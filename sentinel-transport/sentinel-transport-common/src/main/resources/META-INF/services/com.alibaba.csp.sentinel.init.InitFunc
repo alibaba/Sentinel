@@ -1,0 +1,2 @@
+com.alibaba.csp.sentinel.transport.init.CommandCenterInitFunc
+com.alibaba.csp.sentinel.transport.init.HeartbeatSenderInitFunc

@@ -1,0 +1,16 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/openjdk:8-jdk
+
+    working_directory: ~/sentinel
+
+    environment:
+      MAVEN_OPTS: -Xmx3200m
+
+    steps:
+      - checkout
+
+      # Run tests
+      - run: mvn integration-test

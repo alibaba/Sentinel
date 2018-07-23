@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.alibaba.csp</groupId>
+        <artifactId>sentinel-parent</artifactId>
+        <version>0.1.0</version>
+    </parent>
+    <artifactId>sentinel-demo</artifactId>
+    <packaging>pom</packaging>
+    <name>sentinel-demo</name>
+
+    <modules>
+        <module>sentinel-demo-basic</module>
+        <module>sentinel-demo-dynamic-file-rule</module>
+        <module>sentinel-demo-rocketmq</module>
+        <module>sentinel-demo-dubbo</module>
+    </modules>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-datasource-extension</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>

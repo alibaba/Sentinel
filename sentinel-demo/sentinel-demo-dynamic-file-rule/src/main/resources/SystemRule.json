@@ -1,0 +1,8 @@
+[
+  {
+    "avgRt": 10,
+    "highestSystemLoad": 5.0,
+    "maxThread": 10,
+    "qps": 20.0
+  }
+]

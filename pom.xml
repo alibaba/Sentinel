@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.alibaba.csp</groupId>
+    <artifactId>sentinel-parent</artifactId>
+    <version>0.1.0</version>
+    <packaging>pom</packaging>
+
+    <name>${project.artifactId}</name>
+    <description>The parent project of Sentinel</description>
+    <url>https://github.com/alibaba/Sentinel</url>
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <scm>
+        <url>https://github.com/alibaba/Sentinel</url>
+        <connection>scm:git:https://github.com/alibaba/Sentinel.git</connection>
+        <developerConnection>scm:git:https://github.com/alibaba/Sentinel.git</developerConnection>
+    </scm>
+    <developers>
+        <developer>
+            <name>The Sentinel Project Contributors</name>
+            <email>sentinel-dev@linux.alibaba.com</email>
+            <url>https://github.com/alibaba/Sentinel</url>
+        </developer>
+    </developers>
+    <organization>
+        <name>Alibaba Group</name>
+        <url>https://github.com/alibaba</url>
+    </organization>
+    <issueManagement>
+        <system>github</system>
+        <url>https://github.com/alibaba/Sentinel/issues</url>
+    </issueManagement>
+
+    <properties>
+        <!-- Compile libs -->
+        <fastjson.version>1.2.47</fastjson.version>
+
+        <!-- Test libs -->
+        <junit.version>4.12</junit.version>
+        <mockito.version>2.18.0</mockito.version>
+
+        <!-- Build -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.source.version>1.6</java.source.version>
+        <java.target.version>1.6</java.target.version>
+        <java.encoding>UTF-8</java.encoding>
+        <maven.compiler.version>3.7.0</maven.compiler.version>
+        <maven.source.version>3.0.1</maven.source.version>
+        <maven.javadoc.version>3.0.1</maven.javadoc.version>
+        <maven.gpg.version>1.6</maven.gpg.version>
+        <maven.jacoco.version>0.8.1</maven.jacoco.version>
+    </properties>
+
+    <modules>
+        <module>sentinel-core</module>
+        <module>sentinel-extension</module>
+        <module>sentinel-transport</module>
+        <module>sentinel-adapter</module>
+        <module>sentinel-dashboard</module>
+
+        <module>sentinel-demo</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-extension</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-datasource-extension</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-adapter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>${fastjson.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>${mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.version}</version>
+                <configuration>
+                    <source>${java.source.version}</source>
+                    <target>${java.target.version}</target>
+                    <encoding>${java.encoding}</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${maven.jacoco.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>oss</id>
+            <build>
+                <plugins>
+                    <!-- Source -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>${maven.source.version}</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- Javadoc -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>${maven.javadoc.version}</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <configuration>
+                                    <locale>en_US</locale>
+                                    <encoding>UTF-8</encoding>
+                                    <charset>UTF-8</charset>
+                                    <doclint>none</doclint>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- GPG -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>${maven.gpg.version}</version>
+                        <executions>
+                            <execution>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>oss</id>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+                </snapshotRepository>
+                <repository>
+                    <id>oss</id>
+                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+                </repository>
+            </distributionManagement>
+        </profile>
+    </profiles>
+
+</project>

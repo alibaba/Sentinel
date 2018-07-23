@@ -1,0 +1,5 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.alibaba.boot.sentinel.config.SentinelWebServletAutoConfiguration
+
+org.springframework.boot.actuate.autoconfigure.ManagementContextConfiguration=\
+com.alibaba.boot.sentinel.endpoint.SentinelEndpointManagementContextConfiguration

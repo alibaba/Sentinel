@@ -1,0 +1,117 @@
+<div class="row" style="margin-left: 1px; margin-top:10px; height: 50px;">
+  <div class="col-md-6" style="margin-bottom: 10px;">
+    <span style="font-size: 30px;font-weight: bold;">{{app}}</span>
+  </div>
+</div>
+
+<div class="separator"></div>
+<div class="container-fluid">
+  <div class="row" style="margin-top: 20px; margin-bottom: 20px;">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="inputs-header">
+          <span class="brand" style="font-size: 13px;">
+            <i class="fa fa-sort-amount-asc" aria-hidden="true" ng-show="!isDescOrder"></i>
+            <i class="fa fa-sort-amount-desc" aria-hidden="true" ng-show="isDescOrder"></i>
+            {{metricTypeDesc}}&nbsp;实时监控
+          </span>
+          <button class="btn btn-danger" style="float: right;margin-right: 10px;height: 30px;font-size: 12px;" ng-click="setDescOrder()"
+            ng-if="!isDescOrder">降序</button>
+          <button class="btn btn-danger" style="float: right;margin-right: 10px;height: 30px;font-size: 12px;" ng-click="setAscOrder()"
+            ng-if="isDescOrder">升序</button>
+
+          <input class="form-control witdh-200" placeholder="关键字" ng-model="serviceQuery" ng-change="searchService()" style="margin-right: 20px;">
+        </div>
+        <!--.tools-header -->
+        <!--<div id="g2container"></div>-->
+        <div class="card-body">
+          <div class="row" style="margin-left: 3px;margin-right: 3px;">
+            <div class="card-body" style="padding: 0px 0px;">
+              <div class="col-md-12" ng-repeat="metric in metrics" style="padding-left: 10px;padding-right: 10px;">
+
+                <span ng-if="$index == metrics.length-1" ng-init="initAllChart()"></span>
+                <div class="card" style="margin-bottom:20px;" ng-if="$index < metrics.length-1">
+                  <div class="tools-header" style="height: 45px;">
+                    <span class="brand" style="font-weight:normal;;word-break:break-all;word-wrap:break-word;">&nbsp{{metric.resource}}</span>
+                    <a ng-href="">
+                      <i class="fa fa-align-justify"></i>
+                    </a>
+                  </div>
+                  <!-- .tools-header -->
+
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <!--<div ng-if="$index != metrics.length-1" id="chart{{$index}}"></div>-->
+                        <!--<div ng-if="$index == metrics.length-1" id="chart{{$index}}" ng-init="initAllChart()"></div>-->
+                        <div id="chart{{$index}}"></div>
+                      </div>
+                      <div class="col-md-6">
+                        <table class="table table-hover table-striped table-bordered">
+                          <thead>
+                            <tr style="font-size: 13px;text-align:center;font-weight: bold;">
+                              <td style="word-wrap:break-word;word-break:break-all;">时间</td>
+                              <td style="word-wrap:break-word;word-break:break-all;">p_qps</td>
+                              <td style="word-wrap:break-word;word-break:break-all;">b_qps</td>
+                              <td style="word-wrap:break-word;word-break:break-all;">rt(ms)</td>
+                            </tr>
+                          </thead>
+                          <!-- thead -->
+                          <tbody>
+                            <tr style="font-size: 12px;text-align:center;" ng-repeat="tableObj in metric.shortData">
+                              <td style="word-wrap:break-word;word-break:break-all; ">{{tableObj.timestamp | date: 'HH:mm:ss'}}</td>
+                              <td style="word-wrap:break-word;word-break:break-all; ">{{tableObj.passedQps | number : 1}}</td>
+                              <td style="word-wrap:break-word;word-break:break-all; ">{{tableObj.blockedQps | number : 1}}</td>
+                              <td style="word-wrap:break-word;word-break:break-all;">{{tableObj.rt | number : 1}}</td>
+                            </tr>
+                            <tr style="font-size: 12px;text-align:center;" ng-repeat="_tr in [] | range : (6 - metric.shortData.length)">
+                              <td ng-repeat="_td in [] | range : 4">-</td>
+                            </tr>
+                          </tbody>
+                          <!-- tbody -->
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- .card-body -->
+                </div>
+                <!-- .card -->
+              </div>
+              <!-- .col-md-6 -->
+
+            </div>
+            <!-- .card-body -->
+          </div>
+          <!-- .row -->
+        </div>
+
+        <div style="display:none;">
+          <li dir-paginate="empty in emptyObjs| itemsPerPage : servicePageConfig.pageSize" current-page="servicePageConfig.currentPageIndex"
+            pagination-id="servicesPagination"></li>
+        </div>
+
+        <div class="pagination-footer" style="margin-top:5px;">
+          <dir-pagination-controls boundary-links="true" template-url="app/views/pagination.tpl.html" pagination-id="servicesPagination"
+            on-page-change="pageChanged(newPageNumber)">
+          </dir-pagination-controls>
+          <div class="tools" style="">
+            <span>共 {{emptyObjs.length}} 条记录, </span>
+            <span>
+              每页 {{servicePageConfig.pageSize}} 条记录
+              <!--每页-->
+              <!--<input class="form-control" ng-model="servicePageConfig.pageSize" ng-change="pageSizeChanged()">-->
+              <!--条记录,-->
+            </span>
+            <span>第 {{servicePageConfig.currentPageIndex}} / {{servicePageConfig.totalPage}} 页</span>
+          </div>
+          <!-- .tools -->
+        </div>
+        <!-- pagination-footer -->
+        <div class="row" style="margin-bottom:20px"></div>
+      </div>
+      <!-- .card -->
+    </div>
+    <!-- .col-md-12 -->
+  </div>
+  <!-- -->
+</div>

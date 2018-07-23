@@ -1,0 +1,106 @@
+<div>
+  <span class="brand" style="font-weight:bold;">{{flowRuleDialog.title}}</span>
+  <div class="card" style="margin-top: 20px;margin-bottom: 10px;">
+    <div class="panel-body">
+      <div class="row">
+        <form role="form" class="form-horizontal">
+          <div class="form-group">
+            <label class="col-sm-2 control-label">资源名</label>
+            <div class="col-sm-9">
+              <input type="text" ng-if="flowRuleDialog.type == 'edit'" class="form-control" placeholder="资源名" ng-model='currentRule.resource'
+                disabled="" />
+              <input type="text" ng-if="flowRuleDialog.type == 'add'" class="form-control highlight-border" placeholder="资源名" ng-model='currentRule.resource'
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label">流控应用</label>
+            <div class="col-sm-9">
+              <input type="text" class="form-control highlight-border" ng-model='currentRule.limitApp' placeholder='指调用方，"default"表示所有应用。'
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label">阈值类型</label>
+            <div class="col-sm-4">
+              <div class="form-control highlight-border" align="center">
+                <input type="radio" name="grade" value="1" checked ng-model='currentRule.grade' />&nbsp;QPS&nbsp;&nbsp;
+                <input type="radio" name="grade" value="0" ng-model='currentRule.grade' />&nbsp;线程数
+              </div>
+            </div>
+            <label class="col-sm-2 control-label">单机阈值</label>
+            <div class="col-sm-3">
+              <input type='number' class="form-control highlight-border" ng-model='currentRule.count' placeholder="单机阈值" />
+            </div>
+          </div>
+
+          <div ng-if="!flowRuleDialog.showAdvanceButton">
+            <div class="form-group">
+              <label class="col-sm-2 control-label">流控模式</label>
+              <div class="col-sm-9">
+                <div class="form-control highlight-border" align="center">
+                  <input type="radio" name="strategy" value="0" ng-model='currentRule.strategy' />&nbsp;直接&nbsp;&nbsp;
+                  <input type="radio" name="strategy" value="1" ng-model='currentRule.strategy' />&nbsp;关联&nbsp;&nbsp;
+                  <input type="radio" name="strategy" value="2" ng-model='currentRule.strategy' />&nbsp;链路&nbsp;&nbsp;
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group" ng-show="currentRule.strategy==1">
+              <label class="col-sm-2 control-label">关联资源</label>
+              <div class="col-sm-9">
+                <input type="text" class="form-control highlight-border" placeholder="关联资源" ng-model='currentRule.refResource' />
+              </div>
+            </div>
+            <div class="form-group" ng-show="currentRule.strategy==2">
+              <label class="col-sm-2 control-label">入口资源</label>
+              <div class="col-sm-9">
+                <input type="text" class="form-control highlight-border" placeholder="入口资源" ng-model='currentRule.refResource' />
+              </div>
+            </div>
+          </div>
+          <div ng-if="currentRule.grade==1 && !flowRuleDialog.showAdvanceButton">
+            <div class="form-group">
+              <label class="col-sm-2 control-label">流控方式</label>
+              <div class="col-sm-9">
+                <div class="form-control highlight-border" align="center">
+                  <input type="radio" name="controlBehavior" value="0" checked ng-model='currentRule.controlBehavior' />&nbsp;快速失败&nbsp;&nbsp;
+                  <input type="radio" name="controlBehavior" value="1" ng-model='currentRule.controlBehavior' />&nbsp;Warm Up&nbsp;&nbsp;
+                  <input type="radio" name="controlBehavior" value="2" ng-model='currentRule.controlBehavior' />&nbsp;排队等待
+                </div>
+              </div>
+
+            </div>
+            <div class="form-group">
+              <div ng-if="currentRule.controlBehavior==1">
+                <label class="col-sm-2 control-label">预热时长</label>
+                <div class="col-sm-9">
+                  <input type='number' class="form-control highlight-border" ng-model='currentRule.warmUpPeriodSec' placeholder="秒" />
+                </div>
+              </div>
+              <div ng-if="currentRule.controlBehavior==2">
+                <label class="col-sm-2 control-label">超时时间</label>
+                <div class="col-sm-9">
+                  <input type='number' class="form-control highlight-border" ng-model='currentRule.maxQueueingTimeMs' placeholder="毫秒" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group text-center">
+            <a ng-click="onOpenAdvanceClick()" ng-if="flowRuleDialog.showAdvanceButton">高级选项</a>
+            <a ng-click="onCloseAdvanceClick()" ng-if="!flowRuleDialog.showAdvanceButton">关闭高级选项</a>
+          </div>
+        </form>
+      </div>
+      <div class="separator"></div>
+      <div clss="row" style="margin-top: 20px;">
+        <button class="btn btn-default-inverse" style="float:right; height: 30px;font-size: 12px;margin-left: 10px;" ng-click="closeThisDialog()">取消</button>
+        <button class="btn btn-danger-inverse" style="float:right; height: 30px;font-size: 12px;margin-left: 10px;" ng-click="saveRule()">{{flowRuleDialog.confirmBtnText}}</button>
+        <button ng-if="flowRuleDialog.saveAndContinueBtnText" class="btn btn-default" style="float:right; height: 30px;font-size: 12px;"
+          ng-click="saveRuleAndContinue()">{{flowRuleDialog.saveAndContinueBtnText}}</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,72 @@
+<div class="navbar-default sidebar" role="navigation" style="overflow-y: auto;">
+  <div class="sidebar-nav navbar-collapse">
+    <ul class="nav in" id="side-menu">
+      <li class="sidebar-search">
+        <!-- 				<div class="input-group custom-search-form">
+					<input type="text" class="form-control" ng-model="searchApp"
+						placeholder="搜索应用"> <span class="input-group-btn">
+						<button class="btn btn-default" type="button"
+							>
+							<i class="glyphicon glyphicon-search"></i>
+						</button>
+					</span>
+				</div> -->
+        <div class="input-group" style="">
+          <input type="text" class="form-control highlight-border" placeholder="应用名" ng-model="searchApp">
+          <span class="input-group-btn">
+            <button class="btn btn-secondary btn-default-inverse" type="button" ng-click="addSearchApp()">搜索</button>
+          </span>
+        </div>
+      </li>
+
+      <!--<li ui-sref-active="active"><a ui-sref="dashboard.home"><i-->
+      <!--style="color: #000;" class="fa fa-dashboard fa-fw"></i> <span-->
+      <!--style="color: black; font-size:16px;">主控制板</span> </a></li>-->
+      <li ui-sref-active="active">
+        <a ui-sref="dashboard.home" style="font-size:16px;">
+          <span class="glyphicon glyphicon-dashboard"></span>
+          &nbsp;&nbsp;首页</a>
+      </li>
+
+      <li ng-class="{active: true}" ng-repeat="entry in apps | filter:searchApp">{{dropDown}}
+        <a href="" ng-click="click($event)" collapse="{{collpaseall == 1}}" style="font-size: 16px;">
+          <!--<i class="glyphicon glyphicon-chevron-right"></i>-->
+          <!--<span class="fa arrow"></span>-->
+          &nbsp; &nbsp;{{entry.app}}
+          <span class="fa arrow"></span>
+        </a>
+
+        <!--<ul class="nav nav-second-level" collapse="{{entry.active}}" style="display: none;">-->
+        <ul class="nav nav-second-level" ng-show="entry.active">
+          <li ui-sref-active="active">
+            <a ui-sref="dashboard.metric({app: entry.app})">
+              <i class="fa fa-bar-chart"></i>&nbsp;&nbsp;实时监控</a>
+          </li>
+          <li ui-sref-active="active">
+            <a ui-sref="dashboard.identity({app: entry.app})">
+              <i class="glyphicon glyphicon-list-alt"></i>&nbsp;&nbsp;簇点链路</a>
+          </li>
+
+          <li ui-sref-active="active">
+            <a ui-sref="dashboard.flow({app: entry.app})">
+              <i class="glyphicon glyphicon-filter"></i>&nbsp;&nbsp;流控规则</a>
+          </li>
+          <li ui-sref-active="active">
+            <a ui-sref="dashboard.degrade({app: entry.app})">
+              <i class="glyphicon glyphicon-flash"></i>&nbsp;&nbsp;降级规则</a>
+          </li>
+          <li ui-sref-active="active">
+            <a ui-sref="dashboard.system({app: entry.app})">
+              <i class="glyphicon glyphicon-lock"></i>&nbsp;&nbsp;系统规则</a>
+          </li>
+          <li ui-sref-active="active">
+            <a ui-sref="dashboard.machine({app: entry.app})">
+              <i class="glyphicon glyphicon-th-list"></i>&nbsp;&nbsp;机器列表</a>
+          </li>
+
+        </ul>
+        <!-- /.nav-second-level -->
+      </li>
+    </ul>
+  </div>
+</div>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>pom</packaging>
+    <parent>
+        <groupId>com.alibaba.csp</groupId>
+        <artifactId>sentinel-parent</artifactId>
+        <version>0.1.0</version>
+    </parent>
+    <artifactId>sentinel-transport</artifactId>
+    <description>The transport module of Sentinel</description>
+
+    <modules>
+        <module>sentinel-transport-common</module>
+
+        <module>sentinel-transport-simple-http</module>
+        <module>sentinel-transport-netty-http</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-datasource-extension</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- for test -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

@@ -1,0 +1,94 @@
+<!--<div class="row" xmlns="http://www.w3.org/1999/html">-->
+<!--<div class="col-lg-12">-->
+<!--<h2 class="page-header">{{app}} &nbsp;&nbsp;&nbsp;</h2>-->
+<!--<div>-->
+<!--<span>实例总数 {{machines.length}}</span>,-->
+<!--<span style="color: green"> 健康 {{healthCount}}</span>,-->
+<!--<span style="color: red"> 失联 {{machines.length-healthCount}}</span>。-->
+
+<!--</div>-->
+<!--</div>-->
+<!--</div>-->
+<div class="row" style="margin-left: 1px; margin-top:10px; height: 50px;">
+  <div class="col-md-6" style="margin-bottom: 10px;">
+    <span style="font-size: 30px;font-weight: bold;">{{app}}</span>
+  </div>
+</div>
+
+<!--<div>-->
+<!--<span>实例总数 {{machines.length}}, 健康 {{healthCount}}, 失联 {{machines.length-healthCount}}</span>-->
+<!--</div>-->
+
+<div class="separator"></div>
+<div class="container-fluid">
+  <div class="row" style="margin-top: 20px; margin-bottom: 20px;">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="inputs-header">
+          <span class="brand" style="font-size: 13px;">机器列表</span>
+          <span>实例总数 {{machines.length}}, 健康 {{healthCount}}, 失联 {{machines.length-healthCount}}.</span>
+          <!--<button class="btn btn-danger" style="float: right;margin-right: 10px;height: 30px;font-size: 12px;" ng-click="addNewApp()">全部禁用</button>-->
+          <!--<button class="btn btn-danger" style="float: right; margin-right: 10px; height: 30px;font-size: 12px;margin-left: 10px;" ng-click="addNewApp()">全部启用</button>-->
+          <input class="form-control witdh-300" placeholder="关键字" ng-model="searchKey">
+        </div>
+
+        <!--.tools-header -->
+        <div class="card-body" style="padding: 0px 0px;">
+          <table class="table" style="border-left: none; border-right:none;margin-top: 10px;">
+            <thead>
+              <tr style="background: #F3F5F7;">
+                <td>
+                  机器名
+                </td>
+                <td>
+                  IP地址
+                </td>
+                <td>
+                  端口号
+                </td>
+                <td>
+                  健康状态
+                </td>
+                <td>
+                  心跳时间
+                </td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr dir-paginate="entry in machines | filter : searchKey | itemsPerPage: machinesPageConfig.pageSize " current-page="machinesPageConfig.currentPageIndex"
+                pagination-id="entriesPagination">
+                <td style="word-wrap:break-word;word-break:break-all;">{{entry.hostname}}</td>
+                <td style="word-wrap:break-word;word-break:break-all;">{{entry.ip}}</td>
+                <td> {{entry.port}} </td>
+                <td ng-if="entry.health">健康</td>
+                <td ng-if="!entry.health" style="color: red">失联</td>
+                <td>{{entry.version | date: 'yyyy/MM/dd HH:mm:ss'}}</td>
+                <!--<td ng-if="!entry.health" style="color: grey">{{entry.version | date: 'yyyy/MM/dd HH:mm:ss'}}</td>-->
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- .card-body -->
+        <div class="pagination-footer">
+          <dir-pagination-controls boundary-links="true" template-url="app/views/pagination.tpl.html" pagination-id="entriesPagination"
+            on-page-change="">
+          </dir-pagination-controls>
+          <div class="tools" style="">
+            <span>共 {{machinesPageConfig.totalCount}} 条记录, </span>
+            <span>
+              每页
+              <input class="form-control" ng-model="machinesPageConfig.pageSize"> 条记录,
+            </span>
+            <span>第 {{machinesPageConfig.currentPageIndex}} / {{machinesPageConfig.totalPage}} 页</span>
+          </div>
+          <!-- .tools -->
+        </div>
+        <!-- pagination-footer -->
+      </div>
+      <!-- .card -->
+    </div>
+    <!-- .col-md-12 -->
+  </div>
+  <!-- -->
+</div>
+<!-- .container-fluid -->

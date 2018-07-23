@@ -1,0 +1,59 @@
+<div>
+	<span class="brand" style="font-weight:bold;">{{degradeRuleDialog.title}}</span>
+	<div class="card" style="margin-top: 20px;margin-bottom: 10px;">
+		<div class="panel-body">
+			<div class="row">
+				<form role="form" class="form-horizontal">
+					<div class="form-group">
+						<label class="col-sm-2 control-label">资源名</label>
+						<div class="col-sm-9">
+							<input type="text" ng-if="degradeRuleDialog.type == 'edit'" class="form-control" placeholder="资源名" ng-model='currentRule.resource'
+							 disabled="" />
+							<input type="text" ng-if="degradeRuleDialog.type == 'add'" class="form-control highlight-border" placeholder="资源名" ng-model='currentRule.resource'
+							/>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="col-sm-2 control-label">流控应用</label>
+						<div class="col-sm-9">
+							<input type="text" class="form-control highlight-border" ng-model='currentRule.limitApp' placeholder='"default"表示所有应用。' />
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="col-sm-2 control-label">阈值类型</label>
+						<div class="col-sm-9">
+							<div class="form-control highlight-border" align="center">
+								<input type="radio" name="grade" value="0" checked ng-model='currentRule.grade' />&nbsp;RT&nbsp;&nbsp;
+								<input type="radio" name="grade" value="1" ng-model='currentRule.grade' />&nbsp;异常比例
+							</div>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label ng-if="currentRule.grade == 0" class="col-sm-2 control-label">RT</label>
+						<label ng-if="currentRule.grade == 1" class="col-sm-2 control-label">异常比例</label>
+						<div class="col-sm-3">
+							<input type='number' class="form-control highlight-border" ng-model='currentRule.count' ng-if="currentRule.grade == 0" placeholder="毫秒"
+							/>
+							<input type='number' class="form-control highlight-border" ng-model='currentRule.count' ng-if="currentRule.grade == 1" placeholder="0.0~1.0"
+							/>
+						</div>
+						<label class="col-sm-2 control-label">时间窗口</label>
+						<div class="col-sm-4">
+							<input type='number' class="form-control highlight-border" ng-model='currentRule.timeWindow' placeholder="降级时间间隔, 单位秒" />
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="separator"></div>
+			<div clss="row" style="margin-top: 20px;">
+				<button class="btn btn-default-inverse" style="float:right; height: 30px;font-size: 12px;margin-left: 10px;" ng-click="closeThisDialog()">取消</button>
+				<button class="btn btn-danger-inverse" style="float:right; height: 30px;font-size: 12px;margin-left: 10px;" ng-click="saveRule()">{{degradeRuleDialog.confirmBtnText}}</button>
+				<button ng-if="degradeRuleDialog.saveAndContinueBtnText" class="btn btn-default" style="float:right; height: 30px;font-size: 12px;"
+				 ng-click="saveRuleAndContinue()">{{degradeRuleDialog.saveAndContinueBtnText}}</button>
+			</div>
+		</div>
+	</div>
+</div>
