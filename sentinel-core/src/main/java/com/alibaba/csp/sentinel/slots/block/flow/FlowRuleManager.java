@@ -111,7 +111,7 @@ public class FlowRuleManager {
 
         for (FlowRule rule : list) {
             if (StringUtil.isBlank(rule.getLimitApp())) {
-                rule.setLimitApp(FlowRule.DEFAULT);
+                rule.setLimitApp(FlowRule.LIMIT_APP_DEFAULT);
             }
 
             Controller rater = new DefaultController(rule.getCount(), rule.getGrade());
