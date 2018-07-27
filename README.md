@@ -79,9 +79,10 @@ If we want to limit the access times of the resource, we can define rules. The f
 ```java
 List<FlowRule> rules = new ArrayList<FlowRule>();
 FlowRule rule = new FlowRule();
-rule.setResource("hello world");
+rule.setResource("HelloWorld");
 // set limit qps to 20
 rule.setCount(20);
+rule.setGrade(RuleConstant.FLOW_GRADE_QPS);
 rules.add(rule);
 FlowRuleManager.loadRules(rules);
 ```
