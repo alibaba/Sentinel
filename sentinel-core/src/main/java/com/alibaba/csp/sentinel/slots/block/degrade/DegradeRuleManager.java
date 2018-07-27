@@ -143,7 +143,7 @@ public class DegradeRuleManager {
 
             for (DegradeRule rule : list) {
                 if (StringUtil.isBlank(rule.getLimitApp())) {
-                    rule.setLimitApp(FlowRule.DEFAULT);
+                    rule.setLimitApp(FlowRule.LIMIT_APP_DEFAULT);
                 }
 
                 String identity = rule.getResource();

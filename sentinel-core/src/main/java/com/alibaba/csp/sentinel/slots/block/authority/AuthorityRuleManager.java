@@ -124,7 +124,7 @@ public class AuthorityRuleManager {
             Map<String, List<AuthorityRule>> newRuleMap = new ConcurrentHashMap<String, List<AuthorityRule>>();
             for (AuthorityRule rule : list) {
                 if (StringUtil.isBlank(rule.getLimitApp())) {
-                    rule.setLimitApp(FlowRule.DEFAULT);
+                    rule.setLimitApp(FlowRule.LIMIT_APP_DEFAULT);
                 }
 
                 String identity = rule.getResource();
