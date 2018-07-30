@@ -13,6 +13,7 @@
 
     <modules>
         <module>sentinel-datasource-extension</module>
+        <module>sentinel-datasource-nacos</module>
     </modules>
 
 </project>
