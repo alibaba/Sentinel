@@ -21,6 +21,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.init.InitFunc;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.transport.HeartbeatSender;
@@ -33,7 +34,8 @@ import com.alibaba.csp.sentinel.transport.config.TransportConfig;
  */
 public class HeartbeatSenderInitFunc implements InitFunc {
 
-    private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(2);
+    private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(2,
+        new NamedThreadFactory("sentinel-heartbeat-send-task", true));
 
     @Override
     public void init() throws Exception {
