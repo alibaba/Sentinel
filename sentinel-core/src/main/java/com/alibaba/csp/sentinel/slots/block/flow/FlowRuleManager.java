@@ -56,7 +56,7 @@ public class FlowRuleManager {
 
     private static final Map<String, List<FlowRule>> flowRules = new ConcurrentHashMap<String, List<FlowRule>>();
     private final static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1,
-        new NamedThreadFactory("sentinel-flow-metrics-record-task", true));
+        new NamedThreadFactory("sentinel-metrics-record-task", true));
     private final static FlowPropertyListener listener = new FlowPropertyListener();
     private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
 
