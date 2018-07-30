@@ -19,6 +19,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.log.RecordLog;
 
 /**
@@ -48,7 +49,8 @@ public abstract class AutoRefreshDataSource<S, T> extends AbstractDataSource<S, 
     }
 
     private void startTimerService() {
-        service = Executors.newScheduledThreadPool(1);
+        service = Executors.newScheduledThreadPool(1,
+            new NamedThreadFactory("sentinel-datasource-auto-refresh-task", true));
         service.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
