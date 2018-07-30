@@ -19,6 +19,11 @@
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-datasource-extension</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+        </dependency>
     </dependencies>
 
 </project>
