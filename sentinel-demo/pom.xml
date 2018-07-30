@@ -17,16 +17,13 @@
         <module>sentinel-demo-dynamic-file-rule</module>
         <module>sentinel-demo-rocketmq</module>
         <module>sentinel-demo-dubbo</module>
+        <module>sentinel-demo-nacos-datasource</module>
     </modules>
 
     <dependencies>
         <dependency>
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.alibaba.csp</groupId>
-            <artifactId>sentinel-datasource-extension</artifactId>
         </dependency>
     </dependencies>
 
