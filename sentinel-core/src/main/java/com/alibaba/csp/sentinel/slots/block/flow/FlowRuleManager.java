@@ -23,6 +23,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.context.Context;
@@ -54,7 +55,8 @@ import com.alibaba.csp.sentinel.slots.block.flow.controller.WarmUpController;
 public class FlowRuleManager {
 
     private static final Map<String, List<FlowRule>> flowRules = new ConcurrentHashMap<String, List<FlowRule>>();
-    private final static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private final static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1,
+        new NamedThreadFactory("sentinel-flow-metrics-record-task", true));
     private final static FlowPropertyListener listener = new FlowPropertyListener();
     private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
 

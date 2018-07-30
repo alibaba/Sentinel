@@ -83,7 +83,8 @@ public class MetricFetcher {
     private AppManagement appManagement;
 
     private CloseableHttpAsyncClient httpclient;
-    private ScheduledExecutorService fetchScheduleService = Executors.newScheduledThreadPool(1);
+    private ScheduledExecutorService fetchScheduleService = Executors.newScheduledThreadPool(1,
+        new NamedThreadFactory("sentinel-dashboard-metrics-fetch-task"));
     private ExecutorService fetchService;
     private ExecutorService fetchWorker;
 
@@ -94,10 +95,10 @@ public class MetricFetcher {
         RejectedExecutionHandler handler = new DiscardPolicy();
         fetchService = new ThreadPoolExecutor(cores, cores,
             keepAliveTime, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(queueSize),
-            new NamedThreadFactory("fetchService"), handler);
+            new NamedThreadFactory("sentinel-dashboard-metrics-fetchService"), handler);
         fetchWorker = new ThreadPoolExecutor(cores, cores,
             keepAliveTime, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(queueSize),
-            new NamedThreadFactory("fetchWorker"), handler);
+            new NamedThreadFactory("sentinel-dashboard-metrics-fetchWorker"), handler);
         IOReactorConfig ioConfig = IOReactorConfig.custom()
             .setConnectTimeout(3000)
             .setSoTimeout(3000)
