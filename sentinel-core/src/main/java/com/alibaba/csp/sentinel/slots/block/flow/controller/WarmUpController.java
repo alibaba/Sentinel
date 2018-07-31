@@ -69,8 +69,8 @@ public class WarmUpController implements Controller {
     private int maxToken;
     private double slope;
 
-    AtomicLong storedTokens = new AtomicLong(0);
-    AtomicLong lastFilledTime = new AtomicLong(0);
+    private AtomicLong storedTokens = new AtomicLong(0);
+    private AtomicLong lastFilledTime = new AtomicLong(0);
 
     public WarmUpController(double count, int warmupPeriodInSec, int coldFactor) {
         construct(count, warmupPeriodInSec, coldFactor);
@@ -83,7 +83,7 @@ public class WarmUpController implements Controller {
     private void construct(double count, int warmUpPeriodInSec, int coldFactor) {
 
         if (coldFactor <= 1) {
-            throw new RuntimeException("cold factor should be larget than 1");
+            throw new IllegalArgumentException("Cold factor should be larger than 1");
         }
 
         this.count = count;
@@ -146,7 +146,7 @@ public class WarmUpController implements Controller {
         if (storedTokens.compareAndSet(oldValue, newValue)) {
             long currentValue = storedTokens.addAndGet(0 - passQps);
             if (currentValue < 0) {
-                storedTokens.set(0l);
+                storedTokens.set(0L);
             }
             lastFilledTime.set(currentTime);
         }
