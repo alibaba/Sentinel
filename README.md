@@ -27,6 +27,8 @@ See the [Wiki](https://github.com/alibaba/Sentinel/wiki) for full documentation,
 
 See the [Javadoc](https://github.com/alibaba/Sentinel/tree/master/doc) for the API.
 
+**If you are using Sentinel, please [leave a comment here](https://github.com/alibaba/Sentinel/issues/18) to tell us your use scenario to make Sentinel better :-)**
+
 ## Quick Start
 
 Below is a simple demo that guides new users to use Sentinel in just 3 steps. It also shows how to monitor this demo using the dashboard.
