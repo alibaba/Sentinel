@@ -52,7 +52,7 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
     public SimpleHttpHeartbeatSender() {
         // Retrieve the list of default addresses.
         List<InetSocketAddress> newAddrs = getDefaultConsoleIps();
-        RecordLog.info("Default console address list retrieved: " + newAddrs);
+        RecordLog.info("[SimpleHttpHeartbeatSender] Default console address list retrieved: " + newAddrs);
         this.addressList = newAddrs;
         // Set interval config.
         String interval = System.getProperty(TransportConfig.HEARTBEAT_INTERVAL_MS, String.valueOf(DEFAULT_INTERVAL));
@@ -61,6 +61,10 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
 
     @Override
     public boolean sendHeartbeat() throws Exception {
+        if (TransportConfig.getRuntimePort() <= 0) {
+            RecordLog.info("[SimpleHttpHeartbeatSender] Runtime port not initialized, won't send heartbeat");
+            return false;
+        }
         InetSocketAddress addr = getAvailableAddress();
         if (addr == null) {
             return false;
