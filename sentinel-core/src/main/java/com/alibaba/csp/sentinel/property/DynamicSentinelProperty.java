@@ -59,12 +59,12 @@ public class DynamicSentinelProperty<T> implements SentinelProperty<T> {
 
     }
 
-    public boolean isEqual(T oldValue, T newValue) {
+    private boolean isEqual(T oldValue, T newValue) {
         if (oldValue == null && newValue == null) {
             return true;
         }
 
-        if (oldValue == null && newValue != null) {
+        if (oldValue == null) {
             return false;
         }
 

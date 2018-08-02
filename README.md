@@ -27,6 +27,8 @@ See the [Wiki](https://github.com/alibaba/Sentinel/wiki) for full documentation,
 
 See the [Javadoc](https://github.com/alibaba/Sentinel/tree/master/doc) for the API.
 
+**If you are using Sentinel, please [leave a comment here](https://github.com/alibaba/Sentinel/issues/18) to tell us your use scenario to make Sentinel better :-)**
+
 ## Quick Start
 
 Below is a simple demo that guides new users to use Sentinel in just 3 steps. It also shows how to monitor this demo using the dashboard.
@@ -79,9 +81,10 @@ If we want to limit the access times of the resource, we can define rules. The f
 ```java
 List<FlowRule> rules = new ArrayList<FlowRule>();
 FlowRule rule = new FlowRule();
-rule.setResource("hello world");
+rule.setResource("HelloWorld");
 // set limit qps to 20
 rule.setCount(20);
+rule.setGrade(RuleConstant.FLOW_GRADE_QPS);
 rules.add(rule);
 FlowRuleManager.loadRules(rules);
 ```

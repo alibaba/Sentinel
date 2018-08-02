@@ -30,9 +30,9 @@ public class FlowRuleComparator implements Comparator<FlowRule> {
             return 0;
         }
 
-        if (FlowRule.DEFAULT.equals(o1.getLimitApp())) {
+        if (FlowRule.LIMIT_APP_DEFAULT.equals(o1.getLimitApp())) {
             return 1;
-        } else if (FlowRule.DEFAULT.equals(o2.getLimitApp())) {
+        } else if (FlowRule.LIMIT_APP_DEFAULT.equals(o2.getLimitApp())) {
             return -1;
         } else {
             return 0;

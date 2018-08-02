@@ -20,6 +20,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.DefaultNode;
@@ -56,7 +57,7 @@ public class DegradeRule extends AbstractRule {
     private static final int RT_MAX_EXCEED_N = 5;
 
     private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(
-        Runtime.getRuntime().availableProcessors());
+        Runtime.getRuntime().availableProcessors(), new NamedThreadFactory("sentinel-degrade-reset-task", true));
 
     /**
      * RT threshold or exception ratio threshold count.
@@ -99,16 +100,12 @@ public class DegradeRule extends AbstractRule {
         return cut;
     }
 
-    public void setCut(boolean cut) {
+    private void setCut(boolean cut) {
         this.cut = cut;
     }
 
     public AtomicLong getPassCount() {
         return passCount;
-    }
-
-    public void setPassCount(AtomicLong passCount) {
-        this.passCount = passCount;
     }
 
     public int getTimeWindow() {
@@ -142,12 +139,6 @@ public class DegradeRule extends AbstractRule {
         if (grade != that.grade) {
             return false;
         }
-        // if (cut != that.cut) { return false; }
-        //// AtomicLong dose not Override equals()
-        // if ((passCount == null && that.passCount != null)
-        // || (passCount.get() != that.passCount.get())) {
-        // return false;
-        // }
         return true;
     }
 
@@ -157,9 +148,6 @@ public class DegradeRule extends AbstractRule {
         result = 31 * result + new Double(count).hashCode();
         result = 31 * result + timeWindow;
         result = 31 * result + grade;
-        // result = 31 * result + (cut ? 1 : 0);
-        // result = 31 * result + (passCount != null ? (int)passCount.get() :
-        // 0);
         return result;
     }
 
@@ -178,6 +166,7 @@ public class DegradeRule extends AbstractRule {
         if (grade == RuleConstant.DEGRADE_GRADE_RT) {
             double rt = clusterNode.avgRt();
             if (rt < this.count) {
+                passCount.set(0);
                 return true;
             }
 
@@ -188,11 +177,17 @@ public class DegradeRule extends AbstractRule {
         } else {
             double exception = clusterNode.exceptionQps();
             double success = clusterNode.successQps();
-            if (success == 0) {
+            long total = clusterNode.totalQps();
+            // if total qps less than RT_MAX_EXCEED_N, pass.
+            if (total < RT_MAX_EXCEED_N) {
                 return true;
             }
 
-            if (exception / success < count) {
+            if (success == 0) {
+                return exception < RT_MAX_EXCEED_N;
+            }
+
+            if (exception / (success + exception) < count) {
                 return true;
             }
         }

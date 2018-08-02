@@ -47,6 +47,8 @@ public final class AppNameUtil {
 
     public static final String APP_NAME = "project.name";
     public static final String SUN_JAVA_COMMAND = "sun.java.command";
+    private static final String JAR_SUFFIX_LOWER = ".jar";
+    private static final String JAR_SUFFIX_UPPER = ".JAR";
 
     private static String appName;
 
@@ -76,7 +78,7 @@ public final class AppNameUtil {
             String[] strs = command.split(File.separator);
             command = strs[strs.length - 1];
         }
-        if (command.endsWith(".jar") || command.endsWith(".JAR")) {
+        if (command.endsWith(JAR_SUFFIX_LOWER) || command.endsWith(JAR_SUFFIX_UPPER)) {
             command = command.substring(0, command.length() - 4);
         }
         appName = command;

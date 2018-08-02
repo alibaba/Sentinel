@@ -42,6 +42,10 @@ public class TransportConfig {
         return SentinelConfig.getConfig(CONSOLE_SERVER);
     }
 
+    public static int getRuntimePort() {
+        return runtimePort;
+    }
+
     /**
      * Get Server port of this HTTP server.
      *

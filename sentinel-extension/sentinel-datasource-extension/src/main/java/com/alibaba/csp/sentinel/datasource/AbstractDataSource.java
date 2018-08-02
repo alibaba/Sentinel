@@ -20,8 +20,8 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
 
 public abstract class AbstractDataSource<S, T> implements DataSource<S, T> {
 
-    protected ConfigParser<S, T> parser;
-    protected SentinelProperty<T> property;
+    protected final ConfigParser<S, T> parser;
+    protected final SentinelProperty<T> property;
 
     public AbstractDataSource(ConfigParser<S, T> parser) {
         if (parser == null) {

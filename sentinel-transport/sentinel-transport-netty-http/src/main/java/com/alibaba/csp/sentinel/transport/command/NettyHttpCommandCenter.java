@@ -21,6 +21,7 @@ import java.util.concurrent.Executors;
 
 import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandHandlerProvider;
+import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.transport.command.netty.HttpServer;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.transport.CommandCenter;
@@ -34,7 +35,8 @@ public class NettyHttpCommandCenter implements CommandCenter {
 
     private final HttpServer server = new HttpServer();
 
-    private final ExecutorService pool = Executors.newSingleThreadExecutor();
+    private final ExecutorService pool = Executors.newSingleThreadExecutor(
+        new NamedThreadFactory("sentinel-netty-command-center-executor"));
 
     @Override
     public void start() throws Exception {
