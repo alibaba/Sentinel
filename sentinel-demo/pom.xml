@@ -18,6 +18,7 @@
         <module>sentinel-demo-rocketmq</module>
         <module>sentinel-demo-dubbo</module>
         <module>sentinel-demo-nacos-datasource</module>
+        <module>sentinel-demo-zookeeper-datasource</module>
     </modules>
 
     <dependencies>
