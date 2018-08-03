@@ -124,9 +124,7 @@ public class SimpleHttpCommandCenter implements CommandCenter {
                     }
                 }
 
-                if (success) {
-                    tmpPort = port;
-                } else {
+                if (!success) {
                     tmpPort = PORT_UNINITIALIZED;
                 }
                 TransportConfig.setRuntimePort(tmpPort);
