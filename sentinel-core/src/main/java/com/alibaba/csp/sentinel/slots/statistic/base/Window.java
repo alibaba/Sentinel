@@ -31,22 +31,26 @@ public class Window {
     private final LongAdder minRt = new LongAdder();
 
     public Window() {
+        initMinRt();
+    }
+
+    private void initMinRt() {
         minRt.add(4900);
     }
 
     /**
      * Clean the adders and reset window to provided start time.
      *
-     * @param startTime the start time of the window
      * @return new clean window
      */
-    Window resetTo(long startTime) {
+    public Window reset() {
         pass.reset();
         block.reset();
         exception.reset();
         rt.reset();
         success.reset();
         minRt.reset();
+        initMinRt();
         return this;
     }
 
