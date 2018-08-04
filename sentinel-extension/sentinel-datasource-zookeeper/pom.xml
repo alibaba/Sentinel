@@ -13,7 +13,8 @@
     <packaging>jar</packaging>
 
     <properties>
-        <zkclient.version>0.10</zkclient.version>
+        <zookeeper.version>3.4.13</zookeeper.version>
+        <curator.version>4.0.1</curator.version>
     </properties>
 
     <dependencies>
@@ -23,9 +24,20 @@
         </dependency>
 
         <dependency>
-            <groupId>com.101tec</groupId>
-            <artifactId>zkclient</artifactId>
-            <version>${zkclient.version}</version>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+            <version>${zookeeper.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-recipes</artifactId>
+            <version>${curator.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.zookeeper</groupId>
+                    <artifactId>zookeeper</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 </project>

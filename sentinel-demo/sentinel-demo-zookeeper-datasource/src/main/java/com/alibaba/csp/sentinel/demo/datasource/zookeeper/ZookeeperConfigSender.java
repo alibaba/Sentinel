@@ -1,6 +1,10 @@
 package com.alibaba.csp.sentinel.demo.datasource.zookeeper;
 
-import org.I0Itec.zkclient.ZkClient;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.retry.RetryNTimes;
+import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.data.Stat;
 
 /**
  * Zookeeper config sender for demo
@@ -25,11 +29,14 @@ public class ZookeeperConfigSender {
                 + "  }\n"
                 + "]";
 
-        ZkClient zkClient = new ZkClient(remoteAddress, 5000);
+        CuratorFramework zkClient = CuratorFrameworkFactory.newClient(remoteAddress, new RetryNTimes(3, 5000));
+        zkClient.start();
         String path = "/" + groupId + "/" + dataId;
-        if (!zkClient.exists(path)) {
-            zkClient.createPersistent(path, true);
+        Stat stat = zkClient.checkExists().forPath(path);
+        if (stat == null) {
+            zkClient.create().creatingParentContainersIfNeeded().withMode(CreateMode.PERSISTENT).forPath(path, null);
         }
-        zkClient.writeData(path, rule);
+        zkClient.setData().forPath(path, rule.getBytes());
+        // zkClient.delete().forPath(path);
     }
 }

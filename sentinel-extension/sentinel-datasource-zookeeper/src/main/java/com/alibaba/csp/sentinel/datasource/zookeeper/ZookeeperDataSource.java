@@ -1,11 +1,23 @@
 package com.alibaba.csp.sentinel.datasource.zookeeper;
 
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.datasource.AbstractDataSource;
 import com.alibaba.csp.sentinel.datasource.ConfigParser;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import org.I0Itec.zkclient.IZkDataListener;
-import org.I0Itec.zkclient.ZkClient;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.recipes.cache.ChildData;
+import org.apache.curator.framework.recipes.cache.NodeCache;
+import org.apache.curator.framework.recipes.cache.NodeCacheListener;
+import org.apache.curator.retry.RetryNTimes;
+import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.data.Stat;
 
 /**
  * Zookeeper DataSource
@@ -14,13 +26,19 @@ import org.I0Itec.zkclient.ZkClient;
  */
 public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
 
-    private static final int DEFAULT_TIMEOUT = 3000;
+    private static final int RETRY_TIMES = 3;
+    private static final int SLEEP_TIME = 3000;
 
-    private final IZkDataListener zkDataListener;
+    private final ExecutorService pool = new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS,
+            new ArrayBlockingQueue<Runnable>(1), new NamedThreadFactory("sentinel-zookeeper-ds-update"),
+            new ThreadPoolExecutor.DiscardOldestPolicy());
+
+    private final NodeCacheListener listener;
     private final String groupId;
     private final String dataId;
 
-    private ZkClient zkClient = null;
+    private CuratorFramework zkClient = null;
+    private NodeCache nodeCache = null;
 
     public ZookeeperDataSource(final String serverAddr, final String groupId, final String dataId,
                                ConfigParser<String, T> parser) {
@@ -31,22 +49,20 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
         }
         this.groupId = groupId;
         this.dataId = dataId;
-        this.zkDataListener = new IZkDataListener() {
+        this.listener = new NodeCacheListener() {
             @Override
-            public void handleDataChange(String path, Object configInfo) throws Exception {
+            public void nodeChanged() throws Exception {
+                String configInfo = null;
+                ChildData childData = nodeCache.getCurrentData();
+                if (null != childData && childData.getData() != null) {
+
+                    configInfo = new String(childData.getData());
+                }
                 RecordLog.info(String.format("[ZookeeperDataSource] New property value received for (%s, %s, %s): %s",
                         serverAddr, dataId, groupId, configInfo));
-                T newValue = ZookeeperDataSource.this.parser.parse(String.valueOf(configInfo));
+                T newValue = ZookeeperDataSource.this.parser.parse(configInfo);
                 // Update the new value to the property.
                 getProperty().updateValue(newValue);
-            }
-
-            @Override
-            public void handleDataDeleted(String path) throws Exception {
-                RecordLog.info(String.format("[ZookeeperDataSource] New property value received for (%s, %s, %s): %s",
-                        serverAddr, dataId, groupId, null));
-                // Update the new value to the property.
-                getProperty().updateValue(null);
             }
         };
         initZookeeperListener(serverAddr);
@@ -67,12 +83,17 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
 
     private void initZookeeperListener(String serverAddr) {
         try {
-            this.zkClient = new ZkClient(serverAddr, DEFAULT_TIMEOUT);
+            this.zkClient = CuratorFrameworkFactory.newClient(serverAddr, new RetryNTimes(RETRY_TIMES, SLEEP_TIME));
+            this.zkClient.start();
             String path = "/" + this.groupId + "/" + this.dataId;
-            if (!zkClient.exists(path)) {
-                zkClient.createPersistent(path, true);
+            Stat stat = this.zkClient.checkExists().forPath(path);
+            if (stat == null) {
+                this.zkClient.create().creatingParentContainersIfNeeded().withMode(CreateMode.PERSISTENT).forPath(path, null);
             }
-            zkClient.subscribeDataChanges(path, zkDataListener);
+
+            this.nodeCache = new NodeCache(this.zkClient, path);
+            this.nodeCache.getListenable().addListener(this.listener, this.pool);
+            this.nodeCache.start();
         } catch (Exception e) {
             RecordLog.info("[ZookeeperDataSource] Error occurred when initializing Zookeeper data source", e);
             e.printStackTrace();
@@ -81,19 +102,26 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
 
     @Override
     public String readSource() throws Exception {
-        if (zkClient == null) {
+        if (this.zkClient == null) {
             throw new IllegalStateException("Zookeeper has not been initialized or error occurred");
         }
         String path = "/" + this.groupId + "/" + this.dataId;
-        return zkClient.readData(path);
+        byte[] data = this.zkClient.getData().forPath(path);
+        if (data != null) {
+            return new String(data);
+        }
+        return null;
     }
 
     @Override
     public void close() throws Exception {
-        if (zkClient != null) {
-            String path = "/" + this.groupId + "/" + this.dataId;
-            zkClient.unsubscribeDataChanges(path, zkDataListener);
+        if (this.nodeCache != null) {
+            this.nodeCache.getListenable().removeListener(listener);
+            this.nodeCache.close();
         }
-        zkClient.close();
+        if (this.zkClient != null) {
+            this.zkClient.close();
+        }
+        pool.shutdown();
     }
 }
