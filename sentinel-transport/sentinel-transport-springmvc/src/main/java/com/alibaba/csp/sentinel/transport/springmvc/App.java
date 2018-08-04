@@ -1,4 +1,4 @@
-package com.alibaba.csp.sentinel.transport.dubbo;
+package com.alibaba.csp.sentinel.transport.springmvc;
 
 /**
  * Hello world!

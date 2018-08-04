@@ -20,6 +20,11 @@ public class SentinelEntry {
 	}
 
 	private String name;
+	
+	private int count;
+	
+	
+	private Set<Class<? extends Throwable>> throwableSet;
 
 	public String getName() {
 		return name;
@@ -29,7 +34,36 @@ public class SentinelEntry {
 		this.name = name;
 		return this;
 	}
+	
+	public int getCount() {
+		return count;
+	}
 
+	public void setCount(int count) {
+		this.count = count;
+	}
+
+	public Set<Class<? extends Throwable>> getThrowableSet(){
+		return throwableSet;
+	}
+
+	public void addThrowableSet(Class<? extends Throwable>[] throwableArray ) {
+		if(throwableArray == null || throwableArray.length == 0) {
+			return;
+		}
+		if(throwableSet == null) {
+			throwableSet = new HashSet<Class<? extends Throwable>>();
+		}
+		for( Class<? extends Throwable> throwable :throwableArray) {
+			throwableSet.add(throwable);
+		}
+	}
+	
+	public boolean isThisThrowable(Class<? extends Throwable> class1) {
+		return throwableSet == null ? false :throwableSet.contains(class1);
+	}
+	
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == null) {

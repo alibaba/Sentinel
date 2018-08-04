@@ -9,11 +9,14 @@ public class EntryUtils {
 	public static final SentinelEntry transformSentinelAnnotation(Sentinel sentinel) {
 		SentinelEntry sentinelEntry = new SentinelEntry();
 		String name = sentinel.name();
+		
 		if( name == null && "".equals( name)) {
 			return SentinelEntry.NAME_NULL_SENTINEL;
 		}
 		// TODO 还需要判断，是否存在对应的Sentinel
 		sentinelEntry.setName( name );
+		sentinelEntry.setCount( sentinel.count()>0 ? sentinel.count() : 1);
+		sentinelEntry.addThrowableSet( sentinel.blockHandler() );
 		return sentinelEntry;
 	}
 	

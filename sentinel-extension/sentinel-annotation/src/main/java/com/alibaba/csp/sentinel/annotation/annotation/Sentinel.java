@@ -15,4 +15,9 @@ public @interface Sentinel {
 
 	String name();
 	
+	int count() default 1;
+	
+	Class<? extends Throwable>[] blockHandler() default {} ;
+	
+	
 }

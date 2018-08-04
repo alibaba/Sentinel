@@ -1,1 +1,1 @@
-sentinel.dubbo.provider.filter=com.alibaba.csp.sentinel.transport.dubbo.filter.SentinelFitfer
+sentinel.dubbo.provider.filter=com.alibaba.csp.sentinel.transport.dubbo.filter.SentinelFitfer2
