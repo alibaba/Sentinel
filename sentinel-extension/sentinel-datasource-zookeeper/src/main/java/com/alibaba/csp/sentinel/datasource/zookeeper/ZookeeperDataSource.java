@@ -36,7 +36,6 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
             public void handleDataChange(String path, Object configInfo) throws Exception {
                 RecordLog.info(String.format("[ZookeeperDataSource] New property value received for (%s, %s, %s): %s",
                         serverAddr, dataId, groupId, configInfo));
-                System.out.println("===========" + configInfo);
                 T newValue = ZookeeperDataSource.this.parser.parse(String.valueOf(configInfo));
                 // Update the new value to the property.
                 getProperty().updateValue(newValue);

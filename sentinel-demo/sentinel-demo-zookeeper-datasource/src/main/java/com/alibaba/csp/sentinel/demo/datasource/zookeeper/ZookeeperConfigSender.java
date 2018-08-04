@@ -11,8 +11,6 @@ public class ZookeeperConfigSender {
 
     public static void main(String[] args) throws Exception {
 
-
-
         final String remoteAddress = "127.0.0.1:2181";
         final String groupId = "Sentinel-Demo";
         final String dataId = "SYSTEM-CODE-DEMO-FLOW";
