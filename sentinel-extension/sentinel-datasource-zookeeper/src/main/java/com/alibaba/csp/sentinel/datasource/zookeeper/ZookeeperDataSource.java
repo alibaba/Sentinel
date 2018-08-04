@@ -15,7 +15,7 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.NodeCache;
 import org.apache.curator.framework.recipes.cache.NodeCacheListener;
-import org.apache.curator.retry.RetryNTimes;
+import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.data.Stat;
 
@@ -27,7 +27,7 @@ import org.apache.zookeeper.data.Stat;
 public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
 
     private static final int RETRY_TIMES = 3;
-    private static final int SLEEP_TIME = 3000;
+    private static final int SLEEP_TIME = 1000;
 
     private final ExecutorService pool = new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS,
             new ArrayBlockingQueue<Runnable>(1), new NamedThreadFactory("sentinel-zookeeper-ds-update"),
@@ -83,7 +83,7 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
 
     private void initZookeeperListener(String serverAddr) {
         try {
-            this.zkClient = CuratorFrameworkFactory.newClient(serverAddr, new RetryNTimes(RETRY_TIMES, SLEEP_TIME));
+            this.zkClient = CuratorFrameworkFactory.newClient(serverAddr, new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES));
             this.zkClient.start();
             String path = "/" + this.groupId + "/" + this.dataId;
             Stat stat = this.zkClient.checkExists().forPath(path);

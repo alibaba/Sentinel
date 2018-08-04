@@ -2,7 +2,8 @@ package com.alibaba.csp.sentinel.demo.datasource.zookeeper;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.retry.RetryNTimes;
+import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.curator.test.TestingServer;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.data.Stat;
 
@@ -13,9 +14,14 @@ import org.apache.zookeeper.data.Stat;
  */
 public class ZookeeperConfigSender {
 
+    private static final int RETRY_TIMES = 3;
+    private static final int SLEEP_TIME = 1000;
+
     public static void main(String[] args) throws Exception {
 
-        final String remoteAddress = "127.0.0.1:2181";
+        TestingServer server = new TestingServer(2181);
+
+        final String remoteAddress = server.getConnectString();
         final String groupId = "Sentinel-Demo";
         final String dataId = "SYSTEM-CODE-DEMO-FLOW";
         final String rule = "[\n"
@@ -29,7 +35,7 @@ public class ZookeeperConfigSender {
                 + "  }\n"
                 + "]";
 
-        CuratorFramework zkClient = CuratorFrameworkFactory.newClient(remoteAddress, new RetryNTimes(3, 5000));
+        CuratorFramework zkClient = CuratorFrameworkFactory.newClient(remoteAddress, new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES));
         zkClient.start();
         String path = "/" + groupId + "/" + dataId;
         Stat stat = zkClient.checkExists().forPath(path);
@@ -38,5 +44,14 @@ public class ZookeeperConfigSender {
         }
         zkClient.setData().forPath(path, rule.getBytes());
         // zkClient.delete().forPath(path);
+
+        try {
+            Thread.sleep(30000L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        zkClient.close();
+        server.stop();
     }
 }
