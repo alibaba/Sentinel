@@ -42,7 +42,7 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
             }
 
             @Override
-            public void handleDataDeleted(String s) throws Exception {
+            public void handleDataDeleted(String path) throws Exception {
                 RecordLog.info(String.format("[ZookeeperDataSource] New property value received for (%s, %s, %s): %s",
                         serverAddr, dataId, groupId, null));
                 // Update the new value to the property.
