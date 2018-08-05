@@ -34,9 +34,9 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
             new ThreadPoolExecutor.DiscardOldestPolicy());
 
     private NodeCacheListener listener;
-    private String groupId;
-    private String dataId;
-    private String path;
+    private final String groupId;
+    private final String dataId;
+    private final String path;
 
     private CuratorFramework zkClient = null;
     private NodeCache nodeCache = null;
@@ -62,27 +62,13 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
                     serverAddr, path));
         }
         this.path = path;
+        this.groupId = null;
+        this.dataId = null;
 
         init(serverAddr);
     }
 
     private void init(final String serverAddr) {
-        this.listener = new NodeCacheListener() {
-            @Override
-            public void nodeChanged() throws Exception {
-                String configInfo = null;
-                ChildData childData = nodeCache.getCurrentData();
-                if (null != childData && childData.getData() != null) {
-
-                    configInfo = new String(childData.getData());
-                }
-                RecordLog.info(String.format("[ZookeeperDataSource] New property value received for (%s, %s): %s",
-                        serverAddr, path, configInfo));
-                T newValue = ZookeeperDataSource.this.parser.parse(configInfo);
-                // Update the new value to the property.
-                getProperty().updateValue(newValue);
-            }
-        };
         initZookeeperListener(serverAddr);
         loadInitialConfig();
     }
@@ -99,8 +85,26 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
         }
     }
 
-    private void initZookeeperListener(String serverAddr) {
+    private void initZookeeperListener(final String serverAddr) {
         try {
+
+            this.listener = new NodeCacheListener() {
+                @Override
+                public void nodeChanged() throws Exception {
+                    String configInfo = null;
+                    ChildData childData = nodeCache.getCurrentData();
+                    if (null != childData && childData.getData() != null) {
+
+                        configInfo = new String(childData.getData());
+                    }
+                    RecordLog.info(String.format("[ZookeeperDataSource] New property value received for (%s, %s): %s",
+                            serverAddr, path, configInfo));
+                    T newValue = ZookeeperDataSource.this.parser.parse(configInfo);
+                    // Update the new value to the property.
+                    getProperty().updateValue(newValue);
+                }
+            };
+
             this.zkClient = CuratorFrameworkFactory.newClient(serverAddr, new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES));
             this.zkClient.start();
             Stat stat = this.zkClient.checkExists().forPath(this.path);
