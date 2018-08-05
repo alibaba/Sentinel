@@ -85,7 +85,7 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
         try {
             this.zkClient = CuratorFrameworkFactory.newClient(serverAddr, new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES));
             this.zkClient.start();
-            String path = "/" + this.groupId + "/" + this.dataId;
+            String path = getPath(this.groupId, this.dataId);
             Stat stat = this.zkClient.checkExists().forPath(path);
             if (stat == null) {
                 this.zkClient.create().creatingParentContainersIfNeeded().withMode(CreateMode.PERSISTENT).forPath(path, null);
@@ -105,7 +105,7 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
         if (this.zkClient == null) {
             throw new IllegalStateException("Zookeeper has not been initialized or error occurred");
         }
-        String path = "/" + this.groupId + "/" + this.dataId;
+        String path = getPath(this.groupId, this.dataId);
         byte[] data = this.zkClient.getData().forPath(path);
         if (data != null) {
             return new String(data);
@@ -123,5 +123,20 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
             this.zkClient.close();
         }
         pool.shutdown();
+    }
+
+    private String getPath(String groupId, String dataId) {
+        String path = "";
+        if (groupId.startsWith("/")) {
+            path += groupId;
+        } else {
+            path += "/" + groupId;
+        }
+        if (dataId.startsWith("/")) {
+            path += dataId;
+        } else {
+            path += "/" + dataId;
+        }
+        return path;
     }
 }

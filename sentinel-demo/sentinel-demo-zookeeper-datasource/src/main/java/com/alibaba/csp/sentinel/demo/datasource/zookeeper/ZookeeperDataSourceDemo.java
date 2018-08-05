@@ -29,6 +29,9 @@ public class ZookeeperDataSourceDemo {
         // final String systemDataId = "SYSTEM-CODE-DEMO-SYSTEM";
 
 
+        // 规则会持久化到zk的/groupId/flowDataId节点
+        // groupId和和flowDataId可以用/开头也可以不用
+        // 建议不用以/开头，目的是为了如果从Zookeeper切换到nacos的话，只需要改个数据源类名就可以
         DataSource<String, List<FlowRule>> flowRuleDataSource = new ZookeeperDataSource<>(remoteAddress, groupId, flowDataId,
                 source -> JSON.parseObject(source, new TypeReference<List<FlowRule>>() {}));
         FlowRuleManager.register2Property(flowRuleDataSource.getProperty());

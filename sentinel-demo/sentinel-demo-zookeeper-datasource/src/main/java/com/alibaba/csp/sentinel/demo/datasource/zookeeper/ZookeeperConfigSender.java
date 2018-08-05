@@ -19,6 +19,7 @@ public class ZookeeperConfigSender {
 
     public static void main(String[] args) throws Exception {
 
+        // 启动Zookeeper服务
         TestingServer server = new TestingServer(2181);
 
         final String remoteAddress = server.getConnectString();
@@ -37,7 +38,7 @@ public class ZookeeperConfigSender {
 
         CuratorFramework zkClient = CuratorFrameworkFactory.newClient(remoteAddress, new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES));
         zkClient.start();
-        String path = "/" + groupId + "/" + dataId;
+        String path = getPath(groupId, dataId);
         Stat stat = zkClient.checkExists().forPath(path);
         if (stat == null) {
             zkClient.create().creatingParentContainersIfNeeded().withMode(CreateMode.PERSISTENT).forPath(path, null);
@@ -52,6 +53,23 @@ public class ZookeeperConfigSender {
         }
 
         zkClient.close();
+
+        //停止zookeeper服务
         server.stop();
+    }
+
+    private static String getPath(String groupId, String dataId) {
+        String path = "";
+        if (groupId.startsWith("/")) {
+            path += groupId;
+        } else {
+            path += "/" + groupId;
+        }
+        if (dataId.startsWith("/")) {
+            path += dataId;
+        } else {
+            path += "/" + dataId;
+        }
+        return path;
     }
 }
