@@ -79,7 +79,7 @@ public class SystemController {
 
     @ResponseBody
     @RequestMapping("/new.json")
-    Result<?> add(String app, String ip, Integer port, Double avgLoad, Long avgRt, Long maxThread, Double qps) {
+    Result<?> add(String app, String ip, Integer port, Double avgLoad, Long avgRt, Integer maxThread, Double qps) {
         if (StringUtil.isBlank(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
         }
@@ -112,7 +112,7 @@ public class SystemController {
         if (maxThread != null) {
             entity.setMaxThread(maxThread);
         } else {
-            entity.setMaxThread(-1L);
+            entity.setMaxThread(-1);
         }
         if (qps != null) {
             entity.setQps(qps);
@@ -136,7 +136,7 @@ public class SystemController {
 
     @ResponseBody
     @RequestMapping("/save.json")
-    Result<?> updateIfNotNull(Long id, String app, Double avgLoad, Long avgRt, Long maxThread, Double qps) {
+    Result<?> updateIfNotNull(Long id, String app, Double avgLoad, Long avgRt, Integer maxThread, Double qps) {
         if (id == null) {
             return Result.ofFail(-1, "id can't be null");
         }

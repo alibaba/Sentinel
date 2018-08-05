@@ -68,7 +68,7 @@ public class SystemRuleManager {
     private static volatile double highestSystemLoad = Double.MAX_VALUE;
     private static volatile double qps = Double.MAX_VALUE;
     private static volatile long maxRt = Long.MAX_VALUE;
-    private static volatile long maxThread = Long.MAX_VALUE;
+    private static volatile int maxThread = Integer.MAX_VALUE;
     /**
      * mark whether the threshold are set by user.
      */
@@ -167,7 +167,7 @@ public class SystemRuleManager {
         return maxRt;
     }
 
-    public static long getMaxThread() {
+    public static int getMaxThread() {
         return maxThread;
     }
 
@@ -198,7 +198,7 @@ public class SystemRuleManager {
             // should restore changes
             highestSystemLoad = Double.MAX_VALUE;
             maxRt = Long.MAX_VALUE;
-            maxThread = Long.MAX_VALUE;
+            maxThread = Integer.MAX_VALUE;
             qps = Double.MAX_VALUE;
 
             highestSystemLoadIsSet = false;
@@ -278,9 +278,13 @@ public class SystemRuleManager {
         }
 
         // total thread
-        int currentThread = Constants.ENTRY_NODE == null ? 0 : Constants.ENTRY_NODE.curThreadNum();
-        if (currentThread > maxThread) {
-            throw new SystemBlockException(resourceWrapper.getName(), "thread");
+        int currentThread = 0;
+        if (Constants.ENTRY_NODE != null) {
+            if(!Constants.ENTRY_NODE.compareAndIncreaseThreadNum(maxThread)){
+                throw new SystemBlockException(resourceWrapper.getName(), "thread");
+            }
+
+            currentThread =  Constants.ENTRY_NODE.curThreadNum();
         }
 
         double rt = Constants.ENTRY_NODE == null ? 0 : Constants.ENTRY_NODE.avgRt();
