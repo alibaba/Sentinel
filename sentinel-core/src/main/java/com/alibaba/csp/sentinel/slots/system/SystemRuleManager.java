@@ -280,7 +280,7 @@ public class SystemRuleManager {
         // total thread
         int currentThread = 0;
         if (Constants.ENTRY_NODE != null) {
-            if(Constants.ENTRY_NODE.compareAndIncreaseThreadNum((int) maxThread)){
+            if(!Constants.ENTRY_NODE.compareAndIncreaseThreadNum(maxThread)){
                 throw new SystemBlockException(resourceWrapper.getName(), "thread");
             }
 
