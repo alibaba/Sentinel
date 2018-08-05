@@ -105,6 +105,8 @@ public interface Node {
 
     void increaseThreadNum();
 
+    boolean compareAndIncreaseThreadNum(int maxThreadNum);
+
     void decreaseThreadNum();
 
     /**

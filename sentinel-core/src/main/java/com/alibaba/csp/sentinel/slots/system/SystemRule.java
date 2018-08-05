@@ -44,7 +44,7 @@ public class SystemRule extends AbstractRule {
     private double highestSystemLoad = -1;
     private double qps = -1;
     private long avgRt = -1;
-    private long maxThread = -1;
+    private int maxThread = -1;
 
     public double getQps() {
         return qps;
@@ -62,7 +62,7 @@ public class SystemRule extends AbstractRule {
         this.qps = qps;
     }
 
-    public long getMaxThread() {
+    public int getMaxThread() {
         return maxThread;
     }
 
@@ -72,7 +72,7 @@ public class SystemRule extends AbstractRule {
      *
      * @param maxThread max parallel thread number, values <= 0 are special for clearing the threshold.
      */
-    public void setMaxThread(long maxThread) {
+    public void setMaxThread(int maxThread) {
         this.maxThread = maxThread;
     }
 
@@ -154,7 +154,7 @@ public class SystemRule extends AbstractRule {
         result = 31 * result + (int)(temp ^ (temp >>> 32));
 
         result = 31 * result + (int)(avgRt ^ (avgRt >>> 32));
-        result = 31 * result + (int)(maxThread ^ (maxThread >>> 32));
+        result = 31 * result + (maxThread ^ (maxThread >>> 32));
         return result;
     }
 

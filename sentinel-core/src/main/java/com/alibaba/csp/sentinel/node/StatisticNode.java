@@ -18,8 +18,6 @@ package com.alibaba.csp.sentinel.node;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
 import com.alibaba.csp.sentinel.slots.statistic.metric.ArrayMetric;
@@ -36,7 +34,7 @@ public class StatisticNode implements Node {
 
     private transient Metric rollingCounterInMinute = new ArrayMetric(1000, 2 * 60);
 
-    private AtomicInteger curThreadNum = new AtomicInteger(0);
+    private ConcurrentCounter curThreadNum = new ConcurrentCounter();
 
     private long lastFetchTime = -1;
 
@@ -141,7 +139,7 @@ public class StatisticNode implements Node {
 
     @Override
     public int curThreadNum() {
-        return curThreadNum.get();
+        return curThreadNum.getCurConcurrentValue();
     }
 
     @Override
@@ -174,12 +172,17 @@ public class StatisticNode implements Node {
 
     @Override
     public void increaseThreadNum() {
-        curThreadNum.incrementAndGet();
+        // do nothings
+    }
+
+    @Override
+    public boolean compareAndIncreaseThreadNum(int maxThreadNum) {
+        return curThreadNum.tryCompareAndIncrease(maxThreadNum);
     }
 
     @Override
     public void decreaseThreadNum() {
-        curThreadNum.decrementAndGet();
+        curThreadNum.tryDecrease();
     }
 
     @Override
