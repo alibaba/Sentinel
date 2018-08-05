@@ -17,12 +17,29 @@ import com.alibaba.fastjson.TypeReference;
 public class ZookeeperDataSourceDemo {
 
     public static void main(String[] args) {
+        // 使用zookeeper的场景
         loadRules();
+
+        // 方便扩展的场景
+        //loadRules2();
     }
 
     private static void loadRules() {
 
         final String remoteAddress = "127.0.0.1:2181";
+        final String path = "/Sentinel-Demo/SYSTEM-CODE-DEMO-FLOW";
+
+        DataSource<String, List<FlowRule>> flowRuleDataSource = new ZookeeperDataSource<>(remoteAddress, path,
+                source -> JSON.parseObject(source, new TypeReference<List<FlowRule>>() {}));
+        FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
+
+
+    }
+
+    private static void loadRules2() {
+
+        final String remoteAddress = "127.0.0.1:2181";
+        // 引入groupId和dataId的概念，是为了方便和Nacos进行切换
         final String groupId = "Sentinel-Demo";
         final String flowDataId = "SYSTEM-CODE-DEMO-FLOW";
         // final String degradeDataId = "SYSTEM-CODE-DEMO-DEGRADE";
@@ -31,7 +48,7 @@ public class ZookeeperDataSourceDemo {
 
         // 规则会持久化到zk的/groupId/flowDataId节点
         // groupId和和flowDataId可以用/开头也可以不用
-        // 建议不用以/开头，目的是为了如果从Zookeeper切换到nacos的话，只需要改个数据源类名就可以
+        // 建议不用以/开头，目的是为了如果从Zookeeper切换到Nacos的话，只需要改数据源类名就可以
         DataSource<String, List<FlowRule>> flowRuleDataSource = new ZookeeperDataSource<>(remoteAddress, groupId, flowDataId,
                 source -> JSON.parseObject(source, new TypeReference<List<FlowRule>>() {}));
         FlowRuleManager.register2Property(flowRuleDataSource.getProperty());

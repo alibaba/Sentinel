@@ -33,9 +33,10 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
             new ArrayBlockingQueue<Runnable>(1), new NamedThreadFactory("sentinel-zookeeper-ds-update"),
             new ThreadPoolExecutor.DiscardOldestPolicy());
 
-    private final NodeCacheListener listener;
-    private final String groupId;
-    private final String dataId;
+    private NodeCacheListener listener;
+    private String groupId;
+    private String dataId;
+    private String path;
 
     private CuratorFramework zkClient = null;
     private NodeCache nodeCache = null;
@@ -49,6 +50,23 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
         }
         this.groupId = groupId;
         this.dataId = dataId;
+        this.path = getPath(groupId, dataId);
+
+        init(serverAddr);
+    }
+
+    public ZookeeperDataSource(final String serverAddr, final String path, ConfigParser<String, T> parser) {
+        super(parser);
+        if (StringUtil.isBlank(serverAddr) || StringUtil.isBlank(path)) {
+            throw new IllegalArgumentException(String.format("Bad argument: serverAddr=[%s], path=[%s]",
+                    serverAddr, path));
+        }
+        this.path = path;
+
+        init(serverAddr);
+    }
+
+    private void init(final String serverAddr) {
         this.listener = new NodeCacheListener() {
             @Override
             public void nodeChanged() throws Exception {
@@ -58,8 +76,8 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
 
                     configInfo = new String(childData.getData());
                 }
-                RecordLog.info(String.format("[ZookeeperDataSource] New property value received for (%s, %s, %s): %s",
-                        serverAddr, dataId, groupId, configInfo));
+                RecordLog.info(String.format("[ZookeeperDataSource] New property value received for (%s, %s): %s",
+                        serverAddr, path, configInfo));
                 T newValue = ZookeeperDataSource.this.parser.parse(configInfo);
                 // Update the new value to the property.
                 getProperty().updateValue(newValue);
@@ -85,13 +103,12 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
         try {
             this.zkClient = CuratorFrameworkFactory.newClient(serverAddr, new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES));
             this.zkClient.start();
-            String path = getPath(this.groupId, this.dataId);
-            Stat stat = this.zkClient.checkExists().forPath(path);
+            Stat stat = this.zkClient.checkExists().forPath(this.path);
             if (stat == null) {
-                this.zkClient.create().creatingParentContainersIfNeeded().withMode(CreateMode.PERSISTENT).forPath(path, null);
+                this.zkClient.create().creatingParentContainersIfNeeded().withMode(CreateMode.PERSISTENT).forPath(this.path, null);
             }
 
-            this.nodeCache = new NodeCache(this.zkClient, path);
+            this.nodeCache = new NodeCache(this.zkClient, this.path);
             this.nodeCache.getListenable().addListener(this.listener, this.pool);
             this.nodeCache.start();
         } catch (Exception e) {
@@ -105,8 +122,7 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
         if (this.zkClient == null) {
             throw new IllegalStateException("Zookeeper has not been initialized or error occurred");
         }
-        String path = getPath(this.groupId, this.dataId);
-        byte[] data = this.zkClient.getData().forPath(path);
+        byte[] data = this.zkClient.getData().forPath(this.path);
         if (data != null) {
             return new String(data);
         }
