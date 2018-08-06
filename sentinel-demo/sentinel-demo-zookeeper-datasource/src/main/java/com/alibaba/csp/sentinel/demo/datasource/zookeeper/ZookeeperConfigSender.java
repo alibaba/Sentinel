@@ -3,7 +3,6 @@ package com.alibaba.csp.sentinel.demo.datasource.zookeeper;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.curator.test.TestingServer;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.data.Stat;
 
@@ -18,11 +17,7 @@ public class ZookeeperConfigSender {
     private static final int SLEEP_TIME = 1000;
 
     public static void main(String[] args) throws Exception {
-
-        // 启动Zookeeper服务
-        TestingServer server = new TestingServer(2181);
-
-        final String remoteAddress = server.getConnectString();
+        final String remoteAddress = "localhost:2181";
         final String groupId = "Sentinel-Demo";
         final String dataId = "SYSTEM-CODE-DEMO-FLOW";
         final String rule = "[\n"
@@ -44,18 +39,14 @@ public class ZookeeperConfigSender {
             zkClient.create().creatingParentContainersIfNeeded().withMode(CreateMode.PERSISTENT).forPath(path, null);
         }
         zkClient.setData().forPath(path, rule.getBytes());
-        // zkClient.delete().forPath(path);
 
         try {
-            Thread.sleep(30000L);
+            Thread.sleep(3000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
         zkClient.close();
-
-        //停止zookeeper服务
-        server.stop();
     }
 
     private static String getPath(String groupId, String dataId) {
