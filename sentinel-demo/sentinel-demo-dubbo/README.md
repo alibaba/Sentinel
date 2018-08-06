@@ -11,6 +11,7 @@ Sentinel 提供了与 Dubbo 整合的模块 - Sentinel Dubbo Adapter，主要包
 ```
 
 引入此依赖后，Dubbo 的服务接口和方法（包括调用端和服务端）就会成为 Sentinel 中的资源，在配置了规则后就可以自动享受到 Sentinel 的防护能力。
+
 若不希望开启 Sentinel Dubbo Adapter 中的某个 Filter，可以手动关闭对应的 Filter，比如：
 
 ```java
@@ -63,13 +64,30 @@ Demo 2 演示了此限流场景，我们看一下这种模式的效果。假设�
 
 ## Sentinel Dashboard
 
-Sentinel 还提供 API 用于获取实时的监控信息，对应文档见[此处](https://github.com/alibaba/Sentinel/wiki/%E5%AE%9E%E6%97%B6%E7%9B%91%E6%8E%A7)。为了便于使用，Sentinel 还提供了一个控制台（Dashboard）用于配置规则、查看监控、机器发现等功能。我们只需要按照 [Sentinel 控制台文档](https://github.com/alibaba/Sentinel/wiki/%E6%8E%A7%E5%88%B6%E5%8F%B0) 启动控制台，然后给对应的应用程序添加相应参数并启动即可。比如本文中 Service Provider 示例的启动参数：
+Sentinel 还提供 API 用于获取实时的监控信息，对应文档见[此处](https://github.com/alibaba/Sentinel/wiki/%E5%AE%9E%E6%97%B6%E7%9B%91%E6%8E%A7)。为了便于使用，Sentinel 还提供了一个控制台（Dashboard）用于配置规则、查看监控、机器发现等功能。
+
+接入 Dashboard 的步骤（**缺一不可**）：
+
+1. 按照 [Sentinel 控制台文档](https://github.com/alibaba/Sentinel/wiki/%E6%8E%A7%E5%88%B6%E5%8F%B0) 启动控制台
+2. 应用引入 `sentinel-transport-simple-http` 依赖，以便控制台可以拉取对应应用的相关信息
+3. 给应用添加相关的启动参数，启动应用。需要配置的参数有：
+   - `-Dcsp.sentinel.api.port`：客户端的 port，用于上报相关信息
+   - `-Dcsp.sentinel.dashboard.server`：控制台的地址
+   - `-Dproject.name`：应用名称，会在控制台中显示
+
+注意某些环境下本地运行 Dubbo 服务还需要加上 `-Djava.net.preferIPv4Stack=true` 参数。比如 Service Provider 示例的启动参数：
 
 ```bash
 -Djava.net.preferIPv4Stack=true -Dcsp.sentinel.api.port=8720 -Dcsp.sentinel.dashboard.server=localhost:8080 -Dproject.name=dubbo-provider-demo
 ```
 
-这样在启动 Service Provider 示例以后，就可以在 Sentinel 控制台中找到我们的服务了。可以很方便地在控制台中配置限流规则：
+Service Consumer 示例的启动参数：
+
+```bash
+-Djava.net.preferIPv4Stack=true -Dcsp.sentinel.api.port=8721 -Dcsp.sentinel.dashboard.server=localhost:8080 -Dproject.name=dubbo-consumer-demo
+```
+
+这样在启动 Service Provider 和 Service Consumer 示例以后，就可以在 Sentinel 控制台中找到我们的服务了。可以很方便地在控制台中配置限流规则：
 
 ![规则配置](http://dubbo.incubator.apache.org/img/blog/sentinel-dashboard-view-rules.png)
 
