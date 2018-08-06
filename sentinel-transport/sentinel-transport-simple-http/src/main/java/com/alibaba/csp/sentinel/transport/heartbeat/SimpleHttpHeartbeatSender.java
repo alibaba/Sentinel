@@ -101,21 +101,29 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
 
     private List<InetSocketAddress> getDefaultConsoleIps() {
         List<InetSocketAddress> newAddrs = new ArrayList<InetSocketAddress>();
-        String ipsStr = TransportConfig.getConsoleServer();
-        if (StringUtil.isEmpty(ipsStr)) {
-            return newAddrs;
-        }
+        try {
+            String ipsStr = TransportConfig.getConsoleServer();
+            if (StringUtil.isEmpty(ipsStr)) {
+                return newAddrs;
+            }
 
-        for (String ipPortStr : ipsStr.split(",")) {
-            if (ipPortStr.trim().length() == 0) {
-                continue;
+            for (String ipPortStr : ipsStr.split(",")) {
+                if (ipPortStr.trim().length() == 0) {
+                    continue;
+                }
+                if (ipPortStr.startsWith("http://")) {
+                    ipPortStr = ipPortStr.trim().substring(7);
+                }
+                String[] ipPort = ipPortStr.trim().split(":");
+                int port = 80;
+                if (ipPort.length > 1) {
+                    port = Integer.parseInt(ipPort[1].trim());
+                }
+                newAddrs.add(new InetSocketAddress(ipPort[0].trim(), port));
             }
-            String[] ipPort = ipPortStr.trim().split(":");
-            int port = 80;
-            if (ipPort.length > 1) {
-                port = Integer.parseInt(ipPort[1].trim());
-            }
-            newAddrs.add(new InetSocketAddress(ipPort[0].trim(), port));
+        } catch (Exception ex) {
+            RecordLog.info("[SimpleHeartbeatSender] Parse console list failed, current address list: " + newAddrs, ex);
+            ex.printStackTrace();
         }
         return newAddrs;
     }
