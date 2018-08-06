@@ -10,6 +10,7 @@ import com.alibaba.csp.sentinel.datasource.AbstractDataSource;
 import com.alibaba.csp.sentinel.datasource.ConfigParser;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.cache.ChildData;
@@ -30,40 +31,35 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
     private static final int SLEEP_TIME = 1000;
 
     private final ExecutorService pool = new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS,
-            new ArrayBlockingQueue<Runnable>(1), new NamedThreadFactory("sentinel-zookeeper-ds-update"),
-            new ThreadPoolExecutor.DiscardOldestPolicy());
+        new ArrayBlockingQueue<Runnable>(1), new NamedThreadFactory("sentinel-zookeeper-ds-update"),
+        new ThreadPoolExecutor.DiscardOldestPolicy());
 
     private NodeCacheListener listener;
-    private final String groupId;
-    private final String dataId;
     private final String path;
 
     private CuratorFramework zkClient = null;
     private NodeCache nodeCache = null;
 
-    public ZookeeperDataSource(final String serverAddr, final String groupId, final String dataId,
-                               ConfigParser<String, T> parser) {
+    public ZookeeperDataSource(final String serverAddr, final String path, ConfigParser<String, T> parser) {
         super(parser);
-        if (StringUtil.isBlank(serverAddr) || StringUtil.isBlank(groupId) || StringUtil.isBlank(dataId)) {
-            throw new IllegalArgumentException(String.format("Bad argument: serverAddr=[%s], groupId=[%s], dataId=[%s]",
-                    serverAddr, groupId, dataId));
+        if (StringUtil.isBlank(serverAddr) || StringUtil.isBlank(path)) {
+            throw new IllegalArgumentException(String.format("Bad argument: serverAddr=[%s], path=[%s]", serverAddr, path));
         }
-        this.groupId = groupId;
-        this.dataId = dataId;
-        this.path = getPath(groupId, dataId);
+        this.path = path;
 
         init(serverAddr);
     }
 
-    public ZookeeperDataSource(final String serverAddr, final String path, ConfigParser<String, T> parser) {
+    /**
+     * This constructor is Nacos-style.
+     */
+    public ZookeeperDataSource(final String serverAddr, final String groupId, final String dataId,
+                               ConfigParser<String, T> parser) {
         super(parser);
-        if (StringUtil.isBlank(serverAddr) || StringUtil.isBlank(path)) {
-            throw new IllegalArgumentException(String.format("Bad argument: serverAddr=[%s], path=[%s]",
-                    serverAddr, path));
+        if (StringUtil.isBlank(serverAddr) || StringUtil.isBlank(groupId) || StringUtil.isBlank(dataId)) {
+            throw new IllegalArgumentException(String.format("Bad argument: serverAddr=[%s], groupId=[%s], dataId=[%s]", serverAddr, groupId, dataId));
         }
-        this.path = path;
-        this.groupId = null;
-        this.dataId = null;
+        this.path = getPath(groupId, dataId);
 
         init(serverAddr);
     }
@@ -90,7 +86,7 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
 
             this.listener = new NodeCacheListener() {
                 @Override
-                public void nodeChanged() throws Exception {
+                public void nodeChanged() {
                     String configInfo = null;
                     ChildData childData = nodeCache.getCurrentData();
                     if (null != childData && childData.getData() != null) {
@@ -98,7 +94,7 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
                         configInfo = new String(childData.getData());
                     }
                     RecordLog.info(String.format("[ZookeeperDataSource] New property value received for (%s, %s): %s",
-                            serverAddr, path, configInfo));
+                        serverAddr, path, configInfo));
                     T newValue = ZookeeperDataSource.this.parser.parse(configInfo);
                     // Update the new value to the property.
                     getProperty().updateValue(newValue);
@@ -146,17 +142,6 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
     }
 
     private String getPath(String groupId, String dataId) {
-        String path = "";
-        if (groupId.startsWith("/")) {
-            path += groupId;
-        } else {
-            path += "/" + groupId;
-        }
-        if (dataId.startsWith("/")) {
-            path += dataId;
-        } else {
-            path += "/" + dataId;
-        }
-        return path;
+        return String.format("/%s/%s", groupId, dataId);
     }
 }
