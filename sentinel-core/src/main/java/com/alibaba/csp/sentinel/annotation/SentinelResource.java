@@ -24,7 +24,10 @@ import java.lang.annotation.Target;
 import com.alibaba.csp.sentinel.EntryType;
 
 /**
+ * The annotation indicates a definition of Sentinel resource.
+ *
  * @author Eric Zhao
+ * @since 0.1.1
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
@@ -45,6 +48,16 @@ public @interface SentinelResource {
      * @return name of the block exception function, empty by default
      */
     String blockHandler() default "";
+
+    /**
+     * The {@code blockHandler} is located in the same class with the original method by default.
+     * However, if some methods share the same signature and intend to set the same block handler,
+     * then users can set the class where the block handler exists. Note that the block handler method
+     * must be static.
+     *
+     * @return the class where the block handler exists, should not provide more than one classes
+     */
+    Class<?>[] blockHandlerClass() default {};
 
     /**
      * @return name of the fallback function, empty by default
