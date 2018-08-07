@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.annotation.aspectj;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
 import com.alibaba.csp.sentinel.Entry;
@@ -33,6 +34,8 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Aspect for methods with {@link SentinelResource} annotation.
@@ -41,6 +44,8 @@ import org.aspectj.lang.reflect.MethodSignature;
  */
 @Aspect
 public class SentinelResourceAspect {
+
+    private final Logger logger = LoggerFactory.getLogger(SentinelResourceAspect.class);
 
     @Pointcut("@annotation(com.alibaba.csp.sentinel.annotation.SentinelResource)")
     public void sentinelResourceAnnotationPointcut() {
@@ -84,10 +89,14 @@ public class SentinelResourceAspect {
             }
         }
         // Execute block handler if configured.
-        Method blockHandler = extractBlockHandlerMethod(pjp, annotation.blockHandler());
+        Method blockHandler = extractBlockHandlerMethod(pjp, annotation.blockHandler(), annotation.blockHandlerClass());
         if (blockHandler != null) {
+            // Construct args.
             Object[] args = Arrays.copyOf(originArgs, originArgs.length + 1);
             args[args.length - 1] = ex;
+            if (isStatic(blockHandler)) {
+                return blockHandler.invoke(null, args);
+            }
             return blockHandler.invoke(pjp.getTarget(), args);
         }
         // If no block handler is present, then directly throw the exception.
@@ -120,38 +129,26 @@ public class SentinelResourceAspect {
     private Method resolveFallbackInternal(ProceedingJoinPoint pjp, /*@NonNull*/ String name) {
         Method originMethod = getMethod(pjp);
         Class<?>[] parameterTypes = originMethod.getParameterTypes();
-        return findMethod(pjp.getTarget().getClass(), name, originMethod.getReturnType(), parameterTypes);
+        return findMethod(false, pjp.getTarget().getClass(), name, originMethod.getReturnType(), parameterTypes);
     }
 
-    private Method findMethod(Class<?> clazz, String name, Class<?> returnType, Class<?>... parameterTypes) {
-        Method[] methods = clazz.getDeclaredMethods();
-        for (Method method : methods) {
-            if (name.equals(method.getName()) && returnType.isAssignableFrom(method.getReturnType())
-                && Arrays.equals(parameterTypes, method.getParameterTypes())) {
-                return method;
-            }
-        }
-        // Current class nou found, find in the super classes recursively.
-        Class<?> superClass = clazz.getSuperclass();
-        if (superClass != null && !Object.class.equals(superClass)) {
-            return findMethod(superClass, name, returnType, parameterTypes);
-        } else {
-            RecordLog.info(
-                String.format("[SentinelResourceAspect] Cannot find method [%s] in class [%s] with parameters %s",
-                    name, clazz.getCanonicalName(), Arrays.toString(parameterTypes)));
-            return null;
-        }
-    }
-
-    private Method extractBlockHandlerMethod(ProceedingJoinPoint pjp, String name) {
+    private Method extractBlockHandlerMethod(ProceedingJoinPoint pjp, String name, Class<?>[] locationClass) {
         if (StringUtil.isBlank(name)) {
             return null;
         }
-        Class<?> clazz = pjp.getTarget().getClass();
+
+        boolean mustStatic = locationClass != null && locationClass.length >= 1;
+        Class<?> clazz;
+        if (mustStatic) {
+            clazz = locationClass[0];
+        } else {
+            // By default current class.
+            clazz = pjp.getTarget().getClass();
+        }
         MethodWrapper m = ResourceMetadataRegistry.lookupBlockHandler(clazz, name);
         if (m == null) {
             // First time, resolve the block handler.
-            Method method = resolveBlockHandlerInternal(pjp, name);
+            Method method = resolveBlockHandlerInternal(pjp, name, clazz, mustStatic);
             // Cache the method instance.
             ResourceMetadataRegistry.updateBlockHandlerFor(clazz, name, method);
             return method;
@@ -162,12 +159,45 @@ public class SentinelResourceAspect {
         return m.getMethod();
     }
 
-    private Method resolveBlockHandlerInternal(ProceedingJoinPoint pjp, /*@NonNull*/ String name) {
+    private Method resolveBlockHandlerInternal(ProceedingJoinPoint pjp, /*@NonNull*/ String name, Class<?> clazz,
+                                               boolean mustStatic) {
         Method originMethod = getMethod(pjp);
         Class<?>[] originList = originMethod.getParameterTypes();
         Class<?>[] parameterTypes = Arrays.copyOf(originList, originList.length + 1);
         parameterTypes[parameterTypes.length - 1] = BlockException.class;
-        return findMethod(pjp.getTarget().getClass(), name, originMethod.getReturnType(), parameterTypes);
+        return findMethod(mustStatic, clazz, name, originMethod.getReturnType(), parameterTypes);
+    }
+
+    private boolean checkStatic(boolean mustStatic, Method method) {
+        return !mustStatic || isStatic(method);
+    }
+
+    private Method findMethod(boolean mustStatic, Class<?> clazz, String name, Class<?> returnType,
+                              Class<?>... parameterTypes) {
+        Method[] methods = clazz.getDeclaredMethods();
+        for (Method method : methods) {
+            if (name.equals(method.getName()) && checkStatic(mustStatic, method)
+                && returnType.isAssignableFrom(method.getReturnType())
+                && Arrays.equals(parameterTypes, method.getParameterTypes())) {
+
+                logger.info("Resolved method [{}] in class [{}]", name, clazz.getCanonicalName());
+                return method;
+            }
+        }
+        // Current class not found, find in the super classes recursively.
+        Class<?> superClass = clazz.getSuperclass();
+        if (superClass != null && !Object.class.equals(superClass)) {
+            return findMethod(mustStatic, superClass, name, returnType, parameterTypes);
+        } else {
+            String methodType = mustStatic ? " static" : "";
+            logger.error("Cannot find{} method [{}] in class [{}] with parameters {}",
+                methodType, name, clazz.getCanonicalName(), Arrays.toString(parameterTypes));
+            return null;
+        }
+    }
+
+    private boolean isStatic(Method method) {
+        return Modifier.isStatic(method.getModifiers());
     }
 
     private Method getMethod(ProceedingJoinPoint joinPoint) {

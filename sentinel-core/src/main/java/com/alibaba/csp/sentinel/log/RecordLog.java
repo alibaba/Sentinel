@@ -50,4 +50,14 @@ public class RecordLog extends LogBase {
         LoggerUtils.disableOtherHandlers(heliumRecordLog, logHandler);
         heliumRecordLog.log(Level.INFO, detail, e);
     }
+
+    public static void warn(String detail) {
+        LoggerUtils.disableOtherHandlers(heliumRecordLog, logHandler);
+        heliumRecordLog.log(Level.WARNING, detail);
+    }
+
+    public static void warn(String detail, Throwable e) {
+        LoggerUtils.disableOtherHandlers(heliumRecordLog, logHandler);
+        heliumRecordLog.log(Level.WARNING, detail, e);
+    }
 }

@@ -22,36 +22,38 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
+ * Registry for resource configuration metadata (e.g. fallback method)
+ *
  * @author Eric Zhao
  */
-public final class ResourceMetadataRegistry {
+final class ResourceMetadataRegistry {
 
     private static final Map<String, MethodWrapper> FALLBACK_MAP = new ConcurrentHashMap<String, MethodWrapper>();
     private static final Map<String, MethodWrapper> BLOCK_HANDLER_MAP = new ConcurrentHashMap<String, MethodWrapper>();
 
-    public static MethodWrapper lookupFallback(Class<?> clazz, String name) {
+    static MethodWrapper lookupFallback(Class<?> clazz, String name) {
         return FALLBACK_MAP.get(getKey(clazz, name));
     }
 
-    public static MethodWrapper lookupBlockHandler(Class<?> clazz, String name) {
+    static MethodWrapper lookupBlockHandler(Class<?> clazz, String name) {
         return BLOCK_HANDLER_MAP.get(getKey(clazz, name));
     }
 
-    public static void updateFallbackFor(Class<?> clazz, String name, Method method) {
+    static void updateFallbackFor(Class<?> clazz, String name, Method method) {
         if (clazz == null || StringUtil.isBlank(name)) {
             throw new IllegalArgumentException("Bad argument");
         }
         FALLBACK_MAP.put(getKey(clazz, name), MethodWrapper.wrap(method));
     }
 
-    public static void updateBlockHandlerFor(Class<?> clazz, String name, Method method) {
+    static void updateBlockHandlerFor(Class<?> clazz, String name, Method method) {
         if (clazz == null || StringUtil.isBlank(name)) {
             throw new IllegalArgumentException("Bad argument");
         }
         BLOCK_HANDLER_MAP.put(getKey(clazz, name), MethodWrapper.wrap(method));
     }
 
-    public static String getKey(Class<?> clazz, String name) {
+    private static String getKey(Class<?> clazz, String name) {
         return String.format("%s:%s", clazz.getCanonicalName(), name);
     }
 }
