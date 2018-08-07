@@ -19,6 +19,7 @@
         <module>sentinel-demo-dubbo</module>
         <module>sentinel-demo-nacos-datasource</module>
         <module>sentinel-demo-zookeeper-datasource</module>
+        <module>sentinel-demo-annotation-spring-aop</module>
     </modules>
 
     <dependencies>
