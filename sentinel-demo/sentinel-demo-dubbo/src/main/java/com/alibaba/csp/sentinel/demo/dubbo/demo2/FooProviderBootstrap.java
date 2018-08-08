@@ -32,6 +32,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 public class FooProviderBootstrap {
 
     public static void main(String[] args) {
+        // Users don't need to manually call this method.
         InitExecutor.doInit();
 
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
