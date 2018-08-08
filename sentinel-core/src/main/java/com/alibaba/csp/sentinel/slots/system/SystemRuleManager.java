@@ -226,24 +226,24 @@ public class SystemRuleManager {
         boolean checkStatus = false;
         // 首先判断是否有效
 
-        if (rule.getHighestSystemLoad() > 0) {
+        if (rule.getHighestSystemLoad() >= 0) {
             highestSystemLoad = Math.min(highestSystemLoad, rule.getHighestSystemLoad());
             highestSystemLoadIsSet = true;
             checkStatus = true;
         }
 
-        if (rule.getAvgRt() > 0) {
+        if (rule.getAvgRt() >= 0) {
             maxRt = Math.min(maxRt, rule.getAvgRt());
             maxRtIsSet = true;
             checkStatus = true;
         }
-        if (rule.getMaxThread() > 0) {
+        if (rule.getMaxThread() >= 0) {
             maxThread = Math.min(maxThread, rule.getMaxThread());
             maxThreadIsSet = true;
             checkStatus = true;
         }
 
-        if (rule.getQps() > 0) {
+        if (rule.getQps() >= 0) {
             qps = Math.min(qps, rule.getQps());
             qpsIsSet = true;
             checkStatus = true;
