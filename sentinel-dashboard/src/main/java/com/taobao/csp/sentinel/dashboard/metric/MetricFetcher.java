@@ -16,10 +16,7 @@
 package com.taobao.csp.sentinel.dashboard.metric;
 
 import java.nio.charset.Charset;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -41,6 +38,7 @@ import com.taobao.csp.sentinel.dashboard.datasource.entity.MetricEntity;
 import com.taobao.csp.sentinel.dashboard.discovery.AppManagement;
 import com.taobao.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.taobao.csp.sentinel.dashboard.inmem.InMemMetricStore;
+import com.taobao.csp.sentinel.dashboard.persistence.DatabaseMetricStore;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.concurrent.FutureCallback;
@@ -79,6 +77,10 @@ public class MetricFetcher {
 
     @Autowired
     private InMemMetricStore metricStore;
+
+    @Autowired
+    private DatabaseMetricStore databaseMetricStore;
+
     @Autowired
     private AppManagement appManagement;
 
@@ -139,6 +141,7 @@ public class MetricFetcher {
             entity.setGmtModified(date);
         }
         metricStore.saveAll(map.values());
+        databaseMetricStore.saveAll(new ArrayList<>(map.values()));
     }
 
     /**

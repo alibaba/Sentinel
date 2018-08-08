@@ -33,4 +33,12 @@ app.service('MetricService', ['$http', function ($http) {
       method: 'GET'
     });
   };
+
+  this.queryTopResourceMetricDetail = function (params) {
+    return $http({
+      url: '/metric/queryTopResourceMetricDetail.json',
+      params: params,
+      method: 'GET'
+    });
+  };
 }]);

@@ -499,6 +499,19 @@ body {
     color: #666;
 }
 
+.inputs-header > .date-wrapper {
+    float: right;
+    display: flex;
+    align-items: center;
+    width: 300px;
+    margin-right: 20px;
+}
+
+.inputs-header > .date-wrapper .label {
+    margin-right: 8px;
+    color: #333333;
+}
+
 .inputs-header > a {
     float: right;
     margin: 1px 10px;

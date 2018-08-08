@@ -15,15 +15,11 @@
  */
 package com.taobao.csp.sentinel.dashboard.view;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.taobao.csp.sentinel.dashboard.persistence.DatabaseMetricStore;
+import org.apache.commons.lang.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +47,10 @@ public class MetricController {
 
     @Autowired
     private InMemMetricStore metricStore;
+
+    @Autowired
+    private DatabaseMetricStore databaseMetricStore;
+
 
     @ResponseBody
     @RequestMapping("/queryTopResourceMetric.json")
@@ -104,14 +104,14 @@ public class MetricController {
         List<String> topResource = new ArrayList<>();
         if (pageIndex <= totalPage) {
             topResource = resources.subList((pageIndex - 1) * pageSize,
-                Math.min(pageIndex * pageSize, resources.size()));
+                    Math.min(pageIndex * pageSize, resources.size()));
         }
         final Map<String, Iterable<MetricVo>> map = new ConcurrentHashMap<>();
         logger.info("topResource={}", topResource);
         long time = System.currentTimeMillis();
         for (final String resource : topResource) {
             List<MetricEntity> entities = metricStore.queryByAppAndResouce(
-                app, resource, startTime, endTime);
+                    app, resource, startTime, endTime);
             logger.info("resource={}, entities.size()={}", resource, entities == null ? "null" : entities.size());
             List<MetricVo> vos = MetricVo.fromMetricEntities(entities, resource);
             Iterable<MetricVo> vosSorted = sortMetricVoAndDistinct(vos);
@@ -134,6 +134,67 @@ public class MetricController {
     }
 
     @ResponseBody
+    @RequestMapping("/queryTopResourceMetricDetail.json")
+    public Result<?> queryTopResourceMetricDetail(final String app,
+                                                  String startTime, String endTime, String resourceKey) {
+        if (StringUtil.isEmpty(app)) {
+            return Result.ofFail(-1, "app can't be null or empty");
+        }
+
+        if (StringUtil.isEmpty(resourceKey)) {
+            return Result.ofFail(-1, "resourceKey can't be null or empty");
+        }
+
+        Date end;
+        Date start;
+        if (endTime == null) {
+            end = new Date();
+        } else {
+            try {
+                end = DateUtils.parseDate(endTime, new String[]{"yyyy-MM-dd HH:mm:ss"});
+            } catch (Exception e) {
+                return Result.ofFail(-1, "end time format error");
+            }
+        }
+
+        if (startTime == null) {
+            start = new Date(end.getTime() - 1000 * 60 * 30);
+        } else {
+            try {
+                start = DateUtils.parseDate(startTime, new String[]{"yyyy-MM-dd HH:mm:ss"});
+            } catch (Exception e) {
+                return Result.ofFail(-1, "start time format error");
+            }
+        }
+
+        if (end.getTime() - start.getTime() > maxQueryIntervalMs) {
+            return Result.ofFail(-1, "time intervalMs is too big, must <= 1h");
+        }
+
+        final Map<String, Iterable<MetricVo>> map = new ConcurrentHashMap<>();
+        long time = System.currentTimeMillis();
+
+        List<MetricEntity> entities;
+        try {
+            entities = databaseMetricStore.queryByAppAndResouce(
+                    app, resourceKey, start, end);
+        } catch (Exception e) {
+            return Result.ofFail(-1, "query database error:"+e.getMessage());
+        }
+
+        logger.info("resource={}, entities.size()={}", resourceKey, entities == null ? "null" : entities.size());
+        List<MetricVo> vos = MetricVo.fromMetricEntities(entities, resourceKey);
+        Iterable<MetricVo> vosSorted = sortMetricVoAndDistinct(vos);
+        map.put(resourceKey, vosSorted);
+        logger.info("queryTopResourceMetric() total query time={} ms", System.currentTimeMillis() - time);
+        Map<String, Object> resultMap = new HashMap<>(16);
+
+        // order matters.
+        resultMap.put("metric", map);
+        return Result.ofSuccess(resultMap);
+    }
+
+    @ResponseBody
     @RequestMapping("/queryByAppAndResource.json")
     public Result<?> queryByAppAndResource(String app, String identity, Long startTime, Long endTime) {
         if (StringUtil.isEmpty(app)) {
@@ -152,7 +213,7 @@ public class MetricController {
             return Result.ofFail(-1, "time intervalMs is too big, must <= 1h");
         }
         List<MetricEntity> entities = metricStore.queryByAppAndResouce(
-            app, identity, startTime, endTime);
+                app, identity, startTime, endTime);
         List<MetricVo> vos = MetricVo.fromMetricEntities(entities, identity);
         return Result.ofSuccess(sortMetricVoAndDistinct(vos));
     }

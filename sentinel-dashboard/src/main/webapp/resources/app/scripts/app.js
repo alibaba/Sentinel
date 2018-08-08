@@ -159,5 +159,20 @@ angular
             });
           }]
         }
+      })
+      .state('dashboard.metricDetail', {
+        templateUrl: 'app/views/metric-detail.html',
+        url: '/metric-detail/:app?url',
+        controller: 'MetricDetailCtl',
+        resolve: {
+          loadMyFiles: ['$ocLazyLoad', function ($ocLazyLoad) {
+            return $ocLazyLoad.load({
+              name: 'sentinelDashboardApp',
+              files: [
+                'app/scripts/controllers/metricDetail.js',
+              ]
+            });
+          }]
+        }
       });
   }]);

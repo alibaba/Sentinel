@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.2.xsd">
+
+    <import resource="classpath:datasource-mysql.xml" />
+
+    <bean id="metricSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 实例化sqlSessionFactory时需要使用上述配置好的数据源以及SQL映射文件 -->
+        <property name="dataSource" ref="metricDataSource" />
+        <property name="mapperLocations" value="classpath*:sqlmap/sqlmap_sentinel_metric.xml" />
+        <property name="typeAliases" value="com.taobao.csp.sentinel.dashboard.datasource.entity.MetricEntity"/>
+    </bean>
+
+    <bean id="metricMapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer" >
+        <property name="basePackage" value="com.taobao.csp.sentinel.dashboard.persistence" />
+        <property name="sqlSessionFactoryBeanName" value="metricSqlSessionFactory" />
+    </bean>
+
+
+
+</beans>

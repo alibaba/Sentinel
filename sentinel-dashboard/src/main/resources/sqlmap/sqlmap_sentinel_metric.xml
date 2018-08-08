@@ -1,0 +1,75 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.taobao.csp.sentinel.dashboard.persistence.MetricDAO">
+    <resultMap id="metricEntity" type="com.taobao.csp.sentinel.dashboard.datasource.entity.MetricEntity">
+        <id column="id" property="id"></id>
+        <id column="gmt_create" property="gmtCreate"></id>
+        <id column="gmt_modified" property="gmtModified"></id>
+        <id column="app" property="app"></id>
+        <id column="timestamp" property="timestamp"></id>
+        <id column="resource" property="resource"/>
+        <id column="passed_qps" property="passedQps"/>
+        <id column="success_qps" property="successQps"/>
+        <id column="blocked_qps" property="blockedQps"/>
+        <id column="exception" property="exception"/>
+        <id column="rt" property="rt"/>
+        <id column="count" property="count"/>
+        <id column="resource_code" property="resourceCode"/>
+
+    </resultMap>
+
+    <sql id="baseColumn">
+        id,gmt_create,gmt_modified,app,timestamp,resource,passed_qps,success_qps,blocked_qps,exception,rt,count,resource_code
+    </sql>
+
+    <select id="queryByAppAndResouce" parameterType="java.util.Map" resultMap="metricEntity">
+        select
+        <include refid="baseColumn"/>
+        from sentinel_metric
+        where
+        app = #{app}
+        and resource = #{resource}
+        and
+        <![CDATA[
+            gmt_create >= #{startTime} AND gmt_create <= #{endTime}
+            ]]>
+
+    </select>
+
+
+
+    <insert id="batchInsert" parameterType="List" >
+        insert into sentinel_metric(
+        gmt_create,
+        gmt_modified,
+        app,
+        timestamp,
+        resource,
+        passed_qps,
+        success_qps,
+        blocked_qps,
+        exception,
+        rt,
+        count,
+        resource_code
+        )
+        values
+        <foreach collection="list" item="item" separator=",">
+            (
+            now(),
+            now(),
+            #{item.app},
+            #{item.timestamp},
+            #{item.resource},
+            #{item.passedQps},
+            #{item.successQps},
+            #{item.blockedQps},
+            #{item.exception},
+            #{item.rt},
+            #{item.count},
+            #{item.resourceCode}
+            )
+        </foreach>
+
+    </insert>
+
+</mapper>
