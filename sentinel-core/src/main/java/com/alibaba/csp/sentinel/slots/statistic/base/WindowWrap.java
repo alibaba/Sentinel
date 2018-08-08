@@ -65,4 +65,18 @@ public class WindowWrap<T> {
     public void setValue(T value) {
         this.value = value;
     }
+
+    public WindowWrap<T> resetTo(long startTime) {
+        this.windowStart = startTime;
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return "WindowWrap{" +
+            "windowLength=" + windowLength +
+            ", windowStart=" + windowStart +
+            ", value=" + value +
+            '}';
+    }
 }
