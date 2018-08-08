@@ -29,11 +29,8 @@ import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
  */
 public class WindowLeapArray extends LeapArray<Window> {
 
-    private final int timeLength;
-
     public WindowLeapArray(int windowLengthInMs, int intervalInSec) {
         super(windowLengthInMs, intervalInSec);
-        timeLength = intervalInSec * 1000;
     }
 
     private ReentrantLock addLock = new ReentrantLock();
@@ -73,23 +70,8 @@ public class WindowLeapArray extends LeapArray<Window> {
             } else if (time > old.windowStart()) {
                 if (addLock.tryLock()) {
                     try {
-                        // if (old is deprecated) then [LOCK] resetTo currentTime
+                        // if (old is deprecated) then [LOCK] resetTo currentTime.
                         return resetWindowTo(old, time);
-
-                        //WindowWrap<Window> window = new WindowWrap<Window>(windowLength, time, new Window());
-                        //if (array.compareAndSet(idx, old, window)) {
-                        //    for (int i = 0; i < array.length(); i++) {
-                        //        WindowWrap<Window> tmp = array.get(i);
-                        //        if (tmp == null) {
-                        //            continue;
-                        //        } else {
-                        //            if (tmp.windowStart() < time - timeLength) {
-                        //                array.set(i, null);
-                        //            }
-                        //        }
-                        //    }
-                        //    return window;
-                        //}
                     } finally {
                         addLock.unlock();
                     }
@@ -98,6 +80,7 @@ public class WindowLeapArray extends LeapArray<Window> {
                 }
 
             } else if (time < old.windowStart()) {
+                // Cannot go through here.
                 return new WindowWrap<Window>(windowLength, time, new Window());
             }
         }
