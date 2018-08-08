@@ -104,7 +104,7 @@ public class WindowLeapArrayTest {
         assertEquals(0L, currentWindow.block());
     }
 
-    @Test
+    @Deprecated
     public void testWindowDeprecatedRefresh() {
         WindowLeapArray leapArray = new WindowLeapArray(windowLengthInMs, intervalInSec);
         final int len = intervalInSec * 1000 / windowLengthInMs;
@@ -160,9 +160,10 @@ public class WindowLeapArrayTest {
     }
 
     @Test
-    public void testListWindows() {
+    public void testListWindowsResetOld() throws Exception {
         final int windowLengthInMs = 100;
         final int intervalInSec = 1;
+        final int intervalInMs = intervalInSec * 1000;
 
         WindowLeapArray leapArray = new WindowLeapArray(windowLengthInMs, intervalInSec);
         long time = TimeUtil.currentTimeMillis();
@@ -177,7 +178,37 @@ public class WindowLeapArrayTest {
             assertTrue(windowWraps.contains(wrap));
         }
 
-        leapArray.currentWindow(time + windowLengthInMs * 20 + intervalInSec * 1000).value().addPass();
+        Thread.sleep(windowLengthInMs + intervalInMs);
+
+        // This will replace the deprecated bucket, so all deprecated buckets will be reset.
+        leapArray.currentWindow(time + windowLengthInMs + intervalInMs).value().addPass();
+
+        assertEquals(1, leapArray.list().size());
+    }
+
+    @Test
+    public void testListWindowsNewBucket() throws Exception {
+        final int windowLengthInMs = 100;
+        final int intervalInSec = 1;
+
+        WindowLeapArray leapArray = new WindowLeapArray(windowLengthInMs, intervalInSec);
+        long time = TimeUtil.currentTimeMillis();
+
+        Set<WindowWrap<Window>> windowWraps = new HashSet<WindowWrap<Window>>();
+
+        windowWraps.add(leapArray.currentWindow(time));
+        windowWraps.add(leapArray.currentWindow(time + windowLengthInMs));
+
+        Thread.sleep(intervalInSec * 1000 + windowLengthInMs * 3);
+
+        List<WindowWrap<Window>> list = leapArray.list();
+        for (WindowWrap<Window> wrap : list) {
+            assertTrue(windowWraps.contains(wrap));
+        }
+
+        // This won't hit deprecated bucket, so no deprecated buckets will be reset.
+        // But deprecated buckets can be filtered when collecting list.
+        leapArray.currentWindow(TimeUtil.currentTimeMillis()).value().addPass();
 
         assertEquals(1, leapArray.list().size());
     }

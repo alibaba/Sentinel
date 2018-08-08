@@ -24,6 +24,7 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
 /**
  * @param <T> type of data wrapper
  * @author jialiang.linjl
+ * @author Eric Zhao
  */
 public abstract class LeapArray<T> {
 
@@ -45,6 +46,12 @@ public abstract class LeapArray<T> {
         return currentWindow(TimeUtil.currentTimeMillis());
     }
 
+    /**
+     * Get window at provided timestamp.
+     *
+     * @param time a valid timestamp
+     * @return the window at provided timestamp
+     */
     abstract public WindowWrap<T> currentWindow(long time);
 
     public WindowWrap<T> getPreviousWindow(long time) {
@@ -53,8 +60,8 @@ public abstract class LeapArray<T> {
         time = time - windowLength;
         WindowWrap<T> wrap = array.get(idx);
 
-        if (wrap == null) {
-            return wrap;
+        if (wrap == null || isWindowDeprecated(wrap)) {
+            return null;
         }
 
         if (wrap.windowStart() + windowLength < (time)) {
@@ -73,15 +80,19 @@ public abstract class LeapArray<T> {
         int idx = (int)(timeId % array.length());
 
         WindowWrap<T> old = array.get(idx);
-        if (old == null) {
+        if (old == null || isWindowDeprecated(old)) {
             return null;
         }
 
         return old.value();
     }
 
-    public AtomicReferenceArray<WindowWrap<T>> array() {
+    AtomicReferenceArray<WindowWrap<T>> array() {
         return array;
+    }
+
+    private boolean isWindowDeprecated(WindowWrap<T> windowWrap) {
+        return TimeUtil.currentTimeMillis() - windowWrap.windowStart() >= intervalInMs;
     }
 
     public List<WindowWrap<T>> list() {
@@ -89,7 +100,7 @@ public abstract class LeapArray<T> {
 
         for (int i = 0; i < array.length(); i++) {
             WindowWrap<T> windowWrap = array.get(i);
-            if (windowWrap == null) {
+            if (windowWrap == null || isWindowDeprecated(windowWrap)) {
                 continue;
             }
             result.add(windowWrap);
@@ -103,7 +114,7 @@ public abstract class LeapArray<T> {
 
         for (int i = 0; i < array.length(); i++) {
             WindowWrap<T> windowWrap = array.get(i);
-            if (windowWrap == null) {
+            if (windowWrap == null || isWindowDeprecated(windowWrap)) {
                 continue;
             }
             result.add(windowWrap.value());
