@@ -32,7 +32,7 @@
                 <span ng-if="$index == metrics.length-1" ng-init="initAllChart()"></span>
                 <div class="card" style="margin-bottom:20px;" ng-if="$index < metrics.length-1">
                   <div class="tools-header" style="height: 45px;">
-                    <span class="brand" style="font-weight:normal;;word-break:break-all;word-wrap:break-word;">&nbsp{{metric.resource}}</span>
+                    <a class="brand" ui-sref="dashboard.metricDetail({app: app, url: metric.resource})" style="font-weight:normal;;word-break:break-all;word-wrap:break-word;max-width: initial">&nbsp{{metric.resource}}</a>
                     <a ng-href="">
                       <i class="fa fa-align-justify"></i>
                     </a>

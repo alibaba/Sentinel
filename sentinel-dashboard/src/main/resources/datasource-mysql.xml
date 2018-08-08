@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+
+    <!-- statistics数据库配置 -->
+    <bean id="metricDataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init">
+        <property name="name" value="statistics-datasource" />
+        <property name="driverClassName" value="com.mysql.jdbc.Driver" />
+        <property name="url" value="${metrics.jdbc.url}" />
+        <property name="username"  value="${metrics.username}" />
+        <property name="password"  value="${metrics.password}" />
+        <property name="maxActive" value="20" />
+        <!--最小连接池数量-->
+        <property name="minIdle" value="1" />
+        <!--获取连接时最大等待时间，单位毫秒。配置了maxWait之后，缺省启用公平锁，并发效率会有所下降，如果需要可以通过配置useUnfairLock属性为true使用非公平锁。-->
+        <property name="maxWait" value="5000" />
+    </bean>
+
+    <!-- 配置Spring的事务管理器 -->
+    <bean id="metricTransactionManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager" autowire="byName">
+        <property name="dataSource" ref="metricDataSource" />
+    </bean>
+
+    <bean id="metricTransactionTemplate"
+          class="org.springframework.transaction.support.TransactionTemplate">
+        <property name="transactionManager" ref="metricTransactionManager" />
+        <!--ISOLATION_DEFAULT 表示由使用的数据库决定  -->
+        <property name="isolationLevelName" value="ISOLATION_DEFAULT"/>
+        <property name="propagationBehaviorName" value="PROPAGATION_REQUIRED"/>
+        <property name="timeout" value="5000"/>
+    </bean>
+
+</beans>

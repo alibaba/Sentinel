@@ -1,0 +1,79 @@
+<div class="row" style="margin-left: 1px; margin-top:10px; height: 50px;">
+  <div class="col-md-6" style="margin-bottom: 10px;">
+    <span style="font-size: 30px;font-weight: bold;">{{app}}</span>
+  </div>
+</div>
+
+<div class="separator"></div>
+<div class="container-fluid">
+  <div class="row" style="margin-top: 20px; margin-bottom: 20px;">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="inputs-header">
+          <span class="brand" style="font-size: 13px;">
+            <i class="fa fa-sort-amount-asc" aria-hidden="true" ng-show="!isDescOrder"></i>
+            <i class="fa fa-sort-amount-desc" aria-hidden="true" ng-show="isDescOrder"></i>
+            {{metricTypeDesc}}&nbsp;实时监控
+          </span>
+
+          <!-- <input class="form-control witdh-200" placeholder="关键字" ng-model="serviceQuery" ng-change="searchService()" style="margin-right: 20px;"> -->
+          <div class="date-wrapper">
+            <span class="label">结束时间</span>
+            <div class='input-group date' id='datetimepicker-end'>
+              <input type='text' class="form-control" />
+              <span class="input-group-addon">
+                <span class="fa fa-calendar">
+                </span>
+              </span>
+            </div>
+          </div>
+
+          <div class="date-wrapper">
+            <span class="label">开始时间</span>
+            <div class='input-group date' id='datetimepicker-start'>
+              <input type='text' class="form-control" />
+              <span class="input-group-addon">
+                <span class="fa fa-calendar">
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+        <!--.tools-header -->
+        <!--<div id="g2container"></div>-->
+        <div class="card-body">
+          <div class="row" style="margin-left: 3px;margin-right: 3px;">
+            <div class="card-body" style="padding: 0px 0px;">
+              <div class="col-md-12" style="padding-left: 10px;padding-right: 10px;">
+                <div class="card" style="margin-bottom:20px;">
+                  <div class="tools-header" style="height: 45px;">
+                    <span class="brand" style="font-weight:normal;;word-break:break-all;word-wrap:break-word;">&nbsp{{url}}</span>
+                    <a ng-href="">
+                      <i class="fa fa-align-justify"></i>
+                    </a>
+                  </div>
+                  <!-- .tools-header -->
+
+                  <div class="card-body">
+                    <div class="row">
+                      <div id="detail-chart"></div>
+                    </div>
+                  </div>
+                  <!-- .card-body -->
+                </div>
+                <!-- .card -->
+              </div>
+              <!-- .col-md-6 -->
+
+            </div>
+            <!-- .card-body -->
+          </div>
+          <!-- .row -->
+        </div>
+      </div>
+      <!-- .card -->
+    </div>
+    <!-- .col-md-12 -->
+  </div>
+  <!-- -->
+</div>
