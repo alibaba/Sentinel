@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
+import com.alibaba.csp.sentinel.adapter.dubbo.fallback.DubboFallbackRegistry;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
@@ -39,6 +40,7 @@ import com.alibaba.dubbo.rpc.RpcException;
  * </pre>
  *
  * @author leyou
+ * @author Eric Zhao
  */
 @Activate(group = "provider")
 public class SentinelDubboProviderFilter extends AbstractDubboFilter implements Filter {
@@ -63,7 +65,7 @@ public class SentinelDubboProviderFilter extends AbstractDubboFilter implements 
 
             return invoker.invoke(invocation);
         } catch (BlockException e) {
-            throw new SentinelRpcException(e);
+            return DubboFallbackRegistry.getProviderFallback().handle(invoker, invocation, e);
         } catch (RpcException e) {
             Tracer.trace(e);
             throw e;

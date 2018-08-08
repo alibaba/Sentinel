@@ -19,10 +19,10 @@ import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
+import com.alibaba.csp.sentinel.adapter.dubbo.fallback.DubboFallbackRegistry;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.csp.sentinel.slots.block.SentinelRpcException;
 import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.Invocation;
@@ -39,6 +39,7 @@ import com.alibaba.dubbo.rpc.RpcException;
  * </pre>
  *
  * @author leyou
+ * @author Eric Zhao
  */
 @Activate(group = "consumer")
 public class SentinelDubboConsumerFilter extends AbstractDubboFilter implements Filter {
@@ -58,7 +59,7 @@ public class SentinelDubboConsumerFilter extends AbstractDubboFilter implements 
             methodEntry = SphU.entry(resourceName, EntryType.OUT);
             return invoker.invoke(invocation);
         } catch (BlockException e) {
-            throw new SentinelRpcException(e);
+            return DubboFallbackRegistry.getConsumerFallback().handle(invoker, invocation, e);
         } catch (RpcException e) {
             Tracer.trace(e);
             throw e;

@@ -40,8 +40,10 @@ public class FooProviderBootstrap {
     private static final String INTERFACE_RES_KEY = "com.alibaba.csp.sentinel.demo.dubbo.FooService";
 
     public static void main(String[] args) {
-        initFlowRule();
+        // Users don't need to manually call this method.
         InitExecutor.doInit();
+
+        initFlowRule();
 
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
         context.register(ProviderConfiguration.class);
