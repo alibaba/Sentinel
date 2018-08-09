@@ -74,8 +74,14 @@ public final class AppNameUtil {
             return;
         }
         command = command.split("\\s")[0];
-        if (command.contains(File.separator)) {
-            String[] strs = command.split(File.separator);
+        String separator = File.separator;
+        if (command.contains(separator)) {
+            String[] strs;
+            if ("\\".equals(separator)) {
+                strs = command.split("\\\\");
+            } else {
+                strs = command.split(separator);
+            }
             command = strs[strs.length - 1];
         }
         if (command.endsWith(JAR_SUFFIX_LOWER) || command.endsWith(JAR_SUFFIX_UPPER)) {
