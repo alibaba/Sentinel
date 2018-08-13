@@ -82,11 +82,11 @@ public class AuthorityRule extends AbstractRule {
             contain = exactlyMatch;
         }
 
-        if (strategy == RuleConstant.BLACK && contain) {
+        if (strategy == RuleConstant.AUTHORITY_BLACK && contain) {
             return false;
         }
 
-        if (strategy == RuleConstant.WHILE && !contain) {
+        if (strategy == RuleConstant.AUTHORITY_WHITE && !contain) {
             return false;
         }
 
