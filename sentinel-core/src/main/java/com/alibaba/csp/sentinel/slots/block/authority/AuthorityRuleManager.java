@@ -31,9 +31,12 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 
-/***
+/**
+ * Manager for authority rules.
+ *
  * @author youji.zj
  * @author jialiang.linjl
+ * @author Eric Zhao
  */
 public class AuthorityRuleManager {
 
@@ -60,7 +63,9 @@ public class AuthorityRuleManager {
     }
 
     /**
-     * @param rules
+     * Load the authority rules to memory.
+     *
+     * @param rules list of authority rules
      */
     public static void loadRules(List<AuthorityRule> rules) {
         currentProperty.updateValue(rules);
@@ -114,7 +119,7 @@ public class AuthorityRuleManager {
             if (rules != null) {
                 authorityRules.putAll(rules);
             }
-            RecordLog.info("receive authority config: " + authorityRules);
+            RecordLog.info("[AuthorityRuleManager] Authority rules received: " + authorityRules);
         }
 
         private Map<String, List<AuthorityRule>> loadAuthorityConf(List<AuthorityRule> list) {
@@ -129,12 +134,15 @@ public class AuthorityRuleManager {
 
                 String identity = rule.getResource();
                 List<AuthorityRule> ruleM = newRuleMap.get(identity);
+                // putIfAbsent
                 if (ruleM == null) {
                     ruleM = new ArrayList<AuthorityRule>();
+                    ruleM.add(rule);
                     newRuleMap.put(identity, ruleM);
+                } else {
+                    // One resource should only have at most one authority rule, so just ignore redundant rules.
+                    RecordLog.warn("[AuthorityRuleManager] Ignoring redundant rule: " + rule.toString());
                 }
-                ruleM.add(rule);
-
             }
 
             return newRuleMap;
@@ -148,9 +156,8 @@ public class AuthorityRuleManager {
             if (rules != null) {
                 authorityRules.putAll(rules);
             }
-            RecordLog.info("load authority config: " + authorityRules);
+            RecordLog.info("[AuthorityRuleManager] Load authority rules: " + authorityRules);
         }
-
     }
 
 }
