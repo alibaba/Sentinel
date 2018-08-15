@@ -10,8 +10,4 @@
     </parent>
     <artifactId>sentinel-demo-basic</artifactId>
 
-    <dependencies>
-        
-    </dependencies>
-
 </project>

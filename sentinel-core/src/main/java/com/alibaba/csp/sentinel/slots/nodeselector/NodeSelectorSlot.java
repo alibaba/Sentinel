@@ -128,7 +128,7 @@ public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
     /**
      * {@link DefaultNode}s of the same resource in different context.
      */
-    private Map<String, DefaultNode> map = new HashMap<String, DefaultNode>(10);
+    private volatile Map<String, DefaultNode> map = new HashMap<String, DefaultNode>(10);
 
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, Object obj, int count, Object... args)

@@ -88,8 +88,8 @@ public class CtSph implements Sph {
         ProcessorSlot<Object> chain = lookProcessChain(resourceWrapper);
 
         /*
-         * Means processor size exceeds {@link Constants.MAX_ENTRY_SIZE}, no
-         * rule checking will do.
+         * Means processor cache size exceeds {@link Constants.MAX_SLOT_CHAIN_SIZE}, so no
+         * rule checking will be done.
          */
         if (chain == null) {
             return new CtEntry(resourceWrapper, null, context);
@@ -102,7 +102,7 @@ public class CtSph implements Sph {
             e.exit(count, args);
             throw e1;
         } catch (Throwable e1) {
-            RecordLog.info("sentinel unexpected exception", e1);
+            RecordLog.info("Sentinel unexpected exception", e1);
         }
         return e;
     }
@@ -134,8 +134,7 @@ public class CtSph implements Sph {
                     }
 
                     chain = Env.slotsChainbuilder.build();
-                    HashMap<ResourceWrapper, ProcessorSlotChain> newMap
-                        = new HashMap<ResourceWrapper, ProcessorSlotChain>(
+                    Map<ResourceWrapper, ProcessorSlotChain> newMap = new HashMap<ResourceWrapper, ProcessorSlotChain>(
                         chainMap.size() + 1);
                     newMap.putAll(chainMap);
                     newMap.put(resourceWrapper, chain);
