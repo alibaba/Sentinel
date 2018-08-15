@@ -63,7 +63,11 @@ public class SentinelDubboProviderFilter extends AbstractDubboFilter implements 
             interfaceEntry = SphU.entry(interfaceName, EntryType.IN);
             methodEntry = SphU.entry(resourceName, EntryType.IN, 1, invocation.getArguments());
 
-            return invoker.invoke(invocation);
+            Result result = invoker.invoke(invocation);
+            if (result.hasException()) {
+                Tracer.trace(result.getException());
+            }
+            return result;
         } catch (BlockException e) {
             return DubboFallbackRegistry.getProviderFallback().handle(invoker, invocation, e);
         } catch (RpcException e) {

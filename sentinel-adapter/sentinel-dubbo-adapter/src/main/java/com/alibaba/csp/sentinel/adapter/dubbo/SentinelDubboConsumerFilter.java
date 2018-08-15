@@ -57,7 +57,13 @@ public class SentinelDubboConsumerFilter extends AbstractDubboFilter implements 
             ContextUtil.enter(resourceName);
             interfaceEntry = SphU.entry(invoker.getInterface().getName(), EntryType.OUT);
             methodEntry = SphU.entry(resourceName, EntryType.OUT);
-            return invoker.invoke(invocation);
+
+            Result result = invoker.invoke(invocation);
+            if (result.hasException()) {
+                // Record common exception.
+                Tracer.trace(result.getException());
+            }
+            return result;
         } catch (BlockException e) {
             return DubboFallbackRegistry.getConsumerFallback().handle(invoker, invocation, e);
         } catch (RpcException e) {
