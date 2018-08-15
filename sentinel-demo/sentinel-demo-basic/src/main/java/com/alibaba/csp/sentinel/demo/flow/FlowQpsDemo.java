@@ -42,18 +42,19 @@ public class FlowQpsDemo {
 
     private static volatile boolean stop = false;
 
-    private static final int threadCount = 1;
+    private static final int threadCount = 32;
 
     private static int seconds = 60 + 40;
 
     public static void main(String[] args) throws Exception {
+        initFlowQpsRule();
+
         tick();
         // first make the system run on a very low condition
         simulateTraffic();
 
         System.out.println("===== begin to do flow control");
         System.out.println("only 20 requests per second can pass");
-        initFlowQpsRule();
 
     }
 

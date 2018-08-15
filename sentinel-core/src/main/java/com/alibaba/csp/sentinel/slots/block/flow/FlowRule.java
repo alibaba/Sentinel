@@ -53,13 +53,23 @@ public class FlowRule extends AbstractRule {
      */
     private int grade = RuleConstant.FLOW_GRADE_QPS;
 
+    /**
+     * Flow control threshold count.
+     */
     private double count;
 
     /**
-     * 0为直接限流;1为关联限流;2为链路限流
+     * Flow control strategy based on invocation chain.
+     *
+     * {@link RuleConstant#STRATEGY_DIRECT} for direct flow control (by origin);
+     * {@link RuleConstant#STRATEGY_RELATE} for relevant flow control (with relevant resource);
+     * {@link RuleConstant#STRATEGY_CHAIN} for chain flow control (by entrance resource).
      */
     private int strategy = RuleConstant.STRATEGY_DIRECT;
 
+    /**
+     * Reference resource in flow control with relevant resource.
+     */
     private String refResource;
 
     /**
