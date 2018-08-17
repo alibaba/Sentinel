@@ -40,6 +40,7 @@ import com.alibaba.dubbo.rpc.RpcException;
  *
  * @author leyou
  * @author Eric Zhao
+ * @author Young Hu
  */
 @Activate(group = "consumer")
 public class SentinelDubboConsumerFilter extends AbstractDubboFilter implements Filter {
@@ -55,7 +56,7 @@ public class SentinelDubboConsumerFilter extends AbstractDubboFilter implements 
         try {
             String resourceName = getResourceName(invoker, invocation);
             ContextUtil.enter(resourceName);
-            interfaceEntry = SphU.entry(invoker.getInterface().getName(), EntryType.OUT);
+            interfaceEntry = SphU.entry(getInterfaceName(invoker), EntryType.OUT);
             methodEntry = SphU.entry(resourceName, EntryType.OUT);
 
             Result result = invoker.invoke(invocation);
