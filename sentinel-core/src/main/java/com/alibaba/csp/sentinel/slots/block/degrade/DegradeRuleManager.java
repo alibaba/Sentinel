@@ -31,7 +31,7 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.degrade.cb.CircuitBreaker;
-import com.alibaba.csp.sentinel.slots.block.degrade.cb.ExceptionCircuitBreaker;
+import com.alibaba.csp.sentinel.slots.block.degrade.cb.ExceptionRatioCircuitBreaker;
 import com.alibaba.csp.sentinel.slots.block.degrade.cb.RtCircuitBreaker;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -230,7 +230,7 @@ public class DegradeRuleManager {
             case RuleConstant.DEGRADE_GRADE_RT:
                 return new RtCircuitBreaker(rule);
             case RuleConstant.DEGRADE_GRADE_EXCEPTION:
-                return new ExceptionCircuitBreaker(rule);
+                return new ExceptionRatioCircuitBreaker(rule);
             default:
                 return null;
         }

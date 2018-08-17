@@ -30,7 +30,7 @@ import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
  *
  * @author Eric Zhao
  */
-public class ExceptionCircuitBreaker implements CircuitBreaker {
+public class ExceptionRatioCircuitBreaker implements CircuitBreaker {
 
     private static final int RT_MAX_EXCEED_N = 5;
 
@@ -40,7 +40,7 @@ public class ExceptionCircuitBreaker implements CircuitBreaker {
     private final DegradeRule rule;
     private final AtomicBoolean cut = new AtomicBoolean(false);
 
-    public ExceptionCircuitBreaker(DegradeRule rule) {
+    public ExceptionRatioCircuitBreaker(DegradeRule rule) {
         if (rule == null) {
             throw new IllegalArgumentException("Bad degrade rule");
         }

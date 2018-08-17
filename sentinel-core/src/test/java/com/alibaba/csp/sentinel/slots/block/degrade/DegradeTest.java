@@ -36,7 +36,7 @@ import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
  */
 public class DegradeTest {
 
-    @Test
+    @Deprecated
     public void testAverageRtDegrade() throws InterruptedException {
         String key = "test_degrade_average_rt";
         ClusterNode cn = mock(ClusterNode.class);
@@ -65,7 +65,7 @@ public class DegradeTest {
         assertTrue(rule.passCheck(context, node, 1));
     }
 
-    @Test
+    @Deprecated
     public void testExceptionRatioModeDegrade() throws Throwable {
         String key = "test_degrade_exception_ratio";
         ClusterNode cn = mock(ClusterNode.class);
