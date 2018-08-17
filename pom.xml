@@ -67,6 +67,7 @@
         <module>sentinel-dashboard</module>
 
         <module>sentinel-demo</module>
+        <module>sentinel-benchmark</module>
     </modules>
 
     <dependencyManagement>
