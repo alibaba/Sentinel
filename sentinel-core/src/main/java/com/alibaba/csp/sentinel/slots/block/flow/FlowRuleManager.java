@@ -73,6 +73,7 @@ public class FlowRuleManager {
      */
     public static void register2Property(SentinelProperty<List<FlowRule>> property) {
         synchronized (listener) {
+            RecordLog.info("[FlowRuleManager] Registering new property to flow rule manager");
             currentProperty.removeListener(listener);
             property.addListener(listener);
             currentProperty = property;

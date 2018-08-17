@@ -41,18 +41,18 @@
 
     <properties>
         <!-- Compile libs -->
-        <fastjson.version>1.2.47</fastjson.version>
+        <fastjson.version>1.2.49</fastjson.version>
 
         <!-- Test libs -->
         <junit.version>4.12</junit.version>
-        <mockito.version>2.18.0</mockito.version>
+        <mockito.version>2.21.0</mockito.version>
 
         <!-- Build -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.source.version>1.6</java.source.version>
         <java.target.version>1.6</java.target.version>
         <java.encoding>UTF-8</java.encoding>
-        <maven.compiler.version>3.7.0</maven.compiler.version>
+        <maven.compiler.version>3.8.0</maven.compiler.version>
         <maven.source.version>3.0.1</maven.source.version>
         <maven.javadoc.version>3.0.1</maven.javadoc.version>
         <maven.gpg.version>1.6</maven.gpg.version>
@@ -67,6 +67,7 @@
         <module>sentinel-dashboard</module>
 
         <module>sentinel-demo</module>
+        <module>sentinel-benchmark</module>
     </modules>
 
     <dependencyManagement>
