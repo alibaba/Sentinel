@@ -15,16 +15,16 @@
  */
 package com.alibaba.csp.sentinel.config;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-
-import com.alibaba.csp.sentinel.log.LogBase;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.AppNameUtil;
+import com.alibaba.csp.sentinel.util.ClassHelper;
 import com.alibaba.csp.sentinel.util.StringUtil;
+
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The universal config of Courier. The config is retrieved from
@@ -34,6 +34,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  */
 public class SentinelConfig {
 
+    private static final String DEFAULT_PROPERTIES_NAME = "ali-sentinel";
     private static final Map<String, String> props = new ConcurrentHashMap<String, String>();
 
     public static final String CHARSET = "csp.sentinel.charset";
@@ -58,23 +59,18 @@ public class SentinelConfig {
     }
 
     private static void loadProps() {
-        // Resolve app name.
         AppNameUtil.resolveAppName();
+        String propertiesName = DEFAULT_PROPERTIES_NAME;
         try {
             String appName = AppNameUtil.getAppName();
-            if (appName == null) {
-                appName = "";
+            if (!StringUtil.isEmpty(appName)) {
+                propertiesName = appName;
             }
             // We first retrieve the properties from the property file.
-            String fileName = LogBase.getLogBaseDir() + appName + ".properties";
-            File file = new File(fileName);
-            if (file.exists()) {
+            String fileName = propertiesName + ".properties";
+            Properties fileProps = loadProperties(fileName);
+            if (fileProps.size() > 0) {
                 RecordLog.info("read SentinelConfig from " + fileName);
-                FileInputStream fis = new FileInputStream(fileName);
-                Properties fileProps = new Properties();
-                fileProps.load(fis);
-                fis.close();
-
                 for (Object key : fileProps.keySet()) {
                     SentinelConfig.setConfig((String)key, (String)fileProps.get(key));
                     try {
@@ -96,6 +92,7 @@ public class SentinelConfig {
         for (Map.Entry<Object, Object> entry : System.getProperties().entrySet()) {
             SentinelConfig.setConfig(entry.getKey().toString(), entry.getValue().toString());
         }
+        AppNameUtil.setAppName(SentinelConfig.getConfig(AppNameUtil.APP_NAME));
     }
 
     /**
@@ -145,5 +142,58 @@ public class SentinelConfig {
                 + DEFAULT_TOTAL_METRIC_FILE_COUNT, throwable);
             return DEFAULT_TOTAL_METRIC_FILE_COUNT;
         }
+    }
+
+    private static Properties loadProperties(String fileName) {
+        Properties properties = new Properties();
+        if (fileName.startsWith("/")) {
+            try {
+                FileInputStream input = new FileInputStream(fileName);
+                try {
+                    properties.load(input);
+                } finally {
+                    input.close();
+                }
+            } catch (Throwable e) {
+                RecordLog.warn("Failed to load " + fileName + " file from " + fileName + "(ignore this file): " + e.getMessage(), e);
+            }
+            return properties;
+        }
+
+        List<URL> list = new ArrayList<URL>();
+        try {
+            Enumeration<URL> urls = ClassHelper.getClassLoader().getResources(fileName);
+            list = new ArrayList<java.net.URL>();
+            while (urls.hasMoreElements()) {
+                list.add(urls.nextElement());
+            }
+        } catch (Throwable t) {
+            RecordLog.warn("Fail to load " + fileName + " file: " + t.getMessage(), t);
+        }
+
+        if (list.isEmpty()) {
+            RecordLog.warn("No " + fileName + " found on the class path.");
+            return properties;
+        }
+        for (URL url : list) {
+            try {
+                Properties p = new Properties();
+                InputStream input = url.openStream();
+                if (input != null) {
+                    try {
+                        p.load(input);
+                        properties.putAll(p);
+                    } finally {
+                        try {
+                            input.close();
+                        } catch (Throwable t) {
+                        }
+                    }
+                }
+            } catch (Throwable e) {
+                RecordLog.warn("Fail to load " + fileName + " file from " + url + "(ignore this file): " + e.getMessage(), e);
+            }
+        }
+        return properties;
     }
 }

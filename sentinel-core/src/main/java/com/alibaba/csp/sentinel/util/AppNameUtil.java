@@ -60,34 +60,15 @@ public final class AppNameUtil {
         RecordLog.info("app name resolved: " + appName);
     }
 
+    /**
+     * resolve app name from jvm options
+     */
     public static void resolveAppName() {
-        String app = System.getProperty(APP_NAME);
-        // use -Dproject.name first
-        if (!isEmpty(app)) {
-            appName = app;
-            return;
-        }
+        appName = System.getProperty(APP_NAME);
+    }
 
-        // parse sun.java.command property
-        String command = System.getProperty(SUN_JAVA_COMMAND);
-        if (isEmpty(command)) {
-            return;
-        }
-        command = command.split("\\s")[0];
-        String separator = File.separator;
-        if (command.contains(separator)) {
-            String[] strs;
-            if ("\\".equals(separator)) {
-                strs = command.split("\\\\");
-            } else {
-                strs = command.split(separator);
-            }
-            command = strs[strs.length - 1];
-        }
-        if (command.endsWith(JAR_SUFFIX_LOWER) || command.endsWith(JAR_SUFFIX_UPPER)) {
-            command = command.substring(0, command.length() - 4);
-        }
-        appName = command;
+    public static void setAppName(String appName) {
+        AppNameUtil.appName = appName;
     }
 
     public static String getAppName() {
