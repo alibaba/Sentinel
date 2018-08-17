@@ -21,15 +21,37 @@ import com.alibaba.dubbo.rpc.Invoker;
 
 /**
  * @author leyou
+ * @author Young Hu
  */
 abstract class AbstractDubboFilter implements Filter {
 
     protected String getResourceName(Invoker<?> invoker, Invocation invocation) {
         StringBuilder buf = new StringBuilder(64);
-        buf.append(invoker.getInterface().getName())
-            .append(":")
-            .append(invocation.getMethodName())
-            .append("(");
+        buf.append(getInterfaceName(invoker))
+                .append(":")
+                .append(getMethodNameAndArgument(invocation));
+        return buf.toString();
+    }
+
+    protected String getInterfaceName(Invoker<?> invoker) {
+        StringBuilder buf = new StringBuilder(64);
+        String groupName = invoker.getUrl().getParameter("group", "");
+        String version = invoker.getUrl().getParameter("version", "");
+        if (!groupName.isEmpty()) {
+            groupName += "/";
+        }
+        if (!version.isEmpty()) {
+            version = ":" + version;
+        }
+        buf.append(groupName)
+                .append(invoker.getInterface().getName())
+                .append(version);
+        return buf.toString();
+    }
+
+    protected String getMethodNameAndArgument(Invocation invocation) {
+        StringBuilder buf = new StringBuilder(64);
+        buf.append(invocation.getMethodName()).append("(");
         boolean isFirst = true;
         for (Class<?> clazz : invocation.getParameterTypes()) {
             if (!isFirst) {
