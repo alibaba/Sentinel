@@ -108,6 +108,8 @@ public interface Node {
 
     void increaseExceptionQps();
 
+    void tryAcquireThread();
+
     void increaseThreadNum();
 
     void decreaseThreadNum();

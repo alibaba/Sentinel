@@ -47,7 +47,11 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         throws Throwable {
 
         try {
+
+            node.tryAcquireThread();
+
             fireEntry(context, resourceWrapper, node, count, args);
+
             node.increaseThreadNum();
             node.addPassRequest();
 

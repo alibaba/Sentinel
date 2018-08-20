@@ -179,9 +179,13 @@ public class StatisticNode implements Node {
     }
 
     @Override
+    public void tryAcquireThread() {
+        curThreadNumLimiter.tryAcquire(-1);
+    }
+
+    @Override
     public void increaseThreadNum() {
         curThreadNum.incrementAndGet();
-        curThreadNumLimiter.tryAcquire(-1);
     }
 
     @Override
