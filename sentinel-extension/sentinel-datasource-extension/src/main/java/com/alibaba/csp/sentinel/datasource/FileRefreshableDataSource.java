@@ -18,10 +18,18 @@ package com.alibaba.csp.sentinel.datasource;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.lang.reflect.Method;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
+import java.util.List;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRule;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
+import com.alibaba.csp.sentinel.slots.system.SystemRule;
+import com.alibaba.fastjson.JSON;
 
 /**
  * <p>
@@ -59,7 +67,6 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
     public FileRefreshableDataSource(String fileName, ConfigParser<String, T> configParser)
         throws FileNotFoundException {
         this(new File(fileName), configParser, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, DEFAULT_CHAR_SET);
-        //System.out.println(file.getAbsoluteFile());
     }
 
     public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser, int bufSize)
@@ -94,11 +101,41 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
         try {
             T newValue = loadConfig();
             getProperty().updateValue(newValue);
+            registerDataSource(newValue);
         } catch (Throwable e) {
             RecordLog.info("loadConfig exception", e);
         }
     }
+    
+    @SuppressWarnings({ "unchecked" })
+	private void registerDataSource(T value) {
+    	try {
+    		List<?> list0 = (List<?>)value;
+        	Class<?> clazz = list0.get(0).getClass();;
 
+        	//获取类
+    		Class<?> handleClass = Class.forName("com.alibaba.csp.sentinel.command.handler.ModifyRulesCommandHandler");
+        	
+        	// FlowRule
+        	if (clazz == FlowRule.class) {
+        		Method method = handleClass.getMethod("registerFlowDataSource", DataSource.class);
+            	method.invoke(null, (DataSource<?, List<FlowRule>>)this);
+        	} else if (clazz == AuthorityRule.class) {
+        		Method method = handleClass.getMethod("registerAuthorityDataSource", DataSource.class);
+            	method.invoke(null, (DataSource<?, List<AuthorityRule>>)this);
+        	} else if (clazz == DegradeRule.class) {
+        		Method method = handleClass.getMethod("registerDegradeDataSource", DataSource.class);
+            	method.invoke(null, (DataSource<?, List<DegradeRule>>)this);
+        	} else if (clazz == SystemRule.class) {
+        		Method method = handleClass.getMethod("registerSystemDataSource", DataSource.class);
+            	method.invoke(null, (DataSource<?, List<SystemRule>>)this);
+        	}
+    	} catch (Exception e) {
+    		RecordLog.info("registerDataSource exception", e);
+    		return;
+    	}
+    } 
+    
     @Override
     public String readSource() throws Exception {
         FileInputStream inputStream = null;
@@ -129,6 +166,29 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
 
     @Override
     public void writeDataSource(T values) throws Exception {
-        throw new UnsupportedOperationException();
+    	synchronized(file) {
+    		String outputJson = "[]";
+    		if (values != null) {
+    			outputJson = JSON.toJSONString(values);
+    		}
+    		FileOutputStream outputStream = null;
+            try {
+                outputStream = new FileOutputStream(file);
+                byte[] bytesArray = outputJson.getBytes();
+                if (bytesArray.length > buf.length) {
+                	throw new RuntimeException("DataSource size=" + bytesArray.length
+                    + ", is bigger than bufSize=" + buf.length + ". Can't write");
+                }
+                outputStream.write(bytesArray);
+                outputStream.flush();
+            } finally {
+                if (outputStream != null) {
+                    try {
+                    	outputStream.close();
+                    } catch (Exception ignore) {
+                    }
+                }
+            }
+    	}
     }
 }
