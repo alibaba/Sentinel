@@ -108,6 +108,8 @@ public interface Node {
 
     void increaseExceptionQps();
 
+    void tryUpdateThreadThreshold(int threadThreshold);
+
     void tryAcquireThread();
 
     void increaseThreadNum();

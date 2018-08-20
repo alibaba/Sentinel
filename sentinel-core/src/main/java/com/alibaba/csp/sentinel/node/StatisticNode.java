@@ -175,12 +175,16 @@ public class StatisticNode implements Node {
     public void increaseExceptionQps() {
         rollingCounterInSecond.addException();
         rollingCounterInMinute.addException();
+    }
 
+    @Override
+    public void tryUpdateThreadThreshold(int threadThreshold) {
+        curThreadNumLimiter.tryUpdateThredhold(threadThreshold);
     }
 
     @Override
     public void tryAcquireThread() {
-        curThreadNumLimiter.tryAcquire(-1);
+        curThreadNumLimiter.tryAcquire();
     }
 
     @Override

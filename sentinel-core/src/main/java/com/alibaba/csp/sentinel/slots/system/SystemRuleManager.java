@@ -15,13 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.system;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
@@ -31,6 +24,13 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.property.SimplePropertyListener;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * <p>
@@ -84,7 +84,7 @@ public class SystemRuleManager {
     private static SentinelProperty<List<SystemRule>> currentProperty = new DynamicSentinelProperty<List<SystemRule>>();
 
     private final static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1,
-        new NamedThreadFactory("sentinel-system-status-record-task", true));
+            new NamedThreadFactory("sentinel-system-status-record-task", true));
 
     static {
         checkSystemStatus.set(false);
@@ -279,8 +279,12 @@ public class SystemRuleManager {
 
         // total thread
         int currentThread = Constants.ENTRY_NODE == null ? 0 : Constants.ENTRY_NODE.curThreadNum();
-        boolean currentThreadLimiterValue = Constants.ENTRY_NODE == null ? true : Constants.ENTRY_NODE.curThreadLimiterResult();
-        if (currentThread > maxThread && currentThreadLimiterValue) {
+        boolean currentThreadLimiterResult = true;
+        if (Constants.ENTRY_NODE != null) {
+            Constants.ENTRY_NODE.tryUpdateThreadThreshold(maxThread);
+            currentThreadLimiterResult = Constants.ENTRY_NODE.curThreadLimiterResult();
+        }
+        if (currentThread > maxThread || !currentThreadLimiterResult) {
             throw new SystemBlockException(resourceWrapper.getName(), "thread");
         }
 
@@ -292,7 +296,7 @@ public class SystemRuleManager {
         // 完全按照RT,BBR算法来
         if (highestSystemLoadIsSet && getCurrentSystemAvgLoad() > highestSystemLoad) {
             if (currentThread > 1 &&
-                currentThread > Constants.ENTRY_NODE.maxSuccessQps() * Constants.ENTRY_NODE.minRt() / 1000) {
+                    currentThread > Constants.ENTRY_NODE.maxSuccessQps() * Constants.ENTRY_NODE.minRt() / 1000) {
                 throw new SystemBlockException(resourceWrapper.getName(), "load");
             }
         }

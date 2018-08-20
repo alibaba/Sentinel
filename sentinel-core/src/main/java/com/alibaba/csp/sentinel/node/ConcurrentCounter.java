@@ -1,5 +1,7 @@
 package com.alibaba.csp.sentinel.node;
 
+import com.alibaba.csp.sentinel.log.RecordLog;
+
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -41,24 +43,33 @@ public class ConcurrentCounter {
         this.threshold.set(new PermitsSemaphore(threshold));
     }
 
+
+    /**
+     * try update this ConcurrentCounter threshold
+     * @param threshold
+     */
+    public void tryUpdateThredhold(int threshold) {
+        if (threshold < 0) {
+            RecordLog.warn("ConcurrentCounter#updateThredhold fail, threshold can not smaller than 0, threshold:" + threshold);
+            return;
+        }
+
+        PermitsSemaphore permitsSemaphore = this.threshold.get();
+        if (permitsSemaphore == null || permitsSemaphore.getPermits() != threshold) {
+            this.threshold.compareAndSet(permitsSemaphore, new PermitsSemaphore(threshold));
+        }
+    }
+
     /**
      * try acquire a resource and save the result to {@link ConcurrentCounter#curTryAcquireResult}
      *
-     * @param maxConcurrentValue if current can not get max concurrent value, so pass -1
      * @return true-has not exceeded the threshold, false-has exceeded the threshold
      */
-    public boolean tryAcquire(int maxConcurrentValue) {
+    public boolean tryAcquire() {
 
         PermitsSemaphore permitsSemaphore = threshold.get();
-        if(maxConcurrentValue <= 0 && permitsSemaphore == null) {
+        if (permitsSemaphore == null) {
             return true;
-        }
-
-        if (permitsSemaphore == null || permitsSemaphore.getPermits() != maxConcurrentValue) {
-            threshold.compareAndSet(permitsSemaphore, new PermitsSemaphore(maxConcurrentValue));
-
-            // this can not be null
-            permitsSemaphore = threshold.get();
         }
 
         /**
