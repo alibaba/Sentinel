@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-parent</artifactId>
-        <version>0.1.1-SNAPSHOT</version>
+        <version>0.2.0-SNAPSHOT</version>
     </parent>
     <artifactId>sentinel-adapter</artifactId>
     <packaging>pom</packaging>
@@ -18,7 +18,6 @@
         <module>sentinel-web-servlet</module>
         <module>sentinel-dubbo-adapter</module>
         <module>sentinel-grpc-adapter</module>
-        <module>sentinel-spring-boot-starter</module>
     </modules>
 
     <properties>

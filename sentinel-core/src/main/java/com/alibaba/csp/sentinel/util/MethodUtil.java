@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class MethodUtil {
 
-    private static Map<Method, String> methodNameMap = new HashMap<Method, String>();
+    private static volatile Map<Method, String> methodNameMap = new HashMap<Method, String>();
 
     private static final Object LOCK = new Object();
 

@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.slots.statistic.base;
 
+import com.alibaba.csp.sentinel.Constants;
+
 /**
  * Represents metrics data in a period of time window.
  *
@@ -28,25 +30,29 @@ public class Window {
     private final LongAdder exception = new LongAdder();
     private final LongAdder rt = new LongAdder();
     private final LongAdder success = new LongAdder();
-    private final LongAdder minRt = new LongAdder();
+
+    private volatile long minRt;
 
     public Window() {
-        minRt.add(4900);
+        initMinRt();
+    }
+
+    private void initMinRt() {
+        this.minRt = Constants.TIME_DROP_VALVE;
     }
 
     /**
      * Clean the adders and reset window to provided start time.
      *
-     * @param startTime the start time of the window
      * @return new clean window
      */
-    Window resetTo(long startTime) {
+    public Window reset() {
         pass.reset();
         block.reset();
         exception.reset();
         rt.reset();
         success.reset();
-        minRt.reset();
+        initMinRt();
         return this;
     }
 
@@ -67,7 +73,7 @@ public class Window {
     }
 
     public long minRt() {
-        return minRt.longValue();
+        return minRt;
     }
 
     public long success() {
@@ -93,8 +99,9 @@ public class Window {
     public void addRT(long rt) {
         this.rt.add(rt);
 
-        if (minRt.longValue() > rt) {
-            minRt.internalReset(rt);
+        // Not thread-safe, but it's okay.
+        if (rt < minRt) {
+            minRt = rt;
         }
     }
 }

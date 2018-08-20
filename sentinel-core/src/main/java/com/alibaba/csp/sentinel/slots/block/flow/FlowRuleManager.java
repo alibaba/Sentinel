@@ -73,6 +73,7 @@ public class FlowRuleManager {
      */
     public static void register2Property(SentinelProperty<List<FlowRule>> property) {
         synchronized (listener) {
+            RecordLog.info("[FlowRuleManager] Registering new property to flow rule manager");
             currentProperty.removeListener(listener);
             property.addListener(listener);
             currentProperty = property;
@@ -86,9 +87,6 @@ public class FlowRuleManager {
      */
     public static List<FlowRule> getRules() {
         List<FlowRule> rules = new ArrayList<FlowRule>();
-        if (flowRules == null) {
-            return rules;
-        }
         for (Map.Entry<String, List<FlowRule>> entry : flowRules.entrySet()) {
             rules.addAll(entry.getValue());
         }
@@ -145,13 +143,11 @@ public class FlowRuleManager {
 
     public static void checkFlow(ResourceWrapper resource, Context context, DefaultNode node, int count)
         throws BlockException {
-        if (flowRules != null) {
-            List<FlowRule> rules = flowRules.get(resource.getName());
-            if (rules != null) {
-                for (FlowRule rule : rules) {
-                    if (!rule.passCheck(context, node, count)) {
-                        throw new FlowException(rule.getLimitApp());
-                    }
+        List<FlowRule> rules = flowRules.get(resource.getName());
+        if (rules != null) {
+            for (FlowRule rule : rules) {
+                if (!rule.passCheck(context, node, count)) {
+                    throw new FlowException(rule.getLimitApp());
                 }
             }
         }
@@ -166,14 +162,12 @@ public class FlowRuleManager {
             return false;
         }
 
-        if (flowRules != null) {
-            List<FlowRule> rules = flowRules.get(resourceName);
+        List<FlowRule> rules = flowRules.get(resourceName);
 
-            if (rules != null) {
-                for (FlowRule rule : rules) {
-                    if (origin.equals(rule.getLimitApp())) {
-                        return false;
-                    }
+        if (rules != null) {
+            for (FlowRule rule : rules) {
+                if (origin.equals(rule.getLimitApp())) {
+                    return false;
                 }
             }
         }
@@ -190,7 +184,7 @@ public class FlowRuleManager {
                 flowRules.clear();
                 flowRules.putAll(rules);
             }
-            RecordLog.info("receive flow config: " + flowRules);
+            RecordLog.info("[FlowRuleManager] Flow rules received: " + flowRules);
         }
 
         @Override
@@ -200,7 +194,7 @@ public class FlowRuleManager {
                 flowRules.clear();
                 flowRules.putAll(rules);
             }
-            RecordLog.info("load flow config: " + flowRules);
+            RecordLog.info("[FlowRuleManager] Flow rules loaded: " + flowRules);
         }
 
     }

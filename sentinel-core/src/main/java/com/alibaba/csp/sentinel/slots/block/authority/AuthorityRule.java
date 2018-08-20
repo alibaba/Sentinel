@@ -21,14 +21,15 @@ import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
-/***
- *
+/**
  * @author youji.zj
  */
 public class AuthorityRule extends AbstractRule {
 
-    /*** 0代表白名单；1代表黑名单 ***/
-    private int strategy;
+    /**
+     * Mode: 0 for whitelist; 1 for blacklist.
+     */
+    private int strategy = RuleConstant.AUTHORITY_WHITE;
 
     public int getStrategy() {
         return strategy;
@@ -60,12 +61,12 @@ public class AuthorityRule extends AbstractRule {
     public boolean passCheck(Context context, DefaultNode node, int count, Object... args) {
         String requester = context.getOrigin();
 
-        // 来源或者限流的应用为null直接通过
-        if (StringUtil.isEmpty(requester) || this.getLimitApp() == null) {
+        // Empty origin or empty limitApp will pass.
+        if (StringUtil.isEmpty(requester) || StringUtil.isEmpty(this.getLimitApp())) {
             return true;
         }
 
-        // 白名单、黑名单列表为逗号分隔的应用列表, indexOf还不行，需要精确匹配
+        // Do exact match with origin name.
         int pos = this.getLimitApp().indexOf(requester);
         boolean contain = pos > -1;
 
@@ -82,11 +83,11 @@ public class AuthorityRule extends AbstractRule {
             contain = exactlyMatch;
         }
 
-        if (strategy == RuleConstant.BLACK && contain) {
+        if (strategy == RuleConstant.AUTHORITY_BLACK && contain) {
             return false;
         }
 
-        if (strategy == RuleConstant.WHILE && !contain) {
+        if (strategy == RuleConstant.AUTHORITY_WHITE && !contain) {
             return false;
         }
 
@@ -99,6 +100,6 @@ public class AuthorityRule extends AbstractRule {
             "resource=" + getResource() +
             ", limitApp=" + getLimitApp() +
             ", strategy=" + strategy +
-            "} " + super.toString();
+            "} ";
     }
 }
