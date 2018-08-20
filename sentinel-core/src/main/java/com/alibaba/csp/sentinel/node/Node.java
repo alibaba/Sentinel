@@ -84,6 +84,11 @@ public interface Node {
     int curThreadNum();
 
     /**
+     * Current thread limiter value.
+     */
+    boolean curThreadLimiterResult();
+
+    /**
      * Last seconds block QPS.
      */
     long previousBlockQps();

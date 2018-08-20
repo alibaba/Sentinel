@@ -37,6 +37,7 @@ public class StatisticNode implements Node {
     private transient Metric rollingCounterInMinute = new ArrayMetric(1000, 2 * 60);
 
     private AtomicInteger curThreadNum = new AtomicInteger(0);
+    private ConcurrentCounter curThreadNumLimiter = new ConcurrentCounter();
 
     private long lastFetchTime = -1;
 
@@ -145,6 +146,11 @@ public class StatisticNode implements Node {
     }
 
     @Override
+    public boolean curThreadLimiterResult() {
+        return curThreadNumLimiter.getCurTryAcquireResult();
+    }
+
+    @Override
     public void addPassRequest() {
         rollingCounterInSecond.addPass();
         rollingCounterInMinute.addPass();
@@ -175,11 +181,13 @@ public class StatisticNode implements Node {
     @Override
     public void increaseThreadNum() {
         curThreadNum.incrementAndGet();
+        curThreadNumLimiter.tryAcquire(-1);
     }
 
     @Override
     public void decreaseThreadNum() {
         curThreadNum.decrementAndGet();
+        curThreadNumLimiter.release();
     }
 
     @Override
