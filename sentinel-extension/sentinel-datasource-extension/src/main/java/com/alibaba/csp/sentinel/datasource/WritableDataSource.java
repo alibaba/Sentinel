@@ -23,36 +23,31 @@ import com.alibaba.csp.sentinel.log.RecordLog;
  * source can be written to the target
  * datasource be registered to the ModifyRulesCommandHandler 
  *
- * @param <S> source data type
  * @param <T> target data type
+ * @param <R> result data type
  * @author Carpenter Lee
  */
-public class WritableDataSource<S, T> {
+public class WritableDataSource<T, R> {
 
-	private ConfigParser<S, T> parser;
-	private DataSource<?, S> dataSource;
+	private ConfigParser<T, R> parser;
+	private DataSource<?, T> dataSource;
 	private Class<?> type;
 	
-    public WritableDataSource(DataSource<?, S> dataSource) {
+    public WritableDataSource(DataSource<?, T> dataSource) {
     	this.dataSource = dataSource;
     }
     
-    public WritableDataSource<S, T> setConfigParser(ConfigParser<S, T> configParser) {
+    public WritableDataSource<T, R> setConfigParser(ConfigParser<T, R> configParser) {
     	this.parser = configParser;
         return this;
     } 
     
-    public WritableDataSource<S, T> setType(Class<?> type) {
+    public WritableDataSource<T, R> setType(Class<?> type) {
     	this.type = type;
     	this.registerDataSource();
         return this;
     } 
 
-    public T parserConfig(S conf) throws Exception {
-        T value = parser.parse(conf);
-        return value;
-    } 
-    
 	private void registerDataSource() {
     	try {
     		if (type == null) {
@@ -68,7 +63,7 @@ public class WritableDataSource<S, T> {
     	}
     }
     
-    public void writeDataSource(S values) throws Exception {
-    	dataSource.writeDataSource(values);
+    public void writeDataSource(T values) throws Exception {
+    	dataSource.writeDataSource(parser.parse(values));
     }
 }

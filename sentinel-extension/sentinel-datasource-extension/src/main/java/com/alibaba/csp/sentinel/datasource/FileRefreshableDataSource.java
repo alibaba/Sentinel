@@ -46,7 +46,6 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
     private byte[] buf;
     private Charset charset;
     private File file;
-    private WritableDataSource<T, String> writable;
     private long lastModified = 0L;
 
     /**
@@ -91,9 +90,9 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
         this.file = file;
         this.lastModified = file.lastModified();
         this.charset = charset;
-        writable = new WritableDataSource<T, String>(this)
-        		.setConfigParser(configParser2Write)
-        		.setType(registerDSType);
+        new WritableDataSource<T, String>(this)
+        	.setConfigParser(configParser2Write)
+        	.setType(registerDSType);
         firstLoad();
     }
 
@@ -135,19 +134,15 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
     }
 
     @Override
-    public void writeDataSource(T values) throws Exception {
+    public void writeDataSource(Object values) throws Exception {
     	synchronized(file) {
-    		String outputJson = "";
-    		if (values != null) {
-    			outputJson = writable.parserConfig(values);
-    		}
-    		if (StringUtil.isEmpty(outputJson)) {
+    		if (values == null || StringUtil.isEmpty(values.toString())) {
     			throw new RuntimeException("DataSource size=0 Can't write");
     		}
     		FileOutputStream outputStream = null;
             try {
                 outputStream = new FileOutputStream(file);
-                byte[] bytesArray = outputJson.getBytes();
+                byte[] bytesArray = values.toString().getBytes();
                 if (bytesArray.length > buf.length) {
                 	throw new RuntimeException("DataSource size=" + bytesArray.length
                     + ", is bigger than bufSize=" + buf.length + ". Can't write");

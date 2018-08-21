@@ -55,7 +55,7 @@ public interface DataSource<S, T> {
      * @param values
      * @throws Exception
      */
-    void writeDataSource(T values) throws Exception;
+    void writeDataSource(Object values) throws Exception;
 
     /**
      * Close the data source.

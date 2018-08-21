@@ -49,7 +49,7 @@ public abstract class AbstractDataSource<S, T> implements DataSource<S, T> {
     }
 
     @Override
-    public void writeDataSource(T values) throws Exception {
+    public void writeDataSource(Object values) throws Exception {
         throw new UnsupportedOperationException();
     }
 
