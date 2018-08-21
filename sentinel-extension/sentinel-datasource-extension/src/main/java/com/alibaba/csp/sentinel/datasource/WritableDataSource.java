@@ -25,8 +25,8 @@ import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.system.SystemRule;
 
 /**
- * datasource can be written to the target
- * and datasource also be registered to the ModifyRulesCommandHandler 
+ * source can be written to the target
+ * datasource be registered to the ModifyRulesCommandHandler 
  *
  * @param <S> source data type
  * @param <T> target data type
@@ -65,10 +65,11 @@ public class WritableDataSource<S, T> {
     		} else if (type == SystemRule.class) {
     			Method method = handleClass.getMethod("registerSystemDataSource", DataSource.class);
             	method.invoke(null, (DataSource<?, List<SystemRule>>)dataSource);
-    		} 
+    		} else {
+    			RecordLog.info("not supported type:" + type);
+    		}
     	} catch (Exception e) {
     		RecordLog.info("registerDataSource exception", e);
-    		return;
     	}
     }
 
