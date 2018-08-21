@@ -55,8 +55,10 @@ public abstract class AutoRefreshDataSource<S, T> extends AbstractDataSource<S, 
             @Override
             public void run() {
                 try {
+                	if (!refresh()) {
+                		return;
+                	}
                     T newValue = loadConfig();
-
                     getProperty().updateValue(newValue);
                 } catch (Throwable e) {
                     RecordLog.info("loadConfig exception", e);
@@ -73,4 +75,7 @@ public abstract class AutoRefreshDataSource<S, T> extends AbstractDataSource<S, 
         }
     }
 
+    protected boolean refresh(){
+    	return true;
+    }
 }

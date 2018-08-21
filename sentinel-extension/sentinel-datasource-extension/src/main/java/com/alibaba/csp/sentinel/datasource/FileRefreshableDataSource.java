@@ -47,6 +47,7 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
     private Charset charset;
     private File file;
     private WritableDataSource<T, String> writable;
+    private long lastModified = 0L;
 
     /**
      * Create a file based {@link DataSource} whose read buffer size is 1MB, charset is UTF8,
@@ -55,28 +56,28 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
      * @param file         the file to read.
      * @param configParser the config parser.
      */
-    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser, ConfigParser<T, String> configParser2Write, Class<?> clazz) throws FileNotFoundException {
-        this(file, configParser, configParser2Write, clazz, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, DEFAULT_CHAR_SET);
+    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser2Read, ConfigParser<T, String> configParser2Write, Class<?> clazz) throws FileNotFoundException {
+        this(file, configParser2Read, configParser2Write, clazz, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, DEFAULT_CHAR_SET);
     }
 
-    public FileRefreshableDataSource(String fileName, ConfigParser<String, T> configParser, ConfigParser<T, String> configParser2Write, Class<?> clazz)
+    public FileRefreshableDataSource(String fileName, ConfigParser<String, T> configParser2Read, ConfigParser<T, String> configParser2Write, Class<?> clazz)
         throws FileNotFoundException {
-        this(new File(fileName), configParser, configParser2Write, clazz, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, DEFAULT_CHAR_SET);
+        this(new File(fileName), configParser2Read, configParser2Write, clazz, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, DEFAULT_CHAR_SET);
     }
 
-    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser, ConfigParser<T, String> configParser2Write, Class<?> clazz, int bufSize)
+    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser2Read, ConfigParser<T, String> configParser2Write, Class<?> clazz, int bufSize)
         throws FileNotFoundException {
-        this(file, configParser, configParser2Write, clazz, DEFAULT_REFRESH_MS, bufSize, DEFAULT_CHAR_SET);
+        this(file, configParser2Read, configParser2Write, clazz, DEFAULT_REFRESH_MS, bufSize, DEFAULT_CHAR_SET);
     }
 
-    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser, ConfigParser<T, String> configParser2Write, Class<?> clazz, Charset charset)
+    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser2Read, ConfigParser<T, String> configParser2Write, Class<?> clazz, Charset charset)
         throws FileNotFoundException {
-        this(file, configParser, configParser2Write, clazz, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, charset);
+        this(file, configParser2Read, configParser2Write, clazz, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, charset);
     }
 
-    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser, ConfigParser<T, String> configParser2Write, Class<?> clazz, long recommendRefreshMs,
+    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser2Read, ConfigParser<T, String> configParser2Write, Class<?> clazz, long recommendRefreshMs,
                                      int bufSize, Charset charset) throws FileNotFoundException {
-        super(configParser, recommendRefreshMs);
+        super(configParser2Read, recommendRefreshMs);
         if (bufSize <= 0 || bufSize > MAX_SIZE) {
             throw new IllegalArgumentException("bufSize must between (0, " + MAX_SIZE + "], but " + bufSize + " get");
         }
@@ -88,6 +89,7 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
         }
         this.buf = new byte[bufSize];
         this.file = file;
+        this.lastModified = file.lastModified();
         this.charset = charset;
         writable = new WritableDataSource<T, String>(configParser2Write,this,clazz);
         firstLoad();
@@ -159,5 +161,15 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
                 }
             }
     	}
+    }
+    
+    @Override 
+    protected boolean refresh() {
+    	long curLastModified = new File(file.getAbsolutePath()).lastModified();
+    	if (curLastModified != this.lastModified) {
+    		this.lastModified = curLastModified;
+    		return true;
+    	}
+    	return false;
     }
 }
