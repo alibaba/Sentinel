@@ -19,17 +19,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.lang.reflect.Method;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
-import java.util.List;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRule;
-import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
-import com.alibaba.csp.sentinel.slots.system.SystemRule;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
  * <p>
@@ -52,6 +46,7 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
     private byte[] buf;
     private Charset charset;
     private File file;
+    private WritableDataSource<T, String> writable;
 
     /**
      * Create a file based {@link DataSource} whose read buffer size is 1MB, charset is UTF8,
@@ -60,26 +55,26 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
      * @param file         the file to read.
      * @param configParser the config parser.
      */
-    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser) throws FileNotFoundException {
-        this(file, configParser, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, DEFAULT_CHAR_SET);
+    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser, ConfigParser<T, String> configParser2Write, Class<?> clazz) throws FileNotFoundException {
+        this(file, configParser, configParser2Write, clazz, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, DEFAULT_CHAR_SET);
     }
 
-    public FileRefreshableDataSource(String fileName, ConfigParser<String, T> configParser)
+    public FileRefreshableDataSource(String fileName, ConfigParser<String, T> configParser, ConfigParser<T, String> configParser2Write, Class<?> clazz)
         throws FileNotFoundException {
-        this(new File(fileName), configParser, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, DEFAULT_CHAR_SET);
+        this(new File(fileName), configParser, configParser2Write, clazz, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, DEFAULT_CHAR_SET);
     }
 
-    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser, int bufSize)
+    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser, ConfigParser<T, String> configParser2Write, Class<?> clazz, int bufSize)
         throws FileNotFoundException {
-        this(file, configParser, DEFAULT_REFRESH_MS, bufSize, DEFAULT_CHAR_SET);
+        this(file, configParser, configParser2Write, clazz, DEFAULT_REFRESH_MS, bufSize, DEFAULT_CHAR_SET);
     }
 
-    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser, Charset charset)
+    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser, ConfigParser<T, String> configParser2Write, Class<?> clazz, Charset charset)
         throws FileNotFoundException {
-        this(file, configParser, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, charset);
+        this(file, configParser, configParser2Write, clazz, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, charset);
     }
 
-    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser, long recommendRefreshMs,
+    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser, ConfigParser<T, String> configParser2Write, Class<?> clazz, long recommendRefreshMs,
                                      int bufSize, Charset charset) throws FileNotFoundException {
         super(configParser, recommendRefreshMs);
         if (bufSize <= 0 || bufSize > MAX_SIZE) {
@@ -94,6 +89,7 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
         this.buf = new byte[bufSize];
         this.file = file;
         this.charset = charset;
+        writable = new WritableDataSource<T, String>(configParser2Write,this,clazz);
         firstLoad();
     }
 
@@ -101,41 +97,11 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
         try {
             T newValue = loadConfig();
             getProperty().updateValue(newValue);
-            registerDataSource(newValue);
         } catch (Throwable e) {
             RecordLog.info("loadConfig exception", e);
         }
     }
-    
-    @SuppressWarnings({ "unchecked" })
-	private void registerDataSource(T value) {
-    	try {
-    		List<?> list0 = (List<?>)value;
-        	Class<?> clazz = list0.get(0).getClass();;
 
-        	//获取类
-    		Class<?> handleClass = Class.forName("com.alibaba.csp.sentinel.command.handler.ModifyRulesCommandHandler");
-        	
-        	// FlowRule
-        	if (clazz == FlowRule.class) {
-        		Method method = handleClass.getMethod("registerFlowDataSource", DataSource.class);
-            	method.invoke(null, (DataSource<?, List<FlowRule>>)this);
-        	} else if (clazz == AuthorityRule.class) {
-        		Method method = handleClass.getMethod("registerAuthorityDataSource", DataSource.class);
-            	method.invoke(null, (DataSource<?, List<AuthorityRule>>)this);
-        	} else if (clazz == DegradeRule.class) {
-        		Method method = handleClass.getMethod("registerDegradeDataSource", DataSource.class);
-            	method.invoke(null, (DataSource<?, List<DegradeRule>>)this);
-        	} else if (clazz == SystemRule.class) {
-        		Method method = handleClass.getMethod("registerSystemDataSource", DataSource.class);
-            	method.invoke(null, (DataSource<?, List<SystemRule>>)this);
-        	}
-    	} catch (Exception e) {
-    		RecordLog.info("registerDataSource exception", e);
-    		return;
-    	}
-    } 
-    
     @Override
     public String readSource() throws Exception {
         FileInputStream inputStream = null;
@@ -167,9 +133,12 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
     @Override
     public void writeDataSource(T values) throws Exception {
     	synchronized(file) {
-    		String outputJson = "[]";
+    		String outputJson = "";
     		if (values != null) {
-    			outputJson = JSON.toJSONString(values);
+    			outputJson = writable.parserConfig(values);
+    		}
+    		if (StringUtil.isEmpty(outputJson)) {
+    			throw new RuntimeException("DataSource size=0 Can't write");
     		}
     		FileOutputStream outputStream = null;
             try {
