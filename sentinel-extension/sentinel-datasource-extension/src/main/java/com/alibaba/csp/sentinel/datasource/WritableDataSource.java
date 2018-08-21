@@ -16,13 +16,8 @@
 package com.alibaba.csp.sentinel.datasource;
 
 import java.lang.reflect.Method;
-import java.util.List;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRule;
-import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
-import com.alibaba.csp.sentinel.slots.system.SystemRule;
 
 /**
  * source can be written to the target
@@ -34,44 +29,46 @@ import com.alibaba.csp.sentinel.slots.system.SystemRule;
  */
 public class WritableDataSource<S, T> {
 
-	private final ConfigParser<S, T> parser;
-	private final DataSource<?, S> dataSource;
+	private ConfigParser<S, T> parser;
+	private DataSource<?, S> dataSource;
+	private Class<?> type;
 	
-    public WritableDataSource(ConfigParser<S, T> configParser, DataSource<?, S> dataSource, Class<?> type) {
+    public WritableDataSource(DataSource<?, S> dataSource) {
     	this.dataSource = dataSource;
-    	this.parser = configParser;
-    	this.registerDataSource(type);
     }
     
+    public WritableDataSource<S, T> setConfigParser(ConfigParser<S, T> configParser) {
+    	this.parser = configParser;
+        return this;
+    } 
+    
+    public WritableDataSource<S, T> setType(Class<?> type) {
+    	this.type = type;
+    	this.registerDataSource();
+        return this;
+    } 
+
     public T parserConfig(S conf) throws Exception {
         T value = parser.parse(conf);
         return value;
     } 
     
-    @SuppressWarnings("unchecked")
-	private void registerDataSource(Class<?> type) {
+	private void registerDataSource() {
     	try {
-        	//获取类
-    		Class<?> handleClass = Class.forName("com.alibaba.csp.sentinel.command.handler.ModifyRulesCommandHandler");
-    		if (type == FlowRule.class) {
-        		Method method = handleClass.getMethod("registerFlowDataSource", DataSource.class);
-            	method.invoke(null, (DataSource<?, List<FlowRule>>)dataSource);
-    		} else if (type == AuthorityRule.class) {
-    			Method method = handleClass.getMethod("registerAuthorityDataSource", DataSource.class);
-            	method.invoke(null, (DataSource<?, List<AuthorityRule>>)dataSource);
-    		} else if (type == DegradeRule.class) {
-    			Method method = handleClass.getMethod("registerDegradeDataSource", DataSource.class);
-            	method.invoke(null, (DataSource<?, List<DegradeRule>>)dataSource);
-    		} else if (type == SystemRule.class) {
-    			Method method = handleClass.getMethod("registerSystemDataSource", DataSource.class);
-            	method.invoke(null, (DataSource<?, List<SystemRule>>)dataSource);
-    		} else {
-    			RecordLog.info("not supported type:" + type);
+    		if (type == null) {
+    			RecordLog.info("the type is null");
+    			return;
     		}
+    		Class<?> handleClass = Class.forName("com.alibaba.csp.sentinel.command.handler.ModifyRulesCommandHandler");
+    		Method method = handleClass.getMethod("registerDataSource", this.getClass(), Class.class);
+        	method.invoke(null, this, type);
+
     	} catch (Exception e) {
     		RecordLog.info("registerDataSource exception", e);
     	}
     }
-
-
+    
+    public void writeDataSource(S values) throws Exception {
+    	dataSource.writeDataSource(values);
+    }
 }

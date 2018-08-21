@@ -22,17 +22,17 @@ import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
+import com.alibaba.csp.sentinel.datasource.WritableDataSource;
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.csp.sentinel.datasource.DataSource;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRule;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRuleManager;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
-import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 import com.alibaba.csp.sentinel.slots.system.SystemRule;
+import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
+import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.fastjson.JSONArray;
 
 /**
@@ -41,26 +41,27 @@ import com.alibaba.fastjson.JSONArray;
 @CommandMapping(name = "setRules")
 public class ModifyRulesCommandHandler implements CommandHandler<String> {
 
-    static DataSource<?, List<FlowRule>> flowDataSource = null;
-    static DataSource<?, List<AuthorityRule>> authorityDataSource = null;
-    static DataSource<?, List<DegradeRule>> degradeDataSource = null;
-    static DataSource<?, List<SystemRule>> systemSource = null;
+	static WritableDataSource<List<FlowRule>, ?>  flowDataSource = null;
+	static WritableDataSource<List<AuthorityRule>, ?>  authorityDataSource = null;
+	static WritableDataSource<List<DegradeRule>, ?>  degradeDataSource = null;
+	static WritableDataSource<List<SystemRule>, ?>  systemSource = null;
 
-    public static synchronized void registerFlowDataSource(DataSource<?, List<FlowRule>> datasource) {
-        flowDataSource = datasource;
+    @SuppressWarnings("unchecked")
+	public static synchronized void registerDataSource(WritableDataSource<?, ?> datasource, Class<?> dsType) {
+    	if (dsType == FlowRule.class) {
+            flowDataSource = (WritableDataSource<List<FlowRule>, ?>)datasource;
+    	}
+    	else if (dsType == AuthorityRule.class) {
+    		authorityDataSource = (WritableDataSource<List<AuthorityRule>, ?>)datasource;
+    	}
+    	else if (dsType == DegradeRule.class) {
+    		degradeDataSource = (WritableDataSource<List<DegradeRule>, ?>)datasource;
+    	}
+    	else if (dsType == SystemRule.class) {
+    		systemSource = (WritableDataSource<List<SystemRule>, ?>)datasource;
+    	}
     }
 
-    public static synchronized void registerAuthorityDataSource(DataSource<?, List<AuthorityRule>> dataSource) {
-        authorityDataSource = dataSource;
-    }
-
-    public static synchronized void registerDegradeDataSource(DataSource<?, List<DegradeRule>> dataSource) {
-        degradeDataSource = dataSource;
-    }
-
-    public static synchronized void registerSystemDataSource(DataSource<?, List<SystemRule>> dataSource) {
-        systemSource = dataSource;
-    }
 
     @Override
     public CommandResponse<String> handle(CommandRequest request) {
