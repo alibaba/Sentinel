@@ -40,6 +40,13 @@ public @interface SentinelResource {
     String value();
 
     /**
+     * @return name of the origin, usually the origin could be the Service
+     * Consumer's app name. The origin is useful when we want to control different
+     * invoker/consumer separately
+     */
+    String origin() default "";
+
+    /**
      * @return the entry type (inbound or outbound), outbound by default
      */
     EntryType entryType() default EntryType.OUT;

@@ -24,7 +24,6 @@ import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.alibaba.csp.sentinel.context.ContextUtil;
-import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeException;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -61,10 +60,15 @@ public class SentinelResourceAspect {
             throw new IllegalStateException("Wrong state for SentinelResource annotation");
         }
         String resourceName = annotation.value();
+        String origin = annotation.origin();
         EntryType entryType = annotation.entryType();
         Entry entry = null;
         try {
-            ContextUtil.enter(resourceName);
+            if (StringUtil.isNotBlank(origin)) {
+                ContextUtil.enter(resourceName, origin);
+            } else {
+                ContextUtil.enter(resourceName);
+            }
             entry = SphU.entry(resourceName, entryType);
             Object result = pjp.proceed();
             return result;
