@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicReference;
  * will not achieve the desired effect in extreme cases.
  * </p>
  *
- * @author yizhenqiang
  */
 public class ConcurrentCounter {
     /**
