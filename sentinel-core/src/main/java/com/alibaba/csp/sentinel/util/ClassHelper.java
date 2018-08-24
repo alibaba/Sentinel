@@ -61,20 +61,6 @@ public class ClassHelper {
         }
     }
 
-    public static Class<?> forNameWithThreadContextClassLoader(String name)
-            throws ClassNotFoundException {
-        return forName(name, Thread.currentThread().getContextClassLoader());
-    }
-
-    public static Class<?> forNameWithCallerClassLoader(String name, Class<?> caller)
-            throws ClassNotFoundException {
-        return forName(name, caller.getClassLoader());
-    }
-
-    public static ClassLoader getCallerClassLoader(Class<?> caller) {
-        return caller.getClassLoader();
-    }
-
     /**
      * get class loader
      *
@@ -191,13 +177,5 @@ public class ClassHelper {
             result = (Class<?>) primitiveTypeNameMap.get(name);
         }
         return result;
-    }
-
-    public static String toShortString(Object obj) {
-        if (obj == null) {
-            return "null";
-        }
-        return obj.getClass().getSimpleName() + "@" + System.identityHashCode(obj);
-
     }
 }

@@ -28,13 +28,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The universal config of Courier. The config is retrieved from
- * {@code ${user.home}/logs/csp/${appName}.properties} by default.
+ * {@code classpath: sentinel.properties} by default.
  *
  * @author leyou
  */
 public class SentinelConfig {
 
-    private static final String DEFAULT_PROPERTIES_NAME = "ali-sentinel";
+    private static final String DEFAULT_PROPERTIES_NAME = "sentinel";
     private static final Map<String, String> props = new ConcurrentHashMap<String, String>();
 
     public static final String CHARSET = "csp.sentinel.charset";
