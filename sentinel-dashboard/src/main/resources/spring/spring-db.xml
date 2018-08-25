@@ -7,9 +7,9 @@
 	<!-- mysql data source -->
 	<bean id="mysqlDataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close" primary="true">
 		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
-		<property name="url" value="jdbc:mysql://xxx.xxx.xxx.xxx:3306/sentinel" />
-		<property name="username" value="xxx" />
-		<property name="password" value="xxx" />
+		<property name="url" value="${sentinel.database.url}" />
+		<property name="username" value="${sentinel.database.username}" />
+		<property name="password" value="${sentinel.database.password}" />
 		<property name="initialSize" value="5" />
 		<property name="minIdle" value="1" />
 		<property name="maxActive" value="10" />
