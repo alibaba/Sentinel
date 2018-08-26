@@ -54,8 +54,9 @@ public class SentinelDubboConsumerFilter extends AbstractDubboFilter implements 
         Entry methodEntry = null;
         try {
             String resourceName = getResourceName(invoker, invocation);
+            String interfaceName = invoker.getInterface().getName();
             ContextUtil.enter(resourceName);
-            interfaceEntry = SphU.entry(invoker.getInterface().getName(), EntryType.OUT);
+            interfaceEntry = SphU.entry(interfaceName, EntryType.OUT);
             methodEntry = SphU.entry(resourceName, EntryType.OUT);
 
             Result result = invoker.invoke(invocation);

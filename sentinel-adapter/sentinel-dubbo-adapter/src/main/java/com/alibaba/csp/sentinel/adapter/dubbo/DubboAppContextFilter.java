@@ -36,7 +36,7 @@ public class DubboAppContextFilter implements Filter {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         String application = invoker.getUrl().getParameter(Constants.APPLICATION_KEY);
         if (application != null) {
-            RpcContext.getContext().setAttachment(DubboUtils.DUBBO_APPLICATION_KEY, application);
+            RpcContext.getContext().setAttachment(DubboUtils.SENTINEL_APPLICATION_KEY, application);
         }
         return invoker.invoke(invocation);
     }

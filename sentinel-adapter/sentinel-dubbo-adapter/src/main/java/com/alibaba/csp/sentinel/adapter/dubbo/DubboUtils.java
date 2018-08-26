@@ -22,13 +22,13 @@ import com.alibaba.dubbo.rpc.Invocation;
  */
 public final class DubboUtils {
 
-    public static final String DUBBO_APPLICATION_KEY = "dubboApplication";
+    public static final String SENTINEL_APPLICATION_KEY = "sentinelApplication";
 
     public static String getApplication(Invocation invocation, String defaultValue) {
         if (invocation == null || invocation.getAttachments() == null) {
             throw new IllegalArgumentException("Bad invocation instance");
         }
-        return invocation.getAttachment(DUBBO_APPLICATION_KEY, defaultValue);
+        return invocation.getAttachment(SENTINEL_APPLICATION_KEY, defaultValue);
     }
 
     private DubboUtils() {}
