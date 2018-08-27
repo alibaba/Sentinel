@@ -31,8 +31,7 @@ public class RedisDataSourceTest {
     @Before
     public void buildResource() {
         try {
-            // bind to a random port
-            server = RedisServer.newRedisServer();
+            server = RedisServer.newRedisServer(); // bind to a random port
             server.start();
         } catch (IOException e) {
             e.printStackTrace();
