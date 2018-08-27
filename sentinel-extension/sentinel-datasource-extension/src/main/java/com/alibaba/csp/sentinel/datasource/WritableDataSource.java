@@ -15,10 +15,6 @@
  */
 package com.alibaba.csp.sentinel.datasource;
 
-import java.lang.reflect.Method;
-
-import com.alibaba.csp.sentinel.log.RecordLog;
-
 /**
  * source can be written to the target
  * datasource be registered to the ModifyRulesCommandHandler 
@@ -27,43 +23,6 @@ import com.alibaba.csp.sentinel.log.RecordLog;
  * @param <R> result data type
  * @author Carpenter Lee
  */
-public class WritableDataSource<T, R> {
-
-	private ConfigParser<T, R> parser;
-	private DataSource<?, T> dataSource;
-	private Class<?> type;
-	
-    public WritableDataSource(DataSource<?, T> dataSource) {
-    	this.dataSource = dataSource;
-    }
-    
-    public WritableDataSource<T, R> setConfigParser(ConfigParser<T, R> configParser) {
-    	this.parser = configParser;
-        return this;
-    } 
-    
-    public WritableDataSource<T, R> setType(Class<?> type) {
-    	this.type = type;
-    	this.registerDataSource();
-        return this;
-    } 
-
-	private void registerDataSource() {
-    	try {
-    		if (type == null) {
-    			RecordLog.info("the type is null");
-    			return;
-    		}
-    		Class<?> handleClass = Class.forName("com.alibaba.csp.sentinel.command.handler.ModifyRulesCommandHandler");
-    		Method method = handleClass.getMethod("registerDataSource", this.getClass(), Class.class);
-        	method.invoke(null, this, type);
-
-    	} catch (Exception e) {
-    		RecordLog.info("registerDataSource exception", e);
-    	}
-    }
-    
-    public void writeDataSource(T values) throws Exception {
-    	dataSource.writeDataSource(parser.parse(values));
-    }
+public interface WritableDataSource<T> {
+    public void writeDataSource(T values) throws Exception;
 }

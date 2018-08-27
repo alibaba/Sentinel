@@ -41,24 +41,24 @@ import com.alibaba.fastjson.JSONArray;
 @CommandMapping(name = "setRules")
 public class ModifyRulesCommandHandler implements CommandHandler<String> {
 
-	static WritableDataSource<List<FlowRule>, ?>  flowDataSource = null;
-	static WritableDataSource<List<AuthorityRule>, ?>  authorityDataSource = null;
-	static WritableDataSource<List<DegradeRule>, ?>  degradeDataSource = null;
-	static WritableDataSource<List<SystemRule>, ?>  systemSource = null;
+	static WritableDataSource<List<FlowRule>>  flowDataSource = null;
+	static WritableDataSource<List<AuthorityRule>>  authorityDataSource = null;
+	static WritableDataSource<List<DegradeRule>>  degradeDataSource = null;
+	static WritableDataSource<List<SystemRule>>  systemSource = null;
 
     @SuppressWarnings("unchecked")
-	public static synchronized void registerDataSource(WritableDataSource<?, ?> datasource, Class<?> dsType) {
+	public static synchronized void registerDataSource(WritableDataSource<?> datasource, Class<?> dsType) {
     	if (dsType == FlowRule.class) {
-            flowDataSource = (WritableDataSource<List<FlowRule>, ?>)datasource;
+            flowDataSource = (WritableDataSource<List<FlowRule>>)datasource;
     	}
     	else if (dsType == AuthorityRule.class) {
-    		authorityDataSource = (WritableDataSource<List<AuthorityRule>, ?>)datasource;
+    		authorityDataSource = (WritableDataSource<List<AuthorityRule>>)datasource;
     	}
     	else if (dsType == DegradeRule.class) {
-    		degradeDataSource = (WritableDataSource<List<DegradeRule>, ?>)datasource;
+    		degradeDataSource = (WritableDataSource<List<DegradeRule>>)datasource;
     	}
     	else if (dsType == SystemRule.class) {
-    		systemSource = (WritableDataSource<List<SystemRule>, ?>)datasource;
+    		systemSource = (WritableDataSource<List<SystemRule>>)datasource;
     	}
     }
 
