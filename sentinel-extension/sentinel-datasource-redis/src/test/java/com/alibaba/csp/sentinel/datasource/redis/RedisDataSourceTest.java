@@ -1,5 +1,6 @@
 package com.alibaba.csp.sentinel.datasource.redis;
 
+import ai.grakn.redismock.RedisServer;
 import com.alibaba.csp.sentinel.datasource.ConfigParser;
 import com.alibaba.csp.sentinel.datasource.DataSource;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
@@ -14,9 +15,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.List;
 
 public class RedisDataSourceTest {
+
+    private static RedisServer server = null;
 
     private RedisClient client;
 
@@ -26,6 +30,13 @@ public class RedisDataSourceTest {
 
     @Before
     public void buildResource() {
+        try {
+            // bind to a random port
+            server = RedisServer.newRedisServer();
+            server.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         ConfigParser<String, List<FlowRule>> flowConfigParser = buildFlowConfigParser();
         client = RedisClient.create("redis://localhost");
         initRedisRuleData();
@@ -75,6 +86,8 @@ public class RedisDataSourceTest {
         RedisCommands<String, String> stringRedisCommands = client.connect().sync();
         stringRedisCommands.del(ruleKey);
         client.shutdown();
+        server.stop();
+        server = null;
     }
 
     private ConfigParser<String, List<FlowRule>> buildFlowConfigParser() {

@@ -17,6 +17,7 @@
         <curator.version>4.0.1</curator.version>
         <curator.test.version>2.12.0</curator.test.version>
         <lettuce.version>5.0.1.RELEASE</lettuce.version>
+        <redis.mock.version>0.1.6</redis.mock.version>
     </properties>
 
     <dependencies>
@@ -40,6 +41,13 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>ai.grakn</groupId>
+            <artifactId>redis-mock</artifactId>
+            <version>${redis.mock.version}</version>
             <scope>test</scope>
         </dependency>
 
