@@ -20,7 +20,6 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.alibaba.csp.sentinel.config.SentinelConfig;
@@ -35,7 +34,7 @@ import com.alibaba.csp.sentinel.config.SentinelConfig;
 public class MetricSearcher {
 
     private static final Charset defaultCharset = Charset.forName(SentinelConfig.charset());
-    private final ExtractedMetricSearcher extractedMetricSearcher;
+    private final MetricsReader metricsReader;
 
     private String baseDir;
     private String baseFileName;
@@ -70,7 +69,7 @@ public class MetricSearcher {
             this.baseDir += File.separator;
         }
         this.baseFileName = baseFileName;
-        extractedMetricSearcher = new ExtractedMetricSearcher(charset);
+        metricsReader = new MetricsReader(charset);
     }
 
     /**
@@ -100,7 +99,7 @@ public class MetricSearcher {
                 MetricWriter.formIndexFileName(fileName), offsetInIndex);
             offsetInIndex = 0;
             if (offset != -1) {
-                return readMetrics(fileNames, i, offset, recommendLines);
+                return metricsReader.readMetrics(fileNames, i, offset, recommendLines);
             }
         }
         return null;
@@ -135,7 +134,7 @@ public class MetricSearcher {
                 fileName + MetricWriter.METRIC_FILE_INDEX_SUFFIX, offsetInIndex);
             offsetInIndex = 0;
             if (offset != -1) {
-                return extractedMetricSearcher.readMetricsByEndTime(fileNames, i, offset, endTimeMs, identity);
+                return metricsReader.readMetricsByEndTime(fileNames, i, offset, endTimeMs, identity);
             }
         }
         return null;
@@ -189,16 +188,6 @@ public class MetricSearcher {
                 }
             }
         }
-    }
-
-    private List<MetricNode> readMetrics(List<String> fileNames, int pos,
-                                         long offset, int recommendLines) throws Exception {
-        List<MetricNode> list = new ArrayList<MetricNode>(recommendLines);
-        extractedMetricSearcher.readMetricsInOneFile(list, fileNames.get(pos++), offset, recommendLines);
-        while (list.size() < recommendLines && pos < fileNames.size()) {
-            extractedMetricSearcher.readMetricsInOneFile(list, fileNames.get(pos++), 0, recommendLines);
-        }
-        return list;
     }
 
     private long findOffset(long beginTime, String metricFileName,
