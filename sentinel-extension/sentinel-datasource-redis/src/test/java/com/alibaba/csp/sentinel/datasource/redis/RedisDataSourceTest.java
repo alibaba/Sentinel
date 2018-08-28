@@ -8,6 +8,7 @@ import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import io.lettuce.core.RedisClient;
+import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import org.junit.After;
@@ -38,7 +39,7 @@ public class RedisDataSourceTest {
             e.printStackTrace();
         }
         ConfigParser<String, List<FlowRule>> flowConfigParser = buildFlowConfigParser();
-        client = RedisClient.create("redis://localhost");
+        client = RedisClient.create(RedisURI.create(server.getHost(), server.getBindPort()));
         initRedisRuleData();
         DataSource<String, List<FlowRule>> redisDataSource = new RedisDataSource<List<FlowRule>>(client, ruleKey, channel, flowConfigParser);
         FlowRuleManager.register2Property(redisDataSource.getProperty());
