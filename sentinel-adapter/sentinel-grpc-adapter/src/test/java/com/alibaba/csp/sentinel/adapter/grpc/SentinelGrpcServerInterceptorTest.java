@@ -43,8 +43,8 @@ public class SentinelGrpcServerInterceptorTest {
 
     private final String resourceName = "com.alibaba.sentinel.examples.FooService/anotherHello";
     private final int threshold = 4;
+    private final ExtractedSentinelGrpcServerInterceptorTest extractedSentinelGrpcServerInterceptorTest = new ExtractedSentinelGrpcServerInterceptorTest();
 
-    private Server server;
     private FooServiceClient client;
 
     private void configureFlowRule() {
@@ -63,7 +63,7 @@ public class SentinelGrpcServerInterceptorTest {
         client = new FooServiceClient("localhost", port);
 
         configureFlowRule();
-        prepareServer(port);
+        extractedSentinelGrpcServerInterceptorTest.prepareServer(port);
 
         final int total = 8;
         for (int i = 0; i < total; i++) {
@@ -82,7 +82,7 @@ public class SentinelGrpcServerInterceptorTest {
         assertEquals(total - threshold, blockedQps);
         assertEquals(threshold, passQps);
 
-        stopServer();
+        extractedSentinelGrpcServerInterceptorTest.stopServer();
     }
 
     private void sendRequest() {
@@ -94,21 +94,4 @@ public class SentinelGrpcServerInterceptorTest {
         }
     }
 
-    private void prepareServer(int port) throws IOException {
-        if (server != null) {
-            throw new IllegalStateException("Server already running!");
-        }
-        server = ServerBuilder.forPort(port)
-            .addService(new FooServiceImpl())
-            .intercept(new SentinelGrpcServerInterceptor())
-            .build();
-        server.start();
-    }
-
-    private void stopServer() {
-        if (server != null) {
-            server.shutdown();
-            server = null;
-        }
-    }
 }
