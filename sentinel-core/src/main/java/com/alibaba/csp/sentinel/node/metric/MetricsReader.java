@@ -7,14 +7,14 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-class ExtractedMetricSearcher {
+class MetricsReader {
     /**
      * avoid OOM in any case
      */
     private static final int maxLinesReturn = 100000;
     private Charset charset;
 
-    public ExtractedMetricSearcher(Charset charset) {
+    public MetricsReader(Charset charset) {
         this.charset = charset;
     }
 
@@ -101,6 +101,16 @@ class ExtractedMetricSearcher {
             while (pos < fileNames.size()
                     && readMetricsInOneFileByEndTime(list, fileNames.get(pos++), 0, endTimeMs, identity)) {
             }
+        }
+        return list;
+    }
+
+    List<MetricNode> readMetrics(List<String> fileNames, int pos,
+                                 long offset, int recommendLines) throws Exception {
+        List<MetricNode> list = new ArrayList<MetricNode>(recommendLines);
+        readMetricsInOneFile(list, fileNames.get(pos++), offset, recommendLines);
+        while (list.size() < recommendLines && pos < fileNames.size()) {
+            readMetricsInOneFile(list, fileNames.get(pos++), 0, recommendLines);
         }
         return list;
     }
