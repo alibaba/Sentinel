@@ -15,7 +15,6 @@
  */
 package com.alibaba.csp.sentinel.adapter.grpc;
 
-import java.io.IOException;
 import java.util.Collections;
 
 import com.alibaba.csp.sentinel.EntryType;
@@ -27,10 +26,7 @@ import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 
-import io.grpc.Server;
-import io.grpc.ServerBuilder;
 import io.grpc.StatusRuntimeException;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 
@@ -43,7 +39,7 @@ public class SentinelGrpcServerInterceptorTest {
 
     private final String resourceName = "com.alibaba.sentinel.examples.FooService/anotherHello";
     private final int threshold = 4;
-    private final ExtractedSentinelGrpcServerInterceptorTest extractedSentinelGrpcServerInterceptorTest = new ExtractedSentinelGrpcServerInterceptorTest();
+    private final GrpcTestServer extractedSentinelGrpcServerInterceptorTest = new GrpcTestServer();
 
     private FooServiceClient client;
 
@@ -63,7 +59,7 @@ public class SentinelGrpcServerInterceptorTest {
         client = new FooServiceClient("localhost", port);
 
         configureFlowRule();
-        extractedSentinelGrpcServerInterceptorTest.prepareServer(port);
+        extractedSentinelGrpcServerInterceptorTest.prepare(port);
 
         final int total = 8;
         for (int i = 0; i < total; i++) {
@@ -82,7 +78,7 @@ public class SentinelGrpcServerInterceptorTest {
         assertEquals(total - threshold, blockedQps);
         assertEquals(threshold, passQps);
 
-        extractedSentinelGrpcServerInterceptorTest.stopServer();
+        extractedSentinelGrpcServerInterceptorTest.stop();
     }
 
     private void sendRequest() {

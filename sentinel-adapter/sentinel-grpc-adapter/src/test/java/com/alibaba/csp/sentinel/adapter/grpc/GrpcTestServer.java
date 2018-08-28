@@ -7,13 +7,13 @@ import java.io.IOException;
 
 import static org.junit.Assert.*;
 
-class ExtractedSentinelGrpcServerInterceptorTest {
+class GrpcTestServer {
     private Server server;
 
-    ExtractedSentinelGrpcServerInterceptorTest() {
+    GrpcTestServer() {
     }
 
-    void prepareServer(int port) throws IOException {
+    void prepare(int port) throws IOException {
         if (server != null) {
             throw new IllegalStateException("Server already running!");
         }
@@ -24,7 +24,7 @@ class ExtractedSentinelGrpcServerInterceptorTest {
         server.start();
     }
 
-    void stopServer() {
+    void stop() {
         if (server != null) {
             server.shutdown();
             server = null;
