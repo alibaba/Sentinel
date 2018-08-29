@@ -11,15 +11,15 @@ class GrpcTestServer {
     GrpcTestServer() {
     }
 
-    void prepare(int port, boolean shouldIntercept) throws IOException {
+    void start(int port, boolean shouldintercept) throws IOException {
         if (server != null) {
             throw new IllegalStateException("Server already running!");
         }
-        server = ServerBuilder.forPort(port)
+        ServerBuilder<?> serverBuild = ServerBuilder.forPort(port)
                 .addService(new FooServiceImpl());
-        if(shouldIntercept)
-            server.intercept(new SentinelGrpcServerInterceptor());
-        server.build();
+        if(shouldintercept)
+            serverBuild.intercept(new SentinelGrpcServerInterceptor());
+        server = serverBuild.build();
         server.start();
     }
 

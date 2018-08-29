@@ -56,7 +56,7 @@ public class SentinelGrpcClientInterceptorTest {
         final int port = 19328;
 
         configureFlowRule();
-        server.prepare(port);
+        server.start(port, false);
 
         FooServiceClient client = new FooServiceClient("localhost", port, new SentinelGrpcClientInterceptor());
         final int total = 8;

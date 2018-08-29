@@ -39,7 +39,7 @@ public class SentinelGrpcServerInterceptorTest {
 
     private final String resourceName = "com.alibaba.sentinel.examples.FooService/anotherHello";
     private final int threshold = 4;
-    private final GrpcTestServer extractedSentinelGrpcServerInterceptorTest = new GrpcTestServer();
+    private final GrpcTestServer server = new GrpcTestServer();
 
     private FooServiceClient client;
 
@@ -59,7 +59,7 @@ public class SentinelGrpcServerInterceptorTest {
         client = new FooServiceClient("localhost", port);
 
         configureFlowRule();
-        extractedSentinelGrpcServerInterceptorTest.prepare(port);
+        server.start(port, true);
 
         final int total = 8;
         for (int i = 0; i < total; i++) {
@@ -78,7 +78,7 @@ public class SentinelGrpcServerInterceptorTest {
         assertEquals(total - threshold, blockedQps);
         assertEquals(threshold, passQps);
 
-        extractedSentinelGrpcServerInterceptorTest.stop();
+        server.stop();
     }
 
     private void sendRequest() {
