@@ -20,7 +20,6 @@ import java.util.List;
 import com.alibaba.csp.sentinel.datasource.ConfigParser;
 import com.alibaba.csp.sentinel.datasource.DataSource;
 import com.alibaba.csp.sentinel.datasource.FileRefreshableDataSource;
-import com.alibaba.csp.sentinel.datasource.WritableDataSourceAdapter;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.slots.block.Rule;
@@ -92,10 +91,8 @@ public class FileDataSourceDemo {
                 public String parse(List<FlowRule> source) {
             		return JSON.toJSONString(source);
                 }
-            }
+            }, FlowRule.class
         );
-        // FlowRule's persistence
-        WritableDataSourceAdapter.registerDataSource(flowRuleDataSource, FlowRule.class);
         FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
 
         // data source for DegradeRule
@@ -112,9 +109,8 @@ public class FileDataSourceDemo {
                 public String parse(List<DegradeRule> source) {
             		return JSON.toJSONString(source);
                 }
-            }
+            }, DegradeRule.class
         );
-        WritableDataSourceAdapter.registerDataSource(degradeRuleDataSource, DegradeRule.class);
         DegradeRuleManager.register2Property(degradeRuleDataSource.getProperty());
 
         // data source for SystemRule
@@ -131,9 +127,8 @@ public class FileDataSourceDemo {
                 public String parse(List<SystemRule> source) {
             		return JSON.toJSONString(source);
                 }
-            }
+            }, SystemRule.class
         );
-        WritableDataSourceAdapter.registerDataSource(systemRuleDataSource, SystemRule.class);
         SystemRuleManager.register2Property(systemRuleDataSource.getProperty());
     }
 }
