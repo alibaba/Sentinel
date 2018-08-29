@@ -35,6 +35,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  * </p>
  *
  * @author Carpenter Lee
+ * @author Tom Yu
  */
 public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, T> implements WritableDataSource<T> {
 
@@ -146,12 +147,12 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
 	@Override
 	public void writeDataSource(T values) throws Exception {
 		if (configParser2Write == null) {
-			throw new RuntimeException("configParser2Write is null Can't write");
+			throw new NullPointerException("configParser2Write is null Can't write");
 		}
 		synchronized(file) {
 			String parseR = configParser2Write.parse(values);
 			if (parseR == null || StringUtil.isEmpty(parseR)) {
-    			throw new RuntimeException("DataSource size=0 Can't write");
+    			throw new NullPointerException("DataSource size=0 Can't write");
     		}
     		FileOutputStream outputStream = null;
             try {

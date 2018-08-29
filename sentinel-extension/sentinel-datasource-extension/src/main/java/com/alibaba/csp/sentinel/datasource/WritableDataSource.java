@@ -17,11 +17,9 @@ package com.alibaba.csp.sentinel.datasource;
 
 /**
  * source can be written to the target
- * datasource be registered to the ModifyRulesCommandHandler 
  *
  * @param <T> target data type
- * @param <R> result data type
- * @author Carpenter Lee
+ * @author Tom Yu
  */
 public interface WritableDataSource<T> {
     public void writeDataSource(T values) throws Exception;
