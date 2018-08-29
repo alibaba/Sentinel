@@ -5,22 +5,21 @@ import io.grpc.ServerBuilder;
 
 import java.io.IOException;
 
-import static org.junit.Assert.*;
-
 class GrpcTestServer {
     private Server server;
 
     GrpcTestServer() {
     }
 
-    void prepare(int port) throws IOException {
+    void prepare(int port, boolean shouldIntercept) throws IOException {
         if (server != null) {
             throw new IllegalStateException("Server already running!");
         }
         server = ServerBuilder.forPort(port)
-                .addService(new FooServiceImpl())
-                .intercept(new SentinelGrpcServerInterceptor())
-                .build();
+                .addService(new FooServiceImpl());
+        if(shouldIntercept)
+            server.intercept(new SentinelGrpcServerInterceptor());
+        server.build();
         server.start();
     }
 
