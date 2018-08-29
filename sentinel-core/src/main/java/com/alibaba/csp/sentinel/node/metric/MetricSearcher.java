@@ -131,7 +131,7 @@ public class MetricSearcher {
         for (; i < fileNames.size(); i++) {
             String fileName = fileNames.get(i);
             long offset = findOffset(beginTimeMs, fileName,
-                fileName + MetricWriter.METRIC_FILE_INDEX_SUFFIX, offsetInIndex);
+                    MetricWriter.formIndexFileName(fileName), offsetInIndex);
             offsetInIndex = 0;
             if (offset != -1) {
                 return metricsReader.readMetricsByEndTime(fileNames, i, offset, endTimeMs, identity);
