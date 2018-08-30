@@ -209,8 +209,6 @@ public class SentinelResourceAspect {
 				method = targetClass.getMethod(method.getName(), method.getParameterTypes());
 			} catch (NoSuchMethodException e) {
 				e.printStackTrace();
-			} catch (SecurityException e) {
-				e.printStackTrace();
 			}
 		}
         return method;
