@@ -202,6 +202,16 @@ public class SentinelResourceAspect {
 
     private Method getMethod(ProceedingJoinPoint joinPoint) {
         MethodSignature signature = (MethodSignature)joinPoint.getSignature();
-        return signature.getMethod();
+        Method method = signature.getMethod();
+        if (joinPoint.getTarget().getClass() != signature.getMethod().getDeclaringClass()) {
+			try {
+				method = joinPoint.getTarget().getClass().getMethod(method.getName(), method.getParameterTypes());
+			} catch (NoSuchMethodException e) {
+				e.printStackTrace();
+			} catch (SecurityException e) {
+				e.printStackTrace();
+			}
+		}
+        return method;
     }
 }
