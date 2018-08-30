@@ -17,8 +17,9 @@ class GrpcTestServer {
         }
         ServerBuilder<?> serverBuild = ServerBuilder.forPort(port)
                 .addService(new FooServiceImpl());
-        if(shouldintercept)
+        if (shouldintercept) {
             serverBuild.intercept(new SentinelGrpcServerInterceptor());
+        }
         server = serverBuild.build();
         server.start();
     }
