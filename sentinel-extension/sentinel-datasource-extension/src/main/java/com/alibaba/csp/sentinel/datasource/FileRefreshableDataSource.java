@@ -18,6 +18,8 @@ package com.alibaba.csp.sentinel.datasource;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 
@@ -57,8 +59,8 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
     }
 
     public FileRefreshableDataSource(String fileName, ConfigParser<String, T> configParser)
-        throws FileNotFoundException {
-        this(new File(fileName), configParser, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, DEFAULT_CHAR_SET);
+        throws FileNotFoundException, UnsupportedEncodingException {
+        this(new File(URLDecoder.decode(fileName, "UTF-8")), configParser, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, DEFAULT_CHAR_SET);
         //System.out.println(file.getAbsoluteFile());
     }
 
