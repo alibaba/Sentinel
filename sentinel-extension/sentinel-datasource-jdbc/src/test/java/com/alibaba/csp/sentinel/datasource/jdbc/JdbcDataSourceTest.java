@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
 
 /**
  * simple test for JdbcDataSource
- * @author five
+ * @author cdfive
  * @date 2018-09-01
  */
 public class JdbcDataSourceTest {

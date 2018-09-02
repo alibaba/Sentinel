@@ -40,10 +40,9 @@ public class JdbcDataSource<T> extends AutoRefreshDataSource<List<Map<String, Ob
     /**sql: find rule list by app_id, only enabled and not deleted*/
     private static final String READ_SOURCE_SQL = "SELECT * FROM %s WHERE app_id=? AND enabled=1 AND deleted=0";
 
+    /**rule type constant*/
     public static final String RULE_TYPE_FLOW = "flow";
-
     public static final String RULE_TYPE_DEGRADE = "degrade";
-
     public static final String RULE_TYPE_SYSTEM = "system";
 
     /**pull mode, pull data by query from db per 30 seconds, by default*/
