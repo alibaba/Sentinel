@@ -18,7 +18,7 @@ For instance:
 
 ```java
 // `path` is the data path in ZooKeeper
-DataSource<String, List<FlowRule>> flowRuleDataSource = new ZookeeperDataSource<>(remoteAddress, path, source -> JSON.parseObject(source, new TypeReference<List<FlowRule>>() {}));
+ReadableDataSource<String, List<FlowRule>> flowRuleDataSource = new ZookeeperDataSource<>(remoteAddress, path, source -> JSON.parseObject(source, new TypeReference<List<FlowRule>>() {}));
 FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
 ```
 
