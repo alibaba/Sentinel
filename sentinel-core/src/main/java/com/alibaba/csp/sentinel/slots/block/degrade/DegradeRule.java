@@ -183,11 +183,12 @@ public class DegradeRule extends AbstractRule {
                 return true;
             }
 
-            if (success == 0) {
+            double realSuccess = success - exception;
+            if (realSuccess <= 0) {
                 return exception < RT_MAX_EXCEED_N;
             }
 
-            if (exception / (success + exception) < count) {
+            if (exception / success < count) {
                 return true;
             }
         }
