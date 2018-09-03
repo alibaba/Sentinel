@@ -60,10 +60,15 @@ public class SentinelResourceAspect {
             throw new IllegalStateException("Wrong state for SentinelResource annotation");
         }
         String resourceName = annotation.value();
+        String origin = annotation.origin();
         EntryType entryType = annotation.entryType();
         Entry entry = null;
         try {
-            ContextUtil.enter(resourceName);
+            if (StringUtil.isNotBlank(origin)) {
+                ContextUtil.enter(resourceName, origin);
+            } else {
+                ContextUtil.enter(resourceName);
+            }
             entry = SphU.entry(resourceName, entryType);
             Object result = pjp.proceed();
             return result;
