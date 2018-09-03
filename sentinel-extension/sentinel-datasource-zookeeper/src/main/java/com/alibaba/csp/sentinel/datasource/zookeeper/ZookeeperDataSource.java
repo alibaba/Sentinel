@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.datasource.AbstractDataSource;
-import com.alibaba.csp.sentinel.datasource.ConfigParser;
+import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
@@ -21,7 +21,7 @@ import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.data.Stat;
 
 /**
- * Zookeeper DataSource
+ * A read-only {@code DataSource} with ZooKeeper backend.
  *
  * @author guonanjun
  */
@@ -40,7 +40,7 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
     private CuratorFramework zkClient = null;
     private NodeCache nodeCache = null;
 
-    public ZookeeperDataSource(final String serverAddr, final String path, ConfigParser<String, T> parser) {
+    public ZookeeperDataSource(final String serverAddr, final String path, Converter<String, T> parser) {
         super(parser);
         if (StringUtil.isBlank(serverAddr) || StringUtil.isBlank(path)) {
             throw new IllegalArgumentException(String.format("Bad argument: serverAddr=[%s], path=[%s]", serverAddr, path));
@@ -54,7 +54,7 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
      * This constructor is Nacos-style.
      */
     public ZookeeperDataSource(final String serverAddr, final String groupId, final String dataId,
-                               ConfigParser<String, T> parser) {
+                               Converter<String, T> parser) {
         super(parser);
         if (StringUtil.isBlank(serverAddr) || StringUtil.isBlank(groupId) || StringUtil.isBlank(dataId)) {
             throw new IllegalArgumentException(String.format("Bad argument: serverAddr=[%s], groupId=[%s], dataId=[%s]", serverAddr, groupId, dataId));
@@ -73,11 +73,11 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
         try {
             T newValue = loadConfig();
             if (newValue == null) {
-                RecordLog.info("[ZookeeperDataSource] WARN: initial config is null, you may have to check your data source");
+                RecordLog.warn("[ZookeeperDataSource] WARN: initial config is null, you may have to check your data source");
             }
             getProperty().updateValue(newValue);
         } catch (Exception ex) {
-            RecordLog.info("[ZookeeperDataSource] Error when loading initial config", ex);
+            RecordLog.warn("[ZookeeperDataSource] Error when loading initial config", ex);
         }
     }
 
@@ -95,7 +95,7 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
                     }
                     RecordLog.info(String.format("[ZookeeperDataSource] New property value received for (%s, %s): %s",
                         serverAddr, path, configInfo));
-                    T newValue = ZookeeperDataSource.this.parser.parse(configInfo);
+                    T newValue = ZookeeperDataSource.this.parser.convert(configInfo);
                     // Update the new value to the property.
                     getProperty().updateValue(newValue);
                 }
@@ -112,7 +112,7 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
             this.nodeCache.getListenable().addListener(this.listener, this.pool);
             this.nodeCache.start();
         } catch (Exception e) {
-            RecordLog.info("[ZookeeperDataSource] Error occurred when initializing Zookeeper data source", e);
+            RecordLog.warn("[ZookeeperDataSource] Error occurred when initializing Zookeeper data source", e);
             e.printStackTrace();
         }
     }
