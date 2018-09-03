@@ -25,16 +25,17 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 
 /**
  * <p>
- * A {@link DataSource} based on file. This class will automatically fetches the backend file every 3 seconds.
+ * A {@link WritableDataSource} based on file. This class will automatically fetches the backend file every refresh period.
  * </p>
  * <p>
- * Limitations: default read buffer size is 1MB, if file size is greater than buffer size, exceeding bytes will
- * be ignored. Default charset is UTF8.
+ * Limitations: Default read buffer size is 1 MB. If file size is greater than buffer size, exceeding bytes will
+ * be ignored. Default charset is UTF-8.
  * </p>
  *
  * @author Carpenter Lee
+ * @author Eric Zhao
  */
-public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, T> {
+public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, T> implements WritableDataSource<T> {
 
     private static final int MAX_SIZE = 1024 * 1024 * 4;
     private static final long DEFAULT_REFRESH_MS = 3000;
@@ -42,37 +43,38 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
     private static final Charset DEFAULT_CHAR_SET = Charset.forName("utf-8");
 
     private byte[] buf;
-    private Charset charset;
-    private File file;
+    private final Charset charset;
+    private final File file;
+
+    private final Converter<T, String> configEncoder;
 
     /**
-     * Create a file based {@link DataSource} whose read buffer size is 1MB, charset is UTF8,
+     * Create a file based {@link ReadableDataSource} whose read buffer size is 1MB, charset is UTF8,
      * and read interval is 3 seconds.
      *
-     * @param file         the file to read.
-     * @param configParser the config parser.
+     * @param file         the file to read
+     * @param configParser the config decoder (parser)
      */
-    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser) throws FileNotFoundException {
-        this(file, configParser, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, DEFAULT_CHAR_SET);
+    public FileRefreshableDataSource(File file, Converter<String, T> configParser, Converter<T, String> configEncoder) throws FileNotFoundException {
+        this(file, configParser, configEncoder, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, DEFAULT_CHAR_SET);
     }
 
-    public FileRefreshableDataSource(String fileName, ConfigParser<String, T> configParser)
+    public FileRefreshableDataSource(String fileName, Converter<String, T> configParser, Converter<T, String> configEncoder)
         throws FileNotFoundException {
-        this(new File(fileName), configParser, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, DEFAULT_CHAR_SET);
-        //System.out.println(file.getAbsoluteFile());
+        this(new File(fileName), configParser, configEncoder, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, DEFAULT_CHAR_SET);
     }
 
-    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser, int bufSize)
+    public FileRefreshableDataSource(File file, Converter<String, T> configParser, Converter<T, String> configEncoder, int bufSize)
         throws FileNotFoundException {
-        this(file, configParser, DEFAULT_REFRESH_MS, bufSize, DEFAULT_CHAR_SET);
+        this(file, configParser, configEncoder, DEFAULT_REFRESH_MS, bufSize, DEFAULT_CHAR_SET);
     }
 
-    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser, Charset charset)
+    public FileRefreshableDataSource(File file, Converter<String, T> configParser, Converter<T, String> configEncoder, Charset charset)
         throws FileNotFoundException {
-        this(file, configParser, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, charset);
+        this(file, configParser, configEncoder, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, charset);
     }
 
-    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser, long recommendRefreshMs,
+    public FileRefreshableDataSource(File file, Converter<String, T> configParser, Converter<T, String> configEncoder, long recommendRefreshMs,
                                      int bufSize, Charset charset) throws FileNotFoundException {
         super(configParser, recommendRefreshMs);
         if (bufSize <= 0 || bufSize > MAX_SIZE) {
@@ -84,9 +86,13 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
         if (charset == null) {
             throw new IllegalArgumentException("charset can't be null");
         }
+        if (configEncoder == null) {
+            throw new IllegalArgumentException("Config encoder cannot be null");
+        }
         this.buf = new byte[bufSize];
         this.file = file;
         this.charset = charset;
+        this.configEncoder = configEncoder;
         firstLoad();
     }
 
@@ -106,7 +112,7 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
             inputStream = new FileInputStream(file);
             FileChannel channel = inputStream.getChannel();
             if (channel.size() > buf.length) {
-                throw new RuntimeException(file.getAbsolutePath() + " file size=" + channel.size()
+                throw new IllegalStateException(file.getAbsolutePath() + " file size=" + channel.size()
                     + ", is bigger than bufSize=" + buf.length + ". Can't read");
             }
             int len = inputStream.read(buf);
@@ -128,7 +134,7 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
     }
 
     @Override
-    public void writeDataSource(T values) throws Exception {
-        throw new UnsupportedOperationException();
+    public void write(T value) throws Exception {
+        throw new UnsupportedOperationException("Not implemented");
     }
 }
