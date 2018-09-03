@@ -46,7 +46,7 @@ public class JdbcDataSourceTest {
         // appName
         String appName = "demo.service";
 
-        // fresh per 3 seconds
+        // refresh per 3 seconds
         Long ruleRefreshSec = 3L;
         DataSource<List<Map<String, Object>>, List<FlowRule>> dataSource = new JdbcDataSource(jdbcTemplate, appName, new JdbcDataSource.JdbcFlowRuleParser(), ruleRefreshSec);
         FlowRuleManager.register2Property(dataSource.getProperty());
@@ -71,7 +71,7 @@ public class JdbcDataSourceTest {
         // mock modify db value
         map.put("_count", 10d);
 
-        // wait 5 seconds
+        // wait 5 seconds, waiting for refresh
         sleep(5000);
 
         // now, readSource() should invoke at least 2 times

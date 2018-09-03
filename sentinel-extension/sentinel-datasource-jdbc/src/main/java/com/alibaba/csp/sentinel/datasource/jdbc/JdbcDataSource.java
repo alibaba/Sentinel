@@ -216,6 +216,8 @@ public class JdbcDataSource<T> extends AutoRefreshDataSource<List<Map<String, Ob
                 flowRule.setCount(getMapDoubleVal(map, "_count"));
                 flowRule.setStrategy(getMapIntVal(map, "strategy"));
                 flowRule.setControlBehavior(getMapIntVal(map, "control_behavior"));
+                flowRule.setWarmUpPeriodSec(getMapIntVal(map, "warm_up_period_sec"));
+                flowRule.setMaxQueueingTimeMs(getMapIntVal(map, "max_queueing_time_ms"));
             }
 
             return flowRules;
@@ -274,19 +276,81 @@ public class JdbcDataSource<T> extends AutoRefreshDataSource<List<Map<String, Ob
         }
     }
 
+    /**get string value of key from map, default value is null*/
     private static String getMapStringVal(Map<String, Object> map, String key) {
-        return map.get(key).toString();
+        return getMapVal(map, key, null, new ParseMapValCallback<String>() {
+            @Override
+            public String parseVal(String strVal) {
+                return strVal;
+            }
+        });
     }
 
+    /**get int value of key from map, default value is 0*/
     private static int getMapIntVal(Map<String, Object> map, String key) {
-        return Integer.parseInt(map.get(key).toString());
+        return getMapVal(map, key, 0, new ParseMapValCallback<Integer>() {
+            @Override
+            public Integer parseVal(String strVal) {
+                return Integer.parseInt(strVal);
+            }
+        });
     }
 
+    /**get long value of key from map, default value is 0L*/
     private static long getMapLongVal(Map<String, Object> map, String key) {
-        return Long.parseLong(map.get(key).toString());
+        return getMapVal(map, key, 0L, new ParseMapValCallback<Long>() {
+            @Override
+            public Long parseVal(String strVal) {
+                return Long.parseLong(strVal);
+            }
+        });
     }
 
+    /**get double value of key from map, default value is 0D*/
     private static double getMapDoubleVal(Map<String, Object> map, String key) {
-        return Double.parseDouble(map.get(key).toString());
+        return getMapVal(map, key, 0D, new ParseMapValCallback<Double>() {
+            @Override
+            public Double parseVal(String strVal) {
+                return Double.parseDouble(strVal);
+            }
+        });
+    }
+
+    /**
+     * get value of key from the map
+     *
+     * if map doesn't contains key or the value of key from the map is null, then return default value
+     * else use ParseMapValCallback to parse the string value to the return type T
+     * @param map map
+     * @param key key
+     * @param defVal default value
+     * @param parseMapValCallback
+     * @param <T> the type
+     * @return result of type T
+     */
+    private static <T> T getMapVal(Map<String, Object> map, String key, T defVal, ParseMapValCallback<T> parseMapValCallback) {
+        if (!map.containsKey(key)) {
+            return defVal;
+        }
+
+        Object obj = map.get(key);
+        if (obj == null) {
+            return defVal;
+        }
+
+        return parseMapValCallback.parseVal(obj.toString());
+    }
+
+    /**
+     * map value parse callback function
+     * @param <T> type
+     */
+    private interface ParseMapValCallback<T> {
+        /**
+         * ParseMapValCallback
+         * @param strVal the string value
+         * @return the parsed result of type T
+         */
+        T parseVal(String strVal);
     }
 }
