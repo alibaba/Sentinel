@@ -159,7 +159,7 @@ public class JdbcDataSource<T> extends AutoRefreshDataSource<List<Map<String, Ob
             T newValue = loadConfig();
             getProperty().updateValue(newValue);
         } catch (Exception e) {
-            RecordLog.info("loadConfig exception", e);
+            RecordLog.warn("loadConfig exception", e);
         }
     }
 

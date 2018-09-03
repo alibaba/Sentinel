@@ -55,6 +55,7 @@ CREATE TABLE `sentinel_flow_rule` (
   `id` INT NOT NULL AUTO_INCREMENT COMMENT 'id，主键',
   `app_id` INT NOT NULL COMMENT '应用id',
   `resource` VARCHAR(200) NOT NULL COMMENT '规则的资源描述',
+  `resource_type` VARCHAR(20) COMMENT '资源类型 activemq,dubbo,rest,...',
   `description` VARCHAR(500) COMMENT '描述',
   `limit_app` VARCHAR(100) NOT NULL COMMENT '被限制的应用,授权时候为逗号分隔的应用集合，限流时为单个应用',
   `grade` TINYINT NOT NULL COMMENT '0-THREAD 1-QPS',
@@ -84,6 +85,7 @@ CREATE TABLE `sentinel_degrade_rule` (
   `id` INT NOT NULL AUTO_INCREMENT COMMENT 'id，主键',
   `app_id` INT NOT NULL COMMENT '应用id',
   `resource` VARCHAR(200) NOT NULL COMMENT '规则的资源描述',
+  `resource_type` VARCHAR(20) COMMENT '资源类型 activemq,dubbo,rest,...',
   `description` VARCHAR(500) COMMENT '描述',
   `limit_app` VARCHAR(100) NOT NULL COMMENT '被限制的应用,授权时候为逗号分隔的应用集合，限流时为单个应用',
   `grade` TINYINT NOT NULL COMMENT '0-根据响应时间 1-根据异常比例',		
@@ -108,6 +110,7 @@ CREATE TABLE `sentinel_system_rule` (
   `id` INT NOT NULL AUTO_INCREMENT COMMENT 'id，主键',
   `app_id` INT NOT NULL COMMENT '应用id',
   `resource` VARCHAR(200) NOT NULL COMMENT '规则的资源描述',
+  `resource_type` VARCHAR(20) COMMENT '资源类型 activemq,dubbo,rest,...',
   `description` VARCHAR(500) COMMENT '描述',
   `limit_app` VARCHAR(100) NOT NULL COMMENT '被限制的应用,授权时候为逗号分隔的应用集合，限流时为单个应用',
   `highest_system_load` DOUBLE NOT NULL COMMENT '最大系统负载',
@@ -132,10 +135,10 @@ CREATE TABLE `sentinel_system_rule` (
 Insert some data for test: 
 ```sql
 -- add a app named demo_app
-INSERT INTO sentinel_app(id,NAME,chn_name,create_time,enabled,deleted) VALUES(1,'demo_app','示例项目',NOW(),1,0);
+INSERT INTO sentinel_app(id,NAME,chn_name,description,create_time,enabled,deleted) VALUES(1,'demo_app','示例项目','示例项目的描述',NOW(),1,0);
 -- add one flow rule of demo_app
-INSERT INTO sentinel_flow_rule(app_id,resource,limit_app,grade,_count,strategy,control_behavior,create_time,enabled,deleted) 
-VALUES(1,'com.demo.FooService:hello(java.lang.String)','default',1,5,0,0,NOW(),1,0);
+INSERT INTO sentinel_flow_rule(app_id,resource,resource_type,description,limit_app,grade,_count,strategy,control_behavior,create_time,enabled,deleted) 
+VALUES(1,'com.demo.FooService:hello(java.lang.String)','dubbo','hello方法','default',1,5,0,0,NOW(),1,0);
 ```
 
 
