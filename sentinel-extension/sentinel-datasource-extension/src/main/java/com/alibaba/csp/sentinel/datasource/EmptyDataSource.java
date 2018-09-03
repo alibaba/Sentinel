@@ -52,9 +52,4 @@ public class EmptyDataSource implements DataSource<Object, Object> {
     @Override
     public void close() throws Exception { }
 
-    @Override
-    public void writeDataSource(Object config) throws Exception {
-        throw new UnsupportedOperationException();
-    }
-
 }

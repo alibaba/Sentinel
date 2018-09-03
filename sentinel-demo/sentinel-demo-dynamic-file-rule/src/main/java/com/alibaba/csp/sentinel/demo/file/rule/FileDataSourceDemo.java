@@ -20,9 +20,6 @@ import java.util.List;
 import com.alibaba.csp.sentinel.datasource.ConfigParser;
 import com.alibaba.csp.sentinel.datasource.DataSource;
 import com.alibaba.csp.sentinel.datasource.FileRefreshableDataSource;
-import com.alibaba.csp.sentinel.demo.file.rule.parser.JsonDegradeRuleListParser;
-import com.alibaba.csp.sentinel.demo.file.rule.parser.JsonFlowRuleListParser;
-import com.alibaba.csp.sentinel.demo.file.rule.parser.JsonSystemRuleListParser;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.slots.block.Rule;
@@ -32,6 +29,8 @@ import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.system.SystemRule;
 import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 
 /**
  * <p>
@@ -72,25 +71,64 @@ public class FileDataSourceDemo {
         runner.tick();
     }
 
-    public void listenRules() throws Exception {
+	public void listenRules() throws Exception {
         ClassLoader classLoader = getClass().getClassLoader();
-        String flowRulePath = classLoader.getResource("FlowRule.json").getFile();
-        String degradeRulePath = classLoader.getResource("DegradeRule.json").getFile();
-        String systemRulePath = classLoader.getResource("SystemRule.json").getFile();
+        final String flowRulePath = classLoader.getResource("FlowRule.json").getFile();
+        final String degradeRulePath = classLoader.getResource("DegradeRule.json").getFile();
+        final String systemRulePath = classLoader.getResource("SystemRule.json").getFile();
 
         // data source for FlowRule
-        DataSource<String, List<FlowRule>> flowRuleDataSource = new FileRefreshableDataSource<List<FlowRule>>(
-            flowRulePath, new JsonFlowRuleListParser());
+        FileRefreshableDataSource<List<FlowRule>> flowRuleDataSource = new FileRefreshableDataSource<List<FlowRule>>(
+            flowRulePath, 
+            new ConfigParser<String, List<FlowRule>>() {
+            	@Override
+                public List<FlowRule> parse(String source) {
+                    return JSON.parseObject(source, new TypeReference<List<FlowRule>>() {});
+                }
+            },
+            new ConfigParser<List<FlowRule>, String>() {
+            	@Override
+                public String parse(List<FlowRule> source) {
+            		return JSON.toJSONString(source);
+                }
+            }, FlowRule.class
+        );
         FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
 
         // data source for DegradeRule
-        DataSource<String, List<DegradeRule>> degradeRuleDataSource = new FileRefreshableDataSource<List<DegradeRule>>(
-            degradeRulePath, new JsonDegradeRuleListParser());
+        FileRefreshableDataSource<List<DegradeRule>> degradeRuleDataSource = new FileRefreshableDataSource<List<DegradeRule>>(
+            degradeRulePath, 
+            new ConfigParser<String, List<DegradeRule>>() {
+            	@Override
+                public List<DegradeRule> parse(String source) {
+                    return JSON.parseObject(source, new TypeReference<List<DegradeRule>>() {});
+                }
+            },
+            new ConfigParser<List<DegradeRule>, String>() {
+            	@Override
+                public String parse(List<DegradeRule> source) {
+            		return JSON.toJSONString(source);
+                }
+            }, DegradeRule.class
+        );
         DegradeRuleManager.register2Property(degradeRuleDataSource.getProperty());
 
         // data source for SystemRule
-        DataSource<String, List<SystemRule>> systemRuleDataSource = new FileRefreshableDataSource<List<SystemRule>>(
-            systemRulePath, new JsonSystemRuleListParser());
+        FileRefreshableDataSource<List<SystemRule>> systemRuleDataSource = new FileRefreshableDataSource<List<SystemRule>>(
+            systemRulePath, 
+            new ConfigParser<String, List<SystemRule>>() {
+            	@Override
+                public List<SystemRule> parse(String source) {
+                    return JSON.parseObject(source, new TypeReference<List<SystemRule>>() {});
+                }
+            },
+            new ConfigParser<List<SystemRule>, String>() {
+            	@Override
+                public String parse(List<SystemRule> source) {
+            		return JSON.toJSONString(source);
+                }
+            }, SystemRule.class
+        );
         SystemRuleManager.register2Property(systemRuleDataSource.getProperty());
     }
 }

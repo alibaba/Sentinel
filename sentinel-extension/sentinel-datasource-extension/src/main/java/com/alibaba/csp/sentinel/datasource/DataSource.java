@@ -50,14 +50,6 @@ public interface DataSource<S, T> {
     SentinelProperty<T> getProperty();
 
     /**
-     * Write the {@code values} to the data source.
-     *
-     * @param values
-     * @throws Exception
-     */
-    void writeDataSource(T values) throws Exception;
-
-    /**
      * Close the data source.
      *
      * @throws Exception

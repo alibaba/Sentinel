@@ -18,10 +18,12 @@ package com.alibaba.csp.sentinel.datasource;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
  * <p>
@@ -33,8 +35,9 @@ import com.alibaba.csp.sentinel.log.RecordLog;
  * </p>
  *
  * @author Carpenter Lee
+ * @author Tom Yu
  */
-public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, T> {
+public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, T> implements WritableDataSource<T> {
 
     private static final int MAX_SIZE = 1024 * 1024 * 4;
     private static final long DEFAULT_REFRESH_MS = 3000;
@@ -44,6 +47,8 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
     private byte[] buf;
     private Charset charset;
     private File file;
+    private long lastModified = 0L;
+    ConfigParser<T, String> configParser2Write;
 
     /**
      * Create a file based {@link DataSource} whose read buffer size is 1MB, charset is UTF8,
@@ -52,29 +57,28 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
      * @param file         the file to read.
      * @param configParser the config parser.
      */
-    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser) throws FileNotFoundException {
-        this(file, configParser, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, DEFAULT_CHAR_SET);
+    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser2Read, ConfigParser<T, String> configParser2Write, Class<?> type) throws FileNotFoundException {
+        this(file, configParser2Read,configParser2Write, type, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, DEFAULT_CHAR_SET);
     }
 
-    public FileRefreshableDataSource(String fileName, ConfigParser<String, T> configParser)
+    public FileRefreshableDataSource(String fileName, ConfigParser<String, T> configParser2Read, ConfigParser<T, String> configParser2Write, Class<?> type)
         throws FileNotFoundException {
-        this(new File(fileName), configParser, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, DEFAULT_CHAR_SET);
-        //System.out.println(file.getAbsoluteFile());
+        this(new File(fileName), configParser2Read, configParser2Write,type, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, DEFAULT_CHAR_SET);
     }
 
-    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser, int bufSize)
+    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser2Read, ConfigParser<T, String> configParser2Write, Class<?> type, int bufSize)
         throws FileNotFoundException {
-        this(file, configParser, DEFAULT_REFRESH_MS, bufSize, DEFAULT_CHAR_SET);
+        this(file, configParser2Read, configParser2Write,type, DEFAULT_REFRESH_MS, bufSize, DEFAULT_CHAR_SET);
     }
 
-    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser, Charset charset)
+    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser2Read, ConfigParser<T, String> configParser2Write, Class<?> type, Charset charset)
         throws FileNotFoundException {
-        this(file, configParser, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, charset);
+        this(file, configParser2Read, configParser2Write,type, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, charset);
     }
 
-    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser, long recommendRefreshMs,
+    public FileRefreshableDataSource(File file, ConfigParser<String, T> configParser2Read, ConfigParser<T, String> configParser2Write, Class<?> type, long recommendRefreshMs,
                                      int bufSize, Charset charset) throws FileNotFoundException {
-        super(configParser, recommendRefreshMs);
+        super(configParser2Read, recommendRefreshMs);
         if (bufSize <= 0 || bufSize > MAX_SIZE) {
             throw new IllegalArgumentException("bufSize must between (0, " + MAX_SIZE + "], but " + bufSize + " get");
         }
@@ -84,10 +88,13 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
         if (charset == null) {
             throw new IllegalArgumentException("charset can't be null");
         }
+        this.configParser2Write = configParser2Write;
         this.buf = new byte[bufSize];
         this.file = file;
+        this.lastModified = file.lastModified();
         this.charset = charset;
         firstLoad();
+        WritableDataSourceAdapter.registerDataSource(this, type);
     }
 
     private void firstLoad() {
@@ -126,9 +133,48 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
         super.close();
         buf = null;
     }
-
-    @Override
-    public void writeDataSource(T values) throws Exception {
-        throw new UnsupportedOperationException();
+    
+    @Override 
+    protected boolean refresh() {
+    	long curLastModified = new File(file.getAbsolutePath()).lastModified();
+    	if (curLastModified != this.lastModified) {
+    		this.lastModified = curLastModified;
+    		return true;
+    	}
+    	return false;
     }
+
+	@Override
+	public void writeDataSource(T values) throws Exception {
+		if (configParser2Write == null) {
+			throw new NullPointerException("configParser2Write is null Can't write");
+		}
+		synchronized(file) {
+			String parseR = configParser2Write.parse(values);
+			if (parseR == null || StringUtil.isEmpty(parseR)) {
+    			throw new NullPointerException("DataSource size=0 Can't write");
+    		}
+    		FileOutputStream outputStream = null;
+            try {
+                outputStream = new FileOutputStream(file);
+                byte[] bytesArray = parseR.getBytes();
+    			if (bytesArray.length > buf.length) {
+                    throw new RuntimeException(file.getAbsolutePath() + " file size=" + bytesArray.length
+                        + ", is bigger than bufSize=" + buf.length + ". Can't write");
+                }
+
+                outputStream.write(bytesArray);
+                outputStream.flush();
+            } finally {
+                if (outputStream != null) {
+                    try {
+                    	outputStream.close();
+                    } catch (Exception ignore) {
+                    }
+                }
+            }
+    	}
+	}
+	
+	
 }
