@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.demo.file.rule;
 
+import java.net.URLDecoder;
 import java.util.List;
 
 import com.alibaba.csp.sentinel.datasource.ConfigParser;
@@ -74,9 +75,9 @@ public class FileDataSourceDemo {
 
     public void listenRules() throws Exception {
         ClassLoader classLoader = getClass().getClassLoader();
-        String flowRulePath = classLoader.getResource("FlowRule.json").getFile();
-        String degradeRulePath = classLoader.getResource("DegradeRule.json").getFile();
-        String systemRulePath = classLoader.getResource("SystemRule.json").getFile();
+        String flowRulePath = URLDecoder.decode(classLoader.getResource("FlowRule.json").getFile(), "UTF-8");
+        String degradeRulePath = URLDecoder.decode(classLoader.getResource("DegradeRule.json").getFile(), "UTF-8");
+        String systemRulePath = URLDecoder.decode(classLoader.getResource("SystemRule.json").getFile(), "UTF-8");
 
         // data source for FlowRule
         DataSource<String, List<FlowRule>> flowRuleDataSource = new FileRefreshableDataSource<List<FlowRule>>(
