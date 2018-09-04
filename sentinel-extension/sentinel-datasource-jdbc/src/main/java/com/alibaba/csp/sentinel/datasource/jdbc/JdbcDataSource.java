@@ -21,9 +21,32 @@ import java.util.Map;
  * @see com.alibaba.csp.sentinel.datasource.AutoRefreshDataSource
  *
  * <p>
+ *  This class using javax.sql.DataSource dbDatasource, String sql, Object[] sqlParameters
+ *  to query <b>effective</b> sentinel rules from databse, and convert the List<Map<String, Object>>
+ *  to sentinel rule objects.
  *
+ *  Extends on AutoRefreshDataSource<S, T> only dependency on sentinel-datasource-extension.
+ *  use Class and JDBC API in java.sql and javax.sql package, so has no other dependencies.
+ *
+ *  Users are free to choose their own jdbc databse, desgin tables for storage, choose different ORM framework like Spring JDBC, MyBatis and so on.
+ *  Only provide a standard javaxDataSource, and the query rule sql and sql parameters.
  * </p>
  *
+ * <p>
+ *  Usage:
+ *
+ *    1.Using JdbcDataSource
+ *    javax.sql.DataSource dbDataSource = new DruidDataSource() // or get @Bean from Spring container
+ *    Long ruleRefreshSec = 5L;// default 30 seconds
+ *    String sql = "select * from my_flow_rule_table where enable=?";
+ *    Object[] sqlPara
+ *    DataSource<List<Map<String, Object>>, List<FlowRule>> flowRuleDataSource = new JdbcDataSource(sentinelJdbcTemplate(), new JdbcDataSource.JdbcFlowRuleParser(), ruleRefreshSec);
+ *
+ *    2.Extends from JdbcDataSource
+ *    design own construct logic, eg: init by appName
+ *    design own tables for store the sentinel rule datas
+ *
+ * </p>
  * @author cdfive
  * @date 2018-09-01
  */
@@ -146,11 +169,11 @@ public class JdbcDataSource<T> extends AutoRefreshDataSource<List<Map<String, Ob
     }
 
     /**
-     * query sql from databse, using dbDataSource,sql,sqlParameters
+     * query sql from databse, a standard javaxDataSource, and the query rule sql and sql parameters
      *
      * <P>
      *  Note:
-     *  Map's key is the column name of select, if has alias name, alias name prefered
+     *  Map's key is the column name of select sql, if has alias name grammer, alias name prefered
      *
      *  eg: select grade,limit_app as limitApp,... from flow_rule_table
      *
