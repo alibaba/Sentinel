@@ -1,7 +1,7 @@
 package com.alibaba.csp.sentinel.datasource.jdbc;
 
 import com.alibaba.csp.sentinel.datasource.AutoRefreshDataSource;
-import com.alibaba.csp.sentinel.datasource.ConfigParser;
+import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
@@ -17,7 +17,7 @@ import java.util.Map;
 /**
  * jdbc implement of DataSource
  *
- * @see com.alibaba.csp.sentinel.datasource.DataSource
+ * @see com.alibaba.csp.sentinel.datasource.ReadableDataSource
  * @see com.alibaba.csp.sentinel.datasource.AutoRefreshDataSource
  *
  * <p>
@@ -40,7 +40,7 @@ import java.util.Map;
  *    Long ruleRefreshSec = 5L;// default 30 seconds
  *    String sql = "select * from my_flow_rule_table where enable=?";
  *    Object[] sqlPara
- *    DataSource<List<Map<String, Object>>, List<FlowRule>> flowRuleDataSource = new JdbcDataSource(sentinelJdbcTemplate(), new JdbcDataSource.JdbcFlowRuleParser(), ruleRefreshSec);
+ *    DataSource<List<Map<String, Object>>, List<FlowRule>> flowRuleDataSource = new JdbcDataSource(sentinelJdbcTemplate(), new JdbcDataSource.JdbcFlowRuleConverter(), ruleRefreshSec);
  *
  *    2.Extends from JdbcDataSource
  *    design own construct logic, eg: init by appName
@@ -86,21 +86,21 @@ public class JdbcDataSource<T> extends AutoRefreshDataSource<List<Map<String, Ob
      * constructor
      * for extends use
      * @param dbDataSource javax.sql.DataSource Object, which related to user's database
-     * @param configParser rule parser
+     * @param converter rule converter
      */
-    public JdbcDataSource(DataSource dbDataSource, ConfigParser<List<Map<String, Object>>, T> configParser) {
-        this(dbDataSource, configParser, DEFAULT_RULE_REFRESH_SEC);
+    public JdbcDataSource(DataSource dbDataSource, Converter<List<Map<String, Object>>, T> converter) {
+        this(dbDataSource, converter, DEFAULT_RULE_REFRESH_SEC);
     }
 
     /**
      * constructor
      * for extends use
      * @param dbDataSource javax.sql.DataSource Object, which related to user's database
-     * @param configParser rule parser
+     * @param converter rule converter
      * @param ruleRefreshSec the time interval to refresh sentinel rules, in second
      */
-    public JdbcDataSource(DataSource dbDataSource, ConfigParser<List<Map<String, Object>>, T> configParser, Long ruleRefreshSec) {
-        super(configParser, ruleRefreshSec * 1000);
+    public JdbcDataSource(DataSource dbDataSource, Converter<List<Map<String, Object>>, T> converter, Long ruleRefreshSec) {
+        super(converter, ruleRefreshSec * 1000);
 
         this.dbDataSource = dbDataSource;
     }
@@ -109,10 +109,10 @@ public class JdbcDataSource<T> extends AutoRefreshDataSource<List<Map<String, Ob
      * constructor
      * @param dbDataSource javax.sql.DataSource Object, which related to user's database
      * @param sql sql which query <b>effective</b> sentinel rules from databse
-     * @param configParser rule parser
+     * @param converter rule converter
      */
-    public JdbcDataSource(DataSource dbDataSource, String sql, ConfigParser<List<Map<String, Object>>, T> configParser) {
-        this(dbDataSource, sql, null, configParser, DEFAULT_RULE_REFRESH_SEC);
+    public JdbcDataSource(DataSource dbDataSource, String sql, Converter<List<Map<String, Object>>, T> converter) {
+        this(dbDataSource, sql, null, converter, DEFAULT_RULE_REFRESH_SEC);
     }
 
     /**
@@ -120,10 +120,10 @@ public class JdbcDataSource<T> extends AutoRefreshDataSource<List<Map<String, Ob
      * @param dbDataSource javax.sql.DataSource Object, which related to user's database
      * @param sql sql which query <b>effective</b> sentinel rules from databse
      * @param sqlParameters sql parameters
-     * @param configParser rule parser
+     * @param converter rule converter
      */
-    public JdbcDataSource(DataSource dbDataSource, String sql, Object[] sqlParameters, ConfigParser<List<Map<String, Object>>, T> configParser) {
-        this(dbDataSource, sql, sqlParameters, configParser, DEFAULT_RULE_REFRESH_SEC);
+    public JdbcDataSource(DataSource dbDataSource, String sql, Object[] sqlParameters, Converter<List<Map<String, Object>>, T> converter) {
+        this(dbDataSource, sql, sqlParameters, converter, DEFAULT_RULE_REFRESH_SEC);
     }
 
     /**
@@ -131,11 +131,11 @@ public class JdbcDataSource<T> extends AutoRefreshDataSource<List<Map<String, Ob
      * @param dbDataSource javax.sql.DataSource Object, which related to user's database
      * @param sql sql which query <b>effective</b> sentinel rules from databse
      * @param sqlParameters sql parameters
-     * @param configParser rule parser
+     * @param converter rule converter
      * @param ruleRefreshSec the time interval to refresh sentinel rules, in second
      */
-    public JdbcDataSource(DataSource dbDataSource, String sql, Object[] sqlParameters, ConfigParser<List<Map<String, Object>>, T> configParser, Long ruleRefreshSec) {
-        super(configParser, ruleRefreshSec * 1000);
+    public JdbcDataSource(DataSource dbDataSource, String sql, Object[] sqlParameters, Converter<List<Map<String, Object>>, T> converter, Long ruleRefreshSec) {
+        super(converter, ruleRefreshSec * 1000);
 
         checkNotNull(dbDataSource, "javax.sql.DataSource dbDataSource can't be null");
         checkNotEmpty(sql, "sql can't be null or empty");
@@ -210,11 +210,11 @@ public class JdbcDataSource<T> extends AutoRefreshDataSource<List<Map<String, Ob
     }
 
     /**
-     * parse List<Map<String, Object> to List<FlowRule>
+     * convert List<Map<String, Object> to List<FlowRule>
      */
-    public static class JdbcFlowRuleParser implements ConfigParser<List<Map<String, Object>>, List<FlowRule>> {
+    public static class JdbcFlowRuleConverter implements Converter<List<Map<String, Object>>, List<FlowRule>> {
         @Override
-        public List<FlowRule> parse(List<Map<String, Object>> list) {
+        public List<FlowRule> convert(List<Map<String, Object>> list) {
             if (list == null) {
                 return null;
             }
@@ -239,11 +239,11 @@ public class JdbcDataSource<T> extends AutoRefreshDataSource<List<Map<String, Ob
     }
 
     /**
-     * parse List<Map<String, Object> to List<DegradeRule>
+     * convert List<Map<String, Object> to List<DegradeRule>
      */
-    public static class JdbcDegradeRuleParser implements ConfigParser<List<Map<String, Object>>, List<DegradeRule>> {
+    public static class JdbcDegradeRuleConverter implements Converter<List<Map<String, Object>>, List<DegradeRule>> {
         @Override
-        public List<DegradeRule> parse(List<Map<String, Object>> list) {
+        public List<DegradeRule> convert(List<Map<String, Object>> list) {
             if (list == null) {
                 return null;
             }
@@ -264,11 +264,11 @@ public class JdbcDataSource<T> extends AutoRefreshDataSource<List<Map<String, Ob
     }
 
     /**
-     * parse List<Map<String, Object> to List<SystemRule>
+     * convert List<Map<String, Object> to List<SystemRule>
      */
-    public static class JdbcSystemRuleParser implements ConfigParser<List<Map<String, Object>>, List<SystemRule>> {
+    public static class JdbcSystemRuleConverter implements Converter<List<Map<String, Object>>, List<SystemRule>> {
         @Override
-        public List<SystemRule> parse(List<Map<String, Object>> list) {
+        public List<SystemRule> convert(List<Map<String, Object>> list) {
             if (list == null) {
                 return null;
             }

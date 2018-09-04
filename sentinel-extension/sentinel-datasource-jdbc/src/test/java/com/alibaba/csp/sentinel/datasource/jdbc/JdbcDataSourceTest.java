@@ -1,6 +1,6 @@
 package com.alibaba.csp.sentinel.datasource.jdbc;
 
-import com.alibaba.csp.sentinel.datasource.DataSource;
+import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
@@ -63,7 +63,7 @@ public class JdbcDataSourceTest {
 
         // refresh per 3 seconds
         Long ruleRefreshSec = 3L;
-        DataSource<List<Map<String, Object>>, List<FlowRule>> dataSource = new JdbcDataSource(dbDataSource, sql, null, new JdbcDataSource.JdbcFlowRuleParser(), ruleRefreshSec);
+        ReadableDataSource<List<Map<String, Object>>, List<FlowRule>> dataSource = new JdbcDataSource(dbDataSource, sql, null, new JdbcDataSource.JdbcFlowRuleConverter(), ruleRefreshSec);
         FlowRuleManager.register2Property(dataSource.getProperty());
 
         // preparedStatement.executeQuery should invoke at least 1 times
