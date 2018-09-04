@@ -6,28 +6,22 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.system.SystemRule;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.ResultSetExtractor;
-import org.springframework.util.Assert;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import javax.sql.DataSource;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * jdbc DataSource
+ * jdbc implement of DataSource
+ *
+ * @see com.alibaba.csp.sentinel.datasource.DataSource
+ * @see com.alibaba.csp.sentinel.datasource.AutoRefreshDataSource
  *
  * <p>
- * the source data is stored in database, query by sql
- * </p>
  *
- * <p>
- * one table for app: sentinel_app
- * three tables for rules: sentinel_flow_rule, sentinel_degrade_rule, sentinel_system_rule
  * </p>
  *
  * @author cdfive
@@ -35,131 +29,110 @@ import java.util.Map;
  */
 public class JdbcDataSource<T> extends AutoRefreshDataSource<List<Map<String, Object>>, T> {
 
-    /**sql: find app_id by appName, only enabled and not deleted*/
-    private static final String FIND_APP_ID_SQL = "SELECT id FROM sentinel_app WHERE name=? AND enabled=1 AND deleted=0";
-    /**sql: find rule list by app_id, only enabled and not deleted*/
-    private static final String READ_SOURCE_SQL = "SELECT * FROM %s WHERE app_id=? AND enabled=1 AND deleted=0";
-
-    /**rule type constant*/
-    public static final String RULE_TYPE_FLOW = "flow";
-    public static final String RULE_TYPE_DEGRADE = "degrade";
-    public static final String RULE_TYPE_SYSTEM = "system";
-
-    /**pull mode, pull data by query from db per 30 seconds, by default*/
-    private static final long DEFAULT_RULE_REFRESH_SEC = 30;
+    /**
+     * the default time interval to refresh sentinel rules, 30 seconds
+     *
+     * <p>
+     * pull mode, pull data by sql query from database
+     * </p>
+     *
+     * <p>
+     * for not query database frequently, the default is 30s<br />
+     * for short numbers, use second instead of millisecond
+     * </p>
+     */
+    protected static final Long DEFAULT_RULE_REFRESH_SEC = 30L;
 
     /**
-     * key:rule type
-     * value:rule table name
+     * javax.sql.DataSource Object, which related to user's database
      */
-    private static final Map<String, String> RULE_TYPE_TABLE_NAME_MAP = new HashMap<String, String>() {{
-        put(RULE_TYPE_FLOW, "sentinel_flow_rule");
-        put(RULE_TYPE_DEGRADE, "sentinel_degrade_rule");
-        put(RULE_TYPE_SYSTEM, "sentinel_system_rule");
-    }};
+    private DataSource dbDataSource;
 
-    /**app name*/
-    private String appName;
+    /**
+     * sql which query <b>effective</b> sentinel rules from databse
+     */
+    private String sql;
 
-    /**app id*/
-    private Integer appId;
+    /**
+     * sql paramters
+     */
+    private Object[] sqlParameters;
 
-    /**rule type*/
-    private String ruleType;
-
-    /**Spring JdbcTemplate for execute sql query from db*/
-    private JdbcTemplate jdbcTemplate;
 
     /**
      * constructor
-     * @param jdbcTemplate Spring JdbcTemplate
-     * @param appName app name
+     * for extends use
+     * @param dbDataSource javax.sql.DataSource Object, which related to user's database
      * @param configParser rule parser
      */
-    public JdbcDataSource(JdbcTemplate jdbcTemplate, String appName, ConfigParser<List<Map<String, Object>>, T> configParser) {
-        this(jdbcTemplate, appName, configParser, DEFAULT_RULE_REFRESH_SEC);
+    public JdbcDataSource(DataSource dbDataSource, ConfigParser<List<Map<String, Object>>, T> configParser) {
+        this(dbDataSource, configParser, DEFAULT_RULE_REFRESH_SEC);
     }
 
     /**
      * constructor
-     * @param jdbcTemplate Spring JdbcTemplate
-     * @param appName app name
+     * for extends use
+     * @param dbDataSource javax.sql.DataSource Object, which related to user's database
      * @param configParser rule parser
-     * @param ruleRefreshSec pull data by query from db per ruleRefreshSec seconds, 30 seconds by default
+     * @param ruleRefreshSec the time interval to refresh sentinel rules, in second
      */
-    public JdbcDataSource(JdbcTemplate jdbcTemplate, String appName, ConfigParser<List<Map<String, Object>>, T> configParser, Long ruleRefreshSec) {
-        super(configParser, ruleRefreshSec == null ? DEFAULT_RULE_REFRESH_SEC * 1000 : ruleRefreshSec * 1000);
+    public JdbcDataSource(DataSource dbDataSource, ConfigParser<List<Map<String, Object>>, T> configParser, Long ruleRefreshSec) {
+        super(configParser, ruleRefreshSec * 1000);
 
-        init(jdbcTemplate, appName, getRuleTypeByConfigParser(configParser));
+        this.dbDataSource = dbDataSource;
     }
 
     /**
-     * using JdbcDataSource(JdbcTemplate jdbcTemplate, String appName, ConfigParser<List<Map<String, Object>>, T> configParser instead
-     *
-     * because ruleType can get by configParser's class, see
-     * String getRuleTypeByConfigParser(ConfigParser<List<Map<String, Object>>, T> configParser)
+     * constructor
+     * @param dbDataSource javax.sql.DataSource Object, which related to user's database
+     * @param sql sql which query <b>effective</b> sentinel rules from databse
+     * @param configParser rule parser
      */
-    @Deprecated
-    public JdbcDataSource(JdbcTemplate jdbcTemplate, String appName, String ruleType, ConfigParser<List<Map<String, Object>>, T> configParser) {
-        super(configParser);
-
-        init(jdbcTemplate, appName, ruleType);
+    public JdbcDataSource(DataSource dbDataSource, String sql, ConfigParser<List<Map<String, Object>>, T> configParser) {
+        this(dbDataSource, sql, null, configParser, DEFAULT_RULE_REFRESH_SEC);
     }
 
     /**
-     * JdbcDataSource(JdbcTemplate jdbcTemplate, String appName, ConfigParser<List<Map<String, Object>>, T> configParser, Long ruleRefreshSec) instead
-     *
-     * because ruleType can get by configParser's class, see
-     * String getRuleTypeByConfigParser(ConfigParser<List<Map<String, Object>>, T> configParser)
+     * constructor
+     * @param dbDataSource javax.sql.DataSource Object, which related to user's database
+     * @param sql sql which query <b>effective</b> sentinel rules from databse
+     * @param sqlParameters sql parameters
+     * @param configParser rule parser
      */
-    @Deprecated
-    public JdbcDataSource(JdbcTemplate jdbcTemplate, String appName, String ruleType, ConfigParser<List<Map<String, Object>>, T> configParser, long recommendRefreshMs) {
-        super(configParser, recommendRefreshMs);
-
-        init(jdbcTemplate, appName, ruleType);
+    public JdbcDataSource(DataSource dbDataSource, String sql, Object[] sqlParameters, ConfigParser<List<Map<String, Object>>, T> configParser) {
+        this(dbDataSource, sql, sqlParameters, configParser, DEFAULT_RULE_REFRESH_SEC);
     }
 
-    private void init(JdbcTemplate jdbcTemplate, String appName, String ruleType) {
-        Assert.notNull(jdbcTemplate, "jdbcTemplate can't be null");
-        Assert.notNull(appName, "appName can't be null");
-        Assert.notNull(ruleType, "ruleType can't be null");
+    /**
+     * constructor
+     * @param dbDataSource javax.sql.DataSource Object, which related to user's database
+     * @param sql sql which query <b>effective</b> sentinel rules from databse
+     * @param sqlParameters sql parameters
+     * @param configParser rule parser
+     * @param ruleRefreshSec the time interval to refresh sentinel rules, in second
+     */
+    public JdbcDataSource(DataSource dbDataSource, String sql, Object[] sqlParameters, ConfigParser<List<Map<String, Object>>, T> configParser, Long ruleRefreshSec) {
+        super(configParser, ruleRefreshSec * 1000);
 
-        Assert.isTrue(RULE_TYPE_TABLE_NAME_MAP.containsKey(ruleType), "ruleType invalid, must be flow|degrade|system");
+        checkNotNull(dbDataSource, "javax.sql.DataSource dbDataSource can't be null");
+        checkNotEmpty(sql, "sql can't be null or empty");
 
-        this.jdbcTemplate = jdbcTemplate;
-        this.appName = appName;
-        this.ruleType = ruleType;
-
-        initAppId();
+        this.dbDataSource = dbDataSource;
+        this.sql = sql;
+        this.sqlParameters = sqlParameters;
 
         firstLoad();
     }
 
     /**
-     * query app_id from db by appName
+     * load the data from source firstly
      */
-    private void initAppId() {
-        Integer appId = jdbcTemplate.query(FIND_APP_ID_SQL, new ResultSetExtractor<Integer>() {
-            @Override
-            public Integer extractData(ResultSet resultSet) throws SQLException, DataAccessException {
-                if (resultSet.next()) {
-                    return resultSet.getInt(1);
-                }
-                return null;
-            }
-        }, appName);
-
-        Assert.notNull(appId, "can't find appId, appName=" + appName);
-
-        this.appId = appId;
-    }
-
-    private void firstLoad() {
+    protected void firstLoad() {
         try {
             T newValue = loadConfig();
             getProperty().updateValue(newValue);
         } catch (Exception e) {
-            RecordLog.warn("loadConfig exception", e);
+            RecordLog.warn("loadConfig exception", e);// need to write to app log?
         }
     }
 
@@ -168,31 +141,49 @@ public class JdbcDataSource<T> extends AutoRefreshDataSource<List<Map<String, Ob
      */
     @Override
     public List<Map<String, Object>> readSource() throws Exception {
-        String ruleTableName = RULE_TYPE_TABLE_NAME_MAP.get(ruleType);
-
-        List<Map<String, Object>> list = jdbcTemplate.queryForList(String.format(READ_SOURCE_SQL, ruleTableName), appId);
+        List<Map<String, Object>> list = findListMapBySql();
         return list;
     }
 
     /**
-     * get ruleType by configParse's class
-     * @param configParser
-     * @return
+     * query sql from databse, using dbDataSource,sql,sqlParameters
+     *
+     * <P>
+     *  Note:
+     *  Map's key is the column name of select, if has alias name, alias name prefered
+     *
+     *  eg: select grade,limit_app as limitApp,... from flow_rule_table
+     *
+     *  the keys is grade,limitApp
+     * </P>
+     * @return List<Map<String, Object>>
+     * @throws SQLException
      */
-    private String getRuleTypeByConfigParser(ConfigParser<List<Map<String, Object>>, T> configParser) {
-        if (configParser instanceof JdbcFlowRuleParser) {
-            return RULE_TYPE_FLOW;
+    private List<Map<String, Object>> findListMapBySql() throws SQLException {
+        Connection connection = dbDataSource.getConnection();
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        if (sqlParameters != null) {
+            for (int i = 0; i < sqlParameters.length; i++) {
+                preparedStatement.setObject(i + 1, sqlParameters[i]);
+            }
         }
 
-        if (configParser instanceof JdbcDegradeRuleParser) {
-            return RULE_TYPE_DEGRADE;
+        List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+        ResultSet resultSet = preparedStatement.executeQuery();
+        ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+        int columnCount = resultSetMetaData.getColumnCount();
+        while (resultSet.next()) {
+            Map<String, Object> map = new HashMap<String, Object>();
+            list.add(map);
+            for (int i = 1; i <= columnCount; i++) {
+                String columnName = resultSetMetaData.getColumnLabel(i);// get column alias name as key
+                if (columnName == null || columnName.isEmpty()) {
+                    columnName = resultSetMetaData.getColumnName(i);// get column name as key
+                }
+                map.put(columnName, resultSet.getObject(i));
+            }
         }
-
-        if (configParser instanceof JdbcSystemRuleParser) {
-            return RULE_TYPE_SYSTEM;
-        }
-
-        throw new IllegalArgumentException("configParser invalid");
+        return list;
     }
 
     /**
@@ -352,5 +343,48 @@ public class JdbcDataSource<T> extends AutoRefreshDataSource<List<Map<String, Ob
          * @return the parsed result of type T
          */
         T parseVal(String strVal);
+    }
+
+    /**
+     * check null object
+     */
+    private void checkNotNull(Object obj, String msg) {
+        if (obj == null) {
+            throw new IllegalArgumentException(msg);
+        }
+    }
+
+    /**
+     * check empty string
+     */
+    private void checkNotEmpty(String str, String msg) {
+        if (str == null || str.isEmpty()) {
+            throw new IllegalArgumentException(msg);
+        }
+    }
+
+    /**getters and setters*/
+    public DataSource getDbDataSource() {
+        return dbDataSource;
+    }
+
+    public void setDbDataSource(DataSource dbDataSource) {
+        this.dbDataSource = dbDataSource;
+    }
+
+    public String getSql() {
+        return sql;
+    }
+
+    public void setSql(String sql) {
+        this.sql = sql;
+    }
+
+    public Object[] getSqlParameters() {
+        return sqlParameters;
+    }
+
+    public void setSqlParameters(Object[] sqlParameters) {
+        this.sqlParameters = sqlParameters;
     }
 }

@@ -22,13 +22,6 @@
             <artifactId>sentinel-datasource-extension</artifactId>
         </dependency>
 
-        <!-- spring-jdbc -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-jdbc</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-
         <!-- mockito-core -->
         <dependency>
             <groupId>org.mockito</groupId>
