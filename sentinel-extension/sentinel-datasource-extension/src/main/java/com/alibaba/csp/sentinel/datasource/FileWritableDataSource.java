@@ -18,8 +18,6 @@ package com.alibaba.csp.sentinel.datasource;
 import java.io.File;
 import java.io.FileOutputStream;
 
-import com.alibaba.csp.sentinel.util.StringUtil;
-
 /**
  * A {@link WritableDataSource} based on file.
  *
@@ -54,9 +52,6 @@ public class FileWritableDataSource<T> implements WritableDataSource<T> {
 		}
 		synchronized(file) {
 			String convertResult = configEncoder.convert(value);
-			if (StringUtil.isEmpty(convertResult)) {
-    			throw new NullPointerException("convertResult is null Can't write");
-    		}
     		FileOutputStream outputStream = null;
             try {
                 outputStream = new FileOutputStream(file);
