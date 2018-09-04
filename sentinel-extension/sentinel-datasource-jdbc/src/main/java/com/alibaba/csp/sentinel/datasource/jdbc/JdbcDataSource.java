@@ -180,30 +180,59 @@ public class JdbcDataSource<T> extends AutoRefreshDataSource<List<Map<String, Ob
      *  the keys is grade,limitApp
      * </P>
      * @return List<Map<String, Object>>
-     * @throws SQLException
      */
-    private List<Map<String, Object>> findListMapBySql() throws SQLException {
-        Connection connection = dbDataSource.getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        if (sqlParameters != null) {
-            for (int i = 0; i < sqlParameters.length; i++) {
-                preparedStatement.setObject(i + 1, sqlParameters[i]);
-            }
-        }
-
-        List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
-        ResultSet resultSet = preparedStatement.executeQuery();
-        ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-        int columnCount = resultSetMetaData.getColumnCount();
-        while (resultSet.next()) {
-            Map<String, Object> map = new HashMap<String, Object>();
-            list.add(map);
-            for (int i = 1; i <= columnCount; i++) {
-                String columnName = resultSetMetaData.getColumnLabel(i);// get column alias name as key
-                if (columnName == null || columnName.isEmpty()) {
-                    columnName = resultSetMetaData.getColumnName(i);// get column name as key
+    private List<Map<String, Object>> findListMapBySql() {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        List<Map<String, Object>> list;
+        try {
+            connection = dbDataSource.getConnection();
+            preparedStatement = connection.prepareStatement(sql);
+            if (sqlParameters != null) {
+                for (int i = 0; i < sqlParameters.length; i++) {
+                    preparedStatement.setObject(i + 1, sqlParameters[i]);
                 }
-                map.put(columnName, resultSet.getObject(i));
+            }
+
+            list = new ArrayList<Map<String, Object>>();
+            resultSet = preparedStatement.executeQuery();
+            ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+            int columnCount = resultSetMetaData.getColumnCount();
+            while (resultSet.next()) {
+                Map<String, Object> map = new HashMap<String, Object>();
+                list.add(map);
+                for (int i = 1; i <= columnCount; i++) {
+                    String columnName = resultSetMetaData.getColumnLabel(i);// get column alias name as key
+                    if (columnName == null || columnName.isEmpty()) {
+                        columnName = resultSetMetaData.getColumnName(i);// get column name as key
+                    }
+                    map.put(columnName, resultSet.getObject(i));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("SQLException", e);
+        } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (SQLException e) {
+                    throw new RuntimeException("SQLException=>resultSet.close()", e);
+                }
+            }
+            if (preparedStatement != null) {
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    throw new RuntimeException("SQLException=>preparedStatement.close()", e);
+                }
+            }
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    throw new RuntimeException("SQLException=>connection.close()", e);
+                }
             }
         }
         return list;
