@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.taobao.csp.sentinel.dashboard.inmem;
+package com.taobao.csp.sentinel.dashboard.repository.rule;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,7 @@ import com.taobao.csp.sentinel.dashboard.discovery.MachineInfo;
 /**
  * @author leyou
  */
-public abstract class InMemRepositoryAdapter<T extends RuleEntity> implements RuleRepository<T, Long> {
+public abstract class InMemoryRuleRepositoryAdapter<T extends RuleEntity> implements RuleRepository<T, Long> {
     /**
      * {@code <machine, <id, rule>>}
      */

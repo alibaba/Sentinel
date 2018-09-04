@@ -22,8 +22,8 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 
 import com.taobao.csp.sentinel.dashboard.datasource.entity.DegradeRuleEntity;
 import com.taobao.csp.sentinel.dashboard.discovery.MachineInfo;
-import com.taobao.csp.sentinel.dashboard.inmem.HttpHelper;
-import com.taobao.csp.sentinel.dashboard.inmem.InMemDegradeRuleStore;
+import com.taobao.csp.sentinel.dashboard.client.SentinelApiClient;
+import com.taobao.csp.sentinel.dashboard.repository.rule.InMemDegradeRuleStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +42,7 @@ public class DegradeController {
     @Autowired
     InMemDegradeRuleStore repository;
     @Autowired
-    private HttpHelper httpHelper;
+    private SentinelApiClient sentinelApiClient;
 
     @ResponseBody
     @RequestMapping("/rules.json")
@@ -57,7 +57,7 @@ public class DegradeController {
             return Result.ofFail(-1, "port can't be null");
         }
         try {
-            List<DegradeRuleEntity> rules = httpHelper.fetchDegradeRuleOfMachine(app, ip, port);
+            List<DegradeRuleEntity> rules = sentinelApiClient.fetchDegradeRuleOfMachine(app, ip, port);
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
@@ -195,6 +195,6 @@ public class DegradeController {
 
     private boolean publishRules(String app, String ip, Integer port) {
         List<DegradeRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return httpHelper.setDegradeRuleOfMachine(app, ip, port, rules);
+        return sentinelApiClient.setDegradeRuleOfMachine(app, ip, port, rules);
     }
 }
