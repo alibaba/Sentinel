@@ -18,19 +18,20 @@ package com.alibaba.csp.sentinel.datasource;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 
 /**
- * This class is responsible for getting configs.
+ * The readable data source is responsible for retrieving configs (read-only).
  *
  * @param <S> source data type
  * @param <T> target data type
  * @author leyou
+ * @author Eric Zhao
  */
-public interface DataSource<S, T> {
+public interface ReadableDataSource<S, T> {
 
     /**
      * Load data data source as the target type.
      *
      * @return the target data.
-     * @throws Exception
+     * @throws Exception IO or other error occurs
      */
     T loadConfig() throws Exception;
 
@@ -38,7 +39,7 @@ public interface DataSource<S, T> {
      * Read original data from the data source.
      *
      * @return the original data.
-     * @throws Exception
+     * @throws Exception IO or other error occurs
      */
     S readSource() throws Exception;
 
@@ -50,17 +51,9 @@ public interface DataSource<S, T> {
     SentinelProperty<T> getProperty();
 
     /**
-     * Write the {@code values} to the data source.
-     *
-     * @param values
-     * @throws Exception
-     */
-    void writeDataSource(T values) throws Exception;
-
-    /**
      * Close the data source.
      *
-     * @throws Exception
+     * @throws Exception IO or other error occurs
      */
     void close() throws Exception;
 }

@@ -16,16 +16,18 @@
 package com.alibaba.csp.sentinel.datasource;
 
 /**
- * Parse config from source data type S to target data type T.
+ * Convert an object from source type {@code S} to target type {@code T}.
  *
  * @author leyou
+ * @author Eric Zhao
  */
-public interface ConfigParser<S, T> {
+public interface Converter<S, T> {
+
     /**
-     * Parse {@code source} to the target format.
+     * Convert {@code source} to the target type.
      *
-     * @param source the source.
-     * @return the target.
+     * @param source the source object
+     * @return the target object
      */
-    T parse(S source);
+    T convert(S source);
 }

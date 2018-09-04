@@ -13,23 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.demo.file.rule.parser;
-
-import java.util.List;
-
-import com.alibaba.csp.sentinel.datasource.ConfigParser;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
+package com.alibaba.csp.sentinel.datasource;
 
 /**
- * A {@link ConfigParser} parses Json String to {@code List<FlowRule>}.
+ * Interface of writable data source support.
  *
- * @author Carpenter Lee
+ * @author Eric Zhao
+ * @since 0.2.0
  */
-public class JsonFlowRuleListParser implements ConfigParser<String, List<FlowRule>> {
-    @Override
-    public List<FlowRule> parse(String source) {
-        return JSON.parseObject(source, new TypeReference<List<FlowRule>>() {});
-    }
+public interface WritableDataSource<T> {
+
+    /**
+     * Write the {@code value} to the data source.
+     *
+     * @param value value to write
+     * @throws Exception IO or other error occurs
+     */
+    void write(T value) throws Exception;
+
+    /**
+     * Close the data source.
+     *
+     * @throws Exception IO or other error occurs
+     */
+    void close() throws Exception;
 }
