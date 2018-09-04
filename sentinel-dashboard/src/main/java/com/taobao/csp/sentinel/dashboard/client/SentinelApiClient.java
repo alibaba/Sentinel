@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.taobao.csp.sentinel.dashboard.inmem;
+package com.taobao.csp.sentinel.dashboard.client;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -53,31 +53,31 @@ import org.springframework.stereotype.Component;
  * @author leyou
  */
 @Component
-public class HttpHelper {
+public class SentinelApiClient {
 
-    private static Logger logger = LoggerFactory.getLogger(HttpHelper.class);
+    private static Logger logger = LoggerFactory.getLogger(SentinelApiClient.class);
     private static final Charset defaultCharset = Charset.forName(SentinelConfig.charset());
 
-    private CloseableHttpAsyncClient httpclient;
+    private CloseableHttpAsyncClient httpClient;
+
     private final String resourceUrlPath = "jsonTree";
     private final String clusterNodePath = "clusterNode";
-
     private final String getRulesPath = "getRules";
     private final String setRulesPath = "setRules";
     private final String flowRuleType = "flow";
     private final String degradeRuleType = "degrade";
     private final String systemRuleType = "system";
 
-    public HttpHelper() {
+    public SentinelApiClient() {
         IOReactorConfig ioConfig = IOReactorConfig.custom().setConnectTimeout(3000).setSoTimeout(3000)
             .setIoThreadCount(Runtime.getRuntime().availableProcessors() * 2).build();
-        httpclient = HttpAsyncClients.custom().setRedirectStrategy(new DefaultRedirectStrategy() {
+        httpClient = HttpAsyncClients.custom().setRedirectStrategy(new DefaultRedirectStrategy() {
             @Override
             protected boolean isRedirectable(final String method) {
                 return false;
             }
         }).setMaxConnTotal(4000).setMaxConnPerRoute(1000).setDefaultIOReactorConfig(ioConfig).build();
-        httpclient.start();
+        httpClient.start();
     }
 
     public List<NodeVo> fetchResourceOfMachine(String ip, int port, String type) {
@@ -282,7 +282,7 @@ public class HttpHelper {
         final HttpGet httpGet = new HttpGet(url);
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<String> reference = new AtomicReference<>();
-        httpclient.execute(httpGet, new FutureCallback<HttpResponse>() {
+        httpClient.execute(httpGet, new FutureCallback<HttpResponse>() {
             @Override
             public void completed(final HttpResponse response) {
                 try {
@@ -324,4 +324,7 @@ public class HttpHelper {
         return EntityUtils.toString(response.getEntity(), charset != null ? charset : defaultCharset);
     }
 
+    public void close() throws Exception {
+        httpClient.close();
+    }
 }

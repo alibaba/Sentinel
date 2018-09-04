@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.taobao.csp.sentinel.dashboard.inmem;
+package com.taobao.csp.sentinel.dashboard.repository.rule;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -26,7 +26,7 @@ import org.springframework.stereotype.Component;
  * @author leyou
  */
 @Component
-public class InMemFlowRuleStore extends InMemRepositoryAdapter<FlowRuleEntity> {
+public class InMemFlowRuleStore extends InMemoryRuleRepositoryAdapter<FlowRuleEntity> {
     private static AtomicLong ids = new AtomicLong(0);
 
     @Override
