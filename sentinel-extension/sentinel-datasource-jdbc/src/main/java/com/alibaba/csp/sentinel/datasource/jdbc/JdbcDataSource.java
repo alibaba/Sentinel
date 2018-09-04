@@ -177,7 +177,7 @@ public class JdbcDataSource<T> extends AutoRefreshDataSource<List<Map<String, Ob
      *
      *  eg: select grade,limit_app as limitApp,... from flow_rule_table
      *
-     *  the keys is grade,limitApp
+     *  the keys are grade,limitApp
      * </P>
      * @return List<Map<String, Object>>
      */
@@ -218,23 +218,26 @@ public class JdbcDataSource<T> extends AutoRefreshDataSource<List<Map<String, Ob
                     resultSet.close();
                 } catch (SQLException e) {
                     throw new RuntimeException("SQLException=>resultSet.close()", e);
-                }
-            }
-            if (preparedStatement != null) {
-                try {
-                    preparedStatement.close();
-                } catch (SQLException e) {
-                    throw new RuntimeException("SQLException=>preparedStatement.close()", e);
-                }
-            }
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    throw new RuntimeException("SQLException=>connection.close()", e);
+                } finally {
+                    if (preparedStatement != null) {
+                        try {
+                            preparedStatement.close();
+                        } catch (SQLException e) {
+                            throw new RuntimeException("SQLException=>preparedStatement.close()", e);
+                        } finally {
+                            if (connection != null) {
+                                try {
+                                    connection.close();
+                                } catch (SQLException e) {
+                                    throw new RuntimeException("SQLException=>connection.close()", e);
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
+
         return list;
     }
 
