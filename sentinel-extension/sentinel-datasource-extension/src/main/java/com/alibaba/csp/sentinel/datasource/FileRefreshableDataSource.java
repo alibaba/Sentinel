@@ -45,7 +45,8 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
     private byte[] buf;
     private final Charset charset;
     private final File file;
-
+    private long lastModified = 0L;
+    
     /**
      * Create a file based {@link ReadableDataSource} whose read buffer size is 1MB, charset is UTF8,
      * and read interval is 3 seconds.
@@ -87,6 +88,7 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
         this.buf = new byte[bufSize];
         this.file = file;
         this.charset = charset;
+        this.lastModified = file.lastModified();
         firstLoad();
     }
 
@@ -121,6 +123,16 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
         }
     }
 
+    @Override 
+    protected boolean refresh() {
+    	long curLastModified = new File(file.getAbsolutePath()).lastModified();
+    	if (curLastModified != this.lastModified) {
+    		this.lastModified = curLastModified;
+    		return true;
+    	}
+    	return false;
+    }
+    
     @Override
     public void close() throws Exception {
         super.close();

@@ -16,6 +16,9 @@
 package com.alibaba.csp.sentinel.datasource;
 
 import java.io.File;
+import java.io.FileOutputStream;
+
+import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
  * A {@link WritableDataSource} based on file.
@@ -46,7 +49,29 @@ public class FileWritableDataSource<T> implements WritableDataSource<T> {
 
     @Override
     public void write(T value) throws Exception {
-        throw new UnsupportedOperationException("Not implemented");
+    	if (configEncoder == null) {
+			throw new NullPointerException("configEncoder is null Can't write");
+		}
+		synchronized(file) {
+			String parseR = configEncoder.convert(value);
+			if (parseR == null || StringUtil.isEmpty(parseR)) {
+    			throw new NullPointerException("DataSource size=0 Can't write");
+    		}
+    		FileOutputStream outputStream = null;
+            try {
+                outputStream = new FileOutputStream(file);
+                byte[] bytesArray = parseR.getBytes();
+                outputStream.write(bytesArray);
+                outputStream.flush();
+            } finally {
+                if (outputStream != null) {
+                    try {
+                    	outputStream.close();
+                    } catch (Exception ignore) {
+                    }
+                }
+            }
+    	}
     }
 
     @Override
