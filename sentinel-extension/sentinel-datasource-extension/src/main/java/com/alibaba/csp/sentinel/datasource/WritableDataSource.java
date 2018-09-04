@@ -30,4 +30,11 @@ public interface WritableDataSource<T> {
      * @throws Exception IO or other error occurs
      */
     void write(T value) throws Exception;
+
+    /**
+     * Close the data source.
+     *
+     * @throws Exception IO or other error occurs
+     */
+    void close() throws Exception;
 }
