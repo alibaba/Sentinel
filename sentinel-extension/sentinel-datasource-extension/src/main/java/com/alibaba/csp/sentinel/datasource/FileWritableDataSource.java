@@ -53,14 +53,14 @@ public class FileWritableDataSource<T> implements WritableDataSource<T> {
 			throw new NullPointerException("configEncoder is null Can't write");
 		}
 		synchronized(file) {
-			String parseR = configEncoder.convert(value);
-			if (parseR == null || StringUtil.isEmpty(parseR)) {
-    			throw new NullPointerException("DataSource size=0 Can't write");
+			String convertResult = configEncoder.convert(value);
+			if (StringUtil.isEmpty(convertResult)) {
+    			throw new NullPointerException("convertResult is null Can't write");
     		}
     		FileOutputStream outputStream = null;
             try {
                 outputStream = new FileOutputStream(file);
-                byte[] bytesArray = parseR.getBytes();
+                byte[] bytesArray = convertResult.getBytes();
                 outputStream.write(bytesArray);
                 outputStream.flush();
             } finally {
@@ -68,6 +68,7 @@ public class FileWritableDataSource<T> implements WritableDataSource<T> {
                     try {
                     	outputStream.close();
                     } catch (Exception ignore) {
+                    	//nothing
                     }
                 }
             }
