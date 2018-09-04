@@ -81,19 +81,19 @@ public class FileDataSourceDemo {
 
         // Data source for FlowRule
         FileRefreshableDataSource<List<FlowRule>> flowRuleDataSource = new FileRefreshableDataSource<>(
-            flowRulePath, flowRuleListParser, this::encodeJson);
+            flowRulePath, flowRuleListParser);
         FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
 
         // Data source for DegradeRule
         FileRefreshableDataSource<List<DegradeRule>> degradeRuleDataSource
             = new FileRefreshableDataSource<>(
-            degradeRulePath, degradeRuleListParser, this::encodeJson);
+            degradeRulePath, degradeRuleListParser);
         DegradeRuleManager.register2Property(degradeRuleDataSource.getProperty());
 
         // Data source for SystemRule
         FileRefreshableDataSource<List<SystemRule>> systemRuleDataSource
             = new FileRefreshableDataSource<>(
-            systemRulePath, systemRuleListParser, this::encodeJson);
+            systemRulePath, systemRuleListParser);
         SystemRuleManager.register2Property(systemRuleDataSource.getProperty());
     }
 
@@ -103,8 +103,4 @@ public class FileDataSourceDemo {
         new TypeReference<List<DegradeRule>>() {});
     private Converter<String, List<SystemRule>> systemRuleListParser = source -> JSON.parseObject(source,
         new TypeReference<List<SystemRule>>() {});
-
-    private <T> String encodeJson(T t) {
-        return JSON.toJSONString(t);
-    }
 }
