@@ -110,6 +110,9 @@ public class FlowRuleManager {
         }
 
         for (FlowRule rule : list) {
+            if (!isValid(rule)) {
+                continue;
+            }
             if (StringUtil.isBlank(rule.getLimitApp())) {
                 rule.setLimitApp(FlowRule.LIMIT_APP_DEFAULT);
             }
@@ -199,4 +202,7 @@ public class FlowRuleManager {
 
     }
 
+    private static boolean isValid(FlowRule rule) {
+        return rule != null && !StringUtil.isBlank(rule.getResource());
+    }
 }
