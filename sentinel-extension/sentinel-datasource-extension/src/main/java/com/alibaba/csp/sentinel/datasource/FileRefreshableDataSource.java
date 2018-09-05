@@ -38,106 +38,106 @@ import com.alibaba.csp.sentinel.log.RecordLog;
  */
 public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, T> {
 
-	private static final int MAX_SIZE = 1024 * 1024 * 4;
-	private static final long DEFAULT_REFRESH_MS = 3000;
-	private static final int DEFAULT_BUF_SIZE = 1024 * 1024;
-	private static final Charset DEFAULT_CHAR_SET = Charset.forName("utf-8");
+    private static final int MAX_SIZE = 1024 * 1024 * 4;
+    private static final long DEFAULT_REFRESH_MS = 3000;
+    private static final int DEFAULT_BUF_SIZE = 1024 * 1024;
+    private static final Charset DEFAULT_CHAR_SET = Charset.forName("utf-8");
 
-	private byte[] buf;
-	private final Charset charset;
-	private final File file;
-	private long lastModified = 0L;
+    private byte[] buf;
+    private final Charset charset;
+    private final File file;
+    private long lastModified = 0L;
 
-	/**
-	 * Create a file based {@link ReadableDataSource} whose read buffer size is
-	 * 1MB, charset is UTF8, and read interval is 3 seconds.
-	 *
-	 * @param file
-	 *            the file to read
-	 * @param configParser
-	 *            the config decoder (parser)
-	 */
-	public FileRefreshableDataSource(File file, Converter<String, T> configParser) throws FileNotFoundException {
-		this(file, configParser, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, DEFAULT_CHAR_SET);
-	}
+    /**
+     * Create a file based {@link ReadableDataSource} whose read buffer size is
+     * 1MB, charset is UTF8, and read interval is 3 seconds.
+     *
+     * @param file
+     *            the file to read
+     * @param configParser
+     *            the config decoder (parser)
+     */
+    public FileRefreshableDataSource(File file, Converter<String, T> configParser) throws FileNotFoundException {
+        this(file, configParser, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, DEFAULT_CHAR_SET);
+    }
 
-	public FileRefreshableDataSource(String fileName, Converter<String, T> configParser) throws FileNotFoundException {
-		this(new File(fileName), configParser, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, DEFAULT_CHAR_SET);
-	}
+    public FileRefreshableDataSource(String fileName, Converter<String, T> configParser) throws FileNotFoundException {
+        this(new File(fileName), configParser, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, DEFAULT_CHAR_SET);
+    }
 
-	public FileRefreshableDataSource(File file, Converter<String, T> configParser, int bufSize)
-			throws FileNotFoundException {
-		this(file, configParser, DEFAULT_REFRESH_MS, bufSize, DEFAULT_CHAR_SET);
-	}
+    public FileRefreshableDataSource(File file, Converter<String, T> configParser, int bufSize)
+            throws FileNotFoundException {
+        this(file, configParser, DEFAULT_REFRESH_MS, bufSize, DEFAULT_CHAR_SET);
+    }
 
-	public FileRefreshableDataSource(File file, Converter<String, T> configParser, Charset charset)
-			throws FileNotFoundException {
-		this(file, configParser, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, charset);
-	}
+    public FileRefreshableDataSource(File file, Converter<String, T> configParser, Charset charset)
+            throws FileNotFoundException {
+        this(file, configParser, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, charset);
+    }
 
-	public FileRefreshableDataSource(File file, Converter<String, T> configParser, long recommendRefreshMs, int bufSize,
-			Charset charset) throws FileNotFoundException {
-		super(configParser, recommendRefreshMs);
-		if (bufSize <= 0 || bufSize > MAX_SIZE) {
-			throw new IllegalArgumentException("bufSize must between (0, " + MAX_SIZE + "], but " + bufSize + " get");
-		}
-		if (file == null) {
-			throw new IllegalArgumentException("file can't be null");
-		}
-		if (charset == null) {
-			throw new IllegalArgumentException("charset can't be null");
-		}
-		this.buf = new byte[bufSize];
-		this.file = file;
-		this.charset = charset;
-		this.lastModified = file.lastModified();
-		firstLoad();
-	}
+    public FileRefreshableDataSource(File file, Converter<String, T> configParser, long recommendRefreshMs, int bufSize,
+            Charset charset) throws FileNotFoundException {
+        super(configParser, recommendRefreshMs);
+        if (bufSize <= 0 || bufSize > MAX_SIZE) {
+            throw new IllegalArgumentException("bufSize must between (0, " + MAX_SIZE + "], but " + bufSize + " get");
+        }
+        if (file == null) {
+            throw new IllegalArgumentException("file can't be null");
+        }
+        if (charset == null) {
+            throw new IllegalArgumentException("charset can't be null");
+        }
+        this.buf = new byte[bufSize];
+        this.file = file;
+        this.charset = charset;
+        this.lastModified = file.lastModified();
+        firstLoad();
+    }
 
-	private void firstLoad() {
-		try {
-			T newValue = loadConfig();
-			getProperty().updateValue(newValue);
-		} catch (Throwable e) {
-			RecordLog.info("loadConfig exception", e);
-		}
-	}
+    private void firstLoad() {
+        try {
+            T newValue = loadConfig();
+            getProperty().updateValue(newValue);
+        } catch (Throwable e) {
+            RecordLog.info("loadConfig exception", e);
+        }
+    }
 
-	@Override
-	public String readSource() throws Exception {
-		FileInputStream inputStream = null;
-		try {
-			inputStream = new FileInputStream(file);
-			FileChannel channel = inputStream.getChannel();
-			if (channel.size() > buf.length) {
-				throw new IllegalStateException(file.getAbsolutePath() + " file size=" + channel.size()
-						+ ", is bigger than bufSize=" + buf.length + ". Can't read");
-			}
-			int len = inputStream.read(buf);
-			return new String(buf, 0, len, charset);
-		} finally {
-			if (inputStream != null) {
-				try {
-					inputStream.close();
-				} catch (Exception ignore) {
-				}
-			}
-		}
-	}
+    @Override
+    public String readSource() throws Exception {
+        FileInputStream inputStream = null;
+        try {
+            inputStream = new FileInputStream(file);
+            FileChannel channel = inputStream.getChannel();
+            if (channel.size() > buf.length) {
+                throw new IllegalStateException(file.getAbsolutePath() + " file size=" + channel.size()
+                        + ", is bigger than bufSize=" + buf.length + ". Can't read");
+            }
+            int len = inputStream.read(buf);
+            return new String(buf, 0, len, charset);
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (Exception ignore) {
+                }
+            }
+        }
+    }
 
-	@Override
-	protected boolean refresh() {
-		long curLastModified = new File(file.getAbsolutePath()).lastModified();
-		if (curLastModified != this.lastModified) {
-			this.lastModified = curLastModified;
-			return true;
-		}
-		return false;
-	}
+    @Override
+    protected boolean refresh() {
+        long curLastModified = new File(file.getAbsolutePath()).lastModified();
+        if (curLastModified != this.lastModified) {
+            this.lastModified = curLastModified;
+            return true;
+        }
+        return false;
+    }
 
-	@Override
-	public void close() throws Exception {
-		super.close();
-		buf = null;
-	}
+    @Override
+    public void close() throws Exception {
+        super.close();
+        buf = null;
+    }
 }

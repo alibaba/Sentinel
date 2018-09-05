@@ -28,51 +28,51 @@ import java.io.FileOutputStream;
  */
 public class FileWritableDataSource<T> implements WritableDataSource<T> {
 
-	private final Converter<T, String> configEncoder;
-	private File file;
+    private final Converter<T, String> configEncoder;
+    private File file;
 
-	public FileWritableDataSource(String filePath, Converter<T, String> configEncoder) {
-		this(new File(filePath), configEncoder);
-	}
+    public FileWritableDataSource(String filePath, Converter<T, String> configEncoder) {
+        this(new File(filePath), configEncoder);
+    }
 
-	public FileWritableDataSource(File file, Converter<T, String> configEncoder) {
-		if (file == null || file.isDirectory()) {
-			throw new IllegalArgumentException("Bad file");
-		}
-		if (configEncoder == null) {
-			throw new IllegalArgumentException("Config encoder cannot be null");
-		}
-		this.configEncoder = configEncoder;
-		this.file = file;
-	}
+    public FileWritableDataSource(File file, Converter<T, String> configEncoder) {
+        if (file == null || file.isDirectory()) {
+            throw new IllegalArgumentException("Bad file");
+        }
+        if (configEncoder == null) {
+            throw new IllegalArgumentException("Config encoder cannot be null");
+        }
+        this.configEncoder = configEncoder;
+        this.file = file;
+    }
 
-	@Override
-	public void write(T value) throws Exception {
-		if (configEncoder == null) {
-			throw new NullPointerException("configEncoder is null Can't write");
-		}
-		synchronized (file) {
-			String convertResult = configEncoder.convert(value);
-			FileOutputStream outputStream = null;
-			try {
-				outputStream = new FileOutputStream(file);
-				byte[] bytesArray = convertResult.getBytes();
-				outputStream.write(bytesArray);
-				outputStream.flush();
-			} finally {
-				if (outputStream != null) {
-					try {
-						outputStream.close();
-					} catch (Exception ignore) {
-						// nothing
-					}
-				}
-			}
-		}
-	}
+    @Override
+    public void write(T value) throws Exception {
+        if (configEncoder == null) {
+            throw new NullPointerException("configEncoder is null Can't write");
+        }
+        synchronized (file) {
+            String convertResult = configEncoder.convert(value);
+            FileOutputStream outputStream = null;
+            try {
+                outputStream = new FileOutputStream(file);
+                byte[] bytesArray = convertResult.getBytes();
+                outputStream.write(bytesArray);
+                outputStream.flush();
+            } finally {
+                if (outputStream != null) {
+                    try {
+                        outputStream.close();
+                    } catch (Exception ignore) {
+                        // nothing
+                    }
+                }
+            }
+        }
+    }
 
-	@Override
-	public void close() throws Exception {
-		// Nothing
-	}
+    @Override
+    public void close() throws Exception {
+        // Nothing
+    }
 }
