@@ -15,6 +15,7 @@
  */
 package com.taobao.csp.sentinel.dashboard.view;
 
+import com.taobao.csp.sentinel.dashboard.metric.MetricCacheStore;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,7 +36,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import com.taobao.csp.sentinel.dashboard.datasource.entity.MetricEntity;
-import com.taobao.csp.sentinel.dashboard.inmem.InMemMetricStore;
 import com.taobao.csp.sentinel.dashboard.view.vo.MetricVo;
 
 /**
@@ -49,8 +49,10 @@ public class MetricController {
 
     private static final long maxQueryIntervalMs = 1000 * 60 * 60;
 
+    private static final long METRIC_DURATION = 1000 * 60 * 30;
+
     @Autowired
-    private InMemMetricStore metricStore;
+    private MetricCacheStore metricStore;
 
     @ResponseBody
     @RequestMapping("/queryTopResourceMetric.json")
@@ -78,7 +80,7 @@ public class MetricController {
             endTime = System.currentTimeMillis();
         }
         if (startTime == null) {
-            startTime = endTime - 1000 * 60 * 5;
+            startTime = endTime - METRIC_DURATION;
         }
         if (endTime - startTime > maxQueryIntervalMs) {
             return Result.ofFail(-1, "time intervalMs is too big, must <= 1h");
@@ -110,7 +112,7 @@ public class MetricController {
         logger.info("topResource={}", topResource);
         long time = System.currentTimeMillis();
         for (final String resource : topResource) {
-            List<MetricEntity> entities = metricStore.queryByAppAndResouce(
+            List<MetricEntity> entities = metricStore.queryByAppAndResource(
                 app, resource, startTime, endTime);
             logger.info("resource={}, entities.size()={}", resource, entities == null ? "null" : entities.size());
             List<MetricVo> vos = MetricVo.fromMetricEntities(entities, resource);
@@ -146,12 +148,12 @@ public class MetricController {
             endTime = System.currentTimeMillis();
         }
         if (startTime == null) {
-            startTime = endTime - 1000 * 60;
+            startTime = endTime - METRIC_DURATION;
         }
         if (endTime - startTime > maxQueryIntervalMs) {
             return Result.ofFail(-1, "time intervalMs is too big, must <= 1h");
         }
-        List<MetricEntity> entities = metricStore.queryByAppAndResouce(
+        List<MetricEntity> entities = metricStore.queryByAppAndResource(
             app, identity, startTime, endTime);
         List<MetricVo> vos = MetricVo.fromMetricEntities(entities, identity);
         return Result.ofSuccess(sortMetricVoAndDistinct(vos));

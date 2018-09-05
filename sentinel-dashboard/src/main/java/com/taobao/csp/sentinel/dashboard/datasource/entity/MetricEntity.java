@@ -15,12 +15,21 @@
  */
 package com.taobao.csp.sentinel.dashboard.datasource.entity;
 
+import java.io.Serializable;
 import java.util.Date;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
- * @author leyou
+ * @author leyouqueryTopResourceMetric
+ * @author huyong
  */
-public class MetricEntity {
+@Getter
+@Setter
+public class MetricEntity implements Serializable {
+
+    private static final long serialVersionUID = 6844720487195253513L;
+
     private Long id;
     private Date gmtCreate;
     private Date gmtModified;
@@ -49,6 +58,9 @@ public class MetricEntity {
     private int count;
 
     private int resourceCode;
+
+    public MetricEntity() {
+    }
 
     public static MetricEntity copyOf(MetricEntity oldEntity) {
         MetricEntity entity = new MetricEntity();
@@ -92,56 +104,11 @@ public class MetricEntity {
     /**
      * {@link #rt} = {@code avgRt * successQps}
      *
-     * @param avgRt      average rt of {@code successQps}
-     * @param successQps
+     * @param avgRt average rt of {@code successQps}
      */
     public synchronized void setRtAndSuccessQps(double avgRt, Long successQps) {
         this.rt = avgRt * successQps;
         this.successQps = successQps;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Date getGmtCreate() {
-        return gmtCreate;
-    }
-
-    public void setGmtCreate(Date gmtCreate) {
-        this.gmtCreate = gmtCreate;
-    }
-
-    public Date getGmtModified() {
-        return gmtModified;
-    }
-
-    public void setGmtModified(Date gmtModified) {
-        this.gmtModified = gmtModified;
-    }
-
-    public String getApp() {
-        return app;
-    }
-
-    public void setApp(String app) {
-        this.app = app;
-    }
-
-    public Date getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(Date timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public String getResource() {
-        return resource;
     }
 
     public void setResource(String resource) {
@@ -149,75 +116,23 @@ public class MetricEntity {
         this.resourceCode = resource.hashCode();
     }
 
-    public Long getPassedQps() {
-        return passedQps;
-    }
-
-    public void setPassedQps(Long passedQps) {
-        this.passedQps = passedQps;
-    }
-
-    public Long getBlockedQps() {
-        return blockedQps;
-    }
-
-    public void setBlockedQps(Long blockedQps) {
-        this.blockedQps = blockedQps;
-    }
-
-    public Long getException() {
-        return exception;
-    }
-
-    public void setException(Long exception) {
-        this.exception = exception;
-    }
-
-    public double getRt() {
-        return rt;
-    }
-
-    public void setRt(double rt) {
-        this.rt = rt;
-    }
-
-    public int getCount() {
-        return count;
-    }
-
-    public void setCount(int count) {
-        this.count = count;
-    }
-
-    public int getResourceCode() {
-        return resourceCode;
-    }
-
-    public Long getSuccessQps() {
-        return successQps;
-    }
-
-    public void setSuccessQps(Long successQps) {
-        this.successQps = successQps;
-    }
-
     @Override
     public String toString() {
         return "MetricEntity{" +
-            "id=" + id +
-            ", gmtCreate=" + gmtCreate +
-            ", gmtModified=" + gmtModified +
-            ", app='" + app + '\'' +
-            ", timestamp=" + timestamp +
-            ", resource='" + resource + '\'' +
-            ", passedQps=" + passedQps +
-            ", blockedQps=" + blockedQps +
-            ", successQps=" + successQps +
-            ", exception=" + exception +
-            ", rt=" + rt +
-            ", count=" + count +
-            ", resourceCode=" + resourceCode +
-            '}';
+                "id=" + id +
+                ", gmtCreate=" + gmtCreate +
+                ", gmtModified=" + gmtModified +
+                ", app='" + app + '\'' +
+                ", timestamp=" + timestamp +
+                ", resource='" + resource + '\'' +
+                ", passedQps=" + passedQps +
+                ", blockedQps=" + blockedQps +
+                ", successQps=" + successQps +
+                ", exception=" + exception +
+                ", rt=" + rt +
+                ", count=" + count +
+                ", resourceCode=" + resourceCode +
+                '}';
     }
 
 }

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taobao.csp.sentinel.dashboard.datasource.repository.MetricRepository">
+
+    <resultMap id="metricMap" type="com.taobao.csp.sentinel.dashboard.datasource.entity.MetricEntity">
+        <result column="id" property="id" jdbcType="BIGINT"/>
+        <result column="app" property="app" jdbcType="VARCHAR"/>
+        <result column="blocked_qps" property="blockedQps" jdbcType="BIGINT"/>
+        <result column="count" property="count" jdbcType="BIGINT"/>
+        <result column="exception" property="exception" jdbcType="BIGINT"/>
+        <result column="gmt_create" property="gmtCreate" jdbcType="TIMESTAMP"/>
+        <result column="gmt_modified" property="gmtModified" jdbcType="TIMESTAMP"/>
+        <result column="passed_qps" property="passedQps" jdbcType="BIGINT"/>
+        <result column="resource" property="resource" jdbcType="VARCHAR"/>
+        <result column="resource_code" property="resourceCode" jdbcType="BIGINT"/>
+        <result column="rt" property="rt" jdbcType="DOUBLE"/>
+        <result column="success_qps" property="successQps" jdbcType="BIGINT"/>
+        <result column="timestamp" property="timestamp" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="allColumn">
+        id, app, blocked_qps, count, exception, gmt_create, gmt_modified, passed_qps, resource, resource_code, rt, success_qps, timestamp
+    </sql>
+
+    <insert id="save" parameterType="java.lang.Iterable" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO
+        metric (app, blocked_qps, count, exception, passed_qps, resource, resource_code, rt, success_qps, timestamp)
+        VALUES
+        <foreach item="item" collection="metrics" separator=",">
+            (#{item.app}, #{item.blockedQps}, #{item.count}, #{item.exception},
+            #{item.passedQps}, #{item.resource}, #{item.resourceCode}, #{item.rt}, #{item.successQps},
+            #{item.timestamp})
+        </foreach>
+    </insert>
+
+    <select id="findByResourceAndAppAndTime" resultMap="metricMap">
+        SELECT
+        <include refid="allColumn"/>
+        FROM
+        metric
+        WHERE app = #{app} AND resource = #{resource} AND timestamp &gt; #{startTime} AND timestamp &lt; #{endTime}
+    </select>
+    <select id="findByResourceAndTime" resultMap="metricMap">
+        SELECT
+        <include refid="allColumn"/>
+        FROM
+        metric
+        WHERE app = #{app} AND timestamp &gt; #{startTime} AND timestamp &lt; #{endTime}
+    </select>
+</mapper>

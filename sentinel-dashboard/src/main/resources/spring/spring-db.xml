@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<!-- mysql data source -->
+	<bean id="mysqlDataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close" primary="true">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<property name="url" value="${sentinel.database.url}" />
+		<property name="username" value="${sentinel.database.username}" />
+		<property name="password" value="${sentinel.database.password}" />
+		<property name="initialSize" value="5" />
+		<property name="minIdle" value="1" />
+		<property name="maxActive" value="10" />
+		<property name="maxWait" value="60000" />
+		<property name="poolPreparedStatements" value="true" />
+		<property name="maxOpenPreparedStatements" value="20" />
+		<property name="testWhileIdle" value="false" />
+		<property name="testOnBorrow" value="false" />
+		<property name="testOnReturn" value="false" />
+	</bean>
+
+	<bean id="mysqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean" primary="true">
+		<property name="dataSource" ref="mysqlDataSource" />
+		<property name="mapperLocations">
+			<list>
+				<value>classpath:mapper/mysql/MetricRepository.xml</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer" primary="true">
+		<property name="basePackage" value="com.taobao.csp.sentinel.dashboard.datasource.repository" />
+		<property name="sqlSessionFactoryBeanName" value="mysqlSessionFactory" />
+	</bean>
+</beans>
