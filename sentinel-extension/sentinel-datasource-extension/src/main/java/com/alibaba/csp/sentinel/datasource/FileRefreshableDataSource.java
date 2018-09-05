@@ -26,7 +26,7 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 /**
  * <p>
  * A {@link ReadableDataSource} based on file. This class will automatically
- * fetches the backend file every refresh period.
+ * fetches the backend file every isModified period.
  * </p>
  * <p>
  * Limitations: Default read buffer size is 1 MB. If file size is greater than
@@ -46,16 +46,15 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
     private byte[] buf;
     private final Charset charset;
     private final File file;
+
     private long lastModified = 0L;
 
     /**
      * Create a file based {@link ReadableDataSource} whose read buffer size is
      * 1MB, charset is UTF8, and read interval is 3 seconds.
      *
-     * @param file
-     *            the file to read
-     * @param configParser
-     *            the config decoder (parser)
+     * @param file         the file to read
+     * @param configParser the config decoder (parser)
      */
     public FileRefreshableDataSource(File file, Converter<String, T> configParser) throws FileNotFoundException {
         this(file, configParser, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, DEFAULT_CHAR_SET);
@@ -66,23 +65,23 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
     }
 
     public FileRefreshableDataSource(File file, Converter<String, T> configParser, int bufSize)
-            throws FileNotFoundException {
+        throws FileNotFoundException {
         this(file, configParser, DEFAULT_REFRESH_MS, bufSize, DEFAULT_CHAR_SET);
     }
 
     public FileRefreshableDataSource(File file, Converter<String, T> configParser, Charset charset)
-            throws FileNotFoundException {
+        throws FileNotFoundException {
         this(file, configParser, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, charset);
     }
 
     public FileRefreshableDataSource(File file, Converter<String, T> configParser, long recommendRefreshMs, int bufSize,
-            Charset charset) throws FileNotFoundException {
+                                     Charset charset) throws FileNotFoundException {
         super(configParser, recommendRefreshMs);
         if (bufSize <= 0 || bufSize > MAX_SIZE) {
             throw new IllegalArgumentException("bufSize must between (0, " + MAX_SIZE + "], but " + bufSize + " get");
         }
-        if (file == null) {
-            throw new IllegalArgumentException("file can't be null");
+        if (file == null || file.isDirectory()) {
+            throw new IllegalArgumentException("File can't be null or a directory");
         }
         if (charset == null) {
             throw new IllegalArgumentException("charset can't be null");
@@ -90,6 +89,7 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
         this.buf = new byte[bufSize];
         this.file = file;
         this.charset = charset;
+        // If the file does not exist, the last modified will be 0.
         this.lastModified = file.lastModified();
         firstLoad();
     }
@@ -105,13 +105,17 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
 
     @Override
     public String readSource() throws Exception {
+        if (!file.exists()) {
+            // Will throw FileNotFoundException later.
+            RecordLog.warn(String.format("[FileRefreshableDataSource] File does not exist: %s", file.getAbsolutePath()));
+        }
         FileInputStream inputStream = null;
         try {
             inputStream = new FileInputStream(file);
             FileChannel channel = inputStream.getChannel();
             if (channel.size() > buf.length) {
                 throw new IllegalStateException(file.getAbsolutePath() + " file size=" + channel.size()
-                        + ", is bigger than bufSize=" + buf.length + ". Can't read");
+                    + ", is bigger than bufSize=" + buf.length + ". Can't read");
             }
             int len = inputStream.read(buf);
             return new String(buf, 0, len, charset);
@@ -126,8 +130,8 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
     }
 
     @Override
-    protected boolean refresh() {
-        long curLastModified = new File(file.getAbsolutePath()).lastModified();
+    protected boolean isModified() {
+        long curLastModified = file.lastModified();
         if (curLastModified != this.lastModified) {
             this.lastModified = curLastModified;
             return true;

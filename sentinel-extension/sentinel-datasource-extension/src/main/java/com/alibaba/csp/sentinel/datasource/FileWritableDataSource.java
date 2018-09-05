@@ -17,46 +17,63 @@ package com.alibaba.csp.sentinel.datasource;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.charset.Charset;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import com.alibaba.csp.sentinel.log.RecordLog;
 
 /**
  * A {@link WritableDataSource} based on file.
  *
- * @param <T>
- *            data type
+ * @param <T> data type
  * @author Eric Zhao
  * @since 0.2.0
  */
 public class FileWritableDataSource<T> implements WritableDataSource<T> {
 
+    private static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
+
     private final Converter<T, String> configEncoder;
-    private File file;
+    private final File file;
+    private final Charset charset;
+
+    private final Lock lock = new ReentrantLock(true);
 
     public FileWritableDataSource(String filePath, Converter<T, String> configEncoder) {
         this(new File(filePath), configEncoder);
     }
 
     public FileWritableDataSource(File file, Converter<T, String> configEncoder) {
+        this(file, configEncoder, DEFAULT_CHARSET);
+    }
+
+    public FileWritableDataSource(File file, Converter<T, String> configEncoder, Charset charset) {
         if (file == null || file.isDirectory()) {
             throw new IllegalArgumentException("Bad file");
         }
         if (configEncoder == null) {
             throw new IllegalArgumentException("Config encoder cannot be null");
         }
+        if (charset == null) {
+            throw new IllegalArgumentException("Charset cannot be null");
+        }
         this.configEncoder = configEncoder;
         this.file = file;
+        this.charset = charset;
     }
 
     @Override
     public void write(T value) throws Exception {
-        if (configEncoder == null) {
-            throw new NullPointerException("configEncoder is null Can't write");
-        }
-        synchronized (file) {
+        lock.lock();
+        try {
             String convertResult = configEncoder.convert(value);
             FileOutputStream outputStream = null;
             try {
                 outputStream = new FileOutputStream(file);
-                byte[] bytesArray = convertResult.getBytes();
+                byte[] bytesArray = convertResult.getBytes(charset);
+
+                RecordLog.info(String.format("[FileWritableDataSource] Writing to file %s: %s", file.toString(), convertResult));
                 outputStream.write(bytesArray);
                 outputStream.flush();
             } finally {
@@ -68,6 +85,8 @@ public class FileWritableDataSource<T> implements WritableDataSource<T> {
                     }
                 }
             }
+        } finally {
+            lock.unlock();
         }
     }
 
