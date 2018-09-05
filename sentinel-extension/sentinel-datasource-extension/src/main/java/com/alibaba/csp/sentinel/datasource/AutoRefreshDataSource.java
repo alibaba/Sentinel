@@ -25,8 +25,10 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 /**
  * A {@link ReadableDataSource} automatically fetches the backend data.
  *
- * @param <S> source data type
- * @param <T> target data type
+ * @param <S>
+ *            source data type
+ * @param <T>
+ *            target data type
  * @author Carpenter Lee
  */
 public abstract class AutoRefreshDataSource<S, T> extends AbstractDataSource<S, T> {
@@ -50,13 +52,15 @@ public abstract class AutoRefreshDataSource<S, T> extends AbstractDataSource<S, 
 
     private void startTimerService() {
         service = Executors.newScheduledThreadPool(1,
-            new NamedThreadFactory("sentinel-datasource-auto-refresh-task", true));
+                new NamedThreadFactory("sentinel-datasource-auto-refresh-task", true));
         service.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 try {
+                    if (!refresh()) {
+                        return;
+                    }
                     T newValue = loadConfig();
-
                     getProperty().updateValue(newValue);
                 } catch (Throwable e) {
                     RecordLog.info("loadConfig exception", e);
@@ -71,5 +75,9 @@ public abstract class AutoRefreshDataSource<S, T> extends AbstractDataSource<S, 
             service.shutdownNow();
             service = null;
         }
+    }
+
+    protected boolean refresh() {
+        return true;
     }
 }
