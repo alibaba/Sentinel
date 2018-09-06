@@ -37,7 +37,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  */
 public class DegradeRuleManager {
 
-    private static volatile Map<String, List<DegradeRule>> degradeRules
+    private static volatile ConcurrentHashMap<String, List<DegradeRule>> degradeRules
         = new ConcurrentHashMap<String, List<DegradeRule>>();
 
     final static RulePropertyListener listener = new RulePropertyListener();
@@ -62,7 +62,7 @@ public class DegradeRuleManager {
         }
     }
 
-    public static void checkDegrade(ResourceWrapper resource, Context context, DefaultNode node, int count)
+    /*public static void checkDegrade(ResourceWrapper resource, Context context, DefaultNode node, int count)
         throws BlockException {
         if (degradeRules == null) {
             return;
@@ -78,7 +78,64 @@ public class DegradeRuleManager {
                 throw new DegradeException(rule.getLimitApp());
             }
         }
-    }
+    }*/
+    
+	
+	/** 修改支持全局规则 - shenjian **/
+	private static final String GLOBAL = "*";
+
+	public static void checkDegrade(ResourceWrapper resource, Context context, DefaultNode node, int count) throws BlockException {
+		if (degradeRules == null) {
+			return;
+		}
+		List<DegradeRule> rules = getRules(resource.getName());
+		if (rules == null) {
+			return;
+		}
+		for (DegradeRule rule : rules) {
+			if (!rule.passCheck(context, node, count)) {
+				throw new DegradeException(rule.getLimitApp());
+			}
+		}
+	}
+
+	private static List<DegradeRule> getRules(String resourceName) {
+		List<DegradeRule> rules = degradeRules.get(resourceName);
+		if (rules != null) {
+			return rules;
+		}
+		rules = degradeRules.get(GLOBAL);
+		if (rules == null || rules.isEmpty()) {
+			return null;
+		}
+		// 使用全局规则初始化资源规则
+		rules = copyRules(rules, resourceName);
+		List<DegradeRule> oldRules = degradeRules.putIfAbsent(resourceName, rules);
+		if (oldRules != null && !oldRules.equals(rules)) {// 没有添加成功：规则已存在
+			return oldRules;
+		}
+		return rules;
+	}
+
+	private static List<DegradeRule> copyRules(List<DegradeRule> rules, String newResourceName) {
+		List<DegradeRule> list = new ArrayList<DegradeRule>(rules.size());
+		for (DegradeRule rule : rules) {
+			list.add(copyRule(rule, newResourceName));
+		}
+		return list;
+	}
+
+	private static DegradeRule copyRule(DegradeRule rule, String newResourceName) {
+		DegradeRule newRule = new DegradeRule();
+		newRule.setResource(newResourceName);
+		newRule.setCount(rule.getCount());
+		newRule.setGrade(rule.getGrade());
+		newRule.setLimitApp(rule.getLimitApp());
+		newRule.setTimeWindow(rule.getTimeWindow());
+		return newRule;
+	}
+
+	/** 修改支持全局规则 - end **/
 
     public static boolean hasConfig(String resource) {
         return degradeRules.containsKey(resource);
@@ -99,6 +156,8 @@ public class DegradeRuleManager {
         }
         return rules;
     }
+    
+    
 
     /**
      * Load {@link DegradeRule}s, former rules will be replaced.
