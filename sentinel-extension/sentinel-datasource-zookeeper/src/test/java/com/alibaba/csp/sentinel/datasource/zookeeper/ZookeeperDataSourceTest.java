@@ -3,8 +3,8 @@ package com.alibaba.csp.sentinel.datasource.zookeeper;
 import java.util.Collections;
 import java.util.List;
 
-import com.alibaba.csp.sentinel.datasource.ConfigParser;
-import com.alibaba.csp.sentinel.datasource.DataSource;
+import com.alibaba.csp.sentinel.datasource.Converter;
+import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
@@ -34,10 +34,10 @@ public class ZookeeperDataSourceTest {
         final String remoteAddress = server.getConnectString();
         final String path = "/sentinel-zk-ds-demo/flow-HK";
 
-        DataSource<String, List<FlowRule>> flowRuleDataSource = new ZookeeperDataSource<List<FlowRule>>(remoteAddress, path,
-            new ConfigParser<String, List<FlowRule>>() {
+        ReadableDataSource<String, List<FlowRule>> flowRuleDataSource = new ZookeeperDataSource<List<FlowRule>>(remoteAddress, path,
+            new Converter<String, List<FlowRule>>() {
                 @Override
-                public List<FlowRule> parse(String source) {
+                public List<FlowRule> convert(String source) {
                     return JSON.parseObject(source, new TypeReference<List<FlowRule>>() {});
                 }
             });

@@ -15,7 +15,6 @@
  */
 package com.alibaba.csp.sentinel.adapter.grpc;
 
-import java.io.IOException;
 import java.util.Collections;
 
 import com.alibaba.csp.sentinel.EntryType;
@@ -27,10 +26,7 @@ import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 
-import io.grpc.Server;
-import io.grpc.ServerBuilder;
 import io.grpc.StatusRuntimeException;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 
@@ -43,8 +39,8 @@ public class SentinelGrpcServerInterceptorTest {
 
     private final String resourceName = "com.alibaba.sentinel.examples.FooService/anotherHello";
     private final int threshold = 4;
+    private final GrpcTestServer server = new GrpcTestServer();
 
-    private Server server;
     private FooServiceClient client;
 
     private void configureFlowRule() {
@@ -63,7 +59,7 @@ public class SentinelGrpcServerInterceptorTest {
         client = new FooServiceClient("localhost", port);
 
         configureFlowRule();
-        prepareServer(port);
+        server.start(port, true);
 
         final int total = 8;
         for (int i = 0; i < total; i++) {
@@ -82,7 +78,7 @@ public class SentinelGrpcServerInterceptorTest {
         assertEquals(total - threshold, blockedQps);
         assertEquals(threshold, passQps);
 
-        stopServer();
+        server.stop();
     }
 
     private void sendRequest() {
@@ -94,21 +90,4 @@ public class SentinelGrpcServerInterceptorTest {
         }
     }
 
-    private void prepareServer(int port) throws IOException {
-        if (server != null) {
-            throw new IllegalStateException("Server already running!");
-        }
-        server = ServerBuilder.forPort(port)
-            .addService(new FooServiceImpl())
-            .intercept(new SentinelGrpcServerInterceptor())
-            .build();
-        server.start();
-    }
-
-    private void stopServer() {
-        if (server != null) {
-            server.shutdown();
-            server = null;
-        }
-    }
 }

@@ -13,24 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.taobao.csp.sentinel.dashboard.inmem;
-
-import java.util.concurrent.atomic.AtomicLong;
-
-import com.taobao.csp.sentinel.dashboard.datasource.entity.FlowRuleEntity;
-import org.springframework.stereotype.Component;
+package com.alibaba.csp.sentinel.datasource;
 
 /**
- * Store {@link FlowRuleEntity} in memory.
+ * Interface of writable data source support.
  *
- * @author leyou
+ * @author Eric Zhao
+ * @since 0.2.0
  */
-@Component
-public class InMemFlowRuleStore extends InMemRepositoryAdapter<FlowRuleEntity> {
-    private static AtomicLong ids = new AtomicLong(0);
+public interface WritableDataSource<T> {
 
-    @Override
-    protected long nextId() {
-        return ids.incrementAndGet();
-    }
+    /**
+     * Write the {@code value} to the data source.
+     *
+     * @param value value to write
+     * @throws Exception IO or other error occurs
+     */
+    void write(T value) throws Exception;
+
+    /**
+     * Close the data source.
+     *
+     * @throws Exception IO or other error occurs
+     */
+    void close() throws Exception;
 }

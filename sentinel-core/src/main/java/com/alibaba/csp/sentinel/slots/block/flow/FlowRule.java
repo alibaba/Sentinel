@@ -276,6 +276,10 @@ public class FlowRule extends AbstractRule {
             return false;
         }
 
+        if (maxQueueingTimeMs != flowRule.maxQueueingTimeMs) {
+            return false;
+        }
+
         return true;
     }
 
@@ -291,6 +295,7 @@ public class FlowRule extends AbstractRule {
         result = 31 * result + (int)(temp ^ (temp >>> 32));
         result = 31 * result + warmUpPeriodSec;
         result = 31 * result + controlBehavior;
+        result = 31 * result + maxQueueingTimeMs;
         return result;
     }
 
