@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.taobao.csp.sentinel.dashboard.inmem;
+package com.taobao.csp.sentinel.dashboard.repository.rule;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.taobao.csp.sentinel.dashboard.datasource.entity.DegradeRuleEntity;
+import com.taobao.csp.sentinel.dashboard.datasource.entity.SystemRuleEntity;
 import org.springframework.stereotype.Component;
 
 /**
  * @author leyou
  */
 @Component
-public class InMemDegradeRuleStore extends InMemRepositoryAdapter<DegradeRuleEntity> {
+public class InMemSystemRuleStore extends InMemoryRuleRepositoryAdapter<SystemRuleEntity> {
 
     private static AtomicLong ids = new AtomicLong(0);
 

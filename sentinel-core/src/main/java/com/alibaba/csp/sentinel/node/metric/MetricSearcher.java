@@ -15,14 +15,11 @@
  */
 package com.alibaba.csp.sentinel.node.metric;
 
-import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.alibaba.csp.sentinel.config.SentinelConfig;
@@ -37,17 +34,12 @@ import com.alibaba.csp.sentinel.config.SentinelConfig;
 public class MetricSearcher {
 
     private static final Charset defaultCharset = Charset.forName(SentinelConfig.charset());
+    private final MetricsReader metricsReader;
 
     private String baseDir;
     private String baseFileName;
-    private Charset charset;
 
     private Position lastPosition = new Position();
-
-    /**
-     * avoid OOM in any case
-     */
-    private static final int maxLinesReturn = 100000;
 
     /**
      * @param baseDir      metric文件所在目录
@@ -77,7 +69,7 @@ public class MetricSearcher {
             this.baseDir += File.separator;
         }
         this.baseFileName = baseFileName;
-        this.charset = charset;
+        metricsReader = new MetricsReader(charset);
     }
 
     /**
@@ -107,7 +99,7 @@ public class MetricSearcher {
                 MetricWriter.formIndexFileName(fileName), offsetInIndex);
             offsetInIndex = 0;
             if (offset != -1) {
-                return readMetrics(fileNames, i, offset, recommendLines);
+                return metricsReader.readMetrics(fileNames, i, offset, recommendLines);
             }
         }
         return null;
@@ -139,10 +131,10 @@ public class MetricSearcher {
         for (; i < fileNames.size(); i++) {
             String fileName = fileNames.get(i);
             long offset = findOffset(beginTimeMs, fileName,
-                fileName + MetricWriter.METRIC_FILE_INDEX_SUFFIX, offsetInIndex);
+                    MetricWriter.formIndexFileName(fileName), offsetInIndex);
             offsetInIndex = 0;
             if (offset != -1) {
-                return readMetricsByEndTime(fileNames, i, offset, endTimeMs, identity);
+                return metricsReader.readMetricsByEndTime(fileNames, i, offset, endTimeMs, identity);
             }
         }
         return null;
@@ -196,103 +188,6 @@ public class MetricSearcher {
                 }
             }
         }
-    }
-
-    /**
-     * @return if should continue read, return true, else false.
-     */
-    private boolean readMetricsInOneFileByEndTime(List<MetricNode> list, String fileName,
-                                                  long offset, long endTimeMs, String identity) throws Exception {
-        FileInputStream in = null;
-        long endSecond = endTimeMs / 1000;
-        try {
-            in = new FileInputStream(fileName);
-            in.getChannel().position(offset);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in, charset));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                MetricNode node = MetricNode.fromFatString(line);
-                long currentSecond = node.getTimestamp() / 1000;
-                if (currentSecond <= endSecond) {
-                    // read all
-                    if (identity == null) {
-                        list.add(node);
-                    } else if (node.getResource().equals(identity)) {
-                        list.add(node);
-                    }
-                } else {
-                    return false;
-                }
-                if (list.size() >= maxLinesReturn) {
-                    return false;
-                }
-            }
-        } finally {
-            if (in != null) {
-                in.close();
-            }
-        }
-        return true;
-    }
-
-    private void readMetricsInOneFile(List<MetricNode> list, String fileName,
-                                      long offset, int recommendLines) throws Exception {
-        //if(list.size() >= recommendLines){
-        //    return;
-        //}
-        long lastSecond = -1;
-        if (list.size() > 0) {
-            lastSecond = list.get(list.size() - 1).getTimestamp() / 1000;
-        }
-        FileInputStream in = null;
-        try {
-            in = new FileInputStream(fileName);
-            in.getChannel().position(offset);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in, charset));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                MetricNode node = MetricNode.fromFatString(line);
-                long currentSecond = node.getTimestamp() / 1000;
-
-                if (list.size() < recommendLines) {
-                    list.add(node);
-                } else if (currentSecond == lastSecond) {
-                    list.add(node);
-                } else {
-                    break;
-                }
-                lastSecond = currentSecond;
-            }
-        } finally {
-            if (in != null) {
-                in.close();
-            }
-        }
-    }
-
-    private List<MetricNode> readMetrics(List<String> fileNames, int pos,
-                                         long offset, int recommendLines) throws Exception {
-        List<MetricNode> list = new ArrayList<MetricNode>(recommendLines);
-        readMetricsInOneFile(list, fileNames.get(pos++), offset, recommendLines);
-        while (list.size() < recommendLines && pos < fileNames.size()) {
-            readMetricsInOneFile(list, fileNames.get(pos++), 0, recommendLines);
-        }
-        return list;
-    }
-
-    /**
-     * When identity is null, all metric between the time intervalMs will be read, otherwise, only the specific
-     * identity will be read.
-     */
-    private List<MetricNode> readMetricsByEndTime(List<String> fileNames, int pos,
-                                                  long offset, long endTimeMs, String identity) throws Exception {
-        List<MetricNode> list = new ArrayList<MetricNode>(1024);
-        if (readMetricsInOneFileByEndTime(list, fileNames.get(pos++), offset, endTimeMs, identity)) {
-            while (pos < fileNames.size()
-                && readMetricsInOneFileByEndTime(list, fileNames.get(pos++), 0, endTimeMs, identity)) {
-            }
-        }
-        return list;
     }
 
     private long findOffset(long beginTime, String metricFileName,

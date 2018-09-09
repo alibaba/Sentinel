@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.demo.file.rule.parser;
+package com.taobao.csp.sentinel.dashboard.repository.rule;
 
-import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
-import com.alibaba.csp.sentinel.datasource.ConfigParser;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
+import com.taobao.csp.sentinel.dashboard.datasource.entity.DegradeRuleEntity;
+import org.springframework.stereotype.Component;
 
 /**
- * A {@link ConfigParser} parses Json String to {@code List<FlowRule>}.
- *
- * @author Carpenter Lee
+ * @author leyou
  */
-public class JsonFlowRuleListParser implements ConfigParser<String, List<FlowRule>> {
+@Component
+public class InMemDegradeRuleStore extends InMemoryRuleRepositoryAdapter<DegradeRuleEntity> {
+
+    private static AtomicLong ids = new AtomicLong(0);
+
     @Override
-    public List<FlowRule> parse(String source) {
-        return JSON.parseObject(source, new TypeReference<List<FlowRule>>() {});
+    protected long nextId() {
+        return ids.incrementAndGet();
     }
 }

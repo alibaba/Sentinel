@@ -153,7 +153,6 @@ public class DegradeRule extends AbstractRule {
 
     @Override
     public boolean passCheck(Context context, DefaultNode node, int acquireCount, Object... args) {
-
         if (cut) {
             return false;
         }
@@ -183,11 +182,12 @@ public class DegradeRule extends AbstractRule {
                 return true;
             }
 
-            if (success == 0) {
-                return exception < RT_MAX_EXCEED_N;
+            double realSuccess = success - exception;
+            if (realSuccess <= 0 && exception < RT_MAX_EXCEED_N) {
+                return true;
             }
 
-            if (exception / (success + exception) < count) {
+            if (exception / success < count) {
                 return true;
             }
         }
