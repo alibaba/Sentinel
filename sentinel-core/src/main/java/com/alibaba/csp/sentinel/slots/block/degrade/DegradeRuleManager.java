@@ -56,6 +56,7 @@ public class DegradeRuleManager {
      */
     public static void register2Property(SentinelProperty<List<DegradeRule>> property) {
         synchronized (listener) {
+            RecordLog.info("[DegradeRuleManager] Registering new property to degrade rule manager");
             currentProperty.removeListener(listener);
             property.addListener(listener);
             currentProperty = property;
@@ -122,7 +123,7 @@ public class DegradeRuleManager {
                 degradeRules.clear();
                 degradeRules.putAll(rules);
             }
-            RecordLog.info("receive degrade config: " + degradeRules);
+            RecordLog.info("[DegradeRuleManager] Degrade rules received: " + degradeRules);
         }
 
         @Override
@@ -132,16 +133,22 @@ public class DegradeRuleManager {
                 degradeRules.clear();
                 degradeRules.putAll(rules);
             }
-            RecordLog.info("init degrade config: " + degradeRules);
+            RecordLog.info("[DegradeRuleManager] Degrade rules loaded: " + degradeRules);
         }
 
         private Map<String, List<DegradeRule>> loadDegradeConf(List<DegradeRule> list) {
-            if (list == null) {
-                return null;
-            }
             Map<String, List<DegradeRule>> newRuleMap = new ConcurrentHashMap<String, List<DegradeRule>>();
 
+            if (list == null || list.isEmpty()) {
+                return newRuleMap;
+            }
+
             for (DegradeRule rule : list) {
+                if (!isValidRule(rule)) {
+                    RecordLog.warn("[DegradeRuleManager] Ignoring invalid degrade rule when loading new rules: " + rule);
+                    continue;
+                }
+
                 if (StringUtil.isBlank(rule.getLimitApp())) {
                     rule.setLimitApp(FlowRule.LIMIT_APP_DEFAULT);
                 }
@@ -160,4 +167,7 @@ public class DegradeRuleManager {
 
     }
 
+    private static boolean isValidRule(DegradeRule rule) {
+        return rule != null && !StringUtil.isBlank(rule.getResource()) && rule.getCount() >= 0;
+    }
 }
