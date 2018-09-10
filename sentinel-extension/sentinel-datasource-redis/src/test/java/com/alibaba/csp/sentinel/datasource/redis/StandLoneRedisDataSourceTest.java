@@ -1,8 +1,25 @@
+/*
+ * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.alibaba.csp.sentinel.datasource.redis;
 
 import ai.grakn.redismock.RedisServer;
-import com.alibaba.csp.sentinel.datasource.ConfigParser;
-import com.alibaba.csp.sentinel.datasource.DataSource;
+import com.alibaba.csp.sentinel.datasource.Converter;
+import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
+import com.alibaba.csp.sentinel.datasource.redis.config.RedisConnectionConfig;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.fastjson.JSON;
@@ -11,6 +28,7 @@ import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
+import io.lettuce.core.pubsub.api.sync.RedisPubSubCommands;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -18,8 +36,14 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Random;
 
-public class RedisDataSourceTest {
+/**
+ * Redis standLone mode test cases for {@link RedisDataSource}.
+ *
+ * @author tiger
+ */
+public class StandLoneRedisDataSourceTest {
 
     private static RedisServer server = null;
 
@@ -38,49 +62,59 @@ public class RedisDataSourceTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        ConfigParser<String, List<FlowRule>> flowConfigParser = buildFlowConfigParser();
+        Converter<String, List<FlowRule>> flowConfigParser = buildFlowConfigParser();
         client = RedisClient.create(RedisURI.create(server.getHost(), server.getBindPort()));
+        RedisConnectionConfig config = RedisConnectionConfig.builder()
+                .withHost(server.getHost())
+                .withPort(server.getBindPort())
+                .build();
         initRedisRuleData();
-        DataSource<String, List<FlowRule>> redisDataSource = new RedisDataSource<List<FlowRule>>(client, ruleKey, channel, flowConfigParser);
+        ReadableDataSource<String, List<FlowRule>> redisDataSource = new RedisDataSource<List<FlowRule>>(config, ruleKey, channel, flowConfigParser);
         FlowRuleManager.register2Property(redisDataSource.getProperty());
     }
 
     @Test
-    public void pub_msg_and_receive_success() {
+    public void testPubMsgAndReceiveSuccess() {
         List<FlowRule> rules = FlowRuleManager.getRules();
-        Assert.assertTrue(rules.size() == 0);
-        int maxQueueingTimeMs = 480;
+        Assert.assertEquals(1, rules.size());
+        int maxQueueingTimeMs = new Random().nextInt();
         StatefulRedisPubSubConnection<String, String> connection = client.connectPubSub();
         String flowRules = "[{\"resource\":\"test\", \"limitApp\":\"default\", \"grade\":1, \"count\":\"0.0\", \"strategy\":0, \"refResource\":null, " +
                 "\"controlBehavior\":0, \"warmUpPeriodSec\":10, \"maxQueueingTimeMs\":" + maxQueueingTimeMs + ", \"controller\":null}]";
-        connection.sync().publish(channel, flowRules);
+        RedisPubSubCommands<String, String> subCommands = connection.sync();
+        subCommands.multi();
+        subCommands.set(ruleKey, flowRules);
+        subCommands.publish(channel, flowRules);
+        subCommands.exec();
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         rules = FlowRuleManager.getRules();
-        Assert.assertTrue(rules.get(0).getMaxQueueingTimeMs() == maxQueueingTimeMs);
+        Assert.assertEquals(rules.get(0).getMaxQueueingTimeMs(), maxQueueingTimeMs);
+        String value = subCommands.get(ruleKey);
+        List<FlowRule> flowRulesValuesInRedis = buildFlowConfigParser().convert(value);
+        Assert.assertEquals(flowRulesValuesInRedis.size(), 1);
+        Assert.assertEquals(flowRulesValuesInRedis.get(0).getMaxQueueingTimeMs(), maxQueueingTimeMs);
     }
 
-
     @Test
-    public void init_and_parse_flow_rule_success() {
+    public void testInitAndParseFlowRuleSuccess() {
         RedisCommands<String, String> stringRedisCommands = client.connect().sync();
         String value = stringRedisCommands.get(ruleKey);
-        List<FlowRule> flowRules = buildFlowConfigParser().parse(value);
-        Assert.assertTrue(flowRules.size() == 1);
+        List<FlowRule> flowRules = buildFlowConfigParser().convert(value);
+        Assert.assertEquals(flowRules.size(), 1);
         stringRedisCommands.del(ruleKey);
     }
 
     @Test
-    public void read_resource_fail() {
+    public void testReadResourceFail() {
         RedisCommands<String, String> stringRedisCommands = client.connect().sync();
         stringRedisCommands.del(ruleKey);
         String value = stringRedisCommands.get(ruleKey);
-        Assert.assertTrue(value == null);
+        Assert.assertEquals(value, null);
     }
-
 
     @After
     public void clearResource() {
@@ -91,10 +125,10 @@ public class RedisDataSourceTest {
         server = null;
     }
 
-    private ConfigParser<String, List<FlowRule>> buildFlowConfigParser() {
-        return new ConfigParser<String, List<FlowRule>>() {
+    private Converter<String, List<FlowRule>> buildFlowConfigParser() {
+        return new Converter<String, List<FlowRule>>() {
             @Override
-            public List<FlowRule> parse(String source) {
+            public List<FlowRule> convert(String source) {
                 return JSON.parseObject(source, new TypeReference<List<FlowRule>>() {
                 });
             }
@@ -106,6 +140,6 @@ public class RedisDataSourceTest {
                 "\"controlBehavior\":0, \"warmUpPeriodSec\":10, \"maxQueueingTimeMs\":500, \"controller\":null}]";
         RedisCommands<String, String> stringRedisCommands = client.connect().sync();
         String ok = stringRedisCommands.set(ruleKey, flowRulesJson);
-        Assert.assertTrue(ok.equals("OK"));
+        Assert.assertEquals(ok, "OK");
     }
 }

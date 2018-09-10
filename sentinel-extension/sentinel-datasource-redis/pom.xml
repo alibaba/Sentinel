@@ -13,26 +13,20 @@
     <packaging>jar</packaging>
 
     <properties>
-        <zookeeper.version>3.4.13</zookeeper.version>
-        <curator.version>4.0.1</curator.version>
-        <curator.test.version>2.12.0</curator.test.version>
         <lettuce.version>5.0.1.RELEASE</lettuce.version>
         <redis.mock.version>0.1.6</redis.mock.version>
     </properties>
 
     <dependencies>
-
         <dependency>
             <groupId>io.lettuce</groupId>
             <artifactId>lettuce-core</artifactId>
             <version>${lettuce.version}</version>
         </dependency>
-
         <dependency>
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-datasource-extension</artifactId>
         </dependency>
-
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -43,13 +37,11 @@
             <artifactId>fastjson</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>ai.grakn</groupId>
             <artifactId>redis-mock</artifactId>
             <version>${redis.mock.version}</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 </project>

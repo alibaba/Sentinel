@@ -1,10 +1,10 @@
 # Sentinel DataSource Redis
 
-Sentinel DataSource Redis provides integration with Redis so that Redis
-can be the dynamic rule data source of Sentinel. The data source uses push model (listener) with redis pub/sub feature.
+Sentinel DataSource Redis provides integration with Redis. make Redis
+as dynamic rule data source of Sentinel. The data source uses push model (listener) with redis pub/sub feature.
 
-this RedisDataSource implement only Redis Standalone. if you want to use redis cluster. please read this [Redis Cluster PUB/SUB](https://github.com/lettuce-io/lettuce-core/wiki/Pub-Sub),
- then you can implement by yourself.
+**NOTE**:
+we not support redis cluster as a pub/sub dataSource now.
 
 To use Sentinel DataSource Redis, you should add the following dependency:
 
@@ -21,17 +21,60 @@ Then you can create an `RedisDataSource` and register to rule managers.
 For instance:
 
 ```java
-
-DataSource<String, List<FlowRule>> redisDataSource = new RedisDataSource<List<FlowRule>>(client, ruleKey, channel, flowConfigParser);
+ReadableDataSource<String, List<FlowRule>> redisDataSource = new RedisDataSource<List<FlowRule>>(redisConnectionConfig, ruleKey, channel, flowConfigParser);
 FlowRuleManager.register2Property(redisDataSource.getProperty());
 ```
 
-*client* : we use [lettuce](https://lettuce.io/) as redis-cli client. you can build client this way [how client build](https://github.com/lettuce-io/lettuce-core/wiki/Basic-usage) . 
+_**redisConnectionConfig**_ : use `RedisConnectionConfig` class to build your connection config. 
 
-*ruleKey* : when the json rule data publish. it also should save to the key for init read.
+_**ruleKey**_ : when the json rule data publish. it also should save to the key for init read.
 
-*channel* : the channel to listen.  
+_**channel**_ : the channel to listen.  
 
 you can also create multi data source listen for different rule type. 
 
-you can run test case for usage.
+you can see test cases for usage.
+
+## Before start
+
+RedisDataSource init config by read from redis key `ruleKey`, value store the latest rule config data. 
+so you should first config your redis ruleData in back end. 
+
+since update redis rule data. it should simultaneously send data to `channel`.
+
+you may implement like this (using Redis transaction):
+
+```
+
+MULTI
+PUBLISH channel value
+SET ruleKey value
+EXEC
+
+``` 
+
+
+## How to build RedisConnectionConfig
+
+
+### Build with redis standLone mode
+
+```java
+RedisConnectionConfig config = RedisConnectionConfig.builder()
+                .withHost("localhost")
+                .withPort(6379)
+                .withPassword("pwd")
+                .withDataBase(2)
+                .build();
+
+```
+
+
+### Build with redis sentinel mode
+
+```java
+RedisConnectionConfig config = RedisConnectionConfig.builder()
+                .withSentinel("sentinelServer1",5000)
+                .wuthSentinel("sentinelServer2",5001)
+                .withSentinelMasterId("sentinelMasterId").build();
+```
