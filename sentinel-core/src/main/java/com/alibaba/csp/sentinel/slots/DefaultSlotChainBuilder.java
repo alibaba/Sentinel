@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.slots;
 
 import com.alibaba.csp.sentinel.slotchain.DefaultProcessorSlotChain;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlotChain;
+import com.alibaba.csp.sentinel.slotchain.SlotChainBuilder;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthoritySlot;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeSlot;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowSlot;
@@ -32,7 +33,7 @@ import com.alibaba.csp.sentinel.slots.system.SystemSlot;
  * @author qinan.qn
  * @author leyou
  */
-public class DefaultSlotsChainBuilder implements SlotsChainBuilder {
+public class DefaultSlotChainBuilder implements SlotChainBuilder {
 
     @Override
     public ProcessorSlotChain build() {
