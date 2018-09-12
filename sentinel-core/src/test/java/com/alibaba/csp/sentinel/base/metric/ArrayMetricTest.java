@@ -19,10 +19,10 @@ import java.util.ArrayList;
 
 import org.junit.Test;
 
-import com.alibaba.csp.sentinel.slots.statistic.base.Window;
+import com.alibaba.csp.sentinel.slots.statistic.base.MetricBucket;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 import com.alibaba.csp.sentinel.slots.statistic.metric.ArrayMetric;
-import com.alibaba.csp.sentinel.slots.statistic.metric.WindowLeapArray;
+import com.alibaba.csp.sentinel.slots.statistic.metric.MetricsLeapArray;
 
 import static org.junit.Assert.*;
 
@@ -40,10 +40,10 @@ public class ArrayMetricTest {
 
     @Test
     public void testOperateArrayMetric() {
-        WindowLeapArray leapArray = mock(WindowLeapArray.class);
-        final WindowWrap<Window> windowWrap = new WindowWrap<Window>(windowLengthInMs, 0, new Window());
+        MetricsLeapArray leapArray = mock(MetricsLeapArray.class);
+        final WindowWrap<MetricBucket> windowWrap = new WindowWrap<MetricBucket>(windowLengthInMs, 0, new MetricBucket());
         when(leapArray.currentWindow()).thenReturn(windowWrap);
-        when(leapArray.values()).thenReturn(new ArrayList<Window>() {{ add(windowWrap.value()); }});
+        when(leapArray.values()).thenReturn(new ArrayList<MetricBucket>() {{ add(windowWrap.value()); }});
 
         ArrayMetric metric = new ArrayMetric(leapArray);
 

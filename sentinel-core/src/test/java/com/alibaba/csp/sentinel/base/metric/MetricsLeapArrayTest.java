@@ -21,30 +21,30 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
+import com.alibaba.csp.sentinel.slots.statistic.base.MetricBucket;
 import com.alibaba.csp.sentinel.util.TimeUtil;
-import com.alibaba.csp.sentinel.slots.statistic.base.Window;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
-import com.alibaba.csp.sentinel.slots.statistic.metric.WindowLeapArray;
+import com.alibaba.csp.sentinel.slots.statistic.metric.MetricsLeapArray;
 
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 /**
- * Test cases for {@link WindowLeapArray}.
+ * Test cases for {@link MetricsLeapArray}.
  *
  * @author Eric Zhao
  */
-public class WindowLeapArrayTest {
+public class MetricsLeapArrayTest {
 
     private final int windowLengthInMs = 1000;
     private final int intervalInSec = 2;
 
     @Test
     public void testNewWindow() {
-        WindowLeapArray leapArray = new WindowLeapArray(windowLengthInMs, intervalInSec);
+        MetricsLeapArray leapArray = new MetricsLeapArray(windowLengthInMs, intervalInSec);
         long time = TimeUtil.currentTimeMillis();
-        WindowWrap<Window> window = leapArray.currentWindow(time);
+        WindowWrap<MetricBucket> window = leapArray.currentWindow(time);
 
         assertEquals(window.windowLength(), windowLengthInMs);
         assertEquals(window.windowStart(), time - time % windowLengthInMs);
@@ -54,11 +54,11 @@ public class WindowLeapArrayTest {
 
     @Test
     public void testLeapArrayWindowStart() {
-        WindowLeapArray leapArray = new WindowLeapArray(windowLengthInMs, intervalInSec);
+        MetricsLeapArray leapArray = new MetricsLeapArray(windowLengthInMs, intervalInSec);
         long firstTime = TimeUtil.currentTimeMillis();
         long previousWindowStart = firstTime - firstTime % windowLengthInMs;
 
-        WindowWrap<Window> window = leapArray.currentWindow(firstTime);
+        WindowWrap<MetricBucket> window = leapArray.currentWindow(firstTime);
 
         assertEquals(windowLengthInMs, window.windowLength());
         assertEquals(previousWindowStart, window.windowStart());
@@ -66,15 +66,15 @@ public class WindowLeapArrayTest {
 
     @Test
     public void testWindowAfterOneInterval() {
-        WindowLeapArray leapArray = new WindowLeapArray(windowLengthInMs, intervalInSec);
+        MetricsLeapArray leapArray = new MetricsLeapArray(windowLengthInMs, intervalInSec);
         long firstTime = TimeUtil.currentTimeMillis();
         long previousWindowStart = firstTime - firstTime % windowLengthInMs;
-        WindowWrap<Window> window = leapArray.currentWindow(previousWindowStart);
+        WindowWrap<MetricBucket> window = leapArray.currentWindow(previousWindowStart);
 
         assertEquals(windowLengthInMs, window.windowLength());
         assertEquals(previousWindowStart, window.windowStart());
 
-        Window currentWindow = window.value();
+        MetricBucket currentWindow = window.value();
         assertNotNull(currentWindow);
 
         currentWindow.addPass();
@@ -87,7 +87,7 @@ public class WindowLeapArrayTest {
         window = leapArray.currentWindow(middleTime);
         assertEquals(previousWindowStart, window.windowStart());
 
-        Window middleWindow = window.value();
+        MetricBucket middleWindow = window.value();
         middleWindow.addPass();
         assertSame(currentWindow, middleWindow);
         assertEquals(2L, middleWindow.pass());
@@ -106,18 +106,18 @@ public class WindowLeapArrayTest {
 
     @Deprecated
     public void testWindowDeprecatedRefresh() {
-        WindowLeapArray leapArray = new WindowLeapArray(windowLengthInMs, intervalInSec);
+        MetricsLeapArray leapArray = new MetricsLeapArray(windowLengthInMs, intervalInSec);
         final int len = intervalInSec * 1000 / windowLengthInMs;
         long firstTime = TimeUtil.currentTimeMillis();
-        List<WindowWrap<Window>> firstIterWindowList = new ArrayList<WindowWrap<Window>>(len);
+        List<WindowWrap<MetricBucket>> firstIterWindowList = new ArrayList<WindowWrap<MetricBucket>>(len);
         for (int i = 0; i < len; i++) {
-            WindowWrap<Window> w = leapArray.currentWindow(firstTime + windowLengthInMs * i);
+            WindowWrap<MetricBucket> w = leapArray.currentWindow(firstTime + windowLengthInMs * i);
             w.value().addPass();
             firstIterWindowList.add(i, w);
         }
 
         for (int i = len; i < len * 2; i++) {
-            WindowWrap<Window> w = leapArray.currentWindow(firstTime + windowLengthInMs * i);
+            WindowWrap<MetricBucket> w = leapArray.currentWindow(firstTime + windowLengthInMs * i);
             assertNotSame(w, firstIterWindowList.get(i - len));
         }
     }
@@ -126,7 +126,7 @@ public class WindowLeapArrayTest {
     public void testMultiThreadUpdateEmptyWindow() throws Exception {
         final long time = TimeUtil.currentTimeMillis();
         final int nThreads = 16;
-        final WindowLeapArray leapArray = new WindowLeapArray(windowLengthInMs, intervalInSec);
+        final MetricsLeapArray leapArray = new MetricsLeapArray(windowLengthInMs, intervalInSec);
         final CountDownLatch latch = new CountDownLatch(nThreads);
         Runnable task = new Runnable() {
             @Override
@@ -147,9 +147,9 @@ public class WindowLeapArrayTest {
 
     @Test
     public void testGetPreviousWindow() {
-        WindowLeapArray leapArray = new WindowLeapArray(windowLengthInMs, intervalInSec);
+        MetricsLeapArray leapArray = new MetricsLeapArray(windowLengthInMs, intervalInSec);
         long time = TimeUtil.currentTimeMillis();
-        WindowWrap<Window> previousWindow = leapArray.currentWindow(time);
+        WindowWrap<MetricBucket> previousWindow = leapArray.currentWindow(time);
         assertNull(leapArray.getPreviousWindow(time));
 
         long nextTime = time + windowLengthInMs;
@@ -165,16 +165,16 @@ public class WindowLeapArrayTest {
         final int intervalInSec = 1;
         final int intervalInMs = intervalInSec * 1000;
 
-        WindowLeapArray leapArray = new WindowLeapArray(windowLengthInMs, intervalInSec);
+        MetricsLeapArray leapArray = new MetricsLeapArray(windowLengthInMs, intervalInSec);
         long time = TimeUtil.currentTimeMillis();
 
-        Set<WindowWrap<Window>> windowWraps = new HashSet<WindowWrap<Window>>();
+        Set<WindowWrap<MetricBucket>> windowWraps = new HashSet<WindowWrap<MetricBucket>>();
 
         windowWraps.add(leapArray.currentWindow(time));
         windowWraps.add(leapArray.currentWindow(time + windowLengthInMs));
 
-        List<WindowWrap<Window>> list = leapArray.list();
-        for (WindowWrap<Window> wrap : list) {
+        List<WindowWrap<MetricBucket>> list = leapArray.list();
+        for (WindowWrap<MetricBucket> wrap : list) {
             assertTrue(windowWraps.contains(wrap));
         }
 
@@ -191,18 +191,18 @@ public class WindowLeapArrayTest {
         final int windowLengthInMs = 100;
         final int intervalInSec = 1;
 
-        WindowLeapArray leapArray = new WindowLeapArray(windowLengthInMs, intervalInSec);
+        MetricsLeapArray leapArray = new MetricsLeapArray(windowLengthInMs, intervalInSec);
         long time = TimeUtil.currentTimeMillis();
 
-        Set<WindowWrap<Window>> windowWraps = new HashSet<WindowWrap<Window>>();
+        Set<WindowWrap<MetricBucket>> windowWraps = new HashSet<WindowWrap<MetricBucket>>();
 
         windowWraps.add(leapArray.currentWindow(time));
         windowWraps.add(leapArray.currentWindow(time + windowLengthInMs));
 
         Thread.sleep(intervalInSec * 1000 + windowLengthInMs * 3);
 
-        List<WindowWrap<Window>> list = leapArray.list();
-        for (WindowWrap<Window> wrap : list) {
+        List<WindowWrap<MetricBucket>> list = leapArray.list();
+        for (WindowWrap<MetricBucket> wrap : list) {
             assertTrue(windowWraps.contains(wrap));
         }
 

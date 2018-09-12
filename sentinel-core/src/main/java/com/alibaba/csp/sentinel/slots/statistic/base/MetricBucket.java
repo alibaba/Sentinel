@@ -23,7 +23,7 @@ import com.alibaba.csp.sentinel.Constants;
  * @author jialiang.linjl
  * @author Eric Zhao
  */
-public class Window {
+public class MetricBucket {
 
     private final LongAdder pass = new LongAdder();
     private final LongAdder block = new LongAdder();
@@ -33,7 +33,7 @@ public class Window {
 
     private volatile long minRt;
 
-    public Window() {
+    public MetricBucket() {
         initMinRt();
     }
 
@@ -46,7 +46,7 @@ public class Window {
      *
      * @return new clean window
      */
-    public Window reset() {
+    public MetricBucket reset() {
         pass.reset();
         block.reset();
         exception.reset();
