@@ -18,8 +18,6 @@ package com.alibaba.csp.sentinel;
 import com.alibaba.csp.sentinel.init.InitExecutor;
 import com.alibaba.csp.sentinel.node.DefaultNodeBuilder;
 import com.alibaba.csp.sentinel.node.NodeBuilder;
-import com.alibaba.csp.sentinel.slots.DefaultSlotChainBuilder;
-import com.alibaba.csp.sentinel.slotchain.SlotChainBuilder;
 
 /**
  * @author jialiang.linjl
