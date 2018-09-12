@@ -13,20 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.slots;
-
-import com.alibaba.csp.sentinel.slotchain.ProcessorSlotChain;
+package com.alibaba.csp.sentinel.slotchain;
 
 /**
+ * The builder for processor slot chain.
+ *
  * @author qinan.qn
  * @author leyou
+ * @author Eric Zhao
  */
-public interface SlotsChainBuilder {
+public interface SlotChainBuilder {
 
     /**
-     * Helper method to create processor slot chain.
+     * Build the processor slot chain.
      *
-     * @return a processor slot that chain some slots together.
+     * @return a processor slot that chain some slots together
      */
     ProcessorSlotChain build();
 }
