@@ -175,4 +175,45 @@ public class ContextUtil {
     public static Context getContext() {
         return contextHolder.get();
     }
+
+    /**
+     * <p>
+     * Replace current context with the provided context.
+     * This is mainly designed for context switching (e.g. in asynchronous invocation).
+     * </p>
+     * <p>
+     * Note: When switching context manually, remember to restore the original context.
+     * For common scenarios, you can use {@link #runOnContext(Context, Runnable)}.
+     * </p>
+     *
+     * @param newContext new context to set
+     * @return old context
+     * @since 0.2.0
+     */
+    private static Context replaceContext(Context newContext) {
+        Context backupContext = contextHolder.get();
+        if (newContext == null) {
+            contextHolder.remove();
+        } else {
+            contextHolder.set(newContext);
+        }
+        return backupContext;
+    }
+
+    /**
+     * Execute the code within provided context.
+     * This is mainly designed for context switching (e.g. in asynchronous invocation).
+     *
+     * @param context the context
+     * @param f       lambda to run within the context
+     * @since 0.2.0
+     */
+    public static void runOnContext(Context context, Runnable f) {
+        Context curContext = replaceContext(context);
+        try {
+            f.run();
+        } finally {
+            replaceContext(curContext);
+        }
+    }
 }

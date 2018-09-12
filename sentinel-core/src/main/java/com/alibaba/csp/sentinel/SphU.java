@@ -69,6 +69,7 @@ import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
  * </p>
  *
  * @author jialiang.linjl
+ * @author Eric Zhao
  * @see SphO
  */
 public class SphU {
@@ -199,5 +200,46 @@ public class SphU {
      */
     public static Entry entry(String name, EntryType type, int count, Object... args) throws BlockException {
         return Env.sph.entry(name, type, count, args);
+    }
+
+    /**
+     * Checking all rules about the asynchronous resource.
+     *
+     * @param name the unique name of the protected resource
+     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded
+     * @since 0.2.0
+     */
+    public static AsyncEntry asyncEntry(String name) throws BlockException {
+        return Env.sph.asyncEntry(name, EntryType.OUT, 1, OBJECTS0);
+    }
+
+    /**
+     * Checking all {@link Rule}s about the asynchronous resource.
+     *
+     * @param name the unique name for the protected resource
+     * @param type the resource is an inbound or an outbound method. This is used
+     *             to mark whether it can be blocked when the system is unstable,
+     *             only inbound traffic could be blocked by {@link SystemRule}
+     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded
+     * @since 0.2.0
+     */
+    public static AsyncEntry asyncEntry(String name, EntryType type) throws BlockException {
+        return Env.sph.asyncEntry(name, type, 1, OBJECTS0);
+    }
+
+    /**
+     * Checking all {@link Rule}s about the asynchronous resource.
+     *
+     * @param name  the unique name for the protected resource
+     * @param type  the resource is an inbound or an outbound method. This is used
+     *              to mark whether it can be blocked when the system is unstable,
+     *              only inbound traffic could be blocked by {@link SystemRule}
+     * @param count tokens required
+     * @param args  extra parameters
+     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded
+     * @since 0.2.0
+     */
+    public static AsyncEntry asyncEntry(String name, EntryType type, int count, Object... args) throws BlockException {
+        return Env.sph.asyncEntry(name, type, count, args);
     }
 }
