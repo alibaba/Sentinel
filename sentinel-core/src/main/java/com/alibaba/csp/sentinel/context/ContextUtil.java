@@ -190,7 +190,7 @@ public class ContextUtil {
      * @return old context
      * @since 0.2.0
      */
-    private static Context replaceContext(Context newContext) {
+    static Context replaceContext(Context newContext) {
         Context backupContext = contextHolder.get();
         if (newContext == null) {
             contextHolder.remove();
