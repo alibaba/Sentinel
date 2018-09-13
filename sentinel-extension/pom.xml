@@ -17,6 +17,7 @@
         <module>sentinel-datasource-zookeeper</module>
         <module>sentinel-datasource-apollo</module>
         <module>sentinel-annotation-aspectj</module>
+        <module>sentinel-hot-param-flow-control</module>
     </modules>
 
 </project>
