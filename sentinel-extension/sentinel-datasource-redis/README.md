@@ -1,10 +1,12 @@
 # Sentinel DataSource Redis
 
-Sentinel DataSource Redis provides integration with Redis. make Redis
-as dynamic rule data source of Sentinel. The data source uses push model (listener) with redis pub/sub feature.
+Sentinel DataSource Redis provides integration with Redis. The data source leverages Redis pub-sub feature to implement push model (listener).
 
-**NOTE**:
-we not support redis cluster as a pub/sub dataSource now.
+The data source uses [Lettuce](https://lettuce.io/) as the Redis client internal. Requires JDK 1.8 or later.
+
+> **NOTE**: Currently we do not support Redis Cluster now.
+
+## Usage
 
 To use Sentinel DataSource Redis, you should add the following dependency:
 
@@ -25,39 +27,41 @@ ReadableDataSource<String, List<FlowRule>> redisDataSource = new RedisDataSource
 FlowRuleManager.register2Property(redisDataSource.getProperty());
 ```
 
-_**redisConnectionConfig**_ : use `RedisConnectionConfig` class to build your connection config. 
+- `redisConnectionConfig`: use `RedisConnectionConfig` class to build your Redis connection config
+- `ruleKey`: the rule persistence key of a Redis String
+- `channel`: the channel to subscribe
 
-_**ruleKey**_ : when the json rule data publish. it also should save to the key for init read.
+You can also create multi data sources to subscribe for different rule type. 
 
-_**channel**_ : the channel to listen.  
 
-you can also create multi data source listen for different rule type. 
-
-you can see test cases for usage.
-
-## Before start
-
-RedisDataSource init config by read from redis key `ruleKey`, value store the latest rule config data. 
-so you should first config your redis ruleData in back end. 
-
-since update redis rule data. it should simultaneously send data to `channel`.
-
-you may implement like this (using Redis transaction):
+Note that the data source first loads initial rules from a Redis String (provided `ruleKey`) during initialization.
+So for consistency, users should publish the value and save the value to the `ruleKey` simultaneously like this (using Redis transaction):
 
 ```
-
 MULTI
-PUBLISH channel value
 SET ruleKey value
+PUBLISH channel value
 EXEC
+```
 
-``` 
+An example using Lettuce Redis client:
 
+```java
+public <T> void pushRules(List<T> rules, Converter<List<T>, String> encoder) {
+    StatefulRedisPubSubConnection<String, String> connection = client.connectPubSub();
+    RedisPubSubCommands<String, String> subCommands = connection.sync();
+    String value = encoder.convert(rules);
+    subCommands.multi();
+    subCommands.set(ruleKey, value);
+    subCommands.publish(ruleChannel, value);
+    subCommands.exec();
+}
+```
 
 ## How to build RedisConnectionConfig
 
 
-### Build with redis standLone mode
+### Build with Redis standalone mode
 
 ```java
 RedisConnectionConfig config = RedisConnectionConfig.builder()
@@ -70,7 +74,7 @@ RedisConnectionConfig config = RedisConnectionConfig.builder()
 ```
 
 
-### Build with redis sentinel mode
+### Build with Redis Sentinel mode
 
 ```java
 RedisConnectionConfig config = RedisConnectionConfig.builder()

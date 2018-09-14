@@ -19,9 +19,10 @@ package com.alibaba.csp.sentinel.datasource.redis;
 import com.alibaba.csp.sentinel.datasource.AbstractDataSource;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.datasource.redis.config.RedisConnectionConfig;
-import com.alibaba.csp.sentinel.datasource.redis.util.AssertUtil;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
+
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.sync.RedisCommands;
@@ -29,38 +30,51 @@ import io.lettuce.core.pubsub.RedisPubSubAdapter;
 import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import io.lettuce.core.pubsub.api.sync.RedisPubSubCommands;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 /**
- * A read-only {@code DataSource} with Redis backend.
  * <p>
- * When data source init,reads form redis with string k-v,value is string format rule config data.
- * This data source subscribe from specific channel and then data published in redis with this channel,data source
- * will be notified and then update rule config in time.
+ * A read-only {@code DataSource} with Redis backend.
+ * </p>
+ * <p>
+ * The data source first loads initial rules from a Redis String during initialization.
+ * Then the data source subscribe from specific channel. When new rules is published to the channel,
+ * the data source will observe the change in realtime and update to memory.
+ * </p>
+ * <p>
+ * Note that for consistency, users should publish the value and save the value to the ruleKey simultaneously
+ * like this (using Redis transaction):
+ * <pre>
+ *  MULTI
+ *  SET ruleKey value
+ *  PUBLISH channel value
+ *  EXEC
+ * </pre>
  * </p>
  *
  * @author tiger
  */
-
 public class RedisDataSource<T> extends AbstractDataSource<String, T> {
 
-    private RedisClient redisClient = null;
+    private final RedisClient redisClient;
 
-    private String ruleKey;
+    private final String ruleKey;
 
     /**
-     * Constructor of {@code RedisDataSource}
+     * Constructor of {@code RedisDataSource}.
      *
-     * @param connectionConfig redis connection config.
-     * @param ruleKey          data save in redis.
-     * @param channel          subscribe from channel.
-     * @param parser           convert <code>ruleKey<code>`s value to {@literal alibaba/Sentinel} rule type
+     * @param connectionConfig Redis connection config
+     * @param ruleKey          data key in Redis
+     * @param channel          channel to subscribe in Redis
+     * @param parser           customized data parser, cannot be empty
      */
-    public RedisDataSource(RedisConnectionConfig connectionConfig, String ruleKey, String channel, Converter<String, T> parser) {
+    public RedisDataSource(RedisConnectionConfig connectionConfig, String ruleKey, String channel,
+                           Converter<String, T> parser) {
         super(parser);
-        AssertUtil.notNull(connectionConfig, "redis connection config can not be null");
-        AssertUtil.notEmpty(ruleKey, "redis subscribe ruleKey can not be empty");
-        AssertUtil.notEmpty(channel, "redis subscribe channel can not be empty");
+        AssertUtil.notNull(connectionConfig, "Redis connection config can not be null");
+        AssertUtil.notEmpty(ruleKey, "Redis ruleKey can not be empty");
+        AssertUtil.notEmpty(channel, "Redis subscribe channel can not be empty");
         this.redisClient = getRedisClient(connectionConfig);
         this.ruleKey = ruleKey;
         loadInitialConfig();
@@ -68,28 +82,28 @@ public class RedisDataSource<T> extends AbstractDataSource<String, T> {
     }
 
     /**
-     * build redis client form {@code RedisConnectionConfig} with io.lettuce.
+     * Build Redis client fromm {@code RedisConnectionConfig}.
      *
      * @return a new {@link RedisClient}
      */
     private RedisClient getRedisClient(RedisConnectionConfig connectionConfig) {
         if (connectionConfig.getRedisSentinels().size() == 0) {
-            RecordLog.info("start standLone mode to connect to redis");
-            return getRedisStandLoneClient(connectionConfig);
+            RecordLog.info("[RedisDataSource] Creating stand-alone mode Redis client");
+            return getRedisStandaloneClient(connectionConfig);
         } else {
-            RecordLog.info("start redis sentinel mode to connect to redis");
+            RecordLog.info("[RedisDataSource] Creating Redis Sentinel mode Redis client");
             return getRedisSentinelClient(connectionConfig);
         }
     }
 
-    private RedisClient getRedisStandLoneClient(RedisConnectionConfig connectionConfig) {
+    private RedisClient getRedisStandaloneClient(RedisConnectionConfig connectionConfig) {
         char[] password = connectionConfig.getPassword();
         String clientName = connectionConfig.getClientName();
         RedisURI.Builder redisUriBuilder = RedisURI.builder();
         redisUriBuilder.withHost(connectionConfig.getHost())
-                .withPort(connectionConfig.getPort())
-                .withDatabase(connectionConfig.getDatabase())
-                .withTimeout(connectionConfig.getTimeout(), TimeUnit.MILLISECONDS);
+            .withPort(connectionConfig.getPort())
+            .withDatabase(connectionConfig.getDatabase())
+            .withTimeout(Duration.ofMillis(connectionConfig.getTimeout()));
         if (password != null) {
             redisUriBuilder.withPassword(connectionConfig.getPassword());
         }
@@ -113,7 +127,7 @@ public class RedisDataSource<T> extends AbstractDataSource<String, T> {
             sentinelRedisUriBuilder.withClientName(clientName);
         }
         sentinelRedisUriBuilder.withSentinelMasterId(connectionConfig.getRedisSentinelMasterId())
-                .withTimeout(connectionConfig.getTimeout(), TimeUnit.MILLISECONDS);
+            .withTimeout(connectionConfig.getTimeout(), TimeUnit.MILLISECONDS);
         return RedisClient.create(sentinelRedisUriBuilder.build());
     }
 
@@ -138,16 +152,16 @@ public class RedisDataSource<T> extends AbstractDataSource<String, T> {
     }
 
     @Override
-    public String readSource() throws Exception {
+    public String readSource() {
         if (this.redisClient == null) {
-            throw new IllegalStateException("redis client has not been initialized or error occurred");
+            throw new IllegalStateException("Redis client has not been initialized or error occurred");
         }
         RedisCommands<String, String> stringRedisCommands = redisClient.connect().sync();
         return stringRedisCommands.get(ruleKey);
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         redisClient.shutdown();
     }
 
@@ -158,9 +172,8 @@ public class RedisDataSource<T> extends AbstractDataSource<String, T> {
 
         @Override
         public void message(String channel, String message) {
-            RecordLog.info(String.format("[RedisDataSource] New property value received for channel %s: %s",  channel, message));
+            RecordLog.info(String.format("[RedisDataSource] New property value received for channel %s: %s", channel, message));
             getProperty().updateValue(parser.convert(message));
         }
     }
-
 }

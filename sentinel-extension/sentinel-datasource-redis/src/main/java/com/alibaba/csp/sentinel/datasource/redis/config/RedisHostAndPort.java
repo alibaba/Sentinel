@@ -16,7 +16,7 @@
 
 package com.alibaba.csp.sentinel.datasource.redis.config;
 
-import com.alibaba.csp.sentinel.datasource.redis.util.AssertUtil;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
  * An immutable representation of a host and port.
@@ -85,7 +85,7 @@ public class RedisHostAndPort {
         if (!(o instanceof RedisHostAndPort)) {
             return false;
         }
-        RedisHostAndPort that = (RedisHostAndPort) o;
+        RedisHostAndPort that = (RedisHostAndPort)o;
         return port == that.port && (host != null ? host.equals(that.host) : that.host == null);
     }
 
