@@ -22,7 +22,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 import java.util.*;
 
 /**
- *This class provide a builder to build redis client connection config.
+ * This class provide a builder to build redis client connection config.
  *
  * @author tiger
  */

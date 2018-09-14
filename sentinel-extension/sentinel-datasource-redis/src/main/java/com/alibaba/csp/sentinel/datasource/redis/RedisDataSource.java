@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
  * When data source init,reads form redis with string k-v,value is string format rule config data.
  * This data source subscribe from specific channel and then data published in redis with this channel,data source
  * will be notified and then update rule config in time.
- * <p>
+ * </p>
  *
  * @author tiger
  */
