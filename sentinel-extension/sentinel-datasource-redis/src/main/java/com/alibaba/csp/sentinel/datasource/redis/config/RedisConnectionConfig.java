@@ -16,7 +16,7 @@
 
 package com.alibaba.csp.sentinel.datasource.redis.config;
 
-import com.alibaba.csp.sentinel.datasource.redis.util.AssertUtil;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import java.util.*;
@@ -76,7 +76,6 @@ public class RedisConnectionConfig {
         setTimeout(timeout);
     }
 
-
     /**
      * Returns a new {@link RedisConnectionConfig.Builder} to construct a {@link RedisConnectionConfig}.
      *
@@ -85,7 +84,6 @@ public class RedisConnectionConfig {
     public static RedisConnectionConfig.Builder builder() {
         return new RedisConnectionConfig.Builder();
     }
-
 
     /**
      * Returns the host.
@@ -240,7 +238,6 @@ public class RedisConnectionConfig {
         return redisSentinels;
     }
 
-
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
@@ -269,7 +266,7 @@ public class RedisConnectionConfig {
         if (!(o instanceof RedisConnectionConfig)) {
             return false;
         }
-        RedisConnectionConfig redisURI = (RedisConnectionConfig) o;
+        RedisConnectionConfig redisURI = (RedisConnectionConfig)o;
 
         if (port != redisURI.port) {
             return false;
@@ -280,10 +277,12 @@ public class RedisConnectionConfig {
         if (host != null ? !host.equals(redisURI.host) : redisURI.host != null) {
             return false;
         }
-        if (redisSentinelMasterId != null ? !redisSentinelMasterId.equals(redisURI.redisSentinelMasterId) : redisURI.redisSentinelMasterId != null) {
+        if (redisSentinelMasterId != null ? !redisSentinelMasterId.equals(redisURI.redisSentinelMasterId)
+            : redisURI.redisSentinelMasterId != null) {
             return false;
         }
-        return !(redisSentinels != null ? !redisSentinels.equals(redisURI.redisSentinels) : redisURI.redisSentinels != null);
+        return !(redisSentinels != null ? !redisSentinels.equals(redisURI.redisSentinels)
+            : redisURI.redisSentinels != null);
 
     }
 
@@ -296,7 +295,6 @@ public class RedisConnectionConfig {
         result = 31 * result + (redisSentinels != null ? redisSentinels.hashCode() : 0);
         return result;
     }
-
 
     /**
      * Builder for Redis RedisConnectionConfig.
@@ -314,7 +312,6 @@ public class RedisConnectionConfig {
 
         private Builder() {
         }
-
 
         /**
          * Set Redis host. Creates a new builder.
@@ -435,7 +432,8 @@ public class RedisConnectionConfig {
          */
         public RedisConnectionConfig.Builder withHost(String host) {
 
-            AssertUtil.assertState(this.redisSentinels.isEmpty(), "Sentinels are non-empty. Cannot use in Sentinel mode.");
+            AssertUtil.assertState(this.redisSentinels.isEmpty(),
+                "Sentinels are non-empty. Cannot use in Sentinel mode.");
             AssertUtil.notEmpty(host, "Host must not be empty");
 
             this.host = host;
@@ -548,7 +546,8 @@ public class RedisConnectionConfig {
 
             if (redisSentinels.isEmpty() && StringUtil.isEmpty(host)) {
                 throw new IllegalStateException(
-                        "Cannot build a RedisConnectionConfig. One of the following must be provided Host, Socket or Sentinel");
+                    "Cannot build a RedisConnectionConfig. One of the following must be provided Host, Socket or "
+                        + "Sentinel");
             }
 
             RedisConnectionConfig redisURI = new RedisConnectionConfig();
@@ -565,7 +564,8 @@ public class RedisConnectionConfig {
             redisURI.setRedisSentinelMasterId(redisSentinelMasterId);
 
             for (RedisHostAndPort sentinel : redisSentinels) {
-                redisURI.getRedisSentinels().add(new RedisConnectionConfig(sentinel.getHost(), sentinel.getPort(), timeout));
+                redisURI.getRedisSentinels().add(
+                    new RedisConnectionConfig(sentinel.getHost(), sentinel.getPort(), timeout));
             }
 
             redisURI.setTimeout(timeout);

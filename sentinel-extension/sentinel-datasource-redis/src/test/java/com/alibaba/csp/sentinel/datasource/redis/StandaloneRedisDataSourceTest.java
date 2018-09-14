@@ -17,6 +17,7 @@
 package com.alibaba.csp.sentinel.datasource.redis;
 
 import ai.grakn.redismock.RedisServer;
+
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
 import com.alibaba.csp.sentinel.datasource.redis.config.RedisConnectionConfig;
@@ -24,6 +25,7 @@ import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.sync.RedisCommands;
@@ -39,24 +41,23 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Redis standLone mode test cases for {@link RedisDataSource}.
+ * Redis stand-alone mode test cases for {@link RedisDataSource}.
  *
  * @author tiger
  */
-public class StandLoneRedisDataSourceTest {
+public class StandaloneRedisDataSourceTest {
 
     private static RedisServer server = null;
 
     private RedisClient client;
 
-    private String ruleKey = "redisSentinel.flow.rulekey";
-
-    private String channel = "redisSentinel.flow.channel";
+    private String ruleKey = "sentinel.rules.flow.ruleKey";
+    private String channel = "sentinel.rules.flow.channel";
 
     @Before
     public void buildResource() {
         try {
-            //bind to a random port
+            // Bind to a random port.
             server = RedisServer.newRedisServer();
             server.start();
         } catch (IOException e) {
@@ -65,11 +66,12 @@ public class StandLoneRedisDataSourceTest {
         Converter<String, List<FlowRule>> flowConfigParser = buildFlowConfigParser();
         client = RedisClient.create(RedisURI.create(server.getHost(), server.getBindPort()));
         RedisConnectionConfig config = RedisConnectionConfig.builder()
-                .withHost(server.getHost())
-                .withPort(server.getBindPort())
-                .build();
+            .withHost(server.getHost())
+            .withPort(server.getBindPort())
+            .build();
         initRedisRuleData();
-        ReadableDataSource<String, List<FlowRule>> redisDataSource = new RedisDataSource<List<FlowRule>>(config, ruleKey, channel, flowConfigParser);
+        ReadableDataSource<String, List<FlowRule>> redisDataSource = new RedisDataSource<List<FlowRule>>(config,
+            ruleKey, channel, flowConfigParser);
         FlowRuleManager.register2Property(redisDataSource.getProperty());
     }
 
@@ -79,8 +81,12 @@ public class StandLoneRedisDataSourceTest {
         Assert.assertEquals(1, rules.size());
         int maxQueueingTimeMs = new Random().nextInt();
         StatefulRedisPubSubConnection<String, String> connection = client.connectPubSub();
-        String flowRules = "[{\"resource\":\"test\", \"limitApp\":\"default\", \"grade\":1, \"count\":\"0.0\", \"strategy\":0, \"refResource\":null, " +
-                "\"controlBehavior\":0, \"warmUpPeriodSec\":10, \"maxQueueingTimeMs\":" + maxQueueingTimeMs + ", \"controller\":null}]";
+        String flowRules =
+            "[{\"resource\":\"test\", \"limitApp\":\"default\", \"grade\":1, \"count\":\"0.0\", \"strategy\":0, "
+                + "\"refResource\":null, "
+                +
+                "\"controlBehavior\":0, \"warmUpPeriodSec\":10, \"maxQueueingTimeMs\":" + maxQueueingTimeMs
+                + ", \"controller\":null}]";
         RedisPubSubCommands<String, String> subCommands = connection.sync();
         subCommands.multi();
         subCommands.set(ruleKey, flowRules);
@@ -113,7 +119,7 @@ public class StandLoneRedisDataSourceTest {
         RedisCommands<String, String> stringRedisCommands = client.connect().sync();
         stringRedisCommands.del(ruleKey);
         String value = stringRedisCommands.get(ruleKey);
-        Assert.assertEquals(value, null);
+        Assert.assertNull(value);
     }
 
     @After
@@ -126,17 +132,14 @@ public class StandLoneRedisDataSourceTest {
     }
 
     private Converter<String, List<FlowRule>> buildFlowConfigParser() {
-        return new Converter<String, List<FlowRule>>() {
-            @Override
-            public List<FlowRule> convert(String source) {
-                return JSON.parseObject(source, new TypeReference<List<FlowRule>>() {
-                });
-            }
-        };
+        return source -> JSON.parseObject(source, new TypeReference<List<FlowRule>>() {});
     }
 
     private void initRedisRuleData() {
-        String flowRulesJson = "[{\"resource\":\"test\", \"limitApp\":\"default\", \"grade\":1, \"count\":\"0.0\", \"strategy\":0, \"refResource\":null, " +
+        String flowRulesJson =
+            "[{\"resource\":\"test\", \"limitApp\":\"default\", \"grade\":1, \"count\":\"0.0\", \"strategy\":0, "
+                + "\"refResource\":null, "
+                +
                 "\"controlBehavior\":0, \"warmUpPeriodSec\":10, \"maxQueueingTimeMs\":500, \"controller\":null}]";
         RedisCommands<String, String> stringRedisCommands = client.connect().sync();
         String ok = stringRedisCommands.set(ruleKey, flowRulesJson);
