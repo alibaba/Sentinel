@@ -15,10 +15,14 @@
  */
 package com.alibaba.csp.sentinel.slots.hotspot;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
+import com.alibaba.csp.sentinel.slots.statistic.HotParameterMetric;
 
 /**
  * @author jialiang.linjl
@@ -26,6 +30,8 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
  * @since 0.2.0
  */
 public class HotParamSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
+
+    private static final Map<ResourceWrapper, HotParameterMetric> metricsMap = new ConcurrentHashMap<>();
 
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, Object... args)

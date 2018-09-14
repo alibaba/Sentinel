@@ -12,10 +12,6 @@
     <artifactId>sentinel-hot-param-flow-control</artifactId>
     <packaging>jar</packaging>
 
-    <properties>
-        <guava.version>26.0-jre</guava.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.alibaba.csp</groupId>
@@ -28,9 +24,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
+            <groupId>com.googlecode.concurrentlinkedhashmap</groupId>
+            <artifactId>concurrentlinkedhashmap-lru</artifactId>
+            <version>1.4.2</version>
         </dependency>
     </dependencies>
 </project>

@@ -13,19 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.init;
-
-import com.alibaba.csp.sentinel.slots.statistic.StatisticSlotCallbackRegistry;
+package com.alibaba.csp.sentinel.slots.hotspot;
 
 /**
  * @author Eric Zhao
  */
-public class StatisticSlotCallbackInit implements InitFunc {
-
-    @Override
-    public void init() {
-        StatisticSlotCallbackRegistry.addEntryCallback();
-
-        StatisticSlotCallbackRegistry.addExitCallback();
-    }
+public enum RollingParamEvent {
+    /**
+     * Indicates that the request successfully passed the slot chain (entry).
+     */
+    REQUEST_PASSED,
+    /**
+     * Indicates that the request is blocked by a specific slot.
+     */
+    REQUEST_BLOCKED
 }

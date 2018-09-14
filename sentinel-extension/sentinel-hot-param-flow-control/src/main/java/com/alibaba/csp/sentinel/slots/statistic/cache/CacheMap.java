@@ -13,19 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.init;
+package com.alibaba.csp.sentinel.slots.statistic.cache;
 
-import com.alibaba.csp.sentinel.slots.statistic.StatisticSlotCallbackRegistry;
+import java.util.Set;
 
 /**
+ * A common cache map interface.
+ *
+ * @param <K> type of the key
+ * @param <V> type of the value
  * @author Eric Zhao
+ * @since 0.2.0
  */
-public class StatisticSlotCallbackInit implements InitFunc {
+public interface CacheMap<K, V> {
 
-    @Override
-    public void init() {
-        StatisticSlotCallbackRegistry.addEntryCallback();
+    V get(K key);
 
-        StatisticSlotCallbackRegistry.addExitCallback();
-    }
+    V remove(K key);
+
+    V put(K key, V value);
+
+    V putIfAbsent(K key, V value);
+
+    long size();
+
+    void clear();
+
+    Set<K> ascendingKeySet();
 }
