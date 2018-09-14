@@ -16,6 +16,7 @@
         <module>sentinel-datasource-nacos</module>
         <module>sentinel-datasource-zookeeper</module>
         <module>sentinel-datasource-apollo</module>
+        <module>sentinel-datasource-redis</module>
         <module>sentinel-annotation-aspectj</module>
     </modules>
 
