@@ -32,33 +32,33 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Redis sentinel mode test cases for {@link RedisDataSource}.
+ * Redis redisSentinel mode test cases for {@link RedisDataSource}.
  *
  * @author tiger
  */
-@Ignore(value = "before run this test. you should build your own sentinel config in local")
+@Ignore(value = "before run this test. you should build your own redisSentinel config in local")
 public class SentinelModeRedisDataSourceTest {
 
     private String host = "localhost";
 
     private int redisSentinelPort = 5000;
 
-    private String sentinelMasterId = "mymaster";
+    private String redisSentinelMasterId = "mymaster";
 
-    private String ruleKey = "redis.sentinel.flow.rulekey";
+    private String ruleKey = "redis.redisSentinel.flow.rulekey";
 
-    private String channel = "redis.sentinel.flow.channel";
+    private String channel = "redis.redisSentinel.flow.channel";
 
     private final RedisClient client = RedisClient.create(RedisURI.Builder.sentinel(host, redisSentinelPort)
-            .withSentinelMasterId(sentinelMasterId).build());
+            .withSentinelMasterId(redisSentinelMasterId).build());
 
     @Before
     public void initData() {
         Converter<String, List<FlowRule>> flowConfigParser = buildFlowConfigParser();
         RedisConnectionConfig config = RedisConnectionConfig.builder()
-                .withSentinel(host, redisSentinelPort)
-                .withSentinel(host, redisSentinelPort)
-                .withSentinelMasterId(sentinelMasterId).build();
+                .withRedisSentinel(host, redisSentinelPort)
+                .withRedisSentinel(host, redisSentinelPort)
+                .withSentinelMasterId(redisSentinelMasterId).build();
         initRedisRuleData();
         ReadableDataSource<String, List<FlowRule>> redisDataSource = new RedisDataSource<List<FlowRule>>(config, ruleKey, channel, flowConfigParser);
         FlowRuleManager.register2Property(redisDataSource.getProperty());

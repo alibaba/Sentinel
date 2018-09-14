@@ -74,7 +74,7 @@ RedisConnectionConfig config = RedisConnectionConfig.builder()
 
 ```java
 RedisConnectionConfig config = RedisConnectionConfig.builder()
-                .withSentinel("sentinelServer1",5000)
-                .wuthSentinel("sentinelServer2",5001)
-                .withSentinelMasterId("sentinelMasterId").build();
+                .withRedisSentinel("redisSentinelServer1",5000)
+                .withRedisSentinel("redisSentinelServer2",5001)
+                .withRedisSentinelMasterId("redisSentinelMasterId").build();
 ```

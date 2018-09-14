@@ -29,7 +29,7 @@ import java.util.*;
 public class RedisConnectionConfig {
 
     /**
-     * The default sentinel port.
+     * The default redisSentinel port.
      */
     public static final int DEFAULT_SENTINEL_PORT = 26379;
 
@@ -44,13 +44,13 @@ public class RedisConnectionConfig {
     public static final long DEFAULT_TIMEOUT_MILLISECONDS = 60 * 1000;
 
     private String host;
-    private String sentinelMasterId;
+    private String redisSentinelMasterId;
     private int port;
     private int database;
     private String clientName;
     private char[] password;
     private long timeout = DEFAULT_TIMEOUT_MILLISECONDS;
-    private final List<RedisConnectionConfig> sentinels = new ArrayList<RedisConnectionConfig>();
+    private final List<RedisConnectionConfig> redisSentinels = new ArrayList<RedisConnectionConfig>();
 
     /**
      * Default empty constructor.
@@ -110,17 +110,17 @@ public class RedisConnectionConfig {
      *
      * @return the Sentinel Master Id.
      */
-    public String getSentinelMasterId() {
-        return sentinelMasterId;
+    public String getRedisSentinelMasterId() {
+        return redisSentinelMasterId;
     }
 
     /**
      * Sets the Sentinel Master Id.
      *
-     * @param sentinelMasterId the Sentinel Master Id.
+     * @param redisSentinelMasterId the Sentinel Master Id.
      */
-    public void setSentinelMasterId(String sentinelMasterId) {
-        this.sentinelMasterId = sentinelMasterId;
+    public void setRedisSentinelMasterId(String redisSentinelMasterId) {
+        this.redisSentinelMasterId = redisSentinelMasterId;
     }
 
     /**
@@ -236,8 +236,8 @@ public class RedisConnectionConfig {
     /**
      * @return the list of {@link RedisConnectionConfig Redis Sentinel URIs}.
      */
-    public List<RedisConnectionConfig> getSentinels() {
-        return sentinels;
+    public List<RedisConnectionConfig> getRedisSentinels() {
+        return redisSentinels;
     }
 
 
@@ -252,9 +252,9 @@ public class RedisConnectionConfig {
             sb.append("host='").append(host).append('\'');
             sb.append(", port=").append(port);
         }
-        if (sentinelMasterId != null) {
-            sb.append("sentinels=").append(getSentinels());
-            sb.append(", sentinelMasterId=").append(sentinelMasterId);
+        if (redisSentinelMasterId != null) {
+            sb.append("redisSentinels=").append(getRedisSentinels());
+            sb.append(", redisSentinelMasterId=").append(redisSentinelMasterId);
         }
 
         sb.append(']');
@@ -280,20 +280,20 @@ public class RedisConnectionConfig {
         if (host != null ? !host.equals(redisURI.host) : redisURI.host != null) {
             return false;
         }
-        if (sentinelMasterId != null ? !sentinelMasterId.equals(redisURI.sentinelMasterId) : redisURI.sentinelMasterId != null) {
+        if (redisSentinelMasterId != null ? !redisSentinelMasterId.equals(redisURI.redisSentinelMasterId) : redisURI.redisSentinelMasterId != null) {
             return false;
         }
-        return !(sentinels != null ? !sentinels.equals(redisURI.sentinels) : redisURI.sentinels != null);
+        return !(redisSentinels != null ? !redisSentinels.equals(redisURI.redisSentinels) : redisURI.redisSentinels != null);
 
     }
 
     @Override
     public int hashCode() {
         int result = host != null ? host.hashCode() : 0;
-        result = 31 * result + (sentinelMasterId != null ? sentinelMasterId.hashCode() : 0);
+        result = 31 * result + (redisSentinelMasterId != null ? redisSentinelMasterId.hashCode() : 0);
         result = 31 * result + port;
         result = 31 * result + database;
-        result = 31 * result + (sentinels != null ? sentinels.hashCode() : 0);
+        result = 31 * result + (redisSentinels != null ? redisSentinels.hashCode() : 0);
         return result;
     }
 
@@ -304,13 +304,13 @@ public class RedisConnectionConfig {
     public static class Builder {
 
         private String host;
-        private String sentinelMasterId;
+        private String redisSentinelMasterId;
         private int port;
         private int database;
         private String clientName;
         private char[] password;
         private long timeout = DEFAULT_TIMEOUT_MILLISECONDS;
-        private final List<RedisHostAndPort> sentinels = new ArrayList<RedisHostAndPort>();
+        private final List<RedisHostAndPort> redisSentinels = new ArrayList<RedisHostAndPort>();
 
         private Builder() {
         }
@@ -348,12 +348,12 @@ public class RedisConnectionConfig {
          * @param host the host name
          * @return New builder with Sentinel host/port.
          */
-        public static RedisConnectionConfig.Builder sentinel(String host) {
+        public static RedisConnectionConfig.Builder redisSentinel(String host) {
 
             AssertUtil.notEmpty(host, "Host must not be empty");
 
             RedisConnectionConfig.Builder builder = RedisConnectionConfig.builder();
-            return builder.withSentinel(host);
+            return builder.withRedisSentinel(host);
         }
 
         /**
@@ -363,24 +363,24 @@ public class RedisConnectionConfig {
          * @param port the port
          * @return New builder with Sentinel host/port.
          */
-        public static RedisConnectionConfig.Builder sentinel(String host, int port) {
+        public static RedisConnectionConfig.Builder redisSentinel(String host, int port) {
 
             AssertUtil.notEmpty(host, "Host must not be empty");
             AssertUtil.isTrue(isValidPort(port), String.format("Port out of range: %s", port));
 
             RedisConnectionConfig.Builder builder = RedisConnectionConfig.builder();
-            return builder.withSentinel(host, port);
+            return builder.withRedisSentinel(host, port);
         }
 
         /**
          * Set Sentinel host and master id. Creates a new builder.
          *
          * @param host     the host name
-         * @param masterId sentinel master id
+         * @param masterId redisSentinel master id
          * @return New builder with Sentinel host/port.
          */
-        public static RedisConnectionConfig.Builder sentinel(String host, String masterId) {
-            return sentinel(host, DEFAULT_SENTINEL_PORT, masterId);
+        public static RedisConnectionConfig.Builder redisSentinel(String host, String masterId) {
+            return redisSentinel(host, DEFAULT_SENTINEL_PORT, masterId);
         }
 
         /**
@@ -388,42 +388,42 @@ public class RedisConnectionConfig {
          *
          * @param host     the host name
          * @param port     the port
-         * @param masterId sentinel master id
+         * @param masterId redisSentinel master id
          * @return New builder with Sentinel host/port.
          */
-        public static RedisConnectionConfig.Builder sentinel(String host, int port, String masterId) {
+        public static RedisConnectionConfig.Builder redisSentinel(String host, int port, String masterId) {
 
             AssertUtil.notEmpty(host, "Host must not be empty");
             AssertUtil.isTrue(isValidPort(port), String.format("Port out of range: %s", port));
 
             RedisConnectionConfig.Builder builder = RedisConnectionConfig.builder();
-            return builder.withSentinelMasterId(masterId).withSentinel(host, port);
+            return builder.withSentinelMasterId(masterId).withRedisSentinel(host, port);
         }
 
         /**
-         * Add a withSentinel host to the existing builder.
+         * Add a withRedisSentinel host to the existing builder.
          *
          * @param host the host name
          * @return the builder
          */
-        public RedisConnectionConfig.Builder withSentinel(String host) {
-            return withSentinel(host, DEFAULT_SENTINEL_PORT);
+        public RedisConnectionConfig.Builder withRedisSentinel(String host) {
+            return withRedisSentinel(host, DEFAULT_SENTINEL_PORT);
         }
 
         /**
-         * Add a withSentinel host/port to the existing builder.
+         * Add a withRedisSentinel host/port to the existing builder.
          *
          * @param host the host name
          * @param port the port
          * @return the builder
          */
-        public RedisConnectionConfig.Builder withSentinel(String host, int port) {
+        public RedisConnectionConfig.Builder withRedisSentinel(String host, int port) {
 
             AssertUtil.assertState(this.host == null, "Cannot use with Redis mode.");
             AssertUtil.notEmpty(host, "Host must not be empty");
             AssertUtil.isTrue(isValidPort(port), String.format("Port out of range: %s", port));
 
-            sentinels.add(RedisHostAndPort.of(host, port));
+            redisSentinels.add(RedisHostAndPort.of(host, port));
             return this;
         }
 
@@ -435,7 +435,7 @@ public class RedisConnectionConfig {
          */
         public RedisConnectionConfig.Builder withHost(String host) {
 
-            AssertUtil.assertState(this.sentinels.isEmpty(), "Sentinels are non-empty. Cannot use in Sentinel mode.");
+            AssertUtil.assertState(this.redisSentinels.isEmpty(), "Sentinels are non-empty. Cannot use in Sentinel mode.");
             AssertUtil.notEmpty(host, "Host must not be empty");
 
             this.host = host;
@@ -528,16 +528,16 @@ public class RedisConnectionConfig {
         }
 
         /**
-         * Configures a sentinel master Id.
+         * Configures a redisSentinel master Id.
          *
-         * @param sentinelMasterId sentinel master id, must not be empty or {@literal null}
+         * @param sentinelMasterId redisSentinel master id, must not be empty or {@literal null}
          * @return the builder
          */
         public RedisConnectionConfig.Builder withSentinelMasterId(String sentinelMasterId) {
 
             AssertUtil.notEmpty(sentinelMasterId, "Sentinel master id must not empty");
 
-            this.sentinelMasterId = sentinelMasterId;
+            this.redisSentinelMasterId = sentinelMasterId;
             return this;
         }
 
@@ -546,7 +546,7 @@ public class RedisConnectionConfig {
          */
         public RedisConnectionConfig build() {
 
-            if (sentinels.isEmpty() && StringUtil.isEmpty(host)) {
+            if (redisSentinels.isEmpty() && StringUtil.isEmpty(host)) {
                 throw new IllegalStateException(
                         "Cannot build a RedisConnectionConfig. One of the following must be provided Host, Socket or Sentinel");
             }
@@ -562,10 +562,10 @@ public class RedisConnectionConfig {
             redisURI.setDatabase(database);
             redisURI.setClientName(clientName);
 
-            redisURI.setSentinelMasterId(sentinelMasterId);
+            redisURI.setRedisSentinelMasterId(redisSentinelMasterId);
 
-            for (RedisHostAndPort sentinel : sentinels) {
-                redisURI.getSentinels().add(new RedisConnectionConfig(sentinel.getHost(), sentinel.getPort(), timeout));
+            for (RedisHostAndPort sentinel : redisSentinels) {
+                redisURI.getRedisSentinels().add(new RedisConnectionConfig(sentinel.getHost(), sentinel.getPort(), timeout));
             }
 
             redisURI.setTimeout(timeout);

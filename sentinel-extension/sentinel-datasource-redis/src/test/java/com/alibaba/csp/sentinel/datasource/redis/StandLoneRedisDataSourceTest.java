@@ -49,9 +49,9 @@ public class StandLoneRedisDataSourceTest {
 
     private RedisClient client;
 
-    private String ruleKey = "sentinel.flow.rulekey";
+    private String ruleKey = "redisSentinel.flow.rulekey";
 
-    private String channel = "sentinel.flow.channel";
+    private String channel = "redisSentinel.flow.channel";
 
     @Before
     public void buildResource() {

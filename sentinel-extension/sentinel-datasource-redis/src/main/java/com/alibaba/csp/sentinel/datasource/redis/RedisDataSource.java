@@ -54,7 +54,7 @@ public class RedisDataSource<T> extends AbstractDataSource<String, T> {
      * @param connectionConfig redis connection config.
      * @param ruleKey          data save in redis.
      * @param channel          subscribe from channel.
-     * @param parser           convert <code>ruleKey<code>`s value to sentinel rule type
+     * @param parser           convert <code>ruleKey<code>`s value to {@literal alibaba/Sentinel} rule type
      */
     public RedisDataSource(RedisConnectionConfig connectionConfig, String ruleKey, String channel, Converter<String, T> parser) {
         super(parser);
@@ -73,11 +73,11 @@ public class RedisDataSource<T> extends AbstractDataSource<String, T> {
      * @return a new {@link RedisClient}
      */
     private RedisClient getRedisClient(RedisConnectionConfig connectionConfig) {
-        if (connectionConfig.getSentinels().size() == 0) {
+        if (connectionConfig.getRedisSentinels().size() == 0) {
             RecordLog.info("start standLone mode to connect to redis");
             return getRedisStandLoneClient(connectionConfig);
         } else {
-            RecordLog.info("start sentinel mode to connect to redis");
+            RecordLog.info("start redis sentinel mode to connect to redis");
             return getRedisSentinelClient(connectionConfig);
         }
     }
@@ -103,7 +103,7 @@ public class RedisDataSource<T> extends AbstractDataSource<String, T> {
         char[] password = connectionConfig.getPassword();
         String clientName = connectionConfig.getClientName();
         RedisURI.Builder sentinelRedisUriBuilder = RedisURI.builder();
-        for (RedisConnectionConfig config : connectionConfig.getSentinels()) {
+        for (RedisConnectionConfig config : connectionConfig.getRedisSentinels()) {
             sentinelRedisUriBuilder.withSentinel(config.getHost(), config.getPort());
         }
         if (password != null) {
@@ -112,7 +112,7 @@ public class RedisDataSource<T> extends AbstractDataSource<String, T> {
         if (StringUtil.isNotEmpty(connectionConfig.getClientName())) {
             sentinelRedisUriBuilder.withClientName(clientName);
         }
-        sentinelRedisUriBuilder.withSentinelMasterId(connectionConfig.getSentinelMasterId())
+        sentinelRedisUriBuilder.withSentinelMasterId(connectionConfig.getRedisSentinelMasterId())
                 .withTimeout(connectionConfig.getTimeout(), TimeUnit.MILLISECONDS);
         return RedisClient.create(sentinelRedisUriBuilder.build());
     }
