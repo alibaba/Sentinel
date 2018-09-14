@@ -27,6 +27,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  * @author qinan.qn
  * @author jialiang.linjl
  * @author leyou
+ * @author Eric Zhao
  */
 public interface Sph {
 
@@ -135,11 +136,23 @@ public interface Sph {
      * @param type  the resource is an inbound or an outbound method. This is used
      *              to mark whether it can be blocked when the system is unstable
      * @param count the count that the resource requires
-     * @param args  the parameters of the method. It can also be counted by setting
-     *              hot parameter rule
-     * @return entry get.
+     * @param args  the parameters of the method. It can also be counted by setting hot parameter rule
+     * @return entry get
      * @throws BlockException if the block criteria is met
      */
     Entry entry(String name, EntryType type, int count, Object... args) throws BlockException;
 
+    /**
+     * Create a protected asynchronous resource.
+     *
+     * @param name  the unique name for the protected resource
+     * @param type  the resource is an inbound or an outbound method. This is used
+     *              to mark whether it can be blocked when the system is unstable
+     * @param count the count that the resource requires
+     * @param args  the parameters of the method. It can also be counted by setting hot parameter rule
+     * @return created asynchronous entry
+     * @throws BlockException if the block criteria is met
+     * @since 0.2.0
+     */
+    AsyncEntry asyncEntry(String name, EntryType type, int count, Object... args) throws BlockException;
 }
