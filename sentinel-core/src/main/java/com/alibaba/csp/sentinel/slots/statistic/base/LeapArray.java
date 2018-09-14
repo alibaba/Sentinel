@@ -18,10 +18,13 @@ package com.alibaba.csp.sentinel.slots.statistic.base;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReferenceArray;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.alibaba.csp.sentinel.util.TimeUtil;
 
 /**
+ * Basic data structure for statistic metrics.
+ *
  * @param <T> type of data wrapper
  * @author jialiang.linjl
  * @author Eric Zhao
@@ -32,19 +35,42 @@ public abstract class LeapArray<T> {
     protected int sampleCount;
     protected int intervalInMs;
 
-    protected AtomicReferenceArray<WindowWrap<T>> array;
+    protected final AtomicReferenceArray<WindowWrap<T>> array;
+
+    private final ReentrantLock updateLock = new ReentrantLock();
 
     public LeapArray(int windowLength, int intervalInSec) {
         this.windowLength = windowLength;
-        this.sampleCount = intervalInSec * 1000 / windowLength;
         this.intervalInMs = intervalInSec * 1000;
+        this.sampleCount = intervalInMs / windowLength;
 
         this.array = new AtomicReferenceArray<WindowWrap<T>>(sampleCount);
     }
 
+    /**
+     * Get the window at current timestamp.
+     *
+     * @return the window at current timestamp
+     */
     public WindowWrap<T> currentWindow() {
         return currentWindow(TimeUtil.currentTimeMillis());
     }
+
+    /**
+     * Create a new bucket.
+     *
+     * @return the new empty bucket
+     */
+    public abstract T newEmptyBucket();
+
+    /**
+     * Reset current window to provided start time and reset all counters.
+     *
+     * @param startTime  the start time of the window
+     * @param windowWrap current window
+     * @return new clean window wrap
+     */
+    protected abstract WindowWrap<T> resetWindowTo(WindowWrap<T> windowWrap, long startTime);
 
     /**
      * Get window at provided timestamp.
@@ -52,7 +78,43 @@ public abstract class LeapArray<T> {
      * @param time a valid timestamp
      * @return the window at provided timestamp
      */
-    abstract public WindowWrap<T> currentWindow(long time);
+    public WindowWrap<T> currentWindow(long time) {
+        long timeId = time / windowLength;
+        // Calculate current index.
+        int idx = (int)(timeId % array.length());
+
+        // Cut the time to current window start.
+        time = time - time % windowLength;
+
+        while (true) {
+            WindowWrap<T> old = array.get(idx);
+            if (old == null) {
+                WindowWrap<T> window = new WindowWrap<T>(windowLength, time, newEmptyBucket());
+                if (array.compareAndSet(idx, null, window)) {
+                    return window;
+                } else {
+                    Thread.yield();
+                }
+            } else if (time == old.windowStart()) {
+                return old;
+            } else if (time > old.windowStart()) {
+                if (updateLock.tryLock()) {
+                    try {
+                        // if (old is deprecated) then [LOCK] resetTo currentTime.
+                        return resetWindowTo(old, time);
+                    } finally {
+                        updateLock.unlock();
+                    }
+                } else {
+                    Thread.yield();
+                }
+
+            } else if (time < old.windowStart()) {
+                // Cannot go through here.
+                return new WindowWrap<T>(windowLength, time, newEmptyBucket());
+            }
+        }
+    }
 
     public WindowWrap<T> getPreviousWindow(long time) {
         long timeId = (time - windowLength) / windowLength;
@@ -87,16 +149,12 @@ public abstract class LeapArray<T> {
         return old.value();
     }
 
-    AtomicReferenceArray<WindowWrap<T>> array() {
-        return array;
-    }
-
     private boolean isWindowDeprecated(WindowWrap<T> windowWrap) {
         return TimeUtil.currentTimeMillis() - windowWrap.windowStart() >= intervalInMs;
     }
 
     public List<WindowWrap<T>> list() {
-        ArrayList<WindowWrap<T>> result = new ArrayList<WindowWrap<T>>();
+        List<WindowWrap<T>> result = new ArrayList<WindowWrap<T>>();
 
         for (int i = 0; i < array.length(); i++) {
             WindowWrap<T> windowWrap = array.get(i);
@@ -110,7 +168,7 @@ public abstract class LeapArray<T> {
     }
 
     public List<T> values() {
-        ArrayList<T> result = new ArrayList<T>();
+        List<T> result = new ArrayList<T>();
 
         for (int i = 0; i < array.length(); i++) {
             WindowWrap<T> windowWrap = array.get(i);
