@@ -34,6 +34,10 @@ public class StatisticNode implements Node {
     private transient Metric rollingCounterInSecond = new ArrayMetric(1000 / SampleCountProperty.sampleCount,
         IntervalProperty.INTERVAL);
 
+    /**
+     * Holds statistics of the recent 120 seconds. The windowLengthInMs is deliberately set to 1000 milliseconds,
+     * meaning each bucket per second, in this way we can get accurate statistics of each second.
+     */
     private transient Metric rollingCounterInMinute = new ArrayMetric(1000, 2 * 60);
 
     private AtomicInteger curThreadNum = new AtomicInteger(0);
@@ -45,15 +49,21 @@ public class StatisticNode implements Node {
         long currentTime = TimeUtil.currentTimeMillis();
         currentTime = currentTime - currentTime % 1000;
         Map<Long, MetricNode> metrics = new ConcurrentHashMap<Long, MetricNode>();
-        List<MetricNode> minutes = rollingCounterInMinute.details();
-        for (MetricNode node : minutes) {
+        List<MetricNode> nodesOfEverySecond = rollingCounterInMinute.details();
+        long newLastFetchTime = lastFetchTime;
+        for (MetricNode node : nodesOfEverySecond) {
             if (node.getTimestamp() > lastFetchTime && node.getTimestamp() < currentTime) {
-                if (node.getPassedQps() != 0 || node.getBlockedQps() != 0) {
+                if (node.getPassedQps() != 0
+                    || node.getBlockedQps() != 0
+                    || node.getSuccessQps() != 0
+                    || node.getException() != 0
+                    || node.getRt() != 0) {
                     metrics.put(node.getTimestamp(), node);
-                    lastFetchTime = node.getTimestamp();
+                    newLastFetchTime = Math.max(newLastFetchTime, node.getTimestamp());
                 }
             }
         }
+        lastFetchTime = newLastFetchTime;
 
         return metrics;
     }
