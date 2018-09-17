@@ -31,7 +31,7 @@ import com.alibaba.csp.sentinel.slots.statistic.metric.Metric;
  */
 public class StatisticNode implements Node {
 
-    private transient Metric rollingCounterInSecond = new ArrayMetric(1000 / SampleCountProperty.sampleCount,
+    private transient volatile Metric rollingCounterInSecond = new ArrayMetric(1000 / SampleCountProperty.SAMPLE_COUNT,
         IntervalProperty.INTERVAL);
 
     /**
@@ -70,7 +70,7 @@ public class StatisticNode implements Node {
 
     @Override
     public void reset() {
-        rollingCounterInSecond = new ArrayMetric(1000 / SampleCountProperty.sampleCount, IntervalProperty.INTERVAL);
+        rollingCounterInSecond = new ArrayMetric(1000 / SampleCountProperty.SAMPLE_COUNT, IntervalProperty.INTERVAL);
     }
 
     @Override
@@ -131,7 +131,7 @@ public class StatisticNode implements Node {
 
     @Override
     public long maxSuccessQps() {
-        return rollingCounterInSecond.maxSuccess() * SampleCountProperty.sampleCount;
+        return rollingCounterInSecond.maxSuccess() * SampleCountProperty.SAMPLE_COUNT;
     }
 
     @Override
