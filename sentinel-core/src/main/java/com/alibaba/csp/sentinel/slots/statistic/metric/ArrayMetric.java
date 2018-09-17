@@ -33,8 +33,14 @@ public class ArrayMetric implements Metric {
 
     private final MetricsLeapArray data;
 
-    public ArrayMetric(int windowLength, int interval) {
-        this.data = new MetricsLeapArray(windowLength, interval);
+    /**
+     * Constructor
+     *
+     * @param windowLengthInMs a single window bucket's time length in milliseconds.
+     * @param intervalInSec    the total time span of this {@link ArrayMetric} in seconds.
+     */
+    public ArrayMetric(int windowLengthInMs, int intervalInSec) {
+        this.data = new MetricsLeapArray(windowLengthInMs, intervalInSec);
     }
 
     /**

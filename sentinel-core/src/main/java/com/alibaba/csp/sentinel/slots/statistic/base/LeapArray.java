@@ -23,15 +23,23 @@ import java.util.concurrent.locks.ReentrantLock;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 
 /**
+ * <p>
  * Basic data structure for statistic metrics.
+ * </p>
+ * <p>
+ * Using sliding window algorithm to count data. Each bucket cover {@link #windowLengthInMs} time span,
+ * and the total time span is {@link #intervalInMs}, so the total bucket count is:
+ * {@link #sampleCount} = intervalInMs / windowLengthInMs.
+ * </p>
  *
- * @param <T> type of data wrapper
+ * @param <T> type of data bucket.
  * @author jialiang.linjl
  * @author Eric Zhao
+ * @author CarpenterLee
  */
 public abstract class LeapArray<T> {
 
-    protected int windowLength;
+    protected int windowLengthInMs;
     protected int sampleCount;
     protected int intervalInMs;
 
@@ -39,10 +47,15 @@ public abstract class LeapArray<T> {
 
     private final ReentrantLock updateLock = new ReentrantLock();
 
-    public LeapArray(int windowLength, int intervalInSec) {
-        this.windowLength = windowLength;
+    /**
+     * The total bucket count is: {@link #sampleCount} = intervalInSec * 1000 / windowLengthInMs.
+     * @param windowLengthInMs a single window bucket's time length in milliseconds.
+     * @param intervalInSec    the total time span of this {@link LeapArray} in seconds.
+     */
+    public LeapArray(int windowLengthInMs, int intervalInSec) {
+        this.windowLengthInMs = windowLengthInMs;
         this.intervalInMs = intervalInSec * 1000;
-        this.sampleCount = intervalInMs / windowLength;
+        this.sampleCount = intervalInMs / windowLengthInMs;
 
         this.array = new AtomicReferenceArray<WindowWrap<T>>(sampleCount);
     }
@@ -79,17 +92,17 @@ public abstract class LeapArray<T> {
      * @return the window at provided timestamp
      */
     public WindowWrap<T> currentWindow(long time) {
-        long timeId = time / windowLength;
+        long timeId = time / windowLengthInMs;
         // Calculate current index.
         int idx = (int)(timeId % array.length());
 
         // Cut the time to current window start.
-        time = time - time % windowLength;
+        time = time - time % windowLengthInMs;
 
         while (true) {
             WindowWrap<T> old = array.get(idx);
             if (old == null) {
-                WindowWrap<T> window = new WindowWrap<T>(windowLength, time, newEmptyBucket());
+                WindowWrap<T> window = new WindowWrap<T>(windowLengthInMs, time, newEmptyBucket());
                 if (array.compareAndSet(idx, null, window)) {
                     return window;
                 } else {
@@ -111,22 +124,22 @@ public abstract class LeapArray<T> {
 
             } else if (time < old.windowStart()) {
                 // Cannot go through here.
-                return new WindowWrap<T>(windowLength, time, newEmptyBucket());
+                return new WindowWrap<T>(windowLengthInMs, time, newEmptyBucket());
             }
         }
     }
 
     public WindowWrap<T> getPreviousWindow(long time) {
-        long timeId = (time - windowLength) / windowLength;
+        long timeId = (time - windowLengthInMs) / windowLengthInMs;
         int idx = (int)(timeId % array.length());
-        time = time - windowLength;
+        time = time - windowLengthInMs;
         WindowWrap<T> wrap = array.get(idx);
 
         if (wrap == null || isWindowDeprecated(wrap)) {
             return null;
         }
 
-        if (wrap.windowStart() + windowLength < (time)) {
+        if (wrap.windowStart() + windowLengthInMs < (time)) {
             return null;
         }
 
@@ -138,7 +151,7 @@ public abstract class LeapArray<T> {
     }
 
     public T getWindowValue(long time) {
-        long timeId = time / windowLength;
+        long timeId = time / windowLengthInMs;
         int idx = (int)(timeId % array.length());
 
         WindowWrap<T> old = array.get(idx);

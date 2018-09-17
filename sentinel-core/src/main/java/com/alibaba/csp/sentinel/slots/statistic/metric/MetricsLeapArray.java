@@ -22,11 +22,18 @@ import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 /**
  * The fundamental data structure for metric statistics in a time window.
  *
+ * @see LeapArray
  * @author jialiang.linjl
  * @author Eric Zhao
  */
 public class MetricsLeapArray extends LeapArray<MetricBucket> {
 
+    /**
+     * Constructor
+     *
+     * @param windowLengthInMs a single window bucket's time length in milliseconds.
+     * @param intervalInSec    the total time span of this {@link MetricsLeapArray} in seconds.
+     */
     public MetricsLeapArray(int windowLengthInMs, int intervalInSec) {
         super(windowLengthInMs, intervalInSec);
     }
