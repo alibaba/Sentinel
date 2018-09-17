@@ -15,6 +15,9 @@
  */
 package com.alibaba.csp.sentinel.slots.block.authority;
 
+import java.util.List;
+import java.util.Map;
+
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
@@ -25,18 +28,38 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
  * A {@link ProcessorSlot} that dedicates to {@link AuthorityRule} checking.
  *
  * @author leyou
+ * @author Eric Zhao
  */
 public class AuthoritySlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, Object... args)
         throws Throwable {
-        AuthorityRuleManager.checkAuthority(resourceWrapper, context, node, count);
+        checkBlackWhiteAuthority(resourceWrapper, context);
         fireEntry(context, resourceWrapper, node, count, args);
     }
 
     @Override
     public void exit(Context context, ResourceWrapper resourceWrapper, int count, Object... args) {
         fireExit(context, resourceWrapper, count, args);
+    }
+
+    void checkBlackWhiteAuthority(ResourceWrapper resource, Context context) throws AuthorityException {
+        Map<String, List<AuthorityRule>> authorityRules = AuthorityRuleManager.getAuthorityRules();
+
+        if (authorityRules == null) {
+            return;
+        }
+
+        List<AuthorityRule> rules = authorityRules.get(resource.getName());
+        if (rules == null) {
+            return;
+        }
+
+        for (AuthorityRule rule : rules) {
+            if (!AuthorityRuleChecker.passCheck(rule, context)) {
+                throw new AuthorityException(context.getOrigin());
+            }
+        }
     }
 }
