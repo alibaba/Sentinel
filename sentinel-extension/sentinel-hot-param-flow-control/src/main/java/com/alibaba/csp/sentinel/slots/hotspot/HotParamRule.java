@@ -15,215 +15,136 @@
  */
 package com.alibaba.csp.sentinel.slots.hotspot;
 
-import java.lang.reflect.Array;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 
 import com.alibaba.csp.sentinel.context.Context;
-import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
 /**
+ * Rules for hot-spot frequent parameter flow control.
+ *
  * @author jialiang.linjl
+ * @author Eric Zhao
  * @since 0.2.0
  */
 public class HotParamRule extends AbstractRule {
 
-    public final static int INTEGER = 0;
-    public final static int LONG = 1;
-    public final static int BYTE = 2;
-    public final static int DOUBLE = 3;
-    public final static int FLOAT = 4;
-    public final static int SHORT = 5;
-    public final static int BOOLEAN = 6;
-    public final static int STRING = 7;
+    /**
+     * The threshold type of flow control (0: thread count, 1: QPS).
+     */
+    private int blockGrade = RuleConstant.FLOW_GRADE_QPS;
 
-    Integer idx;
+    /**
+     * Parameter index.
+     */
+    private Integer paramIdx;
 
-    // parameter index
-    Integer paramIdx;
+    /**
+     * The threshold count.
+     */
+    private double count;
 
-    // 阀值
-    double count;
+    /**
+     * Original exception items of hot parameters.
+     */
+    private List<HotItem> hotItemList = new ArrayList<HotItem>();
 
-    Set<Object> keys = new ConcurrentSkipListSet<Object>();
+    /**
+     * Parsed exception items of hot parameters. Only for internal use.
+     */
+    private Map<Object, Integer> hotItems;
 
-    Map<Object, Integer> hotItems = new ConcurrentHashMap<Object, Integer>();
-
-    Integer machineCount;
-
-    String id;
-
-    // /0线程数;1 qps
-    Integer blockGrade = 1;
-
-    Integer blockCount = 0;
-
-    // 0 为单个，1为 热点的总量
-    Integer blockStrategy = 0;
-
-    public Integer getIdx() {
-        return idx;
-    }
-
-    public void setIdx(Integer idx) {
-        this.idx = idx;
-    }
-
-    final Map<Object, Integer> clusterExclusionItems = new ConcurrentHashMap<Object, Integer>();
-
-    public Integer getBlockStrategy() {
-        return blockStrategy;
-    }
-
-    public void setBlockStrategy(Integer blockStrategy) {
-        this.blockStrategy = blockStrategy;
-    }
-
-    public Integer getBlockGrade() {
+    public int getBlockGrade() {
         return blockGrade;
     }
 
-    public void setBlockGrade(Integer blockGrade) {
+    public HotParamRule setBlockGrade(int blockGrade) {
         this.blockGrade = blockGrade;
-    }
-
-    public Integer getBlockCount() {
-        return blockCount;
-    }
-
-    public void setBlockCount(Integer blockCount) {
-        this.blockCount = blockCount;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public void setHotItems(Map<Object, Integer> hotItems) {
-        this.hotItems = hotItems;
-    }
-
-    public Integer getMachineCount() {
-        return machineCount;
-    }
-
-    public void setMachineCount(Integer machineCount) {
-        this.machineCount = machineCount;
-    }
-
-    public Set<Object> getKeys() {
-        return keys;
-    }
-
-    public Map<Object, Integer> getHotItems() {
-        return hotItems;
+        return this;
     }
 
     public Integer getParamIdx() {
         return paramIdx;
     }
 
-    public void setParamIdx(Integer paramIdx) {
+    public HotParamRule setParamIdx(Integer paramIdx) {
         this.paramIdx = paramIdx;
+        return this;
     }
 
     public double getCount() {
         return count;
     }
 
-    public void setCount(double count) {
+    public HotParamRule setCount(double count) {
         this.count = count;
+        return this;
     }
 
-    private boolean passSingleValueCheck(ClusterNode node, Object value) {
-        // and then check its real value
-        Set<Object> exclusionItems = this.getKeys();
-        if (this.getBlockGrade() == RuleConstant.FLOW_GRADE_QPS) {
+    public List<HotItem> getHotItemList() {
+        return hotItemList;
+    }
 
-            int curCount = (int)node.getReqPassParamAvg(paramIdx, value);
+    public HotParamRule setHotItemList(List<HotItem> hotItemList) {
+        this.hotItemList = hotItemList;
+        return this;
+    }
 
-            if (exclusionItems.contains(value)) {
-                int qps = getHotItems().get(value);
-                if (++curCount > qps) {
-                    return false;
-                }
-            } else if (++curCount > count) {
+    Map<Object, Integer> getParsedHotItems() {
+        return hotItems;
+    }
 
-                //要考虑小数点,否则就会抖
-                if ((curCount - count) < 1 && (curCount - count) > 0) {
-                    return true;
-                }
-                return false;
-            }
-        } else {
-            long threadCount = node.getThreadCount(paramIdx, value);
-            if (exclusionItems.contains(value)) {
-                int thread = getHotItems().get(value);
-                if (++threadCount > thread) {
-                    return false;
-                }
-            }
-            if (++threadCount > this.blockCount) {
-                return false;
-            }
-        }
+    HotParamRule setParsedHotItems(Map<Object, Integer> hotItems) {
+        this.hotItems = hotItems;
+        return this;
+    }
 
+    @Override
+    @Deprecated
+    public boolean passCheck(Context context, DefaultNode node, int count, Object... args) {
         return true;
     }
 
     @Override
-    public boolean passCheck(Context context, DefaultNode node, int count, Object... args) {
+    public boolean equals(Object o) {
+        if (this == o) { return true; }
+        if (o == null || getClass() != o.getClass()) { return false; }
+        if (!super.equals(o)) { return false; }
 
-        if (args == null) {
-            return true;
-        }
+        HotParamRule that = (HotParamRule)o;
 
-        // first get the index of the parameters
-        if (args.length <= this.getParamIdx()) {
-            return true;
-        }
-
-        Object value = args[paramIdx];
-
-        return passLocalCheck(node.getClusterNode(), value);
-
+        if (blockGrade != that.blockGrade) { return false; }
+        if (Double.compare(that.count, count) != 0) { return false; }
+        if (!paramIdx.equals(that.paramIdx)) { return false; }
+        return hotItems != null ? hotItems.equals(that.hotItems) : that.hotItems == null;
     }
 
-    private boolean passLocalCheck(ClusterNode node, Object value) {
-        // 单个的非cluster的逻辑
-        try {
-            if (Collection.class.isAssignableFrom(value.getClass())) {
-                for (Object param : ((Collection)value)) {
-                    if (!passSingleValueCheck(node, param)) {
-                        return false;
-                    }
-                }
-            } else if (value.getClass().isArray()) {
-                int length = Array.getLength(value);
-                for (int i = 0; i < length; i++) {
-                    Object param = Array.get(value, i);
-                    if (!passSingleValueCheck(node, param)) {
-                        return false;
-                    }
-                }
-            } else {
-                return passSingleValueCheck(node, value);
-            }
-        } catch (Throwable e) {
-            RecordLog.info(e.getMessage(), e);
-        }
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        long temp;
+        result = 31 * result + blockGrade;
+        result = 31 * result + paramIdx.hashCode();
+        temp = Double.doubleToLongBits(count);
+        result = 31 * result + (int)(temp ^ (temp >>> 32));
+        result = 31 * result + (hotItems != null ? hotItems.hashCode() : 0);
+        return result;
+    }
 
-        return true;
+    @Override
+    public String toString() {
+        return "HotParamRule{" +
+            "resource=" + getResource() +
+            ", limitApp=" + getLimitApp() +
+            ", blockGrade=" + blockGrade +
+            ", paramIdx=" + paramIdx +
+            ", count=" + count +
+            ", hotItems=" + hotItems +
+            '}';
     }
 }

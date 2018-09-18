@@ -15,11 +15,14 @@
  */
 package com.alibaba.csp.sentinel.slots.statistic.cache;
 
+import java.util.Set;
+
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.Weighers;
 
 /**
  * @author Eric Zhao
+ * @since 0.2.0
  */
 public class ConcurrentLinkedHashMapWrapper<T, R> implements CacheMap<T, R> {
 
@@ -78,5 +81,10 @@ public class ConcurrentLinkedHashMapWrapper<T, R> implements CacheMap<T, R> {
     @Override
     public void clear() {
         map.clear();
+    }
+
+    @Override
+    public Set<T> ascendingKeySet() {
+        return map.ascendingKeySet();
     }
 }

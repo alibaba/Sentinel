@@ -50,8 +50,6 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, Object... args)
         throws Throwable {
-        Collection<ProcessorSlotEntryCallback<DefaultNode>> entryCallbacks = StatisticSlotCallbackRegistry.getEntryCallbacks();
-
         try {
             fireEntry(context, resourceWrapper, node, count, args);
             node.increaseThreadNum();
@@ -67,7 +65,7 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 Constants.ENTRY_NODE.addPassRequest();
             }
 
-            for (ProcessorSlotEntryCallback<DefaultNode> handler : entryCallbacks) {
+            for (ProcessorSlotEntryCallback<DefaultNode> handler : StatisticSlotCallbackRegistry.getEntryCallbacks()) {
                 handler.onPass(context, resourceWrapper, node, count, args);
             }
         } catch (BlockException e) {
@@ -83,7 +81,7 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 Constants.ENTRY_NODE.increaseBlockedQps();
             }
 
-            for (ProcessorSlotEntryCallback<DefaultNode> handler : entryCallbacks) {
+            for (ProcessorSlotEntryCallback<DefaultNode> handler : StatisticSlotCallbackRegistry.getEntryCallbacks()) {
                 handler.onBlocked(e, context, resourceWrapper, node, count, args);
             }
 

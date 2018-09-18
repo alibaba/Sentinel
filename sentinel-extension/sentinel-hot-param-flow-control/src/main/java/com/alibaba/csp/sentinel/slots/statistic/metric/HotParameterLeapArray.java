@@ -28,42 +28,43 @@ import com.alibaba.csp.sentinel.node.IntervalProperty;
 import com.alibaba.csp.sentinel.slots.hotspot.RollingParamEvent;
 import com.alibaba.csp.sentinel.slots.statistic.base.LeapArray;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
-import com.alibaba.csp.sentinel.slots.statistic.data.LruMapBucket;
+import com.alibaba.csp.sentinel.slots.statistic.data.HotParamMapBucket;
 
 /**
  * The fundamental data structure for hot parameters statistics in a time window.
  *
  * @author Eric Zhao
+ * @since 0.2.0
  */
-public class HotParameterLeapArray extends LeapArray<LruMapBucket> {
+public class HotParameterLeapArray extends LeapArray<HotParamMapBucket> {
 
-    public HotParameterLeapArray(int windowLength, int intervalInSec) {
-        super(windowLength, intervalInSec);
+    public HotParameterLeapArray(int windowLengthInMs, int intervalInSec) {
+        super(windowLengthInMs, intervalInSec);
     }
 
     @Override
-    public LruMapBucket newEmptyBucket() {
-        return new LruMapBucket();
+    public HotParamMapBucket newEmptyBucket() {
+        return new HotParamMapBucket();
     }
 
     @Override
-    protected WindowWrap<LruMapBucket> resetWindowTo(WindowWrap<LruMapBucket> w, long startTime) {
+    protected WindowWrap<HotParamMapBucket> resetWindowTo(WindowWrap<HotParamMapBucket> w, long startTime) {
         w.resetTo(startTime);
         w.value().reset();
         return w;
     }
 
-    public void addValue(RollingParamEvent event, Object value) {
-        currentWindow().value().add(event, value);
+    public void addValue(RollingParamEvent event, int count, Object value) {
+        currentWindow().value().add(event, count, value);
     }
 
     public Map<Object, Double> getTopValues(RollingParamEvent event, int number) {
         currentWindow();
-        List<LruMapBucket> buckets = this.values();
+        List<HotParamMapBucket> buckets = this.values();
 
         Map<Object, Integer> result = new HashMap<Object, Integer>();
 
-        for (LruMapBucket b : buckets) {
+        for (HotParamMapBucket b : buckets) {
             Set<Object> subSet = b.ascendingKeySet(event);
             for (Object o : subSet) {
                 Integer count = result.get(o);
@@ -102,16 +103,20 @@ public class HotParameterLeapArray extends LeapArray<LruMapBucket> {
         return doubleResult;
     }
 
-    public long getCount(RollingParamEvent event, Object value) {
+    public long getRollingSum(RollingParamEvent event, Object value) {
         currentWindow();
 
         long sum = 0;
 
-        List<LruMapBucket> buckets = this.values();
-        for (LruMapBucket b : buckets) {
+        List<HotParamMapBucket> buckets = this.values();
+        for (HotParamMapBucket b : buckets) {
             sum += b.get(event, value);
         }
 
         return sum;
+    }
+
+    public double getRollingAvg(RollingParamEvent event, Object value) {
+        return ((double) getRollingSum(event, value)) / IntervalProperty.INTERVAL;
     }
 }

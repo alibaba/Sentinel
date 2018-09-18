@@ -15,17 +15,22 @@
  */
 package com.alibaba.csp.sentinel.init;
 
+import com.alibaba.csp.sentinel.slots.statistic.HotParamStatisticEntryCallback;
+import com.alibaba.csp.sentinel.slots.statistic.HotParamStatisticExitCallback;
 import com.alibaba.csp.sentinel.slots.statistic.StatisticSlotCallbackRegistry;
 
 /**
  * @author Eric Zhao
+ * @since 0.2.0
  */
 public class StatisticSlotCallbackInit implements InitFunc {
 
     @Override
     public void init() {
-        StatisticSlotCallbackRegistry.addEntryCallback();
+        StatisticSlotCallbackRegistry.addEntryCallback(HotParamStatisticEntryCallback.class.getName(),
+            new HotParamStatisticEntryCallback());
 
-        StatisticSlotCallbackRegistry.addExitCallback();
+        StatisticSlotCallbackRegistry.addExitCallback(HotParamStatisticExitCallback.class.getName(),
+            new HotParamStatisticExitCallback());
     }
 }

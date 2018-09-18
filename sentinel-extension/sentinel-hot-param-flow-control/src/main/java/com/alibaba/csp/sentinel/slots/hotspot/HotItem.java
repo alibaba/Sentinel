@@ -21,15 +21,15 @@ package com.alibaba.csp.sentinel.slots.hotspot;
  */
 public class HotItem {
 
-    private Object object;
-
+    private String object;
     private Integer count;
+    private String classType;
 
-    public Object getObject() {
+    public String getObject() {
         return object;
     }
 
-    public HotItem setObject(Object object) {
+    public HotItem setObject(String object) {
         this.object = object;
         return this;
     }
@@ -41,5 +41,23 @@ public class HotItem {
     public HotItem setCount(Integer count) {
         this.count = count;
         return this;
+    }
+
+    public String getClassType() {
+        return classType;
+    }
+
+    public HotItem setClassType(String classType) {
+        this.classType = classType;
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return "HotItem{" +
+            "object=" + object +
+            ", count=" + count +
+            ", classType='" + classType + '\'' +
+            '}';
     }
 }

@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.slots.hotspot;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -22,7 +23,7 @@ import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
-import com.alibaba.csp.sentinel.slots.statistic.HotParameterMetric;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 
 /**
  * @author jialiang.linjl
@@ -31,7 +32,13 @@ import com.alibaba.csp.sentinel.slots.statistic.HotParameterMetric;
  */
 public class HotParamSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
-    private static final Map<ResourceWrapper, HotParameterMetric> metricsMap = new ConcurrentHashMap<>();
+    private static final Map<ResourceWrapper, HotParameterMetric> metricsMap
+        = new ConcurrentHashMap<ResourceWrapper, HotParameterMetric>();
+
+    /**
+     * Lock for a specific resource.
+     */
+    private final Object LOCK = new Object();
 
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, Object... args)
@@ -42,12 +49,69 @@ public class HotParamSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             return;
         }
 
-        HotParamRuleManager.checkFlow(resourceWrapper, context, node, count, args);
+        checkFlow(resourceWrapper, count, args);
         fireEntry(context, resourceWrapper, node, count, args);
     }
 
     @Override
     public void exit(Context context, ResourceWrapper resourceWrapper, int count, Object... args) {
         fireExit(context, resourceWrapper, count, args);
+    }
+
+    void checkFlow(ResourceWrapper resourceWrapper, int count, Object... args)
+        throws BlockException {
+        if (HotParamRuleManager.hasRules(resourceWrapper.getName())) {
+            List<HotParamRule> rules = HotParamRuleManager.getRulesOfResource(resourceWrapper.getName());
+            if (rules == null) {
+                return;
+            }
+
+            for (HotParamRule rule : rules) {
+                // Initialize the hot parameter metrics.
+                initHotParamMetricsFor(resourceWrapper, rule);
+
+                if (!HotParamChecker.passCheck(resourceWrapper, rule, count, args)) {
+
+                    // Here we add the block count.
+                    addBlockCount(resourceWrapper, count, args);
+
+                    String message = "";
+                    if (args.length > rule.getParamIdx()) {
+                        Object value = args[rule.getParamIdx()];
+                        message = String.valueOf(value);
+                    }
+                    throw new HotParamException(resourceWrapper.getName(), message);
+                }
+            }
+        }
+    }
+
+    private void addBlockCount(ResourceWrapper resourceWrapper, int count, Object... args) {
+        HotParameterMetric hotParameterMetric = HotParamSlot.getHotParamMetric(resourceWrapper);
+
+        if (hotParameterMetric != null) {
+            hotParameterMetric.addBlock(count, args);
+        }
+    }
+
+    private void initHotParamMetricsFor(ResourceWrapper resourceWrapper, HotParamRule rule) {
+        HotParameterMetric metric;
+        // Assume that the resource is valid.
+        if ((metric = metricsMap.get(resourceWrapper)) == null) {
+            synchronized (LOCK) {
+                if ((metric = metricsMap.get(resourceWrapper)) == null) {
+                    metric = new HotParameterMetric();
+                    metricsMap.put(resourceWrapper, metric);
+                }
+            }
+        }
+        metric.initializeForIndex(rule.getParamIdx());
+    }
+
+    public static HotParameterMetric getHotParamMetric(ResourceWrapper resourceWrapper) {
+        if (resourceWrapper == null || resourceWrapper.getName() == null) {
+            return null;
+        }
+        return metricsMap.get(resourceWrapper);
     }
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.slots.statistic;
+package com.alibaba.csp.sentinel.slots.hotspot;
 
 import java.lang.reflect.Array;
 import java.util.Collection;
@@ -23,17 +23,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.slots.hotspot.RollingParamEvent;
+import com.alibaba.csp.sentinel.node.IntervalProperty;
 import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
 import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
 import com.alibaba.csp.sentinel.slots.statistic.metric.HotParameterLeapArray;
 
 /**
  * @author Eric Zhao
+ * @since 0.2.0
  */
 public class HotParameterMetric {
-
-    private static final Object LOCK = new Object();
 
     private Map<Integer, HotParameterLeapArray> rollingParameters =
         new ConcurrentHashMap<Integer, HotParameterLeapArray>();
@@ -44,17 +43,18 @@ public class HotParameterMetric {
         return rollingParameters;
     }
 
-    public void clear() {
+    public synchronized void clear() {
         rollingParameters.clear();
         threadCountMap.clear();
     }
 
     public void initializeForIndex(int index) {
         if (!rollingParameters.containsKey(index)) {
-            synchronized (LOCK) {
+            synchronized (this) {
                 // putIfAbsent
                 if (rollingParameters.get(index) == null) {
-                    rollingParameters.put(index, new HotParameterLeapArray());
+                    // TODO: sampleCount?
+                    rollingParameters.put(index, new HotParameterLeapArray(100, IntervalProperty.INTERVAL));
                 }
 
                 if (threadCountMap.get(index) == null) {
@@ -66,7 +66,7 @@ public class HotParameterMetric {
     }
 
     @SuppressWarnings("rawtypes")
-    public void decreaseThreadCont(Object... args) {
+    public void decreaseThreadCount(Object... args) {
         if (args == null) {
             return;
         }
@@ -120,7 +120,7 @@ public class HotParameterMetric {
 
             }
         } catch (Throwable e) {
-            RecordLog.info("param exception", e);
+            RecordLog.warn("[HotParameterMetric] Param exception", e);
         }
     }
 
@@ -178,12 +178,20 @@ public class HotParameterMetric {
             }
 
         } catch (Throwable e) {
-            RecordLog.info("param exception", e);
+            RecordLog.warn("[HotParameterMetric] Param exception", e);
         }
     }
 
+    public void addPass(int count, Object... args) {
+        add(RollingParamEvent.REQUEST_PASSED, count, args);
+    }
+
+    public void addBlock(int count, Object... args) {
+        add(RollingParamEvent.REQUEST_BLOCKED, count, args);
+    }
+
     @SuppressWarnings("rawtypes")
-    public void add(RollingParamEvent event, Object... args) {
+    private void add(RollingParamEvent event, int count, Object... args) {
         if (args == null) {
             return;
         }
@@ -200,31 +208,31 @@ public class HotParameterMetric {
                 }
                 if (Collection.class.isAssignableFrom(arg.getClass())) {
                     for (Object value : ((Collection)arg)) {
-                        param.addValue(event, value);
+                        param.addValue(event, count, value);
                     }
                 } else if (arg.getClass().isArray()) {
                     int length = Array.getLength(arg);
                     for (int i = 0; i < length; i++) {
                         Object value = Array.get(arg, i);
-                        param.addValue(event, value);
+                        param.addValue(event, count, value);
                     }
                 } else {
-                    param.addValue(event, arg);
+                    param.addValue(event, count, arg);
                 }
 
             }
         } catch (Throwable e) {
-            RecordLog.info("param exception", e);
+            RecordLog.warn("[HotParameterMetric] Param exception", e);
         }
     }
 
-    public double getPassParamQps(int index, Object value) {
+    public long getPassParamQps(int index, Object value) {
         try {
             HotParameterLeapArray parameter = rollingParameters.get(index);
-            if (parameter == null) {
+            if (parameter == null || value == null) {
                 return -1;
             }
-            return parameter.getRollingAvg(RollingParamEvent.REQUEST_PASSED, value);
+            return (long) parameter.getRollingAvg(RollingParamEvent.REQUEST_PASSED, value);
         } catch (Throwable e) {
             RecordLog.info(e.getMessage(), e);
         }
@@ -235,26 +243,11 @@ public class HotParameterMetric {
     public long getBlockParamQps(int index, Object value) {
         try {
             HotParameterLeapArray parameter = rollingParameters.get(index);
-            if (parameter == null) {
-                return -1;
-            }
-
-            return (long)rollingParameters.get(index).getRollingAvg(RollingParamEvent.REQUEST_BLOCKED, value);
-        } catch (Throwable e) {
-            RecordLog.info(e.getMessage(), e);
-        }
-
-        return -1;
-    }
-
-    public long getReqPassParamAvg(int index, Object value) {
-        try {
-            HotParameterLeapArray parameter = rollingParameters.get(index);
             if (parameter == null || value == null) {
                 return -1;
             }
 
-            return (long)parameter.getRollingAvg(RollingParamEvent.REQUEST_PASSED, value);
+            return (long) rollingParameters.get(index).getRollingAvg(RollingParamEvent.REQUEST_BLOCKED, value);
         } catch (Throwable e) {
             RecordLog.info(e.getMessage(), e);
         }
@@ -275,15 +268,6 @@ public class HotParameterMetric {
         }
 
         return new HashMap<Object, Double>();
-    }
-
-    public long getPassParamSum(int index, Object value) {
-        HotParameterLeapArray parameter = rollingParameters.get(index);
-        if (parameter == null) {
-            return -1;
-        }
-
-        return parameter.getCount(RollingParamEvent.REQUEST_PASSED, value);
     }
 
     public long getThreadCount(int index, Object value) {

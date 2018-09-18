@@ -23,14 +23,17 @@ import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
 import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
 
 /**
+ * Represents metric bucket of frequent parameters in a period of time window.
+ *
  * @author Eric Zhao
+ * @since 0.2.0
  */
-public class LruMapBucket {
+public class HotParamMapBucket {
 
     private final CacheMap<Object, AtomicInteger>[] data;
 
     @SuppressWarnings("unchecked")
-    public LruMapBucket() {
+    public HotParamMapBucket() {
         RollingParamEvent[] events = RollingParamEvent.values();
         this.data = new CacheMap[events.length];
         for (RollingParamEvent event : events) {
@@ -39,8 +42,9 @@ public class LruMapBucket {
     }
 
     public void reset() {
-        passedParams.clear();
-        blockedParams.clear();
+        for (RollingParamEvent event : RollingParamEvent.values()) {
+            data[event.ordinal()].clear();
+        }
     }
 
     public int get(RollingParamEvent event, Object value) {
@@ -48,26 +52,10 @@ public class LruMapBucket {
         return counter == null ? 0 : counter.intValue();
     }
 
-    public void add(RollingParamEvent event, Object value) {
+    public void add(RollingParamEvent event, int count, Object value) {
         data[event.ordinal()].putIfAbsent(value, new AtomicInteger());
         AtomicInteger counter = data[event.ordinal()].get(value);
-        counter.incrementAndGet();
-    }
-
-    public int getPassCountFor(Object value) {
-        return get(RollingParamEvent.REQUEST_PASSED, value);
-    }
-
-    public void addPassCountFor(Object value) {
-        add(RollingParamEvent.REQUEST_PASSED, value);
-    }
-
-    public int getBlockedCountFor(Object value) {
-        return get(RollingParamEvent.REQUEST_BLOCKED, value);
-    }
-
-    public void addBlockedCountFor(Object value) {
-        add(RollingParamEvent.REQUEST_BLOCKED, value);
+        counter.addAndGet(count);
     }
 
     public Set<Object> ascendingKeySet(RollingParamEvent type) {
