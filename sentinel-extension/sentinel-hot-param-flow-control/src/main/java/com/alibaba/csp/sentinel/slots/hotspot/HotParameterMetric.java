@@ -29,6 +29,8 @@ import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWra
 import com.alibaba.csp.sentinel.slots.statistic.metric.HotParameterLeapArray;
 
 /**
+ * Metrics for frequent ("hot-spot") parameters.
+ *
  * @author Eric Zhao
  * @since 0.2.0
  */

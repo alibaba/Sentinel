@@ -16,6 +16,8 @@
 package com.alibaba.csp.sentinel.slots.hotspot;
 
 /**
+ * A flow control item for a specific parameter value.
+ *
  * @author jialiang.linjl
  * @since 0.2.0
  */

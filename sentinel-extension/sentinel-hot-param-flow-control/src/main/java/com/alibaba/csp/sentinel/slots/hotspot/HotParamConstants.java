@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.slots.hotspot;
 
 /**
  * @author Eric Zhao
+ * @since 0.2.0
  */
 public final class HotParamConstants {
 

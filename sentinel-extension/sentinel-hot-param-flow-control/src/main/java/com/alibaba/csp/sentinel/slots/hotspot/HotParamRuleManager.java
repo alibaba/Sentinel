@@ -29,7 +29,10 @@ import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
+ * Manager for frequent ("hot-spot") parameter flow rules.
+ *
  * @author jialiang.linjl
+ * @author Eric Zhao
  * @since 0.2.0
  */
 public final class HotParamRuleManager {
@@ -37,12 +40,12 @@ public final class HotParamRuleManager {
     private static final Map<String, List<HotParamRule>> hotParamRules
         = new ConcurrentHashMap<String, List<HotParamRule>>();
 
-    final static RulePropertyListener listener = new RulePropertyListener();
+    private final static RulePropertyListener PROPERTY_LISTENER = new RulePropertyListener();
     private static SentinelProperty<List<HotParamRule>> currentProperty
         = new DynamicSentinelProperty<List<HotParamRule>>();
 
     static {
-        currentProperty.addListener(listener);
+        currentProperty.addListener(PROPERTY_LISTENER);
     }
 
     /**
@@ -58,6 +61,21 @@ public final class HotParamRuleManager {
         }
     }
 
+    /**
+     * Listen to the {@link SentinelProperty} for {@link HotParamRule}s. The property is the source
+     * of {@link HotParamRule}s. Hot parameter flow rules can also be set by {@link #loadRules(List)} directly.
+     *
+     * @param property the property to listen
+     */
+    public static void register2Property(SentinelProperty<List<HotParamRule>> property) {
+        synchronized (PROPERTY_LISTENER) {
+            currentProperty.removeListener(PROPERTY_LISTENER);
+            property.addListener(PROPERTY_LISTENER);
+            currentProperty = property;
+            RecordLog.info("[HotParamRuleManager] New property has been registered to hot param rule manager");
+        }
+    }
+
     public static List<HotParamRule> getRulesOfResource(String resourceName) {
         return hotParamRules.get(resourceName);
     }
@@ -65,6 +83,19 @@ public final class HotParamRuleManager {
     public static boolean hasRules(String resourceName) {
         List<HotParamRule> rules = hotParamRules.get(resourceName);
         return rules != null && !rules.isEmpty();
+    }
+
+    /**
+     * Get a copy of the rules.
+     *
+     * @return a new copy of the rules.
+     */
+    public static List<HotParamRule> getRules() {
+        List<HotParamRule> rules = new ArrayList<HotParamRule>();
+        for (Map.Entry<String, List<HotParamRule>> entry : hotParamRules.entrySet()) {
+            rules.addAll(entry.getValue());
+        }
+        return rules;
     }
 
     private static Object parseValue(String value, String classType) {

@@ -27,6 +27,8 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 
 /**
+ * A processor slot that is responsible for flow control by frequent ("hot-spot") parameters.
+ *
  * @author jialiang.linjl
  * @author Eric Zhao
  * @since 0.2.0

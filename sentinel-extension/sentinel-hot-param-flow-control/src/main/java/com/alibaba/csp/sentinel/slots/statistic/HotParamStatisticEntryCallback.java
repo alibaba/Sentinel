@@ -32,7 +32,7 @@ public class HotParamStatisticEntryCallback implements ProcessorSlotEntryCallbac
     @Override
     public void onPass(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, Object... args)
         throws Exception {
-        // The hot parameter metric should not be null as it has been initialized before passing the entry.
+        // The hot parameter metric is present only if hot parameter rules for the resource exist.
         HotParameterMetric hotParameterMetric = HotParamSlot.getHotParamMetric(resourceWrapper);
 
         if (hotParameterMetric != null) {

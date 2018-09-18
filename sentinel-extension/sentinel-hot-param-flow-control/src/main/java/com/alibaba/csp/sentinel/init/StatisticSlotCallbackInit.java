@@ -20,6 +20,9 @@ import com.alibaba.csp.sentinel.slots.statistic.HotParamStatisticExitCallback;
 import com.alibaba.csp.sentinel.slots.statistic.StatisticSlotCallbackRegistry;
 
 /**
+ * Init function for adding callbacks to {@link StatisticSlotCallbackRegistry} to record metrics
+ * for frequent parameters in {@link com.alibaba.csp.sentinel.slots.statistic.StatisticSlot}.
+ *
  * @author Eric Zhao
  * @since 0.2.0
  */

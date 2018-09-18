@@ -16,7 +16,6 @@
 package com.alibaba.csp.sentinel.slots.hotspot;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,7 +25,7 @@ import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
 /**
- * Rules for hot-spot frequent parameter flow control.
+ * Rules for "hot-spot" frequent parameter flow control.
  *
  * @author jialiang.linjl
  * @author Eric Zhao

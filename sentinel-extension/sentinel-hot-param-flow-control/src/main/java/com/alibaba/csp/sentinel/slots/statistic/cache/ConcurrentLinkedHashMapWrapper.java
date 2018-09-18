@@ -21,6 +21,8 @@ import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.Weighers;
 
 /**
+ * A {@link ConcurrentLinkedHashMap} wrapper for the universal {@link CacheMap}.
+ *
  * @author Eric Zhao
  * @since 0.2.0
  */
@@ -51,6 +53,11 @@ public class ConcurrentLinkedHashMapWrapper<T, R> implements CacheMap<T, R> {
             throw new IllegalArgumentException("Invalid map instance");
         }
         this.map = map;
+    }
+
+    @Override
+    public boolean containsKey(T key) {
+        return map.containsKey(key);
     }
 
     @Override
