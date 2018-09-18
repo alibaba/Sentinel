@@ -1,1 +1,2 @@
-#com.alibaba.csp.sentinel.command.handler.HotParamsCommandHandler
+com.alibaba.csp.sentinel.command.handler.GetHotParamRulesCommandHandler
+com.alibaba.csp.sentinel.command.handler.ModifyHotParamRulesCommandHandler
