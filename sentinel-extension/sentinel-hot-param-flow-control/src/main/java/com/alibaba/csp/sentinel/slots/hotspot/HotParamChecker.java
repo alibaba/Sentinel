@@ -74,7 +74,7 @@ final class HotParamChecker {
         return true;
     }
 
-    private static boolean passSingleValueCheck(ResourceWrapper resourceWrapper, HotParamRule rule, int count, Object value) {
+    static boolean passSingleValueCheck(ResourceWrapper resourceWrapper, HotParamRule rule, int count, Object value) {
         Set<Object> exclusionItems = rule.getParsedHotItems().keySet();
         if (rule.getBlockGrade() == RuleConstant.FLOW_GRADE_QPS) {
 
@@ -84,8 +84,6 @@ final class HotParamChecker {
                 int qps = rule.getParsedHotItems().get(value);
                 return curCount + count <= qps;
             } else if (curCount + count > rule.getCount()) {
-
-                //要考虑小数点,否则就会抖
                 if ((curCount - rule.getCount()) < 1 && (curCount - rule.getCount()) > 0) {
                     return true;
                 }
@@ -94,10 +92,8 @@ final class HotParamChecker {
         } else {
             long threadCount = getHotParameters(resourceWrapper).getThreadCount(rule.getParamIdx(), value);
             if (exclusionItems.contains(value)) {
-                int thread = rule.getParsedHotItems().get(value);
-                if (++threadCount > thread) {
-                    return false;
-                }
+                int itemThreshold = rule.getParsedHotItems().get(value);
+                return ++threadCount <= itemThreshold;
             }
             // TODO: check here (double type)
             if (++threadCount > rule.getCount()) {

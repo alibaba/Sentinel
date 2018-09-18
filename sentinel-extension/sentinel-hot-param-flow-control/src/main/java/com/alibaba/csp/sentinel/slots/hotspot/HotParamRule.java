@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.slots.hotspot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -56,7 +57,7 @@ public class HotParamRule extends AbstractRule {
     /**
      * Parsed exception items of hot parameters. Only for internal use.
      */
-    private Map<Object, Integer> hotItems;
+    private Map<Object, Integer> hotItems = new HashMap<Object, Integer>();
 
     public int getBlockGrade() {
         return blockGrade;

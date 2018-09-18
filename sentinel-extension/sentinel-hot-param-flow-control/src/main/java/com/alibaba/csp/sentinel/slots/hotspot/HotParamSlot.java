@@ -118,4 +118,8 @@ public class HotParamSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         }
         return metricsMap.get(resourceWrapper);
     }
+
+    public static Map<ResourceWrapper, HotParameterMetric> getMetricsMap() {
+        return metricsMap;
+    }
 }
