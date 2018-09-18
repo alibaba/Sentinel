@@ -38,8 +38,11 @@ import com.alibaba.csp.sentinel.slots.statistic.data.HotParamMapBucket;
  */
 public class HotParameterLeapArray extends LeapArray<HotParamMapBucket> {
 
+    private int intervalInSec;
+
     public HotParameterLeapArray(int windowLengthInMs, int intervalInSec) {
         super(windowLengthInMs, intervalInSec);
+        this.intervalInSec = intervalInSec;
     }
 
     @Override
@@ -97,7 +100,7 @@ public class HotParameterLeapArray extends LeapArray<HotParamMapBucket> {
             if (x.getValue() == 0) {
                 break;
             }
-            doubleResult.put(x.getKey(), ((double)x.getValue()) / IntervalProperty.INTERVAL);
+            doubleResult.put(x.getKey(), ((double)x.getValue()) / intervalInSec);
         }
 
         return doubleResult;
@@ -117,6 +120,6 @@ public class HotParameterLeapArray extends LeapArray<HotParamMapBucket> {
     }
 
     public double getRollingAvg(RollingParamEvent event, Object value) {
-        return ((double) getRollingSum(event, value)) / IntervalProperty.INTERVAL;
+        return ((double) getRollingSum(event, value)) / intervalInSec;
     }
 }

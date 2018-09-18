@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.csp.sentinel.context.Context;
+import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
@@ -102,6 +103,7 @@ public class HotParamSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 if ((metric = metricsMap.get(resourceWrapper)) == null) {
                     metric = new HotParameterMetric();
                     metricsMap.put(resourceWrapper, metric);
+                    RecordLog.info("[HotParamSlot] Creating hot parameter metric for: " + resourceWrapper.getName());
                 }
             }
         }
