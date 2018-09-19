@@ -15,8 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.hotspot;
 
-import com.alibaba.csp.sentinel.util.AssertUtil;
-
 /**
  * A flow control item for a specific parameter value.
  *
@@ -39,7 +37,9 @@ public class HotItem {
     }
 
     public static <T> HotItem newHotItem(T object, Integer count) {
-        AssertUtil.isTrue(object != null, "Invalid object: null");
+        if (object == null) {
+            throw new IllegalArgumentException("Invalid object: null");
+        }
         return new HotItem(object.toString(), count, object.getClass().getName());
     }
 

@@ -18,7 +18,7 @@ package com.alibaba.csp.sentinel.slots.hotspot;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 
 /**
- * Block exception for hotspot parameter flow control.
+ * Block exception for frequent ("hot-spot") parameter flow control.
  *
  * @author jialiang.linjl
  * @since 0.2.0

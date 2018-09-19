@@ -28,7 +28,7 @@ import com.alibaba.csp.sentinel.slots.hotspot.HotParamRuleManager;
  * @author Eric Zhao
  * @since 0.2.0
  */
-public class HotspotParamFlowQpsDemo {
+public class HotParamFlowQpsDemo {
 
     private static final int PARAM_A = 1;
     private static final int PARAM_B = 2;

@@ -26,7 +26,6 @@ import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 
@@ -48,18 +47,24 @@ class ParamFlowQpsRunner<T> {
     private volatile boolean stop = false;
 
     public ParamFlowQpsRunner(T[] params, String resourceName, int threadCount, int seconds) {
-        AssertUtil.isTrue(params != null && params.length > 0, "Parameter array should not be empty");
-        AssertUtil.isTrue(StringUtil.isNotBlank(resourceName), "Resource name cannot be empty");
-        AssertUtil.isTrue(seconds > 0, "Time period should be positive");
-        AssertUtil.isTrue(threadCount > 0 && threadCount <= 1000, "Invalid thread count");
+        assertTrue(params != null && params.length > 0, "Parameter array should not be empty");
+        assertTrue(StringUtil.isNotBlank(resourceName), "Resource name cannot be empty");
+        assertTrue(seconds > 0, "Time period should be positive");
+        assertTrue(threadCount > 0 && threadCount <= 1000, "Invalid thread count");
         this.params = params;
         this.resourceName = resourceName;
         this.seconds = seconds;
         this.threadCount = threadCount;
 
         for (T param : params) {
-            AssertUtil.isTrue(param != null, "Parameters should not be null");
+            assertTrue(param != null, "Parameters should not be null");
             passCountMap.putIfAbsent(param, new AtomicLong());
+        }
+    }
+
+    private void assertTrue(boolean b, String message) {
+        if (!b) {
+            throw new IllegalArgumentException(message);
         }
     }
 
