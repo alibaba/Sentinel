@@ -49,12 +49,34 @@ public class ContextUtil {
     private static ThreadLocal<Context> contextHolder = new ThreadLocal<Context>();
 
     /**
-     * Holds all {@link EntranceNode}
+     * Holds all {@link EntranceNode}.
      */
     private static volatile Map<String, DefaultNode> contextNameNodeMap = new HashMap<String, DefaultNode>();
 
     private static final ReentrantLock LOCK = new ReentrantLock();
     private static final Context NULL_CONTEXT = new NullContext();
+
+    static {
+        // Cache the entrance node for default context.
+        initDefaultContext();
+    }
+
+    private static void initDefaultContext() {
+        String defaultContextName = Constants.CONTEXT_DEFAULT_NAME;
+        EntranceNode node = new EntranceNode(new StringResourceWrapper(defaultContextName, EntryType.IN), null);
+        Constants.ROOT.addChild(node);
+        contextNameNodeMap.put(defaultContextName, node);
+    }
+
+    /**
+     * Not thread-safe, only for test.
+     */
+    static void resetContextMap() {
+        if (contextNameNodeMap != null) {
+            contextNameNodeMap.clear();
+            initDefaultContext();
+        }
+    }
 
     /**
      * <p>
@@ -99,6 +121,7 @@ public class ContextUtil {
             DefaultNode node = localCacheNameMap.get(name);
             if (node == null) {
                 if (localCacheNameMap.size() > Constants.MAX_CONTEXT_NAME_SIZE) {
+                    contextHolder.set(NULL_CONTEXT);
                     return NULL_CONTEXT;
                 } else {
                     try {
@@ -106,6 +129,7 @@ public class ContextUtil {
                         node = contextNameNodeMap.get(name);
                         if (node == null) {
                             if (contextNameNodeMap.size() > Constants.MAX_CONTEXT_NAME_SIZE) {
+                                contextHolder.set(NULL_CONTEXT);
                                 return NULL_CONTEXT;
                             } else {
                                 node = new EntranceNode(new StringResourceWrapper(name, EntryType.IN), null);

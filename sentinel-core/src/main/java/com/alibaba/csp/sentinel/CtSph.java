@@ -56,7 +56,8 @@ public class CtSph implements Sph {
     private AsyncEntry asyncEntryInternal(ResourceWrapper resourceWrapper, int count, Object... args) throws BlockException {
         Context context = ContextUtil.getContext();
         if (context instanceof NullContext) {
-            // Init the entry only. No rule checking will occur.
+            // The {@link NullContext} indicates that the amount of context has exceeded the threshold,
+            // so here init the entry only. No rule checking will be done.
             return new AsyncEntry(resourceWrapper, null, context);
         }
         if (context == null) {
@@ -112,7 +113,8 @@ public class CtSph implements Sph {
     public Entry entry(ResourceWrapper resourceWrapper, int count, Object... args) throws BlockException {
         Context context = ContextUtil.getContext();
         if (context instanceof NullContext) {
-            // Init the entry only. No rule checking will occur.
+            // The {@link NullContext} indicates that the amount of context has exceeded the threshold,
+            // so here init the entry only. No rule checking will be done.
             return new CtEntry(resourceWrapper, null, context);
         }
 
@@ -142,6 +144,7 @@ public class CtSph implements Sph {
             e.exit(count, args);
             throw e1;
         } catch (Throwable e1) {
+            // This should not happen, unless there are errors existing in Sentinel internal.
             RecordLog.info("Sentinel unexpected exception", e1);
         }
         return e;
