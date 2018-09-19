@@ -31,7 +31,7 @@ public class Constants {
     public final static int MAX_CONTEXT_NAME_SIZE = 2000;
     public final static int MAX_SLOT_CHAIN_SIZE = 6000;
     public final static String ROOT_ID = "machine-root";
-    public final static String CONTEXT_DEFAULT_NAME = "default_context_name";
+    public final static String CONTEXT_DEFAULT_NAME = "sentinel_default_context";
 
     public final static DefaultNode ROOT = new EntranceNode(new StringResourceWrapper(ROOT_ID, EntryType.IN),
         Env.nodeBuilder.buildClusterNode());
