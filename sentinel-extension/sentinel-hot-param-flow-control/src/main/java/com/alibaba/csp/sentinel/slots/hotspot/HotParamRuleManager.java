@@ -103,6 +103,7 @@ public final class HotParamRuleManager {
             throw new IllegalArgumentException("Null value");
         }
         if (StringUtil.isBlank(classType)) {
+            // If the class type is not provided, then treat it as string.
             return value;
         }
         // Handle primitive type.
@@ -122,7 +123,7 @@ public final class HotParamRuleManager {
             return Short.parseShort(value);
         } else if (char.class.toString().equals(classType)) {
             char[] array = value.toCharArray();
-            return array.length > 0 ? array[1] : null;
+            return array.length > 0 ? array[0] : null;
         }
 
         return value;
@@ -171,7 +172,7 @@ public final class HotParamRuleManager {
                     rule.setHotItemList(new ArrayList<HotItem>());
                 }
 
-                Map<Object, Integer> itemMap = parseHotItems(rule);
+                Map<Object, Integer> itemMap = parseHotItems(rule.getHotItemList());
                 rule.setParsedHotItems(itemMap);
 
                 String resourceName = rule.getResource();
@@ -187,8 +188,7 @@ public final class HotParamRuleManager {
         }
     }
 
-    private static Map<Object, Integer> parseHotItems(/*@Valid*/ HotParamRule rule) {
-        List<HotItem> items = rule.getHotItemList();
+    static Map<Object, Integer> parseHotItems(List<HotItem> items) {
         Map<Object, Integer> itemMap = new HashMap<Object, Integer>();
         if (items == null || items.isEmpty()) {
             return itemMap;
@@ -199,7 +199,7 @@ public final class HotParamRuleManager {
             try {
                 value = parseValue(item.getObject(), item.getClassType());
             } catch (Exception ex) {
-                RecordLog.warn("[HotParamRuleManager] Failed to parse value for item: " + item);
+                RecordLog.warn("[HotParamRuleManager] Failed to parse value for item: " + item, ex);
                 continue;
             }
             if (item.getCount() == null || item.getCount() < 0 || value == null) {
@@ -211,7 +211,7 @@ public final class HotParamRuleManager {
         return itemMap;
     }
 
-    private static boolean isValidRule(HotParamRule rule) {
+    static boolean isValidRule(HotParamRule rule) {
         return rule != null && !StringUtil.isBlank(rule.getResource()) && rule.getCount() >= 0
             && rule.getParamIdx() != null && rule.getParamIdx() >= 0;
     }

@@ -25,6 +25,7 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
 /**
  * @author Eric Zhao
+ * @since 0.2.0
  */
 final class HotParamChecker {
 

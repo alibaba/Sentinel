@@ -71,7 +71,7 @@ public class HotParamSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
             for (HotParamRule rule : rules) {
                 // Initialize the hot parameter metrics.
-                initHotParamMetricsFor(resourceWrapper, rule);
+                initHotParamMetricsFor(resourceWrapper, rule.getParamIdx());
 
                 if (!HotParamChecker.passCheck(resourceWrapper, rule, count, args)) {
 
@@ -97,7 +97,14 @@ public class HotParamSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         }
     }
 
-    private void initHotParamMetricsFor(ResourceWrapper resourceWrapper, HotParamRule rule) {
+    /**
+     * Init the hot parameter metric and index map for given resource.
+     * Package-private for test.
+     *
+     * @param resourceWrapper resource to init
+     * @param index index to initialize, which must be valid
+     */
+    void initHotParamMetricsFor(ResourceWrapper resourceWrapper, /*@Valid*/ int index) {
         HotParameterMetric metric;
         // Assume that the resource is valid.
         if ((metric = metricsMap.get(resourceWrapper)) == null) {
@@ -109,7 +116,7 @@ public class HotParamSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 }
             }
         }
-        metric.initializeForIndex(rule.getParamIdx());
+        metric.initializeForIndex(index);
     }
 
     public static HotParameterMetric getHotParamMetric(ResourceWrapper resourceWrapper) {

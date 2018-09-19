@@ -37,7 +37,7 @@ public class HotParamMapBucket {
         RollingParamEvent[] events = RollingParamEvent.values();
         this.data = new CacheMap[events.length];
         for (RollingParamEvent event : events) {
-            data[event.ordinal()] = new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>();
+            data[event.ordinal()] = new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(DEFAULT_MAX_CAPACITY);
         }
     }
 
@@ -61,4 +61,6 @@ public class HotParamMapBucket {
     public Set<Object> ascendingKeySet(RollingParamEvent type) {
         return data[type.ordinal()].ascendingKeySet();
     }
+
+    public static final int DEFAULT_MAX_CAPACITY = 200;
 }

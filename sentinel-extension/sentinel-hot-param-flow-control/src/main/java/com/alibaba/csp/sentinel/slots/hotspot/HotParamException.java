@@ -33,7 +33,7 @@ public class HotParamException extends BlockException {
     }
 
     public HotParamException(String resourceName, String message) {
-        super(message);
+        super(message, message);
         this.resourceName = resourceName;
     }
 

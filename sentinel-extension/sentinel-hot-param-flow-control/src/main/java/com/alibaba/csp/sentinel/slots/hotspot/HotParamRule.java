@@ -34,6 +34,12 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
  */
 public class HotParamRule extends AbstractRule {
 
+    public HotParamRule() {}
+
+    public HotParamRule(String resourceName) {
+        setResource(resourceName);
+    }
+
     /**
      * The threshold type of flow control (0: thread count, 1: QPS).
      */
@@ -116,12 +122,12 @@ public class HotParamRule extends AbstractRule {
         if (o == null || getClass() != o.getClass()) { return false; }
         if (!super.equals(o)) { return false; }
 
-        HotParamRule that = (HotParamRule)o;
+        HotParamRule rule = (HotParamRule)o;
 
-        if (blockGrade != that.blockGrade) { return false; }
-        if (Double.compare(that.count, count) != 0) { return false; }
-        if (!paramIdx.equals(that.paramIdx)) { return false; }
-        return hotItems != null ? hotItems.equals(that.hotItems) : that.hotItems == null;
+        if (blockGrade != rule.blockGrade) { return false; }
+        if (Double.compare(rule.count, count) != 0) { return false; }
+        if (paramIdx != null ? !paramIdx.equals(rule.paramIdx) : rule.paramIdx != null) { return false; }
+        return hotItemList != null ? hotItemList.equals(rule.hotItemList) : rule.hotItemList == null;
     }
 
     @Override
@@ -129,10 +135,10 @@ public class HotParamRule extends AbstractRule {
         int result = super.hashCode();
         long temp;
         result = 31 * result + blockGrade;
-        result = 31 * result + paramIdx.hashCode();
+        result = 31 * result + (paramIdx != null ? paramIdx.hashCode() : 0);
         temp = Double.doubleToLongBits(count);
         result = 31 * result + (int)(temp ^ (temp >>> 32));
-        result = 31 * result + (hotItems != null ? hotItems.hashCode() : 0);
+        result = 31 * result + (hotItemList != null ? hotItemList.hashCode() : 0);
         return result;
     }
 
@@ -144,7 +150,7 @@ public class HotParamRule extends AbstractRule {
             ", blockGrade=" + blockGrade +
             ", paramIdx=" + paramIdx +
             ", count=" + count +
-            ", hotItems=" + hotItems +
+            ", hotItemList=" + hotItemList +
             '}';
     }
 }

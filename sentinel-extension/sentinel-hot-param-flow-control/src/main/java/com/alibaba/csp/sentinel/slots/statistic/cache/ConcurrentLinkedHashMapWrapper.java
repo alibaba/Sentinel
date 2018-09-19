@@ -29,7 +29,6 @@ import com.googlecode.concurrentlinkedhashmap.Weighers;
 public class ConcurrentLinkedHashMapWrapper<T, R> implements CacheMap<T, R> {
 
     private static final int DEFAULT_CONCURRENCY_LEVEL = 16;
-    private static final int DEFAULT_MAX_CAPACITY = 200;
 
     private final ConcurrentLinkedHashMap<T, R> map;
 
@@ -42,10 +41,6 @@ public class ConcurrentLinkedHashMapWrapper<T, R> implements CacheMap<T, R> {
             .maximumWeightedCapacity(size)
             .weigher(Weighers.singleton())
             .build();
-    }
-
-    public ConcurrentLinkedHashMapWrapper() {
-        this(DEFAULT_MAX_CAPACITY);
     }
 
     public ConcurrentLinkedHashMapWrapper(ConcurrentLinkedHashMap<T, R> map) {

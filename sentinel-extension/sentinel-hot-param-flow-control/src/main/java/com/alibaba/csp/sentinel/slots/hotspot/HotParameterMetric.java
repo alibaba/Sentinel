@@ -45,6 +45,10 @@ public class HotParameterMetric {
         return rollingParameters;
     }
 
+    public Map<Integer, CacheMap<Object, AtomicInteger>> getThreadCountMap() {
+        return threadCountMap;
+    }
+
     public synchronized void clear() {
         rollingParameters.clear();
         threadCountMap.clear();
