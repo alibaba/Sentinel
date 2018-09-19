@@ -187,4 +187,15 @@ public class Context {
     public Node getOriginNode() {
         return curEntry == null ? null : curEntry.getOriginNode();
     }
+
+    @Override
+    public String toString() {
+        return "Context{" +
+            "name='" + name + '\'' +
+            ", entranceNode=" + entranceNode +
+            ", curEntry=" + curEntry +
+            ", origin='" + origin + '\'' +
+            ", async=" + async +
+            '}';
+    }
 }

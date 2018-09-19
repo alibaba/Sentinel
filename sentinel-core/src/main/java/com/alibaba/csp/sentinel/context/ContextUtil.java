@@ -56,6 +56,12 @@ public class ContextUtil {
     private static final ReentrantLock LOCK = new ReentrantLock();
     private static final Context NULL_CONTEXT = new NullContext();
 
+    static {
+        // Cache the entrance node for default context.
+        contextNameNodeMap.put(Constants.CONTEXT_DEFAULT_NAME, new EntranceNode(
+            new StringResourceWrapper(Constants.CONTEXT_DEFAULT_NAME, EntryType.IN), null));
+    }
+
     /**
      * <p>
      * Enter the invocation context. The context is ThreadLocal, meaning that
@@ -98,14 +104,16 @@ public class ContextUtil {
             Map<String, DefaultNode> localCacheNameMap = contextNameNodeMap;
             DefaultNode node = localCacheNameMap.get(name);
             if (node == null) {
-                if (localCacheNameMap.size() > Constants.MAX_CONTEXT_NAME_SIZE) {
+                if (localCacheNameMap.size() >= Constants.MAX_CONTEXT_NAME_SIZE) {
+                    contextHolder.set(NULL_CONTEXT);
                     return NULL_CONTEXT;
                 } else {
                     try {
                         LOCK.lock();
                         node = contextNameNodeMap.get(name);
                         if (node == null) {
-                            if (contextNameNodeMap.size() > Constants.MAX_CONTEXT_NAME_SIZE) {
+                            if (contextNameNodeMap.size() >= Constants.MAX_CONTEXT_NAME_SIZE) {
+                                contextHolder.set(NULL_CONTEXT);
                                 return NULL_CONTEXT;
                             } else {
                                 node = new EntranceNode(new StringResourceWrapper(name, EntryType.IN), null);

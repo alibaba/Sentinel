@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel;
 
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.context.ContextUtil;
+import com.alibaba.csp.sentinel.context.NullContext;
 import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
@@ -59,13 +60,16 @@ class CtEntry extends Entry {
     protected void exitForContext(Context context, int count, Object... args) throws ErrorEntryFreeException {
         if (context != null) {
             if (context.getCurEntry() != this) {
+                String curEntryNameInContext = context.getCurEntry() == null ? null : context.getCurEntry().getResourceWrapper().getName();
                 // Clean previous call stack.
                 CtEntry e = (CtEntry)context.getCurEntry();
                 while (e != null) {
                     e.exit(count, args);
                     e = (CtEntry)e.parent;
                 }
-                throw new ErrorEntryFreeException("The order of entry free is can't be paired with the order of entry");
+                String errorMessage = String.format("The order of entry exit can't be paired with the order of entry"
+                    + ", current entry in context: <%s>, but expected: <%s>", curEntryNameInContext, resourceWrapper.getName());
+                throw new ErrorEntryFreeException(errorMessage);
             } else {
                 if (chain != null) {
                     chain.exit(context, resourceWrapper, count, args);
@@ -75,8 +79,9 @@ class CtEntry extends Entry {
                 if (parent != null) {
                     ((CtEntry)parent).child = null;
                 }
-                if (parent == null) {
-                    // Auto-created entry indicates immediate exit.
+                if (parent == null && !(context instanceof NullContext)) {
+                    // Default context (auto entered) will be exited automatically.
+                    // Note: NullContext won't be exited automatically.
                     ContextUtil.exit();
                 }
                 // Clean the reference of context in current entry to avoid duplicate exit.
