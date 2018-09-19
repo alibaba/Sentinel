@@ -62,8 +62,10 @@ public class ContextUtil {
     }
 
     private static void initDefaultContext() {
-        contextNameNodeMap.put(Constants.CONTEXT_DEFAULT_NAME, new EntranceNode(
-            new StringResourceWrapper(Constants.CONTEXT_DEFAULT_NAME, EntryType.IN), null));
+        String defaultContextName = Constants.CONTEXT_DEFAULT_NAME;
+        EntranceNode node = new EntranceNode(new StringResourceWrapper(defaultContextName, EntryType.IN), null);
+        Constants.ROOT.addChild(node);
+        contextNameNodeMap.put(defaultContextName, node);
     }
 
     /**

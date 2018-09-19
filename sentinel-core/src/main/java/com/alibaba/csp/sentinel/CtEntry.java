@@ -45,6 +45,10 @@ class CtEntry extends Entry {
     }
 
     private void setUpEntryFor(Context context) {
+        // The entry should not be associated to NullContext.
+        if (context instanceof NullContext) {
+            return;
+        }
         this.parent = context.getCurEntry();
         if (parent != null) {
             ((CtEntry)parent).child = this;
@@ -59,6 +63,10 @@ class CtEntry extends Entry {
 
     protected void exitForContext(Context context, int count, Object... args) throws ErrorEntryFreeException {
         if (context != null) {
+            // Null context should exit without clean-up.
+            if (context instanceof NullContext) {
+                return;
+            }
             if (context.getCurEntry() != this) {
                 String curEntryNameInContext = context.getCurEntry() == null ? null : context.getCurEntry().getResourceWrapper().getName();
                 // Clean previous call stack.
@@ -79,7 +87,7 @@ class CtEntry extends Entry {
                 if (parent != null) {
                     ((CtEntry)parent).child = null;
                 }
-                if (parent == null && !(context instanceof NullContext)) {
+                if (parent == null) {
                     // Default context (auto entered) will be exited automatically.
                     // Note: NullContext won't be exited automatically.
                     ContextUtil.exit();

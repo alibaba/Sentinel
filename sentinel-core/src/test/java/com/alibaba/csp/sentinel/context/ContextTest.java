@@ -81,6 +81,7 @@ public class ContextTest {
 
     private void resetContextMap() {
         ContextUtil.resetContextMap();
+        Constants.ROOT.removeChildList();
     }
 
     @Test
