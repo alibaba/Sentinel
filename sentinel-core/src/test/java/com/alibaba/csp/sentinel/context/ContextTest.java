@@ -15,7 +15,11 @@
  */
 package com.alibaba.csp.sentinel.context;
 
+import com.alibaba.csp.sentinel.Constants;
+import com.alibaba.csp.sentinel.TestUtil;
+
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -28,9 +32,55 @@ import static org.junit.Assert.*;
  */
 public class ContextTest {
 
+    @Before
+    public void setUp() {
+        resetContextMap();
+    }
+
     @After
     public void cleanUp() {
-        ContextUtil.exit();
+        TestUtil.cleanUpContext();
+    }
+
+    @Test
+    public void testEnterCustomContextWhenExceedsThreshold() {
+        fillContext();
+        try {
+            String contextName = "abc";
+            ContextUtil.enter(contextName, "bcd");
+            Context curContext = ContextUtil.getContext();
+            assertNotEquals(contextName, curContext.getName());
+            assertTrue(curContext instanceof NullContext);
+            assertEquals("", curContext.getOrigin());
+        } finally {
+            ContextUtil.exit();
+            resetContextMap();
+        }
+    }
+
+    @Test
+    public void testDefaultContextWhenExceedsThreshold() {
+        fillContext();
+        try {
+            ContextUtil.trueEnter(Constants.CONTEXT_DEFAULT_NAME, "");
+            Context curContext = ContextUtil.getContext();
+            assertEquals(Constants.CONTEXT_DEFAULT_NAME, curContext.getName());
+            assertNotNull(curContext.getEntranceNode());
+        } finally {
+            ContextUtil.exit();
+            resetContextMap();
+        }
+    }
+
+    private void fillContext() {
+        for (int i = 0; i < Constants.MAX_CONTEXT_NAME_SIZE; i++) {
+            ContextUtil.enter("test-context-" + i);
+            ContextUtil.exit();
+        }
+    }
+
+    private void resetContextMap() {
+        ContextUtil.resetContextMap();
     }
 
     @Test

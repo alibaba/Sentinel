@@ -49,7 +49,7 @@ public class ContextUtil {
     private static ThreadLocal<Context> contextHolder = new ThreadLocal<Context>();
 
     /**
-     * Holds all {@link EntranceNode}
+     * Holds all {@link EntranceNode}.
      */
     private static volatile Map<String, DefaultNode> contextNameNodeMap = new HashMap<String, DefaultNode>();
 
@@ -58,8 +58,22 @@ public class ContextUtil {
 
     static {
         // Cache the entrance node for default context.
+        initDefaultContext();
+    }
+
+    private static void initDefaultContext() {
         contextNameNodeMap.put(Constants.CONTEXT_DEFAULT_NAME, new EntranceNode(
             new StringResourceWrapper(Constants.CONTEXT_DEFAULT_NAME, EntryType.IN), null));
+    }
+
+    /**
+     * Not thread-safe, only for test.
+     */
+    static void resetContextMap() {
+        if (contextNameNodeMap != null) {
+            contextNameNodeMap.clear();
+            initDefaultContext();
+        }
     }
 
     /**
@@ -104,7 +118,7 @@ public class ContextUtil {
             Map<String, DefaultNode> localCacheNameMap = contextNameNodeMap;
             DefaultNode node = localCacheNameMap.get(name);
             if (node == null) {
-                if (localCacheNameMap.size() >= Constants.MAX_CONTEXT_NAME_SIZE) {
+                if (localCacheNameMap.size() > Constants.MAX_CONTEXT_NAME_SIZE) {
                     contextHolder.set(NULL_CONTEXT);
                     return NULL_CONTEXT;
                 } else {
@@ -112,7 +126,7 @@ public class ContextUtil {
                         LOCK.lock();
                         node = contextNameNodeMap.get(name);
                         if (node == null) {
-                            if (contextNameNodeMap.size() >= Constants.MAX_CONTEXT_NAME_SIZE) {
+                            if (contextNameNodeMap.size() > Constants.MAX_CONTEXT_NAME_SIZE) {
                                 contextHolder.set(NULL_CONTEXT);
                                 return NULL_CONTEXT;
                             } else {
