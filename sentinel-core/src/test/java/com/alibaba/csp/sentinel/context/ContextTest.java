@@ -16,7 +16,6 @@
 package com.alibaba.csp.sentinel.context;
 
 import com.alibaba.csp.sentinel.Constants;
-import com.alibaba.csp.sentinel.TestUtil;
 
 import org.junit.After;
 import org.junit.Before;
@@ -39,7 +38,7 @@ public class ContextTest {
 
     @After
     public void cleanUp() {
-        TestUtil.cleanUpContext();
+        ContextTestUtil.cleanUpContext();
     }
 
     @Test
@@ -80,8 +79,7 @@ public class ContextTest {
     }
 
     private void resetContextMap() {
-        ContextUtil.resetContextMap();
-        Constants.ROOT.removeChildList();
+        ContextTestUtil.resetContextMap();
     }
 
     @Test

@@ -1,9 +1,11 @@
 package com.alibaba.csp.sentinel;
 
 import com.alibaba.csp.sentinel.context.Context;
+import com.alibaba.csp.sentinel.context.ContextTestUtil;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
 
+import org.junit.After;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -22,6 +24,8 @@ public class AsyncEntryTest {
         try {
             ContextUtil.enter(contextName);
             Context curContext = ContextUtil.getContext();
+            Entry previousEntry = new CtEntry(new StringResourceWrapper("entry-sync", EntryType.IN),
+                null, curContext);
             AsyncEntry entry = new AsyncEntry(new StringResourceWrapper("testCleanCurrentEntryInLocal", EntryType.OUT),
                 null, curContext);
 
@@ -29,9 +33,26 @@ public class AsyncEntryTest {
 
             entry.cleanCurrentEntryInLocal();
             assertNotSame(entry, curContext.getCurEntry());
+            assertSame(previousEntry, curContext.getCurEntry());
         } finally {
-            ContextUtil.getContext().setCurEntry(null);
-            ContextUtil.exit();
+            ContextTestUtil.cleanUpContext();
+        }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testCleanCurrentEntryInLocalError() {
+        final String contextName = "abc";
+        try {
+            ContextUtil.enter(contextName);
+            Context curContext = ContextUtil.getContext();
+            AsyncEntry entry = new AsyncEntry(new StringResourceWrapper("testCleanCurrentEntryInLocal", EntryType.OUT),
+                null, curContext);
+
+            entry.cleanCurrentEntryInLocal();
+
+            entry.cleanCurrentEntryInLocal();
+        } finally {
+            ContextTestUtil.cleanUpContext();
         }
     }
 
@@ -47,8 +68,6 @@ public class AsyncEntryTest {
             assertNull(entry.getAsyncContext());
 
             entry.initAsyncContext();
-            System.out.println(curContext.getName());
-            System.out.println(curContext.getOrigin());
 
             Context asyncContext = entry.getAsyncContext();
             assertNotNull(asyncContext);
@@ -58,19 +77,25 @@ public class AsyncEntryTest {
             assertSame(entry, asyncContext.getCurEntry());
             assertTrue(asyncContext.isAsync());
         } finally {
-            ContextUtil.getContext().setCurEntry(null);
-            ContextUtil.exit();
+            ContextTestUtil.cleanUpContext();
         }
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testDuplicateInitAsyncContext() {
         Context context = new Context(null, "abc");
         AsyncEntry entry = new AsyncEntry(new StringResourceWrapper("testDuplicateInitAsyncContext", EntryType.OUT),
             null, context);
         entry.initAsyncContext();
+        Context asyncContext = entry.getAsyncContext();
 
         // Duplicate init.
         entry.initAsyncContext();
+        assertSame(asyncContext, entry.getAsyncContext());
+    }
+
+    @After
+    public void tearDown() {
+        ContextTestUtil.cleanUpContext();
     }
 }
