@@ -3,7 +3,7 @@ package com.alibaba.csp.sentinel.slots.block.authority;
 import java.util.Collections;
 
 import com.alibaba.csp.sentinel.EntryType;
-import com.alibaba.csp.sentinel.TestUtil;
+import com.alibaba.csp.sentinel.context.ContextTestUtil;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
@@ -120,13 +120,13 @@ public class AuthoritySlotTest {
 
     @Before
     public void setUp() {
-        TestUtil.cleanUpContext();
+        ContextTestUtil.cleanUpContext();
         AuthorityRuleManager.loadRules(null);
     }
 
     @After
     public void tearDown() {
-        TestUtil.cleanUpContext();
+        ContextTestUtil.cleanUpContext();
         AuthorityRuleManager.loadRules(null);
     }
 }

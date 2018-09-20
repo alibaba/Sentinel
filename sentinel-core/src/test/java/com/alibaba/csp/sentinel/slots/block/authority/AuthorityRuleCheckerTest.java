@@ -1,6 +1,6 @@
 package com.alibaba.csp.sentinel.slots.block.authority;
 
-import com.alibaba.csp.sentinel.TestUtil;
+import com.alibaba.csp.sentinel.context.ContextTestUtil;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
@@ -18,7 +18,7 @@ public class AuthorityRuleCheckerTest {
 
     @Before
     public void setUp() {
-        TestUtil.cleanUpContext();
+        ContextTestUtil.cleanUpContext();
     }
 
     @Test

@@ -20,9 +20,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.alibaba.csp.sentinel.context.ContextTestUtil;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.node.DefaultNode;
-import com.alibaba.csp.sentinel.node.EntranceNode;
 import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 
@@ -41,10 +41,7 @@ public class AsyncEntryIntegrationTest {
 
     @Before
     public void clearContext() {
-        if (ContextUtil.getContext() != null) {
-            ContextUtil.getContext().setCurEntry(null);
-            ContextUtil.exit();
-        }
+        ContextTestUtil.cleanUpContext();
     }
 
     private final ExecutorService pool = Executors.newFixedThreadPool(10);
