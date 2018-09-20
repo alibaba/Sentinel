@@ -16,6 +16,8 @@
 package com.alibaba.csp.sentinel;
 
 import com.alibaba.csp.sentinel.context.Context;
+import com.alibaba.csp.sentinel.context.NullContext;
+import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 
@@ -37,6 +39,9 @@ public class AsyncEntry extends CtEntry {
      * Remove current entry from local context, but does not exit.
      */
     void cleanCurrentEntryInLocal() {
+        if (context instanceof NullContext) {
+            return;
+        }
         Context originalContext = context;
         if (originalContext != null) {
             Entry curEntry = originalContext.getCurEntry();
@@ -61,11 +66,15 @@ public class AsyncEntry extends CtEntry {
      */
     void initAsyncContext() {
         if (asyncContext == null) {
+            if (context instanceof NullContext) {
+                asyncContext = context;
+                return;
+            }
             this.asyncContext = Context.newAsyncContext(context.getEntranceNode(), context.getName())
                 .setOrigin(context.getOrigin())
                 .setCurEntry(this);
         } else {
-            throw new IllegalStateException("Duplicate initialize of async context");
+            RecordLog.warn("[AsyncEntry] Duplicate initialize of async context for entry: " + resourceWrapper.getName());
         }
     }
 
