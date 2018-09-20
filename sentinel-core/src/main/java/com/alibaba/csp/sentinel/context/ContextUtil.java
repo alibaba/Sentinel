@@ -23,6 +23,7 @@ import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphO;
 import com.alibaba.csp.sentinel.SphU;
+import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.node.EntranceNode;
 import com.alibaba.csp.sentinel.node.Node;
@@ -73,6 +74,7 @@ public class ContextUtil {
      */
     static void resetContextMap() {
         if (contextNameNodeMap != null) {
+            RecordLog.warn("Context map cleared and reset to initial state");
             contextNameNodeMap.clear();
             initDefaultContext();
         }
@@ -188,6 +190,20 @@ public class ContextUtil {
         if (context != null && context.getCurEntry() == null) {
             contextHolder.set(null);
         }
+    }
+
+    /**
+     * Check if provided context is a default auto-created context.
+     *
+     * @param context context to check
+     * @return true if it is a default context, otherwise false
+     * @since 0.2.0
+     */
+    public static boolean isDefaultContext(Context context) {
+        if (context == null) {
+            return false;
+        }
+        return Constants.CONTEXT_DEFAULT_NAME.equals(context.getName());
     }
 
     /**

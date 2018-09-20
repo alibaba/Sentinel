@@ -89,8 +89,9 @@ class CtEntry extends Entry {
                 }
                 if (parent == null) {
                     // Default context (auto entered) will be exited automatically.
-                    // Note: NullContext won't be exited automatically.
-                    ContextUtil.exit();
+                    if (ContextUtil.isDefaultContext(context)) {
+                        ContextUtil.exit();
+                    }
                 }
                 // Clean the reference of context in current entry to avoid duplicate exit.
                 clearEntryContext();
