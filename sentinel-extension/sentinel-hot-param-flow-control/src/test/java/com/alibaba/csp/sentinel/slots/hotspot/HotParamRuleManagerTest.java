@@ -2,9 +2,12 @@ package com.alibaba.csp.sentinel.slots.hotspot;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
 import org.junit.After;
@@ -29,6 +32,24 @@ public class HotParamRuleManagerTest {
     @After
     public void tearDown() {
         HotParamRuleManager.loadRules(null);
+    }
+
+    @Test
+    public void testLoadHotParamRulesClearingUnusedMetrics() {
+        final String resA = "resA";
+        HotParamRule ruleA = new HotParamRule(resA)
+            .setCount(1)
+            .setParamIdx(0);
+        HotParamRuleManager.loadRules(Collections.singletonList(ruleA));
+        HotParamSlot.getMetricsMap().put(new StringResourceWrapper(resA, EntryType.IN), new HotParameterMetric());
+        assertNotNull(HotParamSlot.getHotParamMetricForName(resA));
+
+        final String resB = "resB";
+        HotParamRule ruleB = new HotParamRule(resB)
+            .setCount(2)
+            .setParamIdx(1);
+        HotParamRuleManager.loadRules(Collections.singletonList(ruleB));
+        assertNull("The unused hot param metric should be cleared", HotParamSlot.getHotParamMetricForName(resA));
     }
 
     @Test

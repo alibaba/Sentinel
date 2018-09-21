@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
@@ -155,6 +156,9 @@ public final class HotParamRuleManager {
             Map<String, List<HotParamRule>> newRuleMap = new ConcurrentHashMap<String, List<HotParamRule>>();
 
             if (list == null || list.isEmpty()) {
+                // No hot parameter rules, so clear all the metrics.
+                HotParamSlot.getMetricsMap().clear();
+                RecordLog.info("[HotParamRuleManager] No hot param rules, clearing all hot parameter metrics");
                 return newRuleMap;
             }
 
@@ -182,6 +186,14 @@ public final class HotParamRuleManager {
                     newRuleMap.put(resourceName, ruleList);
                 }
                 ruleList.add(rule);
+            }
+
+            // Clear unused hot param metrics.
+            Set<String> previousResources = hotParamRules.keySet();
+            for (String resource : previousResources) {
+                if (!newRuleMap.containsKey(resource)) {
+                    HotParamSlot.clearHotParamMetricForName(resource);
+                }
             }
 
             return newRuleMap;
