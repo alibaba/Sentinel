@@ -19,12 +19,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
+import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
  * A processor slot that is responsible for flow control by frequent ("hot-spot") parameters.
@@ -124,6 +127,29 @@ public class HotParamSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             return null;
         }
         return metricsMap.get(resourceWrapper);
+    }
+
+    public static HotParameterMetric getHotParamMetricForName(String resourceName) {
+        if (StringUtil.isBlank(resourceName)) {
+            return null;
+        }
+        for (EntryType nodeType : EntryType.values()) {
+            HotParameterMetric metric = metricsMap.get(new StringResourceWrapper(resourceName, nodeType));
+            if (metric != null) {
+                return metric;
+            }
+        }
+        return null;
+    }
+
+    static void clearHotParamMetricForName(String resourceName) {
+        if (StringUtil.isBlank(resourceName)) {
+            return;
+        }
+        for (EntryType nodeType : EntryType.values()) {
+            metricsMap.remove(new StringResourceWrapper(resourceName, nodeType));
+        }
+        RecordLog.info("[HotParamSlot] Clearing hot parameter metric for: " + resourceName);
     }
 
     public static Map<ResourceWrapper, HotParameterMetric> getMetricsMap() {

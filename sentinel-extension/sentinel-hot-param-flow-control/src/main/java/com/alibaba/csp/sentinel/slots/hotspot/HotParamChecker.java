@@ -29,7 +29,8 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
  */
 final class HotParamChecker {
 
-    static boolean passCheck(ResourceWrapper resourceWrapper, /*@Valid*/ HotParamRule rule, /*@Valid*/ int count, Object... args) {
+    static boolean passCheck(ResourceWrapper resourceWrapper, /*@Valid*/ HotParamRule rule, /*@Valid*/ int count,
+                             Object... args) {
         if (args == null) {
             return true;
         }
@@ -78,12 +79,11 @@ final class HotParamChecker {
     static boolean passSingleValueCheck(ResourceWrapper resourceWrapper, HotParamRule rule, int count, Object value) {
         Set<Object> exclusionItems = rule.getParsedHotItems().keySet();
         if (rule.getBlockGrade() == RuleConstant.FLOW_GRADE_QPS) {
-
-            int curCount = (int) getHotParameters(resourceWrapper).getPassParamQps(rule.getParamIdx(), value);
+            double curCount = getHotParameters(resourceWrapper).getPassParamQps(rule.getParamIdx(), value);
 
             if (exclusionItems.contains(value)) {
-                int qps = rule.getParsedHotItems().get(value);
-                return curCount + count <= qps;
+                int itemQps = rule.getParsedHotItems().get(value);
+                return curCount + count <= itemQps;
             } else if (curCount + count > rule.getCount()) {
                 if ((curCount - rule.getCount()) < 1 && (curCount - rule.getCount()) > 0) {
                     return true;
@@ -96,10 +96,8 @@ final class HotParamChecker {
                 int itemThreshold = rule.getParsedHotItems().get(value);
                 return ++threadCount <= itemThreshold;
             }
-            // TODO: check here (double type)
-            if (++threadCount > rule.getCount()) {
-                return false;
-            }
+            long threshold = (long)rule.getCount();
+            return ++threadCount <= threshold;
         }
 
         return true;

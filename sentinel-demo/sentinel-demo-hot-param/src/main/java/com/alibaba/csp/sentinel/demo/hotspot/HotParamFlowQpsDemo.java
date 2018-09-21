@@ -45,8 +45,8 @@ public class HotParamFlowQpsDemo {
     public static void main(String[] args) {
         initHotParamFlowRules();
 
-        final int threadCount = 8;
-        ParamFlowQpsRunner<Integer> runner = new ParamFlowQpsRunner<>(PARAMS, RESOURCE_KEY, threadCount, 60);
+        final int threadCount = 1;
+        ParamFlowQpsRunner<Integer> runner = new ParamFlowQpsRunner<>(PARAMS, RESOURCE_KEY, threadCount, 120);
         runner.simulateTraffic();
         runner.tick();
     }

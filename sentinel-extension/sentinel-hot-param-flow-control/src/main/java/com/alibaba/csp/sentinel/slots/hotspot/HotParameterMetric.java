@@ -232,13 +232,13 @@ public class HotParameterMetric {
         }
     }
 
-    public long getPassParamQps(int index, Object value) {
+    public double getPassParamQps(int index, Object value) {
         try {
             HotParameterLeapArray parameter = rollingParameters.get(index);
             if (parameter == null || value == null) {
                 return -1;
             }
-            return (long) parameter.getRollingAvg(RollingParamEvent.REQUEST_PASSED, value);
+            return parameter.getRollingAvg(RollingParamEvent.REQUEST_PASSED, value);
         } catch (Throwable e) {
             RecordLog.info(e.getMessage(), e);
         }
@@ -261,7 +261,7 @@ public class HotParameterMetric {
         return -1;
     }
 
-    public Map<Object, Double> getTopParamCount(int index, int number) {
+    public Map<Object, Double> getTopPassParamCount(int index, int number) {
         try {
             HotParameterLeapArray parameter = rollingParameters.get(index);
             if (parameter == null) {

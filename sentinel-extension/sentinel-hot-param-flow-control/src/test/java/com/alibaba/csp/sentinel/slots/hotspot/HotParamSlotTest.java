@@ -38,7 +38,7 @@ public class HotParamSlotTest {
         String resourceName = "testEntryWhenHotRuleExists";
         ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
         long argToGo = 1L;
-        long count = 10;
+        double count = 10;
         HotParamRule rule = new HotParamRule(resourceName)
             .setCount(count)
             .setParamIdx(0);

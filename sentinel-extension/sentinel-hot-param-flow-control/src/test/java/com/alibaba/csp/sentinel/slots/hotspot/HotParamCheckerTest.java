@@ -54,8 +54,8 @@ public class HotParamCheckerTest {
         String valueA = "valueA";
         String valueB = "valueB";
         HotParameterMetric metric = mock(HotParameterMetric.class);
-        when(metric.getPassParamQps(paramIdx, valueA)).thenReturn(threshold - 1);
-        when(metric.getPassParamQps(paramIdx, valueB)).thenReturn(threshold + 1);
+        when(metric.getPassParamQps(paramIdx, valueA)).thenReturn((double)threshold - 1);
+        when(metric.getPassParamQps(paramIdx, valueB)).thenReturn((double)threshold + 1);
         HotParamSlot.getMetricsMap().put(resourceWrapper, metric);
 
         assertTrue(HotParamChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
@@ -89,10 +89,10 @@ public class HotParamCheckerTest {
         rule.setParsedHotItems(map);
 
         HotParameterMetric metric = mock(HotParameterMetric.class);
-        when(metric.getPassParamQps(paramIdx, valueA)).thenReturn(globalThreshold - 1);
-        when(metric.getPassParamQps(paramIdx, valueB)).thenReturn(globalThreshold - 1);
-        when(metric.getPassParamQps(paramIdx, valueC)).thenReturn(globalThreshold - 1);
-        when(metric.getPassParamQps(paramIdx, valueD)).thenReturn(globalThreshold + 1);
+        when(metric.getPassParamQps(paramIdx, valueA)).thenReturn((double)globalThreshold - 1);
+        when(metric.getPassParamQps(paramIdx, valueB)).thenReturn((double)globalThreshold - 1);
+        when(metric.getPassParamQps(paramIdx, valueC)).thenReturn((double)globalThreshold - 1);
+        when(metric.getPassParamQps(paramIdx, valueD)).thenReturn((double)globalThreshold + 1);
         HotParamSlot.getMetricsMap().put(resourceWrapper, metric);
 
         assertTrue(HotParamChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
@@ -100,11 +100,11 @@ public class HotParamCheckerTest {
         assertTrue(HotParamChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueC));
         assertTrue(HotParamChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueD));
 
-        when(metric.getPassParamQps(paramIdx, valueA)).thenReturn(globalThreshold);
-        when(metric.getPassParamQps(paramIdx, valueB)).thenReturn(thresholdB - 1L);
-        when(metric.getPassParamQps(paramIdx, valueC)).thenReturn(globalThreshold + 1);
-        when(metric.getPassParamQps(paramIdx, valueD)).thenReturn(globalThreshold - 1)
-            .thenReturn((long)thresholdD);
+        when(metric.getPassParamQps(paramIdx, valueA)).thenReturn((double)globalThreshold);
+        when(metric.getPassParamQps(paramIdx, valueB)).thenReturn((double)thresholdB - 1L);
+        when(metric.getPassParamQps(paramIdx, valueC)).thenReturn((double)globalThreshold + 1);
+        when(metric.getPassParamQps(paramIdx, valueD)).thenReturn((double)globalThreshold - 1)
+            .thenReturn((double)thresholdD);
 
         assertFalse(HotParamChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
         assertTrue(HotParamChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueB));
