@@ -124,7 +124,7 @@ public class CtSph implements Sph {
      * @param resourceWrapper target resource
      * @return {@link ProcessorSlotChain} of the resource
      */
-    private ProcessorSlot<Object> lookProcessChain(ResourceWrapper resourceWrapper) {
+    ProcessorSlot<Object> lookProcessChain(ResourceWrapper resourceWrapper) {
         ProcessorSlotChain chain = chainMap.get(resourceWrapper);
         if (chain == null) {
             synchronized (LOCK) {
@@ -146,6 +146,20 @@ public class CtSph implements Sph {
             }
         }
         return chain;
+    }
+
+    /**
+     * Reset the slot chain map. Only for internal test.
+     */
+    static void resetChainMap() {
+        chainMap.clear();
+    }
+
+    /**
+     * Only for internal test.
+     */
+    static Map<ResourceWrapper, ProcessorSlotChain> getChainMap() {
+        return chainMap;
     }
 
     private static class CtEntry extends Entry {
@@ -204,8 +218,9 @@ public class CtSph implements Sph {
                     }
                     if (parent == null) {
                         // Default context (auto entered) will be exited automatically.
-                        // Note: NullContext won't be exited automatically.
-                        ContextUtil.exit();
+                        if (ContextUtil.isDefaultContext(context)) {
+                            ContextUtil.exit();
+                        }
                     }
                     // Clean the reference of context in current entry to avoid duplicate exit.
                     context = null;

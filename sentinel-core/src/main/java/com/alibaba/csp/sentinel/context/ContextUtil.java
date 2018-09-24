@@ -188,6 +188,13 @@ public class ContextUtil {
         }
     }
 
+    public static boolean isDefaultContext(Context context) {
+        if (context == null) {
+            return false;
+        }
+        return Constants.CONTEXT_DEFAULT_NAME.equals(context.getName());
+    }
+
     /**
      * Get {@link Context} of current thread.
      *
