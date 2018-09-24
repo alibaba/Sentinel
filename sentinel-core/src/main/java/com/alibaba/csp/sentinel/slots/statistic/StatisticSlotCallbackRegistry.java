@@ -24,7 +24,16 @@ import com.alibaba.csp.sentinel.slotchain.ProcessorSlotEntryCallback;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlotExitCallback;
 
 /**
+ * <p>
+ * Callback registry for {@link StatisticSlot}. Now two kind of callbacks are supported:
+ * <ul>
+ * <li>{@link ProcessorSlotEntryCallback}: callback for entry (passed and blocked)</li>
+ * <li>{@link ProcessorSlotExitCallback}: callback for exiting {@link StatisticSlot}</li>
+ * </ul>
+ * </p>
+ *
  * @author Eric Zhao
+ * @since 0.2.0
  */
 public final class StatisticSlotCallbackRegistry {
 
