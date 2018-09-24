@@ -36,11 +36,7 @@ public class ContextTest {
 
     @After
     public void cleanUp() {
-        Context context = ContextUtil.getContext();
-        if (context != null) {
-            context.setCurEntry(null);
-            ContextUtil.exit();
-        }
+        ContextTestUtil.cleanUpContext();
     }
 
     @Test
@@ -81,7 +77,6 @@ public class ContextTest {
     }
 
     private void resetContextMap() {
-        ContextUtil.resetContextMap();
-        Constants.ROOT.removeChildList();
+        ContextTestUtil.resetContextMap();
     }
 }
