@@ -58,7 +58,9 @@ public class AsyncEntryDemo {
                 ContextUtil.runOnContext(entry.getAsyncContext(), () -> {
                     try {
                         TimeUnit.SECONDS.sleep(2);
+                        // Normal entry nested in asynchronous entry.
                         anotherSyncInAsync();
+
                         System.out.println("Async result: 666");
                     } catch (InterruptedException e) {
                         // Ignore.
@@ -115,12 +117,10 @@ public class AsyncEntryDemo {
         try {
             final AsyncEntry entry = SphU.asyncEntry("test-async-not-nested");
 
-            CompletableFuture.runAsync(() -> {
+            this.invoke("abc", result -> {
                 // If no nested entry later, we don't have to wrap in `ContextUtil.runOnContext()`.
                 try {
-                    TimeUnit.SECONDS.sleep(1);
-                } catch (InterruptedException ex) {
-                    // Ignore.
+                    // Here to handle the async result (without other entry).
                 } finally {
                     // Exit the async entry.
                     entry.exit();
@@ -138,7 +138,7 @@ public class AsyncEntryDemo {
             final AsyncEntry entry = SphU.asyncEntry("test-async");
             this.invoke("abc", resp -> {
                 // The thread is different from original caller thread for async entry.
-                // So we need to wrap in the async context so that nested sync invocation entry
+                // So we need to wrap in the async context so that nested invocation entry
                 // can be linked to the parent asynchronous entry.
                 ContextUtil.runOnContext(entry.getAsyncContext(), () -> {
                     try {
@@ -149,7 +149,7 @@ public class AsyncEntryDemo {
 
                         System.out.println(resp);
 
-                        // Then we do a sync entry under current async context.
+                        // Then we do a sync (normal) entry under current async context.
                         fetchSyncInAsync();
                     } finally {
                         // Exit the async entry.
@@ -165,7 +165,7 @@ public class AsyncEntryDemo {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         initFlowRule();
 
         AsyncEntryDemo service = new AsyncEntryDemo();
@@ -195,6 +195,8 @@ public class AsyncEntryDemo {
             }
             ContextUtil.exit();
         }
+
+        TimeUnit.SECONDS.sleep(20);
     }
 
     private static void initFlowRule() {
