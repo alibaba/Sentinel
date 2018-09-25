@@ -89,7 +89,7 @@
             </dependency>
             <dependency>
                 <groupId>com.alibaba.csp</groupId>
-                <artifactId>sentinel-hot-param-flow-control</artifactId>
+                <artifactId>sentinel-parameter-flow-control</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

@@ -21,7 +21,7 @@
         <module>sentinel-demo-zookeeper-datasource</module>
         <module>sentinel-demo-apollo-datasource</module>
         <module>sentinel-demo-annotation-spring-aop</module>
-        <module>sentinel-demo-hot-param</module>
+        <module>sentinel-demo-parameter-flow-control</module>
     </modules>
 
     <dependencies>

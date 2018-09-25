@@ -18,7 +18,10 @@ package com.alibaba.csp.sentinel.slotchain;
 import com.alibaba.csp.sentinel.context.Context;
 
 /**
+ * Callback for exiting {@link com.alibaba.csp.sentinel.slots.statistic.StatisticSlot} (passed and blocked).
+ *
  * @author Eric Zhao
+ * @since 0.2.0
  */
 public interface ProcessorSlotExitCallback {
 

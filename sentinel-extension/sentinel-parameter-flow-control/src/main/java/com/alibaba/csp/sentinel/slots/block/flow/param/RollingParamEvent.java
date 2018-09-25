@@ -13,20 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.slotchain;
-
-import com.alibaba.csp.sentinel.context.Context;
-import com.alibaba.csp.sentinel.slots.block.BlockException;
+package com.alibaba.csp.sentinel.slots.block.flow.param;
 
 /**
- * Callback for entering {@link com.alibaba.csp.sentinel.slots.statistic.StatisticSlot} (passed and blocked).
- *
  * @author Eric Zhao
  * @since 0.2.0
  */
-public interface ProcessorSlotEntryCallback<T> {
-
-    void onPass(Context context, ResourceWrapper resourceWrapper, T param, int count, Object... args) throws Exception;
-
-    void onBlocked(BlockException ex, Context context, ResourceWrapper resourceWrapper, T param, int count, Object... args);
+public enum RollingParamEvent {
+    /**
+     * Indicates that the request successfully passed the slot chain (entry).
+     */
+    REQUEST_PASSED,
+    /**
+     * Indicates that the request is blocked by a specific slot.
+     */
+    REQUEST_BLOCKED
 }
