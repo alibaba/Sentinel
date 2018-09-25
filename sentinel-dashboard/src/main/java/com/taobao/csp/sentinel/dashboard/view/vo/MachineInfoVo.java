@@ -26,12 +26,15 @@ import com.taobao.csp.sentinel.dashboard.discovery.MachineInfo;
  * @author leyou
  */
 public class MachineInfoVo {
+
     private String app;
     private String hostname;
     private String ip;
     private Integer port;
-    private Date version;
+    private Date timestamp;
     private boolean health;
+
+    private String version;
 
     public static List<MachineInfoVo> fromMachineInfoList(List<MachineInfo> machines) {
         List<MachineInfoVo> list = new ArrayList<>();
@@ -47,8 +50,9 @@ public class MachineInfoVo {
         vo.setHostname(machine.getHostname());
         vo.setIp(machine.getIp());
         vo.setPort(machine.getPort());
+        vo.setTimestamp(machine.getTimestamp());
         vo.setVersion(machine.getVersion());
-        if (System.currentTimeMillis() - machine.getVersion().getTime() < MachineDiscovery.MAX_CLIENT_LIVE_TIME_MS) {
+        if (System.currentTimeMillis() - machine.getTimestamp().getTime() < MachineDiscovery.MAX_CLIENT_LIVE_TIME_MS) {
             vo.setHealth(true);
         }
         return vo;
@@ -86,12 +90,21 @@ public class MachineInfoVo {
         this.port = port;
     }
 
-    public Date getVersion() {
+    public Date getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Date timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public String getVersion() {
         return version;
     }
 
-    public void setVersion(Date version) {
+    public MachineInfoVo setVersion(String version) {
         this.version = version;
+        return this;
     }
 
     public boolean isHealth() {

@@ -184,7 +184,7 @@ public class MetricFetcher {
         final CountDownLatch latch = new CountDownLatch(machines.size());
         for (final MachineInfo machine : machines) {
             // dead
-            if (System.currentTimeMillis() - machine.getVersion().getTime() > MAX_CLIENT_LIVE_TIME_MS) {
+            if (System.currentTimeMillis() - machine.getTimestamp().getTime() > MAX_CLIENT_LIVE_TIME_MS) {
                 latch.countDown();
                 dead.incrementAndGet();
                 continue;
