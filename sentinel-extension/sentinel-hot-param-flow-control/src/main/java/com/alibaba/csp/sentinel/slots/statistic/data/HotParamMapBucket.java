@@ -52,10 +52,11 @@ public class HotParamMapBucket {
         return counter == null ? 0 : counter.intValue();
     }
 
-    public void add(RollingParamEvent event, int count, Object value) {
+    public HotParamMapBucket add(RollingParamEvent event, int count, Object value) {
         data[event.ordinal()].putIfAbsent(value, new AtomicInteger());
         AtomicInteger counter = data[event.ordinal()].get(value);
         counter.addAndGet(count);
+        return this;
     }
 
     public Set<Object> ascendingKeySet(RollingParamEvent type) {

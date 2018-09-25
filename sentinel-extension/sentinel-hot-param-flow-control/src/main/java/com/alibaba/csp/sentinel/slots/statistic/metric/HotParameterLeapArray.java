@@ -45,6 +45,10 @@ public class HotParameterLeapArray extends LeapArray<HotParamMapBucket> {
         this.intervalInSec = intervalInSec;
     }
 
+    public int getIntervalInSec() {
+        return intervalInSec;
+    }
+
     @Override
     public HotParamMapBucket newEmptyBucket() {
         return new HotParamMapBucket();
@@ -73,7 +77,6 @@ public class HotParameterLeapArray extends LeapArray<HotParamMapBucket> {
                 Integer count = result.get(o);
                 if (count == null) {
                     count = b.get(event, o);
-
                 } else {
                     count += b.get(event, o);
                 }
@@ -100,7 +103,7 @@ public class HotParameterLeapArray extends LeapArray<HotParamMapBucket> {
             if (x.getValue() == 0) {
                 break;
             }
-            doubleResult.put(x.getKey(), ((double)x.getValue()) / intervalInSec);
+            doubleResult.put(x.getKey(), ((double)x.getValue()) / getIntervalInSec());
         }
 
         return doubleResult;
@@ -120,6 +123,6 @@ public class HotParameterLeapArray extends LeapArray<HotParamMapBucket> {
     }
 
     public double getRollingAvg(RollingParamEvent event, Object value) {
-        return ((double) getRollingSum(event, value)) / intervalInSec;
+        return ((double) getRollingSum(event, value)) / getIntervalInSec();
     }
 }

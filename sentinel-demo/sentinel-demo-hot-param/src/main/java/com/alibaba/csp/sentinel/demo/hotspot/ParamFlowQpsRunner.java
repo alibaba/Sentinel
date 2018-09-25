@@ -68,6 +68,11 @@ class ParamFlowQpsRunner<T> {
         }
     }
 
+    /**
+     * Pick one of provided parameters randomly.
+     *
+     * @return picked parameter
+     */
     private T generateParam() {
         int i = ThreadLocalRandom.current().nextInt(0, params.length);
         return params[i];
@@ -76,7 +81,7 @@ class ParamFlowQpsRunner<T> {
     void simulateTraffic() {
         for (int i = 0; i < threadCount; i++) {
             Thread t = new Thread(new RunTask());
-            t.setName("simulate-traffic-task-" + i);
+            t.setName("sentinel-simulate-traffic-task-" + i);
             t.start();
         }
     }
@@ -127,6 +132,7 @@ class ParamFlowQpsRunner<T> {
         public void run() {
             long start = System.currentTimeMillis();
             System.out.println("Begin to run! Go go go!");
+            System.out.println("See corresponding metrics.log for accurate statistic data");
 
             Map<T, Long> map = new HashMap<>(params.length);
             for (T param : params) {
@@ -137,6 +143,8 @@ class ParamFlowQpsRunner<T> {
                     TimeUnit.SECONDS.sleep(1);
                 } catch (InterruptedException e) {
                 }
+                // There may be a mismatch for time window of internal sliding window.
+                // See corresponding `metrics.log` for accurate statistic log.
                 for (T param : params) {
                     long globalPass = passCountMap.get(param).get();
                     long oldPass = map.get(param);
