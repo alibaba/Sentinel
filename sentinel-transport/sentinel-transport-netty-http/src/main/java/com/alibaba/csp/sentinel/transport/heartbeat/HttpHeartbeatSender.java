@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.transport.heartbeat;
 
+import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.transport.config.TransportConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.AppNameUtil;
@@ -81,6 +82,7 @@ public class HttpHeartbeatSender implements HeartbeatSender {
         uriBuilder.setScheme("http").setHost(consoleHost).setPort(consolePort)
             .setPath("/registry/machine")
             .setParameter("app", AppNameUtil.getAppName())
+            .setParameter("v", Constants.SENTINEL_VERSION)
             .setParameter("version", String.valueOf(System.currentTimeMillis()))
             .setParameter("hostname", HostNameUtil.getHostName())
             .setParameter("ip", HostNameUtil.getIp())

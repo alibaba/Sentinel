@@ -20,11 +20,17 @@ import java.util.Date;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 public class MachineInfo implements Comparable<MachineInfo> {
+
     private String app = "";
     private String hostname = "";
     private String ip = "";
     private Integer port = -1;
-    private Date version;
+    private Date timestamp;
+
+    /**
+     * Indicates the version of Sentinel client (since 0.2.0).
+     */
+    private String version;
 
     public static MachineInfo of(String app, String ip, Integer port) {
         MachineInfo machineInfo = new MachineInfo();
@@ -66,12 +72,21 @@ public class MachineInfo implements Comparable<MachineInfo> {
         this.ip = ip;
     }
 
-    public Date getVersion() {
+    public Date getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Date timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public String getVersion() {
         return version;
     }
 
-    public void setVersion(Date version) {
+    public MachineInfo setVersion(String version) {
         this.version = version;
+        return this;
     }
 
     @Override
@@ -95,7 +110,8 @@ public class MachineInfo implements Comparable<MachineInfo> {
             ", hostname='" + hostname + '\'' +
             ", ip='" + ip + '\'' +
             ", port=" + port +
-            ", version=" + version +
+            ", timestamp=" + timestamp +
+            ", version='" + version + '\'' +
             '}';
     }
 

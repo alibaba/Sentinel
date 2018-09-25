@@ -17,6 +17,8 @@ package com.taobao.csp.sentinel.dashboard.view;
 
 import java.util.Date;
 
+import com.alibaba.csp.sentinel.util.StringUtil;
+
 import com.taobao.csp.sentinel.dashboard.discovery.AppManagement;
 import com.taobao.csp.sentinel.dashboard.discovery.MachineDiscovery;
 import com.taobao.csp.sentinel.dashboard.discovery.MachineInfo;
@@ -31,13 +33,15 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 @RequestMapping(value = "/registry", produces = MediaType.APPLICATION_JSON_VALUE)
 public class MachineRegistryController {
-    Logger logger = LoggerFactory.getLogger(MachineRegistryController.class);
+
+    private final Logger logger = LoggerFactory.getLogger(MachineRegistryController.class);
+
     @Autowired
     private AppManagement appManagement;
 
     @ResponseBody
     @RequestMapping("/machine")
-    public Result<?> receiveHeartBeat(String app, Long version, String hostname, String ip, Integer port) {
+    public Result<?> receiveHeartBeat(String app, Long version, String v, String hostname, String ip, Integer port) {
         if (app == null) {
             app = MachineDiscovery.UNKNOWN_APP_NAME;
         }
@@ -48,23 +52,23 @@ public class MachineRegistryController {
             return Result.ofFail(-1, "port can't be null");
         }
         if (port == -1) {
-            logger.info("receive heartbeat from " + ip + " but port not set yet");
+            logger.info("Receive heartbeat from " + ip + " but port not set yet");
             return Result.ofFail(-1, "your port not set yet");
         }
-        if (version == null) {
-            version = System.currentTimeMillis();
-        }
+        String sentinelVersion = StringUtil.isEmpty(v) ? "unknown" : v;
+        long timestamp = version == null ? System.currentTimeMillis() : version;
         try {
             MachineInfo machineInfo = new MachineInfo();
             machineInfo.setApp(app);
             machineInfo.setHostname(hostname);
             machineInfo.setIp(ip);
             machineInfo.setPort(port);
-            machineInfo.setVersion(new Date(version));
+            machineInfo.setTimestamp(new Date(timestamp));
+            machineInfo.setVersion(sentinelVersion);
             appManagement.addMachine(machineInfo);
             return Result.ofSuccessMsg("success");
         } catch (Exception e) {
-            logger.error("receive heartbeat error:", e);
+            logger.error("Receive heartbeat error", e);
             return Result.ofFail(-1, e.getMessage());
         }
     }
