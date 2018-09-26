@@ -11,6 +11,10 @@
     <artifactId>sentinel-grpc-adapter</artifactId>
     <packaging>jar</packaging>
 
+    <properties>
+        <grpc.version>1.13.1</grpc.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.alibaba.csp</groupId>
