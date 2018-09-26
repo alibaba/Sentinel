@@ -13,23 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel;
+package com.alibaba.csp.sentinel.context;
 
-import org.junit.Test;
-
-import com.alibaba.csp.sentinel.context.ContextUtil;
+import com.alibaba.csp.sentinel.Constants;
 
 /**
- * @author jialiang.linjl
+ * Util class for testing context-related functions.
+ * Only for test. DO NOT USE IN PRODUCTION!
+ *
+ * @author Eric Zhao
+ * @since 0.2.0
  */
-public class ContextTest {
+public final class ContextTestUtil {
 
-    @Test
-    public void testEnterContext() {
-        // TODO: rewrite this unit test
-        ContextUtil.enter("entry", "origin");
-
-        ContextUtil.exit();
+    public static void cleanUpContext() {
+        Context context = ContextUtil.getContext();
+        if (context != null) {
+            context.setCurEntry(null);
+            ContextUtil.exit();
+        }
     }
 
+    public static void resetContextMap() {
+        ContextUtil.resetContextMap();
+        Constants.ROOT.removeChildList();
+    }
+
+    private ContextTestUtil() {}
 }

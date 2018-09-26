@@ -13,66 +13,77 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.taobao.csp.sentinel.dashboard.inmem;
+package com.taobao.csp.sentinel.dashboard.repository.metric;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+
+import com.alibaba.csp.sentinel.util.StringUtil;
 
 import com.taobao.csp.sentinel.dashboard.datasource.entity.MetricEntity;
 import org.springframework.stereotype.Component;
 
 /**
- * Store metrics in memory.
+ * Caches metrics data in a period of time in memory.
  *
- * @author leyou
+ * @author Carpenter Lee
+ * @author Eric Zhao
  */
 @Component
-public class InMemMetricStore {
-    public static final long MAX_METRIC_LIVE_TIME_MS = 1000 * 60 * 5;
+public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity> {
+
+    private static final long MAX_METRIC_LIVE_TIME_MS = 1000 * 60 * 5;
+
     /**
      * {@code app -> resource -> timestamp -> metric}
      */
     private Map<String, Map<String, LinkedHashMap<Long, MetricEntity>>> allMetrics = new ConcurrentHashMap<>();
 
-    /**
-     * Save all metrics in memory. Metric older than {@link #MAX_METRIC_LIVE_TIME_MS} will be removed.
-     *
-     * @param metrics metrics to be saved.
-     */
+    @Override
+    public synchronized void save(MetricEntity entity) {
+        if (entity == null || StringUtil.isBlank(entity.getApp())) {
+            return;
+        }
+        allMetrics.computeIfAbsent(entity.getApp(), e -> new HashMap<>(16))
+            .computeIfAbsent(entity.getResource(), e -> new LinkedHashMap<Long, MetricEntity>() {
+                @Override
+                protected boolean removeEldestEntry(Entry<Long, MetricEntity> eldest) {
+                    // Metric older than {@link #MAX_METRIC_LIVE_TIME_MS} will be removed.
+                    return eldest.getKey() < System.currentTimeMillis() - MAX_METRIC_LIVE_TIME_MS;
+                }
+            }).put(entity.getTimestamp().getTime(), entity);
+    }
+
+    @Override
     public synchronized void saveAll(Iterable<MetricEntity> metrics) {
         if (metrics == null) {
             return;
         }
-        for (MetricEntity entity : metrics) {
-            allMetrics.computeIfAbsent(entity.getApp(), e -> new HashMap<>(16))
-                .computeIfAbsent(entity.getResource(), e -> new LinkedHashMap<Long, MetricEntity>() {
-                    @Override
-                    protected boolean removeEldestEntry(Map.Entry<Long, MetricEntity> eldest) {
-                        return eldest.getKey() < System.currentTimeMillis() - MAX_METRIC_LIVE_TIME_MS;
-                    }
-                }).put(entity.getTimestamp().getTime(), entity);
-        }
+        metrics.forEach(this::save);
     }
 
-    public synchronized List<MetricEntity> queryByAppAndResouce(String app,
-                                                                String resource,
-                                                                long startTime,
-                                                                long endTime) {
+    @Override
+    public synchronized List<MetricEntity> queryByAppAndResourceBetween(String app, String resource,
+                                                                        long startTime, long endTime) {
         List<MetricEntity> results = new ArrayList<>();
-        Map<String, LinkedHashMap<Long, MetricEntity>> resouceMap = allMetrics.get(app);
-        if (resouceMap == null) {
+        if (StringUtil.isBlank(app)) {
             return results;
         }
-        LinkedHashMap<Long, MetricEntity> metricsMap = resouceMap.get(resource);
+        Map<String, LinkedHashMap<Long, MetricEntity>> resourceMap = allMetrics.get(app);
+        if (resourceMap == null) {
+            return results;
+        }
+        LinkedHashMap<Long, MetricEntity> metricsMap = resourceMap.get(resource);
         if (metricsMap == null) {
             return results;
         }
-        for (Map.Entry<Long, MetricEntity> entry : metricsMap.entrySet()) {
+        for (Entry<Long, MetricEntity> entry : metricsMap.entrySet()) {
             if (entry.getKey() >= startTime && entry.getKey() <= endTime) {
                 results.add(entry.getValue());
             }
@@ -80,14 +91,12 @@ public class InMemMetricStore {
         return results;
     }
 
-    /**
-     * Find resources of App order by last minute b_qps desc
-     *
-     * @param app app name
-     * @return Resources list, order by last minute b_qps desc.
-     */
-    public synchronized List<String> findResourcesOfApp(String app) {
+    @Override
+    public List<String> listResourcesOfApp(String app) {
         List<String> results = new ArrayList<>();
+        if (StringUtil.isBlank(app)) {
+            return results;
+        }
         // resource -> timestamp -> metric
         Map<String, LinkedHashMap<Long, MetricEntity>> resourceMap = allMetrics.get(app);
         if (resourceMap == null) {
@@ -96,8 +105,8 @@ public class InMemMetricStore {
         final long minTimeMs = System.currentTimeMillis() - 1000 * 60;
         Map<String, MetricEntity> resourceCount = new HashMap<>(32);
 
-        for (Map.Entry<String, LinkedHashMap<Long, MetricEntity>> resourceMetrics : resourceMap.entrySet()) {
-            for (Map.Entry<Long, MetricEntity> metrics : resourceMetrics.getValue().entrySet()) {
+        for (Entry<String, LinkedHashMap<Long, MetricEntity>> resourceMetrics : resourceMap.entrySet()) {
+            for (Entry<Long, MetricEntity> metrics : resourceMetrics.getValue().entrySet()) {
                 if (metrics.getKey() < minTimeMs) {
                     continue;
                 }
@@ -114,16 +123,19 @@ public class InMemMetricStore {
                 }
             }
         }
-        return resourceCount.entrySet().stream().sorted((o1, o2) -> {
-            MetricEntity e1 = o1.getValue();
-            MetricEntity e2 = o2.getValue();
-            int t = e2.getBlockedQps().compareTo(e1.getBlockedQps());
-            if (t != 0) {
-                return t;
-            }
-            return e2.getPassedQps().compareTo(e1.getPassedQps());
-        }).map(e -> e.getKey())
+        // Order by last minute b_qps DESC.
+        return resourceCount.entrySet()
+            .stream()
+            .sorted((o1, o2) -> {
+                MetricEntity e1 = o1.getValue();
+                MetricEntity e2 = o2.getValue();
+                int t = e2.getBlockedQps().compareTo(e1.getBlockedQps());
+                if (t != 0) {
+                    return t;
+                }
+                return e2.getPassedQps().compareTo(e1.getPassedQps());
+            })
+            .map(Entry::getKey)
             .collect(Collectors.toList());
     }
-
 }

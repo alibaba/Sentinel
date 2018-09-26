@@ -51,7 +51,6 @@ import com.alibaba.csp.sentinel.slots.block.flow.controller.WarmUpController;
  *
  * @author jialiang.linjl
  */
-
 public class FlowRuleManager {
 
     private static final Map<String, List<FlowRule>> flowRules = new ConcurrentHashMap<String, List<FlowRule>>();
@@ -105,12 +104,13 @@ public class FlowRuleManager {
     private static Map<String, List<FlowRule>> loadFlowConf(List<FlowRule> list) {
         Map<String, List<FlowRule>> newRuleMap = new ConcurrentHashMap<String, List<FlowRule>>();
 
-        if (list == null) {
+        if (list == null || list.isEmpty()) {
             return newRuleMap;
         }
 
         for (FlowRule rule : list) {
-            if (!isValid(rule)) {
+            if (!isValidRule(rule)) {
+                RecordLog.warn("[FlowRuleManager] Ignoring invalid flow rule when loading new flow rules: " + rule);
                 continue;
             }
             if (StringUtil.isBlank(rule.getLimitApp())) {
@@ -202,7 +202,7 @@ public class FlowRuleManager {
 
     }
 
-    private static boolean isValid(FlowRule rule) {
+    private static boolean isValidRule(FlowRule rule) {
         return rule != null && !StringUtil.isBlank(rule.getResource());
     }
 }

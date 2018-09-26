@@ -119,7 +119,8 @@ public interface Node {
     void decreaseThreadNum();
 
     /**
-     * Reset the internal counter.
+     * Reset the internal counter. Reset is needed when {@link IntervalProperty#INTERVAL} or
+     * {@link SampleCountProperty#SAMPLE_COUNT} is changed.
      */
     void reset();
 

@@ -13,20 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.slots;
+package com.alibaba.csp.sentinel.adapter.servlet.callback;
 
-import com.alibaba.csp.sentinel.slotchain.ProcessorSlotChain;
+import javax.servlet.http.HttpServletRequest;
 
 /**
- * @author qinan.qn
- * @author leyou
+ * The origin parser parses request origin (e.g. IP, user, appName) from HTTP request.
+ *
+ * @author Eric Zhao
+ * @since 0.2.0
  */
-public interface SlotsChainBuilder {
+public interface RequestOriginParser {
 
     /**
-     * Helper method to create processor slot chain.
+     * Parse the origin from given HTTP request.
      *
-     * @return a processor slot that chain some slots together.
+     * @param request HTTP request
+     * @return parsed origin
      */
-    ProcessorSlotChain build();
+    String parseOrigin(HttpServletRequest request);
 }

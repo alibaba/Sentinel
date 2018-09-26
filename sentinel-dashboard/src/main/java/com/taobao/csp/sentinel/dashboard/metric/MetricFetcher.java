@@ -40,7 +40,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 import com.taobao.csp.sentinel.dashboard.datasource.entity.MetricEntity;
 import com.taobao.csp.sentinel.dashboard.discovery.AppManagement;
 import com.taobao.csp.sentinel.dashboard.discovery.MachineInfo;
-import com.taobao.csp.sentinel.dashboard.inmem.InMemMetricStore;
+import com.taobao.csp.sentinel.dashboard.repository.metric.MetricsRepository;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.concurrent.FutureCallback;
@@ -78,7 +78,7 @@ public class MetricFetcher {
     private Map<String, AtomicLong> appLastFetchTime = new ConcurrentHashMap<>();
 
     @Autowired
-    private InMemMetricStore metricStore;
+    private MetricsRepository<MetricEntity> metricStore;
     @Autowired
     private AppManagement appManagement;
 
@@ -184,7 +184,7 @@ public class MetricFetcher {
         final CountDownLatch latch = new CountDownLatch(machines.size());
         for (final MachineInfo machine : machines) {
             // dead
-            if (System.currentTimeMillis() - machine.getVersion().getTime() > MAX_CLIENT_LIVE_TIME_MS) {
+            if (System.currentTimeMillis() - machine.getTimestamp().getTime() > MAX_CLIENT_LIVE_TIME_MS) {
                 latch.countDown();
                 dead.incrementAndGet();
                 continue;
