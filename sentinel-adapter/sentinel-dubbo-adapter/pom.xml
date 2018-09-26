@@ -12,6 +12,10 @@
     <artifactId>sentinel-dubbo-adapter</artifactId>
     <packaging>jar</packaging>
 
+    <properties>
+        <dubbo.version>2.5.8</dubbo.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.alibaba.csp</groupId>
@@ -20,6 +24,7 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo</artifactId>
+            <version>${dubbo.version}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -37,7 +42,6 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.2.47</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
