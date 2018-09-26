@@ -53,7 +53,7 @@ public class ParamFlowQpsDemo {
 
     private static void initHotParamFlowRules() {
         // QPS mode, threshold is 5 for every frequent "hot spot" parameter in index 0 (the first arg).
-        ParamFlowRule rule = new ParamFlowRule()
+        ParamFlowRule rule = new ParamFlowRule(RESOURCE_KEY)
             .setParamIdx(0)
             .setBlockGrade(RuleConstant.FLOW_GRADE_QPS)
             .setCount(5);
@@ -64,7 +64,6 @@ public class ParamFlowQpsDemo {
             .setClassType(int.class.getName())
             .setCount(10);
         rule.setParamFlowItemList(Collections.singletonList(item));
-        rule.setResource(RESOURCE_KEY);
         ParamFlowRuleManager.loadRules(Collections.singletonList(rule));
     }
 }
