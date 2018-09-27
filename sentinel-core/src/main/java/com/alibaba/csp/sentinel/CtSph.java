@@ -204,6 +204,16 @@ public class CtSph implements Sph {
     }
 
     /**
+     * Get current size of created slot chains.
+     *
+     * @return size of created slot chains
+     * @since 0.2.0
+     */
+    public static int entrySize() {
+        return chainMap.size();
+    }
+
+    /**
      * Reset the slot chain map. Only for internal test.
      *
      * @since 0.2.0
