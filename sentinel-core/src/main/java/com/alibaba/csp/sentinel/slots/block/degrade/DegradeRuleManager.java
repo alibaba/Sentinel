@@ -28,7 +28,7 @@ import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 /***
@@ -150,7 +150,7 @@ public class DegradeRuleManager {
                 }
 
                 if (StringUtil.isBlank(rule.getLimitApp())) {
-                    rule.setLimitApp(FlowRule.LIMIT_APP_DEFAULT);
+                    rule.setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
                 }
 
                 String identity = rule.getResource();

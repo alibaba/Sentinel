@@ -40,12 +40,9 @@ import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
  */
 public class FlowRule extends AbstractRule {
 
-    public static final String LIMIT_APP_DEFAULT = "default";
-    public static final String LIMIT_APP_OTHER = "other";
-
     public FlowRule(){
         super();
-        setLimitApp(LIMIT_APP_DEFAULT);
+        setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
     }
 
     /**
@@ -196,7 +193,7 @@ public class FlowRule extends AbstractRule {
                 return node;
             }
 
-        } else if (LIMIT_APP_DEFAULT.equals(limitApp)) {
+        } else if (RuleConstant.LIMIT_APP_DEFAULT.equals(limitApp)) {
             if (strategy == RuleConstant.STRATEGY_DIRECT) {
                 return node.getClusterNode();
             }
@@ -216,7 +213,7 @@ public class FlowRule extends AbstractRule {
                 return node;
             }
 
-        } else if (LIMIT_APP_OTHER.equals(limitApp) && FlowRuleManager.isOtherOrigin(origin, getResource())) {
+        } else if (RuleConstant.LIMIT_APP_OTHER.equals(limitApp) && FlowRuleManager.isOtherOrigin(origin, getResource())) {
             if (strategy == RuleConstant.STRATEGY_DIRECT) {
                 return context.getOriginNode();
             }

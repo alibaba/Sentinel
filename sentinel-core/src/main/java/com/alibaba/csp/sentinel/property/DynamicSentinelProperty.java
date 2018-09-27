@@ -50,7 +50,7 @@ public class DynamicSentinelProperty<T> implements SentinelProperty<T> {
         if (isEqual(value, newValue)) {
             return;
         }
-        RecordLog.info("SentinelProperty, config is real updated to: " + newValue);
+        RecordLog.info("[DynamicSentinelProperty] Config will be updated to: " + newValue);
 
         value = newValue;
         for (PropertyListener<T> listener : listeners) {

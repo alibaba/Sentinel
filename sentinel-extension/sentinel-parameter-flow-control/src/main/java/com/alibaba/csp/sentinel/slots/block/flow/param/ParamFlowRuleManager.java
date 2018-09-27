@@ -26,7 +26,7 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
@@ -169,7 +169,7 @@ public final class ParamFlowRuleManager {
                 }
 
                 if (StringUtil.isBlank(rule.getLimitApp())) {
-                    rule.setLimitApp(FlowRule.LIMIT_APP_DEFAULT);
+                    rule.setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
                 }
 
                 if (rule.getParamFlowItemList() == null) {
