@@ -123,7 +123,7 @@ public class ContextUtil {
             DefaultNode node = localCacheNameMap.get(name);
             if (node == null) {
                 if (localCacheNameMap.size() > Constants.MAX_CONTEXT_NAME_SIZE) {
-                    contextHolder.set(NULL_CONTEXT);
+                    setNullContext();
                     return NULL_CONTEXT;
                 } else {
                     try {
@@ -131,7 +131,7 @@ public class ContextUtil {
                         node = contextNameNodeMap.get(name);
                         if (node == null) {
                             if (contextNameNodeMap.size() > Constants.MAX_CONTEXT_NAME_SIZE) {
-                                contextHolder.set(NULL_CONTEXT);
+                                setNullContext();
                                 return NULL_CONTEXT;
                             } else {
                                 node = new EntranceNode(new StringResourceWrapper(name, EntryType.IN), null);
@@ -156,6 +156,18 @@ public class ContextUtil {
         }
 
         return context;
+    }
+
+    private static boolean shouldWarn = true;
+
+    private static void setNullContext() {
+        contextHolder.set(NULL_CONTEXT);
+        // Don't need to be thread-safe.
+        if (shouldWarn) {
+            RecordLog.warn("[SentinelStatusChecker] WARN: Amount of context exceeds the threshold "
+                + Constants.MAX_CONTEXT_NAME_SIZE + ". Entries in new contexts will NOT take effect!");
+            shouldWarn = false;
+        }
     }
 
     /**
@@ -190,6 +202,16 @@ public class ContextUtil {
         if (context != null && context.getCurEntry() == null) {
             contextHolder.set(null);
         }
+    }
+
+    /**
+     * Get current size of context entrance node map.
+     *
+     * @return current size of context entrance node map
+     * @since 0.2.0
+     */
+    public static int contextSize() {
+        return contextNameNodeMap.size();
     }
 
     /**
