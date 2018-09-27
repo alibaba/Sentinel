@@ -37,7 +37,6 @@ public class ParamFlowStatisticEntryCallback implements ProcessorSlotEntryCallba
 
         if (parameterMetric != null) {
             parameterMetric.addPass(count, args);
-            parameterMetric.addThreadCount(args);
         }
     }
 

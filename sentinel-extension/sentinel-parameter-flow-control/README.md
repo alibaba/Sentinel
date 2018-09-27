@@ -35,7 +35,6 @@ Then you can configure parameter flow control rules via `loadRules` method in `P
 // QPS mode, threshold is 5 for every frequent "hot spot" parameter in index 0 (the first arg).
 ParamFlowRule rule = new ParamFlowRule(RESOURCE_KEY)
     .setParamIdx(0)
-    .setBlockGrade(RuleConstant.FLOW_GRADE_QPS)
     .setCount(5);
 // We can set threshold count for specific parameter value individually.
 // Here we add an exception item. That means: QPS threshold of entries with parameter `PARAM_B` (type: int)
@@ -53,7 +52,7 @@ The description for fields of `ParamFlowRule`:
 | :----: | :----| :----|
 | resource| resource name (**required**) ||
 | count | flow control threshold (**required**) ||
-| blockGrade | flow control mode (QPS or thread count) | QPS mode |
+| blockGrade | flow control mode (only QPS mode is supported) | QPS mode |
 | paramIdx | the index of provided parameter in `SphU.entry(xxx, args)` (**required**) ||
 | paramFlowItemList | the exception items of parameter; you can set threshold to a specific parameter value ||
 

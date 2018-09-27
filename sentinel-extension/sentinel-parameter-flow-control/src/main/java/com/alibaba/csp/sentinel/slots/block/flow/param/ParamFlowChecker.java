@@ -91,14 +91,6 @@ final class ParamFlowChecker {
                 }
                 return false;
             }
-        } else {
-            long threadCount = getHotParameters(resourceWrapper).getThreadCount(rule.getParamIdx(), value);
-            if (exclusionItems.contains(value)) {
-                int itemThreshold = rule.getParsedHotItems().get(value);
-                return ++threadCount <= itemThreshold;
-            }
-            long threshold = (long)rule.getCount();
-            return ++threadCount <= threshold;
         }
 
         return true;
