@@ -17,13 +17,23 @@ package com.alibaba.csp.sentinel.slots.block;
 
 /***
  * @author youji.zj
+ * @author Eric Zhao
  */
 public abstract class AbstractRule implements Rule {
 
-    /*** 规则的资源描述 ***/
+    /**
+     * Resource name.
+     */
     private String resource;
 
-    /*** 被限制的应用,授权时候为逗号分隔的应用集合，限流时为单个应用 ***/
+    /**
+     * <p>
+     * Application name that will be limited by origin.
+     * Multiple application name can be separated with comma (',').
+     * </p>
+     * <p>The default limitApp is `default`, which means allowing all origin apps.</p>
+     * <p>For example: limitApp = `appA,appB` will limit requests from appA and appB.</p>
+     */
     private String limitApp;
 
     public String getResource() {

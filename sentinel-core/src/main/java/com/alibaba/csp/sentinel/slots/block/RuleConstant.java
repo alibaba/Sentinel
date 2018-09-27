@@ -19,7 +19,7 @@ package com.alibaba.csp.sentinel.slots.block;
  * @author youji.zj
  * @author jialiang.linjl
  */
-public class RuleConstant {
+public final class RuleConstant {
 
     public static final int FLOW_GRADE_THREAD = 0;
     public static final int FLOW_GRADE_QPS = 1;
@@ -38,4 +38,8 @@ public class RuleConstant {
     public static final int CONTROL_BEHAVIOR_WARM_UP = 1;
     public static final int CONTROL_BEHAVIOR_RATE_LIMITER = 2;
 
+    public static final String LIMIT_APP_DEFAULT = "default";
+    public static final String LIMIT_APP_OTHER = "other";
+
+    private RuleConstant() {}
 }
