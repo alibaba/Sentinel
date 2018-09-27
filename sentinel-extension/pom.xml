@@ -18,6 +18,7 @@
         <module>sentinel-datasource-apollo</module>
         <module>sentinel-datasource-redis</module>
         <module>sentinel-annotation-aspectj</module>
+        <module>sentinel-parameter-flow-control</module>
     </modules>
 
 </project>
