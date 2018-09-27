@@ -51,7 +51,7 @@ public class ParameterMetric {
                 // putIfAbsent
                 if (rollingParameters.get(index) == null) {
                     rollingParameters.put(index, new HotParameterLeapArray(
-                        1000 / 2, IntervalProperty.INTERVAL));
+                        1000 / SampleCountProperty.SAMPLE_COUNT, IntervalProperty.INTERVAL));
                 }
             }
         }
