@@ -72,7 +72,8 @@ public class CtSph implements Sph {
     public Entry entry(ResourceWrapper resourceWrapper, int count, Object... args) throws BlockException {
         Context context = ContextUtil.getContext();
         if (context instanceof NullContext) {
-            // Init the entry only. No rule checking will occur.
+            // The {@link NullContext} indicates that the amount of context has exceeded the threshold,
+            // so here init the entry only. No rule checking will be done.
             return new CtEntry(resourceWrapper, null, context);
         }
 
@@ -102,7 +103,8 @@ public class CtSph implements Sph {
             e.exit(count, args);
             throw e1;
         } catch (Throwable e1) {
-            RecordLog.info("sentinel unexpected exception", e1);
+            // This should not happen, unless there are errors existing in Sentinel internal.
+            RecordLog.info("Sentinel unexpected exception", e1);
         }
         return e;
     }
@@ -122,7 +124,7 @@ public class CtSph implements Sph {
      * @param resourceWrapper target resource
      * @return {@link ProcessorSlotChain} of the resource
      */
-    private ProcessorSlot<Object> lookProcessChain(ResourceWrapper resourceWrapper) {
+    ProcessorSlot<Object> lookProcessChain(ResourceWrapper resourceWrapper) {
         ProcessorSlotChain chain = chainMap.get(resourceWrapper);
         if (chain == null) {
             synchronized (LOCK) {
@@ -146,6 +148,20 @@ public class CtSph implements Sph {
         return chain;
     }
 
+    /**
+     * Reset the slot chain map. Only for internal test.
+     */
+    static void resetChainMap() {
+        chainMap.clear();
+    }
+
+    /**
+     * Only for internal test.
+     */
+    static Map<ResourceWrapper, ProcessorSlotChain> getChainMap() {
+        return chainMap;
+    }
+
     private static class CtEntry extends Entry {
 
         protected Entry parent = null;
@@ -157,6 +173,10 @@ public class CtSph implements Sph {
             super(resourceWrapper);
             this.chain = chain;
             this.context = context;
+            // The entry should not be associated to NullContext.
+            if (context instanceof NullContext) {
+                return;
+            }
             parent = context.getCurEntry();
             if (parent != null) {
                 ((CtEntry)parent).child = this;
@@ -172,15 +192,21 @@ public class CtSph implements Sph {
         @Override
         protected Entry trueExit(int count, Object... args) throws ErrorEntryFreeException {
             if (context != null) {
+                // Null context should exit without clean-up.
+                if (context instanceof NullContext) {
+                    return null;
+                }
                 if (context.getCurEntry() != this) {
+                    String curEntryNameInContext = context.getCurEntry() == null ? null : context.getCurEntry().getResourceWrapper().getName();
                     // Clean previous call stack.
                     CtEntry e = (CtEntry)context.getCurEntry();
                     while (e != null) {
                         e.exit(count, args);
                         e = (CtEntry)e.parent;
                     }
-                    throw new ErrorEntryFreeException(
-                        "The order of entry free is can't be paired with the order of entry");
+                    String errorMessage = String.format("The order of entry exit can't be paired with the order of entry"
+                        + ", current entry in context: <%s>, but expected: <%s>", curEntryNameInContext, resourceWrapper.getName());
+                    throw new ErrorEntryFreeException(errorMessage);
                 } else {
                     if (chain != null) {
                         chain.exit(context, resourceWrapper, count, args);
@@ -191,8 +217,10 @@ public class CtSph implements Sph {
                         ((CtEntry)parent).child = null;
                     }
                     if (parent == null) {
-                        // Auto-created entry indicates immediate exit.
-                        ContextUtil.exit();
+                        // Default context (auto entered) will be exited automatically.
+                        if (ContextUtil.isDefaultContext(context)) {
+                            ContextUtil.exit();
+                        }
                     }
                     // Clean the reference of context in current entry to avoid duplicate exit.
                     context = null;

@@ -27,7 +27,7 @@ import com.alibaba.csp.sentinel.Constants;
 public class NullContext extends Context {
 
     public NullContext() {
-        super(null, null);
+        super(null, "null_context_internal");
     }
 
 }

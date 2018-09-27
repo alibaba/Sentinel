@@ -24,7 +24,6 @@ import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.alibaba.csp.sentinel.context.ContextUtil;
-import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeException;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -53,7 +52,7 @@ public class SentinelResourceAspect {
 
     @Around("sentinelResourceAnnotationPointcut()")
     public Object invokeResourceWithSentinel(ProceedingJoinPoint pjp) throws Throwable {
-        Method originMethod = getMethod(pjp);
+        Method originMethod = resolveMethod(pjp);
 
         SentinelResource annotation = originMethod.getAnnotation(SentinelResource.class);
         if (annotation == null) {
@@ -127,7 +126,7 @@ public class SentinelResourceAspect {
     }
 
     private Method resolveFallbackInternal(ProceedingJoinPoint pjp, /*@NonNull*/ String name) {
-        Method originMethod = getMethod(pjp);
+        Method originMethod = resolveMethod(pjp);
         Class<?>[] parameterTypes = originMethod.getParameterTypes();
         return findMethod(false, pjp.getTarget().getClass(), name, originMethod.getReturnType(), parameterTypes);
     }
@@ -161,7 +160,7 @@ public class SentinelResourceAspect {
 
     private Method resolveBlockHandlerInternal(ProceedingJoinPoint pjp, /*@NonNull*/ String name, Class<?> clazz,
                                                boolean mustStatic) {
-        Method originMethod = getMethod(pjp);
+        Method originMethod = resolveMethod(pjp);
         Class<?>[] originList = originMethod.getParameterTypes();
         Class<?>[] parameterTypes = Arrays.copyOf(originList, originList.length + 1);
         parameterTypes[parameterTypes.length - 1] = BlockException.class;
@@ -200,8 +199,35 @@ public class SentinelResourceAspect {
         return Modifier.isStatic(method.getModifiers());
     }
 
-    private Method getMethod(ProceedingJoinPoint joinPoint) {
+    private Method resolveMethod(ProceedingJoinPoint joinPoint) {
         MethodSignature signature = (MethodSignature)joinPoint.getSignature();
-        return signature.getMethod();
+        Class<?> targetClass = joinPoint.getTarget().getClass();
+
+        Method method = getDeclaredMethodFor(targetClass, signature.getName(), signature.getMethod().getParameterTypes());
+        if (method == null) {
+            throw new IllegalStateException("Cannot resolve target method: " + signature.getMethod().getName());
+        }
+        return method;
+    }
+
+    /**
+     * Get declared method with provided name and parameterTypes in given class and its super classes.
+     * All parameters should be valid.
+     *
+     * @param clazz class where the method is located
+     * @param name method name
+     * @param parameterTypes method parameter type list
+     * @return resolved method, null if not found
+     */
+    private Method getDeclaredMethodFor(Class<?> clazz, String name, Class<?>... parameterTypes) {
+        try {
+            return clazz.getDeclaredMethod(name, parameterTypes);
+        } catch (NoSuchMethodException e) {
+            Class<?> superClass = clazz.getSuperclass();
+            if (superClass != null) {
+                return getDeclaredMethodFor(superClass, name, parameterTypes);
+            }
+        }
+        return null;
     }
 }

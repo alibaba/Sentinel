@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.slots.statistic.metric;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
 import com.alibaba.csp.sentinel.slots.statistic.base.Window;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
@@ -117,7 +118,7 @@ public class ArrayMetric implements Metric {
     @Override
     public long minRt() {
         data.currentWindow();
-        long rt = 4900;
+        long rt = Constants.TIME_DROP_VALVE;
         List<Window> list = data.values();
         for (Window window : list) {
             if (window.minRt() < rt) {

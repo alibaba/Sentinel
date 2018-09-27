@@ -35,13 +35,13 @@
           <div class="form-group">
             <label class="col-sm-2 control-label">阈值</label>
             <div class="col-sm-9">
-              <input type='number' class="form-control highlight-border" ng-model='currentRule.avgLoad' placeholder="阈值" ng-if="currentRule.grade == 0"
+              <input type='number' class="form-control highlight-border" ng-model='currentRule.avgLoad' placeholder="[0, ~)的小数" ng-if="currentRule.grade == 0"
               />
-              <input type='number' class="form-control highlight-border" ng-model='currentRule.avgRt' placeholder="阈值" ng-if="currentRule.grade == 1"
+              <input type='number' class="form-control highlight-border" ng-model='currentRule.avgRt' placeholder="[0, ~)的整数" ng-if="currentRule.grade == 1"
               />
-              <input type='number' class="form-control highlight-border" ng-model='currentRule.maxThread' placeholder="阈值" ng-if="currentRule.grade == 2"
+              <input type='number' class="form-control highlight-border" ng-model='currentRule.maxThread' placeholder="[0, ~)的整数" ng-if="currentRule.grade == 2"
               />
-              <input type='number' class="form-control highlight-border" ng-model='currentRule.qps' placeholder="阈值" ng-if="currentRule.grade == 3"
+              <input type='number' class="form-control highlight-border" ng-model='currentRule.qps' placeholder="[0, ~)的小数" ng-if="currentRule.grade == 3"
               />
             </div>
           </div>
