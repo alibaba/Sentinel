@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.alibaba.csp.sentinel.slots.block.flow.param.RollingParamEvent;
 import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
 import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
  * Represents metric bucket of frequent parameters in a period of time window.
@@ -32,12 +33,17 @@ public class ParamMapBucket {
 
     private final CacheMap<Object, AtomicInteger>[] data;
 
-    @SuppressWarnings("unchecked")
     public ParamMapBucket() {
+        this(DEFAULT_MAX_CAPACITY);
+    }
+
+    @SuppressWarnings("unchecked")
+    public ParamMapBucket(int capacity) {
+        AssertUtil.isTrue(capacity > 0, "capacity should be positive");
         RollingParamEvent[] events = RollingParamEvent.values();
         this.data = new CacheMap[events.length];
         for (RollingParamEvent event : events) {
-            data[event.ordinal()] = new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(DEFAULT_MAX_CAPACITY);
+            data[event.ordinal()] = new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(capacity);
         }
     }
 
