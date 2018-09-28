@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 import com.alibaba.csp.sentinel.util.PidUtil;
 
 /**
+ * 
  * @author leyou
  */
 public class LogBase {
@@ -35,6 +36,26 @@ public class LogBase {
     static {
         String userHome = System.getProperty(USER_HOME);
         setLogBaseDir(userHome);
+    }
+    
+    protected static void log(Logger logger, Handler handler, Level level, String detail, Object... params) {
+        if (detail == null) {
+            return;
+        }
+        LoggerUtils.disableOtherHandlers(logger, handler);
+        if (params.length == 0) {
+            logger.log(level, detail);
+        } else {
+            logger.log(level, detail, params);
+        }
+    }
+    
+    protected static void log(Logger logger, Handler handler, Level level, String detail, Throwable throwable) {
+        if (detail == null) {
+            return;
+        }
+        LoggerUtils.disableOtherHandlers(logger, handler);
+        logger.log(level, detail, throwable);
     }
 
     /**
