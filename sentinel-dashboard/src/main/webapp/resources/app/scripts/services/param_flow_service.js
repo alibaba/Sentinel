@@ -18,7 +18,6 @@ angular.module('sentinelDashboardApp').service('ParamFlowService', ['$http', fun
   };
 
   this.addNewRule = function(rule) {
-
     return $http({
       url: '/paramFlow/rule',
       data: rule,
@@ -26,21 +25,17 @@ angular.module('sentinelDashboardApp').service('ParamFlowService', ['$http', fun
     });
   };
 
-  this.saveRule = function (rule) {
-    if (rule.id === undefined || rule.id <= 0) {
-
-    }
-    // TODO: implement this
+  this.saveRule = function (entity) {
     return $http({
-      url: '/paramFlow/rule/' + rule.id,
-      data: {},
-      method: 'GET'
+      url: '/paramFlow/rule/' + entity.id,
+      data: entity,
+      method: 'PUT'
     });
   };
 
-  this.deleteRule = function (rule) {
+  this.deleteRule = function (entity) {
     return $http({
-      url: '/paramFlow/rule/' + rule.id,
+      url: '/paramFlow/rule/' + entity.id,
       method: 'DELETE'
     });
   };

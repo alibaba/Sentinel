@@ -27,6 +27,8 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
  */
 public class ParamFlowRuleEntity extends AbstractRuleEntity<ParamFlowRule> {
 
+    public ParamFlowRuleEntity() {}
+
     public ParamFlowRuleEntity(ParamFlowRule rule) {
         AssertUtil.notNull(rule, "Authority rule should not be null");
         this.rule = rule;

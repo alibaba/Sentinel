@@ -22,6 +22,8 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 import com.taobao.csp.sentinel.dashboard.datasource.entity.SentinelVersion;
 
 /**
+ * Util class for parsing version.
+ *
  * @author Eric Zhao
  * @since 0.2.1
  */
@@ -37,9 +39,11 @@ public final class VersionUtils {
             version.setPostfix(postArr[1]);
         }
         String[] arr = postArr[0].split("\\.");
-        if (arr.length != 3) {
-            return Optional.empty();
-        } else {
+        if (arr.length == 2) {
+            version.setMajorVersion(Integer.valueOf(arr[0]))
+                .setMinorVersion(Integer.valueOf(arr[1]))
+                .setFixVersion(0);
+        } else if (arr.length == 3) {
             try {
                 version.setMajorVersion(Integer.valueOf(arr[0]))
                     .setMinorVersion(Integer.valueOf(arr[1]))
@@ -47,6 +51,8 @@ public final class VersionUtils {
             } catch (Exception ex) {
                 return Optional.empty();
             }
+        } else {
+            return Optional.empty();
         }
         return Optional.of(version);
     }

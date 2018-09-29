@@ -63,9 +63,21 @@ public class SentinelVersion {
     }
 
     public boolean greaterThan(SentinelVersion version) {
+        if (version == null) {
+            return true;
+        }
         return this.majorVersion > version.majorVersion
             || this.minorVersion > version.minorVersion
             || this.fixVersion > version.fixVersion;
+    }
+
+    public boolean greaterOrEqual(SentinelVersion version) {
+        if (version == null) {
+            return true;
+        }
+        return this.majorVersion >= version.majorVersion
+            || this.minorVersion >= version.minorVersion
+            || this.fixVersion >= version.fixVersion;
     }
 
     @Override

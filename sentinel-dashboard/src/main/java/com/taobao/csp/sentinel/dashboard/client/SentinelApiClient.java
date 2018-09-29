@@ -202,9 +202,7 @@ public class SentinelApiClient {
                 );
         } catch (Exception e) {
             logger.error("Error when fetching parameter flow rules", e);
-            CompletableFuture<List<ParamFlowRuleEntity>> future = new CompletableFuture<>();
-            future.completeExceptionally(e);
-            return future;
+            return newFailedFuture(e);
         }
     }
 
@@ -333,9 +331,35 @@ public class SentinelApiClient {
         return true;
     }
 
-    public boolean setParamFlowRuleOfMachine(String app, String ip, int port, List<ParamFlowRuleEntity> rules) {
-        // TODO: implement this.
-        return true;
+    public CompletableFuture<Void> setParamFlowRuleOfMachine(String app, String ip, int port, List<ParamFlowRuleEntity> rules) {
+        if (rules == null) {
+            return CompletableFuture.completedFuture(null);
+        }
+        if (StringUtil.isBlank(ip) || port <= 0) {
+            return newFailedFuture(new IllegalArgumentException("Invalid parameter"));
+        }
+        try {
+            String data = JSON.toJSONString(
+                rules.stream().map(ParamFlowRuleEntity::getRule).collect(Collectors.toList())
+            );
+            data = URLEncoder.encode(data, DEFAULT_CHARSET.name());
+            URIBuilder uriBuilder = new URIBuilder();
+            uriBuilder.setScheme("http").setHost(ip).setPort(port)
+                .setPath(SET_PARAM_RULE_PATH)
+                .setParameter("data", data);
+            return executeCommand(SET_PARAM_RULE_PATH, uriBuilder.build())
+                .thenCompose(e -> {
+                    if ("success".equals(e)) {
+                        return CompletableFuture.completedFuture(null);
+                    } else {
+                        logger.warn("Push parameter flow rules to client failed: " + e);
+                        return newFailedFuture(new RuntimeException(e));
+                    }
+                });
+        } catch (Exception ex) {
+            logger.warn("Error when setting parameter flow rule", ex);
+            return newFailedFuture(ex);
+        }
     }
 
     private boolean isSuccess(int statusCode) {
@@ -433,5 +457,11 @@ public class SentinelApiClient {
 
     public void close() throws Exception {
         httpClient.close();
+    }
+
+    private <R> CompletableFuture<R> newFailedFuture(Throwable ex) {
+        CompletableFuture<R> future = new CompletableFuture<>();
+        future.completeExceptionally(ex);
+        return future;
     }
 }
