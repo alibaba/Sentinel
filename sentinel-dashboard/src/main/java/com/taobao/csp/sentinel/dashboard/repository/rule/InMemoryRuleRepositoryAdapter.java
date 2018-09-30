@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import com.taobao.csp.sentinel.dashboard.datasource.entity.RuleEntity;
+import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
 import com.taobao.csp.sentinel.dashboard.discovery.MachineInfo;
 
 /**
@@ -83,14 +83,13 @@ public abstract class InMemoryRuleRepositoryAdapter<T extends RuleEntity> implem
         if (entities == null) {
             return new ArrayList<>();
         }
-        return entities.values().stream()
-            .collect(Collectors.toList());
+        return new ArrayList<>(entities.values());
     }
 
     /**
      * Get next unused id.
      *
-     * @return
+     * @return next unused id
      */
     abstract protected long nextId();
 }
