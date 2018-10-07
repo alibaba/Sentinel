@@ -19,18 +19,18 @@ import com.alibaba.csp.sentinel.property.NoOpSentinelProperty;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 
 /**
- * A {@link DataSource} based on nothing. {@link EmptyDataSource#getProperty()} will always return the same cached
+ * A {@link ReadableDataSource} based on nothing. {@link EmptyDataSource#getProperty()} will always return the same cached
  * {@link SentinelProperty} that doing nothing.
  * <br/>
- * This class is used when we want to use default settings instead of configs from the {@link DataSource}
+ * This class is used when we want to use default settings instead of configs from the {@link ReadableDataSource}.
  *
  * @author leyou
  */
-public class EmptyDataSource implements DataSource<Object, Object> {
+public final class EmptyDataSource implements ReadableDataSource<Object, Object> {
 
-    public static final DataSource<Object, Object> EMPTY_DATASOURCE = new EmptyDataSource();
+    public static final ReadableDataSource<Object, Object> EMPTY_DATASOURCE = new EmptyDataSource();
 
-    private static final SentinelProperty<Object> property = new NoOpSentinelProperty();
+    private static final SentinelProperty<Object> PROPERTY = new NoOpSentinelProperty();
 
     private EmptyDataSource() { }
 
@@ -46,15 +46,9 @@ public class EmptyDataSource implements DataSource<Object, Object> {
 
     @Override
     public SentinelProperty<Object> getProperty() {
-        return property;
+        return PROPERTY;
     }
 
     @Override
     public void close() throws Exception { }
-
-    @Override
-    public void writeDataSource(Object config) throws Exception {
-        throw new UnsupportedOperationException();
-    }
-
 }

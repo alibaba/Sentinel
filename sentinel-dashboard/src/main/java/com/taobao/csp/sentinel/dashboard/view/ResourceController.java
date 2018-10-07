@@ -22,7 +22,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.command.vo.NodeVo;
 
 import com.taobao.csp.sentinel.dashboard.domain.ResourceTreeNode;
-import com.taobao.csp.sentinel.dashboard.inmem.HttpHelper;
+import com.taobao.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.taobao.csp.sentinel.dashboard.view.vo.ResourceVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +41,7 @@ public class ResourceController {
 
     private static Logger logger = LoggerFactory.getLogger(ResourceController.class);
     @Autowired
-    HttpHelper httpFetcher;
+    SentinelApiClient httpFetcher;
 
     /**
      * Fetch real time statistics info of the machine.

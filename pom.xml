@@ -5,7 +5,7 @@
 
     <groupId>com.alibaba.csp</groupId>
     <artifactId>sentinel-parent</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>0.2.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>${project.artifactId}</name>
@@ -55,6 +55,7 @@
         <maven.compiler.version>3.8.0</maven.compiler.version>
         <maven.source.version>3.0.1</maven.source.version>
         <maven.javadoc.version>3.0.1</maven.javadoc.version>
+        <maven.deploy.version>2.8.2</maven.deploy.version>
         <maven.gpg.version>1.6</maven.gpg.version>
         <maven.jacoco.version>0.8.1</maven.jacoco.version>
     </properties>
@@ -89,6 +90,11 @@
             </dependency>
             <dependency>
                 <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-parameter-flow-control</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
                 <artifactId>sentinel-datasource-extension</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -110,6 +116,11 @@
             <dependency>
                 <groupId>com.alibaba.csp</groupId>
                 <artifactId>sentinel-transport-simple-http</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-transport-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.node;
 
 import java.util.Map;
 
+import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
 
 /**
@@ -28,63 +29,68 @@ import com.alibaba.csp.sentinel.node.metric.MetricNode;
 public interface Node {
 
     /**
-     * Incoming request per minute.
+     * Get incoming request per minute. {@code pass + blocked}
      */
     long totalRequest();
 
+    /**
+     * Get {@link Entry#exit()} count per minute.
+     *
+     * @return Outgoing request per minute.
+     */
     long totalSuccess();
 
     /**
-     * Blocked request count per minute.
+     * Get blocked request count per minute.
      */
     long blockedRequest();
 
     /**
-     * Exception count per minute.
+     * Get exception count per minute.
      */
     long totalException();
 
     /**
-     * Incoming request per second.
+     * Get pass request per second.
      */
     long passQps();
 
     /**
-     * Blocked request per second.
+     * Get blocked request per second.
      */
     long blockedQps();
 
     /**
-     * Incoming request + block request per second.
+     * Get {@link #passQps()} + {@link #blockedQps()} request per second.
      */
     long totalQps();
 
     /**
-     * Outgoing request per second.
+     * Get {@link Entry#exit()} request per second.
      */
     long successQps();
 
     long maxSuccessQps();
 
     /**
-     * Exception count per second.
+     * Get exception count per second.
      */
     long exceptionQps();
 
     /**
-     * Average response per second.
+     * Get average rt per second.
      */
     long avgRt();
 
     long minRt();
 
     /**
-     * Current active thread.
+     * Get current active thread count.
      */
     int curThreadNum();
 
     /**
-     * Last seconds block QPS.
+     * Get last second blocked QPS.
      */
     long previousBlockQps();
 
@@ -97,6 +103,11 @@ public interface Node {
 
     void addPassRequest();
 
+    /**
+     * Add rt and success count.
+     *
+     * @param rt
+     */
     void rt(long rt);
 
     void increaseBlockedQps();
@@ -108,7 +119,8 @@ public interface Node {
     void decreaseThreadNum();
 
     /**
-     * Reset the internal counter.
+     * Reset the internal counter. Reset is needed when {@link IntervalProperty#INTERVAL} or
+     * {@link SampleCountProperty#SAMPLE_COUNT} is changed.
      */
     void reset();
 

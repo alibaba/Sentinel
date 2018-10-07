@@ -15,13 +15,14 @@
  */
 package com.alibaba.csp.sentinel.slots.block.authority;
 
-import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
 /**
+ * Authority rule is designed for limiting by request origins.
+ *
  * @author youji.zj
  */
 public class AuthorityRule extends AbstractRule {
@@ -35,8 +36,9 @@ public class AuthorityRule extends AbstractRule {
         return strategy;
     }
 
-    public void setStrategy(int strategy) {
+    public AuthorityRule setStrategy(int strategy) {
         this.strategy = strategy;
+        return this;
     }
 
     @Override
@@ -59,38 +61,6 @@ public class AuthorityRule extends AbstractRule {
 
     @Override
     public boolean passCheck(Context context, DefaultNode node, int count, Object... args) {
-        String requester = context.getOrigin();
-
-        // Empty origin or empty limitApp will pass.
-        if (StringUtil.isEmpty(requester) || StringUtil.isEmpty(this.getLimitApp())) {
-            return true;
-        }
-
-        // Do exact match with origin name.
-        int pos = this.getLimitApp().indexOf(requester);
-        boolean contain = pos > -1;
-
-        if (contain) {
-            boolean exactlyMatch = false;
-            String[] appArray = this.getLimitApp().split(",");
-            for (String app : appArray) {
-                if (requester.equals(app)) {
-                    exactlyMatch = true;
-                    break;
-                }
-            }
-
-            contain = exactlyMatch;
-        }
-
-        if (strategy == RuleConstant.AUTHORITY_BLACK && contain) {
-            return false;
-        }
-
-        if (strategy == RuleConstant.AUTHORITY_WHITE && !contain) {
-            return false;
-        }
-
         return true;
     }
 

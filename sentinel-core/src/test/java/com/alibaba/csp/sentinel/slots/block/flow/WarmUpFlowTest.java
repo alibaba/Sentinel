@@ -39,12 +39,6 @@ public class WarmUpFlowTest {
 
         FlowRuleManager.loadRules(Arrays.asList(flowRule));
 
-        //ContextUtil.enter(null);
-
-        //when(flowRule.selectNodeByRequsterAndStrategy(null, null, null)).thenReturn(value)
-
-        // flowRule.passCheck(null, DefaultNode, acquireCount, args)
-        // when(leapArray.values()).thenReturn(new ArrayList<Window>() {{ add(windowWrap.value()); }});
         ContextUtil.enter("test");
 
         ContextUtil.exit();

@@ -86,7 +86,7 @@ public class MetricWriter {
         if (singleFileSize <= 0 || totalFileCount <= 0) {
             throw new IllegalArgumentException();
         }
-        RecordLog.info("new MetricWriter, singleFileSize=" + singleFileSize + ", totalFileCount=" + totalFileCount);
+        RecordLog.info("[MetricWriter] Creating new MetricWriter, singleFileSize=" + singleFileSize + ", totalFileCount=" + totalFileCount);
         this.baseDir = METRIC_BASE_DIR;
         File dir = new File(baseDir);
         if (!dir.exists()) {
@@ -100,7 +100,7 @@ public class MetricWriter {
         try {
             this.timeSecondBase = df.parse("1970-01-01 00:00:00").getTime() / 1000;
         } catch (Exception e) {
-            RecordLog.info("new MetricWriter error: ", e);
+            RecordLog.warn("[MetricWriter] Create new MetricWriter error", e);
         }
     }
 
@@ -286,9 +286,9 @@ public class MetricWriter {
             String fileName = list.get(i);
             String indexFile = formIndexFileName(fileName);
             new File(fileName).delete();
-            RecordLog.info("remove metric file: " + fileName);
+            RecordLog.info("[MetricWriter] Removing metric file: " + fileName);
             new File(indexFile).delete();
-            RecordLog.info("remove metric index file: " + indexFile);
+            RecordLog.info("[MetricWriter] Removing metric index file: " + indexFile);
         }
     }
 
@@ -307,8 +307,8 @@ public class MetricWriter {
         ;
         curMetricIndexFile = new File(idxFile);
         outIndex = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(idxFile, append)));
-        RecordLog.info("create new metric file: " + fileName);
-        RecordLog.info("create new metric index file: " + idxFile);
+        RecordLog.info("[MetricWriter] New metric file created: " + fileName);
+        RecordLog.info("[MetricWriter] New metric index file created: " + idxFile);
     }
 
     private boolean validSize() throws Exception {

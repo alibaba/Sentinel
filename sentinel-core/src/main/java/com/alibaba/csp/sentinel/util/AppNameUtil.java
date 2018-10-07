@@ -57,7 +57,7 @@ public final class AppNameUtil {
 
     static {
         resolveAppName();
-        RecordLog.info("app name resolved: " + appName);
+        RecordLog.info("App name resolved: " + appName);
     }
 
     public static void resolveAppName() {
