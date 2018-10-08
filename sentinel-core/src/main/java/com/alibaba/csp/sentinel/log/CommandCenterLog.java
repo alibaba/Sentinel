@@ -32,14 +32,6 @@ public class CommandCenterLog extends LogBase {
         logHandler = makeLogger(FILE_NAME, heliumRecordLog);
     }
 
-    /**
-     * Change log dir, the dir will be created if not exits
-     */
-    public static void resetLogBaseDir(String baseDir) {
-        setLogBaseDir(baseDir);
-        logHandler = makeLogger(FILE_NAME, heliumRecordLog);
-    }
-
     public static void info(String msg) {
         LoggerUtils.disableOtherHandlers(heliumRecordLog, logHandler);
         heliumRecordLog.log(Level.INFO, msg);

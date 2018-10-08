@@ -15,9 +15,14 @@
  */
 package com.alibaba.csp.sentinel;
 
+import java.io.File;
+
+import com.alibaba.csp.sentinel.log.LogBase;
 import com.alibaba.csp.sentinel.log.RecordLog;
 
 import org.junit.Test;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author xuyue
@@ -36,6 +41,24 @@ public class RecordLogTest {
         while (--count > 0) {
             RecordLog.info("Count " + count);
         }
+    }
+
+    @Test
+    public void testChangeLogBase() {
+        String userHome = System.getProperty("user.home");
+        String newLogBase = userHome + File.separator + "tmpLogDir" + System.currentTimeMillis();
+        System.setProperty(LogBase.LOG_DIR, newLogBase);
+
+        RecordLog.info("testChangeLogBase");
+        String logFileName = RecordLog.getLogBaseDir();
+        File[] files = new File(logFileName).listFiles();
+        assertTrue(files != null && files.length > 0);
+    }
+
+    @Test
+    public void testLogBaseDir() {
+        RecordLog.info("testLogBaseDir");
+        assertTrue(RecordLog.getLogBaseDir().startsWith(System.getProperty("user.home")));
     }
 
 }
