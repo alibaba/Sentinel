@@ -24,17 +24,24 @@ import java.util.logging.Logger;
 import com.alibaba.csp.sentinel.util.PidUtil;
 
 /**
+ * Default log base dir is ${user.home}, we can use {@link #LOG_DIR} System property to override it.
+ *
  * @author leyou
  */
 public class LogBase {
     public static final String LOG_CHARSET = "utf-8";
     private static final String DIR_NAME = "logs" + File.separator + "csp";
     private static final String USER_HOME = "user.home";
+    public static final String LOG_DIR = "csp.sentinel.log.dir";
     private static String logBaseDir;
 
     static {
-        String userHome = System.getProperty(USER_HOME);
-        setLogBaseDir(userHome);
+        // first use -D, then use user home.
+        String logDir = System.getProperty(LOG_DIR);
+        if (logDir == null || logDir.isEmpty()) {
+            logDir = System.getProperty(USER_HOME);
+        }
+        setLogBaseDir(logDir);
     }
 
     /**
