@@ -160,50 +160,18 @@ class EagleEyeRollingFileAppender extends EagleEyeAppender {
             raf = new RandomAccessFile(lockFile, "rw");
             fileLock = raf.getChannel().tryLock();
 
-            if (fileLock != null) {
-                File target;
-                File file;
-                final int maxBackupIndex = this.maxBackupIndex;
-
-                reload();
-                if (outputByteSize >= maxFileSize) {
-                    file = new File(filePath + '.' + maxBackupIndex);
-                    if (file.exists()) {
-                        target = new File(filePath + '.' + maxBackupIndex + DELETE_FILE_SUFFIX);
-                        if (!file.renameTo(target) && !file.delete()) {
-                            doSelfLog("[ERROR] Fail to delete or rename file: " + file.getAbsolutePath() + " to "
-                                + target.getAbsolutePath());
-                        }
-                    }
-
-                    for (int i = maxBackupIndex - 1; i >= 1; i--) {
-                        file = new File(filePath + '.' + i);
-                        if (file.exists()) {
-                            target = new File(filePath + '.' + (i + 1));
-                            if (!file.renameTo(target) && !file.delete()) {
-                                doSelfLog("[ERROR] Fail to delete or rename file: " + file.getAbsolutePath() + " to "
-                                    + target.getAbsolutePath());
-                            }
-                        }
-                    }
-
-                    target = new File(filePath + "." + 1);
-
-                    close();
-
-                    file = new File(filePath);
-                    if (file.renameTo(target)) {
-                        doSelfLog("[INFO] File rolled to " + target.getAbsolutePath() + ", "
-                            + TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - lastRollOverTime)
-                            + " minutes since last roll");
-                    } else {
-                        doSelfLog("[WARN] Fail to rename file: " + file.getAbsolutePath() + " to "
-                            + target.getAbsolutePath());
-                    }
-
-                    setFile();
-                }
+            if (fileLock == null) {
+                return;
             }
+
+            final int maxBackupIndex = this.maxBackupIndex;
+
+            reload();
+            if (outputByteSize < maxFileSize) {
+                return;
+            }
+            moveFilesInCycle(maxBackupIndex);
+            setFile();
         } catch (IOException e) {
             doSelfLog("[ERROR] Fail rollover file: " + filePath + ", error=" + e.getMessage());
         } finally {
@@ -231,6 +199,42 @@ class EagleEyeRollingFileAppender extends EagleEyeAppender {
                 }
             }
         }
+    }
+
+    private void moveFilesInCycle(int maxBackupIndex) {
+        File target;
+        File file = new File(filePath + '.' + maxBackupIndex);
+        if (file.exists()) {
+            target = new File(filePath + '.' + maxBackupIndex + DELETE_FILE_SUFFIX);
+            if (!file.renameTo(target) && !file.delete()) {
+                doSelfLog("[ERROR] Fail to delete or rename file: " + file.getAbsolutePath() + " to "
+                        + target.getAbsolutePath());
+            }
+        }
+
+        for (int i = maxBackupIndex - 1; i >= 1; i--) {
+            file = new File(filePath + '.' + i);
+            if (file.exists()) {
+                target = new File(filePath + '.' + (i + 1));
+                if (!file.renameTo(target) && !file.delete()) {
+                    doSelfLog("[ERROR] Fail to delete or rename file: " + file.getAbsolutePath() + " to "
+                            + target.getAbsolutePath());
+                }
+            }
+        }
+
+        target = new File(filePath + "." + 1);
+        close();
+        file = new File(filePath);
+        if (file.renameTo(target)) {
+            doSelfLog("[INFO] File rolled to " + target.getAbsolutePath() + ", "
+                    + TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - lastRollOverTime)
+                    + " minutes since last roll");
+        } else {
+            doSelfLog("[WARN] Fail to rename file: " + file.getAbsolutePath() + " to "
+                    + target.getAbsolutePath());
+        }
+
     }
 
     @Override
