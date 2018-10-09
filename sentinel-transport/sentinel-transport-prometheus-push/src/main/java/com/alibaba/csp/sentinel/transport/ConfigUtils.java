@@ -16,8 +16,8 @@ abstract class ConfigUtils {
      * @return server's web port
      */
     static String getAppWebPort() {
-        String pushServer = System.getProperty("sentinel.web.port");
-        return pushServer != null ? pushServer : "127.0.0.1:9091";
+        String portString = System.getProperty("sentinel.web.port");
+        return portString != null ? portString : "0";
     }
 
 }
