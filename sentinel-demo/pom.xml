@@ -27,6 +27,7 @@
         <module>sentinel-demo-apollo-datasource</module>
         <module>sentinel-demo-annotation-spring-aop</module>
         <module>sentinel-demo-parameter-flow-control</module>
+        <module>sentinel-demo-slot-chain-spi</module>
     </modules>
 
     <dependencies>
