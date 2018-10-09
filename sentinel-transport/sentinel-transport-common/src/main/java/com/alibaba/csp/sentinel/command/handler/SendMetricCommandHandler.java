@@ -21,12 +21,13 @@ import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
+import com.alibaba.csp.sentinel.node.metric.MetricManager;
 import com.alibaba.csp.sentinel.util.PidUtil;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
-import com.alibaba.csp.sentinel.node.metric.MetricSearcher;
-import com.alibaba.csp.sentinel.node.metric.MetricWriter;
+import com.alibaba.csp.sentinel.node.metric.MetricSearcherDefaultImpl;
+import com.alibaba.csp.sentinel.node.metric.MetricWriterDefaultImpl;
 
 /**
  * Retrieve and aggregate {@link MetricNode} metrics.
@@ -37,7 +38,7 @@ import com.alibaba.csp.sentinel.node.metric.MetricWriter;
 @CommandMapping(name = "metric")
 public class SendMetricCommandHandler implements CommandHandler<String> {
 
-    private MetricSearcher searcher;
+    private MetricSearcherDefaultImpl searcher;
 
     private final Object lock = new Object();
 
@@ -51,8 +52,7 @@ public class SendMetricCommandHandler implements CommandHandler<String> {
                     appName = "";
                 }
                 if (searcher == null) {
-                    searcher = new MetricSearcher(MetricWriter.METRIC_BASE_DIR,
-                        MetricWriter.formMetricFileName(appName, PidUtil.getPid()));
+                    searcher = MetricManager.INSTANCE.getMetricSearcher();
                 }
             }
         }

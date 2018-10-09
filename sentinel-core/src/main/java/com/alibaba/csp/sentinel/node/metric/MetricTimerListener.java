@@ -29,8 +29,7 @@ import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 
 public class MetricTimerListener implements Runnable {
 
-    private static final MetricWriter metricWriter = new MetricWriter(SentinelConfig.singleMetricFileSize(),
-        SentinelConfig.totalMetricFileCount());
+    private static final MetricWriter metricWriter = MetricManager.INSTANCE.getMetricWriter();
 
     @Override
     public void run() {
