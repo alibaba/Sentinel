@@ -67,7 +67,7 @@ public class ParamFlowRuleController {
             return Optional.ofNullable(appManagement.getDetailApp(app))
                 .flatMap(e -> e.getMachine(ip, port))
                 .flatMap(m -> VersionUtils.parseVersion(m.getVersion())
-                    .map(version020::greaterOrEqual))
+                    .map(v -> v.greaterOrEqual(version020)))
                 .orElse(true);
             // If error occurred or cannot retrieve machine info, return true.
         } catch (Exception ex) {

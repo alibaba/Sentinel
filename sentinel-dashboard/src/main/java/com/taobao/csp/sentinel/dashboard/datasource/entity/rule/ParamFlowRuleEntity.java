@@ -21,6 +21,8 @@ import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowItem;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * @author Eric Zhao
  * @since 0.2.1
@@ -42,26 +44,32 @@ public class ParamFlowRuleEntity extends AbstractRuleEntity<ParamFlowRule> {
         return entity;
     }
 
+    @JsonIgnore
     public String getLimitApp() {
         return rule.getLimitApp();
     }
 
+    @JsonIgnore
     public String getResource() {
         return rule.getResource();
     }
 
+    @JsonIgnore
     public int getBlockGrade() {
         return rule.getBlockGrade();
     }
 
+    @JsonIgnore
     public Integer getParamIdx() {
         return rule.getParamIdx();
     }
 
+    @JsonIgnore
     public double getCount() {
         return rule.getCount();
     }
 
+    @JsonIgnore
     public List<ParamFlowItem> getParamFlowItemList() {
         return rule.getParamFlowItemList();
     }

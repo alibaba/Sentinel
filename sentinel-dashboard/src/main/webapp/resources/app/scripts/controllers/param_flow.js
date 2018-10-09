@@ -12,7 +12,7 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
     $scope.curExItem = {};
 
     $scope.paramItemClassTypeList = [
-      "int", "double", "java.lang.String", "long", "float", "char", "byte", "boolean"
+      'int', 'double', 'java.lang.String', 'long', 'float', 'char', 'byte'
     ];
 
     $scope.rulesPageConfig = {
@@ -38,8 +38,7 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
 
       function updateSingleParamItem(arr, v, t, c) {
           for (let i = 0; i < arr.length; i++) {
-              if (arr[i].object === v) {
-                  arr[i].classType = t;
+              if (arr[i].object === v && arr[i].classType === t) {
                   arr[i].count = c;
                   return;
               }
@@ -58,15 +57,34 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
 
       function isNumberClass(classType) {
         return classType === 'int' || classType === 'double' ||
-            classType === 'float';
+            classType === 'float' || classType === 'long' || classType === 'short';
+      }
+
+      function isByteClass(classType) {
+          return classType === 'byte';
+      }
+
+      function notNumberAtLeastZero(num) {
+        return num === undefined || num === '' || isNaN(num) || num < 0;
+      }
+
+      function notGoodNumber(num) {
+          return num === undefined || num === '' || isNaN(num);
+      }
+
+      function notGoodNumberBetweenExclusive(num, l ,r) {
+          return num === undefined || num === '' || isNaN(num) || num < l || num > r;
       }
 
       $scope.notValidParamItem = (curExItem) => {
-        if (isNaN(curExItem.object) && isNumberClass(curExItem.classType)) {
-           return true;
+        if (isNumberClass(curExItem.classType) && notGoodNumber(curExItem.object)) {
+          return true;
         }
-          return curExItem.object === undefined || curExItem.classType === undefined ||
-              curExItem.object === '' || curExItem.count === undefined || isNaN(curExItem.count) || curExItem.count < 0;
+        if (isByteClass(curExItem.classType) && notGoodNumberBetweenExclusive(curExItem.object, -128, 127)) {
+          return true;
+        }
+        return curExItem.object === undefined || curExItem.classType === undefined ||
+            notNumberAtLeastZero(curExItem.count);
       };
 
       $scope.addParamItem = () => {
@@ -156,20 +174,30 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
 
     function checkRuleValid(rule) {
       if (!rule.resource || rule.resource === '') {
-        alert("资源名称不能为空");
+        alert('资源名称不能为空');
         return false;
       }
       if (rule.blockGrade !== 1) {
-        alert("未知的限流模式");
+        alert('未知的限流模式');
         return false;
       }
       if (rule.count < 0) {
-        alert("限流阈值必须大于等于 0");
+        alert('限流阈值必须大于等于 0');
         return false;
       }
-      if (rule.paramIdx === undefined || rule.paramIdx === '' || isNaN(rule.paramIdx)) {
-        alert("热点参数索引不合法");
+      if (rule.paramIdx === undefined || rule.paramIdx === '' || isNaN(rule.paramIdx) || rule.paramIdx < 0) {
+        alert('热点参数索引必须大于等于 0');
         return false;
+      }
+      if (rule.paramFlowItemList !== undefined) {
+        for (let i = 0; i < rule.paramFlowItemList.length; i++) {
+          let item = rule.paramFlowItemList[i];
+          if ($scope.notValidParamItem(item)) {
+              alert('热点参数例外项不合法，请检查值和类型是否正确：参数为 ' + item.object + ', 类型为 ' +
+                  item.classType + ', 限流阈值为 ' + item.count);
+              return false;
+          }
+        }
       }
       return true;
     }
@@ -246,14 +274,15 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
     };
 
     var confirmDialog;
-    $scope.deleteRule = function (rule) {
-      $scope.currentRule = rule;
+    $scope.deleteRule = function (ruleEntity) {
+      $scope.currentRule = ruleEntity;
+      console.log('deleting: ' + ruleEntity);
       $scope.confirmDialog = {
         title: '删除热点规则',
         type: 'delete_rule',
         attentionTitle: '请确认是否删除如下热点参数限流规则',
-        attention: '资源名: ' + rule.resource + ', 热点参数索引: ' + rule.paramIdx
-          + ', 限流模式: ' + (rule.blockGrade == 1 ? 'QPS' : '未知') + ', 限流阈值: ' + rule.count,
+        attention: '资源名: ' + ruleEntity.rule.resource + ', 热点参数索引: ' + ruleEntity.rule.paramIdx +
+            ', 限流模式: ' + (ruleEntity.rule.blockGrade === 1 ? 'QPS' : '未知') + ', 限流阈值: ' + ruleEntity.rule.count,
         confirmBtnText: '删除',
       };
       confirmDialog = ngDialog.open({

@@ -64,22 +64,22 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr dir-paginate="rule in rules | filter: searchKey | itemsPerPage: rulesPageConfig.pageSize " current-page="rulesPageConfig.currentPageIndex"
+                        <tr dir-paginate="ruleEntity in rules | filter: searchKey | itemsPerPage: rulesPageConfig.pageSize " current-page="rulesPageConfig.currentPageIndex"
                             pagination-id="entriesPagination">
-                            <td style="word-wrap:break-word;word-break:break-all;">{{rule.resource}}</td>
-                            <td style="word-wrap:break-word;word-break:break-all;">{{rule.paramIdx}}</td>
+                            <td style="word-wrap:break-word;word-break:break-all;">{{ruleEntity.rule.resource}}</td>
+                            <td style="word-wrap:break-word;word-break:break-all;">{{ruleEntity.rule.paramIdx}}</td>
                             <td>
-                                {{rule.blockGrade == 1 ? 'QPS' : '未知'}}
+                                {{ruleEntity.rule.blockGrade == 1 ? 'QPS' : '未知'}}
                             </td>
                             <td style="word-wrap:break-word;word-break:break-all;">
-                                {{rule.count}}
+                                {{ruleEntity.rule.count}}
                             </td>
                             <td>
-                                {{rule.paramFlowItemList == undefined ? 0 : rule.paramFlowItemList.length}}
+                                {{ruleEntity.rule.paramFlowItemList == undefined ? 0 : ruleEntity.rule.paramFlowItemList.length}}
                             </td>
                             <td>
-                                <button class="btn btn-xs btn-default" type="button" ng-click="editRule(rule)" style="font-size: 12px; height:25px;">编辑</button>
-                                <button class="btn btn-xs btn-default" type="button" ng-click="deleteRule(rule)" style="font-size: 12px; height:25px;">删除</button>
+                                <button class="btn btn-xs btn-default" type="button" ng-click="editRule(ruleEntity)" style="font-size: 12px; height:25px;">编辑</button>
+                                <button class="btn btn-xs btn-default" type="button" ng-click="deleteRule(ruleEntity)" style="font-size: 12px; height:25px;">删除</button>
                             </td>
                         </tr>
                         </tbody>

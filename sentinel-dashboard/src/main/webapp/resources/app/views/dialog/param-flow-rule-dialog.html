@@ -78,9 +78,14 @@
 									</thead>
 									<tbody>
 									<tr ng-repeat="paramItem in currentRule.rule.paramFlowItemList">
-										<td>{{paramItem.object}}</td>
-										<td>{{paramItem.classType}}</td>
-										<td>{{paramItem.count}}</td>
+										<td><input ng-model="paramItem.object" type="text" class="form-control" placeholder="例外项参数"></td>
+										<td>
+											<select ng-model="paramItem.classType" ng-options="classType for classType in paramItemClassTypeList" class="form-control" placeholder="请选择参数类型">
+											</select>
+										</td>
+										<td>
+											<input type="number" ng-model="paramItem.count" class="form-control" placeholder="限流阈值">
+										</td>
 										<td>
 											<button type="button" class="btn btn-danger"
 													ng-click="removeParamItem(paramItem.object, paramItem.classType)"><span
@@ -93,53 +98,6 @@
 						</div>
 
                     </div>
-					<!--<div class="col-md-12">-->
-						<!--<div class="form-group">-->
-							<!--<label>参数例外项</label>-->
-						<!--</div>-->
-					<!--</div>-->
-					<!--<div class="col-md-4">-->
-						<!--<div class="form-group">-->
-							<!--<input ng-model="curExItem.object" type="text" class="form-control" placeholder="请输入例外项参数">-->
-						<!--</div>-->
-					<!--</div>-->
-					<!--<div class="col-md-4">-->
-						<!--<div class="form-group">-->
-                            <!--<select ng-model="curExItem.type" ng-options="classType for classType in paramItemClassTypeList" class="form-control" placeholder="请选择参数类型">-->
-                            <!--</select>-->
-						<!--</div>-->
-					<!--</div>-->
-					<!--<div class="col-md-4">-->
-						<!--<div class="form-group">-->
-							<!--<input type="number" ng-model="curExItem.count" class="form-control" placeholder="请输入例外项参数限流阈值">-->
-						<!--</div>-->
-					<!--</div>-->
-					<!--<div class="col-md-2">-->
-						<!--<button type="button" class="btn green-meadow" ng-disabled="curExItem.object === undefined" ng-click="addParamItem()">-->
-							<!--<span class="fa fa-plus">&nbsp;添加</span></button>-->
-					<!--</div>-->
-					<!--<div class="col-md-12">-->
-						<!--<table class="table table-condensed table-hover">-->
-							<!--<thead>-->
-							<!--<th>参数值</th>-->
-							<!--<th>参数类型</th>-->
-							<!--<th>限流阈值</th>-->
-							<!--<th>操作</th>-->
-							<!--</thead>-->
-							<!--<tbody>-->
-							<!--<tr ng-repeat="paramItem in currentRule.rule.paramFlowItemList">-->
-								<!--<td>{{paramItem.object}}</td>-->
-								<!--<td>{{paramItem.classType}}</td>-->
-								<!--<td>{{paramItem.count}}</td>-->
-								<!--<td>-->
-									<!--<button type="button" class="btn red-flamingo"-->
-											<!--ng-click="removeParamItem(paramItem.object, paramItem.classType)"><span-->
-											<!--class="fa fa-trash-o">&nbsp;删除</span></button>-->
-								<!--</td>-->
-							<!--</tr>-->
-							<!--</tbody>-->
-						<!--</table>-->
-					<!--</div>-->
 					<!-- exclusion item part end -->
 				</form>
 			</div>
