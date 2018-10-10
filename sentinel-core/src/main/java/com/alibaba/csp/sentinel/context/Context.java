@@ -139,15 +139,15 @@ public class Context {
         return getOriginNode() == null ? 0 : getOriginNode().totalQps();
     }
 
-    public double getOriginBlockedQps() {
+    public double getOriginBlockQps() {
         return getOriginNode() == null ? 0 : getOriginNode().blockQps();
     }
 
-    public double getOriginPassedReqQps() {
+    public double getOriginPassReqQps() {
         return getOriginNode() == null ? 0 : getOriginNode().successQps();
     }
 
-    public double getOriginPassedQps() {
+    public double getOriginPassQps() {
         return getOriginNode() == null ? 0 : getOriginNode().passQps();
     }
 
@@ -155,7 +155,7 @@ public class Context {
         return getOriginNode() == null ? 0 : getOriginNode().totalRequest();
     }
 
-    public long getOriginBlockedRequest() {
+    public long getOriginBlockRequest() {
         return getOriginNode() == null ? 0 : getOriginNode().blockRequest();
     }
 
