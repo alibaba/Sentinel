@@ -88,9 +88,9 @@ public class DefaultNode extends StatisticNode {
     }
 
     @Override
-    public void increaseBlockedQps() {
-        super.increaseBlockedQps();
-        this.clusterNode.increaseBlockedQps();
+    public void increaseBlockQps() {
+        super.increaseBlockQps();
+        this.clusterNode.increaseBlockQps();
     }
 
     @Override
@@ -134,13 +134,13 @@ public class DefaultNode extends StatisticNode {
         if (!(node instanceof EntranceNode)) {
             System.out.println(
                 String.format("%s(thread:%s pq:%s bq:%s tq:%s rt:%s 1mp:%s 1mb:%s 1mt:%s)", node.id.getShowName(),
-                    node.curThreadNum(), node.passQps(), node.blockedQps(), node.totalQps(), node.avgRt(),
-                    node.totalRequest() - node.blockedRequest(), node.blockedRequest(), node.totalRequest()));
+                    node.curThreadNum(), node.passQps(), node.blockQps(), node.totalQps(), node.avgRt(),
+                    node.totalRequest() - node.blockRequest(), node.blockRequest(), node.totalRequest()));
         } else {
             System.out.println(
                 String.format("Entry-%s(t:%s pq:%s bq:%s tq:%s rt:%s 1mp:%s 1mb:%s 1mt:%s)", node.id.getShowName(),
-                    node.curThreadNum(), node.passQps(), node.blockedQps(), node.totalQps(), node.avgRt(),
-                    node.totalRequest() - node.blockedRequest(), node.blockedRequest(), node.totalRequest()));
+                    node.curThreadNum(), node.passQps(), node.blockQps(), node.totalQps(), node.avgRt(),
+                    node.totalRequest() - node.blockRequest(), node.blockRequest(), node.totalRequest()));
         }
         for (Node n : node.getChildList()) {
             DefaultNode dn = (DefaultNode)n;

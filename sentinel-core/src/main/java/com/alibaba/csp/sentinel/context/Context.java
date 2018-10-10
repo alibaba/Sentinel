@@ -140,7 +140,7 @@ public class Context {
     }
 
     public double getOriginBlockedQps() {
-        return getOriginNode() == null ? 0 : getOriginNode().blockedQps();
+        return getOriginNode() == null ? 0 : getOriginNode().blockQps();
     }
 
     public double getOriginPassedReqQps() {
@@ -156,7 +156,7 @@ public class Context {
     }
 
     public long getOriginBlockedRequest() {
-        return getOriginNode() == null ? 0 : getOriginNode().blockedRequest();
+        return getOriginNode() == null ? 0 : getOriginNode().blockRequest();
     }
 
     public double getOriginAvgRt() {

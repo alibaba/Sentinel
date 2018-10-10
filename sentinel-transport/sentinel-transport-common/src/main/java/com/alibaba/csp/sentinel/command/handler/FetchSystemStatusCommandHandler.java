@@ -38,7 +38,7 @@ public class FetchSystemStatusCommandHandler implements CommandHandler<String> {
 
         systemStatus.put("rqps", Constants.ENTRY_NODE.successQps());
         systemStatus.put("qps", Constants.ENTRY_NODE.passQps());
-        systemStatus.put("b", Constants.ENTRY_NODE.blockedQps());
+        systemStatus.put("b", Constants.ENTRY_NODE.blockQps());
         systemStatus.put("r", Constants.ENTRY_NODE.avgRt());
         systemStatus.put("t", Constants.ENTRY_NODE.curThreadNum());
 

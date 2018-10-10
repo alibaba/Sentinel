@@ -53,10 +53,10 @@ public class StatisticNode implements Node {
         long newLastFetchTime = lastFetchTime;
         for (MetricNode node : nodesOfEverySecond) {
             if (node.getTimestamp() > lastFetchTime && node.getTimestamp() < currentTime) {
-                if (node.getPassedQps() != 0
-                    || node.getBlockedQps() != 0
+                if (node.getPassQps() != 0
+                    || node.getBlockQps() != 0
                     || node.getSuccessQps() != 0
-                    || node.getException() != 0
+                    || node.getExceptionQps() != 0
                     || node.getRt() != 0) {
                     metrics.put(node.getTimestamp(), node);
                     newLastFetchTime = Math.max(newLastFetchTime, node.getTimestamp());
@@ -80,12 +80,12 @@ public class StatisticNode implements Node {
     }
 
     @Override
-    public long blockedRequest() {
+    public long blockRequest() {
         return rollingCounterInMinute.block() / 2;
     }
 
     @Override
-    public long blockedQps() {
+    public long blockQps() {
         return rollingCounterInSecond.block() / IntervalProperty.INTERVAL;
     }
 
@@ -101,7 +101,7 @@ public class StatisticNode implements Node {
 
     @Override
     public long totalQps() {
-        return passQps() + blockedQps();
+        return passQps() + blockQps();
     }
 
     @Override
@@ -170,7 +170,7 @@ public class StatisticNode implements Node {
     }
 
     @Override
-    public void increaseBlockedQps() {
+    public void increaseBlockQps() {
         rollingCounterInSecond.addBlock();
         rollingCounterInMinute.addBlock();
     }
