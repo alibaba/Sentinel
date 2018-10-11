@@ -35,10 +35,10 @@ public class StatisticNode implements Node {
         IntervalProperty.INTERVAL);
 
     /**
-     * Holds statistics of the recent 120 seconds. The windowLengthInMs is deliberately set to 1000 milliseconds,
+     * Holds statistics of the recent 60 seconds. The windowLengthInMs is deliberately set to 1000 milliseconds,
      * meaning each bucket per second, in this way we can get accurate statistics of each second.
      */
-    private transient Metric rollingCounterInMinute = new ArrayMetric(1000, 2 * 60);
+    private transient Metric rollingCounterInMinute = new ArrayMetric(1000, 60);
 
     private AtomicInteger curThreadNum = new AtomicInteger(0);
 
@@ -76,12 +76,12 @@ public class StatisticNode implements Node {
     @Override
     public long totalRequest() {
         long totalRequest = rollingCounterInMinute.pass() + rollingCounterInMinute.block();
-        return totalRequest / 2;
+        return totalRequest;
     }
 
     @Override
     public long blockRequest() {
-        return rollingCounterInMinute.block() / 2;
+        return rollingCounterInMinute.block();
     }
 
     @Override
@@ -106,7 +106,7 @@ public class StatisticNode implements Node {
 
     @Override
     public long totalSuccess() {
-        return rollingCounterInMinute.success() / 2;
+        return rollingCounterInMinute.success();
     }
 
     @Override
@@ -116,7 +116,7 @@ public class StatisticNode implements Node {
 
     @Override
     public long totalException() {
-        return rollingCounterInMinute.exception() / 2;
+        return rollingCounterInMinute.exception();
     }
 
     @Override
