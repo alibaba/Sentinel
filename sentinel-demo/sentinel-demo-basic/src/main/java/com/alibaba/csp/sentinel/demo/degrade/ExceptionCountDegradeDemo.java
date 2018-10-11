@@ -1,18 +1,3 @@
-/*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.alibaba.csp.sentinel.demo.degrade;
 
 import java.util.ArrayList;
@@ -36,23 +21,28 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
  * measure whether a resource is stable or not:
  * <ul>
  * <li>
- * Exception ratio: When the ratio of exception count per second and the success
- * qps greats than or equals to the threshold, access to the resource will be blocked
- * in the coming time window.
+ * Exception count: When the exception count in the last 60 seconds greats than
+ * or equals to the threshold, access to the resource will be blocked in the
+ * coming time window.
  * </li>
  * <li>
- * Exception Count, see {@link ExceptionCountDegradeDemo}.
+ * Exception ratio, see {@link ExceptionRatioDegradeDemo}.
  * </li>
  * <li>
  * For average response time, see {@link RtDegradeDemo}.
  * </li>
  * </ul>
  * </p>
+ * <p>
+ * Note: When degrading by {@link RuleConstant#DEGRADE_GRADE_EXCEPTION_COUNT}, time window
+ * less than 60 seconds will not work as expected. Because the exception count is
+ * summed by minute, when a short time window elapsed, the degradation condition
+ * may still be satisfied.
+ * </p>
  *
- * @author jialiang.linjl
+ * @author Carpenter Lee
  */
-public class ExceptionRatioDegradeDemo {
-
+public class ExceptionCountDegradeDemo {
     private static final String KEY = "abc";
 
     private static AtomicInteger total = new AtomicInteger();
@@ -111,9 +101,15 @@ public class ExceptionRatioDegradeDemo {
         List<DegradeRule> rules = new ArrayList<DegradeRule>();
         DegradeRule rule = new DegradeRule();
         rule.setResource(KEY);
-        // set limit exception ratio to 0.1
-        rule.setCount(0.1);
-        rule.setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO);
+        // set limit exception count to 4
+        rule.setCount(4);
+        rule.setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT);
+        /**
+         * When degrading by {@link RuleConstant#DEGRADE_GRADE_EXCEPTION_COUNT}, time window
+         * less than 60 seconds will not work as expected. Because the exception count is
+         * summed by minute, when a short time window elapsed, the degradation condition
+         * may still be satisfied.
+         */
         rule.setTimeWindow(10);
         rules.add(rule);
         DegradeRuleManager.loadRules(rules);
