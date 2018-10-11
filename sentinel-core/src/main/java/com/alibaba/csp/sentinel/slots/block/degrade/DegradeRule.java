@@ -173,7 +173,7 @@ public class DegradeRule extends AbstractRule {
             if (passCount.incrementAndGet() < RT_MAX_EXCEED_N) {
                 return true;
             }
-        } else {
+        } else if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
             double exception = clusterNode.exceptionQps();
             double success = clusterNode.successQps();
             long total = clusterNode.totalQps();
@@ -188,6 +188,11 @@ public class DegradeRule extends AbstractRule {
             }
 
             if (exception / success < count) {
+                return true;
+            }
+        } else if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
+            double exception = clusterNode.totalException();
+            if (exception < count) {
                 return true;
             }
         }
