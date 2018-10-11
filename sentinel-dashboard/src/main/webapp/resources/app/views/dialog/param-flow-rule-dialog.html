@@ -14,13 +14,11 @@
                     
                     <div class="form-group">
 						<label class="col-sm-2 control-label">限流模式</label>
-						<div class="col-sm-9">
-							<p>QPS 模式</p>
-						</div>
+						<p class="col-sm-9 control-label" style="text-align: left; font-weight: normal;">QPS 模式</p>
 					</div>
 
 					<div class="form-group">
-						<label class="col-sm-2 control-label">热点参数索引</label>
+						<label class="col-sm-2 control-label">参数索引</label>
 						<div class="col-sm-9">
 							<input type="number" class="form-control highlight-border" ng-model='currentRule.rule.paramIdx' placeholder='请填入传入的热点参数的索引（从 0 开始）' />
 						</div>
@@ -32,73 +30,81 @@
 							<input type="number" class="form-control highlight-border" ng-model='currentRule.rule.count' placeholder='请填入限流阈值' />
 						</div>
                     </div>
-					<hr />
+
 
                     <!-- exclusion item part start -->
-                    <div class="form-group">
-						<div class="form-group" style="text-align: center">
-							<label class="control-label">参数例外项</label>
-						</div>
-
+					<div ng-if="!paramFlowRuleDialog.showAdvanceButton">
+						<hr />
 						<div class="form-group">
-							<label class="col-sm-2 control-label">例外项参数</label>
-							<div class="col-md-3">
-								<input ng-model="curExItem.object" type="text" class="form-control" placeholder="例外项参数">
+							<div class="form-group" style="text-align: center">
+								<label class="control-label">参数例外项</label>
 							</div>
 
-							<label class="col-sm-2 control-label">参数类型</label>
-							<div class="col-md-3">
-								<select ng-model="curExItem.classType" ng-options="classType for classType in paramItemClassTypeList" class="form-control" placeholder="请选择参数类型">
-								</select>
+							<div class="form-group">
+								<label class="col-sm-2 control-label">参数类型</label>
+								<div class="col-md-9">
+									<select ng-model="curExItem.classType" ng-options="classType for classType in paramItemClassTypeList" class="form-control" placeholder="请选择参数类型">
+									</select>
+								</div>
 							</div>
+
+							<div class="form-group">
+								<label class="col-sm-2 control-label">参数值</label>
+								<div class="col-md-3">
+									<input ng-model="curExItem.object" type="text" class="form-control" placeholder="例外项参数值">
+								</div>
+
+								<label class="col-sm-2 control-label">限流阈值</label>
+								<div class="col-md-3">
+									<input type="number" ng-model="curExItem.count" class="form-control" placeholder="限流阈值">
+								</div>
+
+								<div class="col-md-2">
+									<button type="button" class="btn btn-success"
+											ng-disabled="notValidParamItem(curExItem)"
+											ng-click="addParamItem()">
+										<span class="fa fa-plus">&nbsp;添加</span>
+									</button>
+								</div>
+							</div>
+
+							<div>
+								<div class="col-md-12">
+									<table class="table table-condensed table-hover">
+										<thead>
+										<th>参数值</th>
+										<th>参数类型</th>
+										<th>限流阈值</th>
+										<th>操作</th>
+										</thead>
+										<tbody>
+										<tr ng-repeat="paramItem in currentRule.rule.paramFlowItemList">
+											<td><input ng-model="paramItem.object" type="text" class="form-control" placeholder="例外项参数"></td>
+											<td>
+												<p>{{paramItem.classType}}</p>
+											</td>
+											<td>
+												<input type="number" ng-model="paramItem.count" class="form-control" placeholder="限流阈值">
+											</td>
+											<td>
+												<button type="button" class="btn btn-danger"
+														ng-click="removeParamItem(paramItem.object, paramItem.classType)"><span
+														class="fa fa-trash-o">&nbsp;删除</span></button>
+											</td>
+										</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+
 						</div>
+					</div>
 
-						<div class="form-group">
-							<label class="col-sm-2 control-label">限流阈值</label>
-							<div class="col-md-3">
-								<input type="number" ng-model="curExItem.count" class="form-control" placeholder="限流阈值">
-							</div>
-
-							<div class="col-md-2">
-								<button type="button" class="btn btn-success"
-										ng-disabled="notValidParamItem(curExItem)"
-										ng-click="addParamItem()">
-									<span class="fa fa-plus">&nbsp;添加</span></button>
-							</div>
-						</div>
-
-						<div>
-							<div class="col-md-12">
-								<table class="table table-condensed table-hover">
-									<thead>
-									<th>参数值</th>
-									<th>参数类型</th>
-									<th>限流阈值</th>
-									<th>操作</th>
-									</thead>
-									<tbody>
-									<tr ng-repeat="paramItem in currentRule.rule.paramFlowItemList">
-										<td><input ng-model="paramItem.object" type="text" class="form-control" placeholder="例外项参数"></td>
-										<td>
-											<select ng-model="paramItem.classType" ng-options="classType for classType in paramItemClassTypeList" class="form-control" placeholder="请选择参数类型">
-											</select>
-										</td>
-										<td>
-											<input type="number" ng-model="paramItem.count" class="form-control" placeholder="限流阈值">
-										</td>
-										<td>
-											<button type="button" class="btn btn-danger"
-													ng-click="removeParamItem(paramItem.object, paramItem.classType)"><span
-													class="fa fa-trash-o">&nbsp;删除</span></button>
-										</td>
-									</tr>
-									</tbody>
-								</table>
-							</div>
-						</div>
-
-                    </div>
 					<!-- exclusion item part end -->
+					<div class="form-group text-center">
+						<a ng-click="onOpenAdvanceClick()" ng-if="paramFlowRuleDialog.showAdvanceButton">高级选项</a>
+						<a ng-click="onCloseAdvanceClick()" ng-if="!paramFlowRuleDialog.showAdvanceButton">关闭高级选项</a>
+					</div>
 				</form>
 			</div>
 			<div class="separator"></div>

@@ -90,7 +90,8 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
       $scope.addParamItem = () => {
           updateSingleParamItem($scope.currentRule.rule.paramFlowItemList,
               $scope.curExItem.object, $scope.curExItem.classType, $scope.curExItem.count);
-          $scope.curExItem = {};
+          let oldItem = $scope.curExItem;
+          $scope.curExItem = {classType: oldItem.classType};
       };
 
       $scope.removeParamItem = (v, t) => {
@@ -133,7 +134,7 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
         title: '编辑热点规则',
         type: 'edit',
         confirmBtnText: '保存',
-        showAdvanceButton: rule.controlBehavior == 0 && rule.strategy == 0
+        showAdvanceButton: rule.rule.paramFlowItemList === undefined || rule.rule.paramFlowItemList.length <= 0
       };
       paramFlowRuleDialog = ngDialog.open({
         template: '/app/views/dialog/param-flow-rule-dialog.html',
@@ -171,6 +172,13 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
       });
       $scope.curExItem = {};
     };
+
+      $scope.onOpenAdvanceClick = function () {
+          $scope.paramFlowRuleDialog.showAdvanceButton = false;
+      };
+      $scope.onCloseAdvanceClick = function () {
+          $scope.paramFlowRuleDialog.showAdvanceButton = true;
+      };
 
     function checkRuleValid(rule) {
       if (!rule.resource || rule.resource === '') {

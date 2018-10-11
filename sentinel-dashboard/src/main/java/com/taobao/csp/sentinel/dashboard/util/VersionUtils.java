@@ -29,32 +29,41 @@ import com.taobao.csp.sentinel.dashboard.datasource.entity.SentinelVersion;
  */
 public final class VersionUtils {
 
+    /**
+     * Parse version of Sentinel from raw string.
+     *
+     * @param s version string
+     * @return parsed {@link SentinelVersion} if the version is valid; empty if
+     * there is something wrong with the format
+     */
     public static Optional<SentinelVersion> parseVersion(String s) {
         if (StringUtil.isBlank(s)) {
             return Optional.empty();
         }
-        SentinelVersion version = new SentinelVersion();
-        String[] postArr = s.split("-");
-        if (postArr.length > 1) {
-            version.setPostfix(postArr[1]);
-        }
-        String[] arr = postArr[0].split("\\.");
-        if (arr.length == 2) {
-            version.setMajorVersion(Integer.valueOf(arr[0]))
-                .setMinorVersion(Integer.valueOf(arr[1]))
-                .setFixVersion(0);
-        } else if (arr.length == 3) {
-            try {
+        try {
+            SentinelVersion version = new SentinelVersion();
+            String[] postArr = s.split("-");
+            if (postArr.length > 1) {
+                version.setPostfix(postArr[1]);
+            }
+            String[] arr = postArr[0].split("\\.");
+            if (arr.length == 2) {
+                version.setMajorVersion(Integer.valueOf(arr[0]))
+                    .setMinorVersion(Integer.valueOf(arr[1]))
+                    .setFixVersion(0);
+            } else if (arr.length == 3) {
                 version.setMajorVersion(Integer.valueOf(arr[0]))
                     .setMinorVersion(Integer.valueOf(arr[1]))
                     .setFixVersion(Integer.valueOf(arr[2]));
-            } catch (Exception ex) {
+            } else {
+                // Wrong format, return empty.
                 return Optional.empty();
             }
-        } else {
+            return Optional.of(version);
+        } catch (Exception ex) {
+            // Parse fail, return empty.
             return Optional.empty();
         }
-        return Optional.of(version);
     }
 
     private VersionUtils() {}
