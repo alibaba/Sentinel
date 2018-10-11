@@ -304,19 +304,19 @@ public class MetricFetcher {
                 String key = buildMetricKey(machine.getApp(), node.getResource(), node.getTimestamp());
                 MetricEntity entity = map.get(key);
                 if (entity != null) {
-                    entity.addPassedQps(node.getPassedQps());
-                    entity.addBlockedQps(node.getBlockedQps());
+                    entity.addPassQps(node.getPassQps());
+                    entity.addBlockQps(node.getBlockQps());
                     entity.addRtAndSuccessQps(node.getRt(), node.getSuccessQps());
-                    entity.addException(node.getException());
+                    entity.addExceptionQps(node.getExceptionQps());
                     entity.addCount(1);
                 } else {
                     entity = new MetricEntity();
                     entity.setApp(machine.getApp());
                     entity.setTimestamp(new Date(node.getTimestamp()));
-                    entity.setPassedQps(node.getPassedQps());
-                    entity.setBlockedQps(node.getBlockedQps());
+                    entity.setPassQps(node.getPassQps());
+                    entity.setBlockQps(node.getBlockQps());
                     entity.setRtAndSuccessQps(node.getRt(), node.getSuccessQps());
-                    entity.setException(node.getException());
+                    entity.setExceptionQps(node.getExceptionQps());
                     entity.setCount(1);
                     entity.setResource(node.getResource());
                     map.put(key, entity);
