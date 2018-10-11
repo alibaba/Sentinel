@@ -144,9 +144,9 @@ public class ArrayMetric implements Metric {
                 continue;
             }
             MetricNode node = new MetricNode();
-            node.setBlockedQps(window.value().block());
-            node.setException(window.value().exception());
-            node.setPassedQps(window.value().pass());
+            node.setBlockQps(window.value().block());
+            node.setExceptionQps(window.value().exception());
+            node.setPassQps(window.value().pass());
             long passQps = window.value().success();
             node.setSuccessQps(passQps);
             if (passQps != 0) {

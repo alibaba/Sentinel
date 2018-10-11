@@ -29,11 +29,11 @@ public class MetricVo implements Comparable<MetricVo> {
     private String app;
     private Long timestamp;
     private Long gmtCreate = System.currentTimeMillis();
-    private String identity;
-    private Long passedQps;
-    private Long blockedQps;
+    private String resource;
+    private Long passQps;
+    private Long blockQps;
     private Long successQps;
-    private Long exception;
+    private Long exceptionQps;
     /**
      * average rt
      */
@@ -78,11 +78,11 @@ public class MetricVo implements Comparable<MetricVo> {
         vo.app = entity.getApp();
         vo.timestamp = entity.getTimestamp().getTime();
         vo.gmtCreate = entity.getGmtCreate().getTime();
-        vo.identity = entity.getResource();
-        vo.passedQps = entity.getPassedQps();
-        vo.blockedQps = entity.getBlockedQps();
+        vo.resource = entity.getResource();
+        vo.passQps = entity.getPassQps();
+        vo.blockQps = entity.getBlockQps();
         vo.successQps = entity.getSuccessQps();
-        vo.exception = entity.getException();
+        vo.exceptionQps = entity.getExceptionQps();
         if (entity.getSuccessQps() != 0) {
             vo.rt = entity.getRt() / entity.getSuccessQps();
         } else {
@@ -96,18 +96,18 @@ public class MetricVo implements Comparable<MetricVo> {
         String[] strs = line.split("\\|");
         long timestamp = Long.parseLong(strs[0]);
         String identity = strs[1];
-        long passedQps = Long.parseLong(strs[2]);
-        long blockedQps = Long.parseLong(strs[3]);
+        long passQps = Long.parseLong(strs[2]);
+        long blockQps = Long.parseLong(strs[3]);
         long exception = Long.parseLong(strs[4]);
         double rt = Double.parseDouble(strs[5]);
         long successQps = Long.parseLong(strs[6]);
         MetricVo vo = new MetricVo();
         vo.timestamp = timestamp;
-        vo.identity = identity;
-        vo.passedQps = passedQps;
-        vo.blockedQps = blockedQps;
+        vo.resource = identity;
+        vo.passQps = passQps;
+        vo.blockQps = blockQps;
         vo.successQps = successQps;
-        vo.exception = exception;
+        vo.exceptionQps = exception;
         vo.rt = rt;
         vo.count = 1;
         return vo;
@@ -145,28 +145,28 @@ public class MetricVo implements Comparable<MetricVo> {
         this.gmtCreate = gmtCreate;
     }
 
-    public String getIdentity() {
-        return identity;
+    public String getResource() {
+        return resource;
     }
 
-    public void setIdentity(String identity) {
-        this.identity = identity;
+    public void setResource(String resource) {
+        this.resource = resource;
     }
 
-    public Long getPassedQps() {
-        return passedQps;
+    public Long getPassQps() {
+        return passQps;
     }
 
-    public void setPassedQps(Long passedQps) {
-        this.passedQps = passedQps;
+    public void setPassQps(Long passQps) {
+        this.passQps = passQps;
     }
 
-    public Long getBlockedQps() {
-        return blockedQps;
+    public Long getBlockQps() {
+        return blockQps;
     }
 
-    public void setBlockedQps(Long blockedQps) {
-        this.blockedQps = blockedQps;
+    public void setBlockQps(Long blockQps) {
+        this.blockQps = blockQps;
     }
 
     public Long getSuccessQps() {
@@ -177,12 +177,12 @@ public class MetricVo implements Comparable<MetricVo> {
         this.successQps = successQps;
     }
 
-    public Long getException() {
-        return exception;
+    public Long getExceptionQps() {
+        return exceptionQps;
     }
 
-    public void setException(Long exception) {
-        this.exception = exception;
+    public void setExceptionQps(Long exceptionQps) {
+        this.exceptionQps = exceptionQps;
     }
 
     public Double getRt() {

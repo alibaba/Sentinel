@@ -75,13 +75,13 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
           type: 'time',
           mask: 'YYYY-MM-DD HH:mm:ss'
         });
-        chart.scale('passedQps', {
+        chart.scale('passQps', {
           min: 0,
           fine: true,
           alias: 'p_qps'
           // max: 10
         });
-        chart.scale('blockedQps', {
+        chart.scale('blockQps', {
           min: 0,
           fine: true,
           alias: 'b_qps',
@@ -94,7 +94,7 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
           grid: null,
           label: null
         });
-        chart.axis('blockedQps', {
+        chart.axis('blockQps', {
           grid: null,
           label: null
         });
@@ -118,17 +118,17 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
           allowAllCanceled: true,
           itemFormatter: function (val) {
             // console.log('val=', val);
-            if ('passedQps' === val) {
+            if ('passQps' === val) {
               return 'p_qps';
             }
-            if ('blockedQps' === val) {
+            if ('blockQps' === val) {
               return 'b_qps';
             }
             return val;
           },
           items: [
-            { value: 'passedQps', marker: { symbol: 'hyphen', stroke: 'green', radius: 5, lineWidth: 2 } },
-            { value: 'blockedQps', marker: { symbol: 'hyphen', stroke: 'blue', radius: 5, lineWidth: 2 } },
+            { value: 'passQps', marker: { symbol: 'hyphen', stroke: 'green', radius: 5, lineWidth: 2 } },
+            { value: 'blockQps', marker: { symbol: 'hyphen', stroke: 'blue', radius: 5, lineWidth: 2 } },
             // { value: 'rt', marker: {symbol: 'hyphen', stroke: 'gray', radius: 5, lineWidth: 2} },
           ],
           onClick: function (ev) {
@@ -148,8 +148,8 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
             }
           }
         });
-        chart.line().position('timestamp*passedQps').size(1).color('green').shape('smooth');
-        chart.line().position('timestamp*blockedQps').size(1).color('blue').shape('smooth');
+        chart.line().position('timestamp*passQps').size(1).color('green').shape('smooth');
+        chart.line().position('timestamp*blockQps').size(1).color('blue').shape('smooth');
         // chart.line().position('timestamp*rt').size(1).color('gray');
         G2.track(false);
         chart.render();
@@ -214,8 +214,8 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
           for (var j = lastTime + 1; j < curTime; j++) {
             filledData.push({
                 "timestamp": j * 1000,
-                "passedQps": 0,
-                "blockedQps": 0,
+                "passQps": 0,
+                "blockQps": 0,
                 "successQps": 0,
                 "exception": 0,
                 "rt": 0,
