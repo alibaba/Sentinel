@@ -33,6 +33,12 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
  * </li>
  * </ul>
  * </p>
+ * <p>
+ * Note: When degrading by {@link RuleConstant#DEGRADE_GRADE_EXCEPTION_COUNT}, time window
+ * less than 60 seconds will not work as expected. Because the exception count is
+ * summed by minute, when a short time window elapsed, the degradation condition
+ * may still be satisfied.
+ * </p>
  *
  * @author Carpenter Lee
  */
@@ -98,6 +104,12 @@ public class ExceptionCountDegradeDemo {
         // set limit exception count to 4
         rule.setCount(4);
         rule.setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT);
+        /**
+         * When degrading by {@link RuleConstant#DEGRADE_GRADE_EXCEPTION_COUNT}, time window
+         * less than 60 seconds will not work as expected. Because the exception count is
+         * summed by minute, when a short time window elapsed, the degradation condition
+         * may still be satisfied.
+         */
         rule.setTimeWindow(10);
         rules.add(rule);
         DegradeRuleManager.loadRules(rules);
