@@ -34,7 +34,7 @@ public interface ProcessorSlot<T> {
      * @param param           Generics parameter, usually is a {@link com.alibaba.csp.sentinel.node.Node}
      * @param count           tokens needed
      * @param args            parameters of the original call
-     * @throws Throwable
+     * @throws Throwable blocked exception or unexpected error
      */
     void entry(Context context, ResourceWrapper resourceWrapper, T param, int count, Object... args)
         throws Throwable;
@@ -44,10 +44,10 @@ public interface ProcessorSlot<T> {
      *
      * @param context         current {@link Context}
      * @param resourceWrapper current resource
-     * @param obj
+     * @param obj             relevant object (e.g. Node)
      * @param count           tokens needed
      * @param args            parameters of the original call
-     * @throws Throwable
+     * @throws Throwable blocked exception or unexpected error
      */
     void fireEntry(Context context, ResourceWrapper resourceWrapper, Object obj, int count, Object... args)
         throws Throwable;

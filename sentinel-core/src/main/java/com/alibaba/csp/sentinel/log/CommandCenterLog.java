@@ -24,19 +24,11 @@ import java.util.logging.Logger;
  */
 public class CommandCenterLog extends LogBase {
 
-    private static final Logger heliumRecordLog = Logger.getLogger("cspMetricLog");
-    private static final String FILE_NAME = "metricStat.log";
+    private static final Logger heliumRecordLog = Logger.getLogger("cspCommandCenterLog");
+    private static final String FILE_NAME = "commandCenter.log";
     private static Handler logHandler = null;
 
     static {
-        logHandler = makeLogger(FILE_NAME, heliumRecordLog);
-    }
-
-    /**
-     * Change log dir, the dir will be created if not exits
-     */
-    public static void resetLogBaseDir(String baseDir) {
-        setLogBaseDir(baseDir);
         logHandler = makeLogger(FILE_NAME, heliumRecordLog);
     }
 

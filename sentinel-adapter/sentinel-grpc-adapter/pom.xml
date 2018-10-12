@@ -5,11 +5,15 @@
     <parent>
         <artifactId>sentinel-adapter</artifactId>
         <groupId>com.alibaba.csp</groupId>
-        <version>0.2.0-SNAPSHOT</version>
+        <version>0.2.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>sentinel-grpc-adapter</artifactId>
     <packaging>jar</packaging>
+
+    <properties>
+        <grpc.version>1.13.1</grpc.version>
+    </properties>
 
     <dependencies>
         <dependency>

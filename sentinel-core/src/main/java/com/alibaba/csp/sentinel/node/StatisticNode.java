@@ -35,10 +35,10 @@ public class StatisticNode implements Node {
         IntervalProperty.INTERVAL);
 
     /**
-     * Holds statistics of the recent 120 seconds. The windowLengthInMs is deliberately set to 1000 milliseconds,
+     * Holds statistics of the recent 60 seconds. The windowLengthInMs is deliberately set to 1000 milliseconds,
      * meaning each bucket per second, in this way we can get accurate statistics of each second.
      */
-    private transient Metric rollingCounterInMinute = new ArrayMetric(1000, 2 * 60);
+    private transient Metric rollingCounterInMinute = new ArrayMetric(1000, 60);
 
     private AtomicInteger curThreadNum = new AtomicInteger(0);
 
@@ -53,10 +53,10 @@ public class StatisticNode implements Node {
         long newLastFetchTime = lastFetchTime;
         for (MetricNode node : nodesOfEverySecond) {
             if (node.getTimestamp() > lastFetchTime && node.getTimestamp() < currentTime) {
-                if (node.getPassedQps() != 0
-                    || node.getBlockedQps() != 0
+                if (node.getPassQps() != 0
+                    || node.getBlockQps() != 0
                     || node.getSuccessQps() != 0
-                    || node.getException() != 0
+                    || node.getExceptionQps() != 0
                     || node.getRt() != 0) {
                     metrics.put(node.getTimestamp(), node);
                     newLastFetchTime = Math.max(newLastFetchTime, node.getTimestamp());
@@ -76,16 +76,16 @@ public class StatisticNode implements Node {
     @Override
     public long totalRequest() {
         long totalRequest = rollingCounterInMinute.pass() + rollingCounterInMinute.block();
-        return totalRequest / 2;
+        return totalRequest;
     }
 
     @Override
-    public long blockedRequest() {
-        return rollingCounterInMinute.block() / 2;
+    public long blockRequest() {
+        return rollingCounterInMinute.block();
     }
 
     @Override
-    public long blockedQps() {
+    public long blockQps() {
         return rollingCounterInSecond.block() / IntervalProperty.INTERVAL;
     }
 
@@ -101,12 +101,12 @@ public class StatisticNode implements Node {
 
     @Override
     public long totalQps() {
-        return passQps() + blockedQps();
+        return passQps() + blockQps();
     }
 
     @Override
     public long totalSuccess() {
-        return rollingCounterInMinute.success() / 2;
+        return rollingCounterInMinute.success();
     }
 
     @Override
@@ -116,7 +116,7 @@ public class StatisticNode implements Node {
 
     @Override
     public long totalException() {
-        return rollingCounterInMinute.exception() / 2;
+        return rollingCounterInMinute.exception();
     }
 
     @Override
@@ -170,7 +170,7 @@ public class StatisticNode implements Node {
     }
 
     @Override
-    public void increaseBlockedQps() {
+    public void increaseBlockQps() {
         rollingCounterInSecond.addBlock();
         rollingCounterInMinute.addBlock();
     }

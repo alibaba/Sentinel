@@ -175,20 +175,44 @@ public class AsyncEntryIntegrationTest {
             ContextUtil.exit();
         }
 
-        TimeUnit.SECONDS.sleep(10);
-        testTreeCorrect();
+        TimeUnit.SECONDS.sleep(15);
+
+        testInvocationTreeCorrect();
     }
 
-    private void testTreeCorrect() {
+    private void testInvocationTreeCorrect() {
         DefaultNode root = Constants.ROOT;
-        Set<Node> childListForRoot = root.getChildList();
-        // TODO: check child tree
+        DefaultNode entranceNode = shouldHasChildFor(root, contextName);
+        DefaultNode testTopNode = shouldHasChildFor(entranceNode, "test-top");
+        DefaultNode testAsyncNode = shouldHasChildFor(testTopNode, "test-async");
+        shouldHasChildFor(testTopNode, "test-sync");
+        shouldHasChildFor(testAsyncNode, "test-sync-in-async");
+        DefaultNode anotherAsyncInAsyncNode = shouldHasChildFor(testAsyncNode, "test-another-async");
+        shouldHasChildFor(anotherAsyncInAsyncNode, "test-another-in-async");
+    }
+
+    private DefaultNode shouldHasChildFor(DefaultNode root, String resourceName) {
+        Set<Node> nodeSet = root.getChildList();
+        if (nodeSet == null || nodeSet.isEmpty()) {
+            fail("Child nodes should not be empty: " + root.getId().getName());
+        }
+        for (Node node : nodeSet) {
+            if (node instanceof DefaultNode) {
+                DefaultNode dn = (DefaultNode)node;
+                if (dn.getId().getName().equals(resourceName)) {
+                    return dn;
+                }
+            }
+        }
+        fail(String.format("The given node <%s> does not have child for resource <%s>",
+            root.getId().getName(), resourceName));
+        return null;
     }
 
     @After
     public void shutdown() {
         pool.shutdownNow();
-        ContextUtil.exit();
+        ContextTestUtil.cleanUpContext();
     }
 
     private void runAsync(Runnable f) {

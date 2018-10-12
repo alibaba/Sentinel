@@ -35,14 +35,17 @@ import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
  * <ul>
  * <li>
  * Average Response Time ('DegradeRule.Grade=RuleContants.DEGRADE_GRADE_RT'): When the
- * average RT exceeds the threshold ('count' in 'DegradeRule', ms), the resource
- * enters a quasi-degraded state. If the RT of next coming five requests still
+ * average RT greats than or equals to the threshold ('count' in 'DegradeRule', ms), the
+ * resource enters a quasi-degraded state. If the RT of next coming five requests still
  * exceed this threshold, this resource will be downgraded, which means that in
  * the next time window(Defined in 'timeWindow', s units) all the access to this
  * resource will be blocked.
  * </li>
  * <li>
  * Exception ratio, see {@link ExceptionRatioDegradeDemo}.
+ * </li>
+ * <li>
+ * Exception Count, see {@link ExceptionCountDegradeDemo}.
  * </li>
  * </ul>
  *

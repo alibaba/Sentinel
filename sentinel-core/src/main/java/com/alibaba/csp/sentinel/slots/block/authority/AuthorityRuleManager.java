@@ -21,11 +21,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 
 /**
  * Manager for authority rules.
@@ -115,7 +115,7 @@ public final class AuthorityRuleManager {
                 }
 
                 if (StringUtil.isBlank(rule.getLimitApp())) {
-                    rule.setLimitApp(FlowRule.LIMIT_APP_DEFAULT);
+                    rule.setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
                 }
 
                 String identity = rule.getResource();
