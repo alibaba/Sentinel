@@ -13,24 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.taobao.csp.sentinel.dashboard.datasource.entity;
+package com.taobao.csp.sentinel.dashboard;
 
-import java.util.Date;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-/**
- * @author leyou
- */
-public interface RuleEntity {
+@SpringBootApplication
+public class DashboardApplication {
 
-    Long getId();
-
-    void setId(Long id);
-
-    String getApp();
-
-    String getIp();
-
-    Integer getPort();
-
-    Date getGmtCreate();
+    public static void main(String[] args) {
+        SpringApplication.run(DashboardApplication.class, args);
+    }
 }

@@ -20,7 +20,7 @@ import java.util.List;
 
 import com.alibaba.csp.sentinel.util.StringUtil;
 
-import com.taobao.csp.sentinel.dashboard.datasource.entity.DegradeRuleEntity;
+import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
 import com.taobao.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.taobao.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.taobao.csp.sentinel.dashboard.repository.rule.InMemDegradeRuleStore;

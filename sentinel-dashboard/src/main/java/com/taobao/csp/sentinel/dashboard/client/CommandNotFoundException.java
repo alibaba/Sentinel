@@ -13,23 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.taobao.csp.sentinel.dashboard.repository.rule;
-
-import java.util.concurrent.atomic.AtomicLong;
-
-import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
-import org.springframework.stereotype.Component;
+package com.taobao.csp.sentinel.dashboard.client;
 
 /**
- * @author leyou
+ * @author Eric Zhao
+ * @since 0.2.1
  */
-@Component
-public class InMemDegradeRuleStore extends InMemoryRuleRepositoryAdapter<DegradeRuleEntity> {
+public class CommandNotFoundException extends Exception {
+    public CommandNotFoundException() { }
 
-    private static AtomicLong ids = new AtomicLong(0);
-
-    @Override
-    protected long nextId() {
-        return ids.incrementAndGet();
+    public CommandNotFoundException(String message) {
+        super(message);
     }
 }
