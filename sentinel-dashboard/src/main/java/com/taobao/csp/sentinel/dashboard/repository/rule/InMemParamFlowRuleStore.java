@@ -17,14 +17,15 @@ package com.taobao.csp.sentinel.dashboard.repository.rule;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
+import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEntity;
 import org.springframework.stereotype.Component;
 
 /**
- * @author leyou
+ * @author Eric Zhao
+ * @since 0.2.1
  */
 @Component
-public class InMemDegradeRuleStore extends InMemoryRuleRepositoryAdapter<DegradeRuleEntity> {
+public class InMemParamFlowRuleStore extends InMemoryRuleRepositoryAdapter<ParamFlowRuleEntity> {
 
     private static AtomicLong ids = new AtomicLong(0);
 
