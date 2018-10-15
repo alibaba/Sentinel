@@ -76,7 +76,7 @@ public class LogBase {
         String fileName = LogBase.getLogBaseDir() + logName + ".pid" + PidUtil.getPid();
         Handler handler = null;
         try {
-            handler = new DateFileLogHandler(fileName + ".%d", 1024 * 1024 * 200, 1, true);
+            handler = new DateFileLogHandler(fileName + ".%d", 1024 * 1024 * 200, 4, true);
             handler.setFormatter(formatter);
             handler.setEncoding(LOG_CHARSET);
         } catch (IOException e) {
