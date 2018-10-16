@@ -70,6 +70,16 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
           height: 250,
           padding: [10, 30, 70, 30]
         });
+        var maxQps = 0;
+        for (var i in metric.data) {
+          var item = metric.data[i];
+          if (item.passQps > maxQps) {
+            maxQps = item.passQps;
+          }
+          if (item.blockQps > maxQps) {
+            maxQps = item.blockQps;
+          }
+        }
         chart.source(metric.data);
         chart.scale('timestamp', {
           type: 'time',
@@ -77,12 +87,14 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
         });
         chart.scale('passQps', {
           min: 0,
+          max: maxQps,
           fine: true,
           alias: 'p_qps'
           // max: 10
         });
         chart.scale('blockQps', {
           min: 0,
+          max: maxQps,
           fine: true,
           alias: 'b_qps',
         });
@@ -105,7 +117,7 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
               textAlign: 'center', // 文本对齐方向，可取值为： start center end
               fill: '#404040', // 文本的颜色
               fontSize: '11', // 文本大小
-              textBaseline: 'top', // 文本基准线，可取 top middle bottom，默认为middle
+              //textBaseline: 'top', // 文本基准线，可取 top middle bottom，默认为middle
             },
             autoRotate: false,
             formatter: function (text, item, index) {
@@ -115,9 +127,9 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
         });
         chart.legend({
           custom: true,
+          position: 'bottom',
           allowAllCanceled: true,
           itemFormatter: function (val) {
-            // console.log('val=', val);
             if ('passQps' === val) {
               return 'p_qps';
             }
@@ -129,7 +141,7 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
           items: [
             { value: 'passQps', marker: { symbol: 'hyphen', stroke: 'green', radius: 5, lineWidth: 2 } },
             { value: 'blockQps', marker: { symbol: 'hyphen', stroke: 'blue', radius: 5, lineWidth: 2 } },
-            // { value: 'rt', marker: {symbol: 'hyphen', stroke: 'gray', radius: 5, lineWidth: 2} },
+            //{ value: 'rt', marker: {symbol: 'hyphen', stroke: 'gray', radius: 5, lineWidth: 2} },
           ],
           onClick: function (ev) {
             const item = ev.item;
@@ -150,7 +162,7 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
         });
         chart.line().position('timestamp*passQps').size(1).color('green').shape('smooth');
         chart.line().position('timestamp*blockQps').size(1).color('blue').shape('smooth');
-        // chart.line().position('timestamp*rt').size(1).color('gray');
+        //chart.line().position('timestamp*rt').size(1).color('gray').shape('smooth');
         G2.track(false);
         chart.render();
       });
