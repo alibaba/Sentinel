@@ -78,7 +78,7 @@ final class ParamFlowChecker {
 
     static boolean passSingleValueCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int count, Object value) {
         Set<Object> exclusionItems = rule.getParsedHotItems().keySet();
-        if (rule.getBlockGrade() == RuleConstant.FLOW_GRADE_QPS) {
+        if (rule.getGrade() == RuleConstant.FLOW_GRADE_QPS) {
             double curCount = getHotParameters(resourceWrapper).getPassParamQps(rule.getParamIdx(), value);
 
             if (exclusionItems.contains(value)) {
