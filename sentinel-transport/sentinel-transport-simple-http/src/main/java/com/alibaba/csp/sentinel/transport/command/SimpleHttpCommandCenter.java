@@ -121,12 +121,11 @@ public class SimpleHttpCommandCenter implements CommandCenter {
     }
     
     /**
-     * Get a server socket from an avaliable port from a base port.<br>
-     * Increasement on port number will happen when the port has already been
-     * used.<br>
+     * Get a server socket from an available port from a base port.<br>
+     * Increasing on port number will occur when the port has already been used.
      * 
-     * @param basePort
-     * @return
+     * @param basePort base port to start
+     * @return new socket with available port
      */
     private static ServerSocket getServerSocketFromBasePort(int basePort) {
         int tryCount = 0;
@@ -229,7 +228,7 @@ public class SimpleHttpCommandCenter implements CommandCenter {
         }
 
         if (handlerMap.containsKey(commandName)) {
-            CommandCenterLog.info("Register failed (duplicate command): " + commandName);
+            CommandCenterLog.warn("Register failed (duplicate command): " + commandName);
             return;
         }
 

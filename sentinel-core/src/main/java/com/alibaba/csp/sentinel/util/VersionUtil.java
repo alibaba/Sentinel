@@ -18,19 +18,22 @@ package com.alibaba.csp.sentinel.util;
 import com.alibaba.csp.sentinel.log.RecordLog;
 
 /**
- * Get Sentinel version from MANIFEST.MF
+ * Get version of Sentinel from {@code MANIFEST.MF} file.
  * 
  * @author jason
  * @since 0.2.1
  */
-public class VersionUtil {
+public final class VersionUtil {
+
     public static String getVersion(String defaultVersion) {
         try {
             String version = VersionUtil.class.getPackage().getImplementationVersion();
-            return version == null || version.length() == 0 ? defaultVersion : version;
+            return StringUtil.isBlank(version) ? defaultVersion : version;
         } catch (Throwable e) {
-            RecordLog.warn("return default version, ignore exception", e);
+            RecordLog.warn("Using default version, ignore exception", e);
             return defaultVersion;
         }
     }
+
+    private VersionUtil() {}
 }
