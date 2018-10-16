@@ -139,15 +139,15 @@ public class Context {
         return getOriginNode() == null ? 0 : getOriginNode().totalQps();
     }
 
-    public double getOriginBlockedQps() {
-        return getOriginNode() == null ? 0 : getOriginNode().blockedQps();
+    public double getOriginBlockQps() {
+        return getOriginNode() == null ? 0 : getOriginNode().blockQps();
     }
 
-    public double getOriginPassedReqQps() {
+    public double getOriginPassReqQps() {
         return getOriginNode() == null ? 0 : getOriginNode().successQps();
     }
 
-    public double getOriginPassedQps() {
+    public double getOriginPassQps() {
         return getOriginNode() == null ? 0 : getOriginNode().passQps();
     }
 
@@ -155,8 +155,8 @@ public class Context {
         return getOriginNode() == null ? 0 : getOriginNode().totalRequest();
     }
 
-    public long getOriginBlockedRequest() {
-        return getOriginNode() == null ? 0 : getOriginNode().blockedRequest();
+    public long getOriginBlockRequest() {
+        return getOriginNode() == null ? 0 : getOriginNode().blockRequest();
     }
 
     public double getOriginAvgRt() {

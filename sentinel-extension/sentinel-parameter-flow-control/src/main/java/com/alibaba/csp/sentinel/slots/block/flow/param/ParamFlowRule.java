@@ -43,7 +43,7 @@ public class ParamFlowRule extends AbstractRule {
     /**
      * The threshold type of flow control (1: QPS).
      */
-    private int blockGrade = RuleConstant.FLOW_GRADE_QPS;
+    private int grade = RuleConstant.FLOW_GRADE_QPS;
 
     /**
      * Parameter index.
@@ -65,12 +65,12 @@ public class ParamFlowRule extends AbstractRule {
      */
     private Map<Object, Integer> hotItems = new HashMap<Object, Integer>();
 
-    public int getBlockGrade() {
-        return blockGrade;
+    public int getGrade() {
+        return grade;
     }
 
-    public ParamFlowRule setBlockGrade(int blockGrade) {
-        this.blockGrade = blockGrade;
+    public ParamFlowRule setGrade(int grade) {
+        this.grade = grade;
         return this;
     }
 
@@ -124,7 +124,7 @@ public class ParamFlowRule extends AbstractRule {
 
         ParamFlowRule rule = (ParamFlowRule)o;
 
-        if (blockGrade != rule.blockGrade) { return false; }
+        if (grade != rule.grade) { return false; }
         if (Double.compare(rule.count, count) != 0) { return false; }
         if (paramIdx != null ? !paramIdx.equals(rule.paramIdx) : rule.paramIdx != null) { return false; }
         return paramFlowItemList != null ? paramFlowItemList.equals(rule.paramFlowItemList) : rule.paramFlowItemList == null;
@@ -134,7 +134,7 @@ public class ParamFlowRule extends AbstractRule {
     public int hashCode() {
         int result = super.hashCode();
         long temp;
-        result = 31 * result + blockGrade;
+        result = 31 * result + grade;
         result = 31 * result + (paramIdx != null ? paramIdx.hashCode() : 0);
         temp = Double.doubleToLongBits(count);
         result = 31 * result + (int)(temp ^ (temp >>> 32));
@@ -147,7 +147,7 @@ public class ParamFlowRule extends AbstractRule {
         return "ParamFlowRule{" +
             "resource=" + getResource() +
             ", limitApp=" + getLimitApp() +
-            ", blockGrade=" + blockGrade +
+            ", grade=" + grade +
             ", paramIdx=" + paramIdx +
             ", count=" + count +
             ", paramFlowItemList=" + paramFlowItemList +

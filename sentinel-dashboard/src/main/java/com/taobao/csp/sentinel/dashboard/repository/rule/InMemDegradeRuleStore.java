@@ -17,7 +17,7 @@ package com.taobao.csp.sentinel.dashboard.repository.rule;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.taobao.csp.sentinel.dashboard.datasource.entity.DegradeRuleEntity;
+import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
 import org.springframework.stereotype.Component;
 
 /**

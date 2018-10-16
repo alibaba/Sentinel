@@ -55,7 +55,7 @@ public class ParamFlowQpsDemo {
         // QPS mode, threshold is 5 for every frequent "hot spot" parameter in index 0 (the first arg).
         ParamFlowRule rule = new ParamFlowRule(RESOURCE_KEY)
             .setParamIdx(0)
-            .setBlockGrade(RuleConstant.FLOW_GRADE_QPS)
+            .setGrade(RuleConstant.FLOW_GRADE_QPS)
             .setCount(5);
         // We can set threshold count for specific parameter value individually.
         // Here we add an exception item. That means: QPS threshold of entries with parameter `PARAM_B` (type: int)

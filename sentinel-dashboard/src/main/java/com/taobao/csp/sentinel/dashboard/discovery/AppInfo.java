@@ -15,6 +15,7 @@
  */
 package com.taobao.csp.sentinel.dashboard.discovery;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -53,4 +54,9 @@ public class AppInfo {
         return machines.add(machineInfo);
     }
 
+    public Optional<MachineInfo> getMachine(String ip, int port) {
+        return machines.stream()
+            .filter(e -> e.getIp().equals(ip) && e.getPort().equals(port))
+            .findFirst();
+    }
 }
