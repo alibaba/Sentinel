@@ -32,7 +32,6 @@ public class CommandCenterLog extends LogBase {
         logHandler = makeLogger(FILE_NAME, heliumRecordLog);
     }
 
-
     public static void info(String detail, Object... params) {
         log(heliumRecordLog, logHandler, Level.INFO, detail, params);
     }
