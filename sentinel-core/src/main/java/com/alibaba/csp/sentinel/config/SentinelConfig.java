@@ -77,15 +77,6 @@ public class SentinelConfig {
 
                 for (Object key : fileProps.keySet()) {
                     SentinelConfig.setConfig((String)key, (String)fileProps.get(key));
-                    try {
-                        String systemValue = System.getProperty((String)key);
-                        if (!StringUtil.isEmpty(systemValue)) {
-                            SentinelConfig.setConfig((String)key, systemValue);
-                        }
-                    } catch (Exception e) {
-                        RecordLog.info(e.getMessage(), e);
-                    }
-                    RecordLog.info(key + " value: " + SentinelConfig.getConfig((String)key));
                 }
             }
         } catch (Throwable ioe) {
@@ -94,7 +85,13 @@ public class SentinelConfig {
 
         // JVM parameter override file config.
         for (Map.Entry<Object, Object> entry : System.getProperties().entrySet()) {
-            SentinelConfig.setConfig(entry.getKey().toString(), entry.getValue().toString());
+            String configKey = entry.getKey().toString();
+            String configValue = entry.getValue().toString();
+            String configValueOld = getConfig(configKey);
+            SentinelConfig.setConfig(configKey, configValue);
+            if (configValueOld != null) {
+                RecordLog.info("JVM parameter overrides {0}: {1} -> {2}", configKey, configValueOld, configValue);
+            }
         }
     }
 
