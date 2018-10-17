@@ -82,11 +82,12 @@ Here is an example:
 
 ```java
 
+// custom provider 
 public class MyBlockFallbackProvider implements SentinelFallbackProvider {
 
     private Logger logger = LoggerFactory.getLogger(DefaultBlockFallbackProvider.class);
     
-    // you can define provider as route level 
+    // you can define root as service level 
     @Override
     public String getRoute() {
         return "/coke/coke";
@@ -102,6 +103,9 @@ public class MyBlockFallbackProvider implements SentinelFallbackProvider {
         }
     }
  }
+ 
+ // register fallback
+ SentinelFallbackManager.registerProvider(new MyBlockFallbackProvider());
 
 ```
 
