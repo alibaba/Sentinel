@@ -56,7 +56,6 @@ public final class InitExecutor {
         } catch (Exception ex) {
             RecordLog.info("[Sentinel InitExecutor] Init failed", ex);
             ex.printStackTrace();
-            System.exit(-1);
         }
     }
 

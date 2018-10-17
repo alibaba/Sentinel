@@ -178,7 +178,9 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
         if (request.content().readableBytes() <= 0) {
             serverRequest.setBody(null);
         } else {
-            serverRequest.setBody(request.content().array());
+            byte[] body = new byte[request.content().readableBytes()];
+            request.content().getBytes(0, body);
+            serverRequest.setBody(body);
         }
         return serverRequest;
     }

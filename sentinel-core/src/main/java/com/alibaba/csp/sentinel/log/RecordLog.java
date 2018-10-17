@@ -32,24 +32,20 @@ public class RecordLog extends LogBase {
     static {
         logHandler = makeLogger(FILE_NAME, heliumRecordLog);
     }
-
-    public static void info(String detail) {
-        LoggerUtils.disableOtherHandlers(heliumRecordLog, logHandler);
-        heliumRecordLog.log(Level.INFO, detail);
+    
+    public static void info(String detail, Object... params) {
+        log(heliumRecordLog, logHandler, Level.INFO, detail, params);
     }
 
     public static void info(String detail, Throwable e) {
-        LoggerUtils.disableOtherHandlers(heliumRecordLog, logHandler);
-        heliumRecordLog.log(Level.INFO, detail, e);
+        log(heliumRecordLog, logHandler, Level.INFO, detail, e);
     }
 
-    public static void warn(String detail) {
-        LoggerUtils.disableOtherHandlers(heliumRecordLog, logHandler);
-        heliumRecordLog.log(Level.WARNING, detail);
+    public static void warn(String detail, Object... params) {
+        log(heliumRecordLog, logHandler, Level.WARNING, detail, params);
     }
 
     public static void warn(String detail, Throwable e) {
-        LoggerUtils.disableOtherHandlers(heliumRecordLog, logHandler);
-        heliumRecordLog.log(Level.WARNING, detail, e);
+        log(heliumRecordLog, logHandler, Level.WARNING, detail, e);
     }
 }

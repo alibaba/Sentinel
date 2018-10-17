@@ -61,6 +61,26 @@ public class LogBase {
         }
         return logDir;
     }
+    
+    protected static void log(Logger logger, Handler handler, Level level, String detail, Object... params) {
+        if (detail == null) {
+            return;
+        }
+        LoggerUtils.disableOtherHandlers(logger, handler);
+        if (params.length == 0) {
+            logger.log(level, detail);
+        } else {
+            logger.log(level, detail, params);
+        }
+    }
+    
+    protected static void log(Logger logger, Handler handler, Level level, String detail, Throwable throwable) {
+        if (detail == null) {
+            return;
+        }
+        LoggerUtils.disableOtherHandlers(logger, handler);
+        logger.log(level, detail, throwable);
+    }
 
     /**
      * Get log file base directory path, the returned path is guaranteed end with {@link File#separator}
@@ -76,7 +96,7 @@ public class LogBase {
         String fileName = LogBase.getLogBaseDir() + logName + ".pid" + PidUtil.getPid();
         Handler handler = null;
         try {
-            handler = new DateFileLogHandler(fileName + ".%d", 1024 * 1024 * 200, 1, true);
+            handler = new DateFileLogHandler(fileName + ".%d", 1024 * 1024 * 200, 4, true);
             handler.setFormatter(formatter);
             handler.setEncoding(LOG_CHARSET);
         } catch (IOException e) {

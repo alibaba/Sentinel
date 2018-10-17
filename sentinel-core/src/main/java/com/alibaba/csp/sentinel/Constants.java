@@ -20,6 +20,7 @@ import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.node.EntranceNode;
 import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
 import com.alibaba.csp.sentinel.slots.system.SystemRule;
+import com.alibaba.csp.sentinel.util.VersionUtil;
 
 /**
  * @author qinan.qn
@@ -28,7 +29,7 @@ import com.alibaba.csp.sentinel.slots.system.SystemRule;
  */
 public final class Constants {
 
-    public static final String SENTINEL_VERSION = "0.2.1";
+    public static final String SENTINEL_VERSION = VersionUtil.getVersion("0.2.1");
 
     public final static int MAX_CONTEXT_NAME_SIZE = 2000;
     public final static int MAX_SLOT_CHAIN_SIZE = 6000;
