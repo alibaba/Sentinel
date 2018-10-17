@@ -56,8 +56,6 @@ public class SentinelPreFilter extends AbstractSentinelFilter {
 
     private static final String EMPTY_ORIGIN = "";
 
-    private static final String EMPTY_URI = "";
-
     public static final String EMPTY_HEADER = "EMPTY_HEADER";
 
     private ProxyRequestHelper proxyRequestHelper;
@@ -86,7 +84,8 @@ public class SentinelPreFilter extends AbstractSentinelFilter {
         RequestContext ctx = RequestContext.getCurrentContext();
         String origin = parseOrigin(ctx.getRequest());
         String serviceTarget = (String) ctx.get(SERVICE_ID_KEY);
-        String uriTarget = EMPTY_URI;
+        // When serviceId blocked first get the service level fallback provider.
+        String uriTarget = serviceTarget;
         try {
             RecordLog.info(String.format("[Sentinel Pre Filter] Origin: %s enter ServiceId: %s", origin, serviceTarget));
             ContextUtil.enter(serviceTarget, origin);
