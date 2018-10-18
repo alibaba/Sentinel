@@ -54,7 +54,7 @@ public class SentinelZuulAutoConfiguration {
 
     @Bean
     public ZuulFilter preFilter( ProxyRequestHelper proxyRequestHelper) {
-        return new SentinelPreFilter(sentinelZuulProperties, proxyRequestHelper);
+        return new SentinelPreFilter(sentinelZuulProperties, proxyRequestHelper, new SentinelPreFilter.MockTestService());
     }
 
     @Bean

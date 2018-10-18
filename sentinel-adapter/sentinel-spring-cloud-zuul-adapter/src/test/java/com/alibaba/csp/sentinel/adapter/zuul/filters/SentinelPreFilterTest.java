@@ -32,7 +32,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.servlet.http.HttpServletRequest;
 
-import static com.alibaba.csp.sentinel.adapter.zuul.filters.SentinelPreFilter.EMPTY_HEADER;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_TYPE;
@@ -45,6 +44,8 @@ public class SentinelPreFilterTest {
 
     private String SERVICE_ID = "servicea";
 
+    private String URI = "/servicea/test";
+
     @Mock
     private RequestAttributes requestAttributes;
 
@@ -54,11 +55,14 @@ public class SentinelPreFilterTest {
     @Mock
     private ProxyRequestHelper proxyRequestHelper;
 
+    @Mock
+    private SentinelPreFilter.MockTestService mockTestService;
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(httpServletRequest.getContextPath()).thenReturn("");
-        when(httpServletRequest.getPathInfo()).thenReturn("/servicea/test");
+        when(httpServletRequest.getPathInfo()).thenReturn(URI);
         RequestContext requestContext = new RequestContext();
         requestContext.set(SERVICE_ID_KEY, SERVICE_ID);
         requestContext.setRequest(httpServletRequest);
@@ -70,7 +74,7 @@ public class SentinelPreFilterTest {
     public void testFilterType() throws Exception {
         SentinelZuulProperties properties = new SentinelZuulProperties();
         ProxyRequestHelper proxyRequestHelper = new ProxyRequestHelper();
-        SentinelPreFilter sentinelPreFilter = new SentinelPreFilter(properties, proxyRequestHelper);
+        SentinelPreFilter sentinelPreFilter = new SentinelPreFilter(properties, proxyRequestHelper,mockTestService);
         Assert.assertEquals(sentinelPreFilter.filterType(), PRE_TYPE);
     }
 
@@ -79,20 +83,40 @@ public class SentinelPreFilterTest {
         RequestContext ctx = RequestContext.getCurrentContext();
         SentinelZuulProperties properties = new SentinelZuulProperties();
         ProxyRequestHelper proxyRequestHelper = new ProxyRequestHelper();
-        SentinelPreFilter sentinelPreFilter = new SentinelPreFilter(properties, proxyRequestHelper);
+        SentinelPreFilter sentinelPreFilter = new SentinelPreFilter(properties, proxyRequestHelper,mockTestService);
         sentinelPreFilter.run();
         Assert.assertNull(ctx.getRouteHost());
         Assert.assertEquals(ctx.get(SERVICE_ID_KEY), SERVICE_ID);
     }
 
     @Test
-    public void testFallBackRun() throws Exception {
+    public void testServiceFallBackRun() throws Exception {
         RequestContext ctx = RequestContext.getCurrentContext();
         SentinelZuulProperties properties = new SentinelZuulProperties();
         properties.setEnabled(true);
-        SentinelPreFilter sentinelPreFilter = new SentinelPreFilter(properties, proxyRequestHelper);
+        SentinelPreFilter sentinelPreFilter = new SentinelPreFilter(properties, proxyRequestHelper,mockTestService);
 
-        given(proxyRequestHelper.isIncludedHeader(EMPTY_HEADER)).willAnswer(
+        given(mockTestService.mockTest(SERVICE_ID)).willAnswer(
+                new Answer<Object>() {
+                    @Override
+                    public Object answer(InvocationOnMock invocation) throws Throwable {
+                        throw new FlowException("flow ex");
+                    }
+                }
+        );
+        sentinelPreFilter.run();
+        Assert.assertNull(ctx.getRouteHost());
+        Assert.assertNull(ctx.get(SERVICE_ID_KEY));
+    }
+
+    @Test
+    public void testUriFallBackRun() throws Exception {
+        RequestContext ctx = RequestContext.getCurrentContext();
+        SentinelZuulProperties properties = new SentinelZuulProperties();
+        properties.setEnabled(true);
+        SentinelPreFilter sentinelPreFilter = new SentinelPreFilter(properties, proxyRequestHelper,mockTestService);
+
+        given(mockTestService.mockTest(URI)).willAnswer(
                 new Answer<Object>() {
                     @Override
                     public Object answer(InvocationOnMock invocation) throws Throwable {

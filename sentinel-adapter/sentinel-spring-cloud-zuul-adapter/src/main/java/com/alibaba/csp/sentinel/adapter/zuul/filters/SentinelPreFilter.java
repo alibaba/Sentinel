@@ -56,14 +56,16 @@ public class SentinelPreFilter extends AbstractSentinelFilter {
 
     private static final String EMPTY_ORIGIN = "";
 
-    public static final String EMPTY_HEADER = "EMPTY_HEADER";
+    private MockTestService mockTestService;
 
     private ProxyRequestHelper proxyRequestHelper;
 
     public SentinelPreFilter(SentinelZuulProperties sentinelZuulProperties,
-                             ProxyRequestHelper proxyRequestHelper) {
+                             ProxyRequestHelper proxyRequestHelper,
+                             MockTestService mockTestService) {
         super(sentinelZuulProperties);
         this.proxyRequestHelper = proxyRequestHelper;
+        this.mockTestService = mockTestService;
     }
 
     @Override
@@ -85,12 +87,14 @@ public class SentinelPreFilter extends AbstractSentinelFilter {
         String origin = parseOrigin(ctx.getRequest());
         String serviceTarget = (String) ctx.get(SERVICE_ID_KEY);
         // When serviceId blocked first get the service level fallback provider.
-        String uriTarget = serviceTarget;
+        String fallBackRoute = serviceTarget;
         try {
             RecordLog.info(String.format("[Sentinel Pre Filter] Origin: %s enter ServiceId: %s", origin, serviceTarget));
             ContextUtil.enter(serviceTarget, origin);
             SphU.entry(serviceTarget, EntryType.IN);
-            uriTarget = FilterUtil.filterTarget(ctx.getRequest());
+            // used for mock test.
+            mockTestService.mockTest(serviceTarget);
+            String uriTarget = FilterUtil.filterTarget(ctx.getRequest());
             // Clean and unify the URL.
             // For REST APIs, you have to clean the URL (e.g. `/foo/1` and `/foo/2` -> `/foo/:id`), or
             // the amount of context and resources will exceed the threshold.
@@ -101,13 +105,14 @@ public class SentinelPreFilter extends AbstractSentinelFilter {
             RecordLog.info(String.format("[Sentinel Pre Filter] Origin: %s enter Uri Path: %s", origin, uriTarget));
             ContextUtil.enter(uriTarget, origin);
             SphU.entry(uriTarget, EntryType.IN);
+            fallBackRoute = uriTarget;
             // used for mock test.
-            proxyRequestHelper.isIncludedHeader(EMPTY_HEADER);
+            mockTestService.mockTest(uriTarget);
         } catch (BlockException ex) {
             try {
-                RecordLog.warn(String.format("[Sentinel Pre Filter] Block Exception when Origin: %s enter Uri Path: %s", origin, uriTarget), ex);
-                SentinelFallbackProvider sentinelFallbackProvider = SentinelFallbackManager.getFallbackProvider(uriTarget);
-                ClientHttpResponse clientHttpResponse = sentinelFallbackProvider.fallbackResponse(uriTarget, ex);
+                RecordLog.warn(String.format("[Sentinel Pre Filter] Block Exception when Origin: %s enter fall back route: %s", origin, fallBackRoute), ex);
+                SentinelFallbackProvider sentinelFallbackProvider = SentinelFallbackManager.getFallbackProvider(fallBackRoute);
+                ClientHttpResponse clientHttpResponse = sentinelFallbackProvider.fallbackResponse(fallBackRoute, ex);
                 LinkedMultiValueMap<String, String> responseHeaders = new LinkedMultiValueMap<String, String>();
                 if (clientHttpResponse != null) {
                     int httpCode = clientHttpResponse.getStatusCode().value();
@@ -143,5 +148,14 @@ public class SentinelPreFilter extends AbstractSentinelFilter {
             }
         }
         return origin;
+    }
+
+    /**
+     * static method mock is hard. use this service to mock throw {@link BlockException}
+     */
+    public static class MockTestService {
+        String mockTest(String resource) {
+            return resource;
+        }
     }
 }
