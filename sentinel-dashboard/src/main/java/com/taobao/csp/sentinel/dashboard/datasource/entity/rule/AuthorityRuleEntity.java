@@ -18,11 +18,15 @@ package com.taobao.csp.sentinel.dashboard.datasource.entity.rule;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRule;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * @author Eric Zhao
  * @since 0.2.1
  */
 public class AuthorityRuleEntity extends AbstractRuleEntity<AuthorityRule> {
+
+    public AuthorityRuleEntity() {}
 
     public AuthorityRuleEntity(AuthorityRule authorityRule) {
         AssertUtil.notNull(authorityRule, "Authority rule should not be null");
@@ -37,14 +41,17 @@ public class AuthorityRuleEntity extends AbstractRuleEntity<AuthorityRule> {
         return entity;
     }
 
+    @JsonIgnore
     public String getLimitApp() {
         return rule.getLimitApp();
     }
 
+    @JsonIgnore
     public String getResource() {
         return rule.getResource();
     }
 
+    @JsonIgnore
     public int getStrategy() {
         return rule.getStrategy();
     }
