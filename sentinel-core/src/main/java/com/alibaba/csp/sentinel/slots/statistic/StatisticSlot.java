@@ -72,13 +72,13 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             context.getCurEntry().setError(e);
 
             // Add block count.
-            node.increaseBlockedQps();
+            node.increaseBlockQps();
             if (context.getCurEntry().getOriginNode() != null) {
-                context.getCurEntry().getOriginNode().increaseBlockedQps();
+                context.getCurEntry().getOriginNode().increaseBlockQps();
             }
 
             if (resourceWrapper.getType() == EntryType.IN) {
-                Constants.ENTRY_NODE.increaseBlockedQps();
+                Constants.ENTRY_NODE.increaseBlockQps();
             }
 
             for (ProcessorSlotEntryCallback<DefaultNode> handler : StatisticSlotCallbackRegistry.getEntryCallbacks()) {

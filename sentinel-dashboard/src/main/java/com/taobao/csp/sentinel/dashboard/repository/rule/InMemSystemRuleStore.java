@@ -17,7 +17,7 @@ package com.taobao.csp.sentinel.dashboard.repository.rule;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.taobao.csp.sentinel.dashboard.datasource.entity.SystemRuleEntity;
+import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.SystemRuleEntity;
 import org.springframework.stereotype.Component;
 
 /**

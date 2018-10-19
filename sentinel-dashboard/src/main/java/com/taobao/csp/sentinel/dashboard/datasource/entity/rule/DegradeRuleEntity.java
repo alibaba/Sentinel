@@ -13,39 +13,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.taobao.csp.sentinel.dashboard.datasource.entity;
+package com.taobao.csp.sentinel.dashboard.datasource.entity.rule;
 
 import java.util.Date;
 
-import com.alibaba.csp.sentinel.slots.system.SystemRule;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 
 /**
  * @author leyou
  */
-public class SystemRuleEntity implements RuleEntity {
-
+public class DegradeRuleEntity implements RuleEntity {
     private Long id;
-
     private String app;
     private String ip;
     private Integer port;
-    private Double avgLoad;
-    private Long avgRt;
-    private Long maxThread;
-    private Double qps;
-
+    private String resource;
+    private String limitApp;
+    private Double count;
+    private Integer timeWindow;
+    /**
+     * 0 rt 限流; 1为异常;
+     */
+    private Integer grade;
     private Date gmtCreate;
     private Date gmtModified;
 
-    public static SystemRuleEntity fromSystemRule(String app, String ip, Integer port, SystemRule rule) {
-        SystemRuleEntity entity = new SystemRuleEntity();
+    public static DegradeRuleEntity fromDegradeRule(String app, String ip, Integer port, DegradeRule rule) {
+        DegradeRuleEntity entity = new DegradeRuleEntity();
         entity.setApp(app);
         entity.setIp(ip);
         entity.setPort(port);
-        entity.setAvgLoad(rule.getHighestSystemLoad());
-        entity.setAvgRt(rule.getAvgRt());
-        entity.setMaxThread(rule.getMaxThread());
-        entity.setQps(rule.getQps());
+        entity.setResource(rule.getResource());
+        entity.setLimitApp(rule.getLimitApp());
+        entity.setCount(rule.getCount());
+        entity.setTimeWindow(rule.getTimeWindow());
+        entity.setGrade(rule.getGrade());
         return entity;
     }
 
@@ -86,36 +88,44 @@ public class SystemRuleEntity implements RuleEntity {
         this.app = app;
     }
 
-    public Double getAvgLoad() {
-        return avgLoad;
+    public String getResource() {
+        return resource;
     }
 
-    public void setAvgLoad(Double avgLoad) {
-        this.avgLoad = avgLoad;
+    public void setResource(String resource) {
+        this.resource = resource;
     }
 
-    public Long getAvgRt() {
-        return avgRt;
+    public String getLimitApp() {
+        return limitApp;
     }
 
-    public void setAvgRt(Long avgRt) {
-        this.avgRt = avgRt;
+    public void setLimitApp(String limitApp) {
+        this.limitApp = limitApp;
     }
 
-    public Long getMaxThread() {
-        return maxThread;
+    public Double getCount() {
+        return count;
     }
 
-    public void setMaxThread(Long maxThread) {
-        this.maxThread = maxThread;
+    public void setCount(Double count) {
+        this.count = count;
     }
 
-    public Double getQps() {
-        return qps;
+    public Integer getTimeWindow() {
+        return timeWindow;
     }
 
-    public void setQps(Double qps) {
-        this.qps = qps;
+    public void setTimeWindow(Integer timeWindow) {
+        this.timeWindow = timeWindow;
+    }
+
+    public Integer getGrade() {
+        return grade;
+    }
+
+    public void setGrade(Integer grade) {
+        this.grade = grade;
     }
 
     @Override
@@ -135,12 +145,13 @@ public class SystemRuleEntity implements RuleEntity {
         this.gmtModified = gmtModified;
     }
 
-    public SystemRule toSystemRule() {
-        SystemRule rule = new SystemRule();
-        rule.setHighestSystemLoad(avgLoad);
-        rule.setAvgRt(avgRt);
-        rule.setMaxThread(maxThread);
-        rule.setQps(qps);
+    public DegradeRule toDegradeRule() {
+        DegradeRule rule = new DegradeRule();
+        rule.setResource(resource);
+        rule.setLimitApp(limitApp);
+        rule.setCount(count);
+        rule.setTimeWindow(timeWindow);
+        rule.setGrade(grade);
         return rule;
     }
 }

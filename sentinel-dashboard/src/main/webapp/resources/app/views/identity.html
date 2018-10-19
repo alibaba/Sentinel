@@ -61,13 +61,13 @@
                     <!--</a>-->
                   </td>
                   <td>{{resource.passQps}}</td>
-                  <td>{{resource.blockedQps}}</td>
+                  <td>{{resource.blockQps}}</td>
                   <td>{{resource.threadNum}}</td>
                   <td>{{resource.averageRt}}</td>
-                  <td>{{resource.oneMinutePassed}}</td>
+                  <td>{{resource.oneMinutePass}}</td>
                   <td ng-if="$index==pageSize-1 || (currentPage>=identities.length/pageSize && $index==identities.length%pageSize-1)" ng-init="initTreeTable()">
-                    {{resource.oneMinuteBlocked}}</td>
-                  <td ng-if="!($index==pageSize-1 || (currentPage>=identities.length/pageSize && $index==identities.length%pageSize-1))"> {{resource.oneMinuteBlocked}}</td>
+                    {{resource.oneMinuteBlock}}</td>
+                  <td ng-if="!($index==pageSize-1 || (currentPage>=identities.length/pageSize && $index==identities.length%pageSize-1))"> {{resource.oneMinuteBlock}}</td>
                   <td>
                     <div class="control-group">
                       <button class="btn btn-xs btn-default" type="button" ng-click="addNewFlowRule(resource.resource)" style="font-size: 12px; height:25px;">

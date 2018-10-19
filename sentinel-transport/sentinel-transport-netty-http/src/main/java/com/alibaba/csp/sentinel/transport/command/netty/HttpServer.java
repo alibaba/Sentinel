@@ -18,14 +18,17 @@ package com.alibaba.csp.sentinel.transport.command.netty;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
-import com.alibaba.csp.sentinel.transport.config.TransportConfig;
 import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.log.CommandCenterLog;
+import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.transport.config.TransportConfig;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -33,6 +36,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 /**
  * @author Eric Zhao
  */
+@SuppressWarnings("rawtypes")
 public final class HttpServer {
 
     private static final int DEFAULT_PORT = 8719;
@@ -58,14 +62,43 @@ public final class HttpServer {
                     port = Integer.parseInt(TransportConfig.getPort());
                 }
             } catch (Exception e) {
+                // Will cause the application exit.
                 throw new IllegalArgumentException("Illegal port: " + TransportConfig.getPort());
             }
-            channel = b.bind(port).sync().channel();
+            
+            int retryCount = 0;
+            ChannelFuture channelFuture = null;
+            // loop for an successful binding
+            while (true) {
+                int newPort = getNewPort(port, retryCount);
+                try {
+                    channelFuture = b.bind(newPort).sync();
+                    TransportConfig.setRuntimePort(newPort);
+                    CommandCenterLog.info("[NettyHttpCommandCenter] Begin listening at port " + newPort);
+                    break;
+                } catch (Exception e) {
+                    TimeUnit.MILLISECONDS.sleep(30);
+                    RecordLog.warn("[HttpServer] Netty server bind error, port={0}, retry={1}", newPort, retryCount);
+                    retryCount ++;
+                }
+            }
+            channel = channelFuture.channel();
             channel.closeFuture().sync();
         } finally {
             workerGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();
         }
+    }
+    
+    /**
+     * Increase port number every 3 tries.
+     * 
+     * @param basePort base port to start
+     * @param retryCount retry count
+     * @return next calculated port
+     */
+    private int getNewPort(int basePort, int retryCount) {
+        return basePort + retryCount / 3;
     }
 
     public void close() {
@@ -78,7 +111,7 @@ public final class HttpServer {
         }
 
         if (handlerMap.containsKey(commandName)) {
-            CommandCenterLog.info("Register failed (duplicate command): " + commandName);
+            CommandCenterLog.warn("[NettyHttpCommandCenter] Register failed (duplicate command): " + commandName);
             return;
         }
 

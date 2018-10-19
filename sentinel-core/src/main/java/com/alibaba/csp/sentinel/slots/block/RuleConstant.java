@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.slots.block;
 
+import com.alibaba.csp.sentinel.node.IntervalProperty;
+
 /***
  * @author youji.zj
  * @author jialiang.linjl
@@ -25,7 +27,14 @@ public final class RuleConstant {
     public static final int FLOW_GRADE_QPS = 1;
 
     public static final int DEGRADE_GRADE_RT = 0;
-    public static final int DEGRADE_GRADE_EXCEPTION = 1;
+    /**
+     * Degrade by biz exception ratio in the current {@link IntervalProperty#INTERVAL} second(s).
+     */
+    public static final int DEGRADE_GRADE_EXCEPTION_RATIO = 1;
+    /**
+     * Degrade by biz exception count in the last 60 seconds.
+     */
+    public static final int DEGRADE_GRADE_EXCEPTION_COUNT = 2;
 
     public static final int AUTHORITY_WHITE = 0;
     public static final int AUTHORITY_BLACK = 1;

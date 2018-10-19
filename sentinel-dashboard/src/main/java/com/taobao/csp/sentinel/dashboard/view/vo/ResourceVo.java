@@ -32,13 +32,13 @@ public class ResourceVo {
 
     private Integer threadNum;
     private Long passQps;
-    private Long blockedQps;
+    private Long blockQps;
     private Long totalQps;
     private Long averageRt;
     private Long passRequestQps;
     private Long exceptionQps;
-    private Long oneMinutePassed;
-    private Long oneMinuteBlocked;
+    private Long oneMinutePass;
+    private Long oneMinuteBlock;
     private Long oneMinuteException;
     private Long oneMinuteTotal;
 
@@ -64,12 +64,12 @@ public class ResourceVo {
             vo.resource = nodeVo.getResource();
             vo.threadNum = nodeVo.getThreadNum();
             vo.passQps = nodeVo.getPassQps();
-            vo.blockedQps = nodeVo.getBlockedQps();
+            vo.blockQps = nodeVo.getBlockQps();
             vo.totalQps = nodeVo.getTotalQps();
             vo.averageRt = nodeVo.getAverageRt();
             vo.exceptionQps = nodeVo.getExceptionQps();
-            vo.oneMinutePassed = nodeVo.getOneMinutePassed();
-            vo.oneMinuteBlocked = nodeVo.getOneMinuteBlocked();
+            vo.oneMinutePass = nodeVo.getOneMinutePass();
+            vo.oneMinuteBlock = nodeVo.getOneMinuteBlock();
             vo.oneMinuteException = nodeVo.getOneMinuteException();
             vo.oneMinuteTotal = nodeVo.getOneMinuteTotal();
             list.add(vo);
@@ -103,12 +103,12 @@ public class ResourceVo {
             vo.resource = node.getResource();
             vo.threadNum = node.getThreadNum();
             vo.passQps = node.getPassQps();
-            vo.blockedQps = node.getBlockedQps();
+            vo.blockQps = node.getBlockQps();
             vo.totalQps = node.getTotalQps();
             vo.averageRt = node.getAverageRt();
             vo.exceptionQps = node.getExceptionQps();
-            vo.oneMinutePassed = node.getOneMinutePassed();
-            vo.oneMinuteBlocked = node.getOneMinuteBlocked();
+            vo.oneMinutePass = node.getOneMinutePass();
+            vo.oneMinuteBlock = node.getOneMinuteBlock();
             vo.oneMinuteException = node.getOneMinuteException();
             vo.oneMinuteTotal = node.getOneMinuteTotal();
             vo.visible = node.isVisible();
@@ -159,12 +159,12 @@ public class ResourceVo {
         this.passQps = passQps;
     }
 
-    public Long getBlockedQps() {
-        return blockedQps;
+    public Long getBlockQps() {
+        return blockQps;
     }
 
-    public void setBlockedQps(Long blockedQps) {
-        this.blockedQps = blockedQps;
+    public void setBlockQps(Long blockQps) {
+        this.blockQps = blockQps;
     }
 
     public Long getTotalQps() {
@@ -207,20 +207,20 @@ public class ResourceVo {
         this.oneMinuteException = oneMinuteException;
     }
 
-    public Long getOneMinutePassed() {
-        return oneMinutePassed;
+    public Long getOneMinutePass() {
+        return oneMinutePass;
     }
 
-    public void setOneMinutePassed(Long oneMinutePassed) {
-        this.oneMinutePassed = oneMinutePassed;
+    public void setOneMinutePass(Long oneMinutePass) {
+        this.oneMinutePass = oneMinutePass;
     }
 
-    public Long getOneMinuteBlocked() {
-        return oneMinuteBlocked;
+    public Long getOneMinuteBlock() {
+        return oneMinuteBlock;
     }
 
-    public void setOneMinuteBlocked(Long oneMinuteBlocked) {
-        this.oneMinuteBlocked = oneMinuteBlocked;
+    public void setOneMinuteBlock(Long oneMinuteBlock) {
+        this.oneMinuteBlock = oneMinuteBlock;
     }
 
     public Long getOneMinuteTotal() {
