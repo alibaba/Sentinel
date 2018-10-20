@@ -103,7 +103,6 @@ public class SentinelPreFilter extends AbstractSentinelFilter {
                 uriTarget = urlCleaner.clean(uriTarget);
             }
             RecordLog.info(String.format("[Sentinel Pre Filter] Origin: %s enter Uri Path: %s", origin, uriTarget));
-            ContextUtil.enter(uriTarget, origin);
             SphU.entry(uriTarget, EntryType.IN);
             fallBackRoute = uriTarget;
             // used for mock test.
