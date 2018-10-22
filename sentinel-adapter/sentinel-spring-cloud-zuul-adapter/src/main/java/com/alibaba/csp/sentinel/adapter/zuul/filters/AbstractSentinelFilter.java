@@ -26,7 +26,7 @@ import com.netflix.zuul.ZuulFilter;
  */
 public abstract class AbstractSentinelFilter extends ZuulFilter {
 
-    private SentinelZuulProperties sentinelZuulProperties;
+    private final SentinelZuulProperties sentinelZuulProperties;
 
     public SentinelZuulProperties getSentinelZuulProperties() {
         return sentinelZuulProperties;

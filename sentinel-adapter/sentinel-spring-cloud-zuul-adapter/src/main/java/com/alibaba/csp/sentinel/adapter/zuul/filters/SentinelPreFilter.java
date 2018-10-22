@@ -56,9 +56,9 @@ public class SentinelPreFilter extends AbstractSentinelFilter {
 
     private static final String EMPTY_ORIGIN = "";
 
-    private MockTestService mockTestService;
+    private final MockTestService mockTestService;
 
-    private ProxyRequestHelper proxyRequestHelper;
+    private final ProxyRequestHelper proxyRequestHelper;
 
     public SentinelPreFilter(SentinelZuulProperties sentinelZuulProperties,
                              ProxyRequestHelper proxyRequestHelper,

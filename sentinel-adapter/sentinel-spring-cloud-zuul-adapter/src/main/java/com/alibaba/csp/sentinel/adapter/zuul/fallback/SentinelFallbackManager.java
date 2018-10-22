@@ -26,9 +26,9 @@ import java.util.Map;
  */
 public class SentinelFallbackManager {
 
-    private volatile static Map<String, SentinelFallbackProvider> fallbackProviderCache = new HashMap<String, SentinelFallbackProvider>();
+    private static Map<String, SentinelFallbackProvider> fallbackProviderCache = new HashMap<String, SentinelFallbackProvider>();
 
-    private volatile static SentinelFallbackProvider defaultFallbackProvider = new DefaultBlockFallbackProvider();
+    private static SentinelFallbackProvider defaultFallbackProvider = new DefaultBlockFallbackProvider();
 
     /**
      * Register special provider for different route.
