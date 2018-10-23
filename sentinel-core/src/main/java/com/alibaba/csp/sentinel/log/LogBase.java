@@ -46,6 +46,7 @@ public class LogBase {
             init();
         } catch (Throwable t) {
             t.printStackTrace();
+            System.exit(-1);
         }
     }
 
