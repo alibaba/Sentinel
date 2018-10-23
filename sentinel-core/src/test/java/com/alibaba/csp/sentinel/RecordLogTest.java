@@ -62,7 +62,6 @@ public class RecordLogTest {
         assertTrue(RecordLog.getLogBaseDir().startsWith(System.getProperty("user.home")));
     }
 
-    @Test
     public void testLogNameNotUsePid() {
         String userHome = System.getProperty("user.home");
         String newLogBase = userHome + File.separator + "tmpLogDir" + System.currentTimeMillis();
@@ -75,7 +74,6 @@ public class RecordLogTest {
         }
     }
 
-    @Test
     public void testLogNameUsePid() {
         String userHome = System.getProperty("user.home");
         String newLogBase = userHome + File.separator + "tmpLogDir" + System.currentTimeMillis();
