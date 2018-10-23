@@ -37,7 +37,7 @@ import com.alibaba.csp.sentinel.log.RecordLog;
  * <ol>
  * <li>metric with the same second should write to the same file;</li>
  * <li>single file size must be controlled;</li>
- * <li>file name is like: {@code metrics.log.pid${pid}.yyyy-MM-dd.[number]}</li>
+ * <li>file name is like: {@code ${appName}-metrics.log.pid${pid}.yyyy-MM-dd.[number]}</li>
  * <li>metric of different day should in different file;</li>
  * <li>every metric file is accompanied with an index file, which file name is {@code ${metricFileName}.idx}</li>
  * </ol>
@@ -351,11 +351,20 @@ public class MetricWriter {
      * @return metric file name.
      */
     public static String formMetricFileName(String appName, int pid) {
-        if (LogBase.isLogNameUsePid()) {
-            return METRIC_FILE + ".pid" + pid;
-        } else {
-            return METRIC_FILE;
+        if (appName == null) {
+            appName = "";
         }
+        // dot is special char that should be replaced.
+        final String dot = ".";
+        final String separator = "-";
+        if (appName.contains(dot)) {
+            appName = appName.replace(dot, separator);
+        }
+        String name = appName + separator + METRIC_FILE;
+        if (LogBase.isLogNameUsePid()) {
+            name += ".pid" + pid;
+        }
+        return name;
     }
 
     /**
