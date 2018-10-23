@@ -26,7 +26,7 @@ import java.util.logging.Logger;
  */
 public class RecordLog extends LogBase {
     private static final Logger heliumRecordLog = Logger.getLogger("cspSentinelRecordLog");
-    private static final String FILE_NAME = "sentinelRecord.log";
+    private static final String FILE_NAME = "sentinel-record.log";
     private static Handler logHandler = null;
 
     static {
