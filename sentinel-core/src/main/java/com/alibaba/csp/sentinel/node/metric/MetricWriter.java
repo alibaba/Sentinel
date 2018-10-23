@@ -232,7 +232,6 @@ public class MetricWriter {
      * metrics.log.2018-03-07
      * metrics.log.2018-03-07.10
      *
-     * metrics.log.pid1234.2018-03-07.10
      * </pre>
      * </p>
      */
