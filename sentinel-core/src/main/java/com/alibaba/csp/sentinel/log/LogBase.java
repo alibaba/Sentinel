@@ -24,7 +24,10 @@ import java.util.logging.Logger;
 import com.alibaba.csp.sentinel.util.PidUtil;
 
 /**
- * Default log base dir is ${user.home}, we can use {@link #LOG_DIR} System property to override it.
+ * Default log base dir is ${user.home}/logs/csp/, we can use {@link #LOG_DIR} System property to override it.
+ * Default log file name dose not contain pid, but if multi instances of the same app are running in the same
+ * machine, we may want to distinguish the log file by pid number, in this case, {@link #LOG_NAME_USE_PID}
+ * System property could be configured as "true" to turn on this switch.
  *
  * @author leyou
  */
@@ -33,9 +36,21 @@ public class LogBase {
     private static final String DIR_NAME = "logs" + File.separator + "csp";
     private static final String USER_HOME = "user.home";
     public static final String LOG_DIR = "csp.sentinel.log.dir";
+    public static final String LOG_NAME_USE_PID = "csp.sentinel.log.use.pid";
+    private static boolean logNameUsePid = false;
+
     private static String logBaseDir;
 
     static {
+        try {
+            init();
+        } catch (Throwable t) {
+            t.printStackTrace();
+            System.exit(-1);
+        }
+    }
+
+    private static void init() {
         // first use -D, then use user home.
         String logDir = System.getProperty(LOG_DIR);
 
@@ -53,6 +68,19 @@ public class LogBase {
         // logBaseDir must end with File.separator
         logBaseDir = logDir;
         System.out.println("INFO: log base dir is: " + logBaseDir);
+
+        String usePid = System.getProperty(LOG_NAME_USE_PID, "");
+        logNameUsePid = "true".equalsIgnoreCase(usePid);
+        System.out.println("INFO: log name use pid is: " + logNameUsePid);
+    }
+
+    /**
+     * Whether log file name should contain pid. This switch is configured by {@link #LOG_NAME_USE_PID} System property.
+     *
+     * @return if log file name should contain pid, return true, otherwise return false.
+     */
+    public static boolean isLogNameUsePid() {
+        return logNameUsePid;
     }
 
     private static String addSeparator(String logDir) {
@@ -61,7 +89,7 @@ public class LogBase {
         }
         return logDir;
     }
-    
+
     protected static void log(Logger logger, Handler handler, Level level, String detail, Object... params) {
         if (detail == null) {
             return;
@@ -73,7 +101,7 @@ public class LogBase {
             logger.log(level, detail, params);
         }
     }
-    
+
     protected static void log(Logger logger, Handler handler, Level level, String detail, Throwable throwable) {
         if (detail == null) {
             return;
@@ -93,7 +121,10 @@ public class LogBase {
 
     protected static Handler makeLogger(String logName, Logger heliumRecordLog) {
         CspFormatter formatter = new CspFormatter();
-        String fileName = LogBase.getLogBaseDir() + logName + ".pid" + PidUtil.getPid();
+        String fileName = LogBase.getLogBaseDir() + logName;
+        if (isLogNameUsePid()) {
+            fileName += ".pid" + PidUtil.getPid();
+        }
         Handler handler = null;
         try {
             handler = new DateFileLogHandler(fileName + ".%d", 1024 * 1024 * 200, 4, true);
