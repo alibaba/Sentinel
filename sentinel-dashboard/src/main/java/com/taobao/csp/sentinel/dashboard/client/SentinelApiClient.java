@@ -331,6 +331,27 @@ public class SentinelApiClient {
         return true;
     }
 
+    public boolean setAuthorityRuleOfMachine(String app, String ip, int port, List<AuthorityRuleEntity> rules) {
+        if (rules == null) {
+            return true;
+        }
+        if (StringUtil.isBlank(ip) || port <= 0) {
+            throw new IllegalArgumentException("Invalid IP or port");
+        }
+        String data = JSON.toJSONString(
+            rules.stream().map(AuthorityRuleEntity::getRule).collect(Collectors.toList()));
+        try {
+            data = URLEncoder.encode(data, DEFAULT_CHARSET.name());
+        } catch (UnsupportedEncodingException e) {
+            logger.info("Encode rule error", e);
+            return false;
+        }
+        String url = "http://" + ip + ":" + port + "/" + SET_RULES_PATH + "?type=" + AUTHORITY_TYPE + "&data=" + data;
+        String result = httpGetContent(url);
+        logger.info("Push authority rules: " + result);
+        return true;
+    }
+
     public CompletableFuture<Void> setParamFlowRuleOfMachine(String app, String ip, int port, List<ParamFlowRuleEntity> rules) {
         if (rules == null) {
             return CompletableFuture.completedFuture(null);
