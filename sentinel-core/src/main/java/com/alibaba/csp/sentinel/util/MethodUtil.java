@@ -16,9 +16,6 @@
 package com.alibaba.csp.sentinel.util;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,14 +26,20 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class MethodUtil {
 
-    private static volatile Map<Method, String> methodNameMap = new HashMap<Method, String>();
+    private static final Map<Method, String> methodNameMap = new ConcurrentHashMap<Method, String>();
 
     private static final Object LOCK = new Object();
 
     /**
-     * Parse and get the method name.
+     * Parse and resolve the method name, then cache to the map.
+     *
+     * @param method method instance
+     * @return resolved method name
      */
-    public static String getMethodName(Method method) {
+    public static String resolveMethodName(Method method) {
+        if (method == null) {
+            throw new IllegalArgumentException("Null method");
+        }
         String methodName = methodNameMap.get(method);
         if (methodName == null) {
             synchronized (LOCK) {
@@ -52,7 +55,7 @@ public final class MethodUtil {
 
                     int paramPos = 0;
                     for (Class<?> clazz : params) {
-                        sb.append(clazz.getName());
+                        sb.append(clazz.getCanonicalName());
                         if (++paramPos < params.length) {
                             sb.append(",");
                         }
@@ -60,12 +63,17 @@ public final class MethodUtil {
                     sb.append(")");
                     methodName = sb.toString();
 
-                    HashMap<Method, String> newMap = new HashMap<Method, String>(methodNameMap);
-                    newMap.put(method, methodName);
-                    methodNameMap = newMap;
+                    methodNameMap.put(method, methodName);
                 }
             }
         }
         return methodName;
+    }
+
+    /**
+     * For test.
+     */
+    static void clearMethodMap() {
+        methodNameMap.clear();
     }
 }
