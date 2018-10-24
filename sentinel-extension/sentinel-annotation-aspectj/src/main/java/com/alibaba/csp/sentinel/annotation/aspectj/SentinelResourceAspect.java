@@ -59,7 +59,7 @@ public class SentinelResourceAspect {
             // Should not go through here.
             throw new IllegalStateException("Wrong state for SentinelResource annotation");
         }
-        String resourceName = annotation.value();
+        String resourceName = getResourceName(annotation.value(), originMethod);
         EntryType entryType = annotation.entryType();
         Entry entry = null;
         try {
@@ -76,7 +76,28 @@ public class SentinelResourceAspect {
             ContextUtil.exit();
         }
     }
-
+    
+    private String getResourceName(String resourceName, Method method) {
+        if(StringUtil.isNotBlank(resourceName)){
+            return resourceName;
+        }
+        StringBuilder buf = new StringBuilder(64);
+        buf.append(method.getDeclaringClass().getName())
+            .append(":")
+            .append(method.getName())
+            .append("(");
+        boolean isFirst = true;
+        for (Class<?> clazz : method.getParameterTypes()) {
+            if (!isFirst) {
+                buf.append(",");
+            }
+            buf.append(clazz.getName());
+            isFirst = false;
+        }
+        buf.append(")");
+        return buf.toString();
+    }
+    
     private Object handleBlockException(ProceedingJoinPoint pjp, SentinelResource annotation, BlockException ex)
         throws Exception {
         // Execute fallback for degrading if configured.
