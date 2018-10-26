@@ -62,7 +62,7 @@ public class CommonTotalFilter implements Filter {
             chain.doFilter(request, response);
         } catch (BlockException e) {
             HttpServletResponse sResponse = (HttpServletResponse)response;
-            WebCallbackManager.getUrlBlockHandler().blocked(sRequest, sResponse);
+            WebCallbackManager.getUrlBlockHandler().blocked(sRequest, sResponse, e);
         } catch (IOException e2) {
             Tracer.trace(e2);
             throw e2;
