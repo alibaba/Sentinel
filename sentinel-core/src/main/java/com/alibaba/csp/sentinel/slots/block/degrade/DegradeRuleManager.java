@@ -167,7 +167,7 @@ public class DegradeRuleManager {
 
     }
 
-    private static boolean isValidRule(DegradeRule rule) {
+    public static boolean isValidRule(DegradeRule rule) {
         boolean baseValid = rule != null && !StringUtil.isBlank(rule.getResource())
             && rule.getCount() >= 0 && rule.getTimeWindow() > 0;
         if (!baseValid) {
