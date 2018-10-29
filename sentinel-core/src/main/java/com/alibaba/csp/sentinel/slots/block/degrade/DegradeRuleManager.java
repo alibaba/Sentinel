@@ -167,7 +167,16 @@ public class DegradeRuleManager {
 
     }
 
-    private static boolean isValidRule(DegradeRule rule) {
-        return rule != null && !StringUtil.isBlank(rule.getResource()) && rule.getCount() >= 0;
+    public static boolean isValidRule(DegradeRule rule) {
+        boolean baseValid = rule != null && !StringUtil.isBlank(rule.getResource())
+            && rule.getCount() >= 0 && rule.getTimeWindow() > 0;
+        if (!baseValid) {
+            return false;
+        }
+        // Check exception ratio mode.
+        if (rule.getGrade() == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO && rule.getCount() > 1) {
+            return false;
+        }
+        return true;
     }
 }
