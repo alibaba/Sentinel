@@ -41,7 +41,7 @@ public class AppInfo {
     }
 
     public synchronized Set<MachineInfo> getMachines() {
-        return machines;
+        return new TreeSet<>(machines);
     }
 
     @Override
