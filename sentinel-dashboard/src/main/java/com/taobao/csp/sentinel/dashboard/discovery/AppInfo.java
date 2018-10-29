@@ -15,9 +15,9 @@
  */
 package com.taobao.csp.sentinel.dashboard.discovery;
 
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class AppInfo {
@@ -47,7 +47,7 @@ public class AppInfo {
      * @return a new copy of the current machines.
      */
     public Set<MachineInfo> getMachines() {
-        return new TreeSet<>(machines);
+        return new HashSet<>(machines);
     }
 
     @Override

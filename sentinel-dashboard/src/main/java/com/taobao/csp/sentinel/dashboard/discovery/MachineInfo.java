@@ -16,6 +16,7 @@
 package com.taobao.csp.sentinel.dashboard.discovery;
 
 import java.util.Date;
+import java.util.Objects;
 
 import com.alibaba.csp.sentinel.util.StringUtil;
 
@@ -117,29 +118,16 @@ public class MachineInfo implements Comparable<MachineInfo> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof MachineInfo)) {
-            return false;
-        }
-
+        if (this == o) { return true; }
+        if (!(o instanceof MachineInfo)) { return false; }
         MachineInfo that = (MachineInfo)o;
-
-        if (app != null ? !app.equals(that.app) : that.app != null) {
-            return false;
-        }
-        if (hostname != null ? !hostname.equals(that.hostname) : that.hostname != null) {
-            return false;
-        }
-        return ip != null ? ip.equals(that.ip) : that.ip == null;
+        return Objects.equals(app, that.app) &&
+            Objects.equals(ip, that.ip) &&
+            Objects.equals(port, that.port);
     }
 
     @Override
     public int hashCode() {
-        int result = app != null ? app.hashCode() : 0;
-        result = 31 * result + (hostname != null ? hostname.hashCode() : 0);
-        result = 31 * result + (ip != null ? ip.hashCode() : 0);
-        return result;
+        return Objects.hash(app, ip, port);
     }
 }
