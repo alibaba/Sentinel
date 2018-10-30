@@ -24,6 +24,25 @@ To use the filter, you can simply configure your `web.xml` with:
 </filter-mapping>
 ```
 
+For Spring web applications you can configure with Spring bean:
+
+```java
+@Configuration
+public class FilterConfig {
+
+    @Bean
+    public FilterRegistrationBean sentinelFilterRegistration() {
+        FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(new CommonFilter());
+        registration.addUrlPatterns("/*");
+        registration.setName("sentinelFilter");
+        registration.setOrder(1);
+
+        return registration;
+    }
+}
+```
+
 When a request is blocked, Sentinel servlet filter will give a default page indicating the request blocked.
 If customized block page is set (via `WebServletConfig.setBlockPage(blockPage)` method),
 the filter will redirect the request to provided URL. You can also implement your own
