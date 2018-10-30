@@ -122,7 +122,7 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
         .error((data, header, config, status) => {
           $scope.loadError = {message: "未知错误"}
         });
-    };
+    }
     $scope.getMachineRules = getMachineRules;
     getMachineRules();
 
@@ -134,6 +134,7 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
         title: '编辑热点规则',
         type: 'edit',
         confirmBtnText: '保存',
+        supportAdvanced: true,
         showAdvanceButton: rule.rule.paramFlowItemList === undefined || rule.rule.paramFlowItemList.length <= 0
       };
       paramFlowRuleDialog = ngDialog.open({
@@ -152,7 +153,7 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
         ip: mac[0],
         port: mac[1],
         rule: {
-          blockGrade: 1,
+          grade: 1,
           paramFlowItemList: [],
           count: 0,
           limitApp: 'default',
@@ -180,38 +181,8 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
           $scope.paramFlowRuleDialog.showAdvanceButton = true;
       };
 
-    function checkRuleValid(rule) {
-      if (!rule.resource || rule.resource === '') {
-        alert('资源名称不能为空');
-        return false;
-      }
-      if (rule.blockGrade !== 1) {
-        alert('未知的限流模式');
-        return false;
-      }
-      if (rule.count < 0) {
-        alert('限流阈值必须大于等于 0');
-        return false;
-      }
-      if (rule.paramIdx === undefined || rule.paramIdx === '' || isNaN(rule.paramIdx) || rule.paramIdx < 0) {
-        alert('热点参数索引必须大于等于 0');
-        return false;
-      }
-      if (rule.paramFlowItemList !== undefined) {
-        for (let i = 0; i < rule.paramFlowItemList.length; i++) {
-          let item = rule.paramFlowItemList[i];
-          if ($scope.notValidParamItem(item)) {
-              alert('热点参数例外项不合法，请检查值和类型是否正确：参数为 ' + item.object + ', 类型为 ' +
-                  item.classType + ', 限流阈值为 ' + item.count);
-              return false;
-          }
-        }
-      }
-      return true;
-    }
-
     $scope.saveRule = function () {
-      if (!checkRuleValid($scope.currentRule.rule)) {
+      if (!ParamFlowService.checkRuleValid($scope.currentRule.rule)) {
         return;
       }
       if ($scope.paramFlowRuleDialog.type === 'add') {
@@ -236,7 +207,7 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
           alert("添加规则失败：未知错误");
         }
       });
-    };
+    }
 
     function saveRuleAndPush(rule, edit) {
       ParamFlowService.saveRule(rule).success(function (data) {
@@ -290,7 +261,7 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
         type: 'delete_rule',
         attentionTitle: '请确认是否删除如下热点参数限流规则',
         attention: '资源名: ' + ruleEntity.rule.resource + ', 热点参数索引: ' + ruleEntity.rule.paramIdx +
-            ', 限流模式: ' + (ruleEntity.rule.blockGrade === 1 ? 'QPS' : '未知') + ', 限流阈值: ' + ruleEntity.rule.count,
+            ', 限流模式: ' + (ruleEntity.rule.grade === 1 ? 'QPS' : '未知') + ', 限流阈值: ' + ruleEntity.rule.count,
         confirmBtnText: '删除',
       };
       confirmDialog = ngDialog.open({
@@ -301,7 +272,7 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
     };
 
     $scope.confirm = function () {
-      if ($scope.confirmDialog.type == 'delete_rule') {
+      if ($scope.confirmDialog.type === 'delete_rule') {
         deleteRuleAndPush($scope.currentRule);
       } else {
         console.error('error');

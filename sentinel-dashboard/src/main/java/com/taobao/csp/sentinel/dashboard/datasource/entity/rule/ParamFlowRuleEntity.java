@@ -55,7 +55,7 @@ public class ParamFlowRuleEntity extends AbstractRuleEntity<ParamFlowRule> {
     }
 
     @JsonIgnore
-    public int getBlockGrade() {
+    public int getGrade() {
         return rule.getGrade();
     }
 
