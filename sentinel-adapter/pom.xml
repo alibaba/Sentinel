@@ -18,8 +18,7 @@
         <module>sentinel-web-servlet</module>
         <module>sentinel-dubbo-adapter</module>
         <module>sentinel-grpc-adapter</module>
-        <module>sentinel-spring-cloud-zuul-adapter</module>
-        <module>sentinel-spring-cloud-zuul-starter</module>
+        <module>sentinel-zuul-adapter</module>
     </modules>
 
     <dependencyManagement>
@@ -40,11 +39,6 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.alibaba.csp</groupId>
-                <artifactId>sentinel-spring-cloud-zuul-adapter</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>${junit.version}</version>
@@ -55,13 +49,6 @@
                 <artifactId>mockito-core</artifactId>
                 <version>${mockito.version}</version>
                 <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-dependencies</artifactId>
-                <version>Finchley.RELEASE</version>
-                <type>pom</type>
-                <scope>import</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
