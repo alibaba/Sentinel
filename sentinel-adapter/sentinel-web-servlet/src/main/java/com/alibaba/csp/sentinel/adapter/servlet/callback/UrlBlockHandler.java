@@ -20,6 +20,8 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.alibaba.csp.sentinel.slots.block.BlockException;
+
 /***
  * The URL block handler handles requests when blocked.
  *
@@ -32,7 +34,8 @@ public interface UrlBlockHandler {
      *
      * @param request  Servlet request
      * @param response Servlet response
+     * @param ex       the block exception.
      * @throws IOException some error occurs
      */
-    void blocked(HttpServletRequest request, HttpServletResponse response) throws IOException;
+    void blocked(HttpServletRequest request, HttpServletResponse response, BlockException ex) throws IOException;
 }

@@ -32,7 +32,7 @@ public class MethodResourceWrapper extends ResourceWrapper {
 
     public MethodResourceWrapper(Method method, EntryType type) {
         this.method = method;
-        this.name = MethodUtil.getMethodName(method);
+        this.name = MethodUtil.resolveMethodName(method);
         this.type = type;
     }
 

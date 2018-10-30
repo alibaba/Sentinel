@@ -26,6 +26,7 @@ import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeException;
+import com.alibaba.csp.sentinel.util.MethodUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -59,7 +60,7 @@ public class SentinelResourceAspect {
             // Should not go through here.
             throw new IllegalStateException("Wrong state for SentinelResource annotation");
         }
-        String resourceName = annotation.value();
+        String resourceName = getResourceName(annotation.value(), originMethod);
         EntryType entryType = annotation.entryType();
         Entry entry = null;
         try {
@@ -75,6 +76,15 @@ public class SentinelResourceAspect {
             }
             ContextUtil.exit();
         }
+    }
+
+    private String getResourceName(String resourceName, Method method) {
+        // If resource name is present in annotation, use this value.
+        if (StringUtil.isNotBlank(resourceName)) {
+            return resourceName;
+        }
+        // Parse name of target method.
+        return MethodUtil.resolveMethodName(method);
     }
 
     private Object handleBlockException(ProceedingJoinPoint pjp, SentinelResource annotation, BlockException ex)
@@ -203,7 +213,8 @@ public class SentinelResourceAspect {
         MethodSignature signature = (MethodSignature)joinPoint.getSignature();
         Class<?> targetClass = joinPoint.getTarget().getClass();
 
-        Method method = getDeclaredMethodFor(targetClass, signature.getName(), signature.getMethod().getParameterTypes());
+        Method method = getDeclaredMethodFor(targetClass, signature.getName(),
+            signature.getMethod().getParameterTypes());
         if (method == null) {
             throw new IllegalStateException("Cannot resolve target method: " + signature.getMethod().getName());
         }
@@ -214,8 +225,8 @@ public class SentinelResourceAspect {
      * Get declared method with provided name and parameterTypes in given class and its super classes.
      * All parameters should be valid.
      *
-     * @param clazz class where the method is located
-     * @param name method name
+     * @param clazz          class where the method is located
+     * @param name           method name
      * @param parameterTypes method parameter type list
      * @return resolved method, null if not found
      */

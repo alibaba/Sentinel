@@ -25,14 +25,14 @@ import java.util.logging.Logger;
  * @author youji.zj
  */
 public class RecordLog extends LogBase {
-    private static final Logger heliumRecordLog = Logger.getLogger("cspRecordLog");
-    private static final String FILE_NAME = "record.log";
+    private static final Logger heliumRecordLog = Logger.getLogger("cspSentinelRecordLog");
+    private static final String FILE_NAME = "sentinel-record.log";
     private static Handler logHandler = null;
 
     static {
         logHandler = makeLogger(FILE_NAME, heliumRecordLog);
     }
-    
+
     public static void info(String detail, Object... params) {
         log(heliumRecordLog, logHandler, Level.INFO, detail, params);
     }

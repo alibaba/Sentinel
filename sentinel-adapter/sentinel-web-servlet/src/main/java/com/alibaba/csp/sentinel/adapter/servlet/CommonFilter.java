@@ -77,7 +77,7 @@ public class CommonFilter implements Filter {
         } catch (BlockException e) {
             HttpServletResponse sResponse = (HttpServletResponse)response;
             // Return the block page, or redirect to another URL.
-            WebCallbackManager.getUrlBlockHandler().blocked(sRequest, sResponse);
+            WebCallbackManager.getUrlBlockHandler().blocked(sRequest, sResponse, e);
         } catch (IOException e2) {
             Tracer.trace(e2);
             throw e2;

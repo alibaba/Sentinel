@@ -81,13 +81,41 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
       });
     };
 
+      function checkRuleValid(rule) {
+          if (rule.resource === undefined || rule.resource === '') {
+              alert('资源名称不能为空');
+              return false;
+          }
+          if (rule.grade === undefined || rule.grade < 0) {
+              alert('未知的降级类型');
+              return false;
+          }
+          if (rule.count === undefined || rule.count === '' || rule.count < 0) {
+              alert('降级阈值不能为空或小于 0');
+              return false;
+          }
+          if (rule.timeWindow === undefined || rule.timeWindow === '' || rule.timeWindow <= 0) {
+              alert('降级时间窗口必须大于 0');
+              return false;
+          }
+          // 异常比率类型.
+          if (rule.grade == 1 && rule.count > 1) {
+              alert('异常比率超出范围：[0.0 - 1.0]');
+              return false;
+          }
+          return true;
+      }
+
     $scope.saveRule = function () {
-      if ($scope.degradeRuleDialog.type == 'add') {
+      if (!checkRuleValid($scope.currentRule)) {
+        return;
+      }
+      if ($scope.degradeRuleDialog.type === 'add') {
         addNewRule($scope.currentRule);
-      } else if ($scope.degradeRuleDialog.type == 'edit') {
+      } else if ($scope.degradeRuleDialog.type === 'edit') {
         saveRule($scope.currentRule, true);
       }
-    }
+    };
 
     var confirmDialog;
     $scope.deleteRule = function (rule) {
