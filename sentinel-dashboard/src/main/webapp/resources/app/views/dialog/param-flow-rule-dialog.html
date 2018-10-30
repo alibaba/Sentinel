@@ -101,7 +101,7 @@
 					</div>
 
 					<!-- exclusion item part end -->
-					<div class="form-group text-center">
+					<div class="form-group text-center" ng-if="paramFlowRuleDialog.supportAdvanced">
 						<a ng-click="onOpenAdvanceClick()" ng-if="paramFlowRuleDialog.showAdvanceButton">高级选项</a>
 						<a ng-click="onCloseAdvanceClick()" ng-if="!paramFlowRuleDialog.showAdvanceButton">关闭高级选项</a>
 					</div>

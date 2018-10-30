@@ -165,7 +165,7 @@ public class ParamFlowRuleController {
         if (entity.getCount() < 0) {
             return Result.ofFail(-1, "count should be valid");
         }
-        if (entity.getBlockGrade() != RuleConstant.FLOW_GRADE_QPS) {
+        if (entity.getGrade() != RuleConstant.FLOW_GRADE_QPS) {
             return Result.ofFail(-1, "Unknown mode (blockGrade) for parameter flow control");
         }
         if (entity.getParamIdx() == null || entity.getParamIdx() < 0) {
