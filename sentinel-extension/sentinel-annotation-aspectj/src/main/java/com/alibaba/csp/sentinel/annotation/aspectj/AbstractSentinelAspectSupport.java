@@ -30,12 +30,11 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
 /**
- * @author chua
- * @date 2018/10/31
+ * Some common functions for Sentinel annotation aspect.
  */
-public abstract class AbstractSentinelAspect {
+public abstract class AbstractSentinelAspectSupport {
 
-    private final Logger logger = LoggerFactory.getLogger(AbstractSentinelAspect.class);
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     protected String getResourceName(String resourceName, Method method) {
         // If resource name is present in annotation, use this value.
