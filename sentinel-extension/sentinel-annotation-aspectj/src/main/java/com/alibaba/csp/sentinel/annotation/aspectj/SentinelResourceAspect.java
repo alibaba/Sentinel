@@ -19,14 +19,11 @@ import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
-import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 
@@ -36,9 +33,7 @@ import java.lang.reflect.Method;
  * @author Eric Zhao
  */
 @Aspect
-public class SentinelResourceAspect extends AbstractSentinelAspect {
-
-    private final Logger logger = LoggerFactory.getLogger(SentinelResourceAspect.class);
+public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
 
     @Pointcut("@annotation(com.alibaba.csp.sentinel.annotation.SentinelResource)")
     public void sentinelResourceAnnotationPointcut() {
@@ -57,7 +52,6 @@ public class SentinelResourceAspect extends AbstractSentinelAspect {
         EntryType entryType = annotation.entryType();
         Entry entry = null;
         try {
-            ContextUtil.enter(resourceName);
             entry = SphU.entry(resourceName, entryType);
             Object result = pjp.proceed();
             return result;
@@ -67,7 +61,6 @@ public class SentinelResourceAspect extends AbstractSentinelAspect {
             if (entry != null) {
                 entry.exit();
             }
-            ContextUtil.exit();
         }
     }
 }
