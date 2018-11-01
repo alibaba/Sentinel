@@ -46,6 +46,7 @@ public final class RuleConstant {
     public static final int CONTROL_BEHAVIOR_DEFAULT = 0;
     public static final int CONTROL_BEHAVIOR_WARM_UP = 1;
     public static final int CONTROL_BEHAVIOR_RATE_LIMITER = 2;
+    public static final int CONTROL_BEHAVIOR_WARM_UP_RATE_LIMITER = 3;
 
     public static final String LIMIT_APP_DEFAULT = "default";
     public static final String LIMIT_APP_OTHER = "other";

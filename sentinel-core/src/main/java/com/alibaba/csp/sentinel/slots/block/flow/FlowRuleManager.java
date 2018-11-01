@@ -36,8 +36,9 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.controller.DefaultController;
-import com.alibaba.csp.sentinel.slots.block.flow.controller.PaceController;
+import com.alibaba.csp.sentinel.slots.block.flow.controller.RateLimiterController;
 import com.alibaba.csp.sentinel.slots.block.flow.controller.WarmUpController;
+import com.alibaba.csp.sentinel.slots.block.flow.controller.WarmUpRateLimiterController;
 
 /**
  * <p>
@@ -126,8 +127,14 @@ public class FlowRuleManager {
             } else if (rule.getGrade() == RuleConstant.FLOW_GRADE_QPS
                 && rule.getControlBehavior() == RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER
                 && rule.getMaxQueueingTimeMs() > 0) {
-                rater = new PaceController(rule.getMaxQueueingTimeMs(), rule.getCount());
+                rater = new RateLimiterController(rule.getMaxQueueingTimeMs(), rule.getCount());
+            } else if (rule.getGrade() == RuleConstant.FLOW_GRADE_QPS
+                && rule.getControlBehavior() == RuleConstant.CONTROL_BEHAVIOR_WARM_UP_RATE_LIMITER
+                && rule.getMaxQueueingTimeMs() > 0 && rule.getWarmUpPeriodSec() > 0) {
+                rater = new WarmUpRateLimiterController(rule.getCount(), rule.getWarmUpPeriodSec(),
+                    rule.getMaxQueueingTimeMs(), ColdFactorProperty.coldFactor);
             }
+
             rule.setRater(rater);
 
             String identity = rule.getResource();
