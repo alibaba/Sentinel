@@ -130,4 +130,13 @@ public class MachineInfo implements Comparable<MachineInfo> {
     public int hashCode() {
         return Objects.hash(app, ip, port);
     }
+
+    /**
+     * Information for log
+     *
+     * @return
+     */
+    public String toLogString() {
+        return app + "|" + ip + "|" + port + "|" + version;
+    }
 }
