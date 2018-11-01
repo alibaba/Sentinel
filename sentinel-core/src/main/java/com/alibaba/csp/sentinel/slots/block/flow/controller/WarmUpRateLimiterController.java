@@ -17,50 +17,59 @@ package com.alibaba.csp.sentinel.slots.block.flow.controller;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.alibaba.csp.sentinel.slots.block.flow.Controller;
-
-import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.node.Node;
+import com.alibaba.csp.sentinel.util.TimeUtil;
 
 /**
  * @author jialiang.linjl
  */
-public class PaceController implements Controller {
+public class WarmUpRateLimiterController extends WarmUpController {
 
-    private final int maxQueueingTimeMs;
-    private final double count;
-    private final AtomicLong latestPassedTime = new AtomicLong(-1);
+    final int timeOutInMs;
+    final AtomicLong latestPassedTime = new AtomicLong(-1);
 
-    public PaceController(int timeOut, double count) {
-        this.maxQueueingTimeMs = timeOut;
-        this.count = count;
+    /**
+     * @param count
+     * @param warmUpPeriodSec
+     */
+    public WarmUpRateLimiterController(double count, int warmUpPeriodSec, int timeOutMs, int coldFactor) {
+        super(count, warmUpPeriodSec, coldFactor);
+        this.timeOutInMs = timeOutMs;
     }
 
     @Override
     public boolean canPass(Node node, int acquireCount) {
+        long previousQps = node.previousPassQps();
+        syncToken(previousQps);
 
-        // 按照斜率来计算计划中应该什么时候通过
         long currentTime = TimeUtil.currentTimeMillis();
 
-        long costTime = Math.round(1.0 * (acquireCount) / count * 1000);
+        long restToken = storedTokens.get();
+        long costTime = 0;
+        long expectedTime = 0;
+        if (restToken >= warningToken) {
+            long aboveToken = restToken - warningToken;
 
-        //期待时间
-        long expectedTime = costTime + latestPassedTime.get();
+            // current interval = restToken*slope+1/count
+            double warmingQps = Math.nextUp(1.0 / (aboveToken * slope + 1.0 / count));
+            costTime = Math.round(1.0 * (acquireCount) / warmingQps * 1000);
+        } else {
+            costTime = Math.round(1.0 * (acquireCount) / count * 1000);
+        }
+        expectedTime = costTime + latestPassedTime.get();
 
         if (expectedTime <= currentTime) {
-            //这里会有冲突,然而冲突就冲突吧.
             latestPassedTime.set(currentTime);
             return true;
         } else {
-            // 计算自己需要的等待时间
-            long waitTime = costTime + latestPassedTime.get() - TimeUtil.currentTimeMillis();
-            if (waitTime >= maxQueueingTimeMs) {
+            long waitTime = costTime + latestPassedTime.get() - currentTime;
+            if (waitTime >= timeOutInMs) {
                 return false;
             } else {
                 long oldTime = latestPassedTime.addAndGet(costTime);
                 try {
                     waitTime = oldTime - TimeUtil.currentTimeMillis();
-                    if (waitTime >= maxQueueingTimeMs) {
+                    if (waitTime >= timeOutInMs) {
                         latestPassedTime.addAndGet(-costTime);
                         return false;
                     }
@@ -70,8 +79,7 @@ public class PaceController implements Controller {
                 }
             }
         }
-
         return false;
     }
-
 }
+
