@@ -47,24 +47,29 @@ public abstract class AbstractSentinelAspectSupport {
 
     protected Object handleBlockException(ProceedingJoinPoint pjp, SentinelResource annotation, BlockException ex)
         throws Exception {
+        return handleBlockException(pjp, annotation.fallback(), annotation.blockHandler(), annotation.blockHandlerClass(), ex);
+    }
+
+    protected Object handleBlockException(ProceedingJoinPoint pjp, String fallback, String blockHandler,
+                                          Class<?>[] blockHandlerClass, BlockException ex) throws Exception {
         // Execute fallback for degrading if configured.
         Object[] originArgs = pjp.getArgs();
         if (isDegradeFailure(ex)) {
-            Method method = extractFallbackMethod(pjp, annotation.fallback());
+            Method method = extractFallbackMethod(pjp, fallback);
             if (method != null) {
                 return method.invoke(pjp.getTarget(), originArgs);
             }
         }
         // Execute block handler if configured.
-        Method blockHandler = extractBlockHandlerMethod(pjp, annotation.blockHandler(), annotation.blockHandlerClass());
-        if (blockHandler != null) {
+        Method blockHandlerMethod = extractBlockHandlerMethod(pjp, blockHandler, blockHandlerClass);
+        if (blockHandlerMethod != null) {
             // Construct args.
             Object[] args = Arrays.copyOf(originArgs, originArgs.length + 1);
             args[args.length - 1] = ex;
-            if (isStatic(blockHandler)) {
-                return blockHandler.invoke(null, args);
+            if (isStatic(blockHandlerMethod)) {
+                return blockHandlerMethod.invoke(null, args);
             }
-            return blockHandler.invoke(pjp.getTarget(), args);
+            return blockHandlerMethod.invoke(pjp.getTarget(), args);
         }
         // If no block handler is present, then directly throw the exception.
         throw ex;
