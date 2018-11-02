@@ -20,6 +20,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeException;
 import com.alibaba.csp.sentinel.util.MethodUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
@@ -47,7 +48,8 @@ public abstract class AbstractSentinelAspectSupport {
 
     protected Object handleBlockException(ProceedingJoinPoint pjp, SentinelResource annotation, BlockException ex)
         throws Exception {
-        return handleBlockException(pjp, annotation.fallback(), annotation.blockHandler(), annotation.blockHandlerClass(), ex);
+        return handleBlockException(pjp, annotation.fallback(), annotation.blockHandler(),
+            annotation.blockHandlerClass(), ex);
     }
 
     protected Object handleBlockException(ProceedingJoinPoint pjp, String fallback, String blockHandler,
