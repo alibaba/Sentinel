@@ -38,7 +38,6 @@ import com.alibaba.csp.sentinel.dashboard.domain.cluster.state.ClusterUniversalS
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ClusterClientConfig;
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ServerFlowConfig;
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ServerTransportConfig;
-import com.alibaba.csp.sentinel.dashboard.util.MachineUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -111,7 +110,7 @@ public class ClusterConfigService {
         }
 
         List<CompletableFuture<ClusterUniversalStatePairVO>> futures = appInfo.getMachines().stream()
-            .filter(MachineUtils::isMachineHealth)
+            .filter(e -> e.isHealthy())
             .map(machine -> getClusterUniversalState(app, machine.getIp(), machine.getPort())
                 .thenApply(e -> new ClusterUniversalStatePairVO(machine.getIp(), machine.getPort(), e)))
             .collect(Collectors.toList());
@@ -129,7 +128,7 @@ public class ClusterConfigService {
         }
 
         boolean machineOk = appInfo.getMachines().stream()
-            .filter(MachineUtils::isMachineHealth)
+            .filter(e -> e.isHealthy())
             .map(e -> e.getIp() + '@' + e.getPort())
             .anyMatch(e -> e.equals(machineId));
         if (!machineOk) {

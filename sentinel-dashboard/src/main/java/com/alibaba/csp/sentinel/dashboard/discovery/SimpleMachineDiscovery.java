@@ -36,6 +36,15 @@ public class SimpleMachineDiscovery implements MachineDiscovery {
         appInfo.addMachine(machineInfo);
         return 1;
     }
+    
+    @Override
+    public boolean removeMachine(String app, String ip, int port) {
+        AppInfo appInfo = apps.get(app);
+        if (appInfo != null) {
+            return appInfo.removeMachine(ip, port);
+        }
+        return false;
+    }
 
     @Override
     public List<String> getAppNames() {
@@ -50,6 +59,11 @@ public class SimpleMachineDiscovery implements MachineDiscovery {
     @Override
     public Set<AppInfo> getBriefApps() {
         return new HashSet<>(apps.values());
+    }
+
+    @Override
+    public void removeApp(String app) {
+        apps.remove(app);
     }
 
 }
