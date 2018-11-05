@@ -195,7 +195,7 @@ var com_github_culmat_jsTreeTable =  (function(){
 				td.prepend($('<span style="padding-left:16px;" /></span>'))
 			}
 			td.prepend($('<span style="padding-left:'+(15*parseInt(level-1))+'px;" /></span>'))
-			td.css('white-space','nowrap')
+			// td.css('white-space','nowrap')
 			tr.trExpand = function(changeState){
 				if(this.trChildren.length < 1) return
 				if(changeState) {
