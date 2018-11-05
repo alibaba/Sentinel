@@ -82,11 +82,27 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
     };
 
     $scope.saveRule = function () {
-      if ($scope.degradeRuleDialog.type == 'add') {
+      if (!DegradeService.checkRuleValid($scope.currentRule)) {
+        return;
+      }
+      if ($scope.degradeRuleDialog.type === 'add') {
         addNewRule($scope.currentRule);
-      } else if ($scope.degradeRuleDialog.type == 'edit') {
+      } else if ($scope.degradeRuleDialog.type === 'edit') {
         saveRule($scope.currentRule, true);
       }
+    };
+
+    function parseDegradeMode(grade) {
+        switch (grade) {
+            case 0:
+              return 'RT';
+            case 1:
+              return '异常比例';
+            case 2:
+              return '异常数';
+            default:
+              return '未知';
+        }
     }
 
     var confirmDialog;
@@ -96,15 +112,14 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
         title: '删除降级规则',
         type: 'delete_rule',
         attentionTitle: '请确认是否删除如下降级规则',
-        attention: '资源名: ' + rule.resource + ', 降级应用: ' + rule.limitApp
-          + ', 阈值类型: ' + (rule.grade == 0 ? 'RT' : '异常比例') + ', 阈值: ' + rule.count,
+        attention: '资源名: ' + rule.resource +
+            ', 降级模式: ' + parseDegradeMode(rule.grade) + ', 阈值: ' + rule.count,
         confirmBtnText: '删除',
       };
       confirmDialog = ngDialog.open({
         template: '/app/views/dialog/confirm-dialog.html',
         scope: $scope,
         overlay: true
-
       });
     };
 

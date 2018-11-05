@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 public class CommandCenterLog extends LogBase {
 
     private static final Logger heliumRecordLog = Logger.getLogger("cspCommandCenterLog");
-    private static final String FILE_NAME = "commandCenter.log";
+    private static final String FILE_NAME = "command-center.log";
     private static Handler logHandler = null;
 
     static {

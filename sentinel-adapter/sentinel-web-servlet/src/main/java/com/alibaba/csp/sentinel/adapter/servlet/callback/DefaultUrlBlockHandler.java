@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.alibaba.csp.sentinel.adapter.servlet.util.FilterUtil;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 
 /***
  * The default {@link UrlBlockHandler}.
@@ -30,7 +31,8 @@ import com.alibaba.csp.sentinel.adapter.servlet.util.FilterUtil;
 public class DefaultUrlBlockHandler implements UrlBlockHandler {
 
     @Override
-    public void blocked(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void blocked(HttpServletRequest request, HttpServletResponse response, BlockException ex)
+        throws IOException {
         // Directly redirect to the default flow control (blocked) page or customized block page.
         FilterUtil.blockRequest(request, response);
     }

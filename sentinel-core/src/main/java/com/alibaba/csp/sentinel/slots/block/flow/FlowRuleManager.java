@@ -36,8 +36,9 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.controller.DefaultController;
-import com.alibaba.csp.sentinel.slots.block.flow.controller.PaceController;
+import com.alibaba.csp.sentinel.slots.block.flow.controller.RateLimiterController;
 import com.alibaba.csp.sentinel.slots.block.flow.controller.WarmUpController;
+import com.alibaba.csp.sentinel.slots.block.flow.controller.WarmUpRateLimiterController;
 
 /**
  * <p>
@@ -126,8 +127,14 @@ public class FlowRuleManager {
             } else if (rule.getGrade() == RuleConstant.FLOW_GRADE_QPS
                 && rule.getControlBehavior() == RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER
                 && rule.getMaxQueueingTimeMs() > 0) {
-                rater = new PaceController(rule.getMaxQueueingTimeMs(), rule.getCount());
+                rater = new RateLimiterController(rule.getMaxQueueingTimeMs(), rule.getCount());
+            } else if (rule.getGrade() == RuleConstant.FLOW_GRADE_QPS
+                && rule.getControlBehavior() == RuleConstant.CONTROL_BEHAVIOR_WARM_UP_RATE_LIMITER
+                && rule.getMaxQueueingTimeMs() > 0 && rule.getWarmUpPeriodSec() > 0) {
+                rater = new WarmUpRateLimiterController(rule.getCount(), rule.getWarmUpPeriodSec(),
+                    rule.getMaxQueueingTimeMs(), ColdFactorProperty.coldFactor);
             }
+
             rule.setRater(rater);
 
             String identity = rule.getResource();
@@ -202,7 +209,31 @@ public class FlowRuleManager {
 
     }
 
-    private static boolean isValidRule(FlowRule rule) {
-        return rule != null && !StringUtil.isBlank(rule.getResource());
+    public static boolean isValidRule(FlowRule rule) {
+        boolean baseValid = rule != null && !StringUtil.isBlank(rule.getResource()) && rule.getCount() >= 0
+            && rule.getGrade() >= 0 && rule.getStrategy() >= 0 && rule.getControlBehavior() >= 0;
+        if (!baseValid) {
+            return false;
+        }
+        // Check strategy and control (shaping) behavior.
+        return checkStrategyField(rule) && checkControlBehaviorField(rule);
+    }
+
+    private static boolean checkStrategyField(/*@NonNull*/ FlowRule rule) {
+        if (rule.getStrategy() == RuleConstant.STRATEGY_RELATE || rule.getStrategy() == RuleConstant.STRATEGY_CHAIN) {
+            return StringUtil.isNotBlank(rule.getRefResource());
+        }
+        return true;
+    }
+
+    private static boolean checkControlBehaviorField(/*@NonNull*/ FlowRule rule) {
+        switch (rule.getControlBehavior()) {
+            case RuleConstant.CONTROL_BEHAVIOR_WARM_UP:
+                return rule.getWarmUpPeriodSec() > 0;
+            case RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER:
+                return rule.getMaxQueueingTimeMs() > 0;
+            default:
+                return true;
+        }
     }
 }

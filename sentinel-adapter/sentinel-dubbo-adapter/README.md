@@ -56,7 +56,7 @@ If the consumer does not use Sentinel Dubbo Adapter but requires flow control ba
 
 ## Global fallback
 
-Since version 0.1.1, Sentinel Dubbo Adapter supports global fallback configuration.
+Sentinel Dubbo Adapter supports global fallback configuration.
 The global fallback will handle exceptions and give replacement result when blocked by
 flow control, degrade or system load protection. You can implement your own `DubboFallback` interface
 and then register to `DubboFallbackRegistry`. If no fallback is configured, Sentinel will wrap the `BlockException`

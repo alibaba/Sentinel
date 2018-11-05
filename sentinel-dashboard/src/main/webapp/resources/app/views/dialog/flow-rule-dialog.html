@@ -15,7 +15,7 @@
           </div>
 
           <div class="form-group">
-            <label class="col-sm-2 control-label">流控应用</label>
+            <label class="col-sm-2 control-label" title="流控针对应用，即流量入口的调用来源（origin）">流控应用</label>
             <div class="col-sm-9">
               <input type="text" class="form-control highlight-border" ng-model='currentRule.limitApp' placeholder='指调用方，"default"表示所有应用。'
               />
@@ -32,7 +32,7 @@
             </div>
             <label class="col-sm-2 control-label">单机阈值</label>
             <div class="col-sm-3">
-              <input type='number' class="form-control highlight-border" ng-model='currentRule.count' placeholder="单机阈值" />
+              <input type='number' min="0" class="form-control highlight-border" ng-model='currentRule.count' placeholder="单机阈值" />
             </div>
           </div>
 
@@ -89,15 +89,15 @@
             </div>
           </div>
           <div class="form-group text-center">
-            <a ng-click="onOpenAdvanceClick()" ng-if="flowRuleDialog.showAdvanceButton">高级选项</a>
-            <a ng-click="onCloseAdvanceClick()" ng-if="!flowRuleDialog.showAdvanceButton">关闭高级选项</a>
+            <a ng-click="onOpenAdvanceClick()" ng-if="flowRuleDialog.showAdvanceButton" style="cursor: pointer;">高级选项</a>
+            <a ng-click="onCloseAdvanceClick()" ng-if="!flowRuleDialog.showAdvanceButton" style="cursor: pointer;">关闭高级选项</a>
           </div>
         </form>
       </div>
       <div class="separator"></div>
       <div clss="row" style="margin-top: 20px;">
-        <button class="btn btn-default-inverse" style="float:right; height: 30px;font-size: 12px;margin-left: 10px;" ng-click="closeThisDialog()">取消</button>
-        <button class="btn btn-danger-inverse" style="float:right; height: 30px;font-size: 12px;margin-left: 10px;" ng-click="saveRule()">{{flowRuleDialog.confirmBtnText}}</button>
+        <button class="btn btn-outline-danger" style="float:right; height: 30px;font-size: 12px;margin-left: 10px;" ng-click="closeThisDialog()">取消</button>
+        <button class="btn btn-outline-success" style="float:right; height: 30px;font-size: 12px;margin-left: 10px;" ng-click="saveRule()">{{flowRuleDialog.confirmBtnText}}</button>
         <button ng-if="flowRuleDialog.saveAndContinueBtnText" class="btn btn-default" style="float:right; height: 30px;font-size: 12px;"
           ng-click="saveRuleAndContinue()">{{flowRuleDialog.saveAndContinueBtnText}}</button>
       </div>
