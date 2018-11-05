@@ -13,14 +13,14 @@
           <span class="brand" style="font-size: 13px;">
             <i class="fa fa-sort-amount-asc" aria-hidden="true" ng-show="!isDescOrder"></i>
             <i class="fa fa-sort-amount-desc" aria-hidden="true" ng-show="isDescOrder"></i>
-            {{metricTypeDesc}}&nbsp;实时监控
+            {{metricTypeDesc}}&nbsp;Real-time Monitoring
           </span>
           <button class="btn btn-danger" style="float: right;margin-right: 10px;height: 30px;font-size: 12px;" ng-click="setDescOrder()"
-            ng-if="!isDescOrder">降序</button>
+            ng-if="!isDescOrder">Descending</button>
           <button class="btn btn-danger" style="float: right;margin-right: 10px;height: 30px;font-size: 12px;" ng-click="setAscOrder()"
-            ng-if="isDescOrder">升序</button>
+            ng-if="isDescOrder">Ascending</button>
 
-          <input class="form-control witdh-200" placeholder="关键字" ng-model="serviceQuery" ng-change="searchService()" style="margin-right: 20px;">
+          <input class="form-control witdh-200" placeholder="keyword..." ng-model="serviceQuery" ng-change="searchService()" style="margin-right: 20px;">
         </div>
         <!--.tools-header -->
         <!--<div id="g2container"></div>-->
@@ -50,10 +50,10 @@
                         <table class="table table-hover table-striped table-bordered">
                           <thead>
                             <tr style="font-size: 13px;text-align:center;font-weight: bold;">
-                              <td style="word-wrap:break-word;word-break:break-all;">时间</td>
-                              <td style="word-wrap:break-word;word-break:break-all;">p_qps</td>
-                              <td style="word-wrap:break-word;word-break:break-all;">b_qps</td>
-                              <td style="word-wrap:break-word;word-break:break-all;">rt(ms)</td>
+                              <td style="word-wrap:break-word;word-break:break-all;">Timestamp</td>
+                              <td style="word-wrap:break-word;word-break:break-all;">Passed QPS</td>
+                              <td style="word-wrap:break-word;word-break:break-all;">Blocked QPS</td>
+                              <td style="word-wrap:break-word;word-break:break-all;">RT</td>
                             </tr>
                           </thead>
                           <!-- thead -->
@@ -62,7 +62,7 @@
                               <td style="word-wrap:break-word;word-break:break-all; ">{{tableObj.timestamp | date: 'HH:mm:ss'}}</td>
                               <td style="word-wrap:break-word;word-break:break-all; ">{{tableObj.passQps | number : 1}}</td>
                               <td style="word-wrap:break-word;word-break:break-all; ">{{tableObj.blockQps | number : 1}}</td>
-                              <td style="word-wrap:break-word;word-break:break-all;">{{tableObj.rt | number : 1}}</td>
+                              <td style="word-wrap:break-word;word-break:break-all;">{{tableObj.rt | number : 1}}ms</td>
                             </tr>
                             <tr style="font-size: 12px;text-align:center;" ng-repeat="_tr in [] | range : (6 - metric.shortData.length)">
                               <td ng-repeat="_td in [] | range : 4">-</td>
@@ -95,14 +95,11 @@
             on-page-change="pageChanged(newPageNumber)">
           </dir-pagination-controls>
           <div class="tools" style="">
-            <span>共 {{emptyObjs.length}} 条记录, </span>
+            <span>{{emptyObjs.length}} items in total. </span>
             <span>
-              每页 {{servicePageConfig.pageSize}} 条记录
-              <!--每页-->
-              <!--<input class="form-control" ng-model="servicePageConfig.pageSize" ng-change="pageSizeChanged()">-->
-              <!--条记录,-->
+              {{servicePageConfig.pageSize}} items per page,
             </span>
-            <span>第 {{servicePageConfig.currentPageIndex}} / {{servicePageConfig.totalPage}} 页</span>
+            <span>current page {{servicePageConfig.currentPageIndex}} / {{servicePageConfig.totalPage}}.</span>
           </div>
           <!-- .tools -->
         </div>

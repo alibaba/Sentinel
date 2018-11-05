@@ -74,27 +74,27 @@ angular.module('sentinelDashboardApp').service('ParamFlowService', ['$http', fun
 
   this.checkRuleValid = function (rule) {
       if (!rule.resource || rule.resource === '') {
-          alert('资源名称不能为空');
+          alert('Resource name cannot be empty');
           return false;
       }
       if (rule.grade != 1) {
-          alert('未知的限流模式');
+          alert('Invalid mode');
           return false;
       }
       if (rule.count < 0) {
-          alert('限流阈值必须大于等于 0');
+          alert('Threshold should be at least 0');
           return false;
       }
       if (rule.paramIdx === undefined || rule.paramIdx === '' || isNaN(rule.paramIdx) || rule.paramIdx < 0) {
-          alert('热点参数索引必须大于等于 0');
+          alert('Parameter index should be at least 0');
           return false;
       }
       if (rule.paramFlowItemList !== undefined) {
           for (var i = 0; i < rule.paramFlowItemList.length; i++) {
               var item = rule.paramFlowItemList[i];
               if (notValidParamItem(item)) {
-                  alert('热点参数例外项不合法，请检查值和类型是否正确：参数为 ' + item.object + ', 类型为 ' +
-                      item.classType + ', 限流阈值为 ' + item.count);
+                  alert('Invalid exception item, please check: param item value is ' + item.object + ', item type is ' +
+                      item.classType + ', threshold is ' + item.count);
                   return false;
               }
           }

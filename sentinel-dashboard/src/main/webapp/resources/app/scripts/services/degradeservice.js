@@ -63,24 +63,24 @@ app.service('DegradeService', ['$http', function ($http) {
 
   this.checkRuleValid = function (rule) {
       if (rule.resource === undefined || rule.resource === '') {
-          alert('资源名称不能为空');
+          alert('Resource name cannot be empty');
           return false;
       }
       if (rule.grade === undefined || rule.grade < 0) {
-          alert('未知的降级策略');
+          alert('Invalid strategy');
           return false;
       }
       if (rule.count === undefined || rule.count === '' || rule.count < 0) {
-          alert('降级阈值不能为空或小于 0');
+          alert('Degrade threshold should be at least 0');
           return false;
       }
       if (rule.timeWindow === undefined || rule.timeWindow === '' || rule.timeWindow <= 0) {
-          alert('降级时间窗口必须大于 0');
+          alert('Degrade time window should be positive');
           return false;
       }
       // 异常比率类型.
       if (rule.grade == 1 && rule.count > 1) {
-          alert('异常比率超出范围：[0.0 - 1.0]');
+          alert('Exception ratio exceeds the range: [0.0 - 1.0]');
           return false;
       }
       return true;

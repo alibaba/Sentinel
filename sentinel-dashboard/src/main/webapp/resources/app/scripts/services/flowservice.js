@@ -81,33 +81,33 @@ app.service('FlowService', ['$http', function ($http) {
 
   this.checkRuleValid = function (rule) {
         if (rule.resource === undefined || rule.resource === '') {
-            alert('资源名称不能为空');
+            alert('Resource name cannot be empty');
             return false;
         }
         if (rule.count === undefined || rule.count < 0) {
-            alert('限流阈值必须大于等于 0');
+            alert('Threshold should be at least 0');
             return false;
         }
         if (rule.strategy === undefined || rule.strategy < 0) {
-            alert('无效的流控模式');
+            alert('Invalid flow strategy');
             return false;
         }
         if (rule.strategy == 1 || rule.strategy == 2) {
             if (rule.refResource === undefined || rule.refResource == '') {
-                alert('请填写关联资源或入口');
+                alert('Please input reference resource or entrance name');
                 return false;
             }
         }
         if (rule.controlBehavior === undefined || rule.controlBehavior < 0) {
-            alert('无效的流控整形方式');
+            alert('Invalid flow control behavior');
             return false;
         }
         if (rule.controlBehavior == 1 && notNumberGreaterThanZero(rule.warmUpPeriodSec)) {
-            alert('预热时长必须大于 0');
+            alert('Warm-up duration should be positive');
             return false;
         }
         if (rule.controlBehavior == 2 && notNumberGreaterThanZero(rule.maxQueueingTimeMs)) {
-            alert('排队超时时间必须大于 0');
+            alert('Queueing timeout should be positive');
             return false;
         }
         return true;

@@ -4,7 +4,7 @@
   </div>
   <div class="col-md-6">
     <button class="btn btn-default-inverse" style="float: right; margin-right: 10px;" ng-disabled="!macInputModel" ng-click="addNewRule()">
-      <i class="fa fa-plus"></i>&nbsp;&nbsp;新增流控规则</button>
+      <i class="fa fa-plus"></i>&nbsp;&nbsp;Add Flow Rule</button>
   </div>
 </div>
 
@@ -15,13 +15,13 @@
     <div class="col-md-12">
       <div class="card">
         <div class="inputs-header">
-          <span class="brand" style="font-size: 13px;">流控规则</span>
+          <span class="brand" style="font-size: 13px;">Flow Rules</span>
           <!--<button class="btn btn-danger" style="float: right;margin-right: 10px;height: 30px;font-size: 12px;" ng-click="disableAll()">全部禁用</button>-->
-          <button class="btn btn-primary" style="float: right; margin-right: 10px; height: 30px;font-size: 12px;" ng-click="getMachineRules()">刷新</button>
-          <input class="form-control witdh-200" placeholder="关键字" ng-model="searchKey">
+          <button class="btn btn-primary" style="float: right; margin-right: 10px; height: 30px;font-size: 12px;" ng-click="getMachineRules()">Refresh</button>
+          <input class="form-control witdh-200" placeholder="keyword" ng-model="searchKey">
           <div class="control-group" style="float:right;margin-right: 10px;margin-bottom: -10px;">
             <selectize id="gsInput" class="selectize-input-200" config="macsInputConfig" options="macsInputOptions" ng-model="macInputModel"
-              placeholder="机器"></selectize>
+              placeholder="machines"></selectize>
           </div>
         </div>
 
@@ -31,28 +31,28 @@
             <thead>
               <tr style="background: #F3F5F7;">
                 <td style="width: 40%">
-                  资源名
+                  Resource Name
                 </td>
                 <td style="width: 10%;">
-                  流控应用
+                  Limit Origin
+                </td>
+                <td style="width: 10%; word-break: break-word;" title="Strategy of flow control by invocation relations">
+                  Strategy
+                </td>
+                <td style="width: 10%; word-break: break-word;">
+                  Metric Type
                 </td>
                 <td style="width: 10%;">
-                  流控模式
+                  Threshold
                 </td>
-                <td style="width: 10%;">
-                  阈值类型
-                </td>
-                <td style="width: 10%;">
-                  单机阈值
-                </td>
-                <td style="width: 10%;">
-                  流控方式
+                <td style="width: 10%; word-break: break-word;">
+                  Control Behavior
                 </td>
                 <!--<td style="width: 8%;">-->
                 <!--状态-->
                 <!--</td>-->
                 <td style="width: 12%;">
-                  操作
+                  Operations
                 </td>
               </tr>
             </thead>
@@ -62,24 +62,24 @@
                 <td style="word-wrap:break-word;word-break:break-all;">{{rule.resource}}</td>
                 <td style="word-wrap:break-word;word-break:break-all;">{{rule.limitApp }}</td>
                 <td>
-                  <span ng-if="rule.strategy == 0">直接</span>
-                  <span ng-if="rule.strategy == 1">关联</span>
-                  <span ng-if="rule.strategy == 2">链路</span>
+                  <span ng-if="rule.strategy == 0">Direct</span>
+                  <span ng-if="rule.strategy == 1">Relate</span>
+                  <span ng-if="rule.strategy == 2" title="By entrance of invocation chain">Chain</span>
                 </td>
                 <td>
-                  {{rule.grade==0 ? '线程数' : 'QPS'}}
+                  {{rule.grade == 0 ? 'Thread Count' : 'QPS'}}
                 </td>
                 <td style="word-wrap:break-word;word-break:break-all;">
                   {{rule.count}}
                 </td>
                 <td>
-                  <span ng-if="rule.controlBehavior == 0">快速失败</span>
+                  <span ng-if="rule.controlBehavior == 0">Fast Reject</span>
                   <span ng-if="rule.controlBehavior == 1">Warm Up</span>
-                  <span ng-if="rule.controlBehavior == 2">排队等待</span>
+                  <span ng-if="rule.controlBehavior == 2" title="Uniform rate limiting">Queueing</span>
                 </td>
                 <td>
-                  <button class="btn btn-xs btn-default" type="button" ng-click="editRule(rule)" style="font-size: 12px; height:25px;">编辑</button>
-                  <button class="btn btn-xs btn-default" type="button" ng-click="deleteRule(rule)" style="font-size: 12px; height:25px;">删除</button>
+                  <button class="btn btn-xs btn-default" type="button" ng-click="editRule(rule)" style="font-size: 12px; height:25px;">Edit</button>
+                  <button class="btn btn-xs btn-outline-danger" type="button" ng-click="deleteRule(rule)" style="font-size: 12px; height:25px;">Delete</button>
                 </td>
               </tr>
             </tbody>
@@ -91,10 +91,9 @@
             on-page-change="">
           </dir-pagination-controls>
           <div class="tools" style="">
-            <span>共 {{rulesPageConfig.totalCount}} 条记录, </span>
+            <span>{{rulesPageConfig.totalCount}} items in total. </span>
             <span>
-              每页
-              <input class="form-control" ng-model="rulesPageConfig.pageSize"> 条记录
+              <input class="form-control" ng-model="rulesPageConfig.pageSize"> items per page.
             </span>
             <!--<span>第 {{rulesPageConfig.currentPageIndex}} / {{rulesPageConfig.totalPage}} 页</span>-->
           </div>

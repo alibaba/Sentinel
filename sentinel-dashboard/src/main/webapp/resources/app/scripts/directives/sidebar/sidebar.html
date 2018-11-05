@@ -3,16 +3,16 @@
     <ul class="nav in" id="side-menu">
       <li class="sidebar-search">
         <div class="input-group" style="">
-          <input type="text" class="form-control highlight-border" placeholder="应用名" ng-model="searchApp">
+          <input type="text" class="form-control highlight-border" placeholder="App name..." ng-model="searchApp">
           <span class="input-group-btn">
-            <button class="btn btn-secondary btn-default-inverse" type="button">搜索</button>
+            <button class="btn btn-secondary btn-default-inverse" type="button">Search</button>
           </span>
         </div>
       </li>
       <li ui-sref-active="active">
         <a ui-sref="dashboard.home" style="font-size:16px;">
           <span class="glyphicon glyphicon-dashboard"></span>
-          &nbsp;&nbsp;首页</a>
+          &nbsp;&nbsp;Home</a>
       </li>
 
       <li ng-class="{active: true}" ng-repeat="entry in apps | filter: { app: searchApp }">{{dropDown}}
@@ -25,36 +25,36 @@
         <ul class="nav nav-second-level" ng-show="entry.active">
           <li ui-sref-active="active">
             <a ui-sref="dashboard.metric({app: entry.app})">
-              <i class="fa fa-bar-chart"></i>&nbsp;&nbsp;实时监控</a>
+              <i class="fa fa-bar-chart"></i>&nbsp;&nbsp;Monitoring</a>
           </li>
           <li ui-sref-active="active">
             <a ui-sref="dashboard.identity({app: entry.app})">
-              <i class="glyphicon glyphicon-list-alt"></i>&nbsp;&nbsp;簇点链路</a>
+              <i class="glyphicon glyphicon-list-alt"></i>&nbsp;&nbsp;Resource Chain</a>
           </li>
 
           <li ui-sref-active="active">
             <a ui-sref="dashboard.flow({app: entry.app})">
-              <i class="glyphicon glyphicon-filter"></i>&nbsp;&nbsp;流控规则</a>
+              <i class="glyphicon glyphicon-filter"></i>&nbsp;&nbsp;Flow Rules</a>
           </li>
           <li ui-sref-active="active">
             <a ui-sref="dashboard.degrade({app: entry.app})">
-              <i class="glyphicon glyphicon-flash"></i>&nbsp;&nbsp;降级规则</a>
+              <i class="glyphicon glyphicon-flash"></i>&nbsp;&nbsp;Degrade Rules</a>
           </li>
           <li ui-sref-active="active">
             <a ui-sref="dashboard.paramFlow({app: entry.app})">
-              <i class="glyphicon glyphicon-fire"></i>&nbsp;&nbsp;热点规则</a>
+              <i class="glyphicon glyphicon-fire"></i>&nbsp;&nbsp;Parameter Rules</a>
           </li>
           <li ui-sref-active="active">
             <a ui-sref="dashboard.system({app: entry.app})">
-              <i class="glyphicon glyphicon-lock"></i>&nbsp;&nbsp;系统规则</a>
+              <i class="glyphicon glyphicon-lock"></i>&nbsp;&nbsp;System Rules</a>
           </li>
           <li ui-sref-active="active">
             <a ui-sref="dashboard.authority({app: entry.app})">
-              <i class="glyphicon glyphicon-check"></i>&nbsp;&nbsp;授权规则</a>
+              <i class="glyphicon glyphicon-check"></i>&nbsp;&nbsp;Authority Rules</a>
           </li>
           <li ui-sref-active="active">
             <a ui-sref="dashboard.machine({app: entry.app})">
-              <i class="glyphicon glyphicon-th-list"></i>&nbsp;&nbsp;机器列表</a>
+              <i class="glyphicon glyphicon-th-list"></i>&nbsp;&nbsp;Machine List</a>
           </li>
 
         </ul>
