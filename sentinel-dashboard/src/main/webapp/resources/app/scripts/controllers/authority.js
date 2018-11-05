@@ -46,7 +46,7 @@ angular.module('sentinelDashboardApp').controller('AuthorityRuleController', ['$
                     }
                 })
                 .error((data, header, config, status) => {
-                    $scope.loadError = {message: "未知错误"};
+                    $scope.loadError = {message: "Unknown error"};
                 });
         };
         $scope.getMachineRules = getMachineRules;
@@ -57,9 +57,9 @@ angular.module('sentinelDashboardApp').controller('AuthorityRuleController', ['$
         $scope.editRule = function (rule) {
             $scope.currentRule = rule;
             $scope.authorityRuleDialog = {
-                title: '编辑授权规则',
+                title: 'Edit Authority Rule',
                 type: 'edit',
-                confirmBtnText: '保存',
+                confirmBtnText: 'Save',
             };
             authorityRuleDialog = ngDialog.open({
                 template: '/app/views/dialog/authority-rule-dialog.html',
@@ -81,9 +81,9 @@ angular.module('sentinelDashboardApp').controller('AuthorityRuleController', ['$
                 }
             };
             $scope.authorityRuleDialog = {
-                title: '新增授权规则',
+                title: 'Add New Authority Rule',
                 type: 'add',
-                confirmBtnText: '新增',
+                confirmBtnText: 'Add',
                 showAdvanceButton: true,
             };
             authorityRuleDialog = ngDialog.open({
@@ -111,13 +111,13 @@ angular.module('sentinelDashboardApp').controller('AuthorityRuleController', ['$
                     getMachineRules();
                     authorityRuleDialog.close();
                 } else {
-                    alert('添加规则失败：' + data.msg);
+                    alert('Failed to add new rule: ' + data.msg);
                 }
             }).error((data) => {
                 if (data) {
-                    alert('添加规则失败：' + data.msg);
+                    alert('Failed to add new rule: ' + data.msg);
                 } else {
-                    alert("添加规则失败：未知错误");
+                    alert('Failed to add new rule: Unknown error');
                 }
             });
         }
@@ -125,7 +125,7 @@ angular.module('sentinelDashboardApp').controller('AuthorityRuleController', ['$
         function saveRuleAndPush(rule, edit) {
             AuthorityRuleService.saveRule(rule).success(function (data) {
                 if (data.success) {
-                    alert("修改规则成功");
+                    alert("Rule successfully edited");
                     getMachineRules();
                     if (edit) {
                         authorityRuleDialog.close();
@@ -133,20 +133,20 @@ angular.module('sentinelDashboardApp').controller('AuthorityRuleController', ['$
                         confirmDialog.close();
                     }
                 } else {
-                    alert('修改规则失败：' + data.msg);
+                    alert('Failed to edit rule: ' + data.msg);
                 }
             }).error((data) => {
                 if (data) {
-                    alert('修改规则失败：' + data.msg);
+                    alert('Failed to edit rule: ' + data.msg);
                 } else {
-                    alert("修改规则失败：未知错误");
+                    alert('Failed to edit rule: Unknown error');
                 }
             });
         }
 
         function deleteRuleAndPush(entity) {
             if (entity.id === undefined || isNaN(entity.id)) {
-                alert('规则 ID 不合法！');
+                alert('Invalid rule ID');
                 return;
             }
             AuthorityRuleService.deleteRule(entity).success((data) => {
@@ -154,13 +154,13 @@ angular.module('sentinelDashboardApp').controller('AuthorityRuleController', ['$
                     getMachineRules();
                     confirmDialog.close();
                 } else {
-                    alert('删除规则失败：' + data.msg);
+                    alert('Failed to delete the rule: ' + data.msg);
                 }
             }).error((data) => {
                 if (data) {
-                    alert('删除规则失败：' + data.msg);
+                    alert('Failed to delete the rule: ' + data.msg);
                 } else {
-                    alert("删除规则失败：未知错误");
+                    alert('Failed to delete the rule: Unknown error');
                 }
             });
         };
@@ -169,12 +169,12 @@ angular.module('sentinelDashboardApp').controller('AuthorityRuleController', ['$
         $scope.deleteRule = function (ruleEntity) {
             $scope.currentRule = ruleEntity;
             $scope.confirmDialog = {
-                title: '删除授权规则',
+                title: 'Delete Authority Rule',
                 type: 'delete_rule',
-                attentionTitle: '请确认是否删除如下授权限流规则',
-                attention: '资源名: ' + ruleEntity.rule.resource + ', 流控应用: ' + ruleEntity.rule.limitApp +
-                    ', 类型: ' + (ruleEntity.rule.strategy === 0 ? '白名单' : '黑名单'),
-                confirmBtnText: '删除',
+                attentionTitle: 'Please confirm the following rule to be deleted',
+                attention: 'Resource name: ' + ruleEntity.rule.resource + ', limit Origin: ' + ruleEntity.rule.limitApp +
+                    ', type: ' + (ruleEntity.rule.strategy === 0 ? 'Whitelist' : 'Blacklist'),
+                confirmBtnText: 'Delete',
             };
             confirmDialog = ngDialog.open({
                 template: '/app/views/dialog/confirm-dialog.html',

@@ -3,12 +3,12 @@
     <span style="font-size: 30px;font-weight: bold;">{{app}}</span>
   </div>
   <div class="btn-group" style="float:right; margin-right: 30px;" ng-show="!isTreeView" ng-click="treeView()">
-    <button class="btn btn-default-inverse" style="height: 30px;font-size: 12px;">树状视图</button>
-    <button class="btn btn-main" style="height: 30px;font-size: 12px;">列表视图</button>
+    <button class="btn btn-default-inverse" style="height: 30px;font-size: 12px;">Tree View</button>
+    <button class="btn btn-main" style="height: 30px;font-size: 12px;">List View</button>
   </div>
   <div class="btn-group" style="float:right; margin-right: 30px;" ng-show="isTreeView" ng-click="listView()">
-    <button class="btn btn-main" style="height: 30px;font-size: 12px;">树状视图</button>
-    <button class="btn btn-default-inverse" style="height: 30px;font-size: 12px;">列表视图</button>
+    <button class="btn btn-main" style="height: 30px;font-size: 12px;">Tree View</button>
+    <button class="btn btn-default-inverse" style="height: 30px;font-size: 12px;">List View</button>
   </div>
 </div>
 
@@ -19,16 +19,12 @@
     <div class="col-md-12">
       <div class="card">
         <div class="inputs-header">
-          <span class="brand" style="font-size: 13px;">簇点链路</span>
-          <button class="btn btn-primary" style="float: right; margin-right: 10px; height: 30px;font-size: 12px;" ng-click="queryIdentities()">刷新</button>
-          <!-- <button class="btn btn-danger" style="float: right;margin-right: 10px;height: 30px;font-size: 12px;" ng-click="expandAll()"
-            ng-if="!isExpand && isTreeView">展开</button>
-          <button class="btn btn-danger" style="float: right;margin-right: 10px;height: 30px;font-size: 12px;" ng-click="collapseAll()"
-            ng-if="isExpand && isTreeView">折叠</button> -->
-          <input class="form-control witdh-200" placeholder="关键字" ng-model="searchKey" ng-change="searchChange(searchKey)">
+          <span class="brand" style="font-size: 13px;">Resource Chain</span>
+          <button class="btn btn-primary" style="float: right; margin-right: 10px; height: 30px;font-size: 12px;" ng-click="queryIdentities()">Refresh</button>
+          <input class="form-control witdh-200" placeholder="keyword" ng-model="searchKey" ng-change="searchChange(searchKey)">
           <div class="control-group" style="float:right;margin-right: 10px;margin-bottom: -10px;">
             <selectize id="gsInput" class="selectize-input-200" config="macsInputConfig" options="macsInputOptions" ng-model="macInputModel"
-              placeholder="机器"></selectize>
+              placeholder="machine"></selectize>
           </div>
         </div>
 
@@ -38,16 +34,16 @@
             <thead>
               <thead>
                 <tr style="background: #F3F5F7;">
-                  <td style="width: 40%;">
-                    资源名
+                  <td style="width: 40%; word-break: break-word;">
+                    Resource
                   </td>
-                  <td style="width: 7%;">通过QPS</td>
-                  <td style="width: 7%;">拒绝QPS</td>
-                  <td style="width: 5%;">线程数</td>
-                  <td style="width: 6%;">平均RT</td>
-                  <td style="width: 6%;">分钟通过</td>
-                  <td style="width: 6%;">分钟拒绝</td>
-                  <td style="width: 23%">操作</td>
+                  <td style="width: 7%; word-break: break-word;">Passed QPS</td>
+                  <td style="width: 7%; word-break: break-word;">Blocked QPS</td>
+                  <td style="width: 6%; word-break: break-word;">Thread Count</td>
+                  <td style="width: 6%; word-break: break-word;" title="average response time">RT</td>
+                  <td style="width: 6%; word-break: break-word;">1-min Passed</td>
+                  <td style="width: 6%; word-break: break-word;">1-min Blocked</td>
+                  <td style="width: 22%; word-break: break-word;">Operations</td>
                 </tr>
                 <tr></tr>
               </thead>
@@ -55,10 +51,7 @@
                 <tr dir-paginate="resource in identities | itemsPerPage: pageSize" current-page="currentPage" pagination-id="entriesPagination"
                   data-tt-id="{{resource.ttId}}" data-tt-parent-id="{{resource.parentTtId}}" data-tt-visible="{{resource.visible}}">
                   <td style="white-space: normal; text-align: left;">
-                    <!--<a ng-click="copyIdentity(resource.resource)"-->
-                    <!--title="{{resource.resource}} 单击复制到剪切板">-->
                     <span style="word-wrap:break-word;word-break:break-all;">{{resource.resource}}</span>
-                    <!--</a>-->
                   </td>
                   <td>{{resource.passQps}}</td>
                   <td>{{resource.blockQps}}</td>
@@ -71,13 +64,13 @@
                   <td>
                     <div class="control-group">
                       <button class="btn btn-xs btn-default" type="button" ng-click="addNewFlowRule(resource.resource)" style="font-size: 12px; height:25px;">
-                        <i class="fa fa-plus"></i>&nbsp;流控</button>
+                        <i class="fa fa-plus"></i>&nbsp;Flow Rule</button>
                       <button class="btn btn-xs btn-default" type="button" ng-click="addNewDegradeRule(resource.resource)" style="font-size: 12px; height:25px;">
-                        <i class="fa fa-plus"></i>&nbsp;降级</button>
+                        <i class="fa fa-plus"></i>&nbsp;Degrade Rule</button>
                       <button class="btn btn-xs btn-default" type="button" ng-click="addNewParamFlowRule(resource.resource)" style="font-size: 12px; height:25px;">
-                        <i class="fa fa-plus"></i>&nbsp;热点</button>
+                        <i class="fa fa-plus"></i>&nbsp;Parameter Rule</button>
                       <button class="btn btn-xs btn-default" type="button" ng-click="addNewAuthorityRule(resource.resource)" style="font-size: 12px; height:25px;">
-                        <i class="fa fa-plus"></i>&nbsp;授权</button>
+                        <i class="fa fa-plus"></i>&nbsp;Authority Rule</button>
                     </div>
                   </td>
                 </tr>
@@ -90,10 +83,9 @@
             on-page-change="">
           </dir-pagination-controls>
           <div class="tools">
-            <span>共 {{totalCount}} 条记录, </span>
+            <span>{{totalCount}} records in total. </span>
             <span>
-              每页
-              <input class="form-control" ng-model="pageSize"> 条记录
+              <input class="form-control" ng-model="pageSize"> items per page.
             </span>
             <!--<span>第 {{currentPage}} / {{totalPage}} 页</span>-->
           </div>

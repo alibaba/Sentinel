@@ -40,15 +40,15 @@ angular.module('sentinelDashboardApp').service('AuthorityRuleService', ['$http',
 
     this.checkRuleValid = function checkRuleValid(rule) {
         if (rule.resource === undefined || rule.resource === '') {
-            alert('资源名称不能为空');
+            alert('Resource name cannot be empty');
             return false;
         }
         if (rule.limitApp === undefined || rule.limitApp === '') {
-            alert('流控针对应用不能为空');
+            alert('Limit origin cannot be empty');
             return false;
         }
         if (rule.strategy === undefined) {
-            alert('必须选择黑白名单模式');
+            alert('Invalid strategy');
             return false;
         }
         return true;

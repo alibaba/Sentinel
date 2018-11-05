@@ -50,9 +50,9 @@ app.controller('FlowCtl', ['$scope', '$stateParams', 'FlowService', 'ngDialog',
     $scope.editRule = function (rule) {
       $scope.currentRule = rule;
       $scope.flowRuleDialog = {
-        title: '编辑流控规则',
+        title: 'Edit Flow Rule',
         type: 'edit',
-        confirmBtnText: '保存',
+        confirmBtnText: 'Save',
         showAdvanceButton: rule.controlBehavior == 0 && rule.strategy == 0
       };
       flowRuleDialog = ngDialog.open({
@@ -75,9 +75,9 @@ app.controller('FlowCtl', ['$scope', '$stateParams', 'FlowService', 'ngDialog',
         limitApp: 'default'
       };
       $scope.flowRuleDialog = {
-        title: '新增流控规则',
+        title: 'Add Flow Rule',
         type: 'add',
-        confirmBtnText: '新增',
+        confirmBtnText: 'Add',
         showAdvanceButton: true,
       };
       flowRuleDialog = ngDialog.open({
@@ -103,12 +103,12 @@ app.controller('FlowCtl', ['$scope', '$stateParams', 'FlowService', 'ngDialog',
     $scope.deleteRule = function (rule) {
       $scope.currentRule = rule;
       $scope.confirmDialog = {
-        title: '删除流控规则',
+        title: 'Delete Flow Rule',
         type: 'delete_rule',
-        attentionTitle: '请确认是否删除如下流控规则',
-        attention: '资源名: ' + rule.resource + ', 流控应用: ' + rule.limitApp
-          + ', 阈值类型: ' + (rule.grade == 0 ? '线程数' : 'QPS') + ', 阈值: ' + rule.count,
-        confirmBtnText: '删除',
+        attentionTitle: 'Please confirm the following rule to be deleted',
+        attention: 'Resource name: ' + rule.resource + ', limit Origin: ' + rule.limitApp
+          + ', metric type: ' + (rule.grade == 0 ? 'thread count' : 'QPS') + ', threshold: ' + rule.count,
+        confirmBtnText: 'Delete',
       };
       confirmDialog = ngDialog.open({
         template: '/app/views/dialog/confirm-dialog.html',
@@ -131,7 +131,7 @@ app.controller('FlowCtl', ['$scope', '$stateParams', 'FlowService', 'ngDialog',
           getMachineRules();
           confirmDialog.close();
         } else {
-          alert('失败!');
+          alert('Failed');
         }
       });
     };
@@ -142,7 +142,7 @@ app.controller('FlowCtl', ['$scope', '$stateParams', 'FlowService', 'ngDialog',
           getMachineRules();
           flowRuleDialog.close();
         } else {
-          alert('失败!');
+          alert('Failed');
         }
       });
     };
@@ -164,7 +164,7 @@ app.controller('FlowCtl', ['$scope', '$stateParams', 'FlowService', 'ngDialog',
             confirmDialog.close();
           }
         } else {
-          alert('失败!');
+          alert('Failed');
         }
       });
     }
