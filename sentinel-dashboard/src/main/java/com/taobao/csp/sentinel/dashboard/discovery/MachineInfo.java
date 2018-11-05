@@ -16,15 +16,22 @@
 package com.taobao.csp.sentinel.dashboard.discovery;
 
 import java.util.Date;
+import java.util.Objects;
 
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 public class MachineInfo implements Comparable<MachineInfo> {
+
     private String app = "";
     private String hostname = "";
     private String ip = "";
     private Integer port = -1;
-    private Date version;
+    private Date timestamp;
+
+    /**
+     * Indicates the version of Sentinel client (since 0.2.0).
+     */
+    private String version;
 
     public static MachineInfo of(String app, String ip, Integer port) {
         MachineInfo machineInfo = new MachineInfo();
@@ -66,12 +73,21 @@ public class MachineInfo implements Comparable<MachineInfo> {
         this.ip = ip;
     }
 
-    public Date getVersion() {
+    public Date getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Date timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public String getVersion() {
         return version;
     }
 
-    public void setVersion(Date version) {
+    public MachineInfo setVersion(String version) {
         this.version = version;
+        return this;
     }
 
     @Override
@@ -95,35 +111,32 @@ public class MachineInfo implements Comparable<MachineInfo> {
             ", hostname='" + hostname + '\'' +
             ", ip='" + ip + '\'' +
             ", port=" + port +
-            ", version=" + version +
+            ", timestamp=" + timestamp +
+            ", version='" + version + '\'' +
             '}';
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof MachineInfo)) {
-            return false;
-        }
-
+        if (this == o) { return true; }
+        if (!(o instanceof MachineInfo)) { return false; }
         MachineInfo that = (MachineInfo)o;
-
-        if (app != null ? !app.equals(that.app) : that.app != null) {
-            return false;
-        }
-        if (hostname != null ? !hostname.equals(that.hostname) : that.hostname != null) {
-            return false;
-        }
-        return ip != null ? ip.equals(that.ip) : that.ip == null;
+        return Objects.equals(app, that.app) &&
+            Objects.equals(ip, that.ip) &&
+            Objects.equals(port, that.port);
     }
 
     @Override
     public int hashCode() {
-        int result = app != null ? app.hashCode() : 0;
-        result = 31 * result + (hostname != null ? hostname.hashCode() : 0);
-        result = 31 * result + (ip != null ? ip.hashCode() : 0);
-        return result;
+        return Objects.hash(app, ip, port);
+    }
+
+    /**
+     * Information for log
+     *
+     * @return
+     */
+    public String toLogString() {
+        return app + "|" + ip + "|" + port + "|" + version;
     }
 }

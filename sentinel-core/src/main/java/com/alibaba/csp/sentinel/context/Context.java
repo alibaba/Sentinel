@@ -32,8 +32,9 @@ import com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot;
  * <li>the current {@link Entry}: the current invocation point.</li>
  * <li>the current {@link Node}: the statistics related to the
  * {@link Entry}.</li>
- * <li>the origin:The origin is useful when we want to control different
- * invoker/consumer separately. Usually the origin could be the Service Consumer's app name. </li>
+ * <li>the origin: The origin is useful when we want to control different
+ * invoker/consumer separately. Usually the origin could be the Service Consumer's app name
+ * or origin IP. </li>
  * </ul>
  * <p>
  * Each {@link SphU}#entry() or {@link SphO}#entry() should be in a {@link Context},
@@ -58,7 +59,7 @@ public class Context {
     /**
      * Context name.
      */
-    private String name;
+    private final String name;
 
     /**
      * The entrance node of current invocation tree.
@@ -71,14 +72,36 @@ public class Context {
     private Entry curEntry;
 
     /**
-     * the origin of this context, usually the origin is the Service Consumer's app name.
+     * The origin of this context (usually indicate different invokers, e.g. service consumer name or origin IP).
      */
     private String origin = "";
 
+    private final boolean async;
+
+    /**
+     * Create a new async context.
+     *
+     * @param entranceNode entrance node of the context
+     * @param name context name
+     * @return the new created context
+     * @since 0.2.0
+     */
+    public static Context newAsyncContext(DefaultNode entranceNode, String name) {
+        return new Context(name, entranceNode, true);
+    }
+
     public Context(DefaultNode entranceNode, String name) {
-        super();
+        this(name, entranceNode, false);
+    }
+
+    public Context(String name, DefaultNode entranceNode, boolean async) {
         this.name = name;
         this.entranceNode = entranceNode;
+        this.async = async;
+    }
+
+    public boolean isAsync() {
+        return async;
     }
 
     public String getName() {
@@ -89,39 +112,42 @@ public class Context {
         return curEntry.getCurNode();
     }
 
-    public void setCurNode(Node node) {
+    public Context setCurNode(Node node) {
         this.curEntry.setCurNode(node);
+        return this;
     }
 
     public Entry getCurEntry() {
         return curEntry;
     }
 
-    public void setCurEntry(Entry curEntry) {
+    public Context setCurEntry(Entry curEntry) {
         this.curEntry = curEntry;
+        return this;
     }
 
     public String getOrigin() {
         return origin;
     }
 
-    public void setOrigin(String origin) {
+    public Context setOrigin(String origin) {
         this.origin = origin;
+        return this;
     }
 
     public double getOriginTotalQps() {
         return getOriginNode() == null ? 0 : getOriginNode().totalQps();
     }
 
-    public double getOriginBlockedQps() {
-        return getOriginNode() == null ? 0 : getOriginNode().blockedQps();
+    public double getOriginBlockQps() {
+        return getOriginNode() == null ? 0 : getOriginNode().blockQps();
     }
 
-    public double getOriginPassedReqQps() {
+    public double getOriginPassReqQps() {
         return getOriginNode() == null ? 0 : getOriginNode().successQps();
     }
 
-    public double getOriginPassedQps() {
+    public double getOriginPassQps() {
         return getOriginNode() == null ? 0 : getOriginNode().passQps();
     }
 
@@ -129,8 +155,8 @@ public class Context {
         return getOriginNode() == null ? 0 : getOriginNode().totalRequest();
     }
 
-    public long getOriginBlockedRequest() {
-        return getOriginNode() == null ? 0 : getOriginNode().blockedRequest();
+    public long getOriginBlockRequest() {
+        return getOriginNode() == null ? 0 : getOriginNode().blockRequest();
     }
 
     public double getOriginAvgRt() {
@@ -160,5 +186,16 @@ public class Context {
 
     public Node getOriginNode() {
         return curEntry == null ? null : curEntry.getOriginNode();
+    }
+
+    @Override
+    public String toString() {
+        return "Context{" +
+            "name='" + name + '\'' +
+            ", entranceNode=" + entranceNode +
+            ", curEntry=" + curEntry +
+            ", origin='" + origin + '\'' +
+            ", async=" + async +
+            '}';
     }
 }

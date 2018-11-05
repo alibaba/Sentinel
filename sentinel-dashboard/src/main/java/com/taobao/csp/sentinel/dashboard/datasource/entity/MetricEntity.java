@@ -30,16 +30,13 @@ public class MetricEntity {
      */
     private Date timestamp;
     private String resource;
-    private Long passedQps;
+    private Long passQps;
     private Long successQps;
-    private Long blockedQps;
-    /**
-     * 发生异常的次数
-     */
-    private Long exception;
+    private Long blockQps;
+    private Long exceptionQps;
 
     /**
-     * 所有successQps的Rt的和。
+     * summary rt of all success exit qps.
      */
     private double rt;
 
@@ -58,26 +55,26 @@ public class MetricEntity {
         entity.setApp(oldEntity.getApp());
         entity.setTimestamp(oldEntity.getTimestamp());
         entity.setResource(oldEntity.getResource());
-        entity.setPassedQps(oldEntity.getPassedQps());
-        entity.setBlockedQps(oldEntity.getBlockedQps());
+        entity.setPassQps(oldEntity.getPassQps());
+        entity.setBlockQps(oldEntity.getBlockQps());
         entity.setSuccessQps(oldEntity.getSuccessQps());
-        entity.setException(oldEntity.getException());
+        entity.setExceptionQps(oldEntity.getExceptionQps());
         entity.setRt(oldEntity.getRt());
         entity.setCount(oldEntity.getCount());
         entity.setResource(oldEntity.getResource());
         return entity;
     }
 
-    public synchronized void addPassedQps(Long passedQps) {
-        this.passedQps += passedQps;
+    public synchronized void addPassQps(Long passQps) {
+        this.passQps += passQps;
     }
 
-    public synchronized void addBlockedQps(Long blockedQps) {
-        this.blockedQps += blockedQps;
+    public synchronized void addBlockQps(Long blockQps) {
+        this.blockQps += blockQps;
     }
 
-    public synchronized void addException(Long exception) {
-        this.exception += exception;
+    public synchronized void addExceptionQps(Long exceptionQps) {
+        this.exceptionQps += exceptionQps;
     }
 
     public synchronized void addCount(int count) {
@@ -149,28 +146,28 @@ public class MetricEntity {
         this.resourceCode = resource.hashCode();
     }
 
-    public Long getPassedQps() {
-        return passedQps;
+    public Long getPassQps() {
+        return passQps;
     }
 
-    public void setPassedQps(Long passedQps) {
-        this.passedQps = passedQps;
+    public void setPassQps(Long passQps) {
+        this.passQps = passQps;
     }
 
-    public Long getBlockedQps() {
-        return blockedQps;
+    public Long getBlockQps() {
+        return blockQps;
     }
 
-    public void setBlockedQps(Long blockedQps) {
-        this.blockedQps = blockedQps;
+    public void setBlockQps(Long blockQps) {
+        this.blockQps = blockQps;
     }
 
-    public Long getException() {
-        return exception;
+    public Long getExceptionQps() {
+        return exceptionQps;
     }
 
-    public void setException(Long exception) {
-        this.exception = exception;
+    public void setExceptionQps(Long exceptionQps) {
+        this.exceptionQps = exceptionQps;
     }
 
     public double getRt() {
@@ -210,10 +207,10 @@ public class MetricEntity {
             ", app='" + app + '\'' +
             ", timestamp=" + timestamp +
             ", resource='" + resource + '\'' +
-            ", passedQps=" + passedQps +
-            ", blockedQps=" + blockedQps +
+            ", passQps=" + passQps +
+            ", blockQps=" + blockQps +
             ", successQps=" + successQps +
-            ", exception=" + exception +
+            ", exceptionQps=" + exceptionQps +
             ", rt=" + rt +
             ", count=" + count +
             ", resourceCode=" + resourceCode +

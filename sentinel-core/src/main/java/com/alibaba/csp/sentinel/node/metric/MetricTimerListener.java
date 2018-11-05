@@ -36,7 +36,6 @@ public class MetricTimerListener implements Runnable {
     public void run() {
         Map<Long, List<MetricNode>> maps = new TreeMap<Long, List<MetricNode>>();
 
-        // 每5秒打印一次,把丢弃的seconds都给丢掉。
         for (Entry<ResourceWrapper, ClusterNode> e : ClusterBuilderSlot.getClusterNodeMap().entrySet()) {
             String name = e.getKey().getName();
             ClusterNode node = e.getValue();

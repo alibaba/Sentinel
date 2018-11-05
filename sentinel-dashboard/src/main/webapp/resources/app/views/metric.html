@@ -60,8 +60,8 @@
                           <tbody>
                             <tr style="font-size: 12px;text-align:center;" ng-repeat="tableObj in metric.shortData">
                               <td style="word-wrap:break-word;word-break:break-all; ">{{tableObj.timestamp | date: 'HH:mm:ss'}}</td>
-                              <td style="word-wrap:break-word;word-break:break-all; ">{{tableObj.passedQps | number : 1}}</td>
-                              <td style="word-wrap:break-word;word-break:break-all; ">{{tableObj.blockedQps | number : 1}}</td>
+                              <td style="word-wrap:break-word;word-break:break-all; ">{{tableObj.passQps | number : 1}}</td>
+                              <td style="word-wrap:break-word;word-break:break-all; ">{{tableObj.blockQps | number : 1}}</td>
                               <td style="word-wrap:break-word;word-break:break-all;">{{tableObj.rt | number : 1}}</td>
                             </tr>
                             <tr style="font-size: 12px;text-align:center;" ng-repeat="_tr in [] | range : (6 - metric.shortData.length)">

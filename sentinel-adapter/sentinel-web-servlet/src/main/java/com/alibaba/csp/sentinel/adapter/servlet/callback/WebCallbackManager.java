@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.adapter.servlet.callback;
 
+import com.alibaba.csp.sentinel.util.AssertUtil;
+
 /**
  * Registry for URL cleaner and URL block handler.
  *
@@ -23,14 +25,16 @@ package com.alibaba.csp.sentinel.adapter.servlet.callback;
 public class WebCallbackManager {
 
     /**
-     * URL cleaner
+     * URL cleaner.
      */
     private static volatile UrlCleaner urlCleaner = new DefaultUrlCleaner();
 
     /**
-     * URL block handler
+     * URL block handler.
      */
     private static volatile UrlBlockHandler urlBlockHandler = new DefaultUrlBlockHandler();
+
+    private static volatile RequestOriginParser requestOriginParser = null;
 
     public static UrlCleaner getUrlCleaner() {
         return urlCleaner;
@@ -45,6 +49,16 @@ public class WebCallbackManager {
     }
 
     public static void setUrlBlockHandler(UrlBlockHandler urlBlockHandler) {
+        AssertUtil.isTrue(urlBlockHandler != null, "URL block handler should not be null");
         WebCallbackManager.urlBlockHandler = urlBlockHandler;
+    }
+
+    public static RequestOriginParser getRequestOriginParser() {
+        return requestOriginParser;
+    }
+
+    public static void setRequestOriginParser(
+        RequestOriginParser requestOriginParser) {
+        WebCallbackManager.requestOriginParser = requestOriginParser;
     }
 }

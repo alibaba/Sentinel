@@ -47,4 +47,12 @@ public class StringResourceWrapper extends ResourceWrapper {
     public EntryType getType() {
         return type;
     }
+
+    @Override
+    public String toString() {
+        return "StringResourceWrapper{" +
+            "name='" + name + '\'' +
+            ", type=" + type +
+            '}';
+    }
 }

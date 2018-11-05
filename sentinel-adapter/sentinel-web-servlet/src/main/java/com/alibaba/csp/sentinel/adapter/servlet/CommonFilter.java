@@ -30,15 +30,19 @@ import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
+import com.alibaba.csp.sentinel.adapter.servlet.callback.RequestOriginParser;
+import com.alibaba.csp.sentinel.adapter.servlet.callback.UrlCleaner;
 import com.alibaba.csp.sentinel.adapter.servlet.callback.WebCallbackManager;
 import com.alibaba.csp.sentinel.adapter.servlet.util.FilterUtil;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.util.StringUtil;
 
 /***
  * Servlet filter that integrates with Sentinel.
  *
  * @author youji.zj
+ * @author Eric Zhao
  */
 public class CommonFilter implements Filter {
 
@@ -55,15 +59,25 @@ public class CommonFilter implements Filter {
 
         try {
             String target = FilterUtil.filterTarget(sRequest);
-            target = WebCallbackManager.getUrlCleaner().clean(target);
+            // Clean and unify the URL.
+            // For REST APIs, you have to clean the URL (e.g. `/foo/1` and `/foo/2` -> `/foo/:id`), or
+            // the amount of context and resources will exceed the threshold.
+            UrlCleaner urlCleaner = WebCallbackManager.getUrlCleaner();
+            if (urlCleaner != null) {
+                target = urlCleaner.clean(target);
+            }
 
-            ContextUtil.enter(target);
+            // Parse the request origin using registered origin parser.
+            String origin = parseOrigin(sRequest);
+
+            ContextUtil.enter(target, origin);
             entry = SphU.entry(target, EntryType.IN);
 
             chain.doFilter(request, response);
         } catch (BlockException e) {
             HttpServletResponse sResponse = (HttpServletResponse)response;
-            WebCallbackManager.getUrlBlockHandler().blocked(sRequest, sResponse);
+            // Return the block page, or redirect to another URL.
+            WebCallbackManager.getUrlBlockHandler().blocked(sRequest, sResponse, e);
         } catch (IOException e2) {
             Tracer.trace(e2);
             throw e2;
@@ -81,8 +95,22 @@ public class CommonFilter implements Filter {
         }
     }
 
+    private String parseOrigin(HttpServletRequest request) {
+        RequestOriginParser originParser = WebCallbackManager.getRequestOriginParser();
+        String origin = EMPTY_ORIGIN;
+        if (originParser != null) {
+            origin = originParser.parseOrigin(request);
+            if (StringUtil.isEmpty(origin)) {
+                return EMPTY_ORIGIN;
+            }
+        }
+        return origin;
+    }
+
     @Override
     public void destroy() {
 
     }
+
+    private static final String EMPTY_ORIGIN = "";
 }
