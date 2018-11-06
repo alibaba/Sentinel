@@ -39,6 +39,13 @@
             <version>${grpc.version}</version>
             <scope>provided</scope>
         </dependency>
+        <!-- workaround for compile in JDK 11 -->
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>1.2</version>
+        </dependency>
+
 
         <dependency>
             <groupId>junit</groupId>
