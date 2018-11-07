@@ -15,9 +15,9 @@
             <i class="fa fa-sort-amount-desc" aria-hidden="true" ng-show="isDescOrder"></i>
             {{metricTypeDesc}}&nbsp;Real-time Monitoring
           </span>
-          <button class="btn btn-danger" style="float: right;margin-right: 10px;height: 30px;font-size: 12px;" ng-click="setDescOrder()"
+          <button class="btn btn-outline-primary" style="float: right;margin-right: 10px;height: 30px;font-size: 12px;" ng-click="setDescOrder()"
             ng-if="!isDescOrder">Descending</button>
-          <button class="btn btn-danger" style="float: right;margin-right: 10px;height: 30px;font-size: 12px;" ng-click="setAscOrder()"
+          <button class="btn btn-outline-primary" style="float: right;margin-right: 10px;height: 30px;font-size: 12px;" ng-click="setAscOrder()"
             ng-if="isDescOrder">Ascending</button>
 
           <input class="form-control witdh-200" placeholder="keyword..." ng-model="serviceQuery" ng-change="searchService()" style="margin-right: 20px;">

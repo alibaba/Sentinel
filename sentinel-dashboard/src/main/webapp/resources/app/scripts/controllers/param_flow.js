@@ -113,11 +113,11 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
             $scope.rules = [];
             $scope.rulesPageConfig.totalCount = 0;
             if (data.code === UNSUPPORTED_CODE) {
-              $scope.loadError = {message: "The Sentinel version of machine " + mac[0] + ":" + mac[1] +
-                      " does not support parameter flow control, please upgrade to 0.2.0 or later version, " +
-                      "and make sure add sentinel-parameter-flow-control dependency."}
+              $scope.loadError = {message: "The Sentinel client of machine <" + mac[0] + ":" + mac[1] +
+                      "> does not support parameter flow control. Please upgrade to 0.2.0 or later version, " +
+                      "and make sure add <sentinel-parameter-flow-control> dependency to your service."}
             } else {
-              $scope.loadError = {message: data.msg}
+              $scope.loadError = {message: data.msg};
             }
           }
         })
