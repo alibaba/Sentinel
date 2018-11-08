@@ -57,8 +57,7 @@ public class WebCallbackManager {
         return requestOriginParser;
     }
 
-    public static void setRequestOriginParser(
-        RequestOriginParser requestOriginParser) {
+    public static void setRequestOriginParser(RequestOriginParser requestOriginParser) {
         WebCallbackManager.requestOriginParser = requestOriginParser;
     }
 }
