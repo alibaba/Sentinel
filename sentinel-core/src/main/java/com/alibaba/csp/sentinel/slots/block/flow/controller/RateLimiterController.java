@@ -17,7 +17,7 @@ package com.alibaba.csp.sentinel.slots.block.flow.controller;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.alibaba.csp.sentinel.slots.block.flow.Controller;
+import com.alibaba.csp.sentinel.slots.block.flow.TrafficShapingController;
 
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.node.Node;
@@ -25,7 +25,7 @@ import com.alibaba.csp.sentinel.node.Node;
 /**
  * @author jialiang.linjl
  */
-public class RateLimiterController implements Controller {
+public class RateLimiterController implements TrafficShapingController {
 
     private final int maxQueueingTimeMs;
     private final double count;

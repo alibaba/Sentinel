@@ -26,14 +26,10 @@ import java.util.concurrent.TimeUnit;
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.csp.sentinel.context.Context;
-import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.node.metric.MetricTimerListener;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
-import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
-import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.controller.DefaultController;
 import com.alibaba.csp.sentinel.slots.block.flow.controller.RateLimiterController;
@@ -118,7 +114,7 @@ public class FlowRuleManager {
                 rule.setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
             }
 
-            Controller rater = new DefaultController(rule.getCount(), rule.getGrade());
+            TrafficShapingController rater = new DefaultController(rule.getCount(), rule.getGrade());
             if (rule.getGrade() == RuleConstant.FLOW_GRADE_QPS
                 && rule.getControlBehavior() == RuleConstant.CONTROL_BEHAVIOR_WARM_UP
                 && rule.getWarmUpPeriodSec() > 0) {
@@ -151,16 +147,8 @@ public class FlowRuleManager {
         return newRuleMap;
     }
 
-    public static void checkFlow(ResourceWrapper resource, Context context, DefaultNode node, int count)
-        throws BlockException {
-        List<FlowRule> rules = flowRules.get(resource.getName());
-        if (rules != null) {
-            for (FlowRule rule : rules) {
-                if (!rule.passCheck(context, node, count)) {
-                    throw new FlowException(rule.getLimitApp());
-                }
-            }
-        }
+    static Map<String, List<FlowRule>> getFlowRules() {
+        return flowRules;
     }
 
     public static boolean hasConfig(String resource) {
@@ -232,6 +220,8 @@ public class FlowRuleManager {
                 return rule.getWarmUpPeriodSec() > 0;
             case RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER:
                 return rule.getMaxQueueingTimeMs() > 0;
+            case RuleConstant.CONTROL_BEHAVIOR_WARM_UP_RATE_LIMITER:
+                return rule.getWarmUpPeriodSec() > 0 && rule.getMaxQueueingTimeMs() > 0;
             default:
                 return true;
         }
