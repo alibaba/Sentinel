@@ -15,18 +15,15 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow;
 
-import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.DefaultNode;
-import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 
-/***
+/**
  * <p>
- *     Each flow rule is mainly composed of three factors: <strong>grade</strong>,
- * <strong>strategy</strong> and <strong>controlBehavior</strong>.
+ * Each flow rule is mainly composed of three factors: <strong>grade</strong>,
+ * <strong>strategy</strong> and <strong>controlBehavior</strong>:
  * </p>
  * <ul>
  *     <li>The {@link #grade} represents the threshold type of flow control (by QPS or thread count).</li>
@@ -42,6 +39,12 @@ public class FlowRule extends AbstractRule {
 
     public FlowRule() {
         super();
+        setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
+    }
+
+    public FlowRule(String resourceName) {
+        super();
+        setResource(resourceName);
         setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
     }
 
@@ -65,7 +68,7 @@ public class FlowRule extends AbstractRule {
     private int strategy = RuleConstant.STRATEGY_DIRECT;
 
     /**
-     * Reference resource in flow control with relevant resource.
+     * Reference resource in flow control with relevant resource or context.
      */
     private String refResource;
 
@@ -82,7 +85,10 @@ public class FlowRule extends AbstractRule {
      */
     private int maxQueueingTimeMs = 500;
 
-    private Controller controller;
+    /**
+     * The traffic shaping (throttling) controller.
+     */
+    private TrafficShapingController controller;
 
     public int getControlBehavior() {
         return controlBehavior;
@@ -102,9 +108,13 @@ public class FlowRule extends AbstractRule {
         return this;
     }
 
-    public FlowRule setRater(Controller rater) {
+    FlowRule setRater(TrafficShapingController rater) {
         this.controller = rater;
         return this;
+    }
+
+    TrafficShapingController getRater() {
+        return controller;
     }
 
     public int getWarmUpPeriodSec() {
@@ -154,90 +164,7 @@ public class FlowRule extends AbstractRule {
 
     @Override
     public boolean passCheck(Context context, DefaultNode node, int acquireCount, Object... args) {
-        String limitApp = this.getLimitApp();
-        if (limitApp == null) {
-            return true;
-        }
-
-        String origin = context.getOrigin();
-        Node selectedNode = selectNodeByRequesterAndStrategy(origin, context, node);
-        if (selectedNode == null) {
-            return true;
-        }
-
-        return controller.canPass(selectedNode, acquireCount);
-    }
-
-    private Node selectNodeByRequesterAndStrategy(String origin, Context context, DefaultNode node) {
-        // The limit app should not be empty.
-        String limitApp = this.getLimitApp();
-
-        if (limitApp.equals(origin)) {
-            if (strategy == RuleConstant.STRATEGY_DIRECT) {
-                return context.getOriginNode();
-            }
-
-            String refResource = this.getRefResource();
-            if (StringUtil.isEmpty(refResource)) {
-                return null;
-            }
-
-            if (strategy == RuleConstant.STRATEGY_RELATE) {
-                return ClusterBuilderSlot.getClusterNode(refResource);
-            }
-
-            if (strategy == RuleConstant.STRATEGY_CHAIN) {
-                if (!refResource.equals(context.getName())) {
-                    return null;
-                }
-                return node;
-            }
-
-        } else if (RuleConstant.LIMIT_APP_DEFAULT.equals(limitApp)) {
-            if (strategy == RuleConstant.STRATEGY_DIRECT) {
-                return node.getClusterNode();
-            }
-            String refResource = this.getRefResource();
-            if (StringUtil.isEmpty(refResource)) {
-                return null;
-            }
-
-            if (strategy == RuleConstant.STRATEGY_RELATE) {
-                return ClusterBuilderSlot.getClusterNode(refResource);
-            }
-
-            if (strategy == RuleConstant.STRATEGY_CHAIN) {
-                if (!refResource.equals(context.getName())) {
-                    return null;
-                }
-                return node;
-            }
-
-        } else if (RuleConstant.LIMIT_APP_OTHER.equals(limitApp)
-            && FlowRuleManager.isOtherOrigin(origin, getResource())) {
-            if (strategy == RuleConstant.STRATEGY_DIRECT) {
-                return context.getOriginNode();
-            }
-
-            String refResource = this.getRefResource();
-            if (StringUtil.isEmpty(refResource)) {
-                return null;
-            }
-            if (strategy == RuleConstant.STRATEGY_RELATE) {
-                return ClusterBuilderSlot.getClusterNode(refResource);
-            }
-
-            if (strategy == RuleConstant.STRATEGY_CHAIN) {
-                if (!refResource.equals(context.getName())) {
-                    return null;
-                }
-                if (node != null) {
-                    return node;
-                }
-            }
-        }
-
-        return null;
+        return true;
     }
 
     @Override

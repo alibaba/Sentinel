@@ -19,17 +19,17 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.node.Node;
-import com.alibaba.csp.sentinel.slots.block.flow.Controller;
+import com.alibaba.csp.sentinel.slots.block.flow.TrafficShapingController;
 
 /**
- * The principle idea comes from guava. However, the calculation of guava is
- * rate-based, which means that we need to translate rate to qps.
- *
- * https://github.com/google/guava/blob/master/guava/src/com/google/common/util/concurrent/SmoothRateLimiter.java
+ * <p>
+ * The principle idea comes from Guava. However, the calculation of Guava is
+ * rate-based, which means that we need to translate rate to QPS.
+ * </p>
  *
  * Requests arriving at the pulse may drag down long idle systems even though it
  * has a much larger handling capability in stable period. It usually happens in
- * scenarios that require extra time for initialization, for example, db
+ * scenarios that require extra time for initialization, e.g. DB
  * establishes a connection; connects to a remote service, and so on.
  *
  * That’s why we need “warm up”.
@@ -61,7 +61,7 @@ import com.alibaba.csp.sentinel.slots.block.flow.Controller;
  *
  * @author jialiang.linjl
  */
-public class WarmUpController implements Controller {
+public class WarmUpController implements TrafficShapingController {
 
     protected double count;
     private int coldFactor;
