@@ -1,4 +1,4 @@
-package com.alibaba.csp.sentinel.slots.block.flow;
+package com.alibaba.csp.sentinel.slots.block.flow.controller;
 
 import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.node.StatisticNode;
