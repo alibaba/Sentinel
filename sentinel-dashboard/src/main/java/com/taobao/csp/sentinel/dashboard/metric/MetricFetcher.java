@@ -64,15 +64,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class MetricFetcher {
 
-    private static Logger logger = LoggerFactory.getLogger(MetricFetcher.class);
-    private static final int HTTP_OK = 200;
-
     public static final long MAX_CLIENT_LIVE_TIME_MS = 1000 * 60 * 5;
+    public static final String NO_METRICS = "No metrics";
+    private static final int HTTP_OK = 200;
     private static final long MAX_LAST_FETCH_INTERVAL_MS = 1000 * 15;
     private static final long FETCH_INTERVAL_SECOND = 6;
     private static final Charset DEFAULT_CHARSET = Charset.forName(SentinelConfig.charset());
     private final static String METRIC_URL_PATH = "metric";
-
+    private static Logger logger = LoggerFactory.getLogger(MetricFetcher.class);
     private final long intervalSecond = 1;
 
     private Map<String, AtomicLong> appLastFetchTime = new ConcurrentHashMap<>();
@@ -184,7 +183,7 @@ public class MetricFetcher {
         final CountDownLatch latch = new CountDownLatch(machines.size());
         for (final MachineInfo machine : machines) {
             // dead
-            if (System.currentTimeMillis() - machine.getVersion().getTime() > MAX_CLIENT_LIVE_TIME_MS) {
+            if (System.currentTimeMillis() - machine.getTimestamp().getTime() > MAX_CLIENT_LIVE_TIME_MS) {
                 latch.countDown();
                 dead.incrementAndGet();
                 continue;
@@ -279,7 +278,7 @@ public class MetricFetcher {
         } catch (Exception ignore) {
         }
         String body = EntityUtils.toString(response.getEntity(), charset != null ? charset : DEFAULT_CHARSET);
-        if (StringUtil.isEmpty(body)) {
+        if (StringUtil.isEmpty(body) || body.startsWith(NO_METRICS)) {
             //logger.info(machine.getApp() + ":" + machine.getIp() + ":" + machine.getPort() + ", bodyStr is empty");
             return;
         }
@@ -304,25 +303,25 @@ public class MetricFetcher {
                 String key = buildMetricKey(machine.getApp(), node.getResource(), node.getTimestamp());
                 MetricEntity entity = map.get(key);
                 if (entity != null) {
-                    entity.addPassedQps(node.getPassedQps());
-                    entity.addBlockedQps(node.getBlockedQps());
+                    entity.addPassQps(node.getPassQps());
+                    entity.addBlockQps(node.getBlockQps());
                     entity.addRtAndSuccessQps(node.getRt(), node.getSuccessQps());
-                    entity.addException(node.getException());
+                    entity.addExceptionQps(node.getExceptionQps());
                     entity.addCount(1);
                 } else {
                     entity = new MetricEntity();
                     entity.setApp(machine.getApp());
                     entity.setTimestamp(new Date(node.getTimestamp()));
-                    entity.setPassedQps(node.getPassedQps());
-                    entity.setBlockedQps(node.getBlockedQps());
+                    entity.setPassQps(node.getPassQps());
+                    entity.setBlockQps(node.getBlockQps());
                     entity.setRtAndSuccessQps(node.getRt(), node.getSuccessQps());
-                    entity.setException(node.getException());
+                    entity.setExceptionQps(node.getExceptionQps());
                     entity.setCount(1);
                     entity.setResource(node.getResource());
                     map.put(key, entity);
                 }
             } catch (Exception e) {
-                logger.info("handleBody line error: {}", line);
+                logger.warn("handleBody line exception, machine: {}, line: {}", machine.toLogString(), line);
             }
         }
     }

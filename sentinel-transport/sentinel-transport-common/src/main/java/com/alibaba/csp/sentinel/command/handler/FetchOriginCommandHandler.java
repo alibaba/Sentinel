@@ -82,8 +82,8 @@ public class FetchOriginCommandHandler implements CommandHandler<String> {
         String format = FORMAT.replaceAll("80", String.valueOf(nameLength + 1));
         i = 0;
         sb.append(String
-            .format(format, "idx", "origin", "threadNum", "passedQps", "blockedQps", "totalQps", "aRt", "1m-passed",
-                "1m-blocked", "1m-total")).append("\n");
+            .format(format, "idx", "origin", "threadNum", "passQps", "blockQps", "totalQps", "aRt", "1m-pass",
+                "1m-block", "1m-total")).append("\n");
 
         for (Entry<String, StatisticNode> e : cNode.getOriginCountMap().entrySet()) {
             StatisticNode node = e.getValue();
@@ -91,8 +91,8 @@ public class FetchOriginCommandHandler implements CommandHandler<String> {
             int lenNum = (int)Math.ceil((double)id.length() / nameLength) - 1;
             sb.append(String
                 .format(format, i + 1, lenNum == 0 ? id : id.substring(0, nameLength), node.curThreadNum(),
-                    node.passQps(), node.blockedQps(), node.totalQps(), node.avgRt(),
-                    node.totalRequest() - node.blockedRequest(), node.blockedRequest(), node.totalRequest()))
+                    node.passQps(), node.blockQps(), node.totalQps(), node.avgRt(),
+                    node.totalRequest() - node.blockRequest(), node.blockRequest(), node.totalRequest()))
                 .append("\n");
             for (int j = 1; j <= lenNum; ++j) {
                 int start = nameLength * j;

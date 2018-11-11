@@ -17,7 +17,7 @@ package com.taobao.csp.sentinel.dashboard.repository.rule;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.taobao.csp.sentinel.dashboard.datasource.entity.FlowRuleEntity;
+import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import org.springframework.stereotype.Component;
 
 /**
@@ -27,6 +27,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class InMemFlowRuleStore extends InMemoryRuleRepositoryAdapter<FlowRuleEntity> {
+
     private static AtomicLong ids = new AtomicLong(0);
 
     @Override

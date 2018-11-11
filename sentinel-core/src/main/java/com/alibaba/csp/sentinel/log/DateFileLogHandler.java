@@ -27,7 +27,12 @@ import java.util.logging.LogRecord;
 
 class DateFileLogHandler extends Handler {
 
-    private final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+    private final ThreadLocal<SimpleDateFormat> dateFormatThreadLocal = new ThreadLocal<SimpleDateFormat>() {
+        @Override
+        public SimpleDateFormat initialValue() {
+            return new SimpleDateFormat("yyyy-MM-dd");
+        }
+    };
 
     private volatile FileHandler handler;
 
@@ -64,15 +69,25 @@ class DateFileLogHandler extends Handler {
 
     @Override
     public void publish(LogRecord record) {
-        synchronized (monitor) {
-            if (endDate < record.getMillis() || !logFileExits()) { rotateDate(); }
+        if (shouldRotate(record)) {
+            synchronized (monitor) {
+                if (shouldRotate(record)) {
+                    rotateDate();
+                }
+            }
         }
-
         if (System.currentTimeMillis() - startDate > 25 * 60 * 60 * 1000) {
             String msg = record.getMessage();
             record.setMessage("missed file rolling at: " + new Date(endDate) + "\n" + msg);
         }
         handler.publish(record);
+    }
+
+    private boolean shouldRotate(LogRecord record) {
+        if (endDate <= record.getMillis() || !logFileExits()) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -83,7 +98,13 @@ class DateFileLogHandler extends Handler {
 
     private boolean logFileExits() {
         try {
-            File logFile = new File(pattern);
+            SimpleDateFormat format = dateFormatThreadLocal.get();
+            String fileName = pattern.replace("%d", format.format(new Date()));
+            // When file count is not 1, the first log file name will end with ".0"
+            if (count != 1) {
+                fileName += ".0";
+            }
+            File logFile = new File(fileName);
             return logFile.exists();
         } catch (Throwable e) {
 
@@ -93,7 +114,10 @@ class DateFileLogHandler extends Handler {
 
     private void rotateDate() {
         this.startDate = System.currentTimeMillis();
-        if (handler != null) { handler.close(); }
+        if (handler != null) {
+            handler.close();
+        }
+        SimpleDateFormat format = dateFormatThreadLocal.get();
         String newPattern = pattern.replace("%d", format.format(new Date()));
         // Get current date.
         Calendar next = Calendar.getInstance();

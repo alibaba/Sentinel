@@ -15,9 +15,9 @@
             <i class="fa fa-sort-amount-desc" aria-hidden="true" ng-show="isDescOrder"></i>
             {{metricTypeDesc}}&nbsp;实时监控
           </span>
-          <button class="btn btn-danger" style="float: right;margin-right: 10px;height: 30px;font-size: 12px;" ng-click="setDescOrder()"
+          <button class="btn btn-outline-primary" style="float: right;margin-right: 10px;height: 30px;font-size: 12px;" ng-click="setDescOrder()"
             ng-if="!isDescOrder">降序</button>
-          <button class="btn btn-danger" style="float: right;margin-right: 10px;height: 30px;font-size: 12px;" ng-click="setAscOrder()"
+          <button class="btn btn-outline-primary" style="float: right;margin-right: 10px;height: 30px;font-size: 12px;" ng-click="setAscOrder()"
             ng-if="isDescOrder">升序</button>
 
           <input class="form-control witdh-200" placeholder="关键字" ng-model="serviceQuery" ng-change="searchService()" style="margin-right: 20px;">
@@ -60,8 +60,8 @@
                           <tbody>
                             <tr style="font-size: 12px;text-align:center;" ng-repeat="tableObj in metric.shortData">
                               <td style="word-wrap:break-word;word-break:break-all; ">{{tableObj.timestamp | date: 'HH:mm:ss'}}</td>
-                              <td style="word-wrap:break-word;word-break:break-all; ">{{tableObj.passedQps | number : 1}}</td>
-                              <td style="word-wrap:break-word;word-break:break-all; ">{{tableObj.blockedQps | number : 1}}</td>
+                              <td style="word-wrap:break-word;word-break:break-all; ">{{tableObj.passQps | number : 1}}</td>
+                              <td style="word-wrap:break-word;word-break:break-all; ">{{tableObj.blockQps | number : 1}}</td>
                               <td style="word-wrap:break-word;word-break:break-all;">{{tableObj.rt | number : 1}}</td>
                             </tr>
                             <tr style="font-size: 12px;text-align:center;" ng-repeat="_tr in [] | range : (6 - metric.shortData.length)">

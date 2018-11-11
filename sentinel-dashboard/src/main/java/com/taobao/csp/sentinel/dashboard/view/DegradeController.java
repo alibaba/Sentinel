@@ -18,9 +18,10 @@ package com.taobao.csp.sentinel.dashboard.view;
 import java.util.Date;
 import java.util.List;
 
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
-import com.taobao.csp.sentinel.dashboard.datasource.entity.DegradeRuleEntity;
+import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
 import com.taobao.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.taobao.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.taobao.csp.sentinel.dashboard.repository.rule.InMemDegradeRuleStore;
@@ -38,15 +39,17 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 @RequestMapping(value = "/degrade", produces = MediaType.APPLICATION_JSON_VALUE)
 public class DegradeController {
-    private static Logger logger = LoggerFactory.getLogger(DegradeController.class);
+
+    private final Logger logger = LoggerFactory.getLogger(DegradeController.class);
+
     @Autowired
-    InMemDegradeRuleStore repository;
+    private InMemDegradeRuleStore repository;
     @Autowired
     private SentinelApiClient sentinelApiClient;
 
     @ResponseBody
     @RequestMapping("/rules.json")
-    Result<List<DegradeRuleEntity>> queryMachineRules(String app, String ip, Integer port) {
+    public Result<List<DegradeRuleEntity>> queryMachineRules(String app, String ip, Integer port) {
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
         }
@@ -68,7 +71,7 @@ public class DegradeController {
 
     @ResponseBody
     @RequestMapping("/new.json")
-    Result<?> add(String app, String ip, Integer port, String limitApp, String resource,
+    public Result<DegradeRuleEntity> add(String app, String ip, Integer port, String limitApp, String resource,
                   Double count, Integer timeWindow, Integer grade) {
         if (StringUtil.isBlank(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
@@ -94,8 +97,8 @@ public class DegradeController {
         if (grade == null) {
             return Result.ofFail(-1, "grade can't be null");
         }
-        if (grade != 0 && grade != 1) {
-            return Result.ofFail(-1, "grade must be 0 or 1, but " + grade + " got");
+        if (grade < RuleConstant.DEGRADE_GRADE_RT || grade > RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
+            return Result.ofFail(-1, "Invalid grade: " + grade);
         }
         DegradeRuleEntity entity = new DegradeRuleEntity();
         entity.setApp(app.trim());
@@ -123,14 +126,14 @@ public class DegradeController {
 
     @ResponseBody
     @RequestMapping("/save.json")
-    Result<?> updateIfNotNull(Long id, String app, String limitApp, String resource,
+    public Result<DegradeRuleEntity> updateIfNotNull(Long id, String app, String limitApp, String resource,
                               Double count, Integer timeWindow, Integer grade) {
         if (id == null) {
             return Result.ofFail(-1, "id can't be null");
         }
         if (grade != null) {
-            if (grade != 0 && grade != 1) {
-                return Result.ofFail(-1, "grade must be 0 or 1, but " + grade + " got");
+            if (grade < RuleConstant.DEGRADE_GRADE_RT || grade > RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
+                return Result.ofFail(-1, "Invalid grade: " + grade);
             }
         }
         DegradeRuleEntity entity = repository.findById(id);
@@ -172,7 +175,7 @@ public class DegradeController {
 
     @ResponseBody
     @RequestMapping("/delete.json")
-    Result<?> delete(Long id) {
+    public Result<Long> delete(Long id) {
         if (id == null) {
             return Result.ofFail(-1, "id can't be null");
         }

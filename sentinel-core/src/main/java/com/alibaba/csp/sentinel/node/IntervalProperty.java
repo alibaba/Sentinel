@@ -16,8 +16,8 @@
 package com.alibaba.csp.sentinel.node;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
+import com.alibaba.csp.sentinel.property.SimplePropertyListener;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 
 /***
@@ -25,36 +25,42 @@ import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
  *
  * @author youji.zj
  * @author jialiang.linjl
+ * @author CarpenterLee
  */
 public class IntervalProperty {
 
+    /**
+     * <p>
+     * Interval in seconds. This variable determines sensitivity of the QPS calculation.
+     * </p>
+     * DO NOT MODIFY this value directly, use {@link #updateInterval(int)}, otherwise the modification will not
+     * take effect.
+     */
     public static volatile int INTERVAL = 1;
 
-    public static void init(SentinelProperty<Integer> dataSource) {
-        dataSource.addListener(new FlowIntervalPropertyListener());
+    public static void register2Property(SentinelProperty<Integer> property) {
+        property.addListener(new SimplePropertyListener<Integer>() {
+            @Override
+            public void configUpdate(Integer value) {
+                if (value != null) {
+                    updateInterval(value);
+                }
+            }
+        });
     }
 
-    private static class FlowIntervalPropertyListener implements PropertyListener<Integer> {
-        @Override
-        public void configUpdate(Integer value) {
-            if (value == null) {
-                value = 1;
-            }
-            INTERVAL = value;
-            RecordLog.info("Init flow interval: " + INTERVAL);
+    /**
+     * Update the {@link #INTERVAL}, All {@link ClusterNode}s will be reset if newInterval is
+     * different from {@link #INTERVAL}
+     *
+     * @param newInterval New interval to set.
+     */
+    public static void updateInterval(int newInterval) {
+        if (newInterval != INTERVAL) {
+            INTERVAL = newInterval;
+            ClusterBuilderSlot.resetClusterNodes();
         }
-
-        @Override
-        public void configLoad(Integer value) {
-            if (value == null) {
-                value = 1;
-            }
-            INTERVAL = value;
-            for (ClusterNode node : ClusterBuilderSlot.getClusterNodeMap().values()) {
-                node.reset();
-            }
-            RecordLog.info("Flow interval change received: " + INTERVAL);
-        }
+        RecordLog.info("INTERVAL updated to: " + INTERVAL);
     }
 
 }

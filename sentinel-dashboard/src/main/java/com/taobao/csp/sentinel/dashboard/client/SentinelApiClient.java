@@ -16,9 +16,13 @@
 package com.taobao.csp.sentinel.dashboard.client;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -29,13 +33,19 @@ import com.alibaba.csp.sentinel.command.vo.NodeVo;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.system.SystemRule;
+import com.alibaba.csp.sentinel.util.AssertUtil;
+import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.fastjson.JSON;
 
-import com.taobao.csp.sentinel.dashboard.datasource.entity.DegradeRuleEntity;
-import com.taobao.csp.sentinel.dashboard.datasource.entity.FlowRuleEntity;
-import com.taobao.csp.sentinel.dashboard.datasource.entity.SystemRuleEntity;
+import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.AuthorityRuleEntity;
+import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
+import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
+import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEntity;
+import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.SystemRuleEntity;
+import com.taobao.csp.sentinel.dashboard.util.RuleUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
@@ -56,17 +66,24 @@ import org.springframework.stereotype.Component;
 public class SentinelApiClient {
 
     private static Logger logger = LoggerFactory.getLogger(SentinelApiClient.class);
-    private static final Charset defaultCharset = Charset.forName(SentinelConfig.charset());
+
+    private static final Charset DEFAULT_CHARSET = Charset.forName(SentinelConfig.charset());
+
+    private static final String RESOURCE_URL_PATH = "jsonTree";
+    private static final String CLUSTER_NODE_PATH = "clusterNode";
+    private static final String GET_RULES_PATH = "getRules";
+    private static final String SET_RULES_PATH = "setRules";
+    private static final String GET_PARAM_RULE_PATH = "getParamFlowRules";
+    private static final String SET_PARAM_RULE_PATH = "setParamFlowRules";
+
+    private static final String FLOW_RULE_TYPE = "flow";
+    private static final String DEGRADE_RULE_TYPE = "degrade";
+    private static final String SYSTEM_RULE_TYPE = "system";
+    private static final String AUTHORITY_TYPE = "authority";
 
     private CloseableHttpAsyncClient httpClient;
 
-    private final String resourceUrlPath = "jsonTree";
-    private final String clusterNodePath = "clusterNode";
-    private final String getRulesPath = "getRules";
-    private final String setRulesPath = "setRules";
-    private final String flowRuleType = "flow";
-    private final String degradeRuleType = "degrade";
-    private final String systemRuleType = "system";
+    private final boolean enableHttps = false;
 
     public SentinelApiClient() {
         IOReactorConfig ioConfig = IOReactorConfig.custom().setConnectTimeout(3000).setSoTimeout(3000)
@@ -81,7 +98,7 @@ public class SentinelApiClient {
     }
 
     public List<NodeVo> fetchResourceOfMachine(String ip, int port, String type) {
-        String url = "http://" + ip + ":" + port + "/" + resourceUrlPath + "?type=" + type;
+        String url = "http://" + ip + ":" + port + "/" + RESOURCE_URL_PATH + "?type=" + type;
         String body = httpGetContent(url);
         if (body == null) {
             return null;
@@ -107,7 +124,7 @@ public class SentinelApiClient {
         if (includeZero) {
             type = "zero";
         }
-        String url = "http://" + ip + ":" + port + "/" + clusterNodePath + "?type=" + type;
+        String url = "http://" + ip + ":" + port + "/" + CLUSTER_NODE_PATH + "?type=" + type;
         String body = httpGetContent(url);
         if (body == null) {
             return null;
@@ -121,10 +138,10 @@ public class SentinelApiClient {
     }
 
     public List<FlowRuleEntity> fetchFlowRuleOfMachine(String app, String ip, int port) {
-        String url = "http://" + ip + ":" + port + "/" + getRulesPath + "?type=" + flowRuleType;
+        String url = "http://" + ip + ":" + port + "/" + GET_RULES_PATH + "?type=" + FLOW_RULE_TYPE;
         String body = httpGetContent(url);
         logger.info("FlowRule Body:{}", body);
-        List<FlowRule> rules = parseFlowRule(body);
+        List<FlowRule> rules = RuleUtils.parseFlowRule(body);
         if (rules != null) {
             return rules.stream().map(rule -> FlowRuleEntity.fromFlowRule(app, ip, port, rule))
                 .collect(Collectors.toList());
@@ -134,10 +151,10 @@ public class SentinelApiClient {
     }
 
     public List<DegradeRuleEntity> fetchDegradeRuleOfMachine(String app, String ip, int port) {
-        String url = "http://" + ip + ":" + port + "/" + getRulesPath + "?type=" + degradeRuleType;
+        String url = "http://" + ip + ":" + port + "/" + GET_RULES_PATH + "?type=" + DEGRADE_RULE_TYPE;
         String body = httpGetContent(url);
         logger.info("Degrade Body:{}", body);
-        List<DegradeRule> rules = parseDegradeRule(body);
+        List<DegradeRule> rules = RuleUtils.parseDegradeRule(body);
         if (rules != null) {
             return rules.stream().map(rule -> DegradeRuleEntity.fromDegradeRule(app, ip, port, rule))
                 .collect(Collectors.toList());
@@ -147,14 +164,76 @@ public class SentinelApiClient {
     }
 
     public List<SystemRuleEntity> fetchSystemRuleOfMachine(String app, String ip, int port) {
-        String url = "http://" + ip + ":" + port + "/" + getRulesPath + "?type=" + systemRuleType;
+        String url = "http://" + ip + ":" + port + "/" + GET_RULES_PATH + "?type=" + SYSTEM_RULE_TYPE;
         String body = httpGetContent(url);
         logger.info("SystemRule Body:{}", body);
-        List<SystemRule> rules = parseSystemRule(body);
+        List<SystemRule> rules = RuleUtils.parseSystemRule(body);
         if (rules != null) {
             return rules.stream().map(rule -> SystemRuleEntity.fromSystemRule(app, ip, port, rule))
                 .collect(Collectors.toList());
         } else {
+            return null;
+        }
+    }
+
+    /**
+     * Fetch all parameter flow rules from provided machine.
+     *
+     * @param app  application name
+     * @param ip   machine client IP
+     * @param port machine client port
+     * @return all retrieved parameter flow rules
+     * @since 0.2.1
+     */
+    public CompletableFuture<List<ParamFlowRuleEntity>> fetchParamFlowRulesOfMachine(String app, String ip, int port) {
+        try {
+            AssertUtil.notEmpty(app, "Bad app name");
+            AssertUtil.notEmpty(ip, "Bad machine IP");
+            AssertUtil.isTrue(port > 0, "Bad machine port");
+            URIBuilder uriBuilder = new URIBuilder();
+            String commandName = GET_PARAM_RULE_PATH;
+            uriBuilder.setScheme("http").setHost(ip).setPort(port)
+                .setPath(commandName);
+            return executeCommand(commandName, uriBuilder.build())
+                .thenApply(RuleUtils::parseParamFlowRule)
+                .thenApply(rules -> rules.stream()
+                    .map(e -> ParamFlowRuleEntity.fromAuthorityRule(app, ip, port, e))
+                    .collect(Collectors.toList())
+                );
+        } catch (Exception e) {
+            logger.error("Error when fetching parameter flow rules", e);
+            return newFailedFuture(e);
+        }
+    }
+
+    /**
+     * Fetch all authority rules from provided machine.
+     *
+     * @param app  application name
+     * @param ip   machine client IP
+     * @param port machine client port
+     * @return all retrieved authority rules
+     * @since 0.2.1
+     */
+    public List<AuthorityRuleEntity> fetchAuthorityRulesOfMachine(String app, String ip, int port) {
+        AssertUtil.notEmpty(app, "Bad app name");
+        AssertUtil.notEmpty(ip, "Bad machine IP");
+        AssertUtil.isTrue(port > 0, "Bad machine port");
+        URIBuilder uriBuilder = new URIBuilder();
+        uriBuilder.setScheme("http").setHost(ip).setPort(port)
+            .setPath(GET_RULES_PATH)
+            .setParameter("type", AUTHORITY_TYPE);
+        try {
+            String body = httpGetContent(uriBuilder.build().toString());
+            return Optional.ofNullable(body)
+                .map(RuleUtils::parseAuthorityRule)
+                .map(rules -> rules.stream()
+                    .map(e -> AuthorityRuleEntity.fromAuthorityRule(app, ip, port, e))
+                    .collect(Collectors.toList())
+                )
+                .orElse(null);
+        } catch (URISyntaxException e) {
+            logger.error("Error when fetching authority rules", e);
             return null;
         }
     }
@@ -178,12 +257,12 @@ public class SentinelApiClient {
         }
         String data = JSON.toJSONString(rules.stream().map(FlowRuleEntity::toFlowRule).collect(Collectors.toList()));
         try {
-            data = URLEncoder.encode(data, defaultCharset.name());
+            data = URLEncoder.encode(data, DEFAULT_CHARSET.name());
         } catch (UnsupportedEncodingException e) {
             logger.info("encode rule error", e);
             return false;
         }
-        String url = "http://" + ip + ":" + port + "/" + setRulesPath + "?type=" + flowRuleType + "&data=" + data;
+        String url = "http://" + ip + ":" + port + "/" + SET_RULES_PATH + "?type=" + FLOW_RULE_TYPE + "&data=" + data;
         String result = httpGetContent(url);
         logger.info("setFlowRule: " + result);
         return true;
@@ -209,12 +288,13 @@ public class SentinelApiClient {
         String data = JSON.toJSONString(
             rules.stream().map(DegradeRuleEntity::toDegradeRule).collect(Collectors.toList()));
         try {
-            data = URLEncoder.encode(data, defaultCharset.name());
+            data = URLEncoder.encode(data, DEFAULT_CHARSET.name());
         } catch (UnsupportedEncodingException e) {
             logger.info("encode rule error", e);
             return false;
         }
-        String url = "http://" + ip + ":" + port + "/" + setRulesPath + "?type=" + degradeRuleType + "&data=" + data;
+        String url = "http://" + ip + ":" + port + "/" + SET_RULES_PATH + "?type=" + DEGRADE_RULE_TYPE + "&data="
+            + data;
         String result = httpGetContent(url);
         logger.info("setDegradeRule: " + result);
         return true;
@@ -240,42 +320,114 @@ public class SentinelApiClient {
         String data = JSON.toJSONString(
             rules.stream().map(SystemRuleEntity::toSystemRule).collect(Collectors.toList()));
         try {
-            data = URLEncoder.encode(data, defaultCharset.name());
+            data = URLEncoder.encode(data, DEFAULT_CHARSET.name());
         } catch (UnsupportedEncodingException e) {
             logger.info("encode rule error", e);
             return false;
         }
-        String url = "http://" + ip + ":" + port + "/" + setRulesPath + "?type=" + systemRuleType + "&data=" + data;
+        String url = "http://" + ip + ":" + port + "/" + SET_RULES_PATH + "?type=" + SYSTEM_RULE_TYPE + "&data=" + data;
         String result = httpGetContent(url);
         logger.info("setSystemRule: " + result);
         return true;
     }
 
-    private List<FlowRule> parseFlowRule(String body) {
+    public boolean setAuthorityRuleOfMachine(String app, String ip, int port, List<AuthorityRuleEntity> rules) {
+        if (rules == null) {
+            return true;
+        }
+        if (StringUtil.isBlank(ip) || port <= 0) {
+            throw new IllegalArgumentException("Invalid IP or port");
+        }
+        String data = JSON.toJSONString(
+            rules.stream().map(AuthorityRuleEntity::getRule).collect(Collectors.toList()));
         try {
-            return JSON.parseArray(body, FlowRule.class);
-        } catch (Exception e) {
-            logger.info("parser FlowRule error: ", e);
-            return null;
+            data = URLEncoder.encode(data, DEFAULT_CHARSET.name());
+        } catch (UnsupportedEncodingException e) {
+            logger.info("Encode rule error", e);
+            return false;
+        }
+        String url = "http://" + ip + ":" + port + "/" + SET_RULES_PATH + "?type=" + AUTHORITY_TYPE + "&data=" + data;
+        String result = httpGetContent(url);
+        logger.info("Push authority rules: " + result);
+        return true;
+    }
+
+    public CompletableFuture<Void> setParamFlowRuleOfMachine(String app, String ip, int port, List<ParamFlowRuleEntity> rules) {
+        if (rules == null) {
+            return CompletableFuture.completedFuture(null);
+        }
+        if (StringUtil.isBlank(ip) || port <= 0) {
+            return newFailedFuture(new IllegalArgumentException("Invalid parameter"));
+        }
+        try {
+            String data = JSON.toJSONString(
+                rules.stream().map(ParamFlowRuleEntity::getRule).collect(Collectors.toList())
+            );
+            data = URLEncoder.encode(data, DEFAULT_CHARSET.name());
+            URIBuilder uriBuilder = new URIBuilder();
+            uriBuilder.setScheme("http").setHost(ip).setPort(port)
+                .setPath(SET_PARAM_RULE_PATH)
+                .setParameter("data", data);
+            return executeCommand(SET_PARAM_RULE_PATH, uriBuilder.build())
+                .thenCompose(e -> {
+                    if ("success".equals(e)) {
+                        return CompletableFuture.completedFuture(null);
+                    } else {
+                        logger.warn("Push parameter flow rules to client failed: " + e);
+                        return newFailedFuture(new RuntimeException(e));
+                    }
+                });
+        } catch (Exception ex) {
+            logger.warn("Error when setting parameter flow rule", ex);
+            return newFailedFuture(ex);
         }
     }
 
-    private List<DegradeRule> parseDegradeRule(String body) {
-        try {
-            return JSON.parseArray(body, DegradeRule.class);
-        } catch (Exception e) {
-            logger.info("parser DegradeRule error: ", e);
-            return null;
-        }
+    private boolean isSuccess(int statusCode) {
+        return statusCode >= 200 && statusCode < 300;
     }
 
-    private List<SystemRule> parseSystemRule(String body) {
-        try {
-            return JSON.parseArray(body, SystemRule.class);
-        } catch (Exception e) {
-            logger.info("parser SystemRule error: ", e);
-            return null;
+    private CompletableFuture<String> executeCommand(String command, URI uri) {
+        CompletableFuture<String> future = new CompletableFuture<>();
+        if (StringUtil.isBlank(command) || uri == null) {
+            future.completeExceptionally(new IllegalArgumentException("Bad URL or command name"));
+            return future;
         }
+        final HttpGet httpGet = new HttpGet(uri);
+        httpClient.execute(httpGet, new FutureCallback<HttpResponse>() {
+            @Override
+            public void completed(final HttpResponse response) {
+                int statusCode = response.getStatusLine().getStatusCode();
+                try {
+                    String value = getBody(response);
+                    if (isSuccess(statusCode)) {
+                        future.complete(value);
+                    } else {
+                        if (statusCode == 400) {
+                            future.completeExceptionally(new CommandNotFoundException(command));
+                        } else {
+                            future.completeExceptionally(new IllegalStateException(value));
+                        }
+                    }
+
+                } catch (Exception ex) {
+                    future.completeExceptionally(ex);
+                    logger.error("HTTP request failed: " + uri.toString(), ex);
+                }
+            }
+
+            @Override
+            public void failed(final Exception ex) {
+                future.completeExceptionally(ex);
+                logger.error("HTTP request failed: " + uri.toString(), ex);
+            }
+
+            @Override
+            public void cancelled() {
+                future.complete(null);
+            }
+        });
+        return future;
     }
 
     private String httpGetContent(String url) {
@@ -321,10 +473,16 @@ public class SentinelApiClient {
             charset = contentType.getCharset();
         } catch (Exception ignore) {
         }
-        return EntityUtils.toString(response.getEntity(), charset != null ? charset : defaultCharset);
+        return EntityUtils.toString(response.getEntity(), charset != null ? charset : DEFAULT_CHARSET);
     }
 
     public void close() throws Exception {
         httpClient.close();
+    }
+
+    private <R> CompletableFuture<R> newFailedFuture(Throwable ex) {
+        CompletableFuture<R> future = new CompletableFuture<>();
+        future.completeExceptionally(ex);
+        return future;
     }
 }

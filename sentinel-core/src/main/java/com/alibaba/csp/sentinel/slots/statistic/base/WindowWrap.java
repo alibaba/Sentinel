@@ -25,9 +25,9 @@ package com.alibaba.csp.sentinel.slots.statistic.base;
 public class WindowWrap<T> {
 
     /**
-     * The length of the window.
+     * a single window bucket's time length in milliseconds.
      */
-    private final long windowLength;
+    private final long windowLengthInMs;
 
     /**
      * Start time of the window in milliseconds.
@@ -40,18 +40,18 @@ public class WindowWrap<T> {
     private T value;
 
     /**
-     * @param windowLength the time length of the window
+     * @param windowLengthInMs a single window bucket's time length in milliseconds.
      * @param windowStart  the start timestamp of the window
      * @param value        window data
      */
-    public WindowWrap(long windowLength, long windowStart, T value) {
-        this.windowLength = windowLength;
+    public WindowWrap(long windowLengthInMs, long windowStart, T value) {
+        this.windowLengthInMs = windowLengthInMs;
         this.windowStart = windowStart;
         this.value = value;
     }
 
     public long windowLength() {
-        return windowLength;
+        return windowLengthInMs;
     }
 
     public long windowStart() {
@@ -74,7 +74,7 @@ public class WindowWrap<T> {
     @Override
     public String toString() {
         return "WindowWrap{" +
-            "windowLength=" + windowLength +
+            "windowLengthInMs=" + windowLengthInMs +
             ", windowStart=" + windowStart +
             ", value=" + value +
             '}';

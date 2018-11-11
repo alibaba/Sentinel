@@ -59,6 +59,12 @@ public class DegradeRule extends AbstractRule {
     private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(
         Runtime.getRuntime().availableProcessors(), new NamedThreadFactory("sentinel-degrade-reset-task", true));
 
+    public DegradeRule() {}
+
+    public DegradeRule(String resourceName) {
+        setResource(resourceName);
+    }
+
     /**
      * RT threshold or exception ratio threshold count.
      */
@@ -80,8 +86,9 @@ public class DegradeRule extends AbstractRule {
         return grade;
     }
 
-    public void setGrade(int grade) {
+    public DegradeRule setGrade(int grade) {
         this.grade = grade;
+        return this;
     }
 
     private AtomicLong passCount = new AtomicLong(0);
@@ -92,8 +99,9 @@ public class DegradeRule extends AbstractRule {
         return count;
     }
 
-    public void setCount(double count) {
+    public DegradeRule setCount(double count) {
         this.count = count;
+        return this;
     }
 
     public boolean isCut() {
@@ -112,8 +120,9 @@ public class DegradeRule extends AbstractRule {
         return timeWindow;
     }
 
-    public void setTimeWindow(int timeWindow) {
+    public DegradeRule setTimeWindow(int timeWindow) {
         this.timeWindow = timeWindow;
+        return this;
     }
 
     @Override
@@ -173,7 +182,7 @@ public class DegradeRule extends AbstractRule {
             if (passCount.incrementAndGet() < RT_MAX_EXCEED_N) {
                 return true;
             }
-        } else {
+        } else if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
             double exception = clusterNode.exceptionQps();
             double success = clusterNode.successQps();
             long total = clusterNode.totalQps();
@@ -188,6 +197,11 @@ public class DegradeRule extends AbstractRule {
             }
 
             if (exception / success < count) {
+                return true;
+            }
+        } else if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
+            double exception = clusterNode.totalException();
+            if (exception < count) {
                 return true;
             }
         }

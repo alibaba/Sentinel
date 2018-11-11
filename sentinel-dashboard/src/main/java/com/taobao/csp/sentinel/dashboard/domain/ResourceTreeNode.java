@@ -32,13 +32,13 @@ public class ResourceTreeNode {
 
     private Integer threadNum;
     private Long passQps;
-    private Long blockedQps;
+    private Long blockQps;
     private Long totalQps;
     private Long averageRt;
     private Long successQps;
     private Long exceptionQps;
-    private Long oneMinutePassed;
-    private Long oneMinuteBlocked;
+    private Long oneMinutePass;
+    private Long oneMinuteBlock;
     private Long oneMinuteException;
     private Long oneMinuteTotal;
 
@@ -74,13 +74,13 @@ public class ResourceTreeNode {
         node.resource = vo.getResource();
         node.threadNum = vo.getThreadNum();
         node.passQps = vo.getPassQps();
-        node.blockedQps = vo.getBlockedQps();
+        node.blockQps = vo.getBlockQps();
         node.totalQps = vo.getTotalQps();
         node.averageRt = vo.getAverageRt();
         node.successQps = vo.getSuccessQps();
         node.exceptionQps = vo.getExceptionQps();
-        node.oneMinutePassed = vo.getOneMinutePassed();
-        node.oneMinuteBlocked = vo.getOneMinuteBlocked();
+        node.oneMinutePass = vo.getOneMinutePass();
+        node.oneMinuteBlock = vo.getOneMinuteBlock();
         node.oneMinuteException = vo.getOneMinuteException();
         node.oneMinuteTotal = vo.getOneMinuteTotal();
         return node;
@@ -151,12 +151,12 @@ public class ResourceTreeNode {
         this.passQps = passQps;
     }
 
-    public Long getBlockedQps() {
-        return blockedQps;
+    public Long getBlockQps() {
+        return blockQps;
     }
 
-    public void setBlockedQps(Long blockedQps) {
-        this.blockedQps = blockedQps;
+    public void setBlockQps(Long blockQps) {
+        this.blockQps = blockQps;
     }
 
     public Long getTotalQps() {
@@ -191,20 +191,20 @@ public class ResourceTreeNode {
         this.exceptionQps = exceptionQps;
     }
 
-    public Long getOneMinutePassed() {
-        return oneMinutePassed;
+    public Long getOneMinutePass() {
+        return oneMinutePass;
     }
 
-    public void setOneMinutePassed(Long oneMinutePassed) {
-        this.oneMinutePassed = oneMinutePassed;
+    public void setOneMinutePass(Long oneMinutePass) {
+        this.oneMinutePass = oneMinutePass;
     }
 
-    public Long getOneMinuteBlocked() {
-        return oneMinuteBlocked;
+    public Long getOneMinuteBlock() {
+        return oneMinuteBlock;
     }
 
-    public void setOneMinuteBlocked(Long oneMinuteBlocked) {
-        this.oneMinuteBlocked = oneMinuteBlocked;
+    public void setOneMinuteBlock(Long oneMinuteBlock) {
+        this.oneMinuteBlock = oneMinuteBlock;
     }
 
     public Long getOneMinuteException() {

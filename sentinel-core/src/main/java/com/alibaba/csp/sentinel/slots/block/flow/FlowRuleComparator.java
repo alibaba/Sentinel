@@ -17,6 +17,8 @@ package com.alibaba.csp.sentinel.slots.block.flow;
 
 import java.util.Comparator;
 
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+
 public class FlowRuleComparator implements Comparator<FlowRule> {
 
     @Override
@@ -30,9 +32,9 @@ public class FlowRuleComparator implements Comparator<FlowRule> {
             return 0;
         }
 
-        if (FlowRule.LIMIT_APP_DEFAULT.equals(o1.getLimitApp())) {
+        if (RuleConstant.LIMIT_APP_DEFAULT.equals(o1.getLimitApp())) {
             return 1;
-        } else if (FlowRule.LIMIT_APP_DEFAULT.equals(o2.getLimitApp())) {
+        } else if (RuleConstant.LIMIT_APP_DEFAULT.equals(o2.getLimitApp())) {
             return -1;
         } else {
             return 0;

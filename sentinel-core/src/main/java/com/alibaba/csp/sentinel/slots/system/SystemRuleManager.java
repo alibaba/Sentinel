@@ -77,7 +77,7 @@ public class SystemRuleManager {
     private static volatile boolean maxRtIsSet = false;
     private static volatile boolean maxThreadIsSet = false;
 
-    static AtomicBoolean checkSystemStatus = new AtomicBoolean(false);
+    private static AtomicBoolean checkSystemStatus = new AtomicBoolean(false);
 
     private static SystemStatusListener statusListener = null;
     private final static SystemPropertyListener listener = new SystemPropertyListener();
@@ -185,11 +185,9 @@ public class SystemRuleManager {
                 checkSystemStatus.set(false);
             }
 
-            RecordLog.info("current system system status : " + checkSystemStatus.get());
-            RecordLog.info("current highestSystemLoad status : " + highestSystemLoad);
-            RecordLog.info("current maxRt : " + maxRt);
-            RecordLog.info("current maxThread : " + maxThread);
-            RecordLog.info("current qps : " + qps);
+
+            RecordLog.info(String.format("[SystemRuleManager] Current system check status: %s, highestSystemLoad: "
+                + highestSystemLoad + ", " + "maxRt: %d, maxThread: %d, maxQps: " + qps, checkSystemStatus.get(), maxRt, maxThread));
         }
 
         protected void restoreSetting() {
@@ -222,9 +220,8 @@ public class SystemRuleManager {
     }
 
     public static void loadSystemConf(SystemRule rule) {
-
         boolean checkStatus = false;
-        // 首先判断是否有效
+        // Check if it's valid.
 
         if (rule.getHighestSystemLoad() >= 0) {
             highestSystemLoad = Math.min(highestSystemLoad, rule.getHighestSystemLoad());
@@ -260,9 +257,8 @@ public class SystemRuleManager {
      * @throws BlockException when any system rule's threshold is exceeded.
      */
     public static void checkSystem(ResourceWrapper resourceWrapper) throws BlockException {
-
-        // 确定开关开了
-        if (checkSystemStatus.get() == false) {
+        // Ensure the checking switch is on.
+        if (!checkSystemStatus.get()) {
             return;
         }
 
@@ -288,7 +284,7 @@ public class SystemRuleManager {
             throw new SystemBlockException(resourceWrapper.getName(), "rt");
         }
 
-        // 完全按照RT,BBR算法来
+        // BBR algorithm.
         if (highestSystemLoadIsSet && getCurrentSystemAvgLoad() > highestSystemLoad) {
             if (currentThread > 1 &&
                 currentThread > Constants.ENTRY_NODE.maxSuccessQps() * Constants.ENTRY_NODE.minRt() / 1000) {
@@ -301,5 +297,4 @@ public class SystemRuleManager {
     public static double getCurrentSystemAvgLoad() {
         return statusListener.getSystemAverageLoad();
     }
-
 }

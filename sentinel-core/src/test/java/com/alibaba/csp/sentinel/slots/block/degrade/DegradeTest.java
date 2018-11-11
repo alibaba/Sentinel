@@ -82,7 +82,7 @@ public class DegradeTest {
         rule.setCount(0.15);
         rule.setResource(key);
         rule.setTimeWindow(5);
-        rule.setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION);
+        rule.setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO);
 
         when(cn.successQps()).thenReturn(8L);
 
@@ -93,6 +93,36 @@ public class DegradeTest {
         TimeUnit.SECONDS.sleep(6);
 
         when(cn.successQps()).thenReturn(20L);
+        // Will pass.
+        assertTrue(rule.passCheck(context, node, 1));
+    }
+
+    @Test
+    public void testExceptionCountModeDegrade() throws Throwable {
+        String key = "test_degrade_exception_count";
+        ClusterNode cn = mock(ClusterNode.class);
+        when(cn.totalException()).thenReturn(10L);
+        ClusterBuilderSlot.getClusterNodeMap().put(new StringResourceWrapper(key, EntryType.IN), cn);
+
+        Context context = mock(Context.class);
+        DefaultNode node = mock(DefaultNode.class);
+        when(node.getClusterNode()).thenReturn(cn);
+
+        DegradeRule rule = new DegradeRule();
+        rule.setCount(4);
+        rule.setResource(key);
+        rule.setTimeWindow(2);
+        rule.setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT);
+
+        when(cn.totalException()).thenReturn(4L);
+
+        // Will fail.
+        assertFalse(rule.passCheck(context, node, 1));
+
+        // Restore from the degrade timeout.
+        TimeUnit.SECONDS.sleep(3);
+
+        when(cn.totalException()).thenReturn(0L);
         // Will pass.
         assertTrue(rule.passCheck(context, node, 1));
     }

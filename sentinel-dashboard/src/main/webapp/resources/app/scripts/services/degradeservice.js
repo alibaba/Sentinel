@@ -60,4 +60,29 @@ app.service('DegradeService', ['$http', function ($http) {
       method: 'GET'
     });
   };
+
+  this.checkRuleValid = function (rule) {
+      if (rule.resource === undefined || rule.resource === '') {
+          alert('资源名称不能为空');
+          return false;
+      }
+      if (rule.grade === undefined || rule.grade < 0) {
+          alert('未知的降级策略');
+          return false;
+      }
+      if (rule.count === undefined || rule.count === '' || rule.count < 0) {
+          alert('降级阈值不能为空或小于 0');
+          return false;
+      }
+      if (rule.timeWindow === undefined || rule.timeWindow === '' || rule.timeWindow <= 0) {
+          alert('降级时间窗口必须大于 0');
+          return false;
+      }
+      // 异常比率类型.
+      if (rule.grade == 1 && rule.count > 1) {
+          alert('异常比率超出范围：[0.0 - 1.0]');
+          return false;
+      }
+      return true;
+  };
 }]);

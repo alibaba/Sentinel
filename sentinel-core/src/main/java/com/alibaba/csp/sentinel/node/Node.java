@@ -29,7 +29,7 @@ import com.alibaba.csp.sentinel.node.metric.MetricNode;
 public interface Node {
 
     /**
-     * Get incoming request per minute. {@code pass + blocked}
+     * Get incoming request per minute. {@code pass + block}
      */
     long totalRequest();
 
@@ -41,9 +41,9 @@ public interface Node {
     long totalSuccess();
 
     /**
-     * Get blocked request count per minute.
+     * Get block request count per minute.
      */
-    long blockedRequest();
+    long blockRequest();
 
     /**
      * Get exception count per minute.
@@ -56,12 +56,12 @@ public interface Node {
     long passQps();
 
     /**
-     * Get blocked request per second.
+     * Get block request per second.
      */
-    long blockedQps();
+    long blockQps();
 
     /**
-     * Get {@link #passQps()} + {@link #blockedQps()} request per second.
+     * Get {@link #passQps()} + {@link #blockQps()} request per second.
      */
     long totalQps();
 
@@ -90,7 +90,7 @@ public interface Node {
     int curThreadNum();
 
     /**
-     * Get last second blocked QPS.
+     * Get last second block QPS.
      */
     long previousBlockQps();
 
@@ -110,7 +110,7 @@ public interface Node {
      */
     void rt(long rt);
 
-    void increaseBlockedQps();
+    void increaseBlockQps();
 
     void increaseExceptionQps();
 
@@ -119,7 +119,8 @@ public interface Node {
     void decreaseThreadNum();
 
     /**
-     * Reset the internal counter.
+     * Reset the internal counter. Reset is needed when {@link IntervalProperty#INTERVAL} or
+     * {@link SampleCountProperty#SAMPLE_COUNT} is changed.
      */
     void reset();
 
