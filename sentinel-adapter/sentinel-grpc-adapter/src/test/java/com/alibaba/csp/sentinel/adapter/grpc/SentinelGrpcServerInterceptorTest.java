@@ -66,14 +66,14 @@ public class SentinelGrpcServerInterceptorTest {
         assertTrue(sendRequest());
         ClusterNode clusterNode = ClusterBuilderSlot.getClusterNode(resourceName, EntryType.IN);
         assertNotNull(clusterNode);
-        assertEquals(1, clusterNode.passQps());
+        assertEquals(1, clusterNode.totalRequest() - clusterNode.blockRequest());
 
         // Not allowed to pass.
         configureFlowRule(0);
 
         // The second request will be blocked.
         assertFalse(sendRequest());
-        assertEquals(1, clusterNode.blockQps());
+        assertEquals(1, clusterNode.blockRequest());
 
         server.stop();
     }
