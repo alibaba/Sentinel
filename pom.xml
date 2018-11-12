@@ -169,7 +169,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <!-- CircleCI build workaround -->
-                    <argLine>-Xms1024m -Xmx2048m</argLine>
+                    <argLine>@{argLine} -Xms1024m -Xmx2048m</argLine>
                     <useSystemClassLoader>false</useSystemClassLoader>
                 </configuration>
             </plugin>
