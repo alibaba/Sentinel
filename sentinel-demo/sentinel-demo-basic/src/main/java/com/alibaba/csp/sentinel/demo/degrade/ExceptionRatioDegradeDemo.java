@@ -32,13 +32,16 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
 /**
  * <p>
  * Degrade is used when the resources are in an unstable state, these resources
- * will be degraded within the next defined time window. There are two ways to
+ * will be degraded within the next defined time window. There are three ways to
  * measure whether a resource is stable or not:
  * <ul>
  * <li>
  * Exception ratio: When the ratio of exception count per second and the success
- * qps exceeds the threshold , access to the resource will be blocked in the
- * coming window.
+ * qps greats than or equals to the threshold, access to the resource will be blocked
+ * in the coming time window.
+ * </li>
+ * <li>
+ * Exception Count, see {@link ExceptionCountDegradeDemo}.
  * </li>
  * <li>
  * For average response time, see {@link RtDegradeDemo}.
@@ -110,7 +113,7 @@ public class ExceptionRatioDegradeDemo {
         rule.setResource(KEY);
         // set limit exception ratio to 0.1
         rule.setCount(0.1);
-        rule.setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION);
+        rule.setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO);
         rule.setTimeWindow(10);
         rules.add(rule);
         DegradeRuleManager.loadRules(rules);

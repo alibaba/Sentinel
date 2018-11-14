@@ -103,7 +103,7 @@ public class MachineEntity {
         machineInfo.setHostname(hostname);
         machineInfo.setIp(ip);
         machineInfo.setPort(port);
-        machineInfo.setVersion(timestamp);
+        machineInfo.setTimestamp(timestamp);
 
         return machineInfo;
     }

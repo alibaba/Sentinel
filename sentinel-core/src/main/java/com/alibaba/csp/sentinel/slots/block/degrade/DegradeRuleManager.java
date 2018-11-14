@@ -28,7 +28,7 @@ import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 /***
@@ -56,6 +56,7 @@ public class DegradeRuleManager {
      */
     public static void register2Property(SentinelProperty<List<DegradeRule>> property) {
         synchronized (listener) {
+            RecordLog.info("[DegradeRuleManager] Registering new property to degrade rule manager");
             currentProperty.removeListener(listener);
             property.addListener(listener);
             currentProperty = property;
@@ -122,7 +123,7 @@ public class DegradeRuleManager {
                 degradeRules.clear();
                 degradeRules.putAll(rules);
             }
-            RecordLog.info("receive degrade config: " + degradeRules);
+            RecordLog.info("[DegradeRuleManager] Degrade rules received: " + degradeRules);
         }
 
         @Override
@@ -132,18 +133,24 @@ public class DegradeRuleManager {
                 degradeRules.clear();
                 degradeRules.putAll(rules);
             }
-            RecordLog.info("init degrade config: " + degradeRules);
+            RecordLog.info("[DegradeRuleManager] Degrade rules loaded: " + degradeRules);
         }
 
         private Map<String, List<DegradeRule>> loadDegradeConf(List<DegradeRule> list) {
-            if (list == null) {
-                return null;
-            }
             Map<String, List<DegradeRule>> newRuleMap = new ConcurrentHashMap<String, List<DegradeRule>>();
 
+            if (list == null || list.isEmpty()) {
+                return newRuleMap;
+            }
+
             for (DegradeRule rule : list) {
+                if (!isValidRule(rule)) {
+                    RecordLog.warn("[DegradeRuleManager] Ignoring invalid degrade rule when loading new rules: " + rule);
+                    continue;
+                }
+
                 if (StringUtil.isBlank(rule.getLimitApp())) {
-                    rule.setLimitApp(FlowRule.LIMIT_APP_DEFAULT);
+                    rule.setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
                 }
 
                 String identity = rule.getResource();
@@ -160,4 +167,16 @@ public class DegradeRuleManager {
 
     }
 
+    public static boolean isValidRule(DegradeRule rule) {
+        boolean baseValid = rule != null && !StringUtil.isBlank(rule.getResource())
+            && rule.getCount() >= 0 && rule.getTimeWindow() > 0;
+        if (!baseValid) {
+            return false;
+        }
+        // Check exception ratio mode.
+        if (rule.getGrade() == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO && rule.getCount() > 1) {
+            return false;
+        }
+        return true;
+    }
 }

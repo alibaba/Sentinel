@@ -69,7 +69,7 @@ public class SentinelConfig {
             String fileName = LogBase.getLogBaseDir() + appName + ".properties";
             File file = new File(fileName);
             if (file.exists()) {
-                RecordLog.info("read SentinelConfig from " + fileName);
+                RecordLog.info("[SentinelConfig] Reading config from " + fileName);
                 FileInputStream fis = new FileInputStream(fileName);
                 Properties fileProps = new Properties();
                 fileProps.load(fis);
@@ -77,15 +77,6 @@ public class SentinelConfig {
 
                 for (Object key : fileProps.keySet()) {
                     SentinelConfig.setConfig((String)key, (String)fileProps.get(key));
-                    try {
-                        String systemValue = System.getProperty((String)key);
-                        if (!StringUtil.isEmpty(systemValue)) {
-                            SentinelConfig.setConfig((String)key, systemValue);
-                        }
-                    } catch (Exception e) {
-                        RecordLog.info(e.getMessage(), e);
-                    }
-                    RecordLog.info(key + " value: " + SentinelConfig.getConfig((String)key));
                 }
             }
         } catch (Throwable ioe) {
@@ -94,7 +85,13 @@ public class SentinelConfig {
 
         // JVM parameter override file config.
         for (Map.Entry<Object, Object> entry : System.getProperties().entrySet()) {
-            SentinelConfig.setConfig(entry.getKey().toString(), entry.getValue().toString());
+            String configKey = entry.getKey().toString();
+            String configValue = entry.getValue().toString();
+            String configValueOld = getConfig(configKey);
+            SentinelConfig.setConfig(configKey, configValue);
+            if (configValueOld != null) {
+                RecordLog.info("[SentinelConfig] JVM parameter overrides {0}: {1} -> {2}", configKey, configValueOld, configValue);
+            }
         }
     }
 
@@ -131,7 +128,7 @@ public class SentinelConfig {
         try {
             return Long.parseLong(props.get(SINGLE_METRIC_FILE_SIZE));
         } catch (Throwable throwable) {
-            RecordLog.info("SentinelConfig get singleMetricFileSize fail, use default value: "
+            RecordLog.info("[SentinelConfig] Parse singleMetricFileSize fail, use default value: "
                 + DEFAULT_SINGLE_METRIC_FILE_SIZE, throwable);
             return DEFAULT_SINGLE_METRIC_FILE_SIZE;
         }
@@ -141,7 +138,7 @@ public class SentinelConfig {
         try {
             return Integer.parseInt(props.get(TOTAL_METRIC_FILE_COUNT));
         } catch (Throwable throwable) {
-            RecordLog.info("SentinelConfig get totalMetricFileCount fail, use default value: "
+            RecordLog.info("[SentinelConfig] Parse totalMetricFileCount fail, use default value: "
                 + DEFAULT_TOTAL_METRIC_FILE_COUNT, throwable);
             return DEFAULT_TOTAL_METRIC_FILE_COUNT;
         }

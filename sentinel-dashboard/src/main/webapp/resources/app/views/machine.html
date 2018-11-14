@@ -37,21 +37,12 @@
           <table class="table" style="border-left: none; border-right:none;margin-top: 10px;">
             <thead>
               <tr style="background: #F3F5F7;">
-                <td>
-                  机器名
-                </td>
-                <td>
-                  IP地址
-                </td>
-                <td>
-                  端口号
-                </td>
-                <td>
-                  健康状态
-                </td>
-                <td>
-                  心跳时间
-                </td>
+                <td>机器名</td>
+                <td>IP 地址</td>
+                <td>端口号</td>
+                <td>Sentinel 客户端版本</td>
+                <td>健康状态</td>
+                <td>心跳时间</td>
               </tr>
             </thead>
             <tbody>
@@ -60,10 +51,11 @@
                 <td style="word-wrap:break-word;word-break:break-all;">{{entry.hostname}}</td>
                 <td style="word-wrap:break-word;word-break:break-all;">{{entry.ip}}</td>
                 <td> {{entry.port}} </td>
+                <td> {{entry.version}} </td>
                 <td ng-if="entry.health">健康</td>
                 <td ng-if="!entry.health" style="color: red">失联</td>
-                <td>{{entry.version | date: 'yyyy/MM/dd HH:mm:ss'}}</td>
-                <!--<td ng-if="!entry.health" style="color: grey">{{entry.version | date: 'yyyy/MM/dd HH:mm:ss'}}</td>-->
+                <td>{{entry.timestamp | date: 'yyyy/MM/dd HH:mm:ss'}}</td>
+                <!--<td ng-if="!entry.health" style="color: grey">{{entry.timestamp | date: 'yyyy/MM/dd HH:mm:ss'}}</td>-->
               </tr>
             </tbody>
           </table>

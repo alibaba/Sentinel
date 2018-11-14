@@ -54,19 +54,19 @@ public class EntranceNode extends DefaultNode {
     }
 
     @Override
-    public long blockedQps() {
+    public long blockQps() {
         int blockQps = 0;
         for (Node node : getChildList()) {
-            blockQps += node.blockedQps();
+            blockQps += node.blockQps();
         }
         return blockQps;
     }
 
     @Override
-    public long blockedRequest() {
+    public long blockRequest() {
         long r = 0;
         for (Node node : getChildList()) {
-            r += node.blockedRequest();
+            r += node.blockRequest();
         }
         return r;
     }

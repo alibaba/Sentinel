@@ -26,7 +26,7 @@ import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRule;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRuleManager;
 
 /**
- * Authority rules is designed for limiting by request origins. In blacklist mode,
+ * Authority rule is designed for limiting by request origins. In blacklist mode,
  * requests will be blocked when blacklist contains current origin, otherwise will pass.
  * In whitelist mode, only requests from whitelist origin can pass.
  *

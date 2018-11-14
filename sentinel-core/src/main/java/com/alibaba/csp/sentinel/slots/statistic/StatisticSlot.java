@@ -15,6 +15,10 @@
  */
 package com.alibaba.csp.sentinel.slots.statistic;
 
+import java.util.Collection;
+
+import com.alibaba.csp.sentinel.slotchain.ProcessorSlotEntryCallback;
+import com.alibaba.csp.sentinel.slotchain.ProcessorSlotExitCallback;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.EntryType;
@@ -39,13 +43,13 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  * </p>
  *
  * @author jialiang.linjl
+ * @author Eric Zhao
  */
 public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, Object... args)
         throws Throwable {
-
         try {
             fireEntry(context, resourceWrapper, node, count, args);
             node.increaseThreadNum();
@@ -61,17 +65,24 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 Constants.ENTRY_NODE.addPassRequest();
             }
 
+            for (ProcessorSlotEntryCallback<DefaultNode> handler : StatisticSlotCallbackRegistry.getEntryCallbacks()) {
+                handler.onPass(context, resourceWrapper, node, count, args);
+            }
         } catch (BlockException e) {
             context.getCurEntry().setError(e);
 
             // Add block count.
-            node.increaseBlockedQps();
+            node.increaseBlockQps();
             if (context.getCurEntry().getOriginNode() != null) {
-                context.getCurEntry().getOriginNode().increaseBlockedQps();
+                context.getCurEntry().getOriginNode().increaseBlockQps();
             }
 
             if (resourceWrapper.getType() == EntryType.IN) {
-                Constants.ENTRY_NODE.increaseBlockedQps();
+                Constants.ENTRY_NODE.increaseBlockQps();
+            }
+
+            for (ProcessorSlotEntryCallback<DefaultNode> handler : StatisticSlotCallbackRegistry.getEntryCallbacks()) {
+                handler.onBlocked(e, context, resourceWrapper, node, count, args);
             }
 
             throw e;
@@ -117,11 +128,14 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 Constants.ENTRY_NODE.decreaseThreadNum();
             }
         } else {
-            // error may happen
-            // node.rt(-2);
+            // Error may happen.
+        }
+
+        Collection<ProcessorSlotExitCallback> exitCallbacks = StatisticSlotCallbackRegistry.getExitCallbacks();
+        for (ProcessorSlotExitCallback handler : exitCallbacks) {
+            handler.onExit(context, resourceWrapper, count, args);
         }
 
         fireExit(context, resourceWrapper, count);
     }
-
 }

@@ -15,9 +15,15 @@
  */
 package com.alibaba.csp.sentinel;
 
+import java.io.File;
+
+import com.alibaba.csp.sentinel.log.LogBase;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.util.PidUtil;
 
 import org.junit.Test;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author xuyue
@@ -35,6 +41,50 @@ public class RecordLogTest {
         int count = 1000;
         while (--count > 0) {
             RecordLog.info("Count " + count);
+        }
+    }
+
+    @Test
+    public void testChangeLogBase() {
+        String userHome = System.getProperty("user.home");
+        String newLogBase = userHome + File.separator + "tmpLogDir" + System.currentTimeMillis();
+        System.setProperty(LogBase.LOG_DIR, newLogBase);
+
+        RecordLog.info("testChangeLogBase");
+        String logFileName = RecordLog.getLogBaseDir();
+        File[] files = new File(logFileName).listFiles();
+        assertTrue(files != null && files.length > 0);
+    }
+
+    @Test
+    public void testLogBaseDir() {
+        RecordLog.info("testLogBaseDir");
+        assertTrue(RecordLog.getLogBaseDir().startsWith(System.getProperty("user.home")));
+    }
+
+    public void testLogNameNotUsePid() {
+        String userHome = System.getProperty("user.home");
+        String newLogBase = userHome + File.separator + "tmpLogDir" + System.currentTimeMillis();
+        System.setProperty(LogBase.LOG_DIR, newLogBase);
+        RecordLog.info("testLogNameNotUsePid");
+        File[] files = new File(newLogBase).listFiles();
+        assertTrue(files != null && files.length > 0);
+        for (File f : files) {
+            assertTrue(!f.getName().contains("pid" + PidUtil.getPid()));
+        }
+    }
+
+    public void testLogNameUsePid() {
+        String userHome = System.getProperty("user.home");
+        String newLogBase = userHome + File.separator + "tmpLogDir" + System.currentTimeMillis();
+        System.setProperty(LogBase.LOG_DIR, newLogBase);
+        System.setProperty(LogBase.LOG_NAME_USE_PID, "true");
+
+        RecordLog.info("testLogNameUsePid");
+        File[] files = new File(newLogBase).listFiles();
+        assertTrue(files != null && files.length > 0);
+        for (File f : files) {
+            assertTrue(f.getName().contains("pid" + PidUtil.getPid()));
         }
     }
 

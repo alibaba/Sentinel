@@ -31,10 +31,14 @@ import com.alibaba.csp.sentinel.slots.statistic.metric.Metric;
  */
 public class StatisticNode implements Node {
 
-    private transient Metric rollingCounterInSecond = new ArrayMetric(1000 / SampleCountProperty.sampleCount,
+    private transient volatile Metric rollingCounterInSecond = new ArrayMetric(1000 / SampleCountProperty.SAMPLE_COUNT,
         IntervalProperty.INTERVAL);
 
-    private transient Metric rollingCounterInMinute = new ArrayMetric(1000, 2 * 60);
+    /**
+     * Holds statistics of the recent 60 seconds. The windowLengthInMs is deliberately set to 1000 milliseconds,
+     * meaning each bucket per second, in this way we can get accurate statistics of each second.
+     */
+    private transient Metric rollingCounterInMinute = new ArrayMetric(1000, 60);
 
     private AtomicInteger curThreadNum = new AtomicInteger(0);
 
@@ -45,37 +49,43 @@ public class StatisticNode implements Node {
         long currentTime = TimeUtil.currentTimeMillis();
         currentTime = currentTime - currentTime % 1000;
         Map<Long, MetricNode> metrics = new ConcurrentHashMap<Long, MetricNode>();
-        List<MetricNode> minutes = rollingCounterInMinute.details();
-        for (MetricNode node : minutes) {
+        List<MetricNode> nodesOfEverySecond = rollingCounterInMinute.details();
+        long newLastFetchTime = lastFetchTime;
+        for (MetricNode node : nodesOfEverySecond) {
             if (node.getTimestamp() > lastFetchTime && node.getTimestamp() < currentTime) {
-                if (node.getPassedQps() != 0 || node.getBlockedQps() != 0) {
+                if (node.getPassQps() != 0
+                    || node.getBlockQps() != 0
+                    || node.getSuccessQps() != 0
+                    || node.getExceptionQps() != 0
+                    || node.getRt() != 0) {
                     metrics.put(node.getTimestamp(), node);
-                    lastFetchTime = node.getTimestamp();
+                    newLastFetchTime = Math.max(newLastFetchTime, node.getTimestamp());
                 }
             }
         }
+        lastFetchTime = newLastFetchTime;
 
         return metrics;
     }
 
     @Override
     public void reset() {
-        rollingCounterInSecond = new ArrayMetric(1000 / SampleCountProperty.sampleCount, IntervalProperty.INTERVAL);
+        rollingCounterInSecond = new ArrayMetric(1000 / SampleCountProperty.SAMPLE_COUNT, IntervalProperty.INTERVAL);
     }
 
     @Override
     public long totalRequest() {
         long totalRequest = rollingCounterInMinute.pass() + rollingCounterInMinute.block();
-        return totalRequest / 2;
+        return totalRequest;
     }
 
     @Override
-    public long blockedRequest() {
-        return rollingCounterInMinute.block() / 2;
+    public long blockRequest() {
+        return rollingCounterInMinute.block();
     }
 
     @Override
-    public long blockedQps() {
+    public long blockQps() {
         return rollingCounterInSecond.block() / IntervalProperty.INTERVAL;
     }
 
@@ -91,12 +101,12 @@ public class StatisticNode implements Node {
 
     @Override
     public long totalQps() {
-        return passQps() + blockedQps();
+        return passQps() + blockQps();
     }
 
     @Override
     public long totalSuccess() {
-        return rollingCounterInMinute.success() / 2;
+        return rollingCounterInMinute.success();
     }
 
     @Override
@@ -106,7 +116,7 @@ public class StatisticNode implements Node {
 
     @Override
     public long totalException() {
-        return rollingCounterInMinute.exception() / 2;
+        return rollingCounterInMinute.exception();
     }
 
     @Override
@@ -121,7 +131,7 @@ public class StatisticNode implements Node {
 
     @Override
     public long maxSuccessQps() {
-        return rollingCounterInSecond.maxSuccess() * SampleCountProperty.sampleCount;
+        return rollingCounterInSecond.maxSuccess() * SampleCountProperty.SAMPLE_COUNT;
     }
 
     @Override
@@ -160,7 +170,7 @@ public class StatisticNode implements Node {
     }
 
     @Override
-    public void increaseBlockedQps() {
+    public void increaseBlockQps() {
         rollingCounterInSecond.addBlock();
         rollingCounterInMinute.addBlock();
     }

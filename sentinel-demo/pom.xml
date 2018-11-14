@@ -6,11 +6,16 @@
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-parent</artifactId>
-        <version>0.2.0-SNAPSHOT</version>
+        <version>1.4.0-SNAPSHOT</version>
     </parent>
     <artifactId>sentinel-demo</artifactId>
     <packaging>pom</packaging>
     <name>sentinel-demo</name>
+
+    <properties>
+        <java.source.version>1.8</java.source.version>
+        <java.target.version>1.8</java.target.version>
+    </properties>
 
     <modules>
         <module>sentinel-demo-basic</module>
@@ -21,6 +26,8 @@
         <module>sentinel-demo-zookeeper-datasource</module>
         <module>sentinel-demo-apollo-datasource</module>
         <module>sentinel-demo-annotation-spring-aop</module>
+        <module>sentinel-demo-parameter-flow-control</module>
+        <module>sentinel-demo-slot-chain-spi</module>
     </modules>
 
     <dependencies>
@@ -29,5 +36,18 @@
             <artifactId>sentinel-core</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>${maven.deploy.version}</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

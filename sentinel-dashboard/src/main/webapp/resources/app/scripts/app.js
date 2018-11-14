@@ -82,6 +82,38 @@ angular
         }
       })
 
+      .state('dashboard.paramFlow', {
+        templateUrl: 'app/views/param_flow.html',
+        url: '/paramFlow/:app',
+        controller: 'ParamFlowController',
+        resolve: {
+          loadMyFiles: ['$ocLazyLoad', function ($ocLazyLoad) {
+            return $ocLazyLoad.load({
+              name: 'sentinelDashboardApp',
+              files: [
+                'app/scripts/controllers/param_flow.js',
+              ]
+            });
+          }]
+        }
+      })
+
+      .state('dashboard.authority', {
+            templateUrl: 'app/views/authority.html',
+            url: '/authority/:app',
+            controller: 'AuthorityRuleController',
+            resolve: {
+                loadMyFiles: ['$ocLazyLoad', function ($ocLazyLoad) {
+                    return $ocLazyLoad.load({
+                        name: 'sentinelDashboardApp',
+                        files: [
+                            'app/scripts/controllers/authority.js',
+                        ]
+                    });
+                }]
+            }
+       })
+
       .state('dashboard.degrade', {
         templateUrl: 'app/views/degrade.html',
         url: '/degrade/:app',
