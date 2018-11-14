@@ -138,8 +138,9 @@ Contributions are always welcomed! Please see [CONTRIBUTING](./CONTRIBUTING.md) 
 
 ## Who is using
 
-This is only part of the companies using Sentinel, for reference only. If you are using Sentinel, please [add your company here](https://github.com/alibaba/Sentinel/issues/18) to tell us your scenario to make Sentinel better :)
+These are only part of the companies using Sentinel, for reference only. If you are using Sentinel, please [add your company here](https://github.com/alibaba/Sentinel/issues/18) to tell us your scenario to make Sentinel better :)
 
 ![Alibaba Group](https://docs.alibabagroup.com/assets2/images/en/global/logo_header.png)
 ![Taiping Renshou](http://www.cntaiping.com/tplresource/cms/www/taiping/img/home_new/tp_logo_img.png)
-![Shunfeng Technology](https://user-images.githubusercontent.com/9434884/48454182-4543b580-e7f1-11e8-8dee-9199ce8d6358.png)
+![Shunfeng Technology](https://user-images.githubusercontent.com/9434884/48463502-2f48eb80-e817-11e8-984f-2f9b1b789e2d.png)
+![Mandao](https://user-images.githubusercontent.com/9434884/48463559-6cad7900-e817-11e8-87e4-42952b074837.png)
