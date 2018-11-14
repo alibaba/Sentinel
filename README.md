@@ -135,3 +135,11 @@ Contact us: sentinel@linux.alibaba.com
 ## Contributing
 
 Contributions are always welcomed! Please see [CONTRIBUTING](./CONTRIBUTING.md) for detailed guidelines.
+
+## Who is using
+
+This is only part of the companies using Sentinel, for reference only. If you are using Sentinel, please [add your company here](https://github.com/alibaba/Sentinel/issues/18) to tell us your scenario to make Sentinel better :)
+
+![Alibaba Group](https://docs.alibabagroup.com/assets2/images/en/global/logo_header.png)
+![Taiping Renshou](http://www.cntaiping.com/tplresource/cms/www/taiping/img/home_new/tp_logo_img.png)
+![Shunfeng Technology](https://user-images.githubusercontent.com/9434884/48454182-4543b580-e7f1-11e8-8dee-9199ce8d6358.png)
