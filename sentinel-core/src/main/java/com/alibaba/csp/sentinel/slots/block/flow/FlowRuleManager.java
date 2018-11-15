@@ -16,6 +16,8 @@
 package com.alibaba.csp.sentinel.slots.block.flow;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -144,6 +146,15 @@ public class FlowRuleManager {
             ruleM.add(rule);
 
         }
+
+        if (!newRuleMap.isEmpty()) {
+            Comparator<FlowRule> comparator = new FlowRuleComparator();
+            // Sort the rules.
+            for (List<FlowRule> rules : newRuleMap.values()) {
+                Collections.sort(rules, comparator);
+            }
+        }
+
         return newRuleMap;
     }
 
