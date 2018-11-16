@@ -20,10 +20,10 @@ import java.util.List;
 
 import com.alibaba.csp.sentinel.util.StringUtil;
 
-import com.taobao.csp.sentinel.dashboard.datasource.entity.SystemRuleEntity;
+import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.SystemRuleEntity;
 import com.taobao.csp.sentinel.dashboard.discovery.MachineInfo;
-import com.taobao.csp.sentinel.dashboard.inmem.HttpHelper;
-import com.taobao.csp.sentinel.dashboard.inmem.InMemSystemRuleStore;
+import com.taobao.csp.sentinel.dashboard.client.SentinelApiClient;
+import com.taobao.csp.sentinel.dashboard.repository.rule.InMemSystemRuleStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +43,7 @@ public class SystemController {
     @Autowired
     private InMemSystemRuleStore repository;
     @Autowired
-    private HttpHelper httpHelper;
+    private SentinelApiClient sentinelApiClient;
 
     @ResponseBody
     @RequestMapping("/rules.json")
@@ -58,7 +58,7 @@ public class SystemController {
             return Result.ofFail(-1, "port can't be null");
         }
         try {
-            List<SystemRuleEntity> rules = httpHelper.fetchSystemRuleOfMachine(app, ip, port);
+            List<SystemRuleEntity> rules = sentinelApiClient.fetchSystemRuleOfMachine(app, ip, port);
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
@@ -209,6 +209,6 @@ public class SystemController {
 
     private boolean publishRules(String app, String ip, Integer port) {
         List<SystemRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return httpHelper.setSystemRuleOfMachine(app, ip, port, rules);
+        return sentinelApiClient.setSystemRuleOfMachine(app, ip, port, rules);
     }
 }

@@ -20,10 +20,10 @@ import java.util.List;
 
 import com.alibaba.csp.sentinel.util.StringUtil;
 
-import com.taobao.csp.sentinel.dashboard.datasource.entity.FlowRuleEntity;
+import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.taobao.csp.sentinel.dashboard.discovery.MachineInfo;
-import com.taobao.csp.sentinel.dashboard.inmem.HttpHelper;
-import com.taobao.csp.sentinel.dashboard.inmem.InMemFlowRuleStore;
+import com.taobao.csp.sentinel.dashboard.client.SentinelApiClient;
+import com.taobao.csp.sentinel.dashboard.repository.rule.InMemFlowRuleStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +45,7 @@ public class FlowController {
     private InMemFlowRuleStore repository;
 
     @Autowired
-    private HttpHelper httpHelper;
+    private SentinelApiClient sentinelApiClient;
 
     @ResponseBody
     @RequestMapping("/rules.json")
@@ -60,7 +60,7 @@ public class FlowController {
             return Result.ofFail(-1, "port can't be null");
         }
         try {
-            List<FlowRuleEntity> rules = httpHelper.fetchFlowRuleOfMachine(app, ip, port);
+            List<FlowRuleEntity> rules = sentinelApiClient.fetchFlowRuleOfMachine(app, ip, port);
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
@@ -244,6 +244,6 @@ public class FlowController {
 
     private boolean publishRules(String app, String ip, Integer port) {
         List<FlowRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return httpHelper.setFlowRuleOfMachine(app, ip, port, rules);
+        return sentinelApiClient.setFlowRuleOfMachine(app, ip, port, rules);
     }
 }

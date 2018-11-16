@@ -19,17 +19,17 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.node.Node;
-import com.alibaba.csp.sentinel.slots.block.flow.Controller;
+import com.alibaba.csp.sentinel.slots.block.flow.TrafficShapingController;
 
 /**
- * The principle idea comes from guava. However, the calculation of guava is
- * rate-based, which means that we need to translate rate to qps.
- *
- * https://github.com/google/guava/blob/master/guava/src/com/google/common/util/concurrent/SmoothRateLimiter.java
+ * <p>
+ * The principle idea comes from Guava. However, the calculation of Guava is
+ * rate-based, which means that we need to translate rate to QPS.
+ * </p>
  *
  * Requests arriving at the pulse may drag down long idle systems even though it
  * has a much larger handling capability in stable period. It usually happens in
- * scenarios that require extra time for initialization, for example, db
+ * scenarios that require extra time for initialization, e.g. DB
  * establishes a connection; connects to a remote service, and so on.
  *
  * That’s why we need “warm up”.
@@ -61,23 +61,23 @@ import com.alibaba.csp.sentinel.slots.block.flow.Controller;
  *
  * @author jialiang.linjl
  */
-public class WarmUpController implements Controller {
+public class WarmUpController implements TrafficShapingController {
 
-    private double count;
+    protected double count;
     private int coldFactor;
-    private int warningToken = 0;
+    protected int warningToken = 0;
     private int maxToken;
-    private double slope;
+    protected double slope;
 
-    private AtomicLong storedTokens = new AtomicLong(0);
-    private AtomicLong lastFilledTime = new AtomicLong(0);
+    protected AtomicLong storedTokens = new AtomicLong(0);
+    protected AtomicLong lastFilledTime = new AtomicLong(0);
 
-    public WarmUpController(double count, int warmupPeriodInSec, int coldFactor) {
-        construct(count, warmupPeriodInSec, coldFactor);
+    public WarmUpController(double count, int warmUpPeriodInSec, int coldFactor) {
+        construct(count, warmUpPeriodInSec, coldFactor);
     }
 
-    public WarmUpController(double count, int warmUpPeriodInMic) {
-        construct(count, warmUpPeriodInMic, 3);
+    public WarmUpController(double count, int warmUpPeriodInSec) {
+        construct(count, warmUpPeriodInSec, 3);
     }
 
     private void construct(double count, int warmUpPeriodInSec, int coldFactor) {
@@ -132,7 +132,7 @@ public class WarmUpController implements Controller {
         return false;
     }
 
-    private void syncToken(long passQps) {
+    protected void syncToken(long passQps) {
         long currentTime = TimeUtil.currentTimeMillis();
         currentTime = currentTime - currentTime % 1000;
         long oldLastFillTime = lastFilledTime.get();

@@ -41,13 +41,13 @@
                   <td style="width: 40%;">
                     资源名
                   </td>
-                  <td style="width: 8%;">通过QPS</td>
-                  <td style="width: 8%;">拒绝QPS</td>
-                  <td style="width: 8%;">线程数</td>
-                  <td style="width: 8%;">平均RT</td>
-                  <td style="width: 8%;">分钟通过</td>
-                  <td style="width: 8%;">分钟拒绝</td>
-                  <td style="width: 12%">操作</td>
+                  <td style="width: 7%;">通过QPS</td>
+                  <td style="width: 7%;">拒绝QPS</td>
+                  <td style="width: 5%;">线程数</td>
+                  <td style="width: 6%;">平均RT</td>
+                  <td style="width: 6%;">分钟通过</td>
+                  <td style="width: 6%;">分钟拒绝</td>
+                  <td style="width: 23%">操作</td>
                 </tr>
                 <tr></tr>
               </thead>
@@ -57,23 +57,27 @@
                   <td style="white-space: normal; text-align: left;">
                     <!--<a ng-click="copyIdentity(resource.resource)"-->
                     <!--title="{{resource.resource}} 单击复制到剪切板">-->
-                    {{resource.resource}}
+                    <span style="word-wrap:break-word;word-break:break-all;">{{resource.resource}}</span>
                     <!--</a>-->
                   </td>
                   <td>{{resource.passQps}}</td>
-                  <td>{{resource.blockedQps}}</td>
+                  <td>{{resource.blockQps}}</td>
                   <td>{{resource.threadNum}}</td>
                   <td>{{resource.averageRt}}</td>
-                  <td>{{resource.oneMinutePassed}}</td>
+                  <td>{{resource.oneMinutePass}}</td>
                   <td ng-if="$index==pageSize-1 || (currentPage>=identities.length/pageSize && $index==identities.length%pageSize-1)" ng-init="initTreeTable()">
-                    {{resource.oneMinuteBlocked}}</td>
-                  <td ng-if="!($index==pageSize-1 || (currentPage>=identities.length/pageSize && $index==identities.length%pageSize-1))"> {{resource.oneMinuteBlocked}}</td>
+                    {{resource.oneMinuteBlock}}</td>
+                  <td ng-if="!($index==pageSize-1 || (currentPage>=identities.length/pageSize && $index==identities.length%pageSize-1))"> {{resource.oneMinuteBlock}}</td>
                   <td>
                     <div class="control-group">
                       <button class="btn btn-xs btn-default" type="button" ng-click="addNewFlowRule(resource.resource)" style="font-size: 12px; height:25px;">
                         <i class="fa fa-plus"></i>&nbsp;流控</button>
                       <button class="btn btn-xs btn-default" type="button" ng-click="addNewDegradeRule(resource.resource)" style="font-size: 12px; height:25px;">
                         <i class="fa fa-plus"></i>&nbsp;降级</button>
+                      <button class="btn btn-xs btn-default" type="button" ng-click="addNewParamFlowRule(resource.resource)" style="font-size: 12px; height:25px;">
+                        <i class="fa fa-plus"></i>&nbsp;热点</button>
+                      <button class="btn btn-xs btn-default" type="button" ng-click="addNewAuthorityRule(resource.resource)" style="font-size: 12px; height:25px;">
+                        <i class="fa fa-plus"></i>&nbsp;授权</button>
                     </div>
                   </td>
                 </tr>

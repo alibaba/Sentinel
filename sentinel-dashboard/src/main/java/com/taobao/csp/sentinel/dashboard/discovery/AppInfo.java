@@ -15,14 +15,16 @@
  */
 package com.taobao.csp.sentinel.dashboard.discovery;
 
+import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class AppInfo {
 
     private String app = "";
 
-    private Set<MachineInfo> machines = new TreeSet<MachineInfo>();
+    private Set<MachineInfo> machines = ConcurrentHashMap.newKeySet();
 
     public AppInfo() {
     }
@@ -39,8 +41,13 @@ public class AppInfo {
         this.app = app;
     }
 
-    public synchronized Set<MachineInfo> getMachines() {
-        return machines;
+    /**
+     * Get the current machines.
+     *
+     * @return a new copy of the current machines.
+     */
+    public Set<MachineInfo> getMachines() {
+        return new HashSet<>(machines);
     }
 
     @Override
@@ -48,9 +55,14 @@ public class AppInfo {
         return "AppInfo{" + "app='" + app + ", machines=" + machines + '}';
     }
 
-    public synchronized boolean addMachine(MachineInfo machineInfo) {
+    public boolean addMachine(MachineInfo machineInfo) {
         machines.remove(machineInfo);
         return machines.add(machineInfo);
     }
 
+    public Optional<MachineInfo> getMachine(String ip, int port) {
+        return machines.stream()
+            .filter(e -> e.getIp().equals(ip) && e.getPort().equals(port))
+            .findFirst();
+    }
 }

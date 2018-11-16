@@ -17,18 +17,19 @@ package com.alibaba.csp.sentinel.slots.block.flow.controller;
 
 import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import com.alibaba.csp.sentinel.slots.block.flow.Controller;
+import com.alibaba.csp.sentinel.slots.block.flow.TrafficShapingController;
 
 /**
+ * Default throttling controller (immediately reject strategy).
+ *
  * @author jialiang.linjl
  */
-public class DefaultController implements Controller {
+public class DefaultController implements TrafficShapingController {
 
-    double count = 0;
-    int grade = 0;
+    private double count;
+    private int grade;
 
     public DefaultController(double count, int grade) {
-        super();
         this.count = count;
         this.grade = grade;
     }

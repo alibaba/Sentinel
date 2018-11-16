@@ -23,8 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.datasource.AbstractDataSource;
-import com.alibaba.csp.sentinel.datasource.ConfigParser;
-import com.alibaba.csp.sentinel.datasource.DataSource;
+import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.nacos.api.NacosFactory;
@@ -32,7 +31,7 @@ import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.listener.Listener;
 
 /**
- * A {@link DataSource} with Nacos backend. When the data in Nacos backend has been modified,
+ * A read-only {@code DataSource} with Nacos backend. When the data in Nacos backend has been modified,
  * Nacos will automatically push the new value so that the dynamic configuration can be real-time.
  *
  * @author Eric Zhao
@@ -58,7 +57,7 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
     private ConfigService configService = null;
 
     /**
-     * Constructs an DataSource with Nacos backend.
+     * Constructs an read-only DataSource with Nacos backend.
      *
      * @param serverAddr server address of Nacos, cannot be empty
      * @param groupId    group ID, cannot be empty
@@ -66,7 +65,7 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
      * @param parser     customized data parser, cannot be empty
      */
     public NacosDataSource(final String serverAddr, final String groupId, final String dataId,
-                           ConfigParser<String, T> parser) {
+                           Converter<String, T> parser) {
         super(parser);
         if (StringUtil.isBlank(serverAddr) || StringUtil.isBlank(groupId) || StringUtil.isBlank(dataId)) {
             throw new IllegalArgumentException(String.format("Bad argument: serverAddr=[%s], groupId=[%s], dataId=[%s]",
@@ -84,7 +83,7 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
             public void receiveConfigInfo(final String configInfo) {
                 RecordLog.info(String.format("[NacosDataSource] New property value received for (%s, %s, %s): %s",
                     serverAddr, dataId, groupId, configInfo));
-                T newValue = NacosDataSource.this.parser.parse(configInfo);
+                T newValue = NacosDataSource.this.parser.convert(configInfo);
                 // Update the new value to the property.
                 getProperty().updateValue(newValue);
             }
@@ -97,11 +96,11 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
         try {
             T newValue = loadConfig();
             if (newValue == null) {
-                RecordLog.info("[NacosDataSource] WARN: initial config is null, you may have to check your data source");
+                RecordLog.warn("[NacosDataSource] WARN: initial config is null, you may have to check your data source");
             }
             getProperty().updateValue(newValue);
         } catch (Exception ex) {
-            RecordLog.info("[NacosDataSource] Error when loading initial config", ex);
+            RecordLog.warn("[NacosDataSource] Error when loading initial config", ex);
         }
     }
 
@@ -111,7 +110,7 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
             // Add config listener.
             configService.addListener(dataId, groupId, configListener);
         } catch (Exception e) {
-            RecordLog.info("[NacosDataSource] Error occurred when initializing Nacos data source", e);
+            RecordLog.warn("[NacosDataSource] Error occurred when initializing Nacos data source", e);
             e.printStackTrace();
         }
     }

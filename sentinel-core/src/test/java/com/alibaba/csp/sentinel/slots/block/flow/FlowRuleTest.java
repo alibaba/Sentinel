@@ -19,6 +19,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.alibaba.csp.sentinel.context.Context;
@@ -30,6 +31,7 @@ import com.alibaba.csp.sentinel.slots.block.flow.controller.DefaultController;
 /**
  * @author jialiang.linjl
  */
+@Ignore("Deprecated test for legacy FlowRule")
 public class FlowRuleTest {
 
     @Test

@@ -15,15 +15,28 @@
  */
 package com.alibaba.csp.sentinel.slots.block;
 
-/***
+/**
+ * Abstract rule entity.
+ *
  * @author youji.zj
+ * @author Eric Zhao
  */
 public abstract class AbstractRule implements Rule {
 
-    /*** 规则的资源描述 ***/
+    /**
+     * Resource name.
+     */
     private String resource;
 
-    /*** 被限制的应用,授权时候为逗号分隔的应用集合，限流时为单个应用 ***/
+    /**
+     * <p>
+     * Application name that will be limited by origin.
+     * The default limitApp is {@code default}, which means allowing all origin apps.
+     * </p>
+     * <p>
+     * For authority rules, multiple origin name can be separated with comma (',').
+     * </p>
+     */
     private String limitApp;
 
     public String getResource() {
@@ -58,8 +71,6 @@ public abstract class AbstractRule implements Rule {
         if (resource != null ? !resource.equals(that.resource) : that.resource != null) {
             return false;
         }
-        // if (limitApp != null ? !limitApp.equals(that.limitApp) :
-        // that.limitApp != null) { return false; }
         if (!limitAppEquals(limitApp, that.limitApp)) {
             return false;
         }
@@ -68,12 +79,12 @@ public abstract class AbstractRule implements Rule {
 
     private boolean limitAppEquals(String str1, String str2) {
         if ("".equals(str1)) {
-            return "default".equals(str2);
-        } else if ("default".equals(str1)) {
+            return RuleConstant.LIMIT_APP_DEFAULT.equals(str2);
+        } else if (RuleConstant.LIMIT_APP_DEFAULT.equals(str1)) {
             return "".equals(str2) || str2 == null || str1.equals(str2);
         }
         if (str1 == null) {
-            return str2 == null || "default".equals(str2);
+            return str2 == null || RuleConstant.LIMIT_APP_DEFAULT.equals(str2);
         }
         return str1.equals(str2);
     }
@@ -85,8 +96,7 @@ public abstract class AbstractRule implements Rule {
     @Override
     public int hashCode() {
         int result = resource != null ? resource.hashCode() : 0;
-        // result = 31 * result + (limitApp != null ? limitApp.hashCode() : 0);
-        if (!("".equals(limitApp) || "default".equals(limitApp) || limitApp == null)) {
+        if (!("".equals(limitApp) || RuleConstant.LIMIT_APP_DEFAULT.equals(limitApp) || limitApp == null)) {
             result = 31 * result + limitApp.hashCode();
         }
         return result;

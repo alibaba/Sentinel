@@ -90,7 +90,13 @@ public class SentinelConfig {
 
         // JVM parameter override file config.
         for (Map.Entry<Object, Object> entry : System.getProperties().entrySet()) {
-            SentinelConfig.setConfig(entry.getKey().toString(), entry.getValue().toString());
+            String configKey = entry.getKey().toString();
+            String configValue = entry.getValue().toString();
+            String configValueOld = getConfig(configKey);
+            SentinelConfig.setConfig(configKey, configValue);
+            if (configValueOld != null) {
+                RecordLog.info("[SentinelConfig] JVM parameter overrides {0}: {1} -> {2}", configKey, configValueOld, configValue);
+            }
         }
         AppNameUtil.setAppName(SentinelConfig.getConfig(AppNameUtil.APP_NAME));
     }
@@ -128,7 +134,7 @@ public class SentinelConfig {
         try {
             return Long.parseLong(props.get(SINGLE_METRIC_FILE_SIZE));
         } catch (Throwable throwable) {
-            RecordLog.info("SentinelConfig get singleMetricFileSize fail, use default value: "
+            RecordLog.info("[SentinelConfig] Parse singleMetricFileSize fail, use default value: "
                 + DEFAULT_SINGLE_METRIC_FILE_SIZE, throwable);
             return DEFAULT_SINGLE_METRIC_FILE_SIZE;
         }
@@ -138,7 +144,7 @@ public class SentinelConfig {
         try {
             return Integer.parseInt(props.get(TOTAL_METRIC_FILE_COUNT));
         } catch (Throwable throwable) {
-            RecordLog.info("SentinelConfig get totalMetricFileCount fail, use default value: "
+            RecordLog.info("[SentinelConfig] Parse totalMetricFileCount fail, use default value: "
                 + DEFAULT_TOTAL_METRIC_FILE_COUNT, throwable);
             return DEFAULT_TOTAL_METRIC_FILE_COUNT;
         }

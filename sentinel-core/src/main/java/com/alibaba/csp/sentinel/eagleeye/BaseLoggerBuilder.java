@@ -54,6 +54,13 @@ class BaseLoggerBuilder<T extends BaseLoggerBuilder<T>> {
     }
 
     @SuppressWarnings("unchecked")
+    public T configLogFilePath(String filePath) {
+        EagleEyeCoreUtils.checkNotNullEmpty(filePath, "filePath");
+        this.filePath = filePath;
+        return (T)this;
+    }
+
+    @SuppressWarnings("unchecked")
     public T maxFileSizeMB(long maxFileSizeMB) {
         if (maxFileSize < 10) {
             throw new IllegalArgumentException("Invalid maxFileSizeMB");

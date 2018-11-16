@@ -15,7 +15,6 @@
  */
 package com.alibaba.csp.sentinel.adapter.grpc;
 
-import java.io.IOException;
 import java.util.Collections;
 
 import com.alibaba.csp.sentinel.EntryType;
@@ -27,9 +26,8 @@ import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 
-import io.grpc.Server;
-import io.grpc.ServerBuilder;
 import io.grpc.StatusRuntimeException;
+import org.junit.After;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -43,13 +41,13 @@ public class SentinelGrpcServerInterceptorTest {
 
     private final String resourceName = "com.alibaba.sentinel.examples.FooService/anotherHello";
     private final int threshold = 4;
+    private final GrpcTestServer server = new GrpcTestServer();
 
-    private Server server;
     private FooServiceClient client;
 
-    private void configureFlowRule() {
+    private void configureFlowRule(int count) {
         FlowRule rule = new FlowRule()
-            .setCount(threshold)
+            .setCount(count)
             .setGrade(RuleConstant.FLOW_GRADE_QPS)
             .setResource(resourceName)
             .setLimitApp("default")
@@ -57,58 +55,44 @@ public class SentinelGrpcServerInterceptorTest {
         FlowRuleManager.loadRules(Collections.singletonList(rule));
     }
 
-    //@Test
+    @Test
     public void testGrpcServerInterceptor() throws Exception {
         final int port = 19329;
         client = new FooServiceClient("localhost", port);
 
-        configureFlowRule();
-        prepareServer(port);
+        configureFlowRule(threshold);
+        server.start(port, true);
 
-        final int total = 8;
-        for (int i = 0; i < total; i++) {
-            sendRequest();
-        }
+        assertTrue(sendRequest());
         ClusterNode clusterNode = ClusterBuilderSlot.getClusterNode(resourceName, EntryType.IN);
         assertNotNull(clusterNode);
+        assertEquals(1, clusterNode.totalRequest() - clusterNode.blockRequest());
 
-        assertEquals((total - threshold) / 2, clusterNode.blockedRequest());
-        assertEquals(total / 2, clusterNode.totalRequest());
+        // Not allowed to pass.
+        configureFlowRule(0);
 
-        long totalQps = clusterNode.totalQps();
-        long passQps = clusterNode.passQps();
-        long blockedQps = clusterNode.blockedQps();
-        assertEquals(total, totalQps);
-        assertEquals(total - threshold, blockedQps);
-        assertEquals(threshold, passQps);
+        // The second request will be blocked.
+        assertFalse(sendRequest());
+        assertEquals(1, clusterNode.blockRequest());
 
-        stopServer();
+        server.stop();
     }
 
-    private void sendRequest() {
+    private boolean sendRequest() {
         try {
             FooResponse response = client.anotherHello(FooRequest.newBuilder().setName("Sentinel").setId(666).build());
             System.out.println("Response: " + response);
+            return true;
         } catch (StatusRuntimeException ex) {
             System.out.println("Blocked, cause: " + ex.getMessage());
+            return false;
         }
     }
 
-    private void prepareServer(int port) throws IOException {
-        if (server != null) {
-            throw new IllegalStateException("Server already running!");
-        }
-        server = ServerBuilder.forPort(port)
-            .addService(new FooServiceImpl())
-            .intercept(new SentinelGrpcServerInterceptor())
-            .build();
-        server.start();
-    }
 
-    private void stopServer() {
-        if (server != null) {
-            server.shutdown();
-            server = null;
-        }
+    @After
+    public void cleanUp() {
+        FlowRuleManager.loadRules(null);
+        ClusterBuilderSlot.getClusterNodeMap().clear();
     }
 }

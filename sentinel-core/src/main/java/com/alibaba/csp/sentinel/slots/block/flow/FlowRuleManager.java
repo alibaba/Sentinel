@@ -16,6 +16,8 @@
 package com.alibaba.csp.sentinel.slots.block.flow;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,18 +28,15 @@ import java.util.concurrent.TimeUnit;
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.csp.sentinel.context.Context;
-import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.node.metric.MetricTimerListener;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
-import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
-import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.controller.DefaultController;
-import com.alibaba.csp.sentinel.slots.block.flow.controller.PaceController;
+import com.alibaba.csp.sentinel.slots.block.flow.controller.RateLimiterController;
 import com.alibaba.csp.sentinel.slots.block.flow.controller.WarmUpController;
+import com.alibaba.csp.sentinel.slots.block.flow.controller.WarmUpRateLimiterController;
 
 /**
  * <p>
@@ -51,7 +50,6 @@ import com.alibaba.csp.sentinel.slots.block.flow.controller.WarmUpController;
  *
  * @author jialiang.linjl
  */
-
 public class FlowRuleManager {
 
     private static final Map<String, List<FlowRule>> flowRules = new ConcurrentHashMap<String, List<FlowRule>>();
@@ -105,16 +103,20 @@ public class FlowRuleManager {
     private static Map<String, List<FlowRule>> loadFlowConf(List<FlowRule> list) {
         Map<String, List<FlowRule>> newRuleMap = new ConcurrentHashMap<String, List<FlowRule>>();
 
-        if (list == null) {
+        if (list == null || list.isEmpty()) {
             return newRuleMap;
         }
 
         for (FlowRule rule : list) {
+            if (!isValidRule(rule)) {
+                RecordLog.warn("[FlowRuleManager] Ignoring invalid flow rule when loading new flow rules: " + rule);
+                continue;
+            }
             if (StringUtil.isBlank(rule.getLimitApp())) {
-                rule.setLimitApp(FlowRule.LIMIT_APP_DEFAULT);
+                rule.setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
             }
 
-            Controller rater = new DefaultController(rule.getCount(), rule.getGrade());
+            TrafficShapingController rater = new DefaultController(rule.getCount(), rule.getGrade());
             if (rule.getGrade() == RuleConstant.FLOW_GRADE_QPS
                 && rule.getControlBehavior() == RuleConstant.CONTROL_BEHAVIOR_WARM_UP
                 && rule.getWarmUpPeriodSec() > 0) {
@@ -123,8 +125,14 @@ public class FlowRuleManager {
             } else if (rule.getGrade() == RuleConstant.FLOW_GRADE_QPS
                 && rule.getControlBehavior() == RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER
                 && rule.getMaxQueueingTimeMs() > 0) {
-                rater = new PaceController(rule.getMaxQueueingTimeMs(), rule.getCount());
+                rater = new RateLimiterController(rule.getMaxQueueingTimeMs(), rule.getCount());
+            } else if (rule.getGrade() == RuleConstant.FLOW_GRADE_QPS
+                && rule.getControlBehavior() == RuleConstant.CONTROL_BEHAVIOR_WARM_UP_RATE_LIMITER
+                && rule.getMaxQueueingTimeMs() > 0 && rule.getWarmUpPeriodSec() > 0) {
+                rater = new WarmUpRateLimiterController(rule.getCount(), rule.getWarmUpPeriodSec(),
+                    rule.getMaxQueueingTimeMs(), ColdFactorProperty.coldFactor);
             }
+
             rule.setRater(rater);
 
             String identity = rule.getResource();
@@ -138,19 +146,20 @@ public class FlowRuleManager {
             ruleM.add(rule);
 
         }
+
+        if (!newRuleMap.isEmpty()) {
+            Comparator<FlowRule> comparator = new FlowRuleComparator();
+            // Sort the rules.
+            for (List<FlowRule> rules : newRuleMap.values()) {
+                Collections.sort(rules, comparator);
+            }
+        }
+
         return newRuleMap;
     }
 
-    public static void checkFlow(ResourceWrapper resource, Context context, DefaultNode node, int count)
-        throws BlockException {
-        List<FlowRule> rules = flowRules.get(resource.getName());
-        if (rules != null) {
-            for (FlowRule rule : rules) {
-                if (!rule.passCheck(context, node, count)) {
-                    throw new FlowException(rule.getLimitApp());
-                }
-            }
-        }
+    static Map<String, List<FlowRule>> getFlowRules() {
+        return flowRules;
     }
 
     public static boolean hasConfig(String resource) {
@@ -199,4 +208,33 @@ public class FlowRuleManager {
 
     }
 
+    public static boolean isValidRule(FlowRule rule) {
+        boolean baseValid = rule != null && !StringUtil.isBlank(rule.getResource()) && rule.getCount() >= 0
+            && rule.getGrade() >= 0 && rule.getStrategy() >= 0 && rule.getControlBehavior() >= 0;
+        if (!baseValid) {
+            return false;
+        }
+        // Check strategy and control (shaping) behavior.
+        return checkStrategyField(rule) && checkControlBehaviorField(rule);
+    }
+
+    private static boolean checkStrategyField(/*@NonNull*/ FlowRule rule) {
+        if (rule.getStrategy() == RuleConstant.STRATEGY_RELATE || rule.getStrategy() == RuleConstant.STRATEGY_CHAIN) {
+            return StringUtil.isNotBlank(rule.getRefResource());
+        }
+        return true;
+    }
+
+    private static boolean checkControlBehaviorField(/*@NonNull*/ FlowRule rule) {
+        switch (rule.getControlBehavior()) {
+            case RuleConstant.CONTROL_BEHAVIOR_WARM_UP:
+                return rule.getWarmUpPeriodSec() > 0;
+            case RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER:
+                return rule.getMaxQueueingTimeMs() > 0;
+            case RuleConstant.CONTROL_BEHAVIOR_WARM_UP_RATE_LIMITER:
+                return rule.getWarmUpPeriodSec() > 0 && rule.getMaxQueueingTimeMs() > 0;
+            default:
+                return true;
+        }
+    }
 }
