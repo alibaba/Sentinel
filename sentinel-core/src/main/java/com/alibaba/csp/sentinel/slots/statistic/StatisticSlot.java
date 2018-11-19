@@ -48,10 +48,10 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
-    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, Object... args)
-        throws Throwable {
+    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
+                      boolean prioritized, Object... args) throws Throwable {
         try {
-            fireEntry(context, resourceWrapper, node, count, args);
+            fireEntry(context, resourceWrapper, node, count, prioritized, args);
             node.increaseThreadNum();
             node.addPassRequest();
 

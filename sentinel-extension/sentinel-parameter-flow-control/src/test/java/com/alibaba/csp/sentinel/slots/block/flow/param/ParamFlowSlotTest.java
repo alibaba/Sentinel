@@ -43,7 +43,7 @@ public class ParamFlowSlotTest {
     public void testEntryWhenParamFlowRuleNotExists() throws Throwable {
         String resourceName = "testEntryWhenParamFlowRuleNotExists";
         ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
-        paramFlowSlot.entry(null, resourceWrapper, null, 1, "abc");
+        paramFlowSlot.entry(null, resourceWrapper, null, 1, false, "abc");
         // The parameter metric instance will not be created.
         assertNull(ParamFlowSlot.getParamMetric(resourceWrapper));
     }
@@ -68,10 +68,10 @@ public class ParamFlowSlotTest {
         ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
 
         // The first entry will pass.
-        paramFlowSlot.entry(null, resourceWrapper, null, 1, argToGo);
+        paramFlowSlot.entry(null, resourceWrapper, null, 1, false, argToGo);
         // The second entry will be blocked.
         try {
-            paramFlowSlot.entry(null, resourceWrapper, null, 1, argToGo);
+            paramFlowSlot.entry(null, resourceWrapper, null, 1, false, argToGo);
         } catch (ParamFlowException ex) {
             assertEquals(String.valueOf(argToGo), ex.getMessage());
             assertEquals(resourceName, ex.getResourceName());

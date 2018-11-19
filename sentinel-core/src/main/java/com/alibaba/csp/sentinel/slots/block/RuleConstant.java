@@ -17,7 +17,7 @@ package com.alibaba.csp.sentinel.slots.block;
 
 import com.alibaba.csp.sentinel.node.IntervalProperty;
 
-/***
+/**
  * @author youji.zj
  * @author jialiang.linjl
  */
