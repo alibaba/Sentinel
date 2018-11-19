@@ -11,6 +11,10 @@
     <artifactId>sentinel-transport-netty-http</artifactId>
     <packaging>jar</packaging>
 
+    <properties>
+        <netty.version>4.1.31.Final</netty.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.alibaba.csp</groupId>
@@ -20,7 +24,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.26.Final</version>
+            <version>${netty.version}</version>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
