@@ -71,6 +71,7 @@
 
         <module>sentinel-demo</module>
         <module>sentinel-benchmark</module>
+        <module>sentinel-cluster</module>
     </modules>
 
     <dependencyManagement>
@@ -123,6 +124,11 @@
             <dependency>
                 <groupId>com.alibaba.csp</groupId>
                 <artifactId>sentinel-transport-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-cluster-common-default</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
