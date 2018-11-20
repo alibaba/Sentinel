@@ -44,10 +44,10 @@ import com.alibaba.csp.sentinel.slots.statistic.metric.Metric;
  * incoming request(QPS), block request(bq), etc. And the time-span is defined by sample count.
  * </p>
  * <pre>
- * 	0 	   100ms
+ * 	0      100ms
  *  +-------+--→ Sliding Windows
- * 		^
- * 	   	|
+ * 	    ^
+ * 	    |
  * 	  request
  * </pre>
  * <p>
@@ -58,29 +58,29 @@ import com.alibaba.csp.sentinel.slots.statistic.metric.Metric;
  *
  * <p>case 2: continuous requests</p>
  * <pre>
- *  0 	 100ms 	  200ms	  300ms
+ *  0    100ms    200ms    300ms
  *  +-------+-------+-------+-----→ Sliding Windows
- * 						^
- * 						|
- * 					  request
+ *                      ^
+ *                      |
+ *                   request
  * </pre>
  *
  * <p>case 3: requests keeps coming, and previous buckets become invalid</p>
  * <pre>
- *  0 	 100ms 	  200ms	  800ms	   900ms  1000ms	1300ms
+ *  0    100ms    200ms	  800ms	   900ms  1000ms    1300ms
  *  +-------+-------+ ...... +-------+-------+ ...... +-------+-----→ Sliding Windows
- *  													^
- *  													|
- * 													  request
+ *                                                      ^
+ *                                                      |
+ *                                                    request
  * </pre>
  *
  * <p>The sliding window should become:</p>
  * <pre>
- * 300ms	  	800ms  900ms  1000ms	1300ms
+ * 300ms     800ms  900ms  1000ms  1300ms
  *  + ...... +-------+ ...... +-------+-----→ Sliding Windows
- *  													^
- *  													|
- * 													  request
+ *                                                      ^
+ *                                                      |
+ *                                                    request
  * </pre>
  *
  * @author qinan.qn
