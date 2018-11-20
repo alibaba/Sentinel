@@ -18,7 +18,7 @@ package com.alibaba.csp.sentinel.slots.statistic.base;
 import com.alibaba.csp.sentinel.Constants;
 
 /**
- * Represents metrics data in a period of time window.
+ * Represents metrics data in a period of time span.
  *
  * @author jialiang.linjl
  * @author Eric Zhao
@@ -42,9 +42,9 @@ public class MetricBucket {
     }
 
     /**
-     * Clean the adders and reset window to provided start time.
+     * Reset the adders.
      *
-     * @return new clean window
+     * @return new metric bucket in initial state
      */
     public MetricBucket reset() {
         pass.reset();
