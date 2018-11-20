@@ -34,8 +34,6 @@ public class ArrayMetric implements Metric {
     private final MetricsLeapArray data;
 
     /**
-     * Constructor
-     *
      * @param windowLengthInMs a single window bucket's time length in milliseconds.
      * @param intervalInSec    the total time span of this {@link ArrayMetric} in seconds.
      */
