@@ -35,6 +35,11 @@ public interface Metric {
      */
     long success();
 
+    /**
+     * Get max success count.
+     *
+     * @return max success count
+     */
     long maxSuccess();
 
     /**
@@ -59,7 +64,7 @@ public interface Metric {
     long pass();
 
     /**
-     * Get total RT.
+     * Get total response time.
      *
      * @return total RT
      */
@@ -72,6 +77,11 @@ public interface Metric {
      */
     long minRt();
 
+    /**
+     * Get aggregated metric nodes of all resources.
+     *
+     * @return metric node list of all resources
+     */
     List<MetricNode> details();
 
     /**

@@ -66,7 +66,11 @@ public class ParamMapBucket {
     }
 
     public Set<Object> ascendingKeySet(RollingParamEvent type) {
-        return data[type.ordinal()].ascendingKeySet();
+        return data[type.ordinal()].keySet(true);
+    }
+
+    public Set<Object> descendingKeySet(RollingParamEvent type) {
+        return data[type.ordinal()].keySet(false);
     }
 
     public static final int DEFAULT_MAX_CAPACITY = 200;
