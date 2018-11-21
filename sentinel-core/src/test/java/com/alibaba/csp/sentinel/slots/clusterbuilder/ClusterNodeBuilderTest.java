@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.slots.clusterbuilder;
 
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -28,7 +30,7 @@ import com.alibaba.csp.sentinel.node.Node;
 /**
  * @author jialiang.linjl
  */
-public class ClusterNodeBuilder {
+public class ClusterNodeBuilderTest {
 
     @Test
     public void clusterNodeBuilder_normal() throws Exception {
@@ -37,10 +39,10 @@ public class ClusterNodeBuilder {
         Entry nodeA = SphU.entry("nodeA");
 
         Node curNode = nodeA.getCurNode();
-        assertTrue(curNode.getClass() == DefaultNode.class);
+        assertSame(curNode.getClass(), DefaultNode.class);
         DefaultNode dN = (DefaultNode)curNode;
         assertTrue(dN.getClusterNode().getOriginCountMap().containsKey("caller1"));
-        assertTrue(nodeA.getOriginNode() == dN.getClusterNode().getOriginNode("caller1"));
+        assertSame(nodeA.getOriginNode(), dN.getClusterNode().getOrCreateOriginNode("caller1"));
 
         if (nodeA != null) {
             nodeA.exit();
@@ -52,10 +54,10 @@ public class ClusterNodeBuilder {
         nodeA = SphU.entry("nodeA");
 
         curNode = nodeA.getCurNode();
-        assertTrue(curNode.getClass() == DefaultNode.class);
+        assertSame(curNode.getClass(), DefaultNode.class);
         DefaultNode dN1 = (DefaultNode)curNode;
         assertTrue(dN1.getClusterNode().getOriginCountMap().containsKey("caller2"));
-        assertTrue(dN1 != dN);
+        assertNotSame(dN1, dN);
 
         if (nodeA != null) {
             nodeA.exit();
