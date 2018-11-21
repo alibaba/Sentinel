@@ -45,6 +45,9 @@ public abstract class LeapArray<T> {
 
     protected final AtomicReferenceArray<WindowWrap<T>> array;
 
+    /**
+     * The fine-grained update lock is used only when current bucket is deprecated.
+     */
     private final ReentrantLock updateLock = new ReentrantLock();
 
     /**

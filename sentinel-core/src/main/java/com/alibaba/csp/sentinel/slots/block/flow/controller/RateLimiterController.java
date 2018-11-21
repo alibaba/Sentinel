@@ -29,6 +29,7 @@ public class RateLimiterController implements TrafficShapingController {
 
     private final int maxQueueingTimeMs;
     private final double count;
+
     private final AtomicLong latestPassedTime = new AtomicLong(-1);
 
     public RateLimiterController(int timeOut, double count) {
@@ -38,21 +39,19 @@ public class RateLimiterController implements TrafficShapingController {
 
     @Override
     public boolean canPass(Node node, int acquireCount) {
-
-        // 按照斜率来计算计划中应该什么时候通过
         long currentTime = TimeUtil.currentTimeMillis();
-
+        // Calculate the interval between every two requests.
         long costTime = Math.round(1.0 * (acquireCount) / count * 1000);
 
-        //期待时间
+        // Expected pass time of this request.
         long expectedTime = costTime + latestPassedTime.get();
 
         if (expectedTime <= currentTime) {
-            //这里会有冲突,然而冲突就冲突吧.
+            // Contention may exist here, but it's okay.
             latestPassedTime.set(currentTime);
             return true;
         } else {
-            // 计算自己需要的等待时间
+            // Calculate the time to wait.
             long waitTime = costTime + latestPassedTime.get() - TimeUtil.currentTimeMillis();
             if (waitTime >= maxQueueingTimeMs) {
                 return false;
@@ -70,7 +69,6 @@ public class RateLimiterController implements TrafficShapingController {
                 }
             }
         }
-
         return false;
     }
 

@@ -106,30 +106,38 @@ public class StatisticNode implements Node {
      */
     private AtomicInteger curThreadNum = new AtomicInteger(0);
 
+    /**
+     * The last timestamp when metrics were fetched.
+     */
     private long lastFetchTime = -1;
 
     @Override
     public Map<Long, MetricNode> metrics() {
+        // The fetch operation is thread-safe under a single-thread scheduler pool.
         long currentTime = TimeUtil.currentTimeMillis();
         currentTime = currentTime - currentTime % 1000;
         Map<Long, MetricNode> metrics = new ConcurrentHashMap<Long, MetricNode>();
         List<MetricNode> nodesOfEverySecond = rollingCounterInMinute.details();
         long newLastFetchTime = lastFetchTime;
+        // Iterate metrics of all resources, filter valid metrics (not-empty and up-to-date).
         for (MetricNode node : nodesOfEverySecond) {
-            if (node.getTimestamp() > lastFetchTime && node.getTimestamp() < currentTime) {
-                if (node.getPassQps() != 0
-                    || node.getBlockQps() != 0
-                    || node.getSuccessQps() != 0
-                    || node.getExceptionQps() != 0
-                    || node.getRt() != 0) {
-                    metrics.put(node.getTimestamp(), node);
-                    newLastFetchTime = Math.max(newLastFetchTime, node.getTimestamp());
-                }
+            if (isNodeInTime(node, currentTime) && isValidMetricNode(node)) {
+                metrics.put(node.getTimestamp(), node);
+                newLastFetchTime = Math.max(newLastFetchTime, node.getTimestamp());
             }
         }
         lastFetchTime = newLastFetchTime;
 
         return metrics;
+    }
+
+    private boolean isNodeInTime(MetricNode node, long currentTime) {
+        return node.getTimestamp() > lastFetchTime && node.getTimestamp() < currentTime;
+    }
+
+    private boolean isValidMetricNode(MetricNode node) {
+        return node.getPassQps() > 0 || node.getBlockQps() > 0 || node.getSuccessQps() > 0
+            || node.getExceptionQps() > 0 || node.getRt() > 0;
     }
 
     @Override
