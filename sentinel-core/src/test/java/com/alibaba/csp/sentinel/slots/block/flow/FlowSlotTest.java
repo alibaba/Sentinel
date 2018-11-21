@@ -54,7 +54,7 @@ public class FlowSlotTest {
         Context context = mock(Context.class);
         DefaultNode node = mock(DefaultNode.class);
         doCallRealMethod().when(flowSlot).checkFlow(any(ResourceWrapper.class), any(Context.class),
-            any(DefaultNode.class), anyInt());
+            any(DefaultNode.class), anyInt(), anyBoolean());
 
         String resA = "resAK";
         String resB = "resBK";
@@ -63,13 +63,13 @@ public class FlowSlotTest {
         // Here we only load rules for resA.
         FlowRuleManager.loadRules(Collections.singletonList(rule1));
 
-        when(flowSlot.canPassCheck(eq(rule1), any(Context.class), any(DefaultNode.class), anyInt()))
+        when(flowSlot.canPassCheck(eq(rule1), any(Context.class), any(DefaultNode.class), anyInt(), anyBoolean()))
             .thenReturn(true);
-        when(flowSlot.canPassCheck(eq(rule2), any(Context.class), any(DefaultNode.class), anyInt()))
+        when(flowSlot.canPassCheck(eq(rule2), any(Context.class), any(DefaultNode.class), anyInt(), anyBoolean()))
             .thenReturn(false);
 
-        flowSlot.checkFlow(new StringResourceWrapper(resA, EntryType.IN), context, node, 1);
-        flowSlot.checkFlow(new StringResourceWrapper(resB, EntryType.IN), context, node, 1);
+        flowSlot.checkFlow(new StringResourceWrapper(resA, EntryType.IN), context, node, 1, false);
+        flowSlot.checkFlow(new StringResourceWrapper(resB, EntryType.IN), context, node, 1, false);
     }
 
     @Test(expected = FlowException.class)
@@ -78,15 +78,15 @@ public class FlowSlotTest {
         Context context = mock(Context.class);
         DefaultNode node = mock(DefaultNode.class);
         doCallRealMethod().when(flowSlot).checkFlow(any(ResourceWrapper.class), any(Context.class),
-            any(DefaultNode.class), anyInt());
+            any(DefaultNode.class), anyInt(), anyBoolean());
 
         String resA = "resAK";
         FlowRule rule = new FlowRule(resA).setCount(10);
         FlowRuleManager.loadRules(Collections.singletonList(rule));
 
-        when(flowSlot.canPassCheck(any(FlowRule.class), any(Context.class), any(DefaultNode.class), anyInt()))
+        when(flowSlot.canPassCheck(any(FlowRule.class), any(Context.class), any(DefaultNode.class), anyInt(), anyBoolean()))
             .thenReturn(false);
 
-        flowSlot.checkFlow(new StringResourceWrapper(resA, EntryType.IN), context, node, 1);
+        flowSlot.checkFlow(new StringResourceWrapper(resA, EntryType.IN), context, node, 1, false);
     }
 }
