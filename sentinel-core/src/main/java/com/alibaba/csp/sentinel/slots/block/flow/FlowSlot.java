@@ -138,27 +138,27 @@ public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
                       boolean prioritized, Object... args) throws Throwable {
-        checkFlow(resourceWrapper, context, node, count);
+        checkFlow(resourceWrapper, context, node, count, prioritized);
 
         fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }
 
-    void checkFlow(ResourceWrapper resource, Context context, DefaultNode node, int count) throws BlockException {
+    void checkFlow(ResourceWrapper resource, Context context, DefaultNode node, int count, boolean prioritized) throws BlockException {
         // Flow rule map cannot be null.
-        Map<String, List<FlowRule>> flowRules = FlowRuleManager.getFlowRules();
+        Map<String, List<FlowRule>> flowRules = FlowRuleManager.getFlowRuleMap();
 
         List<FlowRule> rules = flowRules.get(resource.getName());
         if (rules != null) {
             for (FlowRule rule : rules) {
-                if (!canPassCheck(rule, context, node, count)) {
+                if (!canPassCheck(rule, context, node, count, prioritized)) {
                     throw new FlowException(rule.getLimitApp());
                 }
             }
         }
     }
 
-    boolean canPassCheck(FlowRule rule, Context context, DefaultNode node, int count) {
-        return FlowRuleChecker.passCheck(rule, context, node, count);
+    boolean canPassCheck(FlowRule rule, Context context, DefaultNode node, int count, boolean prioritized) {
+        return FlowRuleChecker.passCheck(rule, context, node, count, prioritized);
     }
 
     @Override
