@@ -28,7 +28,7 @@ public class ClusterFlowConfig {
     /**
      * Global unique ID.
      */
-    private Integer flowId;
+    private Long flowId;
 
     /**
      * Threshold type (average by local value or global value).
@@ -41,15 +41,15 @@ public class ClusterFlowConfig {
      */
     private int strategy = ClusterRuleConstant.FLOW_CLUSTER_STRATEGY_NORMAL;
 
-    private Integer refFlowId;
+    private Long refFlowId;
     private int refSampleCount = 10;
     private double refRatio = 1d;
 
-    public Integer getFlowId() {
+    public Long getFlowId() {
         return flowId;
     }
 
-    public ClusterFlowConfig setFlowId(Integer flowId) {
+    public ClusterFlowConfig setFlowId(Long flowId) {
         this.flowId = flowId;
         return this;
     }
@@ -72,11 +72,11 @@ public class ClusterFlowConfig {
         return this;
     }
 
-    public Integer getRefFlowId() {
+    public Long getRefFlowId() {
         return refFlowId;
     }
 
-    public ClusterFlowConfig setRefFlowId(Integer refFlowId) {
+    public ClusterFlowConfig setRefFlowId(Long refFlowId) {
         this.refFlowId = refFlowId;
         return this;
     }

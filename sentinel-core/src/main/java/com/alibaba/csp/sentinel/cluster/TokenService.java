@@ -33,7 +33,7 @@ public interface TokenService {
      * @param prioritized whether the request is prioritized
      * @return result of the token request
      */
-    TokenResult requestToken(Integer ruleId, int acquireCount, boolean prioritized);
+    TokenResult requestToken(Long ruleId, int acquireCount, boolean prioritized);
 
     /**
      * Request tokens for a specific parameter from remote token server.
@@ -43,5 +43,5 @@ public interface TokenService {
      * @param params parameter list
      * @return result of the token request
      */
-    TokenResult requestParamToken(Integer ruleId, int acquireCount, Collection<Object> params);
+    TokenResult requestParamToken(Long ruleId, int acquireCount, Collection<Object> params);
 }
