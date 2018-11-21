@@ -85,6 +85,12 @@ public class FlowRule extends AbstractRule {
      */
     private int maxQueueingTimeMs = 500;
 
+    private boolean clusterMode;
+    /**
+     * Flow rule config for cluster mode.
+     */
+    private ClusterFlowConfig clusterConfig;
+
     /**
      * The traffic shaping (throttling) controller.
      */
@@ -162,6 +168,24 @@ public class FlowRule extends AbstractRule {
         return this;
     }
 
+    public boolean isClusterMode() {
+        return clusterMode;
+    }
+
+    public FlowRule setClusterMode(boolean clusterMode) {
+        this.clusterMode = clusterMode;
+        return this;
+    }
+
+    public ClusterFlowConfig getClusterConfig() {
+        return clusterConfig;
+    }
+
+    public FlowRule setClusterConfig(ClusterFlowConfig clusterConfig) {
+        this.clusterConfig = clusterConfig;
+        return this;
+    }
+
     @Override
     public boolean passCheck(Context context, DefaultNode node, int acquireCount, Object... args) {
         return true;
@@ -169,43 +193,21 @@ public class FlowRule extends AbstractRule {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof FlowRule)) {
-            return false;
-        }
-        if (!super.equals(o)) {
-            return false;
-        }
+        if (this == o) { return true; }
+        if (o == null || getClass() != o.getClass()) { return false; }
+        if (!super.equals(o)) { return false; }
 
-        FlowRule flowRule = (FlowRule)o;
+        FlowRule rule = (FlowRule)o;
 
-        if (grade != flowRule.grade) {
-            return false;
-        }
-        if (Double.compare(flowRule.count, count) != 0) {
-            return false;
-        }
-        if (strategy != flowRule.strategy) {
-            return false;
-        }
-        if (refResource != null ? !refResource.equals(flowRule.refResource) : flowRule.refResource != null) {
-            return false;
-        }
-        if (this.controlBehavior != flowRule.controlBehavior) {
-            return false;
-        }
-
-        if (warmUpPeriodSec != flowRule.warmUpPeriodSec) {
-            return false;
-        }
-
-        if (maxQueueingTimeMs != flowRule.maxQueueingTimeMs) {
-            return false;
-        }
-
-        return true;
+        if (grade != rule.grade) { return false; }
+        if (Double.compare(rule.count, count) != 0) { return false; }
+        if (strategy != rule.strategy) { return false; }
+        if (controlBehavior != rule.controlBehavior) { return false; }
+        if (warmUpPeriodSec != rule.warmUpPeriodSec) { return false; }
+        if (maxQueueingTimeMs != rule.maxQueueingTimeMs) { return false; }
+        if (clusterMode != rule.clusterMode) { return false; }
+        if (refResource != null ? !refResource.equals(rule.refResource) : rule.refResource != null) { return false; }
+        return clusterConfig != null ? clusterConfig.equals(rule.clusterConfig) : rule.clusterConfig == null;
     }
 
     @Override
@@ -217,10 +219,11 @@ public class FlowRule extends AbstractRule {
         result = 31 * result + (int)(temp ^ (temp >>> 32));
         result = 31 * result + strategy;
         result = 31 * result + (refResource != null ? refResource.hashCode() : 0);
-        result = 31 * result + (int)(temp ^ (temp >>> 32));
-        result = 31 * result + warmUpPeriodSec;
         result = 31 * result + controlBehavior;
+        result = 31 * result + warmUpPeriodSec;
         result = 31 * result + maxQueueingTimeMs;
+        result = 31 * result + (clusterMode ? 1 : 0);
+        result = 31 * result + (clusterConfig != null ? clusterConfig.hashCode() : 0);
         return result;
     }
 
@@ -236,7 +239,9 @@ public class FlowRule extends AbstractRule {
             ", controlBehavior=" + controlBehavior +
             ", warmUpPeriodSec=" + warmUpPeriodSec +
             ", maxQueueingTimeMs=" + maxQueueingTimeMs +
+            ", clusterMode=" + clusterMode +
+            ", clusterConfig=" + clusterConfig +
             ", controller=" + controller +
-            "}";
+            '}';
     }
 }
