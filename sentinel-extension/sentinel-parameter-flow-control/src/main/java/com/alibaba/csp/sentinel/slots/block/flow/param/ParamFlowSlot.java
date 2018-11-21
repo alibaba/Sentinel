@@ -47,16 +47,16 @@ public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     private final Object LOCK = new Object();
 
     @Override
-    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, Object... args)
+    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, boolean prioritized, Object... args)
         throws Throwable {
 
         if (!ParamFlowRuleManager.hasRules(resourceWrapper.getName())) {
-            fireEntry(context, resourceWrapper, node, count, args);
+            fireEntry(context, resourceWrapper, node, count, prioritized, args);
             return;
         }
 
         checkFlow(resourceWrapper, count, args);
-        fireEntry(context, resourceWrapper, node, count, args);
+        fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }
 
     @Override
