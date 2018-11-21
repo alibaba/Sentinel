@@ -33,10 +33,10 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 public class AuthoritySlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
-    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, Object... args)
+    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, boolean prioritized, Object... args)
         throws Throwable {
         checkBlackWhiteAuthority(resourceWrapper, context);
-        fireEntry(context, resourceWrapper, node, count, args);
+        fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }
 
     @Override
