@@ -155,7 +155,7 @@ public final class FlowRuleUtil {
      * @param id flow ID to check
      * @return true if valid, otherwise false
      */
-    public static boolean validClusterRuleId(Integer id) {
+    public static boolean validClusterRuleId(Long id) {
         return id != null && id > 0;
     }
 
