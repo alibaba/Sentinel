@@ -37,7 +37,7 @@ public @interface SentinelResource {
     /**
      * @return name of the Sentinel resource
      */
-    String value() default "";;
+    String value() default "";
 
     /**
      * @return the entry type (inbound or outbound), outbound by default
