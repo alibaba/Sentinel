@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 
 /**
@@ -57,8 +58,14 @@ public abstract class LeapArray<T> {
      * @param intervalInSec    the total time span of this {@link LeapArray} in seconds.
      */
     public LeapArray(int windowLengthInMs, int intervalInSec) {
+        AssertUtil.isTrue(windowLengthInMs > 0, "bucket length is invalid: " + windowLengthInMs);
+        int intervalInMs = intervalInSec * 1000;
+        AssertUtil.isTrue(intervalInSec * 1000 > windowLengthInMs,
+            "total time span of the window should be greater than bucket length");
+        AssertUtil.isTrue(intervalInMs % windowLengthInMs == 0, "time span needs to be evenly divided");
+
         this.windowLengthInMs = windowLengthInMs;
-        this.intervalInMs = intervalInSec * 1000;
+        this.intervalInMs = intervalInMs;
         this.sampleCount = intervalInMs / windowLengthInMs;
 
         this.array = new AtomicReferenceArray<WindowWrap<T>>(sampleCount);
@@ -93,9 +100,12 @@ public abstract class LeapArray<T> {
      * Get bucket item at provided timestamp.
      *
      * @param time a valid timestamp
-     * @return current bucket item at provided timestamp
+     * @return current bucket item at provided timestamp if the time is valid; null if time is invalid
      */
     public WindowWrap<T> currentWindow(long time) {
+        if (time < 0) {
+            return null;
+        }
         long timeId = time / windowLengthInMs;
         // Calculate current index so we can map the timestamp to the leap array.
         int idx = (int)(timeId % array.length());
@@ -189,6 +199,9 @@ public abstract class LeapArray<T> {
      * @return the previous bucket item before provided timestamp
      */
     public WindowWrap<T> getPreviousWindow(long time) {
+        if (time < 0) {
+            return null;
+        }
         long timeId = (time - windowLengthInMs) / windowLengthInMs;
         int idx = (int)(timeId % array.length());
         time = time - windowLengthInMs;
@@ -221,6 +234,9 @@ public abstract class LeapArray<T> {
      * @return the statistic value if bucket for provided timestamp is up-to-date; otherwise null
      */
     public T getWindowValue(long time) {
+        if (time < 0) {
+            return null;
+        }
         long timeId = time / windowLengthInMs;
         int idx = (int)(timeId % array.length());
 
