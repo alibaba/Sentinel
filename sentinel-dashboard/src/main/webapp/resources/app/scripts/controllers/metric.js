@@ -68,7 +68,7 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
           forceFit: true,
           width: 100,
           height: 250,
-          padding: [10, 30, 70, 30]
+          padding: [10, 30, 70, 50]
         });
         var maxQps = 0;
         for (var i in metric.data) {
