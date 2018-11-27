@@ -27,6 +27,7 @@ import io.netty.handler.codec.MessageToByteEncoder;
 
 /**
  * @author Eric Zhao
+ * @since 1.4.0
  */
 public class NettyRequestEncoder extends MessageToByteEncoder<ClusterRequest> {
 

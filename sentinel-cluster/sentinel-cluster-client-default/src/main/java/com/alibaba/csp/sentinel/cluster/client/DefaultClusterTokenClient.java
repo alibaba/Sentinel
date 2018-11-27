@@ -24,32 +24,92 @@ import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
 import com.alibaba.csp.sentinel.cluster.TokenServerDescriptor;
 import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfig;
+import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfigManager;
+import com.alibaba.csp.sentinel.cluster.client.config.ServerChangeObserver;
 import com.alibaba.csp.sentinel.cluster.log.ClusterStatLogUtil;
 import com.alibaba.csp.sentinel.cluster.request.ClusterRequest;
 import com.alibaba.csp.sentinel.cluster.request.data.FlowRequestData;
 import com.alibaba.csp.sentinel.cluster.request.data.ParamFlowRequestData;
 import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
 import com.alibaba.csp.sentinel.cluster.response.data.FlowTokenResponseData;
+import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
+ * Default implementation of {@link ClusterTokenClient}.
+ *
  * @author Eric Zhao
  * @since 1.4.0
  */
 public class DefaultClusterTokenClient implements ClusterTokenClient {
 
     private ClusterTransportClient transportClient;
+    private TokenServerDescriptor serverDescriptor;
 
     public DefaultClusterTokenClient() {
-        // TODO: load and create transport client here.
+        ClusterClientConfigManager.addServerChangeObserver(new ServerChangeObserver() {
+            @Override
+            public void onRemoteServerChange(ClusterClientConfig clusterClientConfig) {
+                changeServer(clusterClientConfig);
+            }
+        });
+        initNewConnection();
     }
 
     public DefaultClusterTokenClient(ClusterTransportClient transportClient) {
+        // TODO: only for test, remove this constructor.
         this.transportClient = transportClient;
+    }
+
+    private boolean serverEqual(TokenServerDescriptor descriptor, ClusterClientConfig config) {
+        if (descriptor == null || config == null) {
+            return false;
+        }
+        return descriptor.getHost().equals(config.getServerHost()) && descriptor.getPort() == config.getServerPort();
+    }
+
+    private void initNewConnection() {
+        if (transportClient != null) {
+            return;
+        }
+        String host = ClusterClientConfigManager.getServerHost();
+        int port = ClusterClientConfigManager.getServerPort();
+        if (StringUtil.isBlank(host) || port <= 0) {
+            return;
+        }
+
+        try {
+            this.transportClient = new NettyTransportClient(host, port);
+            this.serverDescriptor = new TokenServerDescriptor(host, port);
+            transportClient.start();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void changeServer(/*@Valid*/ ClusterClientConfig config) {
+        if (serverEqual(serverDescriptor, config)) {
+            return;
+        }
+        try {
+            // TODO: what if the client is pending init?
+            if (transportClient != null && transportClient.isReady()) {
+                transportClient.stop();
+            }
+            // Replace with new, even if the new client is not ready.
+            this.transportClient = new NettyTransportClient(config);
+            this.serverDescriptor = new TokenServerDescriptor(config.getServerHost(), config.getServerPort());
+            transportClient.start();
+            RecordLog.info("[DefaultClusterTokenClient] New client created: " + serverDescriptor);
+        } catch (Exception ex) {
+            RecordLog.warn("[DefaultClusterTokenClient] Failed to change remote token server", ex);
+            ex.printStackTrace();
+        }
     }
 
     @Override
     public TokenServerDescriptor currentServer() {
-        return new TokenServerDescriptor();
+        return serverDescriptor;
     }
 
     @Override
@@ -84,15 +144,11 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
         }
     }
 
-    private boolean notValidRequest(Long id, int count) {
-        return id == null || id <= 0 || count <= 0;
-    }
-
-    private TokenResult badRequest() {
-        return new TokenResult(TokenResultStatus.BAD_REQUEST);
-    }
-
     private TokenResult sendTokenRequest(ClusterRequest request) throws Exception {
+        if (transportClient == null) {
+            RecordLog.warn("[DefaultClusterTokenClient] Client not created, please check your config for cluster client");
+            return clientFail();
+        }
         ClusterResponse response = transportClient.sendRequest(request);
         TokenResult result = new TokenResult(response.getStatus());
         if (response.getData() != null) {
@@ -101,5 +157,17 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
                 .setWaitInMs(responseData.getWaitInMs());
         }
         return result;
+    }
+
+    private boolean notValidRequest(Long id, int count) {
+        return id == null || id <= 0 || count <= 0;
+    }
+
+    private TokenResult badRequest() {
+        return new TokenResult(TokenResultStatus.BAD_REQUEST);
+    }
+
+    private TokenResult clientFail() {
+        return new TokenResult(TokenResultStatus.FAIL);
     }
 }

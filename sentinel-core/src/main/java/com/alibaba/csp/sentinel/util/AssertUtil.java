@@ -28,6 +28,12 @@ public class AssertUtil {
         }
     }
 
+    public static void assertNotBlank(String string, String message) {
+        if (StringUtil.isBlank(string)) {
+            throw new IllegalArgumentException(message);
+        }
+    }
+
     public static void notNull(Object object, String message) {
         if (object == null) {
             throw new IllegalArgumentException(message);

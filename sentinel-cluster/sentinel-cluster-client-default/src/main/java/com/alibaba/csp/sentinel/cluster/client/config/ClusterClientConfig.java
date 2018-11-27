@@ -62,4 +62,14 @@ public class ClusterClientConfig {
         this.connectTimeout = connectTimeout;
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "ClusterClientConfig{" +
+            "serverHost='" + serverHost + '\'' +
+            ", serverPort=" + serverPort +
+            ", requestTimeout=" + requestTimeout +
+            ", connectTimeout=" + connectTimeout +
+            '}';
+    }
 }

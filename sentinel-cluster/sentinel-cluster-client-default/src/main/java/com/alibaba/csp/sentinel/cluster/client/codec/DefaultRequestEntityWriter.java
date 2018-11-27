@@ -37,8 +37,8 @@ public class DefaultRequestEntityWriter implements RequestEntityWriter<ClusterRe
 
         if (requestDataWriter == null) {
             // TODO: may need to throw exception?
-            RecordLog.warn(
-                "[NettyRequestEncoder] Cannot find matching request writer for type <{0}>, dropping the request", type);
+            RecordLog.warn("[DefaultRequestEntityWriter] Cannot find matching request writer for type <{0}>,"
+                + " dropping the request", type);
             return;
         }
         // Write head part of request.

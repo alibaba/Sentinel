@@ -13,20 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.cluster;
+package com.alibaba.csp.sentinel.cluster.client.config;
 
 /**
- * Token client interface for distributed flow control.
- *
  * @author Eric Zhao
  * @since 1.4.0
  */
-public interface ClusterTokenClient extends TokenService {
+public interface ServerChangeObserver {
 
     /**
-     * Get descriptor of current token server.
+     * Callback on remote server address change.
      *
-     * @return current token server if connected, otherwise null
+     * @param clusterClientConfig new cluster client config
      */
-    TokenServerDescriptor currentServer();
+    void onRemoteServerChange(ClusterClientConfig clusterClientConfig);
 }
