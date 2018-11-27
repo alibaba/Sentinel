@@ -23,6 +23,7 @@ import com.alibaba.csp.sentinel.cluster.ClusterTransportClient;
 import com.alibaba.csp.sentinel.cluster.client.codec.netty.NettyRequestEncoder;
 import com.alibaba.csp.sentinel.cluster.client.codec.netty.NettyResponseDecoder;
 import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfig;
+import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfigManager;
 import com.alibaba.csp.sentinel.cluster.client.handler.TokenClientHandler;
 import com.alibaba.csp.sentinel.cluster.client.handler.TokenClientPromiseHolder;
 import com.alibaba.csp.sentinel.cluster.exception.SentinelClusterException;
@@ -55,20 +56,25 @@ import io.netty.util.concurrent.GenericFutureListener;
  */
 public class NettyTransportClient implements ClusterTransportClient {
 
-    private ClusterClientConfig clientConfig;
-    private String host;
-    private int port;
+    private final String host;
+    private final int port;
 
     private Channel channel;
     private NioEventLoopGroup eventLoopGroup;
     private TokenClientHandler clientHandler;
 
     private AtomicInteger idGenerator = new AtomicInteger(0);
-
     private AtomicInteger failConnectedTime = new AtomicInteger(0);
 
-    public NettyTransportClient(ClusterClientConfig clientConfig, String host, int port) {
-        this.clientConfig = clientConfig;
+    public NettyTransportClient(ClusterClientConfig clientConfig) {
+        AssertUtil.notNull(clientConfig, "client config cannot be null");
+        this.host = clientConfig.getServerHost();
+        this.port = clientConfig.getServerPort();
+    }
+
+    public NettyTransportClient(String host, int port) {
+        AssertUtil.assertNotBlank(host, "remote host cannot be blank");
+        AssertUtil.isTrue(port > 0, "port should be positive");
         this.host = host;
         this.port = port;
     }
@@ -117,11 +123,13 @@ public class NettyTransportClient implements ClusterTransportClient {
         });
     }
 
-    public void start() {
+    @Override
+    public void start() throws Exception {
         connect(initClientBootstrap());
     }
 
-    public void stop() {
+    @Override
+    public void stop() throws Exception {
         if (channel != null) {
             channel.close();
             channel = null;
@@ -138,6 +146,7 @@ public class NettyTransportClient implements ClusterTransportClient {
         return request != null && request.getType() >= 0;
     }
 
+    @Override
     public boolean isReady() {
         return channel != null && clientHandler != null && clientHandler.hasStarted();
     }
@@ -159,8 +168,7 @@ public class NettyTransportClient implements ClusterTransportClient {
             ChannelPromise promise = channel.newPromise();
             TokenClientPromiseHolder.putPromise(xid, promise);
 
-            // TODO: timeout
-            if (!promise.await(20)) {
+            if (!promise.await(ClusterClientConfigManager.getRequestTimeout())) {
                 throw new SentinelClusterException(ClusterErrorMessages.REQUEST_TIME_OUT);
             }
 

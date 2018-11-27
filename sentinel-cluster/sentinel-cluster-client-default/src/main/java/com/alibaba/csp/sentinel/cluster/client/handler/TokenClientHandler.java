@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.alibaba.csp.sentinel.cluster.client.ClientConstants;
 import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
+import com.alibaba.csp.sentinel.log.RecordLog;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -34,6 +35,7 @@ public class TokenClientHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         currentState.set(ClientConstants.CLIENT_STATUS_STARTED);
+        RecordLog.info("[TokenClientHandler] Client handler active, remote address: " + ctx.channel().remoteAddress());
     }
 
     @Override
@@ -48,13 +50,13 @@ public class TokenClientHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        super.exceptionCaught(ctx, cause);
-        cause.printStackTrace();
+        // TODO: should close the connection when an exception is raised.
+        RecordLog.warn("[TokenClientHandler] Client exception caught", cause);
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        super.channelInactive(ctx);
+        RecordLog.info("[TokenClientHandler] Client handler inactive, remote address: " + ctx.channel().remoteAddress());
     }
 
     @Override

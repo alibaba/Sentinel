@@ -27,6 +27,20 @@ import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
 public interface ClusterTransportClient {
 
     /**
+     * Start the client.
+     *
+     * @throws Exception some error occurred (e.g. initialization failed)
+     */
+    void start() throws Exception;
+
+    /**
+     * Stop the client.
+     *
+     * @throws Exception some error occurred (e.g. shutdown failed)
+     */
+    void stop() throws Exception;
+
+    /**
      * Send request to remote server and get response.
      *
      * @param request Sentinel cluster request
@@ -34,4 +48,11 @@ public interface ClusterTransportClient {
      * @throws Exception some error occurs
      */
     ClusterResponse sendRequest(ClusterRequest request) throws Exception;
+
+    /**
+     * Check whether the client has been started and ready for sending requests.
+     *
+     * @return true if the client is ready to send requests, otherwise false
+     */
+    boolean isReady();
 }
