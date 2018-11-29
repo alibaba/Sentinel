@@ -34,7 +34,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  */
 public class SentinelConfig {
 
-    private static final Map<String, String> props = new ConcurrentHashMap<String, String>();
+    private static final Map<String, String> PROPS = new ConcurrentHashMap<String, String>();
 
     public static final String CHARSET = "csp.sentinel.charset";
     public static final String SINGLE_METRIC_FILE_SIZE = "csp.sentinel.metric.file.single.size";
@@ -107,17 +107,17 @@ public class SentinelConfig {
      * @return the config value.
      */
     public static String getConfig(String key) {
-        return props.get(key);
+        return PROPS.get(key);
     }
 
     public static void setConfig(String key, String value) {
-        props.put(key, value);
+        PROPS.put(key, value);
     }
 
     public static void setConfigIfAbsent(String key, String value) {
-        String v = props.get(key);
+        String v = PROPS.get(key);
         if (v == null) {
-            props.put(key, value);
+            PROPS.put(key, value);
         }
     }
 
@@ -126,12 +126,12 @@ public class SentinelConfig {
     }
 
     public static String charset() {
-        return props.get(CHARSET);
+        return PROPS.get(CHARSET);
     }
 
     public static long singleMetricFileSize() {
         try {
-            return Long.parseLong(props.get(SINGLE_METRIC_FILE_SIZE));
+            return Long.parseLong(PROPS.get(SINGLE_METRIC_FILE_SIZE));
         } catch (Throwable throwable) {
             RecordLog.info("[SentinelConfig] Parse singleMetricFileSize fail, use default value: "
                 + DEFAULT_SINGLE_METRIC_FILE_SIZE, throwable);
@@ -141,7 +141,7 @@ public class SentinelConfig {
 
     public static int totalMetricFileCount() {
         try {
-            return Integer.parseInt(props.get(TOTAL_METRIC_FILE_COUNT));
+            return Integer.parseInt(PROPS.get(TOTAL_METRIC_FILE_COUNT));
         } catch (Throwable throwable) {
             RecordLog.info("[SentinelConfig] Parse totalMetricFileCount fail, use default value: "
                 + DEFAULT_TOTAL_METRIC_FILE_COUNT, throwable);
