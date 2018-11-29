@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.datasource;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -40,17 +41,24 @@ public class FileWritableDataSource<T> implements WritableDataSource<T> {
 
     private final Lock lock = new ReentrantLock(true);
 
-    public FileWritableDataSource(String filePath, Converter<T, String> configEncoder) {
+    public FileWritableDataSource(String filePath, Converter<T, String> configEncoder) throws IOException {
         this(new File(filePath), configEncoder);
     }
 
-    public FileWritableDataSource(File file, Converter<T, String> configEncoder) {
+    public FileWritableDataSource(File file, Converter<T, String> configEncoder) throws IOException {
         this(file, configEncoder, DEFAULT_CHARSET);
     }
 
-    public FileWritableDataSource(File file, Converter<T, String> configEncoder, Charset charset) {
+    public FileWritableDataSource(File file, Converter<T, String> configEncoder, Charset charset) throws IOException {
         if (file == null || file.isDirectory()) {
             throw new IllegalArgumentException("Bad file");
+        }
+        if (!file.exists()) {
+            File dir = file.getParentFile();
+            if (!dir.exists()) {
+                dir.createNewFile();
+            }
+            file.createNewFile();
         }
         if (configEncoder == null) {
             throw new IllegalArgumentException("Config encoder cannot be null");

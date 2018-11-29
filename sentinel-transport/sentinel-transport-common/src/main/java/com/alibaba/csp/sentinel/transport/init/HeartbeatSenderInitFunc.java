@@ -17,15 +17,15 @@ package com.alibaba.csp.sentinel.transport.init;
 
 import java.util.Iterator;
 import java.util.ServiceLoader;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.init.InitFunc;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.transport.HeartbeatSender;
 import com.alibaba.csp.sentinel.transport.config.TransportConfig;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
 /**
  * Global init function for heartbeat sender.
@@ -34,16 +34,17 @@ import com.alibaba.csp.sentinel.transport.config.TransportConfig;
  */
 public class HeartbeatSenderInitFunc implements InitFunc {
 
-    private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(2,
-        new NamedThreadFactory("sentinel-heartbeat-send-task", true));
+    private static ScheduledExecutorService pool = new ScheduledThreadPoolExecutor(2,
+            new BasicThreadFactory.Builder().namingPattern("sentinel-heartbeat-send-task-%d").daemon(true).build());
 
     @Override
-    public void init() throws Exception {
+    public void init() {
         long heartBeatInterval = -1;
         try {
             heartBeatInterval = TransportConfig.getHeartbeatIntervalMs();
             RecordLog.info("system property heartbeat interval set: " + heartBeatInterval);
         } catch (Exception ex) {
+            ex.printStackTrace();
             RecordLog.info("Parse heartbeat interval failed, use that in code, " + ex.getMessage());
         }
         ServiceLoader<HeartbeatSender> loader = ServiceLoader.load(HeartbeatSender.class);
@@ -69,7 +70,7 @@ public class HeartbeatSenderInitFunc implements InitFunc {
                     }
                 }, 10000, interval, TimeUnit.MILLISECONDS);
                 RecordLog.info("[HeartbeatSenderInit] HeartbeatSender started: "
-                    + sender.getClass().getCanonicalName());
+                        + sender.getClass().getCanonicalName());
             }
         }
     }
