@@ -40,12 +40,10 @@ public class SentinelConfig {
     public static final String SINGLE_METRIC_FILE_SIZE = "csp.sentinel.metric.file.single.size";
     public static final String TOTAL_METRIC_FILE_COUNT = "csp.sentinel.metric.file.total.count";
     public static final String COLD_FACTOR = "csp.sentinel.flow.cold.factor";
-    public static final String HEARTBEAT_INTERVAL_MS = "csp.sentinel.heartbeat.interval.ms";
 
 
     static final long DEFAULT_SINGLE_METRIC_FILE_SIZE = 1024 * 1024 * 50;
     static final int DEFAULT_TOTAL_METRIC_FILE_COUNT = 6;
-    static final int HEARTBEAT_INTERVAL_MS_COUNT = 10000;
 
     static {
         initialize();
@@ -58,7 +56,6 @@ public class SentinelConfig {
         SentinelConfig.setConfig(SINGLE_METRIC_FILE_SIZE, String.valueOf(DEFAULT_SINGLE_METRIC_FILE_SIZE));
         SentinelConfig.setConfig(TOTAL_METRIC_FILE_COUNT, String.valueOf(DEFAULT_TOTAL_METRIC_FILE_COUNT));
         SentinelConfig.setConfig(COLD_FACTOR, String.valueOf(3));
-        SentinelConfig.setConfig(HEARTBEAT_INTERVAL_MS, String.valueOf(HEARTBEAT_INTERVAL_MS_COUNT));
 
     }
 
