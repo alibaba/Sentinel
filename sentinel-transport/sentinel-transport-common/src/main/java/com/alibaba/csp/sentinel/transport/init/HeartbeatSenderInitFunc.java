@@ -17,15 +17,15 @@ package com.alibaba.csp.sentinel.transport.init;
 
 import java.util.Iterator;
 import java.util.ServiceLoader;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.init.InitFunc;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.transport.HeartbeatSender;
 import com.alibaba.csp.sentinel.transport.config.TransportConfig;
-import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
 /**
  * Global init function for heartbeat sender.
@@ -34,8 +34,9 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
  */
 public class HeartbeatSenderInitFunc implements InitFunc {
 
-    private static ScheduledExecutorService pool = new ScheduledThreadPoolExecutor(2,
-            new BasicThreadFactory.Builder().namingPattern("sentinel-heartbeat-send-task-%d").daemon(true).build());
+    private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(2,
+            new NamedThreadFactory("sentinel-heartbeat-send-task", true));
+
 
     @Override
     public void init() {
