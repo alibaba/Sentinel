@@ -27,7 +27,7 @@ public class TransportConfig {
     public static final String CONSOLE_SERVER = "csp.sentinel.dashboard.server";
     public static final String SERVER_PORT = "csp.sentinel.api.port";
     public static final String HEARTBEAT_INTERVAL_MS = "csp.sentinel.heartbeat.interval.ms";
-    public static final String CLIENT_IP = "csp.sentinel.client.ip";
+    public static final String HEARTBEAT_CLIENT_IP = "csp.sentinel.heartbeat.client.ip";
 
     private static int runtimePort = -1;
 
@@ -71,12 +71,13 @@ public class TransportConfig {
     }
 
     /**
-     * Get client local ip.
+     * Get heartbeat client local ip.
      * If the client ip not configured,it will be the address of local host
+     *
      * @return the local ip.
      */
-    public static String getClientIp() {
-        String ip = SentinelConfig.getConfig(CLIENT_IP);
+    public static String getHeartbeatClientIp() {
+        String ip = SentinelConfig.getConfig(HEARTBEAT_CLIENT_IP);
         if (StringUtil.isBlank(ip)) {
             ip = HostNameUtil.getIp();
         }

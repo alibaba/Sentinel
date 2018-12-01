@@ -85,7 +85,7 @@ public class HttpHeartbeatSender implements HeartbeatSender {
             .setParameter("v", Constants.SENTINEL_VERSION)
             .setParameter("version", String.valueOf(System.currentTimeMillis()))
             .setParameter("hostname", HostNameUtil.getHostName())
-            .setParameter("ip", TransportConfig.getClientIp())
+            .setParameter("ip", TransportConfig.getHeartbeatClientIp())
             .setParameter("port", TransportConfig.getPort())
             .setParameter("pid", String.valueOf(PidUtil.getPid()));
 
