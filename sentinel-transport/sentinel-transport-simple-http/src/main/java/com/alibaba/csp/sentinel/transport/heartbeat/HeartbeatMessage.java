@@ -36,7 +36,7 @@ public class HeartbeatMessage {
 
     public HeartbeatMessage() {
         message.put("hostname", HostNameUtil.getHostName());
-        message.put("ip", HostNameUtil.getIp());
+        message.put("ip", TransportConfig.getHeartbeatClientIp());
         message.put("app", AppNameUtil.getAppName());
         message.put("port", String.valueOf(TransportConfig.getPort()));
     }
