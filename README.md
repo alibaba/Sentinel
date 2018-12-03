@@ -76,7 +76,7 @@ try {
 }
 ```
 
-So far the code modification is done.  
+So far the code modification is done. We also provide [annotation support module](https://github.com/alibaba/Sentinel/blob/master/sentinel-extension/sentinel-annotation-aspectj/README.md) to define resource easier.
 
 ### 3. Define Rules
 
@@ -92,6 +92,8 @@ rule.setGrade(RuleConstant.FLOW_GRADE_QPS);
 rules.add(rule);
 FlowRuleManager.loadRules(rules);
 ```
+
+For more information, please refer to [How To Use](https://github.com/alibaba/Sentinel/wiki/How-to-Use).
 
 ### 4. Check the Result
 
@@ -144,3 +146,12 @@ These are only part of the companies using Sentinel, for reference only. If you 
 ![Taiping Renshou](http://www.cntaiping.com/tplresource/cms/www/taiping/img/home_new/tp_logo_img.png)
 ![Shunfeng Technology](https://user-images.githubusercontent.com/9434884/48463502-2f48eb80-e817-11e8-984f-2f9b1b789e2d.png)
 ![Mandao](https://user-images.githubusercontent.com/9434884/48463559-6cad7900-e817-11e8-87e4-42952b074837.png)
+![每日优鲜](https://home.missfresh.cn/statics/img/logo.png)
+![二维火](https://user-images.githubusercontent.com/9434884/49358468-bc43de00-f70d-11e8-97fe-0bf05865f29f.png)
+![文轩在线](http://static.winxuancdn.com/css/v2/images/logo.png)
+![客如云](https://www.keruyun.com/static/krynew/images/logo.png)
+![亲宝宝](https://stlib.qbb6.com/wclt/img/home_hd/version1/title_logo.png)
+![杭州光云科技](https://www.raycloud.com/images/logo.png)
+![金汇金融](https://res.jinhui365.com/r/images/logo2.png?v=1.527)
+![Vivo](https://user-images.githubusercontent.com/9434884/49355264-c6f87600-f701-11e8-8109-054cf91df868.png)
+![闪电购](http://cdn.52shangou.com/shandianbang/official-source/3.1.1/build/images/logo.png)
