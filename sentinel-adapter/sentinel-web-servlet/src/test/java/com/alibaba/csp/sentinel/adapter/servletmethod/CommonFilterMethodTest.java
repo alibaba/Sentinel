@@ -74,7 +74,7 @@ public class CommonFilterMethodTest {
         if (StringUtil.isNotBlank(limitApp)) {
             rule.setLimitApp(limitApp);
         }
-        FlowRuleManager.loadRules(Collections.singletonList(rule));
+         FlowRuleManager.loadRules(Collections.singletonList(rule));
     }
 
     @Test
@@ -128,6 +128,6 @@ public class CommonFilterMethodTest {
     @After
     public void cleanUp() {
         FlowRuleManager.loadRules(null);
-        ClusterBuilderSlot.getClusterNodeMap().clear();
+        ClusterBuilderSlot.resetClusterNodes();
     }
 }
