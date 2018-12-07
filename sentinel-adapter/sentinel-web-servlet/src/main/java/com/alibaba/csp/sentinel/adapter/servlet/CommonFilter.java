@@ -46,7 +46,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  */
 public class CommonFilter implements Filter {
 
-    private final static String HTTP_METHOD_SPECIFY = "IS_METHOD_SPECIFY";
+    private final static String HTTP_METHOD_SPECIFY = "HTTP_METHOD_SPECIFY";
     private final static String COLON = ":";
     private boolean httpMethodSpecify = false;
 
@@ -57,8 +57,8 @@ public class CommonFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-        throws IOException, ServletException {
-        HttpServletRequest sRequest = (HttpServletRequest)request;
+            throws IOException, ServletException {
+        HttpServletRequest sRequest = (HttpServletRequest) request;
         Entry entry = null;
 
         Entry methodEntry = null;
@@ -81,14 +81,14 @@ public class CommonFilter implements Filter {
 
 
             // Add method specification if necessary
-            if(httpMethodSpecify) {
+            if (httpMethodSpecify) {
                 methodEntry = SphU.entry(sRequest.getMethod().toUpperCase() + COLON + target,
                         EntryType.IN);
             }
 
             chain.doFilter(request, response);
         } catch (BlockException e) {
-            HttpServletResponse sResponse = (HttpServletResponse)response;
+            HttpServletResponse sResponse = (HttpServletResponse) response;
             // Return the block page, or redirect to another URL.
             WebCallbackManager.getUrlBlockHandler().blocked(sRequest, sResponse, e);
         } catch (IOException e2) {
@@ -101,7 +101,7 @@ public class CommonFilter implements Filter {
             Tracer.trace(e4);
             throw e4;
         } finally {
-            if(methodEntry != null) {
+            if (methodEntry != null) {
                 methodEntry.exit();
             }
             if (entry != null) {

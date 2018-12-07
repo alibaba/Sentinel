@@ -45,7 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TestApplication.class,
-webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 public class CommonFilterMethodTest {
 
@@ -68,21 +68,21 @@ public class CommonFilterMethodTest {
 
     private void configureRulesFor(String resource, int count, String limitApp) {
         FlowRule rule = new FlowRule()
-            .setCount(count)
-            .setGrade(RuleConstant.FLOW_GRADE_QPS);
+                .setCount(count)
+                .setGrade(RuleConstant.FLOW_GRADE_QPS);
         rule.setResource(resource);
         if (StringUtil.isNotBlank(limitApp)) {
             rule.setLimitApp(limitApp);
         }
-         FlowRuleManager.loadRules(Collections.singletonList(rule));
+        FlowRuleManager.loadRules(Collections.singletonList(rule));
     }
 
     @Test
     public void testCommonFilterMiscellaneous() throws Exception {
         String url = "/hello";
         this.mvc.perform(get(url))
-            .andExpect(status().isOk())
-            .andExpect(content().string(HELLO_STR));
+                .andExpect(status().isOk())
+                .andExpect(content().string(HELLO_STR));
 
         ClusterNode cnGet = ClusterBuilderSlot.getClusterNode(GET + COLON + url);
         assertNotNull(cnGet);
@@ -108,8 +108,8 @@ public class CommonFilterMethodTest {
         configureRulesFor(GET + ":" + url, 0);
         // The request will be blocked and response is default block message.
         this.mvc.perform(get(url).accept(MediaType.TEXT_PLAIN))
-            .andExpect(status().isOk())
-            .andExpect(content().string(FilterUtil.DEFAULT_BLOCK_MSG));
+                .andExpect(status().isOk())
+                .andExpect(content().string(FilterUtil.DEFAULT_BLOCK_MSG));
         assertEquals(1, cnGet.blockQps());
 
         // Test for post pass

@@ -31,6 +31,8 @@ public class TestMethodController {
     }
 
     @PostMapping("/hello")
-    public String apiHelloPost() {return "Hello Post!";}
+    public String apiHelloPost() {
+        return "Hello Post!";
+    }
 
 }
