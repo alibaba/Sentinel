@@ -37,16 +37,16 @@ final class FooServiceClient {
 
     FooServiceClient(String host, int port) {
         this.channel = ManagedChannelBuilder.forAddress(host, port)
-            .usePlaintext()
-            .build();
+                .usePlaintext()
+                .build();
         this.blockingStub = FooServiceGrpc.newBlockingStub(this.channel);
     }
 
     FooServiceClient(String host, int port, ClientInterceptor interceptor) {
         this.channel = ManagedChannelBuilder.forAddress(host, port)
-            .usePlaintext()
-            .intercept(interceptor)
-            .build();
+                .usePlaintext()
+                .intercept(interceptor)
+                .build();
         this.blockingStub = FooServiceGrpc.newBlockingStub(this.channel);
     }
 
@@ -58,13 +58,26 @@ final class FooServiceClient {
     }
 
 
-
-
     FooResponse anotherHello(FooRequest request) {
         if (request == null) {
             throw new IllegalArgumentException("Request cannot be null");
         }
         return blockingStub.anotherHello(request);
+    }
+
+    FooResponse helloWithEx(FooRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("Request cannot be null");
+        }
+        return blockingStub.helloWithEx(request);
+    }
+
+
+    FooResponse anotherHelloWithEx(FooRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("Request cannot be null");
+        }
+        return blockingStub.anotherHelloWithEx(request);
     }
 
     void shutdown() throws InterruptedException {

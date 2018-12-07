@@ -15,23 +15,20 @@
  */
 package com.alibaba.csp.sentinel.adapter.grpc;
 
+import java.util.Collections;
+
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.adapter.grpc.gen.FooRequest;
 import com.alibaba.csp.sentinel.adapter.grpc.gen.FooResponse;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
-import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
+
 import io.grpc.StatusRuntimeException;
 import org.junit.After;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.concurrent.CountDownLatch;
 
 import static org.junit.Assert.*;
 
@@ -45,30 +42,17 @@ public class SentinelGrpcServerInterceptorTest {
     private final String resourceName = "com.alibaba.sentinel.examples.FooService/anotherHello";
     private final int threshold = 4;
     private final GrpcTestServer server = new GrpcTestServer();
-    private final int timeWindow = 10;
+
     private FooServiceClient client;
 
     private void configureFlowRule(int count) {
         FlowRule rule = new FlowRule()
-                .setCount(count)
-                .setGrade(RuleConstant.FLOW_GRADE_QPS)
-                .setResource(resourceName)
-                .setLimitApp("default")
-                .as(FlowRule.class);
+            .setCount(count)
+            .setGrade(RuleConstant.FLOW_GRADE_QPS)
+            .setResource(resourceName)
+            .setLimitApp("default")
+            .as(FlowRule.class);
         FlowRuleManager.loadRules(Collections.singletonList(rule));
-    }
-
-    private void configureDegradeRule(int count) {
-        DegradeRule rule = new DegradeRule()
-                .setCount(count)
-                .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT)
-                .setResource(resourceName)
-                .setLimitApp("default")
-                .as(DegradeRule.class)
-                .setTimeWindow(timeWindow);
-        DegradeRuleManager.loadRules(Collections.singletonList(rule));
-
-
     }
 
     @Test
@@ -97,83 +81,6 @@ public class SentinelGrpcServerInterceptorTest {
     private boolean sendRequest() {
         try {
             FooResponse response = client.anotherHello(FooRequest.newBuilder().setName("Sentinel").setId(666).build());
-            System.out.println("Response: " + response);
-            return true;
-        } catch (StatusRuntimeException ex) {
-            System.out.println("Blocked, cause: " + ex.getMessage());
-            return false;
-        }
-    }
-
-    @Test
-    public void testGrpcServerInterceptor_degrade_success() throws Exception {
-        final int port = 19329;
-        client = new FooServiceClient("localhost", port);
-
-        configureDegradeRule(threshold);
-        server.start(port, true);
-        assertFalse(sendErrorRequest());
-        ClusterNode clusterNode = ClusterBuilderSlot.getClusterNode(resourceName, EntryType.IN);
-        assertNotNull(clusterNode);
-        assertEquals(0, clusterNode.totalRequest() - clusterNode.totalException());
-        assertTrue(sendRequest());
-
-
-    }
-
-
-    @Test
-    public void testGrpcServerInterceptor_degrade_fail() throws IOException, InterruptedException {
-        final int port = 19329;
-        client = new FooServiceClient("localhost", port);
-        configureDegradeRule(threshold);
-        server.start(port, true);
-        // exception count  = 1
-        configureDegradeRule(1);
-
-
-        assertFalse(sendErrorRequest());
-        ClusterNode clusterNode = ClusterBuilderSlot.getClusterNode(resourceName, EntryType.IN);
-
-        //this request will be blocked
-        assertFalse(sendRequest());
-        assertEquals(1, clusterNode.totalException());
-
-        server.stop();
-    }
-
-
-    @Test
-    public void testGrpcServerInterceptor_degrade_fail_threads() throws IOException, InterruptedException {
-        final int port = 19329;
-        client = new FooServiceClient("localhost", port);
-        configureDegradeRule(threshold);
-        server.start(port, true);
-        // exception count  = 1
-        configureDegradeRule(20);
-        final CountDownLatch latch = new CountDownLatch(20);
-
-        for (int i = 0; i < 20; i++) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    assertFalse(sendErrorRequest());
-                    latch.countDown();
-                }
-            }).start();
-        }
-        latch.await();
-        ClusterNode clusterNode = ClusterBuilderSlot.getClusterNode(resourceName, EntryType.IN);
-        assertEquals(20, clusterNode.totalException());
-        assertFalse(sendRequest());
-        assertEquals(20, clusterNode.totalException());
-        assertEquals(1, clusterNode.blockRequest());
-
-    }
-
-    private boolean sendErrorRequest() {
-        try {
-            FooResponse response = client.anotherHello(FooRequest.newBuilder().setName("Sentinel").setId(-1).build());
             System.out.println("Response: " + response);
             return true;
         } catch (StatusRuntimeException ex) {
