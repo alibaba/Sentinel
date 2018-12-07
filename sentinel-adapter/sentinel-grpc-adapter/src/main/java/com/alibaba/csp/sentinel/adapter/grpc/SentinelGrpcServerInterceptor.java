@@ -15,25 +15,17 @@
  */
 package com.alibaba.csp.sentinel.adapter.grpc;
 
-import com.alibaba.csp.sentinel.Entry;
+import com.alibaba.csp.sentinel.AsyncEntry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-
-import io.grpc.ForwardingServerCall;
-import io.grpc.ForwardingServerCallListener;
-import io.grpc.Metadata;
-import io.grpc.ServerCall;
-import io.grpc.ServerCall.Listener;
-import io.grpc.ServerCallHandler;
-import io.grpc.ServerInterceptor;
-import io.grpc.Status;
+import io.grpc.*;
 
 /**
  * <p>gRPC server interceptor for Sentinel. Currently it only works with unary methods.</p>
- *
+ * <p>
  * Example code:
  * <pre>
  * Server server = ServerBuilder.forPort(port)
@@ -41,7 +33,7 @@ import io.grpc.Status;
  *      .intercept(new SentinelGrpcServerInterceptor()) // Add the server interceptor.
  *      .build();
  * </pre>
- *
+ * <p>
  * For client interceptor, see {@link SentinelGrpcClientInterceptor}.
  *
  * @author Eric Zhao
@@ -49,42 +41,65 @@ import io.grpc.Status;
 public class SentinelGrpcServerInterceptor implements ServerInterceptor {
 
     private static final Status FLOW_CONTROL_BLOCK = Status.UNAVAILABLE.withDescription(
-        "Flow control limit exceeded (server side)");
+            "Flow control limit exceeded (server side)");
 
     @Override
-    public <ReqT, RespT> Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> serverCall, Metadata metadata,
-                                                      ServerCallHandler<ReqT, RespT> serverCallHandler) {
-        String resourceName = serverCall.getMethodDescriptor().getFullMethodName();
+    public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
+        String resourceName = call.getMethodDescriptor().getFullMethodName();
         // Remote address: serverCall.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
-        Entry entry = null;
+        AsyncEntry entry = null;
         try {
             ContextUtil.enter(resourceName);
-            entry = SphU.entry(resourceName, EntryType.IN);
+            entry = SphU.asyncEntry(resourceName, EntryType.IN);
             // Allow access, forward the call.
+            final AsyncEntry tempEntry = entry;
             return new ForwardingServerCallListener.SimpleForwardingServerCallListener<ReqT>(
-                serverCallHandler.startCall(
-                    new ForwardingServerCall.SimpleForwardingServerCall<ReqT, RespT>(serverCall) {
-                        @Override
-                        public void close(Status status, Metadata trailers) {
-                            super.close(status, trailers);
-                            // Record the exception metrics.
-                            if (!status.isOk()) {
-                                recordException(status.asRuntimeException());
-                            }
-                        }
-                    }, metadata)) {};
+                    next.startCall(
+                            new ForwardingServerCall.SimpleForwardingServerCall<ReqT, RespT>(call) {
+                                @Override
+                                public void close(Status status, Metadata trailers) {
+                                    super.close(status, trailers);
+                                    // Record the exception metrics.
+                                    if (!status.isOk()) {
+                                        recordException(status.asException(), tempEntry);
+                                    }
+                                    //entry exit when the call be closed
+                                    tempEntry.exit();
+                                }
+                            }, headers)) {
+
+                /**
+                 *   if call was canceled, onCancel will be called. and the close will not be called
+                 *   so the server is encouraged to abort processing to save resources by onCancel
+                 * @see ServerCall.Listener#onCancel()
+                 */
+                @Override
+                public void onCancel() {
+                    super.onCancel();
+                    // request has be canceled, entry should exit
+                    tempEntry.exit();
+                }
+            };
         } catch (BlockException e) {
-            serverCall.close(FLOW_CONTROL_BLOCK, new Metadata());
-            return new ServerCall.Listener<ReqT>() {};
-        } finally {
+            call.close(FLOW_CONTROL_BLOCK, new Metadata());
+            return new ServerCall.Listener<ReqT>() {
+            };
+        } catch (RuntimeException e) {
+            //catch the RuntimeException startCall throws,
+            // entry is guaranteed to exit
             if (entry != null) {
                 entry.exit();
             }
-            ContextUtil.exit();
+            throw e;
         }
     }
 
-    private void recordException(Throwable t) {
-        Tracer.trace(t);
+    private void recordException(final Throwable t, AsyncEntry tempEntry) {
+        ContextUtil.runOnContext(tempEntry.getAsyncContext(), new Runnable() {
+            @Override
+            public void run() {
+                Tracer.trace(t);
+            }
+        });
     }
 }

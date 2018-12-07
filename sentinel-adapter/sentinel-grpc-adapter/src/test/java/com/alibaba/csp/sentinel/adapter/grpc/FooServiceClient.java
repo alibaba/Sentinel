@@ -57,6 +57,9 @@ final class FooServiceClient {
         return blockingStub.sayHello(request);
     }
 
+
+
+
     FooResponse anotherHello(FooRequest request) {
         if (request == null) {
             throw new IllegalArgumentException("Request cannot be null");
