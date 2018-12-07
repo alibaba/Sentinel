@@ -46,13 +46,13 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  */
 public class CommonFilter implements Filter {
 
-    private final static String IS_METHOD_SPECIFY = "IS_METHOD_SPECIFY";
+    private final static String HTTP_METHOD_SPECIFY = "IS_METHOD_SPECIFY";
     private final static String COLON = ":";
-    private boolean isMethodSpecify = false;
+    private boolean httpMethodSpecify = false;
 
     @Override
     public void init(FilterConfig filterConfig) {
-        isMethodSpecify = Boolean.parseBoolean(filterConfig.getInitParameter(IS_METHOD_SPECIFY));
+        httpMethodSpecify = Boolean.parseBoolean(filterConfig.getInitParameter(HTTP_METHOD_SPECIFY));
     }
 
     @Override
@@ -81,7 +81,7 @@ public class CommonFilter implements Filter {
 
 
             // Add method specification if necessary
-            if(isMethodSpecify) {
+            if(httpMethodSpecify) {
                 methodEntry = SphU.entry(sRequest.getMethod().toUpperCase() + COLON + target,
                         EntryType.IN);
             }
