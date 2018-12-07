@@ -25,6 +25,7 @@ import com.alibaba.csp.sentinel.node.metric.MetricNode;
  *
  * @author qinan.qn
  * @author leyou
+ * @author Eric Zhao
  */
 public interface Node {
 
@@ -70,6 +71,11 @@ public interface Node {
      */
     long successQps();
 
+    /**
+     * Get estimated max success QPS till now.
+     *
+     * @return max success QPS
+     */
     long maxSuccessQps();
 
     /**
@@ -79,9 +85,16 @@ public interface Node {
 
     /**
      * Get average rt per second.
+     *
+     * @return average response time per second
      */
     long avgRt();
 
+    /**
+     * Get minimal response time.
+     *
+     * @return recorded minimal response time
+     */
     long minRt();
 
     /**
@@ -99,23 +112,43 @@ public interface Node {
      */
     long previousPassQps();
 
+    /**
+     * Fetch all valid metric nodes of resources.
+     *
+     * @return valid metric nodes of resources
+     */
     Map<Long, MetricNode> metrics();
 
+    /**
+     * Add pass count.
+     */
     void addPassRequest();
 
     /**
      * Add rt and success count.
      *
-     * @param rt
+     * @param rt response time
      */
     void rt(long rt);
 
+    /**
+     * Increase the block count.
+     */
     void increaseBlockQps();
 
+    /**
+     * Increase the biz exception count.
+     */
     void increaseExceptionQps();
 
+    /**
+     * Increase current thread count.
+     */
     void increaseThreadNum();
 
+    /**
+     * Increase current thread count.
+     */
     void decreaseThreadNum();
 
     /**

@@ -26,11 +26,72 @@ import com.alibaba.csp.sentinel.slots.statistic.metric.ArrayMetric;
 import com.alibaba.csp.sentinel.slots.statistic.metric.Metric;
 
 /**
+ * <p>The statistic node keep three kinds of real-time statistics metrics:</p>
+ * <ol>
+ * <li>metrics in second level ({@code rollingCounterInSecond})</li>
+ * <li>metrics in minute level ({@code rollingCounterInMinute})</li>
+ * <li>thread count</li>
+ * </ol>
+ *
+ * <p>
+ * Sentinel use sliding window to record and count the resource statistics in real-time.
+ * The sliding window infrastructure behind the {@link ArrayMetric} is {@code LeapArray}.
+ * </p>
+ *
+ * <p>
+ * case 1: When the first request comes in, Sentinel will create a new window bucket of
+ * a specified time-span to store running statics, such as total response time(rt),
+ * incoming request(QPS), block request(bq), etc. And the time-span is defined by sample count.
+ * </p>
+ * <pre>
+ * 	0      100ms
+ *  +-------+--→ Sliding Windows
+ * 	    ^
+ * 	    |
+ * 	  request
+ * </pre>
+ * <p>
+ * Sentinel use the statics of the valid buckets to decide whether this request can be passed.
+ * For example, if a rule defines that only 100 requests can be passed,
+ * it will sum all qps in valid buckets, and compare it to the threshold defined in rule.
+ * </p>
+ *
+ * <p>case 2: continuous requests</p>
+ * <pre>
+ *  0    100ms    200ms    300ms
+ *  +-------+-------+-------+-----→ Sliding Windows
+ *                      ^
+ *                      |
+ *                   request
+ * </pre>
+ *
+ * <p>case 3: requests keeps coming, and previous buckets become invalid</p>
+ * <pre>
+ *  0    100ms    200ms	  800ms	   900ms  1000ms    1300ms
+ *  +-------+-------+ ...... +-------+-------+ ...... +-------+-----→ Sliding Windows
+ *                                                      ^
+ *                                                      |
+ *                                                    request
+ * </pre>
+ *
+ * <p>The sliding window should become:</p>
+ * <pre>
+ * 300ms     800ms  900ms  1000ms  1300ms
+ *  + ...... +-------+ ...... +-------+-----→ Sliding Windows
+ *                                                      ^
+ *                                                      |
+ *                                                    request
+ * </pre>
+ *
  * @author qinan.qn
  * @author jialiang.linjl
  */
 public class StatisticNode implements Node {
 
+    /**
+     * Holds statistics of the recent {@code INTERVAL} seconds. The {@code INTERVAL} is divided into time spans
+     * by given {@code sampleCount}.
+     */
     private transient volatile Metric rollingCounterInSecond = new ArrayMetric(1000 / SampleCountProperty.SAMPLE_COUNT,
         IntervalProperty.INTERVAL);
 
@@ -40,32 +101,43 @@ public class StatisticNode implements Node {
      */
     private transient Metric rollingCounterInMinute = new ArrayMetric(1000, 60);
 
+    /**
+     * The counter for thread count.
+     */
     private AtomicInteger curThreadNum = new AtomicInteger(0);
 
+    /**
+     * The last timestamp when metrics were fetched.
+     */
     private long lastFetchTime = -1;
 
     @Override
     public Map<Long, MetricNode> metrics() {
+        // The fetch operation is thread-safe under a single-thread scheduler pool.
         long currentTime = TimeUtil.currentTimeMillis();
         currentTime = currentTime - currentTime % 1000;
         Map<Long, MetricNode> metrics = new ConcurrentHashMap<Long, MetricNode>();
         List<MetricNode> nodesOfEverySecond = rollingCounterInMinute.details();
         long newLastFetchTime = lastFetchTime;
+        // Iterate metrics of all resources, filter valid metrics (not-empty and up-to-date).
         for (MetricNode node : nodesOfEverySecond) {
-            if (node.getTimestamp() > lastFetchTime && node.getTimestamp() < currentTime) {
-                if (node.getPassQps() != 0
-                    || node.getBlockQps() != 0
-                    || node.getSuccessQps() != 0
-                    || node.getExceptionQps() != 0
-                    || node.getRt() != 0) {
-                    metrics.put(node.getTimestamp(), node);
-                    newLastFetchTime = Math.max(newLastFetchTime, node.getTimestamp());
-                }
+            if (isNodeInTime(node, currentTime) && isValidMetricNode(node)) {
+                metrics.put(node.getTimestamp(), node);
+                newLastFetchTime = Math.max(newLastFetchTime, node.getTimestamp());
             }
         }
         lastFetchTime = newLastFetchTime;
 
         return metrics;
+    }
+
+    private boolean isNodeInTime(MetricNode node, long currentTime) {
+        return node.getTimestamp() > lastFetchTime && node.getTimestamp() < currentTime;
+    }
+
+    private boolean isValidMetricNode(MetricNode node) {
+        return node.getPassQps() > 0 || node.getBlockQps() > 0 || node.getSuccessQps() > 0
+            || node.getExceptionQps() > 0 || node.getRt() > 0;
     }
 
     @Override

@@ -71,6 +71,7 @@
 
         <module>sentinel-demo</module>
         <module>sentinel-benchmark</module>
+        <module>sentinel-cluster</module>
     </modules>
 
     <dependencyManagement>
@@ -127,6 +128,11 @@
             </dependency>
             <dependency>
                 <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-cluster-common-default</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
                 <artifactId>sentinel-adapter</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -169,7 +175,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <!-- CircleCI build workaround -->
-                    <argLine>-Xms1024m -Xmx2048m</argLine>
+                    <argLine>@{argLine} -Xms1024m -Xmx2048m</argLine>
                     <useSystemClassLoader>false</useSystemClassLoader>
                 </configuration>
             </plugin>

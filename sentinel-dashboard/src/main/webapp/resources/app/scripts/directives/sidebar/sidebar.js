@@ -33,16 +33,14 @@ angular.module('sentinelDashboardApp')
 
         // toggle side bar
         $scope.click = function ($event) {
-          let element = angular.element($event.target);
           let entry = angular.element($event.target).scope().entry;
-          entry.active = !entry.active;
+          entry.active = !entry.active;// toggle this clicked app bar
 
-          if (entry.active === false) {
-            element.parent().children('ul').hide();
-          } else {
-            element.parent().parent().children('li').children('ul').hide();
-            element.parent().children('ul').show();
-          }
+          $scope.apps.forEach(function (item) {// collapse other app bars
+            if (item != entry) {
+              item.active = false;
+            }
+          });
         };
 
         /**

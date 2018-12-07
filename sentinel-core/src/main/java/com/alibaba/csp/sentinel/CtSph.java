@@ -61,7 +61,8 @@ public class CtSph implements Sph {
         return entry;
     }
 
-    private AsyncEntry asyncEntryInternal(ResourceWrapper resourceWrapper, int count, Object... args) throws BlockException {
+    private AsyncEntry asyncEntryWithPriorityInternal(ResourceWrapper resourceWrapper, int count, boolean prioritized,
+                                                      Object... args) throws BlockException {
         Context context = ContextUtil.getContext();
         if (context instanceof NullContext) {
             // The {@link NullContext} indicates that the amount of context has exceeded the threshold,
@@ -87,7 +88,7 @@ public class CtSph implements Sph {
 
         AsyncEntry asyncEntry = new AsyncEntry(resourceWrapper, chain, context);
         try {
-            chain.entry(context, resourceWrapper, null, count, args);
+            chain.entry(context, resourceWrapper, null, count, prioritized, args);
             // Initiate the async context only when the entry successfully passed the slot chain.
             asyncEntry.initAsyncContext();
             // The asynchronous call may take time in background, and current context should not be hanged on it.
@@ -108,23 +109,12 @@ public class CtSph implements Sph {
         return asyncEntry;
     }
 
-    /**
-     * Do all {@link Rule}s checking about the resource.
-     *
-     * <p>Each distinct resource will use a {@link ProcessorSlot} to do rules checking. Same resource will use
-     * same {@link ProcessorSlot} globally. </p>
-     *
-     * <p>Note that total {@link ProcessorSlot} count must not exceed {@link Constants#MAX_SLOT_CHAIN_SIZE},
-     * otherwise no rules checking will do. In this condition, all requests will pass directly, with no checking
-     * or exception.</p>
-     *
-     * @param resourceWrapper resource name
-     * @param count           tokens needed
-     * @param args            arguments of user method call
-     * @return {@link Entry} represents this call
-     * @throws BlockException if any rule's threshold is exceeded
-     */
-    public Entry entry(ResourceWrapper resourceWrapper, int count, Object... args) throws BlockException {
+    private AsyncEntry asyncEntryInternal(ResourceWrapper resourceWrapper, int count, Object... args) throws BlockException {
+        return asyncEntryWithPriorityInternal(resourceWrapper, count, false, args);
+    }
+
+    private Entry entryWithPriority(ResourceWrapper resourceWrapper, int count, boolean prioritized, Object... args)
+        throws BlockException {
         Context context = ContextUtil.getContext();
         if (context instanceof NullContext) {
             // The {@link NullContext} indicates that the amount of context has exceeded the threshold,
@@ -154,7 +144,7 @@ public class CtSph implements Sph {
 
         Entry e = new CtEntry(resourceWrapper, chain, context);
         try {
-            chain.entry(context, resourceWrapper, null, count, args);
+            chain.entry(context, resourceWrapper, null, count, prioritized, args);
         } catch (BlockException e1) {
             e.exit(count, args);
             throw e1;
@@ -163,6 +153,26 @@ public class CtSph implements Sph {
             RecordLog.info("Sentinel unexpected exception", e1);
         }
         return e;
+    }
+
+    /**
+     * Do all {@link Rule}s checking about the resource.
+     *
+     * <p>Each distinct resource will use a {@link ProcessorSlot} to do rules checking. Same resource will use
+     * same {@link ProcessorSlot} globally. </p>
+     *
+     * <p>Note that total {@link ProcessorSlot} count must not exceed {@link Constants#MAX_SLOT_CHAIN_SIZE},
+     * otherwise no rules checking will do. In this condition, all requests will pass directly, with no checking
+     * or exception.</p>
+     *
+     * @param resourceWrapper resource name
+     * @param count           tokens needed
+     * @param args            arguments of user method call
+     * @return {@link Entry} represents this call
+     * @throws BlockException if any rule's threshold is exceeded
+     */
+    public Entry entry(ResourceWrapper resourceWrapper, int count, Object... args) throws BlockException {
+        return entryWithPriority(resourceWrapper, count, false, args);
     }
 
     /**
@@ -304,5 +314,11 @@ public class CtSph implements Sph {
     public AsyncEntry asyncEntry(String name, EntryType type, int count, Object... args) throws BlockException {
         StringResourceWrapper resource = new StringResourceWrapper(name, type);
         return asyncEntryInternal(resource, count, args);
+    }
+
+    @Override
+    public Entry entryWithPriority(String name, EntryType type, int count, boolean prioritized) throws BlockException {
+        StringResourceWrapper resource = new StringResourceWrapper(name, type);
+        return entryWithPriority(resource, count, prioritized);
     }
 }

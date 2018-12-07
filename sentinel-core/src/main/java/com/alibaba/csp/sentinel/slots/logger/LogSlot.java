@@ -29,10 +29,10 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 public class LogSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
-    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode obj, int count, Object... args)
+    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode obj, int count, boolean prioritized, Object... args)
         throws Throwable {
         try {
-            fireEntry(context, resourceWrapper, obj, count, args);
+            fireEntry(context, resourceWrapper, obj, count, prioritized, args);
         } catch (BlockException e) {
             EagleEyeLogUtil.log(resourceWrapper.getName(), e.getClass().getSimpleName(), e.getRuleLimitApp(),
                 context.getOrigin(), count);

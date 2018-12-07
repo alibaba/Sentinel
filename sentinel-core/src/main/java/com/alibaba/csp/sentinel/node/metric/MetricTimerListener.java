@@ -27,6 +27,9 @@ import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 
+/**
+ * @author jialiang.linjl
+ */
 public class MetricTimerListener implements Runnable {
 
     private static final MetricWriter metricWriter = new MetricWriter(SentinelConfig.singleMetricFileSize(),
@@ -57,11 +60,10 @@ public class MetricTimerListener implements Runnable {
                 try {
                     metricWriter.write(entry.getKey(), entry.getValue());
                 } catch (Exception e) {
-                    RecordLog.info("write metric error: ", e);
+                    RecordLog.warn("[MetricTimerListener] Write metric error", e);
                 }
             }
         }
-
     }
 
 }

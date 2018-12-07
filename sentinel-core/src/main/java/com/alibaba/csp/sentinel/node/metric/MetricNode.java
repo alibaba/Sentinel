@@ -19,6 +19,12 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/**
+ * Metrics data for a specific resource at given {@code timestamp}.
+ *
+ * @author jialiang.linjl
+ * @author Carpenter Lee
+ */
 public class MetricNode {
 
     private long timestamp;

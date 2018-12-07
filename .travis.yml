@@ -3,8 +3,14 @@ language: java
 sudo: required
 dist: trusty
 
-jdk:
-  - oraclejdk8
+matrix:
+  include:
+  - jdk: oraclejdk8
+    env: BUILD_JDK=ORACLE_JDK_8
+  - jdk: oraclejdk11
+    env: BUILD_JDK=ORACLE_JDK_11
+  allow_failures:
+  - env: BUILD_JDK=ORACLE_JDK_11
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

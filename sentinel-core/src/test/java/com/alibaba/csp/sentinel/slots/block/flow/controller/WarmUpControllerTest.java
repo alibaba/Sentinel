@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.slots.block.flow;
+package com.alibaba.csp.sentinel.slots.block.flow.controller;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
