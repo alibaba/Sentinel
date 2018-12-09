@@ -43,6 +43,8 @@ public final class ClusterStateManager {
     private static volatile SentinelProperty<Integer> stateProperty = new DynamicSentinelProperty<Integer>();
     private static final PropertyListener<Integer> PROPERTY_LISTENER = new ClusterStatePropertyListener();
 
+    private static final Object UPDATE_LOCK = new Object();
+
     static {
         InitExecutor.doInit();
         stateProperty.addListener(PROPERTY_LISTENER);
@@ -75,9 +77,9 @@ public final class ClusterStateManager {
      * it will be turned off. Then the cluster client will be started.
      * </p>
      */
-    public static void setToClient() {
+    public static boolean setToClient() {
         if (mode == CLUSTER_CLIENT) {
-            return;
+            return true;
         }
         mode = CLUSTER_CLIENT;
         sleepIfNeeded();
@@ -91,11 +93,14 @@ public final class ClusterStateManager {
             if (tokenClient != null) {
                 tokenClient.start();
                 RecordLog.info("[ClusterStateManager] Changing cluster mode to client");
+                return true;
             } else {
                 RecordLog.warn("[ClusterStateManager] Cannot change to client (no client SPI found)");
+                return false;
             }
         } catch (Exception ex) {
             RecordLog.warn("[ClusterStateManager] Error when changing cluster mode to client", ex);
+            return false;
         }
     }
 
@@ -105,9 +110,9 @@ public final class ClusterStateManager {
      * it will be turned off. Then the cluster server will be started.
      * </p>
      */
-    public static void setToServer() {
+    public static boolean setToServer() {
         if (mode == CLUSTER_SERVER) {
-            return;
+            return true;
         }
         mode = CLUSTER_SERVER;
         sleepIfNeeded();
@@ -121,11 +126,14 @@ public final class ClusterStateManager {
             if (server != null) {
                 server.start();
                 RecordLog.info("[ClusterStateManager] Changing cluster mode to server");
+                return true;
             } else {
                 RecordLog.warn("[ClusterStateManager] Cannot change to server (no server SPI found)");
+                return false;
             }
         } catch (Exception ex) {
             RecordLog.warn("[ClusterStateManager] Error when changing cluster mode to server", ex);
+            return false;
         }
     }
 
@@ -163,20 +171,21 @@ public final class ClusterStateManager {
         public void configUpdate(Integer value) {
             applyState(value);
         }
+    }
 
-        private synchronized void applyState(Integer state) {
-            if (state == null || state < 0) {
-                return;
-            }
+    public static boolean applyState(Integer state) {
+        if (state == null || state < 0) {
+            return false;
+        }
+        synchronized (UPDATE_LOCK) {
             switch (state) {
                 case CLUSTER_CLIENT:
-                    setToClient();
-                    break;
+                    return setToClient();
                 case CLUSTER_SERVER:
-                    setToServer();
-                    break;
+                    return setToServer();
                 default:
                     RecordLog.warn("[ClusterStateManager] Ignoring unknown cluster state: " + state);
+                    return false;
             }
         }
     }
