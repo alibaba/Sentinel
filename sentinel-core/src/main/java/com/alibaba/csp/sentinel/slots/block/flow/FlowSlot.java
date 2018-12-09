@@ -15,45 +15,64 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow;
 
+import java.util.List;
+import java.util.Map;
+
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 
 /**
  * <p>
  * Combined the runtime statistics collected from the previous
- * slots(NodeSelectorSlot, ClusterNodeBuilderSlot, and StatistcSlot), FlowSlot
+ * slots (NodeSelectorSlot, ClusterNodeBuilderSlot, and StatisticSlot), FlowSlot
  * will use pre-set rules to decide whether the incoming requests should be
  * blocked.
+ * </p>
  *
- * {@code SphU.entry (resourceName) }will throw FlowException if any rule is
- * triggered. user can customize his own logic by catching FlowException.
+ * <p>
+ * {@code SphU.entry(resourceName)} will throw {@code FlowException} if any rule is
+ * triggered. Users can customize their own logic by catching {@code FlowException}.
+ * </p>
  *
+ * <p>
  * One resource can have multiple flow rules. FlowSlot traverses these rules
  * until one of them is triggered or all rules have been traversed.
+ * </p>
  *
- * Each FlowRule is mainly composed of the 2 factors: grade, strategy, path; we
+ * <p>
+ * Each {@link FlowRule} is mainly composed of these factors: grade, strategy, path. We
  * can combine these factors to achieve different effects.
+ * </p>
  *
- * The grade is defined by the grade field in FlowRule. Here, 0 for thread
- * isolation and 1 for request count shaping. Both thread count and request
+ * <p>
+ * The grade is defined by the {@code grade} field in {@link FlowRule}. Here, 0 for thread
+ * isolation and 1 for request count shaping (QPS). Both thread count and request
  * count are collected in real runtime, and we can view these statistics by
- * following command: {@code
- * curl http：// localhost：8719 / tree？type = root`
- * idx id    thread pass  blocked   success total aRt   1m-pass   1m-block   1m-all   exeption
- * 2   abc647 0      460    46          46   1    27      630       276        897      0
- * }
+ * following command:
+ * </p>
  *
- * Thread for the count of threads that is currently processing the resource;
- * pass for the count of incoming request within one second; blocked for the
- * count of requests blocked within one second; success for the count of the
- * requests successfully within one second; RT for the average response time of
- * the requests within a second; total for the sum of incoming requests and
- * blocked requests within one second; 1m-pass is for the count of incoming
- * requests within one minute; 1m-block is for the count of a request blocked
- * within one minute; 1m -all is the total of incoming and blocked requests
- * within 1 minute; exception is for the count of exceptions in one second.
+ * <pre>
+ * curl http://localhost:8719/tree
+ *
+ * idx id    thread pass  blocked   success total aRt   1m-pass   1m-block   1m-all   exception
+ * 2   abc647 0      460    46          46   1    27      630       276        897      0
+ * </pre>
+ *
+ * <ul>
+ * <li>{@code thread} for the count of threads that is currently processing the resource</li>
+ * <li>{@code pass} for the count of incoming request within one second</li>
+ * <li>{@code blocked} for the count of requests blocked within one second</li>
+ * <li>{@code success} for the count of the requests successfully handled by Sentinel within one second</li>
+ * <li>{@code RT} for the average response time of the requests within a second</li>
+ * <li>{@code total} for the sum of incoming requests and blocked requests within one second</li>
+ * <li>{@code 1m-pass} is for the count of incoming requests within one minute</li>
+ * <li>{@code 1m-block} is for the count of a request blocked within one minute</li>
+ * <li>{@code 1m-all} is the total of incoming and blocked requests within one minute</li>
+ * <li>{@code exception} is for the count of business (customized) exceptions in one second</li>
+ * </ul>
  *
  * This stage is usually used to protect resources from occupying. If a resource
  * takes long time to finish, threads will begin to occupy. The longer the
@@ -71,57 +90,79 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
  * The benefit of using thread pool is that, it can walk away gracefully when
  * time out. But it also bring us the cost of context switch and additional
  * threads. If the incoming requests is already served in a separated thread,
- * for instance, a servelet request, it will almost double the threads count if
+ * for instance, a Servlet HTTP request, it will almost double the threads count if
  * using thread pool.
  *
- * ### QPS Shaping ### When qps exceeds the threshold, we will take actions to
- * control the incoming request, and is configured by "controlBehavior" field in
- * flowrule
- *
- * 1. immediately reject（RuleConstant.CONTROL_BEHAVIOR_DEFAULT）
- *
+ * <h3>Traffic Shaping</h3>
+ * <p>
+ * When QPS exceeds the threshold, Sentinel will take actions to control the incoming request,
+ * and is configured by {@code controlBehavior} field in flow rules.
+ * </p>
+ * <ol>
+ * <li>Immediately reject ({@code RuleConstant.CONTROL_BEHAVIOR_DEFAULT})</li>
+ * <p>
  * This is the default behavior. The exceeded request is rejected immediately
  * and the FlowException is thrown
+ * </p>
  *
- * 2. Warmup（RuleConstant.CONTROL_BEHAVIOR_WARM_UP）
- *
- * If the usage of system has been low for a while, and a large amount of
+ * <li>Warmup ({@code RuleConstant.CONTROL_BEHAVIOR_WARM_UP})</li>
+ * <p>
+ * If the load of system has been low for a while, and a large amount of
  * requests comes, the system might not be able to handle all these requests at
  * once. However if we steady increase the incoming request, the system can warm
- * up and finally be able to handle all the requests.If the usage of system has
- * been low for a while, and a large amount of requests comes, the system might
- * not be able to handle all these requests at once. However if we steady
- * increase the incoming request, the system can warm up and finally be able to
- * handle all the requests. This warmup period can be configured by setting the
- * field "warmUpPeriodSec" in flow rule.
+ * up and finally be able to handle all the requests.
+ * This warmup period can be configured by setting the field {@code warmUpPeriodSec} in flow rules.
+ * </p>
  *
- * 3.Rate limiter(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER) This strategy
- * strictly controls the interval between requests. In other words, it allows
- * requests to pass at a stable rate.
- * <img src="https://github.com/alibaba/Sentinel/wiki/image/queue.gif" width=
- * "300" height="200" /> This strategy is an implement of leaky bucket
- * (https://en.wikipedia.org/wiki/Leaky_bucket). It is used to handle the
- * request at a stable rate and is often used in burst traffic. For instance,
- * Message. When a large number of requests beyond the system’s capacity arrive
+ * <li>Uniform Rate Limiting ({@code RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER})</li>
+ * <p>
+ * This strategy strictly controls the interval between requests.
+ * In other words, it allows requests to pass at a stable, uniform rate.
+ * </p>
+ * <img src="https://raw.githubusercontent.com/wiki/alibaba/Sentinel/image/uniform-speed-queue.png" style="max-width:
+ * 60%;"/>
+ * <p>
+ * This strategy is an implement of <a href="https://en.wikipedia.org/wiki/Leaky_bucket">leaky bucket</a>.
+ * It is used to handle the request at a stable rate and is often used in burst traffic (e.g. message handling).
+ * When a large number of requests beyond the system’s capacity arrive
  * at the same time, the system using this strategy will handle requests and its
  * fixed rate until all the requests have been processed or time out.
+ * </p>
+ * </ol>
  *
  * @author jialiang.linjl
+ * @author Eric Zhao
  */
 public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
-    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, Object... args)
-        throws Throwable {
+    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
+                      boolean prioritized, Object... args) throws Throwable {
+        checkFlow(resourceWrapper, context, node, count, prioritized);
 
-        FlowRuleManager.checkFlow(resourceWrapper, context, node, count);
+        fireEntry(context, resourceWrapper, node, count, prioritized, args);
+    }
 
-        fireEntry(context, resourceWrapper, node, count, args);
+    void checkFlow(ResourceWrapper resource, Context context, DefaultNode node, int count, boolean prioritized) throws BlockException {
+        // Flow rule map cannot be null.
+        Map<String, List<FlowRule>> flowRules = FlowRuleManager.getFlowRuleMap();
+
+        List<FlowRule> rules = flowRules.get(resource.getName());
+        if (rules != null) {
+            for (FlowRule rule : rules) {
+                if (!canPassCheck(rule, context, node, count, prioritized)) {
+                    throw new FlowException(rule.getLimitApp());
+                }
+            }
+        }
+    }
+
+    boolean canPassCheck(FlowRule rule, Context context, DefaultNode node, int count, boolean prioritized) {
+        return FlowRuleChecker.passCheck(rule, context, node, count, prioritized);
     }
 
     @Override
     public void exit(Context context, ResourceWrapper resourceWrapper, int count, Object... args) {
         fireExit(context, resourceWrapper, count, args);
     }
-
 }

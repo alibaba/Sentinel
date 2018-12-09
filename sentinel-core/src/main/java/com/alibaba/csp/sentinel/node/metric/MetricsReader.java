@@ -22,12 +22,17 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Reads metrics data from log file.
+ */
 class MetricsReader {
+
     /**
-     * avoid OOM in any case
+     * Avoid OOM in any cases.
      */
-    private static final int maxLinesReturn = 100000;
-    private Charset charset;
+    private static final int MAX_LINES_RETURN = 100000;
+
+    private final Charset charset;
 
     public MetricsReader(Charset charset) {
         this.charset = charset;
@@ -58,7 +63,7 @@ class MetricsReader {
                 } else {
                     return false;
                 }
-                if (list.size() >= maxLinesReturn) {
+                if (list.size() >= MAX_LINES_RETURN) {
                     return false;
                 }
             }

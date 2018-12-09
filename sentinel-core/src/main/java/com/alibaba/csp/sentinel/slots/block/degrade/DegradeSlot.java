@@ -29,10 +29,10 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 public class DegradeSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
-    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, Object... args)
+    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, boolean prioritized, Object... args)
         throws Throwable {
         DegradeRuleManager.checkDegrade(resourceWrapper, context, node, count);
-        fireEntry(context, resourceWrapper, node, count, args);
+        fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }
 
     @Override

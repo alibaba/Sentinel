@@ -60,10 +60,24 @@ public class HotParameterLeapArray extends LeapArray<ParamMapBucket> {
         return w;
     }
 
+    /**
+     * Add event count for specific parameter value.
+     *
+     * @param event target event
+     * @param count count to add
+     * @param value parameter value
+     */
     public void addValue(RollingParamEvent event, int count, Object value) {
         currentWindow().value().add(event, count, value);
     }
 
+    /**
+     * Get "top-N" value-QPS map of provided event.
+     *
+     * @param event target event
+     * @param number max number of values
+     * @return "top-N" value map
+     */
     public Map<Object, Double> getTopValues(RollingParamEvent event, int number) {
         currentWindow();
         List<ParamMapBucket> buckets = this.values();

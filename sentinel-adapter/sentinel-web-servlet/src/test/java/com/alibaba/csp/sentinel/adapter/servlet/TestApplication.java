@@ -13,15 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.slots.block.flow;
+package com.alibaba.csp.sentinel.adapter.servlet;
 
-import com.alibaba.csp.sentinel.node.Node;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * @author jialiang.linjl
+ * @author Eric Zhao
  */
-public interface Controller {
+@SpringBootApplication
+public class TestApplication {
 
-    boolean canPass(Node node, int acquireCount);
-
+    public static void main(String[] args) {
+        SpringApplication.run(TestApplication.class, args);
+    }
 }

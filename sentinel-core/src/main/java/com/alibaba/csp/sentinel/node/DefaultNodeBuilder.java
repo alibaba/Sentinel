@@ -18,6 +18,8 @@ package com.alibaba.csp.sentinel.node;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 
 /**
+ * Default implementation of {@link NodeBuilder}.
+ *
  * @author qinan.qn
  */
 public class DefaultNodeBuilder implements NodeBuilder {

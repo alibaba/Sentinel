@@ -28,7 +28,7 @@ import com.alibaba.csp.sentinel.slots.statistic.StatisticSlot;
 import com.alibaba.csp.sentinel.slots.system.SystemSlot;
 
 /**
- * Helper class to create {@link ProcessorSlotChain}.
+ * Builder for a default {@link ProcessorSlotChain}.
  *
  * @author qinan.qn
  * @author leyou
