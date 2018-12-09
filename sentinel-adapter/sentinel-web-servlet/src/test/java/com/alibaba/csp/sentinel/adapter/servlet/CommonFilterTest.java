@@ -171,6 +171,6 @@ public class CommonFilterTest {
     @After
     public void cleanUp() {
         FlowRuleManager.loadRules(null);
-        ClusterBuilderSlot.getClusterNodeMap().clear();
+        ClusterBuilderSlot.resetClusterNodes();
     }
 }
