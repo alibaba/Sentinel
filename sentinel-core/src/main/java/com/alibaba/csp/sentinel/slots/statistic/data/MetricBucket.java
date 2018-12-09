@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.slots.statistic.base;
+package com.alibaba.csp.sentinel.slots.statistic.data;
 
 import com.alibaba.csp.sentinel.Constants;
+import com.alibaba.csp.sentinel.slots.statistic.base.LongAdder;
 
 /**
  * Represents metrics data in a period of time span.
