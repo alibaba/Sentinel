@@ -35,7 +35,6 @@ public class NettyRequestEncoder extends MessageToByteEncoder<ClusterRequest> {
     protected void encode(ChannelHandlerContext ctx, ClusterRequest request, ByteBuf out) throws Exception {
         RequestEntityWriter<Request, ByteBuf> requestEntityWriter = ClientEntityCodecProvider.getRequestEntityWriter();
         if (requestEntityWriter == null) {
-            // TODO: may need to throw exception?
             RecordLog.warn("[NettyRequestEncoder] Cannot resolve the global request entity writer, dropping the request");
             return;
         }

@@ -47,13 +47,17 @@ public final class TokenClientPromiseHolder {
         if (!PROMISE_MAP.containsKey(xid)) {
             return false;
         }
-        ChannelPromise promise = PROMISE_MAP.get(xid).getKey();
-        if (promise.isDone() || promise.isCancelled()) {
-            return false;
+        SimpleEntry<ChannelPromise, ClusterResponse> entry = PROMISE_MAP.get(xid);
+        if (entry != null) {
+            ChannelPromise promise = entry.getKey();
+            if (promise.isDone() || promise.isCancelled()) {
+                return false;
+            }
+            entry.setValue(response);
+            promise.setSuccess();
+            return true;
         }
-        PROMISE_MAP.get(xid).setValue(response);
-        promise.setSuccess();
-        return true;
+        return false;
     }
 
     private TokenClientPromiseHolder() {}

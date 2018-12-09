@@ -36,7 +36,6 @@ public class DefaultRequestEntityWriter implements RequestEntityWriter<ClusterRe
         EntityWriter<Object, ByteBuf> requestDataWriter = RequestDataWriterRegistry.getWriter(type);
 
         if (requestDataWriter == null) {
-            // TODO: may need to throw exception?
             RecordLog.warn("[DefaultRequestEntityWriter] Cannot find matching request writer for type <{0}>,"
                 + " dropping the request", type);
             return;

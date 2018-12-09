@@ -24,6 +24,7 @@ import io.netty.buffer.ByteBuf;
 
 /**
  * @author Eric Zhao
+ * @since 1.4.0
  */
 public final class RequestDataWriterRegistry {
 

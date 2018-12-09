@@ -55,7 +55,6 @@ public class DefaultResponseEntityDecoder implements ResponseEntityDecoder<ByteB
             if (source.readableBytes() == 0) {
                 data = null;
             } else {
-                // TODO: handle decode error here.
                 data = decoder.decode(source);
             }
 

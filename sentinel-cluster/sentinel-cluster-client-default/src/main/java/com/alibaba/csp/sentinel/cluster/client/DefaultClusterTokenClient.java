@@ -16,9 +16,9 @@
 package com.alibaba.csp.sentinel.cluster.client;
 
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.alibaba.csp.sentinel.cluster.ClusterConstants;
-import com.alibaba.csp.sentinel.cluster.ClusterTokenClient;
 import com.alibaba.csp.sentinel.cluster.ClusterTransportClient;
 import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
@@ -26,7 +26,7 @@ import com.alibaba.csp.sentinel.cluster.TokenServerDescriptor;
 import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfig;
 import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfigManager;
 import com.alibaba.csp.sentinel.cluster.client.config.ServerChangeObserver;
-import com.alibaba.csp.sentinel.cluster.log.ClusterStatLogUtil;
+import com.alibaba.csp.sentinel.cluster.log.ClusterClientStatLogUtil;
 import com.alibaba.csp.sentinel.cluster.request.ClusterRequest;
 import com.alibaba.csp.sentinel.cluster.request.data.FlowRequestData;
 import com.alibaba.csp.sentinel.cluster.request.data.ParamFlowRequestData;
@@ -46,6 +46,8 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
     private ClusterTransportClient transportClient;
     private TokenServerDescriptor serverDescriptor;
 
+    private final AtomicBoolean shouldStart = new AtomicBoolean(false);
+
     public DefaultClusterTokenClient() {
         ClusterClientConfigManager.addServerChangeObserver(new ServerChangeObserver() {
             @Override
@@ -53,12 +55,8 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
                 changeServer(clusterClientConfig);
             }
         });
+        // TODO: check here, who should start the client?
         initNewConnection();
-    }
-
-    public DefaultClusterTokenClient(ClusterTransportClient transportClient) {
-        // TODO: only for test, remove this constructor.
-        this.transportClient = transportClient;
     }
 
     private boolean serverEqual(TokenServerDescriptor descriptor, ClusterClientConfig config) {
@@ -81,9 +79,9 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
         try {
             this.transportClient = new NettyTransportClient(host, port);
             this.serverDescriptor = new TokenServerDescriptor(host, port);
-            transportClient.start();
+            RecordLog.info("[DefaultClusterTokenClient] New client created: " + serverDescriptor);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            RecordLog.warn("[DefaultClusterTokenClient] Failed to initialize new token client", ex);
         }
     }
 
@@ -93,17 +91,46 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
         }
         try {
             // TODO: what if the client is pending init?
-            if (transportClient != null && transportClient.isReady()) {
+            if (transportClient != null) {
                 transportClient.stop();
             }
             // Replace with new, even if the new client is not ready.
             this.transportClient = new NettyTransportClient(config);
             this.serverDescriptor = new TokenServerDescriptor(config.getServerHost(), config.getServerPort());
-            transportClient.start();
+            startClientIfScheduled();
             RecordLog.info("[DefaultClusterTokenClient] New client created: " + serverDescriptor);
         } catch (Exception ex) {
             RecordLog.warn("[DefaultClusterTokenClient] Failed to change remote token server", ex);
-            ex.printStackTrace();
+        }
+    }
+
+    private void startClientIfScheduled() throws Exception {
+        if (shouldStart.get()) {
+            if (transportClient != null) {
+                transportClient.start();
+            }
+        }
+    }
+
+    private void stopClientIfStarted() throws Exception {
+        if (shouldStart.get()) {
+            if (transportClient != null) {
+                transportClient.stop();
+            }
+        }
+    }
+
+    @Override
+    public void start() throws Exception {
+        if (shouldStart.compareAndSet(false, true)) {
+            startClientIfScheduled();
+        }
+    }
+
+    @Override
+    public void stop() throws Exception {
+        if (shouldStart.compareAndSet(true, false)) {
+            stopClientIfStarted();
         }
     }
 
@@ -123,7 +150,7 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
         try {
             return sendTokenRequest(request);
         } catch (Exception ex) {
-            ClusterStatLogUtil.log(ex.getMessage());
+            ClusterClientStatLogUtil.log(ex.getMessage());
             return new TokenResult(TokenResultStatus.FAIL);
         }
     }
@@ -139,7 +166,7 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
         try {
             return sendTokenRequest(request);
         } catch (Exception ex) {
-            ClusterStatLogUtil.log(ex.getMessage());
+            ClusterClientStatLogUtil.log(ex.getMessage());
             return new TokenResult(TokenResultStatus.FAIL);
         }
     }
