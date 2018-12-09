@@ -211,16 +211,16 @@ public abstract class LeapArray<T> {
         if (timeMillis < 0) {
             return null;
         }
-        int idx = calculateTimeIdx(timeMillis);
-
-        long previousTime = timeMillis - windowLengthInMs;
+        long timeId = (timeMillis - windowLengthInMs) / windowLengthInMs;
+        int idx = (int)(timeId % array.length());
+        timeMillis = timeMillis - windowLengthInMs;
         WindowWrap<T> wrap = array.get(idx);
 
         if (wrap == null || isWindowDeprecated(wrap)) {
             return null;
         }
 
-        if (wrap.windowStart() + windowLengthInMs < previousTime) {
+        if (wrap.windowStart() + windowLengthInMs < (timeMillis)) {
             return null;
         }
 

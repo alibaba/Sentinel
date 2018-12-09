@@ -189,10 +189,8 @@ public final class FlowRuleUtil {
         switch (rule.getStrategy()) {
             case ClusterRuleConstant.FLOW_CLUSTER_STRATEGY_NORMAL:
                 return true;
-            case ClusterRuleConstant.FLOW_CLUSTER_STRATEGY_REF:
-                return validClusterRuleId(clusterConfig.getRefFlowId());
             default:
-                return true;
+                return false;
         }
     }
 

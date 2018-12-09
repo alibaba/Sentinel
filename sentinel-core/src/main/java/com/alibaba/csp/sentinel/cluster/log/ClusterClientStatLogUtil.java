@@ -15,8 +15,6 @@
  */
 package com.alibaba.csp.sentinel.cluster.log;
 
-import java.io.File;
-
 import com.alibaba.csp.sentinel.eagleeye.EagleEye;
 import com.alibaba.csp.sentinel.eagleeye.StatLogger;
 import com.alibaba.csp.sentinel.log.LogBase;
@@ -26,16 +24,16 @@ import com.alibaba.csp.sentinel.log.LogBase;
  * @author Eric Zhao
  * @since 1.4.0
  */
-public final class ClusterStatLogUtil {
+public final class ClusterClientStatLogUtil {
 
-    private static final String FILE_NAME = "sentinel-cluster.log";
+    private static final String FILE_NAME = "sentinel-cluster-client.log";
 
     private static StatLogger statLogger;
 
     static {
         String path = LogBase.getLogBaseDir() + FILE_NAME;
 
-        statLogger = EagleEye.statLoggerBuilder("sentinel-cluster-record")
+        statLogger = EagleEye.statLoggerBuilder("sentinel-cluster-client-record")
             .intervalSeconds(1)
             .entryDelimiter('|')
             .keyDelimiter(',')
@@ -55,5 +53,5 @@ public final class ClusterStatLogUtil {
         statLogger.stat(msg).count(count);
     }
 
-    private ClusterStatLogUtil() {}
+    private ClusterClientStatLogUtil() {}
 }
