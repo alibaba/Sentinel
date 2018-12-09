@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.cluster;
+package com.alibaba.csp.sentinel.cluster.client;
+
+import com.alibaba.csp.sentinel.cluster.TokenServerDescriptor;
+import com.alibaba.csp.sentinel.cluster.TokenService;
 
 /**
  * Token client interface for distributed flow control.
@@ -29,4 +32,18 @@ public interface ClusterTokenClient extends TokenService {
      * @return current token server if connected, otherwise null
      */
     TokenServerDescriptor currentServer();
+
+    /**
+     * Start the token client.
+     *
+     * @throws Exception some error occurs
+     */
+    void start() throws Exception;
+
+    /**
+     * Stop the token client.
+     *
+     * @throws Exception some error occurs
+     */
+    void stop() throws Exception;
 }
