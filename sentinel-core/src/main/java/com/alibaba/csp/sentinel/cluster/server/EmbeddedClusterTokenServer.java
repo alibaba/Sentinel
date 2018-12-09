@@ -15,15 +15,13 @@
  */
 package com.alibaba.csp.sentinel.cluster.server;
 
+import com.alibaba.csp.sentinel.cluster.TokenService;
+
 /**
- * Token server interface for distributed flow control.
+ * Embedded token server interface that can work in embedded mode.
  *
  * @author Eric Zhao
  * @since 1.4.0
  */
-public interface ClusterTokenServer {
-
-    void start() throws Exception;
-
-    void stop() throws Exception;
+public interface EmbeddedClusterTokenServer extends ClusterTokenServer, TokenService {
 }
