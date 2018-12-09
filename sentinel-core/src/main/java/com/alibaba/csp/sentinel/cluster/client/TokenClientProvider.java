@@ -13,13 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.cluster;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ServiceLoader;
+package com.alibaba.csp.sentinel.cluster.client;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.util.SpiLoader;
 
 /**
  * Provider for a universal {@link ClusterTokenClient} instance.
@@ -31,8 +28,6 @@ public final class TokenClientProvider {
 
     private static ClusterTokenClient client = null;
 
-    private static final ServiceLoader<ClusterTokenClient> LOADER = ServiceLoader.load(ClusterTokenClient.class);
-
     static {
         // Not strictly thread-safe, but it's OK since it will be resolved only once.
         resolveTokenClientInstance();
@@ -43,17 +38,14 @@ public final class TokenClientProvider {
     }
 
     private static void resolveTokenClientInstance() {
-        List<ClusterTokenClient> clients = new ArrayList<ClusterTokenClient>();
-        for (ClusterTokenClient client : LOADER) {
-            clients.add(client);
-        }
-
-        if (!clients.isEmpty()) {
-            // Get first.
-            client = clients.get(0);
-            RecordLog.info("[TokenClientProvider] Token client resolved: " + client.getClass().getCanonicalName());
+        ClusterTokenClient resolvedClient = SpiLoader.loadFirstInstance(ClusterTokenClient.class);
+        if (resolvedClient == null) {
+            RecordLog.info(
+                "[TokenClientProvider] No existing cluster token client, cluster client mode will not be activated");
         } else {
-            RecordLog.warn("[TokenClientProvider] No existing token client, resolve failed");
+            client = resolvedClient;
+            RecordLog.info(
+                "[TokenClientProvider] Cluster token client resolved: " + client.getClass().getCanonicalName());
         }
     }
 
