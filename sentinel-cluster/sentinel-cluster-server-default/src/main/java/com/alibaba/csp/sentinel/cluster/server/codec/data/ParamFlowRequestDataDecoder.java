@@ -25,7 +25,9 @@ import com.alibaba.csp.sentinel.cluster.request.data.ParamFlowRequestData;
 import io.netty.buffer.ByteBuf;
 
 /**
+ * @author jialiang.linjl
  * @author Eric Zhao
+ * @since 1.4.0
  */
 public class ParamFlowRequestDataDecoder implements EntityDecoder<ByteBuf, ParamFlowRequestData> {
 
@@ -38,7 +40,6 @@ public class ParamFlowRequestDataDecoder implements EntityDecoder<ByteBuf, Param
 
             int amount = source.readInt();
             if (amount > 0) {
-                // TODO: should check rules exist here?
                 List<Object> params = new ArrayList<>(amount);
                 for (int i = 0; i < amount; i++) {
                     decodeParam(source, params);
@@ -48,7 +49,6 @@ public class ParamFlowRequestDataDecoder implements EntityDecoder<ByteBuf, Param
                 return requestData;
             }
         }
-        // TODO: handle null here.
         return null;
     }
 

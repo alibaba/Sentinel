@@ -50,11 +50,6 @@ public class ConnectionPool {
      */
     private ScheduledFuture scanTaskFuture = null;
 
-    /**
-     * 创建一个connection，并放入连接池中
-     *
-     * @param channel
-     */
     public void createConnection(Channel channel) {
         if (channel != null) {
             Connection connection = new NettyConnection(channel, this);
@@ -83,7 +78,7 @@ public class ConnectionPool {
      * @return formatted key
      */
     private String getConnectionKey(Channel channel) {
-        InetSocketAddress socketAddress = (InetSocketAddress) channel.remoteAddress();
+        InetSocketAddress socketAddress = (InetSocketAddress)channel.remoteAddress();
         String remoteIp = socketAddress.getAddress().getHostAddress();
         int remotePort = socketAddress.getPort();
         return remoteIp + ":" + remotePort;
@@ -93,16 +88,10 @@ public class ConnectionPool {
         return ip + ":" + port;
     }
 
-    /**
-     * 刷新一个连接上的最新read时间
-     *
-     * @param channel
-     */
     public void refreshLastReadTime(Channel channel) {
         if (channel != null) {
             String connKey = getConnectionKey(channel);
             Connection connection = CONNECTION_MAP.get(connKey);
-            //不应该为null，需要处理这种情况吗？
             if (connection != null) {
                 connection.refreshLastReadTime(System.currentTimeMillis());
             }
@@ -124,7 +113,7 @@ public class ConnectionPool {
         return connections;
     }
 
-    public int count(){
+    public int count() {
         return CONNECTION_MAP.size();
     }
 
@@ -141,7 +130,7 @@ public class ConnectionPool {
     public void refreshIdleTask() {
         if (scanTaskFuture == null || scanTaskFuture.cancel(false)) {
             startScan();
-        }else {
+        } else {
             RecordLog.info("The result of canceling scanTask is error.");
         }
     }

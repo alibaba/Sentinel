@@ -16,23 +16,49 @@
 package com.alibaba.csp.sentinel.cluster.server.processor;
 
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.alibaba.csp.sentinel.cluster.annotation.RequestType;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
  * @author Eric Zhao
  * @since 1.4.0
  */
-public final class RequestProcessorRegistry {
+public final class RequestProcessorProvider {
 
     private static final Map<Integer, RequestProcessor> PROCESSOR_MAP = new ConcurrentHashMap<>();
+
+    private static final ServiceLoader<RequestProcessor> SERVICE_LOADER = ServiceLoader.load(RequestProcessor.class);
+
+    static {
+        loadAndInit();
+    }
+
+    private static void loadAndInit() {
+        for (RequestProcessor processor : SERVICE_LOADER) {
+            Integer type = parseRequestType(processor);
+            if (type != null) {
+                PROCESSOR_MAP.put(type, processor);
+            }
+        }
+    }
+
+    private static Integer parseRequestType(RequestProcessor processor) {
+        RequestType requestType = processor.getClass().getAnnotation(RequestType.class);
+        if (requestType != null) {
+            return requestType.value();
+        } else {
+            return null;
+        }
+    }
 
     public static RequestProcessor getProcessor(int type) {
         return PROCESSOR_MAP.get(type);
     }
 
-    public static void addProcessorIfAbsent(int type, RequestProcessor processor) {
+    static void addProcessorIfAbsent(int type, RequestProcessor processor) {
         // TBD: use putIfAbsent in JDK 1.8.
         if (PROCESSOR_MAP.containsKey(type)) {
             return;
@@ -40,10 +66,11 @@ public final class RequestProcessorRegistry {
         PROCESSOR_MAP.put(type, processor);
     }
 
-    public static void addProcessor(int type, RequestProcessor processor) {
+    static void addProcessor(int type, RequestProcessor processor) {
         AssertUtil.notNull(processor, "processor cannot be null");
         PROCESSOR_MAP.put(type, processor);
     }
 
-    private RequestProcessorRegistry() {}
+
+    private RequestProcessorProvider() {}
 }

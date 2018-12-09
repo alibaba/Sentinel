@@ -16,9 +16,11 @@
 package com.alibaba.csp.sentinel.cluster.flow.statistic;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.csp.sentinel.cluster.flow.statistic.metric.ClusterMetric;
+import com.alibaba.csp.sentinel.cluster.server.config.ClusterServerConfigManager;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
@@ -53,6 +55,14 @@ public final class ClusterMetricStatistics {
 
     public static ClusterMetric getMetric(long id) {
         return METRIC_MAP.get(id);
+    }
+
+    public static void resetFlowMetrics() {
+        Set<Long> keySet = METRIC_MAP.keySet();
+        for (Long id : keySet) {
+            METRIC_MAP.put(id, new ClusterMetric(ClusterServerConfigManager.getSampleCount(),
+                ClusterServerConfigManager.getIntervalMs()));
+        }
     }
 
     private ClusterMetricStatistics() {}

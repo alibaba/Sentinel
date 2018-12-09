@@ -18,15 +18,89 @@ package com.alibaba.csp.sentinel.cluster.server.connection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.util.AssertUtil;
+
 /**
+ * Manager for namespace-scope {@link ConnectionGroup}.
+ *
  * @author Eric Zhao
  * @since 1.4.0
  */
 public final class ConnectionManager {
 
+    /**
+     * Connection map (namespace, connection).
+     */
     private static final Map<String, ConnectionGroup> CONN_MAP = new ConcurrentHashMap<>();
+    /**
+     * namespace map (address, namespace).
+     */
+    private static final Map<String, String> NAMESPACE_MAP = new ConcurrentHashMap<>();
 
+    /**
+     * Get connected count for specific namespace.
+     *
+     * @param namespace namespace to check
+     * @return connected count for specific namespace
+     */
+    public static int getConnectedCount(String namespace) {
+        AssertUtil.notEmpty(namespace, "namespace should not be empty");
+        ConnectionGroup group = CONN_MAP.get(namespace);
+        return group == null ? 0 : group.getConnectedCount();
+    }
 
+    public static ConnectionGroup getOrCreateGroup(String namespace) {
+        AssertUtil.assertNotBlank(namespace, "namespace should not be empty");
+        ConnectionGroup group = CONN_MAP.get(namespace);
+        if (group == null) {
+            synchronized (CREATE_LOCK) {
+                if (CONN_MAP.get(namespace) == null) {
+                    group = new ConnectionGroup(namespace);
+                    CONN_MAP.put(namespace, group);
+                }
+            }
+        }
+        return group;
+    }
+
+    public static void removeConnection(String address) {
+        AssertUtil.assertNotBlank(address, "address should not be empty");
+        String namespace = NAMESPACE_MAP.get(address);
+        if (namespace != null) {
+            ConnectionGroup group = CONN_MAP.get(namespace);
+            if (group == null) {
+                return;
+            }
+            group.removeConnection(address);
+            RecordLog.info("[ConnectionManager] Client <{0}> disconnected and removed from namespace <{1}>", address, namespace);
+        }
+        NAMESPACE_MAP.remove(address);
+    }
+
+    public static void removeConnection(String namespace, String address) {
+        AssertUtil.assertNotBlank(namespace, "namespace should not be empty");
+        AssertUtil.assertNotBlank(address, "address should not be empty");
+        ConnectionGroup group = CONN_MAP.get(namespace);
+        if (group == null) {
+            return;
+        }
+        group.removeConnection(address);
+        NAMESPACE_MAP.remove(address);
+        RecordLog.info("[ConnectionManager] Client <{0}> disconnected and removed from namespace <{1}>", address, namespace);
+    }
+
+    public static ConnectionGroup addConnection(String namespace, String address) {
+        AssertUtil.assertNotBlank(namespace, "namespace should not be empty");
+        AssertUtil.assertNotBlank(address, "address should not be empty");
+        ConnectionGroup group = getOrCreateGroup(namespace);
+        group.addConnection(address);
+        NAMESPACE_MAP.put(address, namespace);
+        RecordLog.info("[ConnectionManager] Client <{0}> registered with namespace <{1}>", address, namespace);
+        return group;
+    }
+
+    private static final Object CREATE_LOCK = new Object();
 
     private ConnectionManager() {}
 }

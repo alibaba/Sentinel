@@ -44,7 +44,6 @@ public class FlowRequestDataDecoder implements EntityDecoder<ByteBuf, FlowReques
             }
             return requestData;
         }
-        // TODO: handle null here.
         return null;
     }
 }

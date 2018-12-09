@@ -19,6 +19,7 @@ import java.util.List;
 
 import com.alibaba.csp.sentinel.cluster.flow.statistic.data.ClusterFlowEvent;
 import com.alibaba.csp.sentinel.cluster.flow.statistic.data.ClusterMetricBucket;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
  * @author Eric Zhao
@@ -28,8 +29,12 @@ public class ClusterMetric {
 
     private final ClusterMetricLeapArray metric;
 
-    public ClusterMetric(int windowLengthInMs, int intervalInSec) {
-        this.metric = new ClusterMetricLeapArray(windowLengthInMs, intervalInSec);
+    public ClusterMetric(int sampleCount, int intervalInMs) {
+        AssertUtil.isTrue(sampleCount > 0, "sampleCount should be positive");
+        AssertUtil.isTrue(intervalInMs > 0, "interval should be positive");
+        AssertUtil.isTrue(intervalInMs % sampleCount == 0, "time span needs to be evenly divided");
+        int windowLengthInMs = intervalInMs / sampleCount;
+        this.metric = new ClusterMetricLeapArray(windowLengthInMs, intervalInMs);
     }
 
     public void add(ClusterFlowEvent event, long count) {
@@ -40,6 +45,12 @@ public class ClusterMetric {
         return metric.currentWindow().value().get(event);
     }
 
+    /**
+     * Get total sum for provided event in {@code intervalInSec}.
+     *
+     * @param event event to calculate
+     * @return total sum for event
+     */
     public long getSum(ClusterFlowEvent event) {
         metric.currentWindow();
         long sum = 0;
@@ -51,11 +62,18 @@ public class ClusterMetric {
         return sum;
     }
 
+    /**
+     * Get average count for provided event per second.
+     *
+     * @param event event to calculate
+     * @return average count per second for event
+     */
     public double getAvg(ClusterFlowEvent event) {
         return getSum(event) / metric.getIntervalInSecond();
     }
 
     /**
+     * Try to pre-occupy upcoming buckets.
      *
      * @return time to wait for next bucket (in ms); 0 if cannot occupy next buckets
      */
@@ -70,7 +88,13 @@ public class ClusterMetric {
     }
 
     private boolean canOccupy(ClusterFlowEvent event, int acquireCount, double latestQps, double threshold) {
-        // TODO
-        return metric.getOccupiedCount(event) + latestQps + acquireCount /*- xxx*/ <= threshold;
+        long headPass = metric.getFirstCountOfWindow(event);
+        long occupiedCount = metric.getOccupiedCount(event);
+        //  bucket to occupy (= incoming bucket)
+        //       ↓
+        // | head bucket |    |    |    | current bucket |
+        // +-------------+----+----+----+----------- ----+
+        //   (headPass)
+        return latestQps + (acquireCount + occupiedCount) - headPass <= threshold;
     }
 }

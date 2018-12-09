@@ -13,17 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.cluster.server.util;
+package com.alibaba.csp.sentinel.cluster.server.codec.data;
+
+import com.alibaba.csp.sentinel.cluster.codec.EntityDecoder;
+
+import io.netty.buffer.ByteBuf;
 
 /**
  * @author Eric Zhao
  * @since 1.4.0
  */
-public final class ClusterRuleUtil {
+public class PingRequestDataDecoder implements EntityDecoder<ByteBuf, String> {
 
-    public static boolean validId(Long id) {
-        return id != null && id > 0;
+    @Override
+    public String decode(ByteBuf source) {
+        if (source.readableBytes() >= 4) {
+            int length = source.readInt();
+            if (length > 0 && source.readableBytes() > 0) {
+                byte[] bytes = new byte[length];
+                source.readBytes(bytes);
+                return new String(bytes);
+            }
+        }
+        return null;
     }
-
-    private ClusterRuleUtil() {}
 }

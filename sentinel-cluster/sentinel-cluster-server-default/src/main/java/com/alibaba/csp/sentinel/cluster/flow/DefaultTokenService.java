@@ -20,7 +20,8 @@ import java.util.Collection;
 import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
 import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.TokenService;
-import com.alibaba.csp.sentinel.slots.block.ClusterRuleConstant;
+import com.alibaba.csp.sentinel.cluster.flow.rule.ClusterFlowRuleManager;
+import com.alibaba.csp.sentinel.cluster.flow.rule.ClusterParamFlowRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
 
@@ -42,15 +43,8 @@ public class DefaultTokenService implements TokenService {
         if (rule == null) {
             return new TokenResult(TokenResultStatus.NO_RULE_EXISTS);
         }
-        if (isUsingReference(rule)) {
-            return ClusterFlowChecker.tryAcquireOrBorrowFromRefResource(rule, acquireCount, prioritized);
-        }
 
         return ClusterFlowChecker.acquireClusterToken(rule, acquireCount, prioritized);
-    }
-
-    private boolean isUsingReference(FlowRule rule) {
-        return rule.getClusterConfig().getStrategy() == ClusterRuleConstant.FLOW_CLUSTER_STRATEGY_REF;
     }
 
     @Override
@@ -59,7 +53,7 @@ public class DefaultTokenService implements TokenService {
             return badRequest();
         }
         // The rule should be valid.
-        ParamFlowRule rule = ClusterParamFlowRuleManager.getParamFlowRuleById(ruleId);
+        ParamFlowRule rule = ClusterParamFlowRuleManager.getParamRuleById(ruleId);
         if (rule == null) {
             return new TokenResult(TokenResultStatus.NO_RULE_EXISTS);
         }

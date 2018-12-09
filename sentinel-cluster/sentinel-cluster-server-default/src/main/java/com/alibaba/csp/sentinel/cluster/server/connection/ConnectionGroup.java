@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.cluster.server.connection;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,16 +25,17 @@ import com.alibaba.csp.sentinel.cluster.server.ServerConstants;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
+ * The connection group stores connection set for a specific namespace.
+ *
  * @author Eric Zhao
  * @since 1.4.0
  */
 public class ConnectionGroup {
 
-    private String namespace;
+    private final String namespace;
 
-    private Set<String> addressSet = new ConcurrentSkipListSet<>();
-    private Set<String> hostSet = new ConcurrentSkipListSet<>();
-    private AtomicInteger connectedCount = new AtomicInteger();
+    private final Set<ConnectionDescriptor> connectionSet = Collections.synchronizedSet(new HashSet<ConnectionDescriptor>());
+    private final AtomicInteger connectedCount = new AtomicInteger();
 
     public ConnectionGroup(String namespace) {
         AssertUtil.notEmpty(namespace, "namespace cannot be empty");
@@ -46,24 +49,26 @@ public class ConnectionGroup {
     public ConnectionGroup addConnection(String address) {
         AssertUtil.notEmpty(address, "address cannot be empty");
 
-        addressSet.add(address);
         String[] ip = address.split(":");
+        String host;
         if (ip != null && ip.length >= 1) {
-            hostSet.add(ip[0]);
+            host = ip[0];
+        } else {
+            host = address;
         }
+        connectionSet.add(new ConnectionDescriptor().setAddress(address).setHost(host));
         connectedCount.incrementAndGet();
+
         return this;
     }
 
     public ConnectionGroup removeConnection(String address) {
         AssertUtil.notEmpty(address, "address cannot be empty");
 
-        addressSet.remove(address);
-        String[] ip = address.split(":");
-        if (ip != null && ip.length >= 1) {
-            hostSet.remove(ip[0]);
+        if (connectionSet.remove(new ConnectionDescriptor().setAddress(address))) {
+            connectedCount.decrementAndGet();
         }
-        connectedCount.decrementAndGet();
+
         return this;
     }
 
@@ -71,12 +76,8 @@ public class ConnectionGroup {
         return namespace;
     }
 
-    public Set<String> getAddressSet() {
-        return addressSet;
-    }
-
-    public Set<String> getHostSet() {
-        return hostSet;
+    public Set<ConnectionDescriptor> getConnectionSet() {
+        return connectionSet;
     }
 
     public int getConnectedCount() {
