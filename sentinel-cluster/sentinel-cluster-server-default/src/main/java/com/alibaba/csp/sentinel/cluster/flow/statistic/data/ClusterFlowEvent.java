@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.cluster.flow.statistic.data;
 
 /**
  * @author Eric Zhao
+ * @since 1.4.0
  */
 public enum ClusterFlowEvent {
 
@@ -36,7 +37,16 @@ public enum ClusterFlowEvent {
      * Token request (from client) blocked.
      */
     BLOCK_REQUEST,
+    /**
+     * Pass (pre-occupy incoming buckets).
+     */
     OCCUPIED_PASS,
+    /**
+     * Block (pre-occupy incoming buckets failed).
+     */
     OCCUPIED_BLOCK,
+    /**
+     * Waiting due to flow shaping or for next bucket tick.
+     */
     WAITING
 }

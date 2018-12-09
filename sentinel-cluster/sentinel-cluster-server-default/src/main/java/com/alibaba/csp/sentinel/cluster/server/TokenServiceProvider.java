@@ -52,6 +52,7 @@ public final class TokenServiceProvider {
         }
 
         if (hasOther) {
+            // Pick the first.
             service = list.get(0);
         } else {
             // No custom token service, using default.

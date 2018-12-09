@@ -36,7 +36,6 @@ public class NettyRequestDecoder extends ByteToMessageDecoder {
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
         RequestEntityDecoder<ByteBuf, Request> requestDecoder = ServerEntityCodecProvider.getRequestEntityDecoder();
         if (requestDecoder == null) {
-            // TODO: may need to throw exception?
             RecordLog.warn("[NettyRequestDecoder] Cannot resolve the global request entity decoder, "
                 + "dropping the request");
             return;

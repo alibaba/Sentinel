@@ -19,20 +19,28 @@ import java.util.List;
 
 import com.alibaba.csp.sentinel.slots.statistic.base.LongAdder;
 import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
  * @author Eric Zhao
+ * @since 1.4.0
  */
 public class ClusterParamMetric {
 
+    public static final int DEFAULT_CLUSTER_MAX_CAPACITY = 4000;
+
     private final ClusterParameterLeapArray<LongAdder> metric;
 
-    public ClusterParamMetric(int windowLengthInMs, int intervalInSec) {
-        this.metric = new ClusterParameterLeapArray<>(windowLengthInMs, intervalInSec);
+    public ClusterParamMetric(int sampleCount, int intervalInMs) {
+        this(sampleCount, intervalInMs, DEFAULT_CLUSTER_MAX_CAPACITY);
     }
 
-    public ClusterParamMetric(int windowLengthInMs, int intervalInSec, int maxCapacity) {
-        this.metric = new ClusterParameterLeapArray<>(windowLengthInMs, intervalInSec, maxCapacity);
+    public ClusterParamMetric(int sampleCount, int intervalInMs, int maxCapacity) {
+        AssertUtil.isTrue(sampleCount > 0, "sampleCount should be positive");
+        AssertUtil.isTrue(intervalInMs > 0, "interval should be positive");
+        AssertUtil.isTrue(intervalInMs % sampleCount == 0, "time span needs to be evenly divided");
+        int windowLengthInMs = intervalInMs / sampleCount;
+        this.metric = new ClusterParameterLeapArray<>(windowLengthInMs, intervalInMs, maxCapacity);
     }
 
     public long getSum(Object value) {
@@ -45,7 +53,8 @@ public class ClusterParamMetric {
 
         List<CacheMap<Object, LongAdder>> buckets = metric.values();
         for (CacheMap<Object, LongAdder> bucket : buckets) {
-            sum += getCount(bucket.get(value));
+            long count = getCount(bucket.get(value));
+            sum += count;
         }
         return sum;
     }

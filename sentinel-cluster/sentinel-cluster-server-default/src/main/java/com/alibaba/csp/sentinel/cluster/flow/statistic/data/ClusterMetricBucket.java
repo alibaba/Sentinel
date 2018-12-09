@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.slots.statistic.base.LongAdder;
 
 /**
  * @author Eric Zhao
+ * @since 1.4.0
  */
 public class ClusterMetricBucket {
 

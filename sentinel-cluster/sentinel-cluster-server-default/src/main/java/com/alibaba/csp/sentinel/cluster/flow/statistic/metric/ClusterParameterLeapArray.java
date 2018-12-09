@@ -22,20 +22,16 @@ import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWra
 import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
- * @author Eric Zhao
  * @param <C> counter type
+ * @author Eric Zhao
  * @since 1.4.0
  */
 public class ClusterParameterLeapArray<C> extends LeapArray<CacheMap<Object, C>> {
 
     private final int maxCapacity;
 
-    public ClusterParameterLeapArray(int windowLengthInMs, int intervalInSec) {
-        this(windowLengthInMs, intervalInSec, DEFAULT_CLUSTER_MAX_CAPACITY);
-    }
-
-    public ClusterParameterLeapArray(int windowLengthInMs, int intervalInSec, int maxCapacity) {
-        super(windowLengthInMs, intervalInSec);
+    public ClusterParameterLeapArray(int windowLengthInMs, int intervalInMs, int maxCapacity) {
+        super(windowLengthInMs, intervalInMs / 1000);
         AssertUtil.isTrue(maxCapacity > 0, "maxCapacity of LRU map should be positive");
         this.maxCapacity = maxCapacity;
     }
@@ -46,11 +42,11 @@ public class ClusterParameterLeapArray<C> extends LeapArray<CacheMap<Object, C>>
     }
 
     @Override
-    protected WindowWrap<CacheMap<Object, C>> resetWindowTo(WindowWrap<CacheMap<Object, C>> w,
-                                                                    long startTime) {
+    protected WindowWrap<CacheMap<Object, C>> resetWindowTo(WindowWrap<CacheMap<Object, C>> w, long startTime) {
+        w.resetTo(startTime);
         w.value().clear();
         return w;
     }
 
-    public static final int DEFAULT_CLUSTER_MAX_CAPACITY = 4000;
+
 }

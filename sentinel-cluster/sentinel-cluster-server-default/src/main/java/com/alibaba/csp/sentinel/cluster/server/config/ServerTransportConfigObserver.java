@@ -13,17 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.cluster.server.util;
+package com.alibaba.csp.sentinel.cluster.server.config;
 
 /**
  * @author Eric Zhao
  * @since 1.4.0
  */
-public final class ClusterRuleUtil {
+public interface ServerTransportConfigObserver {
 
-    public static boolean validId(Long id) {
-        return id != null && id > 0;
-    }
-
-    private ClusterRuleUtil() {}
+    /**
+     * Callback on server transport config (e.g. port) change.
+     *
+     * @param config new server transport config
+     */
+    void onTransportConfigChange(ServerTransportConfig config);
 }

@@ -46,13 +46,16 @@ import static com.alibaba.csp.sentinel.cluster.server.ServerConstants.*;
 
 /**
  * @author Eric Zhao
+ * @since 1.4.0
  */
 public class NettyTransportServer implements ClusterTokenServer {
 
-    private static final int DEFAULT_EVENT_LOOP_THREADS = Math.max(1, SystemPropertyUtil.getInt(
-        "io.netty.eventLoopThreads", Runtime.getRuntime().availableProcessors() * 2));
+    private static final int DEFAULT_EVENT_LOOP_THREADS = Math.max(1,
+        SystemPropertyUtil.getInt("io.netty.eventLoopThreads", Runtime.getRuntime().availableProcessors() * 2));
+    private static final int MAX_RETRY_TIMES = 3;
+    private static final int RETRY_SLEEP_MS = 1000;
 
-    private final int port = 11111;
+    private final int port;
 
     private NioEventLoopGroup bossGroup;
     private NioEventLoopGroup workerGroup;
@@ -61,6 +64,10 @@ public class NettyTransportServer implements ClusterTokenServer {
 
     private final AtomicInteger currentState = new AtomicInteger(SERVER_STATUS_OFF);
     private final AtomicInteger failedTimes = new AtomicInteger(0);
+
+    public NettyTransportServer(int port) {
+        this.port = port;
+    }
 
     @Override
     public void start() {
@@ -92,23 +99,27 @@ public class NettyTransportServer implements ClusterTokenServer {
             .childOption(ChannelOption.SO_TIMEOUT, 10)
             .childOption(ChannelOption.TCP_NODELAY, true)
             .childOption(ChannelOption.SO_RCVBUF, 32 * 1024);
-        b.bind(Integer.valueOf(port)).addListener(new GenericFutureListener<ChannelFuture>() {
+        b.bind(port).addListener(new GenericFutureListener<ChannelFuture>() {
             @Override
             public void operationComplete(ChannelFuture future) {
                 if (future.cause() != null) {
-                    RecordLog.info("Token server start failed", future.cause());
+                    RecordLog.info("[NettyTransportServer] Token server start failed (port=" + port + ")",
+                        future.cause());
                     currentState.compareAndSet(SERVER_STATUS_STARTING, SERVER_STATUS_OFF);
+                    int failCount = failedTimes.incrementAndGet();
+                    if (failCount > MAX_RETRY_TIMES) {
+                        return;
+                    }
 
-                    //try {
-                    //    Thread.sleep((failStartTimes.get() + 1) * 1000);
-                    //    start();
-                    //} catch (Throwable e) {
-                    //    RecordLog.info("Fail to start token server:", e);
-                    //}
+                    try {
+                        Thread.sleep(failCount * RETRY_SLEEP_MS);
+                        start();
+                    } catch (Throwable e) {
+                        RecordLog.info("[NettyTransportServer] Failed to start token server when retrying", e);
+                    }
                 } else {
-                    RecordLog.info("Token server start success");
+                    RecordLog.info("[NettyTransportServer] Token server started success at port " + port);
                     currentState.compareAndSet(SERVER_STATUS_STARTING, SERVER_STATUS_STARTED);
-                    //failStartTimes.set(0);
                 }
             }
         });
@@ -119,9 +130,9 @@ public class NettyTransportServer implements ClusterTokenServer {
         // If still initializing, wait for ready.
         while (currentState.get() == SERVER_STATUS_STARTING) {
             try {
-                Thread.sleep(1000);
+                Thread.sleep(500);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                // Ignore.
             }
         }
 
@@ -133,9 +144,9 @@ public class NettyTransportServer implements ClusterTokenServer {
 
                 failedTimes.set(0);
 
-                RecordLog.info("Token server stopped");
+                RecordLog.info("[NettyTransportServer] Sentinel token server stopped");
             } catch (Exception ex) {
-                RecordLog.warn("Failed to stop token server", ex);
+                RecordLog.warn("[NettyTransportServer] Failed to stop token server (port=" + port + ")", ex);
             }
         }
     }

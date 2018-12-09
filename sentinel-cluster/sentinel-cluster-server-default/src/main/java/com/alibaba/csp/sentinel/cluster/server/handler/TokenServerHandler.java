@@ -18,11 +18,12 @@ package com.alibaba.csp.sentinel.cluster.server.handler;
 import com.alibaba.csp.sentinel.cluster.ClusterConstants;
 import com.alibaba.csp.sentinel.cluster.request.ClusterRequest;
 import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
-import com.alibaba.csp.sentinel.cluster.response.data.FlowTokenResponseData;
+import com.alibaba.csp.sentinel.cluster.server.connection.ConnectionManager;
 import com.alibaba.csp.sentinel.cluster.server.connection.ConnectionPool;
 import com.alibaba.csp.sentinel.cluster.server.processor.RequestProcessor;
-import com.alibaba.csp.sentinel.cluster.server.processor.RequestProcessorRegistry;
+import com.alibaba.csp.sentinel.cluster.server.processor.RequestProcessorProvider;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.util.StringUtil;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -35,36 +36,46 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
  */
 public class TokenServerHandler extends ChannelInboundHandlerAdapter {
 
-    private final ConnectionPool connectionPool;
+    private final ConnectionPool globalConnectionPool;
 
-    public TokenServerHandler(ConnectionPool connectionPool) {
-        this.connectionPool = connectionPool;
+    public TokenServerHandler(ConnectionPool globalConnectionPool) {
+        this.globalConnectionPool = globalConnectionPool;
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("[TokenServerHandler] Connection established");
-        super.channelActive(ctx);
+        globalConnectionPool.createConnection(ctx.channel());
+        String remoteAddress = getRemoteAddress(ctx);
+        System.out.println("[TokenServerHandler] Connection established, remote client address: " + remoteAddress); //TODO: DEBUG
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("[TokenServerHandler] Connection inactive");
-        super.channelInactive(ctx);
+        String remoteAddress = getRemoteAddress(ctx);
+        System.out.println("[TokenServerHandler] Connection inactive, remote client address: " + remoteAddress); //TODO: DEBUG
+        globalConnectionPool.remove(ctx.channel());
+        ConnectionManager.removeConnection(remoteAddress);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        connectionPool.refreshLastReadTime(ctx.channel());
-        System.out.println(String.format("[%s] Server message recv: %s", System.currentTimeMillis(), msg));
+        globalConnectionPool.refreshLastReadTime(ctx.channel());
+        System.out.println(String.format("[%s] Server message recv: %s", System.currentTimeMillis(), msg)); //TODO: DEBUG
         if (msg instanceof ClusterRequest) {
             ClusterRequest request = (ClusterRequest)msg;
 
-            RequestProcessor<?, ?> processor = RequestProcessorRegistry.getProcessor(request.getType());
+            // Client ping with its namespace, add to connection manager.
+            if (request.getType() == ClusterConstants.MSG_TYPE_PING) {
+                handlePingRequest(ctx, request);
+                return;
+            }
+
+            // Pick request processor for request type.
+            RequestProcessor<?, ?> processor = RequestProcessorProvider.getProcessor(request.getType());
             if (processor == null) {
-                System.out.println("[TokenServerHandler] No processor for request type: " + request.getType());
-                writeNoProcessorResponse(ctx, request);
+                RecordLog.warn("[TokenServerHandler] No processor for request type: " + request.getType());
+                writeBadResponse(ctx, request);
             } else {
                 ClusterResponse<?> response = processor.processRequest(request);
                 writeResponse(ctx, response);
@@ -72,7 +83,7 @@ public class TokenServerHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
-    private void writeNoProcessorResponse(ChannelHandlerContext ctx, ClusterRequest request) {
+    private void writeBadResponse(ChannelHandlerContext ctx, ClusterRequest request) {
         ClusterResponse<?> response = new ClusterResponse<>(request.getId(), request.getType(),
             ClusterConstants.RESPONSE_STATUS_BAD, null);
         writeResponse(ctx, response);
@@ -80,5 +91,25 @@ public class TokenServerHandler extends ChannelInboundHandlerAdapter {
 
     private void writeResponse(ChannelHandlerContext ctx, ClusterResponse response) {
         ctx.writeAndFlush(response);
+    }
+
+    private void handlePingRequest(ChannelHandlerContext ctx, ClusterRequest request) {
+        if (request.getData() == null || StringUtil.isBlank((String)request.getData())) {
+            writeBadResponse(ctx, request);
+            return;
+        }
+        String namespace = (String)request.getData();
+        String clientAddress = getRemoteAddress(ctx);
+        // Add the remote namespace to connection manager.
+        int curCount = ConnectionManager.addConnection(namespace, clientAddress).getConnectedCount();
+        int status = ClusterConstants.RESPONSE_STATUS_OK;
+        ClusterResponse<Integer> response = new ClusterResponse<>(request.getId(), request.getType(), status, curCount);
+        writeResponse(ctx, response);
+
+        RecordLog.info("[TokenServerHandler] Client <{0}> registered with namespace <{1}>", clientAddress, namespace);
+    }
+
+    private String getRemoteAddress(ChannelHandlerContext ctx) {
+        return ctx.channel().remoteAddress().toString();
     }
 }

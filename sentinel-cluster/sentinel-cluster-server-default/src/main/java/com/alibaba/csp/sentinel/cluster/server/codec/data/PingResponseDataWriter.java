@@ -13,17 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.cluster.server.util;
+package com.alibaba.csp.sentinel.cluster.server.codec.data;
+
+import com.alibaba.csp.sentinel.cluster.codec.EntityWriter;
+import com.alibaba.csp.sentinel.util.StringUtil;
+
+import io.netty.buffer.ByteBuf;
 
 /**
  * @author Eric Zhao
  * @since 1.4.0
  */
-public final class ClusterRuleUtil {
+public class PingResponseDataWriter implements EntityWriter<Integer, ByteBuf> {
 
-    public static boolean validId(Long id) {
-        return id != null && id > 0;
+    @Override
+    public void writeTo(Integer entity, ByteBuf target) {
+        if (entity == null || target == null) {
+            return;
+        }
+        target.writeByte(entity);
     }
-
-    private ClusterRuleUtil() {}
 }

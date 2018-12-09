@@ -22,6 +22,7 @@ import io.netty.channel.Channel;
 
 /**
  * @author xuyue
+ * @since 1.4.0
  */
 public class NettyConnection implements Connection {
 

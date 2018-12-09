@@ -17,8 +17,10 @@ package com.alibaba.csp.sentinel.cluster.server.processor;
 
 import java.util.Collection;
 
+import com.alibaba.csp.sentinel.cluster.ClusterConstants;
 import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.TokenService;
+import com.alibaba.csp.sentinel.cluster.annotation.RequestType;
 import com.alibaba.csp.sentinel.cluster.request.ClusterRequest;
 import com.alibaba.csp.sentinel.cluster.request.data.ParamFlowRequestData;
 import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
@@ -29,6 +31,7 @@ import com.alibaba.csp.sentinel.cluster.server.TokenServiceProvider;
  * @author Eric Zhao
  * @since 1.4.0
  */
+@RequestType(ClusterConstants.MSG_TYPE_PARAM_FLOW)
 public class ParamFlowRequestProcessor implements RequestProcessor<ParamFlowRequestData, FlowTokenResponseData> {
 
     @Override

@@ -20,6 +20,7 @@ import java.net.SocketAddress;
 /**
  * @author xuyue
  * @author Eric Zhao
+ * @since 1.4.0
  */
 public interface Connection extends AutoCloseable {
 

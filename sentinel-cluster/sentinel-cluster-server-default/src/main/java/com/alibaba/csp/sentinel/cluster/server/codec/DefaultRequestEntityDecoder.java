@@ -54,7 +54,6 @@ public class DefaultRequestEntityDecoder implements RequestEntityDecoder<ByteBuf
             if (source.readableBytes() == 0) {
                 data = null;
             } else {
-                // TODO: handle decode error here.
                 data = dataDecoder.decode(source);
             }
 
