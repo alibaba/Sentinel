@@ -104,6 +104,13 @@ public class ParamFlowRule extends AbstractRule {
         return this;
     }
 
+    public Integer retrieveExclusiveItemCount(Object value) {
+        if (value == null || hotItems == null) {
+            return null;
+        }
+        return hotItems.get(value);
+    }
+
     Map<Object, Integer> getParsedHotItems() {
         return hotItems;
     }
@@ -126,8 +133,7 @@ public class ParamFlowRule extends AbstractRule {
         return clusterConfig;
     }
 
-    public ParamFlowRule setClusterConfig(
-        ParamFlowClusterConfig clusterConfig) {
+    public ParamFlowRule setClusterConfig(ParamFlowClusterConfig clusterConfig) {
         this.clusterConfig = clusterConfig;
         return this;
     }
