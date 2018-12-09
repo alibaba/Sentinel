@@ -13,19 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.slots.block;
+package com.alibaba.csp.sentinel.util.function;
 
 /**
- * @author Eric Zhao
- * @since 1.4.0
+ * Supplier functional interface from JDK 8.
  */
-public final class ClusterRuleConstant {
+public interface Supplier<T> {
 
-    public static final int FLOW_CLUSTER_STRATEGY_NORMAL = 0;
-    public static final int FLOW_CLUSTER_STRATEGY_BORROW_REF = 1;
-
-    public static final int FLOW_THRESHOLD_AVG_LOCAL = 0;
-    public static final int FLOW_THRESHOLD_GLOBAL = 1;
-
-    private ClusterRuleConstant() {}
+    /**
+     * Gets a result.
+     *
+     * @return a result
+     */
+    T get();
 }
