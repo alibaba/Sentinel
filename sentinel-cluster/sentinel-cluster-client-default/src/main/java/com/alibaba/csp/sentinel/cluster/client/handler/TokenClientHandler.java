@@ -17,7 +17,10 @@ package com.alibaba.csp.sentinel.cluster.client.handler;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.alibaba.csp.sentinel.cluster.ClusterConstants;
 import com.alibaba.csp.sentinel.cluster.client.ClientConstants;
+import com.alibaba.csp.sentinel.cluster.registry.ConfigSupplierRegistry;
+import com.alibaba.csp.sentinel.cluster.request.ClusterRequest;
 import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
 import com.alibaba.csp.sentinel.log.RecordLog;
 
@@ -25,32 +28,63 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
 /**
+ * Netty client handler for Sentinel token client.
+ *
  * @author Eric Zhao
  * @since 1.4.0
  */
 public class TokenClientHandler extends ChannelInboundHandlerAdapter {
 
-    private final AtomicInteger currentState = new AtomicInteger(ClientConstants.CLIENT_STATUS_OFF);
+    private final AtomicInteger currentState;
+    private final Runnable disconnectCallback;
+
+    public TokenClientHandler(AtomicInteger currentState, Runnable disconnectCallback) {
+        this.currentState = currentState;
+        this.disconnectCallback = disconnectCallback;
+    }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        currentState.set(ClientConstants.CLIENT_STATUS_STARTED);
+        currentState.compareAndSet(ClientConstants.CLIENT_STATUS_PENDING, ClientConstants.CLIENT_STATUS_STARTED);
+        fireClientPing(ctx);
         RecordLog.info("[TokenClientHandler] Client handler active, remote address: " + ctx.channel().remoteAddress());
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        System.out.println(String.format("[%s] Client message recv: %s", System.currentTimeMillis(), msg));
+        System.out.println(String.format("[%s] Client message recv: %s", System.currentTimeMillis(), msg)); // TODO: remove here
         if (msg instanceof ClusterResponse) {
             ClusterResponse<?> response = (ClusterResponse) msg;
+
+            if (response.getType() == ClusterConstants.MSG_TYPE_PING) {
+                handlePingResponse(ctx, response);
+                return;
+            }
 
             TokenClientPromiseHolder.completePromise(response.getId(), response);
         }
     }
 
+    private void fireClientPing(ChannelHandlerContext ctx) {
+        // Data body: namespace of the client.
+        ClusterRequest<String> ping = new ClusterRequest<String>().setId(0)
+            .setType(ClusterConstants.MSG_TYPE_PING)
+            .setData(ConfigSupplierRegistry.getNamespaceSupplier().get());
+        ctx.writeAndFlush(ping);
+    }
+
+    private void handlePingResponse(ChannelHandlerContext ctx, ClusterResponse response) {
+        if (response.getStatus() == ClusterConstants.RESPONSE_STATUS_OK) {
+            int count = (int) response.getData();
+            RecordLog.info("[TokenClientHandler] Client ping OK (target server: {0}, connected count: {1})",
+                ctx.channel().remoteAddress(), count);
+            return;
+        }
+        RecordLog.warn("[TokenClientHandler] Client ping failed (target server: {0})", ctx.channel().remoteAddress());
+    }
+
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        // TODO: should close the connection when an exception is raised.
         RecordLog.warn("[TokenClientHandler] Client exception caught", cause);
     }
 
@@ -61,7 +95,9 @@ public class TokenClientHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
-        currentState.set(ClientConstants.CLIENT_STATUS_OFF);
+        RecordLog.info("[TokenClientHandler] Client channel unregistered, remote address: " + ctx.channel().remoteAddress());
+        currentState.compareAndSet(ClientConstants.CLIENT_STATUS_STARTED, ClientConstants.CLIENT_STATUS_OFF);
+        disconnectCallback.run();
     }
 
     public int getCurrentState() {

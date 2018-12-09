@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.cluster.client;
 
 import java.util.AbstractMap.SimpleEntry;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.alibaba.csp.sentinel.cluster.ClusterErrorMessages;
@@ -56,6 +57,8 @@ import io.netty.util.concurrent.GenericFutureListener;
  */
 public class NettyTransportClient implements ClusterTransportClient {
 
+    public static final int RECONNECT_DELAY_MS = 1000;
+
     private final String host;
     private final int port;
 
@@ -63,8 +66,9 @@ public class NettyTransportClient implements ClusterTransportClient {
     private NioEventLoopGroup eventLoopGroup;
     private TokenClientHandler clientHandler;
 
-    private AtomicInteger idGenerator = new AtomicInteger(0);
-    private AtomicInteger failConnectedTime = new AtomicInteger(0);
+    private final AtomicInteger idGenerator = new AtomicInteger(0);
+    private final AtomicInteger currentState = new AtomicInteger(ClientConstants.CLIENT_STATUS_OFF);
+    private final AtomicInteger failConnectedTime = new AtomicInteger(0);
 
     public NettyTransportClient(ClusterClientConfig clientConfig) {
         AssertUtil.notNull(clientConfig, "client config cannot be null");
@@ -91,7 +95,7 @@ public class NettyTransportClient implements ClusterTransportClient {
             .handler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
-                    clientHandler = new TokenClientHandler();
+                    clientHandler = new TokenClientHandler(currentState, disconnectCallback);
                     ChannelPipeline pipeline = ch.pipeline();
                     pipeline.addLast(new LengthFieldBasedFrameDecoder(1024, 0, 2, 0, 2));
                     pipeline.addLast(new NettyResponseDecoder());
@@ -105,23 +109,43 @@ public class NettyTransportClient implements ClusterTransportClient {
     }
 
     private void connect(Bootstrap b) {
-        b.connect(host, port).addListener(new GenericFutureListener<ChannelFuture>() {
-            @Override
-            public void operationComplete(ChannelFuture future) {
-                if (future.cause() != null) {
-                    RecordLog.warn(
-                        "[NettyTransportClient] Could not connect after " + failConnectedTime.get() + " times",
-                        future.cause());
-                    failConnectedTime.incrementAndGet();
-                    channel = null;
-                } else {
-                    failConnectedTime.set(0);
-                    channel = future.channel();
-                    RecordLog.info("[NettyTransportClient] Successfully connect to server " + host + ":" + port);
+        if (currentState.compareAndSet(ClientConstants.CLIENT_STATUS_OFF, ClientConstants.CLIENT_STATUS_PENDING)) {
+            b.connect(host, port).addListener(new GenericFutureListener<ChannelFuture>() {
+                @Override
+                public void operationComplete(ChannelFuture future) {
+                    if (future.cause() != null) {
+                        RecordLog.warn(String.format("[NettyTransportClient] Could not connect to <%s:%d> after %d times",
+                            host, port, failConnectedTime.get()), future.cause());
+                        failConnectedTime.incrementAndGet();
+                        channel = null;
+                    } else {
+                        failConnectedTime.set(0);
+                        channel = future.channel();
+                        RecordLog.info("[NettyTransportClient] Successfully connect to server <" + host + ":" + port + ">");
+                    }
                 }
-            }
-        });
+            });
+        }
     }
+
+    private Runnable disconnectCallback = new Runnable() {
+        @Override
+        public void run() {
+            if (channel != null) {
+                channel.eventLoop().schedule(new Runnable() {
+                    @Override
+                    public void run() {
+                        RecordLog.info("[NettyTransportClient] Reconnecting to server <" + host + ":" + port + ">");
+                        try {
+                            start();
+                        } catch (Exception e) {
+                            RecordLog.warn("[NettyTransportClient] Failed to reconnect to server", e);
+                        }
+                    }
+                }, RECONNECT_DELAY_MS * (failConnectedTime.get() + 1), TimeUnit.MILLISECONDS);
+            }
+        }
+    };
 
     @Override
     public void start() throws Exception {
@@ -130,6 +154,14 @@ public class NettyTransportClient implements ClusterTransportClient {
 
     @Override
     public void stop() throws Exception {
+        while (currentState.get() == ClientConstants.CLIENT_STATUS_PENDING) {
+            try {
+                Thread.sleep(500);
+            } catch (Exception ex) {
+                // Ignore.
+            }
+        }
+
         if (channel != null) {
             channel.close();
             channel = null;
@@ -139,7 +171,7 @@ public class NettyTransportClient implements ClusterTransportClient {
         }
         failConnectedTime.set(0);
 
-        RecordLog.info("[NettyTransportClient] Token client stopped");
+        RecordLog.info("[NettyTransportClient] Cluster transport client stopped");
     }
 
     private boolean validRequest(Request request) {

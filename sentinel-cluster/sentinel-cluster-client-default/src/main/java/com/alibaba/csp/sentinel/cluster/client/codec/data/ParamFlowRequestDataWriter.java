@@ -24,6 +24,7 @@ import com.alibaba.csp.sentinel.cluster.request.data.ParamFlowRequestData;
 import io.netty.buffer.ByteBuf;
 
 /**
+ * @author jialiang.linjl
  * @author Eric Zhao
  * @since 1.4.0
  */

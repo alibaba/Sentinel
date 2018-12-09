@@ -13,21 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.cluster.client;
+package com.alibaba.csp.sentinel.cluster.client.codec.data;
+
+import com.alibaba.csp.sentinel.cluster.codec.EntityWriter;
+import com.alibaba.csp.sentinel.util.StringUtil;
+
+import io.netty.buffer.ByteBuf;
 
 /**
  * @author Eric Zhao
  * @since 1.4.0
  */
-public final class ClientConstants {
+public class PingRequestDataWriter implements EntityWriter<String, ByteBuf> {
 
-    public static final int TYPE_PING = 0;
-    public static final int TYPE_FLOW = 1;
-    public static final int TYPE_PARAM_FLOW = 2;
-
-    public static final int CLIENT_STATUS_OFF = 0;
-    public static final int CLIENT_STATUS_PENDING = 1;
-    public static final int CLIENT_STATUS_STARTED = 2;
-
-    private ClientConstants() {}
+    @Override
+    public void writeTo(String entity, ByteBuf target) {
+        if (StringUtil.isBlank(entity) || target == null) {
+            return;
+        }
+        byte[] bytes = entity.getBytes();
+        target.writeInt(bytes.length);
+        target.writeBytes(bytes);
+    }
 }

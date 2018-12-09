@@ -39,7 +39,6 @@ public class NettyResponseDecoder extends ByteToMessageDecoder {
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
         ResponseEntityDecoder<ByteBuf, Response> responseDecoder = ClientEntityCodecProvider.getResponseEntityDecoder();
         if (responseDecoder == null) {
-            // TODO: may need to throw exception?
             RecordLog.warn("[NettyResponseDecoder] Cannot resolve the global response entity decoder, "
                 + "dropping the response");
             return;
