@@ -15,42 +15,28 @@
  */
 package com.alibaba.csp.sentinel.command.handler;
 
-import java.net.URLDecoder;
-
 import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfig;
 import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfigManager;
 import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
-import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.fastjson.JSON;
 
 /**
  * @author Eric Zhao
  * @since 1.4.0
  */
-@CommandMapping(name = "cluster/client/modifyConfig")
-public class ModifyClusterClientConfigHandler implements CommandHandler<String> {
+@CommandMapping(name = "cluster/client/fetchConfig")
+public class FetchClusterClientConfigHandler implements CommandHandler<String> {
 
     @Override
     public CommandResponse<String> handle(CommandRequest request) {
-        String data = request.getParam("data");
-        if (StringUtil.isBlank(data)) {
-            return CommandResponse.ofFailure(new IllegalArgumentException("empty data"));
-        }
-        try {
-            data = URLDecoder.decode(data, "utf-8");
-            RecordLog.info("[ModifyClusterClientConfigHandler] Receiving cluster client config: " + data);
-            ClusterClientConfig clusterClientConfig = JSON.parseObject(data, ClusterClientConfig.class);
-            ClusterClientConfigManager.applyNewConfig(clusterClientConfig);
-
-            return CommandResponse.ofSuccess("ok");
-        } catch (Exception e) {
-            RecordLog.warn("[ModifyClusterClientConfigHandler] Decode client cluster config error", e);
-            return CommandResponse.ofFailure(e, "decode client cluster config error");
-        }
+        ClusterClientConfig config = new ClusterClientConfig()
+            .setServerHost(ClusterClientConfigManager.getServerHost())
+            .setServerPort(ClusterClientConfigManager.getServerPort())
+            .setRequestTimeout(ClusterClientConfigManager.getRequestTimeout());
+        return CommandResponse.ofSuccess(JSON.toJSONString(config));
     }
 }
 
