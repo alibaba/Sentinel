@@ -19,7 +19,7 @@ import java.util.ArrayList;
 
 import org.junit.Test;
 
-import com.alibaba.csp.sentinel.slots.statistic.base.MetricBucket;
+import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 import com.alibaba.csp.sentinel.slots.statistic.metric.ArrayMetric;
 import com.alibaba.csp.sentinel.slots.statistic.metric.MetricsLeapArray;
