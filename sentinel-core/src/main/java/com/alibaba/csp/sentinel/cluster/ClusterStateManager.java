@@ -84,6 +84,10 @@ public final class ClusterStateManager {
         mode = CLUSTER_CLIENT;
         sleepIfNeeded();
         lastModified = TimeUtil.currentTimeMillis();
+        return startClient();
+    }
+
+    private static boolean startClient() {
         try {
             EmbeddedClusterTokenServer server = EmbeddedClusterTokenServerProvider.getServer();
             if (server != null) {
@@ -104,6 +108,23 @@ public final class ClusterStateManager {
         }
     }
 
+    private static boolean stopClient() {
+        try {
+            ClusterTokenClient tokenClient = TokenClientProvider.getClient();
+            if (tokenClient != null) {
+                tokenClient.stop();
+                RecordLog.info("[ClusterStateManager] Stopping the cluster token client");
+                return true;
+            } else {
+                RecordLog.warn("[ClusterStateManager] Cannot stop cluster token client (no server SPI found)");
+                return false;
+            }
+        } catch (Exception ex) {
+            RecordLog.warn("[ClusterStateManager] Error when stopping cluster token client", ex);
+            return false;
+        }
+    }
+
     /**
      * <p>
      * Set current mode to server mode. If Sentinel currently works in client mode,
@@ -117,6 +138,10 @@ public final class ClusterStateManager {
         mode = CLUSTER_SERVER;
         sleepIfNeeded();
         lastModified = TimeUtil.currentTimeMillis();
+        return startServer();
+    }
+
+    private static boolean startServer() {
         try {
             ClusterTokenClient tokenClient = TokenClientProvider.getClient();
             if (tokenClient != null) {
@@ -133,6 +158,23 @@ public final class ClusterStateManager {
             }
         } catch (Exception ex) {
             RecordLog.warn("[ClusterStateManager] Error when changing cluster mode to server", ex);
+            return false;
+        }
+    }
+
+    private static boolean stopServer() {
+        try {
+            EmbeddedClusterTokenServer server = EmbeddedClusterTokenServerProvider.getServer();
+            if (server != null) {
+                server.stop();
+                RecordLog.info("[ClusterStateManager] Stopping the cluster server");
+                return true;
+            } else {
+                RecordLog.warn("[ClusterStateManager] Cannot stop server (no server SPI found)");
+                return false;
+            }
+        } catch (Exception ex) {
+            RecordLog.warn("[ClusterStateManager] Error when stopping server", ex);
             return false;
         }
     }
@@ -163,12 +205,12 @@ public final class ClusterStateManager {
 
     private static class ClusterStatePropertyListener implements PropertyListener<Integer> {
         @Override
-        public void configLoad(Integer value) {
+        public synchronized void configLoad(Integer value) {
             applyState(value);
         }
 
         @Override
-        public void configUpdate(Integer value) {
+        public synchronized void configUpdate(Integer value) {
             applyState(value);
         }
     }
@@ -176,6 +218,9 @@ public final class ClusterStateManager {
     public static boolean applyState(Integer state) {
         if (state == null || state < 0) {
             return false;
+        }
+        if (state == mode) {
+            return true;
         }
         synchronized (UPDATE_LOCK) {
             switch (state) {
@@ -190,5 +235,5 @@ public final class ClusterStateManager {
         }
     }
 
-    private static final int MIN_INTERVAL = 10 * 1000;
+    private static final int MIN_INTERVAL = 5 * 1000;
 }

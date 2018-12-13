@@ -46,13 +46,11 @@ public class TokenServerHandler extends ChannelInboundHandlerAdapter {
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         globalConnectionPool.createConnection(ctx.channel());
         String remoteAddress = getRemoteAddress(ctx);
-        System.out.println("[TokenServerHandler] Connection established, remote client address: " + remoteAddress); //TODO: DEBUG
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         String remoteAddress = getRemoteAddress(ctx);
-        System.out.println("[TokenServerHandler] Connection inactive, remote client address: " + remoteAddress); //TODO: DEBUG
         globalConnectionPool.remove(ctx.channel());
         ConnectionManager.removeConnection(remoteAddress);
     }
@@ -61,7 +59,6 @@ public class TokenServerHandler extends ChannelInboundHandlerAdapter {
     @SuppressWarnings("unchecked")
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         globalConnectionPool.refreshLastReadTime(ctx.channel());
-        System.out.println(String.format("[%s] Server message recv: %s", System.currentTimeMillis(), msg)); //TODO: DEBUG
         if (msg instanceof ClusterRequest) {
             ClusterRequest request = (ClusterRequest)msg;
 
@@ -105,8 +102,6 @@ public class TokenServerHandler extends ChannelInboundHandlerAdapter {
         int status = ClusterConstants.RESPONSE_STATUS_OK;
         ClusterResponse<Integer> response = new ClusterResponse<>(request.getId(), request.getType(), status, curCount);
         writeResponse(ctx, response);
-
-        RecordLog.info("[TokenServerHandler] Client <{0}> registered with namespace <{1}>", clientAddress, namespace);
     }
 
     private String getRemoteAddress(ChannelHandlerContext ctx) {

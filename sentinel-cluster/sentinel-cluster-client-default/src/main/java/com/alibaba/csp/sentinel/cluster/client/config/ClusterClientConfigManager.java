@@ -104,6 +104,7 @@ public final class ClusterClientConfigManager {
     public static boolean isValidConfig(ClusterClientConfig config) {
         return config != null && StringUtil.isNotBlank(config.getServerHost())
             && config.getServerPort() > 0
+            && config.getServerPort() <= 65535
             && config.getRequestTimeout() > 0;
     }
 

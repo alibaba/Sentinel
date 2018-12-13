@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.slots.statistic.data;
 
 import com.alibaba.csp.sentinel.Constants;
+import com.alibaba.csp.sentinel.slots.statistic.MetricEvent;
 import com.alibaba.csp.sentinel.slots.statistic.base.LongAdder;
 
 /**
@@ -26,15 +27,16 @@ import com.alibaba.csp.sentinel.slots.statistic.base.LongAdder;
  */
 public class MetricBucket {
 
-    private final LongAdder pass = new LongAdder();
-    private final LongAdder block = new LongAdder();
-    private final LongAdder exception = new LongAdder();
-    private final LongAdder rt = new LongAdder();
-    private final LongAdder success = new LongAdder();
+    private final LongAdder[] counters;
 
     private volatile long minRt;
 
     public MetricBucket() {
+        MetricEvent[] events = MetricEvent.values();
+        this.counters = new LongAdder[events.length];
+        for (MetricEvent event : events) {
+            counters[event.ordinal()] = new LongAdder();
+        }
         initMinRt();
     }
 
@@ -48,29 +50,36 @@ public class MetricBucket {
      * @return new metric bucket in initial state
      */
     public MetricBucket reset() {
-        pass.reset();
-        block.reset();
-        exception.reset();
-        rt.reset();
-        success.reset();
+        for (MetricEvent event : MetricEvent.values()) {
+            counters[event.ordinal()].reset();
+        }
         initMinRt();
         return this;
     }
 
+    public long get(MetricEvent event) {
+        return counters[event.ordinal()].sum();
+    }
+
+    public MetricBucket add(MetricEvent event, long n) {
+        counters[event.ordinal()].add(n);
+        return this;
+    }
+
     public long pass() {
-        return pass.sum();
+        return get(MetricEvent.PASS);
     }
 
     public long block() {
-        return block.sum();
+        return get(MetricEvent.BLOCK);
     }
 
     public long exception() {
-        return exception.sum();
+        return get(MetricEvent.EXCEPTION);
     }
 
     public long rt() {
-        return rt.sum();
+        return get(MetricEvent.RT);
     }
 
     public long minRt() {
@@ -78,27 +87,27 @@ public class MetricBucket {
     }
 
     public long success() {
-        return success.sum();
+        return get(MetricEvent.SUCCESS);
     }
 
     public void addPass() {
-        pass.add(1L);
+        add(MetricEvent.PASS, 1);
     }
 
     public void addException() {
-        exception.add(1L);
+        add(MetricEvent.EXCEPTION, 1);
     }
 
     public void addBlock() {
-        block.add(1L);
+        add(MetricEvent.BLOCK, 1);
     }
 
     public void addSuccess() {
-        success.add(1L);
+        add(MetricEvent.SUCCESS, 1);
     }
 
     public void addRT(long rt) {
-        this.rt.add(rt);
+        add(MetricEvent.RT, rt);
 
         // Not thread-safe, but it's okay.
         if (rt < minRt) {

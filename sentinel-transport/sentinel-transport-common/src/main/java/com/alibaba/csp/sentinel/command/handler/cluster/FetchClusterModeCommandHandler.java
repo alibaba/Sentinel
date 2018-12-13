@@ -13,34 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.command.handler;
+package com.alibaba.csp.sentinel.command.handler.cluster;
 
 import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
+import com.alibaba.csp.sentinel.cluster.client.TokenClientProvider;
+import com.alibaba.csp.sentinel.cluster.server.EmbeddedClusterTokenServerProvider;
 import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
+import com.alibaba.fastjson.JSONObject;
 
 /**
  * @author Eric Zhao
  * @since 1.4.0
  */
-@CommandMapping(name = "setClusterMode")
-public class ModifyClusterModeCommandHandler implements CommandHandler<String> {
+@CommandMapping(name = "getClusterMode")
+public class FetchClusterModeCommandHandler implements CommandHandler<String> {
 
     @Override
     public CommandResponse<String> handle(CommandRequest request) {
-        try {
-            int mode = Integer.valueOf(request.getParam("mode"));
-            if (ClusterStateManager.applyState(mode)) {
-                return CommandResponse.ofSuccess("success");
-            } else {
-                return CommandResponse.ofSuccess("failed");
-            }
-        } catch (NumberFormatException ex) {
-            return CommandResponse.ofFailure(new IllegalArgumentException("invalid mode"));
-        } catch (Exception ex) {
-            return CommandResponse.ofFailure(ex);
-        }
+        JSONObject res = new JSONObject()
+            .fluentPut("mode", ClusterStateManager.getMode())
+            .fluentPut("lastModified", ClusterStateManager.getLastModified())
+            .fluentPut("clientAvailable", isClusterClientSpiAvailable())
+            .fluentPut("serverAvailable", isClusterServerSpiAvailable());
+        return CommandResponse.ofSuccess(res.toJSONString());
+    }
+
+    private boolean isClusterClientSpiAvailable() {
+        return TokenClientProvider.getClient() != null;
+    }
+
+    private boolean isClusterServerSpiAvailable() {
+        return EmbeddedClusterTokenServerProvider.getServer() != null;
     }
 }

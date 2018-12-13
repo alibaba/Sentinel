@@ -32,10 +32,9 @@ import static com.alibaba.csp.sentinel.cluster.ClusterFlowTestUtil.*;
  * @author Eric Zhao
  * @since 1.4.0
  */
-@Ignore
 public class ClusterFlowCheckerTest {
 
-    @Test
+    //@Test
     public void testAcquireClusterTokenOccupyPass() {
         long flowId = 98765L;
         final int threshold = 5;

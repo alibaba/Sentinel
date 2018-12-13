@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.cluster.flow.rule;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -217,6 +218,54 @@ public final class ClusterParamFlowRuleManager {
         return PARAM_RULES.get(id);
     }
 
+    public static List<ParamFlowRule> getAllParamRules() {
+        return new ArrayList<>(PARAM_RULES.values());
+    }
+
+    /**
+     * Get all cluster parameter flow rules within a specific namespace.
+     *
+     * @param namespace a valid namespace
+     * @return cluster parameter flow rules within the provided namespace
+     */
+    public static List<ParamFlowRule> getParamRules(String namespace) {
+        if (StringUtil.isEmpty(namespace)) {
+            return new ArrayList<>();
+        }
+        List<ParamFlowRule> rules = new ArrayList<>();
+        Set<Long> flowIdSet = NAMESPACE_FLOW_ID_MAP.get(namespace);
+        if (flowIdSet == null || flowIdSet.isEmpty()) {
+            return rules;
+        }
+        for (Long flowId : flowIdSet) {
+            ParamFlowRule rule = PARAM_RULES.get(flowId);
+            if (rule != null) {
+                rules.add(rule);
+            }
+        }
+        return rules;
+    }
+
+    /**
+     * Load parameter flow rules for a specific namespace. The former rules of the namespace will be replaced.
+     *
+     * @param namespace a valid namespace
+     * @param rules rule list
+     */
+    public static void loadRules(String namespace, List<ParamFlowRule> rules) {
+        AssertUtil.notEmpty(namespace, "namespace cannot be empty");
+        NamespaceFlowProperty<ParamFlowRule> property = PROPERTY_MAP.get(namespace);
+        if (property != null) {
+            property.getProperty().updateValue(rules);
+        }
+    }
+
+    /**
+     * Get connected count for associated namespace of given {@code flowId}.
+     *
+     * @param flowId existing rule ID
+     * @return connected count
+     */
     public static int getConnectedCount(long flowId) {
         if (flowId <= 0) {
             return 0;

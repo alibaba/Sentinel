@@ -13,44 +13,51 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.command.handler;
+package com.alibaba.csp.sentinel.cluster.server.command.handler;
 
 import java.net.URLDecoder;
+import java.util.List;
 
-import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfig;
-import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfigManager;
+import com.alibaba.csp.sentinel.cluster.flow.rule.ClusterFlowRuleManager;
 import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 
 /**
  * @author Eric Zhao
  * @since 1.4.0
  */
-@CommandMapping(name = "cluster/client/modifyConfig")
-public class ModifyClusterClientConfigHandler implements CommandHandler<String> {
+@CommandMapping(name = "cluster/server/modifyFlowRules")
+public class ModifyClusterFlowRulesCommandHandler implements CommandHandler<String> {
 
     @Override
     public CommandResponse<String> handle(CommandRequest request) {
+        String namespace = request.getParam("namespace");
+        if (StringUtil.isEmpty(namespace)) {
+            return CommandResponse.ofFailure(new IllegalArgumentException("empty namespace"));
+        }
         String data = request.getParam("data");
         if (StringUtil.isBlank(data)) {
             return CommandResponse.ofFailure(new IllegalArgumentException("empty data"));
         }
         try {
-            data = URLDecoder.decode(data, "utf-8");
-            RecordLog.info("[ModifyClusterClientConfigHandler] Receiving cluster client config: " + data);
-            ClusterClientConfig clusterClientConfig = JSON.parseObject(data, ClusterClientConfig.class);
-            ClusterClientConfigManager.applyNewConfig(clusterClientConfig);
+            data = URLDecoder.decode(data, "UTF-8");
+            RecordLog.info("[ModifyClusterFlowRulesCommandHandler] Receiving cluster flow rules for namespace <{0}>: {1}", namespace, data);
 
-            return CommandResponse.ofSuccess("success");
+            List<FlowRule> flowRules = JSONArray.parseArray(data, FlowRule.class);
+            ClusterFlowRuleManager.loadRules(namespace, flowRules);
+
+            return CommandResponse.ofSuccess(SUCCESS);
         } catch (Exception e) {
-            RecordLog.warn("[ModifyClusterClientConfigHandler] Decode client cluster config error", e);
-            return CommandResponse.ofFailure(e, "decode client cluster config error");
+            RecordLog.warn("[ModifyClusterFlowRulesCommandHandler] Decode cluster flow rules error", e);
+            return CommandResponse.ofFailure(e, "decode cluster flow rules error");
         }
     }
-}
 
+    private static final String SUCCESS = "success";
+}

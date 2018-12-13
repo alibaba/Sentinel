@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.command.handler;
+package com.alibaba.csp.sentinel.cluster.server.command.handler;
 
 import java.net.URLDecoder;
+import java.util.Set;
 
-import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfig;
-import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfigManager;
+import com.alibaba.csp.sentinel.cluster.server.config.ClusterServerConfigManager;
+import com.alibaba.csp.sentinel.cluster.server.config.ServerTransportConfig;
 import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
@@ -26,13 +27,14 @@ import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 
 /**
  * @author Eric Zhao
  * @since 1.4.0
  */
-@CommandMapping(name = "cluster/client/modifyConfig")
-public class ModifyClusterClientConfigHandler implements CommandHandler<String> {
+@CommandMapping(name = "cluster/server/modifyNamespaceSet")
+public class ModifyServerNamespaceSetHandler implements CommandHandler<String> {
 
     @Override
     public CommandResponse<String> handle(CommandRequest request) {
@@ -42,15 +44,13 @@ public class ModifyClusterClientConfigHandler implements CommandHandler<String> 
         }
         try {
             data = URLDecoder.decode(data, "utf-8");
-            RecordLog.info("[ModifyClusterClientConfigHandler] Receiving cluster client config: " + data);
-            ClusterClientConfig clusterClientConfig = JSON.parseObject(data, ClusterClientConfig.class);
-            ClusterClientConfigManager.applyNewConfig(clusterClientConfig);
-
+            RecordLog.info("[ModifyServerNamespaceSetHandler] Receiving cluster server namespace set: " + data);
+            Set<String> set = JSON.parseObject(data, new TypeReference<Set<String>>() {});
+            ClusterServerConfigManager.loadServerNamespaceSet(set);
             return CommandResponse.ofSuccess("success");
         } catch (Exception e) {
-            RecordLog.warn("[ModifyClusterClientConfigHandler] Decode client cluster config error", e);
+            RecordLog.warn("[ModifyServerNamespaceSetHandler] Decode cluster server namespace set error", e);
             return CommandResponse.ofFailure(e, "decode client cluster config error");
         }
     }
 }
-

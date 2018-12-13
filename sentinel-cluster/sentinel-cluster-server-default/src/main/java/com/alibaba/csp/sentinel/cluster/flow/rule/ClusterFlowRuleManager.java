@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.cluster.flow.rule;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -163,6 +164,11 @@ public final class ClusterFlowRuleManager {
         }
     }
 
+    /**
+     * Remove cluster flow rule property for a specific namespace.
+     *
+     * @param namespace valid namespace
+     */
     public static void removeProperty(String namespace) {
         AssertUtil.notEmpty(namespace, "namespace cannot be empty");
         synchronized (UPDATE_LOCK) {
@@ -189,6 +195,12 @@ public final class ClusterFlowRuleManager {
         }
     }
 
+    /**
+     * Get flow rule by rule ID.
+     *
+     * @param id rule ID
+     * @return flow rule
+     */
     public static FlowRule getFlowRuleById(Long id) {
         if (!ClusterRuleUtil.validId(id)) {
             return null;
@@ -196,10 +208,57 @@ public final class ClusterFlowRuleManager {
         return FLOW_RULES.get(id);
     }
 
+    public static List<FlowRule> getAllFlowRules() {
+        return new ArrayList<>(FLOW_RULES.values());
+    }
+
+    /**
+     * Get all cluster flow rules within a specific namespace.
+     *
+     * @param namespace valid namespace
+     * @return cluster flow rules within the provided namespace
+     */
+    public static List<FlowRule> getFlowRules(String namespace) {
+        if (StringUtil.isEmpty(namespace)) {
+            return new ArrayList<>();
+        }
+        List<FlowRule> rules = new ArrayList<>();
+        Set<Long> flowIdSet = NAMESPACE_FLOW_ID_MAP.get(namespace);
+        if (flowIdSet == null || flowIdSet.isEmpty()) {
+            return rules;
+        }
+        for (Long flowId : flowIdSet) {
+            FlowRule rule = FLOW_RULES.get(flowId);
+            if (rule != null) {
+                rules.add(rule);
+            }
+        }
+        return rules;
+    }
+
+    /**
+     * Load flow rules for a specific namespace. The former rules of the namespace will be replaced.
+     *
+     * @param namespace a valid namespace
+     * @param rules rule list
+     */
+    public static void loadRules(String namespace, List<FlowRule> rules) {
+        AssertUtil.notEmpty(namespace, "namespace cannot be empty");
+        NamespaceFlowProperty<FlowRule> property = PROPERTY_MAP.get(namespace);
+        if (property != null) {
+            property.getProperty().updateValue(rules);
+        }
+    }
+
     private static void resetNamespaceFlowIdMapFor(/*@Valid*/ String namespace) {
         NAMESPACE_FLOW_ID_MAP.put(namespace, new HashSet<Long>());
     }
 
+    /**
+     * Clear all rules of the provided namespace and reset map.
+     *
+     * @param namespace valid namespace
+     */
     private static void clearAndResetRulesFor(/*@Valid*/ String namespace) {
         Set<Long> flowIdSet = NAMESPACE_FLOW_ID_MAP.get(namespace);
         if (flowIdSet != null && !flowIdSet.isEmpty()) {
