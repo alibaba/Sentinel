@@ -79,7 +79,7 @@ public class SentinelDefaultTokenServer implements ClusterTokenServer {
         }
         try {
             if (server != null) {
-                stopServerIfStarted();
+                stopServer();
             }
             this.server = new NettyTransportServer(newPort);
             this.port = newPort;
@@ -101,13 +101,11 @@ public class SentinelDefaultTokenServer implements ClusterTokenServer {
         }
     }
 
-    private void stopServerIfStarted() throws Exception {
-        if (shouldStart.get()) {
-            if (server != null) {
-                server.stop();
-                if (embedded) {
-                    handleEmbeddedStop();
-                }
+    private void stopServer() throws Exception {
+        if (server != null) {
+            server.stop();
+            if (embedded) {
+                handleEmbeddedStop();
             }
         }
     }
@@ -136,7 +134,7 @@ public class SentinelDefaultTokenServer implements ClusterTokenServer {
     @Override
     public void stop() throws Exception {
         if (shouldStart.compareAndSet(true, false)) {
-            stopServerIfStarted();
+            stopServer();
         }
     }
 }

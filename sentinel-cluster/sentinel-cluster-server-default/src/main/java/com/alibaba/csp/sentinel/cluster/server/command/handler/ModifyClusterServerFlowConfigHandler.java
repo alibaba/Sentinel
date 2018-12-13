@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.command.handler;
+package com.alibaba.csp.sentinel.cluster.server.command.handler;
 
 import java.net.URLDecoder;
 
-import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfig;
-import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfigManager;
+import com.alibaba.csp.sentinel.cluster.server.config.ClusterServerConfigManager;
+import com.alibaba.csp.sentinel.cluster.server.config.ServerFlowConfig;
+import com.alibaba.csp.sentinel.cluster.server.config.ServerTransportConfig;
 import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
@@ -31,8 +32,8 @@ import com.alibaba.fastjson.JSON;
  * @author Eric Zhao
  * @since 1.4.0
  */
-@CommandMapping(name = "cluster/client/modifyConfig")
-public class ModifyClusterClientConfigHandler implements CommandHandler<String> {
+@CommandMapping(name = "cluster/server/modifyFlowConfig")
+public class ModifyClusterServerFlowConfigHandler implements CommandHandler<String> {
 
     @Override
     public CommandResponse<String> handle(CommandRequest request) {
@@ -40,17 +41,24 @@ public class ModifyClusterClientConfigHandler implements CommandHandler<String> 
         if (StringUtil.isBlank(data)) {
             return CommandResponse.ofFailure(new IllegalArgumentException("empty data"));
         }
+        String namespace = request.getParam("namespace");
         try {
             data = URLDecoder.decode(data, "utf-8");
-            RecordLog.info("[ModifyClusterClientConfigHandler] Receiving cluster client config: " + data);
-            ClusterClientConfig clusterClientConfig = JSON.parseObject(data, ClusterClientConfig.class);
-            ClusterClientConfigManager.applyNewConfig(clusterClientConfig);
+
+            if (StringUtil.isEmpty(namespace)) {
+                RecordLog.info("[ModifyClusterServerFlowConfigHandler] Receiving cluster server global flow config: " + data);
+                ServerFlowConfig config = JSON.parseObject(data, ServerFlowConfig.class);
+                ClusterServerConfigManager.loadGlobalFlowConfig(config);
+            } else {
+                RecordLog.info("[ModifyClusterServerFlowConfigHandler] Receiving cluster server flow config for namespace <{0}>: {1}", namespace, data);
+                ServerFlowConfig config = JSON.parseObject(data, ServerFlowConfig.class);
+                ClusterServerConfigManager.loadFlowConfig(namespace, config);
+            }
 
             return CommandResponse.ofSuccess("success");
         } catch (Exception e) {
-            RecordLog.warn("[ModifyClusterClientConfigHandler] Decode client cluster config error", e);
-            return CommandResponse.ofFailure(e, "decode client cluster config error");
+            RecordLog.warn("[ModifyClusterServerFlowConfigHandler] Decode cluster server flow config error", e);
+            return CommandResponse.ofFailure(e, "decode cluster server flow config error");
         }
     }
 }
-

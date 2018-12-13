@@ -45,14 +45,13 @@ public class TokenClientHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        currentState.compareAndSet(ClientConstants.CLIENT_STATUS_PENDING, ClientConstants.CLIENT_STATUS_STARTED);
+        currentState.set(ClientConstants.CLIENT_STATUS_STARTED);
         fireClientPing(ctx);
         RecordLog.info("[TokenClientHandler] Client handler active, remote address: " + ctx.channel().remoteAddress());
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        System.out.println(String.format("[%s] Client message recv: %s", System.currentTimeMillis(), msg)); // TODO: remove here
         if (msg instanceof ClusterResponse) {
             ClusterResponse<?> response = (ClusterResponse) msg;
 
@@ -96,7 +95,7 @@ public class TokenClientHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
         RecordLog.info("[TokenClientHandler] Client channel unregistered, remote address: " + ctx.channel().remoteAddress());
-        currentState.compareAndSet(ClientConstants.CLIENT_STATUS_STARTED, ClientConstants.CLIENT_STATUS_OFF);
+        currentState.set(ClientConstants.CLIENT_STATUS_OFF);
         disconnectCallback.run();
     }
 

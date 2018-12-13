@@ -100,6 +100,12 @@ public final class ConnectionManager {
         return group;
     }
 
+    public static ConnectionGroup getConnectionGroup(String namespace) {
+        AssertUtil.assertNotBlank(namespace, "namespace should not be empty");
+        ConnectionGroup group = getOrCreateGroup(namespace);
+        return group;
+    }
+
     private static final Object CREATE_LOCK = new Object();
 
     private ConnectionManager() {}

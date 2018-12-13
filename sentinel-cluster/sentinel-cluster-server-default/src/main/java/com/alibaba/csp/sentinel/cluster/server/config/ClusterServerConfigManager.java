@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.cluster.server.config;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -110,6 +111,35 @@ public final class ClusterServerConfigManager {
         }
     }
 
+    public static void loadServerNamespaceSet(Set<String> namespaceSet) {
+        namespaceSetProperty.updateValue(namespaceSet);
+    }
+
+    public static void loadGlobalTransportConfig(ServerTransportConfig config) {
+        transportConfigProperty.updateValue(config);
+    }
+
+    public static void loadGlobalFlowConfig(ServerFlowConfig config) {
+        globalFlowProperty.updateValue(config);
+    }
+
+    /**
+     * Load server flow config for a specific namespace.
+     *
+     * @param namespace a valid namespace
+     * @param config valid flow config for the namespace
+     */
+    public static void loadFlowConfig(String namespace, ServerFlowConfig config) {
+        AssertUtil.notEmpty(namespace, "namespace cannot be empty");
+        // TODO: Support namespace-scope server flow config.
+        globalFlowProperty.updateValue(config);
+    }
+
+    public static void addTransportConfigChangeObserver(ServerTransportConfigObserver observer) {
+        AssertUtil.notNull(observer, "observer cannot be null");
+        TRANSPORT_CONFIG_OBSERVERS.add(observer);
+    }
+
     private static class ServerNamespaceSetPropertyListener implements PropertyListener<Set<String>> {
 
         @Override
@@ -137,6 +167,8 @@ public final class ClusterServerConfigManager {
             ClusterServerConfigManager.namespaceSet = Collections.singleton(ServerConstants.DEFAULT_NAMESPACE);
             return;
         }
+
+        newSet = new HashSet<>(newSet);
         newSet.add(ServerConstants.DEFAULT_NAMESPACE);
 
         Set<String> oldSet = ClusterServerConfigManager.namespaceSet;
@@ -186,48 +218,7 @@ public final class ClusterServerConfigManager {
         }
     }
 
-    private static class ServerGlobalFlowPropertyListener implements PropertyListener<ServerFlowConfig> {
-
-        @Override
-        public void configUpdate(ServerFlowConfig config) {
-            applyGlobalFlowConfig(config);
-        }
-
-        @Override
-        public void configLoad(ServerFlowConfig config) {
-            applyGlobalFlowConfig(config);
-        }
-    }
-
-    private static synchronized void applyGlobalFlowConfig(ServerFlowConfig config) {
-        if (!isValidFlowConfig(config)) {
-            RecordLog.warn(
-                "[ClusterServerConfigManager] Invalid cluster server global flow config, ignoring: " + config);
-            return;
-        }
-        RecordLog.info("[ClusterServerConfigManager] Updating new server global flow config: " + config);
-        if (config.getExceedCount() != exceedCount) {
-            exceedCount = config.getExceedCount();
-        }
-        if (config.getMaxOccupyRatio() != maxOccupyRatio) {
-            maxOccupyRatio = config.getMaxOccupyRatio();
-        }
-        int newIntervalMs = config.getIntervalMs();
-        int newSampleCount = config.getSampleCount();
-        if (newIntervalMs != intervalMs || newSampleCount != sampleCount) {
-            if (newIntervalMs <= 0 || newSampleCount <= 0 || newIntervalMs % newSampleCount != 0) {
-                RecordLog.warn("[ClusterServerConfigManager] Ignoring invalid flow interval or sample count");
-            } else {
-                intervalMs = newIntervalMs;
-                sampleCount = newSampleCount;
-                // Reset all the metrics.
-                ClusterMetricStatistics.resetFlowMetrics();
-                ClusterParamMetricStatistics.resetFlowMetrics();
-            }
-        }
-    }
-
-    public static void updateTokenServer(ServerTransportConfig config) {
+    private static void updateTokenServer(ServerTransportConfig config) {
         int newPort = config.getPort();
         AssertUtil.isTrue(newPort > 0, "token server port should be valid (positive)");
         if (newPort == port) {
@@ -240,17 +231,53 @@ public final class ClusterServerConfigManager {
         }
     }
 
+    private static class ServerGlobalFlowPropertyListener implements PropertyListener<ServerFlowConfig> {
+
+        @Override
+        public void configUpdate(ServerFlowConfig config) {
+            applyGlobalFlowConfig(config);
+        }
+
+        @Override
+        public void configLoad(ServerFlowConfig config) {
+            applyGlobalFlowConfig(config);
+        }
+
+        private synchronized void applyGlobalFlowConfig(ServerFlowConfig config) {
+            if (!isValidFlowConfig(config)) {
+                RecordLog.warn(
+                    "[ClusterServerConfigManager] Invalid cluster server global flow config, ignoring: " + config);
+                return;
+            }
+            RecordLog.info("[ClusterServerConfigManager] Updating new server global flow config: " + config);
+            if (config.getExceedCount() != exceedCount) {
+                exceedCount = config.getExceedCount();
+            }
+            if (config.getMaxOccupyRatio() != maxOccupyRatio) {
+                maxOccupyRatio = config.getMaxOccupyRatio();
+            }
+            int newIntervalMs = config.getIntervalMs();
+            int newSampleCount = config.getSampleCount();
+            if (newIntervalMs != intervalMs || newSampleCount != sampleCount) {
+                if (newIntervalMs <= 0 || newSampleCount <= 0 || newIntervalMs % newSampleCount != 0) {
+                    RecordLog.warn("[ClusterServerConfigManager] Ignoring invalid flow interval or sample count");
+                } else {
+                    intervalMs = newIntervalMs;
+                    sampleCount = newSampleCount;
+                    // Reset all the metrics.
+                    ClusterMetricStatistics.resetFlowMetrics();
+                    ClusterParamMetricStatistics.resetFlowMetrics();
+                }
+            }
+        }
+    }
+
     public static boolean isValidTransportConfig(ServerTransportConfig config) {
-        return config != null && config.getPort() > 0;
+        return config != null && config.getPort() > 0 && config.getPort() <= 65535;
     }
 
     public static boolean isValidFlowConfig(ServerFlowConfig config) {
         return config != null && config.getMaxOccupyRatio() >= 0 && config.getExceedCount() >= 0;
-    }
-
-    public static void addTransportConfigChangeObserver(ServerTransportConfigObserver observer) {
-        AssertUtil.notNull(observer, "observer cannot be null");
-        TRANSPORT_CONFIG_OBSERVERS.add(observer);
     }
 
     public static double getExceedCount(String namespace) {

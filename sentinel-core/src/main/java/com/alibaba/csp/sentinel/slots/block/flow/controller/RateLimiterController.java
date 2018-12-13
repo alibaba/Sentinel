@@ -39,6 +39,11 @@ public class RateLimiterController implements TrafficShapingController {
 
     @Override
     public boolean canPass(Node node, int acquireCount) {
+        return canPass(node, acquireCount, false);
+    }
+
+    @Override
+    public boolean canPass(Node node, int acquireCount, boolean prioritized) {
         long currentTime = TimeUtil.currentTimeMillis();
         // Calculate the interval between every two requests.
         long costTime = Math.round(1.0 * (acquireCount) / count * 1000);

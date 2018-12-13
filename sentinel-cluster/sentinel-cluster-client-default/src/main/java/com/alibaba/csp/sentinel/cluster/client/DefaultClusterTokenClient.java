@@ -55,7 +55,6 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
                 changeServer(clusterClientConfig);
             }
         });
-        // TODO: check here, who should start the client?
         initNewConnection();
     }
 
@@ -90,7 +89,6 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
             return;
         }
         try {
-            // TODO: what if the client is pending init?
             if (transportClient != null) {
                 transportClient.stop();
             }
@@ -108,12 +106,14 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
         if (shouldStart.get()) {
             if (transportClient != null) {
                 transportClient.start();
+            } else {
+                RecordLog.warn("[DefaultClusterTokenClient] Cannot start transport client: client not created");
             }
         }
     }
 
     private void stopClientIfStarted() throws Exception {
-        if (shouldStart.get()) {
+        if (shouldStart.compareAndSet(true, false)) {
             if (transportClient != null) {
                 transportClient.stop();
             }
@@ -129,9 +129,7 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
 
     @Override
     public void stop() throws Exception {
-        if (shouldStart.compareAndSet(true, false)) {
-            stopClientIfStarted();
-        }
+        stopClientIfStarted();
     }
 
     @Override

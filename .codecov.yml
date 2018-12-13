@@ -2,3 +2,4 @@ ignore:
   - "sentinel-demo/.*"
   - "sentinel-dashboard/.*"
   - "sentinel-benchmark/.*"
+  - "sentinel-transport/.*"
