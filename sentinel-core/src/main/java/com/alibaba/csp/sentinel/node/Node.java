@@ -26,6 +26,7 @@ import com.alibaba.csp.sentinel.node.metric.MetricNode;
  * @author qinan.qn
  * @author leyou
  * @author Eric Zhao
+ * @author leitao
  */
 public interface Node {
 
@@ -147,7 +148,7 @@ public interface Node {
     void increaseThreadNum();
 
     /**
-     * Increase current thread count.
+     * Decrease current thread count.
      */
     void decreaseThreadNum();
 
