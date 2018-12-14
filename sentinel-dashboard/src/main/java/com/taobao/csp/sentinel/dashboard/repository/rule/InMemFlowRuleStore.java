@@ -17,6 +17,8 @@ package com.taobao.csp.sentinel.dashboard.repository.rule;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
+
 import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import org.springframework.stereotype.Component;
 
@@ -33,5 +35,19 @@ public class InMemFlowRuleStore extends InMemoryRuleRepositoryAdapter<FlowRuleEn
     @Override
     protected long nextId() {
         return ids.incrementAndGet();
+    }
+
+    @Override
+    protected FlowRuleEntity preProcess(FlowRuleEntity entity) {
+        if (entity != null && entity.isClusterMode()) {
+            ClusterFlowConfig config = entity.getClusterConfig();
+            if (config == null) {
+                config = new ClusterFlowConfig();
+                entity.setClusterConfig(config);
+            }
+            // Set cluster rule id.
+            config.setFlowId(entity.getId());
+        }
+        return entity;
     }
 }

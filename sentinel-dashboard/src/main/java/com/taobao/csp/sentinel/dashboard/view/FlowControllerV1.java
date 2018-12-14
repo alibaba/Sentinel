@@ -20,36 +20,44 @@ import java.util.List;
 
 import com.alibaba.csp.sentinel.util.StringUtil;
 
+import com.taobao.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.taobao.csp.sentinel.dashboard.discovery.MachineInfo;
-import com.taobao.csp.sentinel.dashboard.client.SentinelApiClient;
-import com.taobao.csp.sentinel.dashboard.repository.rule.InMemFlowRuleStore;
+import com.taobao.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Flow rule controller.
  *
  * @author leyou
+ * @author Eric Zhao
  */
-@Controller
-@RequestMapping(value = "/flow", produces = MediaType.APPLICATION_JSON_VALUE)
-public class FlowController {
-    private static Logger logger = LoggerFactory.getLogger(FlowController.class);
+@RestController
+@RequestMapping(value = "/v1/flow")
+public class FlowControllerV1 {
+
+    private final Logger logger = LoggerFactory.getLogger(FlowControllerV1.class);
+
     @Autowired
-    private InMemFlowRuleStore repository;
+    private InMemoryRuleRepositoryAdapter<FlowRuleEntity> repository;
 
     @Autowired
     private SentinelApiClient sentinelApiClient;
 
-    @ResponseBody
-    @RequestMapping("/rules.json")
-    Result<List<FlowRuleEntity>> queryMachineRules(String app, String ip, Integer port) {
+    @GetMapping("/rules")
+    public Result<List<FlowRuleEntity>> apiQueryMachineRules(@RequestParam String app,
+                                                   @RequestParam String ip,
+                                                   @RequestParam Integer port) {
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
         }
@@ -64,88 +72,82 @@ public class FlowController {
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
-            logger.error("queryApps error:", throwable);
+            logger.error("Error when querying flow rules", throwable);
             return Result.ofThrowable(-1, throwable);
         }
     }
 
-    @ResponseBody
-    @RequestMapping("/new.json")
-    Result<?> add(String app, String ip, Integer port, String limitApp, String resource, Integer grade,
-                  Double count, Integer strategy, String refResource,
-                  Integer controlBehavior, Integer warmUpPeriodSec, Integer maxQueueingTimeMs) {
-        if (StringUtil.isBlank(app)) {
+    private <R> Result<R> checkEntityInternal(FlowRuleEntity entity) {
+        if (StringUtil.isBlank(entity.getApp())) {
             return Result.ofFail(-1, "app can't be null or empty");
         }
-        if (StringUtil.isBlank(ip)) {
+        if (StringUtil.isBlank(entity.getIp())) {
             return Result.ofFail(-1, "ip can't be null or empty");
         }
-        if (port == null) {
+        if (entity.getPort() == null) {
             return Result.ofFail(-1, "port can't be null");
         }
-        if (StringUtil.isBlank(limitApp)) {
+        if (StringUtil.isBlank(entity.getLimitApp())) {
             return Result.ofFail(-1, "limitApp can't be null or empty");
         }
-        if (StringUtil.isBlank(resource)) {
+        if (StringUtil.isBlank(entity.getResource())) {
             return Result.ofFail(-1, "resource can't be null or empty");
         }
-        if (grade == null) {
+        if (entity.getGrade() == null) {
             return Result.ofFail(-1, "grade can't be null");
         }
-        if (grade != 0 && grade != 1) {
-            return Result.ofFail(-1, "grade must be 0 or 1, but " + grade + " got");
+        if (entity.getGrade() != 0 && entity.getGrade() != 1) {
+            return Result.ofFail(-1, "grade must be 0 or 1, but " + entity.getGrade() + " got");
         }
-        if (count == null) {
-            return Result.ofFail(-1, "count can't be null");
+        if (entity.getCount() == null || entity.getCount() < 0) {
+            return Result.ofFail(-1, "count should be at lease zero");
         }
-        if (strategy == null) {
+        if (entity.getStrategy() == null) {
             return Result.ofFail(-1, "strategy can't be null");
         }
-        if (strategy != 0 && StringUtil.isBlank(refResource)) {
+        if (entity.getStrategy() != 0 && StringUtil.isBlank(entity.getRefResource())) {
             return Result.ofFail(-1, "refResource can't be null or empty when strategy!=0");
         }
-        if (controlBehavior == null) {
+        if (entity.getControlBehavior() == null) {
             return Result.ofFail(-1, "controlBehavior can't be null");
         }
-        if (controlBehavior == 1 && warmUpPeriodSec == null) {
+        int controlBehavior = entity.getControlBehavior();
+        if (controlBehavior == 1 && entity.getWarmUpPeriodSec() == null) {
             return Result.ofFail(-1, "warmUpPeriodSec can't be null when controlBehavior==1");
         }
-        if (controlBehavior == 2 && maxQueueingTimeMs == null) {
+        if (controlBehavior == 2 && entity.getMaxQueueingTimeMs() == null) {
             return Result.ofFail(-1, "maxQueueingTimeMs can't be null when controlBehavior==2");
         }
-        FlowRuleEntity entity = new FlowRuleEntity();
-        entity.setApp(app.trim());
-        entity.setIp(ip.trim());
-        entity.setPort(port);
-        entity.setLimitApp(limitApp.trim());
-        entity.setResource(resource.trim());
-        entity.setGrade(grade);
-        entity.setCount(count);
-        entity.setStrategy(strategy);
-        entity.setControlBehavior(controlBehavior);
-        entity.setWarmUpPeriodSec(warmUpPeriodSec);
-        entity.setMaxQueueingTimeMs(maxQueueingTimeMs);
-        if (strategy != 0) {
-            entity.setRefResource(refResource.trim());
+        if (entity.isClusterMode() && entity.getClusterConfig() == null) {
+            return Result.ofFail(-1, "cluster config should be valid");
         }
+        return null;
+    }
+
+    @PostMapping("/rule")
+    public Result<FlowRuleEntity> apiAddFlowRule(@RequestBody FlowRuleEntity entity) {
+        Result<FlowRuleEntity> checkResult = checkEntityInternal(entity);
+        if (checkResult != null) {
+            return checkResult;
+        }
+        entity.setId(null);
         Date date = new Date();
         entity.setGmtCreate(date);
         entity.setGmtModified(date);
         try {
             entity = repository.save(entity);
         } catch (Throwable throwable) {
-            logger.error("add error:", throwable);
+            logger.error("Failed to add flow rule", throwable);
             return Result.ofThrowable(-1, throwable);
         }
-        if (!publishRules(app, ip, port)) {
-            logger.info("publish flow rules fail after rule add");
+        if (!publishRules(entity.getApp(), entity.getIp(), entity.getPort())) {
+            logger.error("Publish flow rules failed after rule add");
         }
         return Result.ofSuccess(entity);
     }
 
-    @ResponseBody
-    @RequestMapping("/save.json")
-    Result<?> updateIfNotNull(Long id, String app,
+    @PutMapping("/save.json")
+    public Result<FlowRuleEntity> updateIfNotNull(Long id, String app,
                               String limitApp, String resource, Integer grade,
                               Double count, Integer strategy, String refResource,
                               Integer controlBehavior, Integer warmUpPeriodSec, Integer maxQueueingTimeMs) {
@@ -221,8 +223,7 @@ public class FlowController {
         return Result.ofSuccess(entity);
     }
 
-    @ResponseBody
-    @RequestMapping("/delete.json")
+    @DeleteMapping("/delete.json")
     Result<?> delete(Long id) {
         if (id == null) {
             return Result.ofFail(-1, "id can't be null");
