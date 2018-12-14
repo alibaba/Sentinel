@@ -19,11 +19,11 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
@@ -53,7 +53,7 @@ public class SimpleHttpCommandCenter implements CommandCenter {
     private static final int DEFAULT_PORT = 8719;
 
     @SuppressWarnings("rawtypes")
-    private static final Map<String, CommandHandler> handlerMap = new HashMap<String, CommandHandler>();
+    private static final Map<String, CommandHandler> handlerMap = new ConcurrentHashMap<String, CommandHandler>();
 
     private ExecutorService executor = Executors.newSingleThreadExecutor(
         new NamedThreadFactory("sentinel-command-center-executor"));
@@ -105,12 +105,14 @@ public class SimpleHttpCommandCenter implements CommandCenter {
                     executor.submit(new ServerThread(serverSocket));
                     success = true;
                     port = serverSocket.getLocalPort();
+                } else {
+                    CommandCenterLog.info("[CommandCenter] chooses port fail, http command center will not work");
                 }
 
                 if (!success) {
                     port = PORT_UNINITIALIZED;
                 }
-                
+
                 TransportConfig.setRuntimePort(port);
                 executor.shutdown();
             }
@@ -119,11 +121,11 @@ public class SimpleHttpCommandCenter implements CommandCenter {
 
         new Thread(serverInitTask).start();
     }
-    
+
     /**
      * Get a server socket from an available port from a base port.<br>
      * Increasing on port number will occur when the port has already been used.
-     * 
+     *
      * @param basePort base port to start
      * @return new socket with available port
      */
@@ -135,7 +137,7 @@ public class SimpleHttpCommandCenter implements CommandCenter {
                 server.setReuseAddress(true);
                 return server;
             } catch (IOException e) {
-                tryCount ++;
+                tryCount++;
                 try {
                     TimeUnit.MILLISECONDS.sleep(30);
                 } catch (InterruptedException e1) {
