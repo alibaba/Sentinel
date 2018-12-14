@@ -20,7 +20,7 @@ import java.util.List;
 
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
-import com.alibaba.csp.sentinel.slots.statistic.base.MetricBucket;
+import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 
 /**

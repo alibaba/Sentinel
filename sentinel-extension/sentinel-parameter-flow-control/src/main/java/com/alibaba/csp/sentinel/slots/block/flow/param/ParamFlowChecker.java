@@ -22,8 +22,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import com.alibaba.csp.sentinel.cluster.ClusterTokenClient;
-import com.alibaba.csp.sentinel.cluster.TokenClientProvider;
+import com.alibaba.csp.sentinel.cluster.client.ClusterTokenClient;
+import com.alibaba.csp.sentinel.cluster.client.TokenClientProvider;
 import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
 import com.alibaba.csp.sentinel.log.RecordLog;
@@ -60,57 +60,6 @@ final class ParamFlowChecker {
         }
 
         return passLocalCheck(resourceWrapper, rule, count, value);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static Collection<Object> toCollection(Object value) {
-        if (value instanceof Collection) {
-            return (Collection<Object>)value;
-        } else if (value.getClass().isArray()) {
-            List<Object> params = new ArrayList<Object>();
-            int length = Array.getLength(value);
-            for (int i = 0; i < length; i++) {
-                Object param = Array.get(value, i);
-                params.add(param);
-            }
-            return params;
-        } else {
-            return Collections.singletonList(value);
-        }
-    }
-
-    private static boolean passClusterCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int count,
-                                            Object value) {
-        try {
-            ClusterTokenClient client = TokenClientProvider.getClient();
-            if (client == null) {
-                return true;
-            }
-            Collection<Object> params = toCollection(value);
-
-            TokenResult result = client.requestParamToken(rule.getClusterConfig().getFlowId(), count, params);
-            switch (result.getStatus()) {
-                case TokenResultStatus.OK:
-                    return true;
-                case TokenResultStatus.BLOCKED:
-                    return false;
-                default:
-                    return fallbackToLocalOrPass(resourceWrapper, rule, count, params);
-            }
-        } catch (Throwable ex) {
-            RecordLog.warn("[ParamFlowChecker] Request cluster token for parameter unexpected failed", ex);
-            return fallbackToLocalOrPass(resourceWrapper, rule, count, value);
-        }
-    }
-
-    private static boolean fallbackToLocalOrPass(ResourceWrapper resourceWrapper, ParamFlowRule rule, int count,
-                                                 Object value) {
-        if (rule.getClusterConfig().isFallbackToLocalWhenFail()) {
-            return passLocalCheck(resourceWrapper, rule, count, value);
-        } else {
-            // The rule won't be activated, just pass.
-            return true;
-        }
     }
 
     private static boolean passLocalCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int count,
@@ -163,6 +112,57 @@ final class ParamFlowChecker {
     private static ParameterMetric getHotParameters(ResourceWrapper resourceWrapper) {
         // Should not be null.
         return ParamFlowSlot.getParamMetric(resourceWrapper);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Collection<Object> toCollection(Object value) {
+        if (value instanceof Collection) {
+            return (Collection<Object>)value;
+        } else if (value.getClass().isArray()) {
+            List<Object> params = new ArrayList<Object>();
+            int length = Array.getLength(value);
+            for (int i = 0; i < length; i++) {
+                Object param = Array.get(value, i);
+                params.add(param);
+            }
+            return params;
+        } else {
+            return Collections.singletonList(value);
+        }
+    }
+
+    private static boolean passClusterCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int count,
+                                            Object value) {
+        try {
+            ClusterTokenClient client = TokenClientProvider.getClient();
+            if (client == null) {
+                return true;
+            }
+            Collection<Object> params = toCollection(value);
+
+            TokenResult result = client.requestParamToken(rule.getClusterConfig().getFlowId(), count, params);
+            switch (result.getStatus()) {
+                case TokenResultStatus.OK:
+                    return true;
+                case TokenResultStatus.BLOCKED:
+                    return false;
+                default:
+                    return fallbackToLocalOrPass(resourceWrapper, rule, count, params);
+            }
+        } catch (Throwable ex) {
+            RecordLog.warn("[ParamFlowChecker] Request cluster token for parameter unexpected failed", ex);
+            return fallbackToLocalOrPass(resourceWrapper, rule, count, value);
+        }
+    }
+
+    private static boolean fallbackToLocalOrPass(ResourceWrapper resourceWrapper, ParamFlowRule rule, int count,
+                                                 Object value) {
+        if (rule.getClusterConfig().isFallbackToLocalWhenFail()) {
+            return passLocalCheck(resourceWrapper, rule, count, value);
+        } else {
+            // The rule won't be activated, just pass.
+            return true;
+        }
     }
 
     private ParamFlowChecker() {}

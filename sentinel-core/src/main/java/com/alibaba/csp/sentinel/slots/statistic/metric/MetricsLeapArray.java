@@ -16,7 +16,7 @@
 package com.alibaba.csp.sentinel.slots.statistic.metric;
 
 import com.alibaba.csp.sentinel.slots.statistic.base.LeapArray;
-import com.alibaba.csp.sentinel.slots.statistic.base.MetricBucket;
+import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 
 /**
