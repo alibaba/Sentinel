@@ -1,6 +1,6 @@
 var app = angular.module('sentinelDashboardApp');
 
-app.service('FlowService', ['$http', function ($http) {
+app.service('FlowServiceV1', ['$http', function ($http) {
   this.queryMachineRules = function (app, ip, port) {
     var param = {
       app: app,
@@ -8,7 +8,7 @@ app.service('FlowService', ['$http', function ($http) {
       port: port
     };
     return $http({
-      url: 'flow/rules.json',
+      url: '/v1/flow/rules',
       params: param,
       method: 'GET'
     });
@@ -31,9 +31,9 @@ app.service('FlowService', ['$http', function ($http) {
     };
 
     return $http({
-      url: '/flow/new.json',
-      params: param,
-      method: 'GET'
+      url: '/v1/flow/rule',
+      data: rule,
+      method: 'POST'
     });
   };
 
@@ -52,9 +52,9 @@ app.service('FlowService', ['$http', function ($http) {
     };
 
     return $http({
-      url: '/flow/save.json',
+      url: '/v1/flow/save.json',
       params: param,
-      method: 'GET'
+      method: 'PUT'
     });
   };
 
@@ -65,9 +65,9 @@ app.service('FlowService', ['$http', function ($http) {
     };
 
     return $http({
-      url: '/flow/delete.json',
+      url: '/v1/flow/delete.json',
       params: param,
-      method: 'GET'
+      method: 'DELETE'
     });
   };
 
