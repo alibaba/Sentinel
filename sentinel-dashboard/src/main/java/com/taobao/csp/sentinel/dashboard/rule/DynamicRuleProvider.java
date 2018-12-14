@@ -13,20 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.taobao.csp.sentinel.dashboard;
-
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+package com.taobao.csp.sentinel.dashboard.rule;
 
 /**
- * Sentinel dashboard application.
- *
- * @author Carpenter Lee
+ * @author Eric Zhao
+ * @since 1.4.0
  */
-@SpringBootApplication
-public class DashboardApplication {
+public interface DynamicRuleProvider<T> {
 
-    public static void main(String[] args) {
-        SpringApplication.run(DashboardApplication.class, args);
-    }
+    T getRules(String appName) throws Exception;
 }

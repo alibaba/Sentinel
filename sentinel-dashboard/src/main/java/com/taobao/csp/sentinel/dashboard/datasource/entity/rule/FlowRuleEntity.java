@@ -17,6 +17,7 @@ package com.taobao.csp.sentinel.dashboard.datasource.entity.rule;
 
 import java.util.Date;
 
+import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 
 /**
@@ -49,6 +50,13 @@ public class FlowRuleEntity implements RuleEntity {
      * max queueing time in rate limiter behavior
      */
     private Integer maxQueueingTimeMs;
+
+    private boolean clusterMode;
+    /**
+     * Flow rule config for cluster mode.
+     */
+    private ClusterFlowConfig clusterConfig;
+
     private Date gmtCreate;
     private Date gmtModified;
 
@@ -66,6 +74,8 @@ public class FlowRuleEntity implements RuleEntity {
         entity.setControlBehavior(rule.getControlBehavior());
         entity.setWarmUpPeriodSec(rule.getWarmUpPeriodSec());
         entity.setMaxQueueingTimeMs(rule.getMaxQueueingTimeMs());
+        entity.setClusterMode(rule.isClusterMode());
+        entity.setClusterConfig(rule.getClusterConfig());
         return entity;
     }
 
@@ -178,6 +188,24 @@ public class FlowRuleEntity implements RuleEntity {
         this.maxQueueingTimeMs = maxQueueingTimeMs;
     }
 
+    public boolean isClusterMode() {
+        return clusterMode;
+    }
+
+    public FlowRuleEntity setClusterMode(boolean clusterMode) {
+        this.clusterMode = clusterMode;
+        return this;
+    }
+
+    public ClusterFlowConfig getClusterConfig() {
+        return clusterConfig;
+    }
+
+    public FlowRuleEntity setClusterConfig(ClusterFlowConfig clusterConfig) {
+        this.clusterConfig = clusterConfig;
+        return this;
+    }
+
     @Override
     public Date getGmtCreate() {
         return gmtCreate;
@@ -212,6 +240,8 @@ public class FlowRuleEntity implements RuleEntity {
         if (this.maxQueueingTimeMs != null) {
             flowRule.setMaxQueueingTimeMs(maxQueueingTimeMs);
         }
+        flowRule.setClusterMode(clusterMode);
+        flowRule.setClusterConfig(clusterConfig);
         return flowRule;
     }
 

@@ -84,7 +84,8 @@ public class MetricController {
             return Result.ofFail(-1, "time intervalMs is too big, must <= 1h");
         }
         List<String> resources = metricStore.listResourcesOfApp(app);
-        logger.info("queryTopResourceMetric(), resources.size()={}", resources.size());
+        logger.debug("queryTopResourceMetric(), resources.size()={}", resources.size());
+
         if (resources == null || resources.isEmpty()) {
             return Result.ofSuccess(null);
         }
@@ -107,17 +108,17 @@ public class MetricController {
                 Math.min(pageIndex * pageSize, resources.size()));
         }
         final Map<String, Iterable<MetricVo>> map = new ConcurrentHashMap<>();
-        logger.info("topResource={}", topResource);
+        logger.debug("topResource={}", topResource);
         long time = System.currentTimeMillis();
         for (final String resource : topResource) {
             List<MetricEntity> entities = metricStore.queryByAppAndResourceBetween(
                 app, resource, startTime, endTime);
-            logger.info("resource={}, entities.size()={}", resource, entities == null ? "null" : entities.size());
+            logger.debug("resource={}, entities.size()={}", resource, entities == null ? "null" : entities.size());
             List<MetricVo> vos = MetricVo.fromMetricEntities(entities, resource);
             Iterable<MetricVo> vosSorted = sortMetricVoAndDistinct(vos);
             map.put(resource, vosSorted);
         }
-        logger.info("queryTopResourceMetric() total query time={} ms", System.currentTimeMillis() - time);
+        logger.debug("queryTopResourceMetric() total query time={} ms", System.currentTimeMillis() - time);
         Map<String, Object> resultMap = new HashMap<>(16);
         resultMap.put("totalCount", resources.size());
         resultMap.put("totalPage", totalPage);
