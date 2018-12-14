@@ -23,11 +23,10 @@ package com.alibaba.csp.sentinel.cluster;
  */
 public class TokenServerDescriptor {
 
-    private String host;
-    private int port;
-    private String type;
+    private final String host;
+    private final int port;
 
-    public TokenServerDescriptor() {}
+    private String type = "default";
 
     public TokenServerDescriptor(String host, int port) {
         this.host = host;
@@ -38,18 +37,8 @@ public class TokenServerDescriptor {
         return host;
     }
 
-    public TokenServerDescriptor setHost(String host) {
-        this.host = host;
-        return this;
-    }
-
     public int getPort() {
         return port;
-    }
-
-    public TokenServerDescriptor setPort(int port) {
-        this.port = port;
-        return this;
     }
 
     public String getType() {

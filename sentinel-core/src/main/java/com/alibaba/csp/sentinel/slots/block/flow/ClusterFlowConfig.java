@@ -34,16 +34,12 @@ public class ClusterFlowConfig {
      * Threshold type (average by local value or global value).
      */
     private int thresholdType = ClusterRuleConstant.FLOW_THRESHOLD_AVG_LOCAL;
-    private boolean fallbackToLocalWhenFail;
+    private boolean fallbackToLocalWhenFail = true;
 
     /**
-     * 0: normal; 1: using reference (borrow from reference).
+     * 0: normal.
      */
     private int strategy = ClusterRuleConstant.FLOW_CLUSTER_STRATEGY_NORMAL;
-
-    private Long refFlowId;
-    private int refSampleCount = 10;
-    private double refRatio = 1d;
 
     public Long getFlowId() {
         return flowId;
@@ -72,33 +68,6 @@ public class ClusterFlowConfig {
         return this;
     }
 
-    public Long getRefFlowId() {
-        return refFlowId;
-    }
-
-    public ClusterFlowConfig setRefFlowId(Long refFlowId) {
-        this.refFlowId = refFlowId;
-        return this;
-    }
-
-    public int getRefSampleCount() {
-        return refSampleCount;
-    }
-
-    public ClusterFlowConfig setRefSampleCount(int refSampleCount) {
-        this.refSampleCount = refSampleCount;
-        return this;
-    }
-
-    public double getRefRatio() {
-        return refRatio;
-    }
-
-    public ClusterFlowConfig setRefRatio(double refRatio) {
-        this.refRatio = refRatio;
-        return this;
-    }
-
     public boolean isFallbackToLocalWhenFail() {
         return fallbackToLocalWhenFail;
     }
@@ -118,24 +87,15 @@ public class ClusterFlowConfig {
         if (thresholdType != that.thresholdType) { return false; }
         if (fallbackToLocalWhenFail != that.fallbackToLocalWhenFail) { return false; }
         if (strategy != that.strategy) { return false; }
-        if (refSampleCount != that.refSampleCount) { return false; }
-        if (Double.compare(that.refRatio, refRatio) != 0) { return false; }
-        if (flowId != null ? !flowId.equals(that.flowId) : that.flowId != null) { return false; }
-        return refFlowId != null ? refFlowId.equals(that.refFlowId) : that.refFlowId == null;
+        return flowId != null ? flowId.equals(that.flowId) : that.flowId == null;
     }
 
     @Override
     public int hashCode() {
-        int result;
-        long temp;
-        result = flowId != null ? flowId.hashCode() : 0;
+        int result = flowId != null ? flowId.hashCode() : 0;
         result = 31 * result + thresholdType;
         result = 31 * result + (fallbackToLocalWhenFail ? 1 : 0);
         result = 31 * result + strategy;
-        result = 31 * result + (refFlowId != null ? refFlowId.hashCode() : 0);
-        result = 31 * result + refSampleCount;
-        temp = Double.doubleToLongBits(refRatio);
-        result = 31 * result + (int)(temp ^ (temp >>> 32));
         return result;
     }
 
@@ -146,9 +106,6 @@ public class ClusterFlowConfig {
             ", thresholdType=" + thresholdType +
             ", fallbackToLocalWhenFail=" + fallbackToLocalWhenFail +
             ", strategy=" + strategy +
-            ", refFlowId=" + refFlowId +
-            ", refSampleCount=" + refSampleCount +
-            ", refRatio=" + refRatio +
             '}';
     }
 }

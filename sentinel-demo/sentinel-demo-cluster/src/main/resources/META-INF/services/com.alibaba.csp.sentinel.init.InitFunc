@@ -1,0 +1,2 @@
+com.alibaba.csp.sentinel.demo.cluster.init.DemoClusterClientInitFunc
+com.alibaba.csp.sentinel.demo.cluster.init.DemoClusterServerInitFunc

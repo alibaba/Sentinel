@@ -28,6 +28,7 @@
         <module>sentinel-demo-annotation-spring-aop</module>
         <module>sentinel-demo-parameter-flow-control</module>
         <module>sentinel-demo-slot-chain-spi</module>
+        <module>sentinel-demo-cluster</module>
     </modules>
 
     <dependencies>
