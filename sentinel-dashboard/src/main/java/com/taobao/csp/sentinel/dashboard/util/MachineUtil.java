@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.taobao.csp.sentinel.dashboard;
+package com.taobao.csp.sentinel.dashboard.util;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import com.taobao.csp.sentinel.dashboard.discovery.MachineDiscovery;
+import com.taobao.csp.sentinel.dashboard.discovery.MachineInfo;
 
 /**
- * Sentinel dashboard application.
- *
- * @author Carpenter Lee
+ * @author Eric Zhao
  */
-@SpringBootApplication
-public class DashboardApplication {
+public final class MachineUtil {
 
-    public static void main(String[] args) {
-        SpringApplication.run(DashboardApplication.class, args);
+    public static boolean isMachineHealth(MachineInfo machine) {
+        if (machine == null) {
+            return false;
+        }
+        return System.currentTimeMillis() - machine.getTimestamp().getTime() < MachineDiscovery.MAX_CLIENT_LIVE_TIME_MS;
     }
 }

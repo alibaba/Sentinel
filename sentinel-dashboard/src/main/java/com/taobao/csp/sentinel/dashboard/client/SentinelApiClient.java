@@ -22,6 +22,7 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -42,6 +43,11 @@ import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntit
 import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEntity;
 import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.SystemRuleEntity;
+import com.taobao.csp.sentinel.dashboard.domain.cluster.ClusterServerStateVO;
+import com.taobao.csp.sentinel.dashboard.domain.cluster.ClusterStateSimpleEntity;
+import com.taobao.csp.sentinel.dashboard.domain.cluster.config.ClusterClientConfig;
+import com.taobao.csp.sentinel.dashboard.domain.cluster.config.ServerFlowConfig;
+import com.taobao.csp.sentinel.dashboard.domain.cluster.config.ServerTransportConfig;
 import com.taobao.csp.sentinel.dashboard.util.RuleUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -75,6 +81,18 @@ public class SentinelApiClient {
     private static final String SET_RULES_PATH = "setRules";
     private static final String GET_PARAM_RULE_PATH = "getParamFlowRules";
     private static final String SET_PARAM_RULE_PATH = "setParamFlowRules";
+
+    private static final String FETCH_CLUSTER_MODE_PATH = "getClusterMode";
+    private static final String MODIFY_CLUSTER_MODE_PATH = "setClusterMode";
+    private static final String FETCH_CLUSTER_CLIENT_CONFIG_PATH = "cluster/client/fetchConfig";
+    private static final String MODIFY_CLUSTER_CLIENT_CONFIG_PATH = "cluster/client/modifyConfig";
+
+    private static final String FETCH_CLUSTER_SERVER_ALL_CONFIG_PATH = "cluster/server/fetchConfig";
+    private static final String FETCH_CLUSTER_SERVER_BASIC_INFO_PATH = "cluster/server/info";
+
+    private static final String MODIFY_CLUSTER_SERVER_TRANSPORT_CONFIG_PATH = "cluster/server/modifyTransportConfig";
+    private static final String MODIFY_CLUSTER_SERVER_FLOW_CONFIG_PATH = "cluster/server/modifyFlowConfig";
+    private static final String MODIFY_CLUSTER_SERVER_NAMESPACE_SET_PATH = "cluster/server/modifyNamespaceSet";
 
     private static final String FLOW_RULE_TYPE = "flow";
     private static final String DEGRADE_RULE_TYPE = "degrade";
@@ -484,5 +502,176 @@ public class SentinelApiClient {
         CompletableFuture<R> future = new CompletableFuture<>();
         future.completeExceptionally(ex);
         return future;
+    }
+
+    // Cluster related
+
+    public CompletableFuture<ClusterStateSimpleEntity> fetchClusterMode(String app, String ip, int port) {
+        if (StringUtil.isBlank(ip) || port <= 0) {
+            return newFailedFuture(new IllegalArgumentException("Invalid parameter"));
+        }
+        try {
+            URIBuilder uriBuilder = new URIBuilder();
+            uriBuilder.setScheme("http").setHost(ip).setPort(port)
+                .setPath(FETCH_CLUSTER_MODE_PATH);
+            return executeCommand(FETCH_CLUSTER_MODE_PATH, uriBuilder.build())
+                .thenApply(r -> JSON.parseObject(r, ClusterStateSimpleEntity.class));
+        } catch (Exception ex) {
+            logger.warn("Error when fetching cluster mode", ex);
+            return newFailedFuture(ex);
+        }
+    }
+
+    public CompletableFuture<Void> modifyClusterMode(String app, String ip, int port, int mode) {
+        if (StringUtil.isBlank(ip) || port <= 0) {
+            return newFailedFuture(new IllegalArgumentException("Invalid parameter"));
+        }
+        try {
+            URIBuilder uriBuilder = new URIBuilder();
+            uriBuilder.setScheme("http").setHost(ip).setPort(port)
+                .setPath(MODIFY_CLUSTER_MODE_PATH)
+                .setParameter("mode", String.valueOf(mode));
+            return executeCommand(MODIFY_CLUSTER_MODE_PATH, uriBuilder.build())
+                .thenCompose(e -> {
+                    if ("success".equals(e)) {
+                        return CompletableFuture.completedFuture(null);
+                    } else {
+                        logger.warn("Error when modifying cluster mode: " + e);
+                        return newFailedFuture(new RuntimeException(e));
+                    }
+                });
+        } catch (Exception ex) {
+            logger.warn("Error when modifying cluster mode", ex);
+            return newFailedFuture(ex);
+        }
+    }
+
+    public CompletableFuture<ClusterClientConfig> fetchClusterClientConfig(String app, String ip, int port) {
+        if (StringUtil.isBlank(ip) || port <= 0) {
+            return newFailedFuture(new IllegalArgumentException("Invalid parameter"));
+        }
+        try {
+            URIBuilder uriBuilder = new URIBuilder();
+            uriBuilder.setScheme("http").setHost(ip).setPort(port)
+                .setPath(FETCH_CLUSTER_CLIENT_CONFIG_PATH);
+            return executeCommand(FETCH_CLUSTER_CLIENT_CONFIG_PATH, uriBuilder.build())
+                .thenApply(r -> JSON.parseObject(r, ClusterClientConfig.class));
+        } catch (Exception ex) {
+            logger.warn("Error when fetching cluster client config", ex);
+            return newFailedFuture(ex);
+        }
+    }
+
+    public CompletableFuture<Void> modifyClusterClientConfig(String app, String ip, int port, ClusterClientConfig config) {
+        if (StringUtil.isBlank(ip) || port <= 0) {
+            return newFailedFuture(new IllegalArgumentException("Invalid parameter"));
+        }
+        try {
+            URIBuilder uriBuilder = new URIBuilder();
+            uriBuilder.setScheme("http").setHost(ip).setPort(port)
+                .setPath(MODIFY_CLUSTER_CLIENT_CONFIG_PATH)
+                .setParameter("data", JSON.toJSONString(config));
+            return executeCommand(MODIFY_CLUSTER_MODE_PATH, uriBuilder.build())
+                .thenCompose(e -> {
+                    if ("success".equals(e)) {
+                        return CompletableFuture.completedFuture(null);
+                    } else {
+                        logger.warn("Error when modifying cluster client config: " + e);
+                        return newFailedFuture(new RuntimeException(e));
+                    }
+                });
+        } catch (Exception ex) {
+            logger.warn("Error when modifying cluster client config", ex);
+            return newFailedFuture(ex);
+        }
+    }
+
+    public CompletableFuture<Void> modifyClusterServerFlowConfig(String app, String ip, int port, ServerFlowConfig config) {
+        if (StringUtil.isBlank(ip) || port <= 0) {
+            return newFailedFuture(new IllegalArgumentException("Invalid parameter"));
+        }
+        try {
+            URIBuilder uriBuilder = new URIBuilder();
+            uriBuilder.setScheme("http").setHost(ip).setPort(port)
+                .setPath(MODIFY_CLUSTER_SERVER_FLOW_CONFIG_PATH)
+                .setParameter("data", JSON.toJSONString(config));
+            return executeCommand(MODIFY_CLUSTER_SERVER_FLOW_CONFIG_PATH, uriBuilder.build())
+                .thenCompose(e -> {
+                    if ("success".equals(e)) {
+                        return CompletableFuture.completedFuture(null);
+                    } else {
+                        logger.warn("Error when modifying cluster server flow config: " + e);
+                        return newFailedFuture(new RuntimeException(e));
+                    }
+                });
+        } catch (Exception ex) {
+            logger.warn("Error when modifying cluster server flow config", ex);
+            return newFailedFuture(ex);
+        }
+    }
+
+    public CompletableFuture<Void> modifyClusterServerTransportConfig(String app, String ip, int port, ServerTransportConfig config) {
+        if (StringUtil.isBlank(ip) || port <= 0) {
+            return newFailedFuture(new IllegalArgumentException("Invalid parameter"));
+        }
+        try {
+            URIBuilder uriBuilder = new URIBuilder();
+            uriBuilder.setScheme("http").setHost(ip).setPort(port)
+                .setPath(MODIFY_CLUSTER_SERVER_TRANSPORT_CONFIG_PATH)
+                .setParameter("port", config.getPort().toString())
+                .setParameter("idleSeconds", config.getIdleSeconds().toString());
+            return executeCommand(MODIFY_CLUSTER_SERVER_TRANSPORT_CONFIG_PATH, uriBuilder.build())
+                .thenCompose(e -> {
+                    if ("success".equals(e)) {
+                        return CompletableFuture.completedFuture(null);
+                    } else {
+                        logger.warn("Error when modifying cluster server transport config: " + e);
+                        return newFailedFuture(new RuntimeException(e));
+                    }
+                });
+        } catch (Exception ex) {
+            logger.warn("Error when modifying cluster server transport config", ex);
+            return newFailedFuture(ex);
+        }
+    }
+
+    public CompletableFuture<Void> modifyClusterServerNamespaceSet(String app, String ip, int port, Set<String> set) {
+        if (StringUtil.isBlank(ip) || port <= 0) {
+            return newFailedFuture(new IllegalArgumentException("Invalid parameter"));
+        }
+        try {
+            URIBuilder uriBuilder = new URIBuilder();
+            uriBuilder.setScheme("http").setHost(ip).setPort(port)
+                .setPath(MODIFY_CLUSTER_SERVER_NAMESPACE_SET_PATH)
+                .setParameter("data", JSON.toJSONString(set));
+            return executeCommand(MODIFY_CLUSTER_SERVER_NAMESPACE_SET_PATH, uriBuilder.build())
+                .thenCompose(e -> {
+                    if ("success".equals(e)) {
+                        return CompletableFuture.completedFuture(null);
+                    } else {
+                        logger.warn("Error when modifying cluster server NamespaceSet: " + e);
+                        return newFailedFuture(new RuntimeException(e));
+                    }
+                });
+        } catch (Exception ex) {
+            logger.warn("Error when modifying cluster server NamespaceSet", ex);
+            return newFailedFuture(ex);
+        }
+    }
+
+    public CompletableFuture<ClusterServerStateVO> fetchClusterServerBasicInfo(String app, String ip, int port) {
+        if (StringUtil.isBlank(ip) || port <= 0) {
+            return newFailedFuture(new IllegalArgumentException("Invalid parameter"));
+        }
+        try {
+            URIBuilder uriBuilder = new URIBuilder();
+            uriBuilder.setScheme("http").setHost(ip).setPort(port)
+                .setPath(FETCH_CLUSTER_SERVER_BASIC_INFO_PATH);
+            return executeCommand(FETCH_CLUSTER_SERVER_BASIC_INFO_PATH, uriBuilder.build())
+                .thenApply(r -> JSON.parseObject(r, ClusterServerStateVO.class));
+        } catch (Exception ex) {
+            logger.warn("Error when fetching cluster sever all config and basic info", ex);
+            return newFailedFuture(ex);
+        }
     }
 }

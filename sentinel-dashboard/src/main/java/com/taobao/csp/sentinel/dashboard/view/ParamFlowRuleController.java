@@ -179,6 +179,10 @@ public class ParamFlowRuleController {
         if (id == null || id <= 0) {
             return Result.ofFail(-1, "Invalid id");
         }
+        ParamFlowRuleEntity oldEntity = repository.findById(id);
+        if (oldEntity == null) {
+            return Result.ofFail(-1, "id " + id + " does not exist");
+        }
         Result<ParamFlowRuleEntity> checkResult = checkEntityInternal(entity);
         if (checkResult != null) {
             return checkResult;
@@ -188,7 +192,7 @@ public class ParamFlowRuleController {
         }
         entity.setId(id);
         Date date = new Date();
-        entity.setGmtCreate(null);
+        entity.setGmtCreate(oldEntity.getGmtCreate());
         entity.setGmtModified(date);
         try {
             entity = repository.save(entity);
