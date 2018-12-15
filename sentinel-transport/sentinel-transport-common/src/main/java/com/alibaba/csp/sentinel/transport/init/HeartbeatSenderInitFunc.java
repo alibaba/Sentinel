@@ -62,7 +62,7 @@ public class HeartbeatSenderInitFunc implements InitFunc {
                     public void run() {
                         try {
                             sender.sendHeartbeat();
-                        } catch (Exception e) {
+                        } catch (Throwable e) {
                             e.printStackTrace();
                             RecordLog.info("[HeartbeatSender] Send heartbeat error", e);
                         }
