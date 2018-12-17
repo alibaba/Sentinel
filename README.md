@@ -10,7 +10,8 @@
 
 ## What Does It Do?
 
-As distributed systems become increasingly popular, the reliability and stability between services is becoming more important than ever before. Sentinel takes "flow" as breakthrough point, and works on multiple fields including **flow control**, **concurrency**, **circuit breaking** and **load protection**, to protect service reliability.
+As distributed systems become increasingly popular, the reliability between services is becoming more important than ever before.
+Sentinel takes "flow" as breakthrough point, and works on multiple fields including **flow control**, **circuit breaking** and **system adaptive protection**, to guarantee service reliability.
 
 Sentinel has the following features:
 
@@ -83,7 +84,7 @@ So far the code modification is done. We also provide [annotation support module
 If we want to limit the access times of the resource, we can define rules. The following code defines a rule that limits access to the reource to 20 times per second at the maximum. 
 
 ```java
-List<FlowRule> rules = new ArrayList<FlowRule>();
+List<FlowRule> rules = new ArrayList<>();
 FlowRule rule = new FlowRule();
 rule.setResource("HelloWorld");
 // set limit qps to 20
@@ -137,6 +138,12 @@ Contact us: sentinel@linux.alibaba.com
 ## Contributing
 
 Contributions are always welcomed! Please see [CONTRIBUTING](./CONTRIBUTING.md) for detailed guidelines.
+
+## Credits
+
+Thanks [Guava](https://github.com/google/guava), which provides some inspiration on rate limiting.
+
+And thanks for all [contributors](https://github.com/alibaba/Sentinel/graphs/contributors) of Sentinel!
 
 ## Who is using
 
