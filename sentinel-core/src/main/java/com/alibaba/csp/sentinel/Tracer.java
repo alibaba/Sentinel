@@ -145,6 +145,22 @@ public class Tracer {
         checkNotNull(traceClasses);
         Tracer.traceClasses = traceClasses;
     }
+    
+    /**
+     * In unit tests we should recover the state for other tests.
+     * Promote it to public if necessarily.
+     */
+    protected static void resetExceptionsToTrace() {
+        Tracer.traceClasses = null;
+    }
+    
+    /**
+     * In unit tests we should recover the state for other tests.
+     * Promote it to public if necessarily.
+     */
+    protected static void resetExceptionsToIgnore() {
+        Tracer.ignoreClasses = null;
+    }
 
     /**
      * Get exception classes to trace.

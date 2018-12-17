@@ -16,6 +16,9 @@
 package com.alibaba.csp.sentinel.context;
 
 import com.alibaba.csp.sentinel.Constants;
+import com.alibaba.csp.sentinel.Entry;
+import com.alibaba.csp.sentinel.ErrorEntryFreeException;
+import com.alibaba.csp.sentinel.node.Node;
 
 import org.junit.After;
 import org.junit.Before;
@@ -94,6 +97,16 @@ public class ContextTest {
         assertFalse(curContext.isAsync());
 
         ContextUtil.exit();
+        assertNull(ContextUtil.getContext());
+    }
+    
+    @Test
+    public void testLeaveToAsync() {
+        final String contextName = "contextA";
+        final String origin = "originA";
+        ContextUtil.enter(contextName, origin);
+
+        ContextUtil.exitByAsync();
         assertNull(ContextUtil.getContext());
     }
 

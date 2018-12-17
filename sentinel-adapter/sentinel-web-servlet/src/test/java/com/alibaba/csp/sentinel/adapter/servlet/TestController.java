@@ -15,6 +15,9 @@
  */
 package com.alibaba.csp.sentinel.adapter.servlet;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,5 +41,31 @@ public class TestController {
     @GetMapping("/foo/{id}")
     public String apiFoo(@PathVariable("id") Long id) {
         return "Hello " + id;
+    }
+    
+    @GetMapping("/async")
+    public CompletableFuture<String> async() {
+        return CompletableFuture.supplyAsync(new Supplier<String>() {
+
+            @Override
+            public String get() {
+                return "Async called";
+            }
+        });
+    }
+    
+    @GetMapping("/asyncSlow")
+    public CompletableFuture<String> asyncSlow() {
+        return CompletableFuture.supplyAsync(new Supplier<String>() {
+
+            @Override
+            public String get() {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                }
+                return "Async called";
+            }
+        });
     }
 }

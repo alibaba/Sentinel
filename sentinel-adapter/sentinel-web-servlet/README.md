@@ -54,3 +54,32 @@ the amount of context and resources will exceed the threshold.
 
 `RequestOriginParser` interface is useful for extracting request origin (e.g. IP or appName from HTTP Header)
 from HTTP request. You can implement your own `RequestOriginParser` and register to `WebCallbackManager`.
+
+# Async Servlet Support
+After servlet 3.0 async servlet is supported for slow request. So sentinel's servlet adapter should support it and keep backward compatibility.  
+
+But there may be difference between implementations of servlet. Generally there are two kinds of flow for async requests.  
+
+## Normal Request Flow
+For normal request the flow is shown below:  
+![Normal Request](NormalRequestFlow.png)  
+
+## Async Request Flow
+### Tomcat
+For async servlet in containers like tomcat the flow is like:  
+![Async Request](AsyncRequestFlow1.png)  
+
+### Spring Boot or Mock
+For async servlet in some special implementation things changed:  
+![Async Request](AsyncRequestFlow2.png)  
+
+## Design
+So in `CommonFilter` we should deal with several scenarios:
+
+* Judge a request entering async pool by calling `isAsyncStarted`(since servlet 3.0).
+* Register a listener for async servlets to exit their sentinel contexts.
+* Trace `timeout` and `error` in the listeners for sentinel.
+* Handle the reentering filters of async servlet in some implementations. Separate them from fresh requests.
+
+To make sure backward compatibility we can use `reflection`. All reflections are cached for better performance.
+

@@ -15,6 +15,11 @@
  */
 package com.alibaba.csp.sentinel.adapter.servlet;
 
+
+import java.util.Enumeration;
+
+import javax.servlet.ServletContext;
+
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,12 +32,39 @@ public class FilterConfig {
 
     @Bean
     public FilterRegistrationBean sentinelFilterRegistration() {
+        //init a config
+        javax.servlet.FilterConfig config = new javax.servlet.FilterConfig() {
+            
+            @Override
+            public ServletContext getServletContext() {
+                return null;
+            }
+            
+            @Override
+            public Enumeration<String> getInitParameterNames() {
+                return null;
+            }
+            
+            @Override
+            public String getInitParameter(String name) {
+                return null;
+            }
+            
+            @Override
+            public String getFilterName() {
+                return "sentinelFilter";
+            }
+        };
+        
+        CommonFilter filter = new CommonFilter();
+        filter.init(config);
         FilterRegistrationBean registration = new FilterRegistrationBean();
-        registration.setFilter(new CommonFilter());
+        registration.setFilter(filter);
         registration.addUrlPatterns("/*");
-        registration.setName("sentinelFilter");
+        registration.setName(config.getFilterName());
         registration.setOrder(1);
 
         return registration;
     }
+    
 }

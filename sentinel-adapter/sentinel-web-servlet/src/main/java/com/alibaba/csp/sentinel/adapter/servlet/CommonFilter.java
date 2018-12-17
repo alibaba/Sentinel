@@ -33,7 +33,9 @@ import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.adapter.servlet.callback.RequestOriginParser;
 import com.alibaba.csp.sentinel.adapter.servlet.callback.UrlCleaner;
 import com.alibaba.csp.sentinel.adapter.servlet.callback.WebCallbackManager;
+import com.alibaba.csp.sentinel.adapter.servlet.util.AsyncUtil;
 import com.alibaba.csp.sentinel.adapter.servlet.util.FilterUtil;
+import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -45,45 +47,61 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  * @author Eric Zhao
  */
 public class CommonFilter implements Filter {
-
+    public final static String ATTR_CONTEXT = "SENTINEL_ADAPTER_SERVLET_CTX";
+    public final static String ATTR_ENTRY = "SENTINEL_ADAPTER_SERVLET_ENTRY";
+    public final static String ATTR_METHOD_ENTRY = "SENTINEL_ADAPTER_SERVLET_METHOD_ENTRY";
     private final static String HTTP_METHOD_SPECIFY = "HTTP_METHOD_SPECIFY";
     private final static String COLON = ":";
     private boolean httpMethodSpecify = false;
-
+    
     @Override
     public void init(FilterConfig filterConfig) {
         httpMethodSpecify = Boolean.parseBoolean(filterConfig.getInitParameter(HTTP_METHOD_SPECIFY));
     }
-
+    
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         HttpServletRequest sRequest = (HttpServletRequest) request;
+        
         Entry entry = null;
-
         Entry methodEntry = null;
+        Context ctx = null;
+        
+        // whether in async callback round
+        // Here we can use ServletRequest#getDispatcherType() == 'ASYNC' to determine whether is an async request
+        // But i think use our own attribute is also efficient and working.
+        // Please notice that asyncStarted is false when back(that depends please refer to README)
+        boolean inAsync = sRequest.getAttribute(ATTR_CONTEXT) != null;
 
         try {
-            String target = FilterUtil.filterTarget(sRequest);
-            // Clean and unify the URL.
-            // For REST APIs, you have to clean the URL (e.g. `/foo/1` and `/foo/2` -> `/foo/:id`), or
-            // the amount of context and resources will exceed the threshold.
-            UrlCleaner urlCleaner = WebCallbackManager.getUrlCleaner();
-            if (urlCleaner != null) {
-                target = urlCleaner.clean(target);
-            }
-
-            // Parse the request origin using registered origin parser.
-            String origin = parseOrigin(sRequest);
-
-            ContextUtil.enter(target, origin);
-            entry = SphU.entry(target, EntryType.IN);
-
-
-            // Add method specification if necessary
-            if (httpMethodSpecify) {
-                methodEntry = SphU.entry(sRequest.getMethod().toUpperCase() + COLON + target,
-                        EntryType.IN);
+            if (inAsync) {
+                // Got an async servlet's final lifecycle
+                ctx = (Context) sRequest.getAttribute(ATTR_CONTEXT);
+                entry = (Entry) sRequest.getAttribute(ATTR_ENTRY);
+                methodEntry = (Entry) sRequest.getAttribute(ATTR_METHOD_ENTRY);
+            } else {
+                // For a normal request
+                String target = FilterUtil.filterTarget(sRequest);
+                // Clean and unify the URL.
+                // For REST APIs, you have to clean the URL (e.g. `/foo/1` and `/foo/2` -> `/foo/:id`), or
+                // the amount of context and resources will exceed the threshold.
+                UrlCleaner urlCleaner = WebCallbackManager.getUrlCleaner();
+                if (urlCleaner != null) {
+                    target = urlCleaner.clean(target);
+                }
+    
+                // Parse the request origin using registered origin parser.
+                String origin = parseOrigin(sRequest);
+    
+                ctx = ContextUtil.enter(target, origin);
+                entry = SphU.entry(target, EntryType.IN);
+    
+                // Add method specification if necessary
+                if (httpMethodSpecify) {
+                    methodEntry = SphU.entry(sRequest.getMethod().toUpperCase() + COLON + target,
+                            EntryType.IN);
+                }
             }
 
             chain.doFilter(request, response);
@@ -101,13 +119,27 @@ public class CommonFilter implements Filter {
             Tracer.trace(e4);
             throw e4;
         } finally {
-            if (methodEntry != null) {
-                methodEntry.exit();
+            boolean isAsyncStarted = AsyncUtil.isAsyncStarted(sRequest);
+            if (isAsyncStarted) {
+                sRequest.setAttribute(ATTR_CONTEXT, ctx);
+                sRequest.setAttribute(ATTR_ENTRY, entry);
+                if (methodEntry != null) {
+                    sRequest.setAttribute(ATTR_METHOD_ENTRY, methodEntry);
+                }
+                AsyncUtil.addListener(CommonAsyncListener.getInstance(), sRequest);
             }
-            if (entry != null) {
-                entry.exit();
+            if (!isAsyncStarted && !inAsync) {
+                if (methodEntry != null) {
+                    methodEntry.exit();
+                }
+                if (entry != null) {
+                    entry.exit();
+                }
             }
-            ContextUtil.exit();
+            if (!inAsync) {
+                //force to remove
+                ContextUtil.exitByAsync();
+            }
         }
     }
 

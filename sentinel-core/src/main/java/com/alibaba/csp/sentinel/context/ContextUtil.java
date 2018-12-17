@@ -203,6 +203,18 @@ public class ContextUtil {
             contextHolder.set(null);
         }
     }
+    
+    /**
+     * Exit context of current thread, that is removing {@link Context} in the
+     * ThreadLocal.<br>
+     * Used in async scenario
+     */
+    public static void exitByAsync() {
+        Context context = contextHolder.get();
+        if (context != null) {
+            contextHolder.set(null);
+        }
+    }
 
     /**
      * Get current size of context entrance node map.

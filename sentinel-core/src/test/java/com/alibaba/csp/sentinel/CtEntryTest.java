@@ -93,6 +93,24 @@ public class CtEntryTest {
             assertNull(ContextUtil.getContext());
         }
     }
+    
+    @Test
+    public void testExitToAsyncContext() {
+        String contextName = "context-rpc";
+        ContextUtil.enter(contextName);
+        Context context = ContextUtil.getContext();
+        CtEntry entry = new CtEntry(new StringResourceWrapper("resA", EntryType.IN),
+            null, context);
+        assertNotNull(context.getCurEntry());
+        ContextUtil.exit();
+        assertNotNull(context.getCurEntry());
+        assertEquals(context, ContextUtil.getContext());
+        ContextUtil.exitByAsync();
+        assertNotNull(context.getCurEntry());
+        assertNull(ContextUtil.getContext());
+        entry.exit();
+        assertNull(context.getCurEntry());
+    }
 
     @Test
     public void testEntryAndExitWithNullContext() {

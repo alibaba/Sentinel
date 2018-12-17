@@ -41,6 +41,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -58,6 +59,14 @@ public class CommonFilterTest {
 
     @Autowired
     private MockMvc mvc;
+    
+    private void configureThreadCountRulesFor(String resource, int count) {
+        FlowRule rule = new FlowRule()
+            .setCount(count)
+            .setGrade(RuleConstant.FLOW_GRADE_THREAD);
+        rule.setResource(resource);
+        FlowRuleManager.loadRules(Collections.singletonList(rule));
+    }
 
     private void configureRulesFor(String resource, int count) {
         configureRulesFor(resource, count, "default");
@@ -91,6 +100,8 @@ public class CommonFilterTest {
         testUrlCleaner();
 
         testCustomOriginParser();
+        
+        testAsyncRequest();
     }
 
     private void testCommonBlockAndRedirectBlockPage(String url, ClusterNode cn) throws Exception {
@@ -112,7 +123,7 @@ public class CommonFilterTest {
         WebServletConfig.setBlockPage("");
     }
 
-    private void testUrlCleaner() throws Exception {
+    public void testUrlCleaner() throws Exception {
         final String fooPrefix = "/foo/";
         String url1 = fooPrefix + 1;
         String url2 = fooPrefix + 2;
@@ -139,7 +150,7 @@ public class CommonFilterTest {
         WebCallbackManager.setUrlCleaner(new DefaultUrlCleaner());
     }
 
-    private void testCustomOriginParser() throws Exception {
+    public void testCustomOriginParser() throws Exception {
         String url = "/hello";
         String limitOrigin = "userA";
         final String headerName = "S-User";
@@ -166,6 +177,58 @@ public class CommonFilterTest {
 
         WebCallbackManager.setRequestOriginParser(null);
         FlowRuleManager.loadRules(null);
+    }
+    
+    public void testAsyncRequest() throws Exception {
+        // normal async request
+        {
+            String url = "/async";
+            MvcResult result = this.mvc.perform(get(url))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+            this.mvc.perform(asyncDispatch(result))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Async called"));
+        }
+        
+        // slow async request
+        {
+            String url = "/asyncSlow";
+            MvcResult result1 = this.mvc.perform(get(url))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+            MvcResult result2 = this.mvc.perform(get(url))
+                    .andExpect(request().asyncStarted())
+                    .andReturn();
+            this.mvc.perform(asyncDispatch(result1))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Async called"));
+            this.mvc.perform(asyncDispatch(result2))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Async called"));
+        }
+        {
+            // thread count limit to 1
+            String url = "/asyncSlow";
+            configureThreadCountRulesFor(url, 1);
+            // this one pass to be an async request
+            MvcResult result1 = this.mvc.perform(get(url))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+            // this one fail at once
+            this.mvc.perform(get(url))
+                    .andExpect(request().asyncNotStarted())
+                    .andExpect(content().string(FilterUtil.DEFAULT_BLOCK_MSG));
+            ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
+            assertEquals(1, cn.blockQps(), 0.1);
+            this.mvc.perform(asyncDispatch(result1))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Async called"));
+        }
+        
+        // TIP: We cannot test scenarios of timeout and error 
+        //      because mock will throw exception and terminate.
+        //      
     }
 
     @After
