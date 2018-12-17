@@ -15,7 +15,7 @@ As distributed systems become increasingly popular, the reliability and stabilit
 Sentinel has the following features:
 
 - **Rich applicable scenarios**:
-Sentinel has been wildly used in Alibaba, and has covered almost all the core-scenarios in Double-11 (11.11) Shopping Festivals in the past 10 years, such as “Second Kill” which needs to limit burst flow traffic to meet the system capacity, message peak clipping and valley fills, degrading unreliable downstream applications, etc.
+Sentinel has been wildly used in Alibaba, and has covered almost all the core-scenarios in Double-11 (11.11) Shopping Festivals in the past 10 years, such as “Second Kill” which needs to limit burst flow traffic to meet the system capacity, message peak clipping and valley fills, circuit breaking for unreliable downstream services, cluster flow control, etc.
 
 - **Real-time monitoring**:
 Sentinel also provides real-time monitoring ability. You can see the runtime information of a single machine in real-time, and the aggregated runtime info of a cluster with less than 500 nodes.
@@ -155,3 +155,4 @@ These are only part of the companies using Sentinel, for reference only. If you 
 ![金汇金融](https://res.jinhui365.com/r/images/logo2.png?v=1.527)
 ![Vivo](https://user-images.githubusercontent.com/9434884/49355264-c6f87600-f701-11e8-8109-054cf91df868.png)
 ![闪电购](http://cdn.52shangou.com/shandianbang/official-source/3.1.1/build/images/logo.png)
+![拼多多](http://cdn.pinduoduo.com/assets/img/pdd_logo_v3.png)
