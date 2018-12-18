@@ -19,6 +19,8 @@ import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.transport.HeartbeatSender;
 import com.alibaba.csp.sentinel.transport.config.TransportConfig;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -28,6 +30,16 @@ import static org.mockito.Mockito.*;
  * @author Eric Zhao
  */
 public class HeartbeatSenderInitFuncTest {
+
+    @Before
+    public void setUp() throws Exception {
+        SentinelConfig.removeConfig(TransportConfig.HEARTBEAT_INTERVAL_MS);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        SentinelConfig.removeConfig(TransportConfig.HEARTBEAT_INTERVAL_MS);
+    }
 
     @Test
     public void testRetrieveInterval() {

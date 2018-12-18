@@ -18,11 +18,25 @@ package com.alibaba.csp.sentinel.transport.config;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 public class TransportConfigTest {
+
+    @Before
+    public void setUp() throws Exception {
+        SentinelConfig.removeConfig(TransportConfig.HEARTBEAT_INTERVAL_MS);
+        SentinelConfig.removeConfig(TransportConfig.HEARTBEAT_CLIENT_IP);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        SentinelConfig.removeConfig(TransportConfig.HEARTBEAT_INTERVAL_MS);
+        SentinelConfig.removeConfig(TransportConfig.HEARTBEAT_CLIENT_IP);
+    }
 
     @Test
     public void testGetHeartbeatInterval() {
