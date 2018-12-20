@@ -39,8 +39,7 @@ public class ClusterParamMetric {
         AssertUtil.isTrue(sampleCount > 0, "sampleCount should be positive");
         AssertUtil.isTrue(intervalInMs > 0, "interval should be positive");
         AssertUtil.isTrue(intervalInMs % sampleCount == 0, "time span needs to be evenly divided");
-        int windowLengthInMs = intervalInMs / sampleCount;
-        this.metric = new ClusterParameterLeapArray<>(windowLengthInMs, intervalInMs, maxCapacity);
+        this.metric = new ClusterParameterLeapArray<>(sampleCount, intervalInMs, maxCapacity);
     }
 
     public long getSum(Object value) {
