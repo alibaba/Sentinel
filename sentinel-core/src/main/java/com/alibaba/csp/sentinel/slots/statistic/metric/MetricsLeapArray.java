@@ -28,12 +28,8 @@ import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
  */
 public class MetricsLeapArray extends LeapArray<MetricBucket> {
 
-    /**
-     * @param windowLengthInMs a single window bucket's time length in milliseconds.
-     * @param intervalInSec    the total time span of this {@link MetricsLeapArray} in seconds.
-     */
-    public MetricsLeapArray(int windowLengthInMs, int intervalInSec) {
-        super(windowLengthInMs, intervalInSec);
+    public MetricsLeapArray(int sampleCount, int intervalInMs) {
+        super(sampleCount, intervalInMs);
     }
 
     @Override

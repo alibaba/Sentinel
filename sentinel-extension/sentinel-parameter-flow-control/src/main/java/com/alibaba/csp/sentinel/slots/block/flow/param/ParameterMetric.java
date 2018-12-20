@@ -25,6 +25,7 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.IntervalProperty;
 import com.alibaba.csp.sentinel.node.SampleCountProperty;
 import com.alibaba.csp.sentinel.slots.statistic.metric.HotParameterLeapArray;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
  * Metrics for frequent ("hot spot") parameters.
@@ -33,6 +34,21 @@ import com.alibaba.csp.sentinel.slots.statistic.metric.HotParameterLeapArray;
  * @since 0.2.0
  */
 public class ParameterMetric {
+
+    private final int sampleCount;
+    private final int intervalMs;
+
+    public ParameterMetric() {
+        this(SampleCountProperty.SAMPLE_COUNT, IntervalProperty.INTERVAL);
+    }
+
+    public ParameterMetric(int sampleCount, int intervalInMs) {
+        AssertUtil.isTrue(sampleCount > 0, "sampleCount should be positive");
+        AssertUtil.isTrue(intervalInMs > 0, "window interval should be positive");
+        AssertUtil.isTrue(intervalInMs % sampleCount == 0, "time span needs to be evenly divided");
+        this.sampleCount = sampleCount;
+        this.intervalMs = intervalInMs;
+    }
 
     private Map<Integer, HotParameterLeapArray> rollingParameters =
         new ConcurrentHashMap<Integer, HotParameterLeapArray>();
@@ -50,8 +66,7 @@ public class ParameterMetric {
             synchronized (this) {
                 // putIfAbsent
                 if (rollingParameters.get(index) == null) {
-                    rollingParameters.put(index, new HotParameterLeapArray(
-                        1000 / SampleCountProperty.SAMPLE_COUNT, IntervalProperty.INTERVAL));
+                    rollingParameters.put(index, new HotParameterLeapArray(sampleCount, intervalMs));
                 }
             }
         }
