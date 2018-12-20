@@ -54,20 +54,17 @@ public abstract class LeapArray<T> {
     /**
      * The total bucket count is: {@code sampleCount = intervalInMs / windowLengthInMs}.
      *
-     * @param windowLengthInMs a single window bucket's time length in milliseconds.
-     * @param intervalInSec    the total time span of this {@link LeapArray} in seconds.
+     * @param sampleCount bucket count of the sliding window
+     * @param intervalInMs    the total time interval of this {@link LeapArray} in milliseconds
      */
-    public LeapArray(int windowLengthInMs, int intervalInSec) {
-        // TODO: change `intervalInSec` to `intervalInMs`
-        AssertUtil.isTrue(windowLengthInMs > 0, "bucket length is invalid: " + windowLengthInMs);
-        int intervalInMs = intervalInSec * 1000;
-        AssertUtil.isTrue(intervalInMs > windowLengthInMs,
-            "total time span of the window should be greater than bucket length");
-        AssertUtil.isTrue(intervalInMs % windowLengthInMs == 0, "time span needs to be evenly divided");
+    public LeapArray(int sampleCount, int intervalInMs) {
+        AssertUtil.isTrue(sampleCount > 0, "bucket count is invalid: " + sampleCount);
+        AssertUtil.isTrue(intervalInMs > 0, "total time interval of the sliding window should be positive");
+        AssertUtil.isTrue(intervalInMs % sampleCount == 0, "time span needs to be evenly divided");
 
-        this.windowLengthInMs = windowLengthInMs;
+        this.windowLengthInMs = intervalInMs / sampleCount;
         this.intervalInMs = intervalInMs;
-        this.sampleCount = intervalInMs / windowLengthInMs;
+        this.sampleCount = sampleCount;
 
         this.array = new AtomicReferenceArray<WindowWrap<T>>(sampleCount);
     }
@@ -346,11 +343,20 @@ public abstract class LeapArray<T> {
     }
 
     /**
+     * Get total interval length of the sliding window in milliseconds.
+     *
+     * @return interval in second
+     */
+    public int getIntervalInMs() {
+        return intervalInMs;
+    }
+
+    /**
      * Get total interval length of the sliding window.
      *
      * @return interval in second
      */
-    public int getIntervalInSecond() {
-        return intervalInMs / 1000;
+    public double getIntervalInSecond() {
+        return intervalInMs / 1000.0;
     }
 }

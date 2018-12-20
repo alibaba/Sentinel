@@ -60,7 +60,7 @@ public class HotParameterLeapArrayTest {
         int a1 = 3, a2 = 5;
         String paramPrefix = "param-";
         HotParameterLeapArray leapArray = mock(HotParameterLeapArray.class);
-        when(leapArray.getIntervalInSec()).thenReturn(intervalInSec);
+        when(leapArray.getIntervalInSecond()).thenReturn((double) intervalInSec);
 
         final ParamMapBucket b1 = generateBucket(a1, paramPrefix);
         final ParamMapBucket b2 = generateBucket(a2, paramPrefix);
@@ -122,8 +122,8 @@ public class HotParameterLeapArrayTest {
     public void testGetRollingAvg() {
         HotParameterLeapArray leapArray = mock(HotParameterLeapArray.class);
         when(leapArray.getRollingSum(any(RollingParamEvent.class), any(Object.class))).thenReturn(15L);
-        when(leapArray.getIntervalInSec()).thenReturn(1)
-            .thenReturn(2);
+        when(leapArray.getIntervalInSecond()).thenReturn(1d)
+            .thenReturn(2d);
         when(leapArray.getRollingAvg(any(RollingParamEvent.class), any(Object.class))).thenCallRealMethod();
 
         assertEquals(15.0d, leapArray.getRollingAvg(RollingParamEvent.REQUEST_PASSED, "abc"), 0.001);
