@@ -36,7 +36,6 @@ import static org.mockito.Mockito.*;
 public class ArrayMetricTest {
 
     private final int windowLengthInMs = 500;
-    private final int intervalInSec = 1;
 
     @Test
     public void testOperateArrayMetric() {

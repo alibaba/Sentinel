@@ -118,6 +118,10 @@ public interface Metric {
      */
     void addRT(long rt);
 
+    double getWindowIntervalInSec();
+
+    int getSampleCount();
+
     // Tool methods.
 
     void debugQps();
