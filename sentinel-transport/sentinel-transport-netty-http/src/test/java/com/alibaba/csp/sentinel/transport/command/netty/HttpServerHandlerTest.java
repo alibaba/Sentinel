@@ -88,7 +88,7 @@ public class HttpServerHandlerTest {
     }
 
     @Test
-    public void testTargetBlank() {
+    public void testInvalidCommand() {
         String httpRequestStr = "GET / HTTP/1.1" + CRLF
                               + "Host: localhost:8719" + CRLF
                               + CRLF;
@@ -137,7 +137,7 @@ public class HttpServerHandlerTest {
         processSuccess(httpRequestStr, body);
     }
 
-//    FIXME byteBuf.toString can't get body repsonse now, need to find another way
+//    FIXME byteBuf.toString can't get body response now, need to find another way
 //    @Test
     public void testGetRuleCommandFlowSomeRules() {
         List<FlowRule> rules = new ArrayList<FlowRule>();
@@ -162,8 +162,8 @@ public class HttpServerHandlerTest {
     }
 
     private void processError(String httpRequestStr, HttpResponseStatus status, String body) {
-        String responseStr = processResponse(httpRequestStr);
-        assertErrorStatusAndBody(status, body, responseStr);
+        String httpResponseStr = processResponse(httpRequestStr);
+        assertErrorStatusAndBody(status, body, httpResponseStr);
     }
 
     private void processSuccess(String httpRequestStr, String body) {
@@ -188,17 +188,17 @@ public class HttpServerHandlerTest {
         return responseStr;
     }
 
-    private void assertErrorStatusAndBody(HttpResponseStatus status, String body, String responseStr) {
+    private void assertErrorStatusAndBody(HttpResponseStatus status, String body, String httpResponseStr) {
         StringBuilder text = new StringBuilder();
         text.append(HttpVersion.HTTP_1_1.toString()).append(' ').append(status.toString()).append(CRLF);
         text.append("Content-Type: text/plain; charset=").append(SENTINEL_CHARSET_NAME).append(CRLF);
         text.append(CRLF);
         text.append(body);
 
-        assertEquals(text.toString(), responseStr);
+        assertEquals(text.toString(), httpResponseStr);
     }
 
-    private void assertStatusAndBody(HttpResponseStatus status, String body, String responseStr) {
+    private void assertStatusAndBody(HttpResponseStatus status, String body, String httpResponseStr) {
         StringBuilder text = new StringBuilder();
         text.append(HttpVersion.HTTP_1_1.toString()).append(' ').append(status.toString()).append(CRLF);
         text.append("Content-Type: text/plain; charset=").append(SENTINEL_CHARSET_NAME).append(CRLF);
@@ -207,6 +207,6 @@ public class HttpServerHandlerTest {
         text.append(CRLF);
         text.append(body);
 
-        assertEquals(text.toString(), responseStr);
+        assertEquals(text.toString(), httpResponseStr);
     }
 }

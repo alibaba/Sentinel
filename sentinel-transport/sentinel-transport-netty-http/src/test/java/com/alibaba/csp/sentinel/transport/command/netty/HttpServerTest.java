@@ -67,7 +67,7 @@ public class HttpServerTest {
         httpServer.registerCommand(commandName, handler);
         assertEquals(0, HttpServer.handlerMap.size());
 
-        // if commandName is " ", no handler added in handlerMap
+        // if commandName is "", no handler added in handlerMap
         commandName = "";
         handler = new VersionCommandHandler();
         httpServer.registerCommand(commandName, handler);
@@ -85,7 +85,7 @@ public class HttpServerTest {
         httpServer.registerCommand(commandName, handler);
         assertEquals(1, HttpServer.handlerMap.size());
 
-        // add the same name Handler, no handler add in handlerMap
+        // add the same name Handler, no handler added in handlerMap
         commandName = "version";
         handler = new VersionCommandHandler();
         httpServer.registerCommand(commandName, handler);
