@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.alibaba.csp.sentinel.log.LogBase;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.AppNameUtil;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
@@ -102,14 +103,24 @@ public class SentinelConfig {
      * @return the config value.
      */
     public static String getConfig(String key) {
+        AssertUtil.notNull(key, "key cannot be null");
         return props.get(key);
     }
 
     public static void setConfig(String key, String value) {
+        AssertUtil.notNull(key, "key cannot be null");
+        AssertUtil.notNull(value, "value cannot be null");
         props.put(key, value);
     }
 
+    public static String removeConfig(String key) {
+        AssertUtil.notNull(key, "key cannot be null");
+        return props.remove(key);
+    }
+
     public static void setConfigIfAbsent(String key, String value) {
+        AssertUtil.notNull(key, "key cannot be null");
+        AssertUtil.notNull(value, "value cannot be null");
         String v = props.get(key);
         if (v == null) {
             props.put(key, value);
