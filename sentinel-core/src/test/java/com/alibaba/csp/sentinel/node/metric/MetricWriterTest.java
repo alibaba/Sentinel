@@ -73,6 +73,10 @@ public class MetricWriterTest {
         String baseFileName4 = "Sentinel-SDK-Demo-metrics.log";
         String fileName4 = "Sentinel-SDK-Demo-metrics.log.XXX.2018-03-06.11";
         assertFalse(MetricWriter.fileNameMatches(fileName4, baseFileName4));
+
+        String baseFileName5 = "Sentinel-SDK-Demo-metrics.log";
+        String fileName5 = "Sentinel-SDK-Demo-metrics.log.2018-03-06.11XXX";
+        assertFalse(MetricWriter.fileNameMatches(fileName5, baseFileName5));
     }
 
 
