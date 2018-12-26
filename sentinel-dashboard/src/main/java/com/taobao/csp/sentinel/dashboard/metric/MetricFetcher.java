@@ -141,7 +141,7 @@ public class MetricFetcher {
     }
 
     /**
-     * 遍历每个APP，然后拉取该APP所有机器的metric
+     * Traverse each APP, and then pull the metric of all machines for that APP.
      */
     private void fetchAllApp() {
         List<String> apps = appManagement.getAppNames();
