@@ -25,6 +25,8 @@ import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntit
 import com.taobao.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.taobao.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.taobao.csp.sentinel.dashboard.repository.rule.InMemDegradeRuleStore;
+import com.taobao.csp.sentinel.dashboard.rule.datasource.zookeeper.FlowRuleZKProvider;
+import com.taobao.csp.sentinel.dashboard.rule.datasource.zookeeper.FlowRuleZKPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +48,10 @@ public class DegradeController {
     private InMemDegradeRuleStore repository;
     @Autowired
     private SentinelApiClient sentinelApiClient;
+    @Autowired
+    private FlowRuleZKPublisher flowRuleZKPublisher;
+    @Autowired
+    private FlowRuleZKProvider flowRuleZKProvider;
 
     @ResponseBody
     @RequestMapping("/rules.json")
@@ -60,7 +66,7 @@ public class DegradeController {
             return Result.ofFail(-1, "port can't be null");
         }
         try {
-            List<DegradeRuleEntity> rules = sentinelApiClient.fetchDegradeRuleOfMachine(app, ip, port);
+            List<DegradeRuleEntity> rules = flowRuleZKProvider.getDegradeRuleEntityRules(app);
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
@@ -72,7 +78,7 @@ public class DegradeController {
     @ResponseBody
     @RequestMapping("/new.json")
     public Result<DegradeRuleEntity> add(String app, String ip, Integer port, String limitApp, String resource,
-                  Double count, Integer timeWindow, Integer grade) {
+                                         Double count, Integer timeWindow, Integer grade) {
         if (StringUtil.isBlank(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
         }
@@ -127,7 +133,7 @@ public class DegradeController {
     @ResponseBody
     @RequestMapping("/save.json")
     public Result<DegradeRuleEntity> updateIfNotNull(Long id, String app, String limitApp, String resource,
-                              Double count, Integer timeWindow, Integer grade) {
+                                                     Double count, Integer timeWindow, Integer grade) {
         if (id == null) {
             return Result.ofFail(-1, "id can't be null");
         }
@@ -198,6 +204,7 @@ public class DegradeController {
 
     private boolean publishRules(String app, String ip, Integer port) {
         List<DegradeRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return sentinelApiClient.setDegradeRuleOfMachine(app, ip, port, rules);
+        return flowRuleZKPublisher.publishDegradeRuleOfMachine(app,rules);
+        //return sentinelApiClient.setDegradeRuleOfMachine(app, ip, port, rules);
     }
 }

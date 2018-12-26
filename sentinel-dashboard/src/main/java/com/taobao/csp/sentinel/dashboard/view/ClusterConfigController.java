@@ -76,7 +76,7 @@ public class ClusterConfigController {
                         if (res != null) {
                             return res;
                         }
-                        clusterConfigService.modifyClusterClientConfig(data).get();
+                        clusterConfigService.modifyClusterClientConfig(data);
                         return Result.ofSuccess(true);
                     case ClusterStateManager.CLUSTER_SERVER:
                         ClusterServerModifyRequest d = JSON.parseObject(payload, ClusterServerModifyRequest.class);
@@ -123,8 +123,8 @@ public class ClusterConfigController {
         }
         try {
             return clusterConfigService.getClusterUniversalState(app, ip, port)
-                .thenApply(Result::ofSuccess)
-                .get();
+                    .thenApply(Result::ofSuccess)
+                    .get();
         } catch (ExecutionException ex) {
             logger.error("Error when fetching cluster state", ex.getCause());
             if (isNotSupported(ex.getCause())) {
@@ -145,10 +145,10 @@ public class ClusterConfigController {
     private boolean checkIfSupported(String app, String ip, int port) {
         try {
             return Optional.ofNullable(appManagement.getDetailApp(app))
-                .flatMap(e -> e.getMachine(ip, port))
-                .flatMap(m -> VersionUtils.parseVersion(m.getVersion())
-                    .map(v -> v.greaterOrEqual(version140)))
-                .orElse(true);
+                    .flatMap(e -> e.getMachine(ip, port))
+                    .flatMap(m -> VersionUtils.parseVersion(m.getVersion())
+                            .map(v -> v.greaterOrEqual(version140)))
+                    .orElse(true);
             // If error occurred or cannot retrieve machine info, return true.
         } catch (Exception ex) {
             return true;

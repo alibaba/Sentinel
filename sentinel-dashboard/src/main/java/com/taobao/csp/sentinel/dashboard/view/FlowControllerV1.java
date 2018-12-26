@@ -56,8 +56,8 @@ public class FlowControllerV1 {
 
     @GetMapping("/rules")
     public Result<List<FlowRuleEntity>> apiQueryMachineRules(@RequestParam String app,
-                                                   @RequestParam String ip,
-                                                   @RequestParam Integer port) {
+                                                             @RequestParam String ip,
+                                                             @RequestParam Integer port) {
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
         }
@@ -148,9 +148,9 @@ public class FlowControllerV1 {
 
     @PutMapping("/save.json")
     public Result<FlowRuleEntity> updateIfNotNull(Long id, String app,
-                              String limitApp, String resource, Integer grade,
-                              Double count, Integer strategy, String refResource,
-                              Integer controlBehavior, Integer warmUpPeriodSec, Integer maxQueueingTimeMs) {
+                                                  String limitApp, String resource, Integer grade,
+                                                  Double count, Integer strategy, String refResource,
+                                                  Integer controlBehavior, Integer warmUpPeriodSec, Integer maxQueueingTimeMs) {
         if (id == null) {
             return Result.ofFail(-1, "id can't be null");
         }

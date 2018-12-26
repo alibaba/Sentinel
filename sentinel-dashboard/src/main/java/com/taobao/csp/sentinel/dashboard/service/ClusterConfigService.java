@@ -22,6 +22,7 @@ import java.util.concurrent.ExecutionException;
 import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
+import com.alibaba.fastjson.JSON;
 import com.taobao.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.taobao.csp.sentinel.dashboard.domain.cluster.ClusterClientModifyRequest;
 import com.taobao.csp.sentinel.dashboard.domain.cluster.ClusterClientStateVO;
@@ -30,6 +31,12 @@ import com.taobao.csp.sentinel.dashboard.domain.cluster.ClusterUniversalStateVO;
 import com.taobao.csp.sentinel.dashboard.domain.cluster.config.ClusterClientConfig;
 import com.taobao.csp.sentinel.dashboard.domain.cluster.config.ServerFlowConfig;
 import com.taobao.csp.sentinel.dashboard.domain.cluster.config.ServerTransportConfig;
+import com.taobao.csp.sentinel.dashboard.rule.datasource.zookeeper.FlowRuleZKPublisher;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.data.Stat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,9 +46,11 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class ClusterConfigService {
-
     @Autowired
     private SentinelApiClient sentinelApiClient;
+
+    @Autowired
+    private FlowRuleZKPublisher flowRuleZKPublisher;
 
     public CompletableFuture<Void> modifyClusterClientConfig(ClusterClientModifyRequest request) {
         if (notClientRequestValid(request)) {
@@ -50,6 +59,7 @@ public class ClusterConfigService {
         String app = request.getApp();
         String ip = request.getIp();
         int port = request.getPort();
+        flowRuleZKPublisher.publishClusterModifyRequest(app,ip, JSON.toJSONString(request));
         return sentinelApiClient.modifyClusterClientConfig(app, ip, port, request.getClientConfig())
                 .thenCompose(v -> sentinelApiClient.modifyClusterMode(app, ip, port, ClusterStateManager.CLUSTER_CLIENT));
     }
@@ -57,8 +67,8 @@ public class ClusterConfigService {
     private boolean notClientRequestValid(/*@NonNull */ ClusterClientModifyRequest request) {
         ClusterClientConfig config = request.getClientConfig();
         return config == null || StringUtil.isEmpty(config.getServerHost())
-            || config.getServerPort() == null || config.getServerPort() <= 0
-            || config.getRequestTimeout() == null || config.getRequestTimeout() <= 0;
+                || config.getServerPort() == null || config.getServerPort() <= 0
+                || config.getRequestTimeout() == null || config.getRequestTimeout() <= 0;
     }
 
     public CompletableFuture<Void> modifyClusterServerConfig(ClusterServerModifyRequest request) {
@@ -77,40 +87,41 @@ public class ClusterConfigService {
         String app = request.getApp();
         String ip = request.getIp();
         int port = request.getPort();
+        flowRuleZKPublisher.publishClusterModifyRequest(app,ip, JSON.toJSONString(request));
         return sentinelApiClient.modifyClusterServerNamespaceSet(app, ip, port, namespaceSet)
-            .thenCompose(v -> sentinelApiClient.modifyClusterServerTransportConfig(app, ip, port, transportConfig))
-            .thenCompose(v -> sentinelApiClient.modifyClusterServerFlowConfig(app, ip, port, flowConfig))
-            .thenCompose(v -> sentinelApiClient.modifyClusterMode(app, ip, port, ClusterStateManager.CLUSTER_SERVER));
+                .thenCompose(v -> sentinelApiClient.modifyClusterServerTransportConfig(app, ip, port, transportConfig))
+                .thenCompose(v -> sentinelApiClient.modifyClusterServerFlowConfig(app, ip, port, flowConfig))
+                .thenCompose(v -> sentinelApiClient.modifyClusterMode(app, ip, port, ClusterStateManager.CLUSTER_SERVER));
     }
 
     public CompletableFuture<ClusterUniversalStateVO> getClusterUniversalState(String app, String ip, int port) {
         return sentinelApiClient.fetchClusterMode(app, ip, port)
-            .thenApply(e -> new ClusterUniversalStateVO().setStateInfo(e))
-            .thenCompose(vo -> {
-                if (vo.getStateInfo().getClientAvailable()) {
-                    return sentinelApiClient.fetchClusterClientConfig(app, ip, port)
-                        .thenApply(cc -> vo.setClient(new ClusterClientStateVO().setClientConfig(cc)));
-                } else {
-                    return CompletableFuture.completedFuture(vo);
-                }
-            }).thenCompose(vo -> {
-                if (vo.getStateInfo().getServerAvailable()) {
-                    return sentinelApiClient.fetchClusterServerBasicInfo(app, ip, port)
-                        .thenApply(vo::setServer);
-                } else {
-                    return CompletableFuture.completedFuture(vo);
-                }
-            });
+                .thenApply(e -> new ClusterUniversalStateVO().setStateInfo(e))
+                .thenCompose(vo -> {
+                    if (vo.getStateInfo().getClientAvailable()) {
+                        return sentinelApiClient.fetchClusterClientConfig(app, ip, port)
+                                .thenApply(cc -> vo.setClient(new ClusterClientStateVO().setClientConfig(cc)));
+                    } else {
+                        return CompletableFuture.completedFuture(vo);
+                    }
+                }).thenCompose(vo -> {
+                    if (vo.getStateInfo().getServerAvailable()) {
+                        return sentinelApiClient.fetchClusterServerBasicInfo(app, ip, port)
+                                .thenApply(vo::setServer);
+                    } else {
+                        return CompletableFuture.completedFuture(vo);
+                    }
+                });
     }
 
     private boolean invalidTransportConfig(ServerTransportConfig transportConfig) {
         return transportConfig == null || transportConfig.getPort() == null || transportConfig.getPort() <= 0
-            || transportConfig.getIdleSeconds() == null || transportConfig.getIdleSeconds() <= 0;
+                || transportConfig.getIdleSeconds() == null || transportConfig.getIdleSeconds() <= 0;
     }
 
     private boolean invalidFlowConfig(ServerFlowConfig flowConfig) {
         return flowConfig == null || flowConfig.getSampleCount() == null || flowConfig.getSampleCount() <= 0
-            || flowConfig.getIntervalMs() == null || flowConfig.getIntervalMs() <= 0
-            || flowConfig.getIntervalMs() % flowConfig.getSampleCount() != 0;
+                || flowConfig.getIntervalMs() == null || flowConfig.getIntervalMs() <= 0
+                || flowConfig.getIntervalMs() % flowConfig.getSampleCount() != 0;
     }
 }
