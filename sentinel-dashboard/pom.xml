@@ -18,6 +18,21 @@
         <spring.boot.version>2.0.5.RELEASE</spring.boot.version>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <artifactId>commons-codec</artifactId>
+                <groupId>commons-codec</groupId>
+                <version>1.11</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
+                <version>4.4.6</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>com.alibaba.csp</groupId>
@@ -89,7 +104,6 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpcore</artifactId>
-            <version>4.4.5</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
