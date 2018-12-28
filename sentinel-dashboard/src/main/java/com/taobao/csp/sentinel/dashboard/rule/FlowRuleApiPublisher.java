@@ -45,7 +45,7 @@ public class FlowRuleApiPublisher implements DynamicRulePublisher<List<FlowRuleE
         if (StringUtil.isBlank(app)) {
             return;
         }
-        if (rules == null || rules.isEmpty()) {
+        if (rules == null) {
             return;
         }
         Set<MachineInfo> set = appManagement.getDetailApp(app).getMachines();
