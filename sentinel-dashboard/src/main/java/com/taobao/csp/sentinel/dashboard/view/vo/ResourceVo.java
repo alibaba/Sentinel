@@ -20,6 +20,7 @@ import java.util.List;
 
 import com.alibaba.csp.sentinel.command.vo.NodeVo;
 
+import com.alibaba.csp.sentinel.util.StringUtil;
 import com.taobao.csp.sentinel.dashboard.domain.ResourceTreeNode;
 
 /**
@@ -47,14 +48,15 @@ public class ResourceVo {
     public ResourceVo() {
     }
 
-    public static List<ResourceVo> fromNodeVoList(List<NodeVo> nodeVos) {
+    public static List<ResourceVo> fromNodeVoList(List<NodeVo> nodeVos,String searchKey) {
         if (nodeVos == null) {
             return null;
         }
         List<ResourceVo> list = new ArrayList<>();
         boolean isFirst = true;
         for (NodeVo nodeVo : nodeVos) {
-            if (isFirst) {
+            //if searchKey is blank remove the machine-root(see Constants.ROOT)
+            if (StringUtil.isBlank(searchKey) && isFirst){
                 isFirst = false;
                 continue;
             }

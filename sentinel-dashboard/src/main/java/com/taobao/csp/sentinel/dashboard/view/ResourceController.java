@@ -82,7 +82,7 @@ public class ResourceController {
                     .toLowerCase().contains(searchKey.toLowerCase()))
                     .collect(Collectors.toList());
             }
-            return Result.ofSuccess(ResourceVo.fromNodeVoList(nodeVos));
+            return Result.ofSuccess(ResourceVo.fromNodeVoList(nodeVos,searchKey));
         }
     }
 }
