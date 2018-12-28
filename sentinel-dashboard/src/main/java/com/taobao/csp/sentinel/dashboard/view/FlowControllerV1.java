@@ -15,15 +15,12 @@
  */
 package com.taobao.csp.sentinel.dashboard.view;
 
-import java.util.Date;
-import java.util.List;
-
 import com.alibaba.csp.sentinel.util.StringUtil;
-
-import com.taobao.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.taobao.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.taobao.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
+import com.taobao.csp.sentinel.dashboard.rule.DynamicRuleProvider;
+import com.taobao.csp.sentinel.dashboard.rule.DynamicRulePublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +32,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  * Flow rule controller.
@@ -52,7 +52,9 @@ public class FlowControllerV1 {
     private InMemoryRuleRepositoryAdapter<FlowRuleEntity> repository;
 
     @Autowired
-    private SentinelApiClient sentinelApiClient;
+    private DynamicRuleProvider<List<FlowRuleEntity>> provider;
+    @Autowired
+    private DynamicRulePublisher<List<FlowRuleEntity>> publisher;
 
     @GetMapping("/rules")
     public Result<List<FlowRuleEntity>> apiQueryMachineRules(@RequestParam String app,
@@ -68,7 +70,7 @@ public class FlowControllerV1 {
             return Result.ofFail(-1, "port can't be null");
         }
         try {
-            List<FlowRuleEntity> rules = sentinelApiClient.fetchFlowRuleOfMachine(app, ip, port);
+            List<FlowRuleEntity> rules = provider.getRules(app);
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
@@ -245,6 +247,11 @@ public class FlowControllerV1 {
 
     private boolean publishRules(String app, String ip, Integer port) {
         List<FlowRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return sentinelApiClient.setFlowRuleOfMachine(app, ip, port, rules);
+        try {
+            publisher.publish(app, rules);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

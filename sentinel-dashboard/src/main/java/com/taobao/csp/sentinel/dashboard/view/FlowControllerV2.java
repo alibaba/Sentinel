@@ -15,11 +15,7 @@
  */
 package com.taobao.csp.sentinel.dashboard.view;
 
-import java.util.Date;
-import java.util.List;
-
 import com.alibaba.csp.sentinel.util.StringUtil;
-
 import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.taobao.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
 import com.taobao.csp.sentinel.dashboard.rule.DynamicRuleProvider;
@@ -27,7 +23,6 @@ import com.taobao.csp.sentinel.dashboard.rule.DynamicRulePublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,6 +32,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  * Flow rule controller (v2).
@@ -54,11 +52,9 @@ public class FlowControllerV2 {
     private InMemoryRuleRepositoryAdapter<FlowRuleEntity> repository;
 
     @Autowired
-    @Qualifier("flowRuleDefaultProvider")
-    private DynamicRuleProvider<List<FlowRuleEntity>> ruleProvider;
+    private DynamicRuleProvider<List<FlowRuleEntity>> provider;
     @Autowired
-    @Qualifier("flowRuleDefaultPublisher")
-    private DynamicRulePublisher<List<FlowRuleEntity>> rulePublisher;
+    private DynamicRulePublisher<List<FlowRuleEntity>> publisher;
 
     @GetMapping("/rules")
     public Result<List<FlowRuleEntity>> apiQueryMachineRules(@RequestParam String app) {
@@ -66,7 +62,7 @@ public class FlowControllerV2 {
             return Result.ofFail(-1, "app can't be null or empty");
         }
         try {
-            List<FlowRuleEntity> rules = ruleProvider.getRules(app);
+            List<FlowRuleEntity> rules = provider.getRules(app);
             if (rules != null && !rules.isEmpty()) {
                 for (FlowRuleEntity entity : rules) {
                     entity.setApp(app);
@@ -204,6 +200,6 @@ public class FlowControllerV2 {
 
     private void publishRules(/*@NonNull*/ String app) throws Exception {
         List<FlowRuleEntity> rules = repository.findAllByApp(app);
-        rulePublisher.publish(app, rules);
+        publisher.publish(app, rules);
     }
 }

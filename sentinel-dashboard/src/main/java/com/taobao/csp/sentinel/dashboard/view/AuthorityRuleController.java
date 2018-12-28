@@ -15,16 +15,13 @@
  */
 package com.taobao.csp.sentinel.dashboard.view;
 
-import java.util.Date;
-import java.util.List;
-
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.util.StringUtil;
-
-import com.taobao.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.AuthorityRuleEntity;
 import com.taobao.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.taobao.csp.sentinel.dashboard.repository.rule.RuleRepository;
+import com.taobao.csp.sentinel.dashboard.rule.DynamicRuleProvider;
+import com.taobao.csp.sentinel.dashboard.rule.DynamicRulePublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +35,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Date;
+import java.util.List;
+
 /**
  * @author Eric Zhao
  * @since 0.2.1
@@ -49,7 +49,9 @@ public class AuthorityRuleController {
     private final Logger logger = LoggerFactory.getLogger(AuthorityRuleController.class);
 
     @Autowired
-    private SentinelApiClient sentinelApiClient;
+    private DynamicRuleProvider<List<AuthorityRuleEntity>> provider;
+    @Autowired
+    private DynamicRulePublisher<List<AuthorityRuleEntity>> publisher;
     @Autowired
     private RuleRepository<AuthorityRuleEntity, Long> repository;
 
@@ -67,7 +69,7 @@ public class AuthorityRuleController {
             return Result.ofFail(-1, "Invalid parameter: port");
         }
         try {
-            List<AuthorityRuleEntity> rules = sentinelApiClient.fetchAuthorityRulesOfMachine(app, ip, port);
+            List<AuthorityRuleEntity> rules = provider.getRules(app);
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
@@ -178,6 +180,11 @@ public class AuthorityRuleController {
 
     private boolean publishRules(String app, String ip, Integer port) {
         List<AuthorityRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return sentinelApiClient.setAuthorityRuleOfMachine(app, ip, port, rules);
+        try {
+            publisher.publish(app, rules);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

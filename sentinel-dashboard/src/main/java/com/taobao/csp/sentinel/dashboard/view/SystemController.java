@@ -15,15 +15,12 @@
  */
 package com.taobao.csp.sentinel.dashboard.view;
 
-import java.util.Date;
-import java.util.List;
-
 import com.alibaba.csp.sentinel.util.StringUtil;
-
 import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.SystemRuleEntity;
 import com.taobao.csp.sentinel.dashboard.discovery.MachineInfo;
-import com.taobao.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.taobao.csp.sentinel.dashboard.repository.rule.InMemSystemRuleStore;
+import com.taobao.csp.sentinel.dashboard.rule.DynamicRuleProvider;
+import com.taobao.csp.sentinel.dashboard.rule.DynamicRulePublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +28,9 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author leyou(lihao)
@@ -43,7 +43,9 @@ public class SystemController {
     @Autowired
     private InMemSystemRuleStore repository;
     @Autowired
-    private SentinelApiClient sentinelApiClient;
+    private DynamicRuleProvider<List<SystemRuleEntity>> provider;
+    @Autowired
+    private DynamicRulePublisher<List<SystemRuleEntity>> publisher;
 
     @ResponseBody
     @RequestMapping("/rules.json")
@@ -58,7 +60,7 @@ public class SystemController {
             return Result.ofFail(-1, "port can't be null");
         }
         try {
-            List<SystemRuleEntity> rules = sentinelApiClient.fetchSystemRuleOfMachine(app, ip, port);
+            List<SystemRuleEntity> rules = provider.getRules(app);
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
@@ -92,7 +94,7 @@ public class SystemController {
         int notNullCount = countNotNullAndNotNegtive(avgLoad, avgRt, maxThread, qps);
         if (notNullCount != 1) {
             return Result.ofFail(-1, "only one of [avgLoad, avgRt, maxThread, qps] "
-                + "value must be set >= 0, but " + notNullCount + " values get");
+                    + "value must be set >= 0, but " + notNullCount + " values get");
         }
         SystemRuleEntity entity = new SystemRuleEntity();
         entity.setApp(app.trim());
@@ -209,6 +211,11 @@ public class SystemController {
 
     private boolean publishRules(String app, String ip, Integer port) {
         List<SystemRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return sentinelApiClient.setSystemRuleOfMachine(app, ip, port, rules);
+        try {
+            publisher.publish(app, rules);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
