@@ -33,7 +33,8 @@ See the [中文文档](https://github.com/alibaba/Sentinel/wiki/%E4%BB%8B%E7%BB%
 
 See the [Wiki](https://github.com/alibaba/Sentinel/wiki) for full documentation, examples, blog posts, operational details and other information.
 
-**If you are using Sentinel, please [leave a comment here](https://github.com/alibaba/Sentinel/issues/18) to tell us your scenario to make Sentinel better :-)**
+If you are using Sentinel, please [**leave a comment here**](https://github.com/alibaba/Sentinel/issues/18) to tell us your scenario to make Sentinel better.
+It's also encouraged to add the link of your blog post, tutorial, demo or customized components to [**Awesome Sentinel**](./doc/awesome-sentinel.md).
 
 ## Quick Start
 
@@ -138,6 +139,8 @@ Contact us: sentinel@linux.alibaba.com
 ## Contributing
 
 Contributions are always welcomed! Please see [CONTRIBUTING](./CONTRIBUTING.md) for detailed guidelines.
+
+You can start with the issues labeled with [`good first issue`](https://github.com/alibaba/Sentinel/pulls?q=is%3Apr+is%3Aopen+label%3A%22good+first+issue%22).
 
 ## Credits
 
