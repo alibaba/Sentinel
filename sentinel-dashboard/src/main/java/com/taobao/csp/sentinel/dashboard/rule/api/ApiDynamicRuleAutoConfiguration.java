@@ -1,10 +1,7 @@
 package com.taobao.csp.sentinel.dashboard.rule.api;
 
 import com.taobao.csp.sentinel.dashboard.client.SentinelApiClient;
-import com.taobao.csp.sentinel.dashboard.rule.DynamicRuleProvider;
-import com.taobao.csp.sentinel.dashboard.rule.DynamicRulePublisher;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,8 +11,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @ConditionalOnProperty(name = "csp.sentinel.dashboard.dynamic-rule.type", matchIfMissing = true, havingValue = "api")
-@ConditionalOnMissingBean({DynamicRuleProvider.class, DynamicRulePublisher.class})
-@ConditionalOnClass(SentinelApiClient.class)
+@ConditionalOnBean(SentinelApiClient.class)
 public class ApiDynamicRuleAutoConfiguration {
 
     @Configuration
