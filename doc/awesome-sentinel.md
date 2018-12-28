@@ -26,7 +26,7 @@ You can also add to [sentinel-group/sentinel-awesome](https://github.com/sentine
 
 ## Extensions / Integrations
 
-- [sentinel-support](https://github.com/cdfive/sentinel-support): A support project for convenient Sentinel integration including properties file configuration, ActiveMQ integration and a JdbcDataSource implementation. by [cdfive](https://github.com/cdfive)
+- [sentinel-support](https://github.com/cdfive/sentinel-support): A support project for convenient Sentinel integration including properties file configuration, ActiveMQ integration and a JdbcDataSource implementation by [cdfive](https://github.com/cdfive)
 
 ## Blogs
 
