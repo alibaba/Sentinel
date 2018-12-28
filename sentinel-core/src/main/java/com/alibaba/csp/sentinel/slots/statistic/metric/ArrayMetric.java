@@ -33,12 +33,8 @@ public class ArrayMetric implements Metric {
 
     private final MetricsLeapArray data;
 
-    /**
-     * @param windowLengthInMs a single window bucket's time length in milliseconds.
-     * @param intervalInSec    the total time span of this {@link ArrayMetric} in seconds.
-     */
-    public ArrayMetric(int windowLengthInMs, int intervalInSec) {
-        this.data = new MetricsLeapArray(windowLengthInMs, intervalInSec);
+    public ArrayMetric(int sampleCount, int intervalInMs) {
+        this.data = new MetricsLeapArray(sampleCount, intervalInMs);
     }
 
     /**
@@ -228,5 +224,15 @@ public class ArrayMetric implements Metric {
             return 0;
         }
         return wrap.value().pass();
+    }
+
+    @Override
+    public double getWindowIntervalInSec() {
+        return data.getIntervalInSecond();
+    }
+
+    @Override
+    public int getSampleCount() {
+        return data.getSampleCount();
     }
 }

@@ -16,8 +16,8 @@
 package com.alibaba.csp.sentinel.transport;
 
 /**
- * Heartbeat interface. Sentinel core is responsible for invoking {@link #sendHeartbeat()}
- * at every {@link #intervalMs()} interval.
+ * The heartbeat sender which is responsible for sending heartbeat to remote dashboard
+ * periodically per {@code interval}.
  *
  * @author leyou
  * @author Eric Zhao
@@ -30,14 +30,15 @@ public interface HeartbeatSender {
      * at every {@link #intervalMs()} interval.
      *
      * @return whether heartbeat is successfully send.
-     * @throws Exception
+     * @throws Exception if error occurs
      */
     boolean sendHeartbeat() throws Exception;
 
     /**
-     * Millisecond interval of every {@link #sendHeartbeat()}
+     * Default interval in milliseconds of the sender. It would take effect only when
+     * the heartbeat interval is not configured in Sentinel config property.
      *
-     * @return millisecond interval.
+     * @return default interval of the sender in milliseconds
      */
     long intervalMs();
 }
