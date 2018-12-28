@@ -33,10 +33,6 @@ public class NacosDynamicRuleAutoConfiguration {
 
         @Bean
         public ConfigService configService() throws NacosException {
-            System.out.println("value: " + serverAddr);
-            System.out.println("system: " + System.getProperty("csp.sentinel.dashboard.dynamic-rule.nacos.server-addr"));
-            System.setProperty("csp.sentinel.dashboard.dynamic-rule.nacos.server-addr", serverAddr);
-            System.out.println("system: " + System.getProperty("csp.sentinel.dashboard.dynamic-rule.nacos.server-addr"));
             return ConfigFactory.createConfigService(serverAddr);
         }
     }
