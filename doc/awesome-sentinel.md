@@ -18,8 +18,6 @@ You can also add to [sentinel-group/sentinel-awesome](https://github.com/sentine
 
 ## Tutorials
 
-
-
 ## Samples / Demos
 
 - [sentinel-zuul-example](https://github.com/tigerMoon/sentinel-zuul-sample): A simple project integration Sentinel to Spring Cloud Zuul which provide Service and API Path level flow control management by [tiger](https://github.com/tigerMoon)
@@ -31,8 +29,8 @@ You can also add to [sentinel-group/sentinel-awesome](https://github.com/sentine
 ## Blogs
 
 - [Sentinel 为 Dubbo 服务保驾护航](http://dubbo.apache.org/zh-cn/blog/sentinel-introduction-for-dubbo.html) by [Eric Zhao](https://github.com/sczyh30)
-- [Sentinel 与 Hystrix 的对比](https://github.com/alibaba/Sentinel/wiki/Sentinel-%E4%B8%8E-Hystrix-%E7%9A%84%E5%AF%B9%E6%AF%94)
-- [Guideline: 从 Hystrix 迁移到 Sentinel](https://github.com/alibaba/Sentinel/wiki/Guideline:-%E4%BB%8E-Hystrix-%E8%BF%81%E7%A7%BB%E5%88%B0-Sentinel)
+- [Sentinel 与 Hystrix 的对比](https://github.com/alibaba/Sentinel/wiki/Sentinel-%E4%B8%8E-Hystrix-%E7%9A%84%E5%AF%B9%E6%AF%94) by [Eric Zhao](https://github.com/sczyh30)
+- [Guideline: 从 Hystrix 迁移到 Sentinel](https://github.com/alibaba/Sentinel/wiki/Guideline:-%E4%BB%8E-Hystrix-%E8%BF%81%E7%A7%BB%E5%88%B0-Sentinel) by [Eric Zhao](https://github.com/sczyh30)
 - [Sentinel 控制台监控数据持久化【MySQL】(Spring Data JPA)](https://www.cnblogs.com/cdfive2018/p/9838577.html) by [cdfive](https://github.com/cdfive)
 - [Sentinel 控制台监控数据持久化【InfluxDB】](https://www.cnblogs.com/cdfive2018/p/9914838.html) by [cdfive](https://github.com/cdfive)
- - [Sentinel一体化监控解决方案 CrateDB+Grafana](https://blog.csdn.net/huyong1990/article/details/82392386) by [Young Hu](https://github.com/YoungHu)
+- [Sentinel一体化监控解决方案 CrateDB+Grafana](https://blog.csdn.net/huyong1990/article/details/82392386) by [Young Hu](https://github.com/YoungHu)
