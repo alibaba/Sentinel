@@ -5,7 +5,7 @@
 
     <groupId>com.alibaba.csp</groupId>
     <artifactId>sentinel-parent</artifactId>
-    <version>1.3.0-GA</version>
+    <version>1.3.1</version>
     <packaging>pom</packaging>
 
     <name>${project.artifactId}</name>
@@ -41,7 +41,7 @@
 
     <properties>
         <!-- Compile libs -->
-        <fastjson.version>1.2.51</fastjson.version>
+        <fastjson.version>1.2.54</fastjson.version>
 
         <!-- Test libs -->
         <junit.version>4.12</junit.version>
@@ -169,7 +169,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <!-- CircleCI build workaround -->
-                    <argLine>-Xms1024m -Xmx2048m</argLine>
+                    <argLine>@{argLine} -Xms1024m -Xmx2048m</argLine>
                     <useSystemClassLoader>false</useSystemClassLoader>
                 </configuration>
             </plugin>

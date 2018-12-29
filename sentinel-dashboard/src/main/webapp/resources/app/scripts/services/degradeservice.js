@@ -67,7 +67,7 @@ app.service('DegradeService', ['$http', function ($http) {
           return false;
       }
       if (rule.grade === undefined || rule.grade < 0) {
-          alert('未知的降级类型');
+          alert('未知的降级策略');
           return false;
       }
       if (rule.count === undefined || rule.count === '' || rule.count < 0) {

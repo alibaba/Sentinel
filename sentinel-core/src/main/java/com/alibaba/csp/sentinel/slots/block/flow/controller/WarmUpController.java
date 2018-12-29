@@ -63,21 +63,21 @@ import com.alibaba.csp.sentinel.slots.block.flow.Controller;
  */
 public class WarmUpController implements Controller {
 
-    private double count;
+    protected double count;
     private int coldFactor;
-    private int warningToken = 0;
+    protected int warningToken = 0;
     private int maxToken;
-    private double slope;
+    protected double slope;
 
-    private AtomicLong storedTokens = new AtomicLong(0);
-    private AtomicLong lastFilledTime = new AtomicLong(0);
+    protected AtomicLong storedTokens = new AtomicLong(0);
+    protected AtomicLong lastFilledTime = new AtomicLong(0);
 
-    public WarmUpController(double count, int warmupPeriodInSec, int coldFactor) {
-        construct(count, warmupPeriodInSec, coldFactor);
+    public WarmUpController(double count, int warmUpPeriodInSec, int coldFactor) {
+        construct(count, warmUpPeriodInSec, coldFactor);
     }
 
-    public WarmUpController(double count, int warmUpPeriodInMic) {
-        construct(count, warmUpPeriodInMic, 3);
+    public WarmUpController(double count, int warmUpPeriodInSec) {
+        construct(count, warmUpPeriodInSec, 3);
     }
 
     private void construct(double count, int warmUpPeriodInSec, int coldFactor) {
@@ -132,7 +132,7 @@ public class WarmUpController implements Controller {
         return false;
     }
 
-    private void syncToken(long passQps) {
+    protected void syncToken(long passQps) {
         long currentTime = TimeUtil.currentTimeMillis();
         currentTime = currentTime - currentTime % 1000;
         long oldLastFillTime = lastFilledTime.get();

@@ -239,7 +239,7 @@ public class ParamFlowRuleController {
     }
 
     private <R> Result<R> unsupportedVersion() {
-        return Result.ofFail(4041, "Sentinel client version not supported for parameter flow control");
+        return Result.ofFail(4041, "Sentinel client not supported for parameter flow control (unsupported version or dependency absent)");
     }
 
     private final SentinelVersion version020 = new SentinelVersion().setMinorVersion(2);
