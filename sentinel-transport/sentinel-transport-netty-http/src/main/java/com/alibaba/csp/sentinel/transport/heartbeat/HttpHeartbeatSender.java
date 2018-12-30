@@ -15,26 +15,25 @@
  */
 package com.alibaba.csp.sentinel.transport.heartbeat;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.spi.SpiOrder;
 import com.alibaba.csp.sentinel.transport.config.TransportConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.transport.HeartbeatSender;
+import com.alibaba.csp.sentinel.transport.config.DashboardConfig;
 import com.alibaba.csp.sentinel.util.AppNameUtil;
 import com.alibaba.csp.sentinel.util.HostNameUtil;
-import com.alibaba.csp.sentinel.transport.HeartbeatSender;
 import com.alibaba.csp.sentinel.util.PidUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.csp.sentinel.util.function.Tuple2;
-
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Eric Zhao
@@ -52,23 +51,22 @@ public class HttpHeartbeatSender implements HeartbeatSender {
         .setSocketTimeout(timeoutMs)
         .build();
 
-    private String consoleHost;
-    private int consolePort;
+    private DashboardConfig dashboardConfig;
 
     public HttpHeartbeatSender() {
         this.client = HttpClients.createDefault();
-        List<Tuple2<String, Integer>> dashboardList = parseDashboardList();
+        List<DashboardConfig> dashboardList = parseDashboardList();
         if (dashboardList == null || dashboardList.isEmpty()) {
             RecordLog.info("[NettyHttpHeartbeatSender] No dashboard available");
         } else {
-            consoleHost = dashboardList.get(0).r1;
-            consolePort = dashboardList.get(0).r2;
-            RecordLog.info("[NettyHttpHeartbeatSender] Dashboard address parsed: <" + consoleHost + ':' + consolePort + ">");
+            dashboardConfig = dashboardList.get(0);
+            RecordLog.info("[NettyHttpHeartbeatSender] Dashboard address parsed: <" + dashboardConfig.getHost()
+                    + ':' + dashboardConfig.getPort() + "/" + dashboardConfig.getPath() +">");
         }
     }
 
-    protected static List<Tuple2<String, Integer>> parseDashboardList() {
-        List<Tuple2<String, Integer>> list = new ArrayList<Tuple2<String, Integer>>();
+    private List<DashboardConfig> parseDashboardList() {
+        List<DashboardConfig> list = new ArrayList<DashboardConfig>();
         try {
             String ipsStr = TransportConfig.getConsoleServer();
             if (StringUtil.isBlank(ipsStr)) {
@@ -80,19 +78,7 @@ public class HttpHeartbeatSender implements HeartbeatSender {
                 if (ipPortStr.trim().length() == 0) {
                     continue;
                 }
-                ipPortStr = ipPortStr.trim();
-                if (ipPortStr.startsWith("http://")) {
-                    ipPortStr = ipPortStr.substring(7);
-                }
-                if (ipPortStr.startsWith(":")) {
-                    continue;
-                }
-                String[] ipPort = ipPortStr.trim().split(":");
-                int port = 80;
-                if (ipPort.length > 1) {
-                    port = Integer.parseInt(ipPort[1].trim());
-                }
-                list.add(Tuple2.of(ipPort[0].trim(), port));
+                list.add(new DashboardConfig(ipPortStr));
             }
         } catch (Exception ex) {
             RecordLog.warn("[NettyHttpHeartbeatSender] Parse dashboard list failed, current address list: " + list, ex);
@@ -103,12 +89,12 @@ public class HttpHeartbeatSender implements HeartbeatSender {
 
     @Override
     public boolean sendHeartbeat() throws Exception {
-        if (StringUtil.isEmpty(consoleHost)) {
+        if (dashboardConfig == null) {
             return false;
         }
         URIBuilder uriBuilder = new URIBuilder();
-        uriBuilder.setScheme("http").setHost(consoleHost).setPort(consolePort)
-            .setPath("/registry/machine")
+        uriBuilder.setScheme(dashboardConfig.getSchema()).setHost(dashboardConfig.getHost())
+            .setPort(dashboardConfig.getPort()).setPath(dashboardConfig.getPath()+"/registry/machine")
             .setParameter("app", AppNameUtil.getAppName())
             .setParameter("v", Constants.SENTINEL_VERSION)
             .setParameter("version", String.valueOf(System.currentTimeMillis()))
