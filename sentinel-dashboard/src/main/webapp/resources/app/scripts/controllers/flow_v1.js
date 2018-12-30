@@ -61,7 +61,7 @@ app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', '
 
     var flowRuleDialog;
     $scope.editRule = function (rule) {
-      $scope.currentRule = rule;
+      $scope.currentRule = angular.copy(rule);
       $scope.flowRuleDialog = {
         title: '编辑流控规则',
         type: 'edit',
