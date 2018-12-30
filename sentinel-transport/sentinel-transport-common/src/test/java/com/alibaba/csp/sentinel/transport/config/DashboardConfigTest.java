@@ -2,6 +2,8 @@ package com.alibaba.csp.sentinel.transport.config;
 
 import org.junit.Test;
 
+import java.net.InetSocketAddress;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -17,6 +19,8 @@ public class DashboardConfigTest {
         assertEquals(dashboardConfig.getHost(), "10.10.10.10");
         assertEquals(dashboardConfig.getPort(), Integer.valueOf(80));
         assertEquals(dashboardConfig.getPath(), "");
+        assertEquals(dashboardConfig.toString(), "DashboardConfig{schema='http', host='10.10.10.10', port=80, path=''}");
+        assertEquals(dashboardConfig.getInetSocketAddress(), new InetSocketAddress("10.10.10.10", 80));
 
 
         dashboardConfig = new DashboardConfig("10.10.10.10:8080");
