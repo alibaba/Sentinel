@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.alibaba.csp.sentinel.log.LogBase;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.AppNameUtil;
-import com.alibaba.csp.sentinel.util.StringUtil;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
  * The universal config of Courier. The config is retrieved from
@@ -40,9 +40,13 @@ public class SentinelConfig {
     public static final String SINGLE_METRIC_FILE_SIZE = "csp.sentinel.metric.file.single.size";
     public static final String TOTAL_METRIC_FILE_COUNT = "csp.sentinel.metric.file.total.count";
     public static final String COLD_FACTOR = "csp.sentinel.flow.cold.factor";
+    public static final String STATISTIC_MAX_RT = "csp.sentinel.statistic.max.rt";
 
+    static final String DEFAULT_CHARSET = "UTF-8";
     static final long DEFAULT_SINGLE_METRIC_FILE_SIZE = 1024 * 1024 * 50;
     static final int DEFAULT_TOTAL_METRIC_FILE_COUNT = 6;
+    static final int DEFAULT_COLD_FACTOR = 3;
+    static final int DEFAULT_STATISTIC_MAX_RT = 4900;
 
     static {
         initialize();
@@ -51,10 +55,11 @@ public class SentinelConfig {
 
     private static void initialize() {
         // Init default properties.
-        SentinelConfig.setConfig(CHARSET, "UTF-8");
+        SentinelConfig.setConfig(CHARSET, DEFAULT_CHARSET);
         SentinelConfig.setConfig(SINGLE_METRIC_FILE_SIZE, String.valueOf(DEFAULT_SINGLE_METRIC_FILE_SIZE));
         SentinelConfig.setConfig(TOTAL_METRIC_FILE_COUNT, String.valueOf(DEFAULT_TOTAL_METRIC_FILE_COUNT));
-        SentinelConfig.setConfig(COLD_FACTOR, String.valueOf(3));
+        SentinelConfig.setConfig(COLD_FACTOR, String.valueOf(DEFAULT_COLD_FACTOR));
+        SentinelConfig.setConfig(STATISTIC_MAX_RT, String.valueOf(DEFAULT_STATISTIC_MAX_RT));
     }
 
     private static void loadProps() {
@@ -102,14 +107,24 @@ public class SentinelConfig {
      * @return the config value.
      */
     public static String getConfig(String key) {
+        AssertUtil.notNull(key, "key cannot be null");
         return props.get(key);
     }
 
     public static void setConfig(String key, String value) {
+        AssertUtil.notNull(key, "key cannot be null");
+        AssertUtil.notNull(value, "value cannot be null");
         props.put(key, value);
     }
 
+    public static String removeConfig(String key) {
+        AssertUtil.notNull(key, "key cannot be null");
+        return props.remove(key);
+    }
+
     public static void setConfigIfAbsent(String key, String value) {
+        AssertUtil.notNull(key, "key cannot be null");
+        AssertUtil.notNull(value, "value cannot be null");
         String v = props.get(key);
         if (v == null) {
             props.put(key, value);
@@ -128,7 +143,7 @@ public class SentinelConfig {
         try {
             return Long.parseLong(props.get(SINGLE_METRIC_FILE_SIZE));
         } catch (Throwable throwable) {
-            RecordLog.info("[SentinelConfig] Parse singleMetricFileSize fail, use default value: "
+            RecordLog.warn("[SentinelConfig] Parse singleMetricFileSize fail, use default value: "
                 + DEFAULT_SINGLE_METRIC_FILE_SIZE, throwable);
             return DEFAULT_SINGLE_METRIC_FILE_SIZE;
         }
@@ -138,9 +153,35 @@ public class SentinelConfig {
         try {
             return Integer.parseInt(props.get(TOTAL_METRIC_FILE_COUNT));
         } catch (Throwable throwable) {
-            RecordLog.info("[SentinelConfig] Parse totalMetricFileCount fail, use default value: "
+            RecordLog.warn("[SentinelConfig] Parse totalMetricFileCount fail, use default value: "
                 + DEFAULT_TOTAL_METRIC_FILE_COUNT, throwable);
             return DEFAULT_TOTAL_METRIC_FILE_COUNT;
+        }
+    }
+
+    public static int coldFactor() {
+        try {
+            int coldFactor = Integer.parseInt(props.get(COLD_FACTOR));
+            if (coldFactor <= 1) {// check the cold factor larger than 1
+                coldFactor = DEFAULT_COLD_FACTOR;
+                RecordLog.warn("cold factor=" + coldFactor + ", should be larger than 1, use default value: "
+                        + DEFAULT_COLD_FACTOR);
+            }
+            return coldFactor;
+        } catch (Throwable throwable) {
+            RecordLog.warn("[SentinelConfig] Parse coldFactor fail, use default value: "
+                    + DEFAULT_COLD_FACTOR, throwable);
+            return DEFAULT_COLD_FACTOR;
+        }
+    }
+
+    public static int statisticMaxRt() {
+        try {
+            return Integer.parseInt(props.get(STATISTIC_MAX_RT));
+        } catch (Throwable throwable) {
+            RecordLog.warn("[SentinelConfig] Parse statisticMaxRt fail, use default value: "
+                    + DEFAULT_STATISTIC_MAX_RT, throwable);
+            return DEFAULT_STATISTIC_MAX_RT;
         }
     }
 }

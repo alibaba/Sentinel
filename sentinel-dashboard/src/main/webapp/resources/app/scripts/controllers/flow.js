@@ -1,6 +1,6 @@
 var app = angular.module('sentinelDashboardApp');
 
-app.controller('FlowCtl', ['$scope', '$stateParams', 'FlowService', 'ngDialog',
+app.controller('FlowController', ['$scope', '$stateParams', 'FlowServiceV2', 'ngDialog',
   'MachineService',
   function ($scope, $stateParams, FlowService, ngDialog,
     MachineService) {
@@ -72,7 +72,11 @@ app.controller('FlowCtl', ['$scope', '$stateParams', 'FlowService', 'ngDialog',
         app: $scope.app,
         ip: mac[0],
         port: mac[1],
-        limitApp: 'default'
+        limitApp: 'default',
+        clusterMode: false,
+        clusterConfig: {
+          thresholdType: 0
+        }
       };
       $scope.flowRuleDialog = {
         title: '新增流控规则',

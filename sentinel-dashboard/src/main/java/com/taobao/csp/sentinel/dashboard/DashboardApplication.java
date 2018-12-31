@@ -18,6 +18,11 @@ package com.taobao.csp.sentinel.dashboard;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/**
+ * Sentinel dashboard application.
+ *
+ * @author Carpenter Lee
+ */
 @SpringBootApplication
 public class DashboardApplication {
 

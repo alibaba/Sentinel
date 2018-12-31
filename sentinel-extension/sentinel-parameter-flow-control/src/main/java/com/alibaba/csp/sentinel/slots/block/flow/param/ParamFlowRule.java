@@ -65,7 +65,13 @@ public class ParamFlowRule extends AbstractRule {
      */
     private Map<Object, Integer> hotItems = new HashMap<Object, Integer>();
 
+    /**
+     * Indicating whether the rule is for cluster mode.
+     */
     private boolean clusterMode = false;
+    /**
+     * Cluster mode specific config for parameter flow rule.
+     */
     private ParamFlowClusterConfig clusterConfig;
 
     public int getGrade() {
@@ -104,6 +110,13 @@ public class ParamFlowRule extends AbstractRule {
         return this;
     }
 
+    public Integer retrieveExclusiveItemCount(Object value) {
+        if (value == null || hotItems == null) {
+            return null;
+        }
+        return hotItems.get(value);
+    }
+
     Map<Object, Integer> getParsedHotItems() {
         return hotItems;
     }
@@ -126,8 +139,7 @@ public class ParamFlowRule extends AbstractRule {
         return clusterConfig;
     }
 
-    public ParamFlowRule setClusterConfig(
-        ParamFlowClusterConfig clusterConfig) {
+    public ParamFlowRule setClusterConfig(ParamFlowClusterConfig clusterConfig) {
         this.clusterConfig = clusterConfig;
         return this;
     }

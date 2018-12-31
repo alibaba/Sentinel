@@ -46,16 +46,22 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  */
 public class CommonFilter implements Filter {
 
+    private final static String HTTP_METHOD_SPECIFY = "HTTP_METHOD_SPECIFY";
+    private final static String COLON = ":";
+    private boolean httpMethodSpecify = false;
+
     @Override
     public void init(FilterConfig filterConfig) {
-
+        httpMethodSpecify = Boolean.parseBoolean(filterConfig.getInitParameter(HTTP_METHOD_SPECIFY));
     }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-        throws IOException, ServletException {
-        HttpServletRequest sRequest = (HttpServletRequest)request;
+            throws IOException, ServletException {
+        HttpServletRequest sRequest = (HttpServletRequest) request;
         Entry entry = null;
+
+        Entry methodEntry = null;
 
         try {
             String target = FilterUtil.filterTarget(sRequest);
@@ -73,9 +79,16 @@ public class CommonFilter implements Filter {
             ContextUtil.enter(target, origin);
             entry = SphU.entry(target, EntryType.IN);
 
+
+            // Add method specification if necessary
+            if (httpMethodSpecify) {
+                methodEntry = SphU.entry(sRequest.getMethod().toUpperCase() + COLON + target,
+                        EntryType.IN);
+            }
+
             chain.doFilter(request, response);
         } catch (BlockException e) {
-            HttpServletResponse sResponse = (HttpServletResponse)response;
+            HttpServletResponse sResponse = (HttpServletResponse) response;
             // Return the block page, or redirect to another URL.
             WebCallbackManager.getUrlBlockHandler().blocked(sRequest, sResponse, e);
         } catch (IOException e2) {
@@ -88,6 +101,9 @@ public class CommonFilter implements Filter {
             Tracer.trace(e4);
             throw e4;
         } finally {
+            if (methodEntry != null) {
+                methodEntry.exit();
+            }
             if (entry != null) {
                 entry.exit();
             }

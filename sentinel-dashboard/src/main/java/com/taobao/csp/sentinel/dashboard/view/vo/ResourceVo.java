@@ -52,12 +52,7 @@ public class ResourceVo {
             return null;
         }
         List<ResourceVo> list = new ArrayList<>();
-        boolean isFirst = true;
         for (NodeVo nodeVo : nodeVos) {
-            if (isFirst) {
-                isFirst = false;
-                continue;
-            }
             ResourceVo vo = new ResourceVo();
             vo.parentTtId = nodeVo.getParentId();
             vo.ttId = nodeVo.getId();

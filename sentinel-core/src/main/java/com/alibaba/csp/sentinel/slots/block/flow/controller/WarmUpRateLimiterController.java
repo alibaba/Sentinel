@@ -39,6 +39,11 @@ public class WarmUpRateLimiterController extends WarmUpController {
 
     @Override
     public boolean canPass(Node node, int acquireCount) {
+        return canPass(node, acquireCount, false);
+    }
+
+    @Override
+    public boolean canPass(Node node, int acquireCount, boolean prioritized) {
         long previousQps = node.previousPassQps();
         syncToken(previousQps);
 

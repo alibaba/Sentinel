@@ -66,21 +66,37 @@ angular
         }
       })
 
-      .state('dashboard.flow', {
-        templateUrl: 'app/views/flow.html',
-        url: '/flow/:app',
-        controller: 'FlowCtl',
+      .state('dashboard.flowV1', {
+        templateUrl: 'app/views/flow_old.html',
+        url: '/v1/flow/:app',
+        controller: 'FlowControllerV1',
         resolve: {
           loadMyFiles: ['$ocLazyLoad', function ($ocLazyLoad) {
             return $ocLazyLoad.load({
               name: 'sentinelDashboardApp',
               files: [
-                'app/scripts/controllers/flow.js',
+                'app/scripts/controllers/flow_old.js',
               ]
             });
           }]
         }
       })
+
+        .state('dashboard.flow', {
+            templateUrl: 'app/views/flow.html',
+            url: '/flow/:app',
+            controller: 'FlowController',
+            resolve: {
+                loadMyFiles: ['$ocLazyLoad', function ($ocLazyLoad) {
+                    return $ocLazyLoad.load({
+                        name: 'sentinelDashboardApp',
+                        files: [
+                            'app/scripts/controllers/flow.js',
+                        ]
+                    });
+                }]
+            }
+        })
 
       .state('dashboard.paramFlow', {
         templateUrl: 'app/views/param_flow.html',
@@ -97,6 +113,22 @@ angular
           }]
         }
       })
+
+        .state('dashboard.clusterAll', {
+            templateUrl: 'app/views/cluster.html',
+            url: '/cluster/:app',
+            controller: 'SentinelClusterController',
+            resolve: {
+                loadMyFiles: ['$ocLazyLoad', function ($ocLazyLoad) {
+                    return $ocLazyLoad.load({
+                        name: 'sentinelDashboardApp',
+                        files: [
+                            'app/scripts/controllers/cluster.js',
+                        ]
+                    });
+                }]
+            }
+        })
 
       .state('dashboard.authority', {
             templateUrl: 'app/views/authority.html',

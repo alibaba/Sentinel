@@ -18,7 +18,7 @@ package com.alibaba.csp.sentinel.slots.statistic.metric;
 import java.util.List;
 
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
-import com.alibaba.csp.sentinel.slots.statistic.base.MetricBucket;
+import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
 
 /**
  * Represents a basic structure recording invocation metrics of protected resources.
@@ -117,6 +117,10 @@ public interface Metric {
      * @param rt RT
      */
     void addRT(long rt);
+
+    double getWindowIntervalInSec();
+
+    int getSampleCount();
 
     // Tool methods.
 

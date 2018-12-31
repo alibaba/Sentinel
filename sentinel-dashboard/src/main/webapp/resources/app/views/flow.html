@@ -3,8 +3,11 @@
     <span style="font-size: 30px;font-weight: bold;">{{app}}</span>
   </div>
   <div class="col-md-6">
-    <button class="btn btn-default-inverse" style="float: right; margin-right: 10px;" ng-disabled="!macInputModel" ng-click="addNewRule()">
-      <i class="fa fa-plus"></i>&nbsp;&nbsp;新增流控规则</button>
+    <button class="btn btn-default-inverse" style="float: right; margin-right: 10px;" ng-click="addNewRule()">
+      <i class="fa fa-plus"></i>&nbsp;&nbsp;新增流控规则
+    </button>
+    <a class="btn btn-default-inverse" style="float: right; margin-right: 10px;" ui-sref="dashboard.flowV1({app: app})">
+      回到旧版（单机）</a>
   </div>
 </div>
 
@@ -16,13 +19,7 @@
       <div class="card">
         <div class="inputs-header">
           <span class="brand" style="font-size: 13px;">流控规则</span>
-          <!--<button class="btn btn-danger" style="float: right;margin-right: 10px;height: 30px;font-size: 12px;" ng-click="disableAll()">全部禁用</button>-->
-          <button class="btn btn-primary" style="float: right; margin-right: 10px; height: 30px;font-size: 12px;" ng-click="getMachineRules()">刷新</button>
           <input class="form-control witdh-200" placeholder="关键字" ng-model="searchKey">
-          <div class="control-group" style="float:right;margin-right: 10px;margin-bottom: -10px;">
-            <selectize id="gsInput" class="selectize-input-200" config="macsInputConfig" options="macsInputOptions" ng-model="macInputModel"
-              placeholder="机器"></selectize>
-          </div>
         </div>
 
         <!--.tools-header -->
@@ -36,21 +33,21 @@
                 <td style="width: 10%;">
                   流控应用
                 </td>
-                <td style="width: 10%;">
+                <td style="width: 8%;">
                   流控模式
                 </td>
-                <td style="width: 10%;">
+                <td style="width: 8%;">
                   阈值类型
                 </td>
-                <td style="width: 10%;">
+                <td style="width: 8%;">
                   单机阈值
                 </td>
-                <td style="width: 10%;">
+                <td style="width: 8%;">
+                  是否集群
+                </td>
+                <td style="width: 8%;">
                   流控效果
                 </td>
-                <!--<td style="width: 8%;">-->
-                <!--状态-->
-                <!--</td>-->
                 <td style="width: 12%;">
                   操作
                 </td>
@@ -67,15 +64,20 @@
                   <span ng-if="rule.strategy == 2">链路</span>
                 </td>
                 <td>
-                  {{rule.grade==0 ? '线程数' : 'QPS'}}
+                  {{rule.grade == 0 ? '线程数' : 'QPS'}}
                 </td>
                 <td style="word-wrap:break-word;word-break:break-all;">
                   {{rule.count}}
                 </td>
                 <td>
+                  <span ng-if="rule.clusterMode">是</span>
+                  <span ng-if="!rule.clusterMode">否</span>
+                </td>
+                <td>
                   <span ng-if="rule.controlBehavior == 0">快速失败</span>
                   <span ng-if="rule.controlBehavior == 1">Warm Up</span>
                   <span ng-if="rule.controlBehavior == 2">排队等待</span>
+                  <span ng-if="rule.controlBehavior == 3">预热排队</span>
                 </td>
                 <td>
                   <button class="btn btn-xs btn-default" type="button" ng-click="editRule(rule)" style="font-size: 12px; height:25px;">编辑</button>
