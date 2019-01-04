@@ -15,30 +15,49 @@
  */
 package com.taobao.csp.sentinel.dashboard.domain.cluster;
 
-import com.taobao.csp.sentinel.dashboard.domain.cluster.config.ClusterClientConfig;
-
 /**
  * @author Eric Zhao
- * @since 1.4.0
+ * @since 1.4.1
  */
-public class ClusterClientStateVO {
+public class ClusterStateSingleVO {
 
-    private ClusterClientConfig clientConfig;
+    private String address;
+    private Integer mode;
+    private String target;
 
-    public ClusterClientConfig getClientConfig() {
-        return clientConfig;
+    public String getAddress() {
+        return address;
     }
 
-    public ClusterClientStateVO setClientConfig(
-        ClusterClientConfig clientConfig) {
-        this.clientConfig = clientConfig;
+    public ClusterStateSingleVO setAddress(String address) {
+        this.address = address;
+        return this;
+    }
+
+    public Integer getMode() {
+        return mode;
+    }
+
+    public ClusterStateSingleVO setMode(Integer mode) {
+        this.mode = mode;
+        return this;
+    }
+
+    public String getTarget() {
+        return target;
+    }
+
+    public ClusterStateSingleVO setTarget(String target) {
+        this.target = target;
         return this;
     }
 
     @Override
     public String toString() {
-        return "ClusterClientStateVO{" +
-            "clientConfig=" + clientConfig +
+        return "ClusterStateSingleVO{" +
+            "address='" + address + '\'' +
+            ", mode=" + mode +
+            ", target='" + target + '\'' +
             '}';
     }
 }

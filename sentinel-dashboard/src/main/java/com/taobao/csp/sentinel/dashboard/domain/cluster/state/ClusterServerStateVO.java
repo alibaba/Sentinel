@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.taobao.csp.sentinel.dashboard.domain.cluster;
+package com.taobao.csp.sentinel.dashboard.domain.cluster.state;
 
 import java.util.List;
 import java.util.Set;
 
+import com.taobao.csp.sentinel.dashboard.domain.cluster.ConnectionGroupVO;
 import com.taobao.csp.sentinel.dashboard.domain.cluster.config.ServerFlowConfig;
 import com.taobao.csp.sentinel.dashboard.domain.cluster.config.ServerTransportConfig;
 
@@ -32,14 +33,17 @@ public class ClusterServerStateVO {
     private Set<String> namespaceSet;
 
     private Integer port;
+
     private List<ConnectionGroupVO> connection;
+    private List<ClusterRequestLimitVO> requestLimitData;
+
+    private Boolean embedded;
 
     public ServerTransportConfig getTransport() {
         return transport;
     }
 
-    public ClusterServerStateVO setTransport(
-        ServerTransportConfig transport) {
+    public ClusterServerStateVO setTransport(ServerTransportConfig transport) {
         this.transport = transport;
         return this;
     }
@@ -75,9 +79,26 @@ public class ClusterServerStateVO {
         return connection;
     }
 
-    public ClusterServerStateVO setConnection(
-        List<ConnectionGroupVO> connection) {
+    public ClusterServerStateVO setConnection(List<ConnectionGroupVO> connection) {
         this.connection = connection;
+        return this;
+    }
+
+    public List<ClusterRequestLimitVO> getRequestLimitData() {
+        return requestLimitData;
+    }
+
+    public ClusterServerStateVO setRequestLimitData(List<ClusterRequestLimitVO> requestLimitData) {
+        this.requestLimitData = requestLimitData;
+        return this;
+    }
+
+    public Boolean getEmbedded() {
+        return embedded;
+    }
+
+    public ClusterServerStateVO setEmbedded(Boolean embedded) {
+        this.embedded = embedded;
         return this;
     }
 
@@ -89,6 +110,8 @@ public class ClusterServerStateVO {
             ", namespaceSet=" + namespaceSet +
             ", port=" + port +
             ", connection=" + connection +
+            ", requestLimitData=" + requestLimitData +
+            ", embedded=" + embedded +
             '}';
     }
 }

@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import com.alibaba.csp.sentinel.command.CommandConstants;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.command.vo.NodeVo;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
@@ -43,8 +44,9 @@ import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntit
 import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEntity;
 import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.SystemRuleEntity;
-import com.taobao.csp.sentinel.dashboard.domain.cluster.ClusterServerStateVO;
-import com.taobao.csp.sentinel.dashboard.domain.cluster.ClusterStateSimpleEntity;
+import com.taobao.csp.sentinel.dashboard.domain.cluster.ClusterClientInfoVO;
+import com.taobao.csp.sentinel.dashboard.domain.cluster.state.ClusterServerStateVO;
+import com.taobao.csp.sentinel.dashboard.domain.cluster.state.ClusterStateSimpleEntity;
 import com.taobao.csp.sentinel.dashboard.domain.cluster.config.ClusterClientConfig;
 import com.taobao.csp.sentinel.dashboard.domain.cluster.config.ServerFlowConfig;
 import com.taobao.csp.sentinel.dashboard.domain.cluster.config.ServerTransportConfig;
@@ -62,6 +64,8 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import static com.taobao.csp.sentinel.dashboard.util.AsyncUtils.*;
 
 /**
  * Communicate with Sentinel client.
@@ -104,7 +108,7 @@ public class SentinelApiClient {
     private final boolean enableHttps = false;
 
     public SentinelApiClient() {
-        IOReactorConfig ioConfig = IOReactorConfig.custom().setConnectTimeout(3000).setSoTimeout(3000)
+        IOReactorConfig ioConfig = IOReactorConfig.custom().setConnectTimeout(3000).setSoTimeout(10000)
             .setIoThreadCount(Runtime.getRuntime().availableProcessors() * 2).build();
         httpClient = HttpAsyncClients.custom().setRedirectStrategy(new DefaultRedirectStrategy() {
             @Override
@@ -113,6 +117,109 @@ public class SentinelApiClient {
             }
         }).setMaxConnTotal(4000).setMaxConnPerRoute(1000).setDefaultIOReactorConfig(ioConfig).build();
         httpClient.start();
+    }
+
+    private boolean isSuccess(int statusCode) {
+        return statusCode >= 200 && statusCode < 300;
+    }
+
+    private boolean isCommandNotFound(int statusCode, String body) {
+        return statusCode == 400 && StringUtil.isNotEmpty(body) && body.contains(CommandConstants.MSG_UNKNOWN_COMMAND_PREFIX);
+    }
+
+    private CompletableFuture<String> executeCommand(String command, URI uri) {
+        CompletableFuture<String> future = new CompletableFuture<>();
+        if (StringUtil.isBlank(command) || uri == null) {
+            future.completeExceptionally(new IllegalArgumentException("Bad URL or command name"));
+            return future;
+        }
+        final HttpGet httpGet = new HttpGet(uri);
+        httpClient.execute(httpGet, new FutureCallback<HttpResponse>() {
+            @Override
+            public void completed(final HttpResponse response) {
+                int statusCode = response.getStatusLine().getStatusCode();
+                try {
+                    String value = getBody(response);
+                    if (isSuccess(statusCode)) {
+                        future.complete(value);
+                    } else {
+                        if (isCommandNotFound(statusCode, value)) {
+                            future.completeExceptionally(new CommandNotFoundException(command));
+                        } else {
+                            future.completeExceptionally(new CommandFailedException(value));
+                        }
+                    }
+
+                } catch (Exception ex) {
+                    future.completeExceptionally(ex);
+                    logger.error("HTTP request failed: " + uri.toString(), ex);
+                }
+            }
+
+            @Override
+            public void failed(final Exception ex) {
+                future.completeExceptionally(ex);
+                logger.error("HTTP request failed: " + uri.toString(), ex);
+            }
+
+            @Override
+            public void cancelled() {
+                future.complete(null);
+            }
+        });
+        return future;
+    }
+
+    private String httpGetContent(String url) {
+        final HttpGet httpGet = new HttpGet(url);
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicReference<String> reference = new AtomicReference<>();
+        httpClient.execute(httpGet, new FutureCallback<HttpResponse>() {
+            @Override
+            public void completed(final HttpResponse response) {
+                try {
+                    reference.set(getBody(response));
+                } catch (Exception e) {
+                    logger.info("httpGetContent " + url + " error:", e);
+                } finally {
+                    latch.countDown();
+                }
+            }
+
+            @Override
+            public void failed(final Exception ex) {
+                latch.countDown();
+                logger.info("httpGetContent " + url + " failed:", ex);
+            }
+
+            @Override
+            public void cancelled() {
+                latch.countDown();
+            }
+        });
+        try {
+            latch.await(5, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            logger.info("wait http client error:", e);
+        }
+        return reference.get();
+    }
+
+    private String getBody(HttpResponse response) throws Exception {
+        Charset charset = null;
+        try {
+            String contentTypeStr = response.getFirstHeader("Content-type").getValue();
+            if (StringUtil.isNotEmpty(contentTypeStr)) {
+                ContentType contentType = ContentType.parse(contentTypeStr);
+                charset = contentType.getCharset();
+            }
+        } catch (Exception ignore) {
+        }
+        return EntityUtils.toString(response.getEntity(), charset != null ? charset : DEFAULT_CHARSET);
+    }
+
+    public void close() throws Exception {
+        httpClient.close();
     }
 
     public List<NodeVo> fetchResourceOfMachine(String ip, int port, String type) {
@@ -388,7 +495,7 @@ public class SentinelApiClient {
                 .setParameter("data", data);
             return executeCommand(SET_PARAM_RULE_PATH, uriBuilder.build())
                 .thenCompose(e -> {
-                    if ("success".equals(e)) {
+                    if (CommandConstants.MSG_SUCCESS.equals(e)) {
                         return CompletableFuture.completedFuture(null);
                     } else {
                         logger.warn("Push parameter flow rules to client failed: " + e);
@@ -399,109 +506,6 @@ public class SentinelApiClient {
             logger.warn("Error when setting parameter flow rule", ex);
             return newFailedFuture(ex);
         }
-    }
-
-    private boolean isSuccess(int statusCode) {
-        return statusCode >= 200 && statusCode < 300;
-    }
-
-    private CompletableFuture<String> executeCommand(String command, URI uri) {
-        CompletableFuture<String> future = new CompletableFuture<>();
-        if (StringUtil.isBlank(command) || uri == null) {
-            future.completeExceptionally(new IllegalArgumentException("Bad URL or command name"));
-            return future;
-        }
-        final HttpGet httpGet = new HttpGet(uri);
-        httpClient.execute(httpGet, new FutureCallback<HttpResponse>() {
-            @Override
-            public void completed(final HttpResponse response) {
-                int statusCode = response.getStatusLine().getStatusCode();
-                try {
-                    String value = getBody(response);
-                    if (isSuccess(statusCode)) {
-                        future.complete(value);
-                    } else {
-                        if (statusCode == 400) {
-                            future.completeExceptionally(new CommandNotFoundException(command));
-                        } else {
-                            future.completeExceptionally(new IllegalStateException(value));
-                        }
-                    }
-
-                } catch (Exception ex) {
-                    future.completeExceptionally(ex);
-                    logger.error("HTTP request failed: " + uri.toString(), ex);
-                }
-            }
-
-            @Override
-            public void failed(final Exception ex) {
-                future.completeExceptionally(ex);
-                logger.error("HTTP request failed: " + uri.toString(), ex);
-            }
-
-            @Override
-            public void cancelled() {
-                future.complete(null);
-            }
-        });
-        return future;
-    }
-
-    private String httpGetContent(String url) {
-        final HttpGet httpGet = new HttpGet(url);
-        final CountDownLatch latch = new CountDownLatch(1);
-        final AtomicReference<String> reference = new AtomicReference<>();
-        httpClient.execute(httpGet, new FutureCallback<HttpResponse>() {
-            @Override
-            public void completed(final HttpResponse response) {
-                try {
-                    reference.set(getBody(response));
-                } catch (Exception e) {
-                    logger.info("httpGetContent " + url + " error:", e);
-                } finally {
-                    latch.countDown();
-                }
-            }
-
-            @Override
-            public void failed(final Exception ex) {
-                latch.countDown();
-                logger.info("httpGetContent " + url + " failed:", ex);
-            }
-
-            @Override
-            public void cancelled() {
-                latch.countDown();
-            }
-        });
-        try {
-            latch.await(5, TimeUnit.SECONDS);
-        } catch (Exception e) {
-            logger.info("wait http client error:", e);
-        }
-        return reference.get();
-    }
-
-    private String getBody(HttpResponse response) throws Exception {
-        Charset charset = null;
-        try {
-            String contentTypeStr = response.getFirstHeader("Content-type").getValue();
-            ContentType contentType = ContentType.parse(contentTypeStr);
-            charset = contentType.getCharset();
-        } catch (Exception ignore) {
-        }
-        return EntityUtils.toString(response.getEntity(), charset != null ? charset : DEFAULT_CHARSET);
-    }
-
-    public void close() throws Exception {
-        httpClient.close();
-    }
-
-    private <R> CompletableFuture<R> newFailedFuture(Throwable ex) {
-        CompletableFuture<R> future = new CompletableFuture<>();
-        future.completeExceptionally(ex);
-        return future;
     }
 
     // Cluster related
@@ -533,7 +537,7 @@ public class SentinelApiClient {
                 .setParameter("mode", String.valueOf(mode));
             return executeCommand(MODIFY_CLUSTER_MODE_PATH, uriBuilder.build())
                 .thenCompose(e -> {
-                    if ("success".equals(e)) {
+                    if (CommandConstants.MSG_SUCCESS.equals(e)) {
                         return CompletableFuture.completedFuture(null);
                     } else {
                         logger.warn("Error when modifying cluster mode: " + e);
@@ -546,7 +550,7 @@ public class SentinelApiClient {
         }
     }
 
-    public CompletableFuture<ClusterClientConfig> fetchClusterClientConfig(String app, String ip, int port) {
+    public CompletableFuture<ClusterClientInfoVO> fetchClusterClientInfoAndConfig(String app, String ip, int port) {
         if (StringUtil.isBlank(ip) || port <= 0) {
             return newFailedFuture(new IllegalArgumentException("Invalid parameter"));
         }
@@ -555,7 +559,7 @@ public class SentinelApiClient {
             uriBuilder.setScheme("http").setHost(ip).setPort(port)
                 .setPath(FETCH_CLUSTER_CLIENT_CONFIG_PATH);
             return executeCommand(FETCH_CLUSTER_CLIENT_CONFIG_PATH, uriBuilder.build())
-                .thenApply(r -> JSON.parseObject(r, ClusterClientConfig.class));
+                .thenApply(r -> JSON.parseObject(r, ClusterClientInfoVO.class));
         } catch (Exception ex) {
             logger.warn("Error when fetching cluster client config", ex);
             return newFailedFuture(ex);
@@ -573,7 +577,7 @@ public class SentinelApiClient {
                 .setParameter("data", JSON.toJSONString(config));
             return executeCommand(MODIFY_CLUSTER_MODE_PATH, uriBuilder.build())
                 .thenCompose(e -> {
-                    if ("success".equals(e)) {
+                    if (CommandConstants.MSG_SUCCESS.equals(e)) {
                         return CompletableFuture.completedFuture(null);
                     } else {
                         logger.warn("Error when modifying cluster client config: " + e);
@@ -597,7 +601,7 @@ public class SentinelApiClient {
                 .setParameter("data", JSON.toJSONString(config));
             return executeCommand(MODIFY_CLUSTER_SERVER_FLOW_CONFIG_PATH, uriBuilder.build())
                 .thenCompose(e -> {
-                    if ("success".equals(e)) {
+                    if (CommandConstants.MSG_SUCCESS.equals(e)) {
                         return CompletableFuture.completedFuture(null);
                     } else {
                         logger.warn("Error when modifying cluster server flow config: " + e);
@@ -622,7 +626,7 @@ public class SentinelApiClient {
                 .setParameter("idleSeconds", config.getIdleSeconds().toString());
             return executeCommand(MODIFY_CLUSTER_SERVER_TRANSPORT_CONFIG_PATH, uriBuilder.build())
                 .thenCompose(e -> {
-                    if ("success".equals(e)) {
+                    if (CommandConstants.MSG_SUCCESS.equals(e)) {
                         return CompletableFuture.completedFuture(null);
                     } else {
                         logger.warn("Error when modifying cluster server transport config: " + e);
@@ -646,7 +650,7 @@ public class SentinelApiClient {
                 .setParameter("data", JSON.toJSONString(set));
             return executeCommand(MODIFY_CLUSTER_SERVER_NAMESPACE_SET_PATH, uriBuilder.build())
                 .thenCompose(e -> {
-                    if ("success".equals(e)) {
+                    if (CommandConstants.MSG_SUCCESS.equals(e)) {
                         return CompletableFuture.completedFuture(null);
                     } else {
                         logger.warn("Error when modifying cluster server NamespaceSet: " + e);

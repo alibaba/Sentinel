@@ -41,6 +41,10 @@ public class MachineInfo implements Comparable<MachineInfo> {
         return machineInfo;
     }
 
+    public String toHostPort() {
+        return ip + ":" + port;
+    }
+
     public Integer getPort() {
         return port;
     }

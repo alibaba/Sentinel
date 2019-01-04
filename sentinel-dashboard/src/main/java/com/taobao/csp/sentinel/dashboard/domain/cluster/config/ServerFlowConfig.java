@@ -26,6 +26,7 @@ public class ServerFlowConfig {
 
     public static final int DEFAULT_INTERVAL_MS = 1000;
     public static final int DEFAULT_SAMPLE_COUNT= 10;
+    public static final double DEFAULT_MAX_ALLOWED_QPS= 30000;
 
     private final String namespace;
 
@@ -33,6 +34,8 @@ public class ServerFlowConfig {
     private Double maxOccupyRatio = DEFAULT_MAX_OCCUPY_RATIO;
     private Integer intervalMs = DEFAULT_INTERVAL_MS;
     private Integer sampleCount = DEFAULT_SAMPLE_COUNT;
+
+    private Double maxAllowedQps = DEFAULT_MAX_ALLOWED_QPS;
 
     public ServerFlowConfig() {
         this("default");
@@ -82,6 +85,15 @@ public class ServerFlowConfig {
         return this;
     }
 
+    public Double getMaxAllowedQps() {
+        return maxAllowedQps;
+    }
+
+    public ServerFlowConfig setMaxAllowedQps(Double maxAllowedQps) {
+        this.maxAllowedQps = maxAllowedQps;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "ServerFlowConfig{" +
@@ -90,6 +102,7 @@ public class ServerFlowConfig {
             ", maxOccupyRatio=" + maxOccupyRatio +
             ", intervalMs=" + intervalMs +
             ", sampleCount=" + sampleCount +
+            ", maxAllowedQps=" + maxAllowedQps +
             '}';
     }
 }
