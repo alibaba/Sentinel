@@ -5,8 +5,8 @@
   <div class="col-md-6">
     <button class="btn btn-default-inverse" style="float: right; margin-right: 10px;" ng-disabled="!macInputModel" ng-click="addNewRule()">
       <i class="fa fa-plus"></i>&nbsp;&nbsp;新增流控规则</button>
-    <a class="btn btn-outline-success" style="float: right; margin-right: 10px;" ui-sref="dashboard.flow({app: app})">
-      回到新版</a>
+    <!--<a class="btn btn-outline-success" style="float: right; margin-right: 10px;" ui-sref="dashboard.flow({app: app})">-->
+      <!--回到集群页面</a>-->
   </div>
 </div>
 
@@ -35,24 +35,24 @@
                 <td style="width: 40%">
                   资源名
                 </td>
-                <td style="width: 10%;">
-                  流控应用
+                <td style="width: 8%;">
+                  来源应用
                 </td>
-                <td style="width: 10%;">
+                <td style="width: 8%;">
                   流控模式
                 </td>
-                <td style="width: 10%;">
+                <td style="width: 8%;">
                   阈值类型
                 </td>
-                <td style="width: 10%;">
-                  单机阈值
+                <td style="width: 6%;">
+                  阈值
+                </td>
+                <td style="width: 8%;">
+                  阈值模式
                 </td>
                 <td style="width: 10%;">
                   流控效果
                 </td>
-                <!--<td style="width: 8%;">-->
-                <!--状态-->
-                <!--</td>-->
                 <td style="width: 12%;">
                   操作
                 </td>
@@ -75,9 +75,13 @@
                   {{rule.count}}
                 </td>
                 <td>
+                  <span>{{generateThresholdTypeShow(rule)}}</span>
+                </td>
+                <td>
                   <span ng-if="rule.controlBehavior == 0">快速失败</span>
                   <span ng-if="rule.controlBehavior == 1">Warm Up</span>
                   <span ng-if="rule.controlBehavior == 2">排队等待</span>
+                  <span ng-if="rule.controlBehavior == 3">预热排队</span>
                 </td>
                 <td>
                   <button class="btn btn-xs btn-default" type="button" ng-click="editRule(rule)" style="font-size: 12px; height:25px;">编辑</button>

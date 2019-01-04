@@ -1,6 +1,6 @@
 var app = angular.module('sentinelDashboardApp');
 
-app.controller('FlowController', ['$scope', '$stateParams', 'FlowServiceV2', 'ngDialog',
+app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', 'ngDialog',
   'MachineService',
   function ($scope, $stateParams, FlowService, ngDialog,
     MachineService) {
@@ -24,6 +24,19 @@ app.controller('FlowController', ['$scope', '$stateParams', 'FlowServiceV2', 'ng
       },
       onChange: function (value, oldValue) {
         $scope.macInputModel = value;
+      }
+    };
+
+    $scope.generateThresholdTypeShow = (rule) => {
+      if (!rule.clusterMode) {
+        return '单机';
+      }
+      if (rule.clusterConfig.thresholdType === 0) {
+        return '集群均摊';
+      } else if (rule.clusterConfig.thresholdType === 1) {
+        return '集群总体';
+      } else {
+        return '集群';
       }
     };
 
