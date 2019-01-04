@@ -16,6 +16,8 @@
 package com.alibaba.csp.sentinel.command.handler.cluster;
 
 import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
+import com.alibaba.csp.sentinel.cluster.client.TokenClientProvider;
+import com.alibaba.csp.sentinel.cluster.server.EmbeddedClusterTokenServerProvider;
 import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
@@ -33,16 +35,24 @@ public class ModifyClusterModeCommandHandler implements CommandHandler<String> {
     public CommandResponse<String> handle(CommandRequest request) {
         try {
             int mode = Integer.valueOf(request.getParam("mode"));
-            RecordLog.info("[ModifyClusterModeCommandHandler] Modifying cluster mode to: " + mode);
-            if (ClusterStateManager.applyState(mode)) {
-                return CommandResponse.ofSuccess("success");
-            } else {
-                return CommandResponse.ofSuccess("failed");
+            if (mode == ClusterStateManager.CLUSTER_CLIENT && !TokenClientProvider.isClientSpiAvailable()) {
+                return CommandResponse.ofFailure(new IllegalStateException("token client mode not available: no SPI found"));
             }
+            if (mode == ClusterStateManager.CLUSTER_SERVER && !isClusterServerSpiAvailable()) {
+                return CommandResponse.ofFailure(new IllegalStateException("token server mode not available: no SPI found"));
+            }
+            RecordLog.info("[ModifyClusterModeCommandHandler] Modifying cluster mode to: " + mode);
+
+            ClusterStateManager.applyState(mode);
+            return CommandResponse.ofSuccess("success");
         } catch (NumberFormatException ex) {
-            return CommandResponse.ofFailure(new IllegalArgumentException("invalid mode"));
+            return CommandResponse.ofFailure(new IllegalArgumentException("invalid parameter"));
         } catch (Exception ex) {
             return CommandResponse.ofFailure(ex);
         }
+    }
+
+    private boolean isClusterServerSpiAvailable() {
+        return EmbeddedClusterTokenServerProvider.isServerSpiAvailable();
     }
 }
