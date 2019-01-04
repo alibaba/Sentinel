@@ -137,6 +137,8 @@ public class FlowControllerV2 {
         Date date = new Date();
         entity.setGmtCreate(date);
         entity.setGmtModified(date);
+        entity.setLimitApp(entity.getLimitApp().trim());
+        entity.setResource(entity.getResource().trim());
         try {
             entity = repository.save(entity);
             publishRules(entity.getApp());

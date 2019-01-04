@@ -21,7 +21,7 @@ package com.taobao.csp.sentinel.dashboard.domain.cluster.config;
  */
 public class ServerTransportConfig {
 
-    public static final int DEFAULT_PORT = 8730;
+    public static final int DEFAULT_PORT = 18730;
     public static final int DEFAULT_IDLE_SECONDS = 600;
 
     private Integer port;
