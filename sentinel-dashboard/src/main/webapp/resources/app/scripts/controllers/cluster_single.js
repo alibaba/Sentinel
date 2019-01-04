@@ -1,6 +1,6 @@
 var app = angular.module('sentinelDashboardApp');
 
-app.controller('SentinelClusterController', ['$scope', '$stateParams', 'ngDialog',
+app.controller('SentinelClusterSingleController', ['$scope', '$stateParams', 'ngDialog',
     'MachineService', 'ClusterStateService',
     function ($scope, $stateParams, ngDialog, MachineService, ClusterStateService) {
         $scope.app = $stateParams.app;
@@ -39,7 +39,7 @@ app.controller('SentinelClusterController', ['$scope', '$stateParams', 'ngDialog
         }
 
         function convertStrToNamespaceSet(str) {
-            if (str === undefined || str == '') {
+            if (str === undefined || str === '') {
                 return [];
             }
             let arr = [];
@@ -51,11 +51,11 @@ app.controller('SentinelClusterController', ['$scope', '$stateParams', 'ngDialog
         }
 
         function fetchMachineClusterState() {
-            if (!$scope.macInputModel) {
+            if (!$scope.macInputModel || $scope.macInputModel === '') {
                 return;
             }
             let mac = $scope.macInputModel.split(':');
-            ClusterStateService.fetchClusterUniversalState($scope.app, mac[0], mac[1]).success(function (data) {
+            ClusterStateService.fetchClusterUniversalStateSingle($scope.app, mac[0], mac[1]).success(function (data) {
                 if (data.code == 0 && data.data) {
                     $scope.loadError = undefined;
                     $scope.stateVO = data.data;
@@ -144,6 +144,11 @@ app.controller('SentinelClusterController', ['$scope', '$stateParams', 'ngDialog
                 alert('请输入有效的 Token Server 端口');
                 return false;
             }
+            let flowConfig = stateVO.server.flow;
+            if (flowConfig.maxAllowedQps === undefined || flowConfig.maxAllowedQps < 0) {
+                alert('请输入有效的最大允许 QPS');
+                return false;
+            }
             // if (transportConfig.idleSeconds === undefined || transportConfig.idleSeconds <= 0) {
             //     alert('请输入有效的连接清理时长 (idleSeconds)');
             //     return false;
@@ -205,19 +210,21 @@ app.controller('SentinelClusterController', ['$scope', '$stateParams', 'ngDialog
         function queryAppMachines() {
             MachineService.getAppMachines($scope.app).success(
                 function (data) {
-                    if (data.code == 0) {
+                    if (data.code === 0) {
                         // $scope.machines = data.data;
                         if (data.data) {
                             $scope.machines = [];
+                            $scope.macsInputOptionsOrigin = [];
                             $scope.macsInputOptions = [];
                             data.data.forEach(function (item) {
                                 if (item.health) {
-                                    $scope.macsInputOptions.push({
+                                    $scope.macsInputOptionsOrigin.push({
                                         text: item.ip + ':' + item.port,
                                         value: item.ip + ':' + item.port
                                     });
                                 }
                             });
+                            $scope.macsInputOptions = $scope.macsInputOptionsOrigin;
                         }
                         if ($scope.macsInputOptions.length > 0) {
                             $scope.macInputModel = $scope.macsInputOptions[0].value;
@@ -227,11 +234,29 @@ app.controller('SentinelClusterController', ['$scope', '$stateParams', 'ngDialog
                     }
                 }
             );
-        };
+        }
+        queryAppMachines();
+
+        $scope.$watch('searchKey', function () {
+            if (!$scope.macsInputOptions) {
+                return;
+            }
+            if ($scope.searchKey) {
+                $scope.macsInputOptions = $scope.macsInputOptionsOrigin
+                    .filter((e) => e.value.indexOf($scope.searchKey) !== -1);
+            } else {
+                $scope.macsInputOptions = $scope.macsInputOptionsOrigin;
+            }
+            if ($scope.macsInputOptions.length > 0) {
+                $scope.macInputModel = $scope.macsInputOptions[0].value;
+            } else {
+                $scope.macInputModel = '';
+            }
+        });
+
         $scope.$watch('macInputModel', function () {
             if ($scope.macInputModel) {
                 fetchMachineClusterState();
             }
         });
-        queryAppMachines();
     }]);

@@ -1,6 +1,6 @@
 var app = angular.module('sentinelDashboardApp');
 
-app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', 'ngDialog',
+app.controller('FlowControllerV2', ['$scope', '$stateParams', 'FlowServiceV2', 'ngDialog',
   'MachineService',
   function ($scope, $stateParams, FlowService, ngDialog,
     MachineService) {
@@ -24,6 +24,19 @@ app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', '
       },
       onChange: function (value, oldValue) {
         $scope.macInputModel = value;
+      }
+    };
+
+    $scope.generateThresholdTypeShow = (rule) => {
+      if (!rule.clusterMode) {
+        return '单机';
+      }
+      if (rule.clusterConfig.thresholdType === 0) {
+        return '集群均摊';
+      } else if (rule.clusterConfig.thresholdType === 1) {
+        return '集群总体';
+      } else {
+        return '集群';
       }
     };
 
@@ -72,7 +85,11 @@ app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', '
         app: $scope.app,
         ip: mac[0],
         port: mac[1],
-        limitApp: 'default'
+        limitApp: 'default',
+        clusterMode: false,
+        clusterConfig: {
+          thresholdType: 0
+        }
       };
       $scope.flowRuleDialog = {
         title: '新增流控规则',
