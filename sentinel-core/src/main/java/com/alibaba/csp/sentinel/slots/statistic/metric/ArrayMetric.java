@@ -162,27 +162,27 @@ public class ArrayMetric implements Metric {
     }
 
     @Override
-    public void addException() {
+    public void addException(int count) {
         WindowWrap<MetricBucket> wrap = data.currentWindow();
-        wrap.value().addException();
+        wrap.value().addException(count);
     }
 
     @Override
-    public void addBlock() {
+    public void addBlock(int count) {
         WindowWrap<MetricBucket> wrap = data.currentWindow();
-        wrap.value().addBlock();
+        wrap.value().addBlock(count);
     }
 
     @Override
-    public void addSuccess() {
+    public void addSuccess(int count) {
         WindowWrap<MetricBucket> wrap = data.currentWindow();
-        wrap.value().addSuccess();
+        wrap.value().addSuccess(count);
     }
 
     @Override
-    public void addPass() {
+    public void addPass(int count) {
         WindowWrap<MetricBucket> wrap = data.currentWindow();
-        wrap.value().addPass();
+        wrap.value().addPass(count);
     }
 
     @Override
