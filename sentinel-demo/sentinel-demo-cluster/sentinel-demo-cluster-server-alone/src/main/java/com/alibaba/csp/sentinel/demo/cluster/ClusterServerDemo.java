@@ -23,9 +23,9 @@ import com.alibaba.csp.sentinel.cluster.server.config.ClusterServerConfigManager
 import com.alibaba.csp.sentinel.cluster.server.config.ServerTransportConfig;
 
 /**
- * Cluster server demo (alone mode).
- *
- * Here we init the cluster server dynamic data sources in {@link com.alibaba.csp.sentinel.demo.cluster.init.DemoClusterServerInitFunc}.
+ * <p>Cluster server demo (alone mode).</p>
+ * <p>Here we init the cluster server dynamic data sources in
+ * {@link com.alibaba.csp.sentinel.demo.cluster.init.DemoClusterServerInitFunc}.</p>
  *
  * @author Eric Zhao
  * @since 1.4.0
