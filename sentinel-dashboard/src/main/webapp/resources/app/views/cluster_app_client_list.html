@@ -1,0 +1,73 @@
+<div class="row" style="margin-left: 1px; margin-top:10px; height: 50px;">
+    <div class="col-md-6" style="margin-bottom: 10px;">
+        <span style="font-size: 30px;font-weight: bold;">{{app}}</span>
+    </div>
+    <div class="col-md-6">
+        <a class="btn btn-default-inverse" style="float: right; margin-right: 10px;" ui-sref="dashboard.clusterAppServerList({app: app})">
+            Token Server 列表
+        </a>
+    </div>
+</div>
+
+<div class="separator"></div>
+<div class="container-fluid">
+    <div class="row" style="margin-top: 20px; margin-bottom: 20px;">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="inputs-header">
+                    <span class="brand" style="font-size: 13px;">集群限流 - Token Client 列表</span>
+                </div>
+
+                <!-- error panel -->
+                <div class="row clearfix" ng-if="loadError">
+                    <div class="col-md-6 col-md-offset-3">
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <center>
+                                    <p>{{loadError.message}}</p>
+                                </center>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!--.tools-header -->
+                <div class="card-body" style="padding: 0px 0px;" ng-if="!loadError">
+                    <!-- table start -->
+                    <table class="table" style="border-left: none; border-right:none;margin-top: 10px;">
+                        <thead>
+                        <tr style="background: #F3F5F7;">
+                            <td style="min-width: 12%;">Client ID</td>
+                            <td>Server IP</td>
+                            <td>Server 端口</td>
+                            <td>连接状态</td>
+                            <td style="min-width: 15%;">操作</td>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="clientVO in clientVOList">
+                            <td style="word-wrap:break-word;word-break:break-all;">{{clientVO.id}}</td>
+                            <td style="word-wrap:break-word;word-break:break-all;">{{clientVO.state.clientConfig.serverHost}}</td>
+                            <td>{{clientVO.state.clientConfig.serverPort}}</td>
+                            <td>
+                                <span class="form-control-static text-danger" ng-if="clientVO.state.clientConfig.clientState === 0">未连接</span>
+                                <span class="form-control-static" ng-if="clientVO.state.clientConfig.clientState === 1">连接中</span>
+                                <span class="form-control-static text-success" ng-if="clientVO.state.clientConfig.clientState === 2">已连接</span>
+                            </td>
+                            <td>
+                                <button class="btn btn-xs btn-outline-primary" type="button"
+                                        ng-click="modifyClientConfigDialog(clientVO)" style="font-size: 12px; height:25px;">编辑配置</button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- .card-body -->
+            </div>
+            <!-- .card -->
+        </div>
+        <!-- .col-md-12 -->
+    </div>
+    <!-- -->
+</div>
+<!-- .container-fluid -->

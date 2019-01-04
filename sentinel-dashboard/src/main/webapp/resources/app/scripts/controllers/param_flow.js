@@ -105,7 +105,7 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
       let mac = $scope.macInputModel.split(':');
       ParamFlowService.queryMachineRules($scope.app, mac[0], mac[1])
         .success(function (data) {
-          if (data.code == 0 && data.data) {
+          if (data.code === 0 && data.data) {
             $scope.loadError = undefined;
             $scope.rules = data.data;
             $scope.rulesPageConfig.totalCount = $scope.rules.length;
@@ -157,6 +157,10 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
           paramFlowItemList: [],
           count: 0,
           limitApp: 'default',
+          clusterMode: false,
+          clusterConfig: {
+            thresholdType: 0
+          }
         }
       };
       $scope.paramFlowRuleDialog = {
