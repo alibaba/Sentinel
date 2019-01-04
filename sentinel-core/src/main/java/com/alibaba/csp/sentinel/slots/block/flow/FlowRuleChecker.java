@@ -178,6 +178,7 @@ final class FlowRuleChecker {
             case TokenResultStatus.NO_RULE_EXISTS:
             case TokenResultStatus.BAD_REQUEST:
             case TokenResultStatus.FAIL:
+            case TokenResultStatus.TOO_MANY_REQUEST:
                 return fallbackToLocalOrPass(rule, context, node, acquireCount, prioritized);
             case TokenResultStatus.BLOCKED:
             default:
