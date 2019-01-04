@@ -54,16 +54,16 @@ public class ArrayMetricTest {
 
         metric.addRT(expectedRt);
         for (int i = 0; i < expectedPass; i++) {
-            metric.addPass();
+            metric.addPass(1);
         }
         for (int i = 0; i < expectedBlock; i++) {
-            metric.addBlock();
+            metric.addBlock(1);
         }
         for (int i = 0; i < expectedSuccess; i++) {
-            metric.addSuccess();
+            metric.addSuccess(1);
         }
         for (int i = 0; i < expectedException; i++) {
-            metric.addException();
+            metric.addException(1);
         }
 
         assertEquals(expectedPass, metric.pass());
