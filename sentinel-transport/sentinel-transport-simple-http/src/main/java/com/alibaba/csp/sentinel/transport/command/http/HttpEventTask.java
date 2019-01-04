@@ -72,7 +72,7 @@ public class HttpEventTask implements Runnable {
                 new OutputStreamWriter(outputStream, Charset.forName(SentinelConfig.charset())));
 
             String line = in.readLine();
-            CommandCenterLog.info("[CommandCenter] socket income:" + line
+            CommandCenterLog.info("[SimpleHttpCommandCenter] socket income: " + line
                 + "," + socket.getInetAddress());
             CommandRequest request = parseRequest(line);
 
@@ -95,10 +95,10 @@ public class HttpEventTask implements Runnable {
             printWriter.flush();
 
             long cost = System.currentTimeMillis() - start;
-            CommandCenterLog.info("[CommandCenter] deal a socket task:" + line
-                + "," + socket.getInetAddress() + ", time cost=" + cost + " ms");
+            CommandCenterLog.info("[SimpleHttpCommandCenter] Deal a socket task: " + line
+                + ", address: " + socket.getInetAddress() + ", time cost: " + cost + " ms");
         } catch (Throwable e) {
-            CommandCenterLog.info("CommandCenter error", e);
+            CommandCenterLog.warn("[SimpleHttpCommandCenter] CommandCenter error", e);
             try {
                 if (printWriter != null) {
                     String errorMessage = SERVER_ERROR_MESSAGE;
@@ -110,7 +110,7 @@ public class HttpEventTask implements Runnable {
                     printWriter.flush();
                 }
             } catch (Exception e1) {
-                CommandCenterLog.info("CommandCenter close serverSocket failed", e);
+                CommandCenterLog.warn("[SimpleHttpCommandCenter] Close server socket failed", e);
             }
         } finally {
             closeResource(in);
@@ -124,7 +124,7 @@ public class HttpEventTask implements Runnable {
             try {
                 closeable.close();
             } catch (Exception e) {
-                CommandCenterLog.info("CommandCenter close resource failed", e);
+                CommandCenterLog.warn("[SimpleHttpCommandCenter] Close resource failed", e);
             }
         }
     }

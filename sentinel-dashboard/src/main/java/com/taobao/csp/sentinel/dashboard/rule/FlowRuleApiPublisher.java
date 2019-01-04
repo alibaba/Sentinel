@@ -24,7 +24,7 @@ import com.taobao.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.taobao.csp.sentinel.dashboard.discovery.AppManagement;
 import com.taobao.csp.sentinel.dashboard.discovery.MachineInfo;
-import com.taobao.csp.sentinel.dashboard.util.MachineUtil;
+import com.taobao.csp.sentinel.dashboard.util.MachineUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -45,13 +45,13 @@ public class FlowRuleApiPublisher implements DynamicRulePublisher<List<FlowRuleE
         if (StringUtil.isBlank(app)) {
             return;
         }
-        if (rules == null || rules.isEmpty()) {
+        if (rules == null) {
             return;
         }
         Set<MachineInfo> set = appManagement.getDetailApp(app).getMachines();
 
         for (MachineInfo machine : set) {
-            if (!MachineUtil.isMachineHealth(machine)) {
+            if (!MachineUtils.isMachineHealth(machine)) {
                 continue;
             }
             // TODO: parse the results

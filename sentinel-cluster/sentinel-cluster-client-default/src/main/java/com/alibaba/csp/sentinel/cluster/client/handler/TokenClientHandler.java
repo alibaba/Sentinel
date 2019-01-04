@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.cluster.client.handler;
 
+import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.alibaba.csp.sentinel.cluster.ClusterConstants;
@@ -47,7 +48,7 @@ public class TokenClientHandler extends ChannelInboundHandlerAdapter {
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         currentState.set(ClientConstants.CLIENT_STATUS_STARTED);
         fireClientPing(ctx);
-        RecordLog.info("[TokenClientHandler] Client handler active, remote address: " + ctx.channel().remoteAddress());
+        RecordLog.info("[TokenClientHandler] Client handler active, remote address: " + getRemoteAddress(ctx));
     }
 
     @Override
@@ -76,10 +77,10 @@ public class TokenClientHandler extends ChannelInboundHandlerAdapter {
         if (response.getStatus() == ClusterConstants.RESPONSE_STATUS_OK) {
             int count = (int) response.getData();
             RecordLog.info("[TokenClientHandler] Client ping OK (target server: {0}, connected count: {1})",
-                ctx.channel().remoteAddress(), count);
-            return;
+                getRemoteAddress(ctx), count);
+        } else {
+            RecordLog.warn("[TokenClientHandler] Client ping failed (target server: {0})", getRemoteAddress(ctx));
         }
-        RecordLog.warn("[TokenClientHandler] Client ping failed (target server: {0})", ctx.channel().remoteAddress());
     }
 
     @Override
@@ -89,14 +90,23 @@ public class TokenClientHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        RecordLog.info("[TokenClientHandler] Client handler inactive, remote address: " + ctx.channel().remoteAddress());
+        RecordLog.info("[TokenClientHandler] Client handler inactive, remote address: " + getRemoteAddress(ctx));
     }
 
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
-        RecordLog.info("[TokenClientHandler] Client channel unregistered, remote address: " + ctx.channel().remoteAddress());
+        RecordLog.info("[TokenClientHandler] Client channel unregistered, remote address: " + getRemoteAddress(ctx));
         currentState.set(ClientConstants.CLIENT_STATUS_OFF);
+
         disconnectCallback.run();
+    }
+
+    private String getRemoteAddress(ChannelHandlerContext ctx) {
+        if (ctx.channel().remoteAddress() == null) {
+            return null;
+        }
+        InetSocketAddress inetAddress = (InetSocketAddress) ctx.channel().remoteAddress();
+        return inetAddress.getAddress().getHostAddress() + ":" + inetAddress.getPort();
     }
 
     public int getCurrentState() {

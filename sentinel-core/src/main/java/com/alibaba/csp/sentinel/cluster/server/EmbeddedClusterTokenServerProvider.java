@@ -44,5 +44,9 @@ public final class EmbeddedClusterTokenServerProvider {
         return server;
     }
 
+    public static boolean isServerSpiAvailable() {
+        return getServer() != null;
+    }
+
     private EmbeddedClusterTokenServerProvider() {}
 }

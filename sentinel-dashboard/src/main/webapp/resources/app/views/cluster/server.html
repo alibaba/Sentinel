@@ -1,15 +1,28 @@
 <div class="row clearfix">
     <form role="form" class="form-horizontal">
+        <div class="form-group" ng-if="stateVO.currentMode == 1">
+            <label class="col-sm-2 control-label">Token Server 模式</label>
+            <div class="col-sm-4">
+                <p class="form-control-static" ng-if="!stateVO.server.embedded">独立模式 (Alone)</p>
+                <p class="form-control-static" ng-if="stateVO.server.embedded">嵌入模式 (Embedded)</p>
+            </div>
+        </div>
         <div class="form-group">
             <label class="col-sm-2 control-label">Token Server 端口</label>
             <div class="col-sm-4">
-                <input type="number" min="0" max="65535" required class="form-control highlight-border" ng-model='stateVO.server.transport.port' placeholder='请指定 Token Server 端口' />
+                <input type="number" min="1" max="65535" required class="form-control highlight-border" ng-model='stateVO.server.transport.port' placeholder='请指定 Token Server 端口' />
             </div>
         </div>
         <div class="form-group">
             <label class="col-sm-2 control-label">命名空间集合</label>
             <div class="col-sm-4">
                 <input type="text" required class="form-control highlight-border" ng-model='stateVO.server.namespaceSetStr' placeholder='请指定服务端服务的命名空间集合（以,分隔）' />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">最大全局 QPS</label>
+            <div class="col-sm-4">
+                <input type="number" min="0" max="100000" required class="form-control highlight-border" ng-model='stateVO.server.flow.maxAllowedQps' placeholder='请指定服务端最大全局 QPS' />
             </div>
         </div>
     </form>

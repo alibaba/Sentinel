@@ -25,7 +25,7 @@ import com.taobao.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.taobao.csp.sentinel.dashboard.discovery.AppManagement;
 import com.taobao.csp.sentinel.dashboard.discovery.MachineInfo;
-import com.taobao.csp.sentinel.dashboard.util.MachineUtil;
+import com.taobao.csp.sentinel.dashboard.util.MachineUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -47,7 +47,7 @@ public class FlowRuleApiProvider implements DynamicRuleProvider<List<FlowRuleEnt
         }
         List<MachineInfo> list = appManagement.getDetailApp(appName).getMachines()
             .stream()
-            .filter(MachineUtil::isMachineHealth)
+            .filter(MachineUtils::isMachineHealth)
             .sorted((e1, e2) -> {
                 if (e1.getTimestamp().before(e2.getTimestamp())) {
                     return 1;

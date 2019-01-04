@@ -92,14 +92,14 @@ public class StatisticNode implements Node {
      * Holds statistics of the recent {@code INTERVAL} seconds. The {@code INTERVAL} is divided into time spans
      * by given {@code sampleCount}.
      */
-    private transient volatile Metric rollingCounterInSecond = new ArrayMetric(1000 / SampleCountProperty.SAMPLE_COUNT,
+    private transient volatile Metric rollingCounterInSecond = new ArrayMetric(SampleCountProperty.SAMPLE_COUNT,
         IntervalProperty.INTERVAL);
 
     /**
      * Holds statistics of the recent 60 seconds. The windowLengthInMs is deliberately set to 1000 milliseconds,
      * meaning each bucket per second, in this way we can get accurate statistics of each second.
      */
-    private transient Metric rollingCounterInMinute = new ArrayMetric(1000, 60);
+    private transient Metric rollingCounterInMinute = new ArrayMetric(60, 60 * 1000);
 
     /**
      * The counter for thread count.
@@ -142,7 +142,7 @@ public class StatisticNode implements Node {
 
     @Override
     public void reset() {
-        rollingCounterInSecond = new ArrayMetric(1000 / SampleCountProperty.SAMPLE_COUNT, IntervalProperty.INTERVAL);
+        rollingCounterInSecond = new ArrayMetric(SampleCountProperty.SAMPLE_COUNT, IntervalProperty.INTERVAL);
     }
 
     @Override
@@ -158,7 +158,7 @@ public class StatisticNode implements Node {
 
     @Override
     public long blockQps() {
-        return rollingCounterInSecond.block() / IntervalProperty.INTERVAL;
+        return rollingCounterInSecond.block() / (long) rollingCounterInSecond.getWindowIntervalInSec();
     }
 
     @Override
@@ -183,7 +183,7 @@ public class StatisticNode implements Node {
 
     @Override
     public long exceptionQps() {
-        return rollingCounterInSecond.exception() / IntervalProperty.INTERVAL;
+        return rollingCounterInSecond.exception() / (long) rollingCounterInSecond.getWindowIntervalInSec();
     }
 
     @Override
@@ -193,17 +193,17 @@ public class StatisticNode implements Node {
 
     @Override
     public long passQps() {
-        return rollingCounterInSecond.pass() / IntervalProperty.INTERVAL;
+        return rollingCounterInSecond.pass() / (long) rollingCounterInSecond.getWindowIntervalInSec();
     }
 
     @Override
     public long successQps() {
-        return rollingCounterInSecond.success() / IntervalProperty.INTERVAL;
+        return rollingCounterInSecond.success() / (long) rollingCounterInSecond.getWindowIntervalInSec();
     }
 
     @Override
     public long maxSuccessQps() {
-        return rollingCounterInSecond.maxSuccess() * SampleCountProperty.SAMPLE_COUNT;
+        return rollingCounterInSecond.maxSuccess() * rollingCounterInSecond.getSampleCount();
     }
 
     @Override
@@ -227,30 +227,30 @@ public class StatisticNode implements Node {
     }
 
     @Override
-    public void addPassRequest() {
-        rollingCounterInSecond.addPass();
-        rollingCounterInMinute.addPass();
+    public void addPassRequest(int count) {
+        rollingCounterInSecond.addPass(count);
+        rollingCounterInMinute.addPass(count);
     }
 
     @Override
-    public void rt(long rt) {
-        rollingCounterInSecond.addSuccess();
+    public void addRtAndSuccess(long rt, int successCount) {
+        rollingCounterInSecond.addSuccess(successCount);
         rollingCounterInSecond.addRT(rt);
 
-        rollingCounterInMinute.addSuccess();
+        rollingCounterInMinute.addSuccess(successCount);
         rollingCounterInMinute.addRT(rt);
     }
 
     @Override
-    public void increaseBlockQps() {
-        rollingCounterInSecond.addBlock();
-        rollingCounterInMinute.addBlock();
+    public void increaseBlockQps(int count) {
+        rollingCounterInSecond.addBlock(count);
+        rollingCounterInMinute.addBlock(count);
     }
 
     @Override
-    public void increaseExceptionQps() {
-        rollingCounterInSecond.addException();
-        rollingCounterInMinute.addException();
+    public void increaseExceptionQps(int count) {
+        rollingCounterInSecond.addException(count);
+        rollingCounterInMinute.addException(count);
 
     }
 

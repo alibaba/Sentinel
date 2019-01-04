@@ -30,14 +30,8 @@ public class ClusterMetricLeapArray extends LeapArray<ClusterMetricBucket> {
     private final LongAdder[] occupyCounter;
     private boolean hasOccupied = false;
 
-    /**
-     * The total bucket count is: {@link #sampleCount} = intervalInMs / windowLengthInMs.
-     *
-     * @param windowLengthInMs a single window bucket's time length in milliseconds.
-     * @param intervalInMs    the total time span of this {@link LeapArray} in milliseconds.
-     */
-    public ClusterMetricLeapArray(int windowLengthInMs, int intervalInMs) {
-        super(windowLengthInMs, intervalInMs / 1000);
+    public ClusterMetricLeapArray(int sampleCount, int intervalInMs) {
+        super(sampleCount, intervalInMs);
         ClusterFlowEvent[] events = ClusterFlowEvent.values();
         this.occupyCounter = new LongAdder[events.length];
         for (ClusterFlowEvent event : events) {

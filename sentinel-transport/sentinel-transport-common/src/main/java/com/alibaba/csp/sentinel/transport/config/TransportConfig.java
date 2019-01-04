@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.transport.config;
 
 import com.alibaba.csp.sentinel.config.SentinelConfig;
+import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.HostNameUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
@@ -31,9 +32,19 @@ public class TransportConfig {
 
     private static int runtimePort = -1;
 
+    /**
+     * Get heartbeat interval in milliseconds.
+     *
+     * @return heartbeat interval in milliseconds if exists, or null if not configured or invalid config
+     */
     public static Long getHeartbeatIntervalMs() {
         String interval = SentinelConfig.getConfig(HEARTBEAT_INTERVAL_MS);
-        return interval == null ? null : Long.parseLong(interval);
+        try {
+            return interval == null ? null : Long.parseLong(interval);
+        } catch (Exception ex) {
+            RecordLog.warn("[TransportConfig] Failed to parse heartbeat interval: " + interval);
+            return null;
+        }
     }
 
     /**
