@@ -36,14 +36,14 @@ jobs:
 #              fi
 #            done
 #            bash -c "exit $code";
-      - run:
-          name: use opensource tool client9/misspell to correct commonly misspelled English words 
-          command: |
-            find  ./* -name  "*"  | grep -v vendor | xargs misspell -error
-      - run:
-          name: use ShellCheck (https://github.com/koalaman/shellcheck) to check the validateness of shell scripts in pouch repo
-          command: |
-            find ./ -name "*.sh" | grep -v vendor | xargs shellcheck
+#      - run:
+#          name: use opensource tool client9/misspell to correct commonly misspelled English words
+#          command: |
+#            find  ./* -name  "*"  | grep -v vendor | xargs misspell -error
+#      - run:
+#          name: use ShellCheck (https://github.com/koalaman/shellcheck) to check the validateness of shell scripts in pouch repo
+#          command: |
+#            find ./ -name "*.sh" | grep -v vendor | xargs shellcheck
 
 workflows:
   version: 2
