@@ -13,20 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.taobao.csp.sentinel.dashboard.util;
-
-import com.taobao.csp.sentinel.dashboard.discovery.MachineDiscovery;
-import com.taobao.csp.sentinel.dashboard.discovery.MachineInfo;
+package com.taobao.csp.sentinel.dashboard.domain.cluster.request;
 
 /**
  * @author Eric Zhao
+ * @since 1.4.0
  */
-public final class MachineUtil {
+public interface ClusterModifyRequest {
 
-    public static boolean isMachineHealth(MachineInfo machine) {
-        if (machine == null) {
-            return false;
-        }
-        return System.currentTimeMillis() - machine.getTimestamp().getTime() < MachineDiscovery.MAX_CLIENT_LIVE_TIME_MS;
-    }
+    String getApp();
+
+    String getIp();
+
+    Integer getPort();
+
+    Integer getMode();
 }

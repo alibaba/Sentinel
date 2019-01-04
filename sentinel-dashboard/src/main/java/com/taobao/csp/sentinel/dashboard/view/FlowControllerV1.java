@@ -134,6 +134,8 @@ public class FlowControllerV1 {
         Date date = new Date();
         entity.setGmtCreate(date);
         entity.setGmtModified(date);
+        entity.setLimitApp(entity.getLimitApp().trim());
+        entity.setResource(entity.getResource().trim());
         try {
             entity = repository.save(entity);
         } catch (Throwable throwable) {
@@ -224,7 +226,7 @@ public class FlowControllerV1 {
     }
 
     @DeleteMapping("/delete.json")
-    Result<?> delete(Long id) {
+    public Result<Long> delete(Long id) {
         if (id == null) {
             return Result.ofFail(-1, "id can't be null");
         }

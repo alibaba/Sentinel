@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.taobao.csp.sentinel.dashboard.view;
+package com.taobao.csp.sentinel.dashboard.view.cluster;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
@@ -26,16 +27,22 @@ import com.alibaba.fastjson.JSONObject;
 import com.taobao.csp.sentinel.dashboard.client.CommandNotFoundException;
 import com.taobao.csp.sentinel.dashboard.datasource.entity.SentinelVersion;
 import com.taobao.csp.sentinel.dashboard.discovery.AppManagement;
-import com.taobao.csp.sentinel.dashboard.domain.cluster.ClusterClientModifyRequest;
-import com.taobao.csp.sentinel.dashboard.domain.cluster.ClusterModifyRequest;
-import com.taobao.csp.sentinel.dashboard.domain.cluster.ClusterServerModifyRequest;
-import com.taobao.csp.sentinel.dashboard.domain.cluster.ClusterUniversalStateVO;
+import com.taobao.csp.sentinel.dashboard.domain.cluster.request.ClusterClientModifyRequest;
+import com.taobao.csp.sentinel.dashboard.domain.cluster.request.ClusterModifyRequest;
+import com.taobao.csp.sentinel.dashboard.domain.cluster.request.ClusterServerModifyRequest;
+import com.taobao.csp.sentinel.dashboard.domain.cluster.state.AppClusterClientStateWrapVO;
+import com.taobao.csp.sentinel.dashboard.domain.cluster.state.AppClusterServerStateWrapVO;
+import com.taobao.csp.sentinel.dashboard.domain.cluster.state.ClusterUniversalStatePairVO;
+import com.taobao.csp.sentinel.dashboard.domain.cluster.state.ClusterUniversalStateVO;
 import com.taobao.csp.sentinel.dashboard.service.ClusterConfigService;
+import com.taobao.csp.sentinel.dashboard.util.ClusterEntityUtils;
 import com.taobao.csp.sentinel.dashboard.util.VersionUtils;
+import com.taobao.csp.sentinel.dashboard.view.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -60,7 +67,7 @@ public class ClusterConfigController {
     @Autowired
     private ClusterConfigService clusterConfigService;
 
-    @PostMapping("/config/modify")
+    @PostMapping("/config/modify_single")
     public Result<Boolean> apiModifyClusterConfig(@RequestBody String payload) {
         if (StringUtil.isBlank(payload)) {
             return Result.ofFail(-1, "empty request body");
@@ -94,18 +101,22 @@ public class ClusterConfigController {
             return Result.ofFail(-1, "invalid parameter");
         } catch (ExecutionException ex) {
             logger.error("Error when modifying cluster config", ex.getCause());
-            if (isNotSupported(ex.getCause())) {
-                return unsupportedVersion();
-            } else {
-                return Result.ofThrowable(-1, ex.getCause());
-            }
+            return errorResponse(ex);
         } catch (Throwable ex) {
             logger.error("Error when modifying cluster config", ex);
             return Result.ofFail(-1, ex.getMessage());
         }
     }
 
-    @GetMapping("/state")
+    private <T> Result<T> errorResponse(ExecutionException ex) {
+        if (isNotSupported(ex.getCause())) {
+            return unsupportedVersion();
+        } else {
+            return Result.ofThrowable(-1, ex.getCause());
+        }
+    }
+
+    @GetMapping("/state_single")
     public Result<ClusterUniversalStateVO> apiGetClusterState(@RequestParam String app,
                                                               @RequestParam String ip,
                                                               @RequestParam Integer port) {
@@ -127,13 +138,65 @@ public class ClusterConfigController {
                 .get();
         } catch (ExecutionException ex) {
             logger.error("Error when fetching cluster state", ex.getCause());
-            if (isNotSupported(ex.getCause())) {
-                return unsupportedVersion();
-            } else {
-                return Result.ofThrowable(-1, ex.getCause());
-            }
+            return errorResponse(ex);
         } catch (Throwable throwable) {
             logger.error("Error when fetching cluster state", throwable);
+            return Result.ofFail(-1, throwable.getMessage());
+        }
+    }
+
+    @GetMapping("/server_state/{app}")
+    public Result<List<AppClusterServerStateWrapVO>> apiGetClusterServerStateOfApp(@PathVariable String app) {
+        if (StringUtil.isEmpty(app)) {
+            return Result.ofFail(-1, "app cannot be null or empty");
+        }
+        try {
+            return clusterConfigService.getClusterUniversalState(app)
+                .thenApply(ClusterEntityUtils::wrapToAppClusterServerState)
+                .thenApply(Result::ofSuccess)
+                .get();
+        } catch (ExecutionException ex) {
+            logger.error("Error when fetching cluster server state of app: " + app, ex.getCause());
+            return errorResponse(ex);
+        } catch (Throwable throwable) {
+            logger.error("Error when fetching cluster server state of app: " + app, throwable);
+            return Result.ofFail(-1, throwable.getMessage());
+        }
+    }
+
+    @GetMapping("/client_state/{app}")
+    public Result<List<AppClusterClientStateWrapVO>> apiGetClusterClientStateOfApp(@PathVariable String app) {
+        if (StringUtil.isEmpty(app)) {
+            return Result.ofFail(-1, "app cannot be null or empty");
+        }
+        try {
+            return clusterConfigService.getClusterUniversalState(app)
+                .thenApply(ClusterEntityUtils::wrapToAppClusterClientState)
+                .thenApply(Result::ofSuccess)
+                .get();
+        } catch (ExecutionException ex) {
+            logger.error("Error when fetching cluster token client state of app: " + app, ex.getCause());
+            return errorResponse(ex);
+        } catch (Throwable throwable) {
+            logger.error("Error when fetching cluster token client state of app: " + app, throwable);
+            return Result.ofFail(-1, throwable.getMessage());
+        }
+    }
+
+    @GetMapping("/state/{app}")
+    public Result<List<ClusterUniversalStatePairVO>> apiGetClusterStateOfApp(@PathVariable String app) {
+        if (StringUtil.isEmpty(app)) {
+            return Result.ofFail(-1, "app cannot be null or empty");
+        }
+        try {
+            return clusterConfigService.getClusterUniversalState(app)
+                .thenApply(Result::ofSuccess)
+                .get();
+        } catch (ExecutionException ex) {
+            logger.error("Error when fetching cluster state of app: " + app, ex.getCause());
+            return errorResponse(ex);
+        } catch (Throwable throwable) {
+            logger.error("Error when fetching cluster state of app: " + app, throwable);
             return Result.ofFail(-1, throwable.getMessage());
         }
     }

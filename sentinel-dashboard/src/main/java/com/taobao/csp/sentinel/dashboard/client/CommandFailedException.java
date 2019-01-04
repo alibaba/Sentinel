@@ -13,19 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.taobao.csp.sentinel.dashboard.domain.cluster;
+package com.taobao.csp.sentinel.dashboard.client;
 
 /**
  * @author Eric Zhao
- * @since 1.4.0
  */
-public interface ClusterModifyRequest {
+public class CommandFailedException extends RuntimeException {
 
-    String getApp();
+    public CommandFailedException() {}
 
-    String getIp();
+    public CommandFailedException(String message) {
+        super(message);
+    }
 
-    Integer getPort();
-
-    Integer getMode();
+    @Override
+    public synchronized Throwable fillInStackTrace() {
+        return this;
+    }
 }

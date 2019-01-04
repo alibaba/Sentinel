@@ -21,7 +21,7 @@ import java.util.Set;
 public interface MachineDiscovery {
 
     long MAX_CLIENT_LIVE_TIME_MS = 1000 * 60 * 5;
-    String UNKNOWN_APP_NAME = "UNKNOWN";
+    String UNKNOWN_APP_NAME = "CLUSTER_NOT_STARTED";
 
     List<String> getAppNames();
 

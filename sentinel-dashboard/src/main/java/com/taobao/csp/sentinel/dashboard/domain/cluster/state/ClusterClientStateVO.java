@@ -13,22 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.taobao.csp.sentinel.dashboard.client;
+package com.taobao.csp.sentinel.dashboard.domain.cluster.state;
+
+import com.taobao.csp.sentinel.dashboard.domain.cluster.ClusterClientInfoVO;
 
 /**
  * @author Eric Zhao
- * @since 0.2.1
+ * @since 1.4.0
  */
-public class CommandNotFoundException extends Exception {
+public class ClusterClientStateVO {
 
-    public CommandNotFoundException() { }
+    /**
+     * Cluster token client state.
+     */
+    private ClusterClientInfoVO clientConfig;
 
-    public CommandNotFoundException(String message) {
-        super(message);
+    public ClusterClientInfoVO getClientConfig() {
+        return clientConfig;
+    }
+
+    public ClusterClientStateVO setClientConfig(ClusterClientInfoVO clientConfig) {
+        this.clientConfig = clientConfig;
+        return this;
     }
 
     @Override
-    public synchronized Throwable fillInStackTrace() {
-        return this;
+    public String toString() {
+        return "ClusterClientStateVO{" +
+            "clientConfig=" + clientConfig +
+            '}';
     }
 }

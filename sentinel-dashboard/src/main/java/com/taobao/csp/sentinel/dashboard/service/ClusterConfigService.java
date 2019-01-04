@@ -15,21 +15,30 @@
  */
 package com.taobao.csp.sentinel.dashboard.service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import com.taobao.csp.sentinel.dashboard.client.SentinelApiClient;
-import com.taobao.csp.sentinel.dashboard.domain.cluster.ClusterClientModifyRequest;
-import com.taobao.csp.sentinel.dashboard.domain.cluster.ClusterClientStateVO;
-import com.taobao.csp.sentinel.dashboard.domain.cluster.ClusterServerModifyRequest;
-import com.taobao.csp.sentinel.dashboard.domain.cluster.ClusterUniversalStateVO;
+import com.taobao.csp.sentinel.dashboard.discovery.AppInfo;
+import com.taobao.csp.sentinel.dashboard.discovery.AppManagement;
+import com.taobao.csp.sentinel.dashboard.domain.cluster.ClusterGroupEntity;
+import com.taobao.csp.sentinel.dashboard.domain.cluster.request.ClusterClientModifyRequest;
+import com.taobao.csp.sentinel.dashboard.domain.cluster.state.ClusterClientStateVO;
+import com.taobao.csp.sentinel.dashboard.domain.cluster.request.ClusterServerModifyRequest;
+import com.taobao.csp.sentinel.dashboard.domain.cluster.state.ClusterUniversalStatePairVO;
+import com.taobao.csp.sentinel.dashboard.domain.cluster.state.ClusterUniversalStateVO;
 import com.taobao.csp.sentinel.dashboard.domain.cluster.config.ClusterClientConfig;
 import com.taobao.csp.sentinel.dashboard.domain.cluster.config.ServerFlowConfig;
 import com.taobao.csp.sentinel.dashboard.domain.cluster.config.ServerTransportConfig;
+import com.taobao.csp.sentinel.dashboard.util.AsyncUtils;
+import com.taobao.csp.sentinel.dashboard.util.ClusterEntityUtils;
+import com.taobao.csp.sentinel.dashboard.util.MachineUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -42,6 +51,8 @@ public class ClusterConfigService {
 
     @Autowired
     private SentinelApiClient sentinelApiClient;
+    @Autowired
+    private AppManagement appManagement;
 
     public CompletableFuture<Void> modifyClusterClientConfig(ClusterClientModifyRequest request) {
         if (notClientRequestValid(request)) {
@@ -51,7 +62,7 @@ public class ClusterConfigService {
         String ip = request.getIp();
         int port = request.getPort();
         return sentinelApiClient.modifyClusterClientConfig(app, ip, port, request.getClientConfig())
-                .thenCompose(v -> sentinelApiClient.modifyClusterMode(app, ip, port, ClusterStateManager.CLUSTER_CLIENT));
+            .thenCompose(v -> sentinelApiClient.modifyClusterMode(app, ip, port, ClusterStateManager.CLUSTER_CLIENT));
     }
 
     private boolean notClientRequestValid(/*@NonNull */ ClusterClientModifyRequest request) {
@@ -83,12 +94,64 @@ public class ClusterConfigService {
             .thenCompose(v -> sentinelApiClient.modifyClusterMode(app, ip, port, ClusterStateManager.CLUSTER_SERVER));
     }
 
+    /**
+     * Get cluster state list of all available machines of provided application.
+     *
+     * @param app application name
+     * @return cluster state list of all available machines of the application
+     * @since 1.4.1
+     */
+    public CompletableFuture<List<ClusterUniversalStatePairVO>> getClusterUniversalState(String app) {
+        if (StringUtil.isBlank(app)) {
+            return AsyncUtils.newFailedFuture(new IllegalArgumentException("app cannot be empty"));
+        }
+        AppInfo appInfo = appManagement.getDetailApp(app);
+        if (appInfo == null || appInfo.getMachines() == null) {
+            return CompletableFuture.completedFuture(new ArrayList<>());
+        }
+
+        List<CompletableFuture<ClusterUniversalStatePairVO>> futures = appInfo.getMachines().stream()
+            .filter(MachineUtils::isMachineHealth)
+            .map(machine -> getClusterUniversalState(app, machine.getIp(), machine.getPort())
+                .thenApply(e -> new ClusterUniversalStatePairVO(machine.getIp(), machine.getPort(), e)))
+            .collect(Collectors.toList());
+
+        return AsyncUtils.sequenceSuccessFuture(futures);
+    }
+
+    public CompletableFuture<ClusterGroupEntity> getClusterUniversalStateForAppMachine(String app, String machineId) {
+        if (StringUtil.isBlank(app)) {
+            return AsyncUtils.newFailedFuture(new IllegalArgumentException("app cannot be empty"));
+        }
+        AppInfo appInfo = appManagement.getDetailApp(app);
+        if (appInfo == null || appInfo.getMachines() == null) {
+            return AsyncUtils.newFailedFuture(new IllegalArgumentException("app does not have machines"));
+        }
+
+        boolean machineOk = appInfo.getMachines().stream()
+            .filter(MachineUtils::isMachineHealth)
+            .map(e -> e.getIp() + '@' + e.getPort())
+            .anyMatch(e -> e.equals(machineId));
+        if (!machineOk) {
+            return AsyncUtils.newFailedFuture(new IllegalStateException("machine does not exist or disconnected"));
+        }
+
+        return getClusterUniversalState(app)
+            .thenApply(ClusterEntityUtils::wrapToClusterGroup)
+            .thenCompose(e -> e.stream()
+                .filter(e1 -> e1.getMachineId().equals(machineId))
+                .findAny()
+                .map(CompletableFuture::completedFuture)
+                .orElse(AsyncUtils.newFailedFuture(new IllegalStateException("not a server: " + machineId)))
+            );
+    }
+
     public CompletableFuture<ClusterUniversalStateVO> getClusterUniversalState(String app, String ip, int port) {
         return sentinelApiClient.fetchClusterMode(app, ip, port)
             .thenApply(e -> new ClusterUniversalStateVO().setStateInfo(e))
             .thenCompose(vo -> {
                 if (vo.getStateInfo().getClientAvailable()) {
-                    return sentinelApiClient.fetchClusterClientConfig(app, ip, port)
+                    return sentinelApiClient.fetchClusterClientInfoAndConfig(app, ip, port)
                         .thenApply(cc -> vo.setClient(new ClusterClientStateVO().setClientConfig(cc)));
                 } else {
                     return CompletableFuture.completedFuture(vo);
@@ -111,6 +174,7 @@ public class ClusterConfigService {
     private boolean invalidFlowConfig(ServerFlowConfig flowConfig) {
         return flowConfig == null || flowConfig.getSampleCount() == null || flowConfig.getSampleCount() <= 0
             || flowConfig.getIntervalMs() == null || flowConfig.getIntervalMs() <= 0
-            || flowConfig.getIntervalMs() % flowConfig.getSampleCount() != 0;
+            || flowConfig.getIntervalMs() % flowConfig.getSampleCount() != 0
+            || flowConfig.getMaxAllowedQps() == null || flowConfig.getMaxAllowedQps() < 0;
     }
 }
