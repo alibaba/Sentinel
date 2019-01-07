@@ -61,7 +61,7 @@ app.controller('FlowControllerV2', ['$scope', '$stateParams', 'FlowServiceV2', '
 
     var flowRuleDialog;
     $scope.editRule = function (rule) {
-      $scope.currentRule = rule;
+      $scope.currentRule = angular.copy(rule);
       $scope.flowRuleDialog = {
         title: '编辑流控规则',
         type: 'edit',
@@ -88,7 +88,8 @@ app.controller('FlowControllerV2', ['$scope', '$stateParams', 'FlowServiceV2', '
         limitApp: 'default',
         clusterMode: false,
         clusterConfig: {
-          thresholdType: 0
+          thresholdType: 0,
+          fallbackToLocalWhenFail: true
         }
       };
       $scope.flowRuleDialog = {
