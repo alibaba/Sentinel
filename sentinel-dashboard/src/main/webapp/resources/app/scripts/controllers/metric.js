@@ -89,14 +89,14 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
           min: 0,
           max: maxQps,
           fine: true,
-          alias: 'p_qps(通过 QPS)'
+          alias: 'p_qps'
           // max: 10
         });
         chart.scale('blockQps', {
           min: 0,
           max: maxQps,
           fine: true,
-          alias: 'b_qps(拒绝 QPS)',
+          alias: 'b_qps',
         });
         chart.scale('rt', {
           min: 0,
@@ -131,10 +131,10 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
           allowAllCanceled: true,
           itemFormatter: function (val) {
             if ('passQps' === val) {
-              return 'p_qps';
+              return 'p_qps(通过 QPS)';
             }
             if ('blockQps' === val) {
-              return 'b_qps';
+              return 'b_qps(拒绝 QPS)';
             }
             return val;
           },
