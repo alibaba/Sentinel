@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.taobao.csp.sentinel.dashboard.view;
+package com.taobao.csp.sentinel.dashboard.controller;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,7 +25,8 @@ import javax.servlet.http.HttpServletRequest;
 import com.taobao.csp.sentinel.dashboard.discovery.AppInfo;
 import com.taobao.csp.sentinel.dashboard.discovery.AppManagement;
 import com.taobao.csp.sentinel.dashboard.discovery.MachineInfo;
-import com.taobao.csp.sentinel.dashboard.view.vo.MachineInfoVo;
+import com.taobao.csp.sentinel.dashboard.domain.Result;
+import com.taobao.csp.sentinel.dashboard.domain.vo.MachineInfoVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
