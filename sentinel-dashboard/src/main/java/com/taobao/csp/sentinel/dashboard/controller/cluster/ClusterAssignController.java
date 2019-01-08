@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.taobao.csp.sentinel.dashboard.view.cluster;
+package com.taobao.csp.sentinel.dashboard.controller.cluster;
 
 import java.util.Collections;
 import java.util.Set;
@@ -24,7 +24,7 @@ import com.taobao.csp.sentinel.dashboard.domain.cluster.ClusterAppFullAssignRequ
 import com.taobao.csp.sentinel.dashboard.domain.cluster.ClusterAppAssignResultVO;
 import com.taobao.csp.sentinel.dashboard.domain.cluster.ClusterAppSingleServerAssignRequest;
 import com.taobao.csp.sentinel.dashboard.service.ClusterAssignService;
-import com.taobao.csp.sentinel.dashboard.view.Result;
+import com.taobao.csp.sentinel.dashboard.domain.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
