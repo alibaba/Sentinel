@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.taobao.csp.sentinel.dashboard.view;
+package com.taobao.csp.sentinel.dashboard.controller;
 
 import java.util.Date;
 import java.util.List;
@@ -30,6 +30,7 @@ import com.taobao.csp.sentinel.dashboard.datasource.entity.SentinelVersion;
 import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEntity;
 import com.taobao.csp.sentinel.dashboard.discovery.AppManagement;
 import com.taobao.csp.sentinel.dashboard.discovery.MachineInfo;
+import com.taobao.csp.sentinel.dashboard.domain.Result;
 import com.taobao.csp.sentinel.dashboard.repository.rule.RuleRepository;
 import com.taobao.csp.sentinel.dashboard.util.VersionUtils;
 import org.slf4j.Logger;
@@ -123,6 +124,7 @@ public class ParamFlowRuleController {
             return unsupportedVersion();
         }
         entity.setId(null);
+        entity.getRule().setResource(entity.getResource().trim());
         Date date = new Date();
         entity.setGmtCreate(date);
         entity.setGmtModified(date);

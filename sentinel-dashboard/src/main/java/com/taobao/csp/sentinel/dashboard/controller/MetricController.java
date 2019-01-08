@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.taobao.csp.sentinel.dashboard.view;
+package com.taobao.csp.sentinel.dashboard.controller;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.taobao.csp.sentinel.dashboard.domain.Result;
 import com.taobao.csp.sentinel.dashboard.repository.metric.MetricsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +37,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import com.taobao.csp.sentinel.dashboard.datasource.entity.MetricEntity;
-import com.taobao.csp.sentinel.dashboard.view.vo.MetricVo;
+import com.taobao.csp.sentinel.dashboard.domain.vo.MetricVo;
 
 /**
  * @author leyou
