@@ -131,10 +131,10 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
           allowAllCanceled: true,
           itemFormatter: function (val) {
             if ('passQps' === val) {
-              return 'p_qps';
+              return 'p_qps(通过 QPS)';
             }
             if ('blockQps' === val) {
-              return 'b_qps';
+              return 'b_qps(拒绝 QPS)';
             }
             return val;
           },
