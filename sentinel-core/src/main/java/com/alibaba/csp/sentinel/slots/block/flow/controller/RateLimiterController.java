@@ -15,25 +15,23 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow.controller;
 
-import java.util.concurrent.atomic.AtomicLong;
-
-import com.alibaba.csp.sentinel.slots.block.flow.TrafficShapingController;
-
-import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.node.Node;
+import com.alibaba.csp.sentinel.slots.block.flow.TrafficShapingController;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.LockSupport;
 
 /**
  * @author jialiang.linjl
  */
 public class RateLimiterController implements TrafficShapingController {
 
-    private final int maxQueueingTimeMs;
+    private final long maxQueueingTimeNano;
     private final double count;
 
     private final AtomicLong latestPassedTime = new AtomicLong(-1);
 
-    public RateLimiterController(int timeOut, double count) {
-        this.maxQueueingTimeMs = timeOut;
+    public RateLimiterController(long timeOut, double count) {
+        this.maxQueueingTimeNano = 1000000 * timeOut;
         this.count = count;
     }
 
@@ -44,37 +42,31 @@ public class RateLimiterController implements TrafficShapingController {
 
     @Override
     public boolean canPass(Node node, int acquireCount, boolean prioritized) {
-        long currentTime = TimeUtil.currentTimeMillis();
-        // Calculate the interval between every two requests.
-        long costTime = Math.round(1.0 * (acquireCount) / count * 1000);
 
-        // Expected pass time of this request.
-        long expectedTime = costTime + latestPassedTime.get();
-
-        if (expectedTime <= currentTime) {
-            // Contention may exist here, but it's okay.
+        long currentTime = System.nanoTime();
+        long costTime = Math.round(1e9 * (acquireCount) / count);
+        long lastTime = latestPassedTime.get();
+        long expectedTime = costTime + lastTime;
+        long waitTime = expectedTime - currentTime;
+        if (waitTime <= 0) {
+            //这里会有冲突,然而冲突就冲突吧.
             latestPassedTime.set(currentTime);
             return true;
-        } else {
-            // Calculate the time to wait.
-            long waitTime = costTime + latestPassedTime.get() - TimeUtil.currentTimeMillis();
-            if (waitTime >= maxQueueingTimeMs) {
+        } else if (waitTime >= maxQueueingTimeNano) {
+            return false;
+        }
+        while (!latestPassedTime.compareAndSet(lastTime, expectedTime)) {
+            lastTime = latestPassedTime.get();
+            expectedTime = costTime + lastTime;
+            currentTime = System.nanoTime();
+            waitTime = expectedTime - currentTime;
+            if (waitTime >= maxQueueingTimeNano) {
                 return false;
-            } else {
-                long oldTime = latestPassedTime.addAndGet(costTime);
-                try {
-                    waitTime = oldTime - TimeUtil.currentTimeMillis();
-                    if (waitTime >= maxQueueingTimeMs) {
-                        latestPassedTime.addAndGet(-costTime);
-                        return false;
-                    }
-                    Thread.sleep(waitTime);
-                    return true;
-                } catch (InterruptedException e) {
-                }
             }
         }
-        return false;
+
+        LockSupport.parkNanos(waitTime);
+        return true;
     }
 
 }

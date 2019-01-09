@@ -15,17 +15,15 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow.controller;
 
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-
+import com.alibaba.csp.sentinel.node.Node;
+import com.alibaba.csp.sentinel.util.TimeUtil;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
-
+import java.util.concurrent.atomic.AtomicLong;
 import org.junit.Test;
 
-import com.alibaba.csp.sentinel.util.TimeUtil;
-import com.alibaba.csp.sentinel.node.Node;
-import com.alibaba.csp.sentinel.slots.block.flow.controller.RateLimiterController;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 /**
  * @author jialiang.linjl
@@ -47,42 +45,86 @@ public class RateLimiterControllerTest {
 
     @Test
     public void testPaceController_timeout() throws InterruptedException {
-        final RateLimiterController paceController = new RateLimiterController(500, 10d);
+        final RateLimiterController limiterController = new RateLimiterController(1000, 160d);
         final Node node = mock(Node.class);
 
         final AtomicInteger passcount = new AtomicInteger();
         final AtomicInteger blockcount = new AtomicInteger();
-        final CountDownLatch countDown = new CountDownLatch(1);
 
         final AtomicInteger done = new AtomicInteger();
-        for (int i = 0; i < 10; i++) {
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    boolean pass = paceController.canPass(node, 1);
+        long lastSec = System.currentTimeMillis() / 1000;
+        for (int i = 0; i < 1000; i++) {
+            boolean pass = limiterController.canPass(node, 1);
 
-                    if (pass == true) {
-                        passcount.incrementAndGet();
-                    } else {
-                        blockcount.incrementAndGet();
-                    }
-                    done.incrementAndGet();
-
-                    if (done.get() >= 10) {
-                        countDown.countDown();
-                    }
-                }
-
-            }, "Thread " + i);
-            thread.start();
+            if (pass == true) {
+                passcount.incrementAndGet();
+            } else {
+                blockcount.incrementAndGet();
+            }
+            done.incrementAndGet();
+            long now = System.currentTimeMillis() / 1000;
+            if (lastSec != now) {
+                System.out.println("pass:" + passcount.get() + ", tm:" + lastSec);
+                System.out.println("block" + blockcount.get() + ", tm:" + lastSec);
+                System.out.println("done" + done.get() + ", tm:" + lastSec);
+                passcount.set(0);
+                blockcount.set(0);
+                done.set(0);
+            }
+            lastSec = now;
         }
-
-        countDown.await();
-        System.out.println("pass:" + passcount.get());
-        System.out.println("block" + blockcount.get());
-        System.out.println("done" + done.get());
-        assertTrue(blockcount.get() > 0);
+        //        countDown.await();
+        System.out.println("pass:" + passcount.get() + ", tm:" + lastSec);
+        System.out.println("block" + blockcount.get() + ", tm:" + lastSec);
+        System.out.println("done" + done.get() + ", tm:" + lastSec);
 
     }
 
+    @Test
+    public void testPaceController_multiThread() throws InterruptedException {
+        final RateLimiterController limiterController = new RateLimiterController(1000, 160d);
+        final Node node = mock(Node.class);
+
+        final AtomicInteger passcount = new AtomicInteger();
+        final AtomicInteger blockcount = new AtomicInteger();
+
+        final AtomicInteger done = new AtomicInteger();
+        final AtomicLong lastTm = new AtomicLong(System.currentTimeMillis() / 1000);
+        int count = 1000;
+        final CountDownLatch countDown = new CountDownLatch(count);
+
+        for (int i = 0; i < count; i++) {
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    for (int j = 0; j < 10; j++) {
+                        boolean pass = limiterController.canPass(node, 1);
+                        if (pass) {
+                            passcount.incrementAndGet();
+                        } else {
+                            blockcount.incrementAndGet();
+                        }
+                        done.incrementAndGet();
+                        long now = System.currentTimeMillis() / 1000;
+                        if (lastTm.get() != now) {
+                            System.out.println("pass:" + passcount.get() + ", tm:" + lastTm.get());
+                            System.out.println("block:" + blockcount.get() + ", tm:" + lastTm.get());
+                            System.out.println("done:" + done.get() + ", tm:" + lastTm.get());
+                            passcount.set(0);
+                            blockcount.set(0);
+                            done.set(0);
+                        }
+                        lastTm.set(now);
+                    }
+                    countDown.countDown();
+                }
+            }, "Thread " + i);
+            thread.start();
+        }
+        countDown.await();
+        System.out.println("pass:" + passcount.get() + ", tm:" + lastTm.get());
+        System.out.println("block:" + blockcount.get() + ", tm:" + lastTm.get());
+        System.out.println("done:" + done.get() + ", tm:" + lastTm.get());
+
+    }
 }
