@@ -1,0 +1,14 @@
+node {
+    // some block
+    stage('build') {
+    // some block
+    sh 'mvn package'
+
+}
+    stage('test') {
+    // some block
+    sh 'mvn test'
+
+}
+
+}
