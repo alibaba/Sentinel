@@ -49,7 +49,6 @@ public class RateLimiterController implements TrafficShapingController {
         long expectedTime = costTime + lastTime;
         long waitTime = expectedTime - currentTime;
         if (waitTime <= 0) {
-            //这里会有冲突,然而冲突就冲突吧.
             latestPassedTime.set(currentTime);
             return true;
         } else if (waitTime >= maxQueueingTimeNano) {
