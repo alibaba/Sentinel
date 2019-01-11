@@ -61,12 +61,9 @@ public class SentinelErrorFilter extends AbstractSentinelFilter {
         try {
             RequestContext ctx = RequestContext.getCurrentContext();
             Throwable throwable = ctx.getThrowable();
-            if (throwable != null) {
-                if (!(throwable.getCause() instanceof BlockException)) {
-                    Tracer.trace(throwable.getCause());
-                    RecordLog.info("[Sentinel Error Filter] Trace cause", throwable.getCause());
-
-                }
+            if (!BlockException.isBlockException(throwable)) {
+                Tracer.trace(throwable.getCause());
+                RecordLog.info("[Sentinel Error Filter] Trace cause", throwable.getCause());
             }
         } finally {
             if (ContextUtil.getContext() != null && ContextUtil.getContext().getCurEntry() != null) {
