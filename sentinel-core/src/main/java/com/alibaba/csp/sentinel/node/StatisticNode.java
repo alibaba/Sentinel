@@ -26,41 +26,104 @@ import com.alibaba.csp.sentinel.slots.statistic.metric.ArrayMetric;
 import com.alibaba.csp.sentinel.slots.statistic.metric.Metric;
 
 /**
+ * <p>The statistic node keep three kinds of real-time statistics metrics:</p>
+ * <ol>
+ * <li>metrics in second level ({@code rollingCounterInSecond})</li>
+ * <li>metrics in minute level ({@code rollingCounterInMinute})</li>
+ * <li>thread count</li>
+ * </ol>
+ *
+ * <p>
+ * Sentinel use sliding window to record and count the resource statistics in real-time.
+ * The sliding window infrastructure behind the {@link ArrayMetric} is {@code LeapArray}.
+ * </p>
+ *
+ * <p>
+ * case 1: When the first request comes in, Sentinel will create a new window bucket of
+ * a specified time-span to store running statics, such as total response time(rt),
+ * incoming request(QPS), block request(bq), etc. And the time-span is defined by sample count.
+ * </p>
+ * <pre>
+ * 	0      100ms
+ *  +-------+--→ Sliding Windows
+ * 	    ^
+ * 	    |
+ * 	  request
+ * </pre>
+ * <p>
+ * Sentinel use the statics of the valid buckets to decide whether this request can be passed.
+ * For example, if a rule defines that only 100 requests can be passed,
+ * it will sum all qps in valid buckets, and compare it to the threshold defined in rule.
+ * </p>
+ *
+ * <p>case 2: continuous requests</p>
+ * <pre>
+ *  0    100ms    200ms    300ms
+ *  +-------+-------+-------+-----→ Sliding Windows
+ *                      ^
+ *                      |
+ *                   request
+ * </pre>
+ *
+ * <p>case 3: requests keeps coming, and previous buckets become invalid</p>
+ * <pre>
+ *  0    100ms    200ms	  800ms	   900ms  1000ms    1300ms
+ *  +-------+-------+ ...... +-------+-------+ ...... +-------+-----→ Sliding Windows
+ *                                                      ^
+ *                                                      |
+ *                                                    request
+ * </pre>
+ *
+ * <p>The sliding window should become:</p>
+ * <pre>
+ * 300ms     800ms  900ms  1000ms  1300ms
+ *  + ...... +-------+ ...... +-------+-----→ Sliding Windows
+ *                                                      ^
+ *                                                      |
+ *                                                    request
+ * </pre>
+ *
  * @author qinan.qn
  * @author jialiang.linjl
  */
 public class StatisticNode implements Node {
 
-    private transient volatile Metric rollingCounterInSecond = new ArrayMetric(1000 / SampleCountProperty.SAMPLE_COUNT,
+    /**
+     * Holds statistics of the recent {@code INTERVAL} seconds. The {@code INTERVAL} is divided into time spans
+     * by given {@code sampleCount}.
+     */
+    private transient volatile Metric rollingCounterInSecond = new ArrayMetric(SampleCountProperty.SAMPLE_COUNT,
         IntervalProperty.INTERVAL);
 
     /**
      * Holds statistics of the recent 60 seconds. The windowLengthInMs is deliberately set to 1000 milliseconds,
      * meaning each bucket per second, in this way we can get accurate statistics of each second.
      */
-    private transient Metric rollingCounterInMinute = new ArrayMetric(1000, 60);
+    private transient Metric rollingCounterInMinute = new ArrayMetric(60, 60 * 1000);
 
+    /**
+     * The counter for thread count.
+     */
     private AtomicInteger curThreadNum = new AtomicInteger(0);
 
+    /**
+     * The last timestamp when metrics were fetched.
+     */
     private long lastFetchTime = -1;
 
     @Override
     public Map<Long, MetricNode> metrics() {
+        // The fetch operation is thread-safe under a single-thread scheduler pool.
         long currentTime = TimeUtil.currentTimeMillis();
         currentTime = currentTime - currentTime % 1000;
         Map<Long, MetricNode> metrics = new ConcurrentHashMap<Long, MetricNode>();
         List<MetricNode> nodesOfEverySecond = rollingCounterInMinute.details();
         long newLastFetchTime = lastFetchTime;
+        // Iterate metrics of all resources, filter valid metrics (not-empty and up-to-date).
         for (MetricNode node : nodesOfEverySecond) {
-            if (node.getTimestamp() > lastFetchTime && node.getTimestamp() < currentTime) {
-                if (node.getPassQps() != 0
-                    || node.getBlockQps() != 0
-                    || node.getSuccessQps() != 0
-                    || node.getExceptionQps() != 0
-                    || node.getRt() != 0) {
-                    metrics.put(node.getTimestamp(), node);
-                    newLastFetchTime = Math.max(newLastFetchTime, node.getTimestamp());
-                }
+            if (isNodeInTime(node, currentTime) && isValidMetricNode(node)) {
+                metrics.put(node.getTimestamp(), node);
+                newLastFetchTime = Math.max(newLastFetchTime, node.getTimestamp());
             }
         }
         lastFetchTime = newLastFetchTime;
@@ -68,9 +131,18 @@ public class StatisticNode implements Node {
         return metrics;
     }
 
+    private boolean isNodeInTime(MetricNode node, long currentTime) {
+        return node.getTimestamp() > lastFetchTime && node.getTimestamp() < currentTime;
+    }
+
+    private boolean isValidMetricNode(MetricNode node) {
+        return node.getPassQps() > 0 || node.getBlockQps() > 0 || node.getSuccessQps() > 0
+            || node.getExceptionQps() > 0 || node.getRt() > 0;
+    }
+
     @Override
     public void reset() {
-        rollingCounterInSecond = new ArrayMetric(1000 / SampleCountProperty.SAMPLE_COUNT, IntervalProperty.INTERVAL);
+        rollingCounterInSecond = new ArrayMetric(SampleCountProperty.SAMPLE_COUNT, IntervalProperty.INTERVAL);
     }
 
     @Override
@@ -86,7 +158,7 @@ public class StatisticNode implements Node {
 
     @Override
     public long blockQps() {
-        return rollingCounterInSecond.block() / IntervalProperty.INTERVAL;
+        return rollingCounterInSecond.block() / (long) rollingCounterInSecond.getWindowIntervalInSec();
     }
 
     @Override
@@ -111,7 +183,7 @@ public class StatisticNode implements Node {
 
     @Override
     public long exceptionQps() {
-        return rollingCounterInSecond.exception() / IntervalProperty.INTERVAL;
+        return rollingCounterInSecond.exception() / (long) rollingCounterInSecond.getWindowIntervalInSec();
     }
 
     @Override
@@ -121,17 +193,17 @@ public class StatisticNode implements Node {
 
     @Override
     public long passQps() {
-        return rollingCounterInSecond.pass() / IntervalProperty.INTERVAL;
+        return rollingCounterInSecond.pass() / (long) rollingCounterInSecond.getWindowIntervalInSec();
     }
 
     @Override
     public long successQps() {
-        return rollingCounterInSecond.success() / IntervalProperty.INTERVAL;
+        return rollingCounterInSecond.success() / (long) rollingCounterInSecond.getWindowIntervalInSec();
     }
 
     @Override
     public long maxSuccessQps() {
-        return rollingCounterInSecond.maxSuccess() * SampleCountProperty.SAMPLE_COUNT;
+        return rollingCounterInSecond.maxSuccess() * rollingCounterInSecond.getSampleCount();
     }
 
     @Override
@@ -155,30 +227,30 @@ public class StatisticNode implements Node {
     }
 
     @Override
-    public void addPassRequest() {
-        rollingCounterInSecond.addPass();
-        rollingCounterInMinute.addPass();
+    public void addPassRequest(int count) {
+        rollingCounterInSecond.addPass(count);
+        rollingCounterInMinute.addPass(count);
     }
 
     @Override
-    public void rt(long rt) {
-        rollingCounterInSecond.addSuccess();
+    public void addRtAndSuccess(long rt, int successCount) {
+        rollingCounterInSecond.addSuccess(successCount);
         rollingCounterInSecond.addRT(rt);
 
-        rollingCounterInMinute.addSuccess();
+        rollingCounterInMinute.addSuccess(successCount);
         rollingCounterInMinute.addRT(rt);
     }
 
     @Override
-    public void increaseBlockQps() {
-        rollingCounterInSecond.addBlock();
-        rollingCounterInMinute.addBlock();
+    public void increaseBlockQps(int count) {
+        rollingCounterInSecond.addBlock(count);
+        rollingCounterInMinute.addBlock(count);
     }
 
     @Override
-    public void increaseExceptionQps() {
-        rollingCounterInSecond.addException();
-        rollingCounterInMinute.addException();
+    public void increaseExceptionQps(int count) {
+        rollingCounterInSecond.addException(count);
+        rollingCounterInMinute.addException(count);
 
     }
 

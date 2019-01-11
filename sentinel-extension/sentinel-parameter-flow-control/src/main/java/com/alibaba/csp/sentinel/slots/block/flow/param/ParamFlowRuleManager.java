@@ -16,7 +16,6 @@
 package com.alibaba.csp.sentinel.slots.block.flow.param;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -99,37 +98,6 @@ public final class ParamFlowRuleManager {
         return rules;
     }
 
-    private static Object parseValue(String value, String classType) {
-        if (value == null) {
-            throw new IllegalArgumentException("Null value");
-        }
-        if (StringUtil.isBlank(classType)) {
-            // If the class type is not provided, then treat it as string.
-            return value;
-        }
-        // Handle primitive type.
-        if (int.class.toString().equals(classType) || Integer.class.getName().equals(classType)) {
-            return Integer.parseInt(value);
-        } else if (boolean.class.toString().equals(classType) || Boolean.class.getName().equals(classType)) {
-            return Boolean.parseBoolean(value);
-        } else if (long.class.toString().equals(classType) || Long.class.getName().equals(classType)) {
-            return Long.parseLong(value);
-        } else if (double.class.toString().equals(classType) || Double.class.getName().equals(classType)) {
-            return Double.parseDouble(value);
-        } else if (float.class.toString().equals(classType) || Float.class.getName().equals(classType)) {
-            return Float.parseFloat(value);
-        } else if (byte.class.toString().equals(classType) || Byte.class.getName().equals(classType)) {
-            return Byte.parseByte(value);
-        } else if (short.class.toString().equals(classType) || Short.class.getName().equals(classType)) {
-            return Short.parseShort(value);
-        } else if (char.class.toString().equals(classType)) {
-            char[] array = value.toCharArray();
-            return array.length > 0 ? array[0] : null;
-        }
-
-        return value;
-    }
-
     static class RulePropertyListener implements PropertyListener<List<ParamFlowRule>> {
 
         @Override
@@ -163,7 +131,7 @@ public final class ParamFlowRuleManager {
             }
 
             for (ParamFlowRule rule : list) {
-                if (!isValidRule(rule)) {
+                if (!ParamFlowRuleUtil.isValidRule(rule)) {
                     RecordLog.warn("[ParamFlowRuleManager] Ignoring invalid rule when loading new rules: " + rule);
                     continue;
                 }
@@ -172,12 +140,7 @@ public final class ParamFlowRuleManager {
                     rule.setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
                 }
 
-                if (rule.getParamFlowItemList() == null) {
-                    rule.setParamFlowItemList(new ArrayList<ParamFlowItem>());
-                }
-
-                Map<Object, Integer> itemMap = parseHotItems(rule.getParamFlowItemList());
-                rule.setParsedHotItems(itemMap);
+                ParamFlowRuleUtil.fillExceptionFlowItems(rule);
 
                 String resourceName = rule.getResource();
                 List<ParamFlowRule> ruleList = newRuleMap.get(resourceName);
@@ -198,34 +161,6 @@ public final class ParamFlowRuleManager {
 
             return newRuleMap;
         }
-    }
-
-    static Map<Object, Integer> parseHotItems(List<ParamFlowItem> items) {
-        Map<Object, Integer> itemMap = new HashMap<Object, Integer>();
-        if (items == null || items.isEmpty()) {
-            return itemMap;
-        }
-        for (ParamFlowItem item : items) {
-            // Value should not be null.
-            Object value;
-            try {
-                value = parseValue(item.getObject(), item.getClassType());
-            } catch (Exception ex) {
-                RecordLog.warn("[ParamFlowRuleManager] Failed to parse value for item: " + item, ex);
-                continue;
-            }
-            if (item.getCount() == null || item.getCount() < 0 || value == null) {
-                RecordLog.warn("[ParamFlowRuleManager] Ignoring invalid exclusion parameter item: " + item);
-                continue;
-            }
-            itemMap.put(value, item.getCount());
-        }
-        return itemMap;
-    }
-
-    static boolean isValidRule(ParamFlowRule rule) {
-        return rule != null && !StringUtil.isBlank(rule.getResource()) && rule.getCount() >= 0
-            && rule.getParamIdx() != null && rule.getParamIdx() >= 0;
     }
 
     private ParamFlowRuleManager() {}

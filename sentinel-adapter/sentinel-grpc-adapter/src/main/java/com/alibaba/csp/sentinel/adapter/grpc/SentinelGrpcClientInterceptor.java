@@ -68,7 +68,6 @@ public class SentinelGrpcClientInterceptor implements ClientInterceptor {
         String resourceName = methodDescriptor.getFullMethodName();
         Entry entry = null;
         try {
-            ContextUtil.enter(resourceName);
             entry = SphU.entry(resourceName, EntryType.OUT);
             // Allow access, forward the call.
             return new ForwardingClientCall.SimpleForwardingClientCall<ReqT, RespT>(
@@ -131,7 +130,6 @@ public class SentinelGrpcClientInterceptor implements ClientInterceptor {
             if (entry != null) {
                 entry.exit();
             }
-            ContextUtil.exit();
         }
     }
 

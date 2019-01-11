@@ -37,15 +37,8 @@ import com.alibaba.csp.sentinel.slots.statistic.data.ParamMapBucket;
  */
 public class HotParameterLeapArray extends LeapArray<ParamMapBucket> {
 
-    private int intervalInSec;
-
-    public HotParameterLeapArray(int windowLengthInMs, int intervalInSec) {
-        super(windowLengthInMs, intervalInSec);
-        this.intervalInSec = intervalInSec;
-    }
-
-    public int getIntervalInSec() {
-        return intervalInSec;
+    public HotParameterLeapArray(int sampleCount, int intervalInMs) {
+        super(sampleCount, intervalInMs);
     }
 
     @Override
@@ -60,10 +53,24 @@ public class HotParameterLeapArray extends LeapArray<ParamMapBucket> {
         return w;
     }
 
+    /**
+     * Add event count for specific parameter value.
+     *
+     * @param event target event
+     * @param count count to add
+     * @param value parameter value
+     */
     public void addValue(RollingParamEvent event, int count, Object value) {
         currentWindow().value().add(event, count, value);
     }
 
+    /**
+     * Get "top-N" value-QPS map of provided event.
+     *
+     * @param event target event
+     * @param number max number of values
+     * @return "top-N" value map
+     */
     public Map<Object, Double> getTopValues(RollingParamEvent event, int number) {
         currentWindow();
         List<ParamMapBucket> buckets = this.values();
@@ -102,7 +109,7 @@ public class HotParameterLeapArray extends LeapArray<ParamMapBucket> {
             if (x.getValue() == 0) {
                 break;
             }
-            doubleResult.put(x.getKey(), ((double)x.getValue()) / getIntervalInSec());
+            doubleResult.put(x.getKey(), ((double)x.getValue()) / getIntervalInSecond());
         }
 
         return doubleResult;
@@ -122,6 +129,6 @@ public class HotParameterLeapArray extends LeapArray<ParamMapBucket> {
     }
 
     public double getRollingAvg(RollingParamEvent event, Object value) {
-        return ((double) getRollingSum(event, value)) / getIntervalInSec();
+        return ((double) getRollingSum(event, value)) / getIntervalInSecond();
     }
 }

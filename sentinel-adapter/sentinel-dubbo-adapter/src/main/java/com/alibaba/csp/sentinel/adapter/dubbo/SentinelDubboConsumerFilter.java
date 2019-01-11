@@ -54,7 +54,6 @@ public class SentinelDubboConsumerFilter extends AbstractDubboFilter implements 
         Entry methodEntry = null;
         try {
             String resourceName = getResourceName(invoker, invocation);
-            ContextUtil.enter(resourceName);
             interfaceEntry = SphU.entry(invoker.getInterface().getName(), EntryType.OUT);
             methodEntry = SphU.entry(resourceName, EntryType.OUT);
 
@@ -76,7 +75,6 @@ public class SentinelDubboConsumerFilter extends AbstractDubboFilter implements 
             if (interfaceEntry != null) {
                 interfaceEntry.exit();
             }
-            ContextUtil.exit();
         }
     }
 }

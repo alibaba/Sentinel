@@ -17,6 +17,8 @@ package com.taobao.csp.sentinel.dashboard.repository.rule;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowClusterConfig;
+
 import com.taobao.csp.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEntity;
 import org.springframework.stereotype.Component;
 
@@ -32,5 +34,18 @@ public class InMemParamFlowRuleStore extends InMemoryRuleRepositoryAdapter<Param
     @Override
     protected long nextId() {
         return ids.incrementAndGet();
+    }
+
+    @Override
+    protected ParamFlowRuleEntity preProcess(ParamFlowRuleEntity entity) {
+        if (entity != null && entity.isClusterMode()) {
+            ParamFlowClusterConfig config = entity.getClusterConfig();
+            if (config == null) {
+                config = new ParamFlowClusterConfig();
+            }
+            // Set cluster rule id.
+            config.setFlowId(entity.getId());
+        }
+        return entity;
     }
 }

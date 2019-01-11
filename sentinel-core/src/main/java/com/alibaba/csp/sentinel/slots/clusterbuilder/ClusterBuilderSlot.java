@@ -51,7 +51,7 @@ public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode>
      * <p>
      * Remember that same resource({@link ResourceWrapper#equals(Object)}) will share
      * the same {@link ProcessorSlotChain} globally, no matter in witch context. So if
-     * code goes into {@link #entry(Context, ResourceWrapper, DefaultNode, int, Object...)},
+     * code goes into {@link #entry(Context, ResourceWrapper, DefaultNode, int, boolean, Object...)},
      * the resource name must be same but context name may not.
      * </p>
      * <p>
@@ -62,8 +62,7 @@ public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode>
      * <p>
      * The longer the application runs, the more stable this mapping will
      * become. so we don't concurrent map but a lock. as this lock only happens
-     * at the very beginning while concurrent map will hold the lock all the
-     * time
+     * at the very beginning while concurrent map will hold the lock all the time.
      * </p>
      */
     private static volatile Map<ResourceWrapper, ClusterNode> clusterNodeMap
@@ -74,7 +73,8 @@ public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode>
     private ClusterNode clusterNode = null;
 
     @Override
-    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, Object... args)
+    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
+                      boolean prioritized, Object... args)
         throws Throwable {
         if (clusterNode == null) {
             synchronized (lock) {
@@ -96,11 +96,11 @@ public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode>
          * the specific origin.
          */
         if (!"".equals(context.getOrigin())) {
-            Node originNode = node.getClusterNode().getOriginNode(context.getOrigin());
+            Node originNode = node.getClusterNode().getOrCreateOriginNode(context.getOrigin());
             context.getCurEntry().setOriginNode(originNode);
         }
 
-        fireEntry(context, resourceWrapper, node, count, args);
+        fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }
 
     @Override

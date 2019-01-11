@@ -15,6 +15,8 @@
  */
 package com.taobao.csp.sentinel.dashboard.config;
 
+import javax.servlet.Filter;
+
 import com.alibaba.csp.sentinel.adapter.servlet.CommonFilter;
 
 import org.slf4j.Logger;
@@ -31,7 +33,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
  */
 @Configuration
 public class WebConfig extends WebMvcConfigurerAdapter {
-    private static Logger logger = LoggerFactory.getLogger(WebConfig.class);
+
+    private final Logger logger = LoggerFactory.getLogger(WebConfig.class);
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -46,18 +49,16 @@ public class WebConfig extends WebMvcConfigurerAdapter {
     /**
      * Add {@link CommonFilter} to the server, this is the simplest way to use Sentinel
      * for Web application.
-     *
-     * @return
      */
     @Bean
     public FilterRegistrationBean sentinelFilterRegistration() {
-        logger.info("sentinelFilterRegistration(), add CommonFilter");
-        FilterRegistrationBean registration = new FilterRegistrationBean();
+        FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>();
         registration.setFilter(new CommonFilter());
         registration.addUrlPatterns("/*");
-        registration.addInitParameter("paramName", "paramValue");
         registration.setName("sentinelFilter");
         registration.setOrder(1);
+
+        logger.info("Sentinel servlet CommonFilter registered");
 
         return registration;
     }

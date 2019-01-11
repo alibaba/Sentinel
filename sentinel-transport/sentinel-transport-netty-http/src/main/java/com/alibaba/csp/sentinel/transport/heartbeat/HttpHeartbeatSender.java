@@ -15,6 +15,9 @@
  */
 package com.alibaba.csp.sentinel.transport.heartbeat;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.transport.config.TransportConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
@@ -23,6 +26,7 @@ import com.alibaba.csp.sentinel.util.HostNameUtil;
 import com.alibaba.csp.sentinel.transport.HeartbeatSender;
 import com.alibaba.csp.sentinel.util.PidUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
+import com.alibaba.csp.sentinel.util.function.Tuple2;
 
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -51,24 +55,48 @@ public class HttpHeartbeatSender implements HeartbeatSender {
 
     public HttpHeartbeatSender() {
         this.client = HttpClients.createDefault();
-        String consoleServer = TransportConfig.getConsoleServer();
-        if (StringUtil.isEmpty(consoleServer)) {
-            RecordLog.info("[Heartbeat] Console server address is not configured!");
+        List<Tuple2<String, Integer>> dashboardList = parseDashboardList();
+        if (dashboardList == null || dashboardList.isEmpty()) {
+            RecordLog.info("[NettyHttpHeartbeatSender] No dashboard available");
         } else {
-            String consoleHost = consoleServer;
-            int consolePort = 80;
-            if (consoleServer.contains(",")) {
-                consoleHost = consoleServer.split(",")[0];
-            }
-            if (consoleHost.contains(":")) {
-                String[] strs = consoleServer.split(":");
-                consoleHost = strs[0];
-                consolePort = Integer.parseInt(strs[1]);
-            }
-            this.consoleHost = consoleHost;
-            this.consolePort = consolePort;
+            consoleHost = dashboardList.get(0).r1;
+            consolePort = dashboardList.get(0).r2;
+            RecordLog.info("[NettyHttpHeartbeatSender] Dashboard address parsed: <" + consoleHost + ':' + consolePort + ">");
         }
+    }
 
+    private List<Tuple2<String, Integer>> parseDashboardList() {
+        List<Tuple2<String, Integer>> list = new ArrayList<Tuple2<String, Integer>>();
+        try {
+            String ipsStr = TransportConfig.getConsoleServer();
+            if (StringUtil.isBlank(ipsStr)) {
+                RecordLog.warn("[NettyHttpHeartbeatSender] Dashboard server address is not configured");
+                return list;
+            }
+
+            for (String ipPortStr : ipsStr.split(",")) {
+                if (ipPortStr.trim().length() == 0) {
+                    continue;
+                }
+                ipPortStr = ipPortStr.trim();
+                if (ipPortStr.startsWith("http://")) {
+                    ipPortStr = ipPortStr.substring(7);
+                }
+                if (ipPortStr.startsWith(":")) {
+                    continue;
+                }
+                String[] ipPort = ipPortStr.trim().split(":");
+                int port = 8080;
+                if (ipPort.length > 1) {
+                    port = Integer.parseInt(ipPort[1].trim());
+                }
+                list.add(Tuple2.of(ipPort[0].trim(), port));
+            }
+        } catch (Exception ex) {
+            RecordLog.warn("[NettyHttpHeartbeatSender] Parse dashboard list failed, current address list: " + list, ex);
+            ex.printStackTrace();
+        }
+        return list;
     }
 
     @Override
@@ -76,8 +104,6 @@ public class HttpHeartbeatSender implements HeartbeatSender {
         if (StringUtil.isEmpty(consoleHost)) {
             return false;
         }
-        RecordLog.info(String.format("[Heartbeat] Sending heartbeat to %s:%d", consoleHost, consolePort));
-
         URIBuilder uriBuilder = new URIBuilder();
         uriBuilder.setScheme("http").setHost(consoleHost).setPort(consolePort)
             .setPath("/registry/machine")
@@ -85,7 +111,7 @@ public class HttpHeartbeatSender implements HeartbeatSender {
             .setParameter("v", Constants.SENTINEL_VERSION)
             .setParameter("version", String.valueOf(System.currentTimeMillis()))
             .setParameter("hostname", HostNameUtil.getHostName())
-            .setParameter("ip", HostNameUtil.getIp())
+            .setParameter("ip", TransportConfig.getHeartbeatClientIp())
             .setParameter("port", TransportConfig.getPort())
             .setParameter("pid", String.valueOf(PidUtil.getPid()));
 

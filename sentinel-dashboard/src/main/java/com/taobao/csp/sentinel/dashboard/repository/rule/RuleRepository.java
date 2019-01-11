@@ -25,6 +25,7 @@ import com.taobao.csp.sentinel.dashboard.discovery.MachineInfo;
  * @author leyou
  */
 public interface RuleRepository<T, ID> {
+
     /**
      * Save one.
      *
@@ -64,6 +65,15 @@ public interface RuleRepository<T, ID> {
      * @return
      */
     List<T> findAllByMachine(MachineInfo machineInfo);
+
+    /**
+     * Find all by application.
+     *
+     * @param appName valid app name
+     * @return all rules of the application
+     * @since 1.4.0
+     */
+    List<T> findAllByApp(String appName);
 
     ///**
     // * Find all by app and enable switch.

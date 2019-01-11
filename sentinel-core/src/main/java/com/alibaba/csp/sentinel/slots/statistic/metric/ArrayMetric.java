@@ -20,7 +20,7 @@ import java.util.List;
 
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
-import com.alibaba.csp.sentinel.slots.statistic.base.MetricBucket;
+import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 
 /**
@@ -33,14 +33,8 @@ public class ArrayMetric implements Metric {
 
     private final MetricsLeapArray data;
 
-    /**
-     * Constructor
-     *
-     * @param windowLengthInMs a single window bucket's time length in milliseconds.
-     * @param intervalInSec    the total time span of this {@link ArrayMetric} in seconds.
-     */
-    public ArrayMetric(int windowLengthInMs, int intervalInSec) {
-        this.data = new MetricsLeapArray(windowLengthInMs, intervalInSec);
+    public ArrayMetric(int sampleCount, int intervalInMs) {
+        this.data = new MetricsLeapArray(sampleCount, intervalInMs);
     }
 
     /**
@@ -168,27 +162,27 @@ public class ArrayMetric implements Metric {
     }
 
     @Override
-    public void addException() {
+    public void addException(int count) {
         WindowWrap<MetricBucket> wrap = data.currentWindow();
-        wrap.value().addException();
+        wrap.value().addException(count);
     }
 
     @Override
-    public void addBlock() {
+    public void addBlock(int count) {
         WindowWrap<MetricBucket> wrap = data.currentWindow();
-        wrap.value().addBlock();
+        wrap.value().addBlock(count);
     }
 
     @Override
-    public void addSuccess() {
+    public void addSuccess(int count) {
         WindowWrap<MetricBucket> wrap = data.currentWindow();
-        wrap.value().addSuccess();
+        wrap.value().addSuccess(count);
     }
 
     @Override
-    public void addPass() {
+    public void addPass(int count) {
         WindowWrap<MetricBucket> wrap = data.currentWindow();
-        wrap.value().addPass();
+        wrap.value().addPass(count);
     }
 
     @Override
@@ -230,5 +224,15 @@ public class ArrayMetric implements Metric {
             return 0;
         }
         return wrap.value().pass();
+    }
+
+    @Override
+    public double getWindowIntervalInSec() {
+        return data.getIntervalInSecond();
+    }
+
+    @Override
+    public int getSampleCount() {
+        return data.getSampleCount();
     }
 }

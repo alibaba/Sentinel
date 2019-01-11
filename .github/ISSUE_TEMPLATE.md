@@ -1,6 +1,8 @@
 <!-- Here is for bug reports and feature requests ONLY! 
 
 If you're looking for help, please check our mail list and the Gitter room.
+
+Please try to use English to describe your issue, or at least provide a snippet of English translation.
 -->
 
 ## Issue Description

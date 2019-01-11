@@ -35,10 +35,10 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  * When entering this slot, we need to separately count the following
  * information:
  * <ul>
- * <li>{@link ClusterNode}: total statistics of a cluster node of the resource id  </li>
- * <li> origin node: statistics of a cluster node from different callers/origins.</li>
- * <li> {@link DefaultNode}: statistics for specific resource name in the specific context.
- * <li> Finally, the sum statistics of all entrances.</li>
+ * <li>{@link ClusterNode}: total statistics of a cluster node of the resource ID.</li>
+ * <li>Origin node: statistics of a cluster node from different callers/origins.</li>
+ * <li>{@link DefaultNode}: statistics for specific resource name in the specific context.</li>
+ * <li>Finally, the sum statistics of all entrances.</li>
  * </ul>
  * </p>
  *
@@ -48,55 +48,65 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
-    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, Object... args)
-        throws Throwable {
+    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
+                      boolean prioritized, Object... args) throws Throwable {
         try {
-            fireEntry(context, resourceWrapper, node, count, args);
+            // Do some checking.
+            fireEntry(context, resourceWrapper, node, count, prioritized, args);
+
+            // Request passed, add thread count and pass count.
             node.increaseThreadNum();
-            node.addPassRequest();
+            node.addPassRequest(count);
 
             if (context.getCurEntry().getOriginNode() != null) {
+                // Add count for origin node.
                 context.getCurEntry().getOriginNode().increaseThreadNum();
-                context.getCurEntry().getOriginNode().addPassRequest();
+                context.getCurEntry().getOriginNode().addPassRequest(count);
             }
 
             if (resourceWrapper.getType() == EntryType.IN) {
+                // Add count for global inbound entry node for global statistics.
                 Constants.ENTRY_NODE.increaseThreadNum();
-                Constants.ENTRY_NODE.addPassRequest();
+                Constants.ENTRY_NODE.addPassRequest(count);
             }
 
+            // Handle pass event with registered entry callback handlers.
             for (ProcessorSlotEntryCallback<DefaultNode> handler : StatisticSlotCallbackRegistry.getEntryCallbacks()) {
                 handler.onPass(context, resourceWrapper, node, count, args);
             }
         } catch (BlockException e) {
+            // Blocked, set block exception to current entry.
             context.getCurEntry().setError(e);
 
             // Add block count.
-            node.increaseBlockQps();
+            node.increaseBlockQps(count);
             if (context.getCurEntry().getOriginNode() != null) {
-                context.getCurEntry().getOriginNode().increaseBlockQps();
+                context.getCurEntry().getOriginNode().increaseBlockQps(count);
             }
 
             if (resourceWrapper.getType() == EntryType.IN) {
-                Constants.ENTRY_NODE.increaseBlockQps();
+                // Add count for global inbound entry node for global statistics.
+                Constants.ENTRY_NODE.increaseBlockQps(count);
             }
 
+            // Handle block event with registered entry callback handlers.
             for (ProcessorSlotEntryCallback<DefaultNode> handler : StatisticSlotCallbackRegistry.getEntryCallbacks()) {
                 handler.onBlocked(e, context, resourceWrapper, node, count, args);
             }
 
             throw e;
         } catch (Throwable e) {
+            // Unexpected error, set error to current entry.
             context.getCurEntry().setError(e);
 
-            // Should not happen
-            node.increaseExceptionQps();
+            // This should not happen.
+            node.increaseExceptionQps(count);
             if (context.getCurEntry().getOriginNode() != null) {
-                context.getCurEntry().getOriginNode().increaseExceptionQps();
+                context.getCurEntry().getOriginNode().increaseExceptionQps(count);
             }
 
             if (resourceWrapper.getType() == EntryType.IN) {
-                Constants.ENTRY_NODE.increaseExceptionQps();
+                Constants.ENTRY_NODE.increaseExceptionQps(count);
             }
             throw e;
         }
@@ -107,14 +117,16 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         DefaultNode node = (DefaultNode)context.getCurNode();
 
         if (context.getCurEntry().getError() == null) {
+            // Calculate response time (max RT is TIME_DROP_VALVE).
             long rt = TimeUtil.currentTimeMillis() - context.getCurEntry().getCreateTime();
             if (rt > Constants.TIME_DROP_VALVE) {
                 rt = Constants.TIME_DROP_VALVE;
             }
 
-            node.rt(rt);
+            // Record response time and success count.
+            node.addRtAndSuccess(rt, count);
             if (context.getCurEntry().getOriginNode() != null) {
-                context.getCurEntry().getOriginNode().rt(rt);
+                context.getCurEntry().getOriginNode().addRtAndSuccess(rt, count);
             }
 
             node.decreaseThreadNum();
@@ -124,13 +136,14 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             }
 
             if (resourceWrapper.getType() == EntryType.IN) {
-                Constants.ENTRY_NODE.rt(rt);
+                Constants.ENTRY_NODE.addRtAndSuccess(rt, count);
                 Constants.ENTRY_NODE.decreaseThreadNum();
             }
         } else {
             // Error may happen.
         }
 
+        // Handle exit event with registered exit callback handlers.
         Collection<ProcessorSlotExitCallback> exitCallbacks = StatisticSlotCallbackRegistry.getExitCallbacks();
         for (ProcessorSlotExitCallback handler : exitCallbacks) {
             handler.onExit(context, resourceWrapper, count, args);

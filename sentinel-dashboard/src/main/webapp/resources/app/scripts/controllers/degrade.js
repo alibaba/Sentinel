@@ -45,7 +45,7 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
 
     var degradeRuleDialog;
     $scope.editRule = function (rule) {
-      $scope.currentRule = rule;
+      $scope.currentRule = angular.copy(rule);
       $scope.degradeRuleDialog = {
         title: '编辑降级规则',
         type: 'edit',
@@ -81,33 +81,8 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
       });
     };
 
-      function checkRuleValid(rule) {
-          if (rule.resource === undefined || rule.resource === '') {
-              alert('资源名称不能为空');
-              return false;
-          }
-          if (rule.grade === undefined || rule.grade < 0) {
-              alert('未知的降级类型');
-              return false;
-          }
-          if (rule.count === undefined || rule.count === '' || rule.count < 0) {
-              alert('降级阈值不能为空或小于 0');
-              return false;
-          }
-          if (rule.timeWindow === undefined || rule.timeWindow === '' || rule.timeWindow <= 0) {
-              alert('降级时间窗口必须大于 0');
-              return false;
-          }
-          // 异常比率类型.
-          if (rule.grade == 1 && rule.count > 1) {
-              alert('异常比率超出范围：[0.0 - 1.0]');
-              return false;
-          }
-          return true;
-      }
-
     $scope.saveRule = function () {
-      if (!checkRuleValid($scope.currentRule)) {
+      if (!DegradeService.checkRuleValid($scope.currentRule)) {
         return;
       }
       if ($scope.degradeRuleDialog.type === 'add') {
@@ -117,6 +92,19 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
       }
     };
 
+    function parseDegradeMode(grade) {
+        switch (grade) {
+            case 0:
+              return 'RT';
+            case 1:
+              return '异常比例';
+            case 2:
+              return '异常数';
+            default:
+              return '未知';
+        }
+    }
+
     var confirmDialog;
     $scope.deleteRule = function (rule) {
       $scope.currentRule = rule;
@@ -124,15 +112,14 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
         title: '删除降级规则',
         type: 'delete_rule',
         attentionTitle: '请确认是否删除如下降级规则',
-        attention: '资源名: ' + rule.resource + ', 降级应用: ' + rule.limitApp
-          + ', 阈值类型: ' + (rule.grade == 0 ? 'RT' : '异常比例') + ', 阈值: ' + rule.count,
+        attention: '资源名: ' + rule.resource +
+            ', 降级模式: ' + parseDegradeMode(rule.grade) + ', 阈值: ' + rule.count,
         confirmBtnText: '删除',
       };
       confirmDialog = ngDialog.open({
         template: '/app/views/dialog/confirm-dialog.html',
         scope: $scope,
         overlay: true
-
       });
     };
 

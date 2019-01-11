@@ -24,7 +24,19 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
  */
 public interface NodeBuilder {
 
+    /**
+     * Create a new {@link DefaultNode} as tree node.
+     *
+     * @param id resource
+     * @param clusterNode the cluster node of the provided resource
+     * @return new created tree node
+     */
     DefaultNode buildTreeNode(ResourceWrapper id, ClusterNode clusterNode);
 
+    /**
+     * Create a new {@link ClusterNode} as universal statistic node for a single resource.
+     *
+     * @return new created cluster node
+     */
     ClusterNode buildClusterNode();
 }

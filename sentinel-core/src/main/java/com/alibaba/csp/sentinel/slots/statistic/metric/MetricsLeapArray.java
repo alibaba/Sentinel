@@ -16,11 +16,11 @@
 package com.alibaba.csp.sentinel.slots.statistic.metric;
 
 import com.alibaba.csp.sentinel.slots.statistic.base.LeapArray;
-import com.alibaba.csp.sentinel.slots.statistic.base.MetricBucket;
+import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 
 /**
- * The fundamental data structure for metric statistics in a time window.
+ * The fundamental data structure for metric statistics in a time span.
  *
  * @see LeapArray
  * @author jialiang.linjl
@@ -28,14 +28,8 @@ import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
  */
 public class MetricsLeapArray extends LeapArray<MetricBucket> {
 
-    /**
-     * Constructor
-     *
-     * @param windowLengthInMs a single window bucket's time length in milliseconds.
-     * @param intervalInSec    the total time span of this {@link MetricsLeapArray} in seconds.
-     */
-    public MetricsLeapArray(int windowLengthInMs, int intervalInSec) {
-        super(windowLengthInMs, intervalInSec);
+    public MetricsLeapArray(int sampleCount, int intervalInMs) {
+        super(sampleCount, intervalInMs);
     }
 
     @Override
@@ -45,6 +39,7 @@ public class MetricsLeapArray extends LeapArray<MetricBucket> {
 
     @Override
     protected WindowWrap<MetricBucket> resetWindowTo(WindowWrap<MetricBucket> w, long startTime) {
+        // Update the start time and reset value.
         w.resetTo(startTime);
         w.value().reset();
         return w;

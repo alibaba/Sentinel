@@ -28,12 +28,12 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 public class DemoSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
-    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, Object... args)
+    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, boolean prioritized, Object... args)
         throws Throwable {
         System.out.println("Current context: " + context.getName());
         System.out.println("Current entry resource: " + context.getCurEntry().getResourceWrapper().getName());
 
-        fireEntry(context, resourceWrapper, node, count, args);
+        fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }
 
     @Override

@@ -58,7 +58,7 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
     $scope.getMachineRules = getMachineRules;
     var systemRuleDialog;
     $scope.editRule = function (rule) {
-      $scope.currentRule = rule;
+      $scope.currentRule = angular.copy(rule);
       $scope.systemRuleDialog = {
         title: '编辑系统保护规则',
         type: 'edit',
