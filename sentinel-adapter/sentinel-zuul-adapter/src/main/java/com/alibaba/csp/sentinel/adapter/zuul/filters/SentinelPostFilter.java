@@ -44,9 +44,14 @@ public class SentinelPostFilter extends AbstractSentinelFilter {
         return getSentinelZuulProperties().getOrder().getPost();
     }
 
+    /**
+     * While loop will exit all entries,
+     * Case serviceId and URL entry twice in {@link SentinelPreFilter}.
+     * The ContextUtil.getContext().getCurEntry() will exit from inner to outer.
+     */
     @Override
     public Object run() throws ZuulException {
-        if (ContextUtil.getContext() != null && ContextUtil.getContext().getCurEntry() != null) {
+        while (ContextUtil.getContext() != null && ContextUtil.getContext().getCurEntry() != null) {
             ContextUtil.getContext().getCurEntry().exit();
         }
         ContextUtil.exit();

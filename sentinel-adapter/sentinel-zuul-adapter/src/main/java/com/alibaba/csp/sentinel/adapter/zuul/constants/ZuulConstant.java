@@ -53,5 +53,10 @@ public class ZuulConstant {
      */
     public static final int SEND_RESPONSE_FILTER_ORDER = 1000;
 
+    /**
+     * Zuul use Sentinel as default context when serviceId is empty.
+     */
+    public static final String ZUUL_DEFAULT_CONTEXT = "zuul_default_context";
+
     private ZuulConstant(){}
 }

@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import static com.alibaba.csp.sentinel.adapter.zuul.constants.ZuulConstant.PRE_TYPE;
 import static com.alibaba.csp.sentinel.adapter.zuul.constants.ZuulConstant.SERVICE_ID_KEY;
+import static com.alibaba.csp.sentinel.adapter.zuul.constants.ZuulConstant.ZUUL_DEFAULT_CONTEXT;
 
 /**
  * This pre filter get an entry of resource,the first order is ServiceId, then API Path.
@@ -83,6 +84,7 @@ public class SentinelPreFilter extends AbstractSentinelFilter {
                 SphU.entry(serviceTarget, EntryType.IN);
             } else {
                 RecordLog.info("[Sentinel Pre Filter] ServiceId is empty");
+                ContextUtil.enter(ZUUL_DEFAULT_CONTEXT, origin);
             }
             String uriTarget = FilterUtil.filterTarget(ctx.getRequest());
             // Clean and unify the URL.

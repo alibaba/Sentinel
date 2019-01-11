@@ -55,6 +55,9 @@ public class SentinelErrorFilter extends AbstractSentinelFilter {
 
     /**
      * Trace not {@link BlockException} ex.
+     * While loop will exit all entries,
+     * Case serviceId and URL entry twice in {@link SentinelPreFilter}.
+     * The ContextUtil.getContext().getCurEntry() will exit from inner to outer.
      */
     @Override
     public Object run() throws ZuulException {
@@ -66,7 +69,7 @@ public class SentinelErrorFilter extends AbstractSentinelFilter {
                 RecordLog.info("[Sentinel Error Filter] Trace cause", throwable.getCause());
             }
         } finally {
-            if (ContextUtil.getContext() != null && ContextUtil.getContext().getCurEntry() != null) {
+            while (ContextUtil.getContext() != null && ContextUtil.getContext().getCurEntry() != null) {
                 ContextUtil.getContext().getCurEntry().exit();
             }
             ContextUtil.exit();
