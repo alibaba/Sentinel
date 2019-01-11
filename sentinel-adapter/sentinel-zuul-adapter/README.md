@@ -95,7 +95,7 @@ Here is an example:
 ```java
 
 // custom provider 
-public class MyBlockFallbackProvider implements SentinelFallbackProvider {
+public class MyBlockFallbackProvider implements ZuulBlockFallbackProvider {
 
     private Logger logger = LoggerFactory.getLogger(DefaultBlockFallbackProvider.class);
     
@@ -117,7 +117,7 @@ public class MyBlockFallbackProvider implements SentinelFallbackProvider {
  }
  
  // register fallback
- SentinelFallbackManager.registerProvider(new MyBlockFallbackProvider());
+ ZuulBlockFallbackManager.registerProvider(new MyBlockFallbackProvider());
 
 ```
 
@@ -133,6 +133,8 @@ Default block response
 ```
 
 ## Origin parser
+
+自定义解析URL
 
 ```java
 
