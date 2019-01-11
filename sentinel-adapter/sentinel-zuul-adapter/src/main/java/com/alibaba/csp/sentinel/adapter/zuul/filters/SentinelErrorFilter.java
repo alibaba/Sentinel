@@ -69,8 +69,7 @@ public class SentinelErrorFilter extends AbstractSentinelFilter {
                 }
             }
         } finally {
-            while (ContextUtil.getContext() != null && ContextUtil.getContext().getCurEntry() != null) {
-                RecordLog.info(String.format("[Sentinel Error Filter] Exit entry: %s", ContextUtil.getContext().getCurEntry().toString()));
+            if (ContextUtil.getContext() != null && ContextUtil.getContext().getCurEntry() != null) {
                 ContextUtil.getContext().getCurEntry().exit();
             }
             ContextUtil.exit();

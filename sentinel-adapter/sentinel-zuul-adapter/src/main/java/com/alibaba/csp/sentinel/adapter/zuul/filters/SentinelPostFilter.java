@@ -46,8 +46,7 @@ public class SentinelPostFilter extends AbstractSentinelFilter {
 
     @Override
     public Object run() throws ZuulException {
-        while (ContextUtil.getContext() != null && ContextUtil.getContext().getCurEntry() != null) {
-            RecordLog.info(String.format("[Sentinel Post Filter] Exit current entry: %s", ContextUtil.getContext().getCurEntry().toString()));
+        if (ContextUtil.getContext() != null && ContextUtil.getContext().getCurEntry() != null) {
             ContextUtil.getContext().getCurEntry().exit();
         }
         ContextUtil.exit();

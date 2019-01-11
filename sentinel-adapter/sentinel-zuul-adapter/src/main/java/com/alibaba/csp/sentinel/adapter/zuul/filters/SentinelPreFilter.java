@@ -94,8 +94,8 @@ public class SentinelPreFilter extends AbstractSentinelFilter {
             SphU.entry(uriTarget, EntryType.IN);
         } catch (BlockException ex) {
             RecordLog.warn(String.format("[Sentinel Pre Filter] Block Exception when Origin: %s enter fall back route: %s", origin, fallBackRoute), ex);
-            SentinelFallbackProvider sentinelFallbackProvider = SentinelFallbackManager.getFallbackProvider(fallBackRoute);
-            BlockResponse blockResponse = sentinelFallbackProvider.fallbackResponse(fallBackRoute, ex);
+            ZuulBlockFallbackProvider zuulBlockFallbackProvider = ZuulBlockFallbackManager.getFallbackProvider(fallBackRoute);
+            BlockResponse blockResponse = zuulBlockFallbackProvider.fallbackResponse(fallBackRoute, ex);
             // prevent routing from running
             ctx.setRouteHost(null);
             ctx.set(SERVICE_ID_KEY, null);

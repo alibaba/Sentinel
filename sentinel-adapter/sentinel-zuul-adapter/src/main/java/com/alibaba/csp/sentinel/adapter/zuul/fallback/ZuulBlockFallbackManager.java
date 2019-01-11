@@ -24,16 +24,16 @@ import java.util.Map;
  *
  * @author tiger
  */
-public class SentinelFallbackManager {
+public class ZuulBlockFallbackManager {
 
-    private static Map<String, SentinelFallbackProvider> fallbackProviderCache = new HashMap<String, SentinelFallbackProvider>();
+    private static Map<String, ZuulBlockFallbackProvider> fallbackProviderCache = new HashMap<String, ZuulBlockFallbackProvider>();
 
-    private static SentinelFallbackProvider defaultFallbackProvider = new DefaultBlockFallbackProvider();
+    private static ZuulBlockFallbackProvider defaultFallbackProvider = new DefaultBlockFallbackProvider();
 
     /**
      * Register special provider for different route.
      */
-    public static synchronized void registerProvider(SentinelFallbackProvider provider) {
+    public static synchronized void registerProvider(ZuulBlockFallbackProvider provider) {
         String route = provider.getRoute();
         if ("*".equals(route) || route == null) {
             defaultFallbackProvider = provider;
@@ -42,8 +42,8 @@ public class SentinelFallbackManager {
         }
     }
 
-    public static SentinelFallbackProvider getFallbackProvider(String route) {
-        SentinelFallbackProvider provider = fallbackProviderCache.get(route);
+    public static ZuulBlockFallbackProvider getFallbackProvider(String route) {
+        ZuulBlockFallbackProvider provider = fallbackProviderCache.get(route);
         if (provider == null) {
             provider = defaultFallbackProvider;
         }

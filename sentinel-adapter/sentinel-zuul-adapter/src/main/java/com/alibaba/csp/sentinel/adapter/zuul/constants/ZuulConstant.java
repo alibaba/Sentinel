@@ -52,4 +52,6 @@ public class ZuulConstant {
      * Filter Order for SEND_RESPONSE_FILTER_ORDER
      */
     public static final int SEND_RESPONSE_FILTER_ORDER = 1000;
+
+    private ZuulConstant(){}
 }

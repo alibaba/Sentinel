@@ -24,13 +24,13 @@ import org.junit.Test;
 /**
  * @author tiger
  */
-public class SentinelFallbackManagerTest {
+public class ZuulBlockFallbackManagerTest {
 
     private String ROUTE = "/test";
 
     private String DEFAULT_ROUTE = "*";
 
-    class MyNullResponseFallBackProvider implements SentinelFallbackProvider {
+    class MyNullResponseFallBackProvider implements ZuulBlockFallbackProvider {
         @Override
         public String getRoute() {
             return ROUTE;
@@ -45,7 +45,7 @@ public class SentinelFallbackManagerTest {
     @Test
     public void testRegisterProvider() throws Exception {
         MyNullResponseFallBackProvider myNullResponseFallBackProvider = new MyNullResponseFallBackProvider();
-        SentinelFallbackManager.registerProvider(myNullResponseFallBackProvider);
+        ZuulBlockFallbackManager.registerProvider(myNullResponseFallBackProvider);
         Assert.assertEquals(myNullResponseFallBackProvider.getRoute(), ROUTE);
         Assert.assertNull(myNullResponseFallBackProvider.fallbackResponse(ROUTE, new FlowException("flow ex")));
     }
@@ -53,10 +53,10 @@ public class SentinelFallbackManagerTest {
     @Test
     public void clear() {
         MyNullResponseFallBackProvider myNullResponseFallBackProvider = new MyNullResponseFallBackProvider();
-        SentinelFallbackManager.registerProvider(myNullResponseFallBackProvider);
+        ZuulBlockFallbackManager.registerProvider(myNullResponseFallBackProvider);
         Assert.assertEquals(myNullResponseFallBackProvider.getRoute(), ROUTE);
-        SentinelFallbackManager.clear();
-        Assert.assertEquals(SentinelFallbackManager.getFallbackProvider(ROUTE).getRoute(),DEFAULT_ROUTE);
+        ZuulBlockFallbackManager.clear();
+        Assert.assertEquals(ZuulBlockFallbackManager.getFallbackProvider(ROUTE).getRoute(),DEFAULT_ROUTE);
     }
 
 }

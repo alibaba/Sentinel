@@ -23,38 +23,38 @@ import org.junit.Test;
 /**
  * @author tiger
  */
-public class SentinelFallbackProviderTest {
+public class ZuulBlockFallbackProviderTest {
 
     private String ALL_ROUTE = "*";
 
     @Test
     public void testGetNullRoute() throws Exception {
-        SentinelFallbackProvider fallbackProvider = SentinelFallbackManager.getFallbackProvider(null);
+        ZuulBlockFallbackProvider fallbackProvider = ZuulBlockFallbackManager.getFallbackProvider(null);
         Assert.assertEquals(fallbackProvider.getRoute(), ALL_ROUTE);
     }
 
     @Test
     public void testGetDefaultRoute() throws Exception {
-        SentinelFallbackProvider fallbackProvider = SentinelFallbackManager.getFallbackProvider(ALL_ROUTE);
+        ZuulBlockFallbackProvider fallbackProvider = ZuulBlockFallbackManager.getFallbackProvider(ALL_ROUTE);
         Assert.assertEquals(fallbackProvider.getRoute(), ALL_ROUTE);
     }
 
     @Test
     public void testGetNotInCacheRoute() throws Exception {
-        SentinelFallbackProvider fallbackProvider = SentinelFallbackManager.getFallbackProvider("/not/in");
+        ZuulBlockFallbackProvider fallbackProvider = ZuulBlockFallbackManager.getFallbackProvider("/not/in");
         Assert.assertEquals(fallbackProvider.getRoute(), ALL_ROUTE);
     }
 
     @Test
     public void testFlowControlFallbackResponse() throws Exception {
-        SentinelFallbackProvider fallbackProvider = SentinelFallbackManager.getFallbackProvider(ALL_ROUTE);
+        ZuulBlockFallbackProvider fallbackProvider = ZuulBlockFallbackManager.getFallbackProvider(ALL_ROUTE);
         BlockResponse clientHttpResponse = fallbackProvider.fallbackResponse(ALL_ROUTE, new FlowException("flow exception"));
         Assert.assertEquals(clientHttpResponse.getCode(), 429);
     }
 
     @Test
     public void testRuntimeExceptionFallbackResponse() throws Exception {
-        SentinelFallbackProvider fallbackProvider = SentinelFallbackManager.getFallbackProvider(ALL_ROUTE);
+        ZuulBlockFallbackProvider fallbackProvider = ZuulBlockFallbackManager.getFallbackProvider(ALL_ROUTE);
         BlockResponse clientHttpResponse = fallbackProvider.fallbackResponse(ALL_ROUTE, new RuntimeException());
         Assert.assertEquals(clientHttpResponse.getCode(), 500);
     }

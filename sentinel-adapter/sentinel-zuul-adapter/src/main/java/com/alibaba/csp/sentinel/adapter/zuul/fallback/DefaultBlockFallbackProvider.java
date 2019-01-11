@@ -24,7 +24,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  *
  * @author tiger
  */
-public class DefaultBlockFallbackProvider implements SentinelFallbackProvider {
+public class DefaultBlockFallbackProvider implements ZuulBlockFallbackProvider {
 
     @Override
     public String getRoute() {

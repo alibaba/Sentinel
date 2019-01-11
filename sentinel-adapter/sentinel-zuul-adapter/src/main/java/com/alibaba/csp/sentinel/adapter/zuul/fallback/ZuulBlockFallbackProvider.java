@@ -21,7 +21,7 @@ package com.alibaba.csp.sentinel.adapter.zuul.fallback;
  *
  * @author tiger
  */
-public interface SentinelFallbackProvider {
+public interface ZuulBlockFallbackProvider {
 
     /**
      * The route this fallback will be used for.
