@@ -346,6 +346,7 @@ public class MetricWriter {
         outMetricBuf = new BufferedOutputStream(outMetric);
         curMetricFile = new File(fileName);
         String idxFile = formIndexFileName(fileName);
+        ;
         curMetricIndexFile = new File(idxFile);
         outIndex = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(idxFile, append)));
         RecordLog.info("[MetricWriter] New metric file created: " + fileName);
