@@ -132,6 +132,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  *
  * @author jialiang.linjl
  * @author Eric Zhao
+ * @author kangyl
  */
 public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
@@ -151,6 +152,7 @@ public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         if (rules != null) {
             for (FlowRule rule : rules) {
                 if (!canPassCheck(rule, context, node, count, prioritized)) {
+                    FlowRuleManager.getRuleAlarm().triggerAlarm(rule);
                     throw new FlowException(rule.getLimitApp());
                 }
             }

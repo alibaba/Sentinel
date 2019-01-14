@@ -30,6 +30,9 @@ import com.alibaba.csp.sentinel.node.metric.MetricTimerListener;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
+import com.alibaba.csp.sentinel.warn.DefaultRuleAlarm;
+import com.alibaba.csp.sentinel.warn.RuleAlarm;
+import com.alibaba.csp.sentinel.warn.RuleAlarmListener;
 
 /**
  * <p>
@@ -42,6 +45,7 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
  *
  * @author jialiang.linjl
  * @author Eric Zhao
+ * @author kangyl
  */
 public class FlowRuleManager {
 
@@ -52,6 +56,8 @@ public class FlowRuleManager {
 
     private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1,
         new NamedThreadFactory("sentinel-metrics-record-task", true));
+
+    private static final RuleAlarm<FlowRule> RULE_ALARM = new DefaultRuleAlarm<FlowRule>();
 
     static {
         currentProperty.addListener(LISTENER);
@@ -71,6 +77,32 @@ public class FlowRuleManager {
             property.addListener(LISTENER);
             currentProperty = property;
         }
+    }
+
+    /**
+     * Listen to the {@link RuleAlarm} for {@link FlowRule}s.
+     * Flow rule can't pass will call the method {@link RuleAlarmListener #warn(rule)} directly.
+     *
+     * @param listener the rule to listen.
+     */
+    public static void registerRuleAlarmListener(RuleAlarmListener<FlowRule> listener) {
+        RULE_ALARM.addListener(listener);
+    }
+
+    /**
+     * Remove the {@link RuleAlarmListener} on RULE_ALARM.
+     * @param listener the listener to remove.
+     */
+    public static void removeRuleAlarmListener(RuleAlarmListener<FlowRule> listener) {
+        RULE_ALARM.removeListener(listener);
+    }
+
+    /**
+     * Return the current rule alarm.
+     * @return rule alarm
+     */
+    public static RuleAlarm<FlowRule> getRuleAlarm() {
+        return RULE_ALARM;
     }
 
     /**

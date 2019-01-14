@@ -29,6 +29,7 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
  *
  * @author leyou
  * @author Eric Zhao
+ * @author kangyl
  */
 public class AuthoritySlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
@@ -58,6 +59,7 @@ public class AuthoritySlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
         for (AuthorityRule rule : rules) {
             if (!AuthorityRuleChecker.passCheck(rule, context)) {
+                AuthorityRuleManager.getRuleAlarm().triggerAlarm(rule);
                 throw new AuthorityException(context.getOrigin());
             }
         }

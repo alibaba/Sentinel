@@ -22,10 +22,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
+import com.alibaba.csp.sentinel.warn.DefaultRuleAlarm;
+import com.alibaba.csp.sentinel.warn.RuleAlarm;
+import com.alibaba.csp.sentinel.warn.RuleAlarmListener;
 
 /**
  * Manager for authority rules.
@@ -33,6 +37,7 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
  * @author youji.zj
  * @author jialiang.linjl
  * @author Eric Zhao
+ * @author kangyl
  */
 public final class AuthorityRuleManager {
 
@@ -43,6 +48,8 @@ public final class AuthorityRuleManager {
 
     private static SentinelProperty<List<AuthorityRule>> currentProperty
         = new DynamicSentinelProperty<List<AuthorityRule>>();
+
+    private static final RuleAlarm<AuthorityRule> RULE_ALARM = new DefaultRuleAlarm<AuthorityRule>();
 
     static {
         currentProperty.addListener(listener);
@@ -72,6 +79,31 @@ public final class AuthorityRuleManager {
         return authorityRules.containsKey(resource);
     }
 
+    /**
+     * Listen to the {@link RuleAlarm} for {@link FlowRule}s.
+     * Flow rule can't pass will call the method {@link RuleAlarmListener #warn(rule)} directly.
+     *
+     * @param listener the rule to listen.
+     */
+    public static void registerRuleAlarmListener(RuleAlarmListener<AuthorityRule> listener) {
+        RULE_ALARM.addListener(listener);
+    }
+
+    /**
+     * Remove the {@link RuleAlarmListener} on RULE_ALARM.
+     * @param listener the listener to remove.
+     */
+    public static void removeRuleAlarmListener(RuleAlarmListener<AuthorityRule> listener) {
+        RULE_ALARM.removeListener(listener);
+    }
+
+    /**
+     * Return the current rule alarm.
+     * @return rule alarm
+     */
+    public static RuleAlarm<AuthorityRule> getRuleAlarm() {
+        return RULE_ALARM;
+    }
     /**
      * Get a copy of the rules.
      *
