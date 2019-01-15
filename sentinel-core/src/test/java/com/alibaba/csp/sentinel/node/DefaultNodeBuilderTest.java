@@ -45,6 +45,7 @@ public class DefaultNodeBuilderTest {
         // verify each call returns a different instance
         DefaultNode defaultNode2 = builder.buildTreeNode(id, clusterNode);
         assertNotNull(defaultNode2);
+        assertNotSame(defaultNode, defaultNode2);
         // now DefaultNode#equals(Object) is not implemented, they are not equal
         assertNotEquals(defaultNode, defaultNode2);
     }
