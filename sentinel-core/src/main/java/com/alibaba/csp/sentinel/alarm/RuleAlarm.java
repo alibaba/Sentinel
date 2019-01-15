@@ -1,4 +1,4 @@
-package com.alibaba.csp.sentinel.warn;
+package com.alibaba.csp.sentinel.alarm;
 
 /**
  * <p> Description:

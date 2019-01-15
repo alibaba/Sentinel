@@ -15,11 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.block.degrade;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.DefaultNode;
@@ -29,11 +24,14 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.csp.sentinel.warn.DefaultRuleAlarm;
-import com.alibaba.csp.sentinel.warn.RuleAlarm;
-import com.alibaba.csp.sentinel.warn.RuleAlarmListener;
+import com.alibaba.csp.sentinel.alarm.DefaultRuleAlarm;
+import com.alibaba.csp.sentinel.alarm.RuleAlarm;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /***
  * @author youji.zj
@@ -48,7 +46,7 @@ public class DegradeRuleManager {
     final static RulePropertyListener listener = new RulePropertyListener();
     private static SentinelProperty<List<DegradeRule>> currentProperty
         = new DynamicSentinelProperty<List<DegradeRule>>();
-    private static final RuleAlarm<DegradeRule> RULE_ALARM = new DefaultRuleAlarm<DegradeRule>();
+    private static volatile RuleAlarm<DegradeRule> currentRuleAlarm = new DefaultRuleAlarm<DegradeRule>();
 
 
     static {
@@ -71,29 +69,23 @@ public class DegradeRuleManager {
     }
 
     /**
-     * Listen to the {@link RuleAlarm} for {@link FlowRule}s.
-     * Flow rule can't pass will call the method {@link RuleAlarmListener #warn(rule)} directly.
+     * Register a new rule alarm to replace default rule alarm.
+     * If the rule can't pass will call the method {@link RuleAlarm #triggerAlarm(rule)} directly.
      *
-     * @param listener the rule to listen.
+     * @param ruleAlarm .
      */
-    public static void registerRuleAlarmListener(RuleAlarmListener<DegradeRule> listener) {
-        RULE_ALARM.addListener(listener);
+    public static void registerRuleAlarm(RuleAlarm<DegradeRule> ruleAlarm) {
+        RecordLog.info("[DegradeRuleManager] Registering new rule alarm to degrade rule manager");
+        currentRuleAlarm = ruleAlarm;
     }
 
-    /**
-     * Remove the {@link RuleAlarmListener} on RULE_ALARM.
-     * @param listener the listener to remove.
-     */
-    public static void removeRuleAlarmListener(RuleAlarmListener<DegradeRule> listener) {
-        RULE_ALARM.removeListener(listener);
-    }
 
     /**
      * Return the current rule alarm.
      * @return rule alarm
      */
     public static RuleAlarm<DegradeRule> getRuleAlarm() {
-        return RULE_ALARM;
+        return currentRuleAlarm;
     }
 
     public static void checkDegrade(ResourceWrapper resource, Context context, DefaultNode node, int count)

@@ -15,6 +15,16 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow;
 
+import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
+import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.node.metric.MetricTimerListener;
+import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
+import com.alibaba.csp.sentinel.property.PropertyListener;
+import com.alibaba.csp.sentinel.property.SentinelProperty;
+import com.alibaba.csp.sentinel.util.StringUtil;
+import com.alibaba.csp.sentinel.alarm.DefaultRuleAlarm;
+import com.alibaba.csp.sentinel.alarm.RuleAlarm;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -22,17 +32,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
-import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.csp.sentinel.node.metric.MetricTimerListener;
-import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
-import com.alibaba.csp.sentinel.property.PropertyListener;
-import com.alibaba.csp.sentinel.property.SentinelProperty;
-import com.alibaba.csp.sentinel.warn.DefaultRuleAlarm;
-import com.alibaba.csp.sentinel.warn.RuleAlarm;
-import com.alibaba.csp.sentinel.warn.RuleAlarmListener;
 
 /**
  * <p>
@@ -55,9 +54,9 @@ public class FlowRuleManager {
     private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
 
     private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1,
-        new NamedThreadFactory("sentinel-metrics-record-task", true));
+            new NamedThreadFactory("sentinel-metrics-record-task", true));
 
-    private static final RuleAlarm<FlowRule> RULE_ALARM = new DefaultRuleAlarm<FlowRule>();
+    private static volatile RuleAlarm<FlowRule> currentRuleAlarm = new DefaultRuleAlarm<FlowRule>();
 
     static {
         currentProperty.addListener(LISTENER);
@@ -80,29 +79,24 @@ public class FlowRuleManager {
     }
 
     /**
-     * Listen to the {@link RuleAlarm} for {@link FlowRule}s.
-     * Flow rule can't pass will call the method {@link RuleAlarmListener #warn(rule)} directly.
+     * Register a new rule alarm to replace default rule alarm.
+     * If the rule can't pass will call the method {@link RuleAlarm #triggerAlarm(rule)} directly.
      *
-     * @param listener the rule to listen.
+     * @param ruleAlarm .
      */
-    public static void registerRuleAlarmListener(RuleAlarmListener<FlowRule> listener) {
-        RULE_ALARM.addListener(listener);
+    public static void registerRuleAlarm(RuleAlarm<FlowRule> ruleAlarm) {
+        RecordLog.info("[FlowRuleManager] Registering new rule alarm to flow rule manager");
+        currentRuleAlarm = ruleAlarm;
     }
 
-    /**
-     * Remove the {@link RuleAlarmListener} on RULE_ALARM.
-     * @param listener the listener to remove.
-     */
-    public static void removeRuleAlarmListener(RuleAlarmListener<FlowRule> listener) {
-        RULE_ALARM.removeListener(listener);
-    }
 
     /**
      * Return the current rule alarm.
+     *
      * @return rule alarm
      */
     public static RuleAlarm<FlowRule> getRuleAlarm() {
-        return RULE_ALARM;
+        return currentRuleAlarm;
     }
 
     /**
