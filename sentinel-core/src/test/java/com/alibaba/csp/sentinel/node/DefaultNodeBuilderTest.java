@@ -78,7 +78,7 @@ public class DefaultNodeBuilderTest {
         ClusterNode clusterNode2 = builder.buildClusterNode();
         assertNotNull(clusterNode2);
         assertNotSame(clusterNode, clusterNode2);
-        // now ClusterNode#equals(Object) is not implemented, they are not equal
+        // as new a ClusterNode instance in DefaultNodeBuilder#buildClusterNode(), they are not equal
         assertNotEquals(clusterNode, clusterNode2);
     }
 }
