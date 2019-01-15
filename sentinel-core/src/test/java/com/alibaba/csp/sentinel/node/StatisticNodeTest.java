@@ -40,11 +40,13 @@ import static org.junit.Assert.assertTrue;
  */
 public class StatisticNodeTest {
 
-    private static SimpleDateFormat SDF = new SimpleDateFormat("yyyy-HH-dd HH:mm:ss");
+    private static final String LOG_PREFIX = "[StatisticNodeTest]";
 
-    private static Random RANDOM = new Random();
+    private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-HH-dd HH:mm:ss");
 
-    private static int THREAD_COUNT = 20;
+    private static final Random RANDOM = new Random();
+
+    private static final int THREAD_COUNT = 20;
 
     /**
      * A simple test for statistic threadNum and qps by using StatisticNode
@@ -131,6 +133,8 @@ public class StatisticNodeTest {
                 bizMethod();
 
                 node.decreaseThreadNum();
+
+                // decrease one ThreadNum, so curThreadNum should less than THREAD_COUNT
                 assertTrue(node.curThreadNum() < THREAD_COUNT);
 
                 long rt = TimeUtil.currentTimeMillis() - startTime;
@@ -193,6 +197,6 @@ public class StatisticNodeTest {
     }
 
     private static void log(Object obj) {
-        System.out.println(obj);
+        System.out.println(LOG_PREFIX + obj);
     }
 }
