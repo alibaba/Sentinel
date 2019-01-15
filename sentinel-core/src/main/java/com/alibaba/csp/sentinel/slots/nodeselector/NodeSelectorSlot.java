@@ -33,7 +33,7 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
  * <ol>
  * <li>adding a new {@link DefaultNode} if needed as the last child in the context.
  * The context's last node is the current node or the parent node of the context. </li>
- * <li>setting itself to the the context current node.</li>
+ * <li>setting itself to the context current node.</li>
  * </ol>
  * </p>
  *
