@@ -97,28 +97,22 @@ final class FlowRuleChecker {
         int strategy = rule.getStrategy();
         String origin = context.getOrigin();
 
-        // 对特定应用限流
         if (limitApp.equals(origin) && filterOrigin(origin)) {
-            // 对特定调用者进行限流
             if (strategy == RuleConstant.STRATEGY_DIRECT) {
                 // Matches limit origin, return origin statistic node.
                 return context.getOriginNode();
             }
 
             return selectReferenceNode(rule, context, node);
-        // 对所有应用限流
         } else if (RuleConstant.LIMIT_APP_DEFAULT.equals(limitApp)) {
-            // 特所有调用者进行限流
             if (strategy == RuleConstant.STRATEGY_DIRECT) {
                 // Return the cluster node.
                 return node.getClusterNode();
             }
 
             return selectReferenceNode(rule, context, node);
-        // 对特定应用之外进行限流
         } else if (RuleConstant.LIMIT_APP_OTHER.equals(limitApp)
             && FlowRuleManager.isOtherOrigin(origin, rule.getResource())) {
-            // 对特定应用之外的调用者进行限流
             if (strategy == RuleConstant.STRATEGY_DIRECT) {
                 return context.getOriginNode();
             }
