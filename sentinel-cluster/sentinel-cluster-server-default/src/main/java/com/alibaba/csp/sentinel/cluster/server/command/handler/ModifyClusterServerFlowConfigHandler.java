@@ -48,10 +48,16 @@ public class ModifyClusterServerFlowConfigHandler implements CommandHandler<Stri
             if (StringUtil.isEmpty(namespace)) {
                 RecordLog.info("[ModifyClusterServerFlowConfigHandler] Receiving cluster server global flow config: " + data);
                 ServerFlowConfig config = JSON.parseObject(data, ServerFlowConfig.class);
+                if (!ClusterServerConfigManager.isValidFlowConfig(config)) {
+                    CommandResponse.ofFailure(new IllegalArgumentException("Bad flow config"));
+                }
                 ClusterServerConfigManager.loadGlobalFlowConfig(config);
             } else {
                 RecordLog.info("[ModifyClusterServerFlowConfigHandler] Receiving cluster server flow config for namespace <{0}>: {1}", namespace, data);
                 ServerFlowConfig config = JSON.parseObject(data, ServerFlowConfig.class);
+                if (!ClusterServerConfigManager.isValidFlowConfig(config)) {
+                    CommandResponse.ofFailure(new IllegalArgumentException("Bad flow config"));
+                }
                 ClusterServerConfigManager.loadFlowConfig(namespace, config);
             }
 

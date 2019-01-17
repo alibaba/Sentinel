@@ -94,22 +94,22 @@ public interface Metric {
     /**
      * Increment by one the current exception count.
      */
-    void addException();
+    void addException(int n);
 
     /**
-     * Increment by one the current blovk count.
+     * Increment by one the current block count.
      */
-    void addBlock();
+    void addBlock(int n);
 
     /**
      * Increment by one the current success count.
      */
-    void addSuccess();
+    void addSuccess(int n);
 
     /**
      * Increment by one the current pass count.
      */
-    void addPass();
+    void addPass(int n);
 
     /**
      * Add given RT to current total RT.

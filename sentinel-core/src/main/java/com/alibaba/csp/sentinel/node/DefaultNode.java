@@ -107,21 +107,21 @@ public class DefaultNode extends StatisticNode {
     }
 
     @Override
-    public void increaseBlockQps() {
-        super.increaseBlockQps();
-        this.clusterNode.increaseBlockQps();
+    public void increaseBlockQps(int count) {
+        super.increaseBlockQps(count);
+        this.clusterNode.increaseBlockQps(count);
     }
 
     @Override
-    public void increaseExceptionQps() {
-        super.increaseExceptionQps();
-        this.clusterNode.increaseExceptionQps();
+    public void increaseExceptionQps(int count) {
+        super.increaseExceptionQps(count);
+        this.clusterNode.increaseExceptionQps(count);
     }
 
     @Override
-    public void rt(long rt) {
-        super.rt(rt);
-        this.clusterNode.rt(rt);
+    public void addRtAndSuccess(long rt, int successCount) {
+        super.addRtAndSuccess(rt, successCount);
+        this.clusterNode.addRtAndSuccess(rt, successCount);
     }
 
     @Override
@@ -137,9 +137,9 @@ public class DefaultNode extends StatisticNode {
     }
 
     @Override
-    public void addPassRequest() {
-        super.addPassRequest();
-        this.clusterNode.addPassRequest();
+    public void addPassRequest(int count) {
+        super.addPassRequest(count);
+        this.clusterNode.addPassRequest(count);
     }
 
     public void printDefaultNode() {

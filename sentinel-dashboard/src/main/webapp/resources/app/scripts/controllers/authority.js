@@ -55,7 +55,7 @@ angular.module('sentinelDashboardApp').controller('AuthorityRuleController', ['$
         var authorityRuleDialog;
 
         $scope.editRule = function (rule) {
-            $scope.currentRule = rule;
+            $scope.currentRule = angular.copy(rule);
             $scope.authorityRuleDialog = {
                 title: '编辑授权规则',
                 type: 'edit',
