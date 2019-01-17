@@ -33,8 +33,7 @@ public class ClusterMetric {
         AssertUtil.isTrue(sampleCount > 0, "sampleCount should be positive");
         AssertUtil.isTrue(intervalInMs > 0, "interval should be positive");
         AssertUtil.isTrue(intervalInMs % sampleCount == 0, "time span needs to be evenly divided");
-        int windowLengthInMs = intervalInMs / sampleCount;
-        this.metric = new ClusterMetricLeapArray(windowLengthInMs, intervalInMs);
+        this.metric = new ClusterMetricLeapArray(sampleCount, intervalInMs);
     }
 
     public void add(ClusterFlowEvent event, long count) {

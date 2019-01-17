@@ -65,7 +65,13 @@ public class ParamFlowRule extends AbstractRule {
      */
     private Map<Object, Integer> hotItems = new HashMap<Object, Integer>();
 
+    /**
+     * Indicating whether the rule is for cluster mode.
+     */
     private boolean clusterMode = false;
+    /**
+     * Cluster mode specific config for parameter flow rule.
+     */
     private ParamFlowClusterConfig clusterConfig;
 
     public int getGrade() {

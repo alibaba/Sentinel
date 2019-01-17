@@ -26,6 +26,10 @@ public final class TokenResultStatus {
      */
     public static final int BAD_REQUEST = -4;
     /**
+     * Too many request in server.
+     */
+    public static final int TOO_MANY_REQUEST = -2;
+    /**
      * Server or client unexpected failure (due to transport or serialization failure).
      */
     public static final int FAIL = -1;

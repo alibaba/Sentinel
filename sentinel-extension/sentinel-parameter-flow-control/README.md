@@ -56,6 +56,4 @@ The description for fields of `ParamFlowRule`:
 | paramIdx | the index of provided parameter in `SphU.entry(xxx, args)` (**required**) ||
 | paramFlowItemList | the exception items of parameter; you can set threshold to a specific parameter value ||
 
-
 Now the parameter flow control rules will take effect.
-

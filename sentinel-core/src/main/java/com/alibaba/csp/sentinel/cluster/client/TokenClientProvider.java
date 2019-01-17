@@ -49,5 +49,9 @@ public final class TokenClientProvider {
         }
     }
 
+    public static boolean isClientSpiAvailable() {
+        return getClient() != null;
+    }
+
     private TokenClientProvider() {}
 }
