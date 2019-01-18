@@ -93,10 +93,11 @@ public class ClusterNode extends StatisticNode {
      * @param count     count to add
      */
     public void trace(Throwable throwable, int count) {
+        if (count <= 0) {
+            return;
+        }
         if (!BlockException.isBlockException(throwable)) {
-            for (int i = 0; i < count; i++) {
-                this.increaseExceptionQps();
-            }
+            this.increaseExceptionQps(count);
         }
     }
 }

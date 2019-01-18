@@ -19,12 +19,14 @@ import java.util.Iterator;
 import java.util.ServiceLoader;
 
 import com.alibaba.csp.sentinel.init.InitFunc;
+import com.alibaba.csp.sentinel.init.InitOrder;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.transport.CommandCenter;
 
 /**
  * @author Eric Zhao
  */
+@InitOrder(-1)
 public class CommandCenterInitFunc implements InitFunc {
 
     @Override

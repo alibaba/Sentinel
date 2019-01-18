@@ -5,7 +5,7 @@
 
     <groupId>com.alibaba.csp</groupId>
     <artifactId>sentinel-parent</artifactId>
-    <version>1.4.0-SNAPSHOT</version>
+    <version>1.4.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>${project.artifactId}</name>
@@ -41,7 +41,7 @@
 
     <properties>
         <!-- Compile libs -->
-        <fastjson.version>1.2.51</fastjson.version>
+        <fastjson.version>1.2.54</fastjson.version>
 
         <!-- Test libs -->
         <junit.version>4.12</junit.version>

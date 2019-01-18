@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.slots.block.flow;
 
 import com.alibaba.csp.sentinel.slots.block.ClusterRuleConstant;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
 /**
  * Flow rule config in cluster mode.
@@ -34,16 +35,18 @@ public class ClusterFlowConfig {
      * Threshold type (average by local value or global value).
      */
     private int thresholdType = ClusterRuleConstant.FLOW_THRESHOLD_AVG_LOCAL;
-    private boolean fallbackToLocalWhenFail;
+    private boolean fallbackToLocalWhenFail = true;
 
     /**
-     * 0: normal; 1: using reference (borrow from reference).
+     * 0: normal.
      */
     private int strategy = ClusterRuleConstant.FLOW_CLUSTER_STRATEGY_NORMAL;
 
-    private Long refFlowId;
-    private int refSampleCount = 10;
-    private double refRatio = 1d;
+    private int sampleCount = ClusterRuleConstant.DEFAULT_CLUSTER_SAMPLE_COUNT;
+    /**
+     * The time interval length of the statistic sliding window (in milliseconds)
+     */
+    private int windowIntervalMs = RuleConstant.DEFAULT_WINDOW_INTERVAL_MS;
 
     public Long getFlowId() {
         return flowId;
@@ -72,39 +75,30 @@ public class ClusterFlowConfig {
         return this;
     }
 
-    public Long getRefFlowId() {
-        return refFlowId;
-    }
-
-    public ClusterFlowConfig setRefFlowId(Long refFlowId) {
-        this.refFlowId = refFlowId;
-        return this;
-    }
-
-    public int getRefSampleCount() {
-        return refSampleCount;
-    }
-
-    public ClusterFlowConfig setRefSampleCount(int refSampleCount) {
-        this.refSampleCount = refSampleCount;
-        return this;
-    }
-
-    public double getRefRatio() {
-        return refRatio;
-    }
-
-    public ClusterFlowConfig setRefRatio(double refRatio) {
-        this.refRatio = refRatio;
-        return this;
-    }
-
     public boolean isFallbackToLocalWhenFail() {
         return fallbackToLocalWhenFail;
     }
 
     public ClusterFlowConfig setFallbackToLocalWhenFail(boolean fallbackToLocalWhenFail) {
         this.fallbackToLocalWhenFail = fallbackToLocalWhenFail;
+        return this;
+    }
+
+    public int getSampleCount() {
+        return sampleCount;
+    }
+
+    public ClusterFlowConfig setSampleCount(int sampleCount) {
+        this.sampleCount = sampleCount;
+        return this;
+    }
+
+    public int getWindowIntervalMs() {
+        return windowIntervalMs;
+    }
+
+    public ClusterFlowConfig setWindowIntervalMs(int windowIntervalMs) {
+        this.windowIntervalMs = windowIntervalMs;
         return this;
     }
 
@@ -118,24 +112,19 @@ public class ClusterFlowConfig {
         if (thresholdType != that.thresholdType) { return false; }
         if (fallbackToLocalWhenFail != that.fallbackToLocalWhenFail) { return false; }
         if (strategy != that.strategy) { return false; }
-        if (refSampleCount != that.refSampleCount) { return false; }
-        if (Double.compare(that.refRatio, refRatio) != 0) { return false; }
-        if (flowId != null ? !flowId.equals(that.flowId) : that.flowId != null) { return false; }
-        return refFlowId != null ? refFlowId.equals(that.refFlowId) : that.refFlowId == null;
+        if (sampleCount != that.sampleCount) { return false; }
+        if (windowIntervalMs != that.windowIntervalMs) { return false; }
+        return flowId != null ? flowId.equals(that.flowId) : that.flowId == null;
     }
 
     @Override
     public int hashCode() {
-        int result;
-        long temp;
-        result = flowId != null ? flowId.hashCode() : 0;
+        int result = flowId != null ? flowId.hashCode() : 0;
         result = 31 * result + thresholdType;
         result = 31 * result + (fallbackToLocalWhenFail ? 1 : 0);
         result = 31 * result + strategy;
-        result = 31 * result + (refFlowId != null ? refFlowId.hashCode() : 0);
-        result = 31 * result + refSampleCount;
-        temp = Double.doubleToLongBits(refRatio);
-        result = 31 * result + (int)(temp ^ (temp >>> 32));
+        result = 31 * result + sampleCount;
+        result = 31 * result + windowIntervalMs;
         return result;
     }
 
@@ -146,9 +135,8 @@ public class ClusterFlowConfig {
             ", thresholdType=" + thresholdType +
             ", fallbackToLocalWhenFail=" + fallbackToLocalWhenFail +
             ", strategy=" + strategy +
-            ", refFlowId=" + refFlowId +
-            ", refSampleCount=" + refSampleCount +
-            ", refRatio=" + refRatio +
+            ", sampleCount=" + sampleCount +
+            ", windowIntervalMs=" + windowIntervalMs +
             '}';
     }
 }

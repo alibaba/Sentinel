@@ -39,6 +39,11 @@ public class WarmUpRateLimiterController extends WarmUpController {
 
     @Override
     public boolean canPass(Node node, int acquireCount) {
+        return canPass(node, acquireCount, false);
+    }
+
+    @Override
+    public boolean canPass(Node node, int acquireCount, boolean prioritized) {
         long previousQps = node.previousPassQps();
         syncToken(previousQps);
 
@@ -63,17 +68,19 @@ public class WarmUpRateLimiterController extends WarmUpController {
             return true;
         } else {
             long waitTime = costTime + latestPassedTime.get() - currentTime;
-            if (waitTime >= timeOutInMs) {
+            if (waitTime > timeOutInMs) {
                 return false;
             } else {
                 long oldTime = latestPassedTime.addAndGet(costTime);
                 try {
                     waitTime = oldTime - TimeUtil.currentTimeMillis();
-                    if (waitTime >= timeOutInMs) {
+                    if (waitTime > timeOutInMs) {
                         latestPassedTime.addAndGet(-costTime);
                         return false;
                     }
-                    Thread.sleep(waitTime);
+                    if (waitTime > 0) {
+                        Thread.sleep(waitTime);
+                    }
                     return true;
                 } catch (InterruptedException e) {
                 }

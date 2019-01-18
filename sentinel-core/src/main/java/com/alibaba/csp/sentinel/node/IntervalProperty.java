@@ -18,25 +18,27 @@ package com.alibaba.csp.sentinel.node;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.property.SimplePropertyListener;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 
-/***
+/**
  * QPS statistics interval.
  *
  * @author youji.zj
  * @author jialiang.linjl
- * @author CarpenterLee
+ * @author Carpenter Lee
+ * @author Eric Zhao
  */
 public class IntervalProperty {
 
     /**
+     * <p>Interval in milliseconds. This variable determines sensitivity of the QPS calculation.</p>
      * <p>
-     * Interval in seconds. This variable determines sensitivity of the QPS calculation.
-     * </p>
      * DO NOT MODIFY this value directly, use {@link #updateInterval(int)}, otherwise the modification will not
      * take effect.
+     * </p>
      */
-    public static volatile int INTERVAL = 1;
+    public static volatile int INTERVAL = RuleConstant.DEFAULT_WINDOW_INTERVAL_MS;
 
     public static void register2Property(SentinelProperty<Integer> property) {
         property.addListener(new SimplePropertyListener<Integer>() {
@@ -60,7 +62,7 @@ public class IntervalProperty {
             INTERVAL = newInterval;
             ClusterBuilderSlot.resetClusterNodes();
         }
-        RecordLog.info("INTERVAL updated to: " + INTERVAL);
+        RecordLog.info("[IntervalProperty] INTERVAL updated to: " + INTERVAL);
     }
 
 }

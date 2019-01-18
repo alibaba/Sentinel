@@ -16,9 +16,10 @@
       </li>
 
       <li ng-class="{active: true}" ng-repeat="entry in apps | filter: { app: searchApp }">{{dropDown}}
-        <a href="#" ng-click="click($event)" collapse="{{collpaseall == 1}}" style="font-size: 16px;word-break: break-word;">
+        <a href="javascript:void(0);" ng-click="click($event)" collapse="{{collpaseall == 1}}" style="font-size: 16px;word-break: break-word;">
           &nbsp;{{entry.app}}
           <span class="fa arrow"></span>
+          <span class="arrow">({{entry.heathCount}}/{{entry.machines.length}})</span>
         </a>
 
         <!--<ul class="nav nav-second-level" collapse="{{entry.active}}" style="display: none;">-->
@@ -33,9 +34,13 @@
           </li>
 
           <li ui-sref-active="active">
-            <a ui-sref="dashboard.flow({app: entry.app})">
+            <a ui-sref="dashboard.flowV1({app: entry.app})">
               <i class="glyphicon glyphicon-filter"></i>&nbsp;&nbsp;流控规则</a>
           </li>
+          <!--<li ui-sref-active="active">-->
+            <!--<a ui-sref="dashboard.flow({app: entry.app})">-->
+              <!--<i class="glyphicon glyphicon-filter"></i>&nbsp;&nbsp;流控规则 V1</a>-->
+          <!--</li>-->
           <li ui-sref-active="active">
             <a ui-sref="dashboard.degrade({app: entry.app})">
               <i class="glyphicon glyphicon-flash"></i>&nbsp;&nbsp;降级规则</a>
@@ -51,6 +56,10 @@
           <li ui-sref-active="active">
             <a ui-sref="dashboard.authority({app: entry.app})">
               <i class="glyphicon glyphicon-check"></i>&nbsp;&nbsp;授权规则</a>
+          </li>
+          <li ui-sref-active="active">
+            <a ui-sref="dashboard.clusterAppServerList({app: entry.app})">
+              <i class="glyphicon glyphicon-cloud"></i>&nbsp;&nbsp;集群流控</a>
           </li>
           <li ui-sref-active="active">
             <a ui-sref="dashboard.machine({app: entry.app})">

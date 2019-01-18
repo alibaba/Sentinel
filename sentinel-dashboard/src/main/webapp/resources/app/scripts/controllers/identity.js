@@ -1,7 +1,7 @@
 var app = angular.module('sentinelDashboardApp');
 
 app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
-  'ngDialog', 'FlowService', 'DegradeService', 'AuthorityRuleService', 'ParamFlowService', 'MachineService',
+  'ngDialog', 'FlowServiceV1', 'DegradeService', 'AuthorityRuleService', 'ParamFlowService', 'MachineService',
   '$interval', '$location', '$timeout',
   function ($scope, $stateParams, IdentityService, ngDialog,
     FlowService, DegradeService, AuthorityRuleService, ParamFlowService, MachineService, $interval, $location, $timeout) {
@@ -52,6 +52,10 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
         controlBehavior: 0,
         resource: resource,
         limitApp: 'default',
+        clusterMode: false,
+        clusterConfig: {
+            thresholdType: 0
+        },
         app: $scope.app,
         ip: mac[0],
         port: mac[1]
@@ -89,13 +93,15 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
         return;
       }
       FlowService.newRule(flowRuleDialogScope.currentRule).success(function (data) {
-        if (data.code == 0) {
+        if (data.code === 0) {
           flowRuleDialog.close();
           let url = '/dashboard/flow/' + $scope.app;
           $location.path(url);
         } else {
           alert('失败!');
         }
+      }).error((data, header, config, status) => {
+          alert('未知错误');
       });
     }
 

@@ -194,16 +194,18 @@ public class MetricWriter {
         File baseFile = new File(baseDir);
         DateFormat fileNameDf = new SimpleDateFormat("yyyy-MM-dd");
         String dateStr = fileNameDf.format(new Date(time));
+        String fileNameModel = baseFileName + "." + dateStr;
         for (File file : baseFile.listFiles()) {
-            if (file.getName().contains(baseFileName + "." + dateStr)
-                && !file.getName().endsWith(METRIC_FILE_INDEX_SUFFIX)
-                && !file.getName().endsWith(".lck")) {
+            String fileName = file.getName();
+            if (fileName.contains(fileNameModel)
+                && !fileName.endsWith(METRIC_FILE_INDEX_SUFFIX)
+                && !fileName.endsWith(".lck")) {
                 list.add(file.getAbsolutePath());
             }
         }
         Collections.sort(list, METRIC_FILE_NAME_CMP);
         if (list.isEmpty()) {
-            return baseDir + baseFileName + "." + dateStr;
+            return baseDir + fileNameModel;
         }
         String last = list.get(list.size() - 1);
         int n = 0;
@@ -211,7 +213,7 @@ public class MetricWriter {
         if (strs.length > 0 && strs[strs.length - 1].matches("[0-9]{1,10}")) {
             n = Integer.parseInt(strs[strs.length - 1]);
         }
-        return baseDir + baseFileName + "." + dateStr + "." + (n + 1);
+        return baseDir + fileNameModel + "." + (n + 1);
     }
 
     /**
@@ -244,7 +246,7 @@ public class MetricWriter {
             String name2 = new File(o2).getName();
             String dateStr1 = name1.split("\\.")[2];
             String dateStr2 = name2.split("\\.")[2];
-            // in case of file name contains pid, skip it
+            // in case of file name contains pid, skip it, like Sentinel-Admin-metrics.log.pid22568.2018-12-24
             if (dateStr1.startsWith(pid)) {
                 dateStr1 = name1.split("\\.")[3];
                 dateStr2 = name2.split("\\.")[3];
@@ -266,7 +268,10 @@ public class MetricWriter {
     }
 
     /**
-     * Get all metric files' name in {@code baseDir}. The file name must contain {@code baseFileName}
+     * Get all metric files' name in {@code baseDir}. The file name must like
+     * <pre>
+     * baseFileName + ".yyyy-MM-dd.number"
+     * </pre>
      * and not endsWith {@link #METRIC_FILE_INDEX_SUFFIX} or ".lck".
      *
      * @param baseDir      the directory to search.
@@ -282,15 +287,36 @@ public class MetricWriter {
             return list;
         }
         for (File file : files) {
+            String fileName = file.getName();
             if (file.isFile()
-                && file.getName().contains(baseFileName)
-                && !file.getName().endsWith(MetricWriter.METRIC_FILE_INDEX_SUFFIX)
-                && !file.getName().endsWith(".lck")) {
+                && fileNameMatches(fileName, baseFileName)
+                && !fileName.endsWith(MetricWriter.METRIC_FILE_INDEX_SUFFIX)
+                && !fileName.endsWith(".lck")) {
                 list.add(file.getAbsolutePath());
             }
         }
         Collections.sort(list, MetricWriter.METRIC_FILE_NAME_CMP);
         return list;
+    }
+
+    /**
+     * Test whether fileName matches baseFileName. fileName matches baseFileName when
+     * <pre>
+     * fileName = baseFileName + ".yyyy-MM-dd.number"
+     * </pre>
+     *
+     * @param fileName     file name
+     * @param baseFileName base file name.
+     * @return if fileName matches baseFileName return true, else return false.
+     */
+    public static boolean fileNameMatches(String fileName, String baseFileName) {
+        if (fileName.startsWith(baseFileName)) {
+            String part = fileName.substring(baseFileName.length());
+            // part is like: ".yyyy-MM-dd.number", eg. ".2018-12-24.11"
+            return part.matches("\\.[0-9]{4}-[0-9]{2}-[0-9]{2}(\\.[0-9]*)?");
+        } else {
+            return false;
+        }
     }
 
     private void removeMoreFiles() throws Exception {
@@ -320,7 +346,6 @@ public class MetricWriter {
         outMetricBuf = new BufferedOutputStream(outMetric);
         curMetricFile = new File(fileName);
         String idxFile = formIndexFileName(fileName);
-        ;
         curMetricIndexFile = new File(idxFile);
         outIndex = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(idxFile, append)));
         RecordLog.info("[MetricWriter] New metric file created: " + fileName);

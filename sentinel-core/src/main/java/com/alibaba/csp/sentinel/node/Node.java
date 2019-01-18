@@ -126,25 +126,28 @@ public interface Node {
 
     /**
      * Add pass count.
+     *
+     * @param count count to add pass
      */
-    void addPassRequest();
+    void addPassRequest(int count);
 
     /**
      * Add rt and success count.
      *
      * @param rt response time
+     * @param success success count to add
      */
-    void rt(long rt);
+    void addRtAndSuccess(long rt, int success);
 
     /**
      * Increase the block count.
      */
-    void increaseBlockQps();
+    void increaseBlockQps(int count);
 
     /**
      * Increase the biz exception count.
      */
-    void increaseExceptionQps();
+    void increaseExceptionQps(int count);
 
     void tryUpdateThreadThreshold(int threadThreshold);
 
@@ -156,7 +159,7 @@ public interface Node {
     void increaseThreadNum();
 
     /**
-     * Increase current thread count.
+     * Decrease current thread count.
      */
     void decreaseThreadNum();
 

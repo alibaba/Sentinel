@@ -186,14 +186,19 @@ public final class FlowRuleUtil {
         if (!validClusterRuleId(clusterConfig.getFlowId())) {
             return false;
         }
+        if (!isWindowConfigValid(clusterConfig.getSampleCount(), clusterConfig.getWindowIntervalMs())) {
+            return false;
+        }
         switch (rule.getStrategy()) {
             case ClusterRuleConstant.FLOW_CLUSTER_STRATEGY_NORMAL:
                 return true;
-            case ClusterRuleConstant.FLOW_CLUSTER_STRATEGY_REF:
-                return validClusterRuleId(clusterConfig.getRefFlowId());
             default:
-                return true;
+                return false;
         }
+    }
+
+    public static boolean isWindowConfigValid(int sampleCount, int windowIntervalMs) {
+        return sampleCount > 0 && windowIntervalMs > 0 && windowIntervalMs % sampleCount == 0;
     }
 
     private static boolean checkStrategyField(/*@NonNull*/ FlowRule rule) {

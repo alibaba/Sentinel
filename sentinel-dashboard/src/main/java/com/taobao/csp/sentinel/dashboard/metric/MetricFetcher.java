@@ -15,6 +15,8 @@
  */
 package com.taobao.csp.sentinel.dashboard.metric;
 
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.List;
@@ -41,6 +43,7 @@ import com.taobao.csp.sentinel.dashboard.datasource.entity.MetricEntity;
 import com.taobao.csp.sentinel.dashboard.discovery.AppManagement;
 import com.taobao.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.taobao.csp.sentinel.dashboard.repository.metric.MetricsRepository;
+import com.taobao.csp.sentinel.dashboard.util.MachineUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.concurrent.FutureCallback;
@@ -64,7 +67,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class MetricFetcher {
 
-    public static final long MAX_CLIENT_LIVE_TIME_MS = 1000 * 60 * 5;
     public static final String NO_METRICS = "No metrics";
     private static final int HTTP_OK = 200;
     private static final long MAX_LAST_FETCH_INTERVAL_MS = 1000 * 15;
@@ -141,7 +143,7 @@ public class MetricFetcher {
     }
 
     /**
-     * 遍历每个APP，然后拉取该APP所有机器的metric
+     * Traverse each APP, and then pull the metric of all machines for that APP.
      */
     private void fetchAllApp() {
         List<String> apps = appManagement.getAppNames();
@@ -183,7 +185,7 @@ public class MetricFetcher {
         final CountDownLatch latch = new CountDownLatch(machines.size());
         for (final MachineInfo machine : machines) {
             // dead
-            if (System.currentTimeMillis() - machine.getTimestamp().getTime() > MAX_CLIENT_LIVE_TIME_MS) {
+            if (System.currentTimeMillis() - machine.getTimestamp().getTime() > MachineUtils.getMaxClientTimeout()) {
                 latch.countDown();
                 dead.incrementAndGet();
                 continue;
@@ -210,7 +212,13 @@ public class MetricFetcher {
                     latch.countDown();
                     fail.incrementAndGet();
                     httpGet.abort();
-                    logger.error(msg + " metric " + url + " failed:", ex);
+                    if (ex instanceof SocketTimeoutException) {
+                        logger.error("Failed to fetch metric from <{}>: socket timeout", url);
+                    } else if (ex instanceof ConnectException) {
+                        logger.error("Failed to fetch metric from <{}> (ConnectionException: {})", url, ex.getMessage());
+                    } else {
+                        logger.error(msg + " metric " + url + " error", ex);
+                    }
                 }
 
                 @Override
@@ -273,8 +281,10 @@ public class MetricFetcher {
         Charset charset = null;
         try {
             String contentTypeStr = response.getFirstHeader("Content-type").getValue();
-            ContentType contentType = ContentType.parse(contentTypeStr);
-            charset = contentType.getCharset();
+            if (StringUtil.isNotEmpty(contentTypeStr)) {
+                ContentType contentType = ContentType.parse(contentTypeStr);
+                charset = contentType.getCharset();
+            }
         } catch (Exception ignore) {
         }
         String body = EntityUtils.toString(response.getEntity(), charset != null ? charset : DEFAULT_CHARSET);

@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.slots.block.flow.param;
 
 import com.alibaba.csp.sentinel.slots.block.ClusterRuleConstant;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
 /**
  * Parameter flow rule config in cluster mode.
@@ -35,6 +36,12 @@ public class ParamFlowClusterConfig {
      */
     private int thresholdType = ClusterRuleConstant.FLOW_THRESHOLD_AVG_LOCAL;
     private boolean fallbackToLocalWhenFail = false;
+
+    private int sampleCount = ClusterRuleConstant.DEFAULT_CLUSTER_SAMPLE_COUNT;
+    /**
+     * The time interval length of the statistic sliding window (in milliseconds)
+     */
+    private int windowIntervalMs = RuleConstant.DEFAULT_WINDOW_INTERVAL_MS;
 
     public Long getFlowId() {
         return flowId;
@@ -63,16 +70,36 @@ public class ParamFlowClusterConfig {
         return this;
     }
 
+    public int getSampleCount() {
+        return sampleCount;
+    }
+
+    public ParamFlowClusterConfig setSampleCount(int sampleCount) {
+        this.sampleCount = sampleCount;
+        return this;
+    }
+
+    public int getWindowIntervalMs() {
+        return windowIntervalMs;
+    }
+
+    public ParamFlowClusterConfig setWindowIntervalMs(int windowIntervalMs) {
+        this.windowIntervalMs = windowIntervalMs;
+        return this;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) { return true; }
         if (o == null || getClass() != o.getClass()) { return false; }
 
-        ParamFlowClusterConfig that = (ParamFlowClusterConfig)o;
+        ParamFlowClusterConfig config = (ParamFlowClusterConfig)o;
 
-        if (thresholdType != that.thresholdType) { return false; }
-        if (fallbackToLocalWhenFail != that.fallbackToLocalWhenFail) { return false; }
-        return flowId != null ? flowId.equals(that.flowId) : that.flowId == null;
+        if (thresholdType != config.thresholdType) { return false; }
+        if (fallbackToLocalWhenFail != config.fallbackToLocalWhenFail) { return false; }
+        if (sampleCount != config.sampleCount) { return false; }
+        if (windowIntervalMs != config.windowIntervalMs) { return false; }
+        return flowId != null ? flowId.equals(config.flowId) : config.flowId == null;
     }
 
     @Override
@@ -80,6 +107,8 @@ public class ParamFlowClusterConfig {
         int result = flowId != null ? flowId.hashCode() : 0;
         result = 31 * result + thresholdType;
         result = 31 * result + (fallbackToLocalWhenFail ? 1 : 0);
+        result = 31 * result + sampleCount;
+        result = 31 * result + windowIntervalMs;
         return result;
     }
 
@@ -89,6 +118,8 @@ public class ParamFlowClusterConfig {
             "flowId=" + flowId +
             ", thresholdType=" + thresholdType +
             ", fallbackToLocalWhenFail=" + fallbackToLocalWhenFail +
+            ", sampleCount=" + sampleCount +
+            ", windowIntervalMs=" + windowIntervalMs +
             '}';
     }
 }

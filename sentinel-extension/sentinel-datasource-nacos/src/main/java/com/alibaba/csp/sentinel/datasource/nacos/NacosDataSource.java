@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.datasource.nacos;
 
+import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -25,8 +26,10 @@ import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.datasource.AbstractDataSource;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.nacos.api.NacosFactory;
+import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.listener.Listener;
 
@@ -50,6 +53,7 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
     private final Listener configListener;
     private final String groupId;
     private final String dataId;
+    private final Properties properties;
 
     /**
      * Note: The Nacos config might be null if its initialization failed.
@@ -66,13 +70,27 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
      */
     public NacosDataSource(final String serverAddr, final String groupId, final String dataId,
                            Converter<String, T> parser) {
+        this(NacosDataSource.buildProperties(serverAddr), groupId, dataId, parser);
+    }
+
+    /**
+     *
+     * @param properties properties for construct {@link ConfigService} using {@link NacosFactory#createConfigService(Properties)}
+     * @param groupId    group ID, cannot be empty
+     * @param dataId     data ID, cannot be empty
+     * @param parser     customized data parser, cannot be empty
+     */
+    public NacosDataSource(final Properties properties, final String groupId, final String dataId,
+                           Converter<String, T> parser) {
         super(parser);
-        if (StringUtil.isBlank(serverAddr) || StringUtil.isBlank(groupId) || StringUtil.isBlank(dataId)) {
-            throw new IllegalArgumentException(String.format("Bad argument: serverAddr=[%s], groupId=[%s], dataId=[%s]",
-                serverAddr, groupId, dataId));
+        if (StringUtil.isBlank(groupId) || StringUtil.isBlank(dataId)) {
+            throw new IllegalArgumentException(String.format("Bad argument: groupId=[%s], dataId=[%s]",
+                groupId, dataId));
         }
+        AssertUtil.notNull(properties, "Nacos properties must not be null, you could put some keys from PropertyKeyConst");
         this.groupId = groupId;
         this.dataId = dataId;
+        this.properties = properties;
         this.configListener = new Listener() {
             @Override
             public Executor getExecutor() {
@@ -81,14 +99,14 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
 
             @Override
             public void receiveConfigInfo(final String configInfo) {
-                RecordLog.info(String.format("[NacosDataSource] New property value received for (%s, %s, %s): %s",
-                    serverAddr, dataId, groupId, configInfo));
+                RecordLog.info(String.format("[NacosDataSource] New property value received for (properties: %s) (dataId: %s, groupId: %s): %s",
+                    properties, dataId, groupId, configInfo));
                 T newValue = NacosDataSource.this.parser.convert(configInfo);
                 // Update the new value to the property.
                 getProperty().updateValue(newValue);
             }
         };
-        initNacosListener(serverAddr);
+        initNacosListener();
         loadInitialConfig();
     }
 
@@ -104,9 +122,9 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
         }
     }
 
-    private void initNacosListener(String serverAddr) {
+    private void initNacosListener() {
         try {
-            this.configService = NacosFactory.createConfigService(serverAddr);
+            this.configService = NacosFactory.createConfigService(this.properties);
             // Add config listener.
             configService.addListener(dataId, groupId, configListener);
         } catch (Exception e) {
@@ -129,5 +147,11 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
             configService.removeListener(dataId, groupId, configListener);
         }
         pool.shutdownNow();
+    }
+
+    private static Properties buildProperties(String serverAddr) {
+        Properties properties = new Properties();
+        properties.setProperty(PropertyKeyConst.SERVER_ADDR, serverAddr);
+        return properties;
     }
 }
