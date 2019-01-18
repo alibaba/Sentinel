@@ -7,3 +7,4 @@ com.alibaba.csp.sentinel.cluster.server.command.handler.ModifyServerNamespaceSet
 com.alibaba.csp.sentinel.cluster.server.command.handler.ModifyClusterFlowRulesCommandHandler
 com.alibaba.csp.sentinel.cluster.server.command.handler.ModifyClusterParamFlowRulesCommandHandler
 com.alibaba.csp.sentinel.cluster.server.command.handler.FetchClusterServerInfoCommandHandler
+com.alibaba.csp.sentinel.cluster.server.command.handler.FetchClusterMetricCommandHandler

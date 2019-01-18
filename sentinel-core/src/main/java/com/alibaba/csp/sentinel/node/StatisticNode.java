@@ -227,30 +227,30 @@ public class StatisticNode implements Node {
     }
 
     @Override
-    public void addPassRequest() {
-        rollingCounterInSecond.addPass();
-        rollingCounterInMinute.addPass();
+    public void addPassRequest(int count) {
+        rollingCounterInSecond.addPass(count);
+        rollingCounterInMinute.addPass(count);
     }
 
     @Override
-    public void rt(long rt) {
-        rollingCounterInSecond.addSuccess();
+    public void addRtAndSuccess(long rt, int successCount) {
+        rollingCounterInSecond.addSuccess(successCount);
         rollingCounterInSecond.addRT(rt);
 
-        rollingCounterInMinute.addSuccess();
+        rollingCounterInMinute.addSuccess(successCount);
         rollingCounterInMinute.addRT(rt);
     }
 
     @Override
-    public void increaseBlockQps() {
-        rollingCounterInSecond.addBlock();
-        rollingCounterInMinute.addBlock();
+    public void increaseBlockQps(int count) {
+        rollingCounterInSecond.addBlock(count);
+        rollingCounterInMinute.addBlock(count);
     }
 
     @Override
-    public void increaseExceptionQps() {
-        rollingCounterInSecond.addException();
-        rollingCounterInMinute.addException();
+    public void increaseExceptionQps(int count) {
+        rollingCounterInSecond.addException(count);
+        rollingCounterInMinute.addException(count);
 
     }
 

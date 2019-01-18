@@ -46,4 +46,11 @@ public interface ClusterTokenClient extends TokenService {
      * @throws Exception some error occurs
      */
     void stop() throws Exception;
+
+    /**
+     * Get state of the cluster token client.
+     *
+     * @return state of the cluster token client
+     */
+    int getState();
 }
