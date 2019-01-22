@@ -8,24 +8,17 @@
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![Gitter](https://badges.gitter.im/alibaba/Sentinel.svg)](https://gitter.im/alibaba/Sentinel)
 
-## What Does It Do?
+## Introduction
 
 As distributed systems become increasingly popular, the reliability between services is becoming more important than ever before.
 Sentinel takes "flow" as breakthrough point, and works on multiple fields including **flow control**, **circuit breaking** and **system adaptive protection**, to guarantee service reliability.
 
 Sentinel has the following features:
 
-- **Rich applicable scenarios**:
-Sentinel has been wildly used in Alibaba, and has covered almost all the core-scenarios in Double-11 (11.11) Shopping Festivals in the past 10 years, such as “Second Kill” which needs to limit burst flow traffic to meet the system capacity, message peak clipping and valley fills, circuit breaking for unreliable downstream services, cluster flow control, etc.
-
-- **Real-time monitoring**:
-Sentinel also provides real-time monitoring ability. You can see the runtime information of a single machine in real-time, and the aggregated runtime info of a cluster with less than 500 nodes.
-
-- **Widespread open-source ecosystem**:
-Sentinel provides out-of-box integrations with commonly-used frameworks and libraries such as Spring Cloud, Dubbo and gRPC. You can easily use Sentinel by simply add the adapter dependency to your services.
-
-- **Various SPI extensions**:
-Sentinel provides easy-to-use SPI extension interfaces that allow you to quickly customize your logic, for example, custom rule management, adapting data sources, and so on.
+- **Rich applicable scenarios**: Sentinel has been wildly used in Alibaba, and has covered almost all the core-scenarios in Double-11 (11.11) Shopping Festivals in the past 10 years, such as “Second Kill” which needs to limit burst flow traffic to meet the system capacity, message peak clipping and valley fills, circuit breaking for unreliable downstream services, cluster flow control, etc.
+- **Real-time monitoring**: Sentinel also provides real-time monitoring ability. You can see the runtime information of a single machine in real-time, and the aggregated runtime info of a cluster with less than 500 nodes.
+- **Widespread open-source ecosystem**: Sentinel provides out-of-box integrations with commonly-used frameworks and libraries such as Spring Cloud, Dubbo and gRPC. You can easily use Sentinel by simply add the adapter dependency to your services.
+- **Various SPI extensions**: Sentinel provides easy-to-use SPI extension interfaces that allow you to quickly customize your logic, for example, custom rule management, adapting data sources, and so on.
 
 ## Documentation
 
@@ -33,7 +26,8 @@ See the [中文文档](https://github.com/alibaba/Sentinel/wiki/%E4%BB%8B%E7%BB%
 
 See the [Wiki](https://github.com/alibaba/Sentinel/wiki) for full documentation, examples, blog posts, operational details and other information.
 
-**If you are using Sentinel, please [leave a comment here](https://github.com/alibaba/Sentinel/issues/18) to tell us your scenario to make Sentinel better :-)**
+If you are using Sentinel, please [**leave a comment here**](https://github.com/alibaba/Sentinel/issues/18) to tell us your scenario to make Sentinel better.
+It's also encouraged to add the link of your blog post, tutorial, demo or customized components to [**Awesome Sentinel**](./doc/awesome-sentinel.md).
 
 ## Quick Start
 
@@ -62,9 +56,9 @@ Wrap code snippet via Sentinel API: `SphU.entry("resourceName")` and `entry.exit
 ```java
 Entry entry = null;
 
-try {   
+try {
   entry = SphU.entry("HelloWorld");
-  
+
   // BIZ logic being protected
   System.out.println("hello world");
 } catch (BlockException e) {
@@ -81,7 +75,8 @@ So far the code modification is done. We also provide [annotation support module
 
 ### 3. Define Rules
 
-If we want to limit the access times of the resource, we can define rules. The following code defines a rule that limits access to the reource to 20 times per second at the maximum. 
+If we want to limit the access times of the resource, we can **set rules to the resource**.
+The following code defines a rule that limits access to the resource to 20 times per second at the maximum.
 
 ```java
 List<FlowRule> rules = new ArrayList<>();
@@ -111,6 +106,7 @@ After running the demo for a while, you can see the following records in `~/logs
 
 p stands for incoming request, block for blocked by rules, success for success handled by Sentinel, e for exception count, rt for average response time (ms)
 ```
+
 This shows that the demo can print "hello world" 20 times per second.
 
 More examples and information can be found in the [How To Use](https://github.com/alibaba/Sentinel/wiki/How-to-Use) section.
@@ -138,6 +134,8 @@ Contact us: sentinel@linux.alibaba.com
 ## Contributing
 
 Contributions are always welcomed! Please see [CONTRIBUTING](./CONTRIBUTING.md) for detailed guidelines.
+
+You can start with the issues labeled with [`good first issue`](https://github.com/alibaba/Sentinel/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
 
 ## Credits
 

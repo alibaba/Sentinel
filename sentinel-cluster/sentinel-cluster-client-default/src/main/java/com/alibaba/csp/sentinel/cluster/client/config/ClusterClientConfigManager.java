@@ -37,23 +37,54 @@ public final class ClusterClientConfigManager {
      */
     private static volatile String serverHost = null;
     private static volatile int serverPort = ClusterConstants.DEFAULT_CLUSTER_SERVER_PORT;
-    private static volatile int requestTimeout = ClusterConstants.DEFAULT_REQUEST_TIMEOUT;
 
-    private static final PropertyListener<ClusterClientConfig> PROPERTY_LISTENER = new ClientConfigPropertyListener();
-    private static SentinelProperty<ClusterClientConfig> currentProperty = new DynamicSentinelProperty<>();
+    private static volatile int requestTimeout = ClusterConstants.DEFAULT_REQUEST_TIMEOUT;
+    private static volatile int connectTimeout = ClusterConstants.DEFAULT_CONNECT_TIMEOUT_MILLIS;
+
+    private static final PropertyListener<ClusterClientConfig> CONFIG_PROPERTY_LISTENER
+        = new ClientConfigPropertyListener();
+    private static final PropertyListener<ClusterClientAssignConfig> ASSIGN_PROPERTY_LISTENER
+        = new ClientAssignPropertyListener();
+
+    private static SentinelProperty<ClusterClientConfig> clientConfigProperty = new DynamicSentinelProperty<>();
+    private static SentinelProperty<ClusterClientAssignConfig> clientAssignProperty = new DynamicSentinelProperty<>();
 
     private static final List<ServerChangeObserver> SERVER_CHANGE_OBSERVERS = new ArrayList<>();
 
     static {
-        currentProperty.addListener(PROPERTY_LISTENER);
+        bindPropertyListener();
     }
 
-    public static void register2Property(SentinelProperty<ClusterClientConfig> property) {
-        synchronized (PROPERTY_LISTENER) {
-            RecordLog.info("[ClusterClientConfigManager] Registering new property to cluster client config manager");
-            currentProperty.removeListener(PROPERTY_LISTENER);
-            property.addListener(PROPERTY_LISTENER);
-            currentProperty = property;
+    private static void bindPropertyListener() {
+        removePropertyListener();
+        clientAssignProperty.addListener(ASSIGN_PROPERTY_LISTENER);
+        clientConfigProperty.addListener(CONFIG_PROPERTY_LISTENER);
+    }
+
+    private static void removePropertyListener() {
+        clientAssignProperty.removeListener(ASSIGN_PROPERTY_LISTENER);
+        clientConfigProperty.removeListener(CONFIG_PROPERTY_LISTENER);
+    }
+
+    public static void registerServerAssignProperty(SentinelProperty<ClusterClientAssignConfig> property) {
+        AssertUtil.notNull(property, "property cannot be null");
+        synchronized (ASSIGN_PROPERTY_LISTENER) {
+            RecordLog.info("[ClusterClientConfigManager] Registering new server assignment property to cluster "
+                + "client config manager");
+            clientAssignProperty.removeListener(ASSIGN_PROPERTY_LISTENER);
+            property.addListener(ASSIGN_PROPERTY_LISTENER);
+            clientAssignProperty = property;
+        }
+    }
+
+    public static void registerClientConfigProperty(SentinelProperty<ClusterClientConfig> property) {
+        AssertUtil.notNull(property, "property cannot be null");
+        synchronized (CONFIG_PROPERTY_LISTENER) {
+            RecordLog.info("[ClusterClientConfigManager] Registering new global client config property to "
+                + "cluster client config manager");
+            clientConfigProperty.removeListener(CONFIG_PROPERTY_LISTENER);
+            property.addListener(CONFIG_PROPERTY_LISTENER);
+            clientConfigProperty = property;
         }
     }
 
@@ -68,60 +99,99 @@ public final class ClusterClientConfigManager {
      * @param config new config to apply
      */
     public static void applyNewConfig(ClusterClientConfig config) {
-        currentProperty.updateValue(config);
+        clientConfigProperty.updateValue(config);
+    }
+
+    public static void applyNewAssignConfig(ClusterClientAssignConfig clusterClientAssignConfig) {
+        clientAssignProperty.updateValue(clusterClientAssignConfig);
+    }
+
+    private static class ClientAssignPropertyListener implements PropertyListener<ClusterClientAssignConfig> {
+        @Override
+        public void configLoad(ClusterClientAssignConfig config) {
+            if (config == null) {
+                RecordLog.warn("[ClusterClientConfigManager] Empty initial client assignment config");
+                return;
+            }
+            applyConfig(config);
+        }
+
+        @Override
+        public void configUpdate(ClusterClientAssignConfig config) {
+            applyConfig(config);
+        }
+
+        private synchronized void applyConfig(ClusterClientAssignConfig config) {
+            if (!isValidAssignConfig(config)) {
+                RecordLog.warn(
+                    "[ClusterClientConfigManager] Invalid cluster client assign config, ignoring: " + config);
+                return;
+            }
+            if (serverPort == config.getServerPort() && config.getServerHost().equals(serverHost)) {
+                return;
+            }
+
+            RecordLog.info("[ClusterClientConfigManager] Assign to new target token server: " + config);
+
+            updateServerAssignment(config);
+        }
     }
 
     private static class ClientConfigPropertyListener implements PropertyListener<ClusterClientConfig> {
+
+        @Override
+        public void configLoad(ClusterClientConfig config) {
+            if (config == null) {
+                RecordLog.warn("[ClusterClientConfigManager] Empty initial client config");
+                return;
+            }
+            applyConfig(config);
+        }
 
         @Override
         public void configUpdate(ClusterClientConfig config) {
             applyConfig(config);
         }
 
-        @Override
-        public void configLoad(ClusterClientConfig config) {
-            if (config == null) {
-                RecordLog.warn("[ClusterClientConfigManager] Empty initial config");
-                return;
-            }
-            applyConfig(config);
-        }
-
         private synchronized void applyConfig(ClusterClientConfig config) {
-            if (!isValidConfig(config)) {
+            if (!isValidClientConfig(config)) {
                 RecordLog.warn(
                     "[ClusterClientConfigManager] Invalid cluster client config, ignoring: " + config);
                 return;
             }
-            RecordLog.info("[ClusterClientConfigManager] Updating new config: " + config);
-            if (config.getRequestTimeout() != requestTimeout) {
-                requestTimeout = config.getRequestTimeout();
-            }
-            updateServer(config);
+
+            RecordLog.info("[ClusterClientConfigManager] Updating to new client config: " + config);
+
+            updateClientConfigChange(config);
         }
     }
 
-    public static boolean isValidConfig(ClusterClientConfig config) {
-        return config != null && StringUtil.isNotBlank(config.getServerHost())
-            && config.getServerPort() > 0
-            && config.getServerPort() <= 65535
-            && config.getRequestTimeout() > 0;
+    private static void updateClientConfigChange(ClusterClientConfig config) {
+        if (config.getRequestTimeout() != requestTimeout) {
+            requestTimeout = config.getRequestTimeout();
+        }
     }
 
-    public static void updateServer(ClusterClientConfig config) {
+    private static void updateServerAssignment(/*@Valid*/ ClusterClientAssignConfig config) {
         String host = config.getServerHost();
         int port = config.getServerPort();
-        AssertUtil.assertNotBlank(host, "token server host cannot be empty");
-        AssertUtil.isTrue(port > 0, "token server port should be valid (positive)");
-        if (serverPort == port && host.equals(serverHost)) {
-            return;
-        }
+
         for (ServerChangeObserver observer : SERVER_CHANGE_OBSERVERS) {
             observer.onRemoteServerChange(config);
         }
 
         serverHost = host;
         serverPort = port;
+    }
+
+    public static boolean isValidAssignConfig(ClusterClientAssignConfig config) {
+        return config != null && StringUtil.isNotBlank(config.getServerHost())
+            && config.getServerPort() > 0
+            && config.getServerPort() <= 65535;
+    }
+
+    public static boolean isValidClientConfig(ClusterClientConfig config) {
+        return config != null && config.getRequestTimeout() > 0;
     }
 
     public static String getServerHost() {
@@ -134,6 +204,10 @@ public final class ClusterClientConfigManager {
 
     public static int getRequestTimeout() {
         return requestTimeout;
+    }
+
+    public static int getConnectTimeout() {
+        return connectTimeout;
     }
 
     private ClusterClientConfigManager() {}

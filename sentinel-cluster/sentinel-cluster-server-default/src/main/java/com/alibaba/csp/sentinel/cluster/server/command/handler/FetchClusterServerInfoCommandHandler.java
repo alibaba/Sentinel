@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.cluster.server.command.handler;
 
 import java.util.Set;
 
+import com.alibaba.csp.sentinel.cluster.flow.statistic.limit.GlobalRequestLimiter;
 import com.alibaba.csp.sentinel.cluster.server.config.ClusterServerConfigManager;
 import com.alibaba.csp.sentinel.cluster.server.config.ServerFlowConfig;
 import com.alibaba.csp.sentinel.cluster.server.config.ServerTransportConfig;
@@ -55,15 +56,32 @@ public class FetchClusterServerInfoCommandHandler implements CommandHandler<Stri
             .setExceedCount(ClusterServerConfigManager.getExceedCount())
             .setMaxOccupyRatio(ClusterServerConfigManager.getMaxOccupyRatio())
             .setIntervalMs(ClusterServerConfigManager.getIntervalMs())
-            .setSampleCount(ClusterServerConfigManager.getSampleCount());
+            .setSampleCount(ClusterServerConfigManager.getSampleCount())
+            .setMaxAllowedQps(ClusterServerConfigManager.getMaxAllowedQps());
+
+        JSONArray requestLimitData = buildRequestLimitData(namespaceSet);
 
         info.fluentPut("port", ClusterServerConfigManager.getPort())
             .fluentPut("connection", connectionGroups)
+            .fluentPut("requestLimitData", requestLimitData)
             .fluentPut("transport", transportConfig)
             .fluentPut("flow", flowConfig)
-            .fluentPut("namespaceSet", ClusterServerConfigManager.getNamespaceSet());
+            .fluentPut("namespaceSet", namespaceSet)
+            .fluentPut("embedded", ClusterServerConfigManager.isEmbedded());
 
         return CommandResponse.ofSuccess(info.toJSONString());
+    }
+
+    private JSONArray buildRequestLimitData(Set<String> namespaceSet) {
+        JSONArray array = new JSONArray();
+        for (String namespace : namespaceSet) {
+            array.add(new JSONObject()
+                .fluentPut("namespace", namespace)
+                .fluentPut("currentQps", GlobalRequestLimiter.getCurrentQps(namespace))
+                .fluentPut("maxAllowedQps", GlobalRequestLimiter.getMaxAllowedQps(namespace))
+            );
+        }
+        return array;
     }
 }
 

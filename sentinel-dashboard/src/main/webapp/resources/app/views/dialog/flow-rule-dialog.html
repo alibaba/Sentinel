@@ -15,7 +15,7 @@
           </div>
 
           <div class="form-group">
-            <label class="col-sm-2 control-label" title="流控针对应用，即流量入口的调用来源（origin）">流控应用</label>
+            <label class="col-sm-2 control-label" data-toggle="tooltip" title="流控针对应用，即流量入口的调用来源（origin）">来源应用</label>
             <div class="col-sm-9">
               <input type="text" class="form-control highlight-border" ng-model='currentRule.limitApp' placeholder='指调用方，"default"表示所有应用。'
               />
@@ -53,16 +53,28 @@
           <div class="form-group">
             <label class="col-sm-2 control-label">是否集群</label>
             <div class="col-sm-2">
+              <label class="checkbox-inline">
                 <input type="checkbox" name="clusterMode" ng-model="currentRule.clusterMode">
+              </label>
             </div>
             <div ng-if="currentRule.clusterMode">
               <label class="col-sm-3 control-label">集群阈值模式</label>
               <div class="col-sm-4">
                 <div class="form-control highlight-border" align="center">
                   <input type="radio" name="clusterThresholdType" value="0" ng-model='currentRule.clusterConfig.thresholdType' />&nbsp;单机均摊&nbsp;&nbsp;
-                  <input type="radio" name="clusterThresholdType" value="1" ng-model='currentRule.clusterConfig.thresholdType' />&nbsp;Global
+                  <input type="radio" name="clusterThresholdType" value="1" ng-model='currentRule.clusterConfig.thresholdType' />&nbsp;总体阈值
                 </div>
               </div>
+            </div>
+          </div>
+
+          <div class="form-group" ng-if="currentRule.clusterMode">
+            <label class="col-sm-2 control-label">失败退化</label>
+            <div class="col-sm-8">
+              <label class="checkbox-inline">
+                <input type="checkbox" name="clusterMode" ng-model="currentRule.clusterConfig.fallbackToLocalWhenFail">
+              </label>
+              <i class="glyphicon glyphicon-info-sign"></i>&nbsp;如果 Token Server 不可用是否退化到单机限流
             </div>
           </div>
 

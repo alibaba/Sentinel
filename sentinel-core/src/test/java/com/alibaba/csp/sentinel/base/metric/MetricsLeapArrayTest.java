@@ -79,8 +79,8 @@ public class MetricsLeapArrayTest {
         MetricBucket currentWindow = window.value();
         assertNotNull(currentWindow);
 
-        currentWindow.addPass();
-        currentWindow.addBlock();
+        currentWindow.addPass(1);
+        currentWindow.addBlock(1);
         assertEquals(1L, currentWindow.pass());
         assertEquals(1L, currentWindow.block());
 
@@ -90,7 +90,7 @@ public class MetricsLeapArrayTest {
         assertEquals(previousWindowStart, window.windowStart());
 
         MetricBucket middleWindow = window.value();
-        middleWindow.addPass();
+        middleWindow.addPass(1);
         assertSame(currentWindow, middleWindow);
         assertEquals(2L, middleWindow.pass());
         assertEquals(1L, middleWindow.block());
@@ -114,7 +114,7 @@ public class MetricsLeapArrayTest {
         List<WindowWrap<MetricBucket>> firstIterWindowList = new ArrayList<WindowWrap<MetricBucket>>(len);
         for (int i = 0; i < len; i++) {
             WindowWrap<MetricBucket> w = leapArray.currentWindow(firstTime + windowLengthInMs * i);
-            w.value().addPass();
+            w.value().addPass(1);
             firstIterWindowList.add(i, w);
         }
 
@@ -133,7 +133,7 @@ public class MetricsLeapArrayTest {
         Runnable task = new Runnable() {
             @Override
             public void run() {
-                leapArray.currentWindow(time).value().addPass();
+                leapArray.currentWindow(time).value().addPass(1);
                 latch.countDown();
             }
         };
@@ -183,7 +183,7 @@ public class MetricsLeapArrayTest {
         Thread.sleep(windowLengthInMs + intervalInMs);
 
         // This will replace the deprecated bucket, so all deprecated buckets will be reset.
-        leapArray.currentWindow(time + windowLengthInMs + intervalInMs).value().addPass();
+        leapArray.currentWindow(time + windowLengthInMs + intervalInMs).value().addPass(1);
 
         assertEquals(1, leapArray.list().size());
     }
@@ -212,7 +212,7 @@ public class MetricsLeapArrayTest {
 
         // This won't hit deprecated bucket, so no deprecated buckets will be reset.
         // But deprecated buckets can be filtered when collecting list.
-        leapArray.currentWindow(TimeUtil.currentTimeMillis()).value().addPass();
+        leapArray.currentWindow(TimeUtil.currentTimeMillis()).value().addPass(1);
 
         assertEquals(1, leapArray.list().size());
     }

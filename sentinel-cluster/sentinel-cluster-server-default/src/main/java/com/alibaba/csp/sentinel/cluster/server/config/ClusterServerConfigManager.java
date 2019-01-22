@@ -23,10 +23,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.alibaba.csp.sentinel.cluster.ClusterConstants;
 import com.alibaba.csp.sentinel.cluster.flow.rule.ClusterFlowRuleManager;
 import com.alibaba.csp.sentinel.cluster.flow.rule.ClusterParamFlowRuleManager;
 import com.alibaba.csp.sentinel.cluster.flow.statistic.ClusterMetricStatistics;
 import com.alibaba.csp.sentinel.cluster.flow.statistic.ClusterParamMetricStatistics;
+import com.alibaba.csp.sentinel.cluster.flow.statistic.limit.GlobalRequestLimiter;
+import com.alibaba.csp.sentinel.cluster.registry.ConfigSupplierRegistry;
 import com.alibaba.csp.sentinel.cluster.server.ServerConstants;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
@@ -40,10 +43,12 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
  */
 public final class ClusterServerConfigManager {
 
+    private static boolean embedded = false;
+
     /**
      * Server global transport and scope config.
      */
-    private static volatile int port = ServerTransportConfig.DEFAULT_PORT;
+    private static volatile int port = ClusterConstants.DEFAULT_CLUSTER_SERVER_PORT;
     private static volatile int idleSeconds = ServerTransportConfig.DEFAULT_IDLE_SECONDS;
     private static volatile Set<String> namespaceSet = Collections.singleton(ServerConstants.DEFAULT_NAMESPACE);
 
@@ -54,6 +59,7 @@ public final class ClusterServerConfigManager {
     private static volatile double maxOccupyRatio = ServerFlowConfig.DEFAULT_MAX_OCCUPY_RATIO;
     private static volatile int intervalMs = ServerFlowConfig.DEFAULT_INTERVAL_MS;
     private static volatile int sampleCount = ServerFlowConfig.DEFAULT_SAMPLE_COUNT;
+    private static volatile double maxAllowedQps = ServerFlowConfig.DEFAULT_MAX_ALLOWED_QPS;
 
     /**
      * Namespace-specific flow config for token server.
@@ -170,6 +176,11 @@ public final class ClusterServerConfigManager {
 
         newSet = new HashSet<>(newSet);
         newSet.add(ServerConstants.DEFAULT_NAMESPACE);
+        if (embedded) {
+            // In embedded server mode, the server itself is also a part of service,
+            // so it should be added to namespace set.
+            newSet.add(ConfigSupplierRegistry.getNamespaceSupplier().get());
+        }
 
         Set<String> oldSet = ClusterServerConfigManager.namespaceSet;
         if (oldSet != null && !oldSet.isEmpty()) {
@@ -185,6 +196,7 @@ public final class ClusterServerConfigManager {
         for (String ns : newSet) {
             ClusterFlowRuleManager.registerPropertyIfAbsent(ns);
             ClusterParamFlowRuleManager.registerPropertyIfAbsent(ns);
+            GlobalRequestLimiter.initIfAbsent(ns);
         }
     }
 
@@ -256,6 +268,10 @@ public final class ClusterServerConfigManager {
             if (config.getMaxOccupyRatio() != maxOccupyRatio) {
                 maxOccupyRatio = config.getMaxOccupyRatio();
             }
+            if (config.getMaxAllowedQps() != maxAllowedQps) {
+                maxAllowedQps = config.getMaxAllowedQps();
+                GlobalRequestLimiter.applyMaxQpsChange(maxAllowedQps);
+            }
             int newIntervalMs = config.getIntervalMs();
             int newSampleCount = config.getSampleCount();
             if (newIntervalMs != intervalMs || newSampleCount != sampleCount) {
@@ -277,7 +293,8 @@ public final class ClusterServerConfigManager {
     }
 
     public static boolean isValidFlowConfig(ServerFlowConfig config) {
-        return config != null && config.getMaxOccupyRatio() >= 0 && config.getExceedCount() >= 0;
+        return config != null && config.getMaxOccupyRatio() >= 0 && config.getExceedCount() >= 0
+            && config.getMaxAllowedQps() >= 0;
     }
 
     public static double getExceedCount(String namespace) {
@@ -322,6 +339,19 @@ public final class ClusterServerConfigManager {
         return sampleCount;
     }
 
+    public static double getMaxAllowedQps() {
+        return maxAllowedQps;
+    }
+
+    public static double getMaxAllowedQps(String namespace) {
+        AssertUtil.notEmpty(namespace, "namespace cannot be empty");
+        ServerFlowConfig config = NAMESPACE_CONF.get(namespace);
+        if (config != null) {
+            return config.getMaxAllowedQps();
+        }
+        return maxAllowedQps;
+    }
+
     public static double getExceedCount() {
         return exceedCount;
     }
@@ -352,6 +382,18 @@ public final class ClusterServerConfigManager {
 
     public static void setNamespaceSet(Set<String> namespaceSet) {
         applyNamespaceSetChange(namespaceSet);
+    }
+
+    public static boolean isEmbedded() {
+        return embedded;
+    }
+
+    public static void setEmbedded(boolean embedded) {
+        ClusterServerConfigManager.embedded = embedded;
+    }
+
+    public static void setMaxAllowedQps(double maxAllowedQps) {
+        ClusterServerConfigManager.maxAllowedQps = maxAllowedQps;
     }
 
     private ClusterServerConfigManager() {}
