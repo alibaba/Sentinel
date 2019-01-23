@@ -18,7 +18,7 @@ package com.alibaba.csp.sentinel.demo.cluster;
 import java.util.Collections;
 
 import com.alibaba.csp.sentinel.cluster.server.ClusterTokenServer;
-import com.alibaba.csp.sentinel.cluster.server.SentinelDefaultTokenServer;
+import com.alibaba.csp.sentinel.cluster.server.DefaultClusterTokenServer;
 import com.alibaba.csp.sentinel.cluster.server.config.ClusterServerConfigManager;
 import com.alibaba.csp.sentinel.cluster.server.config.ServerTransportConfig;
 
@@ -34,7 +34,7 @@ public class ClusterServerDemo {
 
     public static void main(String[] args) throws Exception {
         // Not embedded mode by default (alone mode).
-        ClusterTokenServer tokenServer = new SentinelDefaultTokenServer();
+        ClusterTokenServer tokenServer = new DefaultClusterTokenServer();
 
         // A sample for manually load config for cluster server.
         // It's recommended to use dynamic data source to cluster manage config and rules.

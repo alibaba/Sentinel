@@ -15,25 +15,15 @@
  */
 package com.alibaba.csp.sentinel.cluster.server;
 
+import com.alibaba.csp.sentinel.cluster.ClusterToken;
+
 /**
  * Token server interface for distributed flow control.
  *
  * @author Eric Zhao
+ * @author houyi
  * @since 1.4.0
  */
-public interface ClusterTokenServer {
+public interface ClusterTokenServer extends ClusterToken {
 
-    /**
-     * Start the Sentinel cluster server.
-     *
-     * @throws Exception if any error occurs
-     */
-    void start() throws Exception;
-
-    /**
-     * Stop the Sentinel cluster server.
-     *
-     * @throws Exception if any error occurs
-     */
-    void stop() throws Exception;
 }

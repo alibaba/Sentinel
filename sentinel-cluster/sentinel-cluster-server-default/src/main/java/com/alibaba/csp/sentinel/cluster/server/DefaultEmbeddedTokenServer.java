@@ -22,7 +22,7 @@ import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
 import com.alibaba.csp.sentinel.cluster.TokenService;
 
 /**
- * Default embedded token server in Sentinel which wraps the {@link SentinelDefaultTokenServer}
+ * Default embedded token server in Sentinel which wraps the {@link DefaultClusterTokenServer}
  * and the {@link TokenService} from SPI provider.
  *
  * @author Eric Zhao
@@ -31,7 +31,7 @@ import com.alibaba.csp.sentinel.cluster.TokenService;
 public class DefaultEmbeddedTokenServer implements EmbeddedClusterTokenServer {
 
     private final TokenService tokenService = TokenServiceProvider.getService();
-    private final ClusterTokenServer server = new SentinelDefaultTokenServer(true);
+    private final ClusterTokenServer server = new DefaultClusterTokenServer(true);
 
     @Override
     public void start() throws Exception {

@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.cluster.client;
 
+import com.alibaba.csp.sentinel.cluster.ClusterToken;
 import com.alibaba.csp.sentinel.cluster.TokenServerDescriptor;
 import com.alibaba.csp.sentinel.cluster.TokenService;
 
@@ -22,9 +23,10 @@ import com.alibaba.csp.sentinel.cluster.TokenService;
  * Token client interface for distributed flow control.
  *
  * @author Eric Zhao
+ * @author houyi
  * @since 1.4.0
  */
-public interface ClusterTokenClient extends TokenService {
+public interface ClusterTokenClient extends ClusterToken, TokenService {
 
     /**
      * Get descriptor of current token server.
@@ -32,20 +34,6 @@ public interface ClusterTokenClient extends TokenService {
      * @return current token server if connected, otherwise null
      */
     TokenServerDescriptor currentServer();
-
-    /**
-     * Start the token client.
-     *
-     * @throws Exception some error occurs
-     */
-    void start() throws Exception;
-
-    /**
-     * Stop the token client.
-     *
-     * @throws Exception some error occurs
-     */
-    void stop() throws Exception;
 
     /**
      * Get state of the cluster token client.

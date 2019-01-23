@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.alibaba.csp.sentinel.cluster.ClusterTransportServer;
 import com.alibaba.csp.sentinel.cluster.server.codec.netty.NettyRequestDecoder;
 import com.alibaba.csp.sentinel.cluster.server.codec.netty.NettyResponseEncoder;
 import com.alibaba.csp.sentinel.cluster.server.connection.Connection;
@@ -46,9 +47,10 @@ import static com.alibaba.csp.sentinel.cluster.server.ServerConstants.*;
 
 /**
  * @author Eric Zhao
+ * @author houyi
  * @since 1.4.0
  */
-public class NettyTransportServer implements ClusterTokenServer {
+public class NettyTransportServer implements ClusterTransportServer {
 
     private static final int DEFAULT_EVENT_LOOP_THREADS = Math.max(1,
         SystemPropertyUtil.getInt("io.netty.eventLoopThreads", Runtime.getRuntime().availableProcessors() * 2));

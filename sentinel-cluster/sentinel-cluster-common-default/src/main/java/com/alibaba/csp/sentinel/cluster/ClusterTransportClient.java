@@ -22,23 +22,10 @@ import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
  * Synchronous transport client for distributed flow control.
  *
  * @author Eric Zhao
+ * @author houyi
  * @since 1.4.0
  */
-public interface ClusterTransportClient {
-
-    /**
-     * Start the client.
-     *
-     * @throws Exception some error occurred (e.g. initialization failed)
-     */
-    void start() throws Exception;
-
-    /**
-     * Stop the client.
-     *
-     * @throws Exception some error occurred (e.g. shutdown failed)
-     */
-    void stop() throws Exception;
+public interface ClusterTransportClient extends ClusterTransport {
 
     /**
      * Send request to remote server and get response.

@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
+import com.alibaba.csp.sentinel.cluster.ClusterTransportServer;
 import com.alibaba.csp.sentinel.cluster.registry.ConfigSupplierRegistry;
 import com.alibaba.csp.sentinel.cluster.server.config.ClusterServerConfigManager;
 import com.alibaba.csp.sentinel.cluster.server.config.ServerTransportConfig;
@@ -32,13 +33,14 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
  * @author Eric Zhao
+ * @author houyi
  * @since 1.4.0
  */
-public class SentinelDefaultTokenServer implements ClusterTokenServer {
+public class DefaultClusterTokenServer implements ClusterTokenServer {
 
     private final boolean embedded;
 
-    private ClusterTokenServer server;
+    private ClusterTransportServer transportServer;
     private int port;
     private final AtomicBoolean shouldStart = new AtomicBoolean(false);
 
@@ -46,11 +48,11 @@ public class SentinelDefaultTokenServer implements ClusterTokenServer {
         InitExecutor.doInit();
     }
 
-    public SentinelDefaultTokenServer() {
+    public DefaultClusterTokenServer() {
         this(false);
     }
 
-    public SentinelDefaultTokenServer(boolean embedded) {
+    public DefaultClusterTokenServer(boolean embedded) {
         this.embedded = embedded;
         ClusterServerConfigManager.addTransportConfigChangeObserver(new ServerTransportConfigObserver() {
             @Override
@@ -62,12 +64,12 @@ public class SentinelDefaultTokenServer implements ClusterTokenServer {
     }
 
     private void initNewServer() {
-        if (server != null) {
+        if (transportServer != null) {
             return;
         }
         int port = ClusterServerConfigManager.getPort();
         if (port > 0) {
-            this.server = new NettyTransportServer(port);
+            this.transportServer = new NettyTransportServer(port);
             this.port = port;
         }
     }
@@ -81,24 +83,24 @@ public class SentinelDefaultTokenServer implements ClusterTokenServer {
             return;
         }
         try {
-            if (server != null) {
+            if (transportServer != null) {
                 stopServer();
             }
-            this.server = new NettyTransportServer(newPort);
+            this.transportServer = new NettyTransportServer(newPort);
             this.port = newPort;
             startServerIfScheduled();
         } catch (Exception ex) {
-            RecordLog.warn("[SentinelDefaultTokenServer] Failed to apply modification to token server", ex);
+            RecordLog.warn("[DefaultClusterTokenServer] Failed to apply modification to token transportServer", ex);
         }
     }
 
     private void startServerIfScheduled() throws Exception {
         if (shouldStart.get()) {
-            if (server != null) {
-                server.start();
+            if (transportServer != null) {
+                transportServer.start();
                 ClusterStateManager.markToServer();
                 if (embedded) {
-                    RecordLog.info("[SentinelDefaultTokenServer] Running in embedded mode");
+                    RecordLog.info("[DefaultClusterTokenServer] Running in embedded mode");
                     handleEmbeddedStart();
                 }
             }
@@ -106,8 +108,8 @@ public class SentinelDefaultTokenServer implements ClusterTokenServer {
     }
 
     private void stopServer() throws Exception {
-        if (server != null) {
-            server.stop();
+        if (transportServer != null) {
+            transportServer.stop();
             if (embedded) {
                 handleEmbeddedStop();
             }
@@ -124,7 +126,7 @@ public class SentinelDefaultTokenServer implements ClusterTokenServer {
     private void handleEmbeddedStart() {
         String namespace = ConfigSupplierRegistry.getNamespaceSupplier().get();
         if (StringUtil.isNotEmpty(namespace)) {
-            // Mark server global mode as embedded.
+            // Mark transportServer global mode as embedded.
             ClusterServerConfigManager.setEmbedded(true);
             if (!ClusterServerConfigManager.getNamespaceSet().contains(namespace)) {
                 Set<String> namespaceSet = new HashSet<>(ClusterServerConfigManager.getNamespaceSet());
