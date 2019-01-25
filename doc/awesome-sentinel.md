@@ -40,3 +40,4 @@ You can also add to [sentinel-group/sentinel-awesome](https://github.com/sentine
 - [Sentinel 实战-限流](https://mp.weixin.qq.com/s/rjyU37Dm-sxNln7GUD8tOw) by [houyi](https://github.com/all4you)
 - [Sentinel 实战-控制台](https://mp.weixin.qq.com/s/23EDFHMXLwsDqw-4O5dR5A) by [houyi](https://github.com/all4you)
 - [Sentinel 实战-规则持久化](https://mp.weixin.qq.com/s/twMFiBfRawKLR-1-N-f1yw) by [houyi](https://github.com/all4you)
+- [Sentinel 系统中的扩展点](https://github.com/all4you/sentinel-tutorial/blob/master/sentinel-principle/sentinel-extension-points/sentinel-extension-points.md) by [houyi](https://github.com/all4you)
