@@ -44,18 +44,18 @@ public class EntranceNode extends DefaultNode {
 
     @Override
     public long avgRt() {
-        long rt = 0;
+        long total = 0;
         long totalQps = 0;
         for (Node node : getChildList()) {
-            rt += node.avgRt() * node.passQps();
+            total += node.avgRt() * node.passQps();
             totalQps += node.passQps();
         }
-        return rt / (totalQps == 0 ? 1 : totalQps);
+        return total / (totalQps == 0 ? 1 : totalQps);
     }
 
     @Override
     public long blockQps() {
-        int blockQps = 0;
+        long blockQps = 0;
         for (Node node : getChildList()) {
             blockQps += node.blockQps();
         }
@@ -82,7 +82,7 @@ public class EntranceNode extends DefaultNode {
 
     @Override
     public long totalQps() {
-        int r = 0;
+        long r = 0;
         for (Node node : getChildList()) {
             r += node.totalQps();
         }
@@ -91,7 +91,7 @@ public class EntranceNode extends DefaultNode {
 
     @Override
     public long successQps() {
-        int r = 0;
+        long r = 0;
         for (Node node : getChildList()) {
             r += node.successQps();
         }
@@ -100,7 +100,7 @@ public class EntranceNode extends DefaultNode {
 
     @Override
     public long passQps() {
-        int r = 0;
+        long r = 0;
         for (Node node : getChildList()) {
             r += node.passQps();
         }
