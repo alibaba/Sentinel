@@ -147,8 +147,7 @@ public class StatisticNode implements Node {
 
     @Override
     public long totalRequest() {
-        long totalRequest = rollingCounterInMinute.pass() + rollingCounterInMinute.block();
-        return totalRequest;
+        return rollingCounterInMinute.pass() + rollingCounterInMinute.block();
     }
 
     @Override

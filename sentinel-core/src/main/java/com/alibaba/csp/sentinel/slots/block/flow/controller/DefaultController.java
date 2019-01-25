@@ -42,18 +42,14 @@ public class DefaultController implements TrafficShapingController {
     @Override
     public boolean canPass(Node node, int acquireCount, boolean prioritized) {
         int curCount = avgUsedTokens(node);
-        if (curCount + acquireCount > count) {
-            return false;
-        }
-
-        return true;
+        return curCount + acquireCount <= count;
     }
 
     private int avgUsedTokens(Node node) {
         if (node == null) {
             return -1;
         }
-        return grade == RuleConstant.FLOW_GRADE_THREAD ? node.curThreadNum() : (int)node.passQps();
+        return grade == RuleConstant.FLOW_GRADE_THREAD ? node.curThreadNum() : (int) node.passQps();
     }
 
 }
