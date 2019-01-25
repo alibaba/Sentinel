@@ -56,11 +56,4 @@ public class DefaultController implements TrafficShapingController {
         return grade == RuleConstant.FLOW_GRADE_THREAD ? node.curThreadNum() : (int)node.passQps();
     }
 
-    private void sleep(int timeMillis) {
-        try {
-            Thread.sleep(timeMillis);
-        } catch (InterruptedException e) {
-            // Ignore.
-        }
-    }
 }
