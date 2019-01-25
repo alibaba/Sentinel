@@ -224,17 +224,22 @@ public final class ClusterStateManager {
         if (state == mode) {
             return true;
         }
-        switch (state) {
-            case CLUSTER_CLIENT:
-                return setToClient();
-            case CLUSTER_SERVER:
-                return setToServer();
-            case CLUSTER_NOT_STARTED:
-                setStop();
-                return true;
-            default:
-                RecordLog.warn("[ClusterStateManager] Ignoring unknown cluster state: " + state);
-                return false;
+        try {
+            switch (state) {
+                case CLUSTER_CLIENT:
+                    return setToClient();
+                case CLUSTER_SERVER:
+                    return setToServer();
+                case CLUSTER_NOT_STARTED:
+                    setStop();
+                    return true;
+                default:
+                    RecordLog.warn("[ClusterStateManager] Ignoring unknown cluster state: " + state);
+                    return false;
+            }
+        } catch (Throwable t) {
+            RecordLog.warn("[ClusterStateManager] Fatal error when applying state: " + state, t);
+            return false;
         }
     }
 
