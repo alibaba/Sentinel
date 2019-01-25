@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.annotation.aspectj;
 
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeException;
 import com.alibaba.csp.sentinel.util.MethodUtil;
@@ -23,8 +24,6 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -32,10 +31,10 @@ import java.util.Arrays;
 
 /**
  * Some common functions for Sentinel annotation aspect.
+ *
+ * @author Eric Zhao
  */
 public abstract class AbstractSentinelAspectSupport {
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     protected String getResourceName(String resourceName, Method method) {
         // If resource name is present in annotation, use this value.
@@ -154,7 +153,7 @@ public abstract class AbstractSentinelAspectSupport {
                 && returnType.isAssignableFrom(method.getReturnType())
                 && Arrays.equals(parameterTypes, method.getParameterTypes())) {
 
-                logger.info("Resolved method [{}] in class [{}]", name, clazz.getCanonicalName());
+                RecordLog.info("Resolved method [{0}] in class [{1}]", name, clazz.getCanonicalName());
                 return method;
             }
         }
@@ -164,7 +163,7 @@ public abstract class AbstractSentinelAspectSupport {
             return findMethod(mustStatic, superClass, name, returnType, parameterTypes);
         } else {
             String methodType = mustStatic ? " static" : "";
-            logger.error("Cannot find{} method [{}] in class [{}] with parameters {}",
+            RecordLog.warn("Cannot find{0} method [{1}] in class [{2}] with parameters {3}",
                 methodType, name, clazz.getCanonicalName(), Arrays.toString(parameterTypes));
             return null;
         }
