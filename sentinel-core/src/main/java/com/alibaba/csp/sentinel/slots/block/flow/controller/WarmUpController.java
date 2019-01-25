@@ -76,10 +76,6 @@ public class WarmUpController implements TrafficShapingController {
         construct(count, warmUpPeriodInSec, coldFactor);
     }
 
-    public WarmUpController(double count, int warmUpPeriodInSec) {
-        construct(count, warmUpPeriodInSec, 3);
-    }
-
     private void construct(double count, int warmUpPeriodInSec, int coldFactor) {
 
         if (coldFactor <= 1) {

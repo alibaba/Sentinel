@@ -25,8 +25,8 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
  */
 public class WarmUpRateLimiterController extends WarmUpController {
 
-    final int timeOutInMs;
-    final AtomicLong latestPassedTime = new AtomicLong(-1);
+    private final int timeOutInMs;
+    private final AtomicLong latestPassedTime = new AtomicLong(-1);
 
     /**
      * @param count
