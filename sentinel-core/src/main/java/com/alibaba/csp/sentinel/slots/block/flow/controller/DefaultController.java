@@ -51,9 +51,9 @@ public class DefaultController implements TrafficShapingController {
 
     private int avgUsedTokens(Node node) {
         if (node == null) {
-            return -1;
+            return RuleConstant.DEFAULT_AVG_USED_TOKENS;
         }
-        return grade == RuleConstant.FLOW_GRADE_THREAD ? node.curThreadNum() : (int)node.passQps();
+        return grade == RuleConstant.FLOW_GRADE_THREAD ? node.curThreadNum() : (int) node.passQps();
     }
 
     private void sleep(int timeMillis) {
