@@ -34,11 +34,6 @@ import com.alibaba.csp.sentinel.slots.block.flow.TrafficShapingController;
  *
  * That’s why we need “warm up”.
  *
- * Sentinel’s “warm up” implementation is based on Guava's algorithm. However,
- * unlike Guava's scenario, which is a “leaky bucket”, and is mainly used to
- * adjust the request interval, Sentinel is more focus on controlling the count
- * of incoming requests per second without calculating its interval.
- *
  * Sentinel's "warm-up" implementation is based on the guava-based algorithm.
  * However, Guava’s implementation focus on adjusting the request interval, in
  * other words, a Leaky bucket. Sentinel pays more attention to controlling the
