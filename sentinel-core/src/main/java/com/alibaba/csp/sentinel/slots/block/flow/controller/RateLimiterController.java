@@ -44,17 +44,12 @@ public class RateLimiterController implements TrafficShapingController {
 
     @Override
     public boolean canPass(Node node, int acquireCount, boolean prioritized) {
-        /*
-            1. Pass when acquire count is less or equal than 0
-            2. Reject when count is less or equal than 0.
-               Otherwise,the costTime will be max of long and waitTime will overflow in some cases.
-               This will lead to pass of following request.It's dangerous!!!
-         */
-
+        // Pass when acquire count is less or equal than 0.
         if (acquireCount <= 0) {
             return true;
         }
-
+        // Reject when count is less or equal than 0.
+        // Otherwise,the costTime will be max of long and waitTime will overflow in some cases.
         if (count <= 0) {
             return false;
         }
