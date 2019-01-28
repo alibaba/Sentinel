@@ -56,8 +56,10 @@ public class ConnectionGroup {
         } else {
             host = address;
         }
-        connectionSet.add(new ConnectionDescriptor().setAddress(address).setHost(host));
-        connectedCount.incrementAndGet();
+        boolean newAdded = connectionSet.add(new ConnectionDescriptor().setAddress(address).setHost(host));
+        if (newAdded) {
+            connectedCount.incrementAndGet();
+        }
 
         return this;
     }
