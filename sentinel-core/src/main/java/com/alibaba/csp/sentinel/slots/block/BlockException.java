@@ -16,7 +16,8 @@
 package com.alibaba.csp.sentinel.slots.block;
 
 /***
- * Abstract exception indicating blocked by Sentinel due to flow control, degraded or system guard.
+ * Abstract exception indicating blocked by Sentinel due to flow control,
+ * circuit breaking or system protection triggered.
  *
  * @author youji.zj
  */
