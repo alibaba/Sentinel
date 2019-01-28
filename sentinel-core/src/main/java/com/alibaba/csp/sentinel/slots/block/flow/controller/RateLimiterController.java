@@ -72,13 +72,13 @@ public class RateLimiterController implements TrafficShapingController {
             return true;
         } else {
             // Calculate the time to wait.
-            long waitTime = costTime + latestPassedTime.get() - currentTime;
+            long waitTime = costTime + latestPassedTime.get() - TimeUtil.currentTimeMillis();
             if (waitTime > maxQueueingTimeMs) {
                 return false;
             } else {
                 long oldTime = latestPassedTime.addAndGet(costTime);
                 try {
-                    waitTime = oldTime - currentTime;
+                    waitTime = oldTime - TimeUtil.currentTimeMillis();
                     if (waitTime > maxQueueingTimeMs) {
                         latestPassedTime.addAndGet(-costTime);
                         return false;
