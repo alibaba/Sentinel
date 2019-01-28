@@ -55,7 +55,7 @@ public final class ConnectionManager {
         ConnectionGroup group = CONN_MAP.get(namespace);
         if (group == null) {
             synchronized (CREATE_LOCK) {
-                if (CONN_MAP.get(namespace) == null) {
+                if ((group = CONN_MAP.get(namespace)) == null) {
                     group = new ConnectionGroup(namespace);
                     CONN_MAP.put(namespace, group);
                 }
