@@ -16,15 +16,18 @@
 package com.alibaba.csp.sentinel.node;
 
 import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
+
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -34,7 +37,6 @@ import static org.junit.Assert.*;
  * Test cases for {@link ClusterNode}.
  *
  * @author cdfive
- * @date 2019-01-11
  */
 public class ClusterNodeTest {
 
@@ -64,23 +66,28 @@ public class ClusterNodeTest {
 
     @Test
     public void testGetOrCreateOriginNodeMultiThread() {
-        // note: in junit4, repeat execute a test method is not very convenient
+        // Note: in JUnit 4, repeat execute a test method is not very convenient
         // for simple, here use a loop instead
         // https://stackoverflow.com/questions/1492856/easy-way-of-running-the-same-junit-test-over-and-over
-        // in junit5, use @RepeatedTest(10)
-        int testTimes = 10;// execute 10 times, test will have chance to failed, if remove the lock in ClusterNode
+        // in JUnit 5, use @RepeatedTest(10)
+
+        // execute 10 times, test will have chance to failed, if remove the lock in ClusterNode
+        final int testTimes = 10;
+
         for (int times = 0; times < testTimes; times++) {
             final ClusterNode clusterNode = new ClusterNode();
 
-            // store all distinct nodes by calling ClusterNode#getOrCreateOriginNode
-            final Set<Node> createdNodes = new HashSet<Node>();
+            // Store all distinct nodes by calling ClusterNode#getOrCreateOriginNode.
+            // Here we need a thread-safe concurrent set (created from ConcurrentHashMap).
+            final Set<Node> createdNodes = Collections.newSetFromMap(new ConcurrentHashMap<Node, Boolean>());
 
             final Random random = new Random();
 
-            // 10 threads, 3 origins, 20 tasks(in total, calling 20 times of ClusterNode#getOrCreateOriginNode concurrently)
+            // 10 threads, 3 origins, 20 tasks (calling 20 times of ClusterNode#getOrCreateOriginNode concurrently)
             final ExecutorService es = Executors.newFixedThreadPool(10);
             final List<String> origins = Arrays.asList("origin1", "origin2", "origin3");
             int taskCount = 20;
+            final CountDownLatch latch = new CountDownLatch(taskCount);
 
             List<Callable<Object>> tasks = new ArrayList<Callable<Object>>(taskCount);
             for (int i = 0; i < taskCount; i++) {
@@ -90,10 +97,9 @@ public class ClusterNodeTest {
                         // one task call one times of ClusterNode#getOrCreateOriginNode
                         Node node = clusterNode.getOrCreateOriginNode(origins.get(random.nextInt(origins.size())));
                         // add the result node to the createdNodes set
-                        // node: since HashSet is non-threadsafe, synchronized the ClusterNodeTest.class
-                        synchronized (ClusterNodeTest.class) {
-                            createdNodes.add(node);
-                        }
+                        createdNodes.add(node);
+                        latch.countDown();
+
                         return null;
                     }
                 });
@@ -101,6 +107,7 @@ public class ClusterNodeTest {
 
             try {
                 es.invokeAll(tasks);
+                latch.await();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -111,7 +118,8 @@ public class ClusterNodeTest {
 
             // not use `assertEquals(origins.size(), createdNodes.size());`, but a compare judgement for debug
             if (origins.size() != createdNodes.size()) {
-                // for debug, we can add a breakpoint here to see the detail info of createdNodes, if remove the lock in ClusterNode
+                // for debug, we can add a breakpoint here to see the detail info of createdNodes,
+                // if we removed the lock in ClusterNode
                 fail("originCountMap's size should " + origins.size() + ", but actual " + createdNodes.size());
             }
 
@@ -122,9 +130,8 @@ public class ClusterNodeTest {
         }
     }
 
-
     @Test
-    public void testTrace() {
+    public void testTraceException() {
         ClusterNode clusterNode = new ClusterNode();
 
         Exception exception = new RuntimeException("test");
