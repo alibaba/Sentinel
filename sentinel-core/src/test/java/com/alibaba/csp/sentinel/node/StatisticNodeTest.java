@@ -36,7 +36,6 @@ import static org.junit.Assert.assertTrue;
  * Test cases for {@link StatisticNode}.
  *
  * @author cdfive
- * @date 2019-01-08
  */
 public class StatisticNodeTest {
 
@@ -53,7 +52,7 @@ public class StatisticNodeTest {
      *
      * <p>
      * 20 threads, 30 tasks, every task execute 10 times of bizMethod
-     * one bizMthod execute within 1 second, and within 0.5 second interval to exceute next bizMthod
+     * one bizMethod execute within 1 second, and within 0.5 second interval to exceute next bizMthod
      * so that the total time cost will be within 1 minute
      * </p>
      *

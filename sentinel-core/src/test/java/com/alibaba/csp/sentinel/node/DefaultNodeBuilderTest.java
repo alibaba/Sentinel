@@ -26,7 +26,6 @@ import static org.junit.Assert.*;
  * Test cases for {@link DefaultNodeBuilder}.
  *
  * @author cdfive
- * @date 2019-01-15
  */
 public class DefaultNodeBuilderTest {
 
@@ -51,7 +50,7 @@ public class DefaultNodeBuilderTest {
     }
 
     @Test
-    public void testBuildTreeNode_NullClusterNode() {
+    public void testBuildTreeNodeNullClusterNode() {
         DefaultNodeBuilder builder = new DefaultNodeBuilder();
 
         ResourceWrapper id = new StringResourceWrapper("resA", EntryType.IN);
@@ -59,7 +58,7 @@ public class DefaultNodeBuilderTest {
 
         assertNotNull(defaultNode);
         assertEquals(id, defaultNode.getId());
-        assertEquals(null, defaultNode.getClusterNode());
+        assertNull(defaultNode.getClusterNode());
 
         // verify each call returns a different instance
         DefaultNode defaultNode2 = builder.buildTreeNode(id, null);
