@@ -203,7 +203,7 @@ public class MetricsLeapArrayTest {
         windowWraps.add(leapArray.currentWindow(time));
         windowWraps.add(leapArray.currentWindow(time + windowLengthInMs));
 
-        Thread.sleep(intervalInSec * 1000 + windowLengthInMs * 3);
+        Thread.sleep(intervalInMs + windowLengthInMs * 3);
 
         List<WindowWrap<MetricBucket>> list = leapArray.list();
         for (WindowWrap<MetricBucket> wrap : list) {
