@@ -70,7 +70,7 @@ public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode>
 
     private static final Object lock = new Object();
 
-    private ClusterNode clusterNode = null;
+    private volatile ClusterNode clusterNode = null;
 
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
@@ -81,7 +81,7 @@ public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode>
                 if (clusterNode == null) {
                     // Create the cluster node.
                     clusterNode = Env.nodeBuilder.buildClusterNode();
-                    HashMap<ResourceWrapper, ClusterNode> newMap = new HashMap<ResourceWrapper, ClusterNode>(16);
+                    HashMap<ResourceWrapper, ClusterNode> newMap = new HashMap<ResourceWrapper, ClusterNode>(Math.max(clusterNodeMap.size(), 16));
                     newMap.putAll(clusterNodeMap);
                     newMap.put(node.getId(), clusterNode);
 
