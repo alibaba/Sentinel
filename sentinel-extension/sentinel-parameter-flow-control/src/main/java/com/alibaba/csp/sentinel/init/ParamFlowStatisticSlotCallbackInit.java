@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.init;
 
 import com.alibaba.csp.sentinel.slots.statistic.ParamFlowStatisticEntryCallback;
+import com.alibaba.csp.sentinel.slots.statistic.ParamFlowStatisticExitCallback;
 import com.alibaba.csp.sentinel.slots.statistic.StatisticSlotCallbackRegistry;
 
 /**
@@ -31,5 +32,7 @@ public class ParamFlowStatisticSlotCallbackInit implements InitFunc {
     public void init() {
         StatisticSlotCallbackRegistry.addEntryCallback(ParamFlowStatisticEntryCallback.class.getName(),
             new ParamFlowStatisticEntryCallback());
+        StatisticSlotCallbackRegistry.addExitCallback(ParamFlowStatisticExitCallback.class.getName(),
+            new ParamFlowStatisticExitCallback());
     }
 }
