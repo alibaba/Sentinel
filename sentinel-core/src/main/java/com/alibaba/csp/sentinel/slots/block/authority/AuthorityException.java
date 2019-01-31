@@ -17,14 +17,20 @@ package com.alibaba.csp.sentinel.slots.block.authority;
 
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 
-/***
+/**
+ * Block exception for request origin access (authority) control.
  *
  * @author youji.zj
+ * @author Eric Zhao
  */
 public class AuthorityException extends BlockException {
 
     public AuthorityException(String ruleLimitApp) {
         super(ruleLimitApp);
+    }
+
+    public AuthorityException(String ruleLimitApp, AuthorityRule rule) {
+        super(ruleLimitApp, rule);
     }
 
     public AuthorityException(String message, Throwable cause) {
@@ -40,4 +46,15 @@ public class AuthorityException extends BlockException {
         return this;
     }
 
+    /**
+     * Get triggered rule.
+     * Note: the rule result is a reference to rule map and SHOULD NOT be modified.
+     *
+     * @return triggered rule
+     * @since 1.4.2
+     */
+    @Override
+    public AuthorityRule getRule() {
+        return rule.as(AuthorityRule.class);
+    }
 }
