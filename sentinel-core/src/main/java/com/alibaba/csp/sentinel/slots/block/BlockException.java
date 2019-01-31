@@ -15,8 +15,9 @@
  */
 package com.alibaba.csp.sentinel.slots.block;
 
-/***
- * Abstract exception indicating blocked by Sentinel due to flow control, degraded or system guard.
+/**
+ * Abstract exception indicating blocked by Sentinel due to flow control,
+ * circuit breaking or system protection triggered.
  *
  * @author youji.zj
  */
@@ -42,11 +43,18 @@ public abstract class BlockException extends Exception {
         THROW_OUT_EXCEPTION.setStackTrace(sentinelStackTrace);
     }
 
+    protected AbstractRule rule;
     private String ruleLimitApp;
 
     public BlockException(String ruleLimitApp) {
         super();
         this.ruleLimitApp = ruleLimitApp;
+    }
+
+    public BlockException(String ruleLimitApp, AbstractRule rule) {
+        super();
+        this.ruleLimitApp = ruleLimitApp;
+        this.rule = rule;
     }
 
     public BlockException(String message, Throwable cause) {
@@ -56,6 +64,12 @@ public abstract class BlockException extends Exception {
     public BlockException(String ruleLimitApp, String message) {
         super(message);
         this.ruleLimitApp = ruleLimitApp;
+    }
+
+    public BlockException(String ruleLimitApp, String message, AbstractRule rule) {
+        super(message);
+        this.ruleLimitApp = ruleLimitApp;
+        this.rule = rule;
     }
 
     @Override
@@ -97,5 +111,9 @@ public abstract class BlockException extends Exception {
         }
 
         return false;
+    }
+
+    public AbstractRule getRule() {
+        return rule;
     }
 }
