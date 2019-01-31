@@ -25,15 +25,12 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  */
 public class AuthorityException extends BlockException {
 
-    private AuthorityRule rule;
-
     public AuthorityException(String ruleLimitApp) {
         super(ruleLimitApp);
     }
 
     public AuthorityException(String ruleLimitApp, AuthorityRule rule) {
-        this(ruleLimitApp);
-        this.rule = rule;
+        super(ruleLimitApp, rule);
     }
 
     public AuthorityException(String message, Throwable cause) {
@@ -56,7 +53,8 @@ public class AuthorityException extends BlockException {
      * @return triggered rule
      * @since 1.4.2
      */
+    @Override
     public AuthorityRule getRule() {
-        return rule;
+        return rule.as(AuthorityRule.class);
     }
 }

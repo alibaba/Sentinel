@@ -22,15 +22,12 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  */
 public class FlowException extends BlockException {
 
-    private FlowRule rule;
-
     public FlowException(String ruleLimitApp) {
         super(ruleLimitApp);
     }
 
     public FlowException(String ruleLimitApp, FlowRule rule) {
-        super(ruleLimitApp);
-        this.rule = rule;
+        super(ruleLimitApp, rule);
     }
 
     public FlowException(String message, Throwable cause) {
@@ -53,7 +50,8 @@ public class FlowException extends BlockException {
      * @return triggered rule
      * @since 1.4.2
      */
+    @Override
     public FlowRule getRule() {
-        return rule;
+        return rule.as(FlowRule.class);
     }
 }

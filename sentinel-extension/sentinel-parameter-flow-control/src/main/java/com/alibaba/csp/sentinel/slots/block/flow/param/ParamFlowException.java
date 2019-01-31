@@ -27,8 +27,6 @@ public class ParamFlowException extends BlockException {
 
     private final String resourceName;
 
-    private ParamFlowRule rule;
-
     public ParamFlowException(String resourceName, String message, Throwable cause) {
         super(message, cause);
         this.resourceName = resourceName;
@@ -71,7 +69,8 @@ public class ParamFlowException extends BlockException {
      * @return triggered rule
      * @since 1.4.2
      */
+    @Override
     public ParamFlowRule getRule() {
-        return rule;
+        return rule.as(ParamFlowRule.class);
     }
 }

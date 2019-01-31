@@ -22,15 +22,12 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  */
 public class DegradeException extends BlockException {
 
-    private DegradeRule rule;
-
     public DegradeException(String ruleLimitApp) {
         super(ruleLimitApp);
     }
 
     public DegradeException(String ruleLimitApp, DegradeRule rule) {
-        super(ruleLimitApp);
-        this.rule = rule;
+        super(ruleLimitApp, rule);
     }
 
     public DegradeException(String message, Throwable cause) {
@@ -53,7 +50,8 @@ public class DegradeException extends BlockException {
      * @return triggered rule
      * @since 1.4.2
      */
+    @Override
     public DegradeRule getRule() {
-        return rule;
+        return rule.as(DegradeRule.class);
     }
 }
