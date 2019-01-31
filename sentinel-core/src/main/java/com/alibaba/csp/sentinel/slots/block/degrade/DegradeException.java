@@ -26,6 +26,10 @@ public class DegradeException extends BlockException {
         super(ruleLimitApp);
     }
 
+    public DegradeException(String ruleLimitApp, DegradeRule rule) {
+        super(ruleLimitApp, rule);
+    }
+
     public DegradeException(String message, Throwable cause) {
         super(message, cause);
     }
@@ -37,5 +41,17 @@ public class DegradeException extends BlockException {
     @Override
     public Throwable fillInStackTrace() {
         return this;
+    }
+
+    /**
+     * Get triggered rule.
+     * Note: the rule result is a reference to rule map and SHOULD NOT be modified.
+     *
+     * @return triggered rule
+     * @since 1.4.2
+     */
+    @Override
+    public DegradeRule getRule() {
+        return rule.as(DegradeRule.class);
     }
 }
