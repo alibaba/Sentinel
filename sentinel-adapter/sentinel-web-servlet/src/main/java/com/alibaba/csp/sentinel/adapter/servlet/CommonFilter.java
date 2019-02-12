@@ -30,40 +30,67 @@ import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
+import com.alibaba.csp.sentinel.adapter.servlet.callback.RequestOriginParser;
+import com.alibaba.csp.sentinel.adapter.servlet.callback.UrlCleaner;
 import com.alibaba.csp.sentinel.adapter.servlet.callback.WebCallbackManager;
 import com.alibaba.csp.sentinel.adapter.servlet.util.FilterUtil;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.util.StringUtil;
 
 /***
  * Servlet filter that integrates with Sentinel.
  *
  * @author youji.zj
+ * @author Eric Zhao
  */
 public class CommonFilter implements Filter {
 
+    private final static String HTTP_METHOD_SPECIFY = "HTTP_METHOD_SPECIFY";
+    private final static String COLON = ":";
+    private boolean httpMethodSpecify = false;
+
     @Override
     public void init(FilterConfig filterConfig) {
-
+        httpMethodSpecify = Boolean.parseBoolean(filterConfig.getInitParameter(HTTP_METHOD_SPECIFY));
     }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-        throws IOException, ServletException {
-        HttpServletRequest sRequest = (HttpServletRequest)request;
+            throws IOException, ServletException {
+        HttpServletRequest sRequest = (HttpServletRequest) request;
         Entry entry = null;
+
+        Entry methodEntry = null;
 
         try {
             String target = FilterUtil.filterTarget(sRequest);
-            target = WebCallbackManager.getUrlCleaner().clean(target);
+            // Clean and unify the URL.
+            // For REST APIs, you have to clean the URL (e.g. `/foo/1` and `/foo/2` -> `/foo/:id`), or
+            // the amount of context and resources will exceed the threshold.
+            UrlCleaner urlCleaner = WebCallbackManager.getUrlCleaner();
+            if (urlCleaner != null) {
+                target = urlCleaner.clean(target);
+            }
 
-            ContextUtil.enter(target);
+            // Parse the request origin using registered origin parser.
+            String origin = parseOrigin(sRequest);
+
+            ContextUtil.enter(target, origin);
             entry = SphU.entry(target, EntryType.IN);
+
+
+            // Add method specification if necessary
+            if (httpMethodSpecify) {
+                methodEntry = SphU.entry(sRequest.getMethod().toUpperCase() + COLON + target,
+                        EntryType.IN);
+            }
 
             chain.doFilter(request, response);
         } catch (BlockException e) {
-            HttpServletResponse sResponse = (HttpServletResponse)response;
-            WebCallbackManager.getUrlBlockHandler().blocked(sRequest, sResponse);
+            HttpServletResponse sResponse = (HttpServletResponse) response;
+            // Return the block page, or redirect to another URL.
+            WebCallbackManager.getUrlBlockHandler().blocked(sRequest, sResponse, e);
         } catch (IOException e2) {
             Tracer.trace(e2);
             throw e2;
@@ -74,6 +101,9 @@ public class CommonFilter implements Filter {
             Tracer.trace(e4);
             throw e4;
         } finally {
+            if (methodEntry != null) {
+                methodEntry.exit();
+            }
             if (entry != null) {
                 entry.exit();
             }
@@ -81,8 +111,22 @@ public class CommonFilter implements Filter {
         }
     }
 
+    private String parseOrigin(HttpServletRequest request) {
+        RequestOriginParser originParser = WebCallbackManager.getRequestOriginParser();
+        String origin = EMPTY_ORIGIN;
+        if (originParser != null) {
+            origin = originParser.parseOrigin(request);
+            if (StringUtil.isEmpty(origin)) {
+                return EMPTY_ORIGIN;
+            }
+        }
+        return origin;
+    }
+
     @Override
     public void destroy() {
 
     }
+
+    private static final String EMPTY_ORIGIN = "";
 }

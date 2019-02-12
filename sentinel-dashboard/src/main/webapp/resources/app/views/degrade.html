@@ -33,11 +33,11 @@
                 <td style="width: 40%">
                   资源名
                 </td>
+                <!--<td style="width: 10%;">-->
+                  <!--降级应用-->
+                <!--</td>-->
                 <td style="width: 10%;">
-                  降级应用
-                </td>
-                <td style="width: 10%;">
-                  阈值类型
+                  降级模式
                 </td>
                 <td style="width: 10%;">
                   阈值
@@ -57,15 +57,17 @@
               <tr dir-paginate="rule in rules | filter : searchKey | itemsPerPage: rulesPageConfig.pageSize " current-page="rulesPageConfig.currentPageIndex"
                 pagination-id="entriesPagination">
                 <td style="word-wrap:break-word;word-break:break-all;">{{rule.resource}}</td>
-                <td style="word-wrap:break-word;word-break:break-all;">{{rule.limitApp }}</td>
+                <!--<td style="word-wrap:break-word;word-break:break-all;">{{rule.limitApp }}</td>-->
                 <td>
-                  {{rule.grade==0 ? 'RT' : '异常比例'}}
+                  <span ng-if="rule.grade == 0">RT</span>
+                  <span ng-if="rule.grade == 1" title="秒级异常比例">异常比例</span>
+                  <span ng-if="rule.grade == 2" title="分钟级异常数">异常数</span>
                 </td>
                 <td style="word-wrap:break-word;word-break:break-all;">
                   {{rule.count}}
                 </td>
                 <td style="word-wrap:break-word;word-break:break-all;">
-                  {{rule.timeWindow}}
+                  {{rule.timeWindow}}s
                 </td>
 
                 <td>

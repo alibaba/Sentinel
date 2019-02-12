@@ -27,6 +27,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import com.alibaba.csp.sentinel.log.LogBase;
 import com.alibaba.csp.sentinel.util.PidUtil;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
@@ -36,7 +37,7 @@ import com.alibaba.csp.sentinel.log.RecordLog;
  * <ol>
  * <li>metric with the same second should write to the same file;</li>
  * <li>single file size must be controlled;</li>
- * <li>file name is like: {@code ${AppName}_pid-metrics.log.yyyy-MM-dd.[number]}</li>
+ * <li>file name is like: {@code ${appName}-metrics.log.pid${pid}.yyyy-MM-dd.[number]}</li>
  * <li>metric of different day should in different file;</li>
  * <li>every metric file is accompanied with an index file, which file name is {@code ${metricFileName}.idx}</li>
  * </ol>
@@ -47,16 +48,21 @@ public class MetricWriter {
 
     private static final String CHARSET = SentinelConfig.charset();
     public static final String METRIC_BASE_DIR = RecordLog.getLogBaseDir();
-    public static final String METRIC_FILE_SUFFIX = "-metrics.log";
+    /**
+     * Note: {@link MetricFileNameComparator}'s implementation relays on the metric file name,
+     * we should be careful when changing the metric file name.
+     *
+     * @see #formMetricFileName(String, int)
+     */
+    public static final String METRIC_FILE = "metrics.log";
     public static final String METRIC_FILE_INDEX_SUFFIX = ".idx";
-    public static final Comparator<String> METRIC_FILENAME_CMP = new MetricFileNameComparator();
+    public static final Comparator<String> METRIC_FILE_NAME_CMP = new MetricFileNameComparator();
 
     private final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     /**
      * 排除时差干扰
      */
     private long timeSecondBase;
-    private final StringBuilder sb = new StringBuilder(32);
     private String baseDir;
     private String baseFileName;
     /**
@@ -86,7 +92,9 @@ public class MetricWriter {
         if (singleFileSize <= 0 || totalFileCount <= 0) {
             throw new IllegalArgumentException();
         }
-        RecordLog.info("new MetricWriter, singleFileSize=" + singleFileSize + ", totalFileCount=" + totalFileCount);
+        RecordLog.info(
+            "[MetricWriter] Creating new MetricWriter, singleFileSize=" + singleFileSize + ", totalFileCount="
+                + totalFileCount);
         this.baseDir = METRIC_BASE_DIR;
         File dir = new File(baseDir);
         if (!dir.exists()) {
@@ -100,7 +108,7 @@ public class MetricWriter {
         try {
             this.timeSecondBase = df.parse("1970-01-01 00:00:00").getTime() / 1000;
         } catch (Exception e) {
-            RecordLog.info("new MetricWriter error: ", e);
+            RecordLog.warn("[MetricWriter] Create new MetricWriter error", e);
         }
     }
 
@@ -186,16 +194,18 @@ public class MetricWriter {
         File baseFile = new File(baseDir);
         DateFormat fileNameDf = new SimpleDateFormat("yyyy-MM-dd");
         String dateStr = fileNameDf.format(new Date(time));
+        String fileNameModel = baseFileName + "." + dateStr;
         for (File file : baseFile.listFiles()) {
-            if (file.getName().contains(baseFileName + "." + dateStr)
-                && !file.getName().endsWith(METRIC_FILE_INDEX_SUFFIX)
-                && !file.getName().endsWith(".lck")) {
+            String fileName = file.getName();
+            if (fileName.contains(fileNameModel)
+                && !fileName.endsWith(METRIC_FILE_INDEX_SUFFIX)
+                && !fileName.endsWith(".lck")) {
                 list.add(file.getAbsolutePath());
             }
         }
-        Collections.sort(list, METRIC_FILENAME_CMP);
+        Collections.sort(list, METRIC_FILE_NAME_CMP);
         if (list.isEmpty()) {
-            return baseDir + baseFileName + "." + dateStr;
+            return baseDir + fileNameModel;
         }
         String last = list.get(list.size() - 1);
         int n = 0;
@@ -203,36 +213,44 @@ public class MetricWriter {
         if (strs.length > 0 && strs[strs.length - 1].matches("[0-9]{1,10}")) {
             n = Integer.parseInt(strs[strs.length - 1]);
         }
-        return baseDir + baseFileName + "." + dateStr + "." + (n + 1);
+        return baseDir + fileNameModel + "." + (n + 1);
     }
 
     /**
      * A comparator for metric file name. Metric file name is like: <br/>
      * <pre>
-     * aliswitch-8728-metrics.log.2018-03-06
-     * aliswitch-8728-metrics.log.2018-03-07
-     * aliswitch-8728-metrics.log.2018-03-07.10
-     * aliswitch-8728-metrics.log.2018-03-06.100
+     * metrics.log.2018-03-06
+     * metrics.log.2018-03-07
+     * metrics.log.2018-03-07.10
+     * metrics.log.2018-03-06.100
      * </pre>
      * <p>
      * File name with the early date is smaller, if date is same, the one with the small file number is smaller.
      * Note that if the name is an absolute path, only the fileName({@link File#getName()}) part will be considered.
      * So the above file names should be sorted as: <br/>
      * <pre>
-     * aliswitch-8728-metrics.log.2018-03-06
-     * aliswitch-8728-metrics.log.2018-03-06.100
-     * aliswitch-8728-metrics.log.2018-03-07
-     * aliswitch-8728-metrics.log.2018-03-07.10
+     * metrics.log.2018-03-06
+     * metrics.log.2018-03-06.100
+     * metrics.log.2018-03-07
+     * metrics.log.2018-03-07.10
+     *
      * </pre>
      * </p>
      */
     private static final class MetricFileNameComparator implements Comparator<String> {
+        private final String pid = "pid";
+
         @Override
         public int compare(String o1, String o2) {
             String name1 = new File(o1).getName();
             String name2 = new File(o2).getName();
             String dateStr1 = name1.split("\\.")[2];
             String dateStr2 = name2.split("\\.")[2];
+            // in case of file name contains pid, skip it, like Sentinel-Admin-metrics.log.pid22568.2018-12-24
+            if (dateStr1.startsWith(pid)) {
+                dateStr1 = name1.split("\\.")[3];
+                dateStr2 = name2.split("\\.")[3];
+            }
 
             // compare date first
             int t = dateStr1.compareTo(dateStr2);
@@ -250,7 +268,10 @@ public class MetricWriter {
     }
 
     /**
-     * Get all metric files' name in {@code baseDir}. The file name must contain {@code baseFileName}
+     * Get all metric files' name in {@code baseDir}. The file name must like
+     * <pre>
+     * baseFileName + ".yyyy-MM-dd.number"
+     * </pre>
      * and not endsWith {@link #METRIC_FILE_INDEX_SUFFIX} or ".lck".
      *
      * @param baseDir      the directory to search.
@@ -266,15 +287,36 @@ public class MetricWriter {
             return list;
         }
         for (File file : files) {
+            String fileName = file.getName();
             if (file.isFile()
-                && file.getName().contains(baseFileName)
-                && !file.getName().endsWith(MetricWriter.METRIC_FILE_INDEX_SUFFIX)
-                && !file.getName().endsWith(".lck")) {
+                && fileNameMatches(fileName, baseFileName)
+                && !fileName.endsWith(MetricWriter.METRIC_FILE_INDEX_SUFFIX)
+                && !fileName.endsWith(".lck")) {
                 list.add(file.getAbsolutePath());
             }
         }
-        Collections.sort(list, MetricWriter.METRIC_FILENAME_CMP);
+        Collections.sort(list, MetricWriter.METRIC_FILE_NAME_CMP);
         return list;
+    }
+
+    /**
+     * Test whether fileName matches baseFileName. fileName matches baseFileName when
+     * <pre>
+     * fileName = baseFileName + ".yyyy-MM-dd.number"
+     * </pre>
+     *
+     * @param fileName     file name
+     * @param baseFileName base file name.
+     * @return if fileName matches baseFileName return true, else return false.
+     */
+    public static boolean fileNameMatches(String fileName, String baseFileName) {
+        if (fileName.startsWith(baseFileName)) {
+            String part = fileName.substring(baseFileName.length());
+            // part is like: ".yyyy-MM-dd.number", eg. ".2018-12-24.11"
+            return part.matches("\\.[0-9]{4}-[0-9]{2}-[0-9]{2}(\\.[0-9]*)?");
+        } else {
+            return false;
+        }
     }
 
     private void removeMoreFiles() throws Exception {
@@ -286,9 +328,9 @@ public class MetricWriter {
             String fileName = list.get(i);
             String indexFile = formIndexFileName(fileName);
             new File(fileName).delete();
-            RecordLog.info("remove metric file: " + fileName);
+            RecordLog.info("[MetricWriter] Removing metric file: " + fileName);
             new File(indexFile).delete();
-            RecordLog.info("remove metric index file: " + indexFile);
+            RecordLog.info("[MetricWriter] Removing metric index file: " + indexFile);
         }
     }
 
@@ -304,11 +346,10 @@ public class MetricWriter {
         outMetricBuf = new BufferedOutputStream(outMetric);
         curMetricFile = new File(fileName);
         String idxFile = formIndexFileName(fileName);
-        ;
         curMetricIndexFile = new File(idxFile);
         outIndex = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(idxFile, append)));
-        RecordLog.info("create new metric file: " + fileName);
-        RecordLog.info("create new metric index file: " + idxFile);
+        RecordLog.info("[MetricWriter] New metric file created: " + fileName);
+        RecordLog.info("[MetricWriter] New metric index file created: " + idxFile);
     }
 
     private boolean validSize() throws Exception {
@@ -323,8 +364,11 @@ public class MetricWriter {
     }
 
     /**
-     * Form metric file name use the specific appName and pid. Not that only
+     * Form metric file name use the specific appName and pid. Note that only
      * form the file name, not include path.
+     *
+     * Note: {@link MetricFileNameComparator}'s implementation relays on the metric file name,
+     * we should be careful when changing the metric file name.
      *
      * @param appName
      * @param pid
@@ -334,7 +378,17 @@ public class MetricWriter {
         if (appName == null) {
             appName = "";
         }
-        return appName + "-" + pid + METRIC_FILE_SUFFIX;
+        // dot is special char that should be replaced.
+        final String dot = ".";
+        final String separator = "-";
+        if (appName.contains(dot)) {
+            appName = appName.replace(dot, separator);
+        }
+        String name = appName + separator + METRIC_FILE;
+        if (LogBase.isLogNameUsePid()) {
+            name += ".pid" + pid;
+        }
+        return name;
     }
 
     /**

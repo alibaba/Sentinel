@@ -19,10 +19,10 @@ import java.util.ArrayList;
 
 import org.junit.Test;
 
-import com.alibaba.csp.sentinel.slots.statistic.base.Window;
+import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 import com.alibaba.csp.sentinel.slots.statistic.metric.ArrayMetric;
-import com.alibaba.csp.sentinel.slots.statistic.metric.WindowLeapArray;
+import com.alibaba.csp.sentinel.slots.statistic.metric.MetricsLeapArray;
 
 import static org.junit.Assert.*;
 
@@ -36,14 +36,13 @@ import static org.mockito.Mockito.*;
 public class ArrayMetricTest {
 
     private final int windowLengthInMs = 500;
-    private final int intervalInSec = 1;
 
     @Test
     public void testOperateArrayMetric() {
-        WindowLeapArray leapArray = mock(WindowLeapArray.class);
-        final WindowWrap<Window> windowWrap = new WindowWrap<Window>(windowLengthInMs, 0, new Window());
+        MetricsLeapArray leapArray = mock(MetricsLeapArray.class);
+        final WindowWrap<MetricBucket> windowWrap = new WindowWrap<MetricBucket>(windowLengthInMs, 0, new MetricBucket());
         when(leapArray.currentWindow()).thenReturn(windowWrap);
-        when(leapArray.values()).thenReturn(new ArrayList<Window>() {{ add(windowWrap.value()); }});
+        when(leapArray.values()).thenReturn(new ArrayList<MetricBucket>() {{ add(windowWrap.value()); }});
 
         ArrayMetric metric = new ArrayMetric(leapArray);
 
@@ -55,16 +54,16 @@ public class ArrayMetricTest {
 
         metric.addRT(expectedRt);
         for (int i = 0; i < expectedPass; i++) {
-            metric.addPass();
+            metric.addPass(1);
         }
         for (int i = 0; i < expectedBlock; i++) {
-            metric.addBlock();
+            metric.addBlock(1);
         }
         for (int i = 0; i < expectedSuccess; i++) {
-            metric.addSuccess();
+            metric.addSuccess(1);
         }
         for (int i = 0; i < expectedException; i++) {
-            metric.addException();
+            metric.addException(1);
         }
 
         assertEquals(expectedPass, metric.pass());

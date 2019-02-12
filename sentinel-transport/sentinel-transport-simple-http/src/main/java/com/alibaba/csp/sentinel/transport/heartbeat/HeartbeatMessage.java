@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.transport.heartbeat;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.transport.config.TransportConfig;
 import com.alibaba.csp.sentinel.util.AppNameUtil;
 import com.alibaba.csp.sentinel.util.HostNameUtil;
@@ -35,7 +36,7 @@ public class HeartbeatMessage {
 
     public HeartbeatMessage() {
         message.put("hostname", HostNameUtil.getHostName());
-        message.put("ip", HostNameUtil.getIp());
+        message.put("ip", TransportConfig.getHeartbeatClientIp());
         message.put("app", AppNameUtil.getAppName());
         message.put("port", String.valueOf(TransportConfig.getPort()));
     }
@@ -46,6 +47,9 @@ public class HeartbeatMessage {
     }
 
     public Map<String, String> generateCurrentMessage() {
+        // Version of Sentinel.
+        message.put("v", Constants.SENTINEL_VERSION);
+        // Actually timestamp.
         message.put("version", String.valueOf(TimeUtil.currentTimeMillis()));
         message.put("port", String.valueOf(TransportConfig.getPort()));
         return message;

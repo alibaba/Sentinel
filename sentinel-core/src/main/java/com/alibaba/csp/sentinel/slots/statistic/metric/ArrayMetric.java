@@ -18,28 +18,29 @@ package com.alibaba.csp.sentinel.slots.statistic.metric;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
-import com.alibaba.csp.sentinel.slots.statistic.base.Window;
+import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 
 /**
- * The basic metric class in Sentinel using a {@link WindowLeapArray} internal.
+ * The basic metric class in Sentinel using a {@link MetricsLeapArray} internal.
  *
  * @author jialiang.linjl
  * @author Eric Zhao
  */
 public class ArrayMetric implements Metric {
 
-    private final WindowLeapArray data;
+    private final MetricsLeapArray data;
 
-    public ArrayMetric(int windowLength, int interval) {
-        this.data = new WindowLeapArray(windowLength, interval);
+    public ArrayMetric(int sampleCount, int intervalInMs) {
+        this.data = new MetricsLeapArray(sampleCount, intervalInMs);
     }
 
     /**
      * For unit test.
      */
-    public ArrayMetric(WindowLeapArray array) {
+    public ArrayMetric(MetricsLeapArray array) {
         this.data = array;
     }
 
@@ -48,8 +49,8 @@ public class ArrayMetric implements Metric {
         data.currentWindow();
         long success = 0;
 
-        List<Window> list = data.values();
-        for (Window window : list) {
+        List<MetricBucket> list = data.values();
+        for (MetricBucket window : list) {
             success += window.success();
         }
         return success;
@@ -60,8 +61,8 @@ public class ArrayMetric implements Metric {
         data.currentWindow();
         long success = 0;
 
-        List<Window> list = data.values();
-        for (Window window : list) {
+        List<MetricBucket> list = data.values();
+        for (MetricBucket window : list) {
             if (window.success() > success) {
                 success = window.success();
             }
@@ -73,8 +74,8 @@ public class ArrayMetric implements Metric {
     public long exception() {
         data.currentWindow();
         long exception = 0;
-        List<Window> list = data.values();
-        for (Window window : list) {
+        List<MetricBucket> list = data.values();
+        for (MetricBucket window : list) {
             exception += window.exception();
         }
         return exception;
@@ -84,8 +85,8 @@ public class ArrayMetric implements Metric {
     public long block() {
         data.currentWindow();
         long block = 0;
-        List<Window> list = data.values();
-        for (Window window : list) {
+        List<MetricBucket> list = data.values();
+        for (MetricBucket window : list) {
             block += window.block();
         }
         return block;
@@ -95,9 +96,9 @@ public class ArrayMetric implements Metric {
     public long pass() {
         data.currentWindow();
         long pass = 0;
-        List<Window> list = data.values();
+        List<MetricBucket> list = data.values();
 
-        for (Window window : list) {
+        for (MetricBucket window : list) {
             pass += window.pass();
         }
         return pass;
@@ -107,8 +108,8 @@ public class ArrayMetric implements Metric {
     public long rt() {
         data.currentWindow();
         long rt = 0;
-        List<Window> list = data.values();
-        for (Window window : list) {
+        List<MetricBucket> list = data.values();
+        for (MetricBucket window : list) {
             rt += window.rt();
         }
         return rt;
@@ -117,9 +118,9 @@ public class ArrayMetric implements Metric {
     @Override
     public long minRt() {
         data.currentWindow();
-        long rt = 4900;
-        List<Window> list = data.values();
-        for (Window window : list) {
+        long rt = Constants.TIME_DROP_VALVE;
+        List<MetricBucket> list = data.values();
+        for (MetricBucket window : list) {
             if (window.minRt() < rt) {
                 rt = window.minRt();
             }
@@ -132,14 +133,14 @@ public class ArrayMetric implements Metric {
     public List<MetricNode> details() {
         List<MetricNode> details = new ArrayList<MetricNode>();
         data.currentWindow();
-        for (WindowWrap<Window> window : data.list()) {
+        for (WindowWrap<MetricBucket> window : data.list()) {
             if (window == null) {
                 continue;
             }
             MetricNode node = new MetricNode();
-            node.setBlockedQps(window.value().block());
-            node.setException(window.value().exception());
-            node.setPassedQps(window.value().pass());
+            node.setBlockQps(window.value().block());
+            node.setExceptionQps(window.value().exception());
+            node.setPassQps(window.value().pass());
             long passQps = window.value().success();
             node.setSuccessQps(passQps);
             if (passQps != 0) {
@@ -155,38 +156,38 @@ public class ArrayMetric implements Metric {
     }
 
     @Override
-    public Window[] windows() {
+    public MetricBucket[] windows() {
         data.currentWindow();
-        return data.values().toArray(new Window[data.values().size()]);
+        return data.values().toArray(new MetricBucket[data.values().size()]);
     }
 
     @Override
-    public void addException() {
-        WindowWrap<Window> wrap = data.currentWindow();
-        wrap.value().addException();
+    public void addException(int count) {
+        WindowWrap<MetricBucket> wrap = data.currentWindow();
+        wrap.value().addException(count);
     }
 
     @Override
-    public void addBlock() {
-        WindowWrap<Window> wrap = data.currentWindow();
-        wrap.value().addBlock();
+    public void addBlock(int count) {
+        WindowWrap<MetricBucket> wrap = data.currentWindow();
+        wrap.value().addBlock(count);
     }
 
     @Override
-    public void addSuccess() {
-        WindowWrap<Window> wrap = data.currentWindow();
-        wrap.value().addSuccess();
+    public void addSuccess(int count) {
+        WindowWrap<MetricBucket> wrap = data.currentWindow();
+        wrap.value().addSuccess(count);
     }
 
     @Override
-    public void addPass() {
-        WindowWrap<Window> wrap = data.currentWindow();
-        wrap.value().addPass();
+    public void addPass(int count) {
+        WindowWrap<MetricBucket> wrap = data.currentWindow();
+        wrap.value().addPass(count);
     }
 
     @Override
     public void addRT(long rt) {
-        WindowWrap<Window> wrap = data.currentWindow();
+        WindowWrap<MetricBucket> wrap = data.currentWindow();
         wrap.value().addRT(rt);
     }
 
@@ -195,7 +196,7 @@ public class ArrayMetric implements Metric {
         data.currentWindow();
         StringBuilder sb = new StringBuilder();
         sb.append(Thread.currentThread().getId()).append("_");
-        for (WindowWrap<Window> windowWrap : data.list()) {
+        for (WindowWrap<MetricBucket> windowWrap : data.list()) {
 
             sb.append(windowWrap.windowStart()).append(":").append(windowWrap.value().pass()).append(":")
                 .append(windowWrap.value().block());
@@ -207,7 +208,7 @@ public class ArrayMetric implements Metric {
 
     @Override
     public long previousWindowBlock() {
-        WindowWrap<Window> wrap = data.currentWindow();
+        WindowWrap<MetricBucket> wrap = data.currentWindow();
         wrap = data.getPreviousWindow();
         if (wrap == null) {
             return 0;
@@ -217,7 +218,7 @@ public class ArrayMetric implements Metric {
 
     @Override
     public long previousWindowPass() {
-        WindowWrap<Window> wrap = data.currentWindow();
+        WindowWrap<MetricBucket> wrap = data.currentWindow();
         wrap = data.getPreviousWindow();
         if (wrap == null) {
             return 0;
@@ -225,4 +226,13 @@ public class ArrayMetric implements Metric {
         return wrap.value().pass();
     }
 
+    @Override
+    public double getWindowIntervalInSec() {
+        return data.getIntervalInSecond();
+    }
+
+    @Override
+    public int getSampleCount() {
+        return data.getSampleCount();
+    }
 }

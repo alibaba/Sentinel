@@ -15,38 +15,47 @@
  */
 package com.alibaba.csp.sentinel;
 
+import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.node.EntranceNode;
 import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
 import com.alibaba.csp.sentinel.slots.system.SystemRule;
+import com.alibaba.csp.sentinel.util.VersionUtil;
 
 /**
  * @author qinan.qn
  * @author youji.zj
  * @author jialiang.linjl
  */
-public class Constants {
+public final class Constants {
+
+    public static final String SENTINEL_VERSION = VersionUtil.getVersion("1.4.2");
 
     public final static int MAX_CONTEXT_NAME_SIZE = 2000;
     public final static int MAX_SLOT_CHAIN_SIZE = 6000;
+
     public final static String ROOT_ID = "machine-root";
-    public final static String CONTEXT_DEFAULT_NAME = "default_context_name";
+    public final static String CONTEXT_DEFAULT_NAME = "sentinel_default_context";
 
     public final static DefaultNode ROOT = new EntranceNode(new StringResourceWrapper(ROOT_ID, EntryType.IN),
         Env.nodeBuilder.buildClusterNode());
 
     /**
-     * statistics for {@link SystemRule} checking.
+     * Statistics for {@link SystemRule} checking.
      */
     public final static ClusterNode ENTRY_NODE = new ClusterNode();
 
     /**
-     * 超过这个时间的请求不作为平均时间计算
+     * Response time that exceeds TIME_DROP_VALVE will be calculated as TIME_DROP_VALVE.
+     * Default value is 4900 ms
+     * It can be configured by property file or JVM parameter -Dcsp.sentinel.statistic.max.rt=xxx
+     * See {@link SentinelConfig#statisticMaxRt()}
      */
-    public final static int TIME_DROP_VALVE = 4900;
+    public static int TIME_DROP_VALVE = SentinelConfig.statisticMaxRt();
 
-    /*** 框架功能打开或者关闭的开关 ***/
+    /**
+     * The global switch for Sentinel.
+     */
     public static volatile boolean ON = true;
-
 }

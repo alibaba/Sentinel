@@ -17,10 +17,25 @@ package com.alibaba.csp.sentinel.slots.block.flow;
 
 import java.util.Comparator;
 
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+
+/**
+ * Comparator for flow rules.
+ *
+ * @author jialiang.linjl
+ */
 public class FlowRuleComparator implements Comparator<FlowRule> {
 
     @Override
     public int compare(FlowRule o1, FlowRule o2) {
+        // Clustered mode will be on the top.
+        if (o1.isClusterMode() && !o2.isClusterMode()) {
+            return 1;
+        }
+
+        if (!o1.isClusterMode() && o2.isClusterMode()) {
+            return -1;
+        }
 
         if (o1.getLimitApp() == null) {
             return 0;
@@ -30,9 +45,9 @@ public class FlowRuleComparator implements Comparator<FlowRule> {
             return 0;
         }
 
-        if (FlowRule.LIMIT_APP_DEFAULT.equals(o1.getLimitApp())) {
+        if (RuleConstant.LIMIT_APP_DEFAULT.equals(o1.getLimitApp())) {
             return 1;
-        } else if (FlowRule.LIMIT_APP_DEFAULT.equals(o2.getLimitApp())) {
+        } else if (RuleConstant.LIMIT_APP_DEFAULT.equals(o2.getLimitApp())) {
             return -1;
         } else {
             return 0;

@@ -15,27 +15,30 @@
  */
 package com.alibaba.csp.sentinel.slots.block.authority;
 
-import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
-/***
+/**
+ * Authority rule is designed for limiting by request origins.
  *
  * @author youji.zj
  */
 public class AuthorityRule extends AbstractRule {
 
-    /*** 0代表白名单；1代表黑名单 ***/
-    private int strategy;
+    /**
+     * Mode: 0 for whitelist; 1 for blacklist.
+     */
+    private int strategy = RuleConstant.AUTHORITY_WHITE;
 
     public int getStrategy() {
         return strategy;
     }
 
-    public void setStrategy(int strategy) {
+    public AuthorityRule setStrategy(int strategy) {
         this.strategy = strategy;
+        return this;
     }
 
     @Override
@@ -58,38 +61,6 @@ public class AuthorityRule extends AbstractRule {
 
     @Override
     public boolean passCheck(Context context, DefaultNode node, int count, Object... args) {
-        String requester = context.getOrigin();
-
-        // 来源或者限流的应用为null直接通过
-        if (StringUtil.isEmpty(requester) || this.getLimitApp() == null) {
-            return true;
-        }
-
-        // 白名单、黑名单列表为逗号分隔的应用列表, indexOf还不行，需要精确匹配
-        int pos = this.getLimitApp().indexOf(requester);
-        boolean contain = pos > -1;
-
-        if (contain) {
-            boolean exactlyMatch = false;
-            String[] appArray = this.getLimitApp().split(",");
-            for (String app : appArray) {
-                if (requester.equals(app)) {
-                    exactlyMatch = true;
-                    break;
-                }
-            }
-
-            contain = exactlyMatch;
-        }
-
-        if (strategy == RuleConstant.BLACK && contain) {
-            return false;
-        }
-
-        if (strategy == RuleConstant.WHILE && !contain) {
-            return false;
-        }
-
         return true;
     }
 
@@ -99,6 +70,6 @@ public class AuthorityRule extends AbstractRule {
             "resource=" + getResource() +
             ", limitApp=" + getLimitApp() +
             ", strategy=" + strategy +
-            "} " + super.toString();
+            "} ";
     }
 }

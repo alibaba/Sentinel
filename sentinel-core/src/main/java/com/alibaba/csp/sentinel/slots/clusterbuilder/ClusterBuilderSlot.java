@@ -24,7 +24,9 @@ import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.DefaultNode;
+import com.alibaba.csp.sentinel.node.IntervalProperty;
 import com.alibaba.csp.sentinel.node.Node;
+import com.alibaba.csp.sentinel.node.SampleCountProperty;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlotChain;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
@@ -49,7 +51,7 @@ public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode>
      * <p>
      * Remember that same resource({@link ResourceWrapper#equals(Object)}) will share
      * the same {@link ProcessorSlotChain} globally, no matter in witch context. So if
-     * code goes into {@link #entry(Context, ResourceWrapper, DefaultNode, int, Object...)},
+     * code goes into {@link #entry(Context, ResourceWrapper, DefaultNode, int, boolean, Object...)},
      * the resource name must be same but context name may not.
      * </p>
      * <p>
@@ -60,8 +62,7 @@ public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode>
      * <p>
      * The longer the application runs, the more stable this mapping will
      * become. so we don't concurrent map but a lock. as this lock only happens
-     * at the very beginning while concurrent map will hold the lock all the
-     * time
+     * at the very beginning while concurrent map will hold the lock all the time.
      * </p>
      */
     private static volatile Map<ResourceWrapper, ClusterNode> clusterNodeMap
@@ -69,17 +70,18 @@ public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode>
 
     private static final Object lock = new Object();
 
-    private ClusterNode clusterNode = null;
+    private volatile ClusterNode clusterNode = null;
 
     @Override
-    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, Object... args)
+    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
+                      boolean prioritized, Object... args)
         throws Throwable {
         if (clusterNode == null) {
             synchronized (lock) {
                 if (clusterNode == null) {
                     // Create the cluster node.
                     clusterNode = Env.nodeBuilder.buildClusterNode();
-                    HashMap<ResourceWrapper, ClusterNode> newMap = new HashMap<ResourceWrapper, ClusterNode>(16);
+                    HashMap<ResourceWrapper, ClusterNode> newMap = new HashMap<ResourceWrapper, ClusterNode>(Math.max(clusterNodeMap.size(), 16));
                     newMap.putAll(clusterNodeMap);
                     newMap.put(node.getId(), clusterNode);
 
@@ -94,11 +96,11 @@ public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode>
          * the specific origin.
          */
         if (!"".equals(context.getOrigin())) {
-            Node originNode = node.getClusterNode().getOriginNode(context.getOrigin());
+            Node originNode = node.getClusterNode().getOrCreateOriginNode(context.getOrigin());
             context.getCurEntry().setOriginNode(originNode);
         }
 
-        fireEntry(context, resourceWrapper, node, count, args);
+        fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }
 
     @Override
@@ -150,4 +152,13 @@ public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode>
         return clusterNodeMap;
     }
 
+    /**
+     * Reset all {@link ClusterNode}s. Reset is needed when {@link IntervalProperty#INTERVAL} or
+     * {@link SampleCountProperty#SAMPLE_COUNT} is changed.
+     */
+    public static void resetClusterNodes() {
+        for (ClusterNode node : clusterNodeMap.values()) {
+            node.reset();
+        }
+    }
 }

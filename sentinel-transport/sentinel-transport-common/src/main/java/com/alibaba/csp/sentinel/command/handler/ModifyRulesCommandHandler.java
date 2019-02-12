@@ -22,9 +22,9 @@ import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
+import com.alibaba.csp.sentinel.datasource.WritableDataSource;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.csp.sentinel.datasource.DataSource;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRule;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRuleManager;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
@@ -35,32 +35,14 @@ import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 import com.alibaba.csp.sentinel.slots.system.SystemRule;
 import com.alibaba.fastjson.JSONArray;
 
+import static com.alibaba.csp.sentinel.transport.util.WritableDataSourceRegistry.*;
+
 /**
  * @author jialiang.linjl
+ * @author Eric Zhao
  */
 @CommandMapping(name = "setRules")
 public class ModifyRulesCommandHandler implements CommandHandler<String> {
-
-    static DataSource<?, List<FlowRule>> flowDataSource = null;
-    static DataSource<?, List<AuthorityRule>> authorityDataSource = null;
-    static DataSource<?, List<DegradeRule>> degradeDataSource = null;
-    static DataSource<?, List<SystemRule>> systemSource = null;
-
-    public static synchronized void registerFlowDataSource(DataSource<?, List<FlowRule>> datasource) {
-        flowDataSource = datasource;
-    }
-
-    public static synchronized void registerAuthorityDataSource(DataSource<?, List<AuthorityRule>> dataSource) {
-        authorityDataSource = dataSource;
-    }
-
-    public static synchronized void registerDegradeDataSource(DataSource<?, List<DegradeRule>> dataSource) {
-        degradeDataSource = dataSource;
-    }
-
-    public static synchronized void registerSystemDataSource(DataSource<?, List<SystemRule>> dataSource) {
-        systemSource = dataSource;
-    }
 
     @Override
     public CommandResponse<String> handle(CommandRequest request) {
@@ -71,67 +53,70 @@ public class ModifyRulesCommandHandler implements CommandHandler<String> {
             try {
                 data = URLDecoder.decode(data, "utf-8");
             } catch (Exception e) {
-                RecordLog.info("decode rule data error", e);
+                RecordLog.info("Decode rule data error", e);
                 return CommandResponse.ofFailure(e, "decode rule data error");
             }
         }
 
-        RecordLog.info("receive rule change:" + type);
-        RecordLog.info(data);
+        RecordLog.info(String.format("Receiving rule change (type: %s): %s", type, data));
 
         String result = "success";
 
-        if ("flow".equalsIgnoreCase(type)) {
+        if (FLOW_RULE_TYPE.equalsIgnoreCase(type)) {
             List<FlowRule> flowRules = JSONArray.parseArray(data, FlowRule.class);
             FlowRuleManager.loadRules(flowRules);
-            if (flowDataSource != null) {
-                try {
-                    flowDataSource.writeDataSource(flowRules);
-                } catch (Exception e) {
-                    result = "partial success";
-                    RecordLog.info(e.getMessage(), e);
-                }
+            if (!writeToDataSource(getFlowDataSource(), flowRules)) {
+                result = WRITE_DS_FAILURE_MSG;
             }
             return CommandResponse.ofSuccess(result);
-        } else if ("authority".equalsIgnoreCase(type)) {
+        } else if (AUTHORITY_RULE_TYPE.equalsIgnoreCase(type)) {
             List<AuthorityRule> rules = JSONArray.parseArray(data, AuthorityRule.class);
             AuthorityRuleManager.loadRules(rules);
-            if (authorityDataSource != null) {
-                try {
-                    authorityDataSource.writeDataSource(rules);
-                } catch (Exception e) {
-                    result = "partial success";
-                    RecordLog.info(e.getMessage(), e);
-                }
+            if (!writeToDataSource(getAuthorityDataSource(), rules)) {
+                result = WRITE_DS_FAILURE_MSG;
             }
             return CommandResponse.ofSuccess(result);
-        } else if ("degrade".equalsIgnoreCase(type)) {
+        } else if (DEGRADE_RULE_TYPE.equalsIgnoreCase(type)) {
             List<DegradeRule> rules = JSONArray.parseArray(data, DegradeRule.class);
             DegradeRuleManager.loadRules(rules);
-            if (degradeDataSource != null) {
-                try {
-                    degradeDataSource.writeDataSource(rules);
-                } catch (Exception e) {
-                    result = "partial success";
-                    RecordLog.info(e.getMessage(), e);
-                }
+            if (!writeToDataSource(getDegradeDataSource(), rules)) {
+                result = WRITE_DS_FAILURE_MSG;
             }
             return CommandResponse.ofSuccess(result);
-        } else if ("system".equalsIgnoreCase(type)) {
+        } else if (SYSTEM_RULE_TYPE.equalsIgnoreCase(type)) {
             List<SystemRule> rules = JSONArray.parseArray(data, SystemRule.class);
             SystemRuleManager.loadRules(rules);
-            if (systemSource != null) {
-                try {
-                    systemSource.writeDataSource(rules);
-                } catch (Exception e) {
-                    result = "partial success";
-                    RecordLog.info(e.getMessage(), e);
-                }
+            if (!writeToDataSource(getSystemSource(), rules)) {
+                result = WRITE_DS_FAILURE_MSG;
             }
             return CommandResponse.ofSuccess(result);
         }
         return CommandResponse.ofFailure(new IllegalArgumentException("invalid type"));
-
     }
 
+    /**
+     * Write target value to given data source.
+     *
+     * @param dataSource writable data source
+     * @param value target value to save
+     * @param <T> value type
+     * @return true if write successful or data source is empty; false if error occurs
+     */
+    private <T> boolean writeToDataSource(WritableDataSource<T> dataSource, T value) {
+        if (dataSource != null) {
+            try {
+                dataSource.write(value);
+            } catch (Exception e) {
+                RecordLog.warn("Write data source failed", e);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static final String WRITE_DS_FAILURE_MSG = "partial success (write data source failed)";
+    private static final String FLOW_RULE_TYPE = "flow";
+    private static final String DEGRADE_RULE_TYPE = "degrade";
+    private static final String SYSTEM_RULE_TYPE = "system";
+    private static final String AUTHORITY_RULE_TYPE = "authority";
 }

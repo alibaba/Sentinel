@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-parent</artifactId>
-        <version>0.2.0-SNAPSHOT</version>
+        <version>1.4.2-SNAPSHOT</version>
     </parent>
     <artifactId>sentinel-adapter</artifactId>
     <packaging>pom</packaging>
@@ -18,13 +18,8 @@
         <module>sentinel-web-servlet</module>
         <module>sentinel-dubbo-adapter</module>
         <module>sentinel-grpc-adapter</module>
+        <module>sentinel-zuul-adapter</module>
     </modules>
-
-    <properties>
-        <servlet.api.version>3.1.0</servlet.api.version>
-        <dubbo.version>2.5.8</dubbo.version>
-        <grpc.version>1.13.1</grpc.version>
-    </properties>
 
     <dependencyManagement>
         <dependencies>
@@ -39,16 +34,9 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>javax.servlet-api</artifactId>
-                <version>${servlet.api.version}</version>
-                <scope>provided</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>com.alibaba</groupId>
-                <artifactId>dubbo</artifactId>
-                <version>${dubbo.version}</version>
+                <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-web-servlet</artifactId>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>

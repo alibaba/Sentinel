@@ -62,8 +62,8 @@ public class FetchTreeCommandHandler implements CommandHandler<String> {
         }
         sb.append("\r\n\r\n");
         sb.append(
-            "t:threadNum  pq:passQps  bq:blockedQps  tq:totalQps  rt:averageRt  prq: passRequestQps 1mp:1m-passed "
-                + "1mb:1m-blocked 1mt:1m-total").append("\r\n");
+            "t:threadNum  pq:passQps  bq:blockQps  tq:totalQps  rt:averageRt  prq: passRequestQps 1mp:1m-pass "
+                + "1mb:1m-block 1mt:1m-total").append("\r\n");
         return CommandResponse.ofSuccess(sb.toString());
     }
 
@@ -74,14 +74,14 @@ public class FetchTreeCommandHandler implements CommandHandler<String> {
         if (!(node instanceof EntranceNode)) {
             sb.append(String.format("%s(t:%s pq:%s bq:%s tq:%s rt:%s prq:%s 1mp:%s 1mb:%s 1mt:%s)",
                 node.getId().getShowName(), node.curThreadNum(), node.passQps(),
-                node.blockedQps(), node.totalQps(), node.avgRt(), node.successQps(),
-                node.totalRequest() - node.blockedRequest(), node.blockedRequest(),
+                node.blockQps(), node.totalQps(), node.avgRt(), node.successQps(),
+                node.totalRequest() - node.blockRequest(), node.blockRequest(),
                 node.totalRequest())).append("\n");
         } else {
             sb.append(String.format("EntranceNode: %s(t:%s pq:%s bq:%s tq:%s rt:%s prq:%s 1mp:%s 1mb:%s 1mt:%s)",
                 node.getId().getShowName(), node.curThreadNum(), node.passQps(),
-                node.blockedQps(), node.totalQps(), node.avgRt(), node.successQps(),
-                node.totalRequest() - node.blockedRequest(), node.blockedRequest(),
+                node.blockQps(), node.totalQps(), node.avgRt(), node.successQps(),
+                node.totalRequest() - node.blockRequest(), node.blockRequest(),
                 node.totalRequest())).append("\n");
         }
         for (Node n : node.getChildList()) {

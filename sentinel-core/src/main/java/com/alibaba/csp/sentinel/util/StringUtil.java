@@ -117,4 +117,22 @@ public final class StringUtil {
 
         return true;
     }
+
+    public static String capitalize(String str) {
+        return changeFirstCharacterCase(str, true);
+    }
+
+    private static String changeFirstCharacterCase(String str, boolean capitalize) {
+        if (str == null || str.length() == 0) {
+            return str;
+        }
+        StringBuilder buf = new StringBuilder(str.length());
+        if (capitalize) {
+            buf.append(Character.toUpperCase(str.charAt(0)));
+        } else {
+            buf.append(Character.toLowerCase(str.charAt(0)));
+        }
+        buf.append(str.substring(1));
+        return buf.toString();
+    }
 }

@@ -27,6 +27,9 @@ import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 
+/**
+ * @author jialiang.linjl
+ */
 public class MetricTimerListener implements Runnable {
 
     private static final MetricWriter metricWriter = new MetricWriter(SentinelConfig.singleMetricFileSize(),
@@ -36,7 +39,6 @@ public class MetricTimerListener implements Runnable {
     public void run() {
         Map<Long, List<MetricNode>> maps = new TreeMap<Long, List<MetricNode>>();
 
-        // 每5秒打印一次,把丢弃的seconds都给丢掉。
         for (Entry<ResourceWrapper, ClusterNode> e : ClusterBuilderSlot.getClusterNodeMap().entrySet()) {
             String name = e.getKey().getName();
             ClusterNode node = e.getValue();
@@ -58,11 +60,10 @@ public class MetricTimerListener implements Runnable {
                 try {
                     metricWriter.write(entry.getKey(), entry.getValue());
                 } catch (Exception e) {
-                    RecordLog.info("write metric error: ", e);
+                    RecordLog.warn("[MetricTimerListener] Write metric error", e);
                 }
             }
         }
-
     }
 
 }

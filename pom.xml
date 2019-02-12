@@ -5,7 +5,7 @@
 
     <groupId>com.alibaba.csp</groupId>
     <artifactId>sentinel-parent</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>1.4.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>${project.artifactId}</name>
@@ -41,22 +41,26 @@
 
     <properties>
         <!-- Compile libs -->
-        <fastjson.version>1.2.47</fastjson.version>
+        <fastjson.version>1.2.55</fastjson.version>
 
         <!-- Test libs -->
         <junit.version>4.12</junit.version>
-        <mockito.version>2.18.0</mockito.version>
+        <mockito.version>2.21.0</mockito.version>
+        <awaitility.version>3.1.5</awaitility.version>
 
         <!-- Build -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.source.version>1.6</java.source.version>
         <java.target.version>1.6</java.target.version>
         <java.encoding>UTF-8</java.encoding>
-        <maven.compiler.version>3.7.0</maven.compiler.version>
+        <maven.compiler.version>3.8.0</maven.compiler.version>
+        <maven.surefire.version>2.22.1</maven.surefire.version>
         <maven.source.version>3.0.1</maven.source.version>
         <maven.javadoc.version>3.0.1</maven.javadoc.version>
+        <maven.deploy.version>2.8.2</maven.deploy.version>
         <maven.gpg.version>1.6</maven.gpg.version>
-        <maven.jacoco.version>0.8.1</maven.jacoco.version>
+        <maven.jacoco.version>0.8.3</maven.jacoco.version>
+        <maven.jar.version>3.1.0</maven.jar.version>
     </properties>
 
     <modules>
@@ -67,6 +71,8 @@
         <module>sentinel-dashboard</module>
 
         <module>sentinel-demo</module>
+        <module>sentinel-benchmark</module>
+        <module>sentinel-cluster</module>
     </modules>
 
     <dependencyManagement>
@@ -84,6 +90,11 @@
             <dependency>
                 <groupId>com.alibaba.csp</groupId>
                 <artifactId>sentinel-annotation-aspectj</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-parameter-flow-control</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -113,6 +124,16 @@
             </dependency>
             <dependency>
                 <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-transport-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-cluster-common-default</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
                 <artifactId>sentinel-adapter</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -135,6 +156,18 @@
                 <version>${mockito.version}</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>org.awaitility</groupId>
+                <artifactId>awaitility</artifactId>
+                <version>${awaitility.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>java-hamcrest</artifactId>
+                <version>2.0.0.0</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -148,6 +181,15 @@
                     <source>${java.source.version}</source>
                     <target>${java.target.version}</target>
                     <encoding>${java.encoding}</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- CircleCI build workaround -->
+                    <argLine>@{argLine} -Xms1024m -Xmx2048m</argLine>
+                    <useSystemClassLoader>false</useSystemClassLoader>
                 </configuration>
             </plugin>
             <plugin>
@@ -170,6 +212,20 @@
                 </executions>
             </plugin>
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven.surefire.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>${maven.jar.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
     <profiles>
