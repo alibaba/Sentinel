@@ -91,6 +91,8 @@ public class SystemGuardDemo {
         SystemRule rule = new SystemRule();
         // max load is 3
         rule.setHighestSystemLoad(3.0);
+        // max cpu usage is 60%
+        rule.setHighestCpuUsage(0.6);
         // max avg rt of all request is 10 ms
         rule.setAvgRt(10);
         // max total qps is 20
