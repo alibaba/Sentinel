@@ -81,12 +81,12 @@ public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                     // Here we add the block count.
                     addBlockCount(resourceWrapper, count, args);
 
-                    String message = "";
+                    String triggeredParam = "";
                     if (args.length > rule.getParamIdx()) {
                         Object value = args[rule.getParamIdx()];
-                        message = String.valueOf(value);
+                        triggeredParam = String.valueOf(value);
                     }
-                    throw new ParamFlowException(resourceWrapper.getName(), message);
+                    throw new ParamFlowException(resourceWrapper.getName(), triggeredParam, rule);
                 }
             }
         }

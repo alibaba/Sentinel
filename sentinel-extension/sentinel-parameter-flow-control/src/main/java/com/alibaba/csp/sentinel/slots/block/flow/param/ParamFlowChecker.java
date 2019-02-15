@@ -57,7 +57,7 @@ final class ParamFlowChecker {
             return true;
         }
 
-        if (rule.isClusterMode()) {
+        if (rule.isClusterMode() && rule.getGrade() == RuleConstant.FLOW_GRADE_QPS) {
             return passClusterCheck(resourceWrapper, rule, count, value);
         }
 
@@ -106,6 +106,14 @@ final class ParamFlowChecker {
                 }
                 return false;
             }
+        } else if (rule.getGrade() == RuleConstant.FLOW_GRADE_THREAD) {
+            long threadCount = getHotParameters(resourceWrapper).getThreadCount(rule.getParamIdx(), value);
+            if (exclusionItems.contains(value)) {
+                int itemThreshold = rule.getParsedHotItems().get(value);
+                return ++threadCount <= itemThreshold;
+            }
+            long threshold = (long) rule.getCount();
+            return ++threadCount <= threshold;
         }
 
         return true;

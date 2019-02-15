@@ -25,7 +25,7 @@ public final class ClusterErrorMessages {
     public static final String UNEXPECTED_STATUS = "unexpected status";
     public static final String TOO_MANY_REQUESTS = "too many requests (client side)";
     public static final String REQUEST_TIME_OUT = "request time out";
-    public static final String CLIENT_NOT_READY = "client not ready (not running or initializing)";
+    public static final String CLIENT_NOT_READY = "client not ready";
     public static final String NO_RULES_IN_SERVER = "no rules in token server";
 
     private ClusterErrorMessages() {}

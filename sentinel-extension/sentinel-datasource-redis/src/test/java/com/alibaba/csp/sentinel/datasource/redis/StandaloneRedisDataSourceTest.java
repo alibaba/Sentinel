@@ -31,6 +31,7 @@ import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import io.lettuce.core.pubsub.api.sync.RedisPubSubCommands;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -39,6 +40,10 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+
+import static org.awaitility.Awaitility.await;
 
 /**
  * Redis stand-alone mode test cases for {@link RedisDataSource}.
@@ -92,11 +97,15 @@ public class StandaloneRedisDataSourceTest {
         subCommands.set(ruleKey, flowRules);
         subCommands.publish(channel, flowRules);
         subCommands.exec();
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+
+        await().timeout(2, TimeUnit.SECONDS)
+            .until(new Callable<List<FlowRule>>() {
+                @Override
+                public List<FlowRule> call() throws Exception {
+                    return FlowRuleManager.getRules();
+                }
+            }, Matchers.hasSize(1));
+
         rules = FlowRuleManager.getRules();
         Assert.assertEquals(rules.get(0).getMaxQueueingTimeMs(), maxQueueingTimeMs);
         String value = subCommands.get(ruleKey);
