@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.MetricEntity;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import org.springframework.stereotype.Component;
 
 /**
@@ -43,21 +44,23 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
     /**
      * {@code app -> resource -> timestamp -> metric}
      */
-    private Map<String, Map<String, LinkedHashMap<Long, MetricEntity>>> allMetrics = new ConcurrentHashMap<>();
+    private Map<String, Map<String, ConcurrentLinkedHashMap<Long, MetricEntity>>> allMetrics = new ConcurrentHashMap<>();
+
+
 
     @Override
     public synchronized void save(MetricEntity entity) {
         if (entity == null || StringUtil.isBlank(entity.getApp())) {
             return;
         }
-        allMetrics.computeIfAbsent(entity.getApp(), e -> new HashMap<>(16))
-            .computeIfAbsent(entity.getResource(), e -> new LinkedHashMap<Long, MetricEntity>() {
-                @Override
-                protected boolean removeEldestEntry(Entry<Long, MetricEntity> eldest) {
+        allMetrics.computeIfAbsent(entity.getApp(), e -> new ConcurrentHashMap<>(16))
+            .computeIfAbsent(entity.getResource(), e -> new ConcurrentLinkedHashMap.Builder<Long, MetricEntity>()
+                .maximumWeightedCapacity(MAX_METRIC_LIVE_TIME_MS).weigher((key, value) -> {
                     // Metric older than {@link #MAX_METRIC_LIVE_TIME_MS} will be removed.
-                    return eldest.getKey() < System.currentTimeMillis() - MAX_METRIC_LIVE_TIME_MS;
-                }
-            }).put(entity.getTimestamp().getTime(), entity);
+                    int weight = (int)(System.currentTimeMillis() - key);
+                    // weight must be a number greater than or equal to one
+                    return Math.max(weight, 1);
+                }).build()).put(entity.getTimestamp().getTime(), entity);
     }
 
     @Override
@@ -75,11 +78,11 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
         if (StringUtil.isBlank(app)) {
             return results;
         }
-        Map<String, LinkedHashMap<Long, MetricEntity>> resourceMap = allMetrics.get(app);
+        Map<String, ConcurrentLinkedHashMap<Long, MetricEntity>> resourceMap = allMetrics.get(app);
         if (resourceMap == null) {
             return results;
         }
-        LinkedHashMap<Long, MetricEntity> metricsMap = resourceMap.get(resource);
+        ConcurrentLinkedHashMap<Long, MetricEntity> metricsMap = resourceMap.get(resource);
         if (metricsMap == null) {
             return results;
         }
@@ -98,14 +101,14 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
             return results;
         }
         // resource -> timestamp -> metric
-        Map<String, LinkedHashMap<Long, MetricEntity>> resourceMap = allMetrics.get(app);
+        Map<String, ConcurrentLinkedHashMap<Long, MetricEntity>> resourceMap = allMetrics.get(app);
         if (resourceMap == null) {
             return results;
         }
         final long minTimeMs = System.currentTimeMillis() - 1000 * 60;
-        Map<String, MetricEntity> resourceCount = new HashMap<>(32);
+        Map<String, MetricEntity> resourceCount = new ConcurrentHashMap<>(32);
 
-        for (Entry<String, LinkedHashMap<Long, MetricEntity>> resourceMetrics : resourceMap.entrySet()) {
+        for (Entry<String, ConcurrentLinkedHashMap<Long, MetricEntity>> resourceMetrics : resourceMap.entrySet()) {
             for (Entry<Long, MetricEntity> metrics : resourceMetrics.getValue().entrySet()) {
                 if (metrics.getKey() < minTimeMs) {
                     continue;
