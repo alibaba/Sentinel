@@ -20,6 +20,7 @@ import java.util.Collection;
 import com.alibaba.csp.sentinel.cluster.ClusterConstants;
 import com.alibaba.csp.sentinel.cluster.codec.EntityWriter;
 import com.alibaba.csp.sentinel.cluster.request.data.ParamFlowRequestData;
+import com.alibaba.csp.sentinel.log.RecordLog;
 
 import io.netty.buffer.ByteBuf;
 
@@ -84,7 +85,13 @@ public class ParamFlowRequestDataWriter implements EntityWriter<ParamFlowRequest
         target.writeBytes(tmpChars);
     }
 
-    private int calculateParamAmount(/*@NonEmpty*/ Collection<Object> params) {
+    /**
+     * Calculate amount of valid parameters in provided parameter list.
+     *
+     * @param params non-empty parameter list
+     * @return amount of valid parameters
+     */
+    int calculateParamAmount(/*@NonEmpty*/ Collection<Object> params) {
         int size = 0;
         int length = 0;
         for (Object param : params) {
@@ -92,12 +99,20 @@ public class ParamFlowRequestDataWriter implements EntityWriter<ParamFlowRequest
             if (size + s > PARAM_MAX_SIZE) {
                 break;
             }
+            if (s <= 0) {
+                RecordLog.warn("[ParamFlowRequestDataWriter] WARN: Non-primitive type detected in params of "
+                    + "cluster parameter flow control, which is not supported: " + param);
+                continue;
+            }
             length++;
         }
         return length;
     }
 
-    private int calculateParamTransportSize(Object value) {
+    int calculateParamTransportSize(Object value) {
+        if (value == null) {
+            return 0;
+        }
         // Layout for primitives: |type flag(1)|value|
         // size = original size + type flag (1)
         if (value instanceof Integer || int.class.isInstance(value)) {
