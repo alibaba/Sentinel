@@ -97,6 +97,7 @@ public class ParamFlowSlotTest {
         ParameterMetric metric = ParamFlowSlot.getParamMetric(resourceWrapper);
         assertNotNull(metric);
         assertNotNull(metric.getRollingParameters().get(index));
+        assertNotNull(metric.getThreadCountMap().get(index));
 
         // Duplicate init.
         paramFlowSlot.initHotParamMetricsFor(resourceWrapper, index);

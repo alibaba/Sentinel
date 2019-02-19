@@ -1,5 +1,13 @@
 <div class="row clearfix">
     <form role="form" class="form-horizontal">
+        <div class="form-group" ng-if="stateVO.currentMode == 0">
+            <label class="col-sm-2 control-label">连接状态</label>
+            <div class="col-sm-4">
+                <p class="form-control-static text-danger" ng-if="stateVO.client.clientConfig.clientState === 0">未连接</p>
+                <p class="form-control-static" ng-if="stateVO.client.clientConfig.clientState === 1">连接中</p>
+                <p class="form-control-static text-success" ng-if="stateVO.client.clientConfig.clientState === 2">已连接</p>
+            </div>
+        </div>
         <div class="form-group">
             <label class="col-sm-2 control-label">Token Server IP</label>
             <div class="col-sm-4">

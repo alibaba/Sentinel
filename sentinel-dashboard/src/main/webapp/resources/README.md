@@ -1,4 +1,4 @@
-# Sentinel-Dashboard
+# Sentinel Dashboard Frontend
 
 ## Env Requirement
 
@@ -6,8 +6,8 @@
 
 ## Code Guide
 
-- Code Style Guide for HTML/CSS: https://codeguide.bootcss.com/
-- Airbnb JavaScript Style Guide: https://github.com/airbnb/javascript/tree/es5-deprecated/es5
+- [Code Style Guide for HTML/CSS](https://codeguide.bootcss.com/)
+- [Airbnb JavaScript Style Guide](https://github.com/airbnb/javascript/tree/es5-deprecated/es5)
 
 ## Install Packages
 
@@ -27,6 +27,6 @@ npm start
 npm run build
 ```
 
-## CREDIT:
+## Credit
 
 - [sb-admin-angular](https://github.com/start-angular/sb-admin-angular)

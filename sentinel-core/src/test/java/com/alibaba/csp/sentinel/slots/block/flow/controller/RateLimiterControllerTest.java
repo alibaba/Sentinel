@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow.controller;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
@@ -25,7 +26,6 @@ import org.junit.Test;
 
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.node.Node;
-import com.alibaba.csp.sentinel.slots.block.flow.controller.RateLimiterController;
 
 /**
  * @author jialiang.linjl
@@ -85,4 +85,14 @@ public class RateLimiterControllerTest {
 
     }
 
+    @Test
+    public void testPaceController_zeroattack() throws InterruptedException {
+        RateLimiterController paceController = new RateLimiterController(500, 0d);
+        Node node = mock(Node.class);
+
+        for (int i = 0; i < 2; i++) {
+            assertFalse(paceController.canPass(node, 1));
+            assertTrue(paceController.canPass(node, 0));
+        }
+    }
 }

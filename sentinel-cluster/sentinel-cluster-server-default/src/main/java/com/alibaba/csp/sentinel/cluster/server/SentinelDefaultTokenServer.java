@@ -15,8 +15,11 @@
  */
 package com.alibaba.csp.sentinel.cluster.server;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
 import com.alibaba.csp.sentinel.cluster.registry.ConfigSupplierRegistry;
 import com.alibaba.csp.sentinel.cluster.server.config.ClusterServerConfigManager;
 import com.alibaba.csp.sentinel.cluster.server.config.ServerTransportConfig;
@@ -93,6 +96,7 @@ public class SentinelDefaultTokenServer implements ClusterTokenServer {
         if (shouldStart.get()) {
             if (server != null) {
                 server.start();
+                ClusterStateManager.markToServer();
                 if (embedded) {
                     RecordLog.info("[SentinelDefaultTokenServer] Running in embedded mode");
                     handleEmbeddedStart();
@@ -120,6 +124,15 @@ public class SentinelDefaultTokenServer implements ClusterTokenServer {
     private void handleEmbeddedStart() {
         String namespace = ConfigSupplierRegistry.getNamespaceSupplier().get();
         if (StringUtil.isNotEmpty(namespace)) {
+            // Mark server global mode as embedded.
+            ClusterServerConfigManager.setEmbedded(true);
+            if (!ClusterServerConfigManager.getNamespaceSet().contains(namespace)) {
+                Set<String> namespaceSet = new HashSet<>(ClusterServerConfigManager.getNamespaceSet());
+                namespaceSet.add(namespace);
+                ClusterServerConfigManager.loadServerNamespaceSet(namespaceSet);
+            }
+
+            // Register self to connection group.
             ConnectionManager.addConnection(namespace, HostNameUtil.getIp());
         }
     }

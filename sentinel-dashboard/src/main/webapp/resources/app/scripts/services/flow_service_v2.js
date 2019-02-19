@@ -1,41 +1,41 @@
 var app = angular.module('sentinelDashboardApp');
 
 app.service('FlowServiceV2', ['$http', function ($http) {
-  this.queryMachineRules = function (app, ip, port) {
-    var param = {
-      app: app,
-      ip: ip,
-      port: port
+    this.queryMachineRules = function (app, ip, port) {
+        var param = {
+            app: app,
+            ip: ip,
+            port: port
+        };
+        return $http({
+            url: '/v2/flow/rules',
+            params: param,
+            method: 'GET'
+        });
     };
-    return $http({
-      url: '/v2/flow/rules',
-      params: param,
-      method: 'GET'
-    });
-  };
 
-  this.newRule = function (rule) {
-    return $http({
-      url: '/v2/flow/rule',
-      data: rule,
-      method: 'POST'
-    });
-  };
+    this.newRule = function (rule) {
+        return $http({
+            url: '/v2/flow/rule',
+            data: rule,
+            method: 'POST'
+        });
+    };
 
-  this.saveRule = function (rule) {
-   return $http({
-      url: '/v2/flow/rule/' + rule.id,
-      data: rule,
-      method: 'PUT'
-    });
-  };
+    this.saveRule = function (rule) {
+        return $http({
+            url: '/v2/flow/rule/' + rule.id,
+            data: rule,
+            method: 'PUT'
+        });
+    };
 
-  this.deleteRule = function (rule) {
-    return $http({
-      url: '/v2/flow/rule/' + rule.id,
-      method: 'DELETE'
-    });
-  };
+    this.deleteRule = function (rule) {
+        return $http({
+            url: '/v2/flow/rule/' + rule.id,
+            method: 'DELETE'
+        });
+    };
 
     function notNumberAtLeastZero(num) {
         return num === undefined || num === '' || isNaN(num) || num < 0;
@@ -45,7 +45,7 @@ app.service('FlowServiceV2', ['$http', function ($http) {
         return num === undefined || num === '' || isNaN(num) || num <= 0;
     }
 
-  this.checkRuleValid = function (rule) {
+    this.checkRuleValid = function (rule) {
         if (rule.resource === undefined || rule.resource === '') {
             alert('资源名称不能为空');
             return false;
@@ -76,10 +76,10 @@ app.service('FlowServiceV2', ['$http', function ($http) {
             alert('排队超时时间必须大于 0');
             return false;
         }
-      if (rule.clusterMode && (rule.clusterConfig === undefined || rule.clusterConfig.thresholdType === undefined)) {
-          alert('集群限流配置不正确');
-          return false;
-      }
+        if (rule.clusterMode && (rule.clusterConfig === undefined || rule.clusterConfig.thresholdType === undefined)) {
+            alert('集群限流配置不正确');
+            return false;
+        }
         return true;
     };
 }]);

@@ -134,7 +134,7 @@ public class MetricSearcher {
                     MetricWriter.formIndexFileName(fileName), offsetInIndex);
             offsetInIndex = 0;
             if (offset != -1) {
-                return metricsReader.readMetricsByEndTime(fileNames, i, offset, endTimeMs, identity);
+                return metricsReader.readMetricsByEndTime(fileNames, i, offset, beginTimeMs, endTimeMs, identity);
             }
         }
         return null;

@@ -33,6 +33,7 @@ import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleUtil;
 import com.alibaba.csp.sentinel.util.AssertUtil;
@@ -103,6 +104,7 @@ public final class ClusterFlowRuleManager {
     }
 
     public static void setPropertySupplier(Function<String, SentinelProperty<List<FlowRule>>> propertySupplier) {
+        AssertUtil.notNull(propertySupplier, "flow rule property supplier cannot be null");
         ClusterFlowRuleManager.propertySupplier = propertySupplier;
     }
 
@@ -208,6 +210,17 @@ public final class ClusterFlowRuleManager {
         return FLOW_RULES.get(id);
     }
 
+    public static Set<Long> getFlowIdSet(String namespace) {
+        if (StringUtil.isEmpty(namespace)) {
+            return new HashSet<>();
+        }
+        Set<Long> set = NAMESPACE_FLOW_ID_MAP.get(namespace);
+        if (set == null) {
+            return new HashSet<>();
+        }
+        return new HashSet<>(set);
+    }
+
     public static List<FlowRule> getAllFlowRules() {
         return new ArrayList<>(FLOW_RULES.values());
     }
@@ -303,6 +316,10 @@ public final class ClusterFlowRuleManager {
         return ConnectionManager.getConnectedCount(namespace);
     }
 
+    public static String getNamespace(long flowId) {
+        return FLOW_NAMESPACE_MAP.get(flowId);
+    }
+
     private static void applyClusterFlowRule(List<FlowRule> list, /*@Valid*/ String namespace) {
         if (list == null || list.isEmpty()) {
             clearAndResetRulesFor(namespace);
@@ -326,7 +343,8 @@ public final class ClusterFlowRuleManager {
             }
 
             // Flow id should not be null after filtered.
-            Long flowId = rule.getClusterConfig().getFlowId();
+            ClusterFlowConfig clusterConfig = rule.getClusterConfig();
+            Long flowId = clusterConfig.getFlowId();
             if (flowId == null) {
                 continue;
             }
@@ -336,8 +354,7 @@ public final class ClusterFlowRuleManager {
 
             // Prepare cluster metric from valid flow ID.
             ClusterMetricStatistics.putMetricIfAbsent(flowId,
-                new ClusterMetric(ClusterServerConfigManager.getSampleCount(),
-                    ClusterServerConfigManager.getIntervalMs()));
+                new ClusterMetric(clusterConfig.getSampleCount(), clusterConfig.getWindowIntervalMs()));
         }
 
         // Cleanup unused cluster metrics.

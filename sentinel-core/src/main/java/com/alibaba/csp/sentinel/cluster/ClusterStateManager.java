@@ -27,7 +27,10 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 
 /**
- * <p>Global tate manager for Sentinel cluster. This enables switching between cluster client and server.</p>
+ * <p>
+ * Global state manager for Sentinel cluster.
+ * This enables switching between cluster token client and server mode.
+ * </p>
  *
  * @author Eric Zhao
  * @since 1.4.0
@@ -36,14 +39,13 @@ public final class ClusterStateManager {
 
     public static final int CLUSTER_CLIENT = 0;
     public static final int CLUSTER_SERVER = 1;
+    public static final int CLUSTER_NOT_STARTED = -1;
 
-    private static volatile int mode = -1;
+    private static volatile int mode = CLUSTER_NOT_STARTED;
     private static volatile long lastModified = -1;
 
     private static volatile SentinelProperty<Integer> stateProperty = new DynamicSentinelProperty<Integer>();
     private static final PropertyListener<Integer> PROPERTY_LISTENER = new ClusterStatePropertyListener();
-
-    private static final Object UPDATE_LOCK = new Object();
 
     static {
         InitExecutor.doInit();
@@ -206,33 +208,66 @@ public final class ClusterStateManager {
     private static class ClusterStatePropertyListener implements PropertyListener<Integer> {
         @Override
         public synchronized void configLoad(Integer value) {
-            applyState(value);
+            applyStateInternal(value);
         }
 
         @Override
         public synchronized void configUpdate(Integer value) {
-            applyState(value);
+            applyStateInternal(value);
         }
     }
 
-    public static boolean applyState(Integer state) {
-        if (state == null || state < 0) {
+    private static boolean applyStateInternal(Integer state) {
+        if (state == null || state < CLUSTER_NOT_STARTED) {
             return false;
         }
         if (state == mode) {
             return true;
         }
-        synchronized (UPDATE_LOCK) {
+        try {
             switch (state) {
                 case CLUSTER_CLIENT:
                     return setToClient();
                 case CLUSTER_SERVER:
                     return setToServer();
+                case CLUSTER_NOT_STARTED:
+                    setStop();
+                    return true;
                 default:
                     RecordLog.warn("[ClusterStateManager] Ignoring unknown cluster state: " + state);
                     return false;
             }
+        } catch (Throwable t) {
+            RecordLog.warn("[ClusterStateManager] Fatal error when applying state: " + state, t);
+            return false;
         }
+    }
+
+    private static void setStop() {
+        if (mode == CLUSTER_NOT_STARTED) {
+            return;
+        }
+        RecordLog.info("[ClusterStateManager] Changing cluster mode to not-started");
+        mode = CLUSTER_NOT_STARTED;
+
+        sleepIfNeeded();
+        lastModified = TimeUtil.currentTimeMillis();
+
+        stopClient();
+        stopServer();
+    }
+
+    /**
+     * Apply given state to cluster mode.
+     *
+     * @param state valid state to apply
+     */
+    public static void applyState(Integer state) {
+        stateProperty.updateValue(state);
+    }
+
+    public static void markToServer() {
+        mode = CLUSTER_SERVER;
     }
 
     private static final int MIN_INTERVAL = 5 * 1000;
