@@ -51,6 +51,10 @@ public final class ClusterParamFlowChecker {
             // Unexpected state, return FAIL.
             return new TokenResult(TokenResultStatus.FAIL);
         }
+        if (values == null || values.isEmpty()) {
+            // Empty parameter list will always pass.
+            return new TokenResult(TokenResultStatus.OK);
+        }
         double remaining = -1;
         boolean hasPassed = true;
         Object blockObject = null;
