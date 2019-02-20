@@ -129,7 +129,7 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
     var paramFlowRuleDialog;
 
     $scope.editRule = function (rule) {
-      $scope.currentRule = rule;
+      $scope.currentRule = angular.copy(rule);
       $scope.paramFlowRuleDialog = {
         title: '编辑热点规则',
         type: 'edit',

@@ -2,6 +2,8 @@ package com.alibaba.csp.sentinel.datasource.zookeeper;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
@@ -19,6 +21,7 @@ import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.data.Stat;
 import org.junit.Test;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.*;
 
 /**
@@ -68,10 +71,16 @@ public class ZookeeperDataSourceTest {
         String ruleString = JSON.toJSONString(Collections.singletonList(rule));
         zkClient.setData().forPath(path, ruleString.getBytes());
 
-        Thread.sleep(5000);
+        await().timeout(5, TimeUnit.SECONDS)
+            .until(new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    List<FlowRule> rules = FlowRuleManager.getRules();
+                    return rules != null && !rules.isEmpty();
+                }
+            });
 
         List<FlowRule> rules = FlowRuleManager.getRules();
-        assertTrue(rules != null && !rules.isEmpty());
         boolean exists = false;
         for (FlowRule r : rules) {
             if (resourceName.equals(r.getResource())) {

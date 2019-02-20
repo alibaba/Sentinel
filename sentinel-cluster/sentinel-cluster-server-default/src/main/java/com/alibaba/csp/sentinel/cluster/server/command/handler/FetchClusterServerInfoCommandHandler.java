@@ -43,7 +43,7 @@ public class FetchClusterServerInfoCommandHandler implements CommandHandler<Stri
         JSONArray connectionGroups = new JSONArray();
         Set<String> namespaceSet = ClusterServerConfigManager.getNamespaceSet();
         for (String namespace : namespaceSet) {
-            ConnectionGroup group = ConnectionManager.getConnectionGroup(namespace);
+            ConnectionGroup group = ConnectionManager.getOrCreateConnectionGroup(namespace);
             if (group != null) {
                 connectionGroups.add(group);
             }

@@ -16,9 +16,10 @@
       </li>
 
       <li ng-class="{active: true}" ng-repeat="entry in apps | filter: { app: searchApp }">{{dropDown}}
-        <a href="#" ng-click="click($event)" collapse="{{collpaseall == 1}}" style="font-size: 16px;word-break: break-word;">
+        <a href="javascript:void(0);" ng-click="click($event)" collapse="{{collpaseall == 1}}" style="font-size: 16px;word-break: break-word;">
           &nbsp;{{entry.app}}
           <span class="fa arrow"></span>
+          <span class="arrow">({{entry.heathCount}}/{{entry.machines.length}})</span>
         </a>
 
         <!--<ul class="nav nav-second-level" collapse="{{entry.active}}" style="display: none;">-->

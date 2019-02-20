@@ -55,7 +55,7 @@ public final class ConnectionManager {
         ConnectionGroup group = CONN_MAP.get(namespace);
         if (group == null) {
             synchronized (CREATE_LOCK) {
-                if (CONN_MAP.get(namespace) == null) {
+                if ((group = CONN_MAP.get(namespace)) == null) {
                     group = new ConnectionGroup(namespace);
                     CONN_MAP.put(namespace, group);
                 }
@@ -100,10 +100,21 @@ public final class ConnectionManager {
         return group;
     }
 
-    public static ConnectionGroup getConnectionGroup(String namespace) {
+    public static ConnectionGroup getOrCreateConnectionGroup(String namespace) {
         AssertUtil.assertNotBlank(namespace, "namespace should not be empty");
         ConnectionGroup group = getOrCreateGroup(namespace);
         return group;
+    }
+
+    public static ConnectionGroup getConnectionGroup(String namespace) {
+        AssertUtil.assertNotBlank(namespace, "namespace should not be empty");
+        ConnectionGroup group = CONN_MAP.get(namespace);
+        return group;
+    }
+
+    static void clear() {
+        CONN_MAP.clear();
+        NAMESPACE_MAP.clear();
     }
 
     private static final Object CREATE_LOCK = new Object();
