@@ -20,6 +20,8 @@ import java.util.Collection;
 import com.alibaba.csp.sentinel.cluster.ClusterConstants;
 import com.alibaba.csp.sentinel.cluster.codec.EntityWriter;
 import com.alibaba.csp.sentinel.cluster.request.data.ParamFlowRequestData;
+import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 
 import io.netty.buffer.ByteBuf;
 
@@ -29,6 +31,17 @@ import io.netty.buffer.ByteBuf;
  * @since 1.4.0
  */
 public class ParamFlowRequestDataWriter implements EntityWriter<ParamFlowRequestData, ByteBuf> {
+
+    private final int maxParamByteSize;
+
+    public ParamFlowRequestDataWriter() {
+        this(DEFAULT_PARAM_MAX_SIZE);
+    }
+
+    public ParamFlowRequestDataWriter(int maxParamByteSize) {
+        AssertUtil.isTrue(maxParamByteSize > 0, "maxParamByteSize should be positive");
+        this.maxParamByteSize = maxParamByteSize;
+    }
 
     @Override
     public void writeTo(ParamFlowRequestData entity, ByteBuf target) {
@@ -84,20 +97,35 @@ public class ParamFlowRequestDataWriter implements EntityWriter<ParamFlowRequest
         target.writeBytes(tmpChars);
     }
 
-    private int calculateParamAmount(/*@NonEmpty*/ Collection<Object> params) {
+    /**
+     * Calculate amount of valid parameters in provided parameter list.
+     *
+     * @param params non-empty parameter list
+     * @return amount of valid parameters
+     */
+    int calculateParamAmount(/*@NonEmpty*/ Collection<Object> params) {
         int size = 0;
         int length = 0;
         for (Object param : params) {
             int s = calculateParamTransportSize(param);
-            if (size + s > PARAM_MAX_SIZE) {
+            if (s <= 0) {
+                RecordLog.warn("[ParamFlowRequestDataWriter] WARN: Non-primitive type detected in params of "
+                    + "cluster parameter flow control, which is not supported: " + param);
+                continue;
+            }
+            if (size + s > maxParamByteSize) {
                 break;
             }
+            size += s;
             length++;
         }
         return length;
     }
 
-    private int calculateParamTransportSize(Object value) {
+    int calculateParamTransportSize(Object value) {
+        if (value == null) {
+            return 0;
+        }
         // Layout for primitives: |type flag(1)|value|
         // size = original size + type flag (1)
         if (value instanceof Integer || int.class.isInstance(value)) {
@@ -125,5 +153,5 @@ public class ParamFlowRequestDataWriter implements EntityWriter<ParamFlowRequest
         }
     }
 
-    private static final int PARAM_MAX_SIZE = 1000;
+    private static final int DEFAULT_PARAM_MAX_SIZE = 1024;
 }

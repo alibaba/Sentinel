@@ -76,7 +76,7 @@ public class DegradeRuleManager {
 
         for (DegradeRule rule : rules) {
             if (!rule.passCheck(context, node, count)) {
-                throw new DegradeException(rule.getLimitApp());
+                throw new DegradeException(rule.getLimitApp(), rule);
             }
         }
     }
