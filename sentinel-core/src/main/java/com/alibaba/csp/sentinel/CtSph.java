@@ -109,7 +109,8 @@ public class CtSph implements Sph {
         return asyncEntry;
     }
 
-    private AsyncEntry asyncEntryInternal(ResourceWrapper resourceWrapper, int count, Object... args) throws BlockException {
+    private AsyncEntry asyncEntryInternal(ResourceWrapper resourceWrapper, int count, Object... args)
+        throws BlockException {
         return asyncEntryWithPriorityInternal(resourceWrapper, count, false, args);
     }
 
@@ -320,5 +321,12 @@ public class CtSph implements Sph {
     public Entry entryWithPriority(String name, EntryType type, int count, boolean prioritized) throws BlockException {
         StringResourceWrapper resource = new StringResourceWrapper(name, type);
         return entryWithPriority(resource, count, prioritized);
+    }
+
+    @Override
+    public Entry entryWithPriority(String name, EntryType type, int count, boolean prioritized, Object... args)
+        throws BlockException {
+        StringResourceWrapper resource = new StringResourceWrapper(name, type);
+        return entryWithPriority(resource, count, prioritized, args);
     }
 }
