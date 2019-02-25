@@ -169,4 +169,21 @@ public interface Sph {
      * @since 1.4.0
      */
     Entry entryWithPriority(String name, EntryType type, int count, boolean prioritized) throws BlockException;
+
+    /**
+     * Create a protected resource with priority.
+     *
+     * @param name        the unique name for the protected resource
+     * @param type        the resource is an inbound or an outbound method. This is used
+     *                    to mark whether it can be blocked when the system is unstable
+     * @param count       the count that the resource requires
+     * @param prioritized whether the entry is prioritized
+     * @param args        the parameters of the method. It can also be counted by setting hot parameter
+     *                    rule
+     * @return entry get
+     * @throws BlockException if the block criteria is met
+     * @since 1.5.0
+     */
+    Entry entryWithPriority(String name, EntryType type, int count, boolean prioritized, Object... args)
+        throws BlockException;
 }
