@@ -51,3 +51,19 @@ Sentinel 提供了多种规则来保护系统的不同部分。流量控制规�
 
 - [Sentinel 控制台启动和客户端接入](./README.md)
 - [控制台 Wiki](https://github.com/alibaba/Sentinel/wiki/%E6%8E%A7%E5%88%B6%E5%8F%B0)
+
+
+
+
+
+#Sentinel to Apollo to App
+
+- 1.应用端获取配置中心的流控规则（限流规则、热点参数规则等）
+- 2.Sentinel控制台持久化流控规则到配置中心
+- 3.Sentinel控制台设置的流控规则，是否需要发布可通过参数配置
+如果配置为false 则需要在配置中心进行发布操作
+
+
+- [基于Apollo配置中心的Sentinel流控规则配置实战（一）](https://mp.weixin.qq.com/s?__biz=MzA4NzA0NjAzOQ==&mid=2257484007&idx=1&sn=26e228c98d0743df098969be4a86f106&chksm=9345ba1fa43233090885ba37b601ed9f28e278c6585b5c73c5e6d801615240defd48786a79f5&token=159781885&lang=zh_CN&scene=21#wechat_redirect)
+
+- [基于Apollo配置中心的Sentinel流控规则配置实战（二） ](https://mp.weixin.qq.com/s?__biz=MzA4NzA0NjAzOQ==&mid=2257484017&idx=1&sn=cce834ad61e172a439f86e188e243144&chksm=9345ba09a432331fe5652240c6bebe50d687e58e7a82e1fcd2911a4b43f14c86a5c426c1c731&scene=0&xtrack=1#rd)
