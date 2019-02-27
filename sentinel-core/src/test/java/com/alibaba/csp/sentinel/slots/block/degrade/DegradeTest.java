@@ -62,7 +62,14 @@ public class DegradeTest {
 
         // Restore.
         TimeUnit.SECONDS.sleep(6);
-        assertTrue(rule.passCheck(context, node, 1));
+        assertFalse(rule.passCheck(context, node, 1));
+        TimeUnit.SECONDS.sleep(6);
+        rule.setCount(3);
+
+        for (int i = 0; i < 5; i++) {
+            assertTrue(rule.passCheck(context, node, 1));
+        }
+
     }
 
     @Test
@@ -92,9 +99,11 @@ public class DegradeTest {
         // Restore from the degrade timeout.
         TimeUnit.SECONDS.sleep(6);
 
-        when(cn.successQps()).thenReturn(20L);
+        //  when(cn.successQps()).thenReturn(20L);
         // Will pass.
-        assertTrue(rule.passCheck(context, node, 1));
+        for (int i = 0; i < 5; i++) {
+            assertTrue(rule.passCheck(context, node, 1));
+        }
     }
 
     @Test
@@ -124,7 +133,9 @@ public class DegradeTest {
 
         when(cn.totalException()).thenReturn(0L);
         // Will pass.
-        assertTrue(rule.passCheck(context, node, 1));
+        for (int i = 0; i < 5; i++) {
+            assertTrue(rule.passCheck(context, node, 1));
+        }
     }
 
 }

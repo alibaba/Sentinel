@@ -80,7 +80,7 @@ public class DegradeRule extends AbstractRule {
      */
     private int grade = RuleConstant.DEGRADE_GRADE_RT;
 
-    private volatile int cut = RuleConstant.DEGRADE_CUT_OPEN;
+    private volatile int cut = RuleConstant.DEGRADE_CUT_CLOSE;
     /**
      * The total number of abnormalities before the degrade is turned on
      * Will be used when the following methods are used（DEGRADE_GRADE_EXCEPTION_RATIO）
@@ -186,16 +186,18 @@ public class DegradeRule extends AbstractRule {
             }
             if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
                 double exception = clusterNode.exceptionQps();
-                if (exception < 1) {
+                if (exception <= exceptionCount) {
                     degradeCutClose();
                     return true;
                 }
             }
             if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
                 double totalException = clusterNode.totalException();
-                if (exceptionCount <= totalException) {
+                if (exceptionCount >= totalException) {
                     degradeCutClose();
-                    cut = RuleConstant.DEGRADE_CUT_CLOSE;
+                    exceptionCount=0;
+                    return true;
+
                 }
             }
         }
@@ -240,6 +242,9 @@ public class DegradeRule extends AbstractRule {
             if (cut != RuleConstant.DEGRADE_CUT_OPEN) {
                 if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
                     exceptionCount = clusterNode.totalException();
+                }
+                if(grade==RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO){
+                    exceptionCount=clusterNode.exceptionQps();
                 }
                 // Automatically degrade.
                 cut = RuleConstant.DEGRADE_CUT_OPEN;
