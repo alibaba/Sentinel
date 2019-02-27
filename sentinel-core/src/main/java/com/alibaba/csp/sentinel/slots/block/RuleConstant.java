@@ -50,6 +50,12 @@ public final class RuleConstant {
 
     public static final String LIMIT_APP_DEFAULT = "default";
     public static final String LIMIT_APP_OTHER = "other";
+    /**
+     * Three states of the degraded switch
+     */
+    public static final int DEGRADE_CUT_CLOSE = 0;
+    public static final int DEGRADE_CUT_OPEN = 1;
+    public static final int DEGRADE_CUT_HALF_OPEN = 2;
 
     private RuleConstant() {}
 }

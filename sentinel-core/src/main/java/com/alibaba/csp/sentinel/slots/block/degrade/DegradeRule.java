@@ -80,7 +80,13 @@ public class DegradeRule extends AbstractRule {
      */
     private int grade = RuleConstant.DEGRADE_GRADE_RT;
 
-    private volatile boolean cut = false;
+    private volatile int cut = RuleConstant.DEGRADE_CUT_OPEN;
+    /**
+     * The total number of abnormalities before the degrade is turned on
+     * Will be used when the following methods are used（DEGRADE_GRADE_EXCEPTION_RATIO）
+     */
+    private volatile double exceptionCount = 0;
+
 
     public int getGrade() {
         return grade;
@@ -104,11 +110,11 @@ public class DegradeRule extends AbstractRule {
         return this;
     }
 
-    public boolean isCut() {
+    public int getCut() {
         return cut;
     }
 
-    private void setCut(boolean cut) {
+    public void setCut(int cut) {
         this.cut = cut;
     }
 
@@ -137,7 +143,7 @@ public class DegradeRule extends AbstractRule {
             return false;
         }
 
-        DegradeRule that = (DegradeRule)o;
+        DegradeRule that = (DegradeRule) o;
 
         if (count != that.count) {
             return false;
@@ -162,54 +168,81 @@ public class DegradeRule extends AbstractRule {
 
     @Override
     public boolean passCheck(Context context, DefaultNode node, int acquireCount, Object... args) {
-        if (cut) {
+        if (cut == RuleConstant.DEGRADE_CUT_OPEN) {
             return false;
         }
-
         ClusterNode clusterNode = ClusterBuilderSlot.getClusterNode(this.getResource());
         if (clusterNode == null) {
             return true;
         }
-
-        if (grade == RuleConstant.DEGRADE_GRADE_RT) {
-            double rt = clusterNode.avgRt();
-            if (rt < this.count) {
-                passCount.set(0);
-                return true;
+        if (cut == RuleConstant.DEGRADE_CUT_HALF_OPEN) {
+            //In the half-open state, only five requests are all normal and will be fully opened.
+            if (grade == RuleConstant.DEGRADE_GRADE_RT) {
+                double rt = clusterNode.avgRt();
+                if (rt < this.count) {
+                    degradeCutClose();
+                    return true;
+                }
             }
-
-            // Sentinel will degrade the service only if count exceeds.
-            if (passCount.incrementAndGet() < RT_MAX_EXCEED_N) {
-                return true;
+            if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
+                double exception = clusterNode.exceptionQps();
+                if (exception < 1) {
+                    degradeCutClose();
+                    return true;
+                }
             }
-        } else if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
-            double exception = clusterNode.exceptionQps();
-            double success = clusterNode.successQps();
-            long total = clusterNode.totalQps();
-            // if total qps less than RT_MAX_EXCEED_N, pass.
-            if (total < RT_MAX_EXCEED_N) {
-                return true;
-            }
-
-            double realSuccess = success - exception;
-            if (realSuccess <= 0 && exception < RT_MAX_EXCEED_N) {
-                return true;
-            }
-
-            if (exception / success < count) {
-                return true;
-            }
-        } else if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
-            double exception = clusterNode.totalException();
-            if (exception < count) {
-                return true;
+            if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
+                double totalException = clusterNode.totalException();
+                if (exceptionCount <= totalException) {
+                    degradeCutClose();
+                    cut = RuleConstant.DEGRADE_CUT_CLOSE;
+                }
             }
         }
+        if (cut == RuleConstant.DEGRADE_CUT_CLOSE) {
+            if (grade == RuleConstant.DEGRADE_GRADE_RT) {
+                double rt = clusterNode.avgRt();
+                if (rt < this.count) {
+                    passCount.set(0);
+                    return true;
+                }
+                // Sentinel will degrade the service only if count exceeds.
+                if (passCount.incrementAndGet() < RT_MAX_EXCEED_N) {
+                    return true;
+                }
+            }
+            if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
+                double exception = clusterNode.exceptionQps();
+                double success = clusterNode.successQps();
+                long total = clusterNode.totalQps();
+                // if total qps less than RT_MAX_EXCEED_N, pass.
+                if (total < RT_MAX_EXCEED_N) {
+                    return true;
+                }
 
+                double realSuccess = success - exception;
+                if (realSuccess <= 0 && exception < RT_MAX_EXCEED_N) {
+                    return true;
+                }
+
+                if (exception / success < count) {
+                    return true;
+                }
+            }
+            if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
+                double exception = clusterNode.totalException();
+                if (exception < count) {
+                    return true;
+                }
+            }
+        }
         synchronized (lock) {
-            if (!cut) {
+            if (cut != RuleConstant.DEGRADE_CUT_OPEN) {
+                if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
+                    exceptionCount = clusterNode.totalException();
+                }
                 // Automatically degrade.
-                cut = true;
+                cut = RuleConstant.DEGRADE_CUT_OPEN;
                 ResetTask resetTask = new ResetTask(this);
                 pool.schedule(resetTask, timeWindow, TimeUnit.SECONDS);
             }
@@ -221,12 +254,12 @@ public class DegradeRule extends AbstractRule {
     @Override
     public String toString() {
         return "DegradeRule{" +
-            "resource=" + getResource() +
-            ", grade=" + grade +
-            ", count=" + count +
-            ", limitApp=" + getLimitApp() +
-            ", timeWindow=" + timeWindow +
-            "}";
+                "resource=" + getResource() +
+                ", grade=" + grade +
+                ", count=" + count +
+                ", limitApp=" + getLimitApp() +
+                ", timeWindow=" + timeWindow +
+                "}";
     }
 
     private static final class ResetTask implements Runnable {
@@ -240,7 +273,14 @@ public class DegradeRule extends AbstractRule {
         @Override
         public void run() {
             rule.getPassCount().set(0);
-            rule.setCut(false);
+            rule.setCut(RuleConstant.DEGRADE_CUT_HALF_OPEN);
+        }
+    }
+
+    private void degradeCutClose() {
+        if (passCount.incrementAndGet() >= RT_MAX_EXCEED_N) {
+            passCount.set(0);
+            cut = RuleConstant.DEGRADE_CUT_CLOSE;
         }
     }
 }
