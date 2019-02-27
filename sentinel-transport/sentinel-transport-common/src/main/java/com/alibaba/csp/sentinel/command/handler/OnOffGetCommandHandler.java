@@ -24,7 +24,7 @@ import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
 /**
  * @author youji.zj
  */
-@CommandMapping(name = "getSwitch",desc = "get sentinel switch status")
+@CommandMapping(name = "getSwitch", desc = "get sentinel switch status")
 public class OnOffGetCommandHandler implements CommandHandler<String> {
 
     @Override
