@@ -1,8 +1,24 @@
+/*
+ * Copyright 1999-2019 Alibaba Group Holding Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.alibaba.csp.sentinel.dashboard.repository.metric;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.MetricEntity;
+
 import org.assertj.core.util.Lists;
-import org.junit.Assert;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.util.CollectionUtils;
@@ -15,33 +31,36 @@ import java.util.concurrent.*;
 import static org.junit.Assert.*;
 
 /**
- * InMemoryMetricsRepository Test
+ * Test cases for {@link InMemoryMetricsRepository}.
  *
  * @author Nick Tan
  */
 public class InMemoryMetricsRepositoryTest {
 
+    private static final int AVAILABLE_CPU_PROCESSORS = Runtime.getRuntime().availableProcessors();
+
     private static final String DEFAULT_APP = "default";
     private static final String DEFAULT_EXPIRE_APP = "default_expire_app";
     private static final String DEFAULT_RESOURCE = "test";
     private static final long EXPIRE_TIME = 1000 * 60 * 5L;
+
     private InMemoryMetricsRepository inMemoryMetricsRepository;
 
-    private static final int AVAILABLE_CPU_PROCESSORS = Runtime.getRuntime().availableProcessors();
-
-    private ExecutorService executorService = Executors.newFixedThreadPool(AVAILABLE_CPU_PROCESSORS);
+    private ExecutorService executorService;
 
     @Before
     public void setUp() throws Exception {
-
         inMemoryMetricsRepository = new InMemoryMetricsRepository();
+        executorService = Executors.newFixedThreadPool(AVAILABLE_CPU_PROCESSORS);
     }
 
-    @Test
-    public void save() throws InterruptedException {
+    @After
+    public void tearDown() {
+        executorService.shutdownNow();
+    }
 
+    private void testSave() {
         for (int i = 0; i < 1000000; i++) {
-
             MetricEntity entry = new MetricEntity();
             entry.setApp(DEFAULT_APP);
             entry.setResource(DEFAULT_RESOURCE);
@@ -51,14 +70,11 @@ public class InMemoryMetricsRepositoryTest {
             entry.setBlockQps(0L);
             entry.setSuccessQps(1L);
             inMemoryMetricsRepository.save(entry);
-
         }
-
     }
 
     @Test
-    public void testExpireMetric() throws InterruptedException {
-
+    public void testExpireMetric() {
         long now = System.currentTimeMillis();
         MetricEntity expireEntry = new MetricEntity();
         expireEntry.setApp(DEFAULT_EXPIRE_APP);
@@ -83,24 +99,21 @@ public class InMemoryMetricsRepositoryTest {
         List<MetricEntity> list = inMemoryMetricsRepository.queryByAppAndResourceBetween(
             DEFAULT_EXPIRE_APP, DEFAULT_RESOURCE, now - 2 * EXPIRE_TIME, now + EXPIRE_TIME);
 
-        Assert.assertEquals(false, CollectionUtils.isEmpty(list));
-
-        assertTrue(list.size() == 1);
-
+        assertFalse(CollectionUtils.isEmpty(list));
+        assertEquals(1, list.size());
     }
 
     @Test
-    public void listResourcesOfApp() throws InterruptedException {
+    public void testListResourcesOfApp() {
         // prepare basic test data
-        save();
-        System.out.println(System.currentTimeMillis() + "[basic test data ready]");
+        testSave();
+        System.out.println( "[" + System.currentTimeMillis() + "] Basic test data ready in testListResourcesOfApp");
 
         List<CompletableFuture> futures = Lists.newArrayList();
 
         // concurrent query resources of app
         final CyclicBarrier cyclicBarrier = new CyclicBarrier(AVAILABLE_CPU_PROCESSORS);
         for (int j = 0; j < 10000; j++) {
-
             futures.add(
                 CompletableFuture.runAsync(() -> {
                         try {
@@ -117,7 +130,6 @@ public class InMemoryMetricsRepositoryTest {
 
         // batch add metric entity
         for (int i = 0; i < 10000; i++) {
-
             MetricEntity entry = new MetricEntity();
             entry.setApp(DEFAULT_APP);
             entry.setResource(DEFAULT_RESOURCE);
@@ -127,15 +139,14 @@ public class InMemoryMetricsRepositoryTest {
             entry.setBlockQps(0L);
             entry.setSuccessQps(1L);
             inMemoryMetricsRepository.save(entry);
-
         }
 
-        CompletableFuture all = CompletableFuture.allOf(futures.toArray((new CompletableFuture[futures.size()])));
+        CompletableFuture all = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
         try {
             all.join();
         } catch (ConcurrentModificationException e) {
             e.printStackTrace();
-            assertFalse("concurrent error", e instanceof ConcurrentModificationException);
+            fail("concurrent error occurred");
         }
     }
 
