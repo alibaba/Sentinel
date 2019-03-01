@@ -84,7 +84,7 @@ public class DegradeRule extends AbstractRule {
     private volatile int cut = RuleConstant.DEGRADE_CUT_CLOSE;
     /**
      * The total number of abnormalities before the degrade is turned on
-     * Will be used when the following methods are used（DEGRADE_GRADE_EXCEPTION_RATIO）
+     * Will be used when the following methods are used（DEGRADE_GRADE_EXCEPTION_RATIO，DEGRADE_GRADE_EXCEPTION_COUNT）
      */
     private volatile double exceptionCount = 0;
 
