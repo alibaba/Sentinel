@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.demo.cluster.init;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
@@ -157,6 +158,7 @@ public class DemoClusterInitFunc implements InitFunc {
         // Otherwise it's unassigned, should be set to NOT_STARTED.
         boolean canBeClient = groupList.stream()
             .flatMap(e -> e.getClientSet().stream())
+            .filter(Objects::nonNull)
             .anyMatch(e -> e.equals(getCurrentMachineId()));
         return canBeClient ? ClusterStateManager.CLUSTER_CLIENT : ClusterStateManager.CLUSTER_NOT_STARTED;
     }
