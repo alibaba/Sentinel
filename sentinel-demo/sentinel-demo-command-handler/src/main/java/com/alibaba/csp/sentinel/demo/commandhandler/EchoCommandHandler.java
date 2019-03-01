@@ -21,26 +21,28 @@ import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
 
 /**
- * Customized CommandHandler
- * This Class is a demo shows how to create a customized CommandHandler
+ * This class is a demo shows how to create and register a customized CommandHandler.
+ *
  * <ul>
- *     <li>1.Create a class which implements the {@link CommandHandler} interface </li>
- *     <li>2.Use a {@link CommandMapping} to specify the url and desc of your CommandHandler </li>
- *     <li>3.Implement your own handle method </li>
- *     <li>4.Add your CommandHandler in com.alibaba.csp.sentinel.command.CommandHandler file which is stored in resources/META-INF/services/ </li>
+ * <li>1. Create a class which implements the {@link CommandHandler} SPI interface</li>
+ * <li>2. Use a {@link CommandMapping} to specify the url and desc of your CommandHandler</li>
+ * <li>3. Implement your own {@code handle} method </li>
+ * <li>4. Add your CommandHandler in {@code com.alibaba.csp.sentinel.command.CommandHandler} file which is stored in
+ * {@code resources/META-INF/services/} directory </li>
  * </ul>
+ *
  * @author houyi
- **/
-@CommandMapping(name = "echo", desc = "echo service")
+ */
+@CommandMapping(name = "echo", desc = "echo command for demo")
 public class EchoCommandHandler implements CommandHandler<String> {
 
     @Override
     public CommandResponse<String> handle(CommandRequest request) {
         String name = request.getParam("name");
-        if(name==null || name.trim().length()==0){
+        if (name == null || name.trim().length() == 0) {
             return CommandResponse.ofSuccess("Tell us what's your name by submit a name parameter");
         }
-        return CommandResponse.ofSuccess("Hello: "+name);
+        return CommandResponse.ofSuccess("Hello: " + name);
     }
 
 }
