@@ -33,7 +33,7 @@ import com.alibaba.fastjson.TypeReference;
  * @author Eric Zhao
  * @since 1.4.0
  */
-@CommandMapping(name = "cluster/server/modifyNamespaceSet")
+@CommandMapping(name = "cluster/server/modifyNamespaceSet", desc = "modify server namespace set")
 public class ModifyServerNamespaceSetHandler implements CommandHandler<String> {
 
     @Override

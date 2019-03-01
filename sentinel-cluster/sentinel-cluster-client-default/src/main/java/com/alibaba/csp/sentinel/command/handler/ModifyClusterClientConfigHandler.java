@@ -33,7 +33,7 @@ import com.alibaba.fastjson.JSON;
  * @author Eric Zhao
  * @since 1.4.0
  */
-@CommandMapping(name = "cluster/client/modifyConfig")
+@CommandMapping(name = "cluster/client/modifyConfig", desc = "modify cluster client config")
 public class ModifyClusterClientConfigHandler implements CommandHandler<String> {
 
     @Override
