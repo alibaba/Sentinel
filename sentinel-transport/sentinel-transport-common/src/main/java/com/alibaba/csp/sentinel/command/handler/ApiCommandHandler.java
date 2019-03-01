@@ -28,10 +28,12 @@ import java.util.Map;
 /**
  * <p>
  * List all available command handlers by request: </br>
- * {@code curl http://localhost:8719/api}
+ * {@code curl http://ip:commandPort/api}
  * </p>
+ *
  * @author houyi
- **/
+ * @since 1.5.0
+ */
 @CommandMapping(name = "api", desc = "get all available command handlers")
 public class ApiCommandHandler implements CommandHandler<String> {
 

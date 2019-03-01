@@ -27,6 +27,11 @@ public @interface CommandMapping {
 
     String name();
 
+    /**
+     * Get brief description of the command.
+     *
+     * @return brief description of the command
+     * @since 1.5.0
+     */
     String desc();
-
 }

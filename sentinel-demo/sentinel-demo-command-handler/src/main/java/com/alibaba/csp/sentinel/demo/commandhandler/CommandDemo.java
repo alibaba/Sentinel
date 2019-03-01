@@ -15,17 +15,24 @@
  */
 package com.alibaba.csp.sentinel.demo.commandhandler;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import com.alibaba.csp.sentinel.init.InitExecutor;
 
 /**
- * @author houyi
- **/
-@SpringBootApplication(scanBasePackages = {"com.alibaba.csp.sentinel"})
-public class Application {
+ * <p>To run this demo, we need to add the {@code sentinel-transport-simple-http} dependency.</p>
+ * <p>
+ * As soon as the CommandCenter has been initialized, we can visit {@code http://ip:commandPort/api}
+ * to see all available command APIs (by default the port is 8719).
+ * We can also visit our customized {@code /echo} command.
+ * </p>
+ *
+ * @author Eric Zhao
+ */
+public class CommandDemo {
 
     public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
-    }
+        // Only for demo. You don't have to do this in your application.
+        InitExecutor.doInit();
 
+        System.out.println("Sentinel CommandCenter has been initialized");
+    }
 }
