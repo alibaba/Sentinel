@@ -92,6 +92,7 @@ app.controller('SentinelClusterAppServerListController', ['$scope', '$stateParam
                 return;
             }
             let tmpMap = new Map();
+            let serverCommandPortMap = new Map();
             $scope.clusterMap = [];
             $scope.remainingMachineList = [];
             let tmpServerList = [];
@@ -117,9 +118,10 @@ app.controller('SentinelClusterAppServerListController', ['$scope', '$stateParam
                     maxAllowedQps: e.state.server.flow.maxAllowedQps,
                     belongToApp: true,
                 };
-                if (!tmpMap.has(ip)) {
-                    tmpMap.set(ip, group);
+                if (!tmpMap.has(machineId)) {
+                    tmpMap.set(machineId, group);
                 }
+                serverCommandPortMap.set(ip + ':' + e.state.server.port, e.commandPort);
             });
             tmpClientList.forEach((e) => {
                 let ip = e.ip;
@@ -133,19 +135,45 @@ app.controller('SentinelClusterAppServerListController', ['$scope', '$stateParam
                     return;
                 }
 
-                if (!tmpMap.has(targetServer)) {
+                let serverHostPort = targetServer + ':' + targetPort;
+
+                if (serverCommandPortMap.has(serverHostPort)) {
+                    let serverCommandPort = serverCommandPortMap.get(serverHostPort);
+                    let g;
+                    if (serverCommandPort < 0) {
+                        // Not belong to this app.
+                        g = tmpMap.get(serverHostPort);
+                    } else {
+                        // Belong to this app.
+                        g = tmpMap.get(targetServer + '@' + serverCommandPort);
+                    }
+                    g.clientSet.push(machineId);
+                } else {
                     let group = {
                         ip: targetServer,
-                        machineId: targetServer,
+                        machineId: serverHostPort,
                         port: targetPort,
                         clientSet: [machineId],
                         belongToApp: false,
                     };
-                    tmpMap.set(targetServer, group);
-                } else {
-                    let g = tmpMap.get(targetServer);
-                    g.clientSet.push(machineId);
+                    tmpMap.set(serverHostPort, group);
+                    // Indicates that it's not belonging to current app.
+                    serverCommandPortMap.set(serverHostPort, -1);
                 }
+
+                // if (!tmpMap.has(serverHostPort)) {
+                //     let group = {
+                //         ip: targetServer,
+                //         machineId: targetServer,
+                //         port: targetPort,
+                //         clientSet: [machineId],
+                //         belongToApp: false,
+                //     };
+                //     tmpMap.set(targetServer, group);
+                // } else {
+                //     let g = tmpMap.get(targetServer);
+                //     g.clientSet.push(machineId);
+                // }
             });
             tmpMap.forEach((v) => {
                 if (v !== undefined) {
@@ -179,6 +207,9 @@ app.controller('SentinelClusterAppServerListController', ['$scope', '$stateParam
         };
 
         function parseIpFromMachineId(machineId) {
+            if (machineId.indexOf(':') !== -1) {
+                return machineId.split(':')[0];
+            }
             if (machineId.indexOf('@') === -1) {
                 return machineId;
             }
@@ -228,7 +259,8 @@ app.controller('SentinelClusterAppServerListController', ['$scope', '$stateParam
             });
         };
 
-        $scope.modifyServerAssignConfig = (id) => {
+        $scope.modifyServerAssignConfig = (serverVO) => {
+            let id = serverVO.id;
             ClusterStateService.fetchClusterUniversalStateOfApp($scope.app).success(function (data) {
                 if (data.code === 0 && data.data) {
                     $scope.loadError = undefined;
@@ -252,7 +284,7 @@ app.controller('SentinelClusterAppServerListController', ['$scope', '$stateParam
                         confirmBtnText: '保存',
                         serverData: {
                             currentServer: d.machineId,
-                            belongToApp: true,
+                            belongToApp: serverVO.belongToApp,
                             serverPort: d.port,
                             clientSet: d.clientSet,
                         }
@@ -470,11 +502,6 @@ app.controller('SentinelClusterAppServerListController', ['$scope', '$stateParam
                     $scope.loadError = undefined;
                     $scope.serverVOList = data.data;
                     $scope.serverVOList.forEach(processServerListData);
-
-                    // if ($scope.serverVOList.length > 0) {
-                    //     $scope.tmp.curChosenServer = $scope.serverVOList[0];
-                    //     $scope.onChosenServerChange();
-                    // }
                 } else {
                     $scope.serverVOList = {};
                     if (data.code === UNSUPPORTED_CODE) {
