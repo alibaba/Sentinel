@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright 1999-2019 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.command.annotation;
+package com.alibaba.csp.sentinel.demo.commandhandler;
 
-import java.lang.annotation.*;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * @author Eric Zhao
- */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-@Documented
-public @interface CommandMapping {
+ * @author houyi
+ **/
+@SpringBootApplication(scanBasePackages = {"com.alibaba.csp.sentinel"})
+public class Application {
 
-    String name();
-
-    String desc();
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
 
 }
