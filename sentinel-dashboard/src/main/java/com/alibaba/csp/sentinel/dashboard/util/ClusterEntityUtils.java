@@ -17,8 +17,10 @@ package com.alibaba.csp.sentinel.dashboard.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -43,6 +45,8 @@ public final class ClusterEntityUtils {
             return new ArrayList<>();
         }
         Map<String, AppClusterServerStateWrapVO> map = new HashMap<>();
+        Set<String> tokenServerSet = new HashSet<>();
+        // Handle token servers that belong to current app.
         for (ClusterUniversalStatePairVO stateVO : list) {
             int mode = stateVO.getState().getStateInfo().getMode();
 
@@ -55,10 +59,36 @@ public final class ClusterEntityUtils {
                     .setIp(ip)
                     .setPort(serverStateVO.getPort())
                     .setState(serverStateVO)
+                    .setBelongToApp(true)
                     .setConnectedCount(serverStateVO.getConnection().stream()
                         .mapToInt(ConnectionGroupVO::getConnectedCount)
                         .sum()
                     )
+                );
+                tokenServerSet.add(ip + ":" + serverStateVO.getPort());
+            }
+        }
+        // Handle token servers from other app.
+        for (ClusterUniversalStatePairVO stateVO : list) {
+            int mode = stateVO.getState().getStateInfo().getMode();
+
+            if (mode == ClusterStateManager.CLUSTER_CLIENT) {
+                ClusterClientStateVO clientState = stateVO.getState().getClient();
+                if (clientState == null) {
+                    continue;
+                }
+                String serverIp = clientState.getClientConfig().getServerHost();
+                int serverPort = clientState.getClientConfig().getServerPort();
+                if (tokenServerSet.contains(serverIp + ":" + serverPort)) {
+                    continue;
+                }
+                // We are not able to get the commandPort of foreign token server directly.
+                String serverId = String.format("%s:%d", serverIp, serverPort);
+                map.computeIfAbsent(serverId, v -> new AppClusterServerStateWrapVO()
+                    .setId(serverId)
+                    .setIp(serverIp)
+                    .setPort(serverPort)
+                    .setBelongToApp(false)
                 );
             }
         }

@@ -27,6 +27,7 @@ import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
+import com.alibaba.csp.sentinel.util.AppNameUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
@@ -34,7 +35,7 @@ import com.alibaba.fastjson.JSONObject;
  * @author Eric Zhao
  * @since 1.4.0
  */
-@CommandMapping(name = "cluster/server/info")
+@CommandMapping(name = "cluster/server/info", desc = "get cluster server info")
 public class FetchClusterServerInfoCommandHandler implements CommandHandler<String> {
 
     @Override
@@ -68,6 +69,9 @@ public class FetchClusterServerInfoCommandHandler implements CommandHandler<Stri
             .fluentPut("flow", flowConfig)
             .fluentPut("namespaceSet", namespaceSet)
             .fluentPut("embedded", ClusterServerConfigManager.isEmbedded());
+
+        // Since 1.5.0 the appName is carried so that the caller can identify the appName of the token server.
+        info.put("appName", AppNameUtil.getAppName());
 
         return CommandResponse.ofSuccess(info.toJSONString());
     }

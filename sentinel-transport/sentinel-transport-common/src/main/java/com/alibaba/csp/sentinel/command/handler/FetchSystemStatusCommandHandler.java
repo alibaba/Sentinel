@@ -28,7 +28,7 @@ import com.alibaba.fastjson.JSONObject;
 /**
  * @author jialiang.linjl
  */
-@CommandMapping(name = "systemStatus")
+@CommandMapping(name = "systemStatus", desc = "get system status")
 public class FetchSystemStatusCommandHandler implements CommandHandler<String> {
 
     @Override

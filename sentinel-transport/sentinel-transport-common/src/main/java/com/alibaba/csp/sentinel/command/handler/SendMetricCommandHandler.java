@@ -34,7 +34,7 @@ import com.alibaba.csp.sentinel.node.metric.MetricWriter;
  * @author leyou
  * @author Eric Zhao
  */
-@CommandMapping(name = "metric")
+@CommandMapping(name = "metric", desc = "get and aggregate metrics, accept param: startTime={startTime}&endTime={endTime}&maxLines={maxLines}&identify={resourceName}")
 public class SendMetricCommandHandler implements CommandHandler<String> {
 
     private MetricSearcher searcher;

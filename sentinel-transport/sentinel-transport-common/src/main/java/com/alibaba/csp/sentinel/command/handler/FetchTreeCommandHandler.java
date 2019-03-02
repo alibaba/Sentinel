@@ -27,7 +27,7 @@ import com.alibaba.csp.sentinel.node.Node;
 /**
  * @author qinan.qn
  */
-@CommandMapping(name = "tree")
+@CommandMapping(name = "tree", desc = "get metrics in tree mode, use id to specify detailed tree root")
 public class FetchTreeCommandHandler implements CommandHandler<String> {
 
     @Override

@@ -29,6 +29,7 @@
         <module>sentinel-demo-parameter-flow-control</module>
         <module>sentinel-demo-slot-chain-spi</module>
         <module>sentinel-demo-cluster</module>
+        <module>sentinel-demo-command-handler</module>
     </modules>
 
     <dependencies>
