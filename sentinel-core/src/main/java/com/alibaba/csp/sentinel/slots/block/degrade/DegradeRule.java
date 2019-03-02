@@ -189,6 +189,10 @@ public class DegradeRule extends AbstractRule {
             }
             if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
                 double exception = clusterNode.exceptionQps();
+                //When the sliding window slides over the next window, it needs to be cleared.
+                if(exception==0){
+                    exceptionCount=0;
+                }
                 if (exception <= exceptionCount) {
                     degradeCutClose();
                     return true;
@@ -197,7 +201,10 @@ public class DegradeRule extends AbstractRule {
             }
             if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
                 double totalException = clusterNode.totalException();
-                if (exceptionCount >= totalException) {
+                if(totalException==0){
+                    exceptionCount=0;
+                }
+                if (totalException<=exceptionCount) {
                     degradeCutClose();
                     return true;
                 }
