@@ -32,7 +32,7 @@ import com.ctrip.framework.apollo.openapi.dto.OpenNamespaceDTO;
  * @author hantianwei@gmail.com
  * @since 1.4.0
  */
-@Component("flowRuleNacosProvider")
+@Component("flowRuleApolloProvider")
 public class FlowRuleApolloProvider implements DynamicRuleProvider<List<FlowRuleEntity>> {
 
     @Autowired
