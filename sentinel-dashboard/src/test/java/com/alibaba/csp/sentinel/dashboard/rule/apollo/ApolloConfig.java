@@ -28,7 +28,7 @@ import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 
 /**
  * @author hantianwei@gmail.com
- * @since 1.4.0
+ * @since 1.5.0
  */
 @Configuration
 public class ApolloConfig {

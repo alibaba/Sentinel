@@ -30,7 +30,7 @@ import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
 
 /**
  * @author hantianwei@gmail.com
- * @since 1.4.0
+ * @since 1.5.0
  */
 @Component("flowRuleApolloPublisher")
 public class FlowRuleApolloPublisher implements DynamicRulePublisher<List<FlowRuleEntity>> {

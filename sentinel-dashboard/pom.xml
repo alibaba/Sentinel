@@ -116,6 +116,7 @@
             <groupId>com.ctrip.framework.apollo</groupId>
             <artifactId>apollo-openapi</artifactId>
             <version>${apollo.openapi.version}</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
