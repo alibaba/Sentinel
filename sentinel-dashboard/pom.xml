@@ -23,7 +23,6 @@
         <dependency>
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-core</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.alibaba.csp</groupId>
@@ -33,7 +32,6 @@
         <dependency>
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-transport-simple-http</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.alibaba.csp</groupId>
@@ -118,7 +116,12 @@
             <version>${apollo.openapi.version}</version>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+        	<groupId>com.github.stefanbirkner</groupId>
+        	<artifactId>system-rules</artifactId>
+        	<version>1.16.1</version>
+        	<scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
