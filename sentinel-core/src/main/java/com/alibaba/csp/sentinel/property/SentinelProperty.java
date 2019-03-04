@@ -56,6 +56,7 @@ public interface SentinelProperty<T> {
      * added on this only when new {@code newValue} is not Equals to the old value.
      *
      * @param newValue the new value.
+     * @return true if the value in property has been updated, otherwise false
      */
-    void updateValue(T newValue);
+    boolean updateValue(T newValue);
 }

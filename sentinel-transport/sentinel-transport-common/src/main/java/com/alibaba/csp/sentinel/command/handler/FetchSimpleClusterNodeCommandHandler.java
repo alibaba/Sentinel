@@ -32,7 +32,7 @@ import com.alibaba.fastjson.JSONArray;
 /**
  * @author jialiang.linjl
  */
-@CommandMapping(name = "clusterNode")
+@CommandMapping(name = "clusterNode", desc = "get all clusterNode VO, use type=notZero to ignore those nodes with totalRequest <=0")
 public class FetchSimpleClusterNodeCommandHandler implements CommandHandler<String> {
 
     @Override

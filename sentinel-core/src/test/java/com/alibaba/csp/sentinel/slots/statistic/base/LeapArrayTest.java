@@ -29,9 +29,9 @@ public class LeapArrayTest {
     @Test
     public void testGetValidHead() {
         int windowLengthInMs = 100;
-        int intervalInSec = 1;
-        int sampleCount = intervalInSec * 1000 / windowLengthInMs;
-        LeapArray<AtomicInteger> leapArray = new LeapArray<AtomicInteger>(windowLengthInMs, intervalInSec) {
+        int intervalInMs = 1000;
+        int sampleCount = intervalInMs / windowLengthInMs;
+        LeapArray<AtomicInteger> leapArray = new LeapArray<AtomicInteger>(sampleCount, intervalInMs) {
             @Override
             public AtomicInteger newEmptyBucket() {
                 return new AtomicInteger(0);

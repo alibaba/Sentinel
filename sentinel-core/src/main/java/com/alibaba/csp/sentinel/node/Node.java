@@ -26,7 +26,6 @@ import com.alibaba.csp.sentinel.node.metric.MetricNode;
  * @author qinan.qn
  * @author leyou
  * @author Eric Zhao
- * @author leitao
  */
 public interface Node {
 
@@ -122,8 +121,10 @@ public interface Node {
 
     /**
      * Add pass count.
+     *
+     * @param count count to add pass
      */
-    void addPassRequest();
+    void addPassRequest(int count);
 
     /**
      * minus exception
@@ -144,18 +145,19 @@ public interface Node {
      * Add rt and success count.
      *
      * @param rt response time
+     * @param success success count to add
      */
-    void rt(long rt);
+    void addRtAndSuccess(long rt, int success);
 
     /**
      * Increase the block count.
      */
-    void increaseBlockQps();
+    void increaseBlockQps(int count);
 
     /**
      * Increase the biz exception count.
      */
-    void increaseExceptionQps();
+    void increaseExceptionQps(int count);
 
     /**
      * Increase current thread count.

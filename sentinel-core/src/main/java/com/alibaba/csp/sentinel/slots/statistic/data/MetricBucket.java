@@ -100,12 +100,12 @@ public class MetricBucket {
         return get(MetricEvent.SUCCESS);
     }
 
-    public void addPass() {
-        add(MetricEvent.PASS, 1);
+    public void addPass(int n) {
+        add(MetricEvent.PASS, n);
     }
 
-    public void addException() {
-        add(MetricEvent.EXCEPTION, 1);
+    public void addException(int n) {
+        add(MetricEvent.EXCEPTION, n);
     }
 
     public void minusException() {
@@ -123,8 +123,8 @@ public class MetricBucket {
         add(MetricEvent.BLOCK, 1);
     }
 
-    public void addSuccess() {
-        add(MetricEvent.SUCCESS, 1);
+    public void addSuccess(int n) {
+        add(MetricEvent.SUCCESS, n);
     }
 
     public void addRT(long rt) {

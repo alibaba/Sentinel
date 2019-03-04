@@ -41,7 +41,7 @@ public class ParamFlowRule extends AbstractRule {
     }
 
     /**
-     * The threshold type of flow control (1: QPS).
+     * The threshold type of flow control (0: thread count, 1: QPS).
      */
     private int grade = RuleConstant.FLOW_GRADE_QPS;
 
@@ -65,7 +65,13 @@ public class ParamFlowRule extends AbstractRule {
      */
     private Map<Object, Integer> hotItems = new HashMap<Object, Integer>();
 
+    /**
+     * Indicating whether the rule is for cluster mode.
+     */
     private boolean clusterMode = false;
+    /**
+     * Cluster mode specific config for parameter flow rule.
+     */
     private ParamFlowClusterConfig clusterConfig;
 
     public int getGrade() {

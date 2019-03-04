@@ -24,7 +24,7 @@ public interface ServerChangeObserver {
     /**
      * Callback on remote server address change.
      *
-     * @param clusterClientConfig new cluster client config
+     * @param assignConfig new cluster assignment config
      */
-    void onRemoteServerChange(ClusterClientConfig clusterClientConfig);
+    void onRemoteServerChange(ClusterClientAssignConfig assignConfig);
 }

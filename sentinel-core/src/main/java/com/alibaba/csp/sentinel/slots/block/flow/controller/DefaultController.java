@@ -26,6 +26,8 @@ import com.alibaba.csp.sentinel.slots.block.flow.TrafficShapingController;
  */
 public class DefaultController implements TrafficShapingController {
 
+    private static final int DEFAULT_AVG_USED_TOKENS = 0;
+
     private double count;
     private int grade;
 
@@ -51,9 +53,9 @@ public class DefaultController implements TrafficShapingController {
 
     private int avgUsedTokens(Node node) {
         if (node == null) {
-            return -1;
+            return DEFAULT_AVG_USED_TOKENS;
         }
-        return grade == RuleConstant.FLOW_GRADE_THREAD ? node.curThreadNum() : (int)node.passQps();
+        return grade == RuleConstant.FLOW_GRADE_THREAD ? node.curThreadNum() : (int) node.passQps();
     }
 
     private void sleep(int timeMillis) {
