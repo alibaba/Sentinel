@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.cluster.server.handler;
 
+import java.net.InetSocketAddress;
+
 import com.alibaba.csp.sentinel.cluster.ClusterConstants;
 import com.alibaba.csp.sentinel.cluster.request.ClusterRequest;
 import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
@@ -105,6 +107,10 @@ public class TokenServerHandler extends ChannelInboundHandlerAdapter {
     }
 
     private String getRemoteAddress(ChannelHandlerContext ctx) {
-        return ctx.channel().remoteAddress().toString();
+        if (ctx.channel().remoteAddress() == null) {
+            return null;
+        }
+        InetSocketAddress inetAddress = (InetSocketAddress) ctx.channel().remoteAddress();
+        return inetAddress.getAddress().getHostAddress() + ":" + inetAddress.getPort();
     }
 }

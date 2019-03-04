@@ -25,7 +25,7 @@ import com.alibaba.csp.sentinel.Constants;
 /**
  * @author youji.zj
  */
-@CommandMapping(name = "setSwitch")
+@CommandMapping(name = "setSwitch", desc = "set sentinel switch, accept param: value={true|false}")
 public class OnOffSetCommandHandler implements CommandHandler<String> {
 
     @Override

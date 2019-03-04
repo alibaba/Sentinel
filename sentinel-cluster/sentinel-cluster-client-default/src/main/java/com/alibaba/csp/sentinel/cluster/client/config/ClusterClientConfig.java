@@ -21,55 +21,21 @@ package com.alibaba.csp.sentinel.cluster.client.config;
  */
 public class ClusterClientConfig {
 
-    private String serverHost;
-    private int serverPort;
+    private Integer requestTimeout;
 
-    private int requestTimeout;
-    private int connectTimeout;
-
-    public String getServerHost() {
-        return serverHost;
-    }
-
-    public ClusterClientConfig setServerHost(String serverHost) {
-        this.serverHost = serverHost;
-        return this;
-    }
-
-    public int getServerPort() {
-        return serverPort;
-    }
-
-    public ClusterClientConfig setServerPort(int serverPort) {
-        this.serverPort = serverPort;
-        return this;
-    }
-
-    public int getRequestTimeout() {
+    public Integer getRequestTimeout() {
         return requestTimeout;
     }
 
-    public ClusterClientConfig setRequestTimeout(int requestTimeout) {
+    public ClusterClientConfig setRequestTimeout(Integer requestTimeout) {
         this.requestTimeout = requestTimeout;
-        return this;
-    }
-
-    public int getConnectTimeout() {
-        return connectTimeout;
-    }
-
-    public ClusterClientConfig setConnectTimeout(int connectTimeout) {
-        this.connectTimeout = connectTimeout;
         return this;
     }
 
     @Override
     public String toString() {
         return "ClusterClientConfig{" +
-            "serverHost='" + serverHost + '\'' +
-            ", serverPort=" + serverPort +
-            ", requestTimeout=" + requestTimeout +
-            ", connectTimeout=" + connectTimeout +
+            "requestTimeout=" + requestTimeout +
             '}';
     }
 }

@@ -21,6 +21,7 @@ import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
 import com.alibaba.csp.sentinel.cluster.flow.rule.ClusterParamFlowRuleManager;
 import com.alibaba.csp.sentinel.cluster.flow.statistic.ClusterParamMetricStatistics;
+import com.alibaba.csp.sentinel.cluster.flow.statistic.limit.GlobalRequestLimiter;
 import com.alibaba.csp.sentinel.cluster.flow.statistic.metric.ClusterParamMetric;
 import com.alibaba.csp.sentinel.cluster.server.log.ClusterServerStatLogUtil;
 import com.alibaba.csp.sentinel.slots.block.ClusterRuleConstant;
@@ -33,12 +34,26 @@ import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
  */
 public final class ClusterParamFlowChecker {
 
+    static boolean allowProceed(long flowId) {
+        String namespace = ClusterParamFlowRuleManager.getNamespace(flowId);
+        return GlobalRequestLimiter.tryPass(namespace);
+    }
+
     static TokenResult acquireClusterToken(ParamFlowRule rule, int count, Collection<Object> values) {
         Long id = rule.getClusterConfig().getFlowId();
+
+        if (!allowProceed(id)) {
+            return new TokenResult(TokenResultStatus.TOO_MANY_REQUEST);
+        }
+
         ClusterParamMetric metric = ClusterParamMetricStatistics.getMetric(id);
         if (metric == null) {
             // Unexpected state, return FAIL.
             return new TokenResult(TokenResultStatus.FAIL);
+        }
+        if (values == null || values.isEmpty()) {
+            // Empty parameter list will always pass.
+            return new TokenResult(TokenResultStatus.OK);
         }
         double remaining = -1;
         boolean hasPassed = true;

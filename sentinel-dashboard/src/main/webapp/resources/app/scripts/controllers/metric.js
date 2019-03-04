@@ -89,14 +89,14 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
           min: 0,
           max: maxQps,
           fine: true,
-          alias: 'p_qps'
+          alias: '通过 QPS'
           // max: 10
         });
         chart.scale('blockQps', {
           min: 0,
           max: maxQps,
           fine: true,
-          alias: 'b_qps',
+          alias: '拒绝 QPS',
         });
         chart.scale('rt', {
           min: 0,
@@ -131,10 +131,10 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
           allowAllCanceled: true,
           itemFormatter: function (val) {
             if ('passQps' === val) {
-              return 'p_qps';
+              return '通过 QPS';
             }
             if ('blockQps' === val) {
-              return 'b_qps';
+              return '拒绝 QPS';
             }
             return val;
           },
@@ -181,7 +181,7 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
       MetricService.queryAppSortedIdentities(params).success(function (data) {
         $scope.metrics = [];
         $scope.emptyObjs = [];
-        if (data.code == 0 && data.data) {
+        if (data.code === 0 && data.data) {
           var metricsObj = data.data.metric;
           var identityNames = Object.keys(metricsObj);
           if (identityNames.length < 1) {

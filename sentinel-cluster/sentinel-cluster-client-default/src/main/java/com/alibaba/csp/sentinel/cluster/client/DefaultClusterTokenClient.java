@@ -19,11 +19,12 @@ import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.alibaba.csp.sentinel.cluster.ClusterConstants;
+import com.alibaba.csp.sentinel.cluster.ClusterErrorMessages;
 import com.alibaba.csp.sentinel.cluster.ClusterTransportClient;
 import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
 import com.alibaba.csp.sentinel.cluster.TokenServerDescriptor;
-import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfig;
+import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientAssignConfig;
 import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfigManager;
 import com.alibaba.csp.sentinel.cluster.client.config.ServerChangeObserver;
 import com.alibaba.csp.sentinel.cluster.log.ClusterClientStatLogUtil;
@@ -51,14 +52,14 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
     public DefaultClusterTokenClient() {
         ClusterClientConfigManager.addServerChangeObserver(new ServerChangeObserver() {
             @Override
-            public void onRemoteServerChange(ClusterClientConfig clusterClientConfig) {
-                changeServer(clusterClientConfig);
+            public void onRemoteServerChange(ClusterClientAssignConfig assignConfig) {
+                changeServer(assignConfig);
             }
         });
         initNewConnection();
     }
 
-    private boolean serverEqual(TokenServerDescriptor descriptor, ClusterClientConfig config) {
+    private boolean serverEqual(TokenServerDescriptor descriptor, ClusterClientAssignConfig config) {
         if (descriptor == null || config == null) {
             return false;
         }
@@ -84,7 +85,7 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
         }
     }
 
-    private void changeServer(/*@Valid*/ ClusterClientConfig config) {
+    private void changeServer(/*@Valid*/ ClusterClientAssignConfig config) {
         if (serverEqual(serverDescriptor, config)) {
             return;
         }
@@ -93,7 +94,7 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
                 transportClient.stop();
             }
             // Replace with new, even if the new client is not ready.
-            this.transportClient = new NettyTransportClient(config);
+            this.transportClient = new NettyTransportClient(config.getServerHost(), config.getServerPort());
             this.serverDescriptor = new TokenServerDescriptor(config.getServerHost(), config.getServerPort());
             startClientIfScheduled();
             RecordLog.info("[DefaultClusterTokenClient] New client created: " + serverDescriptor);
@@ -133,6 +134,14 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
     }
 
     @Override
+    public int getState() {
+        if (transportClient == null) {
+            return ClientConstants.CLIENT_STATUS_OFF;
+        }
+        return transportClient.isReady() ? ClientConstants.CLIENT_STATUS_STARTED : ClientConstants.CLIENT_STATUS_OFF;
+    }
+
+    @Override
     public TokenServerDescriptor currentServer() {
         return serverDescriptor;
     }
@@ -146,7 +155,9 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
             .setFlowId(flowId).setPriority(prioritized);
         ClusterRequest<FlowRequestData> request = new ClusterRequest<>(ClusterConstants.MSG_TYPE_FLOW, data);
         try {
-            return sendTokenRequest(request);
+            TokenResult result = sendTokenRequest(request);
+            logForResult(result);
+            return result;
         } catch (Exception ex) {
             ClusterClientStatLogUtil.log(ex.getMessage());
             return new TokenResult(TokenResultStatus.FAIL);
@@ -162,16 +173,31 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
             .setFlowId(flowId).setParams(params);
         ClusterRequest<ParamFlowRequestData> request = new ClusterRequest<>(ClusterConstants.MSG_TYPE_PARAM_FLOW, data);
         try {
-            return sendTokenRequest(request);
+            TokenResult result = sendTokenRequest(request);
+            logForResult(result);
+            return result;
         } catch (Exception ex) {
             ClusterClientStatLogUtil.log(ex.getMessage());
             return new TokenResult(TokenResultStatus.FAIL);
         }
     }
 
+    private void logForResult(TokenResult result) {
+        switch (result.getStatus()) {
+            case TokenResultStatus.NO_RULE_EXISTS:
+                ClusterClientStatLogUtil.log(ClusterErrorMessages.NO_RULES_IN_SERVER);
+                break;
+            case TokenResultStatus.TOO_MANY_REQUEST:
+                ClusterClientStatLogUtil.log(ClusterErrorMessages.TOO_MANY_REQUESTS);
+                break;
+            default:
+        }
+    }
+
     private TokenResult sendTokenRequest(ClusterRequest request) throws Exception {
         if (transportClient == null) {
-            RecordLog.warn("[DefaultClusterTokenClient] Client not created, please check your config for cluster client");
+            RecordLog.warn(
+                "[DefaultClusterTokenClient] Client not created, please check your config for cluster client");
             return clientFail();
         }
         ClusterResponse response = transportClient.sendRequest(request);

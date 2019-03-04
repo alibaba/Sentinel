@@ -15,28 +15,35 @@
  */
 package com.alibaba.csp.sentinel.command.handler;
 
-import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfig;
+import com.alibaba.csp.sentinel.cluster.client.ClientConstants;
+import com.alibaba.csp.sentinel.cluster.client.TokenClientProvider;
 import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfigManager;
 import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
+import com.alibaba.csp.sentinel.command.entity.ClusterClientStateEntity;
 import com.alibaba.fastjson.JSON;
 
 /**
  * @author Eric Zhao
  * @since 1.4.0
  */
-@CommandMapping(name = "cluster/client/fetchConfig")
+@CommandMapping(name = "cluster/client/fetchConfig", desc = "get cluster client config")
 public class FetchClusterClientConfigHandler implements CommandHandler<String> {
 
     @Override
     public CommandResponse<String> handle(CommandRequest request) {
-        ClusterClientConfig config = new ClusterClientConfig()
+        ClusterClientStateEntity stateVO = new ClusterClientStateEntity()
             .setServerHost(ClusterClientConfigManager.getServerHost())
             .setServerPort(ClusterClientConfigManager.getServerPort())
             .setRequestTimeout(ClusterClientConfigManager.getRequestTimeout());
-        return CommandResponse.ofSuccess(JSON.toJSONString(config));
+        if (TokenClientProvider.isClientSpiAvailable()) {
+            stateVO.setClientState(TokenClientProvider.getClient().getState());
+        } else {
+            stateVO.setClientState(ClientConstants.CLIENT_STATUS_OFF);
+        }
+        return CommandResponse.ofSuccess(JSON.toJSONString(stateVO));
     }
 }
 

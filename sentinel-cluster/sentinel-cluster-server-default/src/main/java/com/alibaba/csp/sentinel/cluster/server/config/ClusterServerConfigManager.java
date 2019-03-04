@@ -23,15 +23,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.alibaba.csp.sentinel.cluster.ClusterConstants;
 import com.alibaba.csp.sentinel.cluster.flow.rule.ClusterFlowRuleManager;
 import com.alibaba.csp.sentinel.cluster.flow.rule.ClusterParamFlowRuleManager;
 import com.alibaba.csp.sentinel.cluster.flow.statistic.ClusterMetricStatistics;
 import com.alibaba.csp.sentinel.cluster.flow.statistic.ClusterParamMetricStatistics;
+import com.alibaba.csp.sentinel.cluster.flow.statistic.limit.GlobalRequestLimiter;
+import com.alibaba.csp.sentinel.cluster.registry.ConfigSupplierRegistry;
 import com.alibaba.csp.sentinel.cluster.server.ServerConstants;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleUtil;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
@@ -40,10 +44,12 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
  */
 public final class ClusterServerConfigManager {
 
+    private static boolean embedded = false;
+
     /**
      * Server global transport and scope config.
      */
-    private static volatile int port = ServerTransportConfig.DEFAULT_PORT;
+    private static volatile int port = ClusterConstants.DEFAULT_CLUSTER_SERVER_PORT;
     private static volatile int idleSeconds = ServerTransportConfig.DEFAULT_IDLE_SECONDS;
     private static volatile Set<String> namespaceSet = Collections.singleton(ServerConstants.DEFAULT_NAMESPACE);
 
@@ -54,6 +60,7 @@ public final class ClusterServerConfigManager {
     private static volatile double maxOccupyRatio = ServerFlowConfig.DEFAULT_MAX_OCCUPY_RATIO;
     private static volatile int intervalMs = ServerFlowConfig.DEFAULT_INTERVAL_MS;
     private static volatile int sampleCount = ServerFlowConfig.DEFAULT_SAMPLE_COUNT;
+    private static volatile double maxAllowedQps = ServerFlowConfig.DEFAULT_MAX_ALLOWED_QPS;
 
     /**
      * Namespace-specific flow config for token server.
@@ -89,7 +96,13 @@ public final class ClusterServerConfigManager {
         namespaceSetProperty.addListener(NAMESPACE_SET_PROPERTY_LISTENER);
     }
 
+    /**
+     * Register cluster server namespace set dynamic property.
+     *
+     * @param property server namespace set dynamic property
+     */
     public static void registerNamespaceSetProperty(SentinelProperty<Set<String>> property) {
+        AssertUtil.notNull(property, "namespace set dynamic property cannot be null");
         synchronized (NAMESPACE_SET_PROPERTY_LISTENER) {
             RecordLog.info(
                 "[ClusterServerConfigManager] Registering new namespace set dynamic property to Sentinel server "
@@ -100,7 +113,13 @@ public final class ClusterServerConfigManager {
         }
     }
 
+    /**
+     * Register cluster server transport configuration dynamic property.
+     *
+     * @param property server transport configuration dynamic property
+     */
     public static void registerServerTransportProperty(SentinelProperty<ServerTransportConfig> property) {
+        AssertUtil.notNull(property, "cluster server transport config dynamic property cannot be null");
         synchronized (TRANSPORT_PROPERTY_LISTENER) {
             RecordLog.info(
                 "[ClusterServerConfigManager] Registering new server transport dynamic property to Sentinel server "
@@ -111,14 +130,46 @@ public final class ClusterServerConfigManager {
         }
     }
 
+    /**
+     * Register cluster server global statistic (flow) configuration dynamic property.
+     *
+     * @param property server flow configuration dynamic property
+     */
+    public static void registerGlobalServerFlowProperty(SentinelProperty<ServerFlowConfig> property) {
+        AssertUtil.notNull(property, "cluster server flow config dynamic property cannot be null");
+        synchronized (GLOBAL_FLOW_PROPERTY_LISTENER) {
+            RecordLog.info(
+                "[ClusterServerConfigManager] Registering new server global flow dynamic property "
+                    + "to Sentinel server config manager");
+            globalFlowProperty.removeListener(GLOBAL_FLOW_PROPERTY_LISTENER);
+            property.addListener(GLOBAL_FLOW_PROPERTY_LISTENER);
+            globalFlowProperty = property;
+        }
+    }
+
+    /**
+     * Load provided server namespace set to property in memory.
+     *
+     * @param namespaceSet valid namespace set
+     */
     public static void loadServerNamespaceSet(Set<String> namespaceSet) {
         namespaceSetProperty.updateValue(namespaceSet);
     }
 
+    /**
+     * Load provided server transport configuration to property in memory.
+     *
+     * @param config valid cluster server transport configuration
+     */
     public static void loadGlobalTransportConfig(ServerTransportConfig config) {
         transportConfigProperty.updateValue(config);
     }
 
+    /**
+     * Load provided server global statistic (flow) configuration to property in memory.
+     *
+     * @param config valid cluster server flow configuration for global
+     */
     public static void loadGlobalFlowConfig(ServerFlowConfig config) {
         globalFlowProperty.updateValue(config);
     }
@@ -127,7 +178,7 @@ public final class ClusterServerConfigManager {
      * Load server flow config for a specific namespace.
      *
      * @param namespace a valid namespace
-     * @param config valid flow config for the namespace
+     * @param config    valid flow config for the namespace
      */
     public static void loadFlowConfig(String namespace, ServerFlowConfig config) {
         AssertUtil.notEmpty(namespace, "namespace cannot be empty");
@@ -135,6 +186,12 @@ public final class ClusterServerConfigManager {
         globalFlowProperty.updateValue(config);
     }
 
+    /**
+     * Add a transport config observer. The observers will be called as soon as
+     * there are some changes in transport config (e.g. token server port).
+     *
+     * @param observer a valid transport config observer
+     */
     public static void addTransportConfigChangeObserver(ServerTransportConfigObserver observer) {
         AssertUtil.notNull(observer, "observer cannot be null");
         TRANSPORT_CONFIG_OBSERVERS.add(observer);
@@ -169,11 +226,20 @@ public final class ClusterServerConfigManager {
         }
 
         newSet = new HashSet<>(newSet);
+        // Always add the `default` namespace to the namespace set.
         newSet.add(ServerConstants.DEFAULT_NAMESPACE);
+
+        if (embedded) {
+            // In embedded server mode, the server itself is also a part of service,
+            // so it should be added to namespace set.
+            // By default, the added namespace is the appName.
+            newSet.add(ConfigSupplierRegistry.getNamespaceSupplier().get());
+        }
 
         Set<String> oldSet = ClusterServerConfigManager.namespaceSet;
         if (oldSet != null && !oldSet.isEmpty()) {
             for (String ns : oldSet) {
+                // Remove the cluster rule property for deprecated namespace set.
                 if (!newSet.contains(ns)) {
                     ClusterFlowRuleManager.removeProperty(ns);
                     ClusterParamFlowRuleManager.removeProperty(ns);
@@ -183,8 +249,11 @@ public final class ClusterServerConfigManager {
 
         ClusterServerConfigManager.namespaceSet = newSet;
         for (String ns : newSet) {
+            // Register the rule property if needed.
             ClusterFlowRuleManager.registerPropertyIfAbsent(ns);
             ClusterParamFlowRuleManager.registerPropertyIfAbsent(ns);
+            // Initialize the global QPS limiter for the namespace.
+            GlobalRequestLimiter.initIfAbsent(ns);
         }
     }
 
@@ -256,6 +325,10 @@ public final class ClusterServerConfigManager {
             if (config.getMaxOccupyRatio() != maxOccupyRatio) {
                 maxOccupyRatio = config.getMaxOccupyRatio();
             }
+            if (config.getMaxAllowedQps() != maxAllowedQps) {
+                maxAllowedQps = config.getMaxAllowedQps();
+                GlobalRequestLimiter.applyMaxQpsChange(maxAllowedQps);
+            }
             int newIntervalMs = config.getIntervalMs();
             int newSampleCount = config.getSampleCount();
             if (newIntervalMs != intervalMs || newSampleCount != sampleCount) {
@@ -277,7 +350,9 @@ public final class ClusterServerConfigManager {
     }
 
     public static boolean isValidFlowConfig(ServerFlowConfig config) {
-        return config != null && config.getMaxOccupyRatio() >= 0 && config.getExceedCount() >= 0;
+        return config != null && config.getMaxOccupyRatio() >= 0 && config.getExceedCount() >= 0
+            && config.getMaxAllowedQps() >= 0
+            && FlowRuleUtil.isWindowConfigValid(config.getSampleCount(), config.getIntervalMs());
     }
 
     public static double getExceedCount(String namespace) {
@@ -322,6 +397,19 @@ public final class ClusterServerConfigManager {
         return sampleCount;
     }
 
+    public static double getMaxAllowedQps() {
+        return maxAllowedQps;
+    }
+
+    public static double getMaxAllowedQps(String namespace) {
+        AssertUtil.notEmpty(namespace, "namespace cannot be empty");
+        ServerFlowConfig config = NAMESPACE_CONF.get(namespace);
+        if (config != null) {
+            return config.getMaxAllowedQps();
+        }
+        return maxAllowedQps;
+    }
+
     public static double getExceedCount() {
         return exceedCount;
     }
@@ -352,6 +440,27 @@ public final class ClusterServerConfigManager {
 
     public static void setNamespaceSet(Set<String> namespaceSet) {
         applyNamespaceSetChange(namespaceSet);
+    }
+
+    public static boolean isEmbedded() {
+        return embedded;
+    }
+
+    /**
+     * <p>Set the embedded mode flag for the token server. </p>
+     * <p>
+     * NOTE: developers SHOULD NOT manually invoke this method.
+     * The embedded flag should be initialized by Sentinel when starting token server.
+     * </p>
+     *
+     * @param embedded whether the token server is currently running in embedded mode
+     */
+    public static void setEmbedded(boolean embedded) {
+        ClusterServerConfigManager.embedded = embedded;
+    }
+
+    public static void setMaxAllowedQps(double maxAllowedQps) {
+        ClusterServerConfigManager.maxAllowedQps = maxAllowedQps;
     }
 
     private ClusterServerConfigManager() {}

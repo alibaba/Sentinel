@@ -27,7 +27,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  * @author Eric Zhao
  * @since 1.4.0
  */
-@CommandMapping(name = "cluster/server/modifyTransportConfig")
+@CommandMapping(name = "cluster/server/modifyTransportConfig", desc = "modify cluster server transport config")
 public class ModifyClusterServerTransportConfigHandler implements CommandHandler<String> {
 
     @Override

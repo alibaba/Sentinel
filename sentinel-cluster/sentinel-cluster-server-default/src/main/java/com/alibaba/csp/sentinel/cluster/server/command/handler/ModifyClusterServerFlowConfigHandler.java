@@ -32,7 +32,7 @@ import com.alibaba.fastjson.JSON;
  * @author Eric Zhao
  * @since 1.4.0
  */
-@CommandMapping(name = "cluster/server/modifyFlowConfig")
+@CommandMapping(name = "cluster/server/modifyFlowConfig", desc = "modify cluster server flow config")
 public class ModifyClusterServerFlowConfigHandler implements CommandHandler<String> {
 
     @Override
@@ -48,10 +48,16 @@ public class ModifyClusterServerFlowConfigHandler implements CommandHandler<Stri
             if (StringUtil.isEmpty(namespace)) {
                 RecordLog.info("[ModifyClusterServerFlowConfigHandler] Receiving cluster server global flow config: " + data);
                 ServerFlowConfig config = JSON.parseObject(data, ServerFlowConfig.class);
+                if (!ClusterServerConfigManager.isValidFlowConfig(config)) {
+                    CommandResponse.ofFailure(new IllegalArgumentException("Bad flow config"));
+                }
                 ClusterServerConfigManager.loadGlobalFlowConfig(config);
             } else {
                 RecordLog.info("[ModifyClusterServerFlowConfigHandler] Receiving cluster server flow config for namespace <{0}>: {1}", namespace, data);
                 ServerFlowConfig config = JSON.parseObject(data, ServerFlowConfig.class);
+                if (!ClusterServerConfigManager.isValidFlowConfig(config)) {
+                    CommandResponse.ofFailure(new IllegalArgumentException("Bad flow config"));
+                }
                 ClusterServerConfigManager.loadFlowConfig(namespace, config);
             }
 

@@ -58,7 +58,7 @@ public class AuthoritySlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
         for (AuthorityRule rule : rules) {
             if (!AuthorityRuleChecker.passCheck(rule, context)) {
-                throw new AuthorityException(context.getOrigin());
+                throw new AuthorityException(context.getOrigin(), rule);
             }
         }
     }

@@ -22,10 +22,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import com.alibaba.csp.sentinel.cluster.client.ClusterTokenClient;
+import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
+import com.alibaba.csp.sentinel.cluster.TokenService;
 import com.alibaba.csp.sentinel.cluster.client.TokenClientProvider;
 import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
+import com.alibaba.csp.sentinel.cluster.server.EmbeddedClusterTokenServerProvider;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
@@ -55,7 +57,7 @@ final class ParamFlowChecker {
             return true;
         }
 
-        if (rule.isClusterMode()) {
+        if (rule.isClusterMode() && rule.getGrade() == RuleConstant.FLOW_GRADE_QPS) {
             return passClusterCheck(resourceWrapper, rule, count, value);
         }
 
@@ -104,6 +106,14 @@ final class ParamFlowChecker {
                 }
                 return false;
             }
+        } else if (rule.getGrade() == RuleConstant.FLOW_GRADE_THREAD) {
+            long threadCount = getHotParameters(resourceWrapper).getThreadCount(rule.getParamIdx(), value);
+            if (exclusionItems.contains(value)) {
+                int itemThreshold = rule.getParsedHotItems().get(value);
+                return ++threadCount <= itemThreshold;
+            }
+            long threshold = (long) rule.getCount();
+            return ++threadCount <= threshold;
         }
 
         return true;
@@ -134,13 +144,15 @@ final class ParamFlowChecker {
     private static boolean passClusterCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int count,
                                             Object value) {
         try {
-            ClusterTokenClient client = TokenClientProvider.getClient();
-            if (client == null) {
-                return true;
-            }
             Collection<Object> params = toCollection(value);
 
-            TokenResult result = client.requestParamToken(rule.getClusterConfig().getFlowId(), count, params);
+            TokenService clusterService = pickClusterService();
+            if (clusterService == null) {
+                // No available cluster client or server, fallback to local or pass in need.
+                return fallbackToLocalOrPass(resourceWrapper, rule, count, params);
+            }
+
+            TokenResult result = clusterService.requestParamToken(rule.getClusterConfig().getFlowId(), count, params);
             switch (result.getStatus()) {
                 case TokenResultStatus.OK:
                     return true;
@@ -163,6 +175,16 @@ final class ParamFlowChecker {
             // The rule won't be activated, just pass.
             return true;
         }
+    }
+
+    private static TokenService pickClusterService() {
+        if (ClusterStateManager.isClient()) {
+            return TokenClientProvider.getClient();
+        }
+        if (ClusterStateManager.isServer()) {
+            return EmbeddedClusterTokenServerProvider.getServer();
+        }
+        return null;
     }
 
     private ParamFlowChecker() {}
