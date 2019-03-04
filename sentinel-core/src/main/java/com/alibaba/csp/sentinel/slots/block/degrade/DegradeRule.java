@@ -87,6 +87,12 @@ public class DegradeRule extends AbstractRule {
      * Will be used when the following methods are used（DEGRADE_GRADE_EXCEPTION_RATIO，DEGRADE_GRADE_EXCEPTION_COUNT）
      */
     private volatile double exceptionCount = 0;
+    /**
+     * Intermediate state transition of degrade
+     * (0:after new time window)
+     * (1:after degrade cut half-open)
+     */
+    private volatile int degradeStatus = RuleConstant.AFTER_NEW_TIME_WINDOW;
 
 
     public int getGrade() {
@@ -190,8 +196,8 @@ public class DegradeRule extends AbstractRule {
             if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
                 double exception = clusterNode.exceptionQps();
                 //When the sliding window slides over the next window, it needs to be cleared.
-                if(exception==0){
-                    exceptionCount=0;
+                if (exception == 0) {
+                    exceptionCount = 0;
                 }
                 if (exception <= exceptionCount) {
                     degradeCutClose();
@@ -201,10 +207,11 @@ public class DegradeRule extends AbstractRule {
             }
             if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
                 double totalException = clusterNode.totalException();
-                if(totalException==0){
-                    exceptionCount=0;
+                if (totalException == 0) {
+                    exceptionCount = 0;
+                    degradeStatus = RuleConstant.AFTER_NEW_TIME_WINDOW;
                 }
-                if (totalException<=exceptionCount) {
+                if (totalException <= exceptionCount) {
                     degradeCutClose();
                     return true;
                 }
@@ -245,9 +252,15 @@ public class DegradeRule extends AbstractRule {
         }
         if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
             double exception = clusterNode.totalException();
+            if (degradeStatus == RuleConstant.AFTER_DEGRADE_CUT_HALF_OPEN) {
+                if (exception <= count) {
+                    return true;
+                }
+            }
             if (exception < count) {
                 return true;
             }
+            degradeStatus = RuleConstant.AFTER_DEGRADE_CUT_HALF_OPEN;
         }
 
         return degradeCutOpen(clusterNode);
