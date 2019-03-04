@@ -27,16 +27,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class AppManagement implements MachineDiscovery {
 
-    //@Value("${appmanagement.maxnode}")
-    //private Integer maxNode;
-    //
-    //@Value("${discovery.type}")
-    //private String type;
-
     @Autowired
     private ApplicationContext context;
 
-    MachineDiscovery machineDiscovery;
+    private MachineDiscovery machineDiscovery;
 
     @PostConstruct
     public void init() {

@@ -49,8 +49,9 @@ Sentinel 提供了多种规则来保护系统的不同部分。流量控制规�
 
 ## 3. 配置项
 
-控制台的一些特性可以通过配置项来进行配置，配置项主要有两个来源：`System.getProperty()`和`System.getenv()`，同时存在时后者可以覆盖前者。  
-> 环境变量因为不支持`.`所以需要将其更换为`_`。
+控制台的一些特性可以通过配置项来进行配置，配置项主要有两个来源：`System.getProperty()` 和 `System.getenv()`，同时存在时后者可以覆盖前者。
+
+> 通过环境变量进行配置时，因为不支持 `.` 所以需要将其更换为 `_`。
 
 项 | 类型 | 默认值 | 最小值 | 描述
 --- | --- | --- | --- | ---
@@ -61,15 +62,20 @@ sentinel.dashboard.autoRemoveMachineMillis | Integer | 0 | 300000 | 距离最近
 
 配置示例：
 
-命令行
+- 命令行方式：
+
 ```shell
 java -Dsentinel.dashboard.app.hideAppNoMachineMillis=60000
 ```
-java
+
+- Java 方式：
+
 ```java
 System.setProperty("sentinel.dashboard.app.hideAppNoMachineMillis", "60000");
 ```
-环境变量
+
+- 环境变量方式：
+
 ```shell
 sentinel_dashboard_app_hideAppNoMachineMillis=60000
 ```
@@ -78,4 +84,3 @@ sentinel_dashboard_app_hideAppNoMachineMillis=60000
 
 - [Sentinel 控制台启动和客户端接入](./README.md)
 - [控制台 Wiki](https://github.com/alibaba/Sentinel/wiki/%E6%8E%A7%E5%88%B6%E5%8F%B0)
-

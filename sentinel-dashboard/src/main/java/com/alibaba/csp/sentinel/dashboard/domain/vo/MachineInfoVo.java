@@ -49,7 +49,7 @@ public class MachineInfoVo {
         vo.setHostname(machine.getHostname());
         vo.setIp(machine.getIp());
         vo.setPort(machine.getPort());
-        vo.setLastHeartbeat(machine.getLastHeatbeat());
+        vo.setLastHeartbeat(machine.getLastHeartbeat());
         vo.setHeartbeatVersion(machine.getHeartbeatVersion());
         vo.setVersion(machine.getVersion());
         vo.setHealthy(machine.isHealthy());

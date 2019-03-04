@@ -63,7 +63,7 @@ public class MachineRegistryController {
             machineInfo.setIp(ip);
             machineInfo.setPort(port);
             machineInfo.setHeartbeatVersion(version);
-            machineInfo.setLastHeatbeat(System.currentTimeMillis());
+            machineInfo.setLastHeartbeat(System.currentTimeMillis());
             machineInfo.setVersion(sentinelVersion);
             appManagement.addMachine(machineInfo);
             return Result.ofSuccessMsg("success");

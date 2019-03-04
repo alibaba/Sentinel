@@ -19,11 +19,12 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.util.AssertUtil;
-import com.alibaba.nacos.api.config.ConfigService;
+
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import com.ctrip.framework.apollo.openapi.dto.NamespaceReleaseDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
@@ -47,27 +48,22 @@ public class FlowRuleApolloPublisher implements DynamicRulePublisher<List<FlowRu
             return;
         }
 
-        /**
-         * Increase the configuration
-         */
+        // Increase the configuration
         String appId = "appId";
         String flowDataId = ApolloConfigUtil.getFlowDataId(app);
         OpenItemDTO openItemDTO = new OpenItemDTO();
         openItemDTO.setKey(flowDataId);
         openItemDTO.setValue(converter.convert(rules));
         openItemDTO.setComment("Program auto-join");
-        openItemDTO.setDataChangeCreatedBy("hantianwei");
-        apolloOpenApiClient.createOrUpdateItem(appId,"DEV","default","application",openItemDTO);
+        openItemDTO.setDataChangeCreatedBy("some-operator");
+        apolloOpenApiClient.createOrUpdateItem(appId, "DEV", "default", "application", openItemDTO);
 
-        /**
-         * Release configuration
-         */
+        // Release configuration
         NamespaceReleaseDTO namespaceReleaseDTO = new NamespaceReleaseDTO();
         namespaceReleaseDTO.setEmergencyPublish(true);
         namespaceReleaseDTO.setReleaseComment("Modify or add configurations");
-        namespaceReleaseDTO.setReleasedBy("hantianwei");
+        namespaceReleaseDTO.setReleasedBy("some-operator");
         namespaceReleaseDTO.setReleaseTitle("Modify or add configurations");
-        apolloOpenApiClient.publishNamespace(appId,"DEV","default","application",namespaceReleaseDTO);
-
+        apolloOpenApiClient.publishNamespace(appId, "DEV", "default", "application", namespaceReleaseDTO);
     }
 }
