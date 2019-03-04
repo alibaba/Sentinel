@@ -83,17 +83,9 @@ public class DegradeRule extends AbstractRule {
 
     private volatile int cut = RuleConstant.DEGRADE_CUT_CLOSE;
     /**
-     * The total number of abnormalities before the degrade is turned on
-     * Will be used when the following methods are used（DEGRADE_GRADE_EXCEPTION_RATIO，DEGRADE_GRADE_EXCEPTION_COUNT）
+     * Degrade half-open-switch(default=false)
      */
-    private volatile double exceptionCount = 0;
-    /**
-     * Intermediate state transition of degrade
-     * (0:after new time window)
-     * (1:after degrade cut half-open)
-     */
-    private volatile int degradeStatus = RuleConstant.AFTER_NEW_TIME_WINDOW;
-
+    private boolean enableHalfOpen = false;
 
     public int getGrade() {
         return grade;
@@ -124,6 +116,15 @@ public class DegradeRule extends AbstractRule {
     public void setCut(int cut) {
         this.cut = cut;
     }
+
+    public boolean isEnableHalfOpen() {
+        return enableHalfOpen;
+    }
+
+    public void setEnableHalfOpen(boolean enableHalfOpen) {
+        this.enableHalfOpen = enableHalfOpen;
+    }
+
 
     public AtomicLong getPassCount() {
         return passCount;
@@ -188,34 +189,30 @@ public class DegradeRule extends AbstractRule {
             if (grade == RuleConstant.DEGRADE_GRADE_RT) {
                 double rt = clusterNode.avgRt();
                 if (rt < this.count) {
-                    degradeCutClose();
+                    cut = RuleConstant.DEGRADE_CUT_CLOSE;
                     return true;
                 }
-                return degradeCutOpen(clusterNode);
+                clusterNode.resetRt();
+                return degradeCutOpen();
             }
             if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
                 double exception = clusterNode.exceptionQps();
                 //When the sliding window slides over the next window, it needs to be cleared.
-                if (exception == 0) {
-                    exceptionCount = 0;
-                }
-                if (exception <= exceptionCount) {
-                    degradeCutClose();
+                if (exception != 0) {
+                    cut = RuleConstant.DEGRADE_CUT_CLOSE;
                     return true;
                 }
-                return degradeCutOpen(clusterNode);
+                clusterNode.resetException();
+                return degradeCutOpen();
             }
             if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
                 double totalException = clusterNode.totalException();
-                if (totalException == 0) {
-                    exceptionCount = 0;
-                    degradeStatus = RuleConstant.AFTER_NEW_TIME_WINDOW;
-                }
-                if (totalException <= exceptionCount) {
-                    degradeCutClose();
+                if (totalException < count) {
+                    cut = RuleConstant.DEGRADE_CUT_CLOSE;
                     return true;
                 }
-                return degradeCutOpen(clusterNode);
+                clusterNode.minusException();
+                return degradeCutOpen();
             }
         }
         // degrade_cut_close
@@ -229,7 +226,9 @@ public class DegradeRule extends AbstractRule {
             if (passCount.incrementAndGet() < RT_MAX_EXCEED_N) {
                 return true;
             }
-            return degradeCutOpen(clusterNode);
+            clusterNode.resetRt();
+            passCount.set(0);
+            return degradeCutOpen();
         }
         if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
             double exception = clusterNode.exceptionQps();
@@ -248,22 +247,19 @@ public class DegradeRule extends AbstractRule {
             if (exception / success < count) {
                 return true;
             }
-            return degradeCutOpen(clusterNode);
+            clusterNode.resetException();
+            return degradeCutOpen();
         }
         if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
             double exception = clusterNode.totalException();
-            if (degradeStatus == RuleConstant.AFTER_DEGRADE_CUT_HALF_OPEN) {
-                if (exception <= count) {
-                    return true;
-                }
-            }
             if (exception < count) {
                 return true;
             }
-            degradeStatus = RuleConstant.AFTER_DEGRADE_CUT_HALF_OPEN;
+            // after degrade-open minus exceptionCount
+            clusterNode.minusException();
         }
 
-        return degradeCutOpen(clusterNode);
+        return degradeCutOpen();
     }
 
     @Override
@@ -287,35 +283,25 @@ public class DegradeRule extends AbstractRule {
 
         @Override
         public void run() {
-            rule.getPassCount().set(0);
-            rule.setCut(RuleConstant.DEGRADE_CUT_HALF_OPEN);
+            if (rule.enableHalfOpen) {
+                rule.setCut(RuleConstant.DEGRADE_CUT_HALF_OPEN);
+            } else {
+                rule.setCut(RuleConstant.DEGRADE_CUT_CLOSE);
+            }
         }
     }
 
-    private boolean degradeCutOpen(ClusterNode clusterNode) {
+    private boolean degradeCutOpen() {
         synchronized (lock) {
             if (cut != RuleConstant.DEGRADE_CUT_OPEN) {
-                if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
-                    exceptionCount = clusterNode.totalException();
-                }
-                if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
-                    exceptionCount = clusterNode.exceptionQps();
-                }
                 // Automatically degrade.
                 cut = RuleConstant.DEGRADE_CUT_OPEN;
                 ResetTask resetTask = new ResetTask(this);
                 pool.schedule(resetTask, timeWindow, TimeUnit.SECONDS);
             }
-
             return false;
         }
     }
 
-    private void degradeCutClose() {
-        if (passCount.incrementAndGet() >= RT_MAX_EXCEED_N) {
-            passCount.set(0);
-            cut = RuleConstant.DEGRADE_CUT_CLOSE;
-        }
-    }
 }
 

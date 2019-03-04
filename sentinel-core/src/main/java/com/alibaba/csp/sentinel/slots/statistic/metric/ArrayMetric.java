@@ -196,6 +196,23 @@ public class ArrayMetric implements Metric {
     }
 
     @Override
+    public void minusException() {
+        WindowWrap<MetricBucket> wrap = data.currentWindow();
+        wrap.value().minusException();
+    }
+
+    @Override
+    public void resetException() {
+        WindowWrap<MetricBucket> wrap = data.currentWindow();
+        wrap.value().resetException();
+    }
+
+    @Override
+    public void resetRt() {
+        WindowWrap<MetricBucket> wrap = data.currentWindow();
+        wrap.value().resetRt();
+    }
+    @Override
     public void debugQps() {
         data.currentWindow();
         StringBuilder sb = new StringBuilder();

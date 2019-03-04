@@ -118,6 +118,14 @@ public interface Metric {
      */
     void addRT(long rt);
 
+    /**
+     * minus by one the current exception count.
+     */
+    void minusException();
+
+    void resetException();
+
+    void resetRt();
     // Tool methods.
 
     void debugQps();

@@ -126,6 +126,21 @@ public interface Node {
     void addPassRequest();
 
     /**
+     * minus exception
+     */
+    void minusException();
+
+    /**
+     * reset Rt
+     */
+    void resetRt();
+
+    /**
+     * reset exception
+     */
+    void resetException();
+
+    /**
      * Add rt and success count.
      *
      * @param rt response time

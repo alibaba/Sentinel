@@ -93,7 +93,7 @@ public class StatisticNode implements Node {
      * by given {@code sampleCount}.
      */
     private transient volatile Metric rollingCounterInSecond = new ArrayMetric(1000 / SampleCountProperty.SAMPLE_COUNT,
-        IntervalProperty.INTERVAL);
+            IntervalProperty.INTERVAL);
 
     /**
      * Holds statistics of the recent 60 seconds. The windowLengthInMs is deliberately set to 1000 milliseconds,
@@ -137,7 +137,7 @@ public class StatisticNode implements Node {
 
     private boolean isValidMetricNode(MetricNode node) {
         return node.getPassQps() > 0 || node.getBlockQps() > 0 || node.getSuccessQps() > 0
-            || node.getExceptionQps() > 0 || node.getRt() > 0;
+                || node.getExceptionQps() > 0 || node.getRt() > 0;
     }
 
     @Override
@@ -230,6 +230,21 @@ public class StatisticNode implements Node {
     public void addPassRequest() {
         rollingCounterInSecond.addPass();
         rollingCounterInMinute.addPass();
+    }
+
+    @Override
+    public void minusException() {
+        rollingCounterInMinute.minusException();
+    }
+
+    @Override
+    public void resetRt() {
+        rollingCounterInSecond.resetRt();
+    }
+
+    @Override
+    public void resetException() {
+        rollingCounterInSecond.resetException();
     }
 
     @Override
