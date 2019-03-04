@@ -25,26 +25,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.alibaba.csp.sentinel.dashboard.config.DashboardConfig;
 
 public class AppInfo {
-    private static final Comparator<MachineInfo> COMPARATOR_BY_MACHINE_HEARTBEAT_DESC = new Comparator<MachineInfo>() {
-
-        @Override
-        public int compare(MachineInfo o1, MachineInfo o2) {
-            if (o1.getLastHeatbeat() < o2.getLastHeatbeat()) {
-                return -1;
-            }
-            if (o1.getLastHeatbeat() > o2.getLastHeatbeat()) {
-                return 1;
-            }
-            return 0;
-        }
-    };
 
     private String app = "";
 
     private Set<MachineInfo> machines = ConcurrentHashMap.newKeySet();
 
-    public AppInfo() {
-    }
+    public AppInfo() {}
 
     public AppInfo(String app) {
         this.app = app;
@@ -76,7 +62,7 @@ public class AppInfo {
         machines.remove(machineInfo);
         return machines.add(machineInfo);
     }
-    
+
     public synchronized boolean removeMachine(String ip, int port) {
         Iterator<MachineInfo> it = machines.iterator();
         while (it.hasNext()) {
@@ -88,44 +74,45 @@ public class AppInfo {
         }
         return false;
     }
-    
+
     public Optional<MachineInfo> getMachine(String ip, int port) {
         return machines.stream()
             .filter(e -> e.getIp().equals(ip) && e.getPort().equals(port))
             .findFirst();
     }
-    
-    private boolean heartbeatJudge(int threshold) {
+
+    private boolean heartbeatJudge(final int threshold) {
         if (machines.size() == 0) {
             return false;
         }
         if (threshold > 0) {
             long healthyCount = machines.stream()
-                    .filter(m -> m.isHealthy())
-                    .count();
+                .filter(MachineInfo::isHealthy)
+                .count();
             if (healthyCount == 0) {
-                // no machine
-                long recentHeartBeat = machines.stream()
-                        .max(COMPARATOR_BY_MACHINE_HEARTBEAT_DESC).get().getLastHeatbeat();
-                return System.currentTimeMillis() - recentHeartBeat < threshold;
+                // No healthy machines.
+                return machines.stream()
+                    .max(Comparator.comparingLong(MachineInfo::getLastHeartbeat))
+                    .map(e -> System.currentTimeMillis() - e.getLastHeartbeat() < threshold)
+                    .orElse(false);
             }
         }
         return true;
     }
-    
+
     /**
-     * having no healthy machine and should not be displayed
-     * 
-     * @return
+     * Check whether current application has no healthy machines and should not be displayed.
+     *
+     * @return true if the application should be displayed in the sidebar, otherwise false
      */
     public boolean isShown() {
         return heartbeatJudge(DashboardConfig.getHideAppNoMachineMillis());
     }
-    
+
     /**
-     * having no healthy machine and should be removed
-     * 
-     * @return
+     * Check whether current application has no healthy machines and should be removed.
+     *
+     * @return true if the application is dead and should be removed, otherwise false
      */
     public boolean isDead() {
         return !heartbeatJudge(DashboardConfig.getRemoveAppNoMachineMillis());

@@ -103,7 +103,7 @@ public class MachineEntity {
         machineInfo.setHostname(hostname);
         machineInfo.setIp(ip);
         machineInfo.setPort(port);
-        machineInfo.setLastHeatbeat(timestamp.getTime());
+        machineInfo.setLastHeartbeat(timestamp.getTime());
         machineInfo.setHeartbeatVersion(timestamp.getTime());
 
         return machineInfo;

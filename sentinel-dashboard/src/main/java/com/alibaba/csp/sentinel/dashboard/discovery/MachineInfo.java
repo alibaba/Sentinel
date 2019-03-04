@@ -26,7 +26,7 @@ public class MachineInfo implements Comparable<MachineInfo> {
     private String hostname = "";
     private String ip = "";
     private Integer port = -1;
-    private long lastHeatbeat;
+    private long lastHeartbeat;
     private long heartbeatVersion;
 
     /**
@@ -96,7 +96,7 @@ public class MachineInfo implements Comparable<MachineInfo> {
     }
     
     public boolean isHealthy() {
-        long delta = System.currentTimeMillis() - lastHeatbeat;
+        long delta = System.currentTimeMillis() - lastHeartbeat;
         return delta < DashboardConfig.getUnhealthyMachineMillis();
     }
     
@@ -107,18 +107,18 @@ public class MachineInfo implements Comparable<MachineInfo> {
      */
     public boolean isDead() {
         if (DashboardConfig.getAutoRemoveMachineMillis() > 0) {
-            long delta = System.currentTimeMillis() - lastHeatbeat;
+            long delta = System.currentTimeMillis() - lastHeartbeat;
             return delta > DashboardConfig.getAutoRemoveMachineMillis();
         }
         return false;
     }
     
-    public long getLastHeatbeat() {
-        return lastHeatbeat;
+    public long getLastHeartbeat() {
+        return lastHeartbeat;
     }
     
-    public void setLastHeatbeat(long lastHeatbeat) {
-        this.lastHeatbeat = lastHeatbeat;
+    public void setLastHeartbeat(long lastHeartbeat) {
+        this.lastHeartbeat = lastHeartbeat;
     }
 
     @Override
@@ -143,7 +143,7 @@ public class MachineInfo implements Comparable<MachineInfo> {
             .append(", ip='").append(ip).append('\'')
             .append(", port=").append(port)
             .append(", heartbeatVersion=").append(heartbeatVersion)
-            .append(", lastHeartbeat=").append(lastHeatbeat)
+            .append(", lastHeartbeat=").append(lastHeartbeat)
             .append(", version='").append(version).append('\'')
             .append(", healthy=").append(isHealthy())
             .append('}').toString();

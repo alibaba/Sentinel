@@ -79,7 +79,7 @@ public class AppInfoTest {
             machineInfo.setHostname("bogon");
             machineInfo.setIp("127.0.0.1");
             machineInfo.setPort(3389);
-            machineInfo.setLastHeatbeat(System.currentTimeMillis());
+            machineInfo.setLastHeartbeat(System.currentTimeMillis());
             machineInfo.setHeartbeatVersion(1);
             machineInfo.setVersion("0.4.1");
             appInfo.addMachine(machineInfo);
@@ -92,7 +92,7 @@ public class AppInfoTest {
             machineInfo.setHostname("bogon");
             machineInfo.setIp("127.0.0.1");
             machineInfo.setPort(3389);
-            machineInfo.setLastHeatbeat(System.currentTimeMillis());
+            machineInfo.setLastHeartbeat(System.currentTimeMillis());
             machineInfo.setHeartbeatVersion(1);
             machineInfo.setVersion("0.4.2");
             appInfo.addMachine(machineInfo);
@@ -105,7 +105,7 @@ public class AppInfoTest {
             machineInfo.setHostname("bogon");
             machineInfo.setIp("127.0.0.1");
             machineInfo.setPort(3390);
-            machineInfo.setLastHeatbeat(System.currentTimeMillis());
+            machineInfo.setLastHeartbeat(System.currentTimeMillis());
             machineInfo.setHeartbeatVersion(1);
             machineInfo.setVersion("0.4.3");
             appInfo.addMachine(machineInfo);
@@ -116,7 +116,7 @@ public class AppInfoTest {
         appInfo.removeMachine("127.0.0.1", 3390);
         assertEquals(0, appInfo.getMachines().size());
     }
-    
+
     @Test
     public void testHealthyAndDead() {
         System.setProperty(DashboardConfig.CONFIG_HIDE_APP_NO_MACHINE_MILLIS, "60000");
@@ -128,25 +128,25 @@ public class AppInfoTest {
         {
             MachineInfo machineInfo = MachineInfo.of(appName, "127.0.0.1", 8801);
             machineInfo.setHeartbeatVersion(1);
-            machineInfo.setLastHeatbeat(System.currentTimeMillis());
+            machineInfo.setLastHeartbeat(System.currentTimeMillis());
             appInfo.addMachine(machineInfo);
         }
         assertTrue(appInfo.isShown());
         assertFalse(appInfo.isDead());
-        
+
         {
             MachineInfo machineInfo = MachineInfo.of(appName, "127.0.0.1", 8801);
             machineInfo.setHeartbeatVersion(1);
-            machineInfo.setLastHeatbeat(System.currentTimeMillis() - 70000);
+            machineInfo.setLastHeartbeat(System.currentTimeMillis() - 70000);
             appInfo.addMachine(machineInfo);
         }
         assertFalse(appInfo.isShown());
         assertFalse(appInfo.isDead());
-        
+
         {
             MachineInfo machineInfo = MachineInfo.of(appName, "127.0.0.1", 8801);
             machineInfo.setHeartbeatVersion(1);
-            machineInfo.setLastHeatbeat(System.currentTimeMillis() - 700000);
+            machineInfo.setLastHeartbeat(System.currentTimeMillis() - 700000);
             appInfo.addMachine(machineInfo);
         }
         assertFalse(appInfo.isShown());

@@ -34,22 +34,26 @@ import org.springframework.lang.NonNull;
  *
  */
 public class DashboardConfig {
+
+    public static final int DEFAULT_MACHINE_HEALTHY_TIMEOUT_MS = 60_000;
+
     /**
-     * hide app in sidebar when it had no healthy machine after specific period in millis
+     * Hide application name in sidebar when it has no healthy machines after specific period in millisecond.
      */
     public static final String CONFIG_HIDE_APP_NO_MACHINE_MILLIS = "sentinel.dashboard.app.hideAppNoMachineMillis";
     /**
-     * remove app when it had no healthy machine after specific period in millis
+     * Remove application when it has no healthy machines after specific period in millisecond.
      */
     public static final String CONFIG_REMOVE_APP_NO_MACHINE_MILLIS = "sentinel.dashboard.removeAppNoMachineMillis";
     /**
-     * unhealthy millis
+     * Timeout
      */
     public static final String CONFIG_UNHEALTHY_MACHINE_MILLIS = "sentinel.dashboard.unhealthyMachineMillis";
     /**
-     * auto remove unhealthy machine after specific period in millis
+     * Auto remove unhealthy machine after specific period in millisecond.
      */
     public static final String CONFIG_AUTO_REMOVE_MACHINE_MILLIS = "sentinel.dashboard.autoRemoveMachineMillis";
+
     private static final ConcurrentMap<String, Object> cacheMap = new ConcurrentHashMap<>();
     
     @NonNull
@@ -94,7 +98,7 @@ public class DashboardConfig {
     }
     
     public static int getUnhealthyMachineMillis() {
-        return getConfigInt(CONFIG_UNHEALTHY_MACHINE_MILLIS, 60000, 30000);
+        return getConfigInt(CONFIG_UNHEALTHY_MACHINE_MILLIS, DEFAULT_MACHINE_HEALTHY_TIMEOUT_MS, 30000);
     }
     
     public static void clearCache() {

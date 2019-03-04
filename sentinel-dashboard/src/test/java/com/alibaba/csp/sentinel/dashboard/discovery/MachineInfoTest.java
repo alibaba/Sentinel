@@ -21,7 +21,11 @@ import org.junit.Test;
 
 import com.alibaba.csp.sentinel.dashboard.config.DashboardConfig;
 
+/**
+ * @author Jason Joo
+ */
 public class MachineInfoTest {
+
     @Test
     public void testHealthyAndDead() {
         System.setProperty(DashboardConfig.CONFIG_UNHEALTHY_MACHINE_MILLIS, "60000");
@@ -29,15 +33,15 @@ public class MachineInfoTest {
         DashboardConfig.clearCache();
         MachineInfo machineInfo = new MachineInfo();
         machineInfo.setHeartbeatVersion(1);
-        machineInfo.setLastHeatbeat(System.currentTimeMillis() - 10000);
+        machineInfo.setLastHeartbeat(System.currentTimeMillis() - 10000);
         assertTrue(machineInfo.isHealthy());
         assertFalse(machineInfo.isDead());
-        
-        machineInfo.setLastHeatbeat(System.currentTimeMillis() - 100000);
+
+        machineInfo.setLastHeartbeat(System.currentTimeMillis() - 100000);
         assertFalse(machineInfo.isHealthy());
         assertFalse(machineInfo.isDead());
-        
-        machineInfo.setLastHeatbeat(System.currentTimeMillis() - 1000000);
+
+        machineInfo.setLastHeartbeat(System.currentTimeMillis() - 1000000);
         assertFalse(machineInfo.isHealthy());
         assertTrue(machineInfo.isDead());
     }

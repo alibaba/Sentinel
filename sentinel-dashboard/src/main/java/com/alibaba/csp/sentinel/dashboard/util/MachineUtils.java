@@ -24,6 +24,7 @@ import com.alibaba.csp.sentinel.util.function.Tuple2;
  * @author Eric Zhao
  */
 public final class MachineUtils {
+
     public static Optional<Integer> parseCommandPort(String machineIp) {
         try {
             if (!machineIp.contains("@")) {
@@ -53,4 +54,6 @@ public final class MachineUtils {
             return Optional.empty();
         }
     }
+
+    private MachineUtils() {}
 }
