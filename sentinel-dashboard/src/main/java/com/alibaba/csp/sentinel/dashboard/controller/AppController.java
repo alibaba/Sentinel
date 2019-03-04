@@ -32,6 +32,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
@@ -78,5 +79,22 @@ public class AppController {
             return o1.getPort().compareTo(o2.getPort());
         });
         return Result.ofSuccess(MachineInfoVo.fromMachineInfoList(list));
+    }
+    
+    @ResponseBody
+    @RequestMapping(value = "/{app}/machine/remove.json")
+    Result<String> removeMachineById(
+            @PathVariable("app") String app,
+            @RequestParam(name = "ip") String ip,
+            @RequestParam(name = "port") int port) {
+        AppInfo appInfo = appManagement.getDetailApp(app);
+        if (appInfo == null) {
+            return Result.ofSuccess(null);
+        }
+        if (appManagement.removeMachine(app, ip, port)) {
+            return Result.ofSuccessMsg("success");
+        } else {
+            return Result.ofFail(1, "remove failed");
+        }
     }
 }
