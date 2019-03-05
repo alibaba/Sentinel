@@ -27,14 +27,13 @@ import com.alibaba.csp.sentinel.util.function.Supplier;
 
 import org.reactivestreams.Subscription;
 import reactor.core.CoreSubscriber;
-import reactor.core.publisher.BaseSubscriber;
 import reactor.util.context.Context;
 
 /**
  * @author Eric Zhao
  * @since 1.5.0
  */
-public class SentinelReactorSubscriber<T> extends BaseSubscriber<T> {
+public class SentinelReactorSubscriber<T> extends InheritableBaseSubscriber<T> {
 
     private final EntryConfig entryConfig;
 
@@ -88,6 +87,9 @@ public class SentinelReactorSubscriber<T> extends BaseSubscriber<T> {
             this.currentEntry = entry;
             actual.onSubscribe(this);
         } catch (BlockException ex) {
+            // Mark as completed (exited) explicitly.
+            entryExited.set(true);
+            // Signal cancel and propagate the {@code BlockException}.
             cancel();
             actual.onSubscribe(this);
             actual.onError(ex);
@@ -121,6 +123,13 @@ public class SentinelReactorSubscriber<T> extends BaseSubscriber<T> {
     protected void hookOnComplete() {
         tryCompleteEntry();
         actual.onComplete();
+    }
+
+    @Override
+    protected boolean shouldCallErrorDropHook() {
+        // When flow control triggered or stream terminated, the incoming
+        // deprecated exceptions should be dropped implicitly, so we'll not call the `onErrorDropped` hook.
+        return !entryExited.get();
     }
 
     @Override
