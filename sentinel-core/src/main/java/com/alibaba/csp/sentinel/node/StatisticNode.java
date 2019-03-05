@@ -111,7 +111,7 @@ public class StatisticNode implements Node {
      */
     private long lastFetchTime = -1;
     /**
-     * record last rt
+     * record last rt(Prepare degrade rt sum)
      */
     private volatile long lastRt = 0L;
 
@@ -243,18 +243,18 @@ public class StatisticNode implements Node {
     }
 
     @Override
-    public void minusRt() {
+    public void minusRt(int count) {
         rollingCounterInSecond.minusRt(lastRt);
-        rollingCounterInSecond.minusSuccess();
+        rollingCounterInSecond.minusSuccess(count);
         rollingCounterInMinute.minusRt(lastRt);
-        rollingCounterInMinute.minusSuccess();
+        rollingCounterInMinute.minusSuccess(count);
     }
 
     @Override
     public void addRtAndSuccess(long rt, int successCount) {
         rollingCounterInSecond.addSuccess(successCount);
         rollingCounterInSecond.addRT(rt);
-        setLastRt(rt);
+        lastRt+=rt;
         rollingCounterInMinute.addSuccess(successCount);
         rollingCounterInMinute.addRT(rt);
     }
@@ -270,6 +270,11 @@ public class StatisticNode implements Node {
         rollingCounterInSecond.addException(count);
         rollingCounterInMinute.addException(count);
 
+    }
+
+    @Override
+    public void resetLastRt() {
+        lastRt=0;
     }
 
     @Override

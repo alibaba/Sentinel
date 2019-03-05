@@ -121,7 +121,7 @@ public interface Metric {
     /**
      * minus success count
      */
-    void minusSuccess();
+    void minusSuccess(int n);
 
     /**
      * minus rt

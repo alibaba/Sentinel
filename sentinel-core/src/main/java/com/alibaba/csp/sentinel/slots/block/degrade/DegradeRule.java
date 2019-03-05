@@ -99,6 +99,8 @@ public class DegradeRule extends AbstractRule {
 
     private AtomicLong passCount = new AtomicLong(0);
 
+    private final Object lock = new Object();
+
     public double getCount() {
         return count;
     }
@@ -191,7 +193,7 @@ public class DegradeRule extends AbstractRule {
                     cut = RuleConstant.DEGRADE_CUT_CLOSE;
                     return true;
                 }
-                clusterNode.minusRt();
+                clusterNode.minusRt(1);
                 return degradeCutOpen();
             }
             if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
@@ -223,13 +225,15 @@ public class DegradeRule extends AbstractRule {
             double rt = clusterNode.avgRt();
             if (rt < this.count) {
                 passCount.set(0);
+                clusterNode.resetLastRt();
                 return true;
             }
             // Sentinel will degrade the service only if count exceeds.
             if (passCount.incrementAndGet() < RT_MAX_EXCEED_N) {
                 return true;
             }
-            clusterNode.minusRt();
+            clusterNode.minusRt(RT_MAX_EXCEED_N-1);
+            clusterNode.resetLastRt();
             passCount.set(0);
             return degradeCutOpen();
         }

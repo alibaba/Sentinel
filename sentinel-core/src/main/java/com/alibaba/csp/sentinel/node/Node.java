@@ -134,7 +134,7 @@ public interface Node {
     /**
      * minus Rt
      */
-    void minusRt();
+    void minusRt(int count);
 
     /**
      * Add rt and success count.
@@ -174,4 +174,10 @@ public interface Node {
      * Debug only.
      */
     void debug();
+
+    /**
+     * reset lastRT
+     */
+    void resetLastRt();
+
 }

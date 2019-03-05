@@ -192,12 +192,12 @@ public class ArrayMetric implements Metric {
     }
 
     @Override
-    public void minusSuccess() {
+    public void minusSuccess(int n) {
         if (null == data.values() || data.values().size() == 0) {
             return;
         }
         WindowWrap<MetricBucket> wrap = data.currentWindow();
-        wrap.value().minusSuccess(1);
+        wrap.value().minusSuccess(n);
     }
 
     @Override
