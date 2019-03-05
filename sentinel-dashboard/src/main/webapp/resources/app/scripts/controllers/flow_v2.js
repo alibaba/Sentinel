@@ -196,7 +196,7 @@ app.controller('FlowControllerV2', ['$scope', '$stateParams', 'FlowServiceV2', '
               $scope.machines = [];
               $scope.macsInputOptions = [];
               data.data.forEach(function (item) {
-                if (item.health) {
+                if (item.healthy) {
                   $scope.macsInputOptions.push({
                     text: item.ip + ':' + item.port,
                     value: item.ip + ':' + item.port

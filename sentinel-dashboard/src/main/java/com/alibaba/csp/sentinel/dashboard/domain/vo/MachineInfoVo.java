@@ -16,10 +16,8 @@
 package com.alibaba.csp.sentinel.dashboard.domain.vo;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineDiscovery;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 
 /**
@@ -30,9 +28,10 @@ public class MachineInfoVo {
     private String app;
     private String hostname;
     private String ip;
-    private Integer port;
-    private Date timestamp;
-    private boolean health;
+    private int port;
+    private long heartbeatVersion;
+    private long lastHeartbeat;
+    private boolean healthy;
 
     private String version;
 
@@ -50,11 +49,10 @@ public class MachineInfoVo {
         vo.setHostname(machine.getHostname());
         vo.setIp(machine.getIp());
         vo.setPort(machine.getPort());
-        vo.setTimestamp(machine.getTimestamp());
+        vo.setLastHeartbeat(machine.getLastHeartbeat());
+        vo.setHeartbeatVersion(machine.getHeartbeatVersion());
         vo.setVersion(machine.getVersion());
-        if (System.currentTimeMillis() - machine.getTimestamp().getTime() < MachineDiscovery.MAX_CLIENT_LIVE_TIME_MS) {
-            vo.setHealth(true);
-        }
+        vo.setHealthy(machine.isHealthy());
         return vo;
     }
 
@@ -82,20 +80,28 @@ public class MachineInfoVo {
         this.ip = ip;
     }
 
-    public Integer getPort() {
+    public int getPort() {
         return port;
     }
 
-    public void setPort(Integer port) {
+    public void setPort(int port) {
         this.port = port;
     }
 
-    public Date getTimestamp() {
-        return timestamp;
+    public long getLastHeartbeat() {
+        return lastHeartbeat;
     }
-
-    public void setTimestamp(Date timestamp) {
-        this.timestamp = timestamp;
+    
+    public void setLastHeartbeat(long lastHeartbeat) {
+        this.lastHeartbeat = lastHeartbeat;
+    }
+    
+    public void setHeartbeatVersion(long heartbeatVersion) {
+        this.heartbeatVersion = heartbeatVersion;
+    }
+    
+    public long getHeartbeatVersion() {
+        return heartbeatVersion;
     }
 
     public String getVersion() {
@@ -107,11 +113,11 @@ public class MachineInfoVo {
         return this;
     }
 
-    public boolean isHealth() {
-        return health;
+    public boolean isHealthy() {
+        return healthy;
     }
 
-    public void setHealth(boolean health) {
-        this.health = health;
+    public void setHealthy(boolean healthy) {
+        this.healthy = healthy;
     }
 }

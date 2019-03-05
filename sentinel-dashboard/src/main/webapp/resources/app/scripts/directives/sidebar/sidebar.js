@@ -21,20 +21,19 @@ angular.module('sentinelDashboardApp')
           function (data) {
             if (data.code === 0) {
               let initHashApp = $location.path().split('/')[3];
-              let currTime = moment(new Date()).utc().add(-1000*60*5).format('YYYY-MM-DDTHH:mm:ss')
               $scope.apps = data.data;
               $scope.apps = $scope.apps.map(function (item) {
                 if (item.app === initHashApp) {
                   item.active = true;
                 }
-                var heathCount = 0;
+                var heathyCount = 0;
                 for (var i in item.machines) {
-                  if (item.machines[i].timestamp>currTime) {
-                    heathCount++;
+                  if (item.machines[i].healthy) {
+                      heathyCount++;
                   }
                 }
-                item.heathCount = heathCount;
-                if (heathCount>0) {
+                item.heathyCount = heathyCount;
+                if (item.shown) {
                   return item;
                 }
               });

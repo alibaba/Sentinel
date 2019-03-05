@@ -20,6 +20,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import com.alibaba.csp.sentinel.util.AssertUtil;
 
 import org.springframework.stereotype.Component;
 
@@ -28,13 +31,25 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class SimpleMachineDiscovery implements MachineDiscovery {
-    protected ConcurrentHashMap<String, AppInfo> apps = new ConcurrentHashMap<>();
+
+    private final ConcurrentMap<String, AppInfo> apps = new ConcurrentHashMap<>();
 
     @Override
     public long addMachine(MachineInfo machineInfo) {
-        AppInfo appInfo = apps.computeIfAbsent(machineInfo.getApp(), app -> new AppInfo(app));
+        AssertUtil.notNull(machineInfo, "machineInfo cannot be null");
+        AppInfo appInfo = apps.computeIfAbsent(machineInfo.getApp(), AppInfo::new);
         appInfo.addMachine(machineInfo);
         return 1;
+    }
+
+    @Override
+    public boolean removeMachine(String app, String ip, int port) {
+        AssertUtil.assertNotBlank(app, "app name cannot be blank");
+        AppInfo appInfo = apps.get(app);
+        if (appInfo != null) {
+            return appInfo.removeMachine(ip, port);
+        }
+        return false;
     }
 
     @Override
@@ -44,12 +59,19 @@ public class SimpleMachineDiscovery implements MachineDiscovery {
 
     @Override
     public AppInfo getDetailApp(String app) {
+        AssertUtil.assertNotBlank(app, "app name cannot be blank");
         return apps.get(app);
     }
 
     @Override
     public Set<AppInfo> getBriefApps() {
         return new HashSet<>(apps.values());
+    }
+
+    @Override
+    public void removeApp(String app) {
+        AssertUtil.assertNotBlank(app, "app name cannot be blank");
+        apps.remove(app);
     }
 
 }

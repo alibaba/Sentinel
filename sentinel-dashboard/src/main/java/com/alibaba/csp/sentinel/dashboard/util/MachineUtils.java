@@ -17,7 +17,6 @@ package com.alibaba.csp.sentinel.dashboard.util;
 
 import java.util.Optional;
 
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.util.function.Tuple2;
 
@@ -25,12 +24,6 @@ import com.alibaba.csp.sentinel.util.function.Tuple2;
  * @author Eric Zhao
  */
 public final class MachineUtils {
-
-    public static final long DEFAULT_MAX_CLIENT_PING_TIMEOUT = 60 * 1000;
-
-    public static long getMaxClientTimeout() {
-        return DEFAULT_MAX_CLIENT_PING_TIMEOUT;
-    }
 
     public static Optional<Integer> parseCommandPort(String machineIp) {
         try {
@@ -62,10 +55,5 @@ public final class MachineUtils {
         }
     }
 
-    public static boolean isMachineHealth(MachineInfo machine) {
-        if (machine == null) {
-            return false;
-        }
-        return System.currentTimeMillis() - machine.getTimestamp().getTime() < getMaxClientTimeout();
-    }
+    private MachineUtils() {}
 }

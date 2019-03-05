@@ -25,24 +25,25 @@ import com.alibaba.csp.sentinel.dashboard.domain.ResourceTreeNode;
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.dashboard.domain.vo.ResourceVo;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
- * @author leyou
+ * @author Carpenter Lee
  */
-@Controller
-@RequestMapping(value = "/resource", produces = MediaType.APPLICATION_JSON_VALUE)
+@RestController
+@RequestMapping(value = "/resource")
 public class ResourceController {
 
     private static Logger logger = LoggerFactory.getLogger(ResourceController.class);
+
     @Autowired
-    SentinelApiClient httpFetcher;
+    private SentinelApiClient httpFetcher;
 
     /**
      * Fetch real time statistics info of the machine.
@@ -54,9 +55,9 @@ public class ResourceController {
      * @param searchKey key to search
      * @return node statistics info.
      */
-    @ResponseBody
-    @RequestMapping("/machineResource.json")
-    Result<?> fetchIdentityOfMachine(String ip, Integer port, String type, String searchKey) {
+    @GetMapping("/machineResource.json")
+    public Result<List<ResourceVo>> fetchResourceChainListOfMachine(String ip, Integer port, String type,
+                                                                    String searchKey) {
         if (StringUtil.isEmpty(ip) || port == null) {
             return Result.ofFail(-1, "invalid param, give ip, port");
         }
@@ -73,7 +74,8 @@ public class ResourceController {
             ResourceTreeNode treeNode = ResourceTreeNode.fromNodeVoList(nodeVos);
             treeNode.searchIgnoreCase(searchKey);
             return Result.ofSuccess(ResourceVo.fromResourceTreeNode(treeNode));
-        } else {// cluster
+        } else {
+            // Normal (cluster node).
             List<NodeVo> nodeVos = httpFetcher.fetchClusterNodeOfMachine(ip, port, true);
             if (nodeVos == null) {
                 return Result.ofSuccess(null);

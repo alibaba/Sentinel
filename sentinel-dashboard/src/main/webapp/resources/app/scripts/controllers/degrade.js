@@ -177,7 +177,7 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
               $scope.machines = [];
               $scope.macsInputOptions = [];
               data.data.forEach(function (item) {
-                if (item.health) {
+                if (item.healthy) {
                   $scope.macsInputOptions.push({
                     text: item.ip + ':' + item.port,
                     value: item.ip + ':' + item.port
