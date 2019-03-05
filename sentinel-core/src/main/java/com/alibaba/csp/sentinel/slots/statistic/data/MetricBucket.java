@@ -119,8 +119,8 @@ public class MetricBucket {
     public void resetRt(){
         reset(MetricEvent.RT);
     }
-    public void addBlock() {
-        add(MetricEvent.BLOCK, 1);
+    public void addBlock(int n) {
+        add(MetricEvent.BLOCK, n);
     }
 
     public void addSuccess(int n) {

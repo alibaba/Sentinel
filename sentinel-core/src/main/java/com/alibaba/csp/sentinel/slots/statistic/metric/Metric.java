@@ -117,6 +117,12 @@ public interface Metric {
      * @param rt RT
      */
     void addRT(long rt);
+
+
+    double getWindowIntervalInSec();
+
+    int getSampleCount();
+
     /**
      * minus by one the current exception count.
      */
