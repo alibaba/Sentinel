@@ -139,7 +139,7 @@ public class DegradeTest {
         // Restore from the degrade timeout.
         TimeUnit.SECONDS.sleep(3);
         when(cn.totalException()).thenReturn(3L);
-      //  when(cn.totalException()).thenReturn(0L);
+        //  when(cn.totalException()).thenReturn(0L);
         // Will pass.
         //When the fifth request ends, degrade will blow close.
         for (int i = 0; i < 10; i++) {

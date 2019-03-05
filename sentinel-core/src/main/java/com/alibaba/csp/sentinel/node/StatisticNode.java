@@ -93,7 +93,7 @@ public class StatisticNode implements Node {
      * by given {@code sampleCount}.
      */
     private transient volatile Metric rollingCounterInSecond = new ArrayMetric(SampleCountProperty.SAMPLE_COUNT,
-        IntervalProperty.INTERVAL);
+            IntervalProperty.INTERVAL);
 
     /**
      * Holds statistics of the recent 60 seconds. The windowLengthInMs is deliberately set to 1000 milliseconds,
@@ -110,6 +110,10 @@ public class StatisticNode implements Node {
      * The last timestamp when metrics were fetched.
      */
     private long lastFetchTime = -1;
+    /**
+     * record last rt
+     */
+    private volatile long lastRt = 0L;
 
     @Override
     public Map<Long, MetricNode> metrics() {
@@ -137,7 +141,7 @@ public class StatisticNode implements Node {
 
     private boolean isValidMetricNode(MetricNode node) {
         return node.getPassQps() > 0 || node.getBlockQps() > 0 || node.getSuccessQps() > 0
-            || node.getExceptionQps() > 0 || node.getRt() > 0;
+                || node.getExceptionQps() > 0 || node.getRt() > 0;
     }
 
     @Override
@@ -234,24 +238,21 @@ public class StatisticNode implements Node {
 
     @Override
     public void minusException() {
+        rollingCounterInSecond.minusException();
         rollingCounterInMinute.minusException();
     }
 
     @Override
-    public void resetRt() {
-        rollingCounterInSecond.resetRt();
-    }
-
-    @Override
-    public void resetException() {
-        rollingCounterInSecond.resetException();
+    public void minusRt() {
+        rollingCounterInSecond.minusRt(1);
+        rollingCounterInMinute.minusRt(lastRt);
     }
 
     @Override
     public void addRtAndSuccess(long rt, int successCount) {
         rollingCounterInSecond.addSuccess(successCount);
         rollingCounterInSecond.addRT(rt);
-
+        setLastRt(rt);
         rollingCounterInMinute.addSuccess(successCount);
         rollingCounterInMinute.addRT(rt);
     }
@@ -282,5 +283,9 @@ public class StatisticNode implements Node {
     @Override
     public void debug() {
         rollingCounterInSecond.debugQps();
+    }
+
+    public void setLastRt(long lastRt) {
+        this.lastRt = lastRt;
     }
 }

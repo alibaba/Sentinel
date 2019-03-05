@@ -82,10 +82,10 @@ public class LongAdder extends Striped64 implements Serializable {
     }
 
     /**
-     * Equivalent to {@code add(-1)}.
+     * Equivalent to {@code add(-x)}.
      */
-    public void decrement() {
-        add(-1L);
+    public void decrement(long x) {
+        add(-x);
     }
 
     /**

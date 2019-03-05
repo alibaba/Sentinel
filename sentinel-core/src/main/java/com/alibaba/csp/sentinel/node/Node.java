@@ -132,19 +132,14 @@ public interface Node {
     void minusException();
 
     /**
-     * reset Rt
+     * minus Rt
      */
-    void resetRt();
-
-    /**
-     * reset exception
-     */
-    void resetException();
+    void minusRt();
 
     /**
      * Add rt and success count.
      *
-     * @param rt response time
+     * @param rt      response time
      * @param success success count to add
      */
     void addRtAndSuccess(long rt, int success);

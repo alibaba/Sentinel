@@ -118,19 +118,22 @@ public interface Metric {
      */
     void addRT(long rt);
 
+    /**
+     * minus rt
+     */
+    void minusRt(long rt);
+
+    /**
+     * minus exception
+     *
+     * @return
+     */
+    void minusException();
 
     double getWindowIntervalInSec();
 
     int getSampleCount();
 
-    /**
-     * minus by one the current exception count.
-     */
-    void minusException();
-
-    void resetException();
-
-    void resetRt();
     // Tool methods.
 
     void debugQps();
