@@ -15,12 +15,12 @@
  */
 package com.alibaba.csp.sentinel.adapter.reactor;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.alibaba.csp.sentinel.AsyncEntry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
+import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 
@@ -34,39 +34,38 @@ import reactor.core.publisher.Mono;
  */
 public final class ReactorSphU {
 
-    public static <R> Mono<R> entryWith(String resourceName, Callable<R> f) {
-        return entryWith(resourceName, EntryType.OUT, f);
+    public static <R> Mono<R> entryWith(String resourceName, Mono<R> actual) {
+        return entryWith(resourceName, EntryType.OUT, actual);
     }
 
-    public static <R> Mono<R> entryWith(String resourceName, EntryType entryType, Callable<R> f) {
+    public static <R> Mono<R> entryWith(String resourceName, EntryType entryType, Mono<R> actual) {
         final AtomicReference<AsyncEntry> entryWrapper = new AtomicReference<>(null);
         return Mono.defer(() -> {
             try {
                 AsyncEntry entry = SphU.asyncEntry(resourceName, entryType);
                 entryWrapper.set(entry);
-                return Mono.fromCallable(f);
+                return actual.subscriberContext(context -> {
+                    if (entry == null) {
+                        return context;
+                    }
+                    Context sentinelContext = entry.getAsyncContext();
+                    if (sentinelContext == null) {
+                        return context;
+                    }
+                    // TODO: check GC friendly?
+                    return context.put(SentinelReactorConstants.SENTINEL_CONTEXT_KEY, sentinelContext);
+                }).doOnSuccessOrError((o, t) -> {
+                    if (entry != null && entryWrapper.compareAndSet(entry, null)) {
+                        if (t != null) {
+                            Tracer.traceContext(t, 1, entry.getAsyncContext());
+                        }
+                        entry.exit();
+                    }
+                });
             } catch (BlockException ex) {
                 return Mono.error(ex);
             }
-        })
-            .subscriberContext(context -> {
-                AsyncEntry entry = entryWrapper.get();
-                if (entry == null) {
-                    return context;
-                }
-                Context sentinelContext = entry.getAsyncContext();
-                if (sentinelContext == null) {
-                    return context;
-                }
-                // TODO: check GC friendly?
-                return context.put(SentinelReactorConstants.SENTINEL_CONTEXT_KEY, sentinelContext);
-            })
-            .doOnSuccessOrError((o, t) -> {
-                AsyncEntry entry = entryWrapper.get();
-                if (entry != null && entryWrapper.compareAndSet(entry, null)) {
-                    entry.exit();
-                }
-            });
+        });
     }
 
     private ReactorSphU() {}
