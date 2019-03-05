@@ -239,13 +239,17 @@ public class StatisticNode implements Node {
     @Override
     public void minusException() {
         rollingCounterInSecond.minusException();
+        rollingCounterInSecond.minusSuccess();
+        rollingCounterInMinute.minusException();
         rollingCounterInMinute.minusException();
     }
 
     @Override
     public void minusRt() {
-        rollingCounterInSecond.minusRt(1);
+        rollingCounterInSecond.minusRt(lastRt);
+        rollingCounterInSecond.minusSuccess();
         rollingCounterInMinute.minusRt(lastRt);
+        rollingCounterInMinute.minusSuccess();
     }
 
     @Override

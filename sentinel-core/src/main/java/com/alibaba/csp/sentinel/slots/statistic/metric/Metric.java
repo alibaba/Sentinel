@@ -119,6 +119,11 @@ public interface Metric {
     void addRT(long rt);
 
     /**
+     * minus success count
+     */
+    void minusSuccess();
+
+    /**
      * minus rt
      */
     void minusRt(long rt);

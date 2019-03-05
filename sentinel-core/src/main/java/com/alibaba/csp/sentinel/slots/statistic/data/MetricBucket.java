@@ -116,7 +116,9 @@ public class MetricBucket {
         minus(MetricEvent.RT, rt);
 
     }
-
+    public void minusSuccess(int n){
+        minus(MetricEvent.SUCCESS,n);
+    }
     public void addBlock(int n) {
         add(MetricEvent.BLOCK, n);
     }
