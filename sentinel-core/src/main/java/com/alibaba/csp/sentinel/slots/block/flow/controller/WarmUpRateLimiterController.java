@@ -66,25 +66,23 @@ public class WarmUpRateLimiterController extends WarmUpController {
         if (expectedTime <= currentTime) {
             latestPassedTime.set(currentTime);
             return true;
-        } else {
-            long waitTime = costTime + latestPassedTime.get() - currentTime;
+        }
+        long waitTime = costTime + latestPassedTime.get() - currentTime;
+        if (waitTime > timeOutInMs) {
+            return false;
+        }
+        long oldTime = latestPassedTime.addAndGet(costTime);
+        try {
+            waitTime = oldTime - TimeUtil.currentTimeMillis();
             if (waitTime > timeOutInMs) {
+                latestPassedTime.addAndGet(-costTime);
                 return false;
-            } else {
-                long oldTime = latestPassedTime.addAndGet(costTime);
-                try {
-                    waitTime = oldTime - TimeUtil.currentTimeMillis();
-                    if (waitTime > timeOutInMs) {
-                        latestPassedTime.addAndGet(-costTime);
-                        return false;
-                    }
-                    if (waitTime > 0) {
-                        Thread.sleep(waitTime);
-                    }
-                    return true;
-                } catch (InterruptedException e) {
-                }
             }
+            if (waitTime > 0) {
+                Thread.sleep(waitTime);
+            }
+            return true;
+        } catch (InterruptedException e) {
         }
         return false;
     }
