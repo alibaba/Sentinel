@@ -132,10 +132,8 @@ public class DegradeTest {
         rule.setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT);
 
         when(cn.totalException()).thenReturn(4L);
-
         // Will fail.
         assertFalse(rule.passCheck(context, node, 1));
-
         // Restore from the degrade timeout.
         TimeUnit.SECONDS.sleep(3);
         when(cn.totalException()).thenReturn(3L);
