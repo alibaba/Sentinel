@@ -193,21 +193,31 @@ public class ArrayMetric implements Metric {
 
     @Override
     public void minusException() {
+        if (null == data || data.values().size() == 0) {
+            return;
+        }
         WindowWrap<MetricBucket> wrap = data.currentWindow();
         wrap.value().minusException();
     }
 
     @Override
     public void resetException() {
+        if (null == data || data.values().size() == 0) {
+            return;
+        }
         WindowWrap<MetricBucket> wrap = data.currentWindow();
         wrap.value().resetException();
     }
 
     @Override
     public void resetRt() {
+        if (null == data || data.values().size() == 0) {
+            return;
+        }
         WindowWrap<MetricBucket> wrap = data.currentWindow();
         wrap.value().resetRt();
     }
+
     @Override
     public void debugQps() {
         data.currentWindow();
@@ -216,7 +226,7 @@ public class ArrayMetric implements Metric {
         for (WindowWrap<MetricBucket> windowWrap : data.list()) {
 
             sb.append(windowWrap.windowStart()).append(":").append(windowWrap.value().pass()).append(":")
-                .append(windowWrap.value().block());
+                    .append(windowWrap.value().block());
             sb.append(",");
 
         }

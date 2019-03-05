@@ -56,11 +56,6 @@ public final class RuleConstant {
     public static final int DEGRADE_CUT_CLOSE = 0;
     public static final int DEGRADE_CUT_OPEN = 1;
     public static final int DEGRADE_CUT_HALF_OPEN = 2;
-    /**
-     * Intermediate state transition of degrade
-     */
-    public static final int AFTER_DEGRADE_CUT_HALF_OPEN = 1;
-    public static final int AFTER_NEW_TIME_WINDOW = 0;
 
     public static final int DEFAULT_SAMPLE_COUNT = 2;
     public static final int DEFAULT_WINDOW_INTERVAL_MS = 1000;
