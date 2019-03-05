@@ -207,7 +207,11 @@ public class DegradeRule extends AbstractRule {
             }
             if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
                 double totalException = clusterNode.totalException();
-                if (totalException < count) {
+                if (totalException < count&&totalException!=0) {
+                    cut = RuleConstant.DEGRADE_CUT_CLOSE;
+                    return true;
+                }
+                if(totalException==0){
                     cut = RuleConstant.DEGRADE_CUT_CLOSE;
                     return true;
                 }
