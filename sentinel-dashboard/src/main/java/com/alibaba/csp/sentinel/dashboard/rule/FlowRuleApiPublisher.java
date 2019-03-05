@@ -24,7 +24,6 @@ import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.util.MachineUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -51,7 +50,7 @@ public class FlowRuleApiPublisher implements DynamicRulePublisher<List<FlowRuleE
         Set<MachineInfo> set = appManagement.getDetailApp(app).getMachines();
 
         for (MachineInfo machine : set) {
-            if (!MachineUtils.isMachineHealth(machine)) {
+            if (!machine.isHealthy()) {
                 continue;
             }
             // TODO: parse the results

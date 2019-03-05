@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.slots.block.degrade;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
@@ -98,8 +99,6 @@ public class DegradeRule extends AbstractRule {
 
     private AtomicLong passCount = new AtomicLong(0);
 
-    private final Object lock = new Object();
-
     public double getCount() {
         return count;
     }
@@ -108,7 +107,7 @@ public class DegradeRule extends AbstractRule {
         this.count = count;
         return this;
     }
-
+  
     public int getCut() {
         return cut;
     }
@@ -262,7 +261,6 @@ public class DegradeRule extends AbstractRule {
             // after degrade-open minus exceptionCount
             clusterNode.minusException();
         }
-
         return degradeCutOpen();
     }
 

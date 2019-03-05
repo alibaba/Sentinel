@@ -387,13 +387,12 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
     function queryAppMachines() {
       MachineService.getAppMachines($scope.app).success(
         function (data) {
-          if (data.code == 0) {
-            // $scope.machines = data.data;
+          if (data.code === 0) {
             if (data.data) {
               $scope.machines = [];
               $scope.macsInputOptions = [];
               data.data.forEach(function (item) {
-                if (item.health) {
+                if (item.healthy) {
                   $scope.macsInputOptions.push({
                     text: item.ip + ':' + item.port,
                     value: item.ip + ':' + item.port

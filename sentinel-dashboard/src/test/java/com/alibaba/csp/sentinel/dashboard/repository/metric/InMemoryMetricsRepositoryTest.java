@@ -119,13 +119,11 @@ public class InMemoryMetricsRepositoryTest {
                         try {
                             cyclicBarrier.await();
                             inMemoryMetricsRepository.listResourcesOfApp(DEFAULT_APP);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        } catch (BrokenBarrierException e) {
+                        } catch (InterruptedException | BrokenBarrierException e) {
                             e.printStackTrace();
                         }
-                    }, executorService
-                ));
+                }, executorService)
+            );
         }
 
         // batch add metric entity
@@ -142,11 +140,20 @@ public class InMemoryMetricsRepositoryTest {
         }
 
         CompletableFuture all = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+
         try {
-            all.join();
-        } catch (ConcurrentModificationException e) {
+            all.get(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
             e.printStackTrace();
-            fail("concurrent error occurred");
+        } catch (ExecutionException e) {
+            e.getCause().printStackTrace();
+            if (e.getCause() instanceof ConcurrentModificationException) {
+                fail("concurrent error occurred");
+            } else {
+                fail("unexpected exception");
+            }
+        } catch (TimeoutException e) {
+            fail("allOf future timeout");
         }
     }
 
