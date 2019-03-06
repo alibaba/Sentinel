@@ -37,8 +37,6 @@ import static org.junit.Assert.*;
  */
 public class InMemoryMetricsRepositoryTest {
 
-    private static final int AVAILABLE_CPU_PROCESSORS = Runtime.getRuntime().availableProcessors();
-
     private static final String DEFAULT_APP = "default";
     private static final String DEFAULT_EXPIRE_APP = "default_expire_app";
     private static final String DEFAULT_RESOURCE = "test";
@@ -51,7 +49,7 @@ public class InMemoryMetricsRepositoryTest {
     @Before
     public void setUp() throws Exception {
         inMemoryMetricsRepository = new InMemoryMetricsRepository();
-        executorService = Executors.newFixedThreadPool(AVAILABLE_CPU_PROCESSORS);
+        executorService = Executors.newFixedThreadPool(8);
     }
 
     @After
@@ -112,7 +110,7 @@ public class InMemoryMetricsRepositoryTest {
         List<CompletableFuture> futures = Lists.newArrayList();
 
         // concurrent query resources of app
-        final CyclicBarrier cyclicBarrier = new CyclicBarrier(AVAILABLE_CPU_PROCESSORS);
+        final CyclicBarrier cyclicBarrier = new CyclicBarrier(8);
         for (int j = 0; j < 10000; j++) {
             futures.add(
                 CompletableFuture.runAsync(() -> {

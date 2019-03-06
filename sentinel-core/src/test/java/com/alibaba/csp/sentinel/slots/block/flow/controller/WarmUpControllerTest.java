@@ -23,15 +23,18 @@ import static org.mockito.Mockito.when;
 import org.junit.Test;
 
 import com.alibaba.csp.sentinel.node.Node;
+import com.alibaba.csp.sentinel.test.AbstractTimeBasedTest;
 
 /**
  * @author jialiang.linjl
  */
-public class WarmUpControllerTest {
+public class WarmUpControllerTest extends AbstractTimeBasedTest {
 
     @Test
     public void testWarmUp() throws InterruptedException {
         WarmUpController warmupController = new WarmUpController(10, 10, 3);
+        
+        setCurrentMillis(System.currentTimeMillis());
 
         Node node = mock(Node.class);
 
@@ -48,7 +51,7 @@ public class WarmUpControllerTest {
         when(node.previousPassQps()).thenReturn(10L);
 
         for (int i = 0; i < 100; i++) {
-            Thread.sleep(100);
+            sleep(100);
             warmupController.canPass(node, 1);
         }
         when(node.passQps()).thenReturn(8L);
