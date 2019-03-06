@@ -199,6 +199,9 @@ public class DegradeRule extends AbstractRule {
             //In the half-open state, only five requests are all normal and will be fully opened.
             if (grade == RuleConstant.DEGRADE_GRADE_RT) {
                 long rt = clusterNode.getLastRt().get();
+                if (rt == 0) {
+                    return degradeCutOpen();
+                }
                 if (rt < this.count) {
                     cut = RuleConstant.DEGRADE_CUT_CLOSE;
                     return true;
@@ -212,9 +215,9 @@ public class DegradeRule extends AbstractRule {
                     cut = RuleConstant.DEGRADE_CUT_CLOSE;
                     return true;
                 }
-                if(grade==RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
+                if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
                     clusterNode.minusSecondException();
-                }else{
+                } else {
                     clusterNode.minusMinuteException();
                 }
                 return degradeCutOpen();
