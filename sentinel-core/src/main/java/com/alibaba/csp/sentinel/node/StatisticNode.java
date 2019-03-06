@@ -115,12 +115,12 @@ public class StatisticNode implements Node {
     /**
      * record last rt(Prepare degrade rt sum and same TimeWindow)
      */
-    private AtomicLong  lastRt =new AtomicLong(0);
+    private AtomicLong lastRt = new AtomicLong(0);
 
     /**
      * record last rt(same TimeWindow) sum
      */
-    private AtomicInteger lastRtSum=new AtomicInteger(0);
+    private AtomicInteger lastRtSum = new AtomicInteger(0);
     /**
      * lastResult
      *
@@ -272,7 +272,7 @@ public class StatisticNode implements Node {
             lastRt.set(rt);
             lastRtSum.set(1);
         } else {
-            lastRt.set(rt+lastRt.get());
+            lastRt.set(rt + lastRt.get());
             lastRtSum.getAndAdd(1);
         }
         lastResult.set(true);
@@ -325,7 +325,8 @@ public class StatisticNode implements Node {
     }
 
     @Override
-    public AtomicInteger getLsatRtSum() {
+    public AtomicInteger getLastRtSum() {
         return lastRtSum;
     }
+
 }

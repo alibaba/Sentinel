@@ -266,7 +266,7 @@ public class ArrayMetric implements Metric {
 
     @Override
     public boolean newTimeWindow() {
-        if(data.values().isEmpty()){
+        if (data.values().isEmpty()) {
             return true;
         }
         return false;

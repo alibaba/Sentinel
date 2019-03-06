@@ -20,6 +20,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 
@@ -41,12 +42,11 @@ public class DegradeTest {
         String key = "test_degrade_average_rt";
         ClusterNode cn = mock(ClusterNode.class);
         ClusterBuilderSlot.getClusterNodeMap().put(new StringResourceWrapper(key, EntryType.IN), cn);
-
         Context context = mock(Context.class);
         DefaultNode node = mock(DefaultNode.class);
         when(node.getClusterNode()).thenReturn(cn);
         when(cn.avgRt()).thenReturn(2L);
-
+        when(cn.getLastRtSum()).thenReturn(new AtomicInteger(0));
         DegradeRule rule = new DegradeRule();
         rule.setCount(1);
         rule.setResource(key);

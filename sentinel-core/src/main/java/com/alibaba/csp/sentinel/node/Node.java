@@ -196,5 +196,6 @@ public interface Node {
     /**
      * get last rt(same TimeWindow) sum
      */
-    AtomicInteger getLsatRtSum();
+    AtomicInteger getLastRtSum();
+
 }

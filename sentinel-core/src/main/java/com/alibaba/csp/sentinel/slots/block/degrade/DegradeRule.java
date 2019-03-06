@@ -85,7 +85,7 @@ public class DegradeRule extends AbstractRule {
     /**
      * First request after degrade
      */
-    private AtomicBoolean firstRequest=new AtomicBoolean(true);
+    private AtomicBoolean firstRequest = new AtomicBoolean(true);
 
     private volatile int cut = RuleConstant.DEGRADE_CUT_CLOSE;
     /**
@@ -114,7 +114,7 @@ public class DegradeRule extends AbstractRule {
         this.count = count;
         return this;
     }
-  
+
     public int getCut() {
         return cut;
     }
@@ -192,13 +192,13 @@ public class DegradeRule extends AbstractRule {
         // degrade_cut_half_open
         if (cut == RuleConstant.DEGRADE_CUT_HALF_OPEN) {
             //First request after downgrade
-            if(firstRequest.get()){
+            if (firstRequest.get()) {
                 firstRequest.set(false);
                 return true;
             }
             //In the half-open state, only five requests are all normal and will be fully opened.
             if (grade == RuleConstant.DEGRADE_GRADE_RT) {
-                long rt=clusterNode.getLastRt().get();
+                long rt = clusterNode.getLastRt().get();
                 if (rt < this.count) {
                     cut = RuleConstant.DEGRADE_CUT_CLOSE;
                     return true;
@@ -228,7 +228,7 @@ public class DegradeRule extends AbstractRule {
             if (passCount.incrementAndGet() < RT_MAX_EXCEED_N) {
                 return true;
             }
-            clusterNode.minusRt(clusterNode.getLsatRtSum().get());
+            clusterNode.minusRt(clusterNode.getLastRtSum().get());
             clusterNode.resetLastRt();
             passCount.set(0);
             return degradeCutOpen();
