@@ -292,6 +292,7 @@ public class DegradeRule extends AbstractRule {
 
         @Override
         public void run() {
+            //enableHalfOpen 
             if (rule.enableHalfOpen) {
                 rule.setCut(RuleConstant.DEGRADE_CUT_HALF_OPEN);
             } else {
