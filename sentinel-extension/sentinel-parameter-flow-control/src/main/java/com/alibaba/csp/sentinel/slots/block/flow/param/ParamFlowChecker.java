@@ -67,7 +67,7 @@ final class ParamFlowChecker {
     private static Object valueAt(Object[] args, int paramIdx) {
         Object value = null;
         if (paramIdx < 0) {
-            if(-paramIdx <= args.length){
+            if (-paramIdx <= args.length) {
                 return args[args.length + paramIdx];
             }
         } else {
@@ -124,7 +124,7 @@ final class ParamFlowChecker {
                 int itemThreshold = rule.getParsedHotItems().get(value);
                 return ++threadCount <= itemThreshold;
             }
-            long threshold = (long) rule.getCount();
+            long threshold = (long)rule.getCount();
             return ++threadCount <= threshold;
         }
 
