@@ -119,6 +119,11 @@ public interface Metric {
     void addRT(long rt);
 
     /**
+     * is New TimeWindow
+     */
+    boolean newTimeWindow();
+
+    /**
      * minus success count
      */
     void minusSuccess(int n);

@@ -82,6 +82,11 @@ public class DegradeRule extends AbstractRule {
      */
     private int grade = RuleConstant.DEGRADE_GRADE_RT;
 
+    /**
+     * First request after degrade
+     */
+    private AtomicBoolean firstRequest=new AtomicBoolean(true);
+
     private volatile int cut = RuleConstant.DEGRADE_CUT_CLOSE;
     /**
      * Degrade half-open-switch(default=false)
@@ -186,9 +191,14 @@ public class DegradeRule extends AbstractRule {
         }
         // degrade_cut_half_open
         if (cut == RuleConstant.DEGRADE_CUT_HALF_OPEN) {
+            //First request after downgrade
+            if(firstRequest.get()){
+                firstRequest.set(false);
+                return true;
+            }
             //In the half-open state, only five requests are all normal and will be fully opened.
             if (grade == RuleConstant.DEGRADE_GRADE_RT) {
-                double rt = clusterNode.avgRt();
+                long rt=clusterNode.getLastRt().get();
                 if (rt < this.count) {
                     cut = RuleConstant.DEGRADE_CUT_CLOSE;
                     return true;
@@ -196,23 +206,9 @@ public class DegradeRule extends AbstractRule {
                 clusterNode.minusRt(1);
                 return degradeCutOpen();
             }
-            if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
-                double exception = clusterNode.exceptionQps();
+            if (grade != RuleConstant.DEGRADE_GRADE_RT) {
                 //When the sliding window slides over the next window, it needs to be cleared.
-                if (exception != 0) {
-                    cut = RuleConstant.DEGRADE_CUT_CLOSE;
-                    return true;
-                }
-                clusterNode.minusException();
-                return degradeCutOpen();
-            }
-            if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
-                double totalException = clusterNode.totalException();
-                if (totalException < count && totalException != 0) {
-                    cut = RuleConstant.DEGRADE_CUT_CLOSE;
-                    return true;
-                }
-                if (totalException == 0) {
+                if (clusterNode.getLastResult().get()) {
                     cut = RuleConstant.DEGRADE_CUT_CLOSE;
                     return true;
                 }
@@ -232,7 +228,7 @@ public class DegradeRule extends AbstractRule {
             if (passCount.incrementAndGet() < RT_MAX_EXCEED_N) {
                 return true;
             }
-            clusterNode.minusRt(RT_MAX_EXCEED_N-1);
+            clusterNode.minusRt(clusterNode.getLsatRtSum().get());
             clusterNode.resetLastRt();
             passCount.set(0);
             return degradeCutOpen();

@@ -16,6 +16,9 @@
 package com.alibaba.csp.sentinel.node;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
@@ -180,4 +183,18 @@ public interface Node {
      */
     void resetLastRt();
 
+    /**
+     * get lastRT
+     */
+    AtomicLong getLastRt();
+
+    /**
+     * get last Result (true:success;false:exception)
+     */
+    AtomicBoolean getLastResult();
+
+    /**
+     * get last rt(same TimeWindow) sum
+     */
+    AtomicInteger getLsatRtSum();
 }

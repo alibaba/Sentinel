@@ -18,7 +18,9 @@ package com.alibaba.csp.sentinel.node;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
@@ -111,9 +113,20 @@ public class StatisticNode implements Node {
      */
     private long lastFetchTime = -1;
     /**
-     * record last rt(Prepare degrade rt sum)
+     * record last rt(Prepare degrade rt sum and same TimeWindow)
      */
-    private volatile long lastRt = 0L;
+    private AtomicLong  lastRt =new AtomicLong(0);
+
+    /**
+     * record last rt(same TimeWindow) sum
+     */
+    private AtomicInteger lastRtSum=new AtomicInteger(0);
+    /**
+     * lastResult
+     *
+     * @return
+     */
+    private AtomicBoolean lastResult = new AtomicBoolean(true);
 
     @Override
     public Map<Long, MetricNode> metrics() {
@@ -244,17 +257,25 @@ public class StatisticNode implements Node {
 
     @Override
     public void minusRt(int count) {
-        rollingCounterInSecond.minusRt(lastRt);
+        rollingCounterInSecond.minusRt(lastRt.get());
         rollingCounterInSecond.minusSuccess(count);
-        rollingCounterInMinute.minusRt(lastRt);
+        rollingCounterInMinute.minusRt(lastRt.get());
         rollingCounterInMinute.minusSuccess(count);
+        lastRt.set(0);
     }
 
     @Override
     public void addRtAndSuccess(long rt, int successCount) {
         rollingCounterInSecond.addSuccess(successCount);
         rollingCounterInSecond.addRT(rt);
-        lastRt+=rt;
+        if (rollingCounterInSecond.newTimeWindow()) {
+            lastRt.set(rt);
+            lastRtSum.set(1);
+        } else {
+            lastRt.set(rt+lastRt.get());
+            lastRtSum.getAndAdd(1);
+        }
+        lastResult.set(true);
         rollingCounterInMinute.addSuccess(successCount);
         rollingCounterInMinute.addRT(rt);
     }
@@ -269,12 +290,13 @@ public class StatisticNode implements Node {
     public void increaseExceptionQps(int count) {
         rollingCounterInSecond.addException(count);
         rollingCounterInMinute.addException(count);
+        lastResult.set(false);
 
     }
 
     @Override
     public void resetLastRt() {
-        lastRt=0;
+        lastRt.set(0);
     }
 
     @Override
@@ -292,7 +314,18 @@ public class StatisticNode implements Node {
         rollingCounterInSecond.debugQps();
     }
 
-    public void setLastRt(long lastRt) {
-        this.lastRt = lastRt;
+    @Override
+    public AtomicLong getLastRt() {
+        return lastRt;
+    }
+
+    @Override
+    public AtomicBoolean getLastResult() {
+        return lastResult;
+    }
+
+    @Override
+    public AtomicInteger getLsatRtSum() {
+        return lastRtSum;
     }
 }

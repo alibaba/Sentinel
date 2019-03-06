@@ -165,6 +165,7 @@ public class ArrayMetric implements Metric {
     public void addException(int count) {
         WindowWrap<MetricBucket> wrap = data.currentWindow();
         wrap.value().addException(count);
+
     }
 
     @Override
@@ -193,7 +194,7 @@ public class ArrayMetric implements Metric {
 
     @Override
     public void minusSuccess(int n) {
-        if (null == data.values() || data.values().size() == 0) {
+        if (data.values().isEmpty()) {
             return;
         }
         WindowWrap<MetricBucket> wrap = data.currentWindow();
@@ -202,7 +203,7 @@ public class ArrayMetric implements Metric {
 
     @Override
     public void minusRt(long rt) {
-        if (null == data.values() || data.values().size() == 0) {
+        if (data.values().isEmpty()) {
             return;
         }
         WindowWrap<MetricBucket> wrap = data.currentWindow();
@@ -211,7 +212,7 @@ public class ArrayMetric implements Metric {
 
     @Override
     public void minusException() {
-        if (null == data.values() || data.values().size() == 0) {
+        if (data.values().isEmpty()) {
             return;
         }
         WindowWrap<MetricBucket> wrap = data.currentWindow();
@@ -261,5 +262,13 @@ public class ArrayMetric implements Metric {
     @Override
     public int getSampleCount() {
         return data.getSampleCount();
+    }
+
+    @Override
+    public boolean newTimeWindow() {
+        if(data.values().isEmpty()){
+            return true;
+        }
+        return false;
     }
 }
