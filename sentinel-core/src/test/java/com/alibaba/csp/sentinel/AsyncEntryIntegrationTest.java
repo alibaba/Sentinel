@@ -59,7 +59,7 @@ public class AsyncEntryIntegrationTest {
                         @Override
                         public void run() {
                             try {
-                                TimeUnit.SECONDS.sleep(2);
+                                TimeUnit.MILLISECONDS.sleep(500);
                                 anotherSyncInAsync();
                                 System.out.println("Async result: 666");
                             } catch (InterruptedException e) {
@@ -178,7 +178,7 @@ public class AsyncEntryIntegrationTest {
         }
 
         // we keep the original timeout of 15 seconds although the test should
-        // complete in less than 6 seconds
+        // complete in less than 3 seconds
         await().timeout(15, TimeUnit.SECONDS)
             .until(new Callable<DefaultNode>() {
                 @Override
@@ -249,7 +249,7 @@ public class AsyncEntryIntegrationTest {
             @Override
             public void run() {
                 try {
-                    TimeUnit.SECONDS.sleep(3);
+                    TimeUnit.MILLISECONDS.sleep(1000);
                     String resp = arg + ": " + System.currentTimeMillis();
                     handler.accept(resp);
 
