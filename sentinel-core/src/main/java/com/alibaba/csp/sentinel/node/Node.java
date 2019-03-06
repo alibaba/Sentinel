@@ -132,8 +132,9 @@ public interface Node {
     /**
      * minus exception
      */
-    void minusException();
+    void minusMinuteException();
 
+    void minusSecondException();
     /**
      * minus Rt
      */

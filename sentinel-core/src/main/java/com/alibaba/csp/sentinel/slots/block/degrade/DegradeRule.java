@@ -212,7 +212,11 @@ public class DegradeRule extends AbstractRule {
                     cut = RuleConstant.DEGRADE_CUT_CLOSE;
                     return true;
                 }
-                clusterNode.minusException();
+                if(grade==RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
+                    clusterNode.minusSecondException();
+                }else{
+                    clusterNode.minusMinuteException();
+                }
                 return degradeCutOpen();
             }
         }
@@ -250,7 +254,7 @@ public class DegradeRule extends AbstractRule {
             if (exception / success < count) {
                 return true;
             }
-            clusterNode.minusException();
+            clusterNode.minusSecondException();
             return degradeCutOpen();
         }
         if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
@@ -259,7 +263,7 @@ public class DegradeRule extends AbstractRule {
                 return true;
             }
             // after degrade-open minus exceptionCount
-            clusterNode.minusException();
+            clusterNode.minusMinuteException();
         }
         return degradeCutOpen();
     }

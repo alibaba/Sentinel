@@ -250,8 +250,11 @@ public class StatisticNode implements Node {
     }
 
     @Override
-    public void minusException() {
+    public void minusSecondException() {
         rollingCounterInSecond.minusException();
+    }
+    @Override
+    public void minusMinuteException() {
         rollingCounterInMinute.minusException();
     }
 
