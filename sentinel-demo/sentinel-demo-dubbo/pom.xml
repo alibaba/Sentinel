@@ -28,8 +28,8 @@
             <version>4.1.31.Final</version>
         </dependency>
 
-        <!-- As demo use @DubboComponentScan to config, which is implemented in dubbo-config module -->
-        <!-- The dubbo-config module is optional and it depends spring-context-support, so add it explicitly-->
+        <!-- As demo use @DubboComponentScan to config, which is implemented in dubbo-config-spring module -->
+        <!-- The dubbo-config-spring module is optional and it depends spring-context-support, so add it explicitly-->
         <!-- @see https://github.com/apache/incubator-dubbo/issues/2869 -->
         <dependency>
             <groupId>com.alibaba.spring</groupId>
