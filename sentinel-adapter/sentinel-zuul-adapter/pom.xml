@@ -32,6 +32,12 @@
             <artifactId>zuul-core</artifactId>
             <version>${zuul.version}</version>
             <scope>provided</scope>
+            <exclusions>
+            	<exclusion>
+            		<groupId>org.mockito</groupId>
+            		<artifactId>mockito-all</artifactId>
+            	</exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

@@ -50,7 +50,7 @@ public class DegradeTest {
         DegradeRule rule = new DegradeRule();
         rule.setCount(1);
         rule.setResource(key);
-        rule.setTimeWindow(5);
+        rule.setTimeWindow(2);
 
         for (int i = 0; i < 4; i++) {
             assertTrue(rule.passCheck(context, node, 1));
@@ -61,13 +61,13 @@ public class DegradeTest {
         assertFalse(rule.passCheck(context, node, 1));
 
         // Restore.
+
         TimeUnit.SECONDS.sleep(6);
         rule.setCount(3);
         //When the fifth request ends, degrade will blow close.
         for (int i = 0; i < 10; i++) {
             assertTrue(rule.passCheck(context, node, 1));
         }
-
     }
 
     @Test
@@ -86,7 +86,7 @@ public class DegradeTest {
         DegradeRule rule = new DegradeRule();
         rule.setCount(0.15);
         rule.setResource(key);
-        rule.setTimeWindow(5);
+        rule.setTimeWindow(2);
         rule.setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO);
 
         when(cn.successQps()).thenReturn(8L);
@@ -95,7 +95,7 @@ public class DegradeTest {
         assertFalse(rule.passCheck(context, node, 1));
 
         // Restore from the degrade timeout.
-        TimeUnit.SECONDS.sleep(6);
+        TimeUnit.MILLISECONDS.sleep(2200);
 
         //  when(cn.successQps()).thenReturn(20L);
         // Will pass.
@@ -135,6 +135,7 @@ public class DegradeTest {
         // Will fail.
         assertFalse(rule.passCheck(context, node, 1));
         // Restore from the degrade timeout.
+
         TimeUnit.SECONDS.sleep(3);
         when(cn.totalException()).thenReturn(3L);
         //  when(cn.totalException()).thenReturn(0L);
