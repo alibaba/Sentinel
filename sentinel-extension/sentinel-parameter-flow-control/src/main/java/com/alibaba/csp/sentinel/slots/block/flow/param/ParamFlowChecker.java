@@ -52,7 +52,7 @@ final class ParamFlowChecker {
         }
 
         // Get parameter value. If value is null, then pass.
-        Object value = args[paramIdx];
+        Object value = valueAt(args, paramIdx);
         if (value == null) {
             return true;
         }
@@ -62,6 +62,18 @@ final class ParamFlowChecker {
         }
 
         return passLocalCheck(resourceWrapper, rule, count, value);
+    }
+
+    private static Object valueAt(Object[] args, int paramIdx) {
+        Object value = null;
+        if (paramIdx < 0) {
+            if (-paramIdx <= args.length) {
+                return args[args.length + paramIdx];
+            }
+        } else {
+            value = args[paramIdx];
+        }
+        return value;
     }
 
     private static boolean passLocalCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int count,
@@ -112,7 +124,7 @@ final class ParamFlowChecker {
                 int itemThreshold = rule.getParsedHotItems().get(value);
                 return ++threadCount <= itemThreshold;
             }
-            long threshold = (long) rule.getCount();
+            long threshold = (long)rule.getCount();
             return ++threadCount <= threshold;
         }
 
