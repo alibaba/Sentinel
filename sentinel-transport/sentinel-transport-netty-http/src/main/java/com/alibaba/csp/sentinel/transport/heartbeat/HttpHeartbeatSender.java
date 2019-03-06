@@ -20,7 +20,12 @@ import com.alibaba.csp.sentinel.spi.SpiOrder;
 import com.alibaba.csp.sentinel.transport.config.TransportConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.transport.HeartbeatSender;
+<<<<<<< HEAD
 import com.alibaba.csp.sentinel.transport.config.DashboardConfig;
+=======
+import com.alibaba.csp.sentinel.transport.config.HeartbeatConfigEntity;
+import com.alibaba.csp.sentinel.transport.config.TransportConfig;
+>>>>>>> change DashbordConfig to HeartbeatConfigEntity
 import com.alibaba.csp.sentinel.util.AppNameUtil;
 import com.alibaba.csp.sentinel.util.HostNameUtil;
 import com.alibaba.csp.sentinel.util.PidUtil;
@@ -51,22 +56,22 @@ public class HttpHeartbeatSender implements HeartbeatSender {
         .setSocketTimeout(timeoutMs)
         .build();
 
-    private DashboardConfig dashboardConfig;
+    private HeartbeatConfigEntity heartbeatConfigEntity;
 
     public HttpHeartbeatSender() {
         this.client = HttpClients.createDefault();
-        List<DashboardConfig> dashboardList = parseDashboardList();
+        List<HeartbeatConfigEntity> dashboardList = parseDashboardList();
         if (dashboardList == null || dashboardList.isEmpty()) {
             RecordLog.info("[NettyHttpHeartbeatSender] No dashboard available");
         } else {
-            dashboardConfig = dashboardList.get(0);
-            RecordLog.info("[NettyHttpHeartbeatSender] Dashboard address parsed: <" + dashboardConfig.getHost()
-                    + ':' + dashboardConfig.getPort() + "/" + dashboardConfig.getPath() +">");
+            heartbeatConfigEntity = dashboardList.get(0);
+            RecordLog.info("[NettyHttpHeartbeatSender] Dashboard address parsed: <" + heartbeatConfigEntity.getHost()
+                    + ':' + heartbeatConfigEntity.getPort() + "/" + heartbeatConfigEntity.getPath() +">");
         }
     }
 
-    private List<DashboardConfig> parseDashboardList() {
-        List<DashboardConfig> list = new ArrayList<DashboardConfig>();
+    private List<HeartbeatConfigEntity> parseDashboardList() {
+        List<HeartbeatConfigEntity> list = new ArrayList<HeartbeatConfigEntity>();
         try {
             String ipsStr = TransportConfig.getConsoleServer();
             if (StringUtil.isBlank(ipsStr)) {
@@ -78,7 +83,7 @@ public class HttpHeartbeatSender implements HeartbeatSender {
                 if (ipPortStr.trim().length() == 0) {
                     continue;
                 }
-                list.add(new DashboardConfig(ipPortStr));
+                list.add(new HeartbeatConfigEntity(ipPortStr));
             }
         } catch (Exception ex) {
             RecordLog.warn("[NettyHttpHeartbeatSender] Parse dashboard list failed, current address list: " + list, ex);
@@ -89,12 +94,12 @@ public class HttpHeartbeatSender implements HeartbeatSender {
 
     @Override
     public boolean sendHeartbeat() throws Exception {
-        if (dashboardConfig == null) {
+        if (heartbeatConfigEntity == null) {
             return false;
         }
         URIBuilder uriBuilder = new URIBuilder();
-        uriBuilder.setScheme(dashboardConfig.getSchema()).setHost(dashboardConfig.getHost())
-            .setPort(dashboardConfig.getPort()).setPath(dashboardConfig.getPath()+"/registry/machine")
+        uriBuilder.setScheme(heartbeatConfigEntity.getSchema()).setHost(heartbeatConfigEntity.getHost())
+            .setPort(heartbeatConfigEntity.getPort()).setPath(heartbeatConfigEntity.getPath()+"/registry/machine")
             .setParameter("app", AppNameUtil.getAppName())
             .setParameter("v", Constants.SENTINEL_VERSION)
             .setParameter("version", String.valueOf(System.currentTimeMillis()))

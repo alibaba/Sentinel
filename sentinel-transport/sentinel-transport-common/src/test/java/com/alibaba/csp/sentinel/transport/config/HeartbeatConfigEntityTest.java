@@ -7,15 +7,15 @@ import java.net.InetSocketAddress;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Test case for {@link DashboardConfig}
+ * Test case for {@link HeartbeatConfigEntity}
  *
  * @author jz0630
  */
-public class DashboardConfigTest {
+public class HeartbeatConfigEntityTest {
     @Test
     public void testBase() {
         // no port
-        DashboardConfig dashboardConfig = new DashboardConfig("10.10.10.10");
+        HeartbeatConfigEntity dashboardConfig = new HeartbeatConfigEntity("10.10.10.10");
         assertEquals(dashboardConfig.getHost(), "10.10.10.10");
         assertEquals(dashboardConfig.getPort(), Integer.valueOf(80));
         assertEquals(dashboardConfig.getPath(), "");
@@ -23,7 +23,7 @@ public class DashboardConfigTest {
         assertEquals(dashboardConfig.getInetSocketAddress(), new InetSocketAddress("10.10.10.10", 80));
 
 
-        dashboardConfig = new DashboardConfig("10.10.10.10:8080");
+        dashboardConfig = new HeartbeatConfigEntity("10.10.10.10:8080");
         assertEquals(dashboardConfig.getHost(), "10.10.10.10");
         assertEquals(dashboardConfig.getPort(), Integer.valueOf(8080));
         assertEquals(dashboardConfig.getPath(), "");
@@ -31,27 +31,27 @@ public class DashboardConfigTest {
 
     @Test
     public void testWithSchema() {
-        DashboardConfig dashboardConfig = new DashboardConfig("http://10.10.10.10/");
+        HeartbeatConfigEntity dashboardConfig = new HeartbeatConfigEntity("http://10.10.10.10/");
         assertEquals(dashboardConfig.getHost(), "10.10.10.10");
         assertEquals(dashboardConfig.getPort(), Integer.valueOf(80));
         assertEquals(dashboardConfig.getPath(), "");
         assertEquals(dashboardConfig.getSchema(), "http");
 
 
-        dashboardConfig = new DashboardConfig("https://10.10.10.10:8080/");
+        dashboardConfig = new HeartbeatConfigEntity("https://10.10.10.10:8080/");
         assertEquals(dashboardConfig.getHost(), "10.10.10.10");
         assertEquals(dashboardConfig.getPort(), Integer.valueOf(8080));
         assertEquals(dashboardConfig.getPath(), "");
         assertEquals(dashboardConfig.getSchema(), "https");
 
-        dashboardConfig = new DashboardConfig("http://10.10.10.10");
+        dashboardConfig = new HeartbeatConfigEntity("http://10.10.10.10");
         assertEquals(dashboardConfig.getHost(), "10.10.10.10");
         assertEquals(dashboardConfig.getPort(), Integer.valueOf(80));
         assertEquals(dashboardConfig.getPath(), "");
         assertEquals(dashboardConfig.getSchema(), "http");
 
 
-        dashboardConfig = new DashboardConfig("https://10.10.10.10:8080");
+        dashboardConfig = new HeartbeatConfigEntity("https://10.10.10.10:8080");
         assertEquals(dashboardConfig.getHost(), "10.10.10.10");
         assertEquals(dashboardConfig.getPort(), Integer.valueOf(8080));
         assertEquals(dashboardConfig.getPath(), "");
@@ -60,25 +60,25 @@ public class DashboardConfigTest {
 
     @Test
     public void testWithContextPath() {
-        DashboardConfig dashboardConfig = new DashboardConfig("http://10.10.10.10/dashboard/");
+        HeartbeatConfigEntity dashboardConfig = new HeartbeatConfigEntity("http://10.10.10.10/dashboard/");
         assertEquals(dashboardConfig.getHost(), "10.10.10.10");
         assertEquals(dashboardConfig.getPort(), Integer.valueOf(80));
         assertEquals(dashboardConfig.getPath(), "/dashboard");
         assertEquals(dashboardConfig.getSchema(), "http");
 
-        dashboardConfig = new DashboardConfig("http://10.10.10.10:8080/dashboard/");
+        dashboardConfig = new HeartbeatConfigEntity("http://10.10.10.10:8080/dashboard/");
         assertEquals(dashboardConfig.getHost(), "10.10.10.10");
         assertEquals(dashboardConfig.getPort(), Integer.valueOf(8080));
         assertEquals(dashboardConfig.getPath(), "/dashboard");
         assertEquals(dashboardConfig.getSchema(), "http");
 
-        dashboardConfig = new DashboardConfig("http://10.10.10.10/dashboard");
+        dashboardConfig = new HeartbeatConfigEntity("http://10.10.10.10/dashboard");
         assertEquals(dashboardConfig.getHost(), "10.10.10.10");
         assertEquals(dashboardConfig.getPort(), Integer.valueOf(80));
         assertEquals(dashboardConfig.getPath(), "/dashboard");
         assertEquals(dashboardConfig.getSchema(), "http");
 
-        dashboardConfig = new DashboardConfig("http://10.10.10.10:8080/dashboard");
+        dashboardConfig = new HeartbeatConfigEntity("http://10.10.10.10:8080/dashboard");
         assertEquals(dashboardConfig.getHost(), "10.10.10.10");
         assertEquals(dashboardConfig.getPort(), Integer.valueOf(8080));
         assertEquals(dashboardConfig.getPath(), "/dashboard");

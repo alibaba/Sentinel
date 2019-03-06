@@ -3,11 +3,11 @@ package com.alibaba.csp.sentinel.transport.config;
 import java.net.InetSocketAddress;
 
 /**
- * For Dashboard Config
+ * For Heartbeat Config Entity
  *
  * @author jz0630
  */
-public class DashboardConfig {
+public class HeartbeatConfigEntity {
     private static final String HTTP = "http";
     private static final String HTTPS = "https";
     private String schema = HTTP;
@@ -16,7 +16,7 @@ public class DashboardConfig {
     private String path = "";
     private InetSocketAddress address;
 
-    public DashboardConfig(String ipPortStr) {
+    public HeartbeatConfigEntity(String ipPortStr) {
         if (ipPortStr.startsWith(HTTPS)) {
             schema = HTTPS;
             ipPortStr = ipPortStr.trim().substring(8);
