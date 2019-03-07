@@ -1,6 +1,5 @@
 package com.alibaba.csp.sentinel.adapter.reactor;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 

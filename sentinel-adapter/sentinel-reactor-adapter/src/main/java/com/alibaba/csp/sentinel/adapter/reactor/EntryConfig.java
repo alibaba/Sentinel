@@ -26,15 +26,22 @@ public class EntryConfig {
 
     private final String resourceName;
     private final EntryType entryType;
+    private final ContextConfig contextConfig;
 
     public EntryConfig(String resourceName) {
         this(resourceName, EntryType.OUT);
     }
 
     public EntryConfig(String resourceName, EntryType entryType) {
+        this(resourceName, entryType, null);
+    }
+
+    public EntryConfig(String resourceName, EntryType entryType, ContextConfig contextConfig) {
         checkParams(resourceName, entryType);
         this.resourceName = resourceName;
         this.entryType = entryType;
+        // Constructed ContextConfig should be valid here. Null is allowed here.
+        this.contextConfig = contextConfig;
     }
 
     public String getResourceName() {
@@ -43,6 +50,10 @@ public class EntryConfig {
 
     public EntryType getEntryType() {
         return entryType;
+    }
+
+    public ContextConfig getContextConfig() {
+        return contextConfig;
     }
 
     public static void assertValid(EntryConfig config) {
@@ -60,6 +71,7 @@ public class EntryConfig {
         return "EntryConfig{" +
             "resourceName='" + resourceName + '\'' +
             ", entryType=" + entryType +
+            ", contextConfig=" + contextConfig +
             '}';
     }
 }

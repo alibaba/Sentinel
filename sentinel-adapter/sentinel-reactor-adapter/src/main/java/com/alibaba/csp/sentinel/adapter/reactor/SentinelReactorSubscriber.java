@@ -82,6 +82,11 @@ public class SentinelReactorSubscriber<T> extends InheritableBaseSubscriber<T> {
     }
 
     private void entryWhenSubscribed() {
+        ContextConfig sentinelContextConfig = entryConfig.getContextConfig();
+        if (sentinelContextConfig != null) {
+            // If current we're already in a context, the context config won't work.
+            ContextUtil.enter(sentinelContextConfig.getContextName(), sentinelContextConfig.getOrigin());
+        }
         try {
             AsyncEntry entry = SphU.asyncEntry(entryConfig.getResourceName());
             this.currentEntry = entry;
@@ -93,6 +98,10 @@ public class SentinelReactorSubscriber<T> extends InheritableBaseSubscriber<T> {
             cancel();
             actual.onSubscribe(this);
             actual.onError(ex);
+        } finally {
+            if (sentinelContextConfig != null) {
+                ContextUtil.exit();
+            }
         }
     }
 
