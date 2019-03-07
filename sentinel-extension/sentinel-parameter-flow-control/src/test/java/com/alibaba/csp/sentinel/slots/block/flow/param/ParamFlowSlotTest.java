@@ -40,6 +40,28 @@ public class ParamFlowSlotTest {
     private final ParamFlowSlot paramFlowSlot = new ParamFlowSlot();
 
     @Test
+    public void testNegativeParamIdx() throws Throwable {
+        String resourceName = "testNegativeParamIdx";
+        ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
+        ParamFlowRule rule = new ParamFlowRule(resourceName)
+            .setCount(1)
+            .setParamIdx(-1);
+        ParamFlowRuleManager.loadRules(Collections.singletonList(rule));
+        paramFlowSlot.entry(null, resourceWrapper, null, 1, false, "abc", "def", "ghi");
+        assertEquals(2, rule.getParamIdx().longValue());
+
+        rule.setParamIdx(-100);
+        ParamFlowRuleManager.loadRules(Collections.singletonList(rule));
+        paramFlowSlot.entry(null, resourceWrapper, null, 1, false, "abc", "def", "ghi");
+        assertEquals(100, rule.getParamIdx().longValue());
+
+        rule.setParamIdx(0);
+        ParamFlowRuleManager.loadRules(Collections.singletonList(rule));
+        paramFlowSlot.entry(null, resourceWrapper, null, 1, false, "abc", "def", "ghi");
+        assertEquals(0, rule.getParamIdx().longValue());
+    }
+
+    @Test
     public void testEntryWhenParamFlowRuleNotExists() throws Throwable {
         String resourceName = "testEntryWhenParamFlowRuleNotExists";
         ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);

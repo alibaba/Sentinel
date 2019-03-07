@@ -47,9 +47,8 @@ public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     private final Object LOCK = new Object();
 
     @Override
-    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, boolean prioritized, Object... args)
-        throws Throwable {
-
+    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
+                      boolean prioritized, Object... args) throws Throwable {
         if (!ParamFlowRuleManager.hasRules(resourceWrapper.getName())) {
             fireEntry(context, resourceWrapper, node, count, prioritized, args);
             return;
@@ -73,6 +72,16 @@ public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             }
 
             for (ParamFlowRule rule : rules) {
+                int paramIdx = rule.getParamIdx();
+                if (paramIdx < 0) {
+                    if (-paramIdx <= args.length) {
+                        rule.setParamIdx(args.length + paramIdx);
+                    } else {
+                        // illegal index, give it a illegal positive value, latter rule check will pass
+                        rule.setParamIdx(-paramIdx);
+                    }
+                }
+
                 // Initialize the parameter metrics.
                 initHotParamMetricsFor(resourceWrapper, rule.getParamIdx());
 
@@ -105,7 +114,7 @@ public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
      * Package-private for test.
      *
      * @param resourceWrapper resource to init
-     * @param index index to initialize, which must be valid
+     * @param index           index to initialize, which must be valid
      */
     void initHotParamMetricsFor(ResourceWrapper resourceWrapper, /*@Valid*/ int index) {
         ParameterMetric metric;
