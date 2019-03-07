@@ -63,5 +63,5 @@ public @interface SentinelResource {
     /**
      * @return the exception classes to trace, Throwable.class by default
      */
-    Class<? extends Throwable>[] exceptionClasses() default {Throwable.class};
+    Class<? extends Throwable>[] exceptionsToTrace() default {Throwable.class};
 }
