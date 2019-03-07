@@ -35,7 +35,7 @@ Below is a simple demo that guides new users to use Sentinel in just 3 steps. It
 
 ### 1. Add Dependency
 
-**Note:** Sentinel requires Java 6 or later.
+**Note:** Sentinel requires Java 7 or later.
 
 If your application is build in maven, just add the following code in pom.xml.
 
@@ -96,13 +96,13 @@ For more information, please refer to [How To Use](https://github.com/alibaba/Se
 After running the demo for a while, you can see the following records in `~/logs/csp/${appName}-metrics.log`.
 
 ```
-|--timestamp-|------date time----|--resource-|p |block|s |e|rt
-1529998904000|2018-06-26 15:41:44|hello world|20|0    |20|0|0
-1529998905000|2018-06-26 15:41:45|hello world|20|5579 |20|0|728
-1529998906000|2018-06-26 15:41:46|hello world|20|15698|20|0|0
-1529998907000|2018-06-26 15:41:47|hello world|20|19262|20|0|0
-1529998908000|2018-06-26 15:41:48|hello world|20|19502|20|0|0
-1529998909000|2018-06-26 15:41:49|hello world|20|18386|20|0|0
+|--timestamp-|------date time----|-resource-|p |block|s |e|rt
+1529998904000|2018-06-26 15:41:44|HelloWorld|20|0    |20|0|0
+1529998905000|2018-06-26 15:41:45|HelloWorld|20|5579 |20|0|728
+1529998906000|2018-06-26 15:41:46|HelloWorld|20|15698|20|0|0
+1529998907000|2018-06-26 15:41:47|HelloWorld|20|19262|20|0|0
+1529998908000|2018-06-26 15:41:48|HelloWorld|20|19502|20|0|0
+1529998909000|2018-06-26 15:41:49|HelloWorld|20|18386|20|0|0
 
 p stands for incoming request, block for blocked by rules, success for success handled by Sentinel, e for exception count, rt for average response time (ms)
 ```

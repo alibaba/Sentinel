@@ -41,7 +41,7 @@ import static com.alibaba.csp.sentinel.transport.util.WritableDataSourceRegistry
  * @author jialiang.linjl
  * @author Eric Zhao
  */
-@CommandMapping(name = "setRules")
+@CommandMapping(name = "setRules", desc = "modify the rules, accept param: type={ruleType}&data={ruleJson}")
 public class ModifyRulesCommandHandler implements CommandHandler<String> {
 
     @Override

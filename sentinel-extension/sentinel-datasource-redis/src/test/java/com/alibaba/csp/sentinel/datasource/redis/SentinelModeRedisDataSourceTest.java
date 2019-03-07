@@ -27,10 +27,15 @@ import com.alibaba.fastjson.TypeReference;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.sync.RedisCommands;
+import org.hamcrest.Matchers;
 import org.junit.*;
 
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+
+import static org.awaitility.Awaitility.await;
 
 /**
  * Redis redisSentinel mode test cases for {@link RedisDataSource}.
@@ -79,14 +84,16 @@ public class SentinelModeRedisDataSourceTest {
         subCommands.set(ruleKey, flowRulesJson);
         subCommands.publish(channel, flowRulesJson);
         subCommands.exec();
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+
+        await().timeout(2, TimeUnit.SECONDS)
+            .until(new Callable<List<FlowRule>>() {
+                @Override
+                public List<FlowRule> call() throws Exception {
+                    return FlowRuleManager.getRules();
+                }
+            }, Matchers.hasSize(1));
+
         List<FlowRule> rules = FlowRuleManager.getRules();
-        Assert.assertEquals(1, rules.size());
-        rules = FlowRuleManager.getRules();
         Assert.assertEquals(rules.get(0).getMaxQueueingTimeMs(), maxQueueingTimeMs);
         String value = subCommands.get(ruleKey);
         List<FlowRule> flowRulesValuesInRedis = buildFlowConfigParser().convert(value);

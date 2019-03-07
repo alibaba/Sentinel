@@ -32,9 +32,15 @@ public class ParamFlowException extends BlockException {
         this.resourceName = resourceName;
     }
 
-    public ParamFlowException(String resourceName, String message) {
-        super(message, message);
+    public ParamFlowException(String resourceName, String param) {
+        super(param, param);
         this.resourceName = resourceName;
+    }
+
+    public ParamFlowException(String resourceName, String param, ParamFlowRule rule) {
+        super(param, param);
+        this.resourceName = resourceName;
+        this.rule = rule;
     }
 
     public String getResourceName() {
@@ -44,5 +50,27 @@ public class ParamFlowException extends BlockException {
     @Override
     public Throwable fillInStackTrace() {
         return this;
+    }
+
+    /**
+     * Get the parameter value that triggered the parameter flow control.
+     *
+     * @return the parameter value
+     * @since 1.4.2
+     */
+    public String getLimitParam() {
+        return getMessage();
+    }
+
+    /**
+     * Get triggered rule.
+     * Note: the rule result is a reference to rule map and SHOULD NOT be modified.
+     *
+     * @return triggered rule
+     * @since 1.4.2
+     */
+    @Override
+    public ParamFlowRule getRule() {
+        return rule.as(ParamFlowRule.class);
     }
 }

@@ -23,6 +23,7 @@ import com.alibaba.csp.sentinel.dashboard.discovery.AppInfo;
  * @author leyou
  */
 public class ApplicationEntity {
+
     private Long id;
     private Date gmtCreate;
     private Date gmtModified;
@@ -79,10 +80,7 @@ public class ApplicationEntity {
     }
 
     public AppInfo toAppInfo() {
-        AppInfo appInfo = new AppInfo();
-        appInfo.setApp(app);
-
-        return appInfo;
+        return new AppInfo(app);
     }
 
     @Override

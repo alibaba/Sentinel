@@ -38,7 +38,7 @@ public class LogSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 context.getOrigin(), count);
             throw e;
         } catch (Throwable e) {
-            RecordLog.info("Entry exception", e);
+            RecordLog.warn("Unexpected entry exception", e);
         }
 
     }
@@ -48,7 +48,7 @@ public class LogSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         try {
             fireExit(context, resourceWrapper, count, args);
         } catch (Throwable e) {
-            RecordLog.info("Entry exit exception", e);
+            RecordLog.warn("Unexpected entry exit exception", e);
         }
     }
 }

@@ -27,7 +27,7 @@ import com.alibaba.fastjson.JSON;
  * @author Eric Zhao
  * @since 1.4.0
  */
-@CommandMapping(name = "cluster/server/flowRules")
+@CommandMapping(name = "cluster/server/flowRules", desc = "get cluster flow rules")
 public class FetchClusterFlowRulesCommandHandler implements CommandHandler<String> {
 
     @Override

@@ -32,7 +32,7 @@ import com.alibaba.fastjson.JSONArray;
  * @author Eric Zhao
  * @since 1.4.0
  */
-@CommandMapping(name = "cluster/server/modifyFlowRules")
+@CommandMapping(name = "cluster/server/modifyFlowRules", desc = "modify cluster flow rules")
 public class ModifyClusterFlowRulesCommandHandler implements CommandHandler<String> {
 
     @Override

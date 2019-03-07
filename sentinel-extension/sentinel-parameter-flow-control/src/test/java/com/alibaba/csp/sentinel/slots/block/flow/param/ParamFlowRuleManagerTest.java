@@ -79,7 +79,7 @@ public class ParamFlowRuleManagerTest {
         ParamFlowRule ruleC = new ParamFlowRule(resA)
             .setCount(8)
             .setParamIdx(1)
-            .setGrade(RuleConstant.FLOW_GRADE_QPS);
+            .setGrade(RuleConstant.FLOW_GRADE_THREAD);
         // Rule D is for resource B.
         ParamFlowRule ruleD = new ParamFlowRule(resB)
             .setCount(9)

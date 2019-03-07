@@ -38,7 +38,6 @@ import com.alibaba.csp.sentinel.dashboard.domain.cluster.state.ClusterUniversalS
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ClusterClientConfig;
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ServerFlowConfig;
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ServerTransportConfig;
-import com.alibaba.csp.sentinel.dashboard.util.MachineUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -62,7 +61,7 @@ public class ClusterConfigService {
         String ip = request.getIp();
         int port = request.getPort();
         return sentinelApiClient.modifyClusterClientConfig(app, ip, port, request.getClientConfig())
-            .thenCompose(v -> sentinelApiClient.modifyClusterMode(app, ip, port, ClusterStateManager.CLUSTER_CLIENT));
+            .thenCompose(v -> sentinelApiClient.modifyClusterMode(ip, port, ClusterStateManager.CLUSTER_CLIENT));
     }
 
     private boolean notClientRequestValid(/*@NonNull */ ClusterClientModifyRequest request) {
@@ -91,7 +90,7 @@ public class ClusterConfigService {
         return sentinelApiClient.modifyClusterServerNamespaceSet(app, ip, port, namespaceSet)
             .thenCompose(v -> sentinelApiClient.modifyClusterServerTransportConfig(app, ip, port, transportConfig))
             .thenCompose(v -> sentinelApiClient.modifyClusterServerFlowConfig(app, ip, port, flowConfig))
-            .thenCompose(v -> sentinelApiClient.modifyClusterMode(app, ip, port, ClusterStateManager.CLUSTER_SERVER));
+            .thenCompose(v -> sentinelApiClient.modifyClusterMode(ip, port, ClusterStateManager.CLUSTER_SERVER));
     }
 
     /**
@@ -111,7 +110,7 @@ public class ClusterConfigService {
         }
 
         List<CompletableFuture<ClusterUniversalStatePairVO>> futures = appInfo.getMachines().stream()
-            .filter(MachineUtils::isMachineHealth)
+            .filter(e -> e.isHealthy())
             .map(machine -> getClusterUniversalState(app, machine.getIp(), machine.getPort())
                 .thenApply(e -> new ClusterUniversalStatePairVO(machine.getIp(), machine.getPort(), e)))
             .collect(Collectors.toList());
@@ -129,7 +128,7 @@ public class ClusterConfigService {
         }
 
         boolean machineOk = appInfo.getMachines().stream()
-            .filter(MachineUtils::isMachineHealth)
+            .filter(e -> e.isHealthy())
             .map(e -> e.getIp() + '@' + e.getPort())
             .anyMatch(e -> e.equals(machineId));
         if (!machineOk) {
@@ -147,18 +146,18 @@ public class ClusterConfigService {
     }
 
     public CompletableFuture<ClusterUniversalStateVO> getClusterUniversalState(String app, String ip, int port) {
-        return sentinelApiClient.fetchClusterMode(app, ip, port)
+        return sentinelApiClient.fetchClusterMode(ip, port)
             .thenApply(e -> new ClusterUniversalStateVO().setStateInfo(e))
             .thenCompose(vo -> {
                 if (vo.getStateInfo().getClientAvailable()) {
-                    return sentinelApiClient.fetchClusterClientInfoAndConfig(app, ip, port)
+                    return sentinelApiClient.fetchClusterClientInfoAndConfig(ip, port)
                         .thenApply(cc -> vo.setClient(new ClusterClientStateVO().setClientConfig(cc)));
                 } else {
                     return CompletableFuture.completedFuture(vo);
                 }
             }).thenCompose(vo -> {
                 if (vo.getStateInfo().getServerAvailable()) {
-                    return sentinelApiClient.fetchClusterServerBasicInfo(app, ip, port)
+                    return sentinelApiClient.fetchClusterServerBasicInfo(ip, port)
                         .thenApply(vo::setServer);
                 } else {
                     return CompletableFuture.completedFuture(vo);
