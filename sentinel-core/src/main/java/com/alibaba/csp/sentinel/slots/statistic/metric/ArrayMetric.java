@@ -192,6 +192,33 @@ public class ArrayMetric implements Metric {
     }
 
     @Override
+    public void minusSuccess(int n) {
+        if (data.values().isEmpty()) {
+            return;
+        }
+        WindowWrap<MetricBucket> wrap = data.currentWindow();
+        wrap.value().minusSuccess(n);
+    }
+
+    @Override
+    public void minusRt(long rt) {
+        if (data.values().isEmpty()) {
+            return;
+        }
+        WindowWrap<MetricBucket> wrap = data.currentWindow();
+        wrap.value().minusRt(rt);
+    }
+
+    @Override
+    public void minusException() {
+        if (data.values().isEmpty()) {
+            return;
+        }
+        WindowWrap<MetricBucket> wrap = data.currentWindow();
+        wrap.value().minusException(1);
+    }
+
+    @Override
     public void debugQps() {
         data.currentWindow();
         StringBuilder sb = new StringBuilder();
@@ -234,5 +261,13 @@ public class ArrayMetric implements Metric {
     @Override
     public int getSampleCount() {
         return data.getSampleCount();
+    }
+
+    @Override
+    public boolean newTimeWindow() {
+        if (data.values().isEmpty()) {
+            return true;
+        }
+        return false;
     }
 }

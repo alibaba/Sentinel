@@ -16,6 +16,9 @@
 package com.alibaba.csp.sentinel.node;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
@@ -127,9 +130,21 @@ public interface Node {
     void addPassRequest(int count);
 
     /**
+     * minus exception
+     */
+    void minusMinuteException();
+
+    void minusSecondException();
+
+    /**
+     * minus Rt
+     */
+    void minusRt(int count);
+
+    /**
      * Add rt and success count.
      *
-     * @param rt response time
+     * @param rt      response time
      * @param success success count to add
      */
     void addRtAndSuccess(long rt, int success);
@@ -164,4 +179,25 @@ public interface Node {
      * Debug only.
      */
     void debug();
+
+    /**
+     * reset lastRT
+     */
+    void resetLastRt();
+
+    /**
+     * get lastRT
+     */
+    AtomicLong getLastRt();
+
+    /**
+     * get last Result (true:success;false:exception)
+     */
+    AtomicBoolean getLastResult();
+
+    /**
+     * get last rt(same TimeWindow) sum
+     */
+    AtomicInteger getLastRtSum();
+
 }

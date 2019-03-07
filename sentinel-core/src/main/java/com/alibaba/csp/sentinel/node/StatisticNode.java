@@ -18,7 +18,9 @@ package com.alibaba.csp.sentinel.node;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
@@ -93,7 +95,7 @@ public class StatisticNode implements Node {
      * by given {@code sampleCount}.
      */
     private transient volatile Metric rollingCounterInSecond = new ArrayMetric(SampleCountProperty.SAMPLE_COUNT,
-        IntervalProperty.INTERVAL);
+            IntervalProperty.INTERVAL);
 
     /**
      * Holds statistics of the recent 60 seconds. The windowLengthInMs is deliberately set to 1000 milliseconds,
@@ -110,6 +112,21 @@ public class StatisticNode implements Node {
      * The last timestamp when metrics were fetched.
      */
     private long lastFetchTime = -1;
+    /**
+     * record last rt(Prepare degrade rt sum and same TimeWindow)
+     */
+    private AtomicLong lastRt = new AtomicLong(0);
+
+    /**
+     * record last rt(same TimeWindow) sum
+     */
+    private AtomicInteger lastRtSum = new AtomicInteger(0);
+    /**
+     * lastResult
+     *
+     * @return
+     */
+    private AtomicBoolean lastResult = new AtomicBoolean(true);
 
     @Override
     public Map<Long, MetricNode> metrics() {
@@ -137,7 +154,7 @@ public class StatisticNode implements Node {
 
     private boolean isValidMetricNode(MetricNode node) {
         return node.getPassQps() > 0 || node.getBlockQps() > 0 || node.getSuccessQps() > 0
-            || node.getExceptionQps() > 0 || node.getRt() > 0;
+                || node.getExceptionQps() > 0 || node.getRt() > 0;
     }
 
     @Override
@@ -233,10 +250,36 @@ public class StatisticNode implements Node {
     }
 
     @Override
+    public void minusSecondException() {
+        rollingCounterInSecond.minusException();
+    }
+
+    @Override
+    public void minusMinuteException() {
+        rollingCounterInMinute.minusException();
+    }
+
+    @Override
+    public void minusRt(int count) {
+        rollingCounterInSecond.minusRt(lastRt.get());
+        rollingCounterInSecond.minusSuccess(count);
+        rollingCounterInMinute.minusRt(lastRt.get());
+        rollingCounterInMinute.minusSuccess(count);
+        lastRt.set(0);
+    }
+
+    @Override
     public void addRtAndSuccess(long rt, int successCount) {
         rollingCounterInSecond.addSuccess(successCount);
         rollingCounterInSecond.addRT(rt);
-
+        if (rollingCounterInSecond.newTimeWindow()) {
+            lastRt.set(rt);
+            lastRtSum.set(1);
+        } else {
+            lastRt.set(rt + lastRt.get());
+            lastRtSum.getAndAdd(1);
+        }
+        lastResult.set(true);
         rollingCounterInMinute.addSuccess(successCount);
         rollingCounterInMinute.addRT(rt);
     }
@@ -251,7 +294,13 @@ public class StatisticNode implements Node {
     public void increaseExceptionQps(int count) {
         rollingCounterInSecond.addException(count);
         rollingCounterInMinute.addException(count);
+        lastResult.set(false);
 
+    }
+
+    @Override
+    public void resetLastRt() {
+        lastRt.set(0);
     }
 
     @Override
@@ -268,4 +317,20 @@ public class StatisticNode implements Node {
     public void debug() {
         rollingCounterInSecond.debugQps();
     }
+
+    @Override
+    public AtomicLong getLastRt() {
+        return lastRt;
+    }
+
+    @Override
+    public AtomicBoolean getLastResult() {
+        return lastResult;
+    }
+
+    @Override
+    public AtomicInteger getLastRtSum() {
+        return lastRtSum;
+    }
+
 }

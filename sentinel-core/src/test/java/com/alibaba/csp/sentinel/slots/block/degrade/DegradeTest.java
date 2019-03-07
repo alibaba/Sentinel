@@ -20,6 +20,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 
@@ -41,12 +42,11 @@ public class DegradeTest {
         String key = "test_degrade_average_rt";
         ClusterNode cn = mock(ClusterNode.class);
         ClusterBuilderSlot.getClusterNodeMap().put(new StringResourceWrapper(key, EntryType.IN), cn);
-
         Context context = mock(Context.class);
         DefaultNode node = mock(DefaultNode.class);
         when(node.getClusterNode()).thenReturn(cn);
         when(cn.avgRt()).thenReturn(2L);
-
+        when(cn.getLastRtSum()).thenReturn(new AtomicInteger(0));
         DegradeRule rule = new DegradeRule();
         rule.setCount(1);
         rule.setResource(key);
@@ -59,10 +59,14 @@ public class DegradeTest {
         // The third time will fail.
         assertFalse(rule.passCheck(context, node, 1));
         assertFalse(rule.passCheck(context, node, 1));
-
         // Restore.
-        TimeUnit.MILLISECONDS.sleep(2200);
-        assertTrue(rule.passCheck(context, node, 1));
+
+        TimeUnit.SECONDS.sleep(6);
+        rule.setCount(3);
+        //When the fifth request ends, degrade will blow close.
+        for (int i = 0; i < 10; i++) {
+            assertTrue(rule.passCheck(context, node, 1));
+        }
     }
 
     @Test
@@ -92,9 +96,21 @@ public class DegradeTest {
         // Restore from the degrade timeout.
         TimeUnit.MILLISECONDS.sleep(2200);
 
-        when(cn.successQps()).thenReturn(20L);
+        //  when(cn.successQps()).thenReturn(20L);
         // Will pass.
-        assertTrue(rule.passCheck(context, node, 1));
+        when(cn.exceptionQps()).thenReturn(0L);
+        for (int i = 0; i < 5; i++) {
+            assertTrue(rule.passCheck(context, node, 1));
+        }
+        when(cn.exceptionQps()).thenReturn(20L);
+        assertFalse(rule.passCheck(context, node, 1));
+        TimeUnit.SECONDS.sleep(6);
+        // Will pass.
+        //When the fifth request ends, degrade will blow close.
+        when(cn.exceptionQps()).thenReturn(0L);
+        for (int i = 0; i < 5; i++) {
+            assertTrue(rule.passCheck(context, node, 1));
+        }
     }
 
     @Test
@@ -115,16 +131,16 @@ public class DegradeTest {
         rule.setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT);
 
         when(cn.totalException()).thenReturn(4L);
-
         // Will fail.
         assertFalse(rule.passCheck(context, node, 1));
-
         // Restore from the degrade timeout.
-        TimeUnit.MILLISECONDS.sleep(2200);
 
-        when(cn.totalException()).thenReturn(0L);
-        // Will pass.
-        assertTrue(rule.passCheck(context, node, 1));
+        TimeUnit.SECONDS.sleep(3);
+        when(cn.totalException()).thenReturn(3L);
+        //When the fifth request ends, degrade will blow close.
+        for (int i = 0; i < 10; i++) {
+            assertTrue(rule.passCheck(context, node, 1));
+        }
     }
 
 }

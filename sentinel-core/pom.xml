@@ -16,7 +16,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <scope>test</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.hamcrest</groupId>
@@ -31,27 +30,22 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>java-hamcrest</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-module-junit4</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-api-mockito2</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
     <build>

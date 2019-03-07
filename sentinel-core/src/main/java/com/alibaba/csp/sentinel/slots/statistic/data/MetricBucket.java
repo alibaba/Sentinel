@@ -57,12 +57,22 @@ public class MetricBucket {
         return this;
     }
 
+    public MetricBucket reset(MetricEvent event) {
+        counters[event.ordinal()].reset();
+        return this;
+    }
+
     public long get(MetricEvent event) {
         return counters[event.ordinal()].sum();
     }
 
     public MetricBucket add(MetricEvent event, long n) {
         counters[event.ordinal()].add(n);
+        return this;
+    }
+
+    public MetricBucket minus(MetricEvent event, long n) {
+        counters[event.ordinal()].decrement(n);
         return this;
     }
 
@@ -98,6 +108,18 @@ public class MetricBucket {
         add(MetricEvent.EXCEPTION, n);
     }
 
+    public void minusException(int n) {
+        minus(MetricEvent.EXCEPTION, n);
+    }
+
+    public void minusRt(long rt) {
+        minus(MetricEvent.RT, rt);
+
+    }
+
+    public void minusSuccess(int n) {
+        minus(MetricEvent.SUCCESS, n);
+    }
     public void addBlock(int n) {
         add(MetricEvent.BLOCK, n);
     }
