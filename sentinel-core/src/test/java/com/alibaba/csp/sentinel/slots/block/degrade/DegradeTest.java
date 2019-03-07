@@ -59,7 +59,6 @@ public class DegradeTest {
         // The third time will fail.
         assertFalse(rule.passCheck(context, node, 1));
         assertFalse(rule.passCheck(context, node, 1));
-
         // Restore.
 
         TimeUnit.SECONDS.sleep(6);
