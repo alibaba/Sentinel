@@ -38,6 +38,8 @@ public final class Constants {
     public final static String ROOT_ID = "machine-root";
     public final static String CONTEXT_DEFAULT_NAME = "sentinel_default_context";
 
+    public final static String TOTAL_IN_RESOURCE_NAME = "__total_inbound_traffic__";
+
     public final static DefaultNode ROOT = new EntranceNode(new StringResourceWrapper(ROOT_ID, EntryType.IN),
         Env.nodeBuilder.buildClusterNode());
 
