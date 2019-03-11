@@ -68,7 +68,7 @@ public class SentinelWebFluxIntegrationTest {
 
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
         assertNotNull(cn);
-        assertEquals(1, cn.passQps());
+        assertEquals(1, cn.passQps(), 0.01);
     }
 
     @Test
@@ -94,7 +94,7 @@ public class SentinelWebFluxIntegrationTest {
             .expectBody(String.class).isEqualTo("Hello 2");
 
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(fooPrefix + "*");
-        assertEquals(2, cn.passQps());
+        assertEquals(2, cn.passQps(), 0.01);
         assertNull(ClusterBuilderSlot.getClusterNode(url1));
         assertNull(ClusterBuilderSlot.getClusterNode(url2));
 
