@@ -27,12 +27,12 @@ import com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot;
 
 /**
  * <p>
- * A {@link Node} use to hold statistics for specific resource name in the specific context.
+ * A {@link Node} used to hold statistics for specific resource name in the specific context.
  * Each distinct resource in each distinct {@link Context} will corresponding to a {@link DefaultNode}.
  * </p>
  * <p>
- * This class may have a list of sub {@link DefaultNode}s. sub-node will be created when
- * call {@link SphU}#entry() or {@link SphO}@entry() multi times in the same {@link Context}.
+ * This class may have a list of sub {@link DefaultNode}s. Child nodes will be created when
+ * calling {@link SphU}#entry() or {@link SphO}@entry() multiple times in the same {@link Context}.
  * </p>
  *
  * @author qinan.qn
