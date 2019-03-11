@@ -61,7 +61,7 @@ public class HeartbeatConfigEntity {
 
     @Override
     public String toString() {
-        return "DashboardConfig{" +
+        return "HeartbeatConfigEntity{" +
                 "schema='" + schema + '\'' +
                 ", host='" + host + '\'' +
                 ", port=" + port +

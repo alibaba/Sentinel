@@ -60,17 +60,17 @@ public class HttpHeartbeatSender implements HeartbeatSender {
 
     public HttpHeartbeatSender() {
         this.client = HttpClients.createDefault();
-        List<HeartbeatConfigEntity> dashboardList = parseDashboardList();
-        if (dashboardList == null || dashboardList.isEmpty()) {
+        List<HeartbeatConfigEntity> heartbeatConfigEntityList = parseHeartbeatConfigEntityList();
+        if (heartbeatConfigEntityList == null || heartbeatConfigEntityList.isEmpty()) {
             RecordLog.info("[NettyHttpHeartbeatSender] No dashboard available");
         } else {
-            heartbeatConfigEntity = dashboardList.get(0);
+            heartbeatConfigEntity = heartbeatConfigEntityList.get(0);
             RecordLog.info("[NettyHttpHeartbeatSender] Dashboard address parsed: <" + heartbeatConfigEntity.getHost()
                     + ':' + heartbeatConfigEntity.getPort() + "/" + heartbeatConfigEntity.getPath() +">");
         }
     }
 
-    private List<HeartbeatConfigEntity> parseDashboardList() {
+    private List<HeartbeatConfigEntity> parseHeartbeatConfigEntityList() {
         List<HeartbeatConfigEntity> list = new ArrayList<HeartbeatConfigEntity>();
         try {
             String ipsStr = TransportConfig.getConsoleServer();

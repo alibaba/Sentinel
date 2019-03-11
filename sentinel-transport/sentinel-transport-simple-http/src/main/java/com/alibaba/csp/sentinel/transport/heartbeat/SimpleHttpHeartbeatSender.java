@@ -62,13 +62,13 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
             RecordLog.info("[SimpleHttpHeartbeatSender] Runtime port not initialized, won't send heartbeat");
             return false;
         }
-        HeartbeatConfigEntity dashboardConfig = getAvailableAddress();
-        InetSocketAddress addr = dashboardConfig.getInetSocketAddress();
+        HeartbeatConfigEntity heartbeatConfigEntity = getAvailableAddress();
+        InetSocketAddress addr = heartbeatConfigEntity.getInetSocketAddress();
         if (addr == null) {
             return false;
         }
 
-        SimpleHttpRequest request = new SimpleHttpRequest(addr, dashboardConfig.getPath() + HEARTBEAT_PATH);
+        SimpleHttpRequest request = new SimpleHttpRequest(addr, heartbeatConfigEntity.getPath() + HEARTBEAT_PATH);
         request.setParams(heartBeat.generateCurrentMessage());
         try {
             SimpleHttpResponse response = httpClient.post(request);
