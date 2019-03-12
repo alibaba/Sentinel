@@ -13,27 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.slots.statistic.metric;
+package com.alibaba.csp.sentinel.slots.statistic.metric.occupy;
 
 import com.alibaba.csp.sentinel.slots.statistic.base.LeapArray;
-import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
+import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
 
 /**
- * The fundamental data structure for metric statistics in a time span.
+ * A kind of {@code BucketLeapArray} that only reserves for future buckets.
  *
- * @see LeapArray
  * @author jialiang.linjl
- * @author Eric Zhao
+ * @since 1.5.0
  */
-public class MetricsLeapArray extends LeapArray<MetricBucket> {
+public class FutureBucketLeapArray extends LeapArray<MetricBucket> {
 
-    public MetricsLeapArray(int sampleCount, int intervalInMs) {
+    public FutureBucketLeapArray(int sampleCount, int intervalInMs) {
+        // This class is the original "BorrowBucketArray".
         super(sampleCount, intervalInMs);
     }
 
     @Override
-    public MetricBucket newEmptyBucket() {
+    public MetricBucket newEmptyBucket(long time) {
         return new MetricBucket();
     }
 
@@ -43,5 +43,11 @@ public class MetricsLeapArray extends LeapArray<MetricBucket> {
         w.resetTo(startTime);
         w.value().reset();
         return w;
+    }
+
+    @Override
+    public boolean isWindowDeprecated(long time, WindowWrap<MetricBucket> windowWrap) {
+        // Tricky: will only calculate for future.
+        return time >= windowWrap.windowStart();
     }
 }

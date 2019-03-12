@@ -13,26 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.slots.statistic.base;
+package com.alibaba.csp.sentinel.slots.block.flow;
 
 /**
- * @author Eric Zhao
+ * An exception that marks priority wait.
+ *
+ * @author jialiang.linjl
+ * @since 1.5.0
  */
-public class UnaryLeapArray extends LeapArray<LongAdder> {
+public class PriorityWaitException extends RuntimeException {
 
-    public UnaryLeapArray(int sampleCount, int intervalInMs) {
-        super(sampleCount, intervalInMs);
+    private final long waitInMs;
+
+    public PriorityWaitException(long waitInMs) {
+        this.waitInMs = waitInMs;
+    }
+
+    public long getWaitInMs() {
+        return waitInMs;
     }
 
     @Override
-    public LongAdder newEmptyBucket(long time) {
-        return new LongAdder();
-    }
-
-    @Override
-    protected WindowWrap<LongAdder> resetWindowTo(WindowWrap<LongAdder> windowWrap, long startTime) {
-        windowWrap.resetTo(startTime);
-        windowWrap.value().reset();
-        return windowWrap;
+    public Throwable fillInStackTrace() {
+        return this;
     }
 }

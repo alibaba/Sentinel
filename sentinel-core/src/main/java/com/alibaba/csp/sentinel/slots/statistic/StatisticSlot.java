@@ -19,6 +19,7 @@ import java.util.Collection;
 
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlotEntryCallback;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlotExitCallback;
+import com.alibaba.csp.sentinel.slots.block.flow.PriorityWaitException;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.EntryType;
@@ -70,6 +71,21 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 Constants.ENTRY_NODE.addPassRequest(count);
             }
 
+            // Handle pass event with registered entry callback handlers.
+            for (ProcessorSlotEntryCallback<DefaultNode> handler : StatisticSlotCallbackRegistry.getEntryCallbacks()) {
+                handler.onPass(context, resourceWrapper, node, count, args);
+            }
+        } catch (PriorityWaitException ex) {
+            node.increaseThreadNum();
+            if (context.getCurEntry().getOriginNode() != null) {
+                // Add count for origin node.
+                context.getCurEntry().getOriginNode().increaseThreadNum();
+            }
+
+            if (resourceWrapper.getType() == EntryType.IN) {
+                // Add count for global inbound entry node for global statistics.
+                Constants.ENTRY_NODE.increaseThreadNum();
+            }
             // Handle pass event with registered entry callback handlers.
             for (ProcessorSlotEntryCallback<DefaultNode> handler : StatisticSlotCallbackRegistry.getEntryCallbacks()) {
                 handler.onPass(context, resourceWrapper, node, count, args);

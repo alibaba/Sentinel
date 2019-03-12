@@ -17,12 +17,15 @@ package com.alibaba.csp.sentinel.slots.block.flow.controller;
 
 import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.flow.PriorityWaitException;
 import com.alibaba.csp.sentinel.slots.block.flow.TrafficShapingController;
+import com.alibaba.csp.sentinel.util.TimeUtil;
 
 /**
  * Default throttling controller (immediately reject strategy).
  *
  * @author jialiang.linjl
+ * @author Eric Zhao
  */
 public class DefaultController implements TrafficShapingController {
 
@@ -45,9 +48,23 @@ public class DefaultController implements TrafficShapingController {
     public boolean canPass(Node node, int acquireCount, boolean prioritized) {
         int curCount = avgUsedTokens(node);
         if (curCount + acquireCount > count) {
+            if (prioritized && grade == RuleConstant.FLOW_GRADE_QPS) {
+                long currentTime;
+                long waitInMs;
+                currentTime = TimeUtil.currentTimeMillis();
+                waitInMs = node.tryOccupyNext(currentTime, acquireCount, count);
+                if (waitInMs < PriorityTimeoutProperty.PRIORITY_TIMEOUT) {
+                    node.addWaitingRequest(currentTime + waitInMs, acquireCount);
+                    node.addPriorityPass(acquireCount);
+                    sleep(waitInMs);
+                    /*
+                     * PriorityWaitException indicates that the request will pass, but is with high priority.
+                     */
+                    throw new PriorityWaitException(waitInMs);
+                }
+            }
             return false;
         }
-
         return true;
     }
 
@@ -55,10 +72,10 @@ public class DefaultController implements TrafficShapingController {
         if (node == null) {
             return DEFAULT_AVG_USED_TOKENS;
         }
-        return grade == RuleConstant.FLOW_GRADE_THREAD ? node.curThreadNum() : (int) node.passQps();
+        return grade == RuleConstant.FLOW_GRADE_THREAD ? node.curThreadNum() : (int)(node.passQps());
     }
 
-    private void sleep(int timeMillis) {
+    private void sleep(long timeMillis) {
         try {
             Thread.sleep(timeMillis);
         } catch (InterruptedException e) {
