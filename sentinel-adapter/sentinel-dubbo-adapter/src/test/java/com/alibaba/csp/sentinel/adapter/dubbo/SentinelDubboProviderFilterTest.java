@@ -65,7 +65,7 @@ public class SentinelDubboProviderFilterTest {
      * Simply verify invocation structure in memory:
      * EntranceNode(resourceName)
      * --InterfaceNode(interfaceName)
-     * ---- MethodNode(resourceName)
+     * ----MethodNode(resourceName)
      */
     private void verifyInvocationStructure(String originApplication, Invoker invoker, Invocation invocation) {
         Context context = ContextUtil.getContext();

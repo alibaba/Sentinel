@@ -63,7 +63,7 @@ public class SentinelDubboConsumerFilterTest {
      * Simply verify invocation structure in memory:
      * EntranceNode(defaultContextName)
      * --InterfaceNode(interfaceName)
-     * ---- MethodNode(resourceName)
+     * ----MethodNode(resourceName)
      */
     private void verifyInvocationStructure(Invoker invoker, Invocation invocation) {
         Context context = ContextUtil.getContext();
