@@ -48,7 +48,7 @@ import com.alibaba.csp.sentinel.context.Context;
  * @see Context
  * @see ContextUtil
  */
-public abstract class Entry {
+public abstract class Entry implements AutoCloseable {
 
     private static final Object[] OBJECTS0 = new Object[0];
 
@@ -70,6 +70,11 @@ public abstract class Entry {
         return resourceWrapper;
     }
 
+    /**
+     * Complete the current resource entry and restore the entry stack in context.
+     *
+     * @throws ErrorEntryFreeException if entry in current context does not match current entry
+     */
     public void exit() throws ErrorEntryFreeException {
         exit(1, OBJECTS0);
     }
@@ -79,10 +84,20 @@ public abstract class Entry {
     }
 
     /**
+     * Equivalent to {@link #exit()}. Support try-with-resources since JDK 1.7.
+     *
+     * @since 1.5.0
+     */
+    @Override
+    public void close() {
+        exit();
+    }
+
+    /**
      * Exit this entry. This method should invoke if and only if once at the end of the resource protection.
      *
      * @param count tokens to release.
-     * @param args
+     * @param args extra parameters
      * @throws ErrorEntryFreeException, if {@link Context#getCurEntry()} is not this entry.
      */
     public abstract void exit(int count, Object... args) throws ErrorEntryFreeException;
@@ -91,7 +106,7 @@ public abstract class Entry {
      * Exit this entry.
      *
      * @param count tokens to release.
-     * @param args
+     * @param args extra parameters
      * @return next available entry after exit, that is the parent entry.
      * @throws ErrorEntryFreeException, if {@link Context#getCurEntry()} is not this entry.
      */

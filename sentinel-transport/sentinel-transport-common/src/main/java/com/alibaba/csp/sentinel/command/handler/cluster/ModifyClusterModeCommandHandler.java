@@ -28,7 +28,7 @@ import com.alibaba.csp.sentinel.log.RecordLog;
  * @author Eric Zhao
  * @since 1.4.0
  */
-@CommandMapping(name = "setClusterMode")
+@CommandMapping(name = "setClusterMode", desc = "set cluster mode, accept param: mode={0|1} 0:client mode 1:server mode")
 public class ModifyClusterModeCommandHandler implements CommandHandler<String> {
 
     @Override

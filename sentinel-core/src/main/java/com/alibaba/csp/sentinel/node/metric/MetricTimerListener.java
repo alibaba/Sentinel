@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.ClusterNode;
@@ -38,23 +39,13 @@ public class MetricTimerListener implements Runnable {
     @Override
     public void run() {
         Map<Long, List<MetricNode>> maps = new TreeMap<Long, List<MetricNode>>();
-
         for (Entry<ResourceWrapper, ClusterNode> e : ClusterBuilderSlot.getClusterNodeMap().entrySet()) {
             String name = e.getKey().getName();
             ClusterNode node = e.getValue();
             Map<Long, MetricNode> metrics = node.metrics();
-
-            for (Entry<Long, MetricNode> entry : metrics.entrySet()) {
-                long time = entry.getKey();
-                MetricNode metricNode = entry.getValue();
-                metricNode.setResource(name);
-                if (maps.get(time) == null) {
-                    maps.put(time, new ArrayList<MetricNode>());
-                }
-                List<MetricNode> nodes = maps.get(time);
-                nodes.add(entry.getValue());
-            }
+            aggregate(maps, metrics, name);
         }
+        aggregate(maps, Constants.ENTRY_NODE.metrics(), Constants.TOTAL_IN_RESOURCE_NAME);
         if (!maps.isEmpty()) {
             for (Entry<Long, List<MetricNode>> entry : maps.entrySet()) {
                 try {
@@ -63,6 +54,19 @@ public class MetricTimerListener implements Runnable {
                     RecordLog.warn("[MetricTimerListener] Write metric error", e);
                 }
             }
+        }
+    }
+
+    private void aggregate(Map<Long, List<MetricNode>> maps, Map<Long, MetricNode> metrics, String resourceName) {
+        for (Entry<Long, MetricNode> entry : metrics.entrySet()) {
+            long time = entry.getKey();
+            MetricNode metricNode = entry.getValue();
+            metricNode.setResource(resourceName);
+            if (maps.get(time) == null) {
+                maps.put(time, new ArrayList<MetricNode>());
+            }
+            List<MetricNode> nodes = maps.get(time);
+            nodes.add(entry.getValue());
         }
     }
 

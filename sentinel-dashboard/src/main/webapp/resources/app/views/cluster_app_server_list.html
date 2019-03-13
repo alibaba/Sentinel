@@ -51,29 +51,33 @@
                         </thead>
                         <tbody>
                         <tr ng-repeat="serverVO in serverVOList | filter: {id: searchKey}">
-                            <td style="word-wrap:break-word;word-break:break-all;">{{serverVO.id}}</td>
+                            <td style="word-wrap:break-word;word-break:break-all;">
+                                <span ng-if="serverVO.belongToApp">{{serverVO.id}}</span>
+                                <span ng-if="!serverVO.belongToApp">{{serverVO.id}}（自主指定）</span>
+                            </td>
                             <td>{{serverVO.port}}</td>
                             <td style="word-wrap:break-word;word-break:break-all;">
-                                {{serverVO.state.namespaceSetStr}}
+                                <span ng-if="serverVO.belongToApp">{{serverVO.state.namespaceSetStr}}</span>
+                                <span ng-if="!serverVO.belongToApp">未知</span>
                             </td>
                             <td style="word-wrap:break-word;word-break:break-all;">
-                                <span ng-if="serverVO.state.embedded">嵌入模式</span>
-                                <span ng-if="!serverVO.state.embedded">独立模式</span>
+                                <span ng-if="!serverVO.belongToApp">未知</span>
+                                <span ng-if="serverVO.belongToApp && serverVO.state.embedded">嵌入模式</span>
+                                <span ng-if="serverVO.belongToApp && !serverVO.state.embedded">独立模式</span>
                             </td>
                             <td style="word-wrap:break-word;word-break:break-all;">
-                                {{serverVO.connectedCount}}
+                                <span ng-if="serverVO.belongToApp">{{serverVO.connectedCount}}</span>
+                                <span ng-if="!serverVO.belongToApp">未知</span>
                             </td>
                             <td>
-                                {{serverVO.state.requestLimitDataStr}}
-                                <!--<p ng-repeat="crl in serverVO.state.requestLimitData">-->
-                                    <!--<span ng-if="crl.namespace === app">{{crl.namespace}}：{{crl.currentQps}} / {{crl.maxAllowedQps}}</span>-->
-                                <!--</p>-->
+                                <span ng-if="serverVO.belongToApp">{{serverVO.state.requestLimitDataStr}}</span>
+                                <span ng-if="!serverVO.belongToApp">未知</span>
                             </td>
                             <td>
-                                <button class="btn btn-xs btn-outline-primary" type="button"
+                                <button class="btn btn-xs btn-outline-primary" type="button" ng-if="serverVO.belongToApp"
                                         ng-click="viewConnectionDetail(serverVO)" style="font-size: 12px; height:25px;">连接详情</button>
                                 <button class="btn btn-xs btn-outline-primary" type="button"
-                                        ng-click="modifyServerAssignConfig(serverVO.id)" style="font-size: 12px; height:25px;">管理</button>
+                                        ng-click="modifyServerAssignConfig(serverVO)" style="font-size: 12px; height:25px;">管理</button>
                                 <button class="btn btn-xs btn-outline-danger" type="button"
                                         ng-click="unbindServer(serverVO.id)" style="font-size: 12px; height:25px;">移除</button>
                             </td>

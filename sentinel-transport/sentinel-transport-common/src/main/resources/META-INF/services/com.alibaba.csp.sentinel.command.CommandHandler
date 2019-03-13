@@ -14,3 +14,4 @@ com.alibaba.csp.sentinel.command.handler.SendMetricCommandHandler
 com.alibaba.csp.sentinel.command.handler.VersionCommandHandler
 com.alibaba.csp.sentinel.command.handler.cluster.FetchClusterModeCommandHandler
 com.alibaba.csp.sentinel.command.handler.cluster.ModifyClusterModeCommandHandler
+com.alibaba.csp.sentinel.command.handler.ApiCommandHandler

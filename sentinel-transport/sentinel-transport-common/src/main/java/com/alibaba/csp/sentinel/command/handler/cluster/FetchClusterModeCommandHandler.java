@@ -28,7 +28,7 @@ import com.alibaba.fastjson.JSONObject;
  * @author Eric Zhao
  * @since 1.4.0
  */
-@CommandMapping(name = "getClusterMode")
+@CommandMapping(name = "getClusterMode", desc = "get cluster mode status")
 public class FetchClusterModeCommandHandler implements CommandHandler<String> {
 
     @Override

@@ -66,6 +66,10 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 public class SystemRuleManager {
 
     private static volatile double highestSystemLoad = Double.MAX_VALUE;
+    /**
+     * cpu usage, between [0, 1]
+     */
+    private static volatile double highestCpuUsage = Double.MAX_VALUE;
     private static volatile double qps = Double.MAX_VALUE;
     private static volatile long maxRt = Long.MAX_VALUE;
     private static volatile long maxThread = Long.MAX_VALUE;
@@ -73,6 +77,7 @@ public class SystemRuleManager {
      * mark whether the threshold are set by user.
      */
     private static volatile boolean highestSystemLoadIsSet = false;
+    private static volatile boolean highestCpuUsageIsSet = false;
     private static volatile boolean qpsIsSet = false;
     private static volatile boolean maxRtIsSet = false;
     private static volatile boolean maxThreadIsSet = false;
@@ -134,6 +139,12 @@ public class SystemRuleManager {
             result.add(loadRule);
         }
 
+        if (highestCpuUsageIsSet) {
+            SystemRule rule = new SystemRule();
+            rule.setHighestCpuUsage(highestCpuUsage);
+            result.add(rule);
+        }
+
         if (maxRtIsSet) {
             SystemRule rtRule = new SystemRule();
             rtRule.setAvgRt(maxRt);
@@ -185,9 +196,18 @@ public class SystemRuleManager {
                 checkSystemStatus.set(false);
             }
 
-
-            RecordLog.info(String.format("[SystemRuleManager] Current system check status: %s, highestSystemLoad: "
-                + highestSystemLoad + ", " + "maxRt: %d, maxThread: %d, maxQps: " + qps, checkSystemStatus.get(), maxRt, maxThread));
+            RecordLog.info(String.format("[SystemRuleManager] Current system check status: %s, "
+                    + "highestSystemLoad: %e, "
+                    + "highestCpuUsage: %e, "
+                    + "maxRt: %d, "
+                    + "maxThread: %d, "
+                    + "maxQps: %e",
+                checkSystemStatus.get(),
+                highestSystemLoad,
+                highestCpuUsage,
+                maxRt,
+                maxThread,
+                qps));
         }
 
         protected void restoreSetting() {
@@ -195,6 +215,7 @@ public class SystemRuleManager {
 
             // should restore changes
             highestSystemLoad = Double.MAX_VALUE;
+            highestCpuUsage = Double.MAX_VALUE;
             maxRt = Long.MAX_VALUE;
             maxThread = Long.MAX_VALUE;
             qps = Double.MAX_VALUE;
@@ -226,6 +247,12 @@ public class SystemRuleManager {
         if (rule.getHighestSystemLoad() >= 0) {
             highestSystemLoad = Math.min(highestSystemLoad, rule.getHighestSystemLoad());
             highestSystemLoadIsSet = true;
+            checkStatus = true;
+        }
+
+        if (rule.getHighestCpuUsage() >= 0) {
+            highestCpuUsage = Math.min(highestCpuUsage, rule.getHighestCpuUsage());
+            highestCpuUsageIsSet = true;
             checkStatus = true;
         }
 
@@ -284,17 +311,34 @@ public class SystemRuleManager {
             throw new SystemBlockException(resourceWrapper.getName(), "rt");
         }
 
-        // BBR algorithm.
+        // load. BBR algorithm.
         if (highestSystemLoadIsSet && getCurrentSystemAvgLoad() > highestSystemLoad) {
-            if (currentThread > 1 &&
-                currentThread > Constants.ENTRY_NODE.maxSuccessQps() * Constants.ENTRY_NODE.minRt() / 1000) {
+            if (!checkBbr(currentThread)) {
                 throw new SystemBlockException(resourceWrapper.getName(), "load");
             }
         }
 
+        // cpu usage
+        if (highestCpuUsageIsSet && getCurrentCpuUsage() > highestCpuUsage) {
+            if (!checkBbr(currentThread)) {
+                throw new SystemBlockException(resourceWrapper.getName(), "cpu");
+            }
+        }
+    }
+
+    private static boolean checkBbr(int currentThread) {
+        if (currentThread > 1 &&
+            currentThread > Constants.ENTRY_NODE.maxSuccessQps() * Constants.ENTRY_NODE.minRt() / 1000) {
+            return false;
+        }
+        return true;
     }
 
     public static double getCurrentSystemAvgLoad() {
         return statusListener.getSystemAverageLoad();
+    }
+
+    public static double getCurrentCpuUsage() {
+        return statusListener.getCpuUsage();
     }
 }
