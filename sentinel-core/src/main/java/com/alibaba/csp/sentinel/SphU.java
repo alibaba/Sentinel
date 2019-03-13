@@ -176,6 +176,28 @@ public class SphU {
      * Checking all {@link Rule}s about the protected method.
      *
      * @param method the protected method
+     * @param args   the parameters of the method.
+     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded.
+     */
+    public static Entry entry(Method method, Object... args) throws BlockException {
+        return Env.sph.entry(method, EntryType.OUT, 1, args);
+    }
+
+    /**
+     * Checking all {@link Rule}s about the resource.
+     *
+     * @param name the unique name for the protected resource
+     * @param args extra parameters.
+     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded.
+     */
+    public static Entry entry(String name, Object... args) throws BlockException {
+        return Env.sph.entry(name, EntryType.OUT, 1, args);
+    }
+
+    /**
+     * Checking all {@link Rule}s about the protected method.
+     *
+     * @param method the protected method
      * @param type   the resource is an inbound or an outbound method. This is used
      *               to mark whether it can be blocked when the system is unstable,
      *               only inbound traffic could be blocked by {@link SystemRule}
@@ -246,7 +268,7 @@ public class SphU {
     /**
      * Checking all {@link Rule}s related the resource. The entry is prioritized.
      *
-     * @param name        the unique name for the protected resource
+     * @param name the unique name for the protected resource
      * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded.
      * @since 1.4.0
      */
@@ -257,10 +279,10 @@ public class SphU {
     /**
      * Checking all {@link Rule}s related the resource. The entry is prioritized.
      *
-     * @param name        the unique name for the protected resource
-     * @param type        the resource is an inbound or an outbound method. This is used
-     *                    to mark whether it can be blocked when the system is unstable,
-     *                    only inbound traffic could be blocked by {@link SystemRule}
+     * @param name the unique name for the protected resource
+     * @param type the resource is an inbound or an outbound method. This is used
+     *             to mark whether it can be blocked when the system is unstable,
+     *             only inbound traffic could be blocked by {@link SystemRule}
      * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded.
      * @since 1.4.0
      */
