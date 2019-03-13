@@ -38,11 +38,13 @@ public class SentinelDubboProviderFilterTest {
     @Before
     public void setUp() {
         RpcContext.removeContext();
+        ClusterBuilderSlot.getClusterNodeMap().clear();
     }
 
     @After
     public void cleanUp() {
-        ClusterBuilderSlot.resetClusterNodes();
+        RpcContext.removeContext();
+        ClusterBuilderSlot.getClusterNodeMap().clear();
     }
 
     @Test

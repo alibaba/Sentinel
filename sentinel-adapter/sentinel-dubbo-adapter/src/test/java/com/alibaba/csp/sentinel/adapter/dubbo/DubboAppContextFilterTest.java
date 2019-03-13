@@ -4,6 +4,7 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcContext;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,6 +20,11 @@ public class DubboAppContextFilterTest {
 
     @Before
     public void setUp() {
+        RpcContext.removeContext();
+    }
+
+    @After
+    public void cleanUp() {
         RpcContext.removeContext();
     }
 
