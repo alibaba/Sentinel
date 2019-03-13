@@ -13,6 +13,8 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
+import com.alibaba.dubbo.rpc.RpcContext;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -30,6 +32,11 @@ import static org.mockito.Mockito.*;
 public class SentinelDubboProviderFilterTest {
 
     private SentinelDubboProviderFilter filter = new SentinelDubboProviderFilter();
+
+    @Before
+    public void setUp() {
+        RpcContext.removeContext();
+    }
 
     @Test
     public void testInvoke() {
