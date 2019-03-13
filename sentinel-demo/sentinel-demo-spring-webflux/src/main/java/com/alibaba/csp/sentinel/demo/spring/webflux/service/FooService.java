@@ -31,6 +31,7 @@ import reactor.core.scheduler.Schedulers;
 @Service
 public class FooService {
 
+    @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private final ExecutorService pool = Executors.newFixedThreadPool(8);
     private final Scheduler scheduler = Schedulers.fromExecutor(pool);
 

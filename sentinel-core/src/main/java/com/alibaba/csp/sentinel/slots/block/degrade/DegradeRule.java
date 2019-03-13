@@ -57,6 +57,7 @@ public class DegradeRule extends AbstractRule {
 
     private static final int RT_MAX_EXCEED_N = 5;
 
+    @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(
         Runtime.getRuntime().availableProcessors(), new NamedThreadFactory("sentinel-degrade-reset-task", true));
 

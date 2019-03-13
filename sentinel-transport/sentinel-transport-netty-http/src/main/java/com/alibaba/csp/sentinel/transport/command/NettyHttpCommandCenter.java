@@ -35,6 +35,7 @@ public class NettyHttpCommandCenter implements CommandCenter {
 
     private final HttpServer server = new HttpServer();
 
+    @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private final ExecutorService pool = Executors.newSingleThreadExecutor(
         new NamedThreadFactory("sentinel-netty-command-center-executor"));
 
