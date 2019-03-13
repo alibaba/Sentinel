@@ -5,7 +5,9 @@ import com.alibaba.dubbo.rpc.RpcContext;
 
 /**
  * Base test class, provide common methods for subClass
- * Note: the package is same as CtSph, to call CtSph.resetChainMap() method for test
+ * The package is same as CtSph, to call CtSph.resetChainMap() method for test
+ *
+ * Note: Only for test. DO NOT USE IN PRODUCTION!
  *
  * @author cdfive
  */
