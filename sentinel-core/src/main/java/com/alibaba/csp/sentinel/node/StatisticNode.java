@@ -137,7 +137,7 @@ public class StatisticNode implements Node {
 
     private boolean isValidMetricNode(MetricNode node) {
         return node.getPassQps() > 0 || node.getBlockQps() > 0 || node.getSuccessQps() > 0
-            || node.getExceptionQps() > 0 || node.getRt() > 0 || node.getPriorityPassQps() > 0;
+            || node.getExceptionQps() > 0 || node.getRt() > 0 || node.getOccupiedPassQps() > 0;
     }
 
     @Override
@@ -212,8 +212,8 @@ public class StatisticNode implements Node {
     }
 
     @Override
-    public double priorityPassQps() {
-        return rollingCounterInSecond.priorityPass() / rollingCounterInSecond.getWindowIntervalInSec();
+    public double occupiedPassQps() {
+        return rollingCounterInSecond.occupiedPass() / rollingCounterInSecond.getWindowIntervalInSec();
     }
 
     @Override
@@ -324,8 +324,8 @@ public class StatisticNode implements Node {
     }
 
     @Override
-    public void addPriorityPass(int acquireCount) {
-        rollingCounterInMinute.addPriorityPass(acquireCount);
+    public void addOccupiedPass(int acquireCount) {
+        rollingCounterInMinute.addOccupiedPass(acquireCount);
         rollingCounterInMinute.addPass(acquireCount);
     }
 }

@@ -16,7 +16,7 @@
 package com.alibaba.csp.sentinel.slots.block.flow;
 
 /**
- * An exception that marks priority wait.
+ * An exception that marks previous prioritized request has been waiting till now, then should pass.
  *
  * @author jialiang.linjl
  * @since 1.5.0

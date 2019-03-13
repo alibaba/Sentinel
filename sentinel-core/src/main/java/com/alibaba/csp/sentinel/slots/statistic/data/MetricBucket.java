@@ -79,8 +79,8 @@ public class MetricBucket {
         return get(MetricEvent.PASS);
     }
 
-    public long priorityPass() {
-        return get(MetricEvent.PRIORITY_PASS);
+    public long occupiedPass() {
+        return get(MetricEvent.OCCUPIED_PASS);
     }
 
     public long block() {
@@ -107,8 +107,8 @@ public class MetricBucket {
         add(MetricEvent.PASS, n);
     }
 
-    public void addPriorityPass(int n) {
-        add(MetricEvent.PRIORITY_PASS, n);
+    public void addOccupiedPass(int n) {
+        add(MetricEvent.OCCUPIED_PASS, n);
     }
 
     public void addException(int n) {
@@ -134,6 +134,6 @@ public class MetricBucket {
 
     @Override
     public String toString() {
-        return "p: " + pass() + ", b: " + block() + ", w: " + priorityPass();
+        return "p: " + pass() + ", b: " + block() + ", w: " + occupiedPass();
     }
 }

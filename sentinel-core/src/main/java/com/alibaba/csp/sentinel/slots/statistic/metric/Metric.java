@@ -57,7 +57,7 @@ public interface Metric extends DebugSupport {
     long block();
 
     /**
-     * Get total pass count. not include {@link #priorityPass()}
+     * Get total pass count. not include {@link #occupiedPass()}
      *
      * @return pass count
      */
@@ -152,12 +152,12 @@ public interface Metric extends DebugSupport {
     // Occupy-based (@since 1.5.0)
 
     /**
-     * Add priority pass, which represents pass requests that borrow the latter windows' token.
+     * Add occupied pass, which represents pass requests that borrow the latter windows' token.
      *
      * @param acquireCount tokens count.
      * @since 1.5.0
      */
-    void addPriorityPass(int acquireCount);
+    void addOccupiedPass(int acquireCount);
 
     /**
      * Add request that occupied.
@@ -177,12 +177,12 @@ public interface Metric extends DebugSupport {
     long waiting();
 
     /**
-     * Get priority pass count.
+     * Get occupied pass count.
      *
-     * @return priority pass count
+     * @return occupied pass count
      * @since 1.5.0
      */
-    long priorityPass();
+    long occupiedPass();
 
     // Tool methods.
 

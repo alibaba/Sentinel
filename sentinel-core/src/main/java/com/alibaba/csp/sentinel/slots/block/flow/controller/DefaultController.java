@@ -56,11 +56,10 @@ public class DefaultController implements TrafficShapingController {
                 waitInMs = node.tryOccupyNext(currentTime, acquireCount, count);
                 if (waitInMs < OccupyTimeoutProperty.getOccupyTimeout()) {
                     node.addWaitingRequest(currentTime + waitInMs, acquireCount);
-                    node.addPriorityPass(acquireCount);
+                    node.addOccupiedPass(acquireCount);
                     sleep(waitInMs);
-                    /*
-                     * PriorityWaitException indicates that the request will pass, but is with high priority.
-                     */
+
+                    // PriorityWaitException indicates that the request will pass after waiting for {@link @waitInMs}.
                     throw new PriorityWaitException(waitInMs);
                 }
             }

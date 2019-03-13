@@ -116,12 +116,12 @@ public class ArrayMetric implements Metric {
     }
 
     @Override
-    public long priorityPass() {
+    public long occupiedPass() {
         data.currentWindow();
         long pass = 0;
         List<MetricBucket> list = data.values();
         for (MetricBucket window : list) {
-            pass += window.priorityPass();
+            pass += window.occupiedPass();
         }
         return pass;
     }
@@ -172,7 +172,7 @@ public class ArrayMetric implements Metric {
                 node.setRt(window.value().rt());
             }
             node.setTimestamp(window.windowStart());
-            node.setPriorityPassQps(window.value().priorityPass());
+            node.setOccupiedPassQps(window.value().occupiedPass());
 
             details.add(node);
         }
@@ -204,9 +204,9 @@ public class ArrayMetric implements Metric {
     }
 
     @Override
-    public void addPriorityPass(int acquireCount) {
+    public void addOccupiedPass(int acquireCount) {
         WindowWrap<MetricBucket> wrap = data.currentWindow();
-        wrap.value().addPriorityPass(acquireCount);
+        wrap.value().addOccupiedPass(acquireCount);
     }
 
     @Override

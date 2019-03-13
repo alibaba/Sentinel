@@ -31,5 +31,9 @@ public enum MetricEvent {
     EXCEPTION,
     SUCCESS,
     RT,
-    PRIORITY_PASS
+
+    /**
+     * Passed in future quota (pre-occupied, since 1.5.0).
+     */
+    OCCUPIED_PASS
 }

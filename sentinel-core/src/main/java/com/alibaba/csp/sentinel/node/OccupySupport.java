@@ -55,16 +55,16 @@ public interface OccupySupport {
     void addWaitingRequest(long futureTime, int acquireCount);
 
     /**
-     * Add priority pass, which represents pass requests that borrow the latter windows' token.
+     * Add occupied pass request, which represents pass requests that borrow the latter windows' token.
      *
      * @param acquireCount tokens count.
      */
-    void addPriorityPass(int acquireCount);
+    void addOccupiedPass(int acquireCount);
 
     /**
-     * Get current priority pass QPS.
+     * Get current occupied pass QPS.
      *
-     * @return current priority pass QPS
+     * @return current occupied pass QPS
      */
-    double priorityPassQps();
+    double occupiedPassQps();
 }
