@@ -168,6 +168,44 @@ public class SphO {
     /**
      * Checking all {@link Rule}s about the resource.
      *
+     * @param name the unique name for the protected resource
+     * @param args extra parameters.
+     * @return true if no rule's threshold is exceeded, otherwise return false.
+     */
+    public static boolean entry(String name, Object... args) {
+        try {
+            Env.sph.entry(name, EntryType.OUT, 1, args);
+        } catch (BlockException e) {
+            return false;
+        } catch (Throwable e) {
+            RecordLog.info("[Sentinel] Fatal error", e);
+            return true;
+        }
+        return true;
+    }
+
+    /**
+     * Checking all {@link Rule}s about the protected method.
+     *
+     * @param method the protected method
+     * @param args   the parameters of the method.
+     * @return true if no rule's threshold is exceeded, otherwise return false.
+     */
+    public static boolean entry(Method method, Object... args) {
+        try {
+            Env.sph.entry(method, EntryType.OUT, 1, args);
+        } catch (BlockException e) {
+            return false;
+        } catch (Throwable e) {
+            RecordLog.info("[Sentinel] Fatal error", e);
+            return true;
+        }
+        return true;
+    }
+
+    /**
+     * Checking all {@link Rule}s about the resource.
+     *
      * @param name  the unique name for the protected resource
      * @param type  the resource is an inbound or an outbound method. This is used
      *              to mark whether it can be blocked when the system is unstable,
