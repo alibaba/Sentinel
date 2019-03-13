@@ -45,7 +45,7 @@ public class FluxSentinelOperatorTestIntegrationTest {
 
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(resourceName);
         assertNotNull(cn);
-        assertEquals(1, cn.passQps());
+        assertEquals(1, cn.passQps(), 0.01);
         assertEquals(1, cn.totalException());
     }
 
