@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.slots.block.flow.controller;
 
 import com.alibaba.csp.sentinel.node.Node;
+import com.alibaba.csp.sentinel.node.OccupyTimeoutProperty;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.PriorityWaitException;
 import com.alibaba.csp.sentinel.slots.block.flow.TrafficShapingController;
@@ -53,7 +54,7 @@ public class DefaultController implements TrafficShapingController {
                 long waitInMs;
                 currentTime = TimeUtil.currentTimeMillis();
                 waitInMs = node.tryOccupyNext(currentTime, acquireCount, count);
-                if (waitInMs < PriorityTimeoutProperty.PRIORITY_TIMEOUT) {
+                if (waitInMs < OccupyTimeoutProperty.getOccupyTimeout()) {
                     node.addWaitingRequest(currentTime + waitInMs, acquireCount);
                     node.addPriorityPass(acquireCount);
                     sleep(waitInMs);

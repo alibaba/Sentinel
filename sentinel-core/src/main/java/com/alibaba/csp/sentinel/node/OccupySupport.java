@@ -15,8 +15,6 @@
  */
 package com.alibaba.csp.sentinel.node;
 
-import com.alibaba.csp.sentinel.slots.block.flow.controller.PriorityTimeoutProperty;
-
 /**
  * @author Eric Zhao
  * @since 1.5.0
@@ -25,18 +23,18 @@ public interface OccupySupport {
 
     /**
      * Try to occupy latter time windows' tokens. If occupy success, a value less than
-     * {@link PriorityTimeoutProperty#PRIORITY_TIMEOUT} will be return.
+     * {@code occupyTimeout} in {@link OccupyTimeoutProperty} will be return.
      *
      * <p>
      * Each time we occupy tokens of the future window, current thread should sleep for the
      * corresponding time for smoothing QPS. We can't occupy tokens of the future with unlimited,
-     * the sleep time limit is {@link PriorityTimeoutProperty#PRIORITY_TIMEOUT}.
+     * the sleep time limit is {@code occupyTimeout} in {@link OccupyTimeoutProperty}.
      * </p>
      *
      * @param currentTime  current time millis.
      * @param acquireCount tokens count to acquire.
      * @param threshold    qps threshold.
-     * @return time should sleep. Time >= {@link PriorityTimeoutProperty#PRIORITY_TIMEOUT} means
+     * @return time should sleep. Time >= {@code occupyTimeout} in {@link OccupyTimeoutProperty} means
      * occupy fail, in this case, the request should be rejected immediately.
      */
     long tryOccupyNext(long currentTime, int acquireCount, double threshold);

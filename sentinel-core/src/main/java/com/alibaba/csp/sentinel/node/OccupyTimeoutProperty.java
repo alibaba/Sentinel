@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.slots.block.flow.controller;
+package com.alibaba.csp.sentinel.node;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.node.IntervalProperty;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.property.SimplePropertyListener;
 
@@ -25,20 +24,20 @@ import com.alibaba.csp.sentinel.property.SimplePropertyListener;
  * @author Carpenter Lee
  * @since 1.5.0
  */
-public class PriorityTimeoutProperty {
+public class OccupyTimeoutProperty {
 
     /**
      * <p>
-     * Occupy timeout in milliseconds. Requests with priority can occupy tokens of the future statistic
-     * window, and {@code PRIORITY_TIMEOUT} limit the max time length that can be occupied.
+     * Max occupy timeout in milliseconds. Requests with priority can occupy tokens of the future statistic
+     * window, and {@code occupyTimeout} limit the max time length that can be occupied.
      * </p>
      * <p>
-     * Note that the time out should never be greeter than {@link IntervalProperty#INTERVAL}.
+     * Note that the timeout value should never be greeter than {@link IntervalProperty#INTERVAL}.
      * </p>
      * DO NOT MODIFY this value directly, use {@link #updateTimeout(int)},
      * otherwise the modification will not take effect.
      */
-    public static volatile int PRIORITY_TIMEOUT = 200;
+    private static volatile int occupyTimeout = 200;
 
     public static void register2Property(SentinelProperty<Integer> property) {
         property.addListener(new SimplePropertyListener<Integer>() {
@@ -51,6 +50,10 @@ public class PriorityTimeoutProperty {
         });
     }
 
+    public static int getOccupyTimeout() {
+        return occupyTimeout;
+    }
+
     /**
      * Update the timeout value.</br>
      * Note that the time out should never greeter than {@link IntervalProperty#INTERVAL},
@@ -59,14 +62,18 @@ public class PriorityTimeoutProperty {
      * @param newInterval new value.
      */
     public static void updateTimeout(int newInterval) {
+        if (newInterval < 0) {
+            RecordLog.warn("[OccupyTimeoutProperty] Illegal timeout value will be ignored: " + occupyTimeout);
+            return;
+        }
         if (newInterval > IntervalProperty.INTERVAL) {
-            RecordLog.warn("[OccupyTimeoutProperty] Illegal timeout value will be ignored: " + PRIORITY_TIMEOUT
+            RecordLog.warn("[OccupyTimeoutProperty] Illegal timeout value will be ignored: " + occupyTimeout
                 + ", should <= " + IntervalProperty.INTERVAL);
             return;
         }
-        if (newInterval != PRIORITY_TIMEOUT) {
-            PRIORITY_TIMEOUT = newInterval;
+        if (newInterval != occupyTimeout) {
+            occupyTimeout = newInterval;
         }
-        RecordLog.info("[OccupyTimeoutProperty] PRIORITY_TIMEOUT updated to: " + PRIORITY_TIMEOUT);
+        RecordLog.info("[OccupyTimeoutProperty] occupyTimeout updated to: " + occupyTimeout);
     }
 }

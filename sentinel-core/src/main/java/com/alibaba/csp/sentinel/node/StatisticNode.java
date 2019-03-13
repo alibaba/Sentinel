@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.alibaba.csp.sentinel.slots.block.flow.controller.PriorityTimeoutProperty;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
 import com.alibaba.csp.sentinel.slots.statistic.metric.ArrayMetric;
@@ -284,7 +283,7 @@ public class StatisticNode implements Node {
         double maxCount = threshold * IntervalProperty.INTERVAL / 1000;
         long currentBorrow = rollingCounterInSecond.waiting();
         if (currentBorrow >= maxCount) {
-            return PriorityTimeoutProperty.PRIORITY_TIMEOUT;
+            return OccupyTimeoutProperty.getOccupyTimeout();
         }
 
         int windowLength = IntervalProperty.INTERVAL / SampleCountProperty.SAMPLE_COUNT;
@@ -299,7 +298,7 @@ public class StatisticNode implements Node {
         long currentPass = rollingCounterInSecond.pass();
         while (earliestTime < currentTime) {
             long waitInMs = idx * windowLength + windowLength - currentTime % windowLength;
-            if (waitInMs >= PriorityTimeoutProperty.PRIORITY_TIMEOUT) {
+            if (waitInMs >= OccupyTimeoutProperty.getOccupyTimeout()) {
                 break;
             }
             long windowPass = rollingCounterInSecond.getWindowPass(earliestTime);
@@ -311,7 +310,7 @@ public class StatisticNode implements Node {
             idx++;
         }
 
-        return PriorityTimeoutProperty.PRIORITY_TIMEOUT;
+        return OccupyTimeoutProperty.getOccupyTimeout();
     }
 
     @Override
