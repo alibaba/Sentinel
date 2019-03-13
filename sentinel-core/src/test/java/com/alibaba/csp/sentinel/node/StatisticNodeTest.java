@@ -92,9 +92,9 @@ public class StatisticNodeTest {
         tickEs.shutdown();
 
         // now no biz method execute, so there is no curThreadNum,passQps,successQps
-        assertEquals(0, node.curThreadNum());
-        assertEquals(0, node.passQps());
-        assertEquals(0, node.successQps());
+        assertEquals(0, node.curThreadNum(), 0.01);
+        assertEquals(0, node.passQps(), 0.01);
+        assertEquals(0, node.successQps(), 0.01);
 
         // note: total time cost should be controlled within 1 minute,
         // as the node.totalRequest() holding statistics of recent 60 seconds
@@ -105,7 +105,7 @@ public class StatisticNodeTest {
         assertEquals(totalRequest, node.totalSuccess());
 
         // now there are no data in time span, so the minRT should be equals to TIME_DROP_VALVE
-        assertEquals(node.minRt(), Constants.TIME_DROP_VALVE);
+        assertEquals(node.minRt(), Constants.TIME_DROP_VALVE, 0.01);
 
         log("====================================================");
         log("testStatisticThreadNumAndQps done, cost " + (TimeUtil.currentTimeMillis() - testStartTime) + "ms");

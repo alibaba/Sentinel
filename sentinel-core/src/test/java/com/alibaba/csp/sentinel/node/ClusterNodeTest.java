@@ -139,18 +139,18 @@ public class ClusterNodeTest {
         // test count<=0, no exceptionQps added
         clusterNode.trace(exception, 0);
         clusterNode.trace(exception, -1);
-        assertEquals(0, clusterNode.exceptionQps());
+        assertEquals(0, clusterNode.exceptionQps(), 0.01);
         assertEquals(0, clusterNode.totalException());
 
         // test count=1, not BlockException, 1 exceptionQps added
         clusterNode.trace(exception, 1);
-        assertEquals(1, clusterNode.exceptionQps());
+        assertEquals(1, clusterNode.exceptionQps(), 0.01);
         assertEquals(1, clusterNode.totalException());
 
         // test count=1, BlockException, no exceptionQps added
         FlowException flowException = new FlowException("flow");
         clusterNode.trace(flowException, 1);
-        assertEquals(1, clusterNode.exceptionQps());
+        assertEquals(1, clusterNode.exceptionQps(), 0.01);
         assertEquals(1, clusterNode.totalException());
     }
 }

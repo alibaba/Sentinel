@@ -48,7 +48,7 @@ public class DefaultNode extends StatisticNode {
     /**
      * The list of all child nodes.
      */
-    private volatile Set<Node> childList = new HashSet<Node>();
+    private volatile Set<Node> childList = new HashSet<>();
 
     /**
      * Associated cluster node.
@@ -85,7 +85,7 @@ public class DefaultNode extends StatisticNode {
         if (!childList.contains(node)) {
             synchronized (this) {
                 if (!childList.contains(node)) {
-                    Set<Node> newSet = new HashSet<Node>(childList.size() + 1);
+                    Set<Node> newSet = new HashSet<>(childList.size() + 1);
                     newSet.addAll(childList);
                     newSet.add(node);
                     childList = newSet;
@@ -99,7 +99,7 @@ public class DefaultNode extends StatisticNode {
      * Reset the child node list.
      */
     public void removeChildList() {
-        this.childList = new HashSet<Node>();
+        this.childList = new HashSet<>();
     }
 
     public Set<Node> getChildList() {
