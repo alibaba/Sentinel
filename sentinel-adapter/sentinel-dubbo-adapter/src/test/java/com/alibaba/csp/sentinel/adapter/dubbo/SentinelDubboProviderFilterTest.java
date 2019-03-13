@@ -1,5 +1,6 @@
 package com.alibaba.csp.sentinel.adapter.dubbo;
 
+import com.alibaba.csp.sentinel.BaseTest;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService;
@@ -10,11 +11,9 @@ import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.node.StatisticNode;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
-import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
-import com.alibaba.dubbo.rpc.RpcContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,20 +30,18 @@ import static org.mockito.Mockito.*;
 /**
  * @author cdfive
  */
-public class SentinelDubboProviderFilterTest {
+public class SentinelDubboProviderFilterTest extends BaseTest {
 
     private SentinelDubboProviderFilter filter = new SentinelDubboProviderFilter();
 
     @Before
     public void setUp() {
-        RpcContext.removeContext();
-        ClusterBuilderSlot.getClusterNodeMap().clear();
+        cleanUpAll();
     }
 
     @After
     public void cleanUp() {
-        RpcContext.removeContext();
-        ClusterBuilderSlot.getClusterNodeMap().clear();
+        cleanUpAll();
     }
 
     @Test

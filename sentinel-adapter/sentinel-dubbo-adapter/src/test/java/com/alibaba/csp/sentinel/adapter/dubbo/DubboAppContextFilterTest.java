@@ -1,5 +1,6 @@
 package com.alibaba.csp.sentinel.adapter.dubbo;
 
+import com.alibaba.csp.sentinel.BaseTest;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
@@ -14,18 +15,18 @@ import static org.mockito.Mockito.*;
 /**
  * @author cdfive
  */
-public class DubboAppContextFilterTest {
+public class DubboAppContextFilterTest extends BaseTest {
 
     private DubboAppContextFilter filter = new DubboAppContextFilter();
 
     @Before
     public void setUp() {
-        RpcContext.removeContext();
+        cleanUpAll();
     }
 
     @After
     public void cleanUp() {
-        RpcContext.removeContext();
+        cleanUpAll();
     }
 
     @Test
