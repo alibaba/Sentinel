@@ -60,6 +60,7 @@ public final class DegradeRuleManager {
      * @param property the property to listen.
      */
     public static void register2Property(SentinelProperty<List<DegradeRule>> property) {
+        AssertUtil.notNull(property, "property cannot be null");
         synchronized (LISTENER) {
             RecordLog.info("[DegradeRuleManager] Registering new property to degrade rule manager");
             currentProperty.removeListener(LISTENER);
