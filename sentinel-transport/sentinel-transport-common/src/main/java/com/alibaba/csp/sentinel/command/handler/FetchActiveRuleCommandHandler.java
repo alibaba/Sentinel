@@ -28,7 +28,7 @@ import com.alibaba.fastjson.JSON;
 /**
  * @author jialiang.linjl
  */
-@CommandMapping(name = "getRules")
+@CommandMapping(name = "getRules", desc = "get all active rules by type, request param: type={ruleType}")
 public class FetchActiveRuleCommandHandler implements CommandHandler<String> {
 
     @Override

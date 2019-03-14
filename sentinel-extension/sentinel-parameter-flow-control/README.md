@@ -52,10 +52,8 @@ The description for fields of `ParamFlowRule`:
 | :----: | :----| :----|
 | resource| resource name (**required**) ||
 | count | flow control threshold (**required**) ||
-| grade | flow control mode (only QPS mode is supported) | QPS mode |
+| grade | metric type (QPS or thread count) | QPS mode |
 | paramIdx | the index of provided parameter in `SphU.entry(xxx, args)` (**required**) ||
 | paramFlowItemList | the exception items of parameter; you can set threshold to a specific parameter value ||
 
-
 Now the parameter flow control rules will take effect.
-

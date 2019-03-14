@@ -18,7 +18,7 @@ package com.alibaba.csp.sentinel.slots.statistic.metric;
 import java.util.List;
 
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
-import com.alibaba.csp.sentinel.slots.statistic.base.MetricBucket;
+import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
 
 /**
  * Represents a basic structure recording invocation metrics of protected resources.
@@ -26,7 +26,7 @@ import com.alibaba.csp.sentinel.slots.statistic.base.MetricBucket;
  * @author jialiang.linjl
  * @author Eric Zhao
  */
-public interface Metric {
+public interface Metric extends DebugSupport {
 
     /**
      * Get total success count.
@@ -35,6 +35,11 @@ public interface Metric {
      */
     long success();
 
+    /**
+     * Get max success count.
+     *
+     * @return max success count
+     */
     long maxSuccess();
 
     /**
@@ -52,14 +57,14 @@ public interface Metric {
     long block();
 
     /**
-     * Get total pass count.
+     * Get total pass count. not include {@link #occupiedPass()}
      *
      * @return pass count
      */
     long pass();
 
     /**
-     * Get total RT.
+     * Get total response time.
      *
      * @return total RT
      */
@@ -72,6 +77,11 @@ public interface Metric {
      */
     long minRt();
 
+    /**
+     * Get aggregated metric nodes of all resources.
+     *
+     * @return metric node list of all resources
+     */
     List<MetricNode> details();
 
     /**
@@ -82,24 +92,32 @@ public interface Metric {
     MetricBucket[] windows();
 
     /**
-     * Increment by one the current exception count.
+     * Add current exception count.
+     *
+     * @param n count to add
      */
-    void addException();
+    void addException(int n);
 
     /**
-     * Increment by one the current blovk count.
+     * Add current block count.
+     *
+     * @param n count to add
      */
-    void addBlock();
+    void addBlock(int n);
 
     /**
-     * Increment by one the current success count.
+     * Add current completed count.
+     *
+     * @param n count to add
      */
-    void addSuccess();
+    void addSuccess(int n);
 
     /**
-     * Increment by one the current pass count.
+     * Add current pass count.
+     *
+     * @param n count to add
      */
-    void addPass();
+    void addPass(int n);
 
     /**
      * Add given RT to current total RT.
@@ -108,9 +126,65 @@ public interface Metric {
      */
     void addRT(long rt);
 
-    // Tool methods.
+    /**
+     * Get the sliding window length in seconds.
+     *
+     * @return the sliding window length
+     */
+    double getWindowIntervalInSec();
 
-    void debugQps();
+    /**
+     * Get sample count of the sliding window.
+     *
+     * @return sample count of the sliding window.
+     */
+    int getSampleCount();
+
+    /**
+     * Note: this operation will not perform refreshing, so will not generate new buckets.
+     *
+     * @param timeMillis valid time in ms
+     * @return pass count of the bucket exactly associated to provided timestamp, or 0 if the timestamp is invalid
+     * @since 1.5.0
+     */
+    long getWindowPass(long timeMillis);
+
+    // Occupy-based (@since 1.5.0)
+
+    /**
+     * Add occupied pass, which represents pass requests that borrow the latter windows' token.
+     *
+     * @param acquireCount tokens count.
+     * @since 1.5.0
+     */
+    void addOccupiedPass(int acquireCount);
+
+    /**
+     * Add request that occupied.
+     *
+     * @param futureTime   future timestamp that the acquireCount should be added on.
+     * @param acquireCount tokens count.
+     * @since 1.5.0
+     */
+    void addWaiting(long futureTime, int acquireCount);
+
+    /**
+     * Get waiting pass account
+     *
+     * @return waiting pass count
+     * @since 1.5.0
+     */
+    long waiting();
+
+    /**
+     * Get occupied pass count.
+     *
+     * @return occupied pass count
+     * @since 1.5.0
+     */
+    long occupiedPass();
+
+    // Tool methods.
 
     long previousWindowBlock();
 

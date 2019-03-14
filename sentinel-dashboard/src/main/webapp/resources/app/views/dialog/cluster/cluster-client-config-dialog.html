@@ -1,0 +1,40 @@
+<div>
+  <span class="brand" style="font-weight:bold;">修改 Token Client 配置</span>
+  <div class="card" style="margin-top: 20px;margin-bottom: 10px;">
+    <div class="panel-body">
+      <div class="row">
+        <form role="form" class="form-horizontal">
+            <div class="form-group">
+                <label class="col-sm-3 control-label">Client ID</label>
+                <div class="col-sm-4">
+                    <p class="form-control-static">{{ccDialogData.clientId}}</p>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">Token Server IP</label>
+                <div class="col-sm-4">
+                    <input type="text" class="form-control highlight-border" ng-model='ccDialogData.serverHost' placeholder='请指定 Token Server IP' />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">Token Server 端口</label>
+                <div class="col-sm-4">
+                    <input type="number" min="0" max="65535" required class="form-control highlight-border" ng-model='ccDialogData.serverPort' placeholder='请指定 Token Server 端口' />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">请求超时时间（ms）</label>
+                <div class="col-sm-4">
+                    <input type="number" min="0" required class="form-control highlight-border" ng-model='ccDialogData.requestTimeout' placeholder='请指定请求超时时间（ms）' />
+                </div>
+            </div>
+        </form>
+      </div>
+      <div class="separator"></div>
+      <div clss="row" style="margin-top: 20px;">
+        <button class="btn btn-outline-danger" style="float:right; height: 30px;font-size: 12px;margin-left: 10px;" ng-click="ccDialog.close()">取消</button>
+        <button class="btn btn-outline-success" style="float:right; height: 30px;font-size: 12px;margin-left: 10px;" ng-click="doModifyClientConfig()">保存</button>
+      </div>
+    </div>
+  </div>
+</div>

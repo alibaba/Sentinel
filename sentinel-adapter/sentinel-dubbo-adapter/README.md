@@ -3,7 +3,7 @@
 > Note: 中文文档请见[此处](https://github.com/alibaba/Sentinel/wiki/%E4%B8%BB%E6%B5%81%E6%A1%86%E6%9E%B6%E7%9A%84%E9%80%82%E9%85%8D#dubbo)。
 
 Sentinel Dubbo Adapter provides service consumer filter and provider filter
-for [Dubbo](http://dubbo.io/) services. 
+for [Dubbo](http://dubbo.io/) services.
 
 To use Sentinel Dubbo Adapter, you can simply add the following dependency to your `pom.xml`:
 

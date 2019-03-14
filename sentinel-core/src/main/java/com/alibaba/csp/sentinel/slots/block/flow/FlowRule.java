@@ -15,18 +15,15 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow;
 
-import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.DefaultNode;
-import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 
-/***
+/**
  * <p>
- *     Each flow rule is mainly composed of three factors: <strong>grade</strong>,
- * <strong>strategy</strong> and <strong>controlBehavior</strong>.
+ * Each flow rule is mainly composed of three factors: <strong>grade</strong>,
+ * <strong>strategy</strong> and <strong>controlBehavior</strong>:
  * </p>
  * <ul>
  *     <li>The {@link #grade} represents the threshold type of flow control (by QPS or thread count).</li>
@@ -42,6 +39,12 @@ public class FlowRule extends AbstractRule {
 
     public FlowRule() {
         super();
+        setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
+    }
+
+    public FlowRule(String resourceName) {
+        super();
+        setResource(resourceName);
         setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
     }
 
@@ -65,7 +68,7 @@ public class FlowRule extends AbstractRule {
     private int strategy = RuleConstant.STRATEGY_DIRECT;
 
     /**
-     * Reference resource in flow control with relevant resource.
+     * Reference resource in flow control with relevant resource or context.
      */
     private String refResource;
 
@@ -82,7 +85,16 @@ public class FlowRule extends AbstractRule {
      */
     private int maxQueueingTimeMs = 500;
 
-    private Controller controller;
+    private boolean clusterMode;
+    /**
+     * Flow rule config for cluster mode.
+     */
+    private ClusterFlowConfig clusterConfig;
+
+    /**
+     * The traffic shaping (throttling) controller.
+     */
+    private TrafficShapingController controller;
 
     public int getControlBehavior() {
         return controlBehavior;
@@ -102,9 +114,13 @@ public class FlowRule extends AbstractRule {
         return this;
     }
 
-    public FlowRule setRater(Controller rater) {
+    FlowRule setRater(TrafficShapingController rater) {
         this.controller = rater;
         return this;
+    }
+
+    TrafficShapingController getRater() {
+        return controller;
     }
 
     public int getWarmUpPeriodSec() {
@@ -152,133 +168,46 @@ public class FlowRule extends AbstractRule {
         return this;
     }
 
-    @Override
-    public boolean passCheck(Context context, DefaultNode node, int acquireCount, Object... args) {
-        String limitApp = this.getLimitApp();
-        if (limitApp == null) {
-            return true;
-        }
-
-        String origin = context.getOrigin();
-        Node selectedNode = selectNodeByRequesterAndStrategy(origin, context, node);
-        if (selectedNode == null) {
-            return true;
-        }
-
-        return controller.canPass(selectedNode, acquireCount);
+    public boolean isClusterMode() {
+        return clusterMode;
     }
 
-    private Node selectNodeByRequesterAndStrategy(String origin, Context context, DefaultNode node) {
-        // The limit app should not be empty.
-        String limitApp = this.getLimitApp();
+    public FlowRule setClusterMode(boolean clusterMode) {
+        this.clusterMode = clusterMode;
+        return this;
+    }
 
-        if (limitApp.equals(origin)) {
-            if (strategy == RuleConstant.STRATEGY_DIRECT) {
-                return context.getOriginNode();
-            }
+    public ClusterFlowConfig getClusterConfig() {
+        return clusterConfig;
+    }
 
-            String refResource = this.getRefResource();
-            if (StringUtil.isEmpty(refResource)) {
-                return null;
-            }
+    public FlowRule setClusterConfig(ClusterFlowConfig clusterConfig) {
+        this.clusterConfig = clusterConfig;
+        return this;
+    }
 
-            if (strategy == RuleConstant.STRATEGY_RELATE) {
-                return ClusterBuilderSlot.getClusterNode(refResource);
-            }
-
-            if (strategy == RuleConstant.STRATEGY_CHAIN) {
-                if (!refResource.equals(context.getName())) {
-                    return null;
-                }
-                return node;
-            }
-
-        } else if (RuleConstant.LIMIT_APP_DEFAULT.equals(limitApp)) {
-            if (strategy == RuleConstant.STRATEGY_DIRECT) {
-                return node.getClusterNode();
-            }
-            String refResource = this.getRefResource();
-            if (StringUtil.isEmpty(refResource)) {
-                return null;
-            }
-
-            if (strategy == RuleConstant.STRATEGY_RELATE) {
-                return ClusterBuilderSlot.getClusterNode(refResource);
-            }
-
-            if (strategy == RuleConstant.STRATEGY_CHAIN) {
-                if (!refResource.equals(context.getName())) {
-                    return null;
-                }
-                return node;
-            }
-
-        } else if (RuleConstant.LIMIT_APP_OTHER.equals(limitApp)
-            && FlowRuleManager.isOtherOrigin(origin, getResource())) {
-            if (strategy == RuleConstant.STRATEGY_DIRECT) {
-                return context.getOriginNode();
-            }
-
-            String refResource = this.getRefResource();
-            if (StringUtil.isEmpty(refResource)) {
-                return null;
-            }
-            if (strategy == RuleConstant.STRATEGY_RELATE) {
-                return ClusterBuilderSlot.getClusterNode(refResource);
-            }
-
-            if (strategy == RuleConstant.STRATEGY_CHAIN) {
-                if (!refResource.equals(context.getName())) {
-                    return null;
-                }
-                if (node != null) {
-                    return node;
-                }
-            }
-        }
-
-        return null;
+    @Override
+    public boolean passCheck(Context context, DefaultNode node, int acquireCount, Object... args) {
+        return true;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof FlowRule)) {
-            return false;
-        }
-        if (!super.equals(o)) {
-            return false;
-        }
+        if (this == o) { return true; }
+        if (o == null || getClass() != o.getClass()) { return false; }
+        if (!super.equals(o)) { return false; }
 
-        FlowRule flowRule = (FlowRule)o;
+        FlowRule rule = (FlowRule)o;
 
-        if (grade != flowRule.grade) {
-            return false;
-        }
-        if (Double.compare(flowRule.count, count) != 0) {
-            return false;
-        }
-        if (strategy != flowRule.strategy) {
-            return false;
-        }
-        if (refResource != null ? !refResource.equals(flowRule.refResource) : flowRule.refResource != null) {
-            return false;
-        }
-        if (this.controlBehavior != flowRule.controlBehavior) {
-            return false;
-        }
-
-        if (warmUpPeriodSec != flowRule.warmUpPeriodSec) {
-            return false;
-        }
-
-        if (maxQueueingTimeMs != flowRule.maxQueueingTimeMs) {
-            return false;
-        }
-
-        return true;
+        if (grade != rule.grade) { return false; }
+        if (Double.compare(rule.count, count) != 0) { return false; }
+        if (strategy != rule.strategy) { return false; }
+        if (controlBehavior != rule.controlBehavior) { return false; }
+        if (warmUpPeriodSec != rule.warmUpPeriodSec) { return false; }
+        if (maxQueueingTimeMs != rule.maxQueueingTimeMs) { return false; }
+        if (clusterMode != rule.clusterMode) { return false; }
+        if (refResource != null ? !refResource.equals(rule.refResource) : rule.refResource != null) { return false; }
+        return clusterConfig != null ? clusterConfig.equals(rule.clusterConfig) : rule.clusterConfig == null;
     }
 
     @Override
@@ -290,10 +219,11 @@ public class FlowRule extends AbstractRule {
         result = 31 * result + (int)(temp ^ (temp >>> 32));
         result = 31 * result + strategy;
         result = 31 * result + (refResource != null ? refResource.hashCode() : 0);
-        result = 31 * result + (int)(temp ^ (temp >>> 32));
-        result = 31 * result + warmUpPeriodSec;
         result = 31 * result + controlBehavior;
+        result = 31 * result + warmUpPeriodSec;
         result = 31 * result + maxQueueingTimeMs;
+        result = 31 * result + (clusterMode ? 1 : 0);
+        result = 31 * result + (clusterConfig != null ? clusterConfig.hashCode() : 0);
         return result;
     }
 
@@ -309,7 +239,9 @@ public class FlowRule extends AbstractRule {
             ", controlBehavior=" + controlBehavior +
             ", warmUpPeriodSec=" + warmUpPeriodSec +
             ", maxQueueingTimeMs=" + maxQueueingTimeMs +
+            ", clusterMode=" + clusterMode +
+            ", clusterConfig=" + clusterConfig +
             ", controller=" + controller +
-            "}";
+            '}';
     }
 }

@@ -308,7 +308,7 @@ public class CtSphTest {
     private class ShouldNotPassSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         @Override
         public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode param, int count,
-                          Object... args) {
+                          boolean prioritized, Object... args) {
             throw new IllegalStateException("Should not enter this slot!");
         }
 
@@ -323,7 +323,7 @@ public class CtSphTest {
 
         @Override
         public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode param, int count,
-                          Object... args) throws Throwable {
+                          boolean prioritized, Object... args) throws Throwable {
             throw new BlockException("custom") {};
         }
 
@@ -339,7 +339,7 @@ public class CtSphTest {
 
         @Override
         public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode param, int count,
-                          Object... args) {
+                          boolean prioritized, Object... args) {
             entered = true;
         }
 

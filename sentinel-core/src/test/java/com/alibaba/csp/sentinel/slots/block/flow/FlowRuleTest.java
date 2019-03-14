@@ -15,10 +15,11 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.alibaba.csp.sentinel.context.Context;
@@ -30,6 +31,7 @@ import com.alibaba.csp.sentinel.slots.block.flow.controller.DefaultController;
 /**
  * @author jialiang.linjl
  */
+@Ignore("Deprecated test for legacy FlowRule")
 public class FlowRuleTest {
 
     @Test
@@ -50,15 +52,15 @@ public class FlowRuleTest {
 
         when(context.getOrigin()).thenReturn("");
         when(node.getClusterNode()).thenReturn(cn);
-        when(cn.passQps()).thenReturn(1l);
+        when(cn.passQps()).thenReturn(1d);
 
-        assertTrue(flowRule.passCheck(context, node, 1, new Object[0]) == false);
+        assertFalse(flowRule.passCheck(context, node, 1));
 
         flowRule.setGrade(RuleConstant.FLOW_GRADE_THREAD);
         defaultController = new DefaultController(1, flowRule.getGrade());
         flowRule.setRater(defaultController);
         when(cn.curThreadNum()).thenReturn(1);
-        assertTrue(flowRule.passCheck(context, node, 1, new Object[0]) == false);
+        assertTrue(!flowRule.passCheck(context, node, 1));
     }
 
     @Test
@@ -77,17 +79,16 @@ public class FlowRuleTest {
         DefaultNode dn = mock(DefaultNode.class);
 
         when(context.getName()).thenReturn("entry1");
-        when(dn.passQps()).thenReturn(1l);
-        assertTrue(flowRule.passCheck(context, dn, 1, new Object[0]) == false);
+        when(dn.passQps()).thenReturn(1d);
+        assertFalse(flowRule.passCheck(context, dn, 1));
 
         when(context.getName()).thenReturn("entry2");
-        assertTrue(flowRule.passCheck(context, dn, 1, new Object[0]));
+        assertTrue(flowRule.passCheck(context, dn, 1));
 
         // Strategy == relate
         flowRule.setStrategy(RuleConstant.STRATEGY_CHAIN);
         ClusterNode cn = mock(ClusterNode.class);
-        assertTrue(flowRule.passCheck(context, dn, 1, new Object[0]) == true);
-
+        assertTrue(flowRule.passCheck(context, dn, 1));
     }
 
     @Test
@@ -104,7 +105,7 @@ public class FlowRuleTest {
         Context context = mock(Context.class);
         DefaultNode dn = mock(DefaultNode.class);
         when(context.getOrigin()).thenReturn("origin1");
-        when(dn.passQps()).thenReturn(1l);
+        when(dn.passQps()).thenReturn(1d);
         when(context.getOriginNode()).thenReturn(dn);
 
         /*
@@ -113,9 +114,9 @@ public class FlowRuleTest {
          */
         ClusterNode cn = mock(ClusterNode.class);
         when(dn.getClusterNode()).thenReturn(cn);
-        when(cn.passQps()).thenReturn(1l);
+        when(cn.passQps()).thenReturn(1d);
         assertTrue(flowRule.passCheck(context, dn, 1, new Object[0]) == false);
-        when(cn.passQps()).thenReturn(0l);
+        when(cn.passQps()).thenReturn(0d);
         assertTrue(flowRule.passCheck(context, dn, 1, new Object[0]));
 
         flowRule.setStrategy(RuleConstant.STRATEGY_CHAIN);

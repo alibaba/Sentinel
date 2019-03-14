@@ -242,4 +242,29 @@ public class SphU {
     public static AsyncEntry asyncEntry(String name, EntryType type, int count, Object... args) throws BlockException {
         return Env.sph.asyncEntry(name, type, count, args);
     }
+
+    /**
+     * Checking all {@link Rule}s related the resource. The entry is prioritized.
+     *
+     * @param name        the unique name for the protected resource
+     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded.
+     * @since 1.4.0
+     */
+    public static Entry entryWithPriority(String name) throws BlockException {
+        return Env.sph.entryWithPriority(name, EntryType.OUT, 1, true);
+    }
+
+    /**
+     * Checking all {@link Rule}s related the resource. The entry is prioritized.
+     *
+     * @param name        the unique name for the protected resource
+     * @param type        the resource is an inbound or an outbound method. This is used
+     *                    to mark whether it can be blocked when the system is unstable,
+     *                    only inbound traffic could be blocked by {@link SystemRule}
+     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded.
+     * @since 1.4.0
+     */
+    public static Entry entryWithPriority(String name, EntryType type) throws BlockException {
+        return Env.sph.entryWithPriority(name, type, 1, true);
+    }
 }

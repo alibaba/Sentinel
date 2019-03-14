@@ -45,7 +45,7 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
 
     var degradeRuleDialog;
     $scope.editRule = function (rule) {
-      $scope.currentRule = rule;
+      $scope.currentRule = angular.copy(rule);
       $scope.degradeRuleDialog = {
         title: '编辑降级规则',
         type: 'edit',
@@ -177,7 +177,7 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
               $scope.machines = [];
               $scope.macsInputOptions = [];
               data.data.forEach(function (item) {
-                if (item.health) {
+                if (item.healthy) {
                   $scope.macsInputOptions.push({
                     text: item.ip + ':' + item.port,
                     value: item.ip + ':' + item.port
