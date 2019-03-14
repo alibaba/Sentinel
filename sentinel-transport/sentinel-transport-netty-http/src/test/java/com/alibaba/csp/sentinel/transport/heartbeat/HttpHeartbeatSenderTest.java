@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
+import com.alibaba.csp.sentinel.transport.config.HeartbeatConfigEntity;
 import org.junit.Test;
 
 import com.alibaba.csp.sentinel.config.SentinelConfig;
@@ -19,40 +20,40 @@ public class HttpHeartbeatSenderTest {
     @Test
     public void testAddr() {
         setAddr("");
-        assertEquals(0, HttpHeartbeatSender.parseDashboardList().size());
+        assertEquals(0, HttpHeartbeatSender.parseHeartbeatConfigEntityList().size());
         
         setAddr("a.com");
-        List<Tuple2<String, Integer>> list = HttpHeartbeatSender.parseDashboardList();
+        List<HeartbeatConfigEntity> list = HttpHeartbeatSender.parseHeartbeatConfigEntityList();
         assertEquals(1, list.size());
-        assertEquals("a.com", list.get(0).r1);
-        assertEquals(Integer.valueOf(80), list.get(0).r2);
+        assertEquals("a.com", list.get(0).getHost());
+        assertEquals(Integer.valueOf(80), list.get(0).getPort());
         
         setAddr("a.com:88");
-        list = HttpHeartbeatSender.parseDashboardList();
+        list = HttpHeartbeatSender.parseHeartbeatConfigEntityList();
         assertEquals(1, list.size());
-        assertEquals("a.com", list.get(0).r1);
-        assertEquals(Integer.valueOf(88), list.get(0).r2);
+        assertEquals("a.com", list.get(0).getHost());
+        assertEquals(Integer.valueOf(88), list.get(0).getPort());
         
         setAddr("a.com:88,,,,");
-        list = HttpHeartbeatSender.parseDashboardList();
+        list = HttpHeartbeatSender.parseHeartbeatConfigEntityList();
         assertEquals(1, list.size());
-        assertEquals("a.com", list.get(0).r1);
-        assertEquals(Integer.valueOf(88), list.get(0).r2);
+        assertEquals("a.com", list.get(0).getHost());
+        assertEquals(Integer.valueOf(88), list.get(0).getPort());
         
         setAddr("a.com:88,b.com");
-        list = HttpHeartbeatSender.parseDashboardList();
+        list = HttpHeartbeatSender.parseHeartbeatConfigEntityList();
         assertEquals(2, list.size());
-        assertEquals("a.com", list.get(0).r1);
-        assertEquals(Integer.valueOf(88), list.get(0).r2);
-        assertEquals("b.com", list.get(1).r1);
-        assertEquals(Integer.valueOf(80), list.get(1).r2);
+        assertEquals("a.com", list.get(0).getHost());
+        assertEquals(Integer.valueOf(88), list.get(0).getPort());
+        assertEquals("b.com", list.get(1).getHost());
+        assertEquals(Integer.valueOf(80), list.get(1).getPort());
         
         setAddr("a.com:88,b.com:99999");
-        list = HttpHeartbeatSender.parseDashboardList();
+        list = HttpHeartbeatSender.parseHeartbeatConfigEntityList();
         assertEquals(2, list.size());
-        assertEquals("a.com", list.get(0).r1);
-        assertEquals(Integer.valueOf(88), list.get(0).r2);
-        assertEquals("b.com", list.get(1).r1);
-        assertEquals(Integer.valueOf(99999), list.get(1).r2);
+        assertEquals("a.com", list.get(0).getHost());
+        assertEquals(Integer.valueOf(88), list.get(0).getPort());
+        assertEquals("b.com", list.get(1).getHost());
+        assertEquals(Integer.valueOf(99999), list.get(1).getPort());
     }
 }

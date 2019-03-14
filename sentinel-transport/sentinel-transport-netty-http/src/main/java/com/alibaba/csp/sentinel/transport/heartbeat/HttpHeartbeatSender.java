@@ -70,7 +70,7 @@ public class HttpHeartbeatSender implements HeartbeatSender {
         }
     }
 
-    private List<HeartbeatConfigEntity> parseHeartbeatConfigEntityList() {
+    protected static List<HeartbeatConfigEntity> parseHeartbeatConfigEntityList() {
         List<HeartbeatConfigEntity> list = new ArrayList<HeartbeatConfigEntity>();
         try {
             String ipsStr = TransportConfig.getConsoleServer();
