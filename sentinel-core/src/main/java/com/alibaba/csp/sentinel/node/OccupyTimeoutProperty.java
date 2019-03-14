@@ -37,7 +37,7 @@ public class OccupyTimeoutProperty {
      * DO NOT MODIFY this value directly, use {@link #updateTimeout(int)},
      * otherwise the modification will not take effect.
      */
-    private static volatile int occupyTimeout = 200;
+    private static volatile int occupyTimeout = 500;
 
     public static void register2Property(SentinelProperty<Integer> property) {
         property.addListener(new SimplePropertyListener<Integer>() {
