@@ -533,6 +533,10 @@ body {
     max-width: 300px;
 }
 
+.width-300 {
+    max-width: 300px;
+}
+
 .card.highlight {
     border-color: #d9534f;
 }
