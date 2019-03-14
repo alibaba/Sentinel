@@ -13,20 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.base.metric;
+package com.alibaba.csp.sentinel.slots.statistic.metric;
 
 import java.util.ArrayList;
 
+import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
+import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
+
 import org.junit.Test;
 
-import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
-import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
-import com.alibaba.csp.sentinel.slots.statistic.metric.ArrayMetric;
-import com.alibaba.csp.sentinel.slots.statistic.metric.MetricsLeapArray;
-
 import static org.junit.Assert.*;
-
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Test cases for {@link ArrayMetric}.
@@ -39,7 +37,7 @@ public class ArrayMetricTest {
 
     @Test
     public void testOperateArrayMetric() {
-        MetricsLeapArray leapArray = mock(MetricsLeapArray.class);
+        BucketLeapArray leapArray = mock(BucketLeapArray.class);
         final WindowWrap<MetricBucket> windowWrap = new WindowWrap<MetricBucket>(windowLengthInMs, 0, new MetricBucket());
         when(leapArray.currentWindow()).thenReturn(windowWrap);
         when(leapArray.values()).thenReturn(new ArrayList<MetricBucket>() {{ add(windowWrap.value()); }});

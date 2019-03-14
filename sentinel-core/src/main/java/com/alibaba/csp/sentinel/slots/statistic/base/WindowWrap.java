@@ -77,6 +77,17 @@ public class WindowWrap<T> {
         return this;
     }
 
+    /**
+     * Check whether given timestamp is in current bucket.
+     *
+     * @param timeMillis valid timestamp in ms
+     * @return true if the given time is in current bucket, otherwise false
+     * @since 1.5.0
+     */
+    public boolean isTimeInWindow(long timeMillis) {
+        return windowStart <= timeMillis && timeMillis < windowStart + windowLengthInMs;
+    }
+
     @Override
     public String toString() {
         return "WindowWrap{" +
