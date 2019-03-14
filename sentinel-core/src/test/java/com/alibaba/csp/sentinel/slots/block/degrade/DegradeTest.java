@@ -103,16 +103,16 @@ public class DegradeTest {
         when(cn.successQps()).thenReturn(20d);
 
         // Will pass.
-        when(cn.exceptionQps()).thenReturn(0L);
+        when(cn.exceptionQps()).thenReturn(0d);
         for (int i = 0; i < 5; i++) {
             assertTrue(rule.passCheck(context, node, 1));
         }
-        when(cn.exceptionQps()).thenReturn(20L);
+        when(cn.exceptionQps()).thenReturn(20d);
         assertFalse(rule.passCheck(context, node, 1));
         TimeUnit.SECONDS.sleep(6);
         // Will pass.
         //When the fifth request ends, degrade will blow close.
-        when(cn.exceptionQps()).thenReturn(0L);
+        when(cn.exceptionQps()).thenReturn(0d);
         for (int i = 0; i < 5; i++) {
             assertTrue(rule.passCheck(context, node, 1));
         }
