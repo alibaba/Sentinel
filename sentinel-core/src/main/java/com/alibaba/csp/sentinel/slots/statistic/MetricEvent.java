@@ -31,7 +31,9 @@ public enum MetricEvent {
     EXCEPTION,
     SUCCESS,
     RT,
-    OCCUPIED_PASS,
-    OCCUPIED_BLOCK,
-    WAITING
+
+    /**
+     * Passed in future quota (pre-occupied, since 1.5.0).
+     */
+    OCCUPIED_PASS
 }

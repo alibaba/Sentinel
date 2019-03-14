@@ -28,7 +28,7 @@ import com.alibaba.csp.sentinel.slots.statistic.metric.DebugSupport;
  * @author leyou
  * @author Eric Zhao
  */
-public interface Node extends DebugSupport {
+public interface Node extends OccupySupport, DebugSupport {
 
     /**
      * Get incoming request per minute ({@code pass + block}).

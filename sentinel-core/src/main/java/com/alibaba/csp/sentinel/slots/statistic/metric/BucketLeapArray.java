@@ -13,39 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.cluster.flow.statistic.metric;
+package com.alibaba.csp.sentinel.slots.statistic.metric;
 
 import com.alibaba.csp.sentinel.slots.statistic.base.LeapArray;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
-import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
-import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
-import com.alibaba.csp.sentinel.util.AssertUtil;
+import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
 
 /**
- * @param <C> counter type
+ * The fundamental data structure for metric statistics in a time span.
+ *
+ * @author jialiang.linjl
  * @author Eric Zhao
- * @since 1.4.0
+ * @see LeapArray
  */
-public class ClusterParameterLeapArray<C> extends LeapArray<CacheMap<Object, C>> {
+public class BucketLeapArray extends LeapArray<MetricBucket> {
 
-    private final int maxCapacity;
-
-    public ClusterParameterLeapArray(int sampleCount, int intervalInMs, int maxCapacity) {
+    public BucketLeapArray(int sampleCount, int intervalInMs) {
         super(sampleCount, intervalInMs);
-        AssertUtil.isTrue(maxCapacity > 0, "maxCapacity of LRU map should be positive");
-        this.maxCapacity = maxCapacity;
     }
 
     @Override
-    public CacheMap<Object, C> newEmptyBucket(long timeMillis) {
-        return new ConcurrentLinkedHashMapWrapper<>(maxCapacity);
+    public MetricBucket newEmptyBucket(long time) {
+        return new MetricBucket();
     }
 
     @Override
-    protected WindowWrap<CacheMap<Object, C>> resetWindowTo(WindowWrap<CacheMap<Object, C>> w, long startTime) {
+    protected WindowWrap<MetricBucket> resetWindowTo(WindowWrap<MetricBucket> w, long startTime) {
+        // Update the start time and reset value.
         w.resetTo(startTime);
-        w.value().clear();
+        w.value().reset();
         return w;
     }
-
 }

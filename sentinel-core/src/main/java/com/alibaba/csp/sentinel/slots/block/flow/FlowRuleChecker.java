@@ -61,7 +61,7 @@ final class FlowRuleChecker {
             return true;
         }
 
-        return rule.getRater().canPass(selectedNode, acquireCount);
+        return rule.getRater().canPass(selectedNode, acquireCount, prioritized);
     }
 
     static Node selectReferenceNode(FlowRule rule, Context context, DefaultNode node) {

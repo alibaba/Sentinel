@@ -35,7 +35,7 @@ public class LeapArrayTest extends AbstractTimeBasedTest {
         int sampleCount = intervalInMs / windowLengthInMs;
         LeapArray<AtomicInteger> leapArray = new LeapArray<AtomicInteger>(sampleCount, intervalInMs) {
             @Override
-            public AtomicInteger newEmptyBucket() {
+            public AtomicInteger newEmptyBucket(long time) {
                 return new AtomicInteger(0);
             }
 
