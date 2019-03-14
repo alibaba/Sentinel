@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.node.metric.MetricTimerListener;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
@@ -65,6 +66,7 @@ public class FlowRuleManager {
      * @param property the property to listen.
      */
     public static void register2Property(SentinelProperty<List<FlowRule>> property) {
+        AssertUtil.notNull(property, "property cannot be null");
         synchronized (LISTENER) {
             RecordLog.info("[FlowRuleManager] Registering new property to flow rule manager");
             currentProperty.removeListener(LISTENER);
