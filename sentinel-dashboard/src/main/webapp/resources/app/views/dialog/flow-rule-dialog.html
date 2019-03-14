@@ -129,6 +129,18 @@
                 </div>
               </div>
             </div>
+            <!-- add to consumer rule response-->
+            <div class="form-group">
+              <label class="col-sm-2 control-label">自定义返回</label>
+              <div class="col-sm-9">
+                <div class="form-control highlight-border" align="center">
+                  <input type="radio" name="controlBehavior" value="0" checked ng-model='currentRule.controlBehavior' />&nbsp;Dubbo&nbsp;&nbsp;
+                  <input type="radio" name="controlBehavior" value="1" ng-model='currentRule.controlBehavior' />&nbsp;Web Filter&nbsp;&nbsp;
+                </div>
+              </div>
+
+            </div>
+
           </div>
           <div class="form-group text-center">
             <a ng-click="onOpenAdvanceClick()" ng-if="flowRuleDialog.showAdvanceButton" style="cursor: pointer;">高级选项</a>

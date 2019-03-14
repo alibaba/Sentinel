@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.slots.block;
 
+import java.util.Map;
+
 /**
  * Abstract rule entity.
  *
@@ -38,6 +40,21 @@ public abstract class AbstractRule implements Rule {
      * </p>
      */
     private String limitApp;
+
+    /**
+     * 适配器类型(dubbo|WebFilter)
+     */
+    private String adapterType;
+
+    /**
+     * 适配器开关
+     */
+    private boolean adapterReultOn;
+
+    /**
+     * 适配器属性
+     */
+    private Map<String,String> adapterProperties;
 
     public String getResource() {
         return resource;
@@ -100,5 +117,29 @@ public abstract class AbstractRule implements Rule {
             result = 31 * result + limitApp.hashCode();
         }
         return result;
+    }
+
+    public String getAdapterType() {
+        return adapterType;
+    }
+
+    public void setAdapterType(String adapterType) {
+        this.adapterType = adapterType;
+    }
+
+    public Map<String, String> getAdapterProperties() {
+        return adapterProperties;
+    }
+
+    public void setAdapterProperties(Map<String, String> adapterProperties) {
+        this.adapterProperties = adapterProperties;
+    }
+
+    public boolean getAdapterReultOn() {
+        return adapterReultOn;
+    }
+
+    public void setAdapterReultOn(boolean adapterReultOn) {
+        this.adapterReultOn = adapterReultOn;
     }
 }
