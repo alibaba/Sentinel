@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.slots.block.flow.param;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +27,7 @@ import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
@@ -37,12 +39,10 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  */
 public final class ParamFlowRuleManager {
 
-    private static final Map<String, List<ParamFlowRule>> paramFlowRules
-        = new ConcurrentHashMap<String, List<ParamFlowRule>>();
+    private static final Map<String, Set<ParamFlowRule>> paramFlowRules = new ConcurrentHashMap<>();
 
     private final static RulePropertyListener PROPERTY_LISTENER = new RulePropertyListener();
-    private static SentinelProperty<List<ParamFlowRule>> currentProperty
-        = new DynamicSentinelProperty<List<ParamFlowRule>>();
+    private static SentinelProperty<List<ParamFlowRule>> currentProperty = new DynamicSentinelProperty<>();
 
     static {
         currentProperty.addListener(PROPERTY_LISTENER);
@@ -68,6 +68,7 @@ public final class ParamFlowRuleManager {
      * @param property the property to listen
      */
     public static void register2Property(SentinelProperty<List<ParamFlowRule>> property) {
+        AssertUtil.notNull(property, "property cannot be null");
         synchronized (PROPERTY_LISTENER) {
             currentProperty.removeListener(PROPERTY_LISTENER);
             property.addListener(PROPERTY_LISTENER);
@@ -77,11 +78,11 @@ public final class ParamFlowRuleManager {
     }
 
     public static List<ParamFlowRule> getRulesOfResource(String resourceName) {
-        return paramFlowRules.get(resourceName);
+        return new ArrayList<>(paramFlowRules.get(resourceName));
     }
 
     public static boolean hasRules(String resourceName) {
-        List<ParamFlowRule> rules = paramFlowRules.get(resourceName);
+        Set<ParamFlowRule> rules = paramFlowRules.get(resourceName);
         return rules != null && !rules.isEmpty();
     }
 
@@ -91,8 +92,8 @@ public final class ParamFlowRuleManager {
      * @return a new copy of the rules.
      */
     public static List<ParamFlowRule> getRules() {
-        List<ParamFlowRule> rules = new ArrayList<ParamFlowRule>();
-        for (Map.Entry<String, List<ParamFlowRule>> entry : paramFlowRules.entrySet()) {
+        List<ParamFlowRule> rules = new ArrayList<>();
+        for (Map.Entry<String, Set<ParamFlowRule>> entry : paramFlowRules.entrySet()) {
             rules.addAll(entry.getValue());
         }
         return rules;
@@ -102,7 +103,7 @@ public final class ParamFlowRuleManager {
 
         @Override
         public void configUpdate(List<ParamFlowRule> list) {
-            Map<String, List<ParamFlowRule>> rules = aggregateHotParamRules(list);
+            Map<String, Set<ParamFlowRule>> rules = aggregateHotParamRules(list);
             if (rules != null) {
                 paramFlowRules.clear();
                 paramFlowRules.putAll(rules);
@@ -112,7 +113,7 @@ public final class ParamFlowRuleManager {
 
         @Override
         public void configLoad(List<ParamFlowRule> list) {
-            Map<String, List<ParamFlowRule>> rules = aggregateHotParamRules(list);
+            Map<String, Set<ParamFlowRule>> rules = aggregateHotParamRules(list);
             if (rules != null) {
                 paramFlowRules.clear();
                 paramFlowRules.putAll(rules);
@@ -120,8 +121,8 @@ public final class ParamFlowRuleManager {
             RecordLog.info("[ParamFlowRuleManager] Hot spot parameter flow rules received: " + paramFlowRules);
         }
 
-        private Map<String, List<ParamFlowRule>> aggregateHotParamRules(List<ParamFlowRule> list) {
-            Map<String, List<ParamFlowRule>> newRuleMap = new ConcurrentHashMap<String, List<ParamFlowRule>>();
+        private Map<String, Set<ParamFlowRule>> aggregateHotParamRules(List<ParamFlowRule> list) {
+            Map<String, Set<ParamFlowRule>> newRuleMap = new ConcurrentHashMap<>();
 
             if (list == null || list.isEmpty()) {
                 // No parameter flow rules, so clear all the metrics.
@@ -143,12 +144,12 @@ public final class ParamFlowRuleManager {
                 ParamFlowRuleUtil.fillExceptionFlowItems(rule);
 
                 String resourceName = rule.getResource();
-                List<ParamFlowRule> ruleList = newRuleMap.get(resourceName);
-                if (ruleList == null) {
-                    ruleList = new ArrayList<ParamFlowRule>();
-                    newRuleMap.put(resourceName, ruleList);
+                Set<ParamFlowRule> ruleSet = newRuleMap.get(resourceName);
+                if (ruleSet == null) {
+                    ruleSet = new HashSet<>();
+                    newRuleMap.put(resourceName, ruleSet);
                 }
-                ruleList.add(rule);
+                ruleSet.add(rule);
             }
 
             // Clear unused hot param metrics.
