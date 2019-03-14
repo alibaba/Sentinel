@@ -254,20 +254,6 @@ public class ArrayMetric implements Metric {
         wrap.value().minusException(1);
     }
 
-    @Override
-    public void debugQps() {
-        data.currentWindow();
-        StringBuilder sb = new StringBuilder();
-        sb.append(Thread.currentThread().getId()).append("_");
-        for (WindowWrap<MetricBucket> windowWrap : data.list()) {
-
-            sb.append(windowWrap.windowStart()).append(":").append(windowWrap.value().pass()).append(":")
-                .append(windowWrap.value().block());
-            sb.append(",");
-
-        }
-        System.out.println(sb);
-
     public void debug() {
         data.debug(System.currentTimeMillis());
     }
