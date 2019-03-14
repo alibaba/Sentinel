@@ -45,8 +45,10 @@ public class DegradeTest {
         Context context = mock(Context.class);
         DefaultNode node = mock(DefaultNode.class);
         when(node.getClusterNode()).thenReturn(cn);
-        when(cn.avgRt()).thenReturn(2L);
+
         when(cn.getLastRtSum()).thenReturn(new AtomicInteger(0));
+        when(cn.avgRt()).thenReturn(2d);
+
         DegradeRule rule = new DegradeRule();
         rule.setCount(1);
         rule.setResource(key);
@@ -73,9 +75,9 @@ public class DegradeTest {
     public void testExceptionRatioModeDegrade() throws Throwable {
         String key = "test_degrade_exception_ratio";
         ClusterNode cn = mock(ClusterNode.class);
-        when(cn.exceptionQps()).thenReturn(2L);
+        when(cn.exceptionQps()).thenReturn(2d);
         // Indicates that there are QPS more than min threshold.
-        when(cn.totalQps()).thenReturn(12L);
+        when(cn.totalQps()).thenReturn(12d);
         ClusterBuilderSlot.getClusterNodeMap().put(new StringResourceWrapper(key, EntryType.IN), cn);
 
         Context context = mock(Context.class);
@@ -88,7 +90,7 @@ public class DegradeTest {
         rule.setTimeWindow(2);
         rule.setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO);
 
-        when(cn.successQps()).thenReturn(8L);
+        when(cn.successQps()).thenReturn(8d);
 
         // Will fail.
         assertFalse(rule.passCheck(context, node, 1));
@@ -96,7 +98,10 @@ public class DegradeTest {
         // Restore from the degrade timeout.
         TimeUnit.MILLISECONDS.sleep(2200);
 
+
         //  when(cn.successQps()).thenReturn(20L);
+        when(cn.successQps()).thenReturn(20d);
+
         // Will pass.
         when(cn.exceptionQps()).thenReturn(0L);
         for (int i = 0; i < 5; i++) {

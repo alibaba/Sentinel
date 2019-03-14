@@ -22,15 +22,15 @@ public class WarmUpRateLimiterControllerTest {
 
         Node node = mock(Node.class);
 
-        when(node.passQps()).thenReturn(100L);
-        when(node.previousPassQps()).thenReturn(100L);
+        when(node.passQps()).thenReturn(100d);
+        when(node.previousPassQps()).thenReturn(100d);
 
         assertTrue(controller.canPass(node, 1));
 
         long start = System.currentTimeMillis();
         assertTrue(controller.canPass(node, 1));
         long cost = System.currentTimeMillis() - start;
-        assertTrue(cost >= 100 && cost <= 110);
+        assertTrue(cost >= 100 && cost <= 120);
     }
 
     @Test
@@ -39,8 +39,8 @@ public class WarmUpRateLimiterControllerTest {
 
         Node node = mock(Node.class);
 
-        when(node.passQps()).thenReturn(100L);
-        when(node.previousPassQps()).thenReturn(100L);
+        when(node.passQps()).thenReturn(100d);
+        when(node.previousPassQps()).thenReturn(100d);
 
         assertTrue(controller.canPass(node, 1));
 

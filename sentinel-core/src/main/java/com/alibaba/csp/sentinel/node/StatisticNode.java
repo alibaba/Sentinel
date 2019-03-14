@@ -169,27 +169,32 @@ public class StatisticNode implements Node {
     }
 
     @Override
+    public long totalPass() {
+        return rollingCounterInMinute.pass();
+    }
+
+    @Override
     public long blockRequest() {
         return rollingCounterInMinute.block();
     }
 
     @Override
-    public long blockQps() {
-        return rollingCounterInSecond.block() / (long) rollingCounterInSecond.getWindowIntervalInSec();
+    public double blockQps() {
+        return rollingCounterInSecond.block() / rollingCounterInSecond.getWindowIntervalInSec();
     }
 
     @Override
-    public long previousBlockQps() {
+    public double previousBlockQps() {
         return this.rollingCounterInMinute.previousWindowBlock();
     }
 
     @Override
-    public long previousPassQps() {
+    public double previousPassQps() {
         return this.rollingCounterInMinute.previousWindowPass();
     }
 
     @Override
-    public long totalQps() {
+    public double totalQps() {
         return passQps() + blockQps();
     }
 
@@ -199,8 +204,8 @@ public class StatisticNode implements Node {
     }
 
     @Override
-    public long exceptionQps() {
-        return rollingCounterInSecond.exception() / (long) rollingCounterInSecond.getWindowIntervalInSec();
+    public double exceptionQps() {
+        return rollingCounterInSecond.exception() / rollingCounterInSecond.getWindowIntervalInSec();
     }
 
     @Override
@@ -209,32 +214,32 @@ public class StatisticNode implements Node {
     }
 
     @Override
-    public long passQps() {
-        return rollingCounterInSecond.pass() / (long) rollingCounterInSecond.getWindowIntervalInSec();
+    public double passQps() {
+        return rollingCounterInSecond.pass() / rollingCounterInSecond.getWindowIntervalInSec();
     }
 
     @Override
-    public long successQps() {
-        return rollingCounterInSecond.success() / (long) rollingCounterInSecond.getWindowIntervalInSec();
+    public double successQps() {
+        return rollingCounterInSecond.success() / rollingCounterInSecond.getWindowIntervalInSec();
     }
 
     @Override
-    public long maxSuccessQps() {
+    public double maxSuccessQps() {
         return rollingCounterInSecond.maxSuccess() * rollingCounterInSecond.getSampleCount();
     }
 
     @Override
-    public long avgRt() {
+    public double avgRt() {
         long successCount = rollingCounterInSecond.success();
         if (successCount == 0) {
             return 0;
         }
 
-        return rollingCounterInSecond.rt() / successCount;
+        return rollingCounterInSecond.rt() * 1.0 / successCount;
     }
 
     @Override
-    public long minRt() {
+    public double minRt() {
         return rollingCounterInSecond.minRt();
     }
 

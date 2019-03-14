@@ -20,12 +20,15 @@ import com.google.common.collect.Sets;
  * When the rule is changed in Apollo, it will take effect in real time.
  *
  * @author Jason Song
+ * @author Haojun Ren
  */
 public class ApolloDataSource<T> extends AbstractDataSource<String, T> {
 
     private final Config config;
     private final String flowRulesKey;
     private final String defaultFlowRuleValue;
+
+    private ConfigChangeListener configChangeListener;
 
     /**
      * Constructs the Apollo data source
@@ -72,7 +75,7 @@ public class ApolloDataSource<T> extends AbstractDataSource<String, T> {
     }
 
     private void initializeConfigChangeListener() {
-        config.addChangeListener(new ConfigChangeListener() {
+        configChangeListener = new ConfigChangeListener() {
             @Override
             public void onChange(ConfigChangeEvent changeEvent) {
                 ConfigChange change = changeEvent.getChange(flowRulesKey);
@@ -82,7 +85,8 @@ public class ApolloDataSource<T> extends AbstractDataSource<String, T> {
                 }
                 loadAndUpdateRules();
             }
-        }, Sets.newHashSet(flowRulesKey));
+        };
+        config.addChangeListener(configChangeListener, Sets.newHashSet(flowRulesKey));
     }
 
     @Override
@@ -92,6 +96,6 @@ public class ApolloDataSource<T> extends AbstractDataSource<String, T> {
 
     @Override
     public void close() throws Exception {
-        // nothing to destroy
+        config.removeChangeListener(configChangeListener);
     }
 }

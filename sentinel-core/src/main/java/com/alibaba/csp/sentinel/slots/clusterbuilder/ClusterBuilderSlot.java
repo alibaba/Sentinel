@@ -40,7 +40,7 @@ import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
  * </p>
  * <p>
  * One resource has only one cluster node, while one resource can have multiple
- * default node.
+ * default nodes.
  * </p>
  *
  * @author jialiang.linjl
@@ -65,8 +65,7 @@ public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode>
      * at the very beginning while concurrent map will hold the lock all the time.
      * </p>
      */
-    private static volatile Map<ResourceWrapper, ClusterNode> clusterNodeMap
-        = new HashMap<ResourceWrapper, ClusterNode>();
+    private static volatile Map<ResourceWrapper, ClusterNode> clusterNodeMap = new HashMap<>();
 
     private static final Object lock = new Object();
 
@@ -81,7 +80,7 @@ public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode>
                 if (clusterNode == null) {
                     // Create the cluster node.
                     clusterNode = Env.nodeBuilder.buildClusterNode();
-                    HashMap<ResourceWrapper, ClusterNode> newMap = new HashMap<ResourceWrapper, ClusterNode>(Math.max(clusterNodeMap.size(), 16));
+                    HashMap<ResourceWrapper, ClusterNode> newMap = new HashMap<>(Math.max(clusterNodeMap.size(), 16));
                     newMap.putAll(clusterNodeMap);
                     newMap.put(node.getId(), clusterNode);
 

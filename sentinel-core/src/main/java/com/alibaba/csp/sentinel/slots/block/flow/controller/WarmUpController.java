@@ -112,9 +112,9 @@ public class WarmUpController implements TrafficShapingController {
 
     @Override
     public boolean canPass(Node node, int acquireCount, boolean prioritized) {
-        long passQps = node.passQps();
+        long passQps = (long) node.passQps();
 
-        long previousQps = node.previousPassQps();
+        long previousQps = (long) node.previousPassQps();
         syncToken(previousQps);
 
         // 开始计算它的斜率
