@@ -148,6 +148,7 @@ public interface Metric extends DebugSupport {
      */
     void minusException();
 
+    /**
      * Get the sliding window length in seconds.
      *
      * @return the sliding window length
