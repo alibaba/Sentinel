@@ -65,7 +65,7 @@ public class HttpHeartbeatSender implements HeartbeatSender {
         }
     }
 
-    private List<Tuple2<String, Integer>> parseDashboardList() {
+    protected static List<Tuple2<String, Integer>> parseDashboardList() {
         List<Tuple2<String, Integer>> list = new ArrayList<Tuple2<String, Integer>>();
         try {
             String ipsStr = TransportConfig.getConsoleServer();
@@ -86,7 +86,7 @@ public class HttpHeartbeatSender implements HeartbeatSender {
                     continue;
                 }
                 String[] ipPort = ipPortStr.trim().split(":");
-                int port = 8080;
+                int port = 80;
                 if (ipPort.length > 1) {
                     port = Integer.parseInt(ipPort[1].trim());
                 }
