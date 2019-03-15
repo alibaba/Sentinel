@@ -62,6 +62,7 @@
         <maven.gpg.version>1.6</maven.gpg.version>
         <maven.jacoco.version>0.8.3</maven.jacoco.version>
         <maven.jar.version>3.1.0</maven.jar.version>
+        <maven.pmd.version>3.8</maven.pmd.version>
     </properties>
 
     <modules>
@@ -189,10 +190,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
-                <version>3.8</version>
+                <version>${maven.pmd.version}</version>
                 <configuration>
                     <sourceEncoding>${project.build.sourceEncoding}</sourceEncoding>
-                    <targetJdk>1.8</targetJdk>
+                    <minimumPriority>1</minimumPriority>
+                    <excludeRoots>
+                        <excludeRoot>com/alibaba/csp/sentinel/benchmark</excludeRoot>
+                    </excludeRoots>
                     <excludes>
                         <exclude>**/*_jmhTest.java</exclude>
                     </excludes>
