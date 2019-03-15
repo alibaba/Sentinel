@@ -12,6 +12,10 @@ matrix:
   allow_failures:
   - env: BUILD_JDK=ORACLE_JDK_11
 
+# https://docs.travis-ci.com/user/languages/java/#maven-dependency-management
+install:
+  - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -DminimumPriority=1
+
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 
