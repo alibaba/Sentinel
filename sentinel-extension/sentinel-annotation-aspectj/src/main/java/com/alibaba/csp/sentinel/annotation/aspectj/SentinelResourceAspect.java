@@ -82,7 +82,7 @@ public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
             return false;
         }
         for (Class exceptionToTrace : exceptionsToTrace) {
-            if (ex.getClass().isAssignableFrom(exceptionToTrace)) {
+            if (exceptionToTrace.isAssignableFrom(ex.getClass())) {
                 return true;
             }
         }
