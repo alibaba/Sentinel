@@ -27,37 +27,37 @@ import com.alibaba.csp.sentinel.slots.block.flow.TrafficShapingController;
  * rate-based, which means that we need to translate rate to QPS.
  * </p>
  *
+ * <p>
  * Requests arriving at the pulse may drag down long idle systems even though it
  * has a much larger handling capability in stable period. It usually happens in
- * scenarios that require extra time for initialization, e.g. DB
- * establishes a connection; connects to a remote service, and so on.
+ * scenarios that require extra time for initialization, e.g. DB establishes a connection,
+ * connects to a remote service, and so on. That’s why we need “warm up”.
+ * </p>
  *
- * That’s why we need “warm up”.
+ * <p>
+ * Sentinel's "warm-up" implementation is based on the Guava's algorithm.
+ * However, Guava’s implementation focuses on adjusting the request interval,
+ * which is similar to leaky bucket. Sentinel pays more attention to
+ * controlling the count of incoming requests per second without calculating its interval,
+ * which resembles token bucket algorithm.
+ * </p>
  *
- * Sentinel’s “warm up” implementation is based on Guava's algorithm. However,
- * unlike Guava's scenario, which is a “leaky bucket”, and is mainly used to
- * adjust the request interval, Sentinel is more focus on controlling the count
- * of incoming requests per second without calculating its interval.
- *
- * Sentinel's "warm-up" implementation is based on the guava-based algorithm.
- * However, Guava’s implementation focus on adjusting the request interval, in
- * other words, a Leaky bucket. Sentinel pays more attention to controlling the
- * count of incoming requests per second without calculating its interval, it is
- * more like a “Token bucket.”
- *
- *
+ * <p>
  * The remaining tokens in the bucket is used to measure the system utility.
  * Suppose a system can handle b requests per second. Every second b tokens will
  * be added into the bucket until the bucket is full. And when system processes
  * a request, it takes a token from the bucket. The more tokens left in the
  * bucket, the lower the utilization of the system; when the token in the token
  * bucket is above a certain threshold, we call it in a "saturation" state.
+ * </p>
  *
+ * <p>
  * Base on Guava’s theory, there is a linear equation we can write this in the
  * form y = m * x + b where y (a.k.a y(x)), or qps(q)), is our expected QPS
  * given a saturated period (e.g. 3 minutes in), m is the rate of change from
  * our cold (minimum) rate to our stable (maximum) rate, x (or q) is the
  * occupied token.
+ * </p>
  *
  * @author jialiang.linjl
  */
@@ -112,9 +112,9 @@ public class WarmUpController implements TrafficShapingController {
 
     @Override
     public boolean canPass(Node node, int acquireCount, boolean prioritized) {
-        long passQps = node.passQps();
+        long passQps = (long) node.passQps();
 
-        long previousQps = node.previousPassQps();
+        long previousQps = (long) node.previousPassQps();
         syncToken(previousQps);
 
         // 开始计算它的斜率

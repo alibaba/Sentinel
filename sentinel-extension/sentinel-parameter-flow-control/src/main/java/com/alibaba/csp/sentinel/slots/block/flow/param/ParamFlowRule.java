@@ -41,7 +41,7 @@ public class ParamFlowRule extends AbstractRule {
     }
 
     /**
-     * The threshold type of flow control (1: QPS).
+     * The threshold type of flow control (0: thread count, 1: QPS).
      */
     private int grade = RuleConstant.FLOW_GRADE_QPS;
 

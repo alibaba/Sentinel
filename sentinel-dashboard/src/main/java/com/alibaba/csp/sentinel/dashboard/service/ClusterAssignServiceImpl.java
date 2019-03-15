@@ -23,8 +23,10 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
+import com.alibaba.csp.sentinel.dashboard.domain.cluster.state.ClusterUniversalStatePairVO;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.function.Tuple2;
 
@@ -55,12 +57,54 @@ public class ClusterAssignServiceImpl implements ClusterAssignService {
     @Autowired
     private ClusterConfigService clusterConfigService;
 
+    private boolean isMachineInApp(/*@NonEmpty*/ String machineId) {
+        return machineId.contains(":");
+    }
+
+    private ClusterAppAssignResultVO handleUnbindClusterServerNotInApp(String app, String machineId) {
+        Set<String> failedSet = new HashSet<>();
+        try {
+            List<ClusterUniversalStatePairVO> list = clusterConfigService.getClusterUniversalState(app)
+                .get(10, TimeUnit.SECONDS);
+            Set<String> toModifySet = list.stream()
+                .filter(e -> e.getState().getStateInfo().getMode() == ClusterStateManager.CLUSTER_CLIENT)
+                .filter(e -> machineId.equals(e.getState().getClient().getClientConfig().getServerHost() + ':' +
+                    e.getState().getClient().getClientConfig().getServerPort()))
+                .map(e -> e.getIp() + '@' + e.getCommandPort())
+                .collect(Collectors.toSet());
+            // Modify mode to NOT-STARTED for all associated token clients.
+            modifyToNonStarted(toModifySet, failedSet);
+        } catch (Exception ex) {
+            Throwable e = ex instanceof ExecutionException ? ex.getCause() : ex;
+            LOGGER.error("Failed to unbind machine <{}>", machineId, e);
+            failedSet.add(machineId);
+        }
+        return new ClusterAppAssignResultVO()
+            .setFailedClientSet(failedSet)
+            .setFailedServerSet(new HashSet<>());
+    }
+
+    private void modifyToNonStarted(Set<String> toModifySet, Set<String> failedSet) {
+        toModifySet.parallelStream()
+            .map(MachineUtils::parseCommandIpAndPort)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .map(e -> {
+                CompletableFuture<Void> f = modifyMode(e.r1, e.r2, ClusterStateManager.CLUSTER_NOT_STARTED);
+                return Tuple2.of(e.r1 + '@' + e.r2, f);
+            })
+            .forEach(f -> handleFutureSync(f, failedSet));
+    }
+
     @Override
     public ClusterAppAssignResultVO unbindClusterServer(String app, String machineId) {
         AssertUtil.assertNotBlank(app, "app cannot be blank");
         AssertUtil.assertNotBlank(machineId, "machineId cannot be blank");
-        Set<String> failedSet = new HashSet<>();
 
+        if (isMachineInApp(machineId)) {
+            return handleUnbindClusterServerNotInApp(app, machineId);
+        }
+        Set<String> failedSet = new HashSet<>();
         try {
             ClusterGroupEntity entity = clusterConfigService.getClusterUniversalStateForAppMachine(app, machineId)
                 .get(10, TimeUnit.SECONDS);
@@ -70,15 +114,7 @@ public class ClusterAssignServiceImpl implements ClusterAssignService {
                 toModifySet.addAll(entity.getClientSet());
             }
             // Modify mode to NOT-STARTED for all chosen token servers and associated token clients.
-            toModifySet.parallelStream()
-                .map(MachineUtils::parseCommandIpAndPort)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(e -> {
-                    CompletableFuture<Void> f = modifyMode(app, e.r1, e.r2, ClusterStateManager.CLUSTER_NOT_STARTED);
-                    return Tuple2.of(e.r1 + '@' + e.r2, f);
-                })
-                .forEach(f -> handleFutureSync(f, failedSet));
+            modifyToNonStarted(toModifySet, failedSet);
         } catch (Exception ex) {
             Throwable e = ex instanceof ExecutionException ? ex.getCause() : ex;
             LOGGER.error("Failed to unbind machine <{}>", machineId, e);
@@ -119,7 +155,7 @@ public class ClusterAssignServiceImpl implements ClusterAssignService {
             .map(e -> {
                 String ip = e.getIp();
                 int commandPort = parsePort(e);
-                CompletableFuture<Void> f = modifyMode(app, ip, commandPort, ClusterStateManager.CLUSTER_SERVER)
+                CompletableFuture<Void> f = modifyMode(ip, commandPort, ClusterStateManager.CLUSTER_SERVER)
                     .thenCompose(v -> applyServerConfigChange(app, ip, commandPort, e));
                 return Tuple2.of(e.getMachineId(), f);
             })
@@ -150,7 +186,7 @@ public class ClusterAssignServiceImpl implements ClusterAssignService {
             .map(ipPort -> {
                 String ip = ipPort.r1;
                 int commandPort = ipPort.r2;
-                CompletableFuture<Void> f = modifyMode(app, ip, commandPort, ClusterStateManager.CLUSTER_NOT_STARTED);
+                CompletableFuture<Void> f = modifyMode(ip, commandPort, ClusterStateManager.CLUSTER_NOT_STARTED);
                 return Tuple2.of(ip + '@' + commandPort, f);
             })
             .forEach(t -> handleFutureSync(t, failedSet));
@@ -170,7 +206,7 @@ public class ClusterAssignServiceImpl implements ClusterAssignService {
             .map(Optional::get)
             .map(ipPort -> {
                 CompletableFuture<Void> f = sentinelApiClient
-                    .modifyClusterMode(app, ipPort.r1, ipPort.r2, ClusterStateManager.CLUSTER_CLIENT)
+                    .modifyClusterMode(ipPort.r1, ipPort.r2, ClusterStateManager.CLUSTER_CLIENT)
                     .thenCompose(v -> sentinelApiClient.modifyClusterClientConfig(app, ipPort.r1, ipPort.r2,
                         new ClusterClientConfig().setRequestTimeout(20)
                             .setServerHost(serverIp)
@@ -223,8 +259,8 @@ public class ClusterAssignServiceImpl implements ClusterAssignService {
         return sentinelApiClient.modifyClusterServerNamespaceSet(app, ip, commandPort, namespaceSet);
     }
 
-    private CompletableFuture<Void> modifyMode(String app, String ip, int port, int mode) {
-        return sentinelApiClient.modifyClusterMode(app, ip, port, mode);
+    private CompletableFuture<Void> modifyMode(String ip, int port, int mode) {
+        return sentinelApiClient.modifyClusterMode(ip, port, mode);
     }
 
     private int parsePort(ClusterAppAssignMap assignMap) {

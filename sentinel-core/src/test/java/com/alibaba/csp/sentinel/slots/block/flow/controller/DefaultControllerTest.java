@@ -16,7 +16,7 @@ public class DefaultControllerTest {
 
     @Test
     public void testCanPassForQps() {
-        long threshold = 10;
+        double threshold = 10;
         TrafficShapingController controller = new DefaultController(threshold, RuleConstant.FLOW_GRADE_QPS);
         Node node = mock(Node.class);
         when(node.passQps()).thenReturn(threshold - 1)

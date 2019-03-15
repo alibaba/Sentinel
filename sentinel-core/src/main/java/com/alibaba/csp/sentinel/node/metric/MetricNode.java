@@ -34,10 +34,23 @@ public class MetricNode {
     private long exceptionQps;
     private long rt;
 
+    /**
+     * @since 1.5.0
+     */
+    private long occupiedPassQps;
+
     private String resource;
 
     public long getTimestamp() {
         return timestamp;
+    }
+
+    public long getOccupiedPassQps() {
+        return occupiedPassQps;
+    }
+
+    public void setOccupiedPassQps(long occupiedPassQps) {
+        this.occupiedPassQps = occupiedPassQps;
     }
 
     public void setTimestamp(long timestamp) {
@@ -94,22 +107,17 @@ public class MetricNode {
 
     @Override
     public String toString() {
-        return "MetricNode{" +
-            "timestamp=" + timestamp +
-            ", passQps=" + passQps +
-            ", blockQps=" + blockQps +
-            ", successQps=" + successQps +
-            ", exceptionQps=" + exceptionQps +
-            ", rt=" + rt +
-            ", resource='" + resource + '\'' +
-            '}';
+        return "MetricNode{" + "timestamp=" + timestamp + ", passQps=" + passQps + ", blockQps=" + blockQps
+            + ", successQps=" + successQps + ", exceptionQps=" + exceptionQps + ", rt=" + rt
+            + ", occupiedPassQps=" + occupiedPassQps + ", resource='"
+            + resource + '\'' + '}';
     }
 
     /**
-     * To formatting string. All "|" in {@link #resource} will be replaced with "_", format is:
-     * <br/>
+     * To formatting string. All "|" in {@link #resource} will be replaced with
+     * "_", format is: <br/>
      * <code>
-     * timestamp|resource|passQps|blockQps|successQps|exceptionQps|rt
+     * timestamp|resource|passQps|blockQps|successQps|exceptionQps|rt|occupiedPassQps
      * </code>
      *
      * @return string format of this.
@@ -123,12 +131,13 @@ public class MetricNode {
         sb.append(blockQps).append("|");
         sb.append(successQps).append("|");
         sb.append(exceptionQps).append("|");
-        sb.append(rt);
+        sb.append(rt).append("|");
+        sb.append(occupiedPassQps);
         return sb.toString();
     }
 
     /**
-     * Parse {@link MetricNode} from thin string, see {@link #toThinString()} ()}
+     * Parse {@link MetricNode} from thin string, see {@link #toThinString()}
      *
      * @param line
      * @return
@@ -143,14 +152,17 @@ public class MetricNode {
         node.setSuccessQps(Long.parseLong(strs[4]));
         node.setExceptionQps(Long.parseLong(strs[5]));
         node.setRt(Long.parseLong(strs[6]));
+        if (strs.length == 8) {
+            node.setOccupiedPassQps(Long.parseLong(strs[7]));
+        }
         return node;
     }
 
     /**
-     * To formatting string. All "|" in {@link MetricNode#resource} will be replaced with "_", format is:
-     * <br/>
+     * To formatting string. All "|" in {@link MetricNode#resource} will be
+     * replaced with "_", format is: <br/>
      * <code>
-     * timestamp|yyyy-MM-dd HH:mm:ss|resource|passQps|blockQps|successQps|exceptionQps|rt\n
+     * timestamp|yyyy-MM-dd HH:mm:ss|resource|passQps|blockQps|successQps|exceptionQps|rt|occupiedPassQps\n
      * </code>
      *
      * @return string format of this.
@@ -167,7 +179,8 @@ public class MetricNode {
         sb.append(getBlockQps()).append("|");
         sb.append(getSuccessQps()).append("|");
         sb.append(getExceptionQps()).append("|");
-        sb.append(getRt());
+        sb.append(getRt()).append("|");
+        sb.append(getOccupiedPassQps());
         sb.append('\n');
         return sb.toString();
     }
@@ -189,6 +202,9 @@ public class MetricNode {
         node.setSuccessQps(Long.parseLong(strs[5]));
         node.setExceptionQps(Long.parseLong(strs[6]));
         node.setRt(Long.parseLong(strs[7]));
+        if (strs.length == 9) {
+            node.setOccupiedPassQps(Long.parseLong(strs[8]));
+        }
         return node;
     }
 

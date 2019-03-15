@@ -5,23 +5,39 @@
     <parent>
         <artifactId>sentinel-demo</artifactId>
         <groupId>com.alibaba.csp</groupId>
-        <version>1.4.2-SNAPSHOT</version>
+        <version>1.5.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>sentinel-demo-dubbo</artifactId>
 
     <dependencies>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <version>5.0.7.RELEASE</version>
-        </dependency>
+        <!-- Demo use dubbo 2.6.5, since it supports jdk1.6 -->
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo</artifactId>
             <version>2.6.5</version>
         </dependency>
+
+        <!-- As dubbo provide qos plugin since 2.5.8 and is enable by default -->
+        <!-- The dubbo-qos module is optional and it depends netty4, so add it explicitly -->
+        <!-- @see http://dubbo.apache.org/zh-cn/docs/user/references/qos.html -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.1.31.Final</version>
+        </dependency>
+
+        <!-- As demo use @DubboComponentScan to config, which is implemented in dubbo-config-spring module -->
+        <!-- The dubbo-config-spring module is optional and it depends spring-context-support, so add it explicitly-->
+        <!-- @see https://github.com/apache/incubator-dubbo/issues/2869 -->
+        <dependency>
+            <groupId>com.alibaba.spring</groupId>
+            <artifactId>spring-context-support</artifactId>
+            <version>1.0.2</version>
+        </dependency>
+
+        <!-- sentinel adapter and transport -->
         <dependency>
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-dubbo-adapter</artifactId>

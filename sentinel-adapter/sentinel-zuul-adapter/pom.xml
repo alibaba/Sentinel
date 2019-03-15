@@ -5,7 +5,7 @@
     <parent>
         <artifactId>sentinel-adapter</artifactId>
         <groupId>com.alibaba.csp</groupId>
-        <version>1.4.2-SNAPSHOT</version>
+        <version>1.5.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>sentinel-zuul-adapter</artifactId>
@@ -32,6 +32,12 @@
             <artifactId>zuul-core</artifactId>
             <version>${zuul.version}</version>
             <scope>provided</scope>
+            <exclusions>
+            	<exclusion>
+            		<groupId>org.mockito</groupId>
+            		<artifactId>mockito-all</artifactId>
+            	</exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

@@ -1,5 +1,6 @@
 package com.alibaba.csp.sentinel.datasource.zookeeper;
 
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -11,6 +12,7 @@ import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
+import org.apache.curator.framework.AuthInfo;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.cache.ChildData;
@@ -47,7 +49,7 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
         }
         this.path = path;
 
-        init(serverAddr);
+        init(serverAddr, null);
     }
 
     /**
@@ -61,11 +63,25 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
         }
         this.path = getPath(groupId, dataId);
 
-        init(serverAddr);
+        init(serverAddr, null);
     }
 
-    private void init(final String serverAddr) {
-        initZookeeperListener(serverAddr);
+    /**
+     * This constructor adds authentication information.
+     */
+    public ZookeeperDataSource(final String serverAddr, final List<AuthInfo> authInfos, final String groupId, final String dataId,
+                               Converter<String, T> parser) {
+        super(parser);
+        if (StringUtil.isBlank(serverAddr) || StringUtil.isBlank(groupId) || StringUtil.isBlank(dataId)) {
+            throw new IllegalArgumentException(String.format("Bad argument: serverAddr=[%s], authInfos=[%s], groupId=[%s], dataId=[%s]", serverAddr, authInfos, groupId, dataId));
+        }
+        this.path = getPath(groupId, dataId);
+
+        init(serverAddr, authInfos);
+    }
+
+    private void init(final String serverAddr, final List<AuthInfo> authInfos) {
+        initZookeeperListener(serverAddr, authInfos);
         loadInitialConfig();
     }
 
@@ -81,7 +97,7 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
         }
     }
 
-    private void initZookeeperListener(final String serverAddr) {
+    private void initZookeeperListener(final String serverAddr, final List<AuthInfo> authInfos) {
         try {
 
             this.listener = new NodeCacheListener() {
@@ -101,7 +117,15 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
                 }
             };
 
-            this.zkClient = CuratorFrameworkFactory.newClient(serverAddr, new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES));
+            if (authInfos == null || authInfos.size() == 0) {
+                this.zkClient = CuratorFrameworkFactory.newClient(serverAddr, new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES));
+            } else {
+                this.zkClient = CuratorFrameworkFactory.builder().
+                        connectString(serverAddr).
+                        retryPolicy(new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES)).
+                        authorization(authInfos).
+                        build();
+            }
             this.zkClient.start();
             Stat stat = this.zkClient.checkExists().forPath(this.path);
             if (stat == null) {

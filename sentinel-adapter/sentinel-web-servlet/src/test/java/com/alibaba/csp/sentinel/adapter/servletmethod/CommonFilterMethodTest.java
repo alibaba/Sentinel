@@ -86,7 +86,7 @@ public class CommonFilterMethodTest {
 
         ClusterNode cnGet = ClusterBuilderSlot.getClusterNode(GET + COLON + url);
         assertNotNull(cnGet);
-        assertEquals(1, cnGet.passQps());
+        assertEquals(1, cnGet.passQps(), 0.01);
 
 
         ClusterNode cnPost = ClusterBuilderSlot.getClusterNode(POST + COLON + url);
@@ -98,10 +98,9 @@ public class CommonFilterMethodTest {
 
         cnPost = ClusterBuilderSlot.getClusterNode(POST + COLON + url);
         assertNotNull(cnPost);
-        assertEquals(1, cnPost.passQps());
+        assertEquals(1, cnPost.passQps(), 0.01);
 
         testCommonBlockAndRedirectBlockPage(url, cnGet, cnPost);
-
     }
 
     private void testCommonBlockAndRedirectBlockPage(String url, ClusterNode cnGet, ClusterNode cnPost) throws Exception {
@@ -110,20 +109,19 @@ public class CommonFilterMethodTest {
         this.mvc.perform(get(url).accept(MediaType.TEXT_PLAIN))
                 .andExpect(status().isOk())
                 .andExpect(content().string(FilterUtil.DEFAULT_BLOCK_MSG));
-        assertEquals(1, cnGet.blockQps());
+        assertEquals(1, cnGet.blockQps(), 0.01);
 
         // Test for post pass
         this.mvc.perform(post(url))
                 .andExpect(status().isOk())
                 .andExpect(content().string(HELLO_POST_STR));
 
-        assertEquals(2, cnPost.passQps());
+        assertEquals(2, cnPost.passQps(), 0.01);
 
 
         FlowRuleManager.loadRules(null);
         WebServletConfig.setBlockPage("");
     }
-
 
     @After
     public void cleanUp() {

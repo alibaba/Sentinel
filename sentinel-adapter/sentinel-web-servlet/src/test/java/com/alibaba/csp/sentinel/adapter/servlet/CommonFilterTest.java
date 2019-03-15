@@ -83,7 +83,7 @@ public class CommonFilterTest {
 
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
         assertNotNull(cn);
-        assertEquals(1, cn.passQps());
+        assertEquals(1, cn.passQps(), 0.01);
 
         testCommonBlockAndRedirectBlockPage(url, cn);
 
@@ -99,7 +99,7 @@ public class CommonFilterTest {
         this.mvc.perform(get(url).accept(MediaType.TEXT_PLAIN))
             .andExpect(status().isOk())
             .andExpect(content().string(FilterUtil.DEFAULT_BLOCK_MSG));
-        assertEquals(1, cn.blockQps());
+        assertEquals(1, cn.blockQps(), 0.01);
 
         // Test for redirect.
         String redirectUrl = "http://some-location.com";
@@ -132,7 +132,7 @@ public class CommonFilterTest {
             .andExpect(status().isOk())
             .andExpect(content().string("Hello 2"));
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(fooPrefix + "*");
-        assertEquals(2, cn.passQps());
+        assertEquals(2, cn.passQps(), 0.01);
         assertNull(ClusterBuilderSlot.getClusterNode(url1));
         assertNull(ClusterBuilderSlot.getClusterNode(url2));
 

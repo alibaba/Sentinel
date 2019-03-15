@@ -509,7 +509,7 @@ public class SentinelApiClient {
 
     // Cluster related
 
-    public CompletableFuture<ClusterStateSimpleEntity> fetchClusterMode(String app, String ip, int port) {
+    public CompletableFuture<ClusterStateSimpleEntity> fetchClusterMode(String ip, int port) {
         if (StringUtil.isBlank(ip) || port <= 0) {
             return AsyncUtils.newFailedFuture(new IllegalArgumentException("Invalid parameter"));
         }
@@ -525,7 +525,7 @@ public class SentinelApiClient {
         }
     }
 
-    public CompletableFuture<Void> modifyClusterMode(String app, String ip, int port, int mode) {
+    public CompletableFuture<Void> modifyClusterMode(String ip, int port, int mode) {
         if (StringUtil.isBlank(ip) || port <= 0) {
             return AsyncUtils.newFailedFuture(new IllegalArgumentException("Invalid parameter"));
         }
@@ -549,7 +549,7 @@ public class SentinelApiClient {
         }
     }
 
-    public CompletableFuture<ClusterClientInfoVO> fetchClusterClientInfoAndConfig(String app, String ip, int port) {
+    public CompletableFuture<ClusterClientInfoVO> fetchClusterClientInfoAndConfig(String ip, int port) {
         if (StringUtil.isBlank(ip) || port <= 0) {
             return AsyncUtils.newFailedFuture(new IllegalArgumentException("Invalid parameter"));
         }
@@ -662,7 +662,7 @@ public class SentinelApiClient {
         }
     }
 
-    public CompletableFuture<ClusterServerStateVO> fetchClusterServerBasicInfo(String app, String ip, int port) {
+    public CompletableFuture<ClusterServerStateVO> fetchClusterServerBasicInfo(String ip, int port) {
         if (StringUtil.isBlank(ip) || port <= 0) {
             return AsyncUtils.newFailedFuture(new IllegalArgumentException("Invalid parameter"));
         }

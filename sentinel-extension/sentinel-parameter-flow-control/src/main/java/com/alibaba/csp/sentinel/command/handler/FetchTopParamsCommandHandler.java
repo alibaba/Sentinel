@@ -30,7 +30,7 @@ import com.alibaba.fastjson.JSON;
  * @author Eric Zhao
  * @since 0.2.0
  */
-@CommandMapping(name = "topParams")
+@CommandMapping(name = "topParams", desc = "get topN param in specified resource, accept param: res={resourceName}&idx={paramIndex}&n={topN}")
 public class FetchTopParamsCommandHandler implements CommandHandler<String> {
 
     @Override

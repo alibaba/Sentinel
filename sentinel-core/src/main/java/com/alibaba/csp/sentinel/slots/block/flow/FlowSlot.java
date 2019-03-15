@@ -151,7 +151,7 @@ public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         if (rules != null) {
             for (FlowRule rule : rules) {
                 if (!canPassCheck(rule, context, node, count, prioritized)) {
-                    throw new FlowException(rule.getLimitApp());
+                    throw new FlowException(rule.getLimitApp(), rule);
                 }
             }
         }

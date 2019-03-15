@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-parent</artifactId>
-        <version>1.4.2-SNAPSHOT</version>
+        <version>1.5.1-SNAPSHOT</version>
     </parent>
     <artifactId>sentinel-adapter</artifactId>
     <packaging>pom</packaging>
@@ -19,6 +19,8 @@
         <module>sentinel-dubbo-adapter</module>
         <module>sentinel-grpc-adapter</module>
         <module>sentinel-zuul-adapter</module>
+        <module>sentinel-reactor-adapter</module>
+        <module>sentinel-spring-webflux-adapter</module>
     </modules>
 
     <dependencyManagement>
@@ -38,6 +40,12 @@
                 <artifactId>sentinel-web-servlet</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-reactor-adapter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>

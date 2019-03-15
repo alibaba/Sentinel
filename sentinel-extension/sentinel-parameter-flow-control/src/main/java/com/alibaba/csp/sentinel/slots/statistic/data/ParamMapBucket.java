@@ -59,9 +59,16 @@ public class ParamMapBucket {
     }
 
     public ParamMapBucket add(RollingParamEvent event, int count, Object value) {
-        data[event.ordinal()].putIfAbsent(value, new AtomicInteger());
         AtomicInteger counter = data[event.ordinal()].get(value);
-        counter.addAndGet(count);
+        // Note: not strictly concise.
+        if (counter == null) {
+            AtomicInteger old = data[event.ordinal()].putIfAbsent(value, new AtomicInteger(count));
+            if (old != null) {
+                old.addAndGet(count);
+            }
+        } else {
+            counter.addAndGet(count);
+        }
         return this;
     }
 

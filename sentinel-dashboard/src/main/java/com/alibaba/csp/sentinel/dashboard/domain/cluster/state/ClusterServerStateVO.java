@@ -28,6 +28,8 @@ import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ServerTransportC
  */
 public class ClusterServerStateVO {
 
+    private String appName;
+
     private ServerTransportConfig transport;
     private ServerFlowConfig flow;
     private Set<String> namespaceSet;
@@ -38,6 +40,15 @@ public class ClusterServerStateVO {
     private List<ClusterRequestLimitVO> requestLimitData;
 
     private Boolean embedded;
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public ClusterServerStateVO setAppName(String appName) {
+        this.appName = appName;
+        return this;
+    }
 
     public ServerTransportConfig getTransport() {
         return transport;
@@ -105,7 +116,8 @@ public class ClusterServerStateVO {
     @Override
     public String toString() {
         return "ClusterServerStateVO{" +
-            "transport=" + transport +
+            "appName='" + appName + '\'' +
+            ", transport=" + transport +
             ", flow=" + flow +
             ", namespaceSet=" + namespaceSet +
             ", port=" + port +

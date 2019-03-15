@@ -16,15 +16,21 @@
 package com.alibaba.csp.sentinel.slots.block.flow.controller;
 
 import com.alibaba.csp.sentinel.node.Node;
+import com.alibaba.csp.sentinel.node.OccupyTimeoutProperty;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.flow.PriorityWaitException;
 import com.alibaba.csp.sentinel.slots.block.flow.TrafficShapingController;
+import com.alibaba.csp.sentinel.util.TimeUtil;
 
 /**
  * Default throttling controller (immediately reject strategy).
  *
  * @author jialiang.linjl
+ * @author Eric Zhao
  */
 public class DefaultController implements TrafficShapingController {
+
+    private static final int DEFAULT_AVG_USED_TOKENS = 0;
 
     private double count;
     private int grade;
@@ -43,20 +49,33 @@ public class DefaultController implements TrafficShapingController {
     public boolean canPass(Node node, int acquireCount, boolean prioritized) {
         int curCount = avgUsedTokens(node);
         if (curCount + acquireCount > count) {
+            if (prioritized && grade == RuleConstant.FLOW_GRADE_QPS) {
+                long currentTime;
+                long waitInMs;
+                currentTime = TimeUtil.currentTimeMillis();
+                waitInMs = node.tryOccupyNext(currentTime, acquireCount, count);
+                if (waitInMs < OccupyTimeoutProperty.getOccupyTimeout()) {
+                    node.addWaitingRequest(currentTime + waitInMs, acquireCount);
+                    node.addOccupiedPass(acquireCount);
+                    sleep(waitInMs);
+
+                    // PriorityWaitException indicates that the request will pass after waiting for {@link @waitInMs}.
+                    throw new PriorityWaitException(waitInMs);
+                }
+            }
             return false;
         }
-
         return true;
     }
 
     private int avgUsedTokens(Node node) {
         if (node == null) {
-            return -1;
+            return DEFAULT_AVG_USED_TOKENS;
         }
-        return grade == RuleConstant.FLOW_GRADE_THREAD ? node.curThreadNum() : (int)node.passQps();
+        return grade == RuleConstant.FLOW_GRADE_THREAD ? node.curThreadNum() : (int)(node.passQps());
     }
 
-    private void sleep(int timeMillis) {
+    private void sleep(long timeMillis) {
         try {
             Thread.sleep(timeMillis);
         } catch (InterruptedException e) {
