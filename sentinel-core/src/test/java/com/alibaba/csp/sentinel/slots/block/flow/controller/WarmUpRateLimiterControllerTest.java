@@ -1,9 +1,9 @@
 package com.alibaba.csp.sentinel.slots.block.flow.controller;
 
+import com.alibaba.csp.sentinel.fixture.Retry;
+import com.alibaba.csp.sentinel.fixture.RetryRule;
 import com.alibaba.csp.sentinel.node.Node;
-import com.alibaba.csp.sentinel.node.StatisticNode;
-import com.alibaba.csp.sentinel.slots.block.flow.controller.WarmUpRateLimiterController;
-
+import org.junit.Rule;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
@@ -15,8 +15,11 @@ import static org.mockito.Mockito.when;
  * @author CarpenterLee
  */
 public class WarmUpRateLimiterControllerTest {
+    @Rule
+    public RetryRule retryRule = new RetryRule();
 
     @Test
+    @Retry(maxCount = 3)
     public void testPace() throws InterruptedException {
         WarmUpRateLimiterController controller = new WarmUpRateLimiterController(10, 10, 1000, 3);
 
