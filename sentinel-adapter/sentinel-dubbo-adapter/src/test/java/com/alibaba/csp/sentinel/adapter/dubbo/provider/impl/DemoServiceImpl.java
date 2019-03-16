@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.adapter.dubbo.provider;
+package com.alibaba.csp.sentinel.adapter.dubbo.provider.impl;
 
-import com.alibaba.csp.sentinel.adapter.dubbo.DemoService;
+import com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService;
 
 /**
  * @author leyou
