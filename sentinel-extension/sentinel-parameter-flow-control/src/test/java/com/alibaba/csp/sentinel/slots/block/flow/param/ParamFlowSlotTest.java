@@ -18,26 +18,92 @@ package com.alibaba.csp.sentinel.slots.block.flow.param;
 import java.util.Collections;
 
 import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.context.Context;
+import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InOrder;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Test cases for {@link ParamFlowSlot}.
  *
  * @author Eric Zhao
+ * @author cdfive
  * @since 0.2.0
  */
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(ParamFlowRuleManager.class)
 public class ParamFlowSlotTest {
 
     private final ParamFlowSlot paramFlowSlot = new ParamFlowSlot();
+
+    @Test
+    public void testFireEntry() throws Throwable {
+        ParamFlowSlot slot = mock(ParamFlowSlot.class);
+
+        Context context = mock(Context.class);
+        ResourceWrapper resourceWrapper = mock(ResourceWrapper.class);
+        when(resourceWrapper.getName()).thenReturn("");
+        DefaultNode node = mock(DefaultNode.class);
+
+        doCallRealMethod().when(slot).entry(context, resourceWrapper, node, 1, false);
+        slot.entry(context, resourceWrapper, node, 1, false);
+
+        verify(slot).entry(context, resourceWrapper, node, 1, false);
+        // Verify fireEntry method has been called, and only once
+        verify(slot).fireEntry(context, resourceWrapper, node, 1, false);
+        verifyNoMoreInteractions(slot);
+    }
+
+    @Test
+    public void testFireExit() throws Throwable {
+        ParamFlowSlot slot = mock(ParamFlowSlot.class);
+
+        Context context = mock(Context.class);
+        ResourceWrapper resourceWrapper = mock(ResourceWrapper.class);
+
+        doCallRealMethod().when(slot).exit(context, resourceWrapper, 1);
+        slot.exit(context, resourceWrapper, 1);
+
+        verify(slot).exit(context, resourceWrapper, 1);
+        // Verify fireExit method has been called, and only once
+        verify(slot).fireExit(context, resourceWrapper, 1);
+        verifyNoMoreInteractions(slot);
+    }
+
+    @Test
+    public void testEntryParamFlowRule() throws Throwable {
+        PowerMockito.mockStatic(ParamFlowRuleManager.class);
+
+        ParamFlowSlot slot = mock(ParamFlowSlot.class);
+
+        Context context = mock(Context.class);
+        ResourceWrapper resourceWrapper = mock(ResourceWrapper.class);
+        when(resourceWrapper.getName()).thenReturn("resourceA");
+        DefaultNode node = mock(DefaultNode.class);
+
+        PowerMockito.when(ParamFlowRuleManager.hasRules("resourceA")).thenReturn(true);
+
+        doCallRealMethod().when(slot).entry(context, resourceWrapper, node, 1, false);
+        slot.entry(context, resourceWrapper, node, 1, false);
+
+        // Verify checkFlow firstly, then fireEntry, and both are called, and only once
+        InOrder inOrder = inOrder(slot);
+        inOrder.verify(slot).checkFlow(resourceWrapper, 1);
+        inOrder.verify(slot).fireEntry(context, resourceWrapper, node, 1, false);
+        inOrder.verifyNoMoreInteractions();
+    }
 
     @Test
     public void testNegativeParamIdx() throws Throwable {
