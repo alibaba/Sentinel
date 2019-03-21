@@ -36,7 +36,7 @@ import java.util.Arrays;
  */
 public abstract class AbstractSentinelAspectSupport {
 
-    protected String getResourceName(String resourceName, Method method) {
+    protected String getResourceName(String resourceName, /*@NonNull*/ Method method) {
         // If resource name is present in annotation, use this value.
         if (StringUtil.isNotBlank(resourceName)) {
             return resourceName;
