@@ -91,8 +91,6 @@ public class DegradeTest {
         rule.setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO);
 
         when(cn.successQps()).thenReturn(8d);
-        // when(cn.getDegradeSecondExceptionRatio()).thenReturn()
-
         // Will fail.
         assertFalse(rule.passCheck(context, node, 1));
 
