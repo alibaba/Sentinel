@@ -18,10 +18,9 @@ package com.alibaba.csp.sentinel.node;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
+import com.alibaba.csp.sentinel.slots.statistic.base.LongAdder;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
 import com.alibaba.csp.sentinel.slots.statistic.metric.ArrayMetric;
@@ -112,21 +111,31 @@ public class StatisticNode implements Node {
      * The last timestamp when metrics were fetched.
      */
     private long lastFetchTime = -1;
-    /**
-     * record last rt(Prepare degrade rt sum and same TimeWindow)
-     */
-    private AtomicLong lastRt = new AtomicLong(0);
 
     /**
-     * record last rt(same TimeWindow) sum
+     * Record the number of exceptions in the next second
      */
-    private AtomicInteger lastRtSum = new AtomicInteger(0);
+    private LongAdder degradeSecondExceptionCount = new LongAdder();
+
     /**
-     * lastResult
-     *
-     * @return
+     * Record the number of traffic passes in one second
      */
-    private AtomicBoolean lastResult = new AtomicBoolean(true);
+    private LongAdder degradeSecondPassCount = new LongAdder();
+
+    /**
+     * Record the number of exceptions in one minute
+     */
+    private LongAdder degradeMinusExceptionCount = new LongAdder();
+
+    /**
+     * Record the number of successful traffic in one second
+     */
+    private LongAdder degradeSecondSuccessCount = new LongAdder();
+
+    /**
+     * Record one second total RT
+     */
+    private LongAdder degradeSecondTotalRT = new LongAdder();
 
     @Override
     public Map<Long, MetricNode> metrics() {
@@ -154,7 +163,7 @@ public class StatisticNode implements Node {
 
     private boolean isValidMetricNode(MetricNode node) {
         return node.getPassQps() > 0 || node.getBlockQps() > 0 || node.getSuccessQps() > 0
-            || node.getExceptionQps() > 0 || node.getRt() > 0 || node.getOccupiedPassQps() > 0;
+                || node.getExceptionQps() > 0 || node.getRt() > 0 || node.getOccupiedPassQps() > 0;
     }
 
     @Override
@@ -257,25 +266,10 @@ public class StatisticNode implements Node {
     public void addPassRequest(int count) {
         rollingCounterInSecond.addPass(count);
         rollingCounterInMinute.addPass(count);
-    }
-
-    @Override
-    public void minusSecondException() {
-        rollingCounterInSecond.minusException();
-    }
-
-    @Override
-    public void minusMinuteException() {
-        rollingCounterInMinute.minusException();
-    }
-
-    @Override
-    public void minusRt(int count) {
-        rollingCounterInSecond.minusRt(lastRt.get());
-        rollingCounterInSecond.minusSuccess(count);
-        rollingCounterInMinute.minusRt(lastRt.get());
-        rollingCounterInMinute.minusSuccess(count);
-        lastRt.set(0);
+        if (rollingCounterInSecond.newTimeWindow()) {
+            degradeSecondPassCount.reset();
+        }
+        degradeSecondPassCount.add(count);
     }
 
     @Override
@@ -283,13 +277,11 @@ public class StatisticNode implements Node {
         rollingCounterInSecond.addSuccess(successCount);
         rollingCounterInSecond.addRT(rt);
         if (rollingCounterInSecond.newTimeWindow()) {
-            lastRt.set(rt);
-            lastRtSum.set(1);
-        } else {
-            lastRt.set(rt + lastRt.get());
-            lastRtSum.getAndAdd(1);
+            degradeSecondSuccessCount.reset();
+            degradeSecondTotalRT.reset();
         }
-        lastResult.set(true);
+        degradeSecondSuccessCount.add(successCount);
+        degradeSecondTotalRT.add(rt);
         rollingCounterInMinute.addSuccess(successCount);
         rollingCounterInMinute.addRT(rt);
     }
@@ -304,12 +296,6 @@ public class StatisticNode implements Node {
     public void increaseExceptionQps(int count) {
         rollingCounterInSecond.addException(count);
         rollingCounterInMinute.addException(count);
-        lastResult.set(false);
-    }
-
-    @Override
-    public void resetLastRt() {
-        lastRt.set(0);
     }
 
     @Override
@@ -379,18 +365,37 @@ public class StatisticNode implements Node {
     }
 
     @Override
-    public AtomicLong getLastRt() {
-        return lastRt;
+    public double getDegradeAvgRt() {
+        if (degradeSecondExceptionCount.longValue() == 0) {
+            return 0;
+        }
+        return degradeSecondTotalRT.doubleValue() * 1.0 / degradeSecondSuccessCount.doubleValue();
     }
 
     @Override
-    public AtomicBoolean getLastResult() {
-        return lastResult;
+    public long getDegradeMinusExceptionCount() {
+        return degradeMinusExceptionCount.longValue();
     }
 
     @Override
-    public AtomicInteger getLastRtSum() {
-        return lastRtSum;
+    public double getDegradeSecondExceptionRatio() {
+        return degradeSecondExceptionCount.doubleValue() / degradeSecondPassCount.doubleValue();
     }
 
+    @Override
+    public void resetDegradeRt() {
+        degradeSecondTotalRT.reset();
+        degradeSecondSuccessCount.reset();
+    }
+
+    @Override
+    public void resetDegradeExceptionDataRatio() {
+        degradeSecondExceptionCount.reset();
+        degradeSecondPassCount.reset();
+    }
+
+    @Override
+    public void resetDegradeExceptionCount() {
+        degradeMinusExceptionCount.reset();
+    }
 }

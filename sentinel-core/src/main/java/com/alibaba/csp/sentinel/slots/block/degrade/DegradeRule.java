@@ -198,45 +198,50 @@ public class DegradeRule extends AbstractRule {
             }
             //In the half-open state, only five requests are all normal and will be fully opened.
             if (grade == RuleConstant.DEGRADE_GRADE_RT) {
-                long rt = clusterNode.getLastRt().get();
-                if (rt == 0) {
-                    return degradeCutOpen();
-                }
+
+                double rt = clusterNode.getDegradeAvgRt();
+
                 if (rt < this.count) {
                     cut = RuleConstant.DEGRADE_CUT_CLOSE;
                     return true;
                 }
-                clusterNode.minusRt(1);
+                clusterNode.resetDegradeRt();
                 return degradeCutOpen();
             }
-            if (grade != RuleConstant.DEGRADE_GRADE_RT) {
-                //When the sliding window slides over the next window, it needs to be cleared.
-                if (clusterNode.getLastResult().get()) {
+
+            if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
+                if (clusterNode.getDegradeSecondExceptionRatio() < this.count) {
                     cut = RuleConstant.DEGRADE_CUT_CLOSE;
                     return true;
                 }
-                if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
-                    clusterNode.minusSecondException();
-                } else {
-                    clusterNode.minusMinuteException();
+                //此处需要reset
+                clusterNode.resetDegradeExceptionDataRatio();
+                return degradeCutOpen();
+            }
+
+            if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
+
+                if (clusterNode.getDegradeMinusExceptionCount() == 0) {
+                    cut = RuleConstant.DEGRADE_CUT_CLOSE;
+                    return true;
                 }
+                //When the sliding window slides over the next window, it needs to be cleared.
+                clusterNode.resetDegradeExceptionCount();
                 return degradeCutOpen();
             }
         }
         // degrade_cut_close
         if (grade == RuleConstant.DEGRADE_GRADE_RT) {
-            double rt = clusterNode.avgRt();
+            double rt = clusterNode.getDegradeAvgRt();
             if (rt < this.count) {
                 passCount.set(0);
-                clusterNode.resetLastRt();
                 return true;
             }
             // Sentinel will degrade the service only if count exceeds.
             if (passCount.incrementAndGet() < RT_MAX_EXCEED_N) {
                 return true;
             }
-            clusterNode.minusRt(clusterNode.getLastRtSum().get());
-            clusterNode.resetLastRt();
+            clusterNode.resetDegradeRt();
             passCount.set(0);
             return degradeCutOpen();
         }
@@ -257,16 +262,16 @@ public class DegradeRule extends AbstractRule {
             if (exception / success < count) {
                 return true;
             }
-            clusterNode.minusSecondException();
+            clusterNode.resetDegradeExceptionDataRatio();
             return degradeCutOpen();
         }
         if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
-            double exception = clusterNode.totalException();
+            double exception = clusterNode.getDegradeMinusExceptionCount();
             if (exception < count) {
                 return true;
             }
-            // after degrade-open minus exceptionCount
-            clusterNode.minusMinuteException();
+            clusterNode.resetDegradeExceptionCount();
+
         }
         return degradeCutOpen();
     }

@@ -16,10 +16,6 @@
 package com.alibaba.csp.sentinel.node;
 
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
 import com.alibaba.csp.sentinel.slots.statistic.metric.DebugSupport;
@@ -157,18 +153,6 @@ public interface Node extends OccupySupport, DebugSupport {
     void addPassRequest(int count);
 
     /**
-     * minus exception
-     */
-    void minusMinuteException();
-
-    void minusSecondException();
-
-    /**
-     * minus Rt
-     */
-    void minusRt(int count);
-
-    /**
      * Add rt and success count.
      *
      * @param rt      response time
@@ -212,23 +196,32 @@ public interface Node extends OccupySupport, DebugSupport {
     void debug();
 
     /**
-     * reset lastRT
+     * Get the average RT in the degraded state
      */
-    void resetLastRt();
+    double getDegradeAvgRt();
 
     /**
-     * get lastRT
+     * Get the total number of exceptions for the current minute
      */
-    AtomicLong getLastRt();
+    long getDegradeMinusExceptionCount();
 
     /**
-     * get last Result (true:success;false:exception)
+     * Get the abnormal proportion in the degraded state
      */
-    AtomicBoolean getLastResult();
+    double getDegradeSecondExceptionRatio();
 
     /**
-     * get last rt(same TimeWindow) sum
+     * reset rt
      */
-    AtomicInteger getLastRtSum();
+    void resetDegradeRt();
 
+    /**
+     * reset exception-ratio
+     */
+    void resetDegradeExceptionDataRatio();
+
+    /**
+     * reset exception-count
+     */
+    void resetDegradeExceptionCount();
 }

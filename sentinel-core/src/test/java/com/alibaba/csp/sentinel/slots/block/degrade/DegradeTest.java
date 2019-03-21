@@ -46,8 +46,7 @@ public class DegradeTest {
         DefaultNode node = mock(DefaultNode.class);
         when(node.getClusterNode()).thenReturn(cn);
 
-        when(cn.getLastRtSum()).thenReturn(new AtomicInteger(0));
-        when(cn.avgRt()).thenReturn(2d);
+        when(cn.getDegradeAvgRt()).thenReturn(2d);
 
         DegradeRule rule = new DegradeRule();
         rule.setCount(1);
@@ -76,6 +75,7 @@ public class DegradeTest {
         String key = "test_degrade_exception_ratio";
         ClusterNode cn = mock(ClusterNode.class);
         when(cn.exceptionQps()).thenReturn(2d);
+        when(cn.getDegradeSecondExceptionRatio()).thenReturn(0.2d);
         // Indicates that there are QPS more than min threshold.
         when(cn.totalQps()).thenReturn(12d);
         ClusterBuilderSlot.getClusterNodeMap().put(new StringResourceWrapper(key, EntryType.IN), cn);
@@ -91,6 +91,7 @@ public class DegradeTest {
         rule.setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO);
 
         when(cn.successQps()).thenReturn(8d);
+        // when(cn.getDegradeSecondExceptionRatio()).thenReturn()
 
         // Will fail.
         assertFalse(rule.passCheck(context, node, 1));
@@ -122,7 +123,7 @@ public class DegradeTest {
     public void testExceptionCountModeDegrade() throws Throwable {
         String key = "test_degrade_exception_count";
         ClusterNode cn = mock(ClusterNode.class);
-        when(cn.totalException()).thenReturn(10L);
+        when(cn.getDegradeMinusExceptionCount()).thenReturn(10L);
         ClusterBuilderSlot.getClusterNodeMap().put(new StringResourceWrapper(key, EntryType.IN), cn);
 
         Context context = mock(Context.class);
@@ -135,13 +136,13 @@ public class DegradeTest {
         rule.setTimeWindow(2);
         rule.setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT);
 
-        when(cn.totalException()).thenReturn(4L);
+        when(cn.getDegradeMinusExceptionCount()).thenReturn(4L);
         // Will fail.
         assertFalse(rule.passCheck(context, node, 1));
         // Restore from the degrade timeout.
 
         TimeUnit.SECONDS.sleep(3);
-        when(cn.totalException()).thenReturn(3L);
+        when(cn.getDegradeMinusExceptionCount()).thenReturn(3L);
         //When the fifth request ends, degrade will blow close.
         for (int i = 0; i < 10; i++) {
             assertTrue(rule.passCheck(context, node, 1));
