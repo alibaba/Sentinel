@@ -18,7 +18,6 @@ package com.alibaba.csp.sentinel.annotation.aspectj;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
-import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -59,33 +58,12 @@ public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
         } catch (BlockException ex) {
             return handleBlockException(pjp, annotation, ex);
         } catch (Throwable ex) {
-            if (isTrackedException(ex, annotation.exceptionsToTrace())) {
-                Tracer.trace(ex);
-            }
+            traceException(ex, annotation);
             throw ex;
         } finally {
             if (entry != null) {
                 entry.exit();
             }
         }
-    }
-
-    /**
-     * whether the exception is in tracked list of exception classes
-     *
-     * @param ex
-     * @param exceptionsToTrace
-     * @return
-     */
-    private boolean isTrackedException(Throwable ex, Class<? extends Throwable>[] exceptionsToTrace) {
-        if (exceptionsToTrace == null) {
-            return false;
-        }
-        for (Class exceptionToTrace : exceptionsToTrace) {
-            if (exceptionToTrace.isAssignableFrom(ex.getClass())) {
-                return true;
-            }
-        }
-        return false;
     }
 }

@@ -98,7 +98,15 @@ public class SentinelAnnotationIntegrationTest extends AbstractJUnit4SpringConte
         try {
             fooService.foo(5758);
             fail("should not reach here");
-        } catch (IllegalAccessException ex) {
+        } catch (Exception ex) {
+            // Should not be traced.
+            assertThat(cn.exceptionQps()).isZero();
+        }
+
+        try {
+            fooService.foo(5763);
+            fail("should not reach here");
+        } catch (Exception ex) {
             assertThat(cn.exceptionQps()).isPositive();
         }
 
