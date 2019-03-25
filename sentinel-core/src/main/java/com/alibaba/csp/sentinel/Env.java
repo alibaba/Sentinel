@@ -20,6 +20,13 @@ import com.alibaba.csp.sentinel.node.DefaultNodeBuilder;
 import com.alibaba.csp.sentinel.node.NodeBuilder;
 
 /**
+ * Sentinel Env. This class will trigger all initialization for Sentinel.
+ *
+ * <p>
+ * NOTE: to prevent deadlocks, other classes' static code block or static field should
+ * NEVER refer to this class.
+ * </p>
+ *
  * @author jialiang.linjl
  */
 public class Env {
