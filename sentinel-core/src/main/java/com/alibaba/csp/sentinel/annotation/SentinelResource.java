@@ -15,13 +15,9 @@
  */
 package com.alibaba.csp.sentinel.annotation;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 import com.alibaba.csp.sentinel.EntryType;
+
+import java.lang.annotation.*;
 
 /**
  * The annotation indicates a definition of Sentinel resource.
@@ -63,4 +59,9 @@ public @interface SentinelResource {
      * @return name of the fallback function, empty by default
      */
     String fallback() default "";
+
+    /**
+     * @return the exception classes to trace, Throwable.class by default
+     */
+    Class<? extends Throwable>[] exceptionsToTrace() default {Throwable.class};
 }

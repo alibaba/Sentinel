@@ -59,12 +59,33 @@ public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
         } catch (BlockException ex) {
             return handleBlockException(pjp, annotation, ex);
         } catch (Throwable ex) {
-            Tracer.trace(ex);
+            if (isTrackedException(ex, annotation.exceptionsToTrace())) {
+                Tracer.trace(ex);
+            }
             throw ex;
         } finally {
             if (entry != null) {
                 entry.exit();
             }
         }
+    }
+
+    /**
+     * whether the exception is in tracked list of exception classes
+     *
+     * @param ex
+     * @param exceptionsToTrace
+     * @return
+     */
+    private boolean isTrackedException(Throwable ex, Class<? extends Throwable>[] exceptionsToTrace) {
+        if (exceptionsToTrace == null) {
+            return false;
+        }
+        for (Class exceptionToTrace : exceptionsToTrace) {
+            if (exceptionToTrace.isAssignableFrom(ex.getClass())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
