@@ -18,7 +18,6 @@ package com.alibaba.csp.sentinel.slots.clusterbuilder;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.alibaba.csp.sentinel.Env;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.context.ContextUtil;
@@ -79,7 +78,7 @@ public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode>
             synchronized (lock) {
                 if (clusterNode == null) {
                     // Create the cluster node.
-                    clusterNode = Env.nodeBuilder.buildClusterNode();
+                    clusterNode = new ClusterNode();
                     HashMap<ResourceWrapper, ClusterNode> newMap = new HashMap<>(Math.max(clusterNodeMap.size(), 16));
                     newMap.putAll(clusterNodeMap);
                     newMap.put(node.getId(), clusterNode);
