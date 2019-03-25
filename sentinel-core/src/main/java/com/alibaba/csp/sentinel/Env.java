@@ -16,8 +16,6 @@
 package com.alibaba.csp.sentinel;
 
 import com.alibaba.csp.sentinel.init.InitExecutor;
-import com.alibaba.csp.sentinel.node.DefaultNodeBuilder;
-import com.alibaba.csp.sentinel.node.NodeBuilder;
 
 /**
  * Sentinel Env. This class will trigger all initialization for Sentinel.
@@ -31,7 +29,6 @@ import com.alibaba.csp.sentinel.node.NodeBuilder;
  */
 public class Env {
 
-    public static final NodeBuilder nodeBuilder = new DefaultNodeBuilder();
     public static final Sph sph = new CtSph();
 
     static {
