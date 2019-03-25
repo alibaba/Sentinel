@@ -11,6 +11,7 @@ The `@SentinelResource` annotation indicates a resource definition, including:
 - `entryType`: Resource entry type (inbound or outbound), `EntryType.OUT` by default
 - `fallback`: Fallback method when degraded (optional). The fallback method should be located in the same class with original method. The signature of the fallback method should match the original method (parameter types and return type).
 - `blockHandler`: Handler method that handles `BlockException` when blocked. The signature should match original method, with the last additional parameter type `BlockException`. The block handler method should be located in the same class with original method by default. If you want to use method in other classes, you can set the `blockHandlerClass` with corresponding `Class` (Note the method in other classes must be *static*).
+- `exceptionsToTrace`: List of business exception classes to trace and record (since 1.5.1).
 
 For example:
 

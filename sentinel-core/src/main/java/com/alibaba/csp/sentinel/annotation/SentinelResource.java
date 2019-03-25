@@ -61,7 +61,8 @@ public @interface SentinelResource {
     String fallback() default "";
 
     /**
-     * @return the exception classes to trace, Throwable.class by default
+     * @return the list of exception classes to trace, {@link Throwable} by default
+     * @since 1.5.1
      */
     Class<? extends Throwable>[] exceptionsToTrace() default {Throwable.class};
 }
