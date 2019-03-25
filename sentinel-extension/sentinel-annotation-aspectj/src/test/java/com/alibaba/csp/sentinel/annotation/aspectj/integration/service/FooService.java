@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.annotation.aspectj.integration.service;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeException;
+
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -28,13 +29,17 @@ import java.util.concurrent.ThreadLocalRandom;
 @Service
 public class FooService {
 
-    @SentinelResource(value = "apiFoo", blockHandler = "fooBlockHandler", fallback = "fooFallbackFunc")
+    @SentinelResource(value = "apiFoo", blockHandler = "fooBlockHandler", fallback = "fooFallbackFunc",
+        exceptionsToTrace = {IllegalArgumentException.class})
     public String foo(int i) throws Exception {
         if (i == 9527) {
             throw new DegradeException("ggg");
         }
         if (i == 5758) {
             throw new IllegalAccessException();
+        }
+        if (i == 5763) {
+            throw new IllegalArgumentException();
         }
         return "Hello for " + i;
     }

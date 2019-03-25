@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.annotation.aspectj;
 
+import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
@@ -74,6 +75,31 @@ public abstract class AbstractSentinelAspectSupport {
         }
         // If no block handler is present, then directly throw the exception.
         throw ex;
+    }
+
+    protected void traceException(Throwable ex, SentinelResource annotation) {
+        if (isTracedException(ex, annotation.exceptionsToTrace())) {
+            Tracer.trace(ex);
+        }
+    }
+
+    /**
+     * Check whether the exception is in tracked list of exception classes.
+     *
+     * @param ex provided throwable
+     * @param exceptionsToTrace list of exceptions to trace
+     * @return true if it should be traced, otherwise false
+     */
+    private boolean isTracedException(Throwable ex, Class<? extends Throwable>[] exceptionsToTrace) {
+        if (exceptionsToTrace == null) {
+            return false;
+        }
+        for (Class<? extends Throwable> exceptionToTrace : exceptionsToTrace) {
+            if (exceptionToTrace.isAssignableFrom(ex.getClass())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isDegradeFailure(/*@NonNull*/ BlockException ex) {
