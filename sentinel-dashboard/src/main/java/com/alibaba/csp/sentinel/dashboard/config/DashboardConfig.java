@@ -23,15 +23,15 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.springframework.lang.NonNull;
 
 /**
- * Dashboard config support
+ * <p>Dashboard local config support.</p>
  * <p>
  * Dashboard supports configuration loading by several ways by order:<br>
  * 1. System.properties<br>
  * 2. Env
- * 
+ * </p>
+ *
  * @author jason
  * @since 1.5.0
- *
  */
 public class DashboardConfig {
 
