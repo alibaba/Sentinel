@@ -62,7 +62,7 @@ public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
             throw ex;
         } finally {
             if (entry != null) {
-                entry.exit();
+                entry.exit(1, pjp.getArgs());
             }
         }
     }
