@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.service;
+package com.alibaba.csp.sentinel.dashboard.auth;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -23,12 +23,13 @@ import org.springframework.stereotype.Component;
  * A fake AuthService implementation, which will pass all user auth checking.
  *
  * @author Carpenter Lee
+ * @since 1.5.0
  */
 @Component
 public class FakeAuthServiceImpl implements AuthService<HttpServletRequest> {
+
     @Override
     public AuthUser getAuthUser(HttpServletRequest request) {
-
         return new AuthUserImpl();
     }
 
@@ -57,7 +58,7 @@ public class FakeAuthServiceImpl implements AuthService<HttpServletRequest> {
         }
 
         @Override
-        public String getEmpId() {
+        public String getId() {
             return "FAKE_EMP_ID";
         }
     }
