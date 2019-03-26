@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.util.AssertUtil;
+import com.google.common.collect.Lists;
 
 /**
  * @author leyou
@@ -60,12 +61,8 @@ public abstract class InMemoryRuleRepositoryAdapter<T extends RuleEntity> implem
     @Override
     public List<T> saveAll(List<T> rules) {
         // TODO: check here.
-        allRules.clear();
-        machineRules.clear();
-        appRules.clear();
-
         if (rules == null) {
-            return null;
+            return Lists.newArrayList();
         }
         List<T> savedRules = new ArrayList<>(rules.size());
         for (T rule : rules) {
@@ -119,5 +116,5 @@ public abstract class InMemoryRuleRepositoryAdapter<T extends RuleEntity> implem
      *
      * @return next unused id
      */
-    abstract protected long nextId();
+    protected abstract long nextId();
 }
