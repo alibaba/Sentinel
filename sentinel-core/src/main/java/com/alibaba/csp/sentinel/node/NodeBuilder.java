@@ -22,6 +22,7 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
  *
  * @author qinan.qn
  */
+@Deprecated
 public interface NodeBuilder {
 
     /**

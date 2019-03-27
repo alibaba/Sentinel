@@ -84,6 +84,8 @@ public class MetricFetcher {
     private AppManagement appManagement;
 
     private CloseableHttpAsyncClient httpclient;
+
+    @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private ScheduledExecutorService fetchScheduleService = Executors.newScheduledThreadPool(1,
         new NamedThreadFactory("sentinel-dashboard-metrics-fetch-task"));
     private ExecutorService fetchService;

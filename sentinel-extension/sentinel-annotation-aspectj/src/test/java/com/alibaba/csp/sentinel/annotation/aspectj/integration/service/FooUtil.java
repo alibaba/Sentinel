@@ -13,25 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.node;
+package com.alibaba.csp.sentinel.annotation.aspectj.integration.service;
 
-import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 
 /**
- * Default implementation of {@link NodeBuilder}.
- *
- * @author qinan.qn
+ * @author Eric Zhao
  */
-public class DefaultNodeBuilder implements NodeBuilder {
+public class FooUtil {
 
-    @Override
-    public DefaultNode buildTreeNode(ResourceWrapper id, ClusterNode clusterNode) {
-        return new DefaultNode(id, clusterNode);
+    public static final int BLOCK_FLAG = 88888;
+
+    public static int globalBlockHandler(BlockException ex) {
+        System.out.println("Oops: " + ex.getClass().getSimpleName());
+        return BLOCK_FLAG;
     }
-
-    @Override
-    public ClusterNode buildClusterNode() {
-        return new ClusterNode();
-    }
-
 }
