@@ -52,6 +52,22 @@ angular.module('sentinelDashboardApp').controller('AuthorityRuleController', ['$
         $scope.getMachineRules = getMachineRules;
         getMachineRules();
 
+        function forceRefreshRules() {
+            if (!$scope.macInputModel) {
+                return;
+            }
+            var mac = $scope.macInputModel.split(':');
+            AuthorityRuleService.forceRefreshMachineRules('sentinel-authority-forceRefresh', $scope.app, mac[0], mac[1]).success(
+                function (data) {
+                    if (data.code == 0 && data.data) {
+                        getMachineRules();
+                    } else {
+                        alert('失败!');
+                    }
+                });
+        };
+        $scope.forceRefreshRules = forceRefreshRules;
+
         var authorityRuleDialog;
 
         $scope.editRule = function (rule) {

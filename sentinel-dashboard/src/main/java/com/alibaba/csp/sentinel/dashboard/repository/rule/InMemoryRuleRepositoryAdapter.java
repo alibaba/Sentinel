@@ -61,7 +61,7 @@ public abstract class InMemoryRuleRepositoryAdapter<T extends RuleEntity> implem
     @Override
     public List<T> saveAll(List<T> rules) {
         // TODO: check here.
-        if (rules == null) {
+        if (rules == null || rules.isEmpty()) {
             return Lists.newArrayList();
         }
         List<T> savedRules = new ArrayList<>(rules.size());

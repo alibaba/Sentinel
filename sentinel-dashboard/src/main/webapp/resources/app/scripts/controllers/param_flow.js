@@ -126,6 +126,22 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
     $scope.getMachineRules = getMachineRules;
     getMachineRules();
 
+    function forceRefreshRules() {
+        if (!$scope.macInputModel) {
+            return;
+        }
+        var mac = $scope.macInputModel.split(':');
+        ParamFlowService.forceRefreshMachineRules('sentinel-param-flow-forceRefresh', $scope.app, mac[0], mac[1]).success(
+            function (data) {
+                if (data.code == 0) {
+                    getMachineRules();
+                } else {
+                    alert('失败!');
+                }
+            });
+    };
+    $scope.forceRefreshRules = forceRefreshRules;
+
     var paramFlowRuleDialog;
 
     $scope.editRule = function (rule) {

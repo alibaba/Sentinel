@@ -15,6 +15,21 @@ angular.module('sentinelDashboardApp').service('AuthorityRuleService', ['$http',
         });
     };
 
+
+    this.forceRefreshMachineRules = function (operator, app, ip, port) {
+        var param = {
+            operator: operator,
+            app: app,
+            ip: ip,
+            port: port
+        };
+        return $http({
+            url: 'configChange/authorityRules',
+            params: param,
+            method: 'PUT'
+        });
+    };
+
     this.addNewRule = function(rule) {
         return $http({
             url: '/authority/rule',

@@ -9,8 +9,12 @@ import com.alibaba.csp.sentinel.dashboard.fetch.Fetcher;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
+import com.google.common.collect.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -19,6 +23,8 @@ import java.util.Optional;
  * @author longqiang
  */
 public abstract class ApolloFetchAdapter<T extends RuleEntity> implements Fetcher<T> {
+
+    private static final Logger logger = LoggerFactory.getLogger(ApolloFetchAdapter.class);
 
     AppManagement appManagement;
 
@@ -34,6 +40,11 @@ public abstract class ApolloFetchAdapter<T extends RuleEntity> implements Fetche
         ApolloOpenApiClient apolloClient = ApolloClientManagement.getClient(apolloMachineInfo.getPortalUrl());
         AssertUtil.notNull(apolloClient, String.format("There is no equivalent client for apollo portal url: %s", apolloMachineInfo.getPortalUrl()));
         OpenItemDTO item = getItem(apolloClient, apolloMachineInfo);
+        if (Objects.isNull(item)) {
+            logger.warn("There is no corresponding configuration in Apollo,app:{},ip:{},port:{},apollo portal url:{} ,rules key:{}"
+                        , app, ip, port, apolloMachineInfo.getPortalUrl(), getKey(apolloMachineInfo));
+            return Lists.newArrayList();
+        }
         String value = item.getValue();
         return convert(value);
     }
@@ -45,6 +56,7 @@ public abstract class ApolloFetchAdapter<T extends RuleEntity> implements Fetche
 
     /**
      * Get the key of the rule to be published in Apollo
+     *
      * @param apolloMachineInfo
      * @return apollo key
      */
@@ -52,6 +64,7 @@ public abstract class ApolloFetchAdapter<T extends RuleEntity> implements Fetche
 
     /**
      * Convert to the corresponding rules
+     *
      * @param value
      * @return java.util.List<T>
      */

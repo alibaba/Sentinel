@@ -18,7 +18,6 @@ package com.alibaba.csp.sentinel.dashboard.controller;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
-import com.alibaba.csp.sentinel.dashboard.fetch.Fetcher;
 import com.alibaba.csp.sentinel.dashboard.publish.Publisher;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -51,9 +50,6 @@ public class FlowControllerV1 {
 
     @Autowired
     private InMemoryRuleRepositoryAdapter<FlowRuleEntity> repository;
-
-    @Autowired
-    private Fetcher<FlowRuleEntity> fetcher;
 
     @Autowired
     private Publisher<FlowRuleEntity> publisher;
@@ -141,12 +137,12 @@ public class FlowControllerV1 {
         entity.setResource(entity.getResource().trim());
         try {
             entity = repository.save(entity);
-            if (!publisher.publish(entity.getApp(), entity.getIp(), entity.getPort())) {
-                logger.error("Publish flow rules failed after rule add");
-            }
         } catch (Throwable throwable) {
             logger.error("Failed to add flow rule", throwable);
             return Result.ofThrowable(-1, throwable);
+        }
+        if (!publisher.publish(entity.getApp(), entity.getIp(), entity.getPort())) {
+            logger.error("Publish flow rules failed after rule add");
         }
         return Result.ofSuccess(entity);
     }
@@ -218,12 +214,12 @@ public class FlowControllerV1 {
             if (entity == null) {
                 return Result.ofFail(-1, "save entity fail");
             }
-            if (!publisher.publish(entity.getApp(), entity.getIp(), entity.getPort())) {
-                logger.info("publish flow rules fail after rule update");
-            }
         } catch (Throwable throwable) {
             logger.error("save error:", throwable);
             return Result.ofThrowable(-1, throwable);
+        }
+        if (!publisher.publish(entity.getApp(), entity.getIp(), entity.getPort())) {
+            logger.info("publish flow rules failed after rule update");
         }
         return Result.ofSuccess(entity);
     }
@@ -239,11 +235,11 @@ public class FlowControllerV1 {
         }
         try {
             repository.delete(id);
-            if (!publisher.publish(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort())) {
-                logger.info("publish flow rules fail after rule update");
-            }
         } catch (Exception e) {
             return Result.ofFail(-1, e.getMessage());
+        }
+        if (!publisher.publish(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort())) {
+            logger.info("publish flow rules failed after rule delete");
         }
         return Result.ofSuccess(id);
     }

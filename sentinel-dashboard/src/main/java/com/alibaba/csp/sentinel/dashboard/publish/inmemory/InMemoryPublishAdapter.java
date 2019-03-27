@@ -31,27 +31,23 @@ public abstract class InMemoryPublishAdapter<T extends RuleEntity> implements Pu
     }
 
     /**
-     * 寻找需要发布的规则
+     * find rules for publish
+     *
      * @param machineInfo
      * @return java.util.List<T>
-     * @throws
-     * @author longqiang
-     * @date 2019/3/18 11:18
      */
     private List<T> findRules(MachineInfo machineInfo) {
         return repository.findAllByMachine(machineInfo);
     }
 
     /**
-     * 发布
+     * publish rules action
+     *
      * @param app
      * @param ip
      * @param port
      * @param rules
      * @return boolean
-     * @throws
-     * @author longqiang
-     * @date 2019/3/18 11:18
      */
     protected abstract boolean publish(String app, String ip, int port, List<T> rules);
 

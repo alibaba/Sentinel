@@ -43,7 +43,23 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
     };
     $scope.getMachineRules = getMachineRules;
 
-    var degradeRuleDialog;
+    function forceRefreshRules() {
+        if (!$scope.macInputModel) {
+            return;
+        }
+        var mac = $scope.macInputModel.split(':');
+        DegradeService.forceRefreshMachineRules('sentinel-degrade-forceRefresh', $scope.app, mac[0], mac[1]).success(
+            function (data) {
+                if (data.code == 0) {
+                    getMachineRules();
+                } else {
+                    alert('失败!');
+                }
+            });
+    };
+    $scope.forceRefreshRules = forceRefreshRules;
+
+      var degradeRuleDialog;
     $scope.editRule = function (rule) {
       $scope.currentRule = angular.copy(rule);
       $scope.degradeRuleDialog = {

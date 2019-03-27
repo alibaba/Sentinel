@@ -15,16 +15,12 @@
  */
 package com.alibaba.csp.sentinel.dashboard.controller;
 
-import java.util.Date;
-import java.util.List;
-
-import com.alibaba.csp.sentinel.util.StringUtil;
-
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.SystemRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
-import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
+import com.alibaba.csp.sentinel.dashboard.publish.Publisher;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemSystemRuleStore;
+import com.alibaba.csp.sentinel.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +28,9 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author leyou(lihao)
@@ -43,12 +42,13 @@ public class SystemController {
 
     @Autowired
     private InMemSystemRuleStore repository;
+
     @Autowired
-    private SentinelApiClient sentinelApiClient;
+    private Publisher<SystemRuleEntity> publisher;
 
     @ResponseBody
     @RequestMapping("/rules.json")
-    Result<List<SystemRuleEntity>> queryMachineRules(String app, String ip, Integer port) {
+    public Result<List<SystemRuleEntity>> queryMachineRules(String app, String ip, Integer port) {
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
         }
@@ -59,8 +59,7 @@ public class SystemController {
             return Result.ofFail(-1, "port can't be null");
         }
         try {
-            List<SystemRuleEntity> rules = sentinelApiClient.fetchSystemRuleOfMachine(app, ip, port);
-            rules = repository.saveAll(rules);
+            List<SystemRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
             logger.error("queryApps error:", throwable);
@@ -80,7 +79,7 @@ public class SystemController {
 
     @ResponseBody
     @RequestMapping("/new.json")
-    Result<?> add(String app, String ip, Integer port, Double avgLoad, Long avgRt, Long maxThread, Double qps) {
+    public Result<?> add(String app, String ip, Integer port, Double avgLoad, Long avgRt, Long maxThread, Double qps) {
         if (StringUtil.isBlank(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
         }
@@ -129,15 +128,15 @@ public class SystemController {
             logger.error("add error:", throwable);
             return Result.ofThrowable(-1, throwable);
         }
-        if (!publishRules(app, ip, port)) {
-            logger.info("publish system rules fail after rule add");
+        if (!publisher.publish(app, ip, port)) {
+            logger.error("publish system rules failed after rule add");
         }
         return Result.ofSuccess(entity);
     }
 
     @ResponseBody
     @RequestMapping("/save.json")
-    Result<?> updateIfNotNull(Long id, String app, Double avgLoad, Long avgRt, Long maxThread, Double qps) {
+    public Result<?> updateIfNotNull(Long id, String app, Double avgLoad, Long avgRt, Long maxThread, Double qps) {
         if (id == null) {
             return Result.ofFail(-1, "id can't be null");
         }
@@ -180,15 +179,15 @@ public class SystemController {
             logger.error("save error:", throwable);
             return Result.ofThrowable(-1, throwable);
         }
-        if (!publishRules(entity.getApp(), entity.getIp(), entity.getPort())) {
-            logger.info("publish system rules fail after rule update");
+        if (!publisher.publish(entity.getApp(), entity.getIp(), entity.getPort())) {
+            logger.info("publish system rules failed after rule update");
         }
         return Result.ofSuccess(entity);
     }
 
     @ResponseBody
     @RequestMapping("/delete.json")
-    Result<?> delete(Long id) {
+    public Result<?> delete(Long id) {
         if (id == null) {
             return Result.ofFail(-1, "id can't be null");
         }
@@ -202,14 +201,10 @@ public class SystemController {
             logger.error("delete error:", throwable);
             return Result.ofThrowable(-1, throwable);
         }
-        if (!publishRules(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort())) {
-            logger.info("publish system rules fail after rule delete");
+        if (!publisher.publish(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort())) {
+            logger.info("publish system rules failed after rule delete");
         }
         return Result.ofSuccess(id);
     }
 
-    private boolean publishRules(String app, String ip, Integer port) {
-        List<SystemRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return sentinelApiClient.setSystemRuleOfMachine(app, ip, port, rules);
-    }
 }

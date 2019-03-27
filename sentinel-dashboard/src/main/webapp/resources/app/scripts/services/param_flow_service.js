@@ -17,6 +17,20 @@ angular.module('sentinelDashboardApp').service('ParamFlowService', ['$http', fun
     });
   };
 
+  this.forceRefreshMachineRules = function (operator, app, ip, port) {
+    var param = {
+        operator: operator,
+        app: app,
+        ip: ip,
+        port: port
+    };
+    return $http({
+        url: 'configChange/paramFlowRules',
+        params: param,
+        method: 'PUT'
+    });
+  };
+
   this.addNewRule = function(rule) {
     return $http({
       url: '/paramFlow/rule',

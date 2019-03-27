@@ -7,6 +7,7 @@ import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.publish.Publisher;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import com.ctrip.framework.apollo.openapi.dto.NamespaceReleaseDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
@@ -37,7 +38,9 @@ public abstract class ApolloPublishAdapter<T extends RuleEntity> implements Publ
         Optional<MachineInfo> machineInfoOptional = appManagement.getDetailApp(app).getMachine(ip, port);
         ApolloMachineInfo apolloMachineInfo = (ApolloMachineInfo) machineInfoOptional.get();
         List<T> rules = findRules(apolloMachineInfo);
+        AssertUtil.notNull(apolloMachineInfo, String.format("There is no equivalent machineInfo for app: %s, ip: %s, port: %s", app, ip, port));
         ApolloOpenApiClient apolloClient = ApolloClientManagement.getClient(apolloMachineInfo.getPortalUrl());
+        AssertUtil.notNull(apolloClient, String.format("There is no equivalent client for apollo portal url: %s", apolloMachineInfo.getPortalUrl()));
         String appId = apolloMachineInfo.getAppId();
         String env = apolloMachineInfo.getEnv();
         String clusterName = apolloMachineInfo.getClusterName();
@@ -67,7 +70,19 @@ public abstract class ApolloPublishAdapter<T extends RuleEntity> implements Publ
         return repository.findAllByMachine(machineInfo);
     }
 
+    /**
+     * Get Apollo rule key
+     *
+     * @param apolloMachineInfo
+     * @return java.lang.String
+     */
     protected abstract String getKey(ApolloMachineInfo apolloMachineInfo);
 
+    /**
+     * Process rules let them store to Apollo
+     *
+     * @param rules
+     * @return java.lang.String
+     */
     protected abstract String processRules(List<T> rules);
 }

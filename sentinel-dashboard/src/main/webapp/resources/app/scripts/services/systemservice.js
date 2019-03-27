@@ -14,6 +14,20 @@ app.service('SystemService', ['$http', function ($http) {
     });
   };
 
+  this.forceRefreshMachineRules = function (operator, app, ip, port) {
+    var param = {
+        operator: operator,
+        app: app,
+        ip: ip,
+        port: port
+    };
+    return $http({
+        url: 'configChange/systemRules',
+        params: param,
+        method: 'PUT'
+    });
+  };
+
   this.newRule = function (rule) {
     var param = {
       app: rule.app,

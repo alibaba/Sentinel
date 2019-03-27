@@ -56,6 +56,23 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
         });
     };
     $scope.getMachineRules = getMachineRules;
+
+    function forceRefreshRules() {
+        if (!$scope.macInputModel) {
+            return;
+        }
+        var mac = $scope.macInputModel.split(':');
+        SystemService.forceRefreshMachineRules('sentinel-system-forceRefresh', $scope.app, mac[0], mac[1]).success(
+            function (data) {
+                if (data.code == 0) {
+                    getMachineRules();
+                } else {
+                    alert('失败!');
+                }
+            });
+    };
+    $scope.forceRefreshRules = forceRefreshRules;
+
     var systemRuleDialog;
     $scope.editRule = function (rule) {
       $scope.currentRule = angular.copy(rule);

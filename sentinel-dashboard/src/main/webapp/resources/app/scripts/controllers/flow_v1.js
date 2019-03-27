@@ -59,6 +59,22 @@ app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', '
     };
     $scope.getMachineRules = getMachineRules;
 
+    function forceRefreshRules() {
+        if (!$scope.macInputModel) {
+            return;
+        }
+        var mac = $scope.macInputModel.split(':');
+        FlowService.forceRefreshMachineRules('sentinel-flow-forceRefresh', $scope.app, mac[0], mac[1]).success(
+            function (data) {
+                if (data.code == 0) {
+                    getMachineRules();
+                } else {
+                    alert('失败!');
+                }
+            });
+    };
+    $scope.forceRefreshRules = forceRefreshRules;
+
     var flowRuleDialog;
     $scope.editRule = function (rule) {
       $scope.currentRule = angular.copy(rule);
