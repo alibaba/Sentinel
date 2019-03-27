@@ -1,19 +1,19 @@
-# Sentinel Dubbo Adapter
+# Sentinel Apache Dubbo Adapter
 
-> Note: 中文文档请见[此处](https://github.com/alibaba/Sentinel/wiki/%E4%B8%BB%E6%B5%81%E6%A1%86%E6%9E%B6%E7%9A%84%E9%80%82%E9%85%8D#dubbo)。
+> Note: 中文文档请见[此处](https://github.com/alibaba/Sentinel/wiki/主流框架的适配#dubbo)。
 
 Sentinel Dubbo Adapter provides service consumer filter and provider filter
-for [Dubbo](https://dubbo.apache.org/en-us/) services.
+for [Apache Dubbo](https://dubbo.apache.org/en-us/) services.
 
-**Note: This adapter only supports legacy Dubbo 2.6.x version and below.**
-For new Apache Dubbo 2.7.x or above version, please use `sentinel-apache-dubbo-adapter` module instead.
+**Note: This adapter only supports Apache Dubbo 2.7.x and above.** For legacy `com.alibaba:dubbo` 2.6.x,
+please use `sentinel-dubbo-adapter` module instead.
 
 To use Sentinel Dubbo Adapter, you can simply add the following dependency to your `pom.xml`:
 
 ```xml
 <dependency>
     <groupId>com.alibaba.csp</groupId>
-    <artifactId>sentinel-dubbo-adapter</artifactId>
+    <artifactId>sentinel-apache-dubbo-adapter</artifactId>
     <version>x.y.z</version>
 </dependency>
 ```
