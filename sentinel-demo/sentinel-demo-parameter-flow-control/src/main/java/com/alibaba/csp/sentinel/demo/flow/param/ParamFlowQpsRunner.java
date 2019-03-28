@@ -101,20 +101,20 @@ class ParamFlowQpsRunner<T> {
         public void run() {
             while (!stop) {
                 Entry entry = null;
-
+                T param = generateParam();
                 try {
-                    T param = generateParam();
                     entry = SphU.entry(resourceName, EntryType.IN, 1, param);
                     // Add pass for parameter.
                     passFor(param);
                 } catch (BlockException e1) {
                     // block.incrementAndGet();
-                } catch (Exception e2) {
+                } catch (Exception ex) {
                     // biz exception
+                    ex.printStackTrace();
                 } finally {
                     // total.incrementAndGet();
                     if (entry != null) {
-                        entry.exit();
+                        entry.exit(1, param);
                     }
                 }
 
@@ -150,7 +150,7 @@ class ParamFlowQpsRunner<T> {
                     long oldPass = map.get(param);
                     long oneSecondPass = globalPass - oldPass;
                     map.put(param, globalPass);
-                    System.out.println(String.format("[%d][%d] Hot param metrics for resource %s: "
+                    System.out.println(String.format("[%d][%d] Parameter flow metrics for resource %s: "
                             + "pass count for param <%s> is %d",
                         seconds, TimeUtil.currentTimeMillis(), resourceName, param, oneSecondPass));
                 }
