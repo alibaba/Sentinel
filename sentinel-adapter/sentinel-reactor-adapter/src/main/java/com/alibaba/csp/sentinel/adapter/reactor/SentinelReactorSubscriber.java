@@ -88,7 +88,7 @@ public class SentinelReactorSubscriber<T> extends InheritableBaseSubscriber<T> {
             ContextUtil.enter(sentinelContextConfig.getContextName(), sentinelContextConfig.getOrigin());
         }
         try {
-            AsyncEntry entry = SphU.asyncEntry(entryConfig.getResourceName());
+            AsyncEntry entry = SphU.asyncEntry(entryConfig.getResourceName(), entryConfig.getEntryType());
             this.currentEntry = entry;
             actual.onSubscribe(this);
         } catch (BlockException ex) {
