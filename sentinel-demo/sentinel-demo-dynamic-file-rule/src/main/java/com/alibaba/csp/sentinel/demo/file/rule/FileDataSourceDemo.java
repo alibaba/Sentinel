@@ -15,8 +15,15 @@
  */
 package com.alibaba.csp.sentinel.demo.file.rule;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URLDecoder;
 import java.util.List;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
 
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
@@ -75,32 +82,49 @@ public class FileDataSourceDemo {
 
     private void listenRules() throws Exception {
         ClassLoader classLoader = getClass().getClassLoader();
-        String flowRulePath = URLDecoder.decode(classLoader.getResource("FlowRule.json").getFile(), "UTF-8");
-        String degradeRulePath = URLDecoder.decode(classLoader.getResource("DegradeRule.json").getFile(), "UTF-8");
-        String systemRulePath = URLDecoder.decode(classLoader.getResource("SystemRule.json").getFile(), "UTF-8");
+//        String flowRulePath = URLDecoder.decode(classLoader.getResource("FlowRule.json").getFile(), "UTF-8");
+//        String degradeRulePath = URLDecoder.decode(classLoader.getResource("DegradeRule.json").getFile(), "UTF-8");
+//        String systemRulePath = URLDecoder.decode(classLoader.getResource("SystemRule.json").getFile(), "UTF-8");
+
+        // Data source in JarFile for FlowRule
+//        String flowRuleInJarPath = getClass().getProtectionDomain().getCodeSource().getLocation().getFile();
+        String flowRuleJarPath = System.getProperty("user.dir")+"/sentinel-demo/sentinel-demo-dynamic-file-rule/target/sentinel-demo-dynamic-file-rule-1.5.1-SNAPSHOT.jar";
+        String flowRuleInJarPath = "FlowRule.json";
+        FileRefreshableDataSource<List<FlowRule>> flowRuleDataSourceInJarFile = new FileRefreshableDataSource<>(
+                flowRuleJarPath, flowRuleInJarPath, flowRuleListParser);
+        FlowRuleManager.register2Property(flowRuleDataSourceInJarFile.getProperty());
 
         // Data source for FlowRule
-        FileRefreshableDataSource<List<FlowRule>> flowRuleDataSource = new FileRefreshableDataSource<>(
-            flowRulePath, flowRuleListParser);
-        FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
+//        FileRefreshableDataSource<List<FlowRule>> flowRuleDataSource = new FileRefreshableDataSource<>(
+//                flowRulePath, flowRuleListParser);
+//        FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
 
         // Data source for DegradeRule
-        FileRefreshableDataSource<List<DegradeRule>> degradeRuleDataSource
-            = new FileRefreshableDataSource<>(
-            degradeRulePath, degradeRuleListParser);
-        DegradeRuleManager.register2Property(degradeRuleDataSource.getProperty());
-
-        // Data source for SystemRule
-        FileRefreshableDataSource<List<SystemRule>> systemRuleDataSource
-            = new FileRefreshableDataSource<>(
-            systemRulePath, systemRuleListParser);
-        SystemRuleManager.register2Property(systemRuleDataSource.getProperty());
+//        FileRefreshableDataSource<List<DegradeRule>> degradeRuleDataSource
+//                = new FileRefreshableDataSource<>(
+//                degradeRulePath, degradeRuleListParser);
+//        DegradeRuleManager.register2Property(degradeRuleDataSource.getProperty());
+//
+//        // Data source for SystemRule
+//        FileRefreshableDataSource<List<SystemRule>> systemRuleDataSource
+//                = new FileRefreshableDataSource<>(
+//                systemRulePath, systemRuleListParser);
+//        SystemRuleManager.register2Property(systemRuleDataSource.getProperty());
     }
 
     private Converter<String, List<FlowRule>> flowRuleListParser = source -> JSON.parseObject(source,
-        new TypeReference<List<FlowRule>>() {});
+            new TypeReference<List<FlowRule>>() {
+            });
     private Converter<String, List<DegradeRule>> degradeRuleListParser = source -> JSON.parseObject(source,
-        new TypeReference<List<DegradeRule>>() {});
+            new TypeReference<List<DegradeRule>>() {
+            });
     private Converter<String, List<SystemRule>> systemRuleListParser = source -> JSON.parseObject(source,
-        new TypeReference<List<SystemRule>>() {});
+            new TypeReference<List<SystemRule>>() {
+            });
+
+    private String getFilePathInJar(String jarPath, String resourcePath) {
+        // remove 'file:' and '!/' in jarPath
+        int index = jarPath.length() + 7;
+        return resourcePath.substring(index);
+    }
 }
