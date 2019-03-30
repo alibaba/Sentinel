@@ -64,13 +64,15 @@ public class JarFileDataSourceInit implements InitFunc {
     private <T> String encodeJson(T t) {
         return JSON.toJSONString(t);
     }
-    public static void main(String[] args) throws Exception{
+
+    public static void main(String[] args) throws Exception {
         // A fake path.
-        String flowRuleJarPath = System.getProperty("user.dir")+"/sentinel-demo/sentinel-demo-dynamic-file-rule/target/sentinel-demo-dynamic-file-rule-1.5.1-SNAPSHOT.jar";
+        String flowRuleJarPath = System.getProperty("user.dir") + "/sentinel-demo/sentinel-demo-dynamic-file-rule/target/sentinel-demo-dynamic-file-rule-1.5.1-SNAPSHOT.jar";
+        // eg: if flowRuleInJarName full path is 'sentinel-demo-dynamic-file-rule-1.5.1-SNAPSHOT.jar!/classes/FlowRule.json',
+        // your flowRuleInJarName is 'classes/FlowRule.json'
         String flowRuleInJarPath = "FlowRule.json";
 
-        JarFileDataSourceInit jarFileDataSourceInit = new JarFileDataSourceInit();
-        WritableDataSource<List<FlowRule>> wds = new JarFileWritableDataSource<>(flowRuleJarPath,flowRuleInJarPath, (t) ->JSON.toJSONString(t));
+        WritableDataSource<List<FlowRule>> wds = new JarFileWritableDataSource<>(flowRuleJarPath, flowRuleInJarPath, (t) -> JSON.toJSONString(t));
         List<FlowRule> list = new ArrayList<>();
         FlowRule flowRule = new FlowRule();
         flowRule.setCount(10);
