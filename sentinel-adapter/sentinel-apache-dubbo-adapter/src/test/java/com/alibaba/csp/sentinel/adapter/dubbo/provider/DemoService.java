@@ -13,25 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.node;
-
-import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
+package com.alibaba.csp.sentinel.adapter.dubbo.provider;
 
 /**
- * Default implementation of {@link NodeBuilder}.
- *
- * @author qinan.qn
+ * @author leyou
  */
-public class DefaultNodeBuilder implements NodeBuilder {
-
-    @Override
-    public DefaultNode buildTreeNode(ResourceWrapper id, ClusterNode clusterNode) {
-        return new DefaultNode(id, clusterNode);
-    }
-
-    @Override
-    public ClusterNode buildClusterNode() {
-        return new ClusterNode();
-    }
-
+public interface DemoService {
+    String sayHello(String name, int n);
 }
