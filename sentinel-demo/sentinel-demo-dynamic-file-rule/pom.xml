@@ -42,19 +42,6 @@
                     <encoding>${java.encoding}</encoding>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <mainClass>com.alibaba.csp.sentinel.demo.file.rule.Test</mainClass> <!-- 你的主类名 -->
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
         </plugins>
-
     </build>
 </project>

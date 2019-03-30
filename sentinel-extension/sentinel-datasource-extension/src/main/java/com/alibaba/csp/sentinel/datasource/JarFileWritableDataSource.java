@@ -60,7 +60,6 @@ public class JarFileWritableDataSource<T> implements WritableDataSource<T> {
                 jos = new JarOutputStream(fos);
                 Set<JarEntry> lists = getJarEntrySet();
                 for (JarEntry jarEntry : lists) {
-                    // just change the file you want to change,other files should be as same as before
                     if (jarEntry.getName().equals(fileInJarName)) {
                         JarEntry newEntry = new JarEntry(jarEntry.getName());
                         jos.putNextEntry(newEntry);

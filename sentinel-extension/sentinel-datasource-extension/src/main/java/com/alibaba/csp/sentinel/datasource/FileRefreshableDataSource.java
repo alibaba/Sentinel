@@ -15,12 +15,11 @@
  */
 package com.alibaba.csp.sentinel.datasource;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.zip.ZipEntry;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
 
@@ -47,9 +46,6 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
     private byte[] buf;
     private final Charset charset;
     private final File file;
-    private final JarEntry jarEntry;
-    private final boolean isFile;
-    private final JarFile jarFile;
 
     private long lastModified = 0L;
 
@@ -69,27 +65,14 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
     }
 
     public FileRefreshableDataSource(File file, Converter<String, T> configParser, int bufSize)
-            throws FileNotFoundException {
+        throws FileNotFoundException {
         this(file, configParser, DEFAULT_REFRESH_MS, bufSize, DEFAULT_CHAR_SET);
     }
 
     public FileRefreshableDataSource(File file, Converter<String, T> configParser, Charset charset)
-            throws FileNotFoundException {
+        throws FileNotFoundException {
         this(file, configParser, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, charset);
     }
-
-    /**
-     * @param jarPath      the jar to read
-     * @param fileName     the file in jar to read
-     * @param configParser the config decoder (parser)
-     * @throws FileNotFoundException
-     * @since 1.8
-     */
-    public FileRefreshableDataSource(String jarPath, String fileName, Converter<String, T> configParser)
-            throws IOException {
-        this(jarPath, fileName, configParser, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, DEFAULT_CHAR_SET);
-    }
-
 
     public FileRefreshableDataSource(File file, Converter<String, T> configParser, long recommendRefreshMs, int bufSize,
                                      Charset charset) throws FileNotFoundException {
@@ -105,33 +88,9 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
         }
         this.buf = new byte[bufSize];
         this.file = file;
-        this.jarEntry = null;
-        this.jarFile = null;
-        this.isFile = true;
         this.charset = charset;
         // If the file does not exist, the last modified will be 0.
         this.lastModified = file.lastModified();
-        firstLoad();
-    }
-
-    public FileRefreshableDataSource(String jarPath, String fileName, Converter<String, T> configParser, long recommendRefreshMs, int bufSize,
-                                     Charset charset) throws IOException {
-        super(configParser, recommendRefreshMs);
-        if (bufSize <= 0 || bufSize > MAX_SIZE) {
-            throw new IllegalArgumentException("bufSize must between (0, " + MAX_SIZE + "], but " + bufSize + " get");
-        }
-
-        if (charset == null) {
-            throw new IllegalArgumentException("charset can't be null");
-        }
-        this.buf = new byte[bufSize];
-        this.file = null;
-        this.charset = charset;
-        this.jarFile = new JarFile(jarPath);
-        this.jarEntry = jarFile.getJarEntry(fileName);
-        this.isFile = false;
-        // If the file does not exist, the last modified will be 0.
-        this.lastModified = jarEntry.getTime();
         firstLoad();
     }
 
@@ -146,17 +105,17 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
 
     @Override
     public String readSource() throws Exception {
-        if (!file.exists() && null == jarEntry) {
+        if (!file.exists()) {
             // Will throw FileNotFoundException later.
-            RecordLog.warn(String.format("[FileRefreshableDataSource] File does not exist: %s", isFile ? file.getAbsolutePath() : jarEntry.getName()));
+            RecordLog.warn(String.format("[FileRefreshableDataSource] File does not exist: %s", file.getAbsolutePath()));
         }
-        InputStream inputStream = null;
+        FileInputStream inputStream = null;
         try {
-            inputStream = isFile ? new FileInputStream(file) : jarFile.getInputStream(jarEntry);
-            int streamLength = inputStream.available();
-            if (streamLength > buf.length) {
-                throw new IllegalStateException(file.getAbsolutePath() + " file size=" + streamLength
-                        + ", is bigger than bufSize=" + buf.length + ". Can't read");
+            inputStream = new FileInputStream(file);
+            FileChannel channel = inputStream.getChannel();
+            if (channel.size() > buf.length) {
+                throw new IllegalStateException(file.getAbsolutePath() + " file size=" + channel.size()
+                    + ", is bigger than bufSize=" + buf.length + ". Can't read");
             }
             int len = inputStream.read(buf);
             return new String(buf, 0, len, charset);
@@ -172,7 +131,7 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
 
     @Override
     protected boolean isModified() {
-        long curLastModified = isFile ? file.lastModified() : jarEntry.getTime();
+        long curLastModified = file.lastModified();
         if (curLastModified != this.lastModified) {
             this.lastModified = curLastModified;
             return true;
@@ -185,5 +144,4 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
         super.close();
         buf = null;
     }
-
 }
