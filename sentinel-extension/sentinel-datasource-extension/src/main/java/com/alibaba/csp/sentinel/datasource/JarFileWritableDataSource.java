@@ -10,9 +10,10 @@ import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 
 /**
- * @author dq
+ * A {@link WritableDataSource} based on file.
+ * @param <T> data type
+ * @author dingq
  * @date 2019-03-30
- * @desc 描述
  */
 public class JarFileWritableDataSource<T> implements WritableDataSource<T> {
     private static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
