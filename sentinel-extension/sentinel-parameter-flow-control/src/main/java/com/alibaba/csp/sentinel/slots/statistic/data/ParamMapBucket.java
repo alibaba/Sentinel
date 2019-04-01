@@ -16,9 +16,9 @@
 package com.alibaba.csp.sentinel.slots.statistic.data;
 
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.alibaba.csp.sentinel.slots.block.flow.param.RollingParamEvent;
+import com.alibaba.csp.sentinel.slots.statistic.base.LongAdder;
 import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
 import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
 import com.alibaba.csp.sentinel.util.AssertUtil;
@@ -31,7 +31,7 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
  */
 public class ParamMapBucket {
 
-    private final CacheMap<Object, AtomicInteger>[] data;
+    private final CacheMap<Object, LongAdder>[] data;
 
     public ParamMapBucket() {
         this(DEFAULT_MAX_CAPACITY);
@@ -43,7 +43,7 @@ public class ParamMapBucket {
         RollingParamEvent[] events = RollingParamEvent.values();
         this.data = new CacheMap[events.length];
         for (RollingParamEvent event : events) {
-            data[event.ordinal()] = new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(capacity);
+            data[event.ordinal()] = new ConcurrentLinkedHashMapWrapper<Object, LongAdder>(capacity);
         }
     }
 
@@ -54,20 +54,20 @@ public class ParamMapBucket {
     }
 
     public int get(RollingParamEvent event, Object value) {
-        AtomicInteger counter = data[event.ordinal()].get(value);
+    	LongAdder counter = data[event.ordinal()].get(value);
         return counter == null ? 0 : counter.intValue();
     }
 
     public ParamMapBucket add(RollingParamEvent event, int count, Object value) {
-        AtomicInteger counter = data[event.ordinal()].get(value);
+    	LongAdder counter = data[event.ordinal()].get(value);
         // Note: not strictly concise.
         if (counter == null) {
-            AtomicInteger old = data[event.ordinal()].putIfAbsent(value, new AtomicInteger(count));
+        	LongAdder old = data[event.ordinal()].putIfAbsent(value, new LongAdder(count));
             if (old != null) {
-                old.addAndGet(count);
+                old.add(count);
             }
         } else {
-            counter.addAndGet(count);
+            counter.add(count);
         }
         return this;
     }

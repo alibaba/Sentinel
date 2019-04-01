@@ -53,6 +53,11 @@ public class LongAdder extends Striped64 implements Serializable {
      */
     public LongAdder() {
     }
+    
+    public LongAdder(long x){
+    	this();
+    	add(x);
+    }
 
     /**
      * Adds the given value.
