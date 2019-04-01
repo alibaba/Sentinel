@@ -112,7 +112,7 @@ final class ParamFlowChecker {
                 int itemThreshold = rule.getParsedHotItems().get(value);
                 return ++threadCount <= itemThreshold;
             }
-            long threshold = (long) rule.getCount();
+            long threshold = (long)rule.getCount();
             return ++threadCount <= threshold;
         }
 

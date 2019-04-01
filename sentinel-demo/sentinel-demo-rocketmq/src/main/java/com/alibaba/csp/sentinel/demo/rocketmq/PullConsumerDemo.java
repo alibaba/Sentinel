@@ -44,6 +44,7 @@ public class PullConsumerDemo {
 
     private static final Map<MessageQueue, Long> OFFSET_TABLE = new HashMap<MessageQueue, Long>();
 
+    @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static final ExecutorService pool = Executors.newFixedThreadPool(32);
 
     private static final AtomicLong SUCCESS_COUNT = new AtomicLong(0);

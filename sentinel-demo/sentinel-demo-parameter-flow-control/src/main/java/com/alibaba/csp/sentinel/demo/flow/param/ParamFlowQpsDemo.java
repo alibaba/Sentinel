@@ -31,7 +31,7 @@ import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRuleManager;
 public class ParamFlowQpsDemo {
 
     private static final int PARAM_A = 1;
-    private static final int PARAM_B = 2;
+    private static final int PARAM_B = 5;
     private static final int PARAM_C = 3;
     private static final int PARAM_D = 4;
 

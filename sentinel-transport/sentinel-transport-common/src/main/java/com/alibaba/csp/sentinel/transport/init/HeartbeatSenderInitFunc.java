@@ -35,6 +35,7 @@ import com.alibaba.csp.sentinel.transport.config.TransportConfig;
  */
 public class HeartbeatSenderInitFunc implements InitFunc {
 
+    @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(2,
         new NamedThreadFactory("sentinel-heartbeat-send-task", true));
 

@@ -26,7 +26,7 @@ import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
  * @author jialiang.linjl
  * @author Eric Zhao
  */
-public interface Metric {
+public interface Metric extends DebugSupport {
 
     /**
      * Get total success count.
@@ -57,7 +57,7 @@ public interface Metric {
     long block();
 
     /**
-     * Get total pass count.
+     * Get total pass count. not include {@link #occupiedPass()}
      *
      * @return pass count
      */
@@ -92,22 +92,30 @@ public interface Metric {
     MetricBucket[] windows();
 
     /**
-     * Increment by one the current exception count.
+     * Add current exception count.
+     *
+     * @param n count to add
      */
     void addException(int n);
 
     /**
-     * Increment by one the current block count.
+     * Add current block count.
+     *
+     * @param n count to add
      */
     void addBlock(int n);
 
     /**
-     * Increment by one the current success count.
+     * Add current completed count.
+     *
+     * @param n count to add
      */
     void addSuccess(int n);
 
     /**
-     * Increment by one the current pass count.
+     * Add current pass count.
+     *
+     * @param n count to add
      */
     void addPass(int n);
 
@@ -118,13 +126,65 @@ public interface Metric {
      */
     void addRT(long rt);
 
+    /**
+     * Get the sliding window length in seconds.
+     *
+     * @return the sliding window length
+     */
     double getWindowIntervalInSec();
 
+    /**
+     * Get sample count of the sliding window.
+     *
+     * @return sample count of the sliding window.
+     */
     int getSampleCount();
 
-    // Tool methods.
+    /**
+     * Note: this operation will not perform refreshing, so will not generate new buckets.
+     *
+     * @param timeMillis valid time in ms
+     * @return pass count of the bucket exactly associated to provided timestamp, or 0 if the timestamp is invalid
+     * @since 1.5.0
+     */
+    long getWindowPass(long timeMillis);
 
-    void debugQps();
+    // Occupy-based (@since 1.5.0)
+
+    /**
+     * Add occupied pass, which represents pass requests that borrow the latter windows' token.
+     *
+     * @param acquireCount tokens count.
+     * @since 1.5.0
+     */
+    void addOccupiedPass(int acquireCount);
+
+    /**
+     * Add request that occupied.
+     *
+     * @param futureTime   future timestamp that the acquireCount should be added on.
+     * @param acquireCount tokens count.
+     * @since 1.5.0
+     */
+    void addWaiting(long futureTime, int acquireCount);
+
+    /**
+     * Get waiting pass account
+     *
+     * @return waiting pass count
+     * @since 1.5.0
+     */
+    long waiting();
+
+    /**
+     * Get occupied pass count.
+     *
+     * @return occupied pass count
+     * @since 1.5.0
+     */
+    long occupiedPass();
+
+    // Tool methods.
 
     long previousWindowBlock();
 

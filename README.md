@@ -11,7 +11,7 @@
 ## Introduction
 
 As distributed systems become increasingly popular, the reliability between services is becoming more important than ever before.
-Sentinel takes "flow" as breakthrough point, and works on multiple fields including **flow control**, **circuit breaking** and **system adaptive protection**, to guarantee service reliability.
+Sentinel takes "flow" as breakthrough point, and works on multiple fields including **flow control**, **circuit breaking** and **system adaptive protection**, to guarantee reliability of microservices.
 
 Sentinel has the following features:
 
@@ -20,14 +20,25 @@ Sentinel has the following features:
 - **Widespread open-source ecosystem**: Sentinel provides out-of-box integrations with commonly-used frameworks and libraries such as Spring Cloud, Dubbo and gRPC. You can easily use Sentinel by simply add the adapter dependency to your services.
 - **Various SPI extensions**: Sentinel provides easy-to-use SPI extension interfaces that allow you to quickly customize your logic, for example, custom rule management, adapting data sources, and so on.
 
+Features overview:
+
+![features-of-sentinel](./doc/image/sentinel-features-overview-en.png)
+
 ## Documentation
 
-See the [中文文档](https://github.com/alibaba/Sentinel/wiki/%E4%BB%8B%E7%BB%8D) for Chinese readme.
+See the [中文文档](https://github.com/alibaba/Sentinel/wiki/%E4%BB%8B%E7%BB%8D) for document in Chinese.
 
 See the [Wiki](https://github.com/alibaba/Sentinel/wiki) for full documentation, examples, blog posts, operational details and other information.
 
+Sentinel provides integration module for various open-source frameworks and libraries
+(e.g. Spring Cloud, Apache Dubbo, gRPC, Spring WebFlux, Reactor). You can refer to [the document](https://github.com/alibaba/Sentinel/wiki/Adapters-to-Popular-Framework) for more information.
+
 If you are using Sentinel, please [**leave a comment here**](https://github.com/alibaba/Sentinel/issues/18) to tell us your scenario to make Sentinel better.
 It's also encouraged to add the link of your blog post, tutorial, demo or customized components to [**Awesome Sentinel**](./doc/awesome-sentinel.md).
+
+## Ecosystem Landscape
+
+![ecosystem-landscape](./doc/image/sentinel-opensource-eco-landscape-en.png)
 
 ## Quick Start
 
@@ -37,13 +48,14 @@ Below is a simple demo that guides new users to use Sentinel in just 3 steps. It
 
 **Note:** Sentinel requires Java 7 or later.
 
-If your application is build in maven, just add the following code in pom.xml.
+If your application is build in Maven, just add the following dependency in `pom.xml`.
 
 ```xml
+<!-- replace here with the latest version -->
 <dependency>
     <groupId>com.alibaba.csp</groupId>
     <artifactId>sentinel-core</artifactId>
-    <version>x.y.z</version>
+    <version>1.5.1</version>
 </dependency>
 ```
 
@@ -51,23 +63,16 @@ If not, you can download JAR in [Maven Center Repository](https://mvnrepository.
 
 ### 2. Define Resource
 
-Wrap code snippet via Sentinel API: `SphU.entry("resourceName")` and `entry.exit()`. In below example, it is `System.out.println("hello world");`:
+Wrap your code snippet via Sentinel API: `SphU.entry(resourceName)`.
+In below example, it is `System.out.println("hello world");`:
 
 ```java
-Entry entry = null;
-
-try {
-  entry = SphU.entry("HelloWorld");
-
-  // BIZ logic being protected
-  System.out.println("hello world");
+try (Entry entry = SphU.entry("HelloWorld")) {
+    // Your business logic here.
+    System.out.println("hello world");
 } catch (BlockException e) {
-  // handle block logic
-} finally {
-  // make sure that the exit() logic is called
-  if (entry != null) {
-    entry.exit();
-  }
+    // Handle rejected request.
+    e.printStackTrace();
 }
 ```
 

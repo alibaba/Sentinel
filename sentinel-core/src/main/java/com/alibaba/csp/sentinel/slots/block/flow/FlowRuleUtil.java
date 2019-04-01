@@ -18,8 +18,11 @@ package com.alibaba.csp.sentinel.slots.block.flow;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
@@ -85,10 +88,11 @@ public final class FlowRuleUtil {
      */
     public static <K> Map<K, List<FlowRule>> buildFlowRuleMap(List<FlowRule> list, Function<FlowRule, K> groupFunction,
                                                               Predicate<FlowRule> filter, boolean shouldSort) {
-        Map<K, List<FlowRule>> newRuleMap = new ConcurrentHashMap<K, List<FlowRule>>();
+        Map<K, List<FlowRule>> newRuleMap = new ConcurrentHashMap<>();
         if (list == null || list.isEmpty()) {
             return newRuleMap;
         }
+        Map<K, Set<FlowRule>> tmpMap = new ConcurrentHashMap<>();
 
         for (FlowRule rule : list) {
             if (!isValidRule(rule)) {
@@ -109,22 +113,24 @@ public final class FlowRuleUtil {
             if (key == null) {
                 continue;
             }
-            List<FlowRule> flowRules = newRuleMap.get(key);
+            Set<FlowRule> flowRules = tmpMap.get(key);
 
             if (flowRules == null) {
-                flowRules = new ArrayList<FlowRule>();
-                newRuleMap.put(key, flowRules);
+                // Use hash set here to remove duplicate rules.
+                flowRules = new HashSet<>();
+                tmpMap.put(key, flowRules);
             }
 
             flowRules.add(rule);
         }
-
-        if (shouldSort && !newRuleMap.isEmpty()) {
-            Comparator<FlowRule> comparator = new FlowRuleComparator();
-            // Sort the rules.
-            for (List<FlowRule> rules : newRuleMap.values()) {
+        Comparator<FlowRule> comparator = new FlowRuleComparator();
+        for (Entry<K, Set<FlowRule>> entries : tmpMap.entrySet()) {
+            List<FlowRule> rules = new ArrayList<>(entries.getValue());
+            if (shouldSort) {
+                // Sort the rules.
                 Collections.sort(rules, comparator);
             }
+            newRuleMap.put(entries.getKey(), rules);
         }
 
         return newRuleMap;
