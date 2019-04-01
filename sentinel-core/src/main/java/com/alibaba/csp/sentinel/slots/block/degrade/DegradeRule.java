@@ -15,18 +15,18 @@
  */
 package com.alibaba.csp.sentinel.slots.block.degrade;
 
+import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
+import com.alibaba.csp.sentinel.context.Context;
+import com.alibaba.csp.sentinel.node.DefaultNode;
+import com.alibaba.csp.sentinel.node.Node;
+import com.alibaba.csp.sentinel.slots.block.AbstractRule;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
+
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-
-import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
-import com.alibaba.csp.sentinel.context.Context;
-import com.alibaba.csp.sentinel.node.ClusterNode;
-import com.alibaba.csp.sentinel.node.DefaultNode;
-import com.alibaba.csp.sentinel.slots.block.AbstractRule;
-import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 
 /**
  * <p>
@@ -160,13 +160,28 @@ public class DegradeRule extends AbstractRule {
         return result;
     }
 
+    private static Node selectNodeByLimitApp(AbstractRule rule, Context context, DefaultNode contentNode) {
+        // The limit app should not be empty.
+        String limitApp = rule.getLimitApp();
+
+        // if limitApp is 'origin' then return originNode
+        if (RuleConstant.LIMIT_APP_ORIGIN.equals(limitApp)) {
+            Node originNode = context.getOriginNode();
+            if (null == originNode) {
+                return null;
+            }
+            return originNode;
+        }
+        return ClusterBuilderSlot.getClusterNode(rule.getResource());
+    }
+
     @Override
     public boolean passCheck(Context context, DefaultNode node, int acquireCount, Object... args) {
         if (cut) {
             return false;
         }
+        Node clusterNode = selectNodeByLimitApp(this, context, node);
 
-        ClusterNode clusterNode = ClusterBuilderSlot.getClusterNode(this.getResource());
         if (clusterNode == null) {
             return true;
         }
