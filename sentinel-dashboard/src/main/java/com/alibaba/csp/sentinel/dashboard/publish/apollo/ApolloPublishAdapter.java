@@ -6,7 +6,7 @@ import com.alibaba.csp.sentinel.dashboard.discovery.ApolloMachineInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.publish.Publisher;
-import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
+import com.alibaba.csp.sentinel.dashboard.repository.rule.thirdparty.ApolloRepository;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import com.ctrip.framework.apollo.openapi.dto.NamespaceReleaseDTO;
@@ -26,9 +26,9 @@ public abstract class ApolloPublishAdapter<T extends RuleEntity> implements Publ
 
     AppManagement appManagement;
 
-    InMemoryRuleRepositoryAdapter<T> repository;
+    ApolloRepository<T> repository;
 
-    protected ApolloPublishAdapter(AppManagement appManagement, InMemoryRuleRepositoryAdapter<T> repository) {
+    protected ApolloPublishAdapter(AppManagement appManagement, ApolloRepository<T> repository) {
         this.appManagement = appManagement;
         this.repository = repository;
     }
@@ -37,9 +37,9 @@ public abstract class ApolloPublishAdapter<T extends RuleEntity> implements Publ
     public boolean publish(String app, String ip, int port) {
         Optional<MachineInfo> machineInfoOptional = appManagement.getDetailApp(app).getMachine(ip, port);
         ApolloMachineInfo apolloMachineInfo = (ApolloMachineInfo) machineInfoOptional.get();
-        List<T> rules = findRules(apolloMachineInfo);
         AssertUtil.notNull(apolloMachineInfo, String.format("There is no equivalent machineInfo for app: %s, ip: %s, port: %s", app, ip, port));
-        ApolloOpenApiClient apolloClient = ApolloClientManagement.getClient(apolloMachineInfo.getPortalUrl());
+        List<T> rules = findRules(apolloMachineInfo);
+        ApolloOpenApiClient apolloClient = ApolloClientManagement.getOrCreateClient(apolloMachineInfo);
         AssertUtil.notNull(apolloClient, String.format("There is no equivalent client for apollo portal url: %s", apolloMachineInfo.getPortalUrl()));
         String appId = apolloMachineInfo.getAppId();
         String env = apolloMachineInfo.getEnv();
@@ -66,8 +66,8 @@ public abstract class ApolloPublishAdapter<T extends RuleEntity> implements Publ
         apolloClient.publishNamespace(appId, env, clusterName, namespaceName, namespaceReleaseDTO);
     }
 
-    private List<T> findRules(MachineInfo machineInfo) {
-        return repository.findAllByMachine(machineInfo);
+    private List<T> findRules(ApolloMachineInfo apolloMachineInfo) {
+        return repository.findByPortal(apolloMachineInfo);
     }
 
     /**

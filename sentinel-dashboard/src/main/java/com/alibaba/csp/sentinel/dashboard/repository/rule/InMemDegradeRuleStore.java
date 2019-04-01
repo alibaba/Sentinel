@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
 
+import com.alibaba.csp.sentinel.dashboard.repository.rule.thirdparty.ThirdPartyRepository;
 import org.springframework.stereotype.Component;
 
 /**
@@ -28,6 +29,10 @@ import org.springframework.stereotype.Component;
 public class InMemDegradeRuleStore extends InMemoryRuleRepositoryAdapter<DegradeRuleEntity> {
 
     private static AtomicLong ids = new AtomicLong(0);
+
+    public InMemDegradeRuleStore(ThirdPartyRepository<DegradeRuleEntity> thirdPartyRepository) {
+        super(thirdPartyRepository);
+    }
 
     @Override
     protected long nextId() {

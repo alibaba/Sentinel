@@ -62,7 +62,7 @@ public class MachineRegistryV2Controller {
             long timestamp = version == null ? System.currentTimeMillis() : Long.parseLong(version);
             apolloMachineInfo.setTimestamp(new Date(timestamp));
             apolloMachineInfo.setVersion(sentinelVersion);
-            ApolloClientManagement.createClient(apolloMachineInfo);
+            ApolloClientManagement.getOrCreateClient(apolloMachineInfo);
             appManagement.addMachine(apolloMachineInfo);
             return Result.ofSuccessMsg("success");
         } catch (Exception e) {

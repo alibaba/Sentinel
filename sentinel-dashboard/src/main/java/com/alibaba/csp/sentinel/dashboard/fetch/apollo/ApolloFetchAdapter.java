@@ -37,7 +37,7 @@ public abstract class ApolloFetchAdapter<T extends RuleEntity> implements Fetche
         Optional<MachineInfo> machineInfoOptional = appManagement.getDetailApp(app).getMachine(ip, port);
         ApolloMachineInfo apolloMachineInfo = (ApolloMachineInfo) machineInfoOptional.get();
         AssertUtil.notNull(apolloMachineInfo, String.format("There is no equivalent machineInfo for app: %s, ip: %s, port: %s", app, ip, port));
-        ApolloOpenApiClient apolloClient = ApolloClientManagement.getClient(apolloMachineInfo.getPortalUrl());
+        ApolloOpenApiClient apolloClient = ApolloClientManagement.getOrCreateClient(apolloMachineInfo);
         AssertUtil.notNull(apolloClient, String.format("There is no equivalent client for apollo portal url: %s", apolloMachineInfo.getPortalUrl()));
         OpenItemDTO item = getItem(apolloClient, apolloMachineInfo);
         if (Objects.isNull(item)) {
