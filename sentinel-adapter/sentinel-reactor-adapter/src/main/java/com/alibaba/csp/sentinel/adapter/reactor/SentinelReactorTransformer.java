@@ -17,6 +17,8 @@ package com.alibaba.csp.sentinel.adapter.reactor;
 
 import java.util.function.Function;
 
+import com.alibaba.csp.sentinel.util.AssertUtil;
+
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -36,7 +38,7 @@ public class SentinelReactorTransformer<T> implements Function<Publisher<T>, Pub
     }
 
     public SentinelReactorTransformer(EntryConfig entryConfig) {
-        EntryConfig.assertValid(entryConfig);
+        AssertUtil.notNull(entryConfig, "entryConfig cannot be null");
         this.entryConfig = entryConfig;
     }
 
