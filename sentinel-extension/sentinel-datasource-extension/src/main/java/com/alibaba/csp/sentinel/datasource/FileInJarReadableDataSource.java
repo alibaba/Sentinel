@@ -25,8 +25,8 @@ import java.util.jar.JarFile;
 
 /**
  * <p>
- * A {@link ReadableDataSource} based on file. This class will automatically
- * fetches the backend file every isModified period.
+ * A {@link ReadableDataSource} based on jarfile. This class can only read file when it
+ * run but  will not automatically refresh if it is changed.
  * </p>
  * <p>
  * Limitations: Default read buffer size is 1 MB. If file size is greater than
@@ -36,7 +36,7 @@ import java.util.jar.JarFile;
  * @author dingq
  * @date 2019-03-30
  */
-public class JarFileRefreshableDataSource<T> extends AutoRefreshDataSource<String, T> {
+public class FileInJarReadableDataSource<T> extends AutoRefreshDataSource<String, T> {
     private static final int MAX_SIZE = 1024 * 1024 * 4;
     private static final long DEFAULT_REFRESH_MS = 3000;
     private static final int DEFAULT_BUF_SIZE = 1024 * 1024;
@@ -48,7 +48,6 @@ public class JarFileRefreshableDataSource<T> extends AutoRefreshDataSource<Strin
     private final Charset charset;
     private final String jarName;
     private final String fileInJarName;
-    private long lastModified = 0L;
 
     /**
      * @param jarName      the jar to read
@@ -56,23 +55,23 @@ public class JarFileRefreshableDataSource<T> extends AutoRefreshDataSource<Strin
      * @param configParser the config decoder (parser)
      * @throws FileNotFoundException
      */
-    public JarFileRefreshableDataSource(String jarName, String fileInJarName, Converter<String, T> configParser)
+    public FileInJarReadableDataSource(String jarName, String fileInJarName, Converter<String, T> configParser)
             throws IOException {
         this(jarName, fileInJarName, configParser, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, DEFAULT_CHAR_SET);
     }
 
-    public JarFileRefreshableDataSource(String jarName, String fileInJarName, Converter<String, T> configParser, int bufSize)
+    public FileInJarReadableDataSource(String jarName, String fileInJarName, Converter<String, T> configParser, int bufSize)
             throws IOException {
         this(jarName, fileInJarName, configParser, DEFAULT_REFRESH_MS, bufSize, DEFAULT_CHAR_SET);
     }
 
-    public JarFileRefreshableDataSource(String jarName, String fileInJarName, Converter<String, T> configParser, Charset charset)
+    public FileInJarReadableDataSource(String jarName, String fileInJarName, Converter<String, T> configParser, Charset charset)
             throws IOException {
         this(jarName, fileInJarName, configParser, DEFAULT_REFRESH_MS, DEFAULT_BUF_SIZE, charset);
     }
 
-    public JarFileRefreshableDataSource(String jarName, String fileInJarName, Converter<String, T> configParser, long recommendRefreshMs, int bufSize,
-                                        Charset charset) throws IOException {
+    public FileInJarReadableDataSource(String jarName, String fileInJarName, Converter<String, T> configParser, long recommendRefreshMs, int bufSize,
+                                       Charset charset) throws IOException {
         super(configParser, recommendRefreshMs);
         if (bufSize <= 0 || bufSize > MAX_SIZE) {
             throw new IllegalArgumentException("bufSize must between (0, " + MAX_SIZE + "], but " + bufSize + " get");
@@ -85,8 +84,6 @@ public class JarFileRefreshableDataSource<T> extends AutoRefreshDataSource<Strin
         this.jarName = jarName;
         this.fileInJarName = fileInJarName;
         refreshJar();
-        // If the file does not exist, the last modified will be 0.
-        this.lastModified = jarEntry == null ? 0 : jarEntry.getTime();
         firstLoad();
     }
 
@@ -94,7 +91,7 @@ public class JarFileRefreshableDataSource<T> extends AutoRefreshDataSource<Strin
     public String readSource() throws Exception {
         if (null == jarEntry) {
             // Will throw FileNotFoundException later.
-            RecordLog.warn(String.format("[JarFileRefreshableDataSource] File does not exist: %s", jarFile.getName()));
+            RecordLog.warn(String.format("[FileInJarReadableDataSource] File does not exist: %s", jarFile.getName()));
         }
         InputStream inputStream = null;
         try {
@@ -123,24 +120,6 @@ public class JarFileRefreshableDataSource<T> extends AutoRefreshDataSource<Strin
         } catch (Throwable e) {
             RecordLog.info("loadConfig exception", e);
         }
-    }
-
-    @Override
-    protected boolean isModified() {
-        try {
-            // jarFile must refresh
-            refreshJar();
-        } catch (IOException e) {
-            e.printStackTrace();
-            RecordLog.warn(String.format("[JarFileRefreshableDataSource] refresh error: %s"));
-            return false;
-        }
-        long curLastModified = jarEntry.getTime();
-        if (curLastModified != this.lastModified) {
-            this.lastModified = curLastModified;
-            return true;
-        }
-        return false;
     }
 
     @Override

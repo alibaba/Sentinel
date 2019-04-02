@@ -1,8 +1,7 @@
 package com.alibaba.csp.sentinel.demo.file.rule;
 
 import com.alibaba.csp.sentinel.datasource.Converter;
-import com.alibaba.csp.sentinel.datasource.FileRefreshableDataSource;
-import com.alibaba.csp.sentinel.datasource.JarFileRefreshableDataSource;
+import com.alibaba.csp.sentinel.datasource.FileInJarReadableDataSource;
 import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
@@ -18,8 +17,8 @@ import java.util.List;
 
 /**
  * <p>
- * This Demo shows how to use {@link JarFileRefreshableDataSource} to read {@link Rule}s from jarfile. The
- * {@link JarFileRefreshableDataSource} will automatically fetches the backend file every 3 seconds, and
+ * This Demo shows how to use {@link FileInJarReadableDataSource} to read {@link Rule}s from jarfile. The
+ * {@link FileInJarReadableDataSource} will automatically fetches the backend file every 3 seconds, and
  * inform the listener if the file is updated.
  * </p>
  * <p>
@@ -62,7 +61,7 @@ public class JarFileDataSourceDemo {
         // your flowRuleInJarName is 'classes/FlowRule.json'
         String flowRuleInJarPath = "FlowRule.json";
 
-        JarFileRefreshableDataSource<List<FlowRule>> flowRuleDataSource = new JarFileRefreshableDataSource<>(
+        FileInJarReadableDataSource<List<FlowRule>> flowRuleDataSource = new FileInJarReadableDataSource<>(
                 jarPath,flowRuleInJarPath, flowRuleListParser);
         FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
     }
