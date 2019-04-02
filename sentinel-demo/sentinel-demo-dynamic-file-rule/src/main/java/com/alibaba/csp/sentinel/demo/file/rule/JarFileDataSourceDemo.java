@@ -40,7 +40,6 @@ import java.util.List;
  *
  * @author dingq
  * @date 2019-03-30
- * @desc 描述
  */
 public class JarFileDataSourceDemo {
     public static void main(String[] args) throws Exception {
