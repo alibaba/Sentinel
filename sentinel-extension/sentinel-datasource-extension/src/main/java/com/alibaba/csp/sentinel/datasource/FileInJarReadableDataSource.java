@@ -113,6 +113,11 @@ public class FileInJarReadableDataSource<T> extends AutoRefreshDataSource<String
 
     }
 
+    @Override
+    protected boolean isModified() {
+        return false;
+    }
+
     private void firstLoad() {
         try {
             T newValue = loadConfig();
