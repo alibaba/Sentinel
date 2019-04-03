@@ -321,7 +321,7 @@ public class SentinelApiClient {
             return executeCommand(commandName, uriBuilder.build())
                 .thenApply(RuleUtils::parseParamFlowRule)
                 .thenApply(rules -> rules.stream()
-                    .map(e -> ParamFlowRuleEntity.fromAuthorityRule(app, ip, port, e))
+                    .map(e -> ParamFlowRuleEntity.fromParamFlowRule(app, ip, port, e))
                     .collect(Collectors.toList())
                 );
         } catch (Exception e) {

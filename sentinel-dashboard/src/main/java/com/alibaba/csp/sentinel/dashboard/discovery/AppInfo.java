@@ -82,7 +82,7 @@ public class AppInfo {
     }
 
     private boolean heartbeatJudge(final int threshold) {
-        if (machines.size() == 0) {
+        if (machines.isEmpty()) {
             return false;
         }
         if (threshold > 0) {

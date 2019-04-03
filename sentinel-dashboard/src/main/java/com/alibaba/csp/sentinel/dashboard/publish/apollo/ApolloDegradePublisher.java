@@ -3,12 +3,13 @@ package com.alibaba.csp.sentinel.dashboard.publish.apollo;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.ApolloMachineInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
-import com.alibaba.csp.sentinel.dashboard.repository.rule.thirdparty.ApolloRepository;
+import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
 import com.alibaba.fastjson.JSON;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * publish degrade rule by apollo
@@ -19,7 +20,7 @@ import java.util.List;
 @ConditionalOnProperty(name = "ruleDataSource", havingValue = "apollo")
 public class ApolloDegradePublisher extends ApolloPublishAdapter<DegradeRuleEntity> {
 
-    protected ApolloDegradePublisher(AppManagement appManagement, ApolloRepository<DegradeRuleEntity> repository) {
+    protected ApolloDegradePublisher(AppManagement appManagement, InMemoryRuleRepositoryAdapter<DegradeRuleEntity> repository) {
         super(appManagement, repository);
     }
 
@@ -30,6 +31,6 @@ public class ApolloDegradePublisher extends ApolloPublishAdapter<DegradeRuleEnti
 
     @Override
     protected String processRules(List<DegradeRuleEntity> rules) {
-        return JSON.toJSONString(rules);
+        return JSON.toJSONString(rules.stream().map(DegradeRuleEntity::toDegradeRule).collect(Collectors.toList()));
     }
 }

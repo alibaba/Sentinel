@@ -15,8 +15,8 @@
  */
 package com.alibaba.csp.sentinel.dashboard.controller;
 
-import com.alibaba.csp.sentinel.dashboard.discovery.ApolloClientManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.ApolloMachineInfo;
+import com.alibaba.csp.sentinel.dashboard.discovery.ApolloManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineDiscovery;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
@@ -28,8 +28,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import java.util.Date;
 
 @Controller
 @RequestMapping(value = "/registryV2", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -59,10 +57,10 @@ public class MachineRegistryV2Controller {
         String sentinelVersion = StringUtil.isEmpty(v) ? "unknown" : v;
         String version = apolloMachineInfo.getVersion();
         try {
-            long timestamp = version == null ? System.currentTimeMillis() : Long.parseLong(version);
-            apolloMachineInfo.setTimestamp(new Date(timestamp));
+            apolloMachineInfo.setHeartbeatVersion(Long.parseLong(version));
+            apolloMachineInfo.setLastHeartbeat(System.currentTimeMillis());
             apolloMachineInfo.setVersion(sentinelVersion);
-            ApolloClientManagement.getOrCreateClient(apolloMachineInfo);
+            ApolloManagement.getOrCreateClient(apolloMachineInfo);
             appManagement.addMachine(apolloMachineInfo);
             return Result.ofSuccessMsg("success");
         } catch (Exception e) {

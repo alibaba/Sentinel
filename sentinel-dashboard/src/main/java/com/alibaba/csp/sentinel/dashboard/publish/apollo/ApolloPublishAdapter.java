@@ -1,12 +1,12 @@
 package com.alibaba.csp.sentinel.dashboard.publish.apollo;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
-import com.alibaba.csp.sentinel.dashboard.discovery.ApolloClientManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.ApolloMachineInfo;
+import com.alibaba.csp.sentinel.dashboard.discovery.ApolloManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.publish.Publisher;
-import com.alibaba.csp.sentinel.dashboard.repository.rule.thirdparty.ApolloRepository;
+import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import com.ctrip.framework.apollo.openapi.dto.NamespaceReleaseDTO;
@@ -26,9 +26,9 @@ public abstract class ApolloPublishAdapter<T extends RuleEntity> implements Publ
 
     AppManagement appManagement;
 
-    ApolloRepository<T> repository;
+    InMemoryRuleRepositoryAdapter<T> repository;
 
-    protected ApolloPublishAdapter(AppManagement appManagement, ApolloRepository<T> repository) {
+    protected ApolloPublishAdapter(AppManagement appManagement, InMemoryRuleRepositoryAdapter<T> repository) {
         this.appManagement = appManagement;
         this.repository = repository;
     }
@@ -36,18 +36,19 @@ public abstract class ApolloPublishAdapter<T extends RuleEntity> implements Publ
     @Override
     public boolean publish(String app, String ip, int port) {
         Optional<MachineInfo> machineInfoOptional = appManagement.getDetailApp(app).getMachine(ip, port);
-        ApolloMachineInfo apolloMachineInfo = (ApolloMachineInfo) machineInfoOptional.get();
-        AssertUtil.notNull(apolloMachineInfo, String.format("There is no equivalent machineInfo for app: %s, ip: %s, port: %s", app, ip, port));
-        List<T> rules = findRules(apolloMachineInfo);
-        ApolloOpenApiClient apolloClient = ApolloClientManagement.getOrCreateClient(apolloMachineInfo);
-        AssertUtil.notNull(apolloClient, String.format("There is no equivalent client for apollo portal url: %s", apolloMachineInfo.getPortalUrl()));
-        String appId = apolloMachineInfo.getAppId();
-        String env = apolloMachineInfo.getEnv();
-        String clusterName = apolloMachineInfo.getClusterName();
-        String namespace = apolloMachineInfo.getNamespace();
-        String operator = apolloMachineInfo.getOperator();
-        createOrUpdateItem(apolloClient, apolloMachineInfo, operator, rules, appId, env, clusterName, namespace);
-        publishNamespace(apolloClient, operator, appId, env, clusterName, namespace);
+        machineInfoOptional.ifPresent(machineInfo -> {
+            ApolloMachineInfo apolloMachineInfo = (ApolloMachineInfo) machineInfo;
+            List<T> rules = findRules(apolloMachineInfo);
+            ApolloOpenApiClient apolloClient = ApolloManagement.getOrCreateClient(apolloMachineInfo);
+            AssertUtil.notNull(apolloClient, String.format("There is no equivalent client for apollo portal url: %s", apolloMachineInfo.getPortalUrl()));
+            String appId = apolloMachineInfo.getAppId();
+            String env = apolloMachineInfo.getEnv();
+            String clusterName = apolloMachineInfo.getClusterName();
+            String namespace = apolloMachineInfo.getNamespace();
+            String operator = apolloMachineInfo.getOperator();
+            createOrUpdateItem(apolloClient, apolloMachineInfo, operator, rules, appId, env, clusterName, namespace);
+            publishNamespace(apolloClient, operator, appId, env, clusterName, namespace);
+        });
         return true;
     }
 
@@ -67,7 +68,7 @@ public abstract class ApolloPublishAdapter<T extends RuleEntity> implements Publ
     }
 
     private List<T> findRules(ApolloMachineInfo apolloMachineInfo) {
-        return repository.findByPortal(apolloMachineInfo);
+        return repository.findAllByMachine(apolloMachineInfo);
     }
 
     /**

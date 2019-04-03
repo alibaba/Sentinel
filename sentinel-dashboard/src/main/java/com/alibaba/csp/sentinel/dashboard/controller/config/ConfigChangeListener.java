@@ -6,6 +6,7 @@ import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEnti
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.SystemRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.dashboard.fetch.Fetcher;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
@@ -64,6 +65,7 @@ public class ConfigChangeListener {
         boolean checkResult = checker.checkOperator(operator, app, ip, port);
         if (checkResult) {
             List<FlowRuleEntity> rules = flowRuleFetcher.fetch(app, ip, port);
+            flowRuleRepository.deleteByMachine(MachineInfo.of(app, ip, port));
             flowRuleRepository.saveAll(rules);
         }
         return Result.ofSuccess(checkResult);
@@ -74,6 +76,7 @@ public class ConfigChangeListener {
         boolean checkResult = checker.checkOperator(operator, app, ip, port);
         if (checkResult) {
             List<DegradeRuleEntity> rules = degradeRuleFetcher.fetch(app, ip, port);
+            degradeRuleRepository.deleteByMachine(MachineInfo.of(app, ip, port));
             degradeRuleRepository.saveAll(rules);
         }
         return Result.ofSuccess(checkResult);
@@ -84,6 +87,7 @@ public class ConfigChangeListener {
         boolean checkResult = checker.checkOperator(operator, app, ip, port);
         if (checkResult) {
             List<AuthorityRuleEntity> rules = authorityRuleFetcher.fetch(app, ip, port);
+            authorityRuleRepository.deleteByMachine(MachineInfo.of(app, ip, port));
             authorityRuleRepository.saveAll(rules);
         }
         return Result.ofSuccess(checkResult);
@@ -94,6 +98,7 @@ public class ConfigChangeListener {
         boolean checkResult = checker.checkOperator(operator, app, ip, port);
         if (checkResult) {
             List<SystemRuleEntity> rules = systemRuleFetcher.fetch(app, ip, port);
+            systemRuleRepository.deleteByMachine(MachineInfo.of(app, ip, port));
             systemRuleRepository.saveAll(rules);
         }
         return Result.ofSuccess(checkResult);
@@ -104,6 +109,7 @@ public class ConfigChangeListener {
         boolean checkResult = checker.checkOperator(operator, app, ip, port);
         if (checkResult) {
             List<ParamFlowRuleEntity> rules = paramFlowRuleFetcher.fetch(app, ip, port);
+            paramFlowRuleRepository.deleteByMachine(MachineInfo.of(app, ip, port));
             paramFlowRuleRepository.saveAll(rules);
         }
         return Result.ofSuccess(checkResult);

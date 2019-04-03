@@ -15,17 +15,16 @@
  */
 package com.alibaba.csp.sentinel.dashboard.repository.rule;
 
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
+import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
+import com.alibaba.csp.sentinel.util.AssertUtil;
+import com.google.common.collect.Lists;
+import org.springframework.util.CollectionUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
-import com.alibaba.csp.sentinel.dashboard.repository.rule.thirdparty.ThirdPartyRepository;
-import com.alibaba.csp.sentinel.util.AssertUtil;
-import com.google.common.collect.Lists;
 
 /**
  * @author leyou
@@ -39,12 +38,7 @@ public abstract class InMemoryRuleRepositoryAdapter<T extends RuleEntity> implem
     private Map<Long, T> allRules = new ConcurrentHashMap<>(16);
 
     private Map<String, Map<Long, T>> appRules = new ConcurrentHashMap<>(16);
-    private ThirdPartyRepository<T> thirdPartyRepository;
     private static final int MAX_RULES_SIZE = 10000;
-
-    public InMemoryRuleRepositoryAdapter(ThirdPartyRepository<T> thirdPartyRepository) {
-        this.thirdPartyRepository = thirdPartyRepository;
-    }
 
     @Override
     public T save(T entity) {
@@ -59,9 +53,6 @@ public abstract class InMemoryRuleRepositoryAdapter<T extends RuleEntity> implem
                 .put(processedEntity.getId(), processedEntity);
             appRules.computeIfAbsent(processedEntity.getApp(), v -> new ConcurrentHashMap<>(32))
                 .put(processedEntity.getId(), processedEntity);
-            if (Objects.nonNull(thirdPartyRepository)) {
-                thirdPartyRepository.save(processedEntity);
-            }
         }
 
         return processedEntity;
@@ -88,9 +79,6 @@ public abstract class InMemoryRuleRepositoryAdapter<T extends RuleEntity> implem
                 appRules.get(entity.getApp()).remove(id);
             }
             machineRules.get(MachineInfo.of(entity.getApp(), entity.getIp(), entity.getPort())).remove(id);
-            if (Objects.nonNull(thirdPartyRepository)) {
-                thirdPartyRepository.delete(entity);
-            }
         }
         return entity;
     }
@@ -117,6 +105,19 @@ public abstract class InMemoryRuleRepositoryAdapter<T extends RuleEntity> implem
             return new ArrayList<>();
         }
         return new ArrayList<>(entities.values());
+    }
+
+    @Override
+    public void deleteByMachine(MachineInfo machineInfo) {
+        Map<Long, T> removedMachineRules = machineRules.remove(machineInfo);
+        if (CollectionUtils.isEmpty(removedMachineRules)) {
+            return;
+        }
+        Map<Long, T> entities = appRules.get(machineInfo.getApp());
+        removedMachineRules.keySet().forEach(id -> {
+            allRules.remove(id);
+            entities.remove(id);
+        });
     }
 
     protected T preProcess(T entity) {

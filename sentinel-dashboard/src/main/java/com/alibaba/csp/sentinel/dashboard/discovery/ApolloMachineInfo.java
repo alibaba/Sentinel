@@ -136,29 +136,32 @@ public class ApolloMachineInfo extends MachineInfo {
 
     @Override
     public String toString() {
-        return "ApolloMachineInfo{" + "MachineInfo{" +
-                "app='" + getApp() + '\'' +
-                ", hostname='" + getHostname() + '\'' +
-                ", ip='" + getIp() + '\'' +
-                ", port=" + getPort() +
-                ", timestamp=" + getTimestamp() +
-                ", version='" + getVersion() + '\'' +
-                '}'+
-                "appId='" + appId + '\'' +
-                ", env='" + env + '\'' +
-                ", namespace='" + namespace + '\'' +
-                ", clusterName='" + clusterName + '\'' +
-                ", portalUrl='" + portalUrl + '\'' +
-                ", token='" + token + '\'' +
-                ", degradeRulesKey='" + degradeRulesKey + '\'' +
-                ", flowRulesKey='" + flowRulesKey + '\'' +
-                ", authorityRulesKey='" + authorityRulesKey + '\'' +
-                ", systemRulesKey='" + systemRulesKey + '\'' +
-                ", paramFlowRulesKey='" + paramFlowRulesKey + '\'' +
-                ", connectTimeout=" + connectTimeout +
-                ", readTimeout=" + readTimeout +
-                ", operator=" + operator +
-                '}';
+        return new StringBuilder("ApolloMachineInfo{")
+                .append("MachineInfo {")
+                .append("app='").append(getApp()).append('\'')
+                .append(", hostname='").append(getHostname()).append('\'')
+                .append(", ip='").append(getIp()).append('\'')
+                .append(", port=").append(getPort())
+                .append(", heartbeatVersion=").append(getHeartbeatVersion())
+                .append(", lastHeartbeat=").append(getLastHeartbeat())
+                .append(", version='").append(getVersion()).append('\'')
+                .append(", healthy=").append(isHealthy())
+                .append('}')
+                .append("appId='").append(appId).append('\'')
+                .append(", env='").append(env).append('\'')
+                .append(", namespace='").append(namespace).append('\'')
+                .append(", clusterName='").append(clusterName).append('\'')
+                .append(", portalUrl='").append(portalUrl).append('\'')
+                .append(", token='").append(token).append('\'')
+                .append(", degradeRulesKey='").append(degradeRulesKey).append('\'')
+                .append(", flowRulesKey='").append(flowRulesKey).append('\'')
+                .append(", authorityRulesKey='").append(authorityRulesKey).append('\'')
+                .append(", systemRulesKey='").append(systemRulesKey).append('\'')
+                .append(", paramFlowRulesKey='").append(paramFlowRulesKey).append('\'')
+                .append(", connectTimeout=").append(connectTimeout)
+                .append(", readTimeout=").append(readTimeout)
+                .append(", operator='").append(operator).append('\'')
+                .append('}').toString();
     }
 
 }

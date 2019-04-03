@@ -75,6 +75,14 @@ public interface RuleRepository<T, ID> {
      */
     List<T> findAllByApp(String appName);
 
+    /**
+     * Delete rules by machine
+     *
+     * @param machineInfo
+     * @return void
+     */
+    void deleteByMachine(MachineInfo machineInfo);
+
     ///**
     // * Find all by app and enable switch.
     // * @param app

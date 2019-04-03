@@ -19,7 +19,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.AuthorityRuleEntity;
 
-import com.alibaba.csp.sentinel.dashboard.repository.rule.thirdparty.ThirdPartyRepository;
 import org.springframework.stereotype.Component;
 
 /**
@@ -32,10 +31,6 @@ import org.springframework.stereotype.Component;
 public class InMemAuthorityRuleStore extends InMemoryRuleRepositoryAdapter<AuthorityRuleEntity> {
 
     private static AtomicLong ids = new AtomicLong(0);
-
-    public InMemAuthorityRuleStore(ThirdPartyRepository<AuthorityRuleEntity> thirdPartyRepository) {
-        super(thirdPartyRepository);
-    }
 
     @Override
     protected long nextId() {

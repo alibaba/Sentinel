@@ -3,12 +3,13 @@ package com.alibaba.csp.sentinel.dashboard.fetch.apollo;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.AuthorityRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.ApolloMachineInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
+import com.alibaba.csp.sentinel.dashboard.util.RuleUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * fetch authority rule by apollo
@@ -29,7 +30,12 @@ public class ApolloAuthorityRuleFetcher extends ApolloFetchAdapter<AuthorityRule
     }
 
     @Override
-    protected List<AuthorityRuleEntity> convert(String value) {
-        return JSON.parseObject(value, new TypeReference<List<AuthorityRuleEntity>>() {});
+    protected List<AuthorityRuleEntity> convert(String app, String ip, int port, String value) {
+        return Optional.ofNullable(value)
+                        .map(RuleUtils::parseAuthorityRule)
+                        .map(rules -> rules.stream()
+                                            .map(e -> AuthorityRuleEntity.fromAuthorityRule(app, ip, port, e))
+                                            .collect(Collectors.toList()))
+                        .orElse(null);
     }
 }
