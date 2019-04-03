@@ -195,6 +195,7 @@ public class MetricFetcher {
         for (final MachineInfo machine : machines) {
             // auto remove
             if (machine.isDead()) {
+                latch.countDown();
                 appManagement.getDetailApp(app).removeMachine(machine.getIp(), machine.getPort());
                 logger.info("Dead machine removed: {}:{} of {}", machine.getIp(), machine.getPort(), app);
                 continue;
