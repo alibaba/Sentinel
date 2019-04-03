@@ -22,8 +22,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.context.Context;
-import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.DefaultNode;
+import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
@@ -69,6 +69,11 @@ public class DegradeRule extends AbstractRule {
      * RT threshold or exception ratio threshold count.
      */
     private double count;
+
+    /**
+     * Mode: 0 for resource, 1 for context.
+     */
+    private int strategy = RuleConstant.DEGRADE_RESOURCE;
 
     /**
      * Degrade recover timeout (in seconds) when degradation occurs.
@@ -125,6 +130,15 @@ public class DegradeRule extends AbstractRule {
         return this;
     }
 
+    public int getStrategy() {
+        return strategy;
+    }
+
+    public DegradeRule setStrategy(int strategy) {
+        this.strategy = strategy;
+        return this;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -160,13 +174,25 @@ public class DegradeRule extends AbstractRule {
         return result;
     }
 
+    private static Node selectNodeByStrategy(DegradeRule rule, Context context, DefaultNode contentNode) {
+        // if strategy is 1 then return entraceNode
+        if (RuleConstant.DEGRADE_CONTEXT== rule.getStrategy()) {
+            Node originNode = context.getEntranceNode();
+            if (null == originNode) {
+                return null;
+            }
+            return originNode;
+        }
+        return ClusterBuilderSlot.getClusterNode(rule.getResource());
+    }
+
     @Override
     public boolean passCheck(Context context, DefaultNode node, int acquireCount, Object... args) {
         if (cut) {
             return false;
         }
+        Node clusterNode = selectNodeByStrategy(this, context, node);
 
-        ClusterNode clusterNode = ClusterBuilderSlot.getClusterNode(this.getResource());
         if (clusterNode == null) {
             return true;
         }
