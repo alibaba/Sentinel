@@ -109,21 +109,29 @@ public class ParamFlowSlotTest {
 
     @Test
     public void testInitParamMetrics() {
+    	
+    	ParamFlowRule rule = new ParamFlowRule();
+    	rule.setParamIdx(1);
         int index = 1;
         String resourceName = "res-" + System.currentTimeMillis();
         ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
 
         assertNull(ParamFlowSlot.getParamMetric(resourceWrapper));
 
-        paramFlowSlot.initHotParamMetricsFor(resourceWrapper, index);
+        paramFlowSlot.initHotParamMetricsFor(resourceWrapper, rule);
         ParameterMetric metric = ParamFlowSlot.getParamMetric(resourceWrapper);
         assertNotNull(metric);
         assertNotNull(metric.getRollingParameters().get(index));
         assertNotNull(metric.getThreadCountMap().get(index));
 
         // Duplicate init.
-        paramFlowSlot.initHotParamMetricsFor(resourceWrapper, index);
+        paramFlowSlot.initHotParamMetricsFor(resourceWrapper, rule);
         assertSame(metric, ParamFlowSlot.getParamMetric(resourceWrapper));
+        
+        ParamFlowRule rule2 = new ParamFlowRule();
+    	rule2.setParamIdx(1);
+    	assertSame(metric, ParamFlowSlot.getParamMetric(resourceWrapper));
+
     }
 
     @Before

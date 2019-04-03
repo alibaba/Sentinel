@@ -24,6 +24,7 @@ import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.flow.param.ParameterMetric.ParamRuleMetric;
 
 import org.junit.After;
 import org.junit.Before;
@@ -78,7 +79,8 @@ public class ParamFlowCheckerTest {
         assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
         assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueB));
     }
-
+    
+  
     @Test
     public void testSingleValueCheckQpsWithExceptionItems() {
         final String resourceName = "testSingleValueCheckQpsWithExceptionItems";

@@ -43,6 +43,7 @@ class ParamFlowQpsRunner<T> {
     private final int threadCount;
 
     private final Map<T, AtomicLong> passCountMap = new ConcurrentHashMap<>();
+    private final Map<T, AtomicLong> blockCountMap = new ConcurrentHashMap<>();
 
     private volatile boolean stop = false;
 
@@ -59,6 +60,7 @@ class ParamFlowQpsRunner<T> {
         for (T param : params) {
             assertTrue(param != null, "Parameters should not be null");
             passCountMap.putIfAbsent(param, new AtomicLong());
+            blockCountMap.putIfAbsent(param,  new AtomicLong());
         }
     }
 
@@ -96,6 +98,10 @@ class ParamFlowQpsRunner<T> {
         passCountMap.get(param).incrementAndGet();
     }
 
+    private void blockFor(T param) {
+        blockCountMap.get(param).incrementAndGet();
+    }
+    
     final class RunTask implements Runnable {
         @Override
         public void run() {
@@ -108,6 +114,7 @@ class ParamFlowQpsRunner<T> {
                     passFor(param);
                 } catch (BlockException e1) {
                     // block.incrementAndGet();
+                	blockFor(param);
                 } catch (Exception ex) {
                     // biz exception
                     ex.printStackTrace();
@@ -119,7 +126,7 @@ class ParamFlowQpsRunner<T> {
                 }
 
                 try {
-                    TimeUnit.MILLISECONDS.sleep(ThreadLocalRandom.current().nextInt(0, 10));
+                    TimeUnit.MILLISECONDS.sleep(ThreadLocalRandom.current().nextInt(0,10));
                 } catch (InterruptedException e) {
                     // ignore
                 }
@@ -140,20 +147,18 @@ class ParamFlowQpsRunner<T> {
             }
             while (!stop) {
                 try {
-                    TimeUnit.SECONDS.sleep(1);
+                    TimeUnit.SECONDS.sleep(20);
                 } catch (InterruptedException e) {
                 }
                 // There may be a mismatch for time window of internal sliding window.
                 // See corresponding `metrics.log` for accurate statistic log.
                 for (T param : params) {
-                    long globalPass = passCountMap.get(param).get();
-                    long oldPass = map.get(param);
-                    long oneSecondPass = globalPass - oldPass;
-                    map.put(param, globalPass);
+
                     System.out.println(String.format("[%d][%d] Parameter flow metrics for resource %s: "
-                            + "pass count for param <%s> is %d",
-                        seconds, TimeUtil.currentTimeMillis(), resourceName, param, oneSecondPass));
+                            + "pass count for param <%s> is %d, block count: %d",
+                        seconds, TimeUtil.currentTimeMillis(), resourceName, param, passCountMap.get(param).getAndSet(0), blockCountMap.get(param).getAndSet(0)));
                 }
+                System.out.println("=============================");
                 if (seconds-- <= 0) {
                     stop = true;
                 }

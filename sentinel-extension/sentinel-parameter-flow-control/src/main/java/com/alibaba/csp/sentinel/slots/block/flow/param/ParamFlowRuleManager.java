@@ -39,131 +39,135 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  */
 public final class ParamFlowRuleManager {
 
-    private static final Map<String, Set<ParamFlowRule>> paramFlowRules = new ConcurrentHashMap<>();
+	private static final Map<String, Set<ParamFlowRule>> paramFlowRules = new ConcurrentHashMap<>();
 
-    private final static RulePropertyListener PROPERTY_LISTENER = new RulePropertyListener();
-    private static SentinelProperty<List<ParamFlowRule>> currentProperty = new DynamicSentinelProperty<>();
+	private final static RulePropertyListener PROPERTY_LISTENER = new RulePropertyListener();
+	private static SentinelProperty<List<ParamFlowRule>> currentProperty = new DynamicSentinelProperty<>();
 
-    static {
-        currentProperty.addListener(PROPERTY_LISTENER);
-    }
+	static {
+		currentProperty.addListener(PROPERTY_LISTENER);
+	}
 
-    /**
-     * Load parameter flow rules. Former rules will be replaced.
-     *
-     * @param rules new rules to load.
-     */
-    public static void loadRules(List<ParamFlowRule> rules) {
-        try {
-            currentProperty.updateValue(rules);
-        } catch (Throwable e) {
-            RecordLog.info("[ParamFlowRuleManager] Failed to load rules", e);
-        }
-    }
+	/**
+	 * Load parameter flow rules. Former rules will be replaced.
+	 *
+	 * @param rules
+	 *            new rules to load.
+	 */
+	public static void loadRules(List<ParamFlowRule> rules) {
+		try {
+			currentProperty.updateValue(rules);
+		} catch (Throwable e) {
+			RecordLog.info("[ParamFlowRuleManager] Failed to load rules", e);
+		}
+	}
 
-    /**
-     * Listen to the {@link SentinelProperty} for {@link ParamFlowRule}s. The property is the source
-     * of {@link ParamFlowRule}s. Parameter flow rules can also be set by {@link #loadRules(List)} directly.
-     *
-     * @param property the property to listen
-     */
-    public static void register2Property(SentinelProperty<List<ParamFlowRule>> property) {
-        AssertUtil.notNull(property, "property cannot be null");
-        synchronized (PROPERTY_LISTENER) {
-            currentProperty.removeListener(PROPERTY_LISTENER);
-            property.addListener(PROPERTY_LISTENER);
-            currentProperty = property;
-            RecordLog.info("[ParamFlowRuleManager] New property has been registered to hot param rule manager");
-        }
-    }
+	/**
+	 * Listen to the {@link SentinelProperty} for {@link ParamFlowRule}s. The
+	 * property is the source of {@link ParamFlowRule}s. Parameter flow rules
+	 * can also be set by {@link #loadRules(List)} directly.
+	 *
+	 * @param property
+	 *            the property to listen
+	 */
+	public static void register2Property(SentinelProperty<List<ParamFlowRule>> property) {
+		AssertUtil.notNull(property, "property cannot be null");
+		synchronized (PROPERTY_LISTENER) {
+			currentProperty.removeListener(PROPERTY_LISTENER);
+			property.addListener(PROPERTY_LISTENER);
+			currentProperty = property;
+			RecordLog.info("[ParamFlowRuleManager] New property has been registered to hot param rule manager");
+		}
+	}
 
-    public static List<ParamFlowRule> getRulesOfResource(String resourceName) {
-        return new ArrayList<>(paramFlowRules.get(resourceName));
-    }
+	public static List<ParamFlowRule> getRulesOfResource(String resourceName) {
+		return new ArrayList<>(paramFlowRules.get(resourceName));
+	}
 
-    public static boolean hasRules(String resourceName) {
-        Set<ParamFlowRule> rules = paramFlowRules.get(resourceName);
-        return rules != null && !rules.isEmpty();
-    }
+	public static boolean hasRules(String resourceName) {
+		Set<ParamFlowRule> rules = paramFlowRules.get(resourceName);
+		return rules != null && !rules.isEmpty();
+	}
 
-    /**
-     * Get a copy of the rules.
-     *
-     * @return a new copy of the rules.
-     */
-    public static List<ParamFlowRule> getRules() {
-        List<ParamFlowRule> rules = new ArrayList<>();
-        for (Map.Entry<String, Set<ParamFlowRule>> entry : paramFlowRules.entrySet()) {
-            rules.addAll(entry.getValue());
-        }
-        return rules;
-    }
+	/**
+	 * Get a copy of the rules.
+	 *
+	 * @return a new copy of the rules.
+	 */
+	public static List<ParamFlowRule> getRules() {
+		List<ParamFlowRule> rules = new ArrayList<>();
+		for (Map.Entry<String, Set<ParamFlowRule>> entry : paramFlowRules.entrySet()) {
+			rules.addAll(entry.getValue());
+		}
+		return rules;
+	}
 
-    static class RulePropertyListener implements PropertyListener<List<ParamFlowRule>> {
+	static class RulePropertyListener implements PropertyListener<List<ParamFlowRule>> {
 
-        @Override
-        public void configUpdate(List<ParamFlowRule> list) {
-            Map<String, Set<ParamFlowRule>> rules = aggregateHotParamRules(list);
-            if (rules != null) {
-                paramFlowRules.clear();
-                paramFlowRules.putAll(rules);
-            }
-            RecordLog.info("[ParamFlowRuleManager] Hot spot parameter flow rules received: " + paramFlowRules);
-        }
+		@Override
+		public void configUpdate(List<ParamFlowRule> list) {
+			Map<String, Set<ParamFlowRule>> rules = aggregateHotParamRules(list);
+			if (rules != null) {
+				paramFlowRules.clear();
+				paramFlowRules.putAll(rules);
+			}
+			RecordLog.info("[ParamFlowRuleManager] Hot spot parameter flow rules received: " + paramFlowRules);
+		}
 
-        @Override
-        public void configLoad(List<ParamFlowRule> list) {
-            Map<String, Set<ParamFlowRule>> rules = aggregateHotParamRules(list);
-            if (rules != null) {
-                paramFlowRules.clear();
-                paramFlowRules.putAll(rules);
-            }
-            RecordLog.info("[ParamFlowRuleManager] Hot spot parameter flow rules received: " + paramFlowRules);
-        }
+		@Override
+		public void configLoad(List<ParamFlowRule> list) {
+			Map<String, Set<ParamFlowRule>> rules = aggregateHotParamRules(list);
+			if (rules != null) {
+				paramFlowRules.clear();
+				paramFlowRules.putAll(rules);
+			}
+			RecordLog.info("[ParamFlowRuleManager] Hot spot parameter flow rules received: " + paramFlowRules);
+		}
 
-        private Map<String, Set<ParamFlowRule>> aggregateHotParamRules(List<ParamFlowRule> list) {
-            Map<String, Set<ParamFlowRule>> newRuleMap = new ConcurrentHashMap<>();
+		private Map<String, Set<ParamFlowRule>> aggregateHotParamRules(List<ParamFlowRule> list) {
+			Map<String, Set<ParamFlowRule>> newRuleMap = new ConcurrentHashMap<>();
 
-            if (list == null || list.isEmpty()) {
-                // No parameter flow rules, so clear all the metrics.
-                ParamFlowSlot.getMetricsMap().clear();
-                RecordLog.info("[ParamFlowRuleManager] No parameter flow rules, clearing all parameter metrics");
-                return newRuleMap;
-            }
+			if (list == null || list.isEmpty()) {
+				// No parameter flow rules, so clear all the metrics.
+				ParamFlowSlot.getMetricsMap().clear();
+				RecordLog.info("[ParamFlowRuleManager] No parameter flow rules, clearing all parameter metrics");
+				return newRuleMap;
+			}
 
-            for (ParamFlowRule rule : list) {
-                if (!ParamFlowRuleUtil.isValidRule(rule)) {
-                    RecordLog.warn("[ParamFlowRuleManager] Ignoring invalid rule when loading new rules: " + rule);
-                    continue;
-                }
+			for (ParamFlowRule rule : list) {
+				if (!ParamFlowRuleUtil.isValidRule(rule)) {
+					RecordLog.warn("[ParamFlowRuleManager] Ignoring invalid rule when loading new rules: " + rule);
+					continue;
+				}
 
-                if (StringUtil.isBlank(rule.getLimitApp())) {
-                    rule.setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
-                }
+				if (StringUtil.isBlank(rule.getLimitApp())) {
+					rule.setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
+				}
 
-                ParamFlowRuleUtil.fillExceptionFlowItems(rule);
+				ParamFlowRuleUtil.fillExceptionFlowItems(rule);
 
-                String resourceName = rule.getResource();
-                Set<ParamFlowRule> ruleSet = newRuleMap.get(resourceName);
-                if (ruleSet == null) {
-                    ruleSet = new HashSet<>();
-                    newRuleMap.put(resourceName, ruleSet);
-                }
-                ruleSet.add(rule);
-            }
+				String resourceName = rule.getResource();
+				Set<ParamFlowRule> ruleSet = newRuleMap.get(resourceName);
+				if (ruleSet == null) {
+					ruleSet = new HashSet<>();
+					newRuleMap.put(resourceName, ruleSet);
+				}
 
-            // Clear unused hot param metrics.
-            Set<String> previousResources = paramFlowRules.keySet();
-            for (String resource : previousResources) {
-                if (!newRuleMap.containsKey(resource)) {
-                    ParamFlowSlot.clearHotParamMetricForName(resource);
-                }
-            }
+				ruleSet.add(rule);
+			}
 
-            return newRuleMap;
-        }
-    }
+			// Clear unused hot param metrics.
+			Set<String> previousResources = paramFlowRules.keySet();
+			for (String resource : previousResources) {
+				if (!newRuleMap.containsKey(resource)) {
+					ParamFlowSlot.clearHotParamMetricForName(resource);
+				}
+			}
 
-    private ParamFlowRuleManager() {}
+			return newRuleMap;
+		}
+	}
+
+	private ParamFlowRuleManager() {
+	}
 }
-

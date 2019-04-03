@@ -34,6 +34,8 @@ public class ParamFlowQpsDemo {
     private static final int PARAM_B = 2;
     private static final int PARAM_C = 3;
     private static final int PARAM_D = 4;
+    
+    private static final int duration =20;
 
     /**
      * Here we prepare different parameters to validate flow control by parameters.
@@ -42,13 +44,14 @@ public class ParamFlowQpsDemo {
 
     private static final String RESOURCE_KEY = "resA";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         initHotParamFlowRules();
 
-        final int threadCount = 8;
+        final int threadCount =50;
         ParamFlowQpsRunner<Integer> runner = new ParamFlowQpsRunner<>(PARAMS, RESOURCE_KEY, threadCount, 120);
-        runner.simulateTraffic();
         runner.tick();
+        Thread.sleep(1000);
+        runner.simulateTraffic();
     }
 
     private static void initHotParamFlowRules() {
@@ -56,6 +59,9 @@ public class ParamFlowQpsDemo {
         ParamFlowRule rule = new ParamFlowRule(RESOURCE_KEY)
             .setParamIdx(0)
             .setGrade(RuleConstant.FLOW_GRADE_QPS)
+            .setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_REJECT_WITH_BURST)
+            .setDurationInSec(duration)
+           // .setBurstCount(20)
             .setCount(5);
         // We can set threshold count for specific parameter value individually.
         // Here we add an exception item. That means: QPS threshold of entries with parameter `PARAM_B` (type: int)

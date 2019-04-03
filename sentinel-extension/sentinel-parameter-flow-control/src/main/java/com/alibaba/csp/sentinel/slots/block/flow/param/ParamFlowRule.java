@@ -34,162 +34,215 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
  */
 public class ParamFlowRule extends AbstractRule {
 
-    public ParamFlowRule() {}
+	public ParamFlowRule() {
+	}
 
-    public ParamFlowRule(String resourceName) {
-        setResource(resourceName);
-    }
+	public ParamFlowRule(String resourceName) {
+		setResource(resourceName);
+	}
 
-    /**
-     * The threshold type of flow control (0: thread count, 1: QPS).
-     */
-    private int grade = RuleConstant.FLOW_GRADE_QPS;
+	/**
+	 * The threshold type of flow control (0: thread count, 1: QPS).
+	 */
+	private int grade = RuleConstant.FLOW_GRADE_QPS;
 
-    /**
-     * Parameter index.
-     */
-    private Integer paramIdx;
+	/**
+	 * Parameter index.
+	 */
+	private Integer paramIdx;
 
-    /**
-     * The threshold count.
-     */
-    private double count;
+	/**
+	 * The threshold count.
+	 */
+	private double count;
 
-    /**
-     * Original exclusion items of parameters.
-     */
-    private List<ParamFlowItem> paramFlowItemList = new ArrayList<ParamFlowItem>();
+	/**
+	 * Rate limiter control behavior. 0. default(reject directly), 1. warm up,
+	 * 2. rate limiter, 3. warm up + rate limiter
+	 */
+	private int controlBehavior = RuleConstant.CONTROL_BEHAVIOR_DEFAULT;
 
-    /**
-     * Parsed exclusion items of parameters. Only for internal use.
-     */
-    private Map<Object, Integer> hotItems = new HashMap<Object, Integer>();
+	private int burstCount = 0;
 
-    /**
-     * Indicating whether the rule is for cluster mode.
-     */
-    private boolean clusterMode = false;
-    /**
-     * Cluster mode specific config for parameter flow rule.
-     */
-    private ParamFlowClusterConfig clusterConfig;
+	public int getBurstCount() {
+		return burstCount;
+	}
 
-    public int getGrade() {
-        return grade;
-    }
+	public ParamFlowRule setBurstCount(int burstCount) {
+		this.burstCount = burstCount;
+		return this;
+	}
 
-    public ParamFlowRule setGrade(int grade) {
-        this.grade = grade;
-        return this;
-    }
+	public int getControlBehavior() {
+		return controlBehavior;
+	}
 
-    public Integer getParamIdx() {
-        return paramIdx;
-    }
+	public ParamFlowRule setControlBehavior(int controlBehavior) {
+		this.controlBehavior = controlBehavior;
+		return this;
+	}
 
-    public ParamFlowRule setParamIdx(Integer paramIdx) {
-        this.paramIdx = paramIdx;
-        return this;
-    }
+	/**
+	 * Original exclusion items of parameters.
+	 */
+	private List<ParamFlowItem> paramFlowItemList = new ArrayList<ParamFlowItem>();
 
-    public double getCount() {
-        return count;
-    }
+	/**
+	 * Parsed exclusion items of parameters. Only for internal use.
+	 */
+	private Map<Object, Integer> hotItems = new HashMap<Object, Integer>();
 
-    public ParamFlowRule setCount(double count) {
-        this.count = count;
-        return this;
-    }
+	/**
+	 * Indicating whether the rule is for cluster mode.
+	 */
+	private boolean clusterMode = false;
+	/**
+	 * Cluster mode specific config for parameter flow rule.
+	 */
+	private ParamFlowClusterConfig clusterConfig;
 
-    public List<ParamFlowItem> getParamFlowItemList() {
-        return paramFlowItemList;
-    }
+	private int durationInSec = 1;
 
-    public ParamFlowRule setParamFlowItemList(List<ParamFlowItem> paramFlowItemList) {
-        this.paramFlowItemList = paramFlowItemList;
-        return this;
-    }
+	public int getDurationInSec() {
+		return durationInSec;
+	}
 
-    public Integer retrieveExclusiveItemCount(Object value) {
-        if (value == null || hotItems == null) {
-            return null;
-        }
-        return hotItems.get(value);
-    }
+	public ParamFlowRule setDurationInSec(int durationInSec) {
+		this.durationInSec = durationInSec;
+		return this;
+	}
 
-    Map<Object, Integer> getParsedHotItems() {
-        return hotItems;
-    }
+	public int getGrade() {
+		return grade;
+	}
 
-    ParamFlowRule setParsedHotItems(Map<Object, Integer> hotItems) {
-        this.hotItems = hotItems;
-        return this;
-    }
+	public ParamFlowRule setGrade(int grade) {
+		this.grade = grade;
+		return this;
+	}
 
-    public boolean isClusterMode() {
-        return clusterMode;
-    }
+	public Integer getParamIdx() {
+		return paramIdx;
+	}
 
-    public ParamFlowRule setClusterMode(boolean clusterMode) {
-        this.clusterMode = clusterMode;
-        return this;
-    }
+	public ParamFlowRule setParamIdx(Integer paramIdx) {
+		this.paramIdx = paramIdx;
+		return this;
+	}
 
-    public ParamFlowClusterConfig getClusterConfig() {
-        return clusterConfig;
-    }
+	public double getCount() {
+		return count;
+	}
 
-    public ParamFlowRule setClusterConfig(ParamFlowClusterConfig clusterConfig) {
-        this.clusterConfig = clusterConfig;
-        return this;
-    }
+	public ParamFlowRule setCount(double count) {
+		this.count = count;
+		return this;
+	}
 
-    @Override
-    @Deprecated
-    public boolean passCheck(Context context, DefaultNode node, int count, Object... args) {
-        return true;
-    }
+	public List<ParamFlowItem> getParamFlowItemList() {
+		return paramFlowItemList;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) { return true; }
-        if (o == null || getClass() != o.getClass()) { return false; }
-        if (!super.equals(o)) { return false; }
+	public ParamFlowRule setParamFlowItemList(List<ParamFlowItem> paramFlowItemList) {
+		this.paramFlowItemList = paramFlowItemList;
+		return this;
+	}
 
-        ParamFlowRule rule = (ParamFlowRule)o;
+	public Integer retrieveExclusiveItemCount(Object value) {
+		if (value == null || hotItems == null) {
+			return null;
+		}
+		return hotItems.get(value);
+	}
 
-        if (grade != rule.grade) { return false; }
-        if (Double.compare(rule.count, count) != 0) { return false; }
-        if (clusterMode != rule.clusterMode) { return false; }
-        if (paramIdx != null ? !paramIdx.equals(rule.paramIdx) : rule.paramIdx != null) { return false; }
-        if (paramFlowItemList != null ? !paramFlowItemList.equals(rule.paramFlowItemList)
-            : rule.paramFlowItemList != null) { return false; }
-        return clusterConfig != null ? clusterConfig.equals(rule.clusterConfig) : rule.clusterConfig == null;
-    }
+	Map<Object, Integer> getParsedHotItems() {
+		return hotItems;
+	}
 
-    @Override
-    public int hashCode() {
-        int result = super.hashCode();
-        long temp;
-        result = 31 * result + grade;
-        result = 31 * result + (paramIdx != null ? paramIdx.hashCode() : 0);
-        temp = Double.doubleToLongBits(count);
-        result = 31 * result + (int)(temp ^ (temp >>> 32));
-        result = 31 * result + (paramFlowItemList != null ? paramFlowItemList.hashCode() : 0);
-        result = 31 * result + (clusterMode ? 1 : 0);
-        result = 31 * result + (clusterConfig != null ? clusterConfig.hashCode() : 0);
-        return result;
-    }
+	ParamFlowRule setParsedHotItems(Map<Object, Integer> hotItems) {
+		this.hotItems = hotItems;
+		return this;
+	}
 
-    @Override
-    public String toString() {
-        return "ParamFlowRule{" +
-            "grade=" + grade +
-            ", paramIdx=" + paramIdx +
-            ", count=" + count +
-            ", paramFlowItemList=" + paramFlowItemList +
-            ", clusterMode=" + clusterMode +
-            ", clusterConfig=" + clusterConfig +
-            '}';
-    }
+	public boolean isClusterMode() {
+		return clusterMode;
+	}
+
+	public ParamFlowRule setClusterMode(boolean clusterMode) {
+		this.clusterMode = clusterMode;
+		return this;
+	}
+
+	public ParamFlowClusterConfig getClusterConfig() {
+		return clusterConfig;
+	}
+
+	public ParamFlowRule setClusterConfig(ParamFlowClusterConfig clusterConfig) {
+		this.clusterConfig = clusterConfig;
+		return this;
+	}
+
+	@Override
+	@Deprecated
+	public boolean passCheck(Context context, DefaultNode node, int count, Object... args) {
+		return true;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		if (!super.equals(o)) {
+			return false;
+		}
+
+		ParamFlowRule rule = (ParamFlowRule) o;
+
+		if (grade != rule.grade) {
+			return false;
+		}
+		if (Double.compare(rule.count, count) != 0) {
+			return false;
+		}
+		if (clusterMode != rule.clusterMode) {
+			return false;
+		}
+		if (paramIdx != null ? !paramIdx.equals(rule.paramIdx) : rule.paramIdx != null) {
+			return false;
+		}
+		if (paramFlowItemList != null ? !paramFlowItemList.equals(rule.paramFlowItemList)
+				: rule.paramFlowItemList != null) {
+			return false;
+		}
+		return clusterConfig != null ? clusterConfig.equals(rule.clusterConfig) : rule.clusterConfig == null;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = super.hashCode();
+		long temp;
+		result = 31 * result + grade;
+		result = 31 * result + (paramIdx != null ? paramIdx.hashCode() : 0);
+		temp = Double.doubleToLongBits(count);
+		result = 31 * result + (int) (temp ^ (temp >>> 32));
+		result = 31 * result + (paramFlowItemList != null ? paramFlowItemList.hashCode() : 0);
+		result = 31 * result + (clusterMode ? 1 : 0);
+		result = 31 * result + (clusterConfig != null ? clusterConfig.hashCode() : 0);
+		result = 31 * result + durationInSec;
+		return result;
+	}
+
+	@Override
+	public String toString() {
+		return "ParamFlowRule{" + "grade=" + grade + ", paramIdx=" + paramIdx + ", count=" + count
+				+ ", paramFlowItemList=" + paramFlowItemList + ", clusterMode=" + clusterMode + ", clusterConfig="
+				+ clusterConfig + '}';
+	}
+
+	final int MAX_CAPACITY = 200000;
+	final int MAX_CAPACITY_PERSECOND = 4000;
 }

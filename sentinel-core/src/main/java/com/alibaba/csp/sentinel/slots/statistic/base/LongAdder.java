@@ -59,7 +59,9 @@ public class LongAdder extends Striped64 implements Serializable {
     	add(x);
     }
 
-    /**
+ 
+
+	/**
      * Adds the given value.
      *
      * @param x the value to add
