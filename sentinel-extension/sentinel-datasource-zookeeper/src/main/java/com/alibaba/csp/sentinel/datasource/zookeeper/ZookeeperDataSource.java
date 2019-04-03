@@ -39,7 +39,7 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
     private NodeCacheListener listener;
     private final String path;
 
-    private CuratorFramework zkClient = null;
+    private static CuratorFramework zkClient = null;
     private NodeCache nodeCache = null;
 
     public ZookeeperDataSource(final String serverAddr, final String path, Converter<String, T> parser) {
@@ -116,18 +116,20 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
                 }
             };
 
-            if (authInfos == null || authInfos.size() == 0) {
-                this.zkClient = CuratorFrameworkFactory.newClient(serverAddr, new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES));
-            } else {
-                this.zkClient = CuratorFrameworkFactory.builder().
-                        connectString(serverAddr).
-                        retryPolicy(new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES)).
-                        authorization(authInfos).
-                        build();
+            if (zkClient == null) {
+                if (authInfos == null || authInfos.size() == 0) {
+                    zkClient = CuratorFrameworkFactory.newClient(serverAddr, new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES));
+                } else {
+                    zkClient = CuratorFrameworkFactory.builder().
+                            connectString(serverAddr).
+                            retryPolicy(new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES)).
+                            authorization(authInfos).
+                            build();
+                }
+                zkClient.start();
             }
-            this.zkClient.start();
 
-            this.nodeCache = new NodeCache(this.zkClient, this.path);
+            this.nodeCache = new NodeCache(zkClient, this.path);
             this.nodeCache.getListenable().addListener(this.listener, this.pool);
             this.nodeCache.start();
         } catch (Exception e) {
@@ -138,7 +140,7 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
 
     @Override
     public String readSource() throws Exception {
-        if (this.zkClient == null) {
+        if (zkClient == null) {
             throw new IllegalStateException("Zookeeper has not been initialized or error occurred");
         }
         String configInfo = null;
@@ -156,8 +158,9 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
             this.nodeCache.getListenable().removeListener(listener);
             this.nodeCache.close();
         }
-        if (this.zkClient != null) {
-            this.zkClient.close();
+        if (zkClient != null) {
+            zkClient.close();
+            zkClient = null;
         }
         pool.shutdown();
     }

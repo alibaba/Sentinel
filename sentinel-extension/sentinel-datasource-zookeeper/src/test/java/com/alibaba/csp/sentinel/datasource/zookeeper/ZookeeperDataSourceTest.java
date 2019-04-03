@@ -42,29 +42,39 @@ public class ZookeeperDataSourceTest {
         final String remoteAddress = server.getConnectString();
         final String path = "/sentinel-zk-ds-demo/flow-HK";
 
-        ReadableDataSource<String, List<FlowRule>> flowRuleDataSource = new ZookeeperDataSource<List<FlowRule>>(remoteAddress, path,
-            new Converter<String, List<FlowRule>>() {
-                @Override
-                public List<FlowRule> convert(String source) {
-                    return JSON.parseObject(source, new TypeReference<List<FlowRule>>() {});
-                }
-            });
-        FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
+        CuratorFramework zkClient = null;
+        ReadableDataSource<String, List<FlowRule>> flowRuleDataSource = null;
 
-        CuratorFramework zkClient = CuratorFrameworkFactory.newClient(remoteAddress,
-            new ExponentialBackoffRetry(3, 1000));
-        zkClient.start();
-        Stat stat = zkClient.checkExists().forPath(path);
-        if (stat == null) {
-            zkClient.create().creatingParentContainersIfNeeded().withMode(CreateMode.PERSISTENT).forPath(path, null);
+        try {
+            flowRuleDataSource = new ZookeeperDataSource<List<FlowRule>>(remoteAddress, path,
+                    new Converter<String, List<FlowRule>>() {
+                        @Override
+                        public List<FlowRule> convert(String source) {
+                            return JSON.parseObject(source, new TypeReference<List<FlowRule>>() {});
+                        }
+                    });
+            FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
+
+            zkClient = CuratorFrameworkFactory.newClient(remoteAddress,
+                    new ExponentialBackoffRetry(3, 1000));
+            zkClient.start();
+            Stat stat = zkClient.checkExists().forPath(path);
+            if (stat == null) {
+                zkClient.create().creatingParentContainersIfNeeded().withMode(CreateMode.PERSISTENT).forPath(path, null);
+            }
+
+            final String resourceName = "HK";
+            publishThenTestFor(zkClient, path, resourceName, 10);
+            publishThenTestFor(zkClient, path, resourceName, 15);
+        } finally {
+            if (flowRuleDataSource != null) {
+                flowRuleDataSource.close();
+            }
+            if (zkClient != null) {
+                zkClient.close();
+            }
+            server.stop();
         }
-
-        final String resourceName = "HK";
-        publishThenTestFor(zkClient, path, resourceName, 10);
-        publishThenTestFor(zkClient, path, resourceName, 15);
-
-        zkClient.close();
-        server.stop();
     }
 
     @Test
@@ -82,36 +92,46 @@ public class ZookeeperDataSourceTest {
         AuthInfo authInfo = new AuthInfo(scheme, auth.getBytes());
         List<AuthInfo> authInfoList = Collections.singletonList(authInfo);
 
-        CuratorFramework zkClient = CuratorFrameworkFactory.builder().
-                connectString(remoteAddress).
-                retryPolicy(new ExponentialBackoffRetry(3, 100)).
-                authorization(authInfoList).
-                build();
-        zkClient.start();
-        Stat stat = zkClient.checkExists().forPath(path);
-        if (stat == null) {
-            ACL acl = new ACL(ZooDefs.Perms.ALL, new Id(scheme, DigestAuthenticationProvider.generateDigest(auth)));
-            zkClient.create().creatingParentContainersIfNeeded().withACL(Collections.singletonList(acl)).forPath(path, null);
+        CuratorFramework zkClient = null;
+        ReadableDataSource<String, List<FlowRule>> flowRuleDataSource = null;
+
+        try {
+            zkClient = CuratorFrameworkFactory.builder().
+                    connectString(remoteAddress).
+                    retryPolicy(new ExponentialBackoffRetry(3, 100)).
+                    authorization(authInfoList).
+                    build();
+            zkClient.start();
+            Stat stat = zkClient.checkExists().forPath(path);
+            if (stat == null) {
+                ACL acl = new ACL(ZooDefs.Perms.ALL, new Id(scheme, DigestAuthenticationProvider.generateDigest(auth)));
+                zkClient.create().creatingParentContainersIfNeeded().withACL(Collections.singletonList(acl)).forPath(path, null);
+            }
+
+            flowRuleDataSource = new ZookeeperDataSource<List<FlowRule>>(remoteAddress,
+                    authInfoList, groupId, dataId,
+                    new Converter<String, List<FlowRule>>() {
+                        @Override
+                        public List<FlowRule> convert(String source) {
+                            return JSON.parseObject(source, new TypeReference<List<FlowRule>>() {
+                            });
+                        }
+                    });
+            FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
+
+
+            final String resourceName = "HK";
+            publishThenTestFor(zkClient, path, resourceName, 10);
+            publishThenTestFor(zkClient, path, resourceName, 15);
+        } finally {
+            if (flowRuleDataSource != null) {
+                flowRuleDataSource.close();
+            }
+            if (zkClient != null) {
+                zkClient.close();
+            }
+            server.stop();
         }
-
-        ReadableDataSource<String, List<FlowRule>> flowRuleDataSource = new ZookeeperDataSource<List<FlowRule>>(remoteAddress,
-                authInfoList, groupId, dataId,
-                new Converter<String, List<FlowRule>>() {
-                    @Override
-                    public List<FlowRule> convert(String source) {
-                        return JSON.parseObject(source, new TypeReference<List<FlowRule>>() {
-                        });
-                    }
-                });
-        FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
-
-
-        final String resourceName = "HK";
-        publishThenTestFor(zkClient, path, resourceName, 10);
-        publishThenTestFor(zkClient, path, resourceName, 15);
-
-        zkClient.close();
-        server.stop();
     }
 
     private void publishThenTestFor(CuratorFramework zkClient, String path, String resourceName, long count) throws Exception {
