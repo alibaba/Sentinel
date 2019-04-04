@@ -38,8 +38,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  */
 public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
-    private static final Map<ResourceWrapper, ParameterMetric> metricsMap
-        = new ConcurrentHashMap<ResourceWrapper, ParameterMetric>();
+    private static final Map<ResourceWrapper, ParameterMetric> metricsMap = new ConcurrentHashMap<>();
 
     /**
      * Lock for a specific resource.
@@ -63,40 +62,44 @@ public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         fireExit(context, resourceWrapper, count, args);
     }
 
-    void checkFlow(ResourceWrapper resourceWrapper, int count, Object... args)
-        throws BlockException {
-        if (ParamFlowRuleManager.hasRules(resourceWrapper.getName())) {
-            List<ParamFlowRule> rules = ParamFlowRuleManager.getRulesOfResource(resourceWrapper.getName());
-            if (rules == null) {
-                return;
+    void applyRealParamIdx(/*@NonNull*/ ParamFlowRule rule, int length) {
+        int paramIdx = rule.getParamIdx();
+        if (paramIdx < 0) {
+            if (-paramIdx <= length) {
+                rule.setParamIdx(length + paramIdx);
+            } else {
+                // illegal index, give it a illegal positive value, latter rule check will pass
+                rule.setParamIdx(-paramIdx);
             }
+        }
+    }
 
-            for (ParamFlowRule rule : rules) {
-                int paramIdx = rule.getParamIdx();
-                if (paramIdx < 0) {
-                    if (-paramIdx <= args.length) {
-                        rule.setParamIdx(args.length + paramIdx);
-                    } else {
-                        // illegal index, give it a illegal positive value, latter rule check will pass
-                        rule.setParamIdx(-paramIdx);
-                    }
+    void checkFlow(ResourceWrapper resourceWrapper, int count, Object... args) throws BlockException {
+        if (args == null) {
+            return;
+        }
+        if (!ParamFlowRuleManager.hasRules(resourceWrapper.getName())) {
+            return;
+        }
+        List<ParamFlowRule> rules = ParamFlowRuleManager.getRulesOfResource(resourceWrapper.getName());
+
+        for (ParamFlowRule rule : rules) {
+            applyRealParamIdx(rule, args.length);
+
+            // Initialize the parameter metrics.
+            initHotParamMetricsFor(resourceWrapper, rule.getParamIdx());
+
+            if (!ParamFlowChecker.passCheck(resourceWrapper, rule, count, args)) {
+
+                // Here we add the block count.
+                addBlockCount(resourceWrapper, count, args);
+
+                String triggeredParam = "";
+                if (args.length > rule.getParamIdx()) {
+                    Object value = args[rule.getParamIdx()];
+                    triggeredParam = String.valueOf(value);
                 }
-
-                // Initialize the parameter metrics.
-                initHotParamMetricsFor(resourceWrapper, rule.getParamIdx());
-
-                if (!ParamFlowChecker.passCheck(resourceWrapper, rule, count, args)) {
-
-                    // Here we add the block count.
-                    addBlockCount(resourceWrapper, count, args);
-
-                    String triggeredParam = "";
-                    if (args.length > rule.getParamIdx()) {
-                        Object value = args[rule.getParamIdx()];
-                        triggeredParam = String.valueOf(value);
-                    }
-                    throw new ParamFlowException(resourceWrapper.getName(), triggeredParam, rule);
-                }
+                throw new ParamFlowException(resourceWrapper.getName(), triggeredParam, rule);
             }
         }
     }
@@ -161,7 +164,7 @@ public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         RecordLog.info("[ParamFlowSlot] Clearing parameter metric for: " + resourceName);
     }
 
-    public static Map<ResourceWrapper, ParameterMetric> getMetricsMap() {
+    static Map<ResourceWrapper, ParameterMetric> getMetricsMap() {
         return metricsMap;
     }
 }
