@@ -62,14 +62,14 @@ public class ParamFlowRule extends AbstractRule {
 	 */
 	private int controlBehavior = RuleConstant.CONTROL_BEHAVIOR_DEFAULT;
 
-	private int burstCount = 0;
+	private int timeoutInMs = 0;
 
-	public int getBurstCount() {
-		return burstCount;
+	public int getTimeoutInMs() {
+		return timeoutInMs;
 	}
 
-	public ParamFlowRule setBurstCount(int burstCount) {
-		this.burstCount = burstCount;
+	public ParamFlowRule setTimeoutInMs(int timeoutInMs) {
+		this.timeoutInMs = timeoutInMs;
 		return this;
 	}
 

@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.demo.flow.param;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -37,136 +38,165 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
  */
 class ParamFlowQpsRunner<T> {
 
-    private final T[] params;
-    private final String resourceName;
-    private int seconds;
-    private final int threadCount;
+	private final T[] params;
+	private final String resourceName;
+	private int seconds;
+	private final int threadCount;
 
-    private final Map<T, AtomicLong> passCountMap = new ConcurrentHashMap<>();
-    private final Map<T, AtomicLong> blockCountMap = new ConcurrentHashMap<>();
+	private final Map<T, AtomicLong> passCountMap = new ConcurrentHashMap<>();
+	private final Map<T, AtomicLong> blockCountMap = new ConcurrentHashMap<>();
+	
+	private CountDownLatch countDown = null;
 
-    private volatile boolean stop = false;
+	private volatile boolean stop = false;
 
-    public ParamFlowQpsRunner(T[] params, String resourceName, int threadCount, int seconds) {
-        assertTrue(params != null && params.length > 0, "Parameter array should not be empty");
-        assertTrue(StringUtil.isNotBlank(resourceName), "Resource name cannot be empty");
-        assertTrue(seconds > 0, "Time period should be positive");
-        assertTrue(threadCount > 0 && threadCount <= 1000, "Invalid thread count");
-        this.params = params;
-        this.resourceName = resourceName;
-        this.seconds = seconds;
-        this.threadCount = threadCount;
+	public ParamFlowQpsRunner(T[] params, String resourceName, int threadCount, int seconds) {
+		assertTrue(params != null && params.length > 0, "Parameter array should not be empty");
+		assertTrue(StringUtil.isNotBlank(resourceName), "Resource name cannot be empty");
+		assertTrue(seconds > 0, "Time period should be positive");
+		assertTrue(threadCount > 0 && threadCount <= 1000, "Invalid thread count");
+		this.params = params;
+		this.resourceName = resourceName;
+		this.seconds = seconds;
+		this.threadCount = threadCount;
 
-        for (T param : params) {
-            assertTrue(param != null, "Parameters should not be null");
-            passCountMap.putIfAbsent(param, new AtomicLong());
-            blockCountMap.putIfAbsent(param,  new AtomicLong());
-        }
-    }
+		for (T param : params) {
+			assertTrue(param != null, "Parameters should not be null");
+			passCountMap.putIfAbsent(param, new AtomicLong());
+			blockCountMap.putIfAbsent(param, new AtomicLong());
+		}
+		 countDown = new CountDownLatch(threadCount);
 
-    private void assertTrue(boolean b, String message) {
-        if (!b) {
-            throw new IllegalArgumentException(message);
-        }
-    }
+	}
 
-    /**
-     * Pick one of provided parameters randomly.
-     *
-     * @return picked parameter
-     */
-    private T generateParam() {
-        int i = ThreadLocalRandom.current().nextInt(0, params.length);
-        return params[i];
-    }
+	private void assertTrue(boolean b, String message) {
+		if (!b) {
+			throw new IllegalArgumentException(message);
+		}
+	}
 
-    void simulateTraffic() {
-        for (int i = 0; i < threadCount; i++) {
-            Thread t = new Thread(new RunTask());
-            t.setName("sentinel-simulate-traffic-task-" + i);
-            t.start();
-        }
-    }
+	/**
+	 * Pick one of provided parameters randomly.
+	 *
+	 * @return picked parameter
+	 */
+	private T generateParam() {
+		int i = ThreadLocalRandom.current().nextInt(0, params.length);
+		return params[i];
+	}
 
-    void tick() {
-        Thread timer = new Thread(new TimerTask());
-        timer.setName("sentinel-timer-task");
-        timer.start();
-    }
+	void simulateTraffic() {
+		for (int i = 0; i < threadCount; i++) {
+			Thread t = new Thread(new RunTask());
+			t.setName("sentinel-simulate-traffic-task-" + i);
+			t.start();
+		}
+	}
 
-    private void passFor(T param) {
-        passCountMap.get(param).incrementAndGet();
-    }
+	void tick() {
+		Thread timer = new Thread(new TimerTask());
+		timer.setName("sentinel-timer-task");
+		timer.start();
+	}
 
-    private void blockFor(T param) {
-        blockCountMap.get(param).incrementAndGet();
-    }
-    
-    final class RunTask implements Runnable {
-        @Override
-        public void run() {
-            while (!stop) {
-                Entry entry = null;
-                T param = generateParam();
-                try {
-                    entry = SphU.entry(resourceName, EntryType.IN, 1, param);
-                    // Add pass for parameter.
-                    passFor(param);
-                } catch (BlockException e1) {
-                    // block.incrementAndGet();
-                	blockFor(param);
-                } catch (Exception ex) {
-                    // biz exception
-                    ex.printStackTrace();
-                } finally {
-                    // total.incrementAndGet();
-                    if (entry != null) {
-                        entry.exit(1, param);
-                    }
-                }
+	private void passFor(T param) {
+		passCountMap.get(param).incrementAndGet();
+	}
 
-                try {
-                    TimeUnit.MILLISECONDS.sleep(ThreadLocalRandom.current().nextInt(0,10));
-                } catch (InterruptedException e) {
-                    // ignore
-                }
-            }
-        }
-    }
+	private void blockFor(T param) {
+		blockCountMap.get(param).incrementAndGet();
+	}
 
-    final class TimerTask implements Runnable {
-        @Override
-        public void run() {
-            long start = System.currentTimeMillis();
-            System.out.println("Begin to run! Go go go!");
-            System.out.println("See corresponding metrics.log for accurate statistic data");
+	
+	
+	final class RunTask implements Runnable {
+		
+		public void runForSeconds(long secondInterval){
+			
+			long startTime = TimeUtil.currentTimeMillis();
+			long endTime = startTime + secondInterval*1000;
+			while(startTime<endTime){
+				Entry entry = null;
+				T param = generateParam();
+				try {
+					entry = SphU.entry(resourceName, EntryType.IN, 1, param);
+					// Add pass for parameter.
+					passFor(param);
+				} catch (BlockException e1) {
+					// block.incrementAndGet();
+					blockFor(param);
+				} catch (Exception ex) {
+					// biz exception
+					ex.printStackTrace();
+				} finally {
+					// total.incrementAndGet();
+					if (entry != null) {
+						entry.exit(1, param);
+					}
+				}
 
-            Map<T, Long> map = new HashMap<>(params.length);
-            for (T param : params) {
-                map.putIfAbsent(param, 0L);
-            }
-            while (!stop) {
-                try {
-                    TimeUnit.SECONDS.sleep(20);
-                } catch (InterruptedException e) {
-                }
-                // There may be a mismatch for time window of internal sliding window.
-                // See corresponding `metrics.log` for accurate statistic log.
-                for (T param : params) {
+				try {
+					TimeUnit.MILLISECONDS.sleep(ThreadLocalRandom.current().nextInt(0, 10));
+				} catch (InterruptedException e) {
+					// ignore
+				}
+				startTime = TimeUtil.currentTimeMillis();
+			}
+			System.out.println("end:" + endTime);
+		}
+		
+		@Override
+		public void run() {
+			while (!stop) {
 
-                    System.out.println(String.format("[%d][%d] Parameter flow metrics for resource %s: "
-                            + "pass count for param <%s> is %d, block count: %d",
-                        seconds, TimeUtil.currentTimeMillis(), resourceName, param, passCountMap.get(param).getAndSet(0), blockCountMap.get(param).getAndSet(0)));
-                }
-                System.out.println("=============================");
-                if (seconds-- <= 0) {
-                    stop = true;
-                }
-            }
+				runForSeconds(1);
+				try {
+					TimeUnit.SECONDS.sleep(2);
+				} catch (InterruptedException e) {
+					// ignore
+				}
+				runForSeconds(4);
 
-            long cost = System.currentTimeMillis() - start;
-            System.out.println("Time cost: " + cost + " ms");
-            System.exit(0);
-        }
-    }
+			}
+		}
+	}
+
+	final class TimerTask implements Runnable {
+		@Override
+		public void run() {
+			long start = System.currentTimeMillis();
+			System.out.println("Begin to run! Go go go!");
+			System.out.println("See corresponding metrics.log for accurate statistic data");
+
+			Map<T, Long> map = new HashMap<>(params.length);
+			for (T param : params) {
+				map.putIfAbsent(param, 0L);
+			}
+			while (!stop) {
+				try {
+					TimeUnit.SECONDS.sleep(1);
+				} catch (InterruptedException e) {
+				}
+				// There may be a mismatch for time window of internal sliding
+				// window.
+				// See corresponding `metrics.log` for accurate statistic log.
+				for (T param : params) {
+
+					System.out.println(String.format(
+							"[%d][%d] Parameter flow metrics for resource %s: "
+									+ "pass count for param <%s> is %d, block count: %d",
+							seconds, TimeUtil.currentTimeMillis(), resourceName, param,
+							passCountMap.get(param).getAndSet(0), blockCountMap.get(param).getAndSet(0)));
+				}
+				System.out.println("=============================");
+				if (seconds-- <= 0) {
+					stop = true;
+				}
+			}
+
+			long cost = System.currentTimeMillis() - start;
+			System.out.println("Time cost: " + cost + " ms");
+			System.exit(0);
+		}
+	}
 }

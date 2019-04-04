@@ -113,7 +113,7 @@ final class ParamFlowChecker {
 			}
 
 			long costTime = Math.round(1.0 * 1000 * acquireCount * rule.getDurationInSec() / addedCount);
-
+			
 			while (true) {
 				// Add token
 				long currentTime = TimeUtil.currentTimeMillis();
@@ -124,13 +124,10 @@ final class ParamFlowChecker {
 				lastPastTimeRef = ruleCounter.lastPassTimeMap.get(value);
 
 				Long lastPastTime = lastPastTimeRef.get();
-				Long expectedTime = (lastPastTime>currentTime?lastPastTime:currentTime) + costTime;
-				
-			//	System.out.println(value + ": expectedTime: " + expectedTime +" lastPastTime: " + lastPastTime +" currentTime:" + currentTime);
+				Long expectedTime = (lastPastTime > currentTime ? lastPastTime : currentTime) + costTime;
 
-				if (expectedTime <= currentTime + rule.getDurationInSec() * 1000) {
+				if (expectedTime <= currentTime + rule.getDurationInSec() * 1000+rule.getTimeoutInMs()) {
 					if (lastPastTimeRef.compareAndSet(lastPastTime, expectedTime)) {
-						//System.out.println(lastPastTimeRef.get());
 						return true;
 					} else {
 						Thread.yield();

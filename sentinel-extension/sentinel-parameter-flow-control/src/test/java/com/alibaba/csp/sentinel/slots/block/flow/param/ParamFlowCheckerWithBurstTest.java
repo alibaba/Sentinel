@@ -64,11 +64,11 @@ public class ParamFlowCheckerWithBurstTest {
 				.get("helloWorld").intValue() == 1);
 
 	}
-	
+
 	@Test
 	public void testBehaviourWithBurst() throws Throwable {
 		ParamFlowRule ruleA = new ParamFlowRule(resA).setCount(1).setParamIdx(0)
-				.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_REJECT_WITH_BURST).setDurationInSec(1).setBurstCount(10);
+				.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_REJECT_WITH_BURST).setDurationInSec(1).setTimeoutInMs(1000);
 		ParamFlowRuleManager.loadRules(Collections.singletonList(ruleA));
 
 		long currentTime = TimeUtil.currentTimeMillis();
