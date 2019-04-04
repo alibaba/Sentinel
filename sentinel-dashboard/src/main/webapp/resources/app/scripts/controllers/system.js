@@ -64,7 +64,7 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
         var mac = $scope.macInputModel.split(':');
         SystemService.forceRefreshMachineRules('sentinel-system-forceRefresh', $scope.app, mac[0], mac[1]).success(
             function (data) {
-                if (data.code == 0) {
+                if (data.code == 0 && data.data) {
                     getMachineRules();
                 } else {
                     alert('失败!');

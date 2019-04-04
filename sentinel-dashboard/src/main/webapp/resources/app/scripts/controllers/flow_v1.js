@@ -66,7 +66,7 @@ app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', '
         var mac = $scope.macInputModel.split(':');
         FlowService.forceRefreshMachineRules('sentinel-flow-forceRefresh', $scope.app, mac[0], mac[1]).success(
             function (data) {
-                if (data.code == 0) {
+                if (data.code == 0 && data.data) {
                     getMachineRules();
                 } else {
                     alert('失败!');

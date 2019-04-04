@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.dashboard.repository.rule;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
+import com.alibaba.csp.sentinel.dashboard.discovery.AppInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.google.common.collect.Lists;
@@ -24,6 +25,7 @@ import org.springframework.util.CollectionUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -118,6 +120,19 @@ public abstract class InMemoryRuleRepositoryAdapter<T extends RuleEntity> implem
             allRules.remove(id);
             entities.remove(id);
         });
+    }
+
+    @Override
+    public void deleteByApp(AppInfo appInfo) {
+        Map<Long, T> removedAppRules = appRules.remove(appInfo.getApp());
+        if (CollectionUtils.isEmpty(removedAppRules)) {
+            return;
+        }
+        Set<MachineInfo> machines = appInfo.getMachines();
+        if (!CollectionUtils.isEmpty(machines)) {
+            machines.forEach(machineRules::remove);
+        }
+        removedAppRules.keySet().forEach(allRules::remove);
     }
 
     protected T preProcess(T entity) {

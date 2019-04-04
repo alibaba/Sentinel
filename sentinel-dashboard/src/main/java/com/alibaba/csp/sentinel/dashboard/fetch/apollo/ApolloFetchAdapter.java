@@ -4,13 +4,13 @@ import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.ApolloMachineInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.ApolloManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.fetch.Fetcher;
-import com.alibaba.csp.sentinel.util.AssertUtil;
+import com.alibaba.csp.sentinel.util.function.Tuple2;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -28,16 +28,13 @@ public abstract class ApolloFetchAdapter<T extends RuleEntity> implements Fetche
 
     @Override
     public List<T> fetch(String app, String ip, int port) {
-        Optional<MachineInfo> machineInfoOptional = appManagement.getDetailApp(app).getMachine(ip, port);
-        return machineInfoOptional.map(machineInfo -> {
-                    ApolloMachineInfo apolloMachineInfo = (ApolloMachineInfo) machineInfo;
-                    ApolloOpenApiClient apolloClient = ApolloManagement.getOrCreateClient(apolloMachineInfo);
-                    AssertUtil.notNull(apolloClient, String.format("There is no equivalent client for apollo portal url: %s", apolloMachineInfo.getPortalUrl()));
-                    return getItem(apolloClient, apolloMachineInfo); })
-                .map(item -> {
-                    String value = item.getValue();
-                    return convert(app, ip, port, value); })
-                .orElse(null);
+        return Optional.ofNullable(appManagement.getDetailApp(app))
+                       .flatMap(appInfo -> appInfo.getMachine(ip, port))
+                       .map(machineInfo -> new Tuple2<>((ApolloMachineInfo) machineInfo, ApolloManagement.getOrCreateClient((ApolloMachineInfo) machineInfo)))
+                       .filter(pair -> Objects.nonNull(pair.r2))
+                       .map(pair -> getItem(pair.r2, pair.r1))
+                       .map(item -> convert(app, ip, port, item.getValue()))
+                       .orElse(null);
     }
 
     private OpenItemDTO getItem(ApolloOpenApiClient apolloClient, ApolloMachineInfo apolloMachineInfo) {

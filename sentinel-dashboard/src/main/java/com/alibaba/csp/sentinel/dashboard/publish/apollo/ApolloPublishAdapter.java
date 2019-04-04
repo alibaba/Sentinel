@@ -7,14 +7,17 @@ import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.publish.Publisher;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
-import com.alibaba.csp.sentinel.util.AssertUtil;
+import com.alibaba.csp.sentinel.util.function.Tuple2;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import com.ctrip.framework.apollo.openapi.dto.NamespaceReleaseDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -23,6 +26,8 @@ import java.util.Optional;
  * @author longqiang
  */
 public abstract class ApolloPublishAdapter<T extends RuleEntity> implements Publisher<T> {
+
+    private static final Logger logger = LoggerFactory.getLogger(ApolloPublishAdapter.class);
 
     AppManagement appManagement;
 
@@ -35,40 +40,44 @@ public abstract class ApolloPublishAdapter<T extends RuleEntity> implements Publ
 
     @Override
     public boolean publish(String app, String ip, int port) {
-        Optional<MachineInfo> machineInfoOptional = appManagement.getDetailApp(app).getMachine(ip, port);
-        machineInfoOptional.ifPresent(machineInfo -> {
-            ApolloMachineInfo apolloMachineInfo = (ApolloMachineInfo) machineInfo;
-            List<T> rules = findRules(apolloMachineInfo);
-            ApolloOpenApiClient apolloClient = ApolloManagement.getOrCreateClient(apolloMachineInfo);
-            AssertUtil.notNull(apolloClient, String.format("There is no equivalent client for apollo portal url: %s", apolloMachineInfo.getPortalUrl()));
-            String appId = apolloMachineInfo.getAppId();
-            String env = apolloMachineInfo.getEnv();
-            String clusterName = apolloMachineInfo.getClusterName();
-            String namespace = apolloMachineInfo.getNamespace();
-            String operator = apolloMachineInfo.getOperator();
-            createOrUpdateItem(apolloClient, apolloMachineInfo, operator, rules, appId, env, clusterName, namespace);
-            publishNamespace(apolloClient, operator, appId, env, clusterName, namespace);
-        });
-        return true;
+        return Optional.ofNullable(appManagement.getDetailApp(app))
+                        .flatMap(appInfo -> appInfo.getMachine(ip, port))
+                        .map(machineInfo -> new Tuple2<>((ApolloMachineInfo) machineInfo, ApolloManagement.getOrCreateClient((ApolloMachineInfo) machineInfo)))
+                        .filter(pair -> Objects.nonNull(pair.r2))
+                        .map(pair -> publish(pair.r2, pair.r1))
+                        .orElse(false);
     }
 
-    private void createOrUpdateItem(ApolloOpenApiClient apolloClient, ApolloMachineInfo apolloMachineInfo, String operator, List<T> rules, String appId, String env, String clusterName, String namespaceName) {
+    private boolean publish(ApolloOpenApiClient apolloClient, ApolloMachineInfo apolloMachineInfo) {
+        try {
+            createOrUpdateItem(apolloClient, apolloMachineInfo, findRules(apolloMachineInfo));
+            publishNamespace(apolloClient, apolloMachineInfo);
+            return true;
+        } catch (Exception e) {
+            logger.error("publish rules to apollo failed, rules key:{}, reason:{}", getKey(apolloMachineInfo), e);
+            return false;
+        }
+    }
+
+    private void createOrUpdateItem(ApolloOpenApiClient apolloClient, ApolloMachineInfo apolloMachineInfo, List<T> rules) {
         OpenItemDTO openItemDTO = new OpenItemDTO();
         openItemDTO.setKey(getKey(apolloMachineInfo));
         openItemDTO.setValue(processRules(rules));
-        openItemDTO.setDataChangeCreatedBy(operator);
-        apolloClient.createOrUpdateItem(appId, env, clusterName, namespaceName, openItemDTO);
+        openItemDTO.setDataChangeCreatedBy(apolloMachineInfo.getOperator());
+        apolloClient.createOrUpdateItem(apolloMachineInfo.getAppId(), apolloMachineInfo.getEnv(), apolloMachineInfo.getClusterName(),
+                                        apolloMachineInfo.getNamespace(), openItemDTO);
     }
 
-    private void publishNamespace(ApolloOpenApiClient apolloClient, String operator, String appId, String env, String clusterName, String namespaceName) {
+    private void publishNamespace(ApolloOpenApiClient apolloClient, ApolloMachineInfo apolloMachineInfo) {
         NamespaceReleaseDTO namespaceReleaseDTO = new NamespaceReleaseDTO();
         namespaceReleaseDTO.setReleaseTitle(String.format("sentinel-%s-release", DateFormat.getInstance().format(new Date())));
-        namespaceReleaseDTO.setReleasedBy(operator);
-        apolloClient.publishNamespace(appId, env, clusterName, namespaceName, namespaceReleaseDTO);
+        namespaceReleaseDTO.setReleasedBy(apolloMachineInfo.getOperator());
+        apolloClient.publishNamespace(apolloMachineInfo.getAppId(), apolloMachineInfo.getEnv(), apolloMachineInfo.getClusterName(),
+                                      apolloMachineInfo.getNamespace(), namespaceReleaseDTO);
     }
 
-    private List<T> findRules(ApolloMachineInfo apolloMachineInfo) {
-        return repository.findAllByMachine(apolloMachineInfo);
+    private List<T> findRules(MachineInfo machineInfo) {
+        return repository.findAllByMachine(machineInfo);
     }
 
     /**

@@ -18,12 +18,14 @@ package com.alibaba.csp.sentinel.dashboard.discovery;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import com.alibaba.csp.sentinel.util.AssertUtil;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -33,6 +35,9 @@ import org.springframework.stereotype.Component;
 public class SimpleMachineDiscovery implements MachineDiscovery {
 
     private final ConcurrentMap<String, AppInfo> apps = new ConcurrentHashMap<>();
+
+    @Autowired
+    private Cleaner cleaner;
 
     @Override
     public long addMachine(MachineInfo machineInfo) {
@@ -46,8 +51,9 @@ public class SimpleMachineDiscovery implements MachineDiscovery {
     public boolean removeMachine(String app, String ip, int port) {
         AssertUtil.assertNotBlank(app, "app name cannot be blank");
         AppInfo appInfo = apps.get(app);
-        if (appInfo != null) {
-            return appInfo.removeMachine(ip, port);
+        if (appInfo != null && appInfo.removeMachine(ip, port)) {
+            cleaner.cleanMachineResource(MachineInfo.of(app, ip, port));
+            return true;
         }
         return false;
     }
@@ -71,7 +77,10 @@ public class SimpleMachineDiscovery implements MachineDiscovery {
     @Override
     public void removeApp(String app) {
         AssertUtil.assertNotBlank(app, "app name cannot be blank");
-        apps.remove(app);
+        AppInfo removedApp = apps.remove(app);
+        if (Objects.nonNull(removedApp)) {
+            cleaner.cleanAppResource(removedApp);
+        }
     }
 
 }

@@ -133,7 +133,7 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
         var mac = $scope.macInputModel.split(':');
         ParamFlowService.forceRefreshMachineRules('sentinel-param-flow-forceRefresh', $scope.app, mac[0], mac[1]).success(
             function (data) {
-                if (data.code == 0) {
+                if (data.code == 0 && data.data) {
                     getMachineRules();
                 } else {
                     alert('失败!');

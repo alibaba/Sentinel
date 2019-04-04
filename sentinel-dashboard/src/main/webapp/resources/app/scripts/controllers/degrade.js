@@ -50,7 +50,7 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
         var mac = $scope.macInputModel.split(':');
         DegradeService.forceRefreshMachineRules('sentinel-degrade-forceRefresh', $scope.app, mac[0], mac[1]).success(
             function (data) {
-                if (data.code == 0) {
+                if (data.code == 0 && data.data) {
                     getMachineRules();
                 } else {
                     alert('失败!');

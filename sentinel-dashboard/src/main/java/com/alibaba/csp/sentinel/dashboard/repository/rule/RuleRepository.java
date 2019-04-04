@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.dashboard.repository.rule;
 
 import java.util.List;
 
+import com.alibaba.csp.sentinel.dashboard.discovery.AppInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 
 /**
@@ -82,6 +83,14 @@ public interface RuleRepository<T, ID> {
      * @return void
      */
     void deleteByMachine(MachineInfo machineInfo);
+
+    /**
+     * Delete rules by app
+     *
+     * @param appInfo
+     * @return void
+     */
+    void deleteByApp(AppInfo appInfo);
 
     ///**
     // * Find all by app and enable switch.
