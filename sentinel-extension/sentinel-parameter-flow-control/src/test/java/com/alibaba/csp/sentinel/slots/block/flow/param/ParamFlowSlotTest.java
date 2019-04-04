@@ -50,6 +50,12 @@ public class ParamFlowSlotTest {
         paramFlowSlot.entry(null, resourceWrapper, null, 1, false, "abc", "def", "ghi");
         assertEquals(2, rule.getParamIdx().longValue());
 
+        rule.setParamIdx(-1);
+        ParamFlowRuleManager.loadRules(Collections.singletonList(rule));
+        paramFlowSlot.entry(null, resourceWrapper, null, 1, false, null);
+        // Null args will not trigger conversion.
+        assertEquals(-1, rule.getParamIdx().intValue());
+
         rule.setParamIdx(-100);
         ParamFlowRuleManager.loadRules(Collections.singletonList(rule));
         paramFlowSlot.entry(null, resourceWrapper, null, 1, false, "abc", "def", "ghi");
