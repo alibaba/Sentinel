@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.DefaultNode;
+import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 
 /**
@@ -56,6 +57,8 @@ public final class Tracer {
 
         DefaultNode curNode = (DefaultNode)context.getCurNode();
         traceExceptionToNode(e, count, curNode);
+
+        traceExceptionToOriginNode(e, count, context.getOriginNode());
     }
 
     /**
@@ -119,5 +122,16 @@ public final class Tracer {
         clusterNode.trace(t, count);
     }
 
+    private static void traceExceptionToOriginNode(Throwable t, int count, Node curNode) {
+        if (curNode == null) {
+            return;
+        }
+        if (count <= 0) {
+            return;
+        }
+        if (!BlockException.isBlockException(t)) {
+            curNode.increaseExceptionQps(count);
+        }
+    }
     private Tracer() {}
 }

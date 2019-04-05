@@ -15,12 +15,12 @@
  */
 package com.alibaba.csp.sentinel.node;
 
+import com.alibaba.csp.sentinel.context.ContextUtil;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
-
-import com.alibaba.csp.sentinel.context.ContextUtil;
-import com.alibaba.csp.sentinel.slots.block.BlockException;
 
 /**
  * <p>
@@ -47,7 +47,7 @@ public class ClusterNode extends StatisticNode {
      * become. so we don't concurrent map but a lock. as this lock only happens
      * at the very beginning while concurrent map will hold the lock all the time.
      */
-    private Map<String, StatisticNode> originCountMap = new HashMap<String, StatisticNode>();
+    private static volatile Map<String, StatisticNode> originCountMap = new HashMap<String, StatisticNode>();
 
     private final ReentrantLock lock = new ReentrantLock();
 
