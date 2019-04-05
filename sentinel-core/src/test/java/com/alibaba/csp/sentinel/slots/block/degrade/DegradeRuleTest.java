@@ -44,7 +44,7 @@ public class DegradeRuleTest {
 
 
         EntranceNode entranceNode = mock(EntranceNode.class);
-        when(entranceNode.avgRt()).thenReturn(5L);
+        when(entranceNode.avgRt()).thenReturn(2L);
 
 
         Context context = mock(Context.class);
@@ -52,7 +52,7 @@ public class DegradeRuleTest {
 
 
         DegradeRule rule = new DegradeRule();
-        rule.setCount(4);
+        rule.setCount(1);
         rule.setGrade(RuleConstant.DEGRADE_GRADE_RT);
         rule.setResource(key);
         rule.setTimeWindow(5);
@@ -76,10 +76,10 @@ public class DegradeRuleTest {
         Context context = mock(Context.class);
 
         when(entranceNode.getClusterNode()).thenReturn(cn);
-        when(cn.avgRt()).thenReturn(5L);
+        when(cn.avgRt()).thenReturn(2L);
 
         DegradeRule rule = new DegradeRule();
-        rule.setCount(5);
+        rule.setCount(1);
         rule.setGrade(RuleConstant.DEGRADE_GRADE_RT);
         rule.setResource(key);
         rule.setTimeWindow(5);
