@@ -71,11 +71,6 @@ public class DegradeRule extends AbstractRule {
     private double count;
 
     /**
-     * Mode: 0 for resource, 1 for context.
-     */
-    private int strategy = RuleConstant.DEGRADE_RESOURCE;
-
-    /**
      * Degrade recover timeout (in seconds) when degradation occurs.
      */
     private int timeWindow;
@@ -130,15 +125,6 @@ public class DegradeRule extends AbstractRule {
         return this;
     }
 
-    public int getStrategy() {
-        return strategy;
-    }
-
-    public DegradeRule setStrategy(int strategy) {
-        this.strategy = strategy;
-        return this;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -174,24 +160,12 @@ public class DegradeRule extends AbstractRule {
         return result;
     }
 
-    private static Node selectNodeByStrategy(DegradeRule rule, Context context, DefaultNode contentNode) {
-        // if strategy is 1 then return entraceNode
-        if (RuleConstant.DEGRADE_CONTEXT== rule.getStrategy()) {
-            Node originNode = context.getEntranceNode();
-            if (null == originNode) {
-                return null;
-            }
-            return originNode;
-        }
-        return ClusterBuilderSlot.getClusterNode(rule.getResource());
-    }
-
     @Override
     public boolean passCheck(Context context, DefaultNode node, int acquireCount, Object... args) {
         if (cut) {
             return false;
         }
-        Node clusterNode = selectNodeByStrategy(this, context, node);
+        Node clusterNode = DegradeRuleChecker.selectNodeByLimitApp(this, context, node);
 
         if (clusterNode == null) {
             return true;
