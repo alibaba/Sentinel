@@ -24,6 +24,7 @@ import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.DefaultNode;
+import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
@@ -165,8 +166,8 @@ public class DegradeRule extends AbstractRule {
         if (cut) {
             return false;
         }
+        Node clusterNode = DegradeRuleChecker.selectNodeByLimitApp(this, context, node);
 
-        ClusterNode clusterNode = ClusterBuilderSlot.getClusterNode(this.getResource());
         if (clusterNode == null) {
             return true;
         }
