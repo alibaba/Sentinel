@@ -52,7 +52,7 @@ public class DegradeRuleTest {
 
 
         DegradeRule rule = new DegradeRule();
-        rule.setCount(1);
+        rule.setCount(0.15);
         rule.setGrade(RuleConstant.DEGRADE_GRADE_RT);
         rule.setResource(key);
         rule.setTimeWindow(5);
@@ -79,7 +79,7 @@ public class DegradeRuleTest {
         when(cn.avgRt()).thenReturn(2L);
 
         DegradeRule rule = new DegradeRule();
-        rule.setCount(1);
+        rule.setCount(0.5);
         rule.setGrade(RuleConstant.DEGRADE_GRADE_RT);
         rule.setResource(key);
         rule.setTimeWindow(5);
