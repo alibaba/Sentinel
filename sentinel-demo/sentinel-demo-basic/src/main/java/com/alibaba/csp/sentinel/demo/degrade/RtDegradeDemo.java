@@ -48,7 +48,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Exception Count, see {@link ExceptionCountDegradeDemo}.
  * </li>
  * <li>
- * Degrade by app, see {@link RtDegradeByAppDemo}.
+ * Degraded by app, see {@link RtDegradeByAppDemo}.
  * </li>
  * </ul>
  *

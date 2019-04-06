@@ -47,7 +47,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * For average response time, see {@link RtDegradeDemo}.
  * </li>
  * <li>
- * Degrade by app, see {@link RtDegradeByAppDemo}.
+ * Degraded by app, see {@link RtDegradeByAppDemo}.
  * </li>
  * </ul>
  * </p>
