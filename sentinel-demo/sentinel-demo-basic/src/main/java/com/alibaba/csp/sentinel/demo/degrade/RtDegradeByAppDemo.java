@@ -17,8 +17,7 @@ package com.alibaba.csp.sentinel.demo.degrade;
 
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.SphU;
-import com.alibaba.csp.sentinel.Tracer;
-import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
@@ -32,42 +31,65 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * <p>
  * Degrade is used when the resources are in an unstable state, these resources
- * will be degraded within the next defined time window. There are three ways to
+ * will be degraded within the next defined time window. There are two ways to
  * measure whether a resource is stable or not:
  * <ul>
  * <li>
- * Exception ratio: When the ratio of exception count per second and the success
- * qps greats than or equals to the threshold, access to the resource will be blocked
- * in the coming time window.
+ * Average Response Time ('DegradeRule.Grade=RuleContants.DEGRADE_GRADE_RT'): When the
+ * average RT greats than or equals to the threshold ('count' in 'DegradeRule', ms), the
+ * resource enters a quasi-degraded state. If the RT of next coming five requests still
+ * exceed this threshold, this resource will be downgraded, which means that in
+ * the next time window(Defined in 'timeWindow', s units) all the access to this
+ * resource will be blocked.
+ * </li>
+ * <li>
+ * Exception Count, see {@link RtDegradeDemo}.
+ * </li>
+ * <li>
+ * Exception ratio, see {@link ExceptionRatioDegradeDemo}.
  * </li>
  * <li>
  * Exception Count, see {@link ExceptionCountDegradeDemo}.
  * </li>
- * <li>
- * For average response time, see {@link RtDegradeDemo}.
- * </li>
- * <li>
- * Degrade by app, see {@link RtDegradeByAppDemo}.
- * </li>
  * </ul>
+ * <p>
  * </p>
+ * <p>
+ * Run this demo, and the out put will be like,:
+ * <p>
+ * <pre>
+ * 1529399827825,total:0, pass:0, block:0
+ * 1529399828825,total:4263, pass:100, block:4164
+ * 1529399829825,total:19179, pass:4, block:19176
+ * 1529399830824,total:19806, pass:0, block:19806  //begin degrade
+ * 1529399831825,total:19198, pass:0, block:19198
+ * 1529399832824,total:19481, pass:0, block:19481
+ * 1529399833826,total:19241, pass:0, block:19241
+ * 1529399834826,total:17276, pass:0, block:17276
+ * 1529399835826,total:18722, pass:0, block:18722
+ * 1529399836826,total:19490, pass:0, block:19492
+ * 1529399837828,total:19355, pass:0, block:19355
+ * 1529399838827,total:11388, pass:0, block:11388
+ * 1529399839829,total:14494, pass:104, block:14390 //After 10 seconds, the system is restored, and degraded very
+ * quickly
+ * 1529399840854,total:18505, pass:0, block:18505
+ * 1529399841854,total:19673, pass:0, block:19676
+ * </pre>
  *
  * @author jialiang.linjl
  */
-public class ExceptionRatioDegradeDemo {
+public class RtDegradeByAppDemo {
 
     private static final String KEY = "abc";
-
-    private static AtomicInteger total = new AtomicInteger();
+    private static final int threadCount = 100;
     private static AtomicInteger pass = new AtomicInteger();
     private static AtomicInteger block = new AtomicInteger();
-    private static AtomicInteger bizException = new AtomicInteger();
-
+    private static AtomicInteger total = new AtomicInteger();
     private static volatile boolean stop = false;
-    private static final int threadCount = 1;
     private static int seconds = 60 + 40;
 
     public static void main(String[] args) throws Exception {
+
         tick();
         initDegradeRule();
 
@@ -76,26 +98,20 @@ public class ExceptionRatioDegradeDemo {
 
                 @Override
                 public void run() {
-                    int count = 0;
                     while (true) {
-                        count++;
                         Entry entry = null;
                         try {
-                            Thread.sleep(20);
+                            ContextUtil.enter(KEY);
+                            TimeUnit.MILLISECONDS.sleep(5);
                             entry = SphU.entry(KEY);
-                            // token acquired, means pass
-                            pass.addAndGet(1);
-                            if (count % 2 == 0) {
-                                // biz code raise an exception.
-                                throw new RuntimeException("throw runtime ");
-                            }
-                        } catch (BlockException e) {
-                            block.addAndGet(1);
-                        } catch (Throwable t) {
-                            bizException.incrementAndGet();
-                            Tracer.trace(t);
+                            // token acquired
+                            pass.incrementAndGet();
+                            // sleep 600 ms, as rt
+                            TimeUnit.MILLISECONDS.sleep(600);
+                        } catch (Exception e) {
+                            block.incrementAndGet();
                         } finally {
-                            total.addAndGet(1);
+                            total.incrementAndGet();
                             if (entry != null) {
                                 entry.exit();
                             }
@@ -107,17 +123,17 @@ public class ExceptionRatioDegradeDemo {
             entryThread.setName("working-thread");
             entryThread.start();
         }
-
     }
 
     private static void initDegradeRule() {
         List<DegradeRule> rules = new ArrayList<DegradeRule>();
         DegradeRule rule = new DegradeRule();
         rule.setResource(KEY);
-        // set limit exception ratio to 0.1
-        rule.setCount(0.1);
-        rule.setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO);
+        // set threshold rt, 10 ms
+        rule.setCount(10);
+        rule.setGrade(RuleConstant.DEGRADE_GRADE_RT);
         rule.setTimeWindow(10);
+        rule.setLimitApp("origin");
         rules.add(rule);
         DegradeRuleManager.loadRules(rules);
     }
@@ -129,6 +145,7 @@ public class ExceptionRatioDegradeDemo {
     }
 
     static class TimerTask implements Runnable {
+
         @Override
         public void run() {
             long start = System.currentTimeMillis();
@@ -136,12 +153,13 @@ public class ExceptionRatioDegradeDemo {
             long oldTotal = 0;
             long oldPass = 0;
             long oldBlock = 0;
-            long oldBizException = 0;
+
             while (!stop) {
                 try {
                     TimeUnit.SECONDS.sleep(1);
                 } catch (InterruptedException e) {
                 }
+
                 long globalTotal = total.get();
                 long oneSecondTotal = globalTotal - oldTotal;
                 oldTotal = globalTotal;
@@ -154,23 +172,20 @@ public class ExceptionRatioDegradeDemo {
                 long oneSecondBlock = globalBlock - oldBlock;
                 oldBlock = globalBlock;
 
-                long globalBizException = bizException.get();
-                long oneSecondBizException = globalBizException - oldBizException;
-                oldBizException = globalBizException;
+                System.out.println(TimeUtil.currentTimeMillis() + ", total:" + oneSecondTotal
+                        + ", pass:" + oneSecondPass + ", block:" + oneSecondBlock);
 
-                System.out.println(TimeUtil.currentTimeMillis() + ", oneSecondTotal:" + oneSecondTotal
-                    + ", oneSecondPass:" + oneSecondPass
-                    + ", oneSecondBlock:" + oneSecondBlock
-                    + ", oneSecondBizException:" + oneSecondBizException);
                 if (seconds-- <= 0) {
                     stop = true;
                 }
             }
+
             long cost = System.currentTimeMillis() - start;
             System.out.println("time cost: " + cost + " ms");
             System.out.println("total:" + total.get() + ", pass:" + pass.get()
-                + ", block:" + block.get() + ", bizException:" + bizException.get());
+                    + ", block:" + block.get());
             System.exit(0);
         }
     }
+
 }
