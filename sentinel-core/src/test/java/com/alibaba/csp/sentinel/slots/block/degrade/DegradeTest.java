@@ -21,7 +21,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.concurrent.TimeUnit;
 
-import com.alibaba.csp.sentinel.node.StatisticNode;
 import org.junit.Test;
 
 import com.alibaba.csp.sentinel.EntryType;
@@ -137,7 +136,7 @@ public class DegradeTest {
         Context context = mock(Context.class);
         DefaultNode node = mock(DefaultNode.class);
 
-        StatisticNode originNode = mock(StatisticNode.class);
+        DefaultNode originNode = mock(DefaultNode.class);
         when(context.getOriginNode()).thenReturn(originNode);
         when(originNode.avgRt()).thenReturn(2L);
 
@@ -167,7 +166,7 @@ public class DegradeTest {
         Context context = mock(Context.class);
         DefaultNode entranceNode = mock(DefaultNode.class);
 
-        StatisticNode originNode = mock(StatisticNode.class);
+        DefaultNode originNode = mock(DefaultNode.class);
         when(context.getOriginNode()).thenReturn(originNode);
 
         when(originNode.exceptionQps()).thenReturn(2L);
@@ -200,7 +199,7 @@ public class DegradeTest {
         Context context = mock(Context.class);
         DefaultNode entranceNode = mock(DefaultNode.class);
 
-        StatisticNode originNode = mock(StatisticNode.class);
+        DefaultNode originNode = mock(DefaultNode.class);
         when(context.getOriginNode()).thenReturn(originNode);
 
         DegradeRule rule = new DegradeRule();
