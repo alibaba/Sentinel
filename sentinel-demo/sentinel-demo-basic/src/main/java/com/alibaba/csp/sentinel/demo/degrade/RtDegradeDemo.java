@@ -15,17 +15,17 @@
  */
 package com.alibaba.csp.sentinel.demo.degrade;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
+import com.alibaba.csp.sentinel.util.TimeUtil;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * <p>
@@ -46,6 +46,9 @@ import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
  * </li>
  * <li>
  * Exception Count, see {@link ExceptionCountDegradeDemo}.
+ * </li>
+ * <li>
+ * Degrade by app, see {@link RtDegradeByAppDemo}.
  * </li>
  * </ul>
  *
