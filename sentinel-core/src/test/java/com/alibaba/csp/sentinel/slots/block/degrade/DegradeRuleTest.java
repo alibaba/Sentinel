@@ -1,5 +1,3 @@
-package com.alibaba.csp.sentinel.slots.block.degrade;
-
 /*
  * Copyright 1999-2018 Alibaba Group Holding Ltd.
  *
@@ -15,13 +13,13 @@ package com.alibaba.csp.sentinel.slots.block.degrade;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.alibaba.csp.sentinel.slots.block.degrade;
 
-import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.context.Context;
-import com.alibaba.csp.sentinel.node.*;
-import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
+import com.alibaba.csp.sentinel.node.DefaultNode;
+import com.alibaba.csp.sentinel.node.Node;
+import com.alibaba.csp.sentinel.node.StatisticNode;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
@@ -37,17 +35,14 @@ import static org.mockito.Mockito.when;
 public class DegradeRuleTest {
 
     @Test
-    public void testAverageRtDegradeByOrigin() throws InterruptedException {
+    public void testAverageRtDegradeByApp() throws InterruptedException {
         String key = "test_degrade_average_rt";
-        ClusterNode cn = mock(ClusterNode.class);
-        ClusterBuilderSlot.getClusterNodeMap().put(new StringResourceWrapper(key, EntryType.IN), cn);
 
         Context context = mock(Context.class);
-        when(context.getOriginNode()).thenReturn(cn);
-
         DefaultNode node = mock(DefaultNode.class);
-        when(node.getClusterNode()).thenReturn(cn);
-        when(cn.avgRt()).thenReturn(2L);
+
+        StatisticNode originNode = new StatisticNode();
+        when(context.getOriginNode()).thenReturn(originNode);
 
         DegradeRule rule = new DegradeRule();
         rule.setCount(1);
@@ -56,11 +51,14 @@ public class DegradeRuleTest {
         rule.setLimitApp("origin");
 
         for (int i = 0; i < 4; i++) {
+            originNode.addRtAndSuccess(2,1);
             assertTrue(rule.passCheck(context, node, 1));
         }
 
         // The third time will fail.
+        originNode.addRtAndSuccess(2,1);
         assertFalse(rule.passCheck(context, node, 1));
+        originNode.addRtAndSuccess(2,1);
         assertFalse(rule.passCheck(context, node, 1));
 
         // Restore.
@@ -68,5 +66,68 @@ public class DegradeRuleTest {
         assertTrue(rule.passCheck(context, node, 1));
     }
 
-}
+    @Test
+    public void testExceptionRatioModeDegradeByApp() throws Throwable {
+        String key = "test_degrade_exception_ratio";
 
+        Context context = mock(Context.class);
+        DefaultNode entranceNode = mock(DefaultNode.class);
+
+        StatisticNode originNode = new StatisticNode();
+        when(context.getOriginNode()).thenReturn(originNode);
+
+
+        // Indicates that there are QPS more than min threshold.
+        originNode.addRtAndSuccess(1,10);
+
+
+        DegradeRule rule = new DegradeRule();
+        rule.setCount(0.15);
+        rule.setResource(key);
+        rule.setTimeWindow(5);
+        rule.setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO);
+        rule.setLimitApp("origin");
+
+        originNode.increaseExceptionQps(2);
+        originNode.addPassRequest(10);
+        // Will fail.
+        assertFalse(rule.passCheck(context, entranceNode, 1));
+
+        // Restore from the degrade timeout.
+        TimeUnit.SECONDS.sleep(6);
+
+        originNode.addRtAndSuccess(1,20);
+        // Will pass.
+        assertTrue(rule.passCheck(context, entranceNode, 1));
+    }
+
+    @Test
+    public void testExceptionCountModeDegradeByApp() throws Throwable {
+        String key = "test_degrade_exception_count";
+        Context context = mock(Context.class);
+        DefaultNode entranceNode = mock(DefaultNode.class);
+
+        StatisticNode originNode = new StatisticNode();
+        when(context.getOriginNode()).thenReturn(originNode);
+
+        DegradeRule rule = new DegradeRule();
+        rule.setCount(4);
+        rule.setResource(key);
+        rule.setTimeWindow(2);
+        rule.setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT);
+        rule.setLimitApp("origin");
+
+        originNode.increaseExceptionQps(4);
+
+        // Will fail.
+        assertFalse(rule.passCheck(context, entranceNode, 1));
+
+        // Restore from the degrade timeout.
+        TimeUnit.SECONDS.sleep(3);
+
+        rule.setCount(5);
+        // Will pass.
+        assertTrue(rule.passCheck(context, entranceNode, 1));
+    }
+
+}
