@@ -16,7 +16,6 @@
 package com.alibaba.csp.sentinel.dashboard.config;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
 
 import javax.servlet.Filter;
@@ -104,13 +103,14 @@ public class WebConfig implements WebMvcConfigurer {
                 HttpServletRequest request = (HttpServletRequest)servletRequest;
 
                 String requestURI = request.getRequestURI();
-                System.out.println(requestURI);
 
+                // Some spec urls are exclude to auth
                 if (authFilterExcludeUrls.contains(requestURI)) {
                     filterChain.doFilter(servletRequest, servletResponse);
                     return;
                 }
 
+                // Some spec url suffixes are exclude to auth
                 for (String authFilterExcludeUrlSuffix : authFilterExcludeUrlSuffixes) {
                     if (StringUtils.isBlank(authFilterExcludeUrlSuffix)) {
                         continue;
