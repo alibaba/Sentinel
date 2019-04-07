@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.dashboard.config;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -25,14 +26,17 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import com.alibaba.csp.sentinel.adapter.servlet.CommonFilter;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.AuthUser;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -47,6 +51,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
 
     private final Logger logger = LoggerFactory.getLogger(WebConfig.class);
+
+    private static final String URL_SUFFIX_DOT = ".";
+
+    @Value("#{'${auth.filter.exclude-urls}'.split(',')}")
+    private List<String> authFilterExcludeUrls;
+
+    @Value("#{'${auth.filter.exclude-url-suffixes}'.split(',')}")
+    private List<String> authFilterExcludeUrlSuffixes;
 
     @Autowired
     private AuthService<HttpServletRequest> authService;
@@ -90,12 +102,34 @@ public class WebConfig implements WebMvcConfigurer {
             public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse,
                                  FilterChain filterChain) throws IOException, ServletException {
                 HttpServletRequest request = (HttpServletRequest)servletRequest;
+
+                String requestURI = request.getRequestURI();
+                System.out.println(requestURI);
+
+                if (authFilterExcludeUrls.contains(requestURI)) {
+                    filterChain.doFilter(servletRequest, servletResponse);
+                    return;
+                }
+
+                for (String authFilterExcludeUrlSuffix : authFilterExcludeUrlSuffixes) {
+                    if (StringUtils.isBlank(authFilterExcludeUrlSuffix)) {
+                        continue;
+                    }
+
+                    if (!authFilterExcludeUrlSuffix.startsWith(URL_SUFFIX_DOT)) {
+                        authFilterExcludeUrlSuffix = URL_SUFFIX_DOT + authFilterExcludeUrlSuffix;
+                    }
+
+                    if (requestURI.endsWith(authFilterExcludeUrlSuffix)) {
+                        filterChain.doFilter(servletRequest, servletResponse);
+                        return;
+                    }
+                }
+
                 AuthUser authUser = authService.getAuthUser(request);
                 // authentication fail
                 if (authUser == null) {
-                    PrintWriter writer = servletResponse.getWriter();
-                    writer.append("login needed");
-                    writer.flush();
+                    ((HttpServletResponse) servletResponse).sendRedirect("/");
                 } else {
                     filterChain.doFilter(servletRequest, servletResponse);
                 }

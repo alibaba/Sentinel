@@ -33,6 +33,22 @@ angular
     $urlRouterProvider.otherwise('/dashboard/home');
 
     $stateProvider
+      .state('login', {
+          url: '/login',
+          templateUrl: 'app/views/login.html',
+          controller: 'LoginCtl',
+          resolve: {
+              loadMyFiles: ['$ocLazyLoad', function ($ocLazyLoad) {
+                  return $ocLazyLoad.load({
+                      name: 'sentinelDashboardApp',
+                      files: [
+                          'app/scripts/controllers/login.js',
+                      ]
+                  });
+              }]
+          }
+      })
+
       .state('dashboard', {
         url: '/dashboard',
         templateUrl: 'app/views/dashboard/main.html',
