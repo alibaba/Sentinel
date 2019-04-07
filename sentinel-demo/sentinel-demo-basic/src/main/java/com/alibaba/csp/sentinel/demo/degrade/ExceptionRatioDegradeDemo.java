@@ -15,11 +15,6 @@
  */
 package com.alibaba.csp.sentinel.demo.degrade;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
@@ -28,6 +23,11 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.util.TimeUtil;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * <p>
@@ -45,6 +45,9 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
  * </li>
  * <li>
  * For average response time, see {@link RtDegradeDemo}.
+ * </li>
+ * <li>
+ * Degraded by app, see {@link RtDegradeByAppDemo}.
  * </li>
  * </ul>
  * </p>
