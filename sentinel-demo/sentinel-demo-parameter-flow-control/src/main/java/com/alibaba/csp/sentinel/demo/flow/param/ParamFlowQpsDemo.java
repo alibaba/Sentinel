@@ -59,11 +59,12 @@ public class ParamFlowQpsDemo {
         ParamFlowRule rule = new ParamFlowRule(RESOURCE_KEY)
             .setParamIdx(0)
             .setGrade(RuleConstant.FLOW_GRADE_QPS)
-            .setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_REJECT_WITH_BURST)
+            .setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER)
+            //.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_REJECT_WITH_BURST)
            // .setDurationInSec(duration)
-            //.setTimeoutInMs(600)
-           // .setBurstCount(20)
-            .setCount(0);
+            .setTimeoutInMs(600)
+
+            .setCount(5);
         // We can set threshold count for specific parameter value individually.
         // Here we add an exception item. That means: QPS threshold of entries with parameter `PARAM_B` (type: int)
         // in index 0 will be 10, rather than the global threshold (5).
