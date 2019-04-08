@@ -1,5 +1,6 @@
 package com.alibaba.csp.sentinel.dashboard.fetch.inmemory;
 
+import com.alibaba.csp.sentinel.dashboard.Constants;
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEntity;
 import com.alibaba.csp.sentinel.log.RecordLog;
@@ -15,7 +16,7 @@ import java.util.concurrent.ExecutionException;
  *
  * @author longqiang
  */
-@Component
+@Component(Constants.PARAM_FLOW_RULE_FETCHER)
 @ConditionalOnProperty(name = "ruleDataSource", havingValue = "inMemory", matchIfMissing = true)
 public class InMemoryParamFlowRuleFetcher extends InMemoryFetchAdapter<ParamFlowRuleEntity> {
 

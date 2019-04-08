@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.dashboard.repository.rule;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.alibaba.csp.sentinel.dashboard.Constants;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
 
 import org.springframework.stereotype.Component;
@@ -24,7 +25,7 @@ import org.springframework.stereotype.Component;
 /**
  * @author leyou
  */
-@Component
+@Component(Constants.DEGRADE_RULE_STORE)
 public class InMemDegradeRuleStore extends InMemoryRuleRepositoryAdapter<DegradeRuleEntity> {
 
     private static AtomicLong ids = new AtomicLong(0);

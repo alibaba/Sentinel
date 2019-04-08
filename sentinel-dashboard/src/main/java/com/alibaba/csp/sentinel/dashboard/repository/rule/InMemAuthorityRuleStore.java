@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.dashboard.repository.rule;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.alibaba.csp.sentinel.dashboard.Constants;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.AuthorityRuleEntity;
 
 import org.springframework.stereotype.Component;
@@ -27,7 +28,7 @@ import org.springframework.stereotype.Component;
  * @author Eric Zhao
  * @since 0.2.1
  */
-@Component
+@Component(Constants.AUTHORITY_RULE_STORE)
 public class InMemAuthorityRuleStore extends InMemoryRuleRepositoryAdapter<AuthorityRuleEntity> {
 
     private static AtomicLong ids = new AtomicLong(0);

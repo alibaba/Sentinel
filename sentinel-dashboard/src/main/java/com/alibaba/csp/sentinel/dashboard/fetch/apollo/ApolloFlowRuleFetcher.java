@@ -1,5 +1,6 @@
 package com.alibaba.csp.sentinel.dashboard.fetch.apollo;
 
+import com.alibaba.csp.sentinel.dashboard.Constants;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.ApolloMachineInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
  *
  * @author longqiang
  */
-@Component
+@Component(Constants.FLOW_RULE_FETCHER)
 @ConditionalOnProperty(name = "ruleDataSource", havingValue = "apollo")
 public class ApolloFlowRuleFetcher extends ApolloFetchAdapter<FlowRuleEntity> {
 

@@ -1,5 +1,6 @@
 package com.alibaba.csp.sentinel.dashboard.fetch.inmemory;
 
+import com.alibaba.csp.sentinel.dashboard.Constants;
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -12,7 +13,7 @@ import java.util.List;
  *
  * @author longqiang
  */
-@Component
+@Component(Constants.FLOW_RULE_FETCHER)
 @ConditionalOnProperty(name = "ruleDataSource", havingValue = "inMemory", matchIfMissing = true)
 public class InMemoryFlowRuleFetcher extends InMemoryFetchAdapter<FlowRuleEntity> {
 

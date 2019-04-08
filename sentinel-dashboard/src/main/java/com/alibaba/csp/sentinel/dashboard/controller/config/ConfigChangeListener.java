@@ -1,11 +1,8 @@
 package com.alibaba.csp.sentinel.dashboard.controller.config;
 
+import com.alibaba.csp.sentinel.dashboard.Constants;
 import com.alibaba.csp.sentinel.dashboard.controller.config.check.Checker;
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.AuthorityRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.SystemRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.dashboard.fetch.Fetcher;
@@ -17,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * If the configuration modification is not triggered by sentinel-dashboard, need to notify this
@@ -31,88 +29,46 @@ public class ConfigChangeListener {
     private Checker checker;
 
     @Autowired
-    private Fetcher<FlowRuleEntity> flowRuleFetcher;
+    private Map<String, InMemoryRuleRepositoryAdapter> repositoryMap;
 
     @Autowired
-    private Fetcher<DegradeRuleEntity> degradeRuleFetcher;
-
-    @Autowired
-    private Fetcher<AuthorityRuleEntity> authorityRuleFetcher;
-
-    @Autowired
-    private Fetcher<ParamFlowRuleEntity> paramFlowRuleFetcher;
-
-    @Autowired
-    private Fetcher<SystemRuleEntity> systemRuleFetcher;
-
-    @Autowired
-    private InMemoryRuleRepositoryAdapter<FlowRuleEntity> flowRuleRepository;
-
-    @Autowired
-    private InMemoryRuleRepositoryAdapter<DegradeRuleEntity> degradeRuleRepository;
-
-    @Autowired
-    private InMemoryRuleRepositoryAdapter<AuthorityRuleEntity> authorityRuleRepository;
-
-    @Autowired
-    private InMemoryRuleRepositoryAdapter<ParamFlowRuleEntity> paramFlowRuleRepository;
-
-    @Autowired
-    private InMemoryRuleRepositoryAdapter<SystemRuleEntity> systemRuleRepository;
+    private Map<String, Fetcher> fetcherMap;
 
     @PutMapping("flowRules")
     public Result<Boolean> flowRulesOnChange(String operator, String app, String ip, Integer port) {
-        boolean checkResult = checker.checkOperator(operator, app, ip, port);
-        if (checkResult) {
-            List<FlowRuleEntity> rules = flowRuleFetcher.fetch(app, ip, port);
-            flowRuleRepository.deleteByMachine(MachineInfo.of(app, ip, port));
-            flowRuleRepository.saveAll(rules);
-        }
-        return Result.ofSuccess(checkResult);
+        return Result.ofSuccess(processOnChange(operator, app, ip, port, Constants.FLOW_RULE_FETCHER, Constants.FLOW_RULE_STORE));
     }
 
     @PutMapping("degradeRules")
     public Result<Boolean> degradeRulesOnChange(String operator, String app, String ip, Integer port) {
-        boolean checkResult = checker.checkOperator(operator, app, ip, port);
-        if (checkResult) {
-            List<DegradeRuleEntity> rules = degradeRuleFetcher.fetch(app, ip, port);
-            degradeRuleRepository.deleteByMachine(MachineInfo.of(app, ip, port));
-            degradeRuleRepository.saveAll(rules);
-        }
-        return Result.ofSuccess(checkResult);
+        return Result.ofSuccess(processOnChange(operator, app, ip, port, Constants.DEGRADE_RULE_FETCHER, Constants.DEGRADE_RULE_STORE));
     }
 
     @PutMapping("authorityRules")
     public Result<Boolean> authorityRulesOnChange(String operator, String app, String ip, Integer port) {
-        boolean checkResult = checker.checkOperator(operator, app, ip, port);
-        if (checkResult) {
-            List<AuthorityRuleEntity> rules = authorityRuleFetcher.fetch(app, ip, port);
-            authorityRuleRepository.deleteByMachine(MachineInfo.of(app, ip, port));
-            authorityRuleRepository.saveAll(rules);
-        }
-        return Result.ofSuccess(checkResult);
+        return Result.ofSuccess(processOnChange(operator, app, ip, port, Constants.AUTHORITY_RULE_FETCHER, Constants.AUTHORITY_RULE_STORE));
     }
 
     @PutMapping("systemRules")
     public Result<Boolean> systemRulesOnChange(String operator, String app, String ip, Integer port) {
-        boolean checkResult = checker.checkOperator(operator, app, ip, port);
-        if (checkResult) {
-            List<SystemRuleEntity> rules = systemRuleFetcher.fetch(app, ip, port);
-            systemRuleRepository.deleteByMachine(MachineInfo.of(app, ip, port));
-            systemRuleRepository.saveAll(rules);
-        }
-        return Result.ofSuccess(checkResult);
+        return Result.ofSuccess(processOnChange(operator, app, ip, port, Constants.SYSTEM_RULE_FETCHER, Constants.SYSTEM_RULE_STORE));
     }
 
     @PutMapping("paramFlowRules")
     public Result<Boolean> paramFlowRulesOnChange(String operator, String app, String ip, Integer port) {
+        return Result.ofSuccess(processOnChange(operator, app, ip, port, Constants.PARAM_FLOW_RULE_FETCHER, Constants.PARAM_FLOW_RULE_STORE));
+    }
+
+    private Boolean processOnChange(String operator, String app, String ip, Integer port, String fetcherName, String repositoryName) {
         boolean checkResult = checker.checkOperator(operator, app, ip, port);
         if (checkResult) {
-            List<ParamFlowRuleEntity> rules = paramFlowRuleFetcher.fetch(app, ip, port);
-            paramFlowRuleRepository.deleteByMachine(MachineInfo.of(app, ip, port));
-            paramFlowRuleRepository.saveAll(rules);
+            Fetcher fetcher = fetcherMap.get(fetcherName);
+            InMemoryRuleRepositoryAdapter repository = repositoryMap.get(repositoryName);
+            List<RuleEntity> rules = fetcher.fetch(app, ip, port);
+            repository.deleteByMachine(MachineInfo.of(app, ip, port));
+            repository.saveAll(rules);
         }
-        return Result.ofSuccess(checkResult);
+        return checkResult;
     }
 
 }
