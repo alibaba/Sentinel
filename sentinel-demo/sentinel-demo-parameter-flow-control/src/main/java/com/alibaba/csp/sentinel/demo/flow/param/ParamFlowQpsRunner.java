@@ -45,7 +45,7 @@ class ParamFlowQpsRunner<T> {
 
 	private final Map<T, AtomicLong> passCountMap = new ConcurrentHashMap<>();
 	private final Map<T, AtomicLong> blockCountMap = new ConcurrentHashMap<>();
-	
+
 	private CountDownLatch countDown = null;
 
 	private volatile boolean stop = false;
@@ -65,7 +65,7 @@ class ParamFlowQpsRunner<T> {
 			passCountMap.putIfAbsent(param, new AtomicLong());
 			blockCountMap.putIfAbsent(param, new AtomicLong());
 		}
-		 countDown = new CountDownLatch(threadCount);
+		countDown = new CountDownLatch(threadCount);
 
 	}
 
@@ -101,21 +101,54 @@ class ParamFlowQpsRunner<T> {
 
 	private void passFor(T param) {
 		passCountMap.get(param).incrementAndGet();
+		System.out.println(TimeUtil.currentTimeMillis());
 	}
 
 	private void blockFor(T param) {
 		blockCountMap.get(param).incrementAndGet();
 	}
 
-	
-	
 	final class RunTask implements Runnable {
-		
-		public void runForSeconds(long secondInterval){
-			
+
+		public void runForSeconds(long secondInterval) {
+
 			long startTime = TimeUtil.currentTimeMillis();
-			long endTime = startTime + secondInterval*1000;
-			while(startTime<endTime){
+			long endTime = startTime + secondInterval * 1000;
+			while (startTime < endTime) {
+				Entry entry = null;
+				T param = generateParam();
+				try {
+					entry = SphU.entry(resourceName, EntryType.IN, 1, param);
+					// Add pass for parameter.
+					passFor(param);
+
+				} catch (BlockException e1) {
+					// block.incrementAndGet();
+					blockFor(param);
+				} catch (Exception ex) {
+					// biz exception
+					ex.printStackTrace();
+				} finally {
+					// total.incrementAndGet();
+					if (entry != null) {
+						entry.exit(1, param);
+					}
+				}
+
+				try {
+					TimeUnit.MILLISECONDS.sleep(ThreadLocalRandom.current().nextInt(0, 10));
+				} catch (InterruptedException e) {
+					// ignore
+				}
+				startTime = TimeUtil.currentTimeMillis();
+			}
+			// System.out.println("end:" + endTime);
+		}
+
+		@Override
+		public void run() {
+
+			while (!stop) {
 				Entry entry = null;
 				T param = generateParam();
 				try {
@@ -140,23 +173,6 @@ class ParamFlowQpsRunner<T> {
 				} catch (InterruptedException e) {
 					// ignore
 				}
-				startTime = TimeUtil.currentTimeMillis();
-			}
-			System.out.println("end:" + endTime);
-		}
-		
-		@Override
-		public void run() {
-			while (!stop) {
-
-				runForSeconds(1);
-				try {
-					TimeUnit.SECONDS.sleep(2);
-				} catch (InterruptedException e) {
-					// ignore
-				}
-				runForSeconds(4);
-
 			}
 		}
 	}

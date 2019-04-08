@@ -41,59 +41,8 @@ public class ParamFlowCheckerWithBurstTest {
 		ParamFlowRuleManager.loadRules(null);
 	}
 
-	@Test
-	public void testBehaviourWithoutBurst() throws Throwable {
-		ParamFlowRule ruleA = new ParamFlowRule(resA).setCount(1).setParamIdx(0)
-				.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_REJECT_WITH_BURST).setDurationInSec(2);
-		ParamFlowRuleManager.loadRules(Collections.singletonList(ruleA));
+	
 
-		long currentTime = TimeUtil.currentTimeMillis();
-		paramFlowSlot.entry(null, resourceWrapper, null, 1, false, "helloWorld");
-		assertTrue(paramFlowSlot.getParamMetric(resourceWrapper).getRuleCounterMap().get(ruleA).lastAddTokenTimeMap
-				.get("helloWorld").get() > currentTime);
-		assertTrue(paramFlowSlot.getParamMetric(resourceWrapper).getRuleCounterMap().get(ruleA).countMap
-				.get("helloWorld").intValue() == 1);
 
-		paramFlowSlot.entry(null, resourceWrapper, null, 1, false, "helloWorld");
-		assertTrue(paramFlowSlot.getParamMetric(resourceWrapper).getRuleCounterMap().get(ruleA).countMap
-				.get("helloWorld").intValue() == 1);
-
-		Thread.sleep(60);
-		paramFlowSlot.entry(null, resourceWrapper, null, 1, false, "helloWorld");
-		assertTrue(paramFlowSlot.getParamMetric(resourceWrapper).getRuleCounterMap().get(ruleA).countMap
-				.get("helloWorld").intValue() == 1);
-
-	}
-
-	@Test
-	public void testBehaviourWithBurst() throws Throwable {
-		ParamFlowRule ruleA = new ParamFlowRule(resA).setCount(1).setParamIdx(0)
-				.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_REJECT_WITH_BURST).setDurationInSec(1).setTimeoutInMs(1000);
-		ParamFlowRuleManager.loadRules(Collections.singletonList(ruleA));
-
-		long currentTime = TimeUtil.currentTimeMillis();
-		paramFlowSlot.entry(null, resourceWrapper, null, 1, false, "helloWorld");
-		assertTrue(paramFlowSlot.getParamMetric(resourceWrapper).getRuleCounterMap().get(ruleA).lastAddTokenTimeMap
-				.get("helloWorld").get() > currentTime);
-		assertTrue(paramFlowSlot.getParamMetric(resourceWrapper).getRuleCounterMap().get(ruleA).countMap
-				.get("helloWorld").intValue() == 11);
-
-		paramFlowSlot.entry(null, resourceWrapper, null, 1, false, "helloWorld");
-		assertTrue(paramFlowSlot.getParamMetric(resourceWrapper).getRuleCounterMap().get(ruleA).countMap
-				.get("helloWorld").intValue() == 11);
-		
-		Thread.sleep(1000);
-		paramFlowSlot.entry(null, resourceWrapper, null, 1, false, "helloWorld");
-		System.out.println(paramFlowSlot.getParamMetric(resourceWrapper).getRuleCounterMap().get(ruleA).countMap
-				.get("helloWorld").intValue());
-		assertTrue(paramFlowSlot.getParamMetric(resourceWrapper).getRuleCounterMap().get(ruleA).countMap
-				.get("helloWorld").intValue() == 1);
-		
-		Thread.sleep(12000);
-		paramFlowSlot.entry(null, resourceWrapper, null, 1, false, "helloWorld");
-		assertTrue(paramFlowSlot.getParamMetric(resourceWrapper).getRuleCounterMap().get(ruleA).countMap
-				.get("helloWorld").intValue() == 11);
-
-	}
 
 }

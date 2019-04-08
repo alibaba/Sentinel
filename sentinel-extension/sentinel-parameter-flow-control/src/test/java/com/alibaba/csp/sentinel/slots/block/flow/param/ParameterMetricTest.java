@@ -115,7 +115,6 @@ public class ParameterMetricTest {
 		
 		metric.addPass(1, 19L);
 		
-		assertEquals(metric.getRuleCounterMap().get(rule).countMap.get(19L).intValue(), -1);
 		assertTrue(metric.getRuleCounterMap().get(rule).lastPassTimeMap.get(19L).get()>currentTime);
 	}
 

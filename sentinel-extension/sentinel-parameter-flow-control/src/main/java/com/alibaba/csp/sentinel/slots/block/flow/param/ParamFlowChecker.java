@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
@@ -113,7 +114,7 @@ final class ParamFlowChecker {
 			}
 
 			long costTime = Math.round(1.0 * 1000 * acquireCount * rule.getDurationInSec() / addedCount);
-			
+
 			while (true) {
 				// Add token
 				long currentTime = TimeUtil.currentTimeMillis();
@@ -126,13 +127,23 @@ final class ParamFlowChecker {
 				Long lastPastTime = lastPastTimeRef.get();
 				Long expectedTime = (lastPastTime > currentTime ? lastPastTime : currentTime) + costTime;
 
-				if (expectedTime <= currentTime + rule.getDurationInSec() * 1000+rule.getTimeoutInMs()) {
+				if (expectedTime <= currentTime + rule.getDurationInSec() * 1000 + rule.getTimeoutInMs()) {
 					if (lastPastTimeRef.compareAndSet(lastPastTime, expectedTime)) {
+						if (rule.getControlBehavior() == RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER) {
+							long waitTime = expectedTime - currentTime ;
+							if (waitTime > 0) {
+								try {
+									TimeUnit.MILLISECONDS.sleep(waitTime);
+								} catch (InterruptedException e) {
+									RecordLog.info("could not wait ",e);
+								}
+							}
+
+						}
 						return true;
 					} else {
 						Thread.yield();
 					}
-
 				} else {
 					return false;
 				}

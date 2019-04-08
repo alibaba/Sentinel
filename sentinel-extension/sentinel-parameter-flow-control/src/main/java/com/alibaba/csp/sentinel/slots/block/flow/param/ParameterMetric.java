@@ -48,8 +48,6 @@ public class ParameterMetric {
 
 	public class ParamRuleMetric {
 		public CacheMap<Object, AtomicReference<Long>> lastPassTimeMap = null;
-		public CacheMap<Object, LongAdder> countMap = null;
-		public CacheMap<Object, AtomicReference<Long>> lastAddTokenTimeMap = null;
 
 		public ParamRuleMetric(int flowIntervalInSec) {
 			init(flowIntervalInSec);
@@ -58,8 +56,6 @@ public class ParameterMetric {
 		public void init(int intervalInSec) {
 			int max = 4000 * intervalInSec > 2000000 ? 200000 : 4000 * intervalInSec;
 			lastPassTimeMap = new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(max);
-			countMap = new ConcurrentLinkedHashMapWrapper<Object, LongAdder>(max);
-			lastAddTokenTimeMap = new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(max);
 		}
 
 		public void updateObject(Object object, int count) {
