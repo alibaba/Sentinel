@@ -112,23 +112,27 @@ final class ParamFlowChecker {
 			if (exclusionItems.contains(value)) {
 				addedCount = rule.getParsedHotItems().get(value);
 			}
+			
+			if(addedCount == 0){
+				return false;
+			}
 
 			long costTime = Math.round(1.0 * 1000 * acquireCount * rule.getDurationInSec() / addedCount);
 
 			while (true) {
 				// Add token
 				long currentTime = TimeUtil.currentTimeMillis();
-
-				AtomicReference<Long> lastPastTimeRef = ruleCounter.lastPassTimeMap.putIfAbsent(value,
-						new AtomicReference<Long>(currentTime));
-
-				lastPastTimeRef = ruleCounter.lastPassTimeMap.get(value);
-
-				Long lastPastTime = lastPastTimeRef.get();
-				Long expectedTime = (lastPastTime > currentTime ? lastPastTime : currentTime) + costTime;
+				Long lastPassTime = (ruleCounter.lastPassTimeMap.get(value)==null)? null:ruleCounter.lastPassTimeMap.get(value).get();			
+				long expectedTime = lastPassTime == null? (currentTime):(lastPassTime+costTime);
 
 				if (expectedTime <= currentTime + rule.getDurationInSec() * 1000 + rule.getTimeoutInMs()) {
-					if (lastPastTimeRef.compareAndSet(lastPastTime, expectedTime)) {
+					AtomicReference<Long> lastPastTimeRef = ruleCounter.lastPassTimeMap.putIfAbsent(value,
+							new AtomicReference<Long>(expectedTime));
+					if(lastPastTimeRef == null){
+						return true;
+					}
+					
+					if (lastPastTimeRef.compareAndSet(lastPassTime, expectedTime)) {
 						if (rule.getControlBehavior() == RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER) {
 							long waitTime = expectedTime - currentTime ;
 							if (waitTime > 0) {

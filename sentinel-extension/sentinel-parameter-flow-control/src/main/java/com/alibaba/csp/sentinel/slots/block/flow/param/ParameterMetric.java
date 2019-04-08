@@ -57,16 +57,6 @@ public class ParameterMetric {
 			int max = 4000 * intervalInSec > 2000000 ? 200000 : 4000 * intervalInSec;
 			lastPassTimeMap = new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(max);
 		}
-
-		public void updateObject(Object object, int count) {
-			long currentTime = TimeUtil.currentTimeMillis();
-
-			AtomicReference<Long> oldTime = lastPassTimeMap.putIfAbsent(object,
-					new AtomicReference<Long>(currentTime));
-			if(oldTime != null && oldTime.get() < currentTime){
-				oldTime.compareAndSet(oldTime.get(), currentTime);
-			}
-		}
 	}
 
 	private Map<ParamFlowRule, ParamRuleMetric> ruleCounterMap = new HashMap<ParamFlowRule, ParamRuleMetric>();
@@ -311,36 +301,7 @@ public class ParameterMetric {
 		//updateRuleCounter(count, args);
 	}
 
-	private void updateRuleCounter(int count, Object... args) {
-		if (args == null) {
-			return;
-		}
 
-		// update rules
-		for (ParamFlowRule rule : ruleCounterMap.keySet()) {
-			try {
-				
-				ParamRuleMetric metric = ruleCounterMap.get(rule);
-				if(ruleCounterMap == null){
-					continue;
-				}
-				
-				int index = rule.getParamIdx();
-				if(args.length < index){
-					continue;
-				}
-				
-				Object value = args[index];
-				if(value == null){
-					continue;
-				}
-				
-				metric.updateObject(value, count);
-			} catch (Throwable e) {
-				RecordLog.warn("[ParameterMetric] Param exception", e);
-			}
-		}
-	}
 
 	public void addBlock(int count, Object... args) {
 		add(RollingParamEvent.REQUEST_BLOCKED, count, args);
