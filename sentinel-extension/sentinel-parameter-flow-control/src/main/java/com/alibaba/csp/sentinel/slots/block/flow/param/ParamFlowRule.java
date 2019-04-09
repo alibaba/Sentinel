@@ -211,6 +211,15 @@ public class ParamFlowRule extends AbstractRule {
 		if (clusterMode != rule.clusterMode) {
 			return false;
 		}
+		
+		if(durationInSec != rule.durationInSec){
+			return false;
+		}
+		
+		if(controlBehavior != rule.controlBehavior){
+			return false;
+		}
+		
 		if (paramIdx != null ? !paramIdx.equals(rule.paramIdx) : rule.paramIdx != null) {
 			return false;
 		}
@@ -232,7 +241,8 @@ public class ParamFlowRule extends AbstractRule {
 		result = 31 * result + (paramFlowItemList != null ? paramFlowItemList.hashCode() : 0);
 		result = 31 * result + (clusterMode ? 1 : 0);
 		result = 31 * result + (clusterConfig != null ? clusterConfig.hashCode() : 0);
-		result = 31 * result + durationInSec;
+		result = 31 * result + (int)( durationInSec^(durationInSec>>>32));
+		result = 31 * result + (int)(controlBehavior^(controlBehavior>>>32));;
 		return result;
 	}
 

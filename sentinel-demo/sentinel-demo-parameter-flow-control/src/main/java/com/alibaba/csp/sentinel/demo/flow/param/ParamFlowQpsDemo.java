@@ -21,6 +21,7 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowItem;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRuleManager;
+import com.alibaba.csp.sentinel.util.TimeUtil;
 
 /**
  * This demo demonstrates flow control by frequent ("hot spot") parameters.
@@ -47,10 +48,11 @@ public class ParamFlowQpsDemo {
     public static void main(String[] args) throws InterruptedException {
         initHotParamFlowRules();
 
-        final int threadCount =40;
+        final int threadCount =1;
         ParamFlowQpsRunner<Integer> runner = new ParamFlowQpsRunner<>(PARAMS, RESOURCE_KEY, threadCount, 120);
         runner.tick();
         Thread.sleep(1000);
+        TimeUtil.currentTimeMillis();
         runner.simulateTraffic();
     }
 
@@ -62,7 +64,7 @@ public class ParamFlowQpsDemo {
             .setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER)
             //.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_REJECT_WITH_BURST)
            // .setDurationInSec(duration)
-            .setTimeoutInMs(600)
+           //.setTimeoutInMs(600)
 
             .setCount(5);
         // We can set threshold count for specific parameter value individually.

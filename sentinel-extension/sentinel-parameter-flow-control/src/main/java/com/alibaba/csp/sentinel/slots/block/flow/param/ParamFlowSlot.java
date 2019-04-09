@@ -89,9 +89,6 @@ public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
 				if (!ParamFlowChecker.passCheck(resourceWrapper, rule, count, args)) {
 
-					// Here we add the block count.
-					addBlockCount(resourceWrapper, count, args);
-
 					String triggeredParam = "";
 					if (args.length > rule.getParamIdx()) {
 						Object value = args[rule.getParamIdx()];
@@ -100,14 +97,6 @@ public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 					throw new ParamFlowException(resourceWrapper.getName(), triggeredParam, rule);
 				}
 			}
-		}
-	}
-
-	private void addBlockCount(ResourceWrapper resourceWrapper, int count, Object... args) {
-		ParameterMetric parameterMetric = ParamFlowSlot.getParamMetric(resourceWrapper);
-
-		if (parameterMetric != null) {
-			parameterMetric.addBlock(count, args);
 		}
 	}
 
@@ -122,7 +111,6 @@ public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 	 */
 	void initHotParamMetricsFor(ResourceWrapper resourceWrapper, /* @Valid */ ParamFlowRule rule) {
 		ParameterMetric metric;
-		int index = rule.getParamIdx();
 		// Assume that the resource is valid.
 		if ((metric = metricsMap.get(resourceWrapper)) == null) {
 			synchronized (LOCK) {

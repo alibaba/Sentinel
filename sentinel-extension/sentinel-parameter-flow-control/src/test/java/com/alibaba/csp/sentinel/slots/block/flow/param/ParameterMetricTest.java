@@ -15,21 +15,19 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow.param;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
-import com.alibaba.csp.sentinel.slots.block.flow.param.ParameterMetric.ParamRuleMetric;
-import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
-import com.alibaba.csp.sentinel.slots.statistic.metric.HotParameterLeapArray;
-import com.alibaba.csp.sentinel.util.TimeUtil;
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
 
 /**
  * Test cases for {@link ParameterMetric}.
@@ -39,27 +37,7 @@ import static org.mockito.Mockito.when;
  */
 public class ParameterMetricTest {
 
-	@Test
-	public void testGetTopParamCount() {
-		ParameterMetric metric = new ParameterMetric();
-		int index = 1;
-		int n = 10;
-		RollingParamEvent event = RollingParamEvent.REQUEST_PASSED;
-		HotParameterLeapArray leapArray = mock(HotParameterLeapArray.class);
-		Map<Object, Double> topValues = new HashMap<Object, Double>() {
-			{
-				put("a", 3d);
-				put("b", 7d);
-			}
-		};
-		when(leapArray.getTopValues(event, n)).thenReturn(topValues);
-
-		// Get when not initialized.
-		assertEquals(0, metric.getTopPassParamCount(index, n).size());
-
-		metric.getRollingParameters().put(index, leapArray);
-		assertEquals(topValues, metric.getTopPassParamCount(index, n));
-	}
+	
 
 	@Test
 	public void testInitAndClearHotParameterMetric() {
@@ -69,31 +47,30 @@ public class ParameterMetricTest {
 		ParameterMetric metric = new ParameterMetric();
 
 		metric.initialize(rule);
-		HotParameterLeapArray leapArray = metric.getRollingParameters().get(rule.getParamIdx());
 		CacheMap cacheMap = metric.getThreadCountMap().get(rule.getParamIdx());
-		assertNotNull(leapArray);
+	
 		assertNotNull(cacheMap);
-		ParamRuleMetric ruleCounter = metric.getRuleCounterMap().get(rule);
+		CacheMap<Object, AtomicReference<Long>> ruleCounter = metric.getRulePassTimeCounter(rule);
 		assertNotNull(ruleCounter);
 
 		metric.initialize(rule);
-		assertSame(leapArray, metric.getRollingParameters().get(rule.getParamIdx()));
+
 		assertSame(cacheMap, metric.getThreadCountMap().get(rule.getParamIdx()));
-		assertSame(ruleCounter, metric.getRuleCounterMap().get(rule));
+		assertSame(ruleCounter, metric.getRulePassTimeCounter(rule));
 
 		ParamFlowRule rule2 = new ParamFlowRule();
 		rule2.setParamIdx(1);
 		metric.initialize(rule2);
-		assertSame(ruleCounter, metric.getRuleCounterMap().get(rule2));
+		assertSame(ruleCounter, metric.getRulePassTimeCounter(rule2));
 
 		rule2.setParamIdx(2);
 		metric.initialize(rule2);
-		assertNotSame(ruleCounter, metric.getRuleCounterMap().get(rule2));
+		assertNotSame(ruleCounter, metric.getRulePassTimeCounter(rule2));
 
 		metric.clear();
-		assertEquals(0, metric.getRollingParameters().size());
+
 		assertEquals(0, metric.getThreadCountMap().size());
-		assertEquals(0, metric.getRuleCounterMap().size());
+
 	}
 
 	@Test
@@ -103,20 +80,7 @@ public class ParameterMetricTest {
 		testAddAndDecreaseThreadCount(PARAM_TYPE_COLLECTION);
 	}
 	
-	@Test
-	public void testPass(){
-		ParamFlowRule rule = new ParamFlowRule();
-		rule.setParamIdx(0);
-		
-		ParameterMetric metric = new ParameterMetric();
 
-		long currentTime = TimeUtil.currentTimeMillis();
-		metric.initialize(rule);
-		
-		metric.addPass(1, 19L);
-		
-		assertTrue(metric.getRuleCounterMap().get(rule).lastPassTimeMap.get(19L).get()>currentTime);
-	}
 
 	private void testAddAndDecreaseThreadCount(int paramType) {
 
