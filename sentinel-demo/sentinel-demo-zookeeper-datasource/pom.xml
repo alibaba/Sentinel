@@ -29,6 +29,10 @@
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-datasource-zookeeper</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-parameter-flow-control</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>com.alibaba</groupId>

@@ -19,10 +19,10 @@ import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.NodeCache;
 import org.apache.curator.framework.recipes.cache.NodeCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.data.Stat;
 
 /**
+ * This class is not recommended, please use {@link ZookeeperAllDataSource}
+ *
  * A read-only {@code DataSource} with ZooKeeper backend.
  *
  * @author guonanjun
@@ -117,16 +117,20 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
             };
 
             if (zkClient == null) {
-                if (authInfos == null || authInfos.size() == 0) {
-                    zkClient = CuratorFrameworkFactory.newClient(serverAddr, new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES));
-                } else {
-                    zkClient = CuratorFrameworkFactory.builder().
-                            connectString(serverAddr).
-                            retryPolicy(new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES)).
-                            authorization(authInfos).
-                            build();
+                synchronized (ZookeeperDataSource.class) {
+                    if (zkClient == null) {
+                        if (authInfos == null || authInfos.size() == 0) {
+                            zkClient = CuratorFrameworkFactory.newClient(serverAddr, new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES));
+                        } else {
+                            zkClient = CuratorFrameworkFactory.builder().
+                                    connectString(serverAddr).
+                                    retryPolicy(new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES)).
+                                    authorization(authInfos).
+                                    build();
+                        }
+                        zkClient.start();
+                    }
                 }
-                zkClient.start();
             }
 
             this.nodeCache = new NodeCache(zkClient, this.path);
@@ -165,7 +169,7 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
         pool.shutdown();
     }
 
-    private String getPath(String groupId, String dataId) {
+    public static String getPath(String groupId, String dataId) {
         return String.format("/%s/%s", groupId, dataId);
     }
 }

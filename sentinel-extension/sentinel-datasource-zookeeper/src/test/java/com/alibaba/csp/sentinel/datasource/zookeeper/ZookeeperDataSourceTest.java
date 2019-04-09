@@ -5,6 +5,9 @@ import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
+import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowItem;
+import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
+import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRuleManager;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import org.apache.curator.framework.AuthInfo;
@@ -33,6 +36,63 @@ import static org.junit.Assert.assertTrue;
  * @author Eric Zhao
  */
 public class ZookeeperDataSourceTest {
+    @Test
+    public void testZooKeeperAllDataSource() throws Exception {
+        TestingServer server = new TestingServer(21812);
+        server.start();
+
+        final String remoteAddress = server.getConnectString();
+        final String path1 = "/sentinel-zk-ds-demo/flow-HK";
+        final String path2 = "/sentinel-zk-ds-demo/param-HK";
+
+        CuratorFramework zkClient = null;
+        ZookeeperAllDataSource zookeeperAllDataSource = null;
+
+        try {
+            zookeeperAllDataSource = new ZookeeperAllDataSource()
+                    .serverAddr(remoteAddress)
+                    .register(path1, FlowRule.class, new Converter<String, List<FlowRule>>() {
+                        @Override
+                        public List<FlowRule> convert(String source) {
+                            return JSON.parseObject(source, new TypeReference<List<FlowRule>>() {});
+                        }
+                    })
+                    .register(path2, ParamFlowRule.class, new Converter<String, List<ParamFlowRule>>() {
+                        @Override
+                        public List<ParamFlowRule> convert(String source) {
+                            return JSON.parseObject(source, new TypeReference<List<ParamFlowRule>>() {});
+                        }
+                    })
+                    .start();
+
+            zkClient = CuratorFrameworkFactory.newClient(remoteAddress,
+                    new ExponentialBackoffRetry(3, 1000));
+            zkClient.start();
+            Stat stat = zkClient.checkExists().forPath(path1);
+            if (stat == null) {
+                zkClient.create().creatingParentContainersIfNeeded().withMode(CreateMode.PERSISTENT).forPath(path1, null);
+            }
+            stat = zkClient.checkExists().forPath(path2);
+            if (stat == null) {
+                zkClient.create().creatingParentContainersIfNeeded().withMode(CreateMode.PERSISTENT).forPath(path2, null);
+            }
+
+            final String resourceName = "HK";
+            publishThenTestFor(zkClient, path1, resourceName, 10);
+            publishThenTestFor(zkClient, path1, resourceName, 15);
+
+            publishParamFlowRuleThenTestFor(zkClient, path2, resourceName, 20);
+            publishParamFlowRuleThenTestFor(zkClient, path2, resourceName, 22);
+        } finally {
+            if (zookeeperAllDataSource != null) {
+                zookeeperAllDataSource.close();
+            }
+            if (zkClient != null) {
+                zkClient.close();
+            }
+            server.stop();
+        }
+    }
 
     @Test
     public void testZooKeeperDataSource() throws Exception {
@@ -155,6 +215,39 @@ public class ZookeeperDataSourceTest {
         List<FlowRule> rules = FlowRuleManager.getRules();
         boolean exists = false;
         for (FlowRule r : rules) {
+            if (resourceName.equals(r.getResource())) {
+                exists = true;
+                assertEquals(count, new Double(r.getCount()).longValue());
+            }
+        }
+        assertTrue(exists);
+    }
+
+    private void publishParamFlowRuleThenTestFor(CuratorFramework zkClient, String path, String resourceName, long count) throws Exception {
+        ParamFlowRule rule = new ParamFlowRule(resourceName)
+                .setParamIdx(0)
+                .setGrade(RuleConstant.FLOW_GRADE_QPS)
+                .setCount(count);
+        ParamFlowItem item = new ParamFlowItem().setObject("2")
+                .setClassType(int.class.getName())
+                .setCount(3);
+        rule.setParamFlowItemList(Collections.singletonList(item));
+
+        String ruleString = JSON.toJSONString(Collections.singletonList(rule));
+        zkClient.setData().forPath(path, ruleString.getBytes());
+
+        await().timeout(5, TimeUnit.SECONDS)
+                .until(new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        List<ParamFlowRule> rules = ParamFlowRuleManager.getRules();
+                        return rules != null && !rules.isEmpty();
+                    }
+                });
+
+        List<ParamFlowRule> rules = ParamFlowRuleManager.getRules();
+        boolean exists = false;
+        for (ParamFlowRule r : rules) {
             if (resourceName.equals(r.getResource())) {
                 exists = true;
                 assertEquals(count, new Double(r.getCount()).longValue());
