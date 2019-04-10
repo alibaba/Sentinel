@@ -46,11 +46,11 @@ public class ZookeeperDataSourceTest {
         final String path2 = "/sentinel-zk-ds-demo/param-HK";
 
         CuratorFramework zkClient = null;
-        ZookeeperAllDataSource zookeeperAllDataSource = null;
+        ZookeeperDataSource.ZookeeperDataSourceBuilder zookeeperDataSourceBuilder = null;
 
         try {
-            zookeeperAllDataSource = new ZookeeperAllDataSource()
-                    .serverAddr(remoteAddress)
+            zookeeperDataSourceBuilder = ZookeeperDataSource.builder()
+                    .initClient(remoteAddress)
                     .register(path1, FlowRule.class, new Converter<String, List<FlowRule>>() {
                         @Override
                         public List<FlowRule> convert(String source) {
@@ -63,7 +63,7 @@ public class ZookeeperDataSourceTest {
                             return JSON.parseObject(source, new TypeReference<List<ParamFlowRule>>() {});
                         }
                     })
-                    .start();
+                    .build();
 
             zkClient = CuratorFrameworkFactory.newClient(remoteAddress,
                     new ExponentialBackoffRetry(3, 1000));
@@ -84,8 +84,8 @@ public class ZookeeperDataSourceTest {
             publishParamFlowRuleThenTestFor(zkClient, path2, resourceName, 20);
             publishParamFlowRuleThenTestFor(zkClient, path2, resourceName, 22);
         } finally {
-            if (zookeeperAllDataSource != null) {
-                zookeeperAllDataSource.close();
+            if (zookeeperDataSourceBuilder != null) {
+                zookeeperDataSourceBuilder.closeAll();
             }
             if (zkClient != null) {
                 zkClient.close();
