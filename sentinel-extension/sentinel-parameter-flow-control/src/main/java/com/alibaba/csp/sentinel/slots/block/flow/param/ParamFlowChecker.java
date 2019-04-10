@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
@@ -97,14 +98,20 @@ final class ParamFlowChecker {
 
 	static boolean passDefaultCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int acquireCount,
 			Object value) {
-		Set<Object> exclusionItems = rule.getParsedHotItems().keySet();
 
-		CacheMap<Object, AtomicReference<Long>> ruleCounter = getHotParameters(resourceWrapper) == null ? null
-				: getHotParameters(resourceWrapper).getRulePassTimeCounter(rule);
-		if (ruleCounter == null) {
+		CacheMap<Object, AtomicReference<Integer>> qpsCounters = getHotParameters(resourceWrapper) == null ? null
+				: getHotParameters(resourceWrapper).getRuleQpsCounter(rule);
+
+		CacheMap<Object, AtomicReference<Long>> timeCounters = getHotParameters(resourceWrapper) == null ? null
+				: getHotParameters(resourceWrapper).getRuleTimeCounter(rule);
+
+		if (qpsCounters == null || timeCounters == null) {
 			return true;
 		}
-		long addedCount = (long) rule.getCount();
+
+		// 计算它应该加的值
+		Set<Object> exclusionItems = rule.getParsedHotItems().keySet();
+		int addedCount = (int) rule.getCount();
 		if (exclusionItems.contains(value)) {
 			addedCount = rule.getParsedHotItems().get(value);
 		}
@@ -113,47 +120,90 @@ final class ParamFlowChecker {
 			return false;
 		}
 
-		long costTime = Math.round(1.0 * 1000 * acquireCount * rule.getDurationInSec() / addedCount);
+		int maxCount = addedCount + rule.getBurstCount();
+
+		// 开始更新
 		while (true) {
 			// Add token
-			StringBuilder sb = new StringBuilder();
-			long currentTime = TimeUtil.currentTimeMillis();
-			Long lastPassTime = (ruleCounter.get(value) == null) ? null : ruleCounter.get(value).get();
-			long expectedTime = (lastPassTime == null ? (currentTime) : lastPassTime )+ costTime;
-			
-			sb.append("c:" + currentTime);
-			sb.append(",p:" + lastPassTime);
-			sb.append(",e:" + expectedTime);
-			if (expectedTime <= currentTime + rule.getTimeoutInMs()+rule.getDurationInSec()*1000) {
-				AtomicReference<Long> lastPastTimeRef = ruleCounter.putIfAbsent(value,
-						new AtomicReference<Long>(expectedTime));
-				if (lastPastTimeRef == null) {
-					System.out.println("first: " + sb.toString());
-					return true;
-				}
+			Long currentTime = TimeUtil.currentTimeMillis();
 
-				if (lastPastTimeRef.compareAndSet(lastPassTime, expectedTime)) {
-					System.out.println("successful: " + sb.toString());
-					return true;
-				} else {
-					Thread.yield();
-				}
-			} else {
-				return false;
+			AtomicReference<Long> lastAddTokenTime = timeCounters.putIfAbsent(value,
+					new AtomicReference<Long>(currentTime));
+			StringBuilder sb = new StringBuilder();
+			
+			if (lastAddTokenTime == null) {
+				qpsCounters.putIfAbsent(value, new AtomicReference<Integer>(maxCount-1));
+				sb.append("c:" + currentTime);
+				sb.append(",t:" + lastAddTokenTime);
+				sb.append(",count:" + qpsCounters.get(value).get());
+				System.out.println("first " + sb.toString());
+				return true;
 			}
+
+			// 需要添加Token了
+			if (currentTime - lastAddTokenTime.get() > rule.getDurationInSec() * 1000) {				
+				AtomicReference<Integer> oldQps = qpsCounters.putIfAbsent(value, new AtomicReference<Integer>(maxCount-1));
+				if(oldQps == null){
+					//这里可能不精确
+					lastAddTokenTime.set(currentTime);
+					sb.append("c:" + currentTime);
+					sb.append(",t:" + lastAddTokenTime);
+					sb.append(",count:" + qpsCounters.get(value).get());
+					System.out.println("first add token: " + sb.toString());
+					return true;
+				}else{
+					Integer restQps = oldQps.get();
+					Integer newQps = (restQps+addedCount) > maxCount? (restQps+addedCount-1): (maxCount-1);
+					if(oldQps.compareAndSet(restQps, newQps)){
+						lastAddTokenTime.set(currentTime);
+						sb.append("c:" + currentTime);
+						sb.append(",t:" + lastAddTokenTime);
+						sb.append(",count:" + qpsCounters.get(value).get());
+						System.out.println("add token: " + sb.toString());
+						return true;
+					}else{
+						Thread.yield();
+					}
+					
+				}
+			}else{
+				AtomicReference<Integer> oldQps = qpsCounters.get(value);
+				if(oldQps == null){
+					Thread.yield();
+				}else{
+					Integer oldQpsValue = oldQps.get();
+					if(oldQpsValue - acquireCount >= 0){
+						if(oldQps.compareAndSet(oldQpsValue, oldQpsValue-acquireCount)){
+							sb.append("c:" + currentTime);
+							sb.append(",t:" + lastAddTokenTime);
+							sb.append(",count:" + qpsCounters.get(value).get());
+							System.out.println("pass: " + sb.toString());
+							return true;
+						}else{
+							Thread.yield();
+						}
+						
+					}else{
+						return false;
+					}
+				}
+			}
+
 		}
 
 	}
 
 	static boolean passRateLimiterCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int acquireCount,
 			Object value) {
-		Set<Object> exclusionItems = rule.getParsedHotItems().keySet();
-
+		
 		CacheMap<Object, AtomicReference<Long>> ruleCounter = getHotParameters(resourceWrapper) == null ? null
-				: getHotParameters(resourceWrapper).getRulePassTimeCounter(rule);
+				: getHotParameters(resourceWrapper).getRuleTimeCounter(rule);
 		if (ruleCounter == null) {
 			return true;
 		}
+		
+		Set<Object> exclusionItems = rule.getParsedHotItems().keySet();
+
 		long addedCount = (long) rule.getCount();
 		if (exclusionItems.contains(value)) {
 			addedCount = rule.getParsedHotItems().get(value);
@@ -170,37 +220,30 @@ final class ParamFlowChecker {
 			long currentTime = TimeUtil.currentTimeMillis();
 			Long lastPassTime = (ruleCounter.get(value) == null) ? null : ruleCounter.get(value).get();
 			long expectedTime = lastPassTime == null ? (currentTime) : (lastPassTime + costTime);
-		
-			StringBuilder sb = new StringBuilder();
-			sb.append("c:" + currentTime);
-			sb.append(",p:" + lastPassTime);
-			sb.append(",e:" + expectedTime);
-			
+
 			if (expectedTime <= currentTime || expectedTime - currentTime < rule.getTimeoutInMs()) {
 				AtomicReference<Long> lastPastTimeRef = ruleCounter.putIfAbsent(value,
 						new AtomicReference<Long>(expectedTime));
 				if (lastPastTimeRef == null) {
-					System.out.println("First: " + sb.toString());
 					return true;
 				}
-				
+
 				if (lastPastTimeRef.compareAndSet(lastPassTime, currentTime)) {
 					long waitTime = expectedTime - currentTime;
 					if (waitTime > 0) {
-						try {	
+						try {
 							lastPastTimeRef.compareAndSet(lastPassTime, expectedTime);
 							TimeUnit.MILLISECONDS.sleep(waitTime);
 						} catch (InterruptedException e) {
 							RecordLog.info("could not wait ", e);
 						}
 					}
-					System.out.println("successful: " + sb.toString());
 					return true;
 				} else {
 					Thread.yield();
 				}
 			} else {
-				//System.out.println("Fail: " + sb.toString());
+				// System.out.println("Fail: " + sb.toString());
 				return false;
 			}
 		}
@@ -210,12 +253,12 @@ final class ParamFlowChecker {
 	static boolean passSingleValueCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int acuuireCount,
 			Object value) {
 		if (rule.getGrade() == RuleConstant.FLOW_GRADE_QPS) {
-			if(rule.getControlBehavior() == RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER){
+			if (rule.getControlBehavior() == RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER) {
 				return passRateLimiterCheck(resourceWrapper, rule, acuuireCount, value);
-			}else{
+			} else {
 				return passDefaultCheck(resourceWrapper, rule, acuuireCount, value);
 			}
-			
+
 		} else if (rule.getGrade() == RuleConstant.FLOW_GRADE_THREAD) {
 			Set<Object> exclusionItems = rule.getParsedHotItems().keySet();
 			long threadCount = getHotParameters(resourceWrapper).getThreadCount(rule.getParamIdx(), value);

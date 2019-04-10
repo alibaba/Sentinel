@@ -79,16 +79,18 @@ public class ParamFlowSlotTest {
         String resourceName = "testEntryWhenParamFlowExists";
         ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
         long argToGo = 1L;
-        double count = 10;
+        double count = 1;
         ParamFlowRule rule = new ParamFlowRule(resourceName)
             .setCount(count)
-            .setParamIdx(0);
+            .setParamIdx(1);
         ParamFlowRuleManager.loadRules(Collections.singletonList(rule));
 
         ParameterMetric metric = mock(ParameterMetric.class);
         
-        CacheMap<Object, AtomicReference<Long>> map = new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(4000);       
-        when(metric.getRulePassTimeCounter(rule)).thenReturn(map);
+        CacheMap<Object, AtomicReference<Long>> map = new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(4000);      
+        CacheMap<Object, AtomicReference<Integer>> map2 = new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Integer>>(4000);   
+        when(metric.getRuleTimeCounter(rule)).thenReturn(map);
+        when(metric.getRuleQpsCounter(rule)).thenReturn(map2);
         map.put(argToGo, new AtomicReference<Long>(TimeUtil.currentTimeMillis()));
  
 
@@ -127,7 +129,7 @@ public class ParamFlowSlotTest {
         paramFlowSlot.initHotParamMetricsFor(resourceWrapper, rule);
         ParameterMetric metric = ParamFlowSlot.getParamMetric(resourceWrapper);
         assertNotNull(metric);
-        assertNotNull(metric.getRuleCounterMap().get(rule));
+        assertNotNull(metric.getRuleTimeCounters().get(rule));
         assertNotNull(metric.getThreadCountMap().get(index));
 
         // Duplicate init.

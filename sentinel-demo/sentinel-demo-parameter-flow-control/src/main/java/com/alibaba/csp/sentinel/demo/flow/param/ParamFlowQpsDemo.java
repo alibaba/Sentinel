@@ -41,14 +41,14 @@ public class ParamFlowQpsDemo {
     /**
      * Here we prepare different parameters to validate flow control by parameters.
      */
-    private static final Integer[] PARAMS = new Integer[] {PARAM_A};//, PARAM_B, PARAM_C, PARAM_D};
+    private static final Integer[] PARAMS = new Integer[] {PARAM_A, PARAM_B, PARAM_C, PARAM_D};
 
     private static final String RESOURCE_KEY = "resA";
 
     public static void main(String[] args) throws InterruptedException {
         initHotParamFlowRules();
 
-        final int threadCount =1;
+        final int threadCount =40;
         ParamFlowQpsRunner<Integer> runner = new ParamFlowQpsRunner<>(PARAMS, RESOURCE_KEY, threadCount, 120);
         runner.tick();
         Thread.sleep(1000);
@@ -61,7 +61,7 @@ public class ParamFlowQpsDemo {
         ParamFlowRule rule = new ParamFlowRule(RESOURCE_KEY)
             .setParamIdx(0)
             .setGrade(RuleConstant.FLOW_GRADE_QPS)
-            .setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER)
+          //  .setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER)
             //.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_REJECT_WITH_BURST)
            // .setDurationInSec(duration)
            //.setTimeoutInMs(600)

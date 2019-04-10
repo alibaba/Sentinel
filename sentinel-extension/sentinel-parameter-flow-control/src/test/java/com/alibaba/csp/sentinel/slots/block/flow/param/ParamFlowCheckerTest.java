@@ -63,127 +63,7 @@ public class ParamFlowCheckerTest {
 				ParamFlowChecker.passCheck(resourceWrapper, rule, 1, "abc"));
 	}
 
-	@Test
-	public void testSingleValueCheckQps() throws InterruptedException {
-		final String resourceName = "testSingleValueCheckQpsWithoutExceptionItems";
-		final ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
-		int paramIdx = 0;
-		TimeUtil.currentTimeMillis();
 
-		long threshold = 5L;
-
-		ParamFlowRule rule = new ParamFlowRule();
-		rule.setResource(resourceName);
-		rule.setCount(threshold);
-		rule.setParamIdx(paramIdx);
-		rule.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER);
-
-		String valueA = "valueA";
-		ParameterMetric metric = new ParameterMetric();
-		ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
-		metric.getRuleCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(4000));
-
-		long currentTime = TimeUtil.currentTimeMillis();
-		long endTime = currentTime + rule.getDurationInSec() * 1000;
-		int successCount = 0;
-		while (currentTime <= endTime) {
-			if (ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA)) {
-				successCount++;
-			}
-			currentTime = TimeUtil.currentTimeMillis();
-		}
-		assertEquals(successCount, threshold);
-
-		// 模仿比较长的时间的停顿
-		System.out.println("rest for 3 seconds");
-		TimeUnit.SECONDS.sleep(3);
-
-		currentTime = TimeUtil.currentTimeMillis();
-		endTime = currentTime + rule.getDurationInSec() * 1000;
-		successCount = 0;
-		while (currentTime <= endTime) {
-			if (ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA)) {
-				successCount++;
-			}
-			currentTime = TimeUtil.currentTimeMillis();
-		}
-		assertEquals(successCount, threshold);
-
-		TimeUnit.SECONDS.sleep(3);
-	}
-
-	@Test
-	public void testSingleValueCheckQpsInThreads() throws InterruptedException {
-		final String resourceName = "testSingleValueCheckQpsWithTimeout";
-		final ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
-		int paramIdx = 0;
-		TimeUtil.currentTimeMillis();
-
-		long threshold = 5L;
-
-		final ParamFlowRule rule = new ParamFlowRule();
-		rule.setResource(resourceName);
-		rule.setCount(threshold);
-		rule.setParamIdx(paramIdx);
-		rule.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER);
-
-		final String valueA = "valueA";
-		ParameterMetric metric = new ParameterMetric();
-		ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
-		metric.getRuleCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(4000));
-
-		int threadCount = 40;
-
-		final CountDownLatch waitLatch = new CountDownLatch(threadCount + 5);
-		final AtomicInteger successCount = new AtomicInteger();
-		for (int i = 0; i < threadCount + 5; i++) {
-			Thread t = new Thread(new Runnable() {
-				@Override
-				public void run() {
-					if (ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA)) {
-						successCount.incrementAndGet();
-					}
-					waitLatch.countDown();
-				}
-
-			});
-			t.setName("sentinel-simulate-traffic-task-" + i);
-			t.start();
-		}
-		waitLatch.await();
-
-		assertEquals(successCount.get(), 1);
-		System.out.println(threadCount);
-		successCount.set(0);
-
-		TimeUnit.SECONDS.sleep(3);
-		successCount.set(0);
-		final CountDownLatch waitLatch1 = new CountDownLatch(threadCount);
-		for (int i = 0; i < threadCount; i++) {
-			Thread t = new Thread(new Runnable() {
-				@Override
-				public void run() {
-					long currentTime = TimeUtil.currentTimeMillis();
-					long endTime = currentTime + rule.getDurationInSec() * 1000;
-					
-					while (currentTime <= endTime) {
-						if (ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA)) {
-							successCount.incrementAndGet();
-						}
-						currentTime = TimeUtil.currentTimeMillis();
-					}
-					waitLatch1.countDown();
-				}
-
-			});
-			t.setName("sentinel-simulate-traffic-task-" + i);
-			t.start();
-		}
-		waitLatch1.await();
-
-		assertEquals(successCount.get(), threshold);
-		TimeUnit.SECONDS.sleep(3);
-	}
 
 	@Test
 	public void testSingleValueCheckQpsWithExceptionItems() throws InterruptedException {
@@ -215,7 +95,7 @@ public class ParamFlowCheckerTest {
 
 		ParameterMetric metric = new ParameterMetric();
 		ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
-		metric.getRuleCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(4000));
+		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(4000));
 
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
 		assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueB));
@@ -283,7 +163,8 @@ public class ParamFlowCheckerTest {
 		List<String> list = Arrays.asList(v1, v2, v3);
 		ParameterMetric metric = new ParameterMetric();
 		ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
-		metric.getRuleCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(4000));
+		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(4000));		
+		metric.getRuleQPSCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Integer>>(4000));
 
 		assertTrue(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, list));
 		assertFalse(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, list));
@@ -307,7 +188,7 @@ public class ParamFlowCheckerTest {
 		Object arr = new String[] { v1, v2, v3 };
 		ParameterMetric metric = new ParameterMetric();
 		ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
-		metric.getRuleCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(4000));
+		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(4000));
 
 		assertTrue(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, arr));
 		assertFalse(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, arr));

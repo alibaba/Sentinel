@@ -63,6 +63,17 @@ public class ParamFlowRule extends AbstractRule {
 	private int controlBehavior = RuleConstant.CONTROL_BEHAVIOR_DEFAULT;
 
 	private int timeoutInMs = 0;
+	
+	private int burstCount =0;
+	
+	public int getBurstCount() {
+		return burstCount;
+	}
+	
+	public ParamFlowRule setBurstCount(int burstCount) {
+		this.burstCount = burstCount;
+		return this;
+	}
 
 	public int getTimeoutInMs() {
 		return timeoutInMs;
@@ -220,6 +231,10 @@ public class ParamFlowRule extends AbstractRule {
 			return false;
 		}
 		
+		if(burstCount != rule.burstCount){
+			return false;
+		}
+		
 		if (paramIdx != null ? !paramIdx.equals(rule.paramIdx) : rule.paramIdx != null) {
 			return false;
 		}
@@ -242,7 +257,8 @@ public class ParamFlowRule extends AbstractRule {
 		result = 31 * result + (clusterMode ? 1 : 0);
 		result = 31 * result + (clusterConfig != null ? clusterConfig.hashCode() : 0);
 		result = 31 * result + (int)( durationInSec^(durationInSec>>>32));
-		result = 31 * result + (int)(controlBehavior^(controlBehavior>>>32));;
+		result = 31 * result + (int)(controlBehavior^(controlBehavior>>>32));
+		result = 31 * result + (int)(burstCount^(burstCount>>>32));
 		return result;
 	}
 
@@ -255,4 +271,6 @@ public class ParamFlowRule extends AbstractRule {
 
 	final int MAX_CAPACITY = 200000;
 	final int MAX_CAPACITY_PERSECOND = 4000;
+
+	
 }

@@ -36,34 +36,53 @@ public class ParameterMetric {
 
 	Object LOCK = new Object();
 
-	private Map<ParamFlowRule, CacheMap<Object, AtomicReference<Long>>> rulePassTimeCounter = new HashMap<ParamFlowRule, CacheMap<Object, AtomicReference<Long>>>();
+	private Map<ParamFlowRule, CacheMap<Object, AtomicReference<Long>>> ruleTimeCounters = new HashMap<ParamFlowRule, CacheMap<Object, AtomicReference<Long>>>();
+
+	private Map<ParamFlowRule, CacheMap<Object, AtomicReference<Integer>>> ruleQPSCounter = new HashMap<ParamFlowRule, CacheMap<Object, AtomicReference<Integer>>>();
 
 	private Map<Integer, CacheMap<Object, AtomicInteger>> threadCountMap = new HashMap<Integer, CacheMap<Object, AtomicInteger>>();
+
+	public CacheMap<Object, AtomicReference<Integer>> getRuleQpsCounter(ParamFlowRule rule) {
+		return ruleQPSCounter.get(rule);
+	}
+
+	public Map<ParamFlowRule, CacheMap<Object, AtomicReference<Integer>>> getRuleQPSCounters() {
+		return ruleQPSCounter;
+	}
 
 	public Map<Integer, CacheMap<Object, AtomicInteger>> getThreadCountMap() {
 		return threadCountMap;
 	}
 
-	public CacheMap<Object, AtomicReference<Long>> getRulePassTimeCounter(ParamFlowRule rule) {
-		return rulePassTimeCounter.get(rule);
+	public CacheMap<Object, AtomicReference<Long>> getRuleTimeCounter(ParamFlowRule rule) {
+		return ruleTimeCounters.get(rule);
 	}
 
-	public Map<ParamFlowRule, CacheMap<Object, AtomicReference<Long>>> getRuleCounterMap() {
-		return rulePassTimeCounter;
+	public Map<ParamFlowRule, CacheMap<Object, AtomicReference<Long>>> getRuleTimeCounters() {
+		return ruleTimeCounters;
 	}
 
 	public synchronized void clear() {
 		threadCountMap.clear();
-		rulePassTimeCounter.clear();
+		ruleTimeCounters.clear();
+		ruleQPSCounter.clear();
 	}
 
 	public void initialize(ParamFlowRule rule) {
-		if (!rulePassTimeCounter.containsKey(rule)) {
+		if (!ruleTimeCounters.containsKey(rule)) {
 			synchronized (LOCK) {
-				if (rulePassTimeCounter.get(rule) == null) {
+				if (ruleTimeCounters.get(rule) == null) {
 					int max = 4000 * rule.getDurationInSec() > 2000000 ? 200000 : 4000 * rule.getDurationInSec();
-					rulePassTimeCounter.put(rule,
-							new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(max));
+					ruleTimeCounters.put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(max));
+				}
+			}
+		}
+
+		if (!ruleQPSCounter.containsKey(rule)) {
+			synchronized (LOCK) {
+				if (ruleQPSCounter.get(rule) == null) {
+					int max = 4000 * rule.getDurationInSec() > 2000000 ? 200000 : 4000 * rule.getDurationInSec();
+					ruleQPSCounter.put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Integer>>(max));
 				}
 			}
 		}

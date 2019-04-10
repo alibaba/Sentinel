@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Test;
 
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
 
 /**
@@ -47,25 +48,32 @@ public class ParameterMetricTest {
 		ParameterMetric metric = new ParameterMetric();
 
 		metric.initialize(rule);
-		CacheMap cacheMap = metric.getThreadCountMap().get(rule.getParamIdx());
+		CacheMap<Object, AtomicInteger> cacheMap = metric.getThreadCountMap().get(rule.getParamIdx());
 	
 		assertNotNull(cacheMap);
-		CacheMap<Object, AtomicReference<Long>> ruleCounter = metric.getRulePassTimeCounter(rule);
+		CacheMap<Object, AtomicReference<Long>> ruleCounter = metric.getRuleTimeCounter(rule);
 		assertNotNull(ruleCounter);
 
 		metric.initialize(rule);
 
 		assertSame(cacheMap, metric.getThreadCountMap().get(rule.getParamIdx()));
-		assertSame(ruleCounter, metric.getRulePassTimeCounter(rule));
+		assertSame(ruleCounter, metric.getRuleTimeCounter(rule));
 
 		ParamFlowRule rule2 = new ParamFlowRule();
 		rule2.setParamIdx(1);
 		metric.initialize(rule2);
-		assertSame(ruleCounter, metric.getRulePassTimeCounter(rule2));
+		assertSame(ruleCounter, metric.getRuleTimeCounter(rule2));
 
 		rule2.setParamIdx(2);
 		metric.initialize(rule2);
-		assertNotSame(ruleCounter, metric.getRulePassTimeCounter(rule2));
+		assertNotSame(ruleCounter, metric.getRuleTimeCounter(rule2));
+		
+		
+		ParamFlowRule rule3 = new ParamFlowRule();
+		rule3.setParamIdx(1);
+		rule3.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER);
+		metric.initialize(rule3);
+		assertNotSame(ruleCounter, metric.getRuleTimeCounter(rule3));
 
 		metric.clear();
 
