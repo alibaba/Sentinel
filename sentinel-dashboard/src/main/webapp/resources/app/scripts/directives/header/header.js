@@ -11,14 +11,14 @@ angular.module('sentinelDashboardApp')
       restrict: 'E',
       replace: true,
       controller: function ($scope, $state, $window, AuthService) {
-          if (!$window.sessionStorage.getItem('sentinel_admin')) {
+          if (!$window.localStorage.getItem('session_sentinel_admin')) {
               $state.go('login');
           }
 
           $scope.logout = function () {
               AuthService.logout().success(function (data) {
                   if (data.code == 0) {
-                      $window.sessionStorage.clear();
+                      $window.localStorage.clear();
 
                       $state.go('login');
                   } else {

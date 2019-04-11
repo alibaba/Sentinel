@@ -42,8 +42,8 @@ public class AuthController {
         }
 
         if (!authUsername.equals(username) || !authPassword.equals(password)) {
-            LOGGER.error("login failed, error username or password. username=" + username + ", password=" + password);
-            return Result.ofFail(-1, "用户或密码错误");
+            LOGGER.error("Login failed: Invalid username or password, username=" + username + ", password=" + password);
+            return Result.ofFail(-1, "Invalid username or password");
         }
 
         AuthService.AuthUser authUser = new SimpleWebAuthServiceImpl.SimpleWebAuthUserImpl(username);
