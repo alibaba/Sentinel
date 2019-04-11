@@ -44,6 +44,10 @@ public class EntryConfig {
         this(resourceName, entryType, 1, new Object[0], contextConfig);
     }
 
+    public EntryConfig(String resourceName, EntryType entryType, int acquireCount, Object[] args) {
+        this(resourceName, entryType, acquireCount, args, null);
+    }
+
     public EntryConfig(String resourceName, EntryType entryType, int acquireCount, Object[] args,
                        ContextConfig contextConfig) {
         AssertUtil.assertNotBlank(resourceName, "resourceName cannot be blank");
