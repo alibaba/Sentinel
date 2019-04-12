@@ -145,7 +145,8 @@ public class DegradeRuleEntity implements RuleEntity {
         this.gmtModified = gmtModified;
     }
 
-    public DegradeRule toDegradeRule() {
+    @Override
+    public DegradeRule toRule() {
         DegradeRule rule = new DegradeRule();
         rule.setResource(resource);
         rule.setLimitApp(limitApp);
