@@ -27,10 +27,14 @@ public class WarmUpRateLimiterControllerTest {
 
         assertTrue(controller.canPass(node, 1));
 
+        // Easily fail in single request testing, so we increase it to 10 requests and test the average time
         long start = System.currentTimeMillis();
-        assertTrue(controller.canPass(node, 1));
-        long cost = System.currentTimeMillis() - start;
-        assertTrue(cost >= 100 && cost <= 120);
+        int requests = 10;
+        for (int i = 0; i < requests; i++) {
+            assertTrue(controller.canPass(node, 1));
+        }
+        float cost = (System.currentTimeMillis() - start) / 1.0f / requests;
+        assertTrue(Math.abs(cost - 100) < 10);
     }
 
     @Test
