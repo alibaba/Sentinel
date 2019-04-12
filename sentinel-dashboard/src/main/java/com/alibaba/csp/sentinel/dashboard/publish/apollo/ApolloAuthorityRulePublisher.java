@@ -31,6 +31,6 @@ public class ApolloAuthorityRulePublisher extends ApolloPublishAdapter<Authority
 
     @Override
     protected String processRules(List<AuthorityRuleEntity> rules) {
-        return JSON.toJSONString(rules.stream().map(AuthorityRuleEntity::getRule).collect(Collectors.toList()));
+        return JSON.toJSONString(rules.stream().map(AuthorityRuleEntity::toRule).collect(Collectors.toList()));
     }
 }

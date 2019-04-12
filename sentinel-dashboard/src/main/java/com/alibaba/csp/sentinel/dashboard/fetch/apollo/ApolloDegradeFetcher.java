@@ -4,7 +4,8 @@ import com.alibaba.csp.sentinel.dashboard.Constants;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.ApolloMachineInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
-import com.alibaba.csp.sentinel.dashboard.util.RuleUtils;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
+import com.alibaba.fastjson.JSON;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +34,7 @@ public class ApolloDegradeFetcher extends ApolloFetchAdapter<DegradeRuleEntity> 
     @Override
     protected List<DegradeRuleEntity> convert(String app, String ip, int port, String value) {
         return Optional.ofNullable(value)
-                        .map(RuleUtils::parseDegradeRule)
+                        .map(rules -> JSON.parseArray(rules, DegradeRule.class))
                         .map(rules -> rules.stream()
                                             .map(e -> DegradeRuleEntity.fromDegradeRule(app, ip, port, e))
                                             .collect(Collectors.toList()))

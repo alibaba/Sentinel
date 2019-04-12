@@ -31,6 +31,6 @@ public class ApolloDegradePublisher extends ApolloPublishAdapter<DegradeRuleEnti
 
     @Override
     protected String processRules(List<DegradeRuleEntity> rules) {
-        return JSON.toJSONString(rules.stream().map(DegradeRuleEntity::toDegradeRule).collect(Collectors.toList()));
+        return JSON.toJSONString(rules.stream().map(DegradeRuleEntity::toRule).collect(Collectors.toList()));
     }
 }

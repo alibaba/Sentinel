@@ -4,7 +4,8 @@ import com.alibaba.csp.sentinel.dashboard.Constants;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.ApolloMachineInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
-import com.alibaba.csp.sentinel.dashboard.util.RuleUtils;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
+import com.alibaba.fastjson.JSON;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +34,7 @@ public class ApolloFlowRuleFetcher extends ApolloFetchAdapter<FlowRuleEntity> {
     @Override
     protected List<FlowRuleEntity> convert(String app, String ip, int port, String value) {
         return Optional.ofNullable(value)
-                        .map(RuleUtils::parseFlowRule)
+                        .map(rules -> JSON.parseArray(rules, FlowRule.class))
                         .map(rules -> rules.stream()
                                             .map(e -> FlowRuleEntity.fromFlowRule(app, ip, port, e))
                                             .collect(Collectors.toList()))

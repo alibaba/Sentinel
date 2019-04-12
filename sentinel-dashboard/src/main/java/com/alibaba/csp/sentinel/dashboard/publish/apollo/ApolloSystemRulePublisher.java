@@ -31,6 +31,6 @@ public class ApolloSystemRulePublisher extends ApolloPublishAdapter<SystemRuleEn
 
     @Override
     protected String processRules(List<SystemRuleEntity> rules) {
-        return JSON.toJSONString(rules.stream().map(SystemRuleEntity::toSystemRule).collect(Collectors.toList()));
+        return JSON.toJSONString(rules.stream().map(SystemRuleEntity::toRule).collect(Collectors.toList()));
     }
 }

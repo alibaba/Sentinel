@@ -4,7 +4,8 @@ import com.alibaba.csp.sentinel.dashboard.Constants;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.SystemRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.ApolloMachineInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
-import com.alibaba.csp.sentinel.dashboard.util.RuleUtils;
+import com.alibaba.csp.sentinel.slots.system.SystemRule;
+import com.alibaba.fastjson.JSON;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +34,7 @@ public class ApolloSystemRuleFetcher extends ApolloFetchAdapter<SystemRuleEntity
     @Override
     protected List<SystemRuleEntity> convert(String app, String ip, int port, String value) {
         return Optional.ofNullable(value)
-                        .map(RuleUtils::parseSystemRule)
+                        .map(rules -> JSON.parseArray(rules, SystemRule.class))
                         .map(rules -> rules.stream()
                                             .map(e -> SystemRuleEntity.fromSystemRule(app, ip, port, e))
                                             .collect(Collectors.toList()))

@@ -31,6 +31,6 @@ public class ApolloFlowRulePublisher extends ApolloPublishAdapter<FlowRuleEntity
 
     @Override
     protected String processRules(List<FlowRuleEntity> rules) {
-        return JSON.toJSONString(rules.stream().map(FlowRuleEntity::toFlowRule).collect(Collectors.toList()));
+        return JSON.toJSONString(rules.stream().map(FlowRuleEntity::toRule).collect(Collectors.toList()));
     }
 }
