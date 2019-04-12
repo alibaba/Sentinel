@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright 1999-2019 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,28 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.datasource.entity.rule;
+package com.alibaba.csp.sentinel.util;
 
-import java.util.Date;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
-import com.alibaba.csp.sentinel.slots.block.Rule;
+public class IdUtilTest {
 
-/**
- * @author leyou
- */
-public interface RuleEntity {
-
-    Long getId();
-
-    void setId(Long id);
-
-    String getApp();
-
-    String getIp();
-
-    Integer getPort();
-
-    Date getGmtCreate();
-    
-    Rule toRule();
+  @Test
+  public void truncate() {
+        assertEquals("(foo),(bar),(baz)", IdUtil.truncate(".(foo).,(bar).,(baz)"));
+  }
 }
