@@ -17,7 +17,6 @@ import org.junit.Test;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
-import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 
@@ -31,9 +30,9 @@ public class ParamFlowDefaultCheckerTest {
 	public void tearDown() throws Exception {
 		ParamFlowSlot.getMetricsMap().clear();
 	}
-	
+
 	@Test
-	public void testSingleValueCheckQpsWithoutExceptionItems() throws InterruptedException {
+	public void testSingleQps() throws InterruptedException {
 		final String resourceName = "testSingleValueCheckQpsWithoutExceptionItems";
 		final ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
 		int paramIdx = 0;
@@ -45,12 +44,13 @@ public class ParamFlowDefaultCheckerTest {
 		rule.setResource(resourceName);
 		rule.setCount(threshold);
 		rule.setParamIdx(paramIdx);
-	
+
 		String valueA = "valueA";
 		ParameterMetric metric = new ParameterMetric();
 		ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
 		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(4000));
-		metric.getRuleQPSCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Integer>>(4000));
+		metric.getRuleQPSCounters().put(rule,
+				new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Integer>>(4000));
 
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
@@ -58,9 +58,9 @@ public class ParamFlowDefaultCheckerTest {
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
 		assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
-		
+
 		System.out.println("end of one second");
-		//测试间隔的请求
+		// 测试间隔的请求
 		TimeUnit.SECONDS.sleep(3);
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
@@ -70,6 +70,130 @@ public class ParamFlowDefaultCheckerTest {
 		assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
 	}
 	
+
+
+	@Test
+	public void testSingleQpsWithBurst() throws InterruptedException {
+		final String resourceName = "testSingleQpsWithBurst";
+		final ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
+		int paramIdx = 0;
+		TimeUtil.currentTimeMillis();
+
+		long threshold = 5L;
+
+		ParamFlowRule rule = new ParamFlowRule();
+		rule.setResource(resourceName);
+		rule.setCount(threshold);
+		rule.setParamIdx(paramIdx);
+		rule.setBurstCount(3);
+
+		String valueA = "valueA";
+		ParameterMetric metric = new ParameterMetric();
+		ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
+		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(4000));
+		metric.getRuleQPSCounters().put(rule,
+				new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Integer>>(4000));
+
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+
+		System.out.println("end of one second");
+		// 测试间隔的请求
+		TimeUnit.SECONDS.sleep(1);
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+
+		TimeUnit.SECONDS.sleep(1);
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+
+		TimeUnit.SECONDS.sleep(2);
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+
+		TimeUnit.SECONDS.sleep(1);
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+	}
+
+	@Test
+	public void testQpsInDifferentDuration() throws InterruptedException {
+		final String resourceName = "testQpsInDifferentDuration";
+		final ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
+		int paramIdx = 0;
+		TimeUtil.currentTimeMillis();
+
+		long threshold = 5L;
+
+		ParamFlowRule rule = new ParamFlowRule();
+		rule.setResource(resourceName);
+		rule.setCount(threshold);
+		rule.setParamIdx(paramIdx);
+		rule.setDurationInSec(60);
+
+		String valueA = "helloWorld";
+		ParameterMetric metric = new ParameterMetric();
+		ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
+		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(4000));
+		metric.getRuleQPSCounters().put(rule,
+				new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Integer>>(4000));
+
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+
+		assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+
+		System.out.println("end of one second");
+		// 测试间隔的请求
+		TimeUnit.SECONDS.sleep(1);
+		assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+
+		// 测试间隔的请求
+		TimeUnit.SECONDS.sleep(10);
+		assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		
+		TimeUnit.SECONDS.sleep(30);
+		assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		
+		TimeUnit.SECONDS.sleep(30);
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+
+		assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+	}
+
 	@Test
 	public void testSingleValueCheckQpsInThreads() throws InterruptedException {
 		final String resourceName = "testSingleValueCheckQpsInThreads";
@@ -88,7 +212,8 @@ public class ParamFlowDefaultCheckerTest {
 		ParameterMetric metric = new ParameterMetric();
 		ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
 		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(4000));
-		metric.getRuleQPSCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Integer>>(4000));
+		metric.getRuleQPSCounters().put(rule,
+				new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Integer>>(4000));
 		int threadCount = 40;
 
 		final CountDownLatch waitLatch = new CountDownLatch(threadCount);
@@ -153,6 +278,5 @@ public class ParamFlowDefaultCheckerTest {
 		assertEquals(successCount.get(), threshold);
 		TimeUnit.SECONDS.sleep(3);
 	}
-
 
 }

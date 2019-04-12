@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
@@ -111,16 +110,15 @@ final class ParamFlowChecker {
 
 		// 计算它应该加的值
 		Set<Object> exclusionItems = rule.getParsedHotItems().keySet();
-		int addedCount = (int) rule.getCount();
+		int tokenCount = (int) rule.getCount();
 		if (exclusionItems.contains(value)) {
-			addedCount = rule.getParsedHotItems().get(value);
+			tokenCount = rule.getParsedHotItems().get(value);
 		}
-
-		if (addedCount == 0) {
+		if (tokenCount == 0) {
 			return false;
 		}
 
-		int maxCount = addedCount + rule.getBurstCount();
+		int maxCount = tokenCount + rule.getBurstCount();
 
 		// 开始更新
 		while (true) {
@@ -129,61 +127,47 @@ final class ParamFlowChecker {
 
 			AtomicReference<Long> lastAddTokenTime = timeCounters.putIfAbsent(value,
 					new AtomicReference<Long>(currentTime));
-			StringBuilder sb = new StringBuilder();
-			
+
 			if (lastAddTokenTime == null) {
-				qpsCounters.putIfAbsent(value, new AtomicReference<Integer>(maxCount-1));
-				sb.append("c:" + currentTime);
-				sb.append(",t:" + lastAddTokenTime);
-				sb.append(",count:" + qpsCounters.get(value).get());
-				System.out.println("first " + sb.toString());
+				qpsCounters.putIfAbsent(value, new AtomicReference<Integer>(maxCount - 1));
 				return true;
 			}
 
 			// 需要添加Token了
-			if (currentTime - lastAddTokenTime.get() > rule.getDurationInSec() * 1000) {				
-				AtomicReference<Integer> oldQps = qpsCounters.putIfAbsent(value, new AtomicReference<Integer>(maxCount-1));
-				if(oldQps == null){
-					//这里可能不精确
+			long passTime = currentTime - lastAddTokenTime.get();
+			if (passTime > rule.getDurationInSec() * 1000) {
+				AtomicReference<Integer> oldQps = qpsCounters.putIfAbsent(value,
+						new AtomicReference<Integer>(maxCount - 1));
+				if (oldQps == null) {
+					// 这里可能不精确
 					lastAddTokenTime.set(currentTime);
-					sb.append("c:" + currentTime);
-					sb.append(",t:" + lastAddTokenTime);
-					sb.append(",count:" + qpsCounters.get(value).get());
-					System.out.println("first add token: " + sb.toString());
 					return true;
-				}else{
+				} else {
 					Integer restQps = oldQps.get();
-					Integer newQps = (restQps+addedCount) > maxCount? (restQps+addedCount-1): (maxCount-1);
-					if(oldQps.compareAndSet(restQps, newQps)){
+					Integer toAddCount = (int) ((passTime * tokenCount)/ (rule.getDurationInSec() * 1000) );
+					Integer newQps = (restQps + toAddCount) > maxCount ? (maxCount - 1) : (restQps + toAddCount - 1);
+
+					if (oldQps.compareAndSet(restQps, newQps)) {
 						lastAddTokenTime.set(currentTime);
-						sb.append("c:" + currentTime);
-						sb.append(",t:" + lastAddTokenTime);
-						sb.append(",count:" + qpsCounters.get(value).get());
-						System.out.println("add token: " + sb.toString());
 						return true;
-					}else{
+					} else {
 						Thread.yield();
 					}
-					
+
 				}
-			}else{
+			} else {
 				AtomicReference<Integer> oldQps = qpsCounters.get(value);
-				if(oldQps == null){
+				if (oldQps == null) {
 					Thread.yield();
-				}else{
+				} else {
 					Integer oldQpsValue = oldQps.get();
-					if(oldQpsValue - acquireCount >= 0){
-						if(oldQps.compareAndSet(oldQpsValue, oldQpsValue-acquireCount)){
-							sb.append("c:" + currentTime);
-							sb.append(",t:" + lastAddTokenTime);
-							sb.append(",count:" + qpsCounters.get(value).get());
-							System.out.println("pass: " + sb.toString());
+					if (oldQpsValue - acquireCount >= 0) {
+						if (oldQps.compareAndSet(oldQpsValue, oldQpsValue - acquireCount)) {
 							return true;
-						}else{
+						} else {
 							Thread.yield();
 						}
-						
-					}else{
+					} else {
 						return false;
 					}
 				}
@@ -195,13 +179,13 @@ final class ParamFlowChecker {
 
 	static boolean passRateLimiterCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int acquireCount,
 			Object value) {
-		
+
 		CacheMap<Object, AtomicReference<Long>> ruleCounter = getHotParameters(resourceWrapper) == null ? null
 				: getHotParameters(resourceWrapper).getRuleTimeCounter(rule);
 		if (ruleCounter == null) {
 			return true;
 		}
-		
+
 		Set<Object> exclusionItems = rule.getParsedHotItems().keySet();
 
 		long addedCount = (long) rule.getCount();
