@@ -116,7 +116,7 @@ public class SentinelApiClient {
 
     private CloseableHttpAsyncClient httpClient;
 
-    private static final SentinelVersion version152 = new SentinelVersion(1, 5, 2);
+    private static final SentinelVersion version160 = new SentinelVersion(1, 6, 0);
     
     @Autowired
     private AppManagement appManagement;
@@ -249,7 +249,7 @@ public class SentinelApiClient {
         boolean supportPost = StringUtil.isNotEmpty(app) && Optional.ofNullable(appManagement.getDetailApp(app))
                 .flatMap(e -> e.getMachine(ip, port))
                 .flatMap(m -> VersionUtils.parseVersion(m.getVersion())
-                    .map(v -> v.greaterOrEqual(version152)))
+                    .map(v -> v.greaterOrEqual(version160)))
                 .orElse(false);
         if (!supportPost) {
             // Using GET, append parameters after url
