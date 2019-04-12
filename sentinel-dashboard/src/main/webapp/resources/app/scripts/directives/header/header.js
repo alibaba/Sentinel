@@ -11,21 +11,20 @@ angular.module('sentinelDashboardApp')
       restrict: 'E',
       replace: true,
       controller: function ($scope, $state, $window, AuthService) {
-          if (!$window.localStorage.getItem('session_sentinel_admin')) {
+        if (!$window.localStorage.getItem('session_sentinel_admin')) {
+          $state.go('login');
+        }
+
+        $scope.logout = function () {
+          AuthService.logout().success(function (data) {
+            if (data.code == 0) {
+              $window.localStorage.removeItem("session_sentinel_admin");
               $state.go('login');
-          }
-
-          $scope.logout = function () {
-              AuthService.logout().success(function (data) {
-                  if (data.code == 0) {
-                      $window.localStorage.clear();
-
-                      $state.go('login');
-                  } else {
-                      alert('logout error');
-                  }
-              });
-          }
+            } else {
+              alert('logout error');
+            }
+          });
+        }
       }
     }
-}]);
+  }]);

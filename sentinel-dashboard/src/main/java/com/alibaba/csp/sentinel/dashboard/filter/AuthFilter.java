@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.Filter;
@@ -100,9 +101,11 @@ public class AuthFilter implements Filter {
         }
 
         AuthService.AuthUser authUser = authService.getAuthUser(httpRequest);
-        // Authentication fail
+
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
         if (authUser == null) {
-            ((HttpServletResponse) response).sendRedirect("/");
+            // If auth fail, set response status code to 401
+            httpResponse.setStatus(HttpStatus.UNAUTHORIZED.value());
         } else {
             chain.doFilter(request, response);
         }
