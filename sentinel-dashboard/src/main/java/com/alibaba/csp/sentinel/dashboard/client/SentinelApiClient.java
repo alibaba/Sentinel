@@ -19,6 +19,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +65,6 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
@@ -206,8 +206,8 @@ public class SentinelApiClient {
      * @param api
      * @return
      */
-    private CompletableFuture<String> executeCommand(String ip, int port, String api) {
-        return executeCommand(ip, port, api, null);
+    private CompletableFuture<String> executeCommand(String ip, int port, String api, boolean useHttpPost) {
+        return executeCommand(ip, port, api, null, useHttpPost);
     }
     
     /**
@@ -219,8 +219,8 @@ public class SentinelApiClient {
      * @param params
      * @return
      */
-    private CompletableFuture<String> executeCommand(String ip, int port, String api, Map<String, String> params) {
-        return executeCommand(null, ip, port, api, params);
+    private CompletableFuture<String> executeCommand(String ip, int port, String api, Map<String, String> params, boolean useHttpPost) {
+        return executeCommand(null, ip, port, api, params, useHttpPost);
     }
 
     /**
@@ -233,7 +233,7 @@ public class SentinelApiClient {
      * @param params
      * @return
      */
-    private CompletableFuture<String> executeCommand(String app, String ip, int port, String api, Map<String, String> params) {
+    private CompletableFuture<String> executeCommand(String app, String ip, int port, String api, Map<String, String> params, boolean useHttpPost) {
         CompletableFuture<String> future = new CompletableFuture<>();
         if (StringUtil.isBlank(ip) || StringUtil.isBlank(api)) {
             future.completeExceptionally(new IllegalArgumentException("Bad URL or command name"));
@@ -242,23 +242,24 @@ public class SentinelApiClient {
         StringBuilder urlBuilder = new StringBuilder();
         urlBuilder.append("http://");
         urlBuilder.append(ip).append(':').append(port).append('/').append(api);
-        if (params == null || params.size() == 0) {
-            // No parameter, using GET
-            return executeCommand(new HttpGet(urlBuilder.toString()));
+        if (params == null) {
+            params = Collections.emptyMap();
         }
         boolean supportPost = StringUtil.isNotEmpty(app) && Optional.ofNullable(appManagement.getDetailApp(app))
                 .flatMap(e -> e.getMachine(ip, port))
                 .flatMap(m -> VersionUtils.parseVersion(m.getVersion())
                     .map(v -> v.greaterOrEqual(version160)))
                 .orElse(false);
-        if (!supportPost) {
-            // Using GET, append parameters after url
-            if (urlBuilder.indexOf("?") == -1) {
-                urlBuilder.append('?');
-            } else {
-                urlBuilder.append('&');
+        if (!useHttpPost || !supportPost) {
+            // Using GET in older versions, append parameters after url
+            if (!params.isEmpty()) {
+                if (urlBuilder.indexOf("?") == -1) {
+                    urlBuilder.append('?');
+                } else {
+                    urlBuilder.append('&');
+                }
+                urlBuilder.append(queryString(params));
             }
-            urlBuilder.append(queryString(params));
             return executeCommand(new HttpGet(urlBuilder.toString()));
         } else {
             // Using POST
@@ -317,7 +318,7 @@ public class SentinelApiClient {
             params = new HashMap<>(1);
             params.put("type", type);
         }
-        return executeCommand(ip, port, api, params)
+        return executeCommand(ip, port, api, params, false)
                 .thenApply(json -> JSON.parseArray(json, ruleType));
     }
     
@@ -358,7 +359,7 @@ public class SentinelApiClient {
             Map<String, String> params = new HashMap<>(2);
             params.put("type", type);
             params.put("data", data);
-            String result = executeCommand(app, ip, port, SET_RULES_PATH, params).get();
+            String result = executeCommand(app, ip, port, SET_RULES_PATH, params, true).get();
             logger.info("setRules: {}", result);
             return true;
         } catch (InterruptedException | ExecutionException e) {
@@ -526,7 +527,7 @@ public class SentinelApiClient {
             );
             Map<String, String> params = new HashMap<>(1);
             params.put("data", data);
-            return executeCommand(app, ip, port, SET_PARAM_RULE_PATH, params)
+            return executeCommand(app, ip, port, SET_PARAM_RULE_PATH, params, true)
                 .thenCompose(e -> {
                     if (CommandConstants.MSG_SUCCESS.equals(e)) {
                         return CompletableFuture.completedFuture(null);
@@ -548,7 +549,7 @@ public class SentinelApiClient {
             return AsyncUtils.newFailedFuture(new IllegalArgumentException("Invalid parameter"));
         }
         try {
-            return executeCommand(ip, port, FETCH_CLUSTER_MODE_PATH)
+            return executeCommand(ip, port, FETCH_CLUSTER_MODE_PATH, false)
                 .thenApply(r -> JSON.parseObject(r, ClusterStateSimpleEntity.class));
         } catch (Exception ex) {
             logger.warn("Error when fetching cluster mode", ex);
@@ -563,7 +564,7 @@ public class SentinelApiClient {
         try {
             Map<String, String> params = new HashMap<>(1);
             params.put("mode", String.valueOf(mode));
-            return executeCommand(ip, port, MODIFY_CLUSTER_MODE_PATH, params)
+            return executeCommand(ip, port, MODIFY_CLUSTER_MODE_PATH, params, false)
                 .thenCompose(e -> {
                     if (CommandConstants.MSG_SUCCESS.equals(e)) {
                         return CompletableFuture.completedFuture(null);
@@ -583,7 +584,7 @@ public class SentinelApiClient {
             return AsyncUtils.newFailedFuture(new IllegalArgumentException("Invalid parameter"));
         }
         try {
-            return executeCommand(ip, port, FETCH_CLUSTER_CLIENT_CONFIG_PATH)
+            return executeCommand(ip, port, FETCH_CLUSTER_CLIENT_CONFIG_PATH, false)
                 .thenApply(r -> JSON.parseObject(r, ClusterClientInfoVO.class));
         } catch (Exception ex) {
             logger.warn("Error when fetching cluster client config", ex);
@@ -598,7 +599,7 @@ public class SentinelApiClient {
         try {
             Map<String, String> params = new HashMap<>(1);
             params.put("data", JSON.toJSONString(config));
-            return executeCommand(app, ip, port, MODIFY_CLUSTER_CLIENT_CONFIG_PATH, params)
+            return executeCommand(app, ip, port, MODIFY_CLUSTER_CLIENT_CONFIG_PATH, params, true)
                 .thenCompose(e -> {
                     if (CommandConstants.MSG_SUCCESS.equals(e)) {
                         return CompletableFuture.completedFuture(null);
@@ -620,7 +621,7 @@ public class SentinelApiClient {
         try {
             Map<String, String> params = new HashMap<>(1);
             params.put("data", JSON.toJSONString(config));
-            return executeCommand(app, ip, port, MODIFY_CLUSTER_SERVER_FLOW_CONFIG_PATH, params)
+            return executeCommand(app, ip, port, MODIFY_CLUSTER_SERVER_FLOW_CONFIG_PATH, params, true)
                 .thenCompose(e -> {
                     if (CommandConstants.MSG_SUCCESS.equals(e)) {
                         return CompletableFuture.completedFuture(null);
@@ -643,7 +644,7 @@ public class SentinelApiClient {
             Map<String, String> params = new HashMap<>(2);
             params.put("port", config.getPort().toString());
             params.put("idleSeconds", config.getIdleSeconds().toString());
-            return executeCommand(app, ip, port, MODIFY_CLUSTER_SERVER_TRANSPORT_CONFIG_PATH, params)
+            return executeCommand(app, ip, port, MODIFY_CLUSTER_SERVER_TRANSPORT_CONFIG_PATH, params, false)
                 .thenCompose(e -> {
                     if (CommandConstants.MSG_SUCCESS.equals(e)) {
                         return CompletableFuture.completedFuture(null);
@@ -665,7 +666,7 @@ public class SentinelApiClient {
         try {
             Map<String, String> params = new HashMap<>(1);
             params.put("data", JSON.toJSONString(set));
-            return executeCommand(app, ip, port, MODIFY_CLUSTER_SERVER_NAMESPACE_SET_PATH, params)
+            return executeCommand(app, ip, port, MODIFY_CLUSTER_SERVER_NAMESPACE_SET_PATH, params, true)
                 .thenCompose(e -> {
                     if (CommandConstants.MSG_SUCCESS.equals(e)) {
                         return CompletableFuture.completedFuture(null);
@@ -685,10 +686,7 @@ public class SentinelApiClient {
             return AsyncUtils.newFailedFuture(new IllegalArgumentException("Invalid parameter"));
         }
         try {
-            URIBuilder uriBuilder = new URIBuilder();
-            uriBuilder.setScheme("http").setHost(ip).setPort(port)
-                .setPath(FETCH_CLUSTER_SERVER_BASIC_INFO_PATH);
-            return executeCommand(ip, port, FETCH_CLUSTER_SERVER_BASIC_INFO_PATH)
+            return executeCommand(ip, port, FETCH_CLUSTER_SERVER_BASIC_INFO_PATH, false)
                 .thenApply(r -> JSON.parseObject(r, ClusterServerStateVO.class));
         } catch (Exception ex) {
             logger.warn("Error when fetching cluster sever all config and basic info", ex);
