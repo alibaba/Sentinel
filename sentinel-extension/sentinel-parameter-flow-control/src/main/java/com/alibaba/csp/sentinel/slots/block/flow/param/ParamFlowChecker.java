@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
@@ -98,10 +100,10 @@ final class ParamFlowChecker {
 	static boolean passDefaultCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int acquireCount,
 			Object value) {
 
-		CacheMap<Object, AtomicReference<Integer>> qpsCounters = getHotParameters(resourceWrapper) == null ? null
+		CacheMap<Object, AtomicInteger> qpsCounters = getHotParameters(resourceWrapper) == null ? null
 				: getHotParameters(resourceWrapper).getRuleQpsCounter(rule);
 
-		CacheMap<Object, AtomicReference<Long>> timeCounters = getHotParameters(resourceWrapper) == null ? null
+		CacheMap<Object, AtomicLong> timeCounters = getHotParameters(resourceWrapper) == null ? null
 				: getHotParameters(resourceWrapper).getRuleTimeCounter(rule);
 
 		if (qpsCounters == null || timeCounters == null) {
@@ -125,19 +127,19 @@ final class ParamFlowChecker {
 			// Add token
 			Long currentTime = TimeUtil.currentTimeMillis();
 
-			AtomicReference<Long> lastAddTokenTime = timeCounters.putIfAbsent(value,
-					new AtomicReference<Long>(currentTime));
+			AtomicLong lastAddTokenTime = timeCounters.putIfAbsent(value,
+					new AtomicLong(currentTime));
 
 			if (lastAddTokenTime == null) {
-				qpsCounters.putIfAbsent(value, new AtomicReference<Integer>(maxCount - 1));
+				qpsCounters.putIfAbsent(value, new AtomicInteger(maxCount -acquireCount));
 				return true;
 			}
 
 			// 需要添加Token了
 			long passTime = currentTime - lastAddTokenTime.get();
 			if (passTime > rule.getDurationInSec() * 1000) {
-				AtomicReference<Integer> oldQps = qpsCounters.putIfAbsent(value,
-						new AtomicReference<Integer>(maxCount - 1));
+				AtomicInteger oldQps = qpsCounters.putIfAbsent(value,
+						new AtomicInteger(maxCount - acquireCount));
 				if (oldQps == null) {
 					// 这里可能不精确
 					lastAddTokenTime.set(currentTime);
@@ -145,7 +147,11 @@ final class ParamFlowChecker {
 				} else {
 					Integer restQps = oldQps.get();
 					Integer toAddCount = (int) ((passTime * tokenCount)/ (rule.getDurationInSec() * 1000) );
-					Integer newQps = (restQps + toAddCount) > maxCount ? (maxCount - 1) : (restQps + toAddCount - 1);
+					Integer newQps = (restQps + toAddCount) > maxCount ? (maxCount - acquireCount) : (restQps + toAddCount - acquireCount);
+					
+					if(newQps <0){
+						return false;
+					}
 
 					if (oldQps.compareAndSet(restQps, newQps)) {
 						lastAddTokenTime.set(currentTime);
@@ -153,10 +159,9 @@ final class ParamFlowChecker {
 					} else {
 						Thread.yield();
 					}
-
 				}
 			} else {
-				AtomicReference<Integer> oldQps = qpsCounters.get(value);
+				AtomicInteger oldQps = qpsCounters.get(value);
 				if (oldQps == null) {
 					Thread.yield();
 				} else {
@@ -180,7 +185,7 @@ final class ParamFlowChecker {
 	static boolean passRateLimiterCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int acquireCount,
 			Object value) {
 
-		CacheMap<Object, AtomicReference<Long>> ruleCounter = getHotParameters(resourceWrapper) == null ? null
+		CacheMap<Object, AtomicLong> ruleCounter = getHotParameters(resourceWrapper) == null ? null
 				: getHotParameters(resourceWrapper).getRuleTimeCounter(rule);
 		if (ruleCounter == null) {
 			return true;
@@ -206,8 +211,8 @@ final class ParamFlowChecker {
 			long expectedTime = lastPassTime == null ? (currentTime) : (lastPassTime + costTime);
 
 			if (expectedTime <= currentTime || expectedTime - currentTime < rule.getTimeoutInMs()) {
-				AtomicReference<Long> lastPastTimeRef = ruleCounter.putIfAbsent(value,
-						new AtomicReference<Long>(expectedTime));
+				AtomicLong lastPastTimeRef = ruleCounter.putIfAbsent(value,
+						new AtomicLong(expectedTime));
 				if (lastPastTimeRef == null) {
 					return true;
 				}
@@ -216,7 +221,8 @@ final class ParamFlowChecker {
 					long waitTime = expectedTime - currentTime;
 					if (waitTime > 0) {
 						try {
-							lastPastTimeRef.compareAndSet(lastPassTime, expectedTime);
+							//
+							lastPastTimeRef.set(expectedTime);
 							TimeUnit.MILLISECONDS.sleep(waitTime);
 						} catch (InterruptedException e) {
 							RecordLog.info("could not wait ", e);

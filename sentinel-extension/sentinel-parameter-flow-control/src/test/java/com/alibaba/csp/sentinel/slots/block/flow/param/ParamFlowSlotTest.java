@@ -15,8 +15,22 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow.param;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
@@ -24,14 +38,6 @@ import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
 import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
 import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
 import com.alibaba.csp.sentinel.util.TimeUtil;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * Test cases for {@link ParamFlowSlot}.
@@ -87,11 +93,11 @@ public class ParamFlowSlotTest {
 
         ParameterMetric metric = mock(ParameterMetric.class);
         
-        CacheMap<Object, AtomicReference<Long>> map = new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(4000);      
-        CacheMap<Object, AtomicReference<Integer>> map2 = new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Integer>>(4000);   
+        CacheMap<Object, AtomicLong> map = new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000);      
+        CacheMap<Object, AtomicInteger> map2 = new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(4000);   
         when(metric.getRuleTimeCounter(rule)).thenReturn(map);
         when(metric.getRuleQpsCounter(rule)).thenReturn(map2);
-        map.put(argToGo, new AtomicReference<Long>(TimeUtil.currentTimeMillis()));
+        map.put(argToGo, new AtomicLong(TimeUtil.currentTimeMillis()));
  
 
         // Insert the mock metric to control pass or block.

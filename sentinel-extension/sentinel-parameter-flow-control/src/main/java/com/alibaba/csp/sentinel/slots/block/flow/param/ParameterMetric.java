@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
@@ -36,17 +36,17 @@ public class ParameterMetric {
 
 	Object LOCK = new Object();
 
-	private Map<ParamFlowRule, CacheMap<Object, AtomicReference<Long>>> ruleTimeCounters = new HashMap<ParamFlowRule, CacheMap<Object, AtomicReference<Long>>>();
+	private Map<ParamFlowRule, CacheMap<Object, AtomicLong>> ruleTimeCounters = new HashMap<ParamFlowRule, CacheMap<Object, AtomicLong>>();
 
-	private Map<ParamFlowRule, CacheMap<Object, AtomicReference<Integer>>> ruleQPSCounter = new HashMap<ParamFlowRule, CacheMap<Object, AtomicReference<Integer>>>();
+	private Map<ParamFlowRule, CacheMap<Object, AtomicInteger>> ruleQPSCounter = new HashMap<ParamFlowRule, CacheMap<Object, AtomicInteger>>();
 
 	private Map<Integer, CacheMap<Object, AtomicInteger>> threadCountMap = new HashMap<Integer, CacheMap<Object, AtomicInteger>>();
 
-	public CacheMap<Object, AtomicReference<Integer>> getRuleQpsCounter(ParamFlowRule rule) {
+	public CacheMap<Object,AtomicInteger> getRuleQpsCounter(ParamFlowRule rule) {
 		return ruleQPSCounter.get(rule);
 	}
 
-	public Map<ParamFlowRule, CacheMap<Object, AtomicReference<Integer>>> getRuleQPSCounters() {
+	public Map<ParamFlowRule, CacheMap<Object, AtomicInteger>> getRuleQPSCounters() {
 		return ruleQPSCounter;
 	}
 
@@ -54,11 +54,11 @@ public class ParameterMetric {
 		return threadCountMap;
 	}
 
-	public CacheMap<Object, AtomicReference<Long>> getRuleTimeCounter(ParamFlowRule rule) {
+	public CacheMap<Object, AtomicLong> getRuleTimeCounter(ParamFlowRule rule) {
 		return ruleTimeCounters.get(rule);
 	}
 
-	public Map<ParamFlowRule, CacheMap<Object, AtomicReference<Long>>> getRuleTimeCounters() {
+	public Map<ParamFlowRule, CacheMap<Object, AtomicLong>> getRuleTimeCounters() {
 		return ruleTimeCounters;
 	}
 
@@ -73,7 +73,7 @@ public class ParameterMetric {
 			synchronized (LOCK) {
 				if (ruleTimeCounters.get(rule) == null) {
 					int max = 4000 * rule.getDurationInSec() > 2000000 ? 200000 : 4000 * rule.getDurationInSec();
-					ruleTimeCounters.put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(max));
+					ruleTimeCounters.put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(max));
 				}
 			}
 		}
@@ -82,7 +82,7 @@ public class ParameterMetric {
 			synchronized (LOCK) {
 				if (ruleQPSCounter.get(rule) == null) {
 					int max = 4000 * rule.getDurationInSec() > 2000000 ? 200000 : 4000 * rule.getDurationInSec();
-					ruleQPSCounter.put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Integer>>(max));
+					ruleQPSCounter.put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(max));
 				}
 			}
 		}

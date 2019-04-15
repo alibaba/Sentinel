@@ -6,6 +6,7 @@ import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.After;
@@ -38,7 +39,7 @@ public class RateLimiterCheckerTest {
 		String valueA = "valueA";
 		ParameterMetric metric = new ParameterMetric();
 		ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
-		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(4000));
+		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 
 		long currentTime = TimeUtil.currentTimeMillis();
 		long endTime = currentTime + rule.getDurationInSec() * 1000;
@@ -87,7 +88,7 @@ public class RateLimiterCheckerTest {
 		final String valueA = "valueA";
 		ParameterMetric metric = new ParameterMetric();
 		ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
-		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(4000));
+		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 
 		int threadCount = 40;
 

@@ -8,7 +8,7 @@ import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.After;
 import org.junit.Before;
@@ -48,9 +48,9 @@ public class ParamFlowDefaultCheckerTest {
 		String valueA = "valueA";
 		ParameterMetric metric = new ParameterMetric();
 		ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
-		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(4000));
+		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 		metric.getRuleQPSCounters().put(rule,
-				new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Integer>>(4000));
+				new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(4000));
 
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
@@ -90,10 +90,11 @@ public class ParamFlowDefaultCheckerTest {
 		String valueA = "valueA";
 		ParameterMetric metric = new ParameterMetric();
 		ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
-		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(4000));
+		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 		metric.getRuleQPSCounters().put(rule,
-				new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Integer>>(4000));
+				new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(4000));
 
+		System.out.println(TimeUtil.currentTimeMillis());
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
@@ -106,7 +107,8 @@ public class ParamFlowDefaultCheckerTest {
 
 		System.out.println("end of one second");
 		// 测试间隔的请求
-		TimeUnit.SECONDS.sleep(1);
+		TimeUnit.MILLISECONDS.sleep(1002);
+		System.out.println(TimeUtil.currentTimeMillis());
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
@@ -114,7 +116,8 @@ public class ParamFlowDefaultCheckerTest {
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
 		assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
 
-		TimeUnit.SECONDS.sleep(1);
+		TimeUnit.MILLISECONDS.sleep(1002);
+		System.out.println(TimeUtil.currentTimeMillis());
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
@@ -123,6 +126,7 @@ public class ParamFlowDefaultCheckerTest {
 		assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
 
 		TimeUnit.SECONDS.sleep(2);
+		System.out.println(TimeUtil.currentTimeMillis());
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
@@ -133,7 +137,8 @@ public class ParamFlowDefaultCheckerTest {
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
 		assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
 
-		TimeUnit.SECONDS.sleep(1);
+		TimeUnit.MILLISECONDS.sleep(1002);
+		System.out.println(TimeUtil.currentTimeMillis());
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
@@ -160,9 +165,9 @@ public class ParamFlowDefaultCheckerTest {
 		String valueA = "helloWorld";
 		ParameterMetric metric = new ParameterMetric();
 		ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
-		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(4000));
+		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 		metric.getRuleQPSCounters().put(rule,
-				new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Integer>>(4000));
+				new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(4000));
 
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
@@ -211,9 +216,9 @@ public class ParamFlowDefaultCheckerTest {
 		final String valueA = "valueA";
 		ParameterMetric metric = new ParameterMetric();
 		ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
-		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(4000));
+		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 		metric.getRuleQPSCounters().put(rule,
-				new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Integer>>(4000));
+				new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(4000));
 		int threadCount = 40;
 
 		final CountDownLatch waitLatch = new CountDownLatch(threadCount);

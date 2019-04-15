@@ -15,7 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow.param;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -25,9 +24,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.After;
@@ -95,7 +94,7 @@ public class ParamFlowCheckerTest {
 
 		ParameterMetric metric = new ParameterMetric();
 		ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
-		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(4000));
+		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 
 		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
 		assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueB));
@@ -163,8 +162,8 @@ public class ParamFlowCheckerTest {
 		List<String> list = Arrays.asList(v1, v2, v3);
 		ParameterMetric metric = new ParameterMetric();
 		ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
-		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(4000));		
-		metric.getRuleQPSCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Integer>>(4000));
+		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));		
+		metric.getRuleQPSCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(4000));
 
 		assertTrue(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, list));
 		assertFalse(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, list));
@@ -188,7 +187,7 @@ public class ParamFlowCheckerTest {
 		Object arr = new String[] { v1, v2, v3 };
 		ParameterMetric metric = new ParameterMetric();
 		ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
-		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicReference<Long>>(4000));
+		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 
 		assertTrue(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, arr));
 		assertFalse(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, arr));

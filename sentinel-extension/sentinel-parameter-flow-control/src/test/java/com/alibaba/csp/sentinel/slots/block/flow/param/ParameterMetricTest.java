@@ -23,7 +23,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.Test;
 
@@ -51,7 +51,7 @@ public class ParameterMetricTest {
 		CacheMap<Object, AtomicInteger> cacheMap = metric.getThreadCountMap().get(rule.getParamIdx());
 	
 		assertNotNull(cacheMap);
-		CacheMap<Object, AtomicReference<Long>> ruleCounter = metric.getRuleTimeCounter(rule);
+		CacheMap<Object, AtomicLong> ruleCounter = metric.getRuleTimeCounter(rule);
 		assertNotNull(ruleCounter);
 
 		metric.initialize(rule);
