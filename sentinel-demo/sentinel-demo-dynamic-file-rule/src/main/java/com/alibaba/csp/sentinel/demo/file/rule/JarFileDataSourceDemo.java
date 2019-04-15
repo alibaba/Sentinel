@@ -39,24 +39,24 @@ import java.util.List;
  * </p>
  *
  * @author dingq
- * @date 2019-03-30
  */
 public class JarFileDataSourceDemo {
+
     public static void main(String[] args) throws Exception {
         JarFileDataSourceDemo demo = new JarFileDataSourceDemo();
         demo.listenRules();
 
-        /*
-         * Start to require tokens, rate will be limited by rule in FlowRule.json
-         */
+        // Start to require tokens, rate will be limited by rule of FlowRule.json in jar.
         FlowQpsRunner runner = new FlowQpsRunner();
         runner.simulateTraffic();
         runner.tick();
     }
 
     private void listenRules() throws Exception {
-        String jarPath = System.getProperty("user.dir") + "/sentinel-demo/sentinel-demo-dynamic-file-rule/target/sentinel-demo-dynamic-file-rule-1.5.1-SNAPSHOT.jar";
-        // eg: if flowRuleInJarName full path is 'sentinel-demo-dynamic-file-rule-1.5.1-SNAPSHOT.jar!/classes/FlowRule.json',
+        // Modify the path with your real path.
+        String jarPath = System.getProperty("user.dir") + "/sentinel-demo/sentinel-demo-dynamic-file-rule/target/"
+            + "sentinel-demo-dynamic-file-rule.jar";
+        // eg: if flowRuleInJarName full path is 'sentinel-demo-dynamic-file-rule.jar!/classes/FlowRule.json',
         // your flowRuleInJarName is 'classes/FlowRule.json'
         String flowRuleInJarPath = "FlowRule.json";
 
