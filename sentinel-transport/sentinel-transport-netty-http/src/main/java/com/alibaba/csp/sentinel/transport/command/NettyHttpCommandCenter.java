@@ -22,6 +22,7 @@ import java.util.concurrent.Executors;
 import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandHandlerProvider;
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
+import com.alibaba.csp.sentinel.spi.SpiOrder;
 import com.alibaba.csp.sentinel.transport.command.netty.HttpServer;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.transport.CommandCenter;
@@ -31,6 +32,7 @@ import com.alibaba.csp.sentinel.transport.CommandCenter;
  *
  * @author Eric Zhao
  */
+@SpiOrder(SpiOrder.LOWEST_PRECEDENCE - 100)
 public class NettyHttpCommandCenter implements CommandCenter {
 
     private final HttpServer server = new HttpServer();
