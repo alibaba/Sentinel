@@ -94,7 +94,8 @@ public class ParamFlowSlotTest {
         double count = 1;
         ParamFlowRule rule = new ParamFlowRule(resourceName)
             .setCount(count)
-            .setParamIdx(1);
+            .setBurstCount(0)
+            .setParamIdx(0);
         ParamFlowRuleManager.loadRules(Collections.singletonList(rule));
 
         ParameterMetric metric = mock(ParameterMetric.class);

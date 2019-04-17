@@ -45,7 +45,7 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
  */
 final class ParamFlowChecker {
 
-    static boolean passCheck(ResourceWrapper resourceWrapper, /* @Valid */ ParamFlowRule rule, /* @Valid */ int count,
+    static boolean passCheck(ResourceWrapper resourceWrapper, /*@Valid*/ ParamFlowRule rule, /*@Valid*/ int count,
                              Object... args) {
         if (args == null) {
             return true;
@@ -109,7 +109,7 @@ final class ParamFlowChecker {
             return true;
         }
 
-        // 计算它应该加的值
+        // Calculate max token count (threshold)
         Set<Object> exclusionItems = rule.getParsedHotItems().keySet();
         int tokenCount = (int)rule.getCount();
         if (exclusionItems.contains(value)) {
@@ -120,15 +120,15 @@ final class ParamFlowChecker {
         }
 
         int maxCount = tokenCount + rule.getBurstCount();
+        if (acquireCount > maxCount) {
+            return false;
+        }
 
-        // 开始更新
         while (true) {
             // Add token
-            Long currentTime = TimeUtil.currentTimeMillis();
+            long currentTime = TimeUtil.currentTimeMillis();
 
-            AtomicLong lastAddTokenTime = timeCounters.putIfAbsent(value,
-                new AtomicLong(currentTime));
-
+            AtomicLong lastAddTokenTime = timeCounters.putIfAbsent(value, new AtomicLong(currentTime));
             if (lastAddTokenTime == null) {
                 qpsCounters.putIfAbsent(value, new AtomicInteger(maxCount - acquireCount));
                 return true;
@@ -137,22 +137,20 @@ final class ParamFlowChecker {
             // 需要添加Token了
             long passTime = currentTime - lastAddTokenTime.get();
             if (passTime > rule.getDurationInSec() * 1000) {
-                AtomicInteger oldQps = qpsCounters.putIfAbsent(value,
-                    new AtomicInteger(maxCount - acquireCount));
+                AtomicInteger oldQps = qpsCounters.putIfAbsent(value, new AtomicInteger(maxCount - acquireCount));
                 if (oldQps == null) {
-                    // 这里可能不精确
+                    // Might not be accurate here.
                     lastAddTokenTime.set(currentTime);
                     return true;
                 } else {
-                    Integer restQps = oldQps.get();
-                    Integer toAddCount = (int)((passTime * tokenCount) / (rule.getDurationInSec() * 1000));
-                    Integer newQps = (restQps + toAddCount) > maxCount ? (maxCount - acquireCount)
+                    int restQps = oldQps.get();
+                    int toAddCount = (int)((passTime * tokenCount) / (rule.getDurationInSec() * 1000));
+                    int newQps = (restQps + toAddCount) > maxCount ? (maxCount - acquireCount)
                         : (restQps + toAddCount - acquireCount);
 
                     if (newQps < 0) {
                         return false;
                     }
-
                     if (oldQps.compareAndSet(restQps, newQps)) {
                         lastAddTokenTime.set(currentTime);
                         return true;
@@ -165,7 +163,7 @@ final class ParamFlowChecker {
                 if (oldQps == null) {
                     Thread.yield();
                 } else {
-                    Integer oldQpsValue = oldQps.get();
+                    int oldQpsValue = oldQps.get();
                     if (oldQpsValue - acquireCount >= 0) {
                         if (oldQps.compareAndSet(oldQpsValue, oldQpsValue - acquireCount)) {
                             return true;
@@ -207,12 +205,12 @@ final class ParamFlowChecker {
         while (true) {
             // Add token
             long currentTime = TimeUtil.currentTimeMillis();
-            Long lastPassTime = (ruleCounter.get(value) == null) ? null : ruleCounter.get(value).get();
+            AtomicLong counter = ruleCounter.get(value);
+            Long lastPassTime = (counter == null) ? null : counter.get();
             long expectedTime = lastPassTime == null ? (currentTime) : (lastPassTime + costTime);
 
             if (expectedTime <= currentTime || expectedTime - currentTime < rule.getMaxQueueingTimeMs()) {
-                AtomicLong lastPastTimeRef = ruleCounter.putIfAbsent(value,
-                    new AtomicLong(expectedTime));
+                AtomicLong lastPastTimeRef = ruleCounter.putIfAbsent(value, new AtomicLong(expectedTime));
                 if (lastPastTimeRef == null) {
                     return true;
                 }
@@ -221,11 +219,10 @@ final class ParamFlowChecker {
                     long waitTime = expectedTime - currentTime;
                     if (waitTime > 0) {
                         try {
-                            //
                             lastPastTimeRef.set(expectedTime);
                             TimeUnit.MILLISECONDS.sleep(waitTime);
                         } catch (InterruptedException e) {
-                            RecordLog.info("could not wait ", e);
+                            RecordLog.warn("Wait interrupted", e);
                         }
                     }
                     return true;
@@ -233,7 +230,6 @@ final class ParamFlowChecker {
                     Thread.yield();
                 }
             } else {
-                // System.out.println("Fail: " + sb.toString());
                 return false;
             }
         }
