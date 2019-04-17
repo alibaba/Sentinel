@@ -25,7 +25,7 @@ import com.alibaba.csp.sentinel.util.SpiLoader;
  * @author cdfive
  * @since 1.5.0
  */
-public class CommandCenterProvider {
+public final class CommandCenterProvider {
 
     private static CommandCenter commandCenter = null;
 
@@ -34,10 +34,10 @@ public class CommandCenterProvider {
     }
 
     private static void resolveInstance() {
-        CommandCenter resolveCommandCenter = SpiLoader.loadFirstInstance(CommandCenter.class);
+        CommandCenter resolveCommandCenter = SpiLoader.loadHighestPriorityInstance(CommandCenter.class);
 
         if (resolveCommandCenter == null) {
-            RecordLog.warn("[CommandCenterProvider] No existing CommandCenter, resolve failed");
+            RecordLog.warn("[CommandCenterProvider] WARN: No existing CommandCenter found");
         } else {
             commandCenter = resolveCommandCenter;
             RecordLog.info("[CommandCenterProvider] CommandCenter resolved: " + resolveCommandCenter.getClass()
