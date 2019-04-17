@@ -15,9 +15,9 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow.param;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.context.Context;
@@ -30,7 +30,8 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
- * A processor slot that is responsible for flow control by frequent ("hot spot") parameters.
+ * A processor slot that is responsible for flow control by frequent ("hot
+ * spot") parameters.
  *
  * @author jialiang.linjl
  * @author Eric Zhao
@@ -90,10 +91,6 @@ public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             initHotParamMetricsFor(resourceWrapper, rule.getParamIdx());
 
             if (!ParamFlowChecker.passCheck(resourceWrapper, rule, count, args)) {
-
-                // Here we add the block count.
-                addBlockCount(resourceWrapper, count, args);
-
                 String triggeredParam = "";
                 if (args.length > rule.getParamIdx()) {
                     Object value = args[rule.getParamIdx()];
@@ -104,14 +101,6 @@ public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         }
     }
 
-    private void addBlockCount(ResourceWrapper resourceWrapper, int count, Object... args) {
-        ParameterMetric parameterMetric = ParamFlowSlot.getParamMetric(resourceWrapper);
-
-        if (parameterMetric != null) {
-            parameterMetric.addBlock(count, args);
-        }
-    }
-
     /**
      * Init the parameter metric and index map for given resource.
      * Package-private for test.
@@ -119,7 +108,7 @@ public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
      * @param resourceWrapper resource to init
      * @param index           index to initialize, which must be valid
      */
-    void initHotParamMetricsFor(ResourceWrapper resourceWrapper, /*@Valid*/ int index) {
+    void initHotParamMetricsFor(ResourceWrapper resourceWrapper, /*@Valid*/ ParamFlowRule rule) {
         ParameterMetric metric;
         // Assume that the resource is valid.
         if ((metric = metricsMap.get(resourceWrapper)) == null) {
@@ -131,7 +120,7 @@ public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 }
             }
         }
-        metric.initializeForIndex(index);
+        metric.initialize(rule);
     }
 
     public static ParameterMetric getParamMetric(ResourceWrapper resourceWrapper) {

@@ -19,16 +19,12 @@ import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.node.IntervalProperty;
-import com.alibaba.csp.sentinel.node.SampleCountProperty;
 import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
 import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
-import com.alibaba.csp.sentinel.slots.statistic.metric.HotParameterLeapArray;
-import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
  * Metrics for frequent ("hot spot") parameters.
@@ -38,268 +34,195 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
  */
 public class ParameterMetric {
 
-    private final int sampleCount;
-    private final int intervalMs;
+	Object LOCK = new Object();
 
-    public ParameterMetric() {
-        this(SampleCountProperty.SAMPLE_COUNT, IntervalProperty.INTERVAL);
-    }
+	private Map<ParamFlowRule, CacheMap<Object, AtomicLong>> ruleTimeCounters = new HashMap<ParamFlowRule, CacheMap<Object, AtomicLong>>();
 
-    public ParameterMetric(int sampleCount, int intervalInMs) {
-        AssertUtil.isTrue(sampleCount > 0, "sampleCount should be positive");
-        AssertUtil.isTrue(intervalInMs > 0, "window interval should be positive");
-        AssertUtil.isTrue(intervalInMs % sampleCount == 0, "time span needs to be evenly divided");
-        this.sampleCount = sampleCount;
-        this.intervalMs = intervalInMs;
-    }
+	private Map<ParamFlowRule, CacheMap<Object, AtomicInteger>> ruleQPSCounter = new HashMap<ParamFlowRule, CacheMap<Object, AtomicInteger>>();
 
-    private Map<Integer, HotParameterLeapArray> rollingParameters =
-        new ConcurrentHashMap<Integer, HotParameterLeapArray>();
-    private Map<Integer, CacheMap<Object, AtomicInteger>> threadCountMap =
-        new ConcurrentHashMap<Integer, CacheMap<Object, AtomicInteger>>();
+	private Map<Integer, CacheMap<Object, AtomicInteger>> threadCountMap = new HashMap<Integer, CacheMap<Object, AtomicInteger>>();
 
-    public Map<Integer, HotParameterLeapArray> getRollingParameters() {
-        return rollingParameters;
-    }
+	public CacheMap<Object,AtomicInteger> getRuleQpsCounter(ParamFlowRule rule) {
+		return ruleQPSCounter.get(rule);
+	}
 
-    public Map<Integer, CacheMap<Object, AtomicInteger>> getThreadCountMap() {
-        return threadCountMap;
-    }
+	public Map<ParamFlowRule, CacheMap<Object, AtomicInteger>> getRuleQPSCounters() {
+		return ruleQPSCounter;
+	}
 
-    public synchronized void clear() {
-        rollingParameters.clear();
-        threadCountMap.clear();
-    }
+	public Map<Integer, CacheMap<Object, AtomicInteger>> getThreadCountMap() {
+		return threadCountMap;
+	}
 
-    public void initializeForIndex(int index) {
-        if (!rollingParameters.containsKey(index)) {
-            synchronized (this) {
-                // putIfAbsent
-                if (rollingParameters.get(index) == null) {
-                    rollingParameters.put(index, new HotParameterLeapArray(sampleCount, intervalMs));
-                }
+	public CacheMap<Object, AtomicLong> getRuleTimeCounter(ParamFlowRule rule) {
+		return ruleTimeCounters.get(rule);
+	}
 
-                if (threadCountMap.get(index) == null) {
-                    threadCountMap.put(index,
-                        new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(THREAD_COUNT_MAX_CAPACITY));
-                }
-            }
-        }
-    }
+	public Map<ParamFlowRule, CacheMap<Object, AtomicLong>> getRuleTimeCounters() {
+		return ruleTimeCounters;
+	}
 
-    @SuppressWarnings("rawtypes")
-    public void decreaseThreadCount(Object... args) {
-        if (args == null) {
-            return;
-        }
+	public synchronized void clear() {
+		threadCountMap.clear();
+		ruleTimeCounters.clear();
+		ruleQPSCounter.clear();
+	}
 
-        try {
-            for (int index = 0; index < args.length; index++) {
-                CacheMap<Object, AtomicInteger> threadCount = threadCountMap.get(index);
-                if (threadCount == null) {
-                    continue;
-                }
+	public void initialize(ParamFlowRule rule) {
+		if (!ruleTimeCounters.containsKey(rule)) {
+			synchronized (LOCK) {
+				if (ruleTimeCounters.get(rule) == null) {
+					int max = 4000 * rule.getDurationInSec() > 2000000 ? 200000 : 4000 * rule.getDurationInSec();
+					ruleTimeCounters.put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(max));
+				}
+			}
+		}
 
-                Object arg = args[index];
-                if (arg == null) {
-                    continue;
-                }
-                if (Collection.class.isAssignableFrom(arg.getClass())) {
+		if (!ruleQPSCounter.containsKey(rule)) {
+			synchronized (LOCK) {
+				if (ruleQPSCounter.get(rule) == null) {
+					int max = 4000 * rule.getDurationInSec() > 2000000 ? 200000 : 4000 * rule.getDurationInSec();
+					ruleQPSCounter.put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(max));
+				}
+			}
+		}
 
-                    for (Object value : ((Collection)arg)) {
-                        AtomicInteger oldValue = threadCount.putIfAbsent(value, new AtomicInteger());
-                        if (oldValue != null) {
-                            int currentValue = oldValue.decrementAndGet();
-                            if (currentValue <= 0) {
-                                threadCount.remove(value);
-                            }
-                        }
+		if (!threadCountMap.containsKey(rule.getParamIdx())) {
+			synchronized (LOCK) {
+				if (threadCountMap.get(rule.getParamIdx()) == null) {
+					threadCountMap.put(rule.getParamIdx(),
+							new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(THREAD_COUNT_MAX_CAPACITY));
+				}
+			}
+		}
+	}
 
-                    }
-                } else if (arg.getClass().isArray()) {
-                    int length = Array.getLength(arg);
-                    for (int i = 0; i < length; i++) {
-                        Object value = Array.get(arg, i);
-                        AtomicInteger oldValue = threadCount.putIfAbsent(value, new AtomicInteger());
-                        if (oldValue != null) {
-                            int currentValue = oldValue.decrementAndGet();
-                            if (currentValue <= 0) {
-                                threadCount.remove(value);
-                            }
-                        }
+	@SuppressWarnings("rawtypes")
+	public void decreaseThreadCount(Object... args) {
+		if (args == null) {
+			return;
+		}
 
-                    }
-                } else {
-                    AtomicInteger oldValue = threadCount.putIfAbsent(arg, new AtomicInteger());
-                    if (oldValue != null) {
-                        int currentValue = oldValue.decrementAndGet();
-                        if (currentValue <= 0) {
-                            threadCount.remove(arg);
-                        }
-                    }
+		try {
+			for (int index = 0; index < args.length; index++) {
+				CacheMap<Object, AtomicInteger> threadCount = threadCountMap.get(index);
+				if (threadCount == null) {
+					continue;
+				}
 
-                }
+				Object arg = args[index];
+				if (arg == null) {
+					continue;
+				}
+				if (Collection.class.isAssignableFrom(arg.getClass())) {
 
-            }
-        } catch (Throwable e) {
-            RecordLog.warn("[ParameterMetric] Param exception", e);
-        }
-    }
+					for (Object value : ((Collection) arg)) {
+						AtomicInteger oldValue = threadCount.putIfAbsent(value, new AtomicInteger());
+						if (oldValue != null) {
+							int currentValue = oldValue.decrementAndGet();
+							if (currentValue <= 0) {
+								threadCount.remove(value);
+							}
+						}
 
-    @SuppressWarnings("rawtypes")
-    public void addThreadCount(Object... args) {
-        if (args == null) {
-            return;
-        }
+					}
+				} else if (arg.getClass().isArray()) {
+					int length = Array.getLength(arg);
+					for (int i = 0; i < length; i++) {
+						Object value = Array.get(arg, i);
+						AtomicInteger oldValue = threadCount.putIfAbsent(value, new AtomicInteger());
+						if (oldValue != null) {
+							int currentValue = oldValue.decrementAndGet();
+							if (currentValue <= 0) {
+								threadCount.remove(value);
+							}
+						}
 
-        try {
-            for (int index = 0; index < args.length; index++) {
-                CacheMap<Object, AtomicInteger> threadCount = threadCountMap.get(index);
-                if (threadCount == null) {
-                    continue;
-                }
+					}
+				} else {
+					AtomicInteger oldValue = threadCount.putIfAbsent(arg, new AtomicInteger());
+					if (oldValue != null) {
+						int currentValue = oldValue.decrementAndGet();
+						if (currentValue <= 0) {
+							threadCount.remove(arg);
+						}
+					}
 
-                Object arg = args[index];
+				}
 
-                if (arg == null) {
-                    continue;
-                }
+			}
+		} catch (Throwable e) {
+			RecordLog.warn("[ParameterMetric] Param exception", e);
+		}
+	}
 
-                if (Collection.class.isAssignableFrom(arg.getClass())) {
-                    for (Object value : ((Collection)arg)) {
-                        AtomicInteger oldValue = threadCount.putIfAbsent(value, new AtomicInteger());
-                        if (oldValue != null) {
-                            oldValue.incrementAndGet();
-                        } else {
-                            threadCount.put(value, new AtomicInteger(1));
-                        }
+	@SuppressWarnings("rawtypes")
+	public void addThreadCount(Object... args) {
+		if (args == null) {
+			return;
+		}
 
-                    }
-                } else if (arg.getClass().isArray()) {
-                    int length = Array.getLength(arg);
-                    for (int i = 0; i < length; i++) {
-                        Object value = Array.get(arg, i);
-                        AtomicInteger oldValue = threadCount.putIfAbsent(value, new AtomicInteger());
-                        if (oldValue != null) {
-                            oldValue.incrementAndGet();
-                        } else {
-                            threadCount.put(value, new AtomicInteger(1));
-                        }
+		try {
+			for (int index = 0; index < args.length; index++) {
+				CacheMap<Object, AtomicInteger> threadCount = threadCountMap.get(index);
+				if (threadCount == null) {
+					continue;
+				}
 
-                    }
-                } else {
-                    AtomicInteger oldValue = threadCount.putIfAbsent(arg, new AtomicInteger());
-                    if (oldValue != null) {
-                        oldValue.incrementAndGet();
-                    } else {
-                        threadCount.put(arg, new AtomicInteger(1));
-                    }
+				Object arg = args[index];
 
-                }
+				if (arg == null) {
+					continue;
+				}
 
-            }
+				if (Collection.class.isAssignableFrom(arg.getClass())) {
+					for (Object value : ((Collection) arg)) {
+						AtomicInteger oldValue = threadCount.putIfAbsent(value, new AtomicInteger());
+						if (oldValue != null) {
+							oldValue.incrementAndGet();
+						} else {
+							threadCount.put(value, new AtomicInteger(1));
+						}
 
-        } catch (Throwable e) {
-            RecordLog.warn("[ParameterMetric] Param exception", e);
-        }
-    }
+					}
+				} else if (arg.getClass().isArray()) {
+					int length = Array.getLength(arg);
+					for (int i = 0; i < length; i++) {
+						Object value = Array.get(arg, i);
+						AtomicInteger oldValue = threadCount.putIfAbsent(value, new AtomicInteger());
+						if (oldValue != null) {
+							oldValue.incrementAndGet();
+						} else {
+							threadCount.put(value, new AtomicInteger(1));
+						}
 
-    public void addPass(int count, Object... args) {
-        add(RollingParamEvent.REQUEST_PASSED, count, args);
-    }
+					}
+				} else {
+					AtomicInteger oldValue = threadCount.putIfAbsent(arg, new AtomicInteger());
+					if (oldValue != null) {
+						oldValue.incrementAndGet();
+					} else {
+						threadCount.put(arg, new AtomicInteger(1));
+					}
 
-    public void addBlock(int count, Object... args) {
-        add(RollingParamEvent.REQUEST_BLOCKED, count, args);
-    }
+				}
 
-    @SuppressWarnings("rawtypes")
-    private void add(RollingParamEvent event, int count, Object... args) {
-        if (args == null) {
-            return;
-        }
-        try {
-            for (int index = 0; index < args.length; index++) {
-                HotParameterLeapArray param = rollingParameters.get(index);
-                if (param == null) {
-                    continue;
-                }
+			}
 
-                Object arg = args[index];
-                if (arg == null) {
-                    continue;
-                }
-                if (Collection.class.isAssignableFrom(arg.getClass())) {
-                    for (Object value : ((Collection)arg)) {
-                        param.addValue(event, count, value);
-                    }
-                } else if (arg.getClass().isArray()) {
-                    int length = Array.getLength(arg);
-                    for (int i = 0; i < length; i++) {
-                        Object value = Array.get(arg, i);
-                        param.addValue(event, count, value);
-                    }
-                } else {
-                    param.addValue(event, count, arg);
-                }
+		} catch (Throwable e) {
+			RecordLog.warn("[ParameterMetric] Param exception", e);
+		}
+	}
 
-            }
-        } catch (Throwable e) {
-            RecordLog.warn("[ParameterMetric] Param exception", e);
-        }
-    }
+	public long getThreadCount(int index, Object value) {
+		if (threadCountMap.get(index) == null) {
+			return 0;
+		}
 
-    public double getPassParamQps(int index, Object value) {
-        try {
-            HotParameterLeapArray parameter = rollingParameters.get(index);
-            if (parameter == null || value == null) {
-                return -1;
-            }
-            return parameter.getRollingAvg(RollingParamEvent.REQUEST_PASSED, value);
-        } catch (Throwable e) {
-            RecordLog.info(e.getMessage(), e);
-        }
+		AtomicInteger count = threadCountMap.get(index).get(value);
+		return count == null ? 0L : count.get();
+	}
 
-        return -1;
-    }
+	private static final long THREAD_COUNT_MAX_CAPACITY = 4000;
 
-    public long getBlockParamQps(int index, Object value) {
-        try {
-            HotParameterLeapArray parameter = rollingParameters.get(index);
-            if (parameter == null || value == null) {
-                return -1;
-            }
-
-            return (long)rollingParameters.get(index).getRollingAvg(RollingParamEvent.REQUEST_BLOCKED, value);
-        } catch (Throwable e) {
-            RecordLog.info(e.getMessage(), e);
-        }
-
-        return -1;
-    }
-
-    public Map<Object, Double> getTopPassParamCount(int index, int number) {
-        try {
-            HotParameterLeapArray parameter = rollingParameters.get(index);
-            if (parameter == null) {
-                return new HashMap<Object, Double>();
-            }
-
-            return parameter.getTopValues(RollingParamEvent.REQUEST_PASSED, number);
-        } catch (Throwable e) {
-            RecordLog.info(e.getMessage(), e);
-        }
-
-        return new HashMap<Object, Double>();
-    }
-
-    public long getThreadCount(int index, Object value) {
-        if (threadCountMap.get(index) == null) {
-            return 0;
-        }
-
-        AtomicInteger count = threadCountMap.get(index).get(value);
-        return count == null ? 0L : count.get();
-    }
-
-    private static final long THREAD_COUNT_MAX_CAPACITY = 4000;
 }
