@@ -15,9 +15,9 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow.param;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.context.Context;
@@ -88,7 +88,7 @@ public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             applyRealParamIdx(rule, args.length);
 
             // Initialize the parameter metrics.
-            initHotParamMetricsFor(resourceWrapper, rule.getParamIdx());
+            initHotParamMetricsFor(resourceWrapper, rule);
 
             if (!ParamFlowChecker.passCheck(resourceWrapper, rule, count, args)) {
                 String triggeredParam = "";
@@ -106,7 +106,7 @@ public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
      * Package-private for test.
      *
      * @param resourceWrapper resource to init
-     * @param index           index to initialize, which must be valid
+     * @param rule            relevant rule
      */
     void initHotParamMetricsFor(ResourceWrapper resourceWrapper, /*@Valid*/ ParamFlowRule rule) {
         ParameterMetric metric;
