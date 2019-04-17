@@ -75,6 +75,61 @@ public class HttpEventTask implements Runnable {
             CommandCenterLog.info("[SimpleHttpCommandCenter] socket income: " + line
                 + "," + socket.getInetAddress());
             CommandRequest request = parseRequest(line);
+            
+            if (line.length() > 4 && StringUtil.equalsIgnoreCase("POST", line.substring(0, 4))) {
+                // Deal with post method
+                // Now simple-http only support form-encoded post request.
+                String bodyLine = null;
+                boolean bodyNext = false;
+                boolean supported = false;
+                int maxLength = 8192;
+                while (true) {
+                    // Body processing
+                    if (bodyNext) {
+                        if (!supported) {
+                            break;
+                        }
+                        char[] bodyBytes = new char[maxLength];
+                        int read = in.read(bodyBytes);
+                        String postData = new String(bodyBytes, 0, read);
+                        parseParams(postData, request);
+                        break;
+                    }
+                    
+                    bodyLine = in.readLine();
+                    if (bodyLine == null) {
+                        break;
+                    }
+                    // Body seperator
+                    if (StringUtil.isEmpty(bodyLine)) {
+                        bodyNext = true;
+                        continue;
+                    }
+                    // Header processing
+                    int index = bodyLine.indexOf(":");
+                    if (index < 1) {
+                        continue;
+                    }
+                    String headerName = bodyLine.substring(0, index);
+                    String header = bodyLine.substring(index + 1).trim();
+                    if (StringUtil.equalsIgnoreCase("content-type", headerName)) {
+                        if (StringUtil.equals("application/x-www-form-urlencoded", header)) {
+                            supported = true;
+                        } else {
+                            // not support request
+                            break;
+                        }
+                    } else if (StringUtil.equalsIgnoreCase("content-length", headerName)) {
+                        try {
+                            int len = new Integer(header);
+                            if (len > 0) {
+                                maxLength = len;
+                            }
+                        } catch (Exception e) {
+                        }
+                    }
+                }
+            }
 
             // Validate the target command.
             String commandName = HttpCommandUtils.getTarget(request);
@@ -203,7 +258,12 @@ public class HttpEventTask implements Runnable {
             return request;
         }
         String parameterStr = line.substring(ask != -1 ? ask + 1 : 0, space != -1 ? space : line.length());
-        for (String parameter : parameterStr.split("&")) {
+        parseParams(parameterStr, request);
+        return request;
+    }
+    
+    private void parseParams(String queryString, CommandRequest request) {
+        for (String parameter : queryString.split("&")) {
             if (StringUtil.isBlank(parameter)) {
                 continue;
             }
@@ -221,7 +281,6 @@ public class HttpEventTask implements Runnable {
 
             request.addParam(StringUtil.trim(keyValue[0]), value);
         }
-        return request;
     }
 
     private static final String SERVER_ERROR_MESSAGE = "Command server error";
