@@ -30,8 +30,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
- * A processor slot that is responsible for flow control by frequent ("hot
- * spot") parameters.
+ * A processor slot that is responsible for flow control by frequent ("hot spot") parameters.
  *
  * @author jialiang.linjl
  * @author Eric Zhao

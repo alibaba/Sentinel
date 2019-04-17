@@ -98,13 +98,12 @@ public class ParamFlowSlotTest {
         ParamFlowRuleManager.loadRules(Collections.singletonList(rule));
 
         ParameterMetric metric = mock(ParameterMetric.class);
-        
-        CacheMap<Object, AtomicLong> map = new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000);      
-        CacheMap<Object, AtomicInteger> map2 = new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(4000);   
+
+        CacheMap<Object, AtomicLong> map = new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000);
+        CacheMap<Object, AtomicInteger> map2 = new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(4000);
         when(metric.getRuleTimeCounter(rule)).thenReturn(map);
         when(metric.getRuleQpsCounter(rule)).thenReturn(map2);
         map.put(argToGo, new AtomicLong(TimeUtil.currentTimeMillis()));
- 
 
         // Insert the mock metric to control pass or block.
         ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
@@ -129,9 +128,9 @@ public class ParamFlowSlotTest {
 
     @Test
     public void testInitParamMetrics() {
-    	
-    	ParamFlowRule rule = new ParamFlowRule();
-    	rule.setParamIdx(1);
+
+        ParamFlowRule rule = new ParamFlowRule();
+        rule.setParamIdx(1);
         int index = 1;
         String resourceName = "res-" + System.currentTimeMillis();
         ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
@@ -147,10 +146,10 @@ public class ParamFlowSlotTest {
         // Duplicate init.
         paramFlowSlot.initHotParamMetricsFor(resourceWrapper, rule);
         assertSame(metric, ParamFlowSlot.getParamMetric(resourceWrapper));
-        
+
         ParamFlowRule rule2 = new ParamFlowRule();
-    	rule2.setParamIdx(1);
-    	assertSame(metric, ParamFlowSlot.getParamMetric(resourceWrapper));
+        rule2.setParamIdx(1);
+        assertSame(metric, ParamFlowSlot.getParamMetric(resourceWrapper));
 
     }
 

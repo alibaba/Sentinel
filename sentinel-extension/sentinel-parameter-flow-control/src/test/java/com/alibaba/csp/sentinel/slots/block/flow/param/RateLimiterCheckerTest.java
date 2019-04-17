@@ -20,153 +20,157 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 
+/**
+ * @author jialiang.linjl
+ */
 public class RateLimiterCheckerTest {
-	@Test
-	public void testSingleValueCheckQps() throws InterruptedException {
-		final String resourceName = "testSingleValueCheckQpsWithoutExceptionItems";
-		final ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
-		int paramIdx = 0;
-		TimeUtil.currentTimeMillis();
 
-		long threshold = 5L;
+    @Test
+    public void testSingleValueCheckQps() throws InterruptedException {
+        final String resourceName = "testSingleValueCheckQpsWithoutExceptionItems";
+        final ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
+        int paramIdx = 0;
+        TimeUtil.currentTimeMillis();
 
-		ParamFlowRule rule = new ParamFlowRule();
-		rule.setResource(resourceName);
-		rule.setCount(threshold);
-		rule.setParamIdx(paramIdx);
-		rule.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER);
+        long threshold = 5L;
 
-		String valueA = "valueA";
-		ParameterMetric metric = new ParameterMetric();
-		ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
-		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        ParamFlowRule rule = new ParamFlowRule();
+        rule.setResource(resourceName);
+        rule.setCount(threshold);
+        rule.setParamIdx(paramIdx);
+        rule.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER);
 
-		long currentTime = TimeUtil.currentTimeMillis();
-		long endTime = currentTime + rule.getDurationInSec() * 1000;
-		int successCount = 0;
-		while (currentTime <= endTime - 10) {
-			if (ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA)) {
-				successCount++;
-			}
-			currentTime = TimeUtil.currentTimeMillis();
-		}
-		assertEquals(successCount, threshold);
+        String valueA = "valueA";
+        ParameterMetric metric = new ParameterMetric();
+        ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
+        metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 
-		// 模仿比较长的时间的停顿
-		System.out.println("rest for 3 seconds");
-		TimeUnit.SECONDS.sleep(3);
+        long currentTime = TimeUtil.currentTimeMillis();
+        long endTime = currentTime + rule.getDurationInSec() * 1000;
+        int successCount = 0;
+        while (currentTime <= endTime - 10) {
+            if (ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA)) {
+                successCount++;
+            }
+            currentTime = TimeUtil.currentTimeMillis();
+        }
+        assertEquals(successCount, threshold);
 
-		currentTime = TimeUtil.currentTimeMillis();
-		endTime = currentTime + rule.getDurationInSec() * 1000;
-		successCount = 0;
-		while (currentTime <= endTime - 10) {
-			if (ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA)) {
-				successCount++;
-			}
-			currentTime = TimeUtil.currentTimeMillis();
-		}
-		assertEquals(successCount, threshold);
+        // 模仿比较长的时间的停顿
+        System.out.println("rest for 3 seconds");
+        TimeUnit.SECONDS.sleep(3);
 
-		TimeUnit.SECONDS.sleep(3);
-	}
+        currentTime = TimeUtil.currentTimeMillis();
+        endTime = currentTime + rule.getDurationInSec() * 1000;
+        successCount = 0;
+        while (currentTime <= endTime - 10) {
+            if (ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA)) {
+                successCount++;
+            }
+            currentTime = TimeUtil.currentTimeMillis();
+        }
+        assertEquals(successCount, threshold);
 
-	@Test
-	public void testSingleValueCheckQpsInThreads() throws InterruptedException {
-		final String resourceName = "testSingleValueCheckQpsInThreads";
-		final ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
-		int paramIdx = 0;
-		TimeUtil.currentTimeMillis();
+        TimeUnit.SECONDS.sleep(3);
+    }
 
-		long threshold = 5L;
+    @Test
+    public void testSingleValueCheckQpsInThreads() throws InterruptedException {
+        final String resourceName = "testSingleValueCheckQpsInThreads";
+        final ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
+        int paramIdx = 0;
+        TimeUtil.currentTimeMillis();
 
-		final ParamFlowRule rule = new ParamFlowRule();
-		rule.setResource(resourceName);
-		rule.setCount(threshold);
-		rule.setParamIdx(paramIdx);
-		rule.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER);
+        long threshold = 5L;
 
-		final String valueA = "valueA";
-		ParameterMetric metric = new ParameterMetric();
-		ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
-		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        final ParamFlowRule rule = new ParamFlowRule();
+        rule.setResource(resourceName);
+        rule.setCount(threshold);
+        rule.setParamIdx(paramIdx);
+        rule.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER);
 
-		int threadCount = 40;
+        final String valueA = "valueA";
+        ParameterMetric metric = new ParameterMetric();
+        ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
+        metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 
-		final CountDownLatch waitLatch = new CountDownLatch(threadCount);
-		final AtomicInteger successCount = new AtomicInteger();
-		for (int i = 0; i < threadCount; i++) {
-			Thread t = new Thread(new Runnable() {
-				@Override
-				public void run() {
-					if (ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA)) {
-						successCount.incrementAndGet();
-					}
-					waitLatch.countDown();
-				}
+        int threadCount = 40;
 
-			});
-			t.setName("sentinel-simulate-traffic-task-" + i);
-			t.start();
-		}
-		waitLatch.await();
+        final CountDownLatch waitLatch = new CountDownLatch(threadCount);
+        final AtomicInteger successCount = new AtomicInteger();
+        for (int i = 0; i < threadCount; i++) {
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    if (ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA)) {
+                        successCount.incrementAndGet();
+                    }
+                    waitLatch.countDown();
+                }
 
-		assertEquals(successCount.get(), 1);
-		System.out.println(threadCount);
-		successCount.set(0);
+            });
+            t.setName("sentinel-simulate-traffic-task-" + i);
+            t.start();
+        }
+        waitLatch.await();
 
-		System.out.println("sleep for 3 seconds");
-		TimeUnit.SECONDS.sleep(3);
+        assertEquals(successCount.get(), 1);
+        System.out.println(threadCount);
+        successCount.set(0);
 
-		successCount.set(0);
-		final CountDownLatch waitLatch1 = new CountDownLatch(threadCount);
-		final long currentTime = TimeUtil.currentTimeMillis();
-		final long endTime = currentTime + rule.getDurationInSec() * 1000 - 1;
-		for (int i = 0; i < threadCount; i++) {
-			Thread t = new Thread(new Runnable() {
-				@Override
-				public void run() {
-					long currentTime1 = currentTime;
-					while (currentTime1 <= endTime) {
-						if (ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA)) {
-							successCount.incrementAndGet();
-						}
+        System.out.println("sleep for 3 seconds");
+        TimeUnit.SECONDS.sleep(3);
 
-						Random random = new Random();
+        successCount.set(0);
+        final CountDownLatch waitLatch1 = new CountDownLatch(threadCount);
+        final long currentTime = TimeUtil.currentTimeMillis();
+        final long endTime = currentTime + rule.getDurationInSec() * 1000 - 1;
+        for (int i = 0; i < threadCount; i++) {
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    long currentTime1 = currentTime;
+                    while (currentTime1 <= endTime) {
+                        if (ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA)) {
+                            successCount.incrementAndGet();
+                        }
 
-						try {
-							TimeUnit.MILLISECONDS.sleep(random.nextInt(20));
-						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						currentTime1 = TimeUtil.currentTimeMillis();
-					}
+                        Random random = new Random();
 
-					waitLatch1.countDown();
-				}
+                        try {
+                            TimeUnit.MILLISECONDS.sleep(random.nextInt(20));
+                        } catch (InterruptedException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                        currentTime1 = TimeUtil.currentTimeMillis();
+                    }
 
-			});
-			t.setName("sentinel-simulate-traffic-task-" + i);
-			t.start();
-		}
-		waitLatch1.await();
+                    waitLatch1.countDown();
+                }
 
-		assertEquals(successCount.get(), threshold);
-		TimeUnit.SECONDS.sleep(3);
-	}
+            });
+            t.setName("sentinel-simulate-traffic-task-" + i);
+            t.start();
+        }
+        waitLatch1.await();
 
-	@Test
-	public void testDuation() {
+        assertEquals(successCount.get(), threshold);
+        TimeUnit.SECONDS.sleep(3);
+    }
 
-	}
+    @Test
+    public void testDuation() {
 
-	@Before
-	public void setUp() throws Exception {
-		ParamFlowSlot.getMetricsMap().clear();
-	}
+    }
 
-	@After
-	public void tearDown() throws Exception {
-		ParamFlowSlot.getMetricsMap().clear();
-	}
+    @Before
+    public void setUp() throws Exception {
+        ParamFlowSlot.getMetricsMap().clear();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        ParamFlowSlot.getMetricsMap().clear();
+    }
 }

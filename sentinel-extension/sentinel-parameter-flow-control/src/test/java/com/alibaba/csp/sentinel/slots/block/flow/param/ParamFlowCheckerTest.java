@@ -47,161 +47,159 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
  */
 public class ParamFlowCheckerTest {
 
-	@Test
-	public void testHotParamCheckerPassCheckExceedArgs() {
-		final String resourceName = "testHotParamCheckerPassCheckExceedArgs";
-		final ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
-		int paramIdx = 1;
+    @Test
+    public void testHotParamCheckerPassCheckExceedArgs() {
+        final String resourceName = "testHotParamCheckerPassCheckExceedArgs";
+        final ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
+        int paramIdx = 1;
 
-		ParamFlowRule rule = new ParamFlowRule();
-		rule.setResource(resourceName);
-		rule.setCount(10);
-		rule.setParamIdx(paramIdx);
+        ParamFlowRule rule = new ParamFlowRule();
+        rule.setResource(resourceName);
+        rule.setCount(10);
+        rule.setParamIdx(paramIdx);
 
-		assertTrue("The rule will pass if the paramIdx exceeds provided args",
-				ParamFlowChecker.passCheck(resourceWrapper, rule, 1, "abc"));
-	}
+        assertTrue("The rule will pass if the paramIdx exceeds provided args",
+            ParamFlowChecker.passCheck(resourceWrapper, rule, 1, "abc"));
+    }
 
+    @Test
+    public void testSingleValueCheckQpsWithExceptionItems() throws InterruptedException {
+        final String resourceName = "testSingleValueCheckQpsWithExceptionItems";
+        final ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
+        TimeUtil.currentTimeMillis();
+        int paramIdx = 0;
 
+        long globalThreshold = 5L;
+        int thresholdB = 0;
+        int thresholdD = 7;
 
-	@Test
-	public void testSingleValueCheckQpsWithExceptionItems() throws InterruptedException {
-		final String resourceName = "testSingleValueCheckQpsWithExceptionItems";
-		final ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
-		TimeUtil.currentTimeMillis();
-		int paramIdx = 0;
+        ParamFlowRule rule = new ParamFlowRule();
+        rule.setResource(resourceName);
+        rule.setCount(globalThreshold);
+        rule.setParamIdx(paramIdx);
+        rule.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER);
 
-		long globalThreshold = 5L;
-		int thresholdB = 0;
-		int thresholdD = 7;
+        String valueA = "valueA";
+        String valueB = "valueB";
+        String valueC = "valueC";
+        String valueD = "valueD";
 
-		ParamFlowRule rule = new ParamFlowRule();
-		rule.setResource(resourceName);
-		rule.setCount(globalThreshold);
-		rule.setParamIdx(paramIdx);
-		rule.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER);
+        // Directly set parsed map for test.
+        Map<Object, Integer> map = new HashMap<Object, Integer>();
+        map.put(valueB, thresholdB);
+        map.put(valueD, thresholdD);
+        rule.setParsedHotItems(map);
 
-		String valueA = "valueA";
-		String valueB = "valueB";
-		String valueC = "valueC";
-		String valueD = "valueD";
+        ParameterMetric metric = new ParameterMetric();
+        ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
+        metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 
-		// Directly set parsed map for test.
-		Map<Object, Integer> map = new HashMap<Object, Integer>();
-		map.put(valueB, thresholdB);
-		map.put(valueD, thresholdD);
-		rule.setParsedHotItems(map);
+        assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+        assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueB));
+        TimeUnit.SECONDS.sleep(3);
+    }
 
-		ParameterMetric metric = new ParameterMetric();
-		ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
-		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+    @Test
+    public void testSingleValueCheckThreadCountWithExceptionItems() {
+        final String resourceName = "testSingleValueCheckThreadCountWithExceptionItems";
+        final ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
+        int paramIdx = 0;
 
-		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
-		assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueB));
-		TimeUnit.SECONDS.sleep(3);
-	}
+        long globalThreshold = 5L;
+        int thresholdB = 3;
+        int thresholdD = 7;
 
-	@Test
-	public void testSingleValueCheckThreadCountWithExceptionItems() {
-		final String resourceName = "testSingleValueCheckThreadCountWithExceptionItems";
-		final ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
-		int paramIdx = 0;
+        ParamFlowRule rule = new ParamFlowRule(resourceName).setCount(globalThreshold).setParamIdx(paramIdx)
+            .setGrade(RuleConstant.FLOW_GRADE_THREAD);
 
-		long globalThreshold = 5L;
-		int thresholdB = 3;
-		int thresholdD = 7;
+        String valueA = "valueA";
+        String valueB = "valueB";
+        String valueC = "valueC";
+        String valueD = "valueD";
 
-		ParamFlowRule rule = new ParamFlowRule(resourceName).setCount(globalThreshold).setParamIdx(paramIdx)
-				.setGrade(RuleConstant.FLOW_GRADE_THREAD);
+        // Directly set parsed map for test.
+        Map<Object, Integer> map = new HashMap<Object, Integer>();
+        map.put(valueB, thresholdB);
+        map.put(valueD, thresholdD);
+        rule.setParsedHotItems(map);
 
-		String valueA = "valueA";
-		String valueB = "valueB";
-		String valueC = "valueC";
-		String valueD = "valueD";
+        ParameterMetric metric = mock(ParameterMetric.class);
+        when(metric.getThreadCount(paramIdx, valueA)).thenReturn(globalThreshold - 1);
+        when(metric.getThreadCount(paramIdx, valueB)).thenReturn(globalThreshold - 1);
+        when(metric.getThreadCount(paramIdx, valueC)).thenReturn(globalThreshold - 1);
+        when(metric.getThreadCount(paramIdx, valueD)).thenReturn(globalThreshold + 1);
+        ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
 
-		// Directly set parsed map for test.
-		Map<Object, Integer> map = new HashMap<Object, Integer>();
-		map.put(valueB, thresholdB);
-		map.put(valueD, thresholdD);
-		rule.setParsedHotItems(map);
+        assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+        assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueB));
+        assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueC));
+        assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueD));
 
-		ParameterMetric metric = mock(ParameterMetric.class);
-		when(metric.getThreadCount(paramIdx, valueA)).thenReturn(globalThreshold - 1);
-		when(metric.getThreadCount(paramIdx, valueB)).thenReturn(globalThreshold - 1);
-		when(metric.getThreadCount(paramIdx, valueC)).thenReturn(globalThreshold - 1);
-		when(metric.getThreadCount(paramIdx, valueD)).thenReturn(globalThreshold + 1);
-		ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
+        when(metric.getThreadCount(paramIdx, valueA)).thenReturn(globalThreshold);
+        when(metric.getThreadCount(paramIdx, valueB)).thenReturn(thresholdB - 1L);
+        when(metric.getThreadCount(paramIdx, valueC)).thenReturn(globalThreshold + 1);
+        when(metric.getThreadCount(paramIdx, valueD)).thenReturn(globalThreshold - 1).thenReturn((long)thresholdD);
 
-		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
-		assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueB));
-		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueC));
-		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueD));
+        assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+        assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueB));
+        assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueC));
+        assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueD));
+        assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueD));
+    }
 
-		when(metric.getThreadCount(paramIdx, valueA)).thenReturn(globalThreshold);
-		when(metric.getThreadCount(paramIdx, valueB)).thenReturn(thresholdB - 1L);
-		when(metric.getThreadCount(paramIdx, valueC)).thenReturn(globalThreshold + 1);
-		when(metric.getThreadCount(paramIdx, valueD)).thenReturn(globalThreshold - 1).thenReturn((long) thresholdD);
+    @Test
+    public void testPassLocalCheckForCollection() throws InterruptedException {
+        final String resourceName = "testPassLocalCheckForCollection";
+        final ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
+        int paramIdx = 0;
+        double globalThreshold = 1;
 
-		assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
-		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueB));
-		assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueC));
-		assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueD));
-		assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueD));
-	}
+        ParamFlowRule rule = new ParamFlowRule(resourceName).setParamIdx(paramIdx).setCount(globalThreshold);
 
-	@Test
-	public void testPassLocalCheckForCollection() throws InterruptedException {
-		final String resourceName = "testPassLocalCheckForCollection";
-		final ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
-		int paramIdx = 0;
-		double globalThreshold = 1;
+        String v1 = "a", v2 = "B", v3 = "Cc";
+        List<String> list = Arrays.asList(v1, v2, v3);
+        ParameterMetric metric = new ParameterMetric();
+        ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
+        metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleQPSCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(4000));
 
-		ParamFlowRule rule = new ParamFlowRule(resourceName).setParamIdx(paramIdx).setCount(globalThreshold);
+        assertTrue(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, list));
+        assertFalse(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, list));
 
-		String v1 = "a", v2 = "B", v3 = "Cc";
-		List<String> list = Arrays.asList(v1, v2, v3);
-		ParameterMetric metric = new ParameterMetric();
-		ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
-		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));		
-		metric.getRuleQPSCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(4000));
+        TimeUnit.SECONDS.sleep(3);
+    }
 
-		assertTrue(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, list));
-		assertFalse(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, list));
+    @Test
+    public void testPassLocalCheckForArray() throws InterruptedException {
+        final String resourceName = "testPassLocalCheckForArray";
+        final ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
+        int paramIdx = 0;
+        double globalThreshold = 1;
 
-		TimeUnit.SECONDS.sleep(3);
-	}
+        ParamFlowRule rule = new ParamFlowRule(resourceName).setParamIdx(paramIdx)
+            .setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER).setCount(globalThreshold);
 
-	@Test
-	public void testPassLocalCheckForArray() throws InterruptedException {
-		final String resourceName = "testPassLocalCheckForArray";
-		final ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
-		int paramIdx = 0;
-		double globalThreshold = 1;
+        TimeUtil.currentTimeMillis();
 
-		ParamFlowRule rule = new ParamFlowRule(resourceName).setParamIdx(paramIdx)
-				.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER).setCount(globalThreshold);
+        String v1 = "a", v2 = "B", v3 = "Cc";
+        Object arr = new String[] {v1, v2, v3};
+        ParameterMetric metric = new ParameterMetric();
+        ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
+        metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 
-		TimeUtil.currentTimeMillis();
+        assertTrue(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, arr));
+        assertFalse(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, arr));
 
-		String v1 = "a", v2 = "B", v3 = "Cc";
-		Object arr = new String[] { v1, v2, v3 };
-		ParameterMetric metric = new ParameterMetric();
-		ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
-		metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        TimeUnit.SECONDS.sleep(3);
+    }
 
-		assertTrue(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, arr));
-		assertFalse(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, arr));
+    @Before
+    public void setUp() throws Exception {
+        ParamFlowSlot.getMetricsMap().clear();
+    }
 
-		TimeUnit.SECONDS.sleep(3);
-	}
-
-	@Before
-	public void setUp() throws Exception {
-		ParamFlowSlot.getMetricsMap().clear();
-	}
-
-	@After
-	public void tearDown() throws Exception {
-		ParamFlowSlot.getMetricsMap().clear();
-	}
+    @After
+    public void tearDown() throws Exception {
+        ParamFlowSlot.getMetricsMap().clear();
+    }
 }
