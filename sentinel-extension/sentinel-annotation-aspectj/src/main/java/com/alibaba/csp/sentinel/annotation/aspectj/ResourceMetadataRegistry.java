@@ -56,4 +56,18 @@ final class ResourceMetadataRegistry {
     private static String getKey(Class<?> clazz, String name) {
         return String.format("%s:%s", clazz.getCanonicalName(), name);
     }
+
+    /**
+     * Only for internal test.
+     */
+    static void clearFallbackMap() {
+        FALLBACK_MAP.clear();
+    }
+
+    /**
+     * Only for internal test.
+     */
+    static void clearBlockHandlerMap() {
+        BLOCK_HANDLER_MAP.clear();
+    }
 }

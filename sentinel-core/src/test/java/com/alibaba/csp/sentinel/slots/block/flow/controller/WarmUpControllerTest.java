@@ -38,26 +38,26 @@ public class WarmUpControllerTest extends AbstractTimeBasedTest {
 
         Node node = mock(Node.class);
 
-        when(node.passQps()).thenReturn(8L);
-        when(node.previousPassQps()).thenReturn(1L);
+        when(node.passQps()).thenReturn(8d);
+        when(node.previousPassQps()).thenReturn(1d);
 
         assertFalse(warmupController.canPass(node, 1));
 
-        when(node.passQps()).thenReturn(1L);
-        when(node.previousPassQps()).thenReturn(1L);
+        when(node.passQps()).thenReturn(1d);
+        when(node.previousPassQps()).thenReturn(1d);
 
         assertTrue(warmupController.canPass(node, 1));
 
-        when(node.previousPassQps()).thenReturn(10L);
+        when(node.previousPassQps()).thenReturn(10d);
 
         for (int i = 0; i < 100; i++) {
             sleep(100);
             warmupController.canPass(node, 1);
         }
-        when(node.passQps()).thenReturn(8L);
+        when(node.passQps()).thenReturn(8d);
         assertTrue(warmupController.canPass(node, 1));
 
-        when(node.passQps()).thenReturn(10L);
+        when(node.passQps()).thenReturn(10d);
         assertFalse(warmupController.canPass(node, 1));
     }
 }

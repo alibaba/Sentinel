@@ -38,8 +38,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  */
 public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
-    private static final Map<ResourceWrapper, ParameterMetric> metricsMap
-        = new ConcurrentHashMap<ResourceWrapper, ParameterMetric>();
+    private static final Map<ResourceWrapper, ParameterMetric> metricsMap = new ConcurrentHashMap<>();
 
     /**
      * Lock for a specific resource.
@@ -47,9 +46,8 @@ public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     private final Object LOCK = new Object();
 
     @Override
-    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, boolean prioritized, Object... args)
-        throws Throwable {
-
+    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
+                      boolean prioritized, Object... args) throws Throwable {
         if (!ParamFlowRuleManager.hasRules(resourceWrapper.getName())) {
             fireEntry(context, resourceWrapper, node, count, prioritized, args);
             return;
@@ -64,30 +62,44 @@ public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         fireExit(context, resourceWrapper, count, args);
     }
 
-    void checkFlow(ResourceWrapper resourceWrapper, int count, Object... args)
-        throws BlockException {
-        if (ParamFlowRuleManager.hasRules(resourceWrapper.getName())) {
-            List<ParamFlowRule> rules = ParamFlowRuleManager.getRulesOfResource(resourceWrapper.getName());
-            if (rules == null) {
-                return;
+    void applyRealParamIdx(/*@NonNull*/ ParamFlowRule rule, int length) {
+        int paramIdx = rule.getParamIdx();
+        if (paramIdx < 0) {
+            if (-paramIdx <= length) {
+                rule.setParamIdx(length + paramIdx);
+            } else {
+                // illegal index, give it a illegal positive value, latter rule check will pass
+                rule.setParamIdx(-paramIdx);
             }
+        }
+    }
 
-            for (ParamFlowRule rule : rules) {
-                // Initialize the parameter metrics.
-                initHotParamMetricsFor(resourceWrapper, rule.getParamIdx());
+    void checkFlow(ResourceWrapper resourceWrapper, int count, Object... args) throws BlockException {
+        if (args == null) {
+            return;
+        }
+        if (!ParamFlowRuleManager.hasRules(resourceWrapper.getName())) {
+            return;
+        }
+        List<ParamFlowRule> rules = ParamFlowRuleManager.getRulesOfResource(resourceWrapper.getName());
 
-                if (!ParamFlowChecker.passCheck(resourceWrapper, rule, count, args)) {
+        for (ParamFlowRule rule : rules) {
+            applyRealParamIdx(rule, args.length);
 
-                    // Here we add the block count.
-                    addBlockCount(resourceWrapper, count, args);
+            // Initialize the parameter metrics.
+            initHotParamMetricsFor(resourceWrapper, rule.getParamIdx());
 
-                    String triggeredParam = "";
-                    if (args.length > rule.getParamIdx()) {
-                        Object value = args[rule.getParamIdx()];
-                        triggeredParam = String.valueOf(value);
-                    }
-                    throw new ParamFlowException(resourceWrapper.getName(), triggeredParam, rule);
+            if (!ParamFlowChecker.passCheck(resourceWrapper, rule, count, args)) {
+
+                // Here we add the block count.
+                addBlockCount(resourceWrapper, count, args);
+
+                String triggeredParam = "";
+                if (args.length > rule.getParamIdx()) {
+                    Object value = args[rule.getParamIdx()];
+                    triggeredParam = String.valueOf(value);
                 }
+                throw new ParamFlowException(resourceWrapper.getName(), triggeredParam, rule);
             }
         }
     }
@@ -105,7 +117,7 @@ public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
      * Package-private for test.
      *
      * @param resourceWrapper resource to init
-     * @param index index to initialize, which must be valid
+     * @param index           index to initialize, which must be valid
      */
     void initHotParamMetricsFor(ResourceWrapper resourceWrapper, /*@Valid*/ int index) {
         ParameterMetric metric;
@@ -152,7 +164,7 @@ public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         RecordLog.info("[ParamFlowSlot] Clearing parameter metric for: " + resourceName);
     }
 
-    public static Map<ResourceWrapper, ParameterMetric> getMetricsMap() {
+    static Map<ResourceWrapper, ParameterMetric> getMetricsMap() {
         return metricsMap;
     }
 }

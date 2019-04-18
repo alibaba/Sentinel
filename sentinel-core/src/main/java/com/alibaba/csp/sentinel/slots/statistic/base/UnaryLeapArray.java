@@ -25,7 +25,7 @@ public class UnaryLeapArray extends LeapArray<LongAdder> {
     }
 
     @Override
-    public LongAdder newEmptyBucket() {
+    public LongAdder newEmptyBucket(long time) {
         return new LongAdder();
     }
 

@@ -57,6 +57,7 @@ public class DegradeRule extends AbstractRule {
 
     private static final int RT_MAX_EXCEED_N = 5;
 
+    @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(
         Runtime.getRuntime().availableProcessors(), new NamedThreadFactory("sentinel-degrade-reset-task", true));
 
@@ -184,7 +185,7 @@ public class DegradeRule extends AbstractRule {
         } else if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
             double exception = clusterNode.exceptionQps();
             double success = clusterNode.successQps();
-            long total = clusterNode.totalQps();
+            double total = clusterNode.totalQps();
             // if total qps less than RT_MAX_EXCEED_N, pass.
             if (total < RT_MAX_EXCEED_N) {
                 return true;

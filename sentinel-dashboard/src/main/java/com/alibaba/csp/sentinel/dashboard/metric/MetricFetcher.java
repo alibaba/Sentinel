@@ -84,6 +84,8 @@ public class MetricFetcher {
     private AppManagement appManagement;
 
     private CloseableHttpAsyncClient httpclient;
+
+    @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private ScheduledExecutorService fetchScheduleService = Executors.newScheduledThreadPool(1,
         new NamedThreadFactory("sentinel-dashboard-metrics-fetch-task"));
     private ExecutorService fetchService;
@@ -193,6 +195,7 @@ public class MetricFetcher {
         for (final MachineInfo machine : machines) {
             // auto remove
             if (machine.isDead()) {
+                latch.countDown();
                 appManagement.getDetailApp(app).removeMachine(machine.getIp(), machine.getPort());
                 logger.info("Dead machine removed: {}:{} of {}", machine.getIp(), machine.getPort(), app);
                 continue;

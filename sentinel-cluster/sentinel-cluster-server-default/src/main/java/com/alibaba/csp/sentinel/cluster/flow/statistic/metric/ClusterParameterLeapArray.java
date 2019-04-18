@@ -37,7 +37,7 @@ public class ClusterParameterLeapArray<C> extends LeapArray<CacheMap<Object, C>>
     }
 
     @Override
-    public CacheMap<Object, C> newEmptyBucket() {
+    public CacheMap<Object, C> newEmptyBucket(long timeMillis) {
         return new ConcurrentLinkedHashMapWrapper<>(maxCapacity);
     }
 
@@ -47,6 +47,5 @@ public class ClusterParameterLeapArray<C> extends LeapArray<CacheMap<Object, C>>
         w.value().clear();
         return w;
     }
-
 
 }
