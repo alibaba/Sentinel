@@ -1,17 +1,14 @@
 /*
  * Copyright 1999-2018 Alibaba Group Holding Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
  */
 package com.alibaba.csp.sentinel.annotation.aspectj;
 
@@ -53,7 +50,7 @@ public abstract class AbstractSentinelAspectSupport {
     }
 
     protected Object handleBlockException(ProceedingJoinPoint pjp, String fallback, String blockHandler,
-                                          Class<?>[] blockHandlerClass, BlockException ex) throws Exception {
+        Class<?>[] blockHandlerClass, BlockException ex) throws Exception {
         // Execute fallback for degrading if configured.
         Object[] originArgs = pjp.getArgs();
         if (isDegradeFailure(ex)) {
@@ -78,6 +75,10 @@ public abstract class AbstractSentinelAspectSupport {
     }
 
     protected void traceException(Throwable ex, SentinelResource annotation) {
+        if (annotation.exceptionsToIgnore() != null && annotation.exceptionsToIgnore().length > 0) {
+            if (isIgnoredException(ex, annotation.exceptionsToIgnore()))
+                return;
+        }
         if (isTracedException(ex, annotation.exceptionsToTrace())) {
             Tracer.trace(ex);
         }
@@ -86,8 +87,10 @@ public abstract class AbstractSentinelAspectSupport {
     /**
      * Check whether the exception is in tracked list of exception classes.
      *
-     * @param ex provided throwable
-     * @param exceptionsToTrace list of exceptions to trace
+     * @param ex
+     *            provided throwable
+     * @param exceptionsToTrace
+     *            list of exceptions to trace
      * @return true if it should be traced, otherwise false
      */
     private boolean isTracedException(Throwable ex, Class<? extends Throwable>[] exceptionsToTrace) {
@@ -96,6 +99,18 @@ public abstract class AbstractSentinelAspectSupport {
         }
         for (Class<? extends Throwable> exceptionToTrace : exceptionsToTrace) {
             if (exceptionToTrace.isAssignableFrom(ex.getClass())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isIgnoredException(Throwable ex, Class<? extends Throwable>[] exceptionsToIgnore) {
+        if (exceptionsToIgnore == null) {
+            return false;
+        }
+        for (Class<? extends Throwable> exceptionToIgnore : exceptionsToIgnore) {
+            if (exceptionToIgnore.isAssignableFrom(ex.getClass())) {
                 return true;
             }
         }
@@ -159,7 +174,7 @@ public abstract class AbstractSentinelAspectSupport {
     }
 
     private Method resolveBlockHandlerInternal(ProceedingJoinPoint pjp, /*@NonNull*/ String name, Class<?> clazz,
-                                               boolean mustStatic) {
+        boolean mustStatic) {
         Method originMethod = resolveMethod(pjp);
         Class<?>[] originList = originMethod.getParameterTypes();
         Class<?>[] parameterTypes = Arrays.copyOf(originList, originList.length + 1);
@@ -172,7 +187,7 @@ public abstract class AbstractSentinelAspectSupport {
     }
 
     private Method findMethod(boolean mustStatic, Class<?> clazz, String name, Class<?> returnType,
-                              Class<?>... parameterTypes) {
+        Class<?>... parameterTypes) {
         Method[] methods = clazz.getDeclaredMethods();
         for (Method method : methods) {
             if (name.equals(method.getName()) && checkStatic(mustStatic, method)
@@ -189,8 +204,8 @@ public abstract class AbstractSentinelAspectSupport {
             return findMethod(mustStatic, superClass, name, returnType, parameterTypes);
         } else {
             String methodType = mustStatic ? " static" : "";
-            RecordLog.warn("Cannot find{0} method [{1}] in class [{2}] with parameters {3}",
-                methodType, name, clazz.getCanonicalName(), Arrays.toString(parameterTypes));
+            RecordLog.warn("Cannot find{0} method [{1}] in class [{2}] with parameters {3}", methodType, name,
+                clazz.getCanonicalName(), Arrays.toString(parameterTypes));
             return null;
         }
     }
@@ -203,8 +218,8 @@ public abstract class AbstractSentinelAspectSupport {
         MethodSignature signature = (MethodSignature)joinPoint.getSignature();
         Class<?> targetClass = joinPoint.getTarget().getClass();
 
-        Method method = getDeclaredMethodFor(targetClass, signature.getName(),
-            signature.getMethod().getParameterTypes());
+        Method method =
+            getDeclaredMethodFor(targetClass, signature.getName(), signature.getMethod().getParameterTypes());
         if (method == null) {
             throw new IllegalStateException("Cannot resolve target method: " + signature.getMethod().getName());
         }
@@ -212,12 +227,15 @@ public abstract class AbstractSentinelAspectSupport {
     }
 
     /**
-     * Get declared method with provided name and parameterTypes in given class and its super classes.
-     * All parameters should be valid.
+     * Get declared method with provided name and parameterTypes in given class and its super classes. All parameters
+     * should be valid.
      *
-     * @param clazz          class where the method is located
-     * @param name           method name
-     * @param parameterTypes method parameter type list
+     * @param clazz
+     *            class where the method is located
+     * @param name
+     *            method name
+     * @param parameterTypes
+     *            method parameter type list
      * @return resolved method, null if not found
      */
     private Method getDeclaredMethodFor(Class<?> clazz, String name, Class<?>... parameterTypes) {
