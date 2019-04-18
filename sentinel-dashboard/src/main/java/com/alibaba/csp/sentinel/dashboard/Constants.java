@@ -5,6 +5,10 @@ package com.alibaba.csp.sentinel.dashboard;
  */
 public class Constants {
 
+    private Constants() {
+        throw new IllegalStateException("Constants class");
+    }
+
     public static final String PARAM_FLOW_RULE_FETCHER = "ParamFlowRuleFetcher";
 
     public static final String SYSTEM_RULE_FETCHER = "SystemRuleFetcher";
@@ -15,6 +19,16 @@ public class Constants {
 
     public static final String FLOW_RULE_FETCHER = "FlowRuleFetcher";
 
+    public static final String PARAM_FLOW_RULE_PUBLISHER = "ParamFlowRulePublisher";
+
+    public static final String SYSTEM_RULE_PUBLISHER = "SystemRulePublisher";
+
+    public static final String AUTHORITY_RULE_PUBLISHER = "AuthorityRulePublisher";
+
+    public static final String DEGRADE_RULE_PUBLISHER = "DegradeRulePublisher";
+
+    public static final String FLOW_RULE_PUBLISHER = "FlowRulePublisher";
+
     public static final String PARAM_FLOW_RULE_STORE = "ParamFlowRuleStore";
 
     public static final String SYSTEM_RULE_STORE = "SystemRuleStore";
@@ -24,4 +38,6 @@ public class Constants {
     public static final String DEGRADE_RULE_STORE = "DegradeRuleStore";
 
     public static final String FLOW_RULE_STORE = "FlowRuleStore";
+
+    public static final String CONFIG_CHANGE_CHECKER = "configChangeChecker";
 }

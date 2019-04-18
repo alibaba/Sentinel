@@ -21,7 +21,7 @@ import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.SystemRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
-import com.alibaba.csp.sentinel.dashboard.publish.Publisher;
+import com.alibaba.csp.sentinel.dashboard.transpot.publish.Publisher;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemSystemRuleStore;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import org.slf4j.Logger;

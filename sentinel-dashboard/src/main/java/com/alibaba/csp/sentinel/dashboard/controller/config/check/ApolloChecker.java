@@ -1,5 +1,6 @@
 package com.alibaba.csp.sentinel.dashboard.controller.config.check;
 
+import com.alibaba.csp.sentinel.dashboard.Constants;
 import com.alibaba.csp.sentinel.dashboard.discovery.ApolloMachineInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,7 @@ import java.util.Optional;
  *
  * @author longqiang
  */
-@Component
+@Component(Constants.CONFIG_CHANGE_CHECKER)
 @ConditionalOnProperty(name = "ruleDataSource", havingValue = "apollo")
 public class ApolloChecker implements Checker {
 

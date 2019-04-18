@@ -5,7 +5,7 @@ import com.alibaba.csp.sentinel.dashboard.controller.config.check.Checker;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
-import com.alibaba.csp.sentinel.dashboard.fetch.Fetcher;
+import com.alibaba.csp.sentinel.dashboard.transpot.fetch.Fetcher;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;

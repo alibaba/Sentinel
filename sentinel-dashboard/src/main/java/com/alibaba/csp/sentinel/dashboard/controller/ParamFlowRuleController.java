@@ -23,7 +23,7 @@ import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEn
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
-import com.alibaba.csp.sentinel.dashboard.publish.Publisher;
+import com.alibaba.csp.sentinel.dashboard.transpot.publish.Publisher;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.RuleRepository;
 import com.alibaba.csp.sentinel.dashboard.util.VersionUtils;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
