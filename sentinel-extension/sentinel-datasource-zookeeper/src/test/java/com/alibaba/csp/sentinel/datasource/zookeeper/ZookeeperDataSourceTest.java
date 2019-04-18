@@ -37,7 +37,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class ZookeeperDataSourceTest {
     @Test
-    public void testZooKeeperAllDataSource() throws Exception {
+    public void testNewZooKeeperDataSource() throws Exception {
         TestingServer server = new TestingServer(21812);
         server.start();
 
@@ -46,24 +46,23 @@ public class ZookeeperDataSourceTest {
         final String path2 = "/sentinel-zk-ds-demo/param-HK";
 
         CuratorFramework zkClient = null;
-        ZookeeperDataSource.ZookeeperDataSourceBuilder zookeeperDataSourceBuilder = null;
-
+        ZookeeperDataSource dataSource = new ZookeeperDataSource(remoteAddress);
         try {
-            zookeeperDataSourceBuilder = ZookeeperDataSource.builder()
-                    .initClient(remoteAddress)
-                    .register(path1, FlowRule.class, new Converter<String, List<FlowRule>>() {
+             dataSource
+                    .register(path1, new Converter<String, List<FlowRule>>() {
                         @Override
                         public List<FlowRule> convert(String source) {
                             return JSON.parseObject(source, new TypeReference<List<FlowRule>>() {});
                         }
                     })
-                    .register(path2, ParamFlowRule.class, new Converter<String, List<ParamFlowRule>>() {
+                    .register(path2, new Converter<String, List<ParamFlowRule>>() {
                         @Override
                         public List<ParamFlowRule> convert(String source) {
                             return JSON.parseObject(source, new TypeReference<List<ParamFlowRule>>() {});
                         }
-                    })
-                    .build();
+                    });
+             FlowRuleManager.register2Property(dataSource.getProperty(path1));
+             ParamFlowRuleManager.register2Property(dataSource.getProperty(path2));
 
             zkClient = CuratorFrameworkFactory.newClient(remoteAddress,
                     new ExponentialBackoffRetry(3, 1000));
@@ -84,8 +83,8 @@ public class ZookeeperDataSourceTest {
             publishParamFlowRuleThenTestFor(zkClient, path2, resourceName, 20);
             publishParamFlowRuleThenTestFor(zkClient, path2, resourceName, 22);
         } finally {
-            if (zookeeperDataSourceBuilder != null) {
-                zookeeperDataSourceBuilder.closeAll();
+            if (dataSource != null) {
+                dataSource.close();
             }
             if (zkClient != null) {
                 zkClient.close();

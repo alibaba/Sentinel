@@ -2,10 +2,15 @@ package com.alibaba.csp.sentinel.demo.datasource.zookeeper;
 
 import com.alibaba.csp.sentinel.datasource.zookeeper.ZookeeperDataSource;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRule;
+import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRuleManager;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
+import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRuleManager;
 import com.alibaba.csp.sentinel.slots.system.SystemRule;
+import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 
@@ -35,18 +40,22 @@ public class ZookeeperDataSourceDemo {
         final String pathAuthority = "/Sentinel-Demo/SYSTEM-CODE-DEMO-AUTHORITY";
         final String pathParam = "/Sentinel-Demo/SYSTEM-CODE-DEMO-PARAM";
 
-        ZookeeperDataSource.ZookeeperDataSourceBuilder builder = ZookeeperDataSource.builder()
-                .initClient(remoteAddress)
-                .register(pathFlow, FlowRule.class, source -> JSON.parseObject(source, new TypeReference<List<FlowRule>>() {}))
-                .register(pathSystem, SystemRule.class, source -> JSON.parseObject(source, new TypeReference<List<SystemRule>>() {}))
-                .register(pathDegrade, DegradeRule.class, source -> JSON.parseObject(source, new TypeReference<List<DegradeRule>>() {}))
-                .register(pathAuthority, AuthorityRule.class, source -> JSON.parseObject(source, new TypeReference<List<AuthorityRule>>() {}))
-                .register(pathParam, ParamFlowRule.class, source -> JSON.parseObject(source, new TypeReference<List<ParamFlowRule>>() {}))
-                .build();
+        ZookeeperDataSource dataSource = new ZookeeperDataSource(remoteAddress)
+                .register(pathFlow, source -> JSON.parseObject((String)source, new TypeReference<List<FlowRule>>() {}))
+                .register(pathSystem, source -> JSON.parseObject((String)source, new TypeReference<List<SystemRule>>() {}))
+                .register(pathDegrade, source -> JSON.parseObject((String)source, new TypeReference<List<DegradeRule>>() {}))
+                .register(pathAuthority, source -> JSON.parseObject((String)source, new TypeReference<List<AuthorityRule>>() {}))
+                .register(pathParam, source -> JSON.parseObject((String)source, new TypeReference<List<ParamFlowRule>>() {}));
 
-        // do something...
+        FlowRuleManager.register2Property(dataSource.getProperty(pathFlow));
+        DegradeRuleManager.register2Property(dataSource.getProperty(pathDegrade));
+        SystemRuleManager.register2Property(dataSource.getProperty(pathSystem));
+        AuthorityRuleManager.register2Property(dataSource.getProperty(pathAuthority));
+        ParamFlowRuleManager.register2Property(dataSource.getProperty(pathParam));
 
-        builder.closeAll();
+        // do something ...
+
+        dataSource.close();
     }
 
     private static void loadRules2() throws Exception {
@@ -64,17 +73,21 @@ public class ZookeeperDataSourceDemo {
         // 规则会持久化到zk的/groupId/flowDataId节点
         // groupId和和flowDataId可以用/开头也可以不用
         // 建议不用以/开头，目的是为了如果从Zookeeper切换到Nacos的话，只需要改数据源类名就可以
-        ZookeeperDataSource.ZookeeperDataSourceBuilder builder = ZookeeperDataSource.builder()
-                .initClient(remoteAddress)
-                .register(groupId, flowDataId, FlowRule.class, source -> JSON.parseObject(source, new TypeReference<List<FlowRule>>() {}))
-                .register(groupId, systemDataId, SystemRule.class, source -> JSON.parseObject(source, new TypeReference<List<SystemRule>>() {}))
-                .register(groupId, degradeDataId, DegradeRule.class, source -> JSON.parseObject(source, new TypeReference<List<DegradeRule>>() {}))
-                .register(groupId, authorityDataId, AuthorityRule.class, source -> JSON.parseObject(source, new TypeReference<List<AuthorityRule>>() {}))
-                .register(groupId, paramDataId, ParamFlowRule.class, source -> JSON.parseObject(source, new TypeReference<List<ParamFlowRule>>() {}))
-                .build();
+        ZookeeperDataSource dataSource = new ZookeeperDataSource(remoteAddress)
+                .register(groupId, flowDataId, source -> JSON.parseObject((String)source, new TypeReference<List<FlowRule>>() {}))
+                .register(groupId, systemDataId, source -> JSON.parseObject((String)source, new TypeReference<List<SystemRule>>() {}))
+                .register(groupId, degradeDataId, source -> JSON.parseObject((String)source, new TypeReference<List<DegradeRule>>() {}))
+                .register(groupId, authorityDataId, source -> JSON.parseObject((String)source, new TypeReference<List<AuthorityRule>>() {}))
+                .register(groupId, paramDataId, source -> JSON.parseObject((String)source, new TypeReference<List<ParamFlowRule>>() {}));
+
+        FlowRuleManager.register2Property(dataSource.getProperty(ZookeeperDataSource.getPath(groupId, flowDataId)));
+        DegradeRuleManager.register2Property(dataSource.getProperty(ZookeeperDataSource.getPath(groupId, degradeDataId)));
+        SystemRuleManager.register2Property(dataSource.getProperty(ZookeeperDataSource.getPath(groupId, systemDataId)));
+        AuthorityRuleManager.register2Property(dataSource.getProperty(ZookeeperDataSource.getPath(groupId, authorityDataId)));
+        ParamFlowRuleManager.register2Property(dataSource.getProperty(ZookeeperDataSource.getPath(groupId, paramDataId)));
 
         // do something...
 
-        builder.closeAll();
+        dataSource.close();
     }
 }
