@@ -76,8 +76,9 @@ public abstract class AbstractSentinelAspectSupport {
 
     protected void traceException(Throwable ex, SentinelResource annotation) {
         if (annotation.exceptionsToIgnore() != null && annotation.exceptionsToIgnore().length > 0) {
-            if (isIgnoredException(ex, annotation.exceptionsToIgnore()))
+            if (isIgnoredException(ex, annotation.exceptionsToIgnore())) {
                 return;
+            }
         }
         if (isTracedException(ex, annotation.exceptionsToTrace())) {
             Tracer.trace(ex);
