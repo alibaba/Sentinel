@@ -26,7 +26,6 @@ import static org.mockito.Mockito.when;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.After;
 import org.junit.Before;
@@ -103,7 +102,7 @@ public class ParamFlowSlotTest {
         CacheMap<Object, AtomicLong> map = new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000);
         CacheMap<Object, AtomicInteger> map2 = new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(4000);
         when(metric.getRuleTimeCounter(rule)).thenReturn(map);
-        when(metric.getRuleQpsCounter(rule)).thenReturn(map2);
+        when(metric.getRuleTokenCounter(rule)).thenReturn(map2);
         map.put(argToGo, new AtomicLong(TimeUtil.currentTimeMillis()));
 
         // Insert the mock metric to control pass or block.
@@ -141,7 +140,7 @@ public class ParamFlowSlotTest {
         paramFlowSlot.initHotParamMetricsFor(resourceWrapper, rule);
         ParameterMetric metric = ParamFlowSlot.getParamMetric(resourceWrapper);
         assertNotNull(metric);
-        assertNotNull(metric.getRuleTimeCounters().get(rule));
+        assertNotNull(metric.getRuleTimeCounterMap().get(rule));
         assertNotNull(metric.getThreadCountMap().get(index));
 
         // Duplicate init.

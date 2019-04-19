@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.DefaultNode;
@@ -210,11 +211,9 @@ public class ParamFlowRule extends AbstractRule {
         if (burstCount != that.burstCount) { return false; }
         if (durationInSec != that.durationInSec) { return false; }
         if (clusterMode != that.clusterMode) { return false; }
-        if (paramIdx != null ? !paramIdx.equals(that.paramIdx) : that.paramIdx != null) { return false; }
-        if (paramFlowItemList != null ? !paramFlowItemList.equals(that.paramFlowItemList)
-            : that.paramFlowItemList != null) { return false; }
-        return clusterConfig != null ? clusterConfig.equals(that.clusterConfig) : that.clusterConfig == null;
-
+        if (!Objects.equals(paramIdx, that.paramIdx)) { return false; }
+        if (!Objects.equals(paramFlowItemList, that.paramFlowItemList)) { return false; }
+        return Objects.equals(clusterConfig, that.clusterConfig);
     }
 
     @Override

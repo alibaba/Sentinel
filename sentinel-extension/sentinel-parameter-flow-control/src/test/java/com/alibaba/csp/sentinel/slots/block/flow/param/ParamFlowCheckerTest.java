@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.After;
 import org.junit.Before;
@@ -92,7 +91,7 @@ public class ParamFlowCheckerTest {
 
         ParameterMetric metric = new ParameterMetric();
         ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
-        metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 
         assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
         assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueB));
@@ -160,13 +159,11 @@ public class ParamFlowCheckerTest {
         List<String> list = Arrays.asList(v1, v2, v3);
         ParameterMetric metric = new ParameterMetric();
         ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
-        metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
-        metric.getRuleQPSCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(4000));
+        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTokenCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(4000));
 
         assertTrue(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, list));
         assertFalse(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, list));
-
-        TimeUnit.SECONDS.sleep(3);
     }
 
     @Test
@@ -185,12 +182,10 @@ public class ParamFlowCheckerTest {
         Object arr = new String[] {v1, v2, v3};
         ParameterMetric metric = new ParameterMetric();
         ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
-        metric.getRuleTimeCounters().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 
         assertTrue(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, arr));
         assertFalse(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, arr));
-
-        TimeUnit.SECONDS.sleep(3);
     }
 
     @Before

@@ -40,25 +40,21 @@ public class ParameterMetricTest {
 
     @Test
     public void testInitAndClearHotParameterMetric() {
-
-        ParamFlowRule rule = new ParamFlowRule();
-        rule.setParamIdx(1);
+        ParamFlowRule rule = new ParamFlowRule("abc")
+            .setParamIdx(1);
         ParameterMetric metric = new ParameterMetric();
 
         metric.initialize(rule);
         CacheMap<Object, AtomicInteger> cacheMap = metric.getThreadCountMap().get(rule.getParamIdx());
-
         assertNotNull(cacheMap);
         CacheMap<Object, AtomicLong> ruleCounter = metric.getRuleTimeCounter(rule);
         assertNotNull(ruleCounter);
-
         metric.initialize(rule);
-
         assertSame(cacheMap, metric.getThreadCountMap().get(rule.getParamIdx()));
         assertSame(ruleCounter, metric.getRuleTimeCounter(rule));
 
-        ParamFlowRule rule2 = new ParamFlowRule();
-        rule2.setParamIdx(1);
+        ParamFlowRule rule2 = new ParamFlowRule("def")
+            .setParamIdx(1);
         metric.initialize(rule2);
         assertSame(ruleCounter, metric.getRuleTimeCounter(rule2));
 
@@ -66,16 +62,15 @@ public class ParameterMetricTest {
         metric.initialize(rule2);
         assertNotSame(ruleCounter, metric.getRuleTimeCounter(rule2));
 
-        ParamFlowRule rule3 = new ParamFlowRule();
-        rule3.setParamIdx(1);
+        ParamFlowRule rule3 = new ParamFlowRule("other3").setParamIdx(1);
         rule3.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER);
         metric.initialize(rule3);
         assertNotSame(ruleCounter, metric.getRuleTimeCounter(rule3));
 
         metric.clear();
-
         assertEquals(0, metric.getThreadCountMap().size());
-
+        assertEquals(0, metric.getRuleTimeCounterMap().size());
+        assertEquals(0, metric.getRuleTokenCounterMap().size());
     }
 
     @Test

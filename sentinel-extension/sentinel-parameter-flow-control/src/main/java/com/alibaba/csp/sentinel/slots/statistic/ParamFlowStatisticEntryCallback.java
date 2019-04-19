@@ -30,8 +30,7 @@ import com.alibaba.csp.sentinel.slots.block.flow.param.ParameterMetric;
 public class ParamFlowStatisticEntryCallback implements ProcessorSlotEntryCallback<DefaultNode> {
 
     @Override
-    public void onPass(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, Object... args)
-        throws Exception {
+    public void onPass(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, Object... args) {
         // The "hot spot" parameter metric is present only if parameter flow rules for the resource exist.
         ParameterMetric parameterMetric = ParamFlowSlot.getParamMetric(resourceWrapper);
 

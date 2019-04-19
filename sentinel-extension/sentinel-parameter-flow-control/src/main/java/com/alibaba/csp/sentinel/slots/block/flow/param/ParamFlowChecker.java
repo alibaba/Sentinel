@@ -96,16 +96,35 @@ final class ParamFlowChecker {
         return true;
     }
 
-    static boolean passDefaultCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int acquireCount,
-                                    Object value) {
+    static boolean passSingleValueCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int acquireCount,
+                                        Object value) {
+        if (rule.getGrade() == RuleConstant.FLOW_GRADE_QPS) {
+            if (rule.getControlBehavior() == RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER) {
+                return passThrottleLocalCheck(resourceWrapper, rule, acquireCount, value);
+            } else {
+                return passDefaultLocalCheck(resourceWrapper, rule, acquireCount, value);
+            }
+        } else if (rule.getGrade() == RuleConstant.FLOW_GRADE_THREAD) {
+            Set<Object> exclusionItems = rule.getParsedHotItems().keySet();
+            long threadCount = getParameterMetric(resourceWrapper).getThreadCount(rule.getParamIdx(), value);
+            if (exclusionItems.contains(value)) {
+                int itemThreshold = rule.getParsedHotItems().get(value);
+                return ++threadCount <= itemThreshold;
+            }
+            long threshold = (long)rule.getCount();
+            return ++threadCount <= threshold;
+        }
 
-        CacheMap<Object, AtomicInteger> qpsCounters = getHotParameters(resourceWrapper) == null ? null
-            : getHotParameters(resourceWrapper).getRuleQpsCounter(rule);
+        return true;
+    }
 
-        CacheMap<Object, AtomicLong> timeCounters = getHotParameters(resourceWrapper) == null ? null
-            : getHotParameters(resourceWrapper).getRuleTimeCounter(rule);
+    static boolean passDefaultLocalCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int acquireCount,
+                                         Object value) {
+        ParameterMetric metric = getParameterMetric(resourceWrapper);
+        CacheMap<Object, AtomicInteger> tokenCounters = metric == null ? null : metric.getRuleTokenCounter(rule);
+        CacheMap<Object, AtomicLong> timeCounters = metric == null ? null : metric.getRuleTimeCounter(rule);
 
-        if (qpsCounters == null || timeCounters == null) {
+        if (tokenCounters == null || timeCounters == null) {
             return true;
         }
 
@@ -115,6 +134,7 @@ final class ParamFlowChecker {
         if (exclusionItems.contains(value)) {
             tokenCount = rule.getParsedHotItems().get(value);
         }
+
         if (tokenCount == 0) {
             return false;
         }
@@ -125,18 +145,20 @@ final class ParamFlowChecker {
         }
 
         while (true) {
-            // Add token
             long currentTime = TimeUtil.currentTimeMillis();
 
             AtomicLong lastAddTokenTime = timeCounters.putIfAbsent(value, new AtomicLong(currentTime));
             if (lastAddTokenTime == null) {
-                qpsCounters.putIfAbsent(value, new AtomicInteger(maxCount - acquireCount));
+                // Token never added, just replenish the tokens and consume {@code acquireCount} immediately.
+                tokenCounters.putIfAbsent(value, new AtomicInteger(maxCount - acquireCount));
                 return true;
             }
 
+            // Calculate the time duration since last token was added.
             long passTime = currentTime - lastAddTokenTime.get();
+            // A simplified token bucket algorithm that will replenish the tokens only when statistic window has passed.
             if (passTime > rule.getDurationInSec() * 1000) {
-                AtomicInteger oldQps = qpsCounters.putIfAbsent(value, new AtomicInteger(maxCount - acquireCount));
+                AtomicInteger oldQps = tokenCounters.putIfAbsent(value, new AtomicInteger(maxCount - acquireCount));
                 if (oldQps == null) {
                     // Might not be accurate here.
                     lastAddTokenTime.set(currentTime);
@@ -153,75 +175,66 @@ final class ParamFlowChecker {
                     if (oldQps.compareAndSet(restQps, newQps)) {
                         lastAddTokenTime.set(currentTime);
                         return true;
-                    } else {
-                        Thread.yield();
                     }
+                    Thread.yield();
                 }
             } else {
-                AtomicInteger oldQps = qpsCounters.get(value);
-                if (oldQps == null) {
-                    Thread.yield();
-                } else {
+                AtomicInteger oldQps = tokenCounters.get(value);
+                if (oldQps != null) {
                     int oldQpsValue = oldQps.get();
                     if (oldQpsValue - acquireCount >= 0) {
                         if (oldQps.compareAndSet(oldQpsValue, oldQpsValue - acquireCount)) {
                             return true;
-                        } else {
-                            Thread.yield();
                         }
                     } else {
                         return false;
                     }
                 }
+                Thread.yield();
             }
-
         }
-
     }
 
-    static boolean passRateLimiterCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int acquireCount,
-                                        Object value) {
-
-        CacheMap<Object, AtomicLong> ruleCounter = getHotParameters(resourceWrapper) == null ? null
-            : getHotParameters(resourceWrapper).getRuleTimeCounter(rule);
-        if (ruleCounter == null) {
+    static boolean passThrottleLocalCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int acquireCount,
+                                          Object value) {
+        ParameterMetric metric = getParameterMetric(resourceWrapper);
+        CacheMap<Object, AtomicLong> timeRecorderMap = metric == null ? null : metric.getRuleTimeCounter(rule);
+        if (timeRecorderMap == null) {
             return true;
         }
 
+        // Calculate max token count (threshold)
         Set<Object> exclusionItems = rule.getParsedHotItems().keySet();
-
-        long addedCount = (long)rule.getCount();
+        long tokenCount = (long)rule.getCount();
         if (exclusionItems.contains(value)) {
-            addedCount = rule.getParsedHotItems().get(value);
+            tokenCount = rule.getParsedHotItems().get(value);
         }
 
-        if (addedCount == 0) {
+        if (tokenCount == 0) {
             return false;
         }
 
-        long costTime = Math.round(1.0 * 1000 * acquireCount * rule.getDurationInSec() / addedCount);
-
+        long costTime = Math.round(1.0 * 1000 * acquireCount * rule.getDurationInSec() / tokenCount);
         while (true) {
-            // Add token
             long currentTime = TimeUtil.currentTimeMillis();
-            AtomicLong counter = ruleCounter.get(value);
-            Long lastPassTime = (counter == null) ? null : counter.get();
-            long expectedTime = lastPassTime == null ? (currentTime) : (lastPassTime + costTime);
+            AtomicLong timeRecorder = timeRecorderMap.putIfAbsent(value, new AtomicLong(currentTime));
+            if (timeRecorder == null) {
+                return true;
+            }
+            //AtomicLong timeRecorder = timeRecorderMap.get(value);
+            long lastPassTime = timeRecorder.get();
+            long expectedTime = lastPassTime + costTime;
 
             if (expectedTime <= currentTime || expectedTime - currentTime < rule.getMaxQueueingTimeMs()) {
-                AtomicLong lastPastTimeRef = ruleCounter.putIfAbsent(value, new AtomicLong(expectedTime));
-                if (lastPastTimeRef == null) {
-                    return true;
-                }
-
+                AtomicLong lastPastTimeRef = timeRecorderMap.get(value);
                 if (lastPastTimeRef.compareAndSet(lastPassTime, currentTime)) {
                     long waitTime = expectedTime - currentTime;
                     if (waitTime > 0) {
+                        lastPastTimeRef.set(expectedTime);
                         try {
-                            lastPastTimeRef.set(expectedTime);
                             TimeUnit.MILLISECONDS.sleep(waitTime);
                         } catch (InterruptedException e) {
-                            RecordLog.warn("Wait interrupted", e);
+                            RecordLog.warn("passThrottleLocalCheck: wait interrupted", e);
                         }
                     }
                     return true;
@@ -232,33 +245,9 @@ final class ParamFlowChecker {
                 return false;
             }
         }
-
     }
 
-    static boolean passSingleValueCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int acuuireCount,
-                                        Object value) {
-        if (rule.getGrade() == RuleConstant.FLOW_GRADE_QPS) {
-            if (rule.getControlBehavior() == RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER) {
-                return passRateLimiterCheck(resourceWrapper, rule, acuuireCount, value);
-            } else {
-                return passDefaultCheck(resourceWrapper, rule, acuuireCount, value);
-            }
-
-        } else if (rule.getGrade() == RuleConstant.FLOW_GRADE_THREAD) {
-            Set<Object> exclusionItems = rule.getParsedHotItems().keySet();
-            long threadCount = getHotParameters(resourceWrapper).getThreadCount(rule.getParamIdx(), value);
-            if (exclusionItems.contains(value)) {
-                int itemThreshold = rule.getParsedHotItems().get(value);
-                return ++threadCount <= itemThreshold;
-            }
-            long threshold = (long)rule.getCount();
-            return ++threadCount <= threshold;
-        }
-
-        return true;
-    }
-
-    private static ParameterMetric getHotParameters(ResourceWrapper resourceWrapper) {
+    private static ParameterMetric getParameterMetric(ResourceWrapper resourceWrapper) {
         // Should not be null.
         return ParamFlowSlot.getParamMetric(resourceWrapper);
     }
