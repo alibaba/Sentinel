@@ -135,7 +135,8 @@ public class SystemRuleEntity implements RuleEntity {
         this.gmtModified = gmtModified;
     }
 
-    public SystemRule toSystemRule() {
+    @Override
+    public SystemRule toRule() {
         SystemRule rule = new SystemRule();
         rule.setHighestSystemLoad(avgLoad);
         rule.setAvgRt(avgRt);
