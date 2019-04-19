@@ -96,7 +96,7 @@ class ParamFlowQpsRunner<T> {
 
     private void passFor(T param) {
         passCountMap.get(param).incrementAndGet();
-        System.out.println(TimeUtil.currentTimeMillis());
+        // System.out.println(String.format("Parameter <%s> passed at: %d", param, TimeUtil.currentTimeMillis()));
     }
 
     private void blockFor(T param) {
@@ -104,41 +104,6 @@ class ParamFlowQpsRunner<T> {
     }
 
     final class RunTask implements Runnable {
-
-        public void runForSeconds(long secondInterval) {
-
-            long startTime = TimeUtil.currentTimeMillis();
-            long endTime = startTime + secondInterval * 1000;
-            while (startTime < endTime) {
-                Entry entry = null;
-                T param = generateParam();
-                try {
-                    entry = SphU.entry(resourceName, EntryType.IN, 1, param);
-                    // Add pass for parameter.
-                    passFor(param);
-
-                } catch (BlockException e1) {
-                    // block.incrementAndGet();
-                    blockFor(param);
-                } catch (Exception ex) {
-                    // biz exception
-                    ex.printStackTrace();
-                } finally {
-                    // total.incrementAndGet();
-                    if (entry != null) {
-                        entry.exit(1, param);
-                    }
-                }
-
-                try {
-                    TimeUnit.MILLISECONDS.sleep(ThreadLocalRandom.current().nextInt(0, 10));
-                } catch (InterruptedException e) {
-                    // ignore
-                }
-                startTime = TimeUtil.currentTimeMillis();
-            }
-            // System.out.println("end:" + endTime);
-        }
 
         @Override
         public void run() {
@@ -150,7 +115,7 @@ class ParamFlowQpsRunner<T> {
                     entry = SphU.entry(resourceName, EntryType.IN, 1, param);
                     // Add pass for parameter.
                     passFor(param);
-                } catch (BlockException e1) {
+                } catch (BlockException e) {
                     // block.incrementAndGet();
                     blockFor(param);
                 } catch (Exception ex) {
@@ -163,12 +128,16 @@ class ParamFlowQpsRunner<T> {
                     }
                 }
 
-                try {
-                    TimeUnit.MILLISECONDS.sleep(ThreadLocalRandom.current().nextInt(0, 10));
-                } catch (InterruptedException e) {
-                    // ignore
-                }
+                sleep(ThreadLocalRandom.current().nextInt(0, 10));
             }
+        }
+    }
+
+    private void sleep(int timeMs) {
+        try {
+            TimeUnit.MILLISECONDS.sleep(timeMs);
+        } catch (InterruptedException e) {
+            // ignore
         }
     }
 
@@ -184,12 +153,9 @@ class ParamFlowQpsRunner<T> {
                 map.putIfAbsent(param, 0L);
             }
             while (!stop) {
-                try {
-                    TimeUnit.SECONDS.sleep(1);
-                } catch (InterruptedException e) {
-                }
-                // There may be a mismatch for time window of internal sliding
-                // window.
+                sleep(1000);
+
+                // There may be a mismatch for time window of internal sliding window.
                 // See corresponding `metrics.log` for accurate statistic log.
                 for (T param : params) {
 

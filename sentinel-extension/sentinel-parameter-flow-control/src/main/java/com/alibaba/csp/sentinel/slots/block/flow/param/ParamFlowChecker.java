@@ -134,7 +134,6 @@ final class ParamFlowChecker {
                 return true;
             }
 
-            // 需要添加Token了
             long passTime = currentTime - lastAddTokenTime.get();
             if (passTime > rule.getDurationInSec() * 1000) {
                 AtomicInteger oldQps = qpsCounters.putIfAbsent(value, new AtomicInteger(maxCount - acquireCount));
