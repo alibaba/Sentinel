@@ -40,10 +40,10 @@ public class AuthController {
 
     private static Logger LOGGER = LoggerFactory.getLogger(AuthController.class);
 
-    @Value("${auth.username}")
+    @Value("${auth.username:sentinel}")
     private String authUsername;
 
-    @Value("${auth.password}")
+    @Value("${auth.password:sentinel}")
     private String authPassword;
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
@@ -56,7 +56,13 @@ public class AuthController {
             authPassword = DashboardConfig.getAuthPassword();
         }
 
-        if (!authUsername.equals(username) || !authPassword.equals(password)) {
+        /**
+         * If authUsername or authPassword is blank(set in application.properties or VM arguments),
+         * auth will pass, as the front side validate the input which can't be blank,
+         * so user can input any username or password(both are not blank) to login in that case.
+         */
+        if (   StringUtils.isNotBlank(authUsername) && !authUsername.equals(username)
+            || StringUtils.isNotBlank(authPassword) && !authPassword.equals(password)) {
             LOGGER.error("Login failed: Invalid username or password, username=" + username + ", password=" + password);
             return Result.ofFail(-1, "Invalid username or password");
         }
