@@ -38,6 +38,7 @@ import io.netty.channel.Channel;
  */
 public class ConnectionPool {
 
+    @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static final ScheduledExecutorService TIMER = Executors.newScheduledThreadPool(2);
 
     /**

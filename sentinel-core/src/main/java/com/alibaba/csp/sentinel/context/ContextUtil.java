@@ -47,12 +47,12 @@ public class ContextUtil {
     /**
      * Store the context in ThreadLocal for easy access.
      */
-    private static ThreadLocal<Context> contextHolder = new ThreadLocal<Context>();
+    private static ThreadLocal<Context> contextHolder = new ThreadLocal<>();
 
     /**
-     * Holds all {@link EntranceNode}.
+     * Holds all {@link EntranceNode}. Each {@link EntranceNode} is associated with a distinct context name.
      */
-    private static volatile Map<String, DefaultNode> contextNameNodeMap = new HashMap<String, DefaultNode>();
+    private static volatile Map<String, DefaultNode> contextNameNodeMap = new HashMap<>();
 
     private static final ReentrantLock LOCK = new ReentrantLock();
     private static final Context NULL_CONTEXT = new NullContext();
@@ -82,33 +82,34 @@ public class ContextUtil {
 
     /**
      * <p>
-     * Enter the invocation context. The context is ThreadLocal, meaning that
-     * each thread has it's own {@link Context}. New context will be created if
-     * current thread doesn't have one.
+     * Enter the invocation context, which marks as the entrance of an invocation chain.
+     * The context is wrapped with {@code ThreadLocal}, meaning that each thread has it's own {@link Context}.
+     * New context will be created if current thread doesn't have one.
      * </p>
      * <p>
-     * A context will be related to a {@link EntranceNode}, which represents the entrance
-     * of the invocation tree. New {@link EntranceNode} will be created if
+     * A context will be bound with an {@link EntranceNode}, which represents the entrance statistic node
+     * of the invocation chain. New {@link EntranceNode} will be created if
      * current context does't have one. Note that same context name will share
      * same {@link EntranceNode} globally.
      * </p>
      * <p>
-     * Note that each distinct {@code origin} of {@code name} will lead to creating a new
-     * {@link Node}, meaning that total {@link Node} created will be of:<br/>
-     * {@code distinct context name count * distinct origin count} <br/>
-     * So when origin is too many, memory efficiency should be carefully considered.
+     * The origin node will be created in {@link com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot}.
+     * Note that each distinct {@code origin} of different resources will lead to creating different new
+     * {@link Node}, meaning that total amount of created origin statistic nodes will be:<br/>
+     * {@code distinct resource name amount * distinct origin count}.<br/>
+     * So when there are too many origins, memory footprint should be carefully considered.
      * </p>
      * <p>
      * Same resource in different context will count separately, see {@link NodeSelectorSlot}.
      * </p>
      *
-     * @param name   the context name.
+     * @param name   the context name
      * @param origin the origin of this invocation, usually the origin could be the Service
      *               Consumer's app name. The origin is useful when we want to control different
      *               invoker/consumer separately.
-     * @return The invocation context of the current thread.
+     * @return The invocation context of the current thread
      */
-    static public Context enter(String name, String origin) {
+    public static Context enter(String name, String origin) {
         if (Constants.CONTEXT_DEFAULT_NAME.equals(name)) {
             throw new ContextNameDefineException(
                 "The " + Constants.CONTEXT_DEFAULT_NAME + " can't be permit to defined!");
@@ -138,8 +139,7 @@ public class ContextUtil {
                                 // Add entrance node.
                                 Constants.ROOT.addChild(node);
 
-                                Map<String, DefaultNode> newMap = new HashMap<String, DefaultNode>(
-                                    contextNameNodeMap.size() + 1);
+                                Map<String, DefaultNode> newMap = new HashMap<>(contextNameNodeMap.size() + 1);
                                 newMap.putAll(contextNameNodeMap);
                                 newMap.put(name, node);
                                 contextNameNodeMap = newMap;
@@ -172,22 +172,22 @@ public class ContextUtil {
 
     /**
      * <p>
-     * Enter the invocation context. The context is ThreadLocal, meaning that
-     * each thread has it's own {@link Context}. New context will be created if
-     * current thread doesn't have one.
+     * Enter the invocation context, which marks as the entrance of an invocation chain.
+     * The context is wrapped with {@code ThreadLocal}, meaning that each thread has it's own {@link Context}.
+     * New context will be created if current thread doesn't have one.
      * </p>
      * <p>
-     * A context will related to A {@link EntranceNode}, which is the entrance
-     * of the invocation tree. New {@link EntranceNode} will be created if
-     * current context does't have one. Note that same resource name will share
+     * A context will be bound with an {@link EntranceNode}, which represents the entrance statistic node
+     * of the invocation chain. New {@link EntranceNode} will be created if
+     * current context does't have one. Note that same context name will share
      * same {@link EntranceNode} globally.
      * </p>
      * <p>
      * Same resource in different context will count separately, see {@link NodeSelectorSlot}.
      * </p>
      *
-     * @param name the context name.
-     * @return The invocation context of the current thread.
+     * @param name the context name
+     * @return The invocation context of the current thread
      */
     public static Context enter(String name) {
         return enter(name, "");

@@ -42,7 +42,7 @@ public class HotParameterLeapArray extends LeapArray<ParamMapBucket> {
     }
 
     @Override
-    public ParamMapBucket newEmptyBucket() {
+    public ParamMapBucket newEmptyBucket(long timeMillis) {
         return new ParamMapBucket();
     }
 

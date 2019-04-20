@@ -40,7 +40,7 @@ public class ClusterMetricLeapArray extends LeapArray<ClusterMetricBucket> {
     }
 
     @Override
-    public ClusterMetricBucket newEmptyBucket() {
+    public ClusterMetricBucket newEmptyBucket(long timeMillis) {
         return new ClusterMetricBucket();
     }
 

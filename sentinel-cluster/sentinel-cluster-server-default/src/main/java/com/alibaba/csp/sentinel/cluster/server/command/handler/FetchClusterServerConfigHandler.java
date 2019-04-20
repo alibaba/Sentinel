@@ -29,7 +29,7 @@ import com.alibaba.fastjson.JSONObject;
  * @author Eric Zhao
  * @since 1.4.0
  */
-@CommandMapping(name = "cluster/server/fetchConfig")
+@CommandMapping(name = "cluster/server/fetchConfig", desc = "get cluster server config")
 public class FetchClusterServerConfigHandler implements CommandHandler<String> {
 
     @Override

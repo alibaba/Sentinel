@@ -21,10 +21,15 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.alibaba.csp.sentinel.dashboard.client.CommandNotFoundException;
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
+import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
+import com.alibaba.csp.sentinel.dashboard.auth.AuthService.AuthUser;
+import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
@@ -33,6 +38,7 @@ import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEn
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.RuleRepository;
 import com.alibaba.csp.sentinel.dashboard.util.VersionUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +69,9 @@ public class ParamFlowRuleController {
     @Autowired
     private RuleRepository<ParamFlowRuleEntity, Long> repository;
 
+    @Autowired
+    private AuthService<HttpServletRequest> authService;
+
     private boolean checkIfSupported(String app, String ip, int port) {
         try {
             return Optional.ofNullable(appManagement.getDetailApp(app))
@@ -77,9 +86,12 @@ public class ParamFlowRuleController {
     }
 
     @GetMapping("/rules")
-    public Result<List<ParamFlowRuleEntity>> apiQueryAllRulesForMachine(@RequestParam String app,
+    public Result<List<ParamFlowRuleEntity>> apiQueryAllRulesForMachine(HttpServletRequest request,
+                                                                        @RequestParam String app,
                                                                         @RequestParam String ip,
                                                                         @RequestParam Integer port) {
+        AuthUser authUser = authService.getAuthUser(request);
+        authUser.authTarget(app, PrivilegeType.READ_RULE);
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app cannot be null or empty");
         }
@@ -115,7 +127,10 @@ public class ParamFlowRuleController {
     }
 
     @PostMapping("/rule")
-    public Result<ParamFlowRuleEntity> apiAddParamFlowRule(@RequestBody ParamFlowRuleEntity entity) {
+    public Result<ParamFlowRuleEntity> apiAddParamFlowRule(HttpServletRequest request,
+                                                           @RequestBody ParamFlowRuleEntity entity) {
+        AuthUser authUser = authService.getAuthUser(request);
+        authUser.authTarget(entity.getApp(), PrivilegeType.WRITE_RULE);
         Result<ParamFlowRuleEntity> checkResult = checkEntityInternal(entity);
         if (checkResult != null) {
             return checkResult;
@@ -177,7 +192,10 @@ public class ParamFlowRuleController {
     }
 
     @PutMapping("/rule/{id}")
-    public Result<ParamFlowRuleEntity> apiUpdateParamFlowRule(@PathVariable("id") Long id, @RequestBody ParamFlowRuleEntity entity) {
+    public Result<ParamFlowRuleEntity> apiUpdateParamFlowRule(HttpServletRequest request,
+                                                              @PathVariable("id") Long id,
+                                                              @RequestBody ParamFlowRuleEntity entity) {
+        AuthUser authUser = authService.getAuthUser(request);
         if (id == null || id <= 0) {
             return Result.ofFail(-1, "Invalid id");
         }
@@ -185,6 +203,7 @@ public class ParamFlowRuleController {
         if (oldEntity == null) {
             return Result.ofFail(-1, "id " + id + " does not exist");
         }
+        authUser.authTarget(oldEntity.getApp(), PrivilegeType.WRITE_RULE);
         Result<ParamFlowRuleEntity> checkResult = checkEntityInternal(entity);
         if (checkResult != null) {
             return checkResult;
@@ -214,7 +233,8 @@ public class ParamFlowRuleController {
     }
 
     @DeleteMapping("/rule/{id}")
-    public Result<Long> apiDeleteRule(@PathVariable("id") Long id) {
+    public Result<Long> apiDeleteRule(HttpServletRequest request, @PathVariable("id") Long id) {
+        AuthUser authUser = authService.getAuthUser(request);
         if (id == null) {
             return Result.ofFail(-1, "id cannot be null");
         }
@@ -222,6 +242,7 @@ public class ParamFlowRuleController {
         if (oldEntity == null) {
             return Result.ofSuccess(null);
         }
+        authUser.authTarget(oldEntity.getApp(), PrivilegeType.DELETE_RULE);
         try {
             repository.delete(id);
             publishRules(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort()).get();
@@ -245,7 +266,8 @@ public class ParamFlowRuleController {
     }
 
     private <R> Result<R> unsupportedVersion() {
-        return Result.ofFail(4041, "Sentinel client not supported for parameter flow control (unsupported version or dependency absent)");
+        return Result.ofFail(4041,
+            "Sentinel client not supported for parameter flow control (unsupported version or dependency absent)");
     }
 
     private final SentinelVersion version020 = new SentinelVersion().setMinorVersion(2);

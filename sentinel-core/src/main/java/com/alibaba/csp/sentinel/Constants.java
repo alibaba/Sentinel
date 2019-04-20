@@ -30,7 +30,7 @@ import com.alibaba.csp.sentinel.util.VersionUtil;
  */
 public final class Constants {
 
-    public static final String SENTINEL_VERSION = VersionUtil.getVersion("1.5.0");
+    public static final String SENTINEL_VERSION = VersionUtil.getVersion("1.6.0");
 
     public final static int MAX_CONTEXT_NAME_SIZE = 2000;
     public final static int MAX_SLOT_CHAIN_SIZE = 6000;
@@ -38,21 +38,27 @@ public final class Constants {
     public final static String ROOT_ID = "machine-root";
     public final static String CONTEXT_DEFAULT_NAME = "sentinel_default_context";
 
-    public final static DefaultNode ROOT = new EntranceNode(new StringResourceWrapper(ROOT_ID, EntryType.IN),
-        Env.nodeBuilder.buildClusterNode());
+    /**
+     * A virtual resource identifier for total inbound statistics (since 1.5.0).
+     */
+    public final static String TOTAL_IN_RESOURCE_NAME = "__total_inbound_traffic__";
 
     /**
-     * Statistics for {@link SystemRule} checking.
+     * Global ROOT statistic node that represents the universal parent node.
+     */
+    public final static DefaultNode ROOT = new EntranceNode(new StringResourceWrapper(ROOT_ID, EntryType.IN),
+        new ClusterNode());
+
+    /**
+     * Global statistic node for inbound traffic. Usually used for {@link SystemRule} checking.
      */
     public final static ClusterNode ENTRY_NODE = new ClusterNode();
 
     /**
-     * Response time that exceeds TIME_DROP_VALVE will be calculated as TIME_DROP_VALVE.
-     * Default value is 4900 ms
-     * It can be configured by property file or JVM parameter -Dcsp.sentinel.statistic.max.rt=xxx
-     * See {@link SentinelConfig#statisticMaxRt()}
+     * Response time that exceeds TIME_DROP_VALVE will be calculated as TIME_DROP_VALVE. Default value is 4900 ms.
+     * It can be configured by property file or JVM parameter via {@code -Dcsp.sentinel.statistic.max.rt=xxx}.
      */
-    public static int TIME_DROP_VALVE = SentinelConfig.statisticMaxRt();
+    public static final int TIME_DROP_VALVE = SentinelConfig.statisticMaxRt();
 
     /**
      * The global switch for Sentinel.

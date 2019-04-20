@@ -19,98 +19,125 @@ import java.util.Map;
 
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
+import com.alibaba.csp.sentinel.slots.statistic.metric.DebugSupport;
 
 /**
- * This class holds real-time statistics for a resource.
+ * Holds real-time statistics for resources.
  *
  * @author qinan.qn
  * @author leyou
  * @author Eric Zhao
  */
-public interface Node {
+public interface Node extends OccupySupport, DebugSupport {
 
     /**
-     * Get incoming request per minute. {@code pass + block}
+     * Get incoming request per minute ({@code pass + block}).
+     *
+     * @return total request count per minute
      */
     long totalRequest();
 
     /**
+     * Get pass count per minute.
+     *
+     * @return total passed request count per minute
+     * @since 1.5.0
+     */
+    long totalPass();
+
+    /**
      * Get {@link Entry#exit()} count per minute.
      *
-     * @return Outgoing request per minute.
+     * @return total completed request count per minute
      */
     long totalSuccess();
 
     /**
-     * Get block request count per minute.
+     * Get blocked request count per minute (totalBlockRequest).
+     *
+     * @return total blocked request count per minute
      */
     long blockRequest();
 
     /**
      * Get exception count per minute.
+     *
+     * @return total business exception count per minute
      */
     long totalException();
 
     /**
      * Get pass request per second.
+     *
+     * @return QPS of passed requests
      */
-    long passQps();
+    double passQps();
 
     /**
      * Get block request per second.
+     *
+     * @return QPS of blocked requests
      */
-    long blockQps();
+    double blockQps();
 
     /**
      * Get {@link #passQps()} + {@link #blockQps()} request per second.
+     *
+     * @return QPS of passed and blocked requests
      */
-    long totalQps();
+    double totalQps();
 
     /**
      * Get {@link Entry#exit()} request per second.
+     *
+     * @return QPS of completed requests
      */
-    long successQps();
+    double successQps();
 
     /**
      * Get estimated max success QPS till now.
      *
-     * @return max success QPS
+     * @return max completed QPS
      */
-    long maxSuccessQps();
+    double maxSuccessQps();
 
     /**
      * Get exception count per second.
+     *
+     * @return QPS of exception occurs
      */
-    long exceptionQps();
+    double exceptionQps();
 
     /**
      * Get average rt per second.
      *
      * @return average response time per second
      */
-    long avgRt();
+    double avgRt();
 
     /**
      * Get minimal response time.
      *
      * @return recorded minimal response time
      */
-    long minRt();
+    double minRt();
 
     /**
      * Get current active thread count.
+     *
+     * @return current active thread count
      */
     int curThreadNum();
 
     /**
      * Get last second block QPS.
      */
-    long previousBlockQps();
+    double previousBlockQps();
 
     /**
      * Last window QPS.
      */
-    long previousPassQps();
+    double previousPassQps();
 
     /**
      * Fetch all valid metric nodes of resources.
@@ -129,18 +156,22 @@ public interface Node {
     /**
      * Add rt and success count.
      *
-     * @param rt response time
+     * @param rt      response time
      * @param success success count to add
      */
     void addRtAndSuccess(long rt, int success);
 
     /**
      * Increase the block count.
+     *
+     * @param count count to add
      */
     void increaseBlockQps(int count);
 
     /**
-     * Increase the biz exception count.
+     * Add the biz exception count.
+     *
+     * @param count count to add
      */
     void increaseExceptionQps(int count);
 
@@ -159,9 +190,4 @@ public interface Node {
      * {@link SampleCountProperty#SAMPLE_COUNT} is changed.
      */
     void reset();
-
-    /**
-     * Debug only.
-     */
-    void debug();
 }

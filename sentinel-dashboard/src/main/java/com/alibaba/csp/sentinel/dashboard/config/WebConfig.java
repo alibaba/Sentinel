@@ -15,18 +15,19 @@
  */
 package com.alibaba.csp.sentinel.dashboard.config;
 
-import javax.servlet.Filter;
-
 import com.alibaba.csp.sentinel.adapter.servlet.CommonFilter;
-
+import com.alibaba.csp.sentinel.dashboard.filter.AuthFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import javax.servlet.Filter;
 
 /**
  * @author leyou
@@ -35,6 +36,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
 
     private final Logger logger = LoggerFactory.getLogger(WebConfig.class);
+
+    @Autowired
+    private AuthFilter authFilter;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -60,6 +64,16 @@ public class WebConfig implements WebMvcConfigurer {
 
         logger.info("Sentinel servlet CommonFilter registered");
 
+        return registration;
+    }
+
+    @Bean
+    public FilterRegistrationBean authenticationFilterRegistration() {
+        FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(authFilter);
+        registration.addUrlPatterns("/*");
+        registration.setName("authenticationFilter");
+        registration.setOrder(0);
         return registration;
     }
 }

@@ -55,6 +55,7 @@ public class SimpleHttpCommandCenter implements CommandCenter {
     @SuppressWarnings("rawtypes")
     private static final Map<String, CommandHandler> handlerMap = new ConcurrentHashMap<String, CommandHandler>();
 
+    @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private ExecutorService executor = Executors.newSingleThreadExecutor(
         new NamedThreadFactory("sentinel-command-center-executor"));
     private ExecutorService bizExecutor;

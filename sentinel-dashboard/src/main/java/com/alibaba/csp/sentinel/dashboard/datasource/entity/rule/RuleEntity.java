@@ -17,6 +17,8 @@ package com.alibaba.csp.sentinel.dashboard.datasource.entity.rule;
 
 import java.util.Date;
 
+import com.alibaba.csp.sentinel.slots.block.Rule;
+
 /**
  * @author leyou
  */
@@ -33,4 +35,6 @@ public interface RuleEntity {
     Integer getPort();
 
     Date getGmtCreate();
+    
+    Rule toRule();
 }

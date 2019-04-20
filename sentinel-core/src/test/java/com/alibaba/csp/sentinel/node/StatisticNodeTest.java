@@ -39,7 +39,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class StatisticNodeTest {
 
-    private static final String LOG_PREFIX = "[StatisticNodeTest]";
+    private static final String LOG_PREFIX = "[StatisticNodeTest] ";
 
     private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-HH-dd HH:mm:ss");
 
@@ -74,7 +74,7 @@ public class StatisticNodeTest {
 
         tickEs.submit(new TickTask(node));
 
-        List<BizTask> bizTasks = new ArrayList<BizTask>(taskBizExecuteCount);
+        List<BizTask> bizTasks = new ArrayList<>(taskBizExecuteCount);
         for (int i = 0; i < taskCount; i++) {
             bizTasks.add(new BizTask(node, taskBizExecuteCount));
         }
@@ -88,13 +88,13 @@ public class StatisticNodeTest {
         log("all biz task done, waiting 3 second to exit");
         sleep(3000);
 
-        bizEs.shutdown();
-        tickEs.shutdown();
+        bizEs.shutdownNow();
+        tickEs.shutdownNow();
 
         // now no biz method execute, so there is no curThreadNum,passQps,successQps
-        assertEquals(0, node.curThreadNum());
-        assertEquals(0, node.passQps());
-        assertEquals(0, node.successQps());
+        assertEquals(0, node.curThreadNum(), 0.01);
+        assertEquals(0, node.passQps(), 0.01);
+        assertEquals(0, node.successQps(), 0.01);
 
         // note: total time cost should be controlled within 1 minute,
         // as the node.totalRequest() holding statistics of recent 60 seconds
@@ -105,7 +105,7 @@ public class StatisticNodeTest {
         assertEquals(totalRequest, node.totalSuccess());
 
         // now there are no data in time span, so the minRT should be equals to TIME_DROP_VALVE
-        assertEquals(node.minRt(), Constants.TIME_DROP_VALVE);
+        assertEquals(node.minRt(), Constants.TIME_DROP_VALVE, 0.01);
 
         log("====================================================");
         log("testStatisticThreadNumAndQps done, cost " + (TimeUtil.currentTimeMillis() - testStartTime) + "ms");
@@ -192,7 +192,7 @@ public class StatisticNodeTest {
         log(SDF.format(new Date()) + " curThreadNum=" + node.curThreadNum() + ",passQps=" + node.passQps()
                 + ",successQps=" + node.successQps() + ",maxSuccessQps=" + node.maxSuccessQps()
                 + ",totalRequest=" + node.totalRequest() + ",totalSuccess=" + node.totalSuccess()
-                + ",avgRt=" + node.avgRt() + ",minRt=" + node.minRt());
+                + ", avgRt=" + String.format("%.2f", node.avgRt()) + ", minRt=" + node.minRt());
     }
 
     private static void log(Object obj) {

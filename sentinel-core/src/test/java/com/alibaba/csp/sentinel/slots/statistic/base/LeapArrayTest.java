@@ -19,13 +19,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 
+import com.alibaba.csp.sentinel.test.AbstractTimeBasedTest;
+
 import static org.junit.Assert.*;
 
 /**
  * @author Eric Zhao
  */
-public class LeapArrayTest {
-
+public class LeapArrayTest extends AbstractTimeBasedTest {
+    
     @Test
     public void testGetValidHead() {
         int windowLengthInMs = 100;
@@ -33,7 +35,7 @@ public class LeapArrayTest {
         int sampleCount = intervalInMs / windowLengthInMs;
         LeapArray<AtomicInteger> leapArray = new LeapArray<AtomicInteger>(sampleCount, intervalInMs) {
             @Override
-            public AtomicInteger newEmptyBucket() {
+            public AtomicInteger newEmptyBucket(long time) {
                 return new AtomicInteger(0);
             }
 
@@ -44,6 +46,7 @@ public class LeapArrayTest {
                 return windowWrap;
             }
         };
+        
         WindowWrap<AtomicInteger> expected1 = leapArray.currentWindow();
         expected1.value().addAndGet(1);
         sleep(windowLengthInMs);
@@ -59,11 +62,4 @@ public class LeapArrayTest {
         assertSame(expected2, leapArray.getValidHead());
     }
 
-    private void sleep(int t) {
-        try {
-            Thread.sleep(t);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
 }

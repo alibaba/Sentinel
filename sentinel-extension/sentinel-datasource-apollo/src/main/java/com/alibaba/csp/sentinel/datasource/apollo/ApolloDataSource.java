@@ -20,38 +20,40 @@ import com.google.common.collect.Sets;
  * When the rule is changed in Apollo, it will take effect in real time.
  *
  * @author Jason Song
+ * @author Haojun Ren
  */
 public class ApolloDataSource<T> extends AbstractDataSource<String, T> {
 
     private final Config config;
-    private final String flowRulesKey;
-    private final String defaultFlowRuleValue;
+    private final String ruleKey;
+    private final String defaultRuleValue;
+
+    private ConfigChangeListener configChangeListener;
 
     /**
      * Constructs the Apollo data source
      *
      * @param namespaceName        the namespace name in Apollo, should not be null or empty
-     * @param flowRulesKey         the flow rules key in the namespace, should not be null or empty
-     * @param defaultFlowRuleValue the default flow rules value when the flow rules key is not found or any error
+     * @param ruleKey              the rule key in the namespace, should not be null or empty
+     * @param defaultRuleValue     the default rule value when the ruleKey is not found or any error
      *                             occurred
      * @param parser               the parser to transform string configuration to actual flow rules
      */
-    public ApolloDataSource(String namespaceName, String flowRulesKey, String defaultFlowRuleValue,
+    public ApolloDataSource(String namespaceName, String ruleKey, String defaultRuleValue,
                             Converter<String, T> parser) {
         super(parser);
 
         Preconditions.checkArgument(!Strings.isNullOrEmpty(namespaceName), "Namespace name could not be null or empty");
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(flowRulesKey), "FlowRuleKey could not be null or empty!");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(ruleKey), "RuleKey could not be null or empty!");
 
-        this.flowRulesKey = flowRulesKey;
-        this.defaultFlowRuleValue = defaultFlowRuleValue;
+        this.ruleKey = ruleKey;
+        this.defaultRuleValue = defaultRuleValue;
 
         this.config = ConfigService.getConfig(namespaceName);
 
         initialize();
 
-        RecordLog.info(String.format("Initialized rule for namespace: %s, flow rules key: %s",
-            namespaceName, flowRulesKey));
+        RecordLog.info(String.format("Initialized rule for namespace: %s, rule key: %s", namespaceName, ruleKey));
     }
 
     private void initialize() {
@@ -72,26 +74,27 @@ public class ApolloDataSource<T> extends AbstractDataSource<String, T> {
     }
 
     private void initializeConfigChangeListener() {
-        config.addChangeListener(new ConfigChangeListener() {
+        configChangeListener = new ConfigChangeListener() {
             @Override
             public void onChange(ConfigChangeEvent changeEvent) {
-                ConfigChange change = changeEvent.getChange(flowRulesKey);
+                ConfigChange change = changeEvent.getChange(ruleKey);
                 //change is never null because the listener will only notify for this key
                 if (change != null) {
                     RecordLog.info("[ApolloDataSource] Received config changes: " + change.toString());
                 }
                 loadAndUpdateRules();
             }
-        }, Sets.newHashSet(flowRulesKey));
+        };
+        config.addChangeListener(configChangeListener, Sets.newHashSet(ruleKey));
     }
 
     @Override
     public String readSource() throws Exception {
-        return config.getProperty(flowRulesKey, defaultFlowRuleValue);
+        return config.getProperty(ruleKey, defaultRuleValue);
     }
 
     @Override
     public void close() throws Exception {
-        // nothing to destroy
+        config.removeChangeListener(configChangeListener);
     }
 }

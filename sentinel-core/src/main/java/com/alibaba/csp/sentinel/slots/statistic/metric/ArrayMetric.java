@@ -20,27 +20,38 @@ import java.util.List;
 
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
+import com.alibaba.csp.sentinel.slots.statistic.MetricEvent;
+import com.alibaba.csp.sentinel.slots.statistic.base.LeapArray;
 import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
+import com.alibaba.csp.sentinel.slots.statistic.metric.occupy.OccupiableBucketLeapArray;
 
 /**
- * The basic metric class in Sentinel using a {@link MetricsLeapArray} internal.
+ * The basic metric class in Sentinel using a {@link BucketLeapArray} internal.
  *
  * @author jialiang.linjl
  * @author Eric Zhao
  */
 public class ArrayMetric implements Metric {
 
-    private final MetricsLeapArray data;
+    private final LeapArray<MetricBucket> data;
 
     public ArrayMetric(int sampleCount, int intervalInMs) {
-        this.data = new MetricsLeapArray(sampleCount, intervalInMs);
+        this.data = new OccupiableBucketLeapArray(sampleCount, intervalInMs);
+    }
+
+    public ArrayMetric(int sampleCount, int intervalInMs, boolean enableOccupy) {
+        if (enableOccupy) {
+            this.data = new OccupiableBucketLeapArray(sampleCount, intervalInMs);
+        } else {
+            this.data = new BucketLeapArray(sampleCount, intervalInMs);
+        }
     }
 
     /**
      * For unit test.
      */
-    public ArrayMetric(MetricsLeapArray array) {
+    public ArrayMetric(LeapArray<MetricBucket> array) {
         this.data = array;
     }
 
@@ -105,6 +116,17 @@ public class ArrayMetric implements Metric {
     }
 
     @Override
+    public long occupiedPass() {
+        data.currentWindow();
+        long pass = 0;
+        List<MetricBucket> list = data.values();
+        for (MetricBucket window : list) {
+            pass += window.occupiedPass();
+        }
+        return pass;
+    }
+
+    @Override
     public long rt() {
         data.currentWindow();
         long rt = 0;
@@ -133,7 +155,8 @@ public class ArrayMetric implements Metric {
     public List<MetricNode> details() {
         List<MetricNode> details = new ArrayList<MetricNode>();
         data.currentWindow();
-        for (WindowWrap<MetricBucket> window : data.list()) {
+        List<WindowWrap<MetricBucket>> list = data.list();
+        for (WindowWrap<MetricBucket> window : list) {
             if (window == null) {
                 continue;
             }
@@ -141,14 +164,16 @@ public class ArrayMetric implements Metric {
             node.setBlockQps(window.value().block());
             node.setExceptionQps(window.value().exception());
             node.setPassQps(window.value().pass());
-            long passQps = window.value().success();
-            node.setSuccessQps(passQps);
-            if (passQps != 0) {
-                node.setRt(window.value().rt() / passQps);
+            long successQps = window.value().success();
+            node.setSuccessQps(successQps);
+            if (successQps != 0) {
+                node.setRt(window.value().rt() / successQps);
             } else {
                 node.setRt(window.value().rt());
             }
             node.setTimestamp(window.windowStart());
+            node.setOccupiedPassQps(window.value().occupiedPass());
+
             details.add(node);
         }
 
@@ -158,7 +183,7 @@ public class ArrayMetric implements Metric {
     @Override
     public MetricBucket[] windows() {
         data.currentWindow();
-        return data.values().toArray(new MetricBucket[data.values().size()]);
+        return data.values().toArray(new MetricBucket[0]);
     }
 
     @Override
@@ -171,6 +196,17 @@ public class ArrayMetric implements Metric {
     public void addBlock(int count) {
         WindowWrap<MetricBucket> wrap = data.currentWindow();
         wrap.value().addBlock(count);
+    }
+
+    @Override
+    public void addWaiting(long time, int acquireCount) {
+        data.addWaiting(time, acquireCount);
+    }
+
+    @Override
+    public void addOccupiedPass(int acquireCount) {
+        WindowWrap<MetricBucket> wrap = data.currentWindow();
+        wrap.value().addOccupiedPass(acquireCount);
     }
 
     @Override
@@ -192,18 +228,8 @@ public class ArrayMetric implements Metric {
     }
 
     @Override
-    public void debugQps() {
-        data.currentWindow();
-        StringBuilder sb = new StringBuilder();
-        sb.append(Thread.currentThread().getId()).append("_");
-        for (WindowWrap<MetricBucket> windowWrap : data.list()) {
-
-            sb.append(windowWrap.windowStart()).append(":").append(windowWrap.value().pass()).append(":")
-                .append(windowWrap.value().block());
-            sb.append(",");
-
-        }
-        System.out.println(sb);
+    public void debug() {
+        data.debug(System.currentTimeMillis());
     }
 
     @Override
@@ -224,6 +250,55 @@ public class ArrayMetric implements Metric {
             return 0;
         }
         return wrap.value().pass();
+    }
+
+    public void add(MetricEvent event, long count) {
+        data.currentWindow().value().add(event, count);
+    }
+
+    public long getCurrentCount(MetricEvent event) {
+        return data.currentWindow().value().get(event);
+    }
+
+    /**
+     * Get total sum for provided event in {@code intervalInSec}.
+     *
+     * @param event event to calculate
+     * @return total sum for event
+     */
+    public long getSum(MetricEvent event) {
+        data.currentWindow();
+        long sum = 0;
+
+        List<MetricBucket> buckets = data.values();
+        for (MetricBucket bucket : buckets) {
+            sum += bucket.get(event);
+        }
+        return sum;
+    }
+
+    /**
+     * Get average count for provided event per second.
+     *
+     * @param event event to calculate
+     * @return average count per second for event
+     */
+    public double getAvg(MetricEvent event) {
+        return getSum(event) / data.getIntervalInSecond();
+    }
+
+    @Override
+    public long getWindowPass(long timeMillis) {
+        MetricBucket bucket = data.getWindowValue(timeMillis);
+        if (bucket == null) {
+            return 0L;
+        }
+        return bucket.pass();
+    }
+
+    @Override
+    public long waiting() {
+        return data.currentWaiting();
     }
 
     @Override

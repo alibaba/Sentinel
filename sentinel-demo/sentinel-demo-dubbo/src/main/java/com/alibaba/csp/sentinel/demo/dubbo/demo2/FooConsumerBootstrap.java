@@ -48,6 +48,7 @@ public class FooConsumerBootstrap {
     private static final String RES_KEY = "com.alibaba.csp.sentinel.demo.dubbo.FooService:sayHello(java.lang.String)";
     private static final String INTERFACE_RES_KEY = "com.alibaba.csp.sentinel.demo.dubbo.FooService";
 
+    @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static final ExecutorService pool = Executors.newFixedThreadPool(10,
         new NamedThreadFactory("dubbo-consumer-pool"));
 

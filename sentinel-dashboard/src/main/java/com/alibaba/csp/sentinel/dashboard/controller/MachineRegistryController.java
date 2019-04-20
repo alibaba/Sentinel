@@ -15,8 +15,6 @@
  */
 package com.alibaba.csp.sentinel.dashboard.controller;
 
-import java.util.Date;
-
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
@@ -57,14 +55,15 @@ public class MachineRegistryController {
             return Result.ofFail(-1, "your port not set yet");
         }
         String sentinelVersion = StringUtil.isEmpty(v) ? "unknown" : v;
-        long timestamp = version == null ? System.currentTimeMillis() : version;
+        version = version == null ? System.currentTimeMillis() : version;
         try {
             MachineInfo machineInfo = new MachineInfo();
             machineInfo.setApp(app);
             machineInfo.setHostname(hostname);
             machineInfo.setIp(ip);
             machineInfo.setPort(port);
-            machineInfo.setTimestamp(new Date(timestamp));
+            machineInfo.setHeartbeatVersion(version);
+            machineInfo.setLastHeartbeat(System.currentTimeMillis());
             machineInfo.setVersion(sentinelVersion);
             appManagement.addMachine(machineInfo);
             return Result.ofSuccessMsg("success");
