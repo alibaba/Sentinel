@@ -39,33 +39,36 @@ import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
 public class ParameterMetricTest {
 
     @Test
-    public void testInitAndClearHotParameterMetric() {
-        ParamFlowRule rule = new ParamFlowRule("abc")
-            .setParamIdx(1);
+    public void testInitAndClearParameterMetric() {
+        // Create a parameter metric for resource "abc".
         ParameterMetric metric = new ParameterMetric();
 
+        ParamFlowRule rule = new ParamFlowRule("abc")
+            .setParamIdx(1);
         metric.initialize(rule);
-        CacheMap<Object, AtomicInteger> cacheMap = metric.getThreadCountMap().get(rule.getParamIdx());
-        assertNotNull(cacheMap);
-        CacheMap<Object, AtomicLong> ruleCounter = metric.getRuleTimeCounter(rule);
-        assertNotNull(ruleCounter);
+        CacheMap<Object, AtomicInteger> threadCountMap = metric.getThreadCountMap().get(rule.getParamIdx());
+        assertNotNull(threadCountMap);
+        CacheMap<Object, AtomicLong> timeRecordMap = metric.getRuleTimeCounter(rule);
+        assertNotNull(timeRecordMap);
         metric.initialize(rule);
-        assertSame(cacheMap, metric.getThreadCountMap().get(rule.getParamIdx()));
-        assertSame(ruleCounter, metric.getRuleTimeCounter(rule));
+        assertSame(threadCountMap, metric.getThreadCountMap().get(rule.getParamIdx()));
+        assertSame(timeRecordMap, metric.getRuleTimeCounter(rule));
 
-        ParamFlowRule rule2 = new ParamFlowRule("def")
+        ParamFlowRule rule2 = new ParamFlowRule("abc")
             .setParamIdx(1);
         metric.initialize(rule2);
-        assertSame(ruleCounter, metric.getRuleTimeCounter(rule2));
+        CacheMap<Object, AtomicLong> timeRecordMap2 = metric.getRuleTimeCounter(rule2);
+        assertSame(timeRecordMap, timeRecordMap2);
 
         rule2.setParamIdx(2);
         metric.initialize(rule2);
-        assertNotSame(ruleCounter, metric.getRuleTimeCounter(rule2));
+        assertNotSame(timeRecordMap2, metric.getRuleTimeCounter(rule2));
 
-        ParamFlowRule rule3 = new ParamFlowRule("other3").setParamIdx(1);
-        rule3.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER);
+        ParamFlowRule rule3 = new ParamFlowRule("abc")
+            .setParamIdx(1)
+            .setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER);
         metric.initialize(rule3);
-        assertNotSame(ruleCounter, metric.getRuleTimeCounter(rule3));
+        assertNotSame(timeRecordMap, metric.getRuleTimeCounter(rule3));
 
         metric.clear();
         assertEquals(0, metric.getThreadCountMap().size());
