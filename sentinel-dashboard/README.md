@@ -20,12 +20,19 @@ mvn clean package
 
 ```bash
 java -Dserver.port=8080 \
+-Dserver.servlet.session.timeout=7200 \
+-Dauth.username=sentinel \
+-Dauth.password=123456 \
 -Dcsp.sentinel.dashboard.server=localhost:8080 \
 -Dproject.name=sentinel-dashboard \
 -jar target/sentinel-dashboard.jar
 ```
 
-上述命令中我们指定几个 JVM 参数，其中 `-Dserver.port=8080` 用于指定 Spring Boot 启动端口为 `8080`，其余几个是 Sentinel 客户端的参数。
+上述命令中我们指定几个 JVM 参数，其中：  
+`-Dserver.port=8080` 用于指定 Spring Boot 启动端口为 `8080`；  
+`-Dserver.servlet.session.timeout=7200` 用于指定 Spring Boot 服务器端会话的过期时间，如不带后缀的7200表示7200秒，60m表示60分钟，默认为30分钟；  
+`-Dauth.username=sentinel`、 `-Dauth.password=123456` 用于指定控制台的登录用户和密码分别为sentinel和123456，如果省略这2个参数，默认用户和密码均为sentinel；      
+其余几个是 Sentinel 客户端的参数。  
 为便于演示，我们对控制台本身加入了流量控制功能，具体做法是引入 `CommonFilter` 这个 Sentinel 拦截器。上述 JVM 参数的含义是：
 
 | 参数 | 作用 |

@@ -23,16 +23,57 @@ angular
     'selectize',
     'angularUtils.directives.dirPagination'
   ])
-  .config(['$stateProvider', '$urlRouterProvider', '$ocLazyLoadProvider',
-    function ($stateProvider, $urlRouterProvider, $ocLazyLoadProvider) {
-    $ocLazyLoadProvider.config({
-      debug: false,
-      events: true,
-    });
+  .factory('AuthInterceptor', ['$window', '$state', function ($window, $state) {
+    var authInterceptor = {
+      'responseError' : function(response) {
+        if (response.status == 401) {
+          // If not auth, clear session in localStorage and jump to the login page
+          $window.localStorage.removeItem("session_sentinel_admin");
+          $state.go('login');
+        }
 
-    $urlRouterProvider.otherwise('/dashboard/home');
+        return response;
+      },
+      'response' : function(response) {
+        return response;
+      },
+      'request' : function(config) {
+        return config;
+      },
+      'requestError' : function(config){
+        return config;
+      }
+    };
+    return authInterceptor;
+  }])
+  .config(['$stateProvider', '$urlRouterProvider', '$ocLazyLoadProvider', '$httpProvider',
+    function ($stateProvider, $urlRouterProvider, $ocLazyLoadProvider, $httpProvider) {
+      $httpProvider.interceptors.push('AuthInterceptor');
 
-    $stateProvider
+      $ocLazyLoadProvider.config({
+        debug: false,
+        events: true,
+      });
+
+      $urlRouterProvider.otherwise('/dashboard/home');
+
+      $stateProvider
+        .state('login', {
+            url: '/login',
+            templateUrl: 'app/views/login.html',
+            controller: 'LoginCtl',
+            resolve: {
+                loadMyFiles: ['$ocLazyLoad', function ($ocLazyLoad) {
+                    return $ocLazyLoad.load({
+                        name: 'sentinelDashboardApp',
+                        files: [
+                            'app/scripts/controllers/login.js',
+                        ]
+                    });
+                }]
+            }
+        })
+
       .state('dashboard', {
         url: '/dashboard',
         templateUrl: 'app/views/dashboard/main.html',
