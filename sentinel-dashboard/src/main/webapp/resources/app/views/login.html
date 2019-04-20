@@ -1,0 +1,29 @@
+<div class="container">
+    <div class="row" style="margin: 200px auto 15px auto; display: table;">
+        <h1 id='login_title'>Sentinel控制台</h1>
+    </div>
+    <div class="row">
+        <div class="col-md-4" >
+        </div>
+        <div class="col-md-4">
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-2 control-label">用户</label>
+                    <div class="col-md-9">
+                        <input class="form-control" type="text" ng-model="username" autofocus="autofocus"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-md-2 control-label">密码</label>
+                    <div class="col-md-9">
+                        <input class="form-control" type="password" ng-model="password" />
+                    </div>
+                </div>
+                <div class="form-group btn-group" style="margin: 0px auto;display: table;">
+                    <button class="btn btn-success btn-primary" ng-click="login()">登录</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
