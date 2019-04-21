@@ -49,8 +49,12 @@ public class FooService {
         return ThreadLocalRandom.current().nextInt(0, 30000);
     }
 
-    @SentinelResource(value = "apiBaz", blockHandler = "bazBlockHandler")
+    @SentinelResource(value = "apiBaz", blockHandler = "bazBlockHandler",
+            exceptionsToIgnore = {IllegalMonitorStateException.class})
     public String baz(String name) {
+        if (name.equals("fail")) {
+            throw new IllegalMonitorStateException("boom!");
+        }
         return "cheers, " + name;
     }
 
