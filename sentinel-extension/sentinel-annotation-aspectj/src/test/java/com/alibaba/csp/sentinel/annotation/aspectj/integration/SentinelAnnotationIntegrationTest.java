@@ -84,6 +84,22 @@ public class SentinelAnnotationIntegrationTest extends AbstractJUnit4SpringConte
     }
 
     @Test
+    public void testAnnotationExceptionsToIgnore() {
+        assertThat(fooService.baz("Sentinel")).isEqualTo("cheers, Sentinel");
+        String resourceName = "apiBaz";
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode(resourceName);
+        assertThat(cn).isNotNull();
+        assertThat(cn.passQps()).isPositive();
+
+        try {
+            fooService.baz("fail");
+            fail("should not reach here");
+        } catch (IllegalMonitorStateException ex) {
+            assertThat(cn.exceptionQps()).isZero();
+        }
+    }
+
+    @Test
     public void testNormalBlockHandlerAndFallback() throws Exception {
         assertThat(fooService.foo(1)).isEqualTo("Hello for 1");
         String resourceName = "apiFoo";
