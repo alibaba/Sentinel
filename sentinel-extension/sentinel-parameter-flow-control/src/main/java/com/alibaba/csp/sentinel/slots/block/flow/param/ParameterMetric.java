@@ -88,7 +88,7 @@ public class ParameterMetric {
         if (!ruleTimeCounters.containsKey(rule)) {
             synchronized (lock) {
                 if (ruleTimeCounters.get(rule) == null) {
-                    int size = Math.min(BASE_PARAM_MAX_CAPACITY * rule.getDurationInSec(), TOTAL_MAX_CAPACITY);
+                    long size = Math.min(BASE_PARAM_MAX_CAPACITY * rule.getDurationInSec(), TOTAL_MAX_CAPACITY);
                     ruleTimeCounters.put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(size));
                 }
             }
@@ -97,7 +97,7 @@ public class ParameterMetric {
         if (!ruleTokenCounter.containsKey(rule)) {
             synchronized (lock) {
                 if (ruleTokenCounter.get(rule) == null) {
-                    int size = Math.min(BASE_PARAM_MAX_CAPACITY * rule.getDurationInSec(), TOTAL_MAX_CAPACITY);
+                    long size = Math.min(BASE_PARAM_MAX_CAPACITY * rule.getDurationInSec(), TOTAL_MAX_CAPACITY);
                     ruleTokenCounter.put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(size));
                 }
             }

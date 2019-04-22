@@ -63,7 +63,7 @@ public class ParamFlowRule extends AbstractRule {
 
     private int maxQueueingTimeMs = 0;
     private int burstCount = 0;
-    private int durationInSec = 1;
+    private long durationInSec = 1;
 
     /**
      * Original exclusion items of parameters.
@@ -111,11 +111,11 @@ public class ParamFlowRule extends AbstractRule {
         return this;
     }
 
-    public int getDurationInSec() {
+    public long getDurationInSec() {
         return durationInSec;
     }
 
-    public ParamFlowRule setDurationInSec(int durationInSec) {
+    public ParamFlowRule setDurationInSec(long durationInSec) {
         this.durationInSec = durationInSec;
         return this;
     }
@@ -227,26 +227,10 @@ public class ParamFlowRule extends AbstractRule {
         result = 31 * result + controlBehavior;
         result = 31 * result + maxQueueingTimeMs;
         result = 31 * result + burstCount;
-        result = 31 * result + durationInSec;
+        result = 31 * result + (int)(durationInSec ^ (durationInSec >>> 32));
         result = 31 * result + (paramFlowItemList != null ? paramFlowItemList.hashCode() : 0);
         result = 31 * result + (clusterMode ? 1 : 0);
         result = 31 * result + (clusterConfig != null ? clusterConfig.hashCode() : 0);
         return result;
-    }
-
-    @Override
-    public String toString() {
-        return "ParamFlowRule{" +
-            "grade=" + grade +
-            ", paramIdx=" + paramIdx +
-            ", count=" + count +
-            ", controlBehavior=" + controlBehavior +
-            ", maxQueueingTimeMs=" + maxQueueingTimeMs +
-            ", burstCount=" + burstCount +
-            ", durationInSec=" + durationInSec +
-            ", paramFlowItemList=" + paramFlowItemList +
-            ", clusterMode=" + clusterMode +
-            ", clusterConfig=" + clusterConfig +
-            '}';
     }
 }
