@@ -62,8 +62,9 @@ public final class ParamFlowRuleManager {
     }
 
     /**
-     * Listen to the {@link SentinelProperty} for {@link ParamFlowRule}s. The property is the source
-     * of {@link ParamFlowRule}s. Parameter flow rules can also be set by {@link #loadRules(List)} directly.
+     * Listen to the {@link SentinelProperty} for {@link ParamFlowRule}s. The
+     * property is the source of {@link ParamFlowRule}s. Parameter flow rules
+     * can also be set by {@link #loadRules(List)} directly.
      *
      * @param property the property to listen
      */
@@ -149,6 +150,7 @@ public final class ParamFlowRuleManager {
                     ruleSet = new HashSet<>();
                     newRuleMap.put(resourceName, ruleSet);
                 }
+
                 ruleSet.add(rule);
             }
 
@@ -164,6 +166,6 @@ public final class ParamFlowRuleManager {
         }
     }
 
-    private ParamFlowRuleManager() {}
+    private ParamFlowRuleManager() {
+    }
 }
-
