@@ -233,4 +233,20 @@ public class ParamFlowRule extends AbstractRule {
         result = 31 * result + (clusterConfig != null ? clusterConfig.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "ParamFlowRule{" +
+            "grade=" + grade +
+            ", paramIdx=" + paramIdx +
+            ", count=" + count +
+            ", controlBehavior=" + controlBehavior +
+            ", maxQueueingTimeMs=" + maxQueueingTimeMs +
+            ", burstCount=" + burstCount +
+            ", durationInSec=" + durationInSec +
+            ", paramFlowItemList=" + paramFlowItemList +
+            ", clusterMode=" + clusterMode +
+            ", clusterConfig=" + clusterConfig +
+            '}';
+    }
 }
