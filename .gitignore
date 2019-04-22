@@ -25,3 +25,10 @@ bin/
 # System related
 *.DS_Store
 Thumbs.db
+
+# VS Code
+.vscode
+.factorypath
+
+# Vim
+*.swp
