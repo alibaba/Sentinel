@@ -31,7 +31,10 @@ public final class ParamFlowRuleUtil {
 
     public static boolean isValidRule(ParamFlowRule rule) {
         return rule != null && !StringUtil.isBlank(rule.getResource()) && rule.getCount() >= 0
-            && rule.getGrade() >= 0 && rule.getParamIdx() != null && checkCluster(rule);
+            && rule.getGrade() >= 0 && rule.getParamIdx() != null
+            && rule.getBurstCount() >= 0 && rule.getControlBehavior() >= 0
+            && rule.getDurationInSec() > 0 && rule.getMaxQueueingTimeMs() >= 0
+            && checkCluster(rule);
     }
 
     private static boolean checkCluster(/*@PreChecked*/ ParamFlowRule rule) {
