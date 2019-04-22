@@ -20,12 +20,7 @@ import com.alibaba.csp.sentinel.spi.SpiOrder;
 import com.alibaba.csp.sentinel.transport.config.TransportConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.transport.HeartbeatSender;
-<<<<<<< HEAD
-import com.alibaba.csp.sentinel.transport.config.DashboardConfig;
-=======
 import com.alibaba.csp.sentinel.transport.config.HeartbeatConfigEntity;
-import com.alibaba.csp.sentinel.transport.config.TransportConfig;
->>>>>>> change DashbordConfig to HeartbeatConfigEntity
 import com.alibaba.csp.sentinel.util.AppNameUtil;
 import com.alibaba.csp.sentinel.util.HostNameUtil;
 import com.alibaba.csp.sentinel.util.PidUtil;
