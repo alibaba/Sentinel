@@ -15,19 +15,14 @@
  */
 package com.alibaba.csp.sentinel.dashboard.controller;
 
-import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.AuthUser;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
-import com.alibaba.csp.sentinel.dashboard.transpot.publish.Publisher;
-import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemDegradeRuleStore;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,49 +30,15 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
-import java.util.List;
 
 /**
  * @author leyou
  */
 @Controller
 @RequestMapping(value = "/degrade", produces = MediaType.APPLICATION_JSON_VALUE)
-public class DegradeController {
+public class DegradeController extends RuleController<DegradeRuleEntity> {
 
     private final Logger logger = LoggerFactory.getLogger(DegradeController.class);
-
-    @Autowired
-    private InMemDegradeRuleStore repository;
-
-    @Autowired
-    private Publisher<DegradeRuleEntity> publisher;
-
-    @Autowired
-    private AuthService<HttpServletRequest> authService;
-
-    @ResponseBody
-    @RequestMapping("/rules.json")
-    public Result<List<DegradeRuleEntity>> queryMachineRules(HttpServletRequest request, String app, String ip, Integer port) {
-        AuthUser authUser = authService.getAuthUser(request);
-        authUser.authTarget(app, PrivilegeType.READ_RULE);
-
-        if (StringUtil.isEmpty(app)) {
-            return Result.ofFail(-1, "app can't be null or empty");
-        }
-        if (StringUtil.isEmpty(ip)) {
-            return Result.ofFail(-1, "ip can't be null or empty");
-        }
-        if (port == null) {
-            return Result.ofFail(-1, "port can't be null");
-        }
-        try {
-            List<DegradeRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-            return Result.ofSuccess(rules);
-        } catch (Throwable throwable) {
-            logger.error("queryApps error:", throwable);
-            return Result.ofThrowable(-1, throwable);
-        }
-    }
 
     @ResponseBody
     @RequestMapping("/new.json")

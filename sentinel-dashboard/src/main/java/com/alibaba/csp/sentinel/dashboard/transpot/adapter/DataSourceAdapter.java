@@ -1,7 +1,7 @@
 package com.alibaba.csp.sentinel.dashboard.transpot.adapter;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
-import com.alibaba.csp.sentinel.dashboard.discovery.DataSourceMachineInfo;
+import com.alibaba.csp.sentinel.dashboard.datasource.management.DataSourceMachineInfo;
 
 import java.util.List;
 

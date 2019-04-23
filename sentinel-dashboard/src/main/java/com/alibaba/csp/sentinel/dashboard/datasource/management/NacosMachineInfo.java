@@ -1,10 +1,4 @@
-package com.alibaba.csp.sentinel.dashboard.discovery;
-
-import com.alibaba.nacos.api.PropertyKeyConst;
-
-import java.net.UnknownHostException;
-import java.util.Objects;
-import java.util.Properties;
+package com.alibaba.csp.sentinel.dashboard.datasource.management;
 
 /**
  * the machine info of nacos
@@ -13,18 +7,15 @@ import java.util.Properties;
  */
 public class NacosMachineInfo extends DataSourceMachineInfo {
 
-    private Properties properties;
+    private String properties;
     private String group;
     private long timeoutMs;
 
-    public Properties getProperties() {
+    public String getProperties() {
         return properties;
     }
 
-    public void setProperties(Properties properties) throws UnknownHostException {
-        if (Objects.isNull(properties.getProperty(PropertyKeyConst.SERVER_ADDR))) {
-            throw new UnknownHostException("Nacos server address can't be null");
-        }
+    public void setProperties(String properties) {
         this.properties = properties;
     }
 

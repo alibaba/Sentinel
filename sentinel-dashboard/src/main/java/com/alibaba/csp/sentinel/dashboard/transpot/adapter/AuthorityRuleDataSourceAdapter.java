@@ -1,7 +1,7 @@
 package com.alibaba.csp.sentinel.dashboard.transpot.adapter;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.AuthorityRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.discovery.DataSourceMachineInfo;
+import com.alibaba.csp.sentinel.dashboard.datasource.management.DataSourceMachineInfo;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRule;
 import com.alibaba.fastjson.JSON;
 import org.springframework.stereotype.Component;

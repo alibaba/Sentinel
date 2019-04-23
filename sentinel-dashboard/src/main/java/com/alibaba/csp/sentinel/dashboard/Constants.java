@@ -39,5 +39,15 @@ public class Constants {
 
     public static final String FLOW_RULE_STORE = "FlowRuleStore";
 
-    public static final String CONFIG_CHANGE_CHECKER = "configChangeChecker";
+    public static final String CONFIG_CHANGE_CHECKER = "ConfigChangeChecker";
+
+    public static final String MANAGEMENT = "Management";
+
+    public static final String DATASOURCE_APOLLO = "Apollo";
+
+    public static final String DATASOURCE_NACOS = "Nacos";
+
+    public static final String APOLLO_MANAGEMENT = DATASOURCE_APOLLO + MANAGEMENT;
+
+    public static final String NACOS_MANAGEMENT = DATASOURCE_NACOS + MANAGEMENT;
 }

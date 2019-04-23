@@ -1,4 +1,6 @@
-package com.alibaba.csp.sentinel.dashboard.discovery;
+package com.alibaba.csp.sentinel.dashboard.datasource.management;
+
+import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 
 /**
  * Third-party data source public key information
@@ -12,6 +14,7 @@ public class DataSourceMachineInfo extends MachineInfo {
     private String authorityRulesKey;
     private String systemRulesKey;
     private String paramFlowRulesKey;
+    private String dataSourceType;
 
     public String getDegradeRulesKey() {
         return degradeRulesKey;
@@ -53,6 +56,14 @@ public class DataSourceMachineInfo extends MachineInfo {
         this.paramFlowRulesKey = paramFlowRulesKey;
     }
 
+    public String getDataSourceType() {
+        return dataSourceType;
+    }
+
+    public void setDataSourceType(String dataSourceType) {
+        this.dataSourceType = dataSourceType;
+    }
+
     @Override
     public String toString() {
         return new StringBuilder("DataSourceMachineInfo{")
@@ -62,6 +73,7 @@ public class DataSourceMachineInfo extends MachineInfo {
                     .append(", authorityRulesKey='").append(authorityRulesKey).append('\'')
                     .append(", systemRulesKey='").append(systemRulesKey).append('\'')
                     .append(", paramFlowRulesKey='").append(paramFlowRulesKey).append('\'')
+                    .append(", dataSourceType='").append(dataSourceType).append('\'')
                     .append('}').toString();
     }
 }

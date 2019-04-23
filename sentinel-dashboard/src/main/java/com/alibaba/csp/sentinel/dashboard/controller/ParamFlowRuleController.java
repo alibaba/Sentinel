@@ -15,7 +15,6 @@
  */
 package com.alibaba.csp.sentinel.dashboard.controller;
 
-import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.AuthUser;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.SentinelVersion;
@@ -23,8 +22,6 @@ import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEn
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
-import com.alibaba.csp.sentinel.dashboard.transpot.publish.Publisher;
-import com.alibaba.csp.sentinel.dashboard.repository.rule.RuleRepository;
 import com.alibaba.csp.sentinel.dashboard.util.VersionUtils;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -52,20 +49,12 @@ import java.util.Optional;
  */
 @RestController
 @RequestMapping(value = "/paramFlow")
-public class ParamFlowRuleController {
+public class ParamFlowRuleController extends RuleController<ParamFlowRuleEntity> {
 
     private final Logger logger = LoggerFactory.getLogger(ParamFlowRuleController.class);
 
     @Autowired
     private AppManagement appManagement;
-    @Autowired
-    private RuleRepository<ParamFlowRuleEntity, Long> repository;
-
-    @Autowired
-    private AuthService<HttpServletRequest> authService;
-
-    @Autowired
-    private Publisher<ParamFlowRuleEntity> publisher;
 
     private boolean checkIfSupported(String app, String ip, int port) {
         try {

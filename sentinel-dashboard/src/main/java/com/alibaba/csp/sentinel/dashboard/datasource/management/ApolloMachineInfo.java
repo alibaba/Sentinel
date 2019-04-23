@@ -1,4 +1,4 @@
-package com.alibaba.csp.sentinel.dashboard.discovery;
+package com.alibaba.csp.sentinel.dashboard.datasource.management;
 
 /**
  * the machine info of apollo

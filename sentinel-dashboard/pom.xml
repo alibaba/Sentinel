@@ -41,12 +41,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.alibaba.csp</groupId>
-            <artifactId>sentinel-datasource-nacos</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>com.ctrip.framework.apollo</groupId>
             <artifactId>apollo-openapi</artifactId>
             <version>${apollo.version}</version>
@@ -54,7 +48,7 @@
 
         <dependency>
             <groupId>com.alibaba.nacos</groupId>
-            <artifactId>nacos-api</artifactId>
+            <artifactId>nacos-client</artifactId>
             <version>${nacos.version}</version>
         </dependency>
 

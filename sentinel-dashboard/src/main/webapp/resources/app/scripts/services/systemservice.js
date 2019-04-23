@@ -8,7 +8,7 @@ app.service('SystemService', ['$http', function ($http) {
       port: port
     };
     return $http({
-      url: 'system/rules.json',
+      url: 'system/rules',
       params: param,
       method: 'GET'
     });

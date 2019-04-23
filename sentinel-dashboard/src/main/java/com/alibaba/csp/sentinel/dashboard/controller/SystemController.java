@@ -54,7 +54,7 @@ public class SystemController {
     private Publisher<SystemRuleEntity> publisher;
 
     @ResponseBody
-    @RequestMapping("/rules.json")
+    @RequestMapping("/rules")
     public Result<List<SystemRuleEntity>> queryMachineRules(HttpServletRequest request, String app, String ip, Integer port) {
             AuthUser authUser = authService.getAuthUser(request);
             authUser.authTarget(app, PrivilegeType.READ_RULE);

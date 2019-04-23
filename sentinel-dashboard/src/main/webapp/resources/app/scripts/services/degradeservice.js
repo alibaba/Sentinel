@@ -8,7 +8,7 @@ app.service('DegradeService', ['$http', function ($http) {
       port: port
     };
     return $http({
-      url: 'degrade/rules.json',
+      url: 'degrade/rules',
       params: param,
       method: 'GET'
     });
