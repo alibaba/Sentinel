@@ -29,17 +29,35 @@ import java.util.concurrent.ThreadLocalRandom;
 @Service
 public class FooService {
 
-    @SentinelResource(value = "apiFoo", blockHandler = "fooBlockHandler", fallback = "fooFallbackFunc",
+    @SentinelResource(value = "apiFoo", blockHandler = "fooBlockHandler",
         exceptionsToTrace = {IllegalArgumentException.class})
     public String foo(int i) throws Exception {
-        if (i == 9527) {
-            throw new DegradeException("ggg");
-        }
         if (i == 5758) {
             throw new IllegalAccessException();
         }
         if (i == 5763) {
             throw new IllegalArgumentException();
+        }
+        return "Hello for " + i;
+    }
+
+    @SentinelResource(value = "apiFooWithFallback", blockHandler = "fooBlockHandler", fallback = "fooFallbackFunc",
+        exceptionsToTrace = {IllegalArgumentException.class})
+    public String fooWithFallback(int i) throws Exception {
+        if (i == 5758) {
+            throw new IllegalAccessException();
+        }
+        if (i == 5763) {
+            throw new IllegalArgumentException();
+        }
+        return "Hello for " + i;
+    }
+
+    @SentinelResource(value = "apiAnotherFooWithDefaultFallback", defaultFallback = "globalDefaultFallback",
+        fallbackClass = {FooUtil.class})
+    public String anotherFoo(int i) {
+        if (i == 5758) {
+            throw new IllegalArgumentException("oops");
         }
         return "Hello for " + i;
     }
