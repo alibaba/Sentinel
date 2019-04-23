@@ -64,4 +64,6 @@ public final class Constants {
      * The global switch for Sentinel.
      */
     public static volatile boolean ON = true;
+
+    private Constants() {}
 }
