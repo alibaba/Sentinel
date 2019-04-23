@@ -1,6 +1,7 @@
 # Sentinel Zuul Adapter
 
-Sentinel Zuul Adapter provides **ServiceId level** and **API Path level** flow control for Zuul gateway service.
+Sentinel Zuul Adapter provides **route level** and **customized API level**
+flow control for Zuul API Gateway.
 
 > *Note*: this adapter only support Zuul 1.x.
 
@@ -18,53 +19,67 @@ Sentinel Zuul Adapter provides **ServiceId level** and **API Path level** flow c
 
 2. Register filters
 
-```java
-// get registry
-final FilterRegistry r = FilterRegistry.instance();
-// this is property config. set filter enable
-SentinelZuulProperties properties = new SentinelZuulProperties();
-properties.setEnabled(true);
-// set url cleaner, here use default
-DefaultUrlCleaner defaultUrlCleaner = new DefaultUrlCleaner();
-// set origin parser. here use default
-DefaultRequestOriginParser defaultRequestOriginParser = new DefaultRequestOriginParser();
+For Spring Cloud Zuul users, we only need to inject the three filters in Spring configuration class like this:
 
-// register filters. you must register all three filters.
-SentinelPreFilter sentinelPreFilter = new SentinelPreFilter(properties, defaultUrlCleaner, defaultRequestOriginParser);
-r.put("sentinelPreFilter", sentinelPreFilter);
-SentinelPostFilter postFilter = new SentinelPostFilter(properties);
-r.put("sentinelPostFilter", postFilter);
-SentinelErrorFilter errorFilter = new SentinelErrorFilter(properties);
-r.put("sentinelErrorFilter", errorFilter);
+```java
+@Configuration
+public class ZuulConfig {
+
+    @Bean
+    public ZuulFilter sentinelZuulPreFilter() {
+        // We can provider the filter order here.
+        return new SentinelZuulPreFilter(10000);
+    }
+
+    @Bean
+    public ZuulFilter sentinelZuulPostFilter() {
+        return new SentinelZuulPostFilter(1000);
+    }
+
+    @Bean
+    public ZuulFilter sentinelZuulErrorFilter() {
+        return new SentinelZuulErrorFilter(-1);
+    }
+}
+```
+
+For original Zuul users:
+
+```java
+// Get filter registry
+final FilterRegistry r = FilterRegistry.instance();
+
+// We need to register all three filters.
+SentinelZuulPreFilter sentinelPreFilter = new SentinelZuulPreFilter();
+r.put("sentinelZuulPreFilter", sentinelPreFilter);
+SentinelZuulPostFilter postFilter = new SentinelZuulPostFilter();
+r.put("sentinelZuulPostFilter", postFilter);
+SentinelZuulErrorFilter errorFilter = new SentinelZuulErrorFilter();
+r.put("sentinelZuulErrorFilter", errorFilter);
 ```
 
 ## How it works
 
-As Zuul run as per thread per connection block model, we add filters around `route Filter` to trace sentinel statistics.
+As Zuul run as per thread per connection block model, we add filters around route filter to trace Sentinel statistics.
 
-- `SentinelPreFilter`: Get an entry of resource, the first order is **ServiceId** (the key in RequestContext is `serviceId`, this can set in own custom filter), then **API Path**.
-- `SentinelPostFilter`: When success response, exit entry.
-- `SentinelPreFilter`:  When an `Exception` caught, trace the exception and exit context.
+- `SentinelZuulPreFilter`: This pre-filter will regard all proxy ID (`proxy` in `RequestContext`) and all customized API as resources. When a `BlockException` caught, the filter will try to find a fallback to execute.
+- `SentinelZuulPostFilter`: When the response has no exception caught, the post filter will complete the entries.
+- `SentinelZuulPreFilter`:  When an exception is caught, the filter will trace the exception and complete the entries.
 
 <img width="792" src="https://user-images.githubusercontent.com/9305625/47277113-6b5da780-d5ef-11e8-8a0a-93a6b09b0887.png">
 
-The order of filters can be changed in property.
+The order of filters can be changed via the constructor.
 
 The invocation chain resembles this:
 
 ```bash
-EntranceNode: machine-root(t:3 pq:0 bq:0 tq:0 rt:0 prq:0 1mp:0 1mb:0 1mt:0)
--EntranceNode: coke(t:2 pq:0 bq:0 tq:0 rt:0 prq:0 1mp:0 1mb:0 1mt:0)
---coke(t:2 pq:0 bq:0 tq:0 rt:0 prq:0 1mp:0 1mb:0 1mt:0)
----/coke/coke(t:0 pq:0 bq:0 tq:0 rt:0 prq:0 1mp:0 1mb:0 1mt:0)
--EntranceNode: sentinel_default_context(t:0 pq:0 bq:0 tq:0 rt:0 prq:0 1mp:0 1mb:0 1mt:0)
--EntranceNode: book(t:1 pq:0 bq:0 tq:0 rt:0 prq:0 1mp:0 1mb:0 1mt:0)
---book(t:1 pq:0 bq:0 tq:0 rt:0 prq:0 1mp:0 1mb:0 1mt:0)
----/book/coke(t:0 pq:0 bq:0 tq:0 rt:0 prq:0 1mp:0 1mb:0 1mt:0)
+-EntranceNode: sentinel_gateway_context$$route$$another-route-b(t:0 pq:0.0 bq:0.0 tq:0.0 rt:0.0 prq:0.0 1mp:8 1mb:1 1mt:9)
+--another-route-b(t:0 pq:0.0 bq:0.0 tq:0.0 rt:0.0 prq:0.0 1mp:4 1mb:1 1mt:5)
+--another_customized_api(t:0 pq:0.0 bq:0.0 tq:0.0 rt:0.0 prq:0.0 1mp:4 1mb:0 1mt:4)
+-EntranceNode: sentinel_gateway_context$$route$$my-route-1(t:0 pq:0.0 bq:0.0 tq:0.0 rt:0.0 prq:0.0 1mp:6 1mb:0 1mt:6)
+--my-route-1(t:0 pq:0.0 bq:0.0 tq:0.0 rt:0.0 prq:0.0 1mp:2 1mb:0 1mt:2)
+--some_customized_api(t:0 pq:0.0 bq:0.0 tq:0.0 rt:0.0 prq:0.0 1mp:2 1mb:0 1mt:2)
 ```
-
-- `book` and `coke` are serviceId.
-- `/book/coke` is api path, the real API path is `/coke`.
 
 ## Integration with Sentinel Dashboard
 
@@ -76,7 +91,7 @@ EntranceNode: machine-root(t:3 pq:0 bq:0 tq:0 rt:0 prq:0 1mp:0 1mb:0 1mt:0)
 You can implement `SentinelFallbackProvider` to define your own fallback provider when Sentinel `BlockException` is thrown.
 The default fallback provider is `DefaultBlockFallbackProvider`.
 
-By default fallback route is `ServiveId + URI PATH`, example `/book/coke`, first `book` is serviceId, `/coke` is URI PATH, so that both can be needed.
+By default fallback route is proxy ID (or customized API name).
 
 Here is an example:
 
@@ -90,7 +105,7 @@ public class MyBlockFallbackProvider implements ZuulBlockFallbackProvider {
     // you can define root as service level
     @Override
     public String getRoute() {
-        return "/coke/coke";
+        return "my-route";
     }
 
     @Override
