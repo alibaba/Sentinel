@@ -13,52 +13,66 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.service;
+package com.alibaba.csp.sentinel.dashboard.auth;
 
-import javax.servlet.http.HttpServletRequest;
-
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
 /**
- * A fake AuthService implementation, which will pass all user auth checking.
- *
- * @author Carpenter Lee
+ * @author cdfive
+ * @since 1.6.0
  */
+@Primary
 @Component
-public class FakeAuthServiceImpl implements AuthService<HttpServletRequest> {
+public class SimpleWebAuthServiceImpl implements AuthService<HttpServletRequest> {
+
+    public static final String WEB_SESSTION_KEY = "session_sentinel_admin";
+
     @Override
     public AuthUser getAuthUser(HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        Object sentinelUserObj = session.getAttribute(SimpleWebAuthServiceImpl.WEB_SESSTION_KEY);
+        if (sentinelUserObj != null && sentinelUserObj instanceof AuthUser) {
+            return (AuthUser) sentinelUserObj;
+        }
 
-        return new AuthUserImpl();
+        return null;
     }
 
-    static final class AuthUserImpl implements AuthUser {
+    public static final class SimpleWebAuthUserImpl implements AuthUser {
+
+        private String username;
+
+        public SimpleWebAuthUserImpl(String username) {
+            this.username = username;
+        }
 
         @Override
         public boolean authTarget(String target, PrivilegeType privilegeType) {
-            // fake implementation, always return true
             return true;
         }
 
         @Override
         public boolean isSuperUser() {
-            // fake implementation, always return true
             return true;
         }
 
         @Override
         public String getNickName() {
-            return "FAKE_NICK_NAME";
+            return username;
         }
 
         @Override
         public String getLoginName() {
-            return "FAKE_LOGIN_NAME";
+            return username;
         }
 
         @Override
-        public String getEmpId() {
-            return "FAKE_EMP_ID";
+        public String getId() {
+            return username;
         }
     }
 }

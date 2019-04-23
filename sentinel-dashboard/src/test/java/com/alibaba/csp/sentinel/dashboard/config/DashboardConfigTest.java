@@ -24,11 +24,34 @@ import org.junit.contrib.java.lang.system.EnvironmentVariables;
 public class DashboardConfigTest {
     @Rule
     public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
-    
+
+    @Test
+    public void testGetConfigStr() {
+        // clear cache
+        DashboardConfig.clearCache();
+
+        // if not set, return null
+        assertEquals(null, DashboardConfig.getConfigStr("a"));
+
+        // test property
+        System.setProperty("a", "111");
+        assertEquals("111", DashboardConfig.getConfigStr("a"));
+
+        // test env
+        environmentVariables.set("a", "222");
+        // return value in cache
+        assertEquals("111", DashboardConfig.getConfigStr("a"));
+
+        // clear cache and then test
+        DashboardConfig.clearCache();
+        assertEquals("222", DashboardConfig.getConfigStr("a"));
+    }
+
     @Test
     public void testGetConfigInt() {
-        // skip cache
-        
+        // clear cache
+        DashboardConfig.clearCache();
+
         // default value
         assertEquals(0, DashboardConfig.getConfigInt("t", 0, 10));
         DashboardConfig.clearCache();

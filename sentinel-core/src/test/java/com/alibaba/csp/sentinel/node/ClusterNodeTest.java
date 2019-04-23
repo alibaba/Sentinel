@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -81,8 +80,6 @@ public class ClusterNodeTest {
             // Here we need a thread-safe concurrent set (created from ConcurrentHashMap).
             final Set<Node> createdNodes = Collections.newSetFromMap(new ConcurrentHashMap<Node, Boolean>());
 
-            final Random random = new Random();
-
             // 10 threads, 3 origins, 20 tasks (calling 20 times of ClusterNode#getOrCreateOriginNode concurrently)
             final ExecutorService es = Executors.newFixedThreadPool(10);
             final List<String> origins = Arrays.asList("origin1", "origin2", "origin3");
@@ -91,11 +88,12 @@ public class ClusterNodeTest {
 
             List<Callable<Object>> tasks = new ArrayList<Callable<Object>>(taskCount);
             for (int i = 0; i < taskCount; i++) {
+                final int index = i % origins.size();
                 tasks.add(new Callable<Object>() {
                     @Override
                     public Object call() throws Exception {
                         // one task call one times of ClusterNode#getOrCreateOriginNode
-                        Node node = clusterNode.getOrCreateOriginNode(origins.get(random.nextInt(origins.size())));
+                        Node node = clusterNode.getOrCreateOriginNode(origins.get(index));
                         // add the result node to the createdNodes set
                         createdNodes.add(node);
                         latch.countDown();

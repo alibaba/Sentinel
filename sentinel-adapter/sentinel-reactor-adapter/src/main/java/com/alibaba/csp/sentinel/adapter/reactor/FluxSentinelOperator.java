@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.adapter.reactor;
 
+import com.alibaba.csp.sentinel.util.AssertUtil;
+
 import reactor.core.CoreSubscriber;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxOperator;
@@ -29,7 +31,7 @@ public class FluxSentinelOperator<T> extends FluxOperator<T, T> {
 
     public FluxSentinelOperator(Flux<? extends T> source, EntryConfig entryConfig) {
         super(source);
-        EntryConfig.assertValid(entryConfig);
+        AssertUtil.notNull(entryConfig, "entryConfig cannot be null");
         this.entryConfig = entryConfig;
     }
 

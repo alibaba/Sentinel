@@ -6,6 +6,7 @@ import java.util.concurrent.CountDownLatch;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
 import com.alibaba.csp.sentinel.slots.statistic.metric.occupy.OccupiableBucketLeapArray;
+import com.alibaba.csp.sentinel.test.AbstractTimeBasedTest;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 
 import org.junit.Test;
@@ -17,7 +18,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author jialiang.linjl
  */
-public class OccupiableBucketLeapArrayTest {
+public class OccupiableBucketLeapArrayTest extends AbstractTimeBasedTest {
 
     private final int windowLengthInMs = 200;
     private final int intervalInSec = 2;
@@ -26,7 +27,8 @@ public class OccupiableBucketLeapArrayTest {
 
     @Test
     public void testNewWindow() {
-        long currentTime = TimeUtil.currentTimeMillis();
+        long currentTime = System.currentTimeMillis();
+        setCurrentMillis(currentTime);
         OccupiableBucketLeapArray leapArray = new OccupiableBucketLeapArray(sampleCount, intervalInMs);
 
         WindowWrap<MetricBucket> currentWindow = leapArray.currentWindow(currentTime);
@@ -42,7 +44,8 @@ public class OccupiableBucketLeapArrayTest {
     @Test
     public void testWindowInOneInterval() {
         OccupiableBucketLeapArray leapArray = new OccupiableBucketLeapArray(sampleCount, intervalInMs);
-        long currentTime = TimeUtil.currentTimeMillis();
+        long currentTime = System.currentTimeMillis();
+        setCurrentMillis(currentTime);
 
         WindowWrap<MetricBucket> currentWindow = leapArray.currentWindow(currentTime);
         currentWindow.value().addPass(1);
@@ -65,7 +68,8 @@ public class OccupiableBucketLeapArrayTest {
 
     @Test
     public void testMultiThreadUpdateEmptyWindow() throws Exception {
-        final long time = TimeUtil.currentTimeMillis();
+        final long time = System.currentTimeMillis();
+        setCurrentMillis(time);
         final int nThreads = 16;
         final OccupiableBucketLeapArray leapArray = new OccupiableBucketLeapArray(sampleCount, intervalInMs);
         final CountDownLatch latch = new CountDownLatch(nThreads);
@@ -100,7 +104,8 @@ public class OccupiableBucketLeapArrayTest {
     @Test
     public void testWindowAfterOneInterval() {
         OccupiableBucketLeapArray leapArray = new OccupiableBucketLeapArray(sampleCount, intervalInMs);
-        long currentTime = TimeUtil.currentTimeMillis();
+        long currentTime = System.currentTimeMillis();
+        setCurrentMillis(currentTime);
 
         System.out.println(currentTime);
         for (int i = 0; i < intervalInSec * 1000 / windowLengthInMs; i++) {
@@ -122,6 +127,13 @@ public class OccupiableBucketLeapArrayTest {
             sum += bucket.pass();
         }
         assertEquals(sum, 2 * intervalInSec * 1000 / windowLengthInMs - 1);
+
+        /**
+         * https://github.com/alibaba/Sentinel/issues/685
+         *
+         * Here we could not use exactly current time, because the following result is related with the above elapse.
+         * So we use the beginning current time to ensure.
+         */
         assertEquals(leapArray.currentWaiting(), 10);
     }
 }

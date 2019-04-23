@@ -13,14 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.service;
+package com.alibaba.csp.sentinel.dashboard.auth;
 
 /**
- * Interface about authentication and authorization
+ * Interface for authentication and authorization.
  *
  * @author Carpenter Lee
+ * @since 1.5.0
  */
 public interface AuthService<R> {
+
     /**
      * Get the authentication user.
      *
@@ -30,41 +32,42 @@ public interface AuthService<R> {
     AuthUser getAuthUser(R request);
 
     /**
-     * privilege type.
+     * Privilege type.
      */
     enum PrivilegeType {
         /**
-         * read rule
+         * Read rule
          */
         READ_RULE,
         /**
-         * create or modify rule
+         * Create or modify rule
          */
         WRITE_RULE,
         /**
-         * delete rule
+         * Delete rule
          */
         DELETE_RULE,
         /**
-         * read metrics
+         * Read metrics
          */
         READ_METRIC,
         /**
-         * add machine
+         * Add machine
          */
         ADD_MACHINE,
         /**
-         * equals all privileges above
+         * All privileges above are granted.
          */
         ALL
     }
 
     /**
-     * entity represents the current user
+     * Represents the current user.
      */
     interface AuthUser {
+
         /**
-         * query whether current user has the specific privilege to the target, the target
+         * Query whether current user has the specific privilege to the target, the target
          * may be an app name or an ip address, or other destination.
          * <p>
          * This method will use return value to represent  whether user has the specific
@@ -80,32 +83,31 @@ public interface AuthService<R> {
         boolean authTarget(String target, PrivilegeType privilegeType);
 
         /**
-         * check whether current user is super user
+         * Check whether current user is a super-user.
          *
          * @return if current user is super user return true, else return false.
          */
         boolean isSuperUser();
 
         /**
-         * get current user's nick name.
+         * Get current user's nick name.
          *
          * @return current user's nick name.
          */
         String getNickName();
 
         /**
-         * get current user's login name.
+         * Get current user's login name.
          *
          * @return current user's login name.
          */
         String getLoginName();
 
         /**
-         * get current user's employ id.
+         * Get current user's ID.
          *
-         * @return current user's employ id.
+         * @return ID of current user
          */
-        String getEmpId();
-
+        String getId();
     }
 }

@@ -32,11 +32,15 @@ import com.alibaba.csp.sentinel.util.PidUtil;
  * @author leyou
  */
 public class LogBase {
+
     public static final String LOG_CHARSET = "utf-8";
+
     private static final String DIR_NAME = "logs" + File.separator + "csp";
     private static final String USER_HOME = "user.home";
+
     public static final String LOG_DIR = "csp.sentinel.log.dir";
     public static final String LOG_NAME_USE_PID = "csp.sentinel.log.use.pid";
+
     private static boolean logNameUsePid = false;
 
     private static String logBaseDir;
@@ -45,8 +49,8 @@ public class LogBase {
         try {
             init();
         } catch (Throwable t) {
+            System.err.println("[LogBase] FATAL ERROR when initializing log class");
             t.printStackTrace();
-            System.exit(-1);
         }
     }
 

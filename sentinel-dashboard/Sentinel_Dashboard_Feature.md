@@ -55,6 +55,8 @@ Sentinel 提供了多种规则来保护系统的不同部分。流量控制规�
 
 项 | 类型 | 默认值 | 最小值 | 描述
 --- | --- | --- | --- | ---
+sentinel.dashboard.auth.username | String | sentinel | 无 | 登录控制台的用户名，默认为 `sentinel`
+sentinel.dashboard.auth.password | String | sentinel | 无 | 登录控制台的密码，默认为 `sentinel`
 sentinel.dashboard.app.hideAppNoMachineMillis | Integer | 0 | 60000 | 是否隐藏无健康节点的应用，距离最近一次主机心跳时间的毫秒数，默认关闭
 sentinel.dashboard.removeAppNoMachineMillis | Integer | 0 | 120000 | 是否自动删除无健康节点的应用，距离最近一次其下节点的心跳时间毫秒数，默认关闭
 sentinel.dashboard.unhealthyMachineMillis | Integer | 60000 | 30000 | 主机失联判定，不可关闭
