@@ -25,6 +25,7 @@ import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.node.EntranceNode;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
+import com.alibaba.csp.sentinel.spi.SpiOrder;
 
 /**
  * </p>
@@ -122,6 +123,7 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
  * @see EntranceNode
  * @see ContextUtil
  */
+@SpiOrder(-9000)
 public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
 
     /**

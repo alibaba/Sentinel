@@ -92,6 +92,7 @@ public final class SpiLoader {
     }
 
     /**
+     * Load and sorted SPI instance list.
      * Load the SPI instance list for provided SPI interface.
      *
      * @param clazz class of the SPI
@@ -124,6 +125,8 @@ public final class SpiLoader {
     /**
      * Load the sorted SPI instance list for provided SPI interface.
      *
+     * Note: each call return new instances.
+     *
      * @param clazz class of the SPI
      * @param <T>   SPI type
      * @return sorted SPI instance list
@@ -131,13 +134,8 @@ public final class SpiLoader {
      */
     public static <T> List<T> loadInstanceListSorted(Class<T> clazz) {
         try {
-            String key = clazz.getName();
-            // Not thread-safe, as it's expected to be resolved in a thread-safe context.
-            ServiceLoader<T> serviceLoader = SERVICE_LOADER_MAP.get(key);
-            if (serviceLoader == null) {
-                serviceLoader = ServiceLoader.load(clazz);
-                SERVICE_LOADER_MAP.put(key, serviceLoader);
-            }
+            // Call ServiceLoader.load(clazz) to get new instance
+            ServiceLoader<T> serviceLoader = ServiceLoader.load(clazz);
 
             List<SpiOrderWrapper<T>> orderWrappers = new ArrayList<>();
             for (T spi : serviceLoader) {
