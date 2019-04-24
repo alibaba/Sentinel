@@ -53,7 +53,7 @@ public abstract class AbstractSentinelAspectSupport {
     }
 
     protected Object handleBlockException(ProceedingJoinPoint pjp, String fallback, String blockHandler,
-                                          Class<?>[] blockHandlerClass, BlockException ex) throws Exception {
+        Class<?>[] blockHandlerClass, BlockException ex) throws Exception {
         // Execute fallback for degrading if configured.
         Object[] originArgs = pjp.getArgs();
         if (isDegradeFailure(ex)) {
@@ -78,6 +78,11 @@ public abstract class AbstractSentinelAspectSupport {
     }
 
     protected void traceException(Throwable ex, SentinelResource annotation) {
+        Class<? extends Throwable>[] exceptionsToIgnore = annotation.exceptionsToIgnore();
+        // The ignore list will be checked first.
+        if (exceptionsToIgnore.length > 0 && isIgnoredException(ex, exceptionsToIgnore)) {
+            return;
+        }
         if (isTracedException(ex, annotation.exceptionsToTrace())) {
             Tracer.trace(ex);
         }
@@ -86,8 +91,10 @@ public abstract class AbstractSentinelAspectSupport {
     /**
      * Check whether the exception is in tracked list of exception classes.
      *
-     * @param ex provided throwable
-     * @param exceptionsToTrace list of exceptions to trace
+     * @param ex
+     *            provided throwable
+     * @param exceptionsToTrace
+     *            list of exceptions to trace
      * @return true if it should be traced, otherwise false
      */
     private boolean isTracedException(Throwable ex, Class<? extends Throwable>[] exceptionsToTrace) {
@@ -96,6 +103,18 @@ public abstract class AbstractSentinelAspectSupport {
         }
         for (Class<? extends Throwable> exceptionToTrace : exceptionsToTrace) {
             if (exceptionToTrace.isAssignableFrom(ex.getClass())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isIgnoredException(Throwable ex, Class<? extends Throwable>[] exceptionsToIgnore) {
+        if (exceptionsToIgnore == null) {
+            return false;
+        }
+        for (Class<? extends Throwable> exceptionToIgnore : exceptionsToIgnore) {
+            if (exceptionToIgnore.isAssignableFrom(ex.getClass())) {
                 return true;
             }
         }
@@ -176,8 +195,8 @@ public abstract class AbstractSentinelAspectSupport {
         Method[] methods = clazz.getDeclaredMethods();
         for (Method method : methods) {
             if (name.equals(method.getName()) && checkStatic(mustStatic, method)
-                && returnType.isAssignableFrom(method.getReturnType())
-                && Arrays.equals(parameterTypes, method.getParameterTypes())) {
+                    && returnType.isAssignableFrom(method.getReturnType())
+                    && Arrays.equals(parameterTypes, method.getParameterTypes())) {
 
                 RecordLog.info("Resolved method [{0}] in class [{1}]", name, clazz.getCanonicalName());
                 return method;
@@ -190,7 +209,7 @@ public abstract class AbstractSentinelAspectSupport {
         } else {
             String methodType = mustStatic ? " static" : "";
             RecordLog.warn("Cannot find{0} method [{1}] in class [{2}] with parameters {3}",
-                methodType, name, clazz.getCanonicalName(), Arrays.toString(parameterTypes));
+                    methodType, name, clazz.getCanonicalName(), Arrays.toString(parameterTypes));
             return null;
         }
     }
@@ -204,7 +223,7 @@ public abstract class AbstractSentinelAspectSupport {
         Class<?> targetClass = joinPoint.getTarget().getClass();
 
         Method method = getDeclaredMethodFor(targetClass, signature.getName(),
-            signature.getMethod().getParameterTypes());
+                signature.getMethod().getParameterTypes());
         if (method == null) {
             throw new IllegalStateException("Cannot resolve target method: " + signature.getMethod().getName());
         }

@@ -65,4 +65,14 @@ public @interface SentinelResource {
      * @since 1.5.1
      */
     Class<? extends Throwable>[] exceptionsToTrace() default {Throwable.class};
+    
+    /**
+     * Indicates the exceptions to be ignored. Note that {@code exceptionsToTrace} should
+     * not appear with {@code exceptionsToIgnore} at the same time, or {@code exceptionsToIgnore}
+     * will be of higher precedence.
+     *
+     * @return the list of exception classes to ignore, empty by default
+     * @since 1.6.0
+     */
+    Class<? extends Throwable>[] exceptionsToIgnore() default {};
 }

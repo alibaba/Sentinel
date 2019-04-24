@@ -15,19 +15,19 @@
  */
 package com.alibaba.csp.sentinel.demo.flow;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
+import com.alibaba.csp.sentinel.util.TimeUtil;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * <p>
@@ -125,6 +125,16 @@ public class PaceFlowDemo {
         block.set(0);
         countDown = new CountDownLatch(1);
         initDefaultFlowRule();
+        simulatePulseFlow();
+        countDown.await();
+        System.out.println("done");
+        System.out.println("total pass:" + pass.get() + ", total block:" + block.get());
+        System.err.println("Preheating is over");
+        done.set(0);
+        pass.set(0);
+        block.set(0);
+        TimeUnit.SECONDS.sleep(1);
+        countDown = new CountDownLatch(1);
         simulatePulseFlow();
         countDown.await();
         System.out.println("done");

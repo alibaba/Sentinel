@@ -15,19 +15,20 @@
  */
 package com.alibaba.csp.sentinel.demo.flow;
 
+import com.alibaba.csp.sentinel.Entry;
+import com.alibaba.csp.sentinel.SphU;
+import com.alibaba.csp.sentinel.context.ContextUtil;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
+import com.alibaba.csp.sentinel.util.TimeUtil;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import com.alibaba.csp.sentinel.util.TimeUtil;
-import com.alibaba.csp.sentinel.Entry;
-import com.alibaba.csp.sentinel.SphU;
-import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 
 /**
  * @author jialiang.linjl
@@ -65,7 +66,7 @@ public class FlowQpsDemo {
         // set limit qps to 20
         rule1.setCount(20);
         rule1.setGrade(RuleConstant.FLOW_GRADE_QPS);
-        rule1.setLimitApp("default");
+        rule1.setLimitApp("a");
         rules.add(rule1);
         FlowRuleManager.loadRules(rules);
     }
@@ -134,7 +135,7 @@ public class FlowQpsDemo {
         public void run() {
             while (!stop) {
                 Entry entry = null;
-
+                ContextUtil.enter("a", "a");
                 try {
                     entry = SphU.entry(KEY);
                     // token acquired, means pass
