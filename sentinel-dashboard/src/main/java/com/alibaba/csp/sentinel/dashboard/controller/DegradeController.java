@@ -108,10 +108,8 @@ public class DegradeController extends RuleController<DegradeRuleEntity> {
         if (id == null) {
             return Result.ofFail(-1, "id can't be null");
         }
-        if (grade != null) {
-            if (grade < RuleConstant.DEGRADE_GRADE_RT || grade > RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
-                return Result.ofFail(-1, "Invalid grade: " + grade);
-            }
+        if (grade != null && checkInvalidGrade(grade)) {
+            return Result.ofFail(-1, "Invalid grade: " + grade);
         }
         DegradeRuleEntity entity = repository.findById(id);
         if (entity == null) {
@@ -174,6 +172,10 @@ public class DegradeController extends RuleController<DegradeRuleEntity> {
             logger.error("Publish degrade rules failed after rule delete");
         }
         return Result.ofSuccess(id);
+    }
+
+    private boolean checkInvalidGrade(Integer grade) {
+        return grade < RuleConstant.DEGRADE_GRADE_RT || grade > RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT;
     }
 
 }

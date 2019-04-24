@@ -92,9 +92,7 @@ public class AuthorityRuleController extends RuleController<AuthorityRuleEntity>
             logger.error("Failed to add authority rule", throwable);
             return Result.ofThrowable(-1, throwable);
         }
-        if (!publisher.publish(entity.getApp(), entity.getIp(), entity.getPort())) {
-            logger.error("Publish authority rules failed after rule add");
-        }
+        publishRules(entity);
         return Result.ofSuccess(entity);
     }
 
@@ -124,9 +122,7 @@ public class AuthorityRuleController extends RuleController<AuthorityRuleEntity>
             logger.error("Failed to save authority rule", throwable);
             return Result.ofThrowable(-1, throwable);
         }
-        if (!publisher.publish(entity.getApp(), entity.getIp(), entity.getPort())) {
-            logger.info("publish authority rules failed after rule update");
-        }
+        publishRules(entity);
         return Result.ofSuccess(entity);
     }
 
@@ -146,9 +142,7 @@ public class AuthorityRuleController extends RuleController<AuthorityRuleEntity>
         } catch (Exception e) {
             return Result.ofFail(-1, e.getMessage());
         }
-        if (!publisher.publish(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort())) {
-            logger.info("publish authority rules failed after rule delete");
-        }
+        publishRules(oldEntity);
         return Result.ofSuccess(id);
     }
 

@@ -55,7 +55,7 @@ public abstract class RuleController<T extends RuleEntity> {
         }
     }
 
-    protected void publishRule(T ruleEntity) {
+    protected void publishRules(T ruleEntity) {
         if (!publisher.publish(ruleEntity.getApp(), ruleEntity.getIp(), ruleEntity.getPort())) {
             logger.info("publish flow rules failed after rule delete");
         }

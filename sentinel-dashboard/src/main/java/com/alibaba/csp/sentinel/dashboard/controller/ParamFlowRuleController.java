@@ -20,7 +20,6 @@ import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.SentinelVersion;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.dashboard.util.VersionUtils;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
@@ -29,18 +28,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -69,34 +65,6 @@ public class ParamFlowRuleController extends RuleController<ParamFlowRuleEntity>
         }
     }
 
-    @GetMapping("/rules")
-    public Result<List<ParamFlowRuleEntity>> apiQueryAllRulesForMachine(HttpServletRequest request,
-                                                                        @RequestParam String app,
-                                                                        @RequestParam String ip,
-                                                                        @RequestParam Integer port) {
-        AuthUser authUser = authService.getAuthUser(request);
-        authUser.authTarget(app, PrivilegeType.READ_RULE);
-        if (StringUtil.isEmpty(app)) {
-            return Result.ofFail(-1, "app cannot be null or empty");
-        }
-        if (StringUtil.isEmpty(ip)) {
-            return Result.ofFail(-1, "ip cannot be null or empty");
-        }
-        if (port == null || port <= 0) {
-            return Result.ofFail(-1, "Invalid parameter: port");
-        }
-        if (!checkIfSupported(app, ip, port)) {
-            return unsupportedVersion();
-        }
-        try {
-            List<ParamFlowRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-            return Result.ofSuccess(rules);
-        } catch (Throwable throwable) {
-            logger.error("Error when querying parameter flow rules", throwable);
-            return Result.ofFail(-1, throwable.getMessage());
-        }
-    }
-
     @PostMapping("/rule")
     public Result<ParamFlowRuleEntity> apiAddParamFlowRule(HttpServletRequest request,
                                                            @RequestBody ParamFlowRuleEntity entity) {
@@ -116,7 +84,7 @@ public class ParamFlowRuleController extends RuleController<ParamFlowRuleEntity>
         entity.setGmtModified(date);
         try {
             entity = repository.save(entity);
-            publishRules(entity.getApp(), entity.getIp(), entity.getPort());
+            publishRules(entity);
             return Result.ofSuccess(entity);
         } catch (Throwable throwable) {
             logger.error("Error when adding new parameter flow rules", throwable);
@@ -181,7 +149,7 @@ public class ParamFlowRuleController extends RuleController<ParamFlowRuleEntity>
         entity.setGmtModified(date);
         try {
             entity = repository.save(entity);
-            publishRules(entity.getApp(), entity.getIp(), entity.getPort());
+            publishRules(entity);
             return Result.ofSuccess(entity);
         } catch (Throwable throwable) {
             logger.error("Error when updating parameter flow rules, id=" + id, throwable);
@@ -202,16 +170,12 @@ public class ParamFlowRuleController extends RuleController<ParamFlowRuleEntity>
         authUser.authTarget(oldEntity.getApp(), PrivilegeType.DELETE_RULE);
         try {
             repository.delete(id);
-            publishRules(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort());
+            publishRules(oldEntity);
             return Result.ofSuccess(id);
         } catch (Throwable throwable) {
             logger.error("Error when deleting parameter flow rules", throwable);
             return Result.ofFail(-1, throwable.getMessage());
         }
-    }
-
-    private void publishRules(String app, String ip, Integer port) {
-        publisher.publish(app, ip, port);
     }
 
     private <R> Result<R> unsupportedVersion() {

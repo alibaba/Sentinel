@@ -112,7 +112,7 @@ public class FlowControllerV1 extends RuleController<FlowRuleEntity> {
             logger.error("Failed to add flow rule", throwable);
             return Result.ofThrowable(-1, throwable);
         }
-        publishRule(entity);
+        publishRules(entity);
         return Result.ofSuccess(entity);
     }
 
@@ -191,7 +191,7 @@ public class FlowControllerV1 extends RuleController<FlowRuleEntity> {
             logger.error("save error:", throwable);
             return Result.ofThrowable(-1, throwable);
         }
-        publishRule(entity);
+        publishRules(entity);
         return Result.ofSuccess(entity);
     }
 
@@ -211,7 +211,7 @@ public class FlowControllerV1 extends RuleController<FlowRuleEntity> {
         } catch (Exception e) {
             return Result.ofFail(-1, e.getMessage());
         }
-        publishRule(oldEntity);
+        publishRules(oldEntity);
         return Result.ofSuccess(id);
     }
 
