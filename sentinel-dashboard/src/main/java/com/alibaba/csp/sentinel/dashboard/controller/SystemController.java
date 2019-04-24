@@ -38,7 +38,7 @@ import java.util.Date;
 public class SystemController extends RuleController<SystemRuleEntity> {
     private static Logger logger = LoggerFactory.getLogger(SystemController.class);
 
-    private int countNotNullAndNotNegtive(Number... values) {
+    private int countNotNullAndNotNegative(Number... values) {
         int notNullCount = 0;
         for (int i = 0; i < values.length; i++) {
             if (values[i] != null && values[i].doubleValue() >= 0) {
@@ -63,7 +63,7 @@ public class SystemController extends RuleController<SystemRuleEntity> {
         if (port == null) {
             return Result.ofFail(-1, "port can't be null");
         }
-        int notNullCount = countNotNullAndNotNegtive(avgLoad, avgRt, maxThread, qps);
+        int notNullCount = countNotNullAndNotNegative(avgLoad, avgRt, maxThread, qps);
         if (notNullCount != 1) {
             return Result.ofFail(-1, "only one of [avgLoad, avgRt, maxThread, qps] "
                 + "value must be set >= 0, but " + notNullCount + " values get");
