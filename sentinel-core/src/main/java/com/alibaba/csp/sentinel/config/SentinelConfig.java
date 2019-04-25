@@ -20,6 +20,7 @@ import java.io.FileInputStream;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import com.alibaba.csp.sentinel.log.LogBase;
 import com.alibaba.csp.sentinel.log.RecordLog;
@@ -123,7 +124,7 @@ public class SentinelConfig {
         }
 
         // JVM parameter override file config.
-        for (Map.Entry<Object, Object> entry : System.getProperties().entrySet()) {
+        for (Map.Entry<Object, Object> entry : new CopyOnWriteArraySet<>(System.getProperties().entrySet())) {
             String configKey = entry.getKey().toString();
             String configValue = entry.getValue().toString();
             String configValueOld = getConfig(configKey);
