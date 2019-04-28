@@ -82,19 +82,6 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
 
     private void init(final String serverAddr, final List<AuthInfo> authInfos) {
         initZookeeperListener(serverAddr, authInfos);
-        loadInitialConfig();
-    }
-
-    private void loadInitialConfig() {
-        try {
-            T newValue = loadConfig();
-            if (newValue == null) {
-                RecordLog.warn("[ZookeeperDataSource] WARN: initial config is null, you may have to check your data source");
-            }
-            getProperty().updateValue(newValue);
-        } catch (Exception ex) {
-            RecordLog.warn("[ZookeeperDataSource] Error when loading initial config", ex);
-        }
     }
 
     private void initZookeeperListener(final String serverAddr, final List<AuthInfo> authInfos) {
