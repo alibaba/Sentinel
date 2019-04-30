@@ -11,6 +11,7 @@ import com.alibaba.csp.sentinel.log.RecordLog;
  * Get all {@link MetricExtension}s via SPI.
  *
  * @author Carpenter Lee
+ * @since 1.6.1
  */
 public class MetricExtensionInit implements InitFunc {
     private static List<MetricExtension> metricExtensions = new ArrayList<>();
@@ -25,6 +26,11 @@ public class MetricExtensionInit implements InitFunc {
         }
     }
 
+    /**
+     * Get all metric extensions. DO NOT MODIFY the returned list.
+     *
+     * @return all metric extensions.
+     */
     public static List<MetricExtension> getMetricExtensions() {
         return metricExtensions;
     }

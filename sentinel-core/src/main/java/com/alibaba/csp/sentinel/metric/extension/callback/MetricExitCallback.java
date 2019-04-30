@@ -11,6 +11,7 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
  * Metric extension exit callback.
  *
  * @author Carpenter Lee
+ * @since 1.6.1
  */
 public class MetricExitCallback implements ProcessorSlotExitCallback {
     @Override
@@ -18,9 +19,9 @@ public class MetricExitCallback implements ProcessorSlotExitCallback {
         for (MetricExtension m : MetricExtensionInit.getMetricExtensions()) {
             if (context.getCurEntry().getError() == null) {
                 long realRt = TimeUtil.currentTimeMillis() - context.getCurEntry().getCreateTime();
-                m.addRt(resourceWrapper.getName(), realRt);
-                m.addSuccess(resourceWrapper.getName(), count);
-                m.decreaseThreadNum(resourceWrapper.getName());
+                m.addRt(resourceWrapper.getName(), realRt, args);
+                m.addSuccess(resourceWrapper.getName(), count, args);
+                m.decreaseThreadNum(resourceWrapper.getName(), args);
             }
         }
     }

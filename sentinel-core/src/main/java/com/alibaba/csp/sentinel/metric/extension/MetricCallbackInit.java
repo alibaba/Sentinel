@@ -9,6 +9,7 @@ import com.alibaba.csp.sentinel.slots.statistic.StatisticSlotCallbackRegistry;
  * Register callbacks for metric extension.
  *
  * @author Carpenter Lee
+ * @since 1.6.1
  */
 public class MetricCallbackInit implements InitFunc {
     @Override

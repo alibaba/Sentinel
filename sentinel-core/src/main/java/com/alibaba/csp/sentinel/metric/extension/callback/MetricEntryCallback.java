@@ -12,14 +12,15 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  * Metric extension entry callback.
  *
  * @author Carpenter Lee
+ * @since 1.6.1
  */
 public class MetricEntryCallback implements ProcessorSlotEntryCallback<DefaultNode> {
     @Override
     public void onPass(Context context, ResourceWrapper resourceWrapper, DefaultNode param, int count, Object... args)
         throws Exception {
         for (MetricExtension m : MetricExtensionInit.getMetricExtensions()) {
-            m.increaseThreadNum(resourceWrapper.getName());
-            m.addPass(resourceWrapper.getName(), count);
+            m.increaseThreadNum(resourceWrapper.getName(), args);
+            m.addPass(resourceWrapper.getName(), count, args);
         }
     }
 
@@ -27,7 +28,7 @@ public class MetricEntryCallback implements ProcessorSlotEntryCallback<DefaultNo
     public void onBlocked(BlockException ex, Context context, ResourceWrapper resourceWrapper, DefaultNode param,
                           int count, Object... args) {
         for (MetricExtension m : MetricExtensionInit.getMetricExtensions()) {
-            m.addBlock(resourceWrapper.getName(), count);
+            m.addBlock(resourceWrapper.getName(), count, args);
         }
     }
 }
