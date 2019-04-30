@@ -113,7 +113,7 @@ public final class Tracer {
             return;
         }
         for (MetricExtension m : MetricExtensionInit.getMetricExtensions()) {
-            m.addException(entry.resourceWrapper.getName(), count);
+            m.addException(entry.getResourceWrapper().getName(), count, t);
         }
 
         // clusterNode can be null when Constants.ON is false.

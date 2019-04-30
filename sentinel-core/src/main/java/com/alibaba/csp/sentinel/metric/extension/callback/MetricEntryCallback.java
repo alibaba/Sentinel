@@ -16,8 +16,8 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  */
 public class MetricEntryCallback implements ProcessorSlotEntryCallback<DefaultNode> {
     @Override
-    public void onPass(Context context, ResourceWrapper resourceWrapper, DefaultNode param, int count, Object... args)
-        throws Exception {
+    public void onPass(Context context, ResourceWrapper resourceWrapper, DefaultNode param,
+                       int count, Object... args) throws Exception {
         for (MetricExtension m : MetricExtensionInit.getMetricExtensions()) {
             m.increaseThreadNum(resourceWrapper.getName(), args);
             m.addPass(resourceWrapper.getName(), count, args);
@@ -25,10 +25,10 @@ public class MetricEntryCallback implements ProcessorSlotEntryCallback<DefaultNo
     }
 
     @Override
-    public void onBlocked(BlockException ex, Context context, ResourceWrapper resourceWrapper, DefaultNode param,
-                          int count, Object... args) {
+    public void onBlocked(BlockException ex, Context context, ResourceWrapper resourceWrapper,
+                          DefaultNode param, int count, Object... args) {
         for (MetricExtension m : MetricExtensionInit.getMetricExtensions()) {
-            m.addBlock(resourceWrapper.getName(), count, args);
+            m.addBlock(resourceWrapper.getName(), count, context.getOrigin(), ex, args);
         }
     }
 }

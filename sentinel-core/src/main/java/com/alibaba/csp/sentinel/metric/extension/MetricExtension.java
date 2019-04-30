@@ -1,5 +1,7 @@
 package com.alibaba.csp.sentinel.metric.extension;
 
+import com.alibaba.csp.sentinel.slots.block.BlockException;
+
 /**
  * This interface provides extension to Sentinel internal statistics.
  * <p>
@@ -26,12 +28,14 @@ public interface MetricExtension {
     /**
      * Add current block count of the resource name.
      *
-     * @param n        count to add
-     * @param resource resource name
-     * @param args     additional arguments of the resource, eg. if the resource is a method name,
-     *                 the args will be the parameters of the method.
+     * @param n              count to add
+     * @param resource       resource name
+     * @param origin         the original invoker.
+     * @param blockException block exception related.
+     * @param args           additional arguments of the resource, eg. if the resource is a method name,
+     *                       the args will be the parameters of the method.
      */
-    void addBlock(String resource, int n, Object... args);
+    void addBlock(String resource, int n, String origin, BlockException blockException, Object... args);
 
     /**
      * Add current completed count of the resource name.
@@ -46,12 +50,11 @@ public interface MetricExtension {
     /**
      * Add current exception count of the resource name.
      *
-     * @param n        count to add
-     * @param resource resource name
-     * @param args     additional arguments of the resource, eg. if the resource is a method name,
-     *                 the args will be the parameters of the method.
+     * @param n         count to add
+     * @param resource  resource name
+     * @param throwable exception related.
      */
-    void addException(String resource, int n, Object... args);
+    void addException(String resource, int n, Throwable throwable);
 
     /**
      * Add response time of the resource name.
