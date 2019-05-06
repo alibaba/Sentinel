@@ -1,2 +1,1 @@
-com.alibaba.csp.sentinel.metric.extension.MetricExtensionInit
 com.alibaba.csp.sentinel.metric.extension.MetricCallbackInit

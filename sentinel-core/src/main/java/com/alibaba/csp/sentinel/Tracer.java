@@ -17,7 +17,7 @@ package com.alibaba.csp.sentinel;
 
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.context.ContextUtil;
-import com.alibaba.csp.sentinel.metric.extension.MetricExtensionInit;
+import com.alibaba.csp.sentinel.metric.extension.MetricExtensionProvider;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
@@ -112,7 +112,7 @@ public final class Tracer {
         if (curNode == null) {
             return;
         }
-        for (MetricExtension m : MetricExtensionInit.getMetricExtensions()) {
+        for (MetricExtension m : MetricExtensionProvider.getMetricExtensions()) {
             m.addException(entry.getResourceWrapper().getName(), count, t);
         }
 

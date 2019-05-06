@@ -2,7 +2,7 @@ package com.alibaba.csp.sentinel.metric.extension.callback;
 
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.context.Context;
-import com.alibaba.csp.sentinel.metric.extension.MetricExtensionInit;
+import com.alibaba.csp.sentinel.metric.extension.MetricExtensionProvider;
 import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
 
@@ -20,7 +20,7 @@ public class MetricEntryCallbackTest {
     @Test
     public void onPass() throws Exception {
         FakeMetricExtension extension = new FakeMetricExtension();
-        MetricExtensionInit.getMetricExtensions().add(extension);
+        MetricExtensionProvider.addMetricExtension(extension);
 
         MetricEntryCallback entryCallback = new MetricEntryCallback();
         StringResourceWrapper resourceWrapper = new StringResourceWrapper("resource", EntryType.OUT);
@@ -34,7 +34,7 @@ public class MetricEntryCallbackTest {
     @Test
     public void onBlocked() throws Exception {
         FakeMetricExtension extension = new FakeMetricExtension();
-        MetricExtensionInit.getMetricExtensions().add(extension);
+        MetricExtensionProvider.addMetricExtension(extension);
 
         MetricEntryCallback entryCallback = new MetricEntryCallback();
         StringResourceWrapper resourceWrapper = new StringResourceWrapper("resource", EntryType.OUT);

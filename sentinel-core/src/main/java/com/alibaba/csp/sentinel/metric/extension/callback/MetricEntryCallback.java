@@ -1,7 +1,7 @@
 package com.alibaba.csp.sentinel.metric.extension.callback;
 
 import com.alibaba.csp.sentinel.context.Context;
-import com.alibaba.csp.sentinel.metric.extension.MetricExtensionInit;
+import com.alibaba.csp.sentinel.metric.extension.MetricExtensionProvider;
 import com.alibaba.csp.sentinel.metric.extension.MetricExtension;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlotEntryCallback;
@@ -18,7 +18,7 @@ public class MetricEntryCallback implements ProcessorSlotEntryCallback<DefaultNo
     @Override
     public void onPass(Context context, ResourceWrapper resourceWrapper, DefaultNode param,
                        int count, Object... args) throws Exception {
-        for (MetricExtension m : MetricExtensionInit.getMetricExtensions()) {
+        for (MetricExtension m : MetricExtensionProvider.getMetricExtensions()) {
             m.increaseThreadNum(resourceWrapper.getName(), args);
             m.addPass(resourceWrapper.getName(), count, args);
         }
@@ -27,7 +27,7 @@ public class MetricEntryCallback implements ProcessorSlotEntryCallback<DefaultNo
     @Override
     public void onBlocked(BlockException ex, Context context, ResourceWrapper resourceWrapper,
                           DefaultNode param, int count, Object... args) {
-        for (MetricExtension m : MetricExtensionInit.getMetricExtensions()) {
+        for (MetricExtension m : MetricExtensionProvider.getMetricExtensions()) {
             m.addBlock(resourceWrapper.getName(), count, context.getOrigin(), ex, args);
         }
     }
