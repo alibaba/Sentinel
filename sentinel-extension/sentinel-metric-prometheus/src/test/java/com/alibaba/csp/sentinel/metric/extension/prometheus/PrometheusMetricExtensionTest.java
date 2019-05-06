@@ -2,21 +2,38 @@ package com.alibaba.csp.sentinel.metric.extension.prometheus;
 
 import java.util.List;
 
+import com.alibaba.csp.sentinel.metric.extension.MetricExtension;
+import com.alibaba.csp.sentinel.metric.extension.MetricExtensionProvider;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 public class PrometheusMetricExtensionTest {
 
     private String r = "resource1";
+    private PrometheusMetricExtension p;
+
+    @Before
+    public void before() {
+        for (MetricExtension extension : MetricExtensionProvider.getMetricExtensions()) {
+            if (extension instanceof PrometheusMetricExtension) {
+                p = (PrometheusMetricExtension)extension;
+                break;
+            }
+        }
+        if (p == null) {
+            p = new PrometheusMetricExtension();
+        }
+    }
 
     @Test
     public void addPass() {
-        PrometheusMetricExtension p = new PrometheusMetricExtension();
+        p.getPassRequests().clear();
         int n = 4;
         p.addPass(r, n);
         Counter requests = p.getPassRequests();
@@ -27,7 +44,7 @@ public class PrometheusMetricExtensionTest {
 
     @Test
     public void addBlock() {
-        PrometheusMetricExtension p = new PrometheusMetricExtension();
+        p.getBlockRequests().clear();
         int n = 5;
         p.addBlock(r, n, "origin1", new FlowException("default"));
         Counter requests = p.getBlockRequests();
@@ -38,7 +55,7 @@ public class PrometheusMetricExtensionTest {
 
     @Test
     public void addSuccess() {
-        PrometheusMetricExtension p = new PrometheusMetricExtension();
+        p.getSuccessRequests().clear();
         int n = 6;
         p.addSuccess(r, n);
         Counter requests = p.getSuccessRequests();
@@ -49,7 +66,7 @@ public class PrometheusMetricExtensionTest {
 
     @Test
     public void addException() {
-        PrometheusMetricExtension p = new PrometheusMetricExtension();
+        p.getExceptionRequests().clear();
         int n = 7;
         p.addException(r, n, new RuntimeException("bizException"));
         Counter requests = p.getExceptionRequests();
@@ -60,7 +77,7 @@ public class PrometheusMetricExtensionTest {
 
     @Test
     public void increaseThreadNum() {
-        PrometheusMetricExtension p = new PrometheusMetricExtension();
+        p.getCurrentThreads().clear();
         p.increaseThreadNum(r);
         p.increaseThreadNum(r);
         p.increaseThreadNum(r);
@@ -73,7 +90,7 @@ public class PrometheusMetricExtensionTest {
 
     @Test
     public void decreaseThreadNum() {
-        PrometheusMetricExtension p = new PrometheusMetricExtension();
+        p.getCurrentThreads().clear();
         p.increaseThreadNum(r);
         p.increaseThreadNum(r);
         p.increaseThreadNum(r);
