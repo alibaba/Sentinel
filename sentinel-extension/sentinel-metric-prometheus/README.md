@@ -15,6 +15,7 @@ To use Sentinel Metric Prometheus, you should add the following dependency:
 Then sentinel metric will automatic write to Prometheus client via Sentinel metric extension SPI.
 
 You could export these metrics by any of [Prometheus exposition](https://github.com/prometheus/client_java#exporting). The The simplest of these may be the HTTPServer:
+
 ```java
 HTTPServer server = new HTTPServer(1234);
 ```
