@@ -15,12 +15,14 @@
  */
 package com.alibaba.csp.sentinel.init;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.util.VersionUtil;
 
 /**
  * Load registered init functions and execute in order.
@@ -32,6 +34,26 @@ public final class InitExecutor {
     private static AtomicBoolean initialized = new AtomicBoolean(false);
 
     /**
+     * Make sure the fastjson (if have one) no more less than 1.2.12
+     */
+    private static void checkFastjson() {
+        String className = "com.alibaba.fastjson.JSON";
+        try {
+            Class<?> clazz = Class.forName(className);
+            Field versionField = clazz.getDeclaredField("VERSION");
+            Object val = versionField.get(clazz);
+            if (val instanceof String) {
+                if (VersionUtil.fromVersionString((String) val) < 0x01021200) {
+                    RecordLog.warn("[InitExecutor] Init failed, fastjson is too old (should >= 1.2.12, {0} given)", val);
+                    throw new RuntimeException("fastjson is too old (should >= 1.2.12, " + val + " given)");
+                }
+            }
+        } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
+            // no fastjson.jar in class path
+        }
+    }
+
+    /**
      * If one {@link InitFunc} throws an exception, the init process
      * will immediately be interrupted and the application will exit.
      *
@@ -41,6 +63,7 @@ public final class InitExecutor {
         if (!initialized.compareAndSet(false, true)) {
             return;
         }
+        checkFastjson();
         try {
             ServiceLoader<InitFunc> loader = ServiceLoader.load(InitFunc.class);
             List<OrderWrapper> initList = new ArrayList<OrderWrapper>();
@@ -49,9 +72,9 @@ public final class InitExecutor {
                 insertSorted(initList, initFunc);
             }
             for (OrderWrapper w : initList) {
-                w.func.init();
+                w.getFunc().init();
                 RecordLog.info(String.format("[InitExecutor] Executing %s with order %d",
-                    w.func.getClass().getCanonicalName(), w.order));
+                    w.getFunc().getClass().getCanonicalName(), w.order));
             }
         } catch (Exception ex) {
             RecordLog.warn("[InitExecutor] WARN: Initialization failed", ex);
