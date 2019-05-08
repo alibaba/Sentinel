@@ -15,17 +15,13 @@
  */
 package com.alibaba.csp.sentinel.demo.zuul.gateway;
 
-import com.alibaba.csp.sentinel.adapter.gateway.zuul.fallback.ZuulBlockFallbackManager;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 import com.alibaba.csp.sentinel.adapter.gateway.zuul.filters.SentinelZuulErrorFilter;
 import com.alibaba.csp.sentinel.adapter.gateway.zuul.filters.SentinelZuulPostFilter;
 import com.alibaba.csp.sentinel.adapter.gateway.zuul.filters.SentinelZuulPreFilter;
-
 import com.netflix.zuul.ZuulFilter;
-
-import javax.annotation.PostConstruct;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 /**
  * @author Eric Zhao
@@ -48,9 +44,4 @@ public class ZuulConfig {
         return new SentinelZuulErrorFilter(-1);
     }
     
-    @PostConstruct
-    public void init() {
-    	// 注册 FallbackProvider
-    	ZuulBlockFallbackManager.registerProvider(new MyBlockFallbackProvider());
-    }
 }
