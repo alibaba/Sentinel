@@ -15,13 +15,13 @@
  */
 package com.alibaba.csp.sentinel.demo.zuul.gateway;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
 import com.alibaba.csp.sentinel.adapter.gateway.zuul.filters.SentinelZuulErrorFilter;
 import com.alibaba.csp.sentinel.adapter.gateway.zuul.filters.SentinelZuulPostFilter;
 import com.alibaba.csp.sentinel.adapter.gateway.zuul.filters.SentinelZuulPreFilter;
+
 import com.netflix.zuul.ZuulFilter;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 /**
  * @author Eric Zhao
@@ -43,5 +43,4 @@ public class ZuulConfig {
     public ZuulFilter sentinelZuulErrorFilter() {
         return new SentinelZuulErrorFilter(-1);
     }
-    
 }
