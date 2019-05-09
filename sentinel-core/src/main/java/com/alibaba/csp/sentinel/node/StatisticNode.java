@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.alibaba.csp.sentinel.slots.statistic.base.LongAdder;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
 import com.alibaba.csp.sentinel.slots.statistic.metric.ArrayMetric;
@@ -104,7 +105,7 @@ public class StatisticNode implements Node {
     /**
      * The counter for thread count.
      */
-    private AtomicInteger curThreadNum = new AtomicInteger(0);
+     private LongAdder curThreadNum = new LongAdder();
 
     /**
      * The last timestamp when metrics were fetched.
@@ -233,7 +234,7 @@ public class StatisticNode implements Node {
 
     @Override
     public int curThreadNum() {
-        return curThreadNum.get();
+        return (int)curThreadNum.sum();
     }
 
     @Override
@@ -265,12 +266,12 @@ public class StatisticNode implements Node {
 
     @Override
     public void increaseThreadNum() {
-        curThreadNum.incrementAndGet();
+        curThreadNum.increment();
     }
 
     @Override
     public void decreaseThreadNum() {
-        curThreadNum.decrementAndGet();
+        curThreadNum.decrement();
     }
 
     @Override
