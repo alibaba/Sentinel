@@ -44,6 +44,16 @@ public final class Constants {
     public final static String TOTAL_IN_RESOURCE_NAME = "__total_inbound_traffic__";
 
     /**
+     * A virtual resource identifier for cpu usage statistics (since 1.6.1).
+     */
+    public final static String CPU_USAGE_RESOURCE_NAME = "__cpu_usage__";
+
+    /**
+     * A virtual resource identifier for system load statistics (since 1.6.1).
+     */
+    public final static String SYSTEM_LOAD_RESOURCE_NAME = "__system_load__";
+
+    /**
      * Global ROOT statistic node that represents the universal parent node.
      */
     public final static DefaultNode ROOT = new EntranceNode(new StringResourceWrapper(ROOT_ID, EntryType.IN),
