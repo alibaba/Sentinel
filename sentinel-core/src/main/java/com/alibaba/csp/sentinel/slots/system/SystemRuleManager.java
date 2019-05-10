@@ -222,6 +222,7 @@ public class SystemRuleManager {
             qps = Double.MAX_VALUE;
 
             highestSystemLoadIsSet = false;
+            highestCpuUsageIsSet = false;
             maxRtIsSet = false;
             maxThreadIsSet = false;
             qpsIsSet = false;
