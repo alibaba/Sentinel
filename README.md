@@ -3,7 +3,7 @@
 # Sentinel: Sentinel of Your Application
 
 [![Travis Build Status](https://travis-ci.org/alibaba/Sentinel.svg?branch=master)](https://travis-ci.org/alibaba/Sentinel)
-[![Codecov](https://codecov.io/gh/alibaba/Sentinel/branch/master/graph/badge.svg)](https://codecov.io/gh/alibaba/Sentinel)
+[![Backers on Open Collective](https://opencollective.com/Sentinel/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/Sentinel/sponsors/badge.svg)](#sponsors) [![Codecov](https://codecov.io/gh/alibaba/Sentinel/branch/master/graph/badge.svg)](https://codecov.io/gh/alibaba/Sentinel)
 [![Maven Central](https://img.shields.io/maven-central/v/com.alibaba.csp/sentinel-core.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:com.alibaba.csp%20AND%20a:sentinel-core)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![Gitter](https://badges.gitter.im/alibaba/Sentinel.svg)](https://gitter.im/alibaba/Sentinel)
@@ -166,3 +166,33 @@ These are only part of the companies using Sentinel, for reference only. If you 
 ![Vivo](https://user-images.githubusercontent.com/9434884/49355264-c6f87600-f701-11e8-8109-054cf91df868.png)
 ![闪电购](http://cdn.52shangou.com/shandianbang/official-source/3.1.1/build/images/logo.png)
 ![拼多多](http://cdn.pinduoduo.com/assets/img/pdd_logo_v3.png)
+
+## Contributors
+
+This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
+<a href="https://github.com/alibaba/Sentinel/graphs/contributors"><img src="https://opencollective.com/Sentinel/contributors.svg?width=890&button=false" /></a>
+
+
+## Backers
+
+Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/Sentinel#backer)]
+
+<a href="https://opencollective.com/Sentinel#backers" target="_blank"><img src="https://opencollective.com/Sentinel/backers.svg?width=890"></a>
+
+
+## Sponsors
+
+Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/Sentinel#sponsor)]
+
+<a href="https://opencollective.com/Sentinel/sponsor/0/website" target="_blank"><img src="https://opencollective.com/Sentinel/sponsor/0/avatar.svg"></a>
+<a href="https://opencollective.com/Sentinel/sponsor/1/website" target="_blank"><img src="https://opencollective.com/Sentinel/sponsor/1/avatar.svg"></a>
+<a href="https://opencollective.com/Sentinel/sponsor/2/website" target="_blank"><img src="https://opencollective.com/Sentinel/sponsor/2/avatar.svg"></a>
+<a href="https://opencollective.com/Sentinel/sponsor/3/website" target="_blank"><img src="https://opencollective.com/Sentinel/sponsor/3/avatar.svg"></a>
+<a href="https://opencollective.com/Sentinel/sponsor/4/website" target="_blank"><img src="https://opencollective.com/Sentinel/sponsor/4/avatar.svg"></a>
+<a href="https://opencollective.com/Sentinel/sponsor/5/website" target="_blank"><img src="https://opencollective.com/Sentinel/sponsor/5/avatar.svg"></a>
+<a href="https://opencollective.com/Sentinel/sponsor/6/website" target="_blank"><img src="https://opencollective.com/Sentinel/sponsor/6/avatar.svg"></a>
+<a href="https://opencollective.com/Sentinel/sponsor/7/website" target="_blank"><img src="https://opencollective.com/Sentinel/sponsor/7/avatar.svg"></a>
+<a href="https://opencollective.com/Sentinel/sponsor/8/website" target="_blank"><img src="https://opencollective.com/Sentinel/sponsor/8/avatar.svg"></a>
+<a href="https://opencollective.com/Sentinel/sponsor/9/website" target="_blank"><img src="https://opencollective.com/Sentinel/sponsor/9/avatar.svg"></a>
+
+
