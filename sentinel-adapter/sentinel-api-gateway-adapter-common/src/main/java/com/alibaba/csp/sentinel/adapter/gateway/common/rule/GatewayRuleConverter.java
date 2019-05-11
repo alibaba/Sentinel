@@ -32,6 +32,17 @@ final class GatewayRuleConverter {
             .setMaxQueueingTimeMs(rule.getMaxQueueingTimeoutMs());
     }
 
+    static ParamFlowRule applyNonParamToParamRule(/*@Valid*/ GatewayFlowRule gatewayRule, int idx) {
+        return new ParamFlowRule(gatewayRule.getResource())
+            .setCount(gatewayRule.getCount())
+            .setGrade(gatewayRule.getGrade())
+            .setDurationInSec(gatewayRule.getIntervalSec())
+            .setBurstCount(gatewayRule.getBurst())
+            .setControlBehavior(gatewayRule.getControlBehavior())
+            .setMaxQueueingTimeMs(gatewayRule.getMaxQueueingTimeoutMs())
+            .setParamIdx(idx);
+    }
+
     /**
      * Convert a gateway rule to parameter flow rule, then apply the generated
      * parameter index to {@link GatewayParamFlowItem} of the rule.
