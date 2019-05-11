@@ -16,14 +16,23 @@
 package com.alibaba.csp.sentinel.node;
 
 import com.alibaba.csp.sentinel.Constants;
-import com.alibaba.csp.sentinel.slots.statistic.base.LongAdder;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
@@ -206,9 +215,14 @@ public class StatisticNodeTest {
     public void testStatisticLongAdder() throws InterruptedException {
           AtomicInteger atomicInteger = new AtomicInteger(0);
           StatisticNode statisticNode = new StatisticNode();
-          ExecutorService bizEs1 = Executors.newFixedThreadPool(THREAD_COUNT);
-          ExecutorService bizEs2 = Executors.newFixedThreadPool(THREAD_COUNT);
-          for(int i = 0; i < 100; i++){
+          ExecutorService bizEs1 =    new ThreadPoolExecutor(THREAD_COUNT, THREAD_COUNT,
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>());
+          ExecutorService bizEs2 =    new ThreadPoolExecutor(THREAD_COUNT, THREAD_COUNT,
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>());
+          int taskCount = 100;
+          for(int i = 0; i < taskCount; i++){
               int op = i % 2;
               bizEs2.submit(new StatisticAtomicIntegerTask(atomicInteger,op,i));
               bizEs1.submit(new StatisticLongAdderTask(statisticNode,op,i));
@@ -247,7 +261,8 @@ public class StatisticNodeTest {
         @Override
         public void run() {
             long startTime = System.currentTimeMillis();
-            for(int i = 0; i < 100000; i++){
+            int calCount = 100000;
+            for(int i = 0; i < calCount; i++){
                 if(op == 0) {
                     statisticNode.increaseThreadNum();
                 }else if(op == 1){
@@ -288,8 +303,8 @@ public class StatisticNodeTest {
         @Override
         public void run() {
             long startTime = System.currentTimeMillis();
-
-            for(int i = 0; i < 100000; i++) {
+            int calCount = 100000;
+            for(int i = 0; i < calCount; i++) {
                 if (op == 0) {
                     atomicInteger.incrementAndGet();
                 } else if (op == 1) {
