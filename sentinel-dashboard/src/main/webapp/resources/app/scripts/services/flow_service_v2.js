@@ -37,10 +37,6 @@ app.service('FlowServiceV2', ['$http', function ($http) {
         });
     };
 
-    function notNumberAtLeastZero(num) {
-        return num === undefined || num === '' || isNaN(num) || num < 0;
-    }
-
     function notNumberGreaterThanZero(num) {
         return num === undefined || num === '' || isNaN(num) || num <= 0;
     }
@@ -58,8 +54,8 @@ app.service('FlowServiceV2', ['$http', function ($http) {
             alert('无效的流控模式');
             return false;
         }
-        if (rule.strategy == 1 || rule.strategy == 2) {
-            if (rule.refResource === undefined || rule.refResource == '') {
+        if (rule.strategy === 1 || rule.strategy === 2) {
+            if (rule.refResource === undefined || rule.refResource === '') {
                 alert('请填写关联资源或入口');
                 return false;
             }
@@ -68,11 +64,11 @@ app.service('FlowServiceV2', ['$http', function ($http) {
             alert('无效的流控整形方式');
             return false;
         }
-        if (rule.controlBehavior == 1 && notNumberGreaterThanZero(rule.warmUpPeriodSec)) {
+        if (rule.controlBehavior === 1 && notNumberGreaterThanZero(rule.warmUpPeriodSec)) {
             alert('预热时长必须大于 0');
             return false;
         }
-        if (rule.controlBehavior == 2 && notNumberGreaterThanZero(rule.maxQueueingTimeMs)) {
+        if (rule.controlBehavior === 2 && notNumberGreaterThanZero(rule.maxQueueingTimeMs)) {
             alert('排队超时时间必须大于 0');
             return false;
         }

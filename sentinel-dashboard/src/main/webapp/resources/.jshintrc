@@ -34,14 +34,14 @@
   // Prohibit use of a variable before it is defined.
   "latedef": true,
 
-  // Enforce line length to 100 characters
-  "maxlen": 100,
+  // Enforce line length to 1000 characters
+  "maxlen": 1000,
 
   // Require capitalized names for constructor functions.
   "newcap": true,
 
   // Enforce use of single quotation marks for strings.
-  "quotmark": "single",
+ // "quotmark": "single",
 
   // Enforce placing 'use strict' at the top function scope
   // 前端项目中外层使用 strict 即可，覆盖此条规则
@@ -62,6 +62,7 @@
   "eqnull": true,
   "globals": {
     "$": false,
-    "angular": false
+    "angular": false,
+    "alert": false
   }
 }

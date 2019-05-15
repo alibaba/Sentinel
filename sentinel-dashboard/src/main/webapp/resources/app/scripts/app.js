@@ -26,7 +26,7 @@ angular
   .factory('AuthInterceptor', ['$window', '$state', function ($window, $state) {
     var authInterceptor = {
       'responseError' : function(response) {
-        if (response.status == 401) {
+        if (response.status === 401) {
           // If not auth, clear session in localStorage and jump to the login page
           $window.localStorage.removeItem("session_sentinel_admin");
           $state.go('login');

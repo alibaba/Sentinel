@@ -77,7 +77,7 @@ angular.module('sentinelDashboardApp').service('ParamFlowService', ['$http', fun
           alert('资源名称不能为空');
           return false;
       }
-      if (rule.grade != 1) {
+      if (rule.grade !== 1) {
           alert('未知的限流模式');
           return false;
       }

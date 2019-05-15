@@ -40,7 +40,7 @@ app.service('DegradeService', ['$http', function ($http) {
       limitApp: rule.limitApp,
       grade: rule.grade,
       count: rule.count,
-      timeWindow: rule.timeWindow,
+      timeWindow: rule.timeWindow
     };
     return $http({
       url: '/degrade/save.json',
@@ -79,7 +79,7 @@ app.service('DegradeService', ['$http', function ($http) {
           return false;
       }
       // 异常比率类型.
-      if (rule.grade == 1 && rule.count > 1) {
+      if (rule.grade === 1 && rule.count > 1) {
           alert('异常比率超出范围：[0.0 - 1.0]');
           return false;
       }
