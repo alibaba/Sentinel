@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component("flowRuleZookeeperPublisher")
+@Component("flowRuleZookeeperProvider")
 public class FlowRuleZookeeperProvider implements DynamicRuleProvider<List<FlowRuleEntity>> {
 
     @Autowired
