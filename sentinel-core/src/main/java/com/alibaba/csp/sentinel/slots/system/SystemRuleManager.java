@@ -1,14 +1,17 @@
 /*
  * Copyright 1999-2018 Alibaba Group Holding Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
- * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.csp.sentinel.slots.system;
 
@@ -31,24 +34,30 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 
 /**
  * <p>
- * Sentinel System Rule makes the inbound traffic and capacity meet. It takes average rt, qps, thread count of incoming
- * requests into account. And it also provides a measurement of system's load, but only available on Linux.
+ * Sentinel System Rule makes the inbound traffic and capacity meet. It takes
+ * average rt, qps, thread count of incoming requests into account. And it also
+ * provides a measurement of system's load, but only available on Linux.
  * </p>
  * <p>
- * rt, qps, thread count is easy to understand. If the incoming requests' rt,qps, thread count exceeds its threshold,
- * the requests will be rejected.however, we use a different method to calculate the load.
+ * rt, qps, thread count is easy to understand. If the incoming requests'
+ * rt,qps, thread count exceeds its threshold, the requests will be
+ * rejected.however, we use a different method to calculate the load.
  * </p>
  * <p>
- * Consider the system as a pipeline，transitions between constraints result in three different regions (traffic-limited,
- * capacity-limited and danger area) with qualitatively different behavior. When there isn’t enough request in flight to
- * fill the pipe, RTprop determines behavior; otherwise, the system capacity dominates. Constraint lines intersect at
- * inflight = Capacity × RTprop. Since the pipe is full past this point, the inflight –capacity excess creates a queue,
- * which results in the linear dependence of RTT on inflight traffic and an increase in system load.In danger area,
- * system will stop responding.<br/>
+ * Consider the system as a pipeline，transitions between constraints result in
+ * three different regions (traffic-limited, capacity-limited and danger area)
+ * with qualitatively different behavior. When there isn’t enough request in
+ * flight to fill the pipe, RTprop determines behavior; otherwise, the system
+ * capacity dominates. Constraint lines intersect at inflight = Capacity ×
+ * RTprop. Since the pipe is full past this point, the inflight –capacity excess
+ * creates a queue, which results in the linear dependence of RTT on inflight
+ * traffic and an increase in system load.In danger area, system will stop
+ * responding.<br/>
  * Referring to BBR algorithm to learn more.
  * </p>
  * <p>
- * Note that {@link SystemRule} only effect on inbound requests, outbound traffic will not limit by {@link SystemRule}
+ * Note that {@link SystemRule} only effect on inbound requests, outbound traffic
+ * will not limit by {@link SystemRule}
  * </p>
  *
  * @author jialiang.linjl
@@ -80,8 +89,8 @@ public class SystemRuleManager {
     private static SentinelProperty<List<SystemRule>> currentProperty = new DynamicSentinelProperty<List<SystemRule>>();
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
-    private final static ScheduledExecutorService scheduler =
-        Executors.newScheduledThreadPool(1, new NamedThreadFactory("sentinel-system-status-record-task", true));
+    private final static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1,
+        new NamedThreadFactory("sentinel-system-status-record-task", true));
 
     static {
         checkSystemStatus.set(false);
@@ -91,11 +100,10 @@ public class SystemRuleManager {
     }
 
     /**
-     * Listen to the {@link SentinelProperty} for {@link SystemRule}s. The property is the source of
-     * {@link SystemRule}s. System rules can also be set by {@link #loadRules(List)} directly.
+     * Listen to the {@link SentinelProperty} for {@link SystemRule}s. The property is the source
+     * of {@link SystemRule}s. System rules can also be set by {@link #loadRules(List)} directly.
      *
-     * @param property
-     *            the property to listen.
+     * @param property the property to listen.
      */
     public static void register2Property(SentinelProperty<List<SystemRule>> property) {
         synchronized (listener) {
@@ -108,8 +116,7 @@ public class SystemRuleManager {
     /**
      * Load {@link SystemRule}s, former rules will be replaced.
      *
-     * @param rules
-     *            new rules to load.
+     * @param rules new rules to load.
      */
     public static void loadRules(List<SystemRule> rules) {
         currentProperty.updateValue(rules);
@@ -190,10 +197,18 @@ public class SystemRuleManager {
                 checkSystemStatus.set(false);
             }
 
-            RecordLog.info(String.format(
-                "[SystemRuleManager] Current system check status: %s, " + "highestSystemLoad: %e, "
-                    + "highestCpuUsage: %e, " + "maxRt: %d, " + "maxThread: %d, " + "maxQps: %e",
-                checkSystemStatus.get(), highestSystemLoad, highestCpuUsage, maxRt, maxThread, qps));
+            RecordLog.info(String.format("[SystemRuleManager] Current system check status: %s, "
+                    + "highestSystemLoad: %e, "
+                    + "highestCpuUsage: %e, "
+                    + "maxRt: %d, "
+                    + "maxThread: %d, "
+                    + "maxQps: %e",
+                checkSystemStatus.get(),
+                highestSystemLoad,
+                highestCpuUsage,
+                maxRt,
+                maxThread,
+                qps));
         }
 
         protected void restoreSetting() {
@@ -219,16 +234,20 @@ public class SystemRuleManager {
         return checkSystemStatus.get();
     }
 
-    public static double getHighestCpuUsage() {
-        return highestCpuUsage;
-    }
-
     public static double getHighestSystemLoad() {
         return highestSystemLoad;
     }
 
     public static void setHighestSystemLoad(double highestSystemLoad) {
         SystemRuleManager.highestSystemLoad = highestSystemLoad;
+    }
+    
+    public static double getHighestCpuUsage() {
+        return highestCpuUsage;
+    }
+
+    public static void setHighestCpuUsage(double highestCpuUsage) {
+        SystemRuleManager.highestCpuUsage = highestCpuUsage;
     }
 
     public static void loadSystemConf(SystemRule rule) {
@@ -271,10 +290,8 @@ public class SystemRuleManager {
     /**
      * Apply {@link SystemRule} to the resource. Only inbound traffic will be checked.
      *
-     * @param resourceWrapper
-     *            the resource.
-     * @throws BlockException
-     *             when any system rule's threshold is exceeded.
+     * @param resourceWrapper the resource.
+     * @throws BlockException when any system rule's threshold is exceeded.
      */
     public static void checkSystem(ResourceWrapper resourceWrapper) throws BlockException {
         // Ensure the checking switch is on.
@@ -320,8 +337,8 @@ public class SystemRuleManager {
     }
 
     private static boolean checkBbr(int currentThread) {
-        if (currentThread > 1
-            && currentThread > Constants.ENTRY_NODE.maxSuccessQps() * Constants.ENTRY_NODE.minRt() / 1000) {
+        if (currentThread > 1 &&
+            currentThread > Constants.ENTRY_NODE.maxSuccessQps() * Constants.ENTRY_NODE.minRt() / 1000) {
             return false;
         }
         return true;
