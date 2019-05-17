@@ -131,6 +131,11 @@
         	<version>1.16.1</version>
         	<scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.influxdata</groupId>
+            <artifactId>influxdb-client-java</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>
