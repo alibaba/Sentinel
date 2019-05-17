@@ -84,15 +84,78 @@ public class SentinelAnnotationIntegrationTest extends AbstractJUnit4SpringConte
     }
 
     @Test
+    public void testAnnotationExceptionsToIgnore() {
+        assertThat(fooService.baz("Sentinel")).isEqualTo("cheers, Sentinel");
+        String resourceName = "apiBaz";
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode(resourceName);
+        assertThat(cn).isNotNull();
+        assertThat(cn.passQps()).isPositive();
+
+        try {
+            fooService.baz("fail");
+            fail("should not reach here");
+        } catch (IllegalMonitorStateException ex) {
+            assertThat(cn.exceptionQps()).isZero();
+        }
+    }
+
+    @Test
+    public void testFallbackWithNoParams() throws Exception {
+        assertThat(fooService.fooWithFallback(1)).isEqualTo("Hello for 1");
+        String resourceName = "apiFooWithFallback";
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode(resourceName);
+        assertThat(cn).isNotNull();
+        assertThat(cn.passQps()).isPositive();
+
+        // Fallback should be ignored for this.
+        try {
+            fooService.fooWithFallback(5758);
+            fail("should not reach here");
+        } catch (IllegalAccessException e) {
+            assertThat(cn.exceptionQps()).isZero();
+        }
+
+        // Fallback should take effect.
+        assertThat(fooService.fooWithFallback(5763)).isEqualTo("eee...");
+        assertThat(cn.exceptionQps()).isPositive();
+        assertThat(cn.blockQps()).isZero();
+
+        FlowRuleManager.loadRules(Collections.singletonList(
+            new FlowRule(resourceName).setCount(0)
+        ));
+        // Fallback should not take effect for BlockException, as blockHandler is configured.
+        assertThat(fooService.fooWithFallback(2221)).isEqualTo("Oops, 2221");
+        assertThat(cn.blockQps()).isPositive();
+    }
+
+    @Test
+    public void testDefaultFallbackWithSingleParam() {
+        assertThat(fooService.anotherFoo(1)).isEqualTo("Hello for 1");
+        String resourceName = "apiAnotherFooWithDefaultFallback";
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode(resourceName);
+        assertThat(cn).isNotNull();
+        assertThat(cn.passQps()).isPositive();
+
+        // Default fallback should take effect.
+        assertThat(fooService.anotherFoo(5758)).isEqualTo(FooUtil.FALLBACK_DEFAULT_RESULT);
+        assertThat(cn.exceptionQps()).isPositive();
+        assertThat(cn.blockQps()).isZero();
+
+        FlowRuleManager.loadRules(Collections.singletonList(
+            new FlowRule(resourceName).setCount(0)
+        ));
+        // Default fallback should also take effect for BlockException.
+        assertThat(fooService.anotherFoo(5758)).isEqualTo(FooUtil.FALLBACK_DEFAULT_RESULT);
+        assertThat(cn.blockQps()).isPositive();
+    }
+
+    @Test
     public void testNormalBlockHandlerAndFallback() throws Exception {
         assertThat(fooService.foo(1)).isEqualTo("Hello for 1");
         String resourceName = "apiFoo";
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(resourceName);
         assertThat(cn).isNotNull();
         assertThat(cn.passQps()).isPositive();
-
-        // Test for fallback.
-        assertThat(fooService.foo(9527)).isEqualTo("eee...");
 
         // Test for biz exception.
         try {

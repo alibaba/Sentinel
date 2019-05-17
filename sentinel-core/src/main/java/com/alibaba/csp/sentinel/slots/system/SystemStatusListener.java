@@ -33,8 +33,6 @@ public class SystemStatusListener implements Runnable {
 
     volatile String reason = StringUtil.EMPTY;
 
-    static final int processor = ManagementFactory.getOperatingSystemMXBean().getAvailableProcessors();
-
     public double getSystemAverageLoad() {
         return currentLoad;
     }
@@ -46,10 +44,6 @@ public class SystemStatusListener implements Runnable {
     @Override
     public void run() {
         try {
-            if (!SystemRuleManager.getCheckSystemStatus()) {
-                return;
-            }
-
             OperatingSystemMXBean osBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
             currentLoad = osBean.getSystemLoadAverage();
             /**

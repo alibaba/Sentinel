@@ -17,9 +17,11 @@ package com.alibaba.csp.sentinel;
 
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.context.ContextUtil;
+import com.alibaba.csp.sentinel.metric.extension.MetricExtensionProvider;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.metric.extension.MetricExtension;
 
 /**
  * This class is used to record other exceptions except block exception.
@@ -55,7 +57,7 @@ public final class Tracer {
         }
 
         DefaultNode curNode = (DefaultNode)context.getCurNode();
-        traceExceptionToNode(e, count, curNode);
+        traceExceptionToNode(e, count, context.getCurEntry(), curNode);
     }
 
     /**
@@ -74,7 +76,7 @@ public final class Tracer {
         }
 
         DefaultNode curNode = (DefaultNode)context.getCurNode();
-        traceExceptionToNode(e, count, curNode);
+        traceExceptionToNode(e, count, context.getCurEntry(), curNode);
     }
 
     /**
@@ -103,12 +105,15 @@ public final class Tracer {
         }
 
         DefaultNode curNode = (DefaultNode)entry.getCurNode();
-        traceExceptionToNode(e, count, curNode);
+        traceExceptionToNode(e, count, entry, curNode);
     }
 
-    private static void traceExceptionToNode(Throwable t, int count, DefaultNode curNode) {
+    private static void traceExceptionToNode(Throwable t, int count, Entry entry, DefaultNode curNode) {
         if (curNode == null) {
             return;
+        }
+        for (MetricExtension m : MetricExtensionProvider.getMetricExtensions()) {
+            m.addException(entry.getResourceWrapper().getName(), count, t);
         }
 
         // clusterNode can be null when Constants.ON is false.

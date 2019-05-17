@@ -15,19 +15,28 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow.param;
 
-import java.util.Collections;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import com.alibaba.csp.sentinel.EntryType;
-import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
-import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
+import java.util.Collections;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
+import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
+import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
+import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
+import com.alibaba.csp.sentinel.util.TimeUtil;
 
 /**
  * Test cases for {@link ParamFlowSlot}.
@@ -81,17 +90,21 @@ public class ParamFlowSlotTest {
         String resourceName = "testEntryWhenParamFlowExists";
         ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
         long argToGo = 1L;
-        double count = 10;
+        double count = 1;
         ParamFlowRule rule = new ParamFlowRule(resourceName)
             .setCount(count)
+            .setBurstCount(0)
             .setParamIdx(0);
         ParamFlowRuleManager.loadRules(Collections.singletonList(rule));
 
         ParameterMetric metric = mock(ParameterMetric.class);
-        // First pass, then blocked.
-        when(metric.getPassParamQps(rule.getParamIdx(), argToGo))
-            .thenReturn(count - 1)
-            .thenReturn(count);
+
+        CacheMap<Object, AtomicLong> map = new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000);
+        CacheMap<Object, AtomicInteger> map2 = new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(4000);
+        when(metric.getRuleTimeCounter(rule)).thenReturn(map);
+        when(metric.getRuleTokenCounter(rule)).thenReturn(map2);
+        map.put(argToGo, new AtomicLong(TimeUtil.currentTimeMillis()));
+
         // Insert the mock metric to control pass or block.
         ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
 
@@ -115,21 +128,29 @@ public class ParamFlowSlotTest {
 
     @Test
     public void testInitParamMetrics() {
+
+        ParamFlowRule rule = new ParamFlowRule();
+        rule.setParamIdx(1);
         int index = 1;
         String resourceName = "res-" + System.currentTimeMillis();
         ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
 
         assertNull(ParamFlowSlot.getParamMetric(resourceWrapper));
 
-        paramFlowSlot.initHotParamMetricsFor(resourceWrapper, index);
+        paramFlowSlot.initHotParamMetricsFor(resourceWrapper, rule);
         ParameterMetric metric = ParamFlowSlot.getParamMetric(resourceWrapper);
         assertNotNull(metric);
-        assertNotNull(metric.getRollingParameters().get(index));
+        assertNotNull(metric.getRuleTimeCounterMap().get(rule));
         assertNotNull(metric.getThreadCountMap().get(index));
 
         // Duplicate init.
-        paramFlowSlot.initHotParamMetricsFor(resourceWrapper, index);
+        paramFlowSlot.initHotParamMetricsFor(resourceWrapper, rule);
         assertSame(metric, ParamFlowSlot.getParamMetric(resourceWrapper));
+
+        ParamFlowRule rule2 = new ParamFlowRule();
+        rule2.setParamIdx(1);
+        assertSame(metric, ParamFlowSlot.getParamMetric(resourceWrapper));
+
     }
 
     @Before
