@@ -1,12 +1,11 @@
 package com.alibaba.csp.sentinel.dashboard.util;
 
-import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.influxdata.client.InfluxDBClient;
 import org.influxdata.client.InfluxDBClientFactory;
-import org.influxdata.client.WriteApi;
+import org.influxdata.client.QueryApi;
+import org.influxdata.client.domain.Permission;
+import org.influxdata.client.domain.PermissionResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,12 +21,8 @@ public class InfluxDBUtils {
     private static Logger logger = LoggerFactory.getLogger(InfluxDBUtils.class);
 
     private static String url;
-
     private static String username;
-
     private static String password;
-
-    private static InfluxDBResultMapper resultMapper = new InfluxDBResultMapper();
 
     @Value("${influxdb.url}")
     public void setUrl(String url) {
@@ -50,24 +45,18 @@ public class InfluxDBUtils {
         InfluxDBUtils.password = password;
     }
 
-    public static <T> T process(String database, InfluxDBCallback callback) {
+    public static <T> T process(String bucket, InfluxDBCallback callback) {
         T t = null;
+        InfluxDBClient influxDBClient = null;
         try {
-            InfluxDBClient influxDBClient = InfluxDBClientFactory.create("http://123.56.187.228:9999",
-                    "N4-jSEhI67HFVqPfdWi1Fd-S9-kDJKeFtmd6At0U-54HOzEm8_1XJ3Um3FBTiJXmury5qxzo5FE0asmZOB1G-A=="
-                            .toCharArray());
-            try (WriteApi writeApi = influxDBClient.getWriteApi()) {
-                writeApi.writeMeasurement("sentinel_metric", "03dba1e36bbc6000", ChronoUnit.NANOS, temperature);
-            }
-            influxDB.setDatabase(database);
-
-            t = callback.doCallBack(database, influxDB);
+            influxDBClient = InfluxDBClientFactory.create(url, findToken().toCharArray());
+            t = callback.doCallBack(bucket, influxDBClient);
         } catch (Exception e) {
             logger.error("[process exception]", e);
         } finally {
-            if (influxDB != null) {
+            if (influxDBClient != null) {
                 try {
-                    influxDB.close();
+                    influxDBClient.close();
                 } catch (Exception e) {
                     logger.error("[influxDB.close exception]", e);
                 }
@@ -77,57 +66,71 @@ public class InfluxDBUtils {
         return t;
     }
 
-    public static void insert(String database, InfluxDBInsertCallback influxDBInsertCallback) {
-        process(database, new InfluxDBCallback() {
+    public static void insert(String bucket, InfluxDBInsertCallback influxDBInsertCallback) {
+        process(bucket, new InfluxDBCallback() {
             @Override
-            public <T> T doCallBack(String database, InfluxDB influxDB) {
-                influxDBInsertCallback.doCallBack(database, influxDB);
+            public <T> T doCallBack(String bucket, InfluxDBClient influxDB) {
+                influxDBInsertCallback.doCallBack(bucket, influxDB);
                 return null;
             }
         });
 
     }
 
-    public static QueryResult query(String database, InfluxDBQueryCallback influxDBQueryCallback) {
-        return process(database, new InfluxDBCallback() {
+    public static QueryApi query(String bucket, InfluxDBQueryCallback influxDBQueryCallback) {
+        return process(bucket, new InfluxDBCallback() {
             @Override
-            public <T> T doCallBack(String database, InfluxDB influxDB) {
-                QueryResult queryResult = influxDBQueryCallback.doCallBack(database, influxDB);
-                return (T) queryResult;
+            public <T> T doCallBack(String database, InfluxDBClient influxDB) {
+                QueryApi queryApi = influxDBQueryCallback.doCallBack(bucket, influxDB);
+                return (T) queryApi;
             }
         });
     }
 
-    public static <T> List<T> queryList(String database, String sql, Map<String, Object> paramMap, Class<T> clasz) {
-        QueryResult queryResult = query(database, new InfluxDBQueryCallback() {
+    public static <T> List<T> queryList(String bucket, String sql, Class<T> clasz) {
+
+        QueryApi queryApi = query(bucket, new InfluxDBQueryCallback() {
             @Override
-            public QueryResult doCallBack(String database, InfluxDBClient influxDB) {
-                BoundParameterQuery.QueryBuilder queryBuilder = BoundParameterQuery.QueryBuilder.newQuery(sql);
-                queryBuilder.forDatabase(database);
+            public QueryApi doCallBack(String bucket, InfluxDBClient influxDB) {
 
-                if (paramMap != null && paramMap.size() > 0) {
-                    Set<Map.Entry<String, Object>> entries = paramMap.entrySet();
-                    for (Map.Entry<String, Object> entry : entries) {
-                        queryBuilder.bind(entry.getKey(), entry.getValue());
-                    }
-                }
-
-                return influxDB.query(queryBuilder.create());
+                return influxDB.getQueryApi();
             }
         });
 
-        return resultMapper.toPOJO(queryResult, clasz);
+        return queryApi.query(sql, clasz);
+    }
+
+    private static String findToken() throws Exception {
+
+        InfluxDBClient influxDBClient = InfluxDBClientFactory.create(url,
+                username, password.toCharArray());
+
+        String token = influxDBClient.getAuthorizationsApi()
+                .findAuthorizations()
+                .stream()
+                .filter(authorization -> authorization.getPermissions().stream()
+                        .map(Permission::getResource)
+                        .anyMatch(resource ->
+                                resource.getType().equals(PermissionResource.TypeEnum.ORGS) &&
+                                        resource.getId() == null &&
+                                        resource.getOrgID() == null))
+                .findFirst()
+                .orElseThrow(IllegalStateException::new).getToken();
+
+        influxDBClient.close();
+
+        return token;
     }
 
     public interface InfluxDBCallback {
-        <T> T doCallBack(String database, InfluxDB influxDB);
+        <T> T doCallBack(String bucket, InfluxDBClient influxDB);
     }
 
     public interface InfluxDBInsertCallback {
-        void doCallBack(String database, InfluxDBClient influxDB);
+        void doCallBack(String bucket, InfluxDBClient influxDB);
     }
 
     public interface InfluxDBQueryCallback {
-        QueryResult doCallBack(String database, InfluxDBClient influxDB);
+        QueryApi doCallBack(String bucket, InfluxDBClient influxDB);
     }
 }

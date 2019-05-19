@@ -36,7 +36,7 @@ import org.springframework.stereotype.Component;
  * @author Carpenter Lee
  * @author Eric Zhao
  */
-@Component
+//@Component
 public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity> {
 
     private static final long MAX_METRIC_LIVE_TIME_MS = 1000 * 60 * 5;

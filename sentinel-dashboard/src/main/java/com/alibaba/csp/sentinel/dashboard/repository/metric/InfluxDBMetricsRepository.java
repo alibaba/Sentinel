@@ -32,16 +32,18 @@ import org.springframework.util.CollectionUtils;
 @Repository("influxDBMetricsRepository")
 public class InfluxDBMetricsRepository implements MetricsRepository<MetricEntity> {
 
-    /**时间格式*/
+    /** 时间格式 */
     private static final String DATE_FORMAT_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
 
-    /**数据库名称*/
-    private static final String SENTINEL_DATABASE = "sentinel_db";
+    /** 组织ID */
+    private static final String ORG_ID = "03dba1e36bbc6000";
+    /** 数据库名称 */
+    private static final String BUCKET_NAME = "sentinel_metric_db";
 
     /** 数据表名称 */
     private static final String METRIC_MEASUREMENT = "sentinel_metric";
 
-    /**北京时间领先UTC时间8小时 UTC: Universal Time Coordinated,世界统一时间*/
+    /** 北京时间领先UTC时间8小时 UTC: Universal Time Coordinated,世界统一时间 */
     private static final Integer UTC_8 = 8;
 
     @Override
@@ -50,7 +52,7 @@ public class InfluxDBMetricsRepository implements MetricsRepository<MetricEntity
             return;
         }
 
-        InfluxDBUtils.insert(SENTINEL_DATABASE, new InfluxDBUtils.InfluxDBInsertCallback() {
+        InfluxDBUtils.insert(BUCKET_NAME, new InfluxDBUtils.InfluxDBInsertCallback() {
             @Override
             public void doCallBack(String database, InfluxDBClient influxDB) {
                 if (metric.getId() == null) {
@@ -73,9 +75,9 @@ public class InfluxDBMetricsRepository implements MetricsRepository<MetricEntity
             return;
         }
 
-        InfluxDBUtils.insert(SENTINEL_DATABASE, new InfluxDBUtils.InfluxDBInsertCallback() {
+        InfluxDBUtils.insert(BUCKET_NAME, new InfluxDBUtils.InfluxDBInsertCallback() {
             @Override
-            public void doCallBack(String database, InfluxDBClient influxDB) {
+            public void doCallBack(String bucket, InfluxDBClient influxDB) {
                 while (iterator.hasNext()) {
                     MetricEntity metric = iterator.next();
                     if (metric.getId() == null) {
@@ -99,19 +101,14 @@ public class InfluxDBMetricsRepository implements MetricsRepository<MetricEntity
         }
 
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT * FROM " + METRIC_MEASUREMENT);
-        sql.append(" WHERE app=$app");
-        sql.append(" AND resource=$resource");
-        sql.append(" AND time>=$startTime");
-        sql.append(" AND time<=$endTime");
+        sql.append("from(bucket: " + BUCKET_NAME + ")");
+        sql.append(" |> range(start: " + DateFormatUtils.format(new Date(startTime), DATE_FORMAT_PATTERN)
+                + ", stop: " + DateFormatUtils.format(new Date(endTime), DATE_FORMAT_PATTERN) + ")");
+        sql.append(" |> filter(fn: (r) => r._measurement == " + METRIC_MEASUREMENT + ")");
+        sql.append(" |> filter(fn: (r) => r.app == " + app + ")");
+        sql.append(" |> filter(fn: (r) => r.resource == " + resource + ")");
 
-        Map<String, Object> paramMap = new HashMap<String, Object>();
-        paramMap.put("app", app);
-        paramMap.put("resource", resource);
-        paramMap.put("startTime", DateFormatUtils.format(new Date(startTime), DATE_FORMAT_PATTERN));
-        paramMap.put("endTime", DateFormatUtils.format(new Date(endTime), DATE_FORMAT_PATTERN));
-
-        List<MetricPO> metricPOS = InfluxDBUtils.queryList(SENTINEL_DATABASE, sql.toString(), paramMap, MetricPO.class);
+        List<MetricPO> metricPOS = InfluxDBUtils.queryList(BUCKET_NAME, sql.toString(), MetricPO.class);
 
         if (CollectionUtils.isEmpty(metricPOS)) {
             return results;
@@ -132,16 +129,12 @@ public class InfluxDBMetricsRepository implements MetricsRepository<MetricEntity
         }
 
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT * FROM " + METRIC_MEASUREMENT);
-        sql.append(" WHERE app=$app");
-        sql.append(" AND time>=$startTime");
+        sql.append("from(bucket: " + BUCKET_NAME + ")");
+        sql.append(" |> range(start: -1m)");
+        sql.append(" |> filter(fn: (r) => r._measurement == " + METRIC_MEASUREMENT + ")");
+        sql.append(" |> filter(fn: (r) => r.app == " + app + ")");
 
-        Map<String, Object> paramMap = new HashMap<String, Object>();
-        long startTime = System.currentTimeMillis() - 1000 * 60;
-        paramMap.put("app", app);
-        paramMap.put("startTime", DateFormatUtils.format(new Date(startTime), DATE_FORMAT_PATTERN));
-
-        List<MetricPO> metricPOS = InfluxDBUtils.queryList(SENTINEL_DATABASE, sql.toString(), paramMap, MetricPO.class);
+        List<MetricPO> metricPOS = InfluxDBUtils.queryList(BUCKET_NAME, sql.toString(), MetricPO.class);
 
         if (CollectionUtils.isEmpty(metricPOS)) {
             return results;
@@ -219,7 +212,7 @@ public class InfluxDBMetricsRepository implements MetricsRepository<MetricEntity
                     .addField("rt", metric.getRt())
                     .addField("count", metric.getCount())
                     .addField("resourceCode", metric.getResourceCode());
-            writeApi.writePoint("bucket_name", "org_id", point);
+            writeApi.writePoint(BUCKET_NAME, ORG_ID, point);
         }
     }
 }
