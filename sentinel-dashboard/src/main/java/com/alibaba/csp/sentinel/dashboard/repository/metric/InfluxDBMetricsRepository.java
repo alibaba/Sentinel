@@ -108,7 +108,7 @@ public class InfluxDBMetricsRepository implements MetricsRepository<MetricEntity
         sql.append(" |> filter(fn: (r) => r.app == " + app + ")");
         sql.append(" |> filter(fn: (r) => r.resource == " + resource + ")");
 
-        List<MetricPO> metricPOS = InfluxDBUtils.queryList(BUCKET_NAME, sql.toString(), MetricPO.class);
+        List<MetricPO> metricPOS = InfluxDBUtils.queryList(ORG_ID, sql.toString(), MetricPO.class);
 
         if (CollectionUtils.isEmpty(metricPOS)) {
             return results;
@@ -134,7 +134,7 @@ public class InfluxDBMetricsRepository implements MetricsRepository<MetricEntity
         sql.append(" |> filter(fn: (r) => r._measurement == " + METRIC_MEASUREMENT + ")");
         sql.append(" |> filter(fn: (r) => r.app == " + app + ")");
 
-        List<MetricPO> metricPOS = InfluxDBUtils.queryList(BUCKET_NAME, sql.toString(), MetricPO.class);
+        List<MetricPO> metricPOS = InfluxDBUtils.queryList(ORG_ID, sql.toString(), MetricPO.class);
 
         if (CollectionUtils.isEmpty(metricPOS)) {
             return results;

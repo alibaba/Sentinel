@@ -77,27 +77,28 @@ public class InfluxDBUtils {
 
     }
 
-    public static QueryApi query(String bucket, InfluxDBQueryCallback influxDBQueryCallback) {
-        return process(bucket, new InfluxDBCallback() {
+    public static QueryApi query(String orgID, InfluxDBQueryCallback influxDBQueryCallback) {
+        return process(orgID, new InfluxDBCallback() {
             @Override
             public <T> T doCallBack(String database, InfluxDBClient influxDB) {
-                QueryApi queryApi = influxDBQueryCallback.doCallBack(bucket, influxDB);
+                QueryApi queryApi = influxDBQueryCallback.doCallBack(orgID, influxDB);
                 return (T) queryApi;
             }
         });
     }
 
-    public static <T> List<T> queryList(String bucket, String sql, Class<T> clasz) {
+    public static <T> List<T> queryList(String orgID, String sql, Class<T> clasz) {
 
-        QueryApi queryApi = query(bucket, new InfluxDBQueryCallback() {
+        QueryApi queryApi = query(orgID, new InfluxDBQueryCallback() {
             @Override
-            public QueryApi doCallBack(String bucket, InfluxDBClient influxDB) {
+            public QueryApi doCallBack(String orgID, InfluxDBClient influxDB) {
 
                 return influxDB.getQueryApi();
             }
         });
 
-        return queryApi.query(sql, clasz);
+
+        return queryApi.query(sql, orgID, clasz);
     }
 
     private static String findToken() throws Exception {
@@ -131,6 +132,6 @@ public class InfluxDBUtils {
     }
 
     public interface InfluxDBQueryCallback {
-        QueryApi doCallBack(String bucket, InfluxDBClient influxDB);
+        QueryApi doCallBack(String orgID, InfluxDBClient influxDB);
     }
 }
