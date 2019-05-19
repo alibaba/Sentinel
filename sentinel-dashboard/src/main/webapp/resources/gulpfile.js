@@ -53,6 +53,7 @@ const JS_APP = [
   'app/scripts/services/identityservice.js',
   'app/scripts/services/metricservice.js',
   'app/scripts/services/param_flow_service.js',
+  'app/scripts/services/param_flow_service_v2.js',
   'app/scripts/services/authority_service.js',
   'app/scripts/services/cluster_state_service.js',
 ];

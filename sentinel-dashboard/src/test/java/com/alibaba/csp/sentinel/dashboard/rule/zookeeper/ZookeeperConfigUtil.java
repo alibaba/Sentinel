@@ -20,22 +20,35 @@ import org.apache.commons.lang.StringUtils;
 
 public class ZookeeperConfigUtil {
     public static final String RULE_ROOT_PATH = "/sentinel_rule_config";
+    public static final String FLOW_RULE_PATH = "/flow_rule_config";
+    public static final String PARAM_FLOW_RULE_PATH = "/param_flow_rule_config";
 
     public static final int RETRY_TIMES = 3;
     public static final int SLEEP_TIME = 1000;
 
-    public static String getPath(String appName) {
+    public static String getFlowRulePath(String appName) {
         StringBuilder stringBuilder = new StringBuilder(RULE_ROOT_PATH);
+        appendAppName(appName, stringBuilder);
+        stringBuilder.append(FLOW_RULE_PATH);
+        return stringBuilder.toString();
+    }
 
+    public static String getParamFlowRulePath(String appName) {
+        StringBuilder stringBuilder = new StringBuilder(RULE_ROOT_PATH);
+        appendAppName(appName, stringBuilder);
+        stringBuilder.append(PARAM_FLOW_RULE_PATH);
+        return stringBuilder.toString();
+    }
+
+    private static void appendAppName(String appName, StringBuilder stringBuilder) {
         if (StringUtils.isBlank(appName)) {
-            return stringBuilder.toString();
+            return;
         }
         if (appName.startsWith("/")) {
             stringBuilder.append(appName);
         } else {
             stringBuilder.append("/")
-                    .append(appName);
+                .append(appName);
         }
-        return stringBuilder.toString();
     }
 }
