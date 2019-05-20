@@ -92,7 +92,37 @@ public final class SpiLoader {
     }
 
     /**
-     * Load and sorted SPI instance list.
+     * Load the SPI instance list for provided SPI interface.
+     *
+     * @param clazz class of the SPI
+     * @param <T>   SPI type
+     * @return sorted SPI instance list
+     * @since 1.6.0
+     */
+    public static <T> List<T> loadInstanceList(Class<T> clazz) {
+        try {
+            String key = clazz.getName();
+            // Not thread-safe, as it's expected to be resolved in a thread-safe context.
+            ServiceLoader<T> serviceLoader = SERVICE_LOADER_MAP.get(key);
+            if (serviceLoader == null) {
+                serviceLoader = ServiceLoader.load(clazz);
+                SERVICE_LOADER_MAP.put(key, serviceLoader);
+            }
+
+            List<T> list = new ArrayList<>();
+            for (T spi : serviceLoader) {
+                list.add(spi);
+            }
+            return list;
+        } catch (Throwable t) {
+            RecordLog.warn("[SpiLoader] ERROR: loadInstanceListSorted failed", t);
+            t.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Load the sorted SPI instance list for provided SPI interface.
      *
      * @param clazz class of the SPI
      * @param <T>   SPI type

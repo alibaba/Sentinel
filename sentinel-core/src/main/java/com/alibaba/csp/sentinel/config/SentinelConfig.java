@@ -20,6 +20,7 @@ import java.io.FileInputStream;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import com.alibaba.csp.sentinel.log.LogBase;
 import com.alibaba.csp.sentinel.log.RecordLog;
@@ -27,15 +28,25 @@ import com.alibaba.csp.sentinel.util.AppNameUtil;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
- * The universal config of Courier. The config is retrieved from
- * {@code ${user.home}/logs/csp/${appName}.properties} by default.
+ * The universal local config center of Sentinel. The config is retrieved from command line arguments
+ * and {@code ${user.home}/logs/csp/${appName}.properties} file by default.
  *
  * @author leyou
+ * @author Eric Zhao
  */
 public class SentinelConfig {
 
-    private static final Map<String, String> props = new ConcurrentHashMap<String, String>();
+    /**
+     * The default application type.
+     *
+     * @since 1.6.0
+     */
+    public static final int APP_TYPE_COMMON = 0;
 
+    private static final Map<String, String> props = new ConcurrentHashMap<>();
+    private static int appType = APP_TYPE_COMMON;
+
+    public static final String APP_TYPE = "csp.sentinel.app.type";
     public static final String CHARSET = "csp.sentinel.charset";
     public static final String SINGLE_METRIC_FILE_SIZE = "csp.sentinel.metric.file.single.size";
     public static final String TOTAL_METRIC_FILE_COUNT = "csp.sentinel.metric.file.total.count";
@@ -49,8 +60,32 @@ public class SentinelConfig {
     static final int DEFAULT_STATISTIC_MAX_RT = 4900;
 
     static {
-        initialize();
-        loadProps();
+        try {
+            initialize();
+            loadProps();
+
+            resolveAppType();
+            RecordLog.info("[SentinelConfig] Application type resolved: " + appType);
+        } catch (Throwable ex) {
+            RecordLog.warn("[SentinelConfig] Failed to initialize", ex);
+            ex.printStackTrace();
+        }
+    }
+
+    private static void resolveAppType() {
+        try {
+            String type = getConfig(APP_TYPE);
+            if (type == null) {
+                appType = APP_TYPE_COMMON;
+                return;
+            }
+            appType = Integer.parseInt(type);
+            if (appType < 0) {
+                appType = APP_TYPE_COMMON;
+            }
+        } catch (Exception ex) {
+            appType = APP_TYPE_COMMON;
+        }
     }
 
     private static void initialize() {
@@ -89,7 +124,7 @@ public class SentinelConfig {
         }
 
         // JVM parameter override file config.
-        for (Map.Entry<Object, Object> entry : System.getProperties().entrySet()) {
+        for (Map.Entry<Object, Object> entry : new CopyOnWriteArraySet<>(System.getProperties().entrySet())) {
             String configKey = entry.getKey().toString();
             String configValue = entry.getValue().toString();
             String configValueOld = getConfig(configKey);
@@ -135,6 +170,16 @@ public class SentinelConfig {
         return AppNameUtil.getAppName();
     }
 
+    /**
+     * Get application type.
+     *
+     * @return application type, common (0) by default
+     * @since 1.6.0
+     */
+    public static int getAppType() {
+        return appType;
+    }
+
     public static String charset() {
         return props.get(CHARSET);
     }
@@ -162,7 +207,8 @@ public class SentinelConfig {
     public static int coldFactor() {
         try {
             int coldFactor = Integer.parseInt(props.get(COLD_FACTOR));
-            if (coldFactor <= 1) {// check the cold factor larger than 1
+            // check the cold factor larger than 1
+            if (coldFactor <= 1) {
                 coldFactor = DEFAULT_COLD_FACTOR;
                 RecordLog.warn("cold factor=" + coldFactor + ", should be larger than 1, use default value: "
                         + DEFAULT_COLD_FACTOR);
