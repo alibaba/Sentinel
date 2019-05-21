@@ -242,7 +242,7 @@ public class SystemRuleManager {
         SystemRuleManager.highestSystemLoad = highestSystemLoad;
     }
     
-    public static double getHighestCpuUsage() {
+    public static double getCpuUsageThreshold() {
         return highestCpuUsage;
     }
 
