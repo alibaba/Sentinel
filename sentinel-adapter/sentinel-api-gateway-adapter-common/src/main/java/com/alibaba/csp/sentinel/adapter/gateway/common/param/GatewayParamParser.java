@@ -62,10 +62,10 @@ public class GatewayParamParser<T> {
                 hasNonParamRule = true;
             }
         }
-        if (gatewayRules.isEmpty()) {
+        if (!hasNonParamRule && gatewayRules.isEmpty()) {
             return new Object[0];
         }
-        if (predSet.size() != 1 || predSet.contains(false)) {
+        if (predSet.size() > 1 || predSet.contains(false)) {
             return new Object[0];
         }
         int size = hasNonParamRule ? gatewayRules.size() + 1 : gatewayRules.size();

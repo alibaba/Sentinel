@@ -70,10 +70,15 @@ public class GatewayParamParserTest {
             .setCount(5)
             .setIntervalSec(1)
         );
+        rules.add(new GatewayFlowRule(routeId1)
+            .setCount(10)
+            .setControlBehavior(2)
+            .setMaxQueueingTimeoutMs(1000)
+        );
         GatewayRuleManager.loadRules(rules);
 
         Object[] params = parser.parseParameterFor(routeId1, request, routeIdPredicate);
-        assertThat(params.length).isZero();
+        assertThat(params.length).isEqualTo(1);
     }
 
     @Test
