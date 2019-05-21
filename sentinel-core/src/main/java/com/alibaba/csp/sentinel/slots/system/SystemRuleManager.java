@@ -246,10 +246,6 @@ public class SystemRuleManager {
         return highestCpuUsage;
     }
 
-    public static void setHighestCpuUsage(double highestCpuUsage) {
-        SystemRuleManager.highestCpuUsage = highestCpuUsage;
-    }
-
     public static void loadSystemConf(SystemRule rule) {
         boolean checkStatus = false;
         // Check if it's valid.
