@@ -39,6 +39,21 @@ public class TracerTest extends Tracer {
         Assert.assertTrue(Tracer.shouldTrace(new TraceException()));
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testNull() {
+        Tracer.setExceptionsToTrace(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNull1() {
+        Tracer.setExceptionsToTrace(TraceException.class, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNull2() {
+        Tracer.setExceptionsToIgnore(IgnoreException.class, null);
+    }
+
     private class TraceException extends Exception {}
 
     private class TraceException2 extends Exception {}

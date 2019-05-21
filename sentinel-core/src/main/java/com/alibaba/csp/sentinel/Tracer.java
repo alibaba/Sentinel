@@ -22,6 +22,7 @@ import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.metric.extension.MetricExtension;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
  * This class is used to record other exceptions except block exception.
@@ -141,6 +142,7 @@ public class Tracer {
      */
     @SafeVarargs
     public static void setExceptionsToTrace(Class<? extends Throwable>... traceClasses) {
+        checkNotNull(traceClasses);
         Tracer.traceClasses = traceClasses;
     }
 
@@ -166,6 +168,7 @@ public class Tracer {
      */
     @SafeVarargs
     public static void setExceptionsToIgnore(Class<? extends Throwable>... ignoreClasses) {
+        checkNotNull(ignoreClasses);
         Tracer.ignoreClasses = ignoreClasses;
     }
 
@@ -177,6 +180,13 @@ public class Tracer {
      */
     public static Class<? extends Throwable>[] getExceptionsToIgnore() {
         return ignoreClasses;
+    }
+
+    private static void checkNotNull(Class<? extends Throwable>[] classes) {
+        AssertUtil.notNull(classes, "trace or ignore classes must not be null");
+        for (Class<? extends Throwable> clazz : classes) {
+            AssertUtil.notNull(clazz, "trace or ignore classes must not be null");
+        }
     }
 
     /**
@@ -191,14 +201,14 @@ public class Tracer {
         }
         if (ignoreClasses != null) {
             for (Class<? extends Throwable> clazz : ignoreClasses) {
-                if (clazz.isAssignableFrom(t.getClass())) {
+                if (clazz != null && clazz.isAssignableFrom(t.getClass())) {
                     return false;
                 }
             }
         }
         if (traceClasses != null) {
             for (Class<? extends Throwable> clazz : traceClasses) {
-                if (clazz.isAssignableFrom(t.getClass())) {
+                if (clazz != null && clazz.isAssignableFrom(t.getClass())) {
                     return true;
                 }
             }
