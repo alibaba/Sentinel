@@ -89,16 +89,11 @@ public class InfluxDBUtils {
 
     public static <T> List<T> queryList(String orgID, String sql, Class<T> clasz) {
 
-        QueryApi queryApi = query(orgID, new InfluxDBQueryCallback() {
-            @Override
-            public QueryApi doCallBack(String orgID, InfluxDBClient influxDB) {
+        InfluxDBClient influxDBClient = InfluxDBClientFactory.create("http://123.56.187.228:9999",
+                "N4-jSEhI67HFVqPfdWi1Fd-S9-kDJKeFtmd6At0U-54HOzEm8_1XJ3Um3FBTiJXmury5qxzo5FE0asmZOB1G-A=="
+                        .toCharArray());
 
-                return influxDB.getQueryApi();
-            }
-        });
-
-
-        return queryApi.query(sql, orgID, clasz);
+        return influxDBClient.getQueryApi().query(sql, orgID, clasz);
     }
 
     private static String findToken() throws Exception {

@@ -101,10 +101,10 @@ public class InfluxDBMetricsRepository implements MetricsRepository<MetricEntity
         }
 
         StringBuilder sql = new StringBuilder();
-        sql.append("from(bucket: " + BUCKET_NAME + ")");
+        sql.append("from(bucket: \"" + BUCKET_NAME + "\")");
         sql.append(" |> range(start: " + DateFormatUtils.format(new Date(startTime), DATE_FORMAT_PATTERN)
                 + ", stop: " + DateFormatUtils.format(new Date(endTime), DATE_FORMAT_PATTERN) + ")");
-        sql.append(" |> filter(fn: (r) => r._measurement == " + METRIC_MEASUREMENT + ")");
+        sql.append(" |> filter(fn: (r) => r._measurement == \"" + METRIC_MEASUREMENT + "\")");
         sql.append(" |> filter(fn: (r) => r.app == " + app + ")");
         sql.append(" |> filter(fn: (r) => r.resource == " + resource + ")");
 
@@ -129,9 +129,9 @@ public class InfluxDBMetricsRepository implements MetricsRepository<MetricEntity
         }
 
         StringBuilder sql = new StringBuilder();
-        sql.append("from(bucket: " + BUCKET_NAME + ")");
+        sql.append("from(bucket: \"" + BUCKET_NAME + "\")");
         sql.append(" |> range(start: -1m)");
-        sql.append(" |> filter(fn: (r) => r._measurement == " + METRIC_MEASUREMENT + ")");
+        sql.append(" |> filter(fn: (r) => r._measurement == \"" + METRIC_MEASUREMENT + "\")");
         sql.append(" |> filter(fn: (r) => r.app == " + app + ")");
 
         List<MetricPO> metricPOS = InfluxDBUtils.queryList(ORG_ID, sql.toString(), MetricPO.class);
