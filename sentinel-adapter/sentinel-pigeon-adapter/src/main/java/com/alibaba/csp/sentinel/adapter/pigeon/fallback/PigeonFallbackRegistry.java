@@ -7,7 +7,7 @@ public final class PigeonFallbackRegistry {
     private static volatile PigeonFallback invokerFallback = new DefaultPigeonFallback();
     private static volatile PigeonFallback providerFallback = new DefaultPigeonFallback();
 
-    public static PigeonFallback getConsumerFallback() {
+    public static PigeonFallback getInvokerFallback() {
         return invokerFallback;
     }
 
