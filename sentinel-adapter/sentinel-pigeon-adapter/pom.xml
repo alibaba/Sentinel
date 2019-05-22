@@ -13,8 +13,6 @@
     <packaging>jar</packaging>
 
     <properties>
-        <java.source.version>1.8</java.source.version>
-        <java.target.version>1.8</java.target.version>
         <pigeon.version>2.9.7</pigeon.version>
     </properties>
 

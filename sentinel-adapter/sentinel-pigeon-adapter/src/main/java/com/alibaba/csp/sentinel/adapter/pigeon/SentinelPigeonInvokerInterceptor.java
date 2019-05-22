@@ -34,7 +34,7 @@ public class SentinelPigeonInvokerInterceptor implements InvokerInterceptor {
             String resourceName = PigeonUtils.getResourceName(invokerContext);
             methodEntry = SphU.entry(resourceName, EntryType.OUT);
         } catch (BlockException ex) {
-            PigeonFallbackRegistry.getConsumerFallback().handle(invokerContext, ex);
+            PigeonFallbackRegistry.getInvokerFallback().handle(invokerContext, ex);
         } catch (RpcException e) {
             Tracer.traceEntry(e, methodEntry);
             throw e;
