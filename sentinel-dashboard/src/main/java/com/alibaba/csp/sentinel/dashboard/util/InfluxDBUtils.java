@@ -1,9 +1,9 @@
 package com.alibaba.csp.sentinel.dashboard.util;
 
+import com.alibaba.fastjson.JSON;
 import java.util.List;
 import org.influxdata.client.InfluxDBClient;
 import org.influxdata.client.InfluxDBClientFactory;
-import org.influxdata.client.QueryApi;
 import org.influxdata.client.domain.Permission;
 import org.influxdata.client.domain.PermissionResource;
 import org.slf4j.Logger;
@@ -77,23 +77,22 @@ public class InfluxDBUtils {
 
     }
 
-    public static QueryApi query(String orgID, InfluxDBQueryCallback influxDBQueryCallback) {
+    public static <T> List<T> query(String orgID, InfluxDBQueryCallback influxDBQueryCallback) {
         return process(orgID, new InfluxDBCallback() {
             @Override
             public <T> T doCallBack(String database, InfluxDBClient influxDB) {
-                QueryApi queryApi = influxDBQueryCallback.doCallBack(orgID, influxDB);
-                return (T) queryApi;
+                return (T) influxDBQueryCallback.doCallBack(orgID, influxDB);
             }
         });
     }
 
     public static <T> List<T> queryList(String orgID, String sql, Class<T> clasz) {
-
-        InfluxDBClient influxDBClient = InfluxDBClientFactory.create("http://123.56.187.228:9999",
-                "N4-jSEhI67HFVqPfdWi1Fd-S9-kDJKeFtmd6At0U-54HOzEm8_1XJ3Um3FBTiJXmury5qxzo5FE0asmZOB1G-A=="
-                        .toCharArray());
-
-        return influxDBClient.getQueryApi().query(sql, orgID, clasz);
+        return query(orgID, new InfluxDBQueryCallback() {
+            @Override
+            public <T> List<T> doCallBack(String orgID, InfluxDBClient influxDB) {
+                return (List<T>) influxDB.getQueryApi().query(sql, orgID, clasz);
+            }
+        });
     }
 
     private static String findToken() throws Exception {
@@ -127,6 +126,6 @@ public class InfluxDBUtils {
     }
 
     public interface InfluxDBQueryCallback {
-        QueryApi doCallBack(String orgID, InfluxDBClient influxDB);
+        <T> List<T> doCallBack(String orgID, InfluxDBClient influxDB);
     }
 }

@@ -132,7 +132,7 @@ public class InfluxDBMetricsRepository implements MetricsRepository<MetricEntity
         sql.append("from(bucket: \"" + BUCKET_NAME + "\")");
         sql.append(" |> range(start: -1m)");
         sql.append(" |> filter(fn: (r) => r._measurement == \"" + METRIC_MEASUREMENT + "\")");
-        sql.append(" |> filter(fn: (r) => r.app == " + app + ")");
+        sql.append(" |> filter(fn: (r) => r.app == \"" + app + "\")");
 
         List<MetricPO> metricPOS = InfluxDBUtils.queryList(ORG_ID, sql.toString(), MetricPO.class);
 
