@@ -28,6 +28,7 @@ import com.alibaba.csp.sentinel.dashboard.datasource.entity.MetricEntity;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 /**
@@ -36,7 +37,7 @@ import org.springframework.stereotype.Component;
  * @author Carpenter Lee
  * @author Eric Zhao
  */
-//@Component
+@Component
 public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity> {
 
     private static final long MAX_METRIC_LIVE_TIME_MS = 1000 * 60 * 5;
@@ -105,7 +106,7 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
         if (resourceMap == null) {
             return results;
         }
-        final long minTimeMs = System.currentTimeMillis() - 1000 * 60;
+        final long minTimeMs = System.currentTimeMillis() - 1000 * 60 * 5;
         Map<String, MetricEntity> resourceCount = new ConcurrentHashMap<>(32);
 
         for (Entry<String, ConcurrentLinkedHashMap<Long, MetricEntity>> resourceMetrics : resourceMap.entrySet()) {
