@@ -45,17 +45,20 @@ public final class InitExecutor {
             ServiceLoader<InitFunc> loader = ServiceLoader.load(InitFunc.class);
             List<OrderWrapper> initList = new ArrayList<OrderWrapper>();
             for (InitFunc initFunc : loader) {
-                RecordLog.info("[Sentinel InitExecutor] Found init func: " + initFunc.getClass().getCanonicalName());
+                RecordLog.info("[InitExecutor] Found init func: " + initFunc.getClass().getCanonicalName());
                 insertSorted(initList, initFunc);
             }
             for (OrderWrapper w : initList) {
                 w.func.init();
-                RecordLog.info(String.format("[Sentinel InitExecutor] Initialized: %s with order %d",
+                RecordLog.info(String.format("[InitExecutor] Executing %s with order %d",
                     w.func.getClass().getCanonicalName(), w.order));
             }
         } catch (Exception ex) {
-            RecordLog.info("[Sentinel InitExecutor] Init failed", ex);
+            RecordLog.warn("[InitExecutor] WARN: Initialization failed", ex);
             ex.printStackTrace();
+        } catch (Error error) {
+            RecordLog.warn("[InitExecutor] ERROR: Initialization failed with fatal error", error);
+            error.printStackTrace();
         }
     }
 

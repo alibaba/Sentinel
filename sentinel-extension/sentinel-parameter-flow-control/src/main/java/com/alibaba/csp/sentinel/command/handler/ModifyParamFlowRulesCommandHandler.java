@@ -33,7 +33,7 @@ import com.alibaba.fastjson.JSONArray;
  * @author Eric Zhao
  * @since 0.2.0
  */
-@CommandMapping(name = "setParamFlowRules")
+@CommandMapping(name = "setParamFlowRules", desc = "Set parameter flow rules, while previous rules will be replaced.")
 public class ModifyParamFlowRulesCommandHandler implements CommandHandler<String> {
 
     private static WritableDataSource<List<ParamFlowRule>> paramFlowWds = null;

@@ -1,4 +1,4 @@
-# Sentinel-Dashboard
+# Sentinel Dashboard Frontend
 
 ## 环境要求
 
@@ -6,8 +6,8 @@
 
 ## 编码规范
 
-- HTML/CSS 遵循 Bootstrap 编码规范，参考：https://codeguide.bootcss.com/
-- JavaScript 遵循 Airbnb JavaScript Style Guide，参考：https://github.com/airbnb/javascript/tree/es5-deprecated/es5
+- HTML/CSS 遵循 [Bootstrap 编码规范](https://codeguide.bootcss.com/)
+- JavaScript 遵循 [Airbnb JavaScript Style Guide](https://github.com/airbnb/javascript/tree/es5-deprecated/es5) 以及最新的 ES 6 标准
 
 ## 安装依赖
 
@@ -27,6 +27,6 @@ npm start
 npm run build
 ```
 
-## CREDIT:
+## Credit
 
 - [sb-admin-angular](https://github.com/start-angular/sb-admin-angular)

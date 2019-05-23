@@ -47,10 +47,13 @@ public class AuthorityRuleManagerTest {
         AuthorityRule ruleB = null;
         AuthorityRule ruleC = new AuthorityRule();
         ruleC.setResource("abc");
+        AuthorityRule ruleD = new AuthorityRule();
+        ruleD.setResource("bcd").setLimitApp("abc");
 
         assertFalse(AuthorityRuleManager.isValidRule(ruleA));
         assertFalse(AuthorityRuleManager.isValidRule(ruleB));
-        assertTrue(AuthorityRuleManager.isValidRule(ruleC));
+        assertFalse(AuthorityRuleManager.isValidRule(ruleC));
+        assertTrue(AuthorityRuleManager.isValidRule(ruleD));
     }
 
     @After

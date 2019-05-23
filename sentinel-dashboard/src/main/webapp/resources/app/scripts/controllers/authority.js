@@ -55,7 +55,7 @@ angular.module('sentinelDashboardApp').controller('AuthorityRuleController', ['$
         var authorityRuleDialog;
 
         $scope.editRule = function (rule) {
-            $scope.currentRule = rule;
+            $scope.currentRule = angular.copy(rule);
             $scope.authorityRuleDialog = {
                 title: '编辑授权规则',
                 type: 'edit',
@@ -94,24 +94,8 @@ angular.module('sentinelDashboardApp').controller('AuthorityRuleController', ['$
             });
         };
 
-        function checkRuleValid(rule) {
-            if (rule.resource === undefined || rule.resource === '') {
-                alert('资源名称不能为空');
-                return false;
-            }
-            if (rule.limitApp === undefined || rule.limitApp === '') {
-                alert('流控针对应用不能为空');
-                return false;
-            }
-            if (rule.strategy === undefined) {
-                alert('必须选择黑白名单模式');
-                return false;
-            }
-            return true;
-        }
-
         $scope.saveRule = function () {
-            if (!checkRuleValid($scope.currentRule.rule)) {
+            if (!AuthorityRuleService.checkRuleValid($scope.currentRule.rule)) {
                 return;
             }
             if ($scope.authorityRuleDialog.type === 'add') {
@@ -136,7 +120,7 @@ angular.module('sentinelDashboardApp').controller('AuthorityRuleController', ['$
                     alert("添加规则失败：未知错误");
                 }
             });
-        };
+        }
 
         function saveRuleAndPush(rule, edit) {
             AuthorityRuleService.saveRule(rule).success(function (data) {
@@ -218,7 +202,7 @@ angular.module('sentinelDashboardApp').controller('AuthorityRuleController', ['$
                             $scope.machines = [];
                             $scope.macsInputOptions = [];
                             data.data.forEach(function (item) {
-                                if (item.health) {
+                                if (item.healthy) {
                                     $scope.macsInputOptions.push({
                                         text: item.ip + ':' + item.port,
                                         value: item.ip + ':' + item.port

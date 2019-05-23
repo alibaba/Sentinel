@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-parent</artifactId>
-        <version>0.2.1-SNAPSHOT</version>
+        <version>1.6.1</version>
     </parent>
     <artifactId>sentinel-demo</artifactId>
     <packaging>pom</packaging>
@@ -28,6 +28,12 @@
         <module>sentinel-demo-annotation-spring-aop</module>
         <module>sentinel-demo-parameter-flow-control</module>
         <module>sentinel-demo-slot-chain-spi</module>
+        <module>sentinel-demo-cluster</module>
+        <module>sentinel-demo-command-handler</module>
+        <module>sentinel-demo-spring-webflux</module>
+        <module>sentinel-demo-apache-dubbo</module>
+        <module>sentinel-demo-spring-cloud-gateway</module>
+        <module>sentinel-demo-zuul-gateway</module>
     </modules>
 
     <dependencies>
@@ -36,5 +42,18 @@
             <artifactId>sentinel-core</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>${maven.deploy.version}</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

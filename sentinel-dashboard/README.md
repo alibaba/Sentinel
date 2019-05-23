@@ -25,17 +25,26 @@ java -Dserver.port=8080 \
 -jar target/sentinel-dashboard.jar
 ```
 
-上述命令中我们指定几个 JVM 参数，其中 `-Dserver.port=8080` 用于指定 Spring Boot 启动端口为 `8080`，其余几个是 Sentinel 客户端的参数。
-为便于演示，我们对控制台本身加入了流量控制功能，具体做法是引入 `CommonFilter` 这个 Sentinel 拦截器。上述 JVM 参数的含义是：
+上述命令中我们指定几个 JVM 参数，其中 `-Dserver.port=8080` 是 Spring Boot 的参数，
+用于指定 Spring Boot 服务端启动端口为 `8080`。其余几个是 Sentinel 客户端的参数。
+
+为便于演示，我们对控制台本身加入了流量控制功能，具体做法是引入 Sentinel 提供的 `CommonFilter` 这个 Servlet Filter。
+上述 JVM 参数的含义是：
 
 | 参数 | 作用 |
 |--------|--------|
-|`Dcsp.sentinel.dashboard.server=localhost:8080`|向 Sentinel 客户端指定控制台的地址|
-|`-Dproject.name=sentinel-dashboard`|向 Sentinel 指定本程序名称|
+|`Dcsp.sentinel.dashboard.server=localhost:8080`|向 Sentinel 接入端指定控制台的地址|
+|`-Dproject.name=sentinel-dashboard`|向 Sentinel 指定应用名称，比如上面对应的应用名称就为 `sentinel-dashboard`|
 
-全部配置项参考 [启动配置项](https://github.com/alibaba/Sentinel/wiki/%E5%90%AF%E5%8A%A8%E9%85%8D%E7%BD%AE%E9%A1%B9)
+全部的配置项可以参考 [启动配置项文档](https://github.com/alibaba/Sentinel/wiki/%E5%90%AF%E5%8A%A8%E9%85%8D%E7%BD%AE%E9%A1%B9)。
 
-经过上述配置，控制台启动后会自动向自己发送心跳。程序启动后浏览器访问`localhost:8080`即可访问 Sentinel 控制台。
+经过上述配置，控制台启动后会自动向自己发送心跳。程序启动后浏览器访问 `localhost:8080` 即可访问 Sentinel 控制台。
+
+从 Sentinel 1.6.0 开始，Sentinel 控制台支持简单的**登录**功能，默认用户名和密码都是 `sentinel`。用户可以通过如下参数进行配置：
+
+- `-Dsentinel.dashboard.auth.username=sentinel` 用于指定控制台的登录用户名为 `sentinel`；
+- `-Dsentinel.dashboard.auth.password=123456` 用于指定控制台的登录密码为 `123456`；如果省略这两个参数，默认用户和密码均为 `sentinel`；
+- `-Dserver.servlet.session.timeout=7200` 用于指定 Spring Boot 服务端 session 的过期时间，如 `7200` 表示 7200 秒；`60m` 表示 60 分钟，默认为 30 分钟；
 
 ## 2. 客户端接入
 
@@ -46,7 +55,7 @@ java -Dserver.port=8080 \
 
 ## 3. 验证是否接入成功
 
-客户端正确配置并启动后，会主动向控制台发送心跳包，汇报自己的存在；控制台收到客户端心跳包之后，会在左侧导航栏中显示该客户端信息。控制台能够看到客户端的机器信息，则表明客户端接入成功了。
-
+客户端正确配置并启动后，会**在初次调用后**主动向控制台发送心跳包，汇报自己的存在；
+控制台收到客户端心跳包之后，会在左侧导航栏中显示该客户端信息。如果控制台能够看到客户端的机器信息，则表明客户端接入成功了。
 
 更多：[控制台功能介绍](./Sentinel_Dashboard_Feature.md)。

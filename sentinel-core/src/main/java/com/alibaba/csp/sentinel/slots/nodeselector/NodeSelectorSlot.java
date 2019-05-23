@@ -18,7 +18,6 @@ package com.alibaba.csp.sentinel.slots.nodeselector;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.alibaba.csp.sentinel.Env;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.node.ClusterNode;
@@ -33,7 +32,7 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
  * <ol>
  * <li>adding a new {@link DefaultNode} if needed as the last child in the context.
  * The context's last node is the current node or the parent node of the context. </li>
- * <li>setting itself to the the context current node.</li>
+ * <li>setting itself to the context current node.</li>
  * </ol>
  * </p>
  *
@@ -131,7 +130,7 @@ public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
     private volatile Map<String, DefaultNode> map = new HashMap<String, DefaultNode>(10);
 
     @Override
-    public void entry(Context context, ResourceWrapper resourceWrapper, Object obj, int count, Object... args)
+    public void entry(Context context, ResourceWrapper resourceWrapper, Object obj, int count, boolean prioritized, Object... args)
         throws Throwable {
         /*
          * It's interesting that we use context name rather resource name as the map key.
@@ -156,7 +155,7 @@ public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
             synchronized (this) {
                 node = map.get(context.getName());
                 if (node == null) {
-                    node = Env.nodeBuilder.buildTreeNode(resourceWrapper, null);
+                    node = new DefaultNode(resourceWrapper, null);
                     HashMap<String, DefaultNode> cacheMap = new HashMap<String, DefaultNode>(map.size());
                     cacheMap.putAll(map);
                     cacheMap.put(context.getName(), node);
@@ -168,7 +167,7 @@ public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
         }
 
         context.setCurNode(node);
-        fireEntry(context, resourceWrapper, node, count, args);
+        fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }
 
     @Override

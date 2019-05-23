@@ -26,7 +26,7 @@ import com.alibaba.fastjson.JSON;
  * @author Eric Zhao
  * @since 0.2.0
  */
-@CommandMapping(name = "getParamFlowRules")
+@CommandMapping(name = "getParamFlowRules", desc = "Get all parameter flow rules")
 public class GetParamFlowRulesCommandHandler implements CommandHandler<String> {
 
     @Override
