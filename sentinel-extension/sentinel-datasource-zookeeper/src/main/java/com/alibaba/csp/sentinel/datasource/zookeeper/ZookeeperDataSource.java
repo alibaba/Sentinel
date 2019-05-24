@@ -1,17 +1,10 @@
 package com.alibaba.csp.sentinel.datasource.zookeeper;
 
-import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.datasource.AbstractDataSource;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
-
 import org.apache.curator.framework.AuthInfo;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -19,8 +12,14 @@ import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.NodeCache;
 import org.apache.curator.framework.recipes.cache.NodeCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.data.Stat;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A read-only {@code DataSource} with ZooKeeper backend.
@@ -31,6 +30,11 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
 
     private static final int RETRY_TIMES = 3;
     private static final int SLEEP_TIME = 1000;
+
+    private static volatile Map<String, CuratorFramework> zkClientMap = new HashMap<>();
+    private static final Object lock = new Object();
+
+
 
     private final ExecutorService pool = new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS,
         new ArrayBlockingQueue<Runnable>(1), new NamedThreadFactory("sentinel-zookeeper-ds-update"),
@@ -116,16 +120,34 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
                 }
             };
 
-            if (authInfos == null || authInfos.size() == 0) {
-                this.zkClient = CuratorFrameworkFactory.newClient(serverAddr, new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES));
-            } else {
-                this.zkClient = CuratorFrameworkFactory.builder().
-                        connectString(serverAddr).
-                        retryPolicy(new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES)).
-                        authorization(authInfos).
-                        build();
+
+            if(zkClientMap.containsKey(serverAddr)){
+                this.zkClient = zkClientMap.get(serverAddr);
+            }else {
+                synchronized (lock) {
+                    if(!zkClientMap.containsKey(serverAddr)) {
+                        CuratorFramework zc = null;
+                        if (authInfos == null || authInfos.size() == 0) {
+                            zc = CuratorFrameworkFactory.newClient(serverAddr, new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES));
+                        } else {
+                            zc = CuratorFrameworkFactory.builder().
+                                    connectString(serverAddr).
+                                    retryPolicy(new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES)).
+                                    authorization(authInfos).
+                                    build();
+                        }
+                        this.zkClient = zc;
+                        this.zkClient.start();
+                        Map<String, CuratorFramework> newZkClientMap = new HashMap<>(zkClientMap.size());
+                        newZkClientMap.putAll(zkClientMap);
+                        newZkClientMap.put(serverAddr,zc);
+                        zkClientMap = newZkClientMap;
+                    }else{
+                        this.zkClient = zkClientMap.get(serverAddr);
+                    }
+                }
             }
-            this.zkClient.start();
+
 
             this.nodeCache = new NodeCache(this.zkClient, this.path);
             this.nodeCache.getListenable().addListener(this.listener, this.pool);
