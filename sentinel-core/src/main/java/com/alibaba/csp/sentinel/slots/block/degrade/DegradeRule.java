@@ -15,12 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.block.degrade;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.ClusterNode;
@@ -28,6 +22,12 @@ import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * <p>
@@ -55,7 +55,7 @@ import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
  */
 public class DegradeRule extends AbstractRule {
 
-    private static final int RT_MAX_EXCEED_N = 5;
+    private int rtMaxExceedN = RuleConstant.DEGRADE_GRADE_RT_MAX_EXCEED_N;
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(
@@ -179,7 +179,7 @@ public class DegradeRule extends AbstractRule {
             }
 
             // Sentinel will degrade the service only if count exceeds.
-            if (passCount.incrementAndGet() < RT_MAX_EXCEED_N) {
+            if (passCount.incrementAndGet() < rtMaxExceedN) {
                 return true;
             }
         } else if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
@@ -187,12 +187,12 @@ public class DegradeRule extends AbstractRule {
             double success = clusterNode.successQps();
             double total = clusterNode.totalQps();
             // if total qps less than RT_MAX_EXCEED_N, pass.
-            if (total < RT_MAX_EXCEED_N) {
+            if (total < rtMaxExceedN) {
                 return true;
             }
 
             double realSuccess = success - exception;
-            if (realSuccess <= 0 && exception < RT_MAX_EXCEED_N) {
+            if (realSuccess <= 0 && exception < rtMaxExceedN) {
                 return true;
             }
 
@@ -214,6 +214,15 @@ public class DegradeRule extends AbstractRule {
         return false;
     }
 
+    public int getRtMaxExceedN() {
+        return rtMaxExceedN;
+    }
+
+    public DegradeRule setRtMaxExceedN(int rtMaxExceedN) {
+        this.rtMaxExceedN = rtMaxExceedN;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "DegradeRule{" +
@@ -224,6 +233,8 @@ public class DegradeRule extends AbstractRule {
             ", timeWindow=" + timeWindow +
             "}";
     }
+
+
 
     private static final class ResetTask implements Runnable {
 
