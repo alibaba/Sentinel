@@ -22,7 +22,6 @@ import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.adapter.pigeon.fallback.PigeonFallbackRegistry;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.dianping.pigeon.remoting.common.exception.RpcException;
 import com.dianping.pigeon.remoting.provider.domain.ProviderContext;
 import com.dianping.pigeon.remoting.provider.process.ProviderInterceptor;
 
@@ -32,28 +31,36 @@ public class SentinelPigeonProviderInterceptor implements ProviderInterceptor {
 
     @Override
     public void preInvoke(ProviderContext providerContext) {
-        Entry methodEntry = null;
-        Parameter[] arguments = new Parameter[]{};
         try {
             String resourceName = PigeonUtils.getResourceName(providerContext);
-            arguments = PigeonUtils.getMethodArguments(providerContext);
+            Parameter[] arguments = PigeonUtils.getMethodArguments(providerContext);
             ContextUtil.enter(resourceName);
-            methodEntry = SphU.entry(resourceName, EntryType.IN, 1, arguments);
+            SphU.entry(resourceName, EntryType.IN, 1, arguments);
         } catch (BlockException ex) {
             PigeonFallbackRegistry.getProviderFallback().handle(providerContext, ex);
-        } catch (RpcException ex) {
-            Tracer.traceEntry(ex, methodEntry);
-            throw ex;
-        } finally {
-            if (methodEntry != null) {
-                methodEntry.exit(1, arguments);
-            }
-            ContextUtil.exit();
         }
     }
 
     @Override
     public void postInvoke(ProviderContext providerContext) {
+        Entry methodEntry = ContextUtil.getContext().getCurEntry();
+        Parameter[] arguments = PigeonUtils.getMethodArguments(providerContext);
+
+        Throwable ex = null;
+        ex = providerContext.getServiceError();
+        if (ex != null) {
+            Tracer.traceEntry(ex, methodEntry);
+        }
+        //because of service error and framework error are mutually exclusive
+        ex = providerContext.getFrameworkError();
+        if (ex != null) {
+            Tracer.traceEntry(ex, methodEntry);
+        }
+
+        if (methodEntry != null) {
+            methodEntry.exit(1, arguments);
+        }
+        ContextUtil.exit();
     }
 
 }

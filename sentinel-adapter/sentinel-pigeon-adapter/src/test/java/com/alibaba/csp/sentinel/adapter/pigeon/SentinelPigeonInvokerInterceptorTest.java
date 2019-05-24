@@ -16,9 +16,10 @@
 package com.alibaba.csp.sentinel.adapter.pigeon;
 
 import com.alibaba.csp.sentinel.BaseTest;
+import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.adapter.pigeon.provider.DemoService;
-import com.alibaba.csp.sentinel.context.Context;
-import com.alibaba.csp.sentinel.context.ContextUtil;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.dianping.pigeon.remoting.common.domain.InvocationRequest;
 import com.dianping.pigeon.remoting.invoker.domain.InvokerContext;
 import org.junit.After;
@@ -27,7 +28,6 @@ import org.junit.Test;
 
 import java.lang.reflect.Method;
 
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 /**
@@ -65,9 +65,29 @@ public class SentinelPigeonInvokerInterceptorTest extends BaseTest {
         when(invocationRequest.getParamClassName()).thenReturn(paramClazzName);
 
         interceptor.preInvoke(invokerContext);
+    }
 
-        Context context = ContextUtil.getContext();
-        assertNull(context);
+    @Test
+    public void testPostInvoke() throws BlockException {
+        final InvokerContext invokerContext = mock(InvokerContext.class);
+
+        Method method = DemoService.class.getMethods()[0];
+        String resourceName = MethodUtils.buildResource(method);
+        SphU.entry(resourceName, EntryType.OUT);
+
+        interceptor.postInvoke(invokerContext);
+    }
+
+    @Test
+    public void testAfterThrowing() throws BlockException {
+        final InvokerContext invokerContext = mock(InvokerContext.class);
+
+        Method method = DemoService.class.getMethods()[0];
+        String resourceName = MethodUtils.buildResource(method);
+        SphU.entry(resourceName, EntryType.OUT);
+        Throwable ex = new Throwable("error");
+
+        interceptor.afterThrowing(invokerContext, ex);
     }
 
 }
