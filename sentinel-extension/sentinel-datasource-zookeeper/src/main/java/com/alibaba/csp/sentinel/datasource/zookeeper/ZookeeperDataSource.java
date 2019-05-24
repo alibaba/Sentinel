@@ -35,10 +35,9 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
     private static final Object lock = new Object();
 
 
-
     private final ExecutorService pool = new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS,
-        new ArrayBlockingQueue<Runnable>(1), new NamedThreadFactory("sentinel-zookeeper-ds-update"),
-        new ThreadPoolExecutor.DiscardOldestPolicy());
+            new ArrayBlockingQueue<Runnable>(1), new NamedThreadFactory("sentinel-zookeeper-ds-update"),
+            new ThreadPoolExecutor.DiscardOldestPolicy());
 
     private NodeCacheListener listener;
     private final String path;
@@ -121,11 +120,11 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
             };
 
 
-            if(zkClientMap.containsKey(serverAddr)){
+            if (zkClientMap.containsKey(serverAddr)) {
                 this.zkClient = zkClientMap.get(serverAddr);
-            }else {
+            } else {
                 synchronized (lock) {
-                    if(!zkClientMap.containsKey(serverAddr)) {
+                    if (!zkClientMap.containsKey(serverAddr)) {
                         CuratorFramework zc = null;
                         if (authInfos == null || authInfos.size() == 0) {
                             zc = CuratorFrameworkFactory.newClient(serverAddr, new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES));
@@ -140,9 +139,9 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
                         this.zkClient.start();
                         Map<String, CuratorFramework> newZkClientMap = new HashMap<>(zkClientMap.size());
                         newZkClientMap.putAll(zkClientMap);
-                        newZkClientMap.put(serverAddr,zc);
+                        newZkClientMap.put(serverAddr, zc);
                         zkClientMap = newZkClientMap;
-                    }else{
+                    } else {
                         this.zkClient = zkClientMap.get(serverAddr);
                     }
                 }
