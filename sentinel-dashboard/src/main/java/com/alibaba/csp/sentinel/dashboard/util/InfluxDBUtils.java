@@ -1,6 +1,5 @@
 package com.alibaba.csp.sentinel.dashboard.util;
 
-import com.alibaba.fastjson.JSON;
 import java.util.List;
 import org.influxdata.client.InfluxDBClient;
 import org.influxdata.client.InfluxDBClientFactory;

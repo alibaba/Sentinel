@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import org.apache.commons.lang.time.DateFormatUtils;
 import org.influxdata.client.InfluxDBClient;
 import org.influxdata.client.WriteApi;
 import org.influxdata.client.domain.WritePrecision;
@@ -33,9 +32,6 @@ import org.springframework.util.CollectionUtils;
 @Primary
 @Repository("influxDBMetricsRepository")
 public class InfluxDBMetricsRepository implements MetricsRepository<MetricEntity> {
-
-    /** 时间格式 */
-    private static final String DATE_FORMAT_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
 
     /** 组织ID */
     private static final String ORG_ID = "03dba1e36bbc6000";
@@ -104,11 +100,11 @@ public class InfluxDBMetricsRepository implements MetricsRepository<MetricEntity
 
         StringBuilder sql = new StringBuilder();
         sql.append("from(bucket: \"" + BUCKET_NAME + "\")");
-        sql.append(" |> range(start: " + DateFormatUtils.format(new Date(startTime), DATE_FORMAT_PATTERN)
-                + ", stop: " + DateFormatUtils.format(new Date(endTime), DATE_FORMAT_PATTERN) + ")");
+        sql.append(" |> range(start: " + Instant.ofEpochMilli(startTime).toString() + ", stop: " + Instant
+                .ofEpochMilli(endTime).toString() + ")");
         sql.append(" |> filter(fn: (r) => r._measurement == \"" + METRIC_MEASUREMENT + "\")");
-        sql.append(" |> filter(fn: (r) => r.app == " + app + ")");
-        sql.append(" |> filter(fn: (r) => r.resource == " + resource + ")");
+        sql.append(" |> filter(fn: (r) => r.app == \"" + app + "\")");
+        sql.append(" |> filter(fn: (r) => r.resource == \"" + resource + "\")");
         sql.append(" |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")");
 
         List<MetricPO> metricPOS = InfluxDBUtils.queryList(ORG_ID, sql.toString(), MetricPO.class);
@@ -133,7 +129,7 @@ public class InfluxDBMetricsRepository implements MetricsRepository<MetricEntity
 
         StringBuilder sql = new StringBuilder();
         sql.append("from(bucket: \"" + BUCKET_NAME + "\")");
-        sql.append(" |> range(start: -1h)");
+        sql.append(" |> range(start: -1m)");
         sql.append(" |> filter(fn: (r) => r._measurement == \"" + METRIC_MEASUREMENT + "\")");
         sql.append(" |> filter(fn: (r) => r.app == \"" + app + "\")");
         sql.append(" |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")");
@@ -188,7 +184,7 @@ public class InfluxDBMetricsRepository implements MetricsRepository<MetricEntity
         metricEntity.setGmtCreate(new Date(metricPO.getGmtCreate()));
         metricEntity.setGmtModified(new Date(metricPO.getGmtModified()));
         metricEntity.setApp(metricPO.getApp());
-        metricEntity.setTimestamp(Date.from(metricPO.getTime().minusMillis(TimeUnit.HOURS.toMillis(UTC_8))));// 查询数据减8小时
+        metricEntity.setTimestamp(Date.from(metricPO.getTime()));
         metricEntity.setResource(metricPO.getResource());
         metricEntity.setPassQps(metricPO.getPassQps());
         metricEntity.setSuccessQps(metricPO.getSuccessQps());
