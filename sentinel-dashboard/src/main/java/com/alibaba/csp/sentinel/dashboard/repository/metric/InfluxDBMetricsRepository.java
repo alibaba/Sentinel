@@ -18,6 +18,7 @@ import org.influxdata.client.InfluxDBClient;
 import org.influxdata.client.WriteApi;
 import org.influxdata.client.domain.WritePrecision;
 import org.influxdata.client.write.Point;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 
@@ -29,6 +30,7 @@ import org.springframework.util.CollectionUtils;
  * @author Leo
  * @date 2019-05-17 17:48
  */
+@Primary
 @Repository("influxDBMetricsRepository")
 public class InfluxDBMetricsRepository implements MetricsRepository<MetricEntity> {
 
@@ -107,6 +109,7 @@ public class InfluxDBMetricsRepository implements MetricsRepository<MetricEntity
         sql.append(" |> filter(fn: (r) => r._measurement == \"" + METRIC_MEASUREMENT + "\")");
         sql.append(" |> filter(fn: (r) => r.app == " + app + ")");
         sql.append(" |> filter(fn: (r) => r.resource == " + resource + ")");
+        sql.append(" |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")");
 
         List<MetricPO> metricPOS = InfluxDBUtils.queryList(ORG_ID, sql.toString(), MetricPO.class);
 
@@ -130,9 +133,10 @@ public class InfluxDBMetricsRepository implements MetricsRepository<MetricEntity
 
         StringBuilder sql = new StringBuilder();
         sql.append("from(bucket: \"" + BUCKET_NAME + "\")");
-        sql.append(" |> range(start: -1m)");
+        sql.append(" |> range(start: -1h)");
         sql.append(" |> filter(fn: (r) => r._measurement == \"" + METRIC_MEASUREMENT + "\")");
         sql.append(" |> filter(fn: (r) => r.app == \"" + app + "\")");
+        sql.append(" |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")");
 
         List<MetricPO> metricPOS = InfluxDBUtils.queryList(ORG_ID, sql.toString(), MetricPO.class);
 
@@ -191,7 +195,7 @@ public class InfluxDBMetricsRepository implements MetricsRepository<MetricEntity
         metricEntity.setBlockQps(metricPO.getBlockQps());
         metricEntity.setExceptionQps(metricPO.getExceptionQps());
         metricEntity.setRt(metricPO.getRt());
-        metricEntity.setCount(metricPO.getCount());
+        metricEntity.setCount(metricPO.getCount().intValue());
 
         return metricEntity;
     }

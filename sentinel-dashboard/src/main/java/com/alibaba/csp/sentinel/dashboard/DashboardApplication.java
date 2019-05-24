@@ -16,16 +16,16 @@
 package com.alibaba.csp.sentinel.dashboard;
 
 import com.alibaba.csp.sentinel.init.InitExecutor;
-
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
 /**
  * Sentinel dashboard application.
  *
  * @author Carpenter Lee
  */
-@SpringBootApplication
+@SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
 public class DashboardApplication {
 
     public static void main(String[] args) {

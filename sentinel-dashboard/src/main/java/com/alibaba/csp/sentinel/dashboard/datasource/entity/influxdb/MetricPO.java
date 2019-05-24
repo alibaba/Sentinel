@@ -38,13 +38,13 @@ public class MetricPO {
     private Long exceptionQps;
 
     @Column(name = "rt")
-    private double rt;
+    private Double rt;
 
     @Column(name = "count")
-    private int count;
+    private Long count;
 
     @Column(name = "resourceCode")
-    private int resourceCode;
+    private Long resourceCode;
 
     public Instant getTime() {
         return time;
@@ -126,27 +126,27 @@ public class MetricPO {
         this.exceptionQps = exceptionQps;
     }
 
-    public double getRt() {
+    public Double getRt() {
         return rt;
     }
 
-    public void setRt(double rt) {
+    public void setRt(Double rt) {
         this.rt = rt;
     }
 
-    public int getCount() {
+    public Long getCount() {
         return count;
     }
 
-    public void setCount(int count) {
+    public void setCount(Long count) {
         this.count = count;
     }
 
-    public int getResourceCode() {
+    public Long getResourceCode() {
         return resourceCode;
     }
 
-    public void setResourceCode(int resourceCode) {
+    public void setResourceCode(Long resourceCode) {
         this.resourceCode = resourceCode;
     }
 }

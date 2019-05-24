@@ -23,12 +23,11 @@ import org.springframework.util.CollectionUtils;
  * @author cdfive
  * @date 2018-09-17
  */
-@Primary
-@Transactional
-@Repository("jpaMetricsRepository")
+//@Transactional
+//@Repository("jpaMetricsRepository")
 public class JpaMetricsRepository implements MetricsRepository<MetricEntity> {
 
-    @PersistenceContext
+    //@PersistenceContext
     private EntityManager em;
 
     @Override
