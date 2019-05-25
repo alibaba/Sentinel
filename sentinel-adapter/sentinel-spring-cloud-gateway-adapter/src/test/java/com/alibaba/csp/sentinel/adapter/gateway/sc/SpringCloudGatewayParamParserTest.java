@@ -67,7 +67,7 @@ public class SpringCloudGatewayParamParserTest {
 
         Object[] params = paramParser.parseParameterFor(routeId1, exchange,
             e -> e.getResourceMode() == 0);
-        assertThat(params.length).isZero();
+        assertThat(params.length).isEqualTo(1);
     }
 
     @Test

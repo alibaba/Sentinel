@@ -149,7 +149,8 @@ public class FlowRuleCheckerTest {
     public void testPassCheckNullLimitApp() {
         FlowRule rule = new FlowRule("abc").setCount(1);
         rule.setLimitApp(null);
-        assertTrue(FlowRuleChecker.passCheck(rule, null, null, 1));
+        FlowRuleChecker checker = new FlowRuleChecker();
+        assertTrue(checker.canPassCheck(rule, null, null, 1));
     }
 
     @Test
@@ -161,7 +162,8 @@ public class FlowRuleCheckerTest {
         Context context = mock(Context.class);
         when(context.getOrigin()).thenReturn("def");
 
-        assertTrue(FlowRuleChecker.passCheck(rule, context, node, 1));
+        FlowRuleChecker checker = new FlowRuleChecker();
+        assertTrue(checker.canPassCheck(rule, context, node, 1));
     }
 
     @Before

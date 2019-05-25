@@ -43,9 +43,9 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
  * @author Eric Zhao
  * @since 0.2.0
  */
-final class ParamFlowChecker {
+public final class ParamFlowChecker {
 
-    static boolean passCheck(ResourceWrapper resourceWrapper, /*@Valid*/ ParamFlowRule rule, /*@Valid*/ int count,
+    public static boolean passCheck(ResourceWrapper resourceWrapper, /*@Valid*/ ParamFlowRule rule, /*@Valid*/ int count,
                              Object... args) {
         if (args == null) {
             return true;
@@ -249,7 +249,7 @@ final class ParamFlowChecker {
 
     private static ParameterMetric getParameterMetric(ResourceWrapper resourceWrapper) {
         // Should not be null.
-        return ParamFlowSlot.getParamMetric(resourceWrapper);
+        return ParameterMetricStorage.getParamMetric(resourceWrapper);
     }
 
     @SuppressWarnings("unchecked")
