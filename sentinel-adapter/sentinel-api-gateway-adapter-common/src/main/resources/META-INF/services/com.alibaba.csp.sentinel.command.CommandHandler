@@ -1,0 +1,4 @@
+com.alibaba.csp.sentinel.adapter.gateway.common.command.UpdateGatewayApiDefinitionGroupCommandHandler
+com.alibaba.csp.sentinel.adapter.gateway.common.command.UpdateGatewayRuleCommandHandler
+com.alibaba.csp.sentinel.adapter.gateway.common.command.GetGatewayApiDefinitionGroupCommandHandler
+com.alibaba.csp.sentinel.adapter.gateway.common.command.GetGatewayRuleCommandHandler

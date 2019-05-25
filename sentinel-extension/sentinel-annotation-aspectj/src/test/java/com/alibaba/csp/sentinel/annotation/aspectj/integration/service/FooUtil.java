@@ -23,9 +23,15 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 public class FooUtil {
 
     public static final int BLOCK_FLAG = 88888;
+    public static final String FALLBACK_DEFAULT_RESULT = "fallback";
 
     public static int globalBlockHandler(BlockException ex) {
         System.out.println("Oops: " + ex.getClass().getSimpleName());
         return BLOCK_FLAG;
+    }
+
+    public static String globalDefaultFallback(Throwable t) {
+        System.out.println("Fallback caught: " + t.getClass().getSimpleName());
+        return FALLBACK_DEFAULT_RESULT;
     }
 }

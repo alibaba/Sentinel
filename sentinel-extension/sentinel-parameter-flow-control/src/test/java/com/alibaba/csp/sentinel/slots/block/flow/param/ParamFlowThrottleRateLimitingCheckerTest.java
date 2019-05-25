@@ -1,6 +1,19 @@
+/*
+ * Copyright 1999-2019 Alibaba Group Holding Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.alibaba.csp.sentinel.slots.block.flow.param;
-
-import static org.junit.Assert.assertEquals;
 
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
@@ -18,6 +31,8 @@ import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
 import com.alibaba.csp.sentinel.util.TimeUtil;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author jialiang.linjl
@@ -41,7 +56,7 @@ public class ParamFlowThrottleRateLimitingCheckerTest {
 
         String valueA = "valueA";
         ParameterMetric metric = new ParameterMetric();
-        ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
+        ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
         metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 
         long currentTime = TimeUtil.currentTimeMillis();
@@ -85,7 +100,7 @@ public class ParamFlowThrottleRateLimitingCheckerTest {
 
         final String valueA = "valueA";
         ParameterMetric metric = new ParameterMetric();
-        ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
+        ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
         metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 
         int threadCount = 40;
@@ -154,11 +169,11 @@ public class ParamFlowThrottleRateLimitingCheckerTest {
 
     @Before
     public void setUp() throws Exception {
-        ParamFlowSlot.getMetricsMap().clear();
+        ParameterMetricStorage.getMetricsMap().clear();
     }
 
     @After
     public void tearDown() throws Exception {
-        ParamFlowSlot.getMetricsMap().clear();
+        ParameterMetricStorage.getMetricsMap().clear();
     }
 }
