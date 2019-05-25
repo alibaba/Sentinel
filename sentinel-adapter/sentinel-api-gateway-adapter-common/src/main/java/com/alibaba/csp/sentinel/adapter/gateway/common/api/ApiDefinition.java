@@ -19,6 +19,8 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
+ * A group of HTTP API patterns.
+ *
  * @author Eric Zhao
  * @since 1.6.0
  */

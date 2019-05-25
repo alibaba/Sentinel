@@ -53,24 +53,31 @@ public class GatewayParamParser<T> {
         }
         Set<GatewayFlowRule> gatewayRules = new HashSet<>();
         Set<Boolean> predSet = new HashSet<>();
+        boolean hasNonParamRule = false;
         for (GatewayFlowRule rule : GatewayRuleManager.getRulesForResource(resource)) {
             if (rule.getParamItem() != null) {
                 gatewayRules.add(rule);
                 predSet.add(rulePredicate.test(rule));
+            } else {
+                hasNonParamRule = true;
             }
         }
-        if (gatewayRules.isEmpty()) {
+        if (!hasNonParamRule && gatewayRules.isEmpty()) {
             return new Object[0];
         }
-        if (predSet.size() != 1 || predSet.contains(false)) {
+        if (predSet.size() > 1 || predSet.contains(false)) {
             return new Object[0];
         }
-        Object[] arr = new Object[gatewayRules.size()];
+        int size = hasNonParamRule ? gatewayRules.size() + 1 : gatewayRules.size();
+        Object[] arr = new Object[size];
         for (GatewayFlowRule rule : gatewayRules) {
             GatewayParamFlowItem paramItem = rule.getParamItem();
             int idx = paramItem.getIndex();
             String param = parseInternal(paramItem, request);
             arr[idx] = param;
+        }
+        if (hasNonParamRule) {
+            arr[size - 1] = SentinelGatewayConstants.GATEWAY_DEFAULT_PARAM;
         }
         return arr;
     }
