@@ -15,17 +15,13 @@
  */
 package com.alibaba.csp.sentinel.config;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
-
-import com.alibaba.csp.sentinel.log.LogBase;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.AppNameUtil;
 import com.alibaba.csp.sentinel.util.AssertUtil;
+
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The universal local config center of Sentinel. The config is retrieved from command line arguments
@@ -98,32 +94,13 @@ public class SentinelConfig {
     }
 
     private static void loadProps() {
-        // Resolve app name.
-        AppNameUtil.resolveAppName();
-        try {
-            String appName = AppNameUtil.getAppName();
-            if (appName == null) {
-                appName = "";
-            }
-            // We first retrieve the properties from the property file.
-            String fileName = LogBase.getLogBaseDir() + appName + ".properties";
-            File file = new File(fileName);
-            if (file.exists()) {
-                RecordLog.info("[SentinelConfig] Reading config from " + fileName);
-                FileInputStream fis = new FileInputStream(fileName);
-                Properties fileProps = new Properties();
-                fileProps.load(fis);
-                fis.close();
 
-                for (Object key : fileProps.keySet()) {
-                    SentinelConfig.setConfig((String)key, (String)fileProps.get(key));
-                }
-            }
-        } catch (Throwable ioe) {
-            RecordLog.info(ioe.getMessage(), ioe);
+        Properties properties = ConfigLoadUtils.loadProperties();
+        for (Object key : properties.keySet()) {
+            SentinelConfig.setConfig((String) key, (String) properties.get(key));
         }
 
-        // JVM parameter override file config.
+       /* // JVM parameter override file config.
         for (Map.Entry<Object, Object> entry : new CopyOnWriteArraySet<>(System.getProperties().entrySet())) {
             String configKey = entry.getKey().toString();
             String configValue = entry.getValue().toString();
@@ -132,7 +109,7 @@ public class SentinelConfig {
             if (configValueOld != null) {
                 RecordLog.info("[SentinelConfig] JVM parameter overrides {0}: {1} -> {2}", configKey, configValueOld, configValue);
             }
-        }
+        }*/
     }
 
     /**

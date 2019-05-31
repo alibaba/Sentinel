@@ -17,8 +17,6 @@ package com.alibaba.csp.sentinel.util;
 
 import java.io.File;
 
-import com.alibaba.csp.sentinel.log.RecordLog;
-
 /**
  * Util class for getting application name. This class uses the flowing order to get app's name:
  *
@@ -57,7 +55,9 @@ public final class AppNameUtil {
 
     static {
         resolveAppName();
-        RecordLog.info("App name resolved: " + appName);
+        //here use RecordLog will lead to class-init circle-dependency problem
+        //RecordLog.info("App name resolved: " + appName);
+        System.out.println("App name resolved: " + appName);
     }
 
     public static void resolveAppName() {

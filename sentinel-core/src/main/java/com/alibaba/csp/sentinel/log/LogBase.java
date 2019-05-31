@@ -15,13 +15,16 @@
  */
 package com.alibaba.csp.sentinel.log;
 
+import com.alibaba.csp.sentinel.config.ConfigLoadUtils;
+import com.alibaba.csp.sentinel.util.PidUtil;
+import com.alibaba.csp.sentinel.util.StringUtil;
+
 import java.io.File;
 import java.io.IOException;
+import java.util.Properties;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.alibaba.csp.sentinel.util.PidUtil;
 
 /**
  * Default log base dir is ${user.home}/logs/csp/, we can use {@link #LOG_DIR} System property to override it.
@@ -55,10 +58,10 @@ public class LogBase {
     }
 
     private static void init() {
-        // first use -D, then use user home.
-        String logDir = System.getProperty(LOG_DIR);
 
-        if (logDir == null || logDir.isEmpty()) {
+        Properties properties = ConfigLoadUtils.loadProperties();
+        String logDir = (String) properties.get(LOG_DIR);
+        if (StringUtil.isBlank(logDir)) {
             logDir = System.getProperty(USER_HOME);
             logDir = addSeparator(logDir) + DIR_NAME + File.separator;
         }
@@ -73,7 +76,7 @@ public class LogBase {
         logBaseDir = logDir;
         System.out.println("INFO: log base dir is: " + logBaseDir);
 
-        String usePid = System.getProperty(LOG_NAME_USE_PID, "");
+        String usePid = properties.getProperty(LOG_NAME_USE_PID, "");
         logNameUsePid = "true".equalsIgnoreCase(usePid);
         System.out.println("INFO: log name use pid is: " + logNameUsePid);
     }
