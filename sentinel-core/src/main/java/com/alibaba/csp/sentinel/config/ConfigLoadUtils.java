@@ -55,7 +55,7 @@ public class ConfigLoadUtils {
     private static void init() {
 
         //Load from JVM -D user-specified file
-        String fileName = System.getenv(SENTINEL_CONFIG_FILE);
+        String fileName = System.getProperty(SENTINEL_CONFIG_FILE);
         if (StringUtil.isNotBlank(fileName)) {
             if (fileName.startsWith("/")) {
                 loadPropertiesFromFille(fileName);
