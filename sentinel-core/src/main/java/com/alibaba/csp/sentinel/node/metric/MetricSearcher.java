@@ -25,10 +25,9 @@ import java.util.List;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 
 /**
- * 从指定目录下找出所有的metric文件，并按照指定时间戳进行检索，参考{@link MetricSearcher#find(long, int)}。
- * 会借助索引以提高检索效率，参考{@link MetricWriter}；还会在内部缓存上一次检索的文件指针，以便下一次顺序检索时
- * 减少读盘次数。
- *
+ *  Find all metric files from the specified directory,and retrieve it according to the specified timestamp,refer to {@link MetricSearcher#find(long, int)}.
+ *  Index will be used to improve retrieval efficiency, refer to {@link MetricWriter};The last retrieved file pointer is also cached in the internal cache,
+ *  in order to reduce the number of reads on the next sequential retrieval.
  * @author leyou
  */
 public class MetricSearcher {
@@ -42,16 +41,16 @@ public class MetricSearcher {
     private Position lastPosition = new Position();
 
     /**
-     * @param baseDir      metric文件所在目录
-     * @param baseFileName metric文件名的关键字，比如 alihot-metrics.log
+     * @param baseDir      The directory in which the metric file is located
+     * @param baseFileName Keywords for metric file names,such as "alihot-metrics.log"
      */
     public MetricSearcher(String baseDir, String baseFileName) {
         this(baseDir, baseFileName, defaultCharset);
     }
 
     /**
-     * @param baseDir      metric文件所在目录
-     * @param baseFileName metric文件名的关键字，比如 alihot-metrics.log
+     * @param baseDir      The directory in which the metric file is located
+     * @param baseFileName Keywords for metric file names,such as "alihot-metrics.log"
      * @param charset
      */
     public MetricSearcher(String baseDir, String baseFileName, Charset charset) {
@@ -73,11 +72,10 @@ public class MetricSearcher {
     }
 
     /**
-     * 从beginTime开始，检索recommendLines条(大概)记录。同一秒中的数据是原子的，不能分割成多次查询。
-     *
-     * @param beginTimeMs    检索的最小时间戳
-     * @param recommendLines 查询最多想得到的记录条数，返回条数会尽可能不超过这个数字。但是为保证每一秒的数据不被分割，有时候
-     *                       返回的记录条数会大于该数字。
+     * Start with beginTime,retrieve recommendLines bar records.The data in the same second is atomic,can not be split into multiple queries
+     * @param beginTimeMs    Minimum timestamp retrieved
+     * @param recommendLines Query the maximum number of record bars you want,the number of returns will not exceed this number as much as possible.
+     *                       But in order to ensure that every second of the data is not segmented,sometimes the number of record bars returned is greater than recommendLines。
      * @return
      * @throws Exception
      */
@@ -141,17 +139,17 @@ public class MetricSearcher {
     }
 
     /**
-     * 记录上一次读取的index文件位置和数值
+     * Record the location and value of the last read index file.
      */
     private static final class Position {
         String metricFileName;
         String indexFileName;
         /**
-         * 索引文件内的偏移
+         * Offset in index file
          */
         long offsetInIndex;
         /**
-         * 索引文件中offsetInIndex位置上的数字，秒数。
+         * Numbers at the offsetInIndex location in the index file, seconds.
          */
         long second;
     }
