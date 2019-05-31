@@ -60,7 +60,7 @@ public class MetricWriter {
 
     private final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     /**
-     * 排除时差干扰
+     * excluding time difference interference
      */
     private long timeSecondBase;
     private String baseDir;
@@ -80,7 +80,7 @@ public class MetricWriter {
     private final int pid = PidUtil.getPid();
 
     /**
-     * 秒级统计，忽略毫秒数。
+     * Second-level statistics, ignoring the number of milliseconds.
      */
     private long lastSecond = -1;
 
@@ -113,7 +113,7 @@ public class MetricWriter {
     }
 
     /**
-     * 如果传入了time，就认为nodes中所有的时间时间戳都是time.
+     * If time is passed in,All the timestamps in nodes are considered time.
      *
      * @param time
      * @param nodes
@@ -141,7 +141,7 @@ public class MetricWriter {
 
         long second = time / 1000;
         if (second < lastSecond) {
-            // 时间靠前的直接忽略，不应该发生。
+            //The direct neglect of time should not happen.
         } else if (second == lastSecond) {
             for (MetricNode node : nodes) {
                 outMetricBuf.write(node.toFatString().getBytes(CHARSET));
