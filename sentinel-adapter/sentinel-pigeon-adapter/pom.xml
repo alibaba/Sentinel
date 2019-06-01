@@ -22,10 +22,6 @@
         <repository>
             <id>github-dianping-maven-repo</id>
             <url>https://raw.githubusercontent.com/dianping/maven-repo/master</url>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-            </snapshots>
         </repository>
     </repositories>
 
