@@ -15,21 +15,8 @@
  */
 package com.alibaba.csp.sentinel.dashboard.config;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-
 import com.alibaba.csp.sentinel.adapter.servlet.CommonFilter;
-import com.alibaba.csp.sentinel.dashboard.service.AuthService;
-import com.alibaba.csp.sentinel.dashboard.service.AuthService.AuthUser;
-
+import com.alibaba.csp.sentinel.dashboard.filter.AuthFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +27,8 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import javax.servlet.Filter;
+
 /**
  * @author leyou
  */
@@ -47,8 +36,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
 
     private final Logger logger = LoggerFactory.getLogger(WebConfig.class);
+
     @Autowired
-    private AuthService<HttpServletRequest> authService;
+    private AuthFilter authFilter;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -80,29 +70,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Bean
     public FilterRegistrationBean authenticationFilterRegistration() {
         FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>();
-        registration.setFilter(new Filter() {
-
-            @Override
-            public void init(FilterConfig filterConfig) throws ServletException { }
-
-            @Override
-            public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse,
-                                 FilterChain filterChain) throws IOException, ServletException {
-                HttpServletRequest request = (HttpServletRequest)servletRequest;
-                AuthUser authUser = authService.getAuthUser(request);
-                // authentication fail
-                if (authUser == null) {
-                    PrintWriter writer = servletResponse.getWriter();
-                    writer.append("login needed");
-                    writer.flush();
-                } else {
-                    filterChain.doFilter(servletRequest, servletResponse);
-                }
-            }
-
-            @Override
-            public void destroy() { }
-        });
+        registration.setFilter(authFilter);
         registration.addUrlPatterns("/*");
         registration.setName("authenticationFilter");
         registration.setOrder(0);

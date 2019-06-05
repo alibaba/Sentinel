@@ -23,6 +23,7 @@ import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.function.Supplier;
 
 import org.reactivestreams.Subscription;
@@ -53,7 +54,7 @@ public class SentinelReactorSubscriber<T> extends InheritableBaseSubscriber<T> {
     }
 
     private void checkEntryConfig(EntryConfig config) {
-        EntryConfig.assertValid(config);
+        AssertUtil.notNull(config, "entryConfig cannot be null");
     }
 
     @Override
@@ -88,7 +89,8 @@ public class SentinelReactorSubscriber<T> extends InheritableBaseSubscriber<T> {
             ContextUtil.enter(sentinelContextConfig.getContextName(), sentinelContextConfig.getOrigin());
         }
         try {
-            AsyncEntry entry = SphU.asyncEntry(entryConfig.getResourceName());
+            AsyncEntry entry = SphU.asyncEntry(entryConfig.getResourceName(), entryConfig.getEntryType(),
+                entryConfig.getAcquireCount(), entryConfig.getArgs());
             this.currentEntry = entry;
             actual.onSubscribe(this);
         } catch (BlockException ex) {
@@ -158,7 +160,7 @@ public class SentinelReactorSubscriber<T> extends InheritableBaseSubscriber<T> {
 
     private boolean tryCompleteEntry() {
         if (currentEntry != null && entryExited.compareAndSet(false, true)) {
-            currentEntry.exit();
+            currentEntry.exit(1, entryConfig.getArgs());
             return true;
         }
         return false;

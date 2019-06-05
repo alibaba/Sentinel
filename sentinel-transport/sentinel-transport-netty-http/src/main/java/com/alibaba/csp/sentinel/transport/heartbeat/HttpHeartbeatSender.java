@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.alibaba.csp.sentinel.Constants;
+import com.alibaba.csp.sentinel.config.SentinelConfig;
+import com.alibaba.csp.sentinel.spi.SpiOrder;
 import com.alibaba.csp.sentinel.transport.config.TransportConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.AppNameUtil;
@@ -39,6 +41,7 @@ import org.apache.http.impl.client.HttpClients;
  * @author Eric Zhao
  * @author leyou
  */
+@SpiOrder(SpiOrder.LOWEST_PRECEDENCE - 100)
 public class HttpHeartbeatSender implements HeartbeatSender {
 
     private final CloseableHttpClient client;
@@ -108,6 +111,7 @@ public class HttpHeartbeatSender implements HeartbeatSender {
         uriBuilder.setScheme("http").setHost(consoleHost).setPort(consolePort)
             .setPath("/registry/machine")
             .setParameter("app", AppNameUtil.getAppName())
+            .setParameter("app_type", String.valueOf(SentinelConfig.getAppType()))
             .setParameter("v", Constants.SENTINEL_VERSION)
             .setParameter("version", String.valueOf(System.currentTimeMillis()))
             .setParameter("hostname", HostNameUtil.getHostName())

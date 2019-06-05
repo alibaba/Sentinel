@@ -5,7 +5,7 @@
     <parent>
         <artifactId>sentinel-adapter</artifactId>
         <groupId>com.alibaba.csp</groupId>
-        <version>1.5.1-SNAPSHOT</version>
+        <version>1.7.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>sentinel-zuul-adapter</artifactId>
@@ -21,6 +21,11 @@
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-api-gateway-adapter-common</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
@@ -38,6 +43,20 @@
             		<artifactId>mockito-all</artifactId>
             	</exclusion>
             </exclusions>
+        </dependency>
+        <!-- we need to use AntPathMatcher in spring-core -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>4.3.20.RELEASE</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-zuul</artifactId>
+            <version>1.4.6.RELEASE</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>

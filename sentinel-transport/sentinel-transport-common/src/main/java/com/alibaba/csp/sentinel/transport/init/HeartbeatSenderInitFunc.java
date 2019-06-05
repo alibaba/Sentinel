@@ -15,15 +15,16 @@
  */
 package com.alibaba.csp.sentinel.transport.init;
 
-import java.util.Iterator;
-import java.util.ServiceLoader;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor.DiscardOldestPolicy;
 import java.util.concurrent.TimeUnit;
 
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
+import com.alibaba.csp.sentinel.heartbeat.HeartbeatSenderProvider;
 import com.alibaba.csp.sentinel.init.InitFunc;
+import com.alibaba.csp.sentinel.init.InitOrder;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.transport.HeartbeatSender;
 import com.alibaba.csp.sentinel.transport.config.TransportConfig;
@@ -33,29 +34,35 @@ import com.alibaba.csp.sentinel.transport.config.TransportConfig;
  *
  * @author Eric Zhao
  */
+@InitOrder(-1)
 public class HeartbeatSenderInitFunc implements InitFunc {
 
-    private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(2,
-        new NamedThreadFactory("sentinel-heartbeat-send-task", true));
+    private ScheduledExecutorService pool = null;
 
-    private boolean validHeartbeatInterval(Long interval) {
-        return interval != null && interval > 0;
+    private void initSchedulerIfNeeded() {
+        if (pool == null) {
+            pool = new ScheduledThreadPoolExecutor(2,
+                new NamedThreadFactory("sentinel-heartbeat-send-task", true),
+                new DiscardOldestPolicy());
+        }
     }
 
     @Override
     public void init() {
-        ServiceLoader<HeartbeatSender> loader = ServiceLoader.load(HeartbeatSender.class);
-        Iterator<HeartbeatSender> iterator = loader.iterator();
-        if (iterator.hasNext()) {
-            final HeartbeatSender sender = iterator.next();
-            if (iterator.hasNext()) {
-                throw new IllegalStateException("Only single heartbeat sender can be scheduled");
-            } else {
-                long interval = retrieveInterval(sender);
-                setIntervalIfNotExists(interval);
-                scheduleHeartbeatTask(sender, interval);
-            }
+        HeartbeatSender sender = HeartbeatSenderProvider.getHeartbeatSender();
+        if (sender == null) {
+            RecordLog.warn("[HeartbeatSenderInitFunc] WARN: No HeartbeatSender loaded");
+            return;
         }
+
+        initSchedulerIfNeeded();
+        long interval = retrieveInterval(sender);
+        setIntervalIfNotExists(interval);
+        scheduleHeartbeatTask(sender, interval);
+    }
+
+    private boolean isValidHeartbeatInterval(Long interval) {
+        return interval != null && interval > 0;
     }
 
     private void setIntervalIfNotExists(long interval) {
@@ -64,13 +71,14 @@ public class HeartbeatSenderInitFunc implements InitFunc {
 
     long retrieveInterval(/*@NonNull*/ HeartbeatSender sender) {
         Long intervalInConfig = TransportConfig.getHeartbeatIntervalMs();
-        if (validHeartbeatInterval(intervalInConfig)) {
-            RecordLog.info("[HeartbeatSenderInit] Using heartbeat interval in Sentinel config property: " + intervalInConfig);
+        if (isValidHeartbeatInterval(intervalInConfig)) {
+            RecordLog.info("[HeartbeatSenderInitFunc] Using heartbeat interval "
+                + "in Sentinel config property: " + intervalInConfig);
             return intervalInConfig;
         } else {
             long senderInterval = sender.intervalMs();
-            RecordLog.info("[HeartbeatSenderInit] Heartbeat interval not configured in config property or invalid, "
-                + "using sender default: " + senderInterval);
+            RecordLog.info("[HeartbeatSenderInit] Heartbeat interval not configured in "
+                + "config property or invalid, using sender default: " + senderInterval);
             return senderInterval;
         }
     }

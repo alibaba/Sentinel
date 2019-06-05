@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-demo</artifactId>
-        <version>1.5.1-SNAPSHOT</version>
+        <version>1.7.0-SNAPSHOT</version>
     </parent>
     <artifactId>sentinel-demo-dynamic-file-rule</artifactId>
 
@@ -31,6 +31,7 @@
     </dependencies>
 
     <build>
+        <finalName>sentinel-demo-dynamic-file-rule</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

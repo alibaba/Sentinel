@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.node;
 
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
+import com.alibaba.csp.sentinel.slots.statistic.base.LongAdder;
 import com.alibaba.csp.sentinel.slots.statistic.metric.ArrayMetric;
 import com.alibaba.csp.sentinel.slots.statistic.metric.Metric;
 import com.alibaba.csp.sentinel.util.TimeUtil;
@@ -23,7 +24,7 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
+
 
 /**
  * <p>The statistic node keep three kinds of real-time statistics metrics:</p>
@@ -104,7 +105,7 @@ public class StatisticNode implements Node {
     /**
      * The counter for thread count.
      */
-    private AtomicInteger curThreadNum = new AtomicInteger(0);
+    private LongAdder curThreadNum = new LongAdder();
     private ConcurrentCounter curThreadNumLimiter = new ConcurrentCounter();
 
     /**
@@ -138,11 +139,7 @@ public class StatisticNode implements Node {
 
     private boolean isValidMetricNode(MetricNode node) {
         return node.getPassQps() > 0 || node.getBlockQps() > 0 || node.getSuccessQps() > 0
-<<<<<<< HEAD
-                || node.getExceptionQps() > 0 || node.getRt() > 0;
-=======
-            || node.getExceptionQps() > 0 || node.getRt() > 0 || node.getOccupiedPassQps() > 0;
->>>>>>> master
+                || node.getExceptionQps() > 0 || node.getRt() > 0 || node.getOccupiedPassQps() > 0;
     }
 
     @Override
@@ -238,7 +235,7 @@ public class StatisticNode implements Node {
 
     @Override
     public int curThreadNum() {
-        return curThreadNum.get();
+        return (int) curThreadNum.sum();
     }
 
     @Override
@@ -271,7 +268,6 @@ public class StatisticNode implements Node {
     public void increaseExceptionQps(int count) {
         rollingCounterInSecond.addException(count);
         rollingCounterInMinute.addException(count);
-<<<<<<< HEAD
     }
 
     @Override
@@ -282,18 +278,16 @@ public class StatisticNode implements Node {
     @Override
     public void tryAcquireThread() {
         curThreadNumLimiter.tryAcquire();
-=======
->>>>>>> master
     }
 
     @Override
     public void increaseThreadNum() {
-        curThreadNum.incrementAndGet();
+        curThreadNum.increment();
     }
 
     @Override
     public void decreaseThreadNum() {
-        curThreadNum.decrementAndGet();
+        curThreadNum.decrement();
         curThreadNumLimiter.release();
     }
 

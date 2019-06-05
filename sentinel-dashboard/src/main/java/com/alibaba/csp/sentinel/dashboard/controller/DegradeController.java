@@ -22,9 +22,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
-import com.alibaba.csp.sentinel.dashboard.service.AuthService;
-import com.alibaba.csp.sentinel.dashboard.service.AuthService.AuthUser;
-import com.alibaba.csp.sentinel.dashboard.service.AuthService.PrivilegeType;
+import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
+import com.alibaba.csp.sentinel.dashboard.auth.AuthService.AuthUser;
+import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
