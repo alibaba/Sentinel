@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.adapter.gateway.common.rule;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -242,14 +243,18 @@ public final class GatewayRuleManager {
         if (item.getParseStrategy() < 0) {
             return false;
         }
-        if (item.getParseStrategy() == SentinelGatewayConstants.PARAM_PARSE_STRATEGY_URL_PARAM ||
-            item.getParseStrategy() == SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER) {
-            if (StringUtil.isBlank(item.getFieldName())) {
-                return false;
-            }
+        // Check required field name for item types.
+        if (FIELD_REQUIRED_SET.contains(item.getParseStrategy()) && StringUtil.isBlank(item.getFieldName())) {
+            return false;
         }
         return StringUtil.isEmpty(item.getPattern()) || item.getMatchStrategy() >= 0;
     }
+
+    private static final Set<Integer> FIELD_REQUIRED_SET = new HashSet<>(
+        Arrays.asList(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_URL_PARAM,
+            SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER,
+            SentinelGatewayConstants.PARAM_PARSE_STRATEGY_COOKIE)
+    );
 
     private GatewayRuleManager() {}
 }
