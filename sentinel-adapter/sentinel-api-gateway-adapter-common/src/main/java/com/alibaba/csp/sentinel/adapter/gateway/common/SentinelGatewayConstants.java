@@ -40,6 +40,7 @@ public final class SentinelGatewayConstants {
     public static final String GATEWAY_CONTEXT_ROUTE_PREFIX = "sentinel_gateway_context$$route$$";
 
     public static final String GATEWAY_NOT_MATCH_PARAM = "$$not_match";
+    public static final String GATEWAY_DEFAULT_PARAM = "$D";
 
     private SentinelGatewayConstants() {}
 }

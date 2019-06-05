@@ -15,9 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.nodeselector;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.node.ClusterNode;
@@ -25,6 +22,9 @@ import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.node.EntranceNode;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * </p>
@@ -160,9 +160,10 @@ public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
                     cacheMap.putAll(map);
                     cacheMap.put(context.getName(), node);
                     map = cacheMap;
+                    // Build invocation tree
+                    ((DefaultNode) context.getLastNode()).addChild(node);
                 }
-                // Build invocation tree
-                ((DefaultNode)context.getLastNode()).addChild(node);
+
             }
         }
 
