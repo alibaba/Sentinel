@@ -55,7 +55,15 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class DegradeRule extends AbstractRule {
 
-    private int rtMaxExceedN = RuleConstant.DEGRADE_GRADE_RT_MAX_EXCEED_N;
+    /**
+     * minimum number of consecutive slow requests that can trigger RT circuit breaking
+     */
+    private int rtSlowRequestAmount = RuleConstant.DEGRADE_GRADE_RT_MAX_EXCEED_N;
+
+    /**
+     * minimum number of requests (in an active statistic time span) that can trigger circuit breaking
+     */
+    private int minRequestAmount = RuleConstant.DEGRADE_GRADE_MIN_REQUEST_EXCEED_N;
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(
@@ -179,20 +187,20 @@ public class DegradeRule extends AbstractRule {
             }
 
             // Sentinel will degrade the service only if count exceeds.
-            if (passCount.incrementAndGet() < rtMaxExceedN) {
+            if (passCount.incrementAndGet() < rtSlowRequestAmount) {
                 return true;
             }
         } else if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
             double exception = clusterNode.exceptionQps();
             double success = clusterNode.successQps();
             double total = clusterNode.totalQps();
-            // if total qps less than RT_MAX_EXCEED_N, pass.
-            if (total < rtMaxExceedN) {
+            // if total qps less than minRequestAmount, pass.
+            if (total < minRequestAmount) {
                 return true;
             }
 
             double realSuccess = success - exception;
-            if (realSuccess <= 0 && exception < rtMaxExceedN) {
+            if (realSuccess <= 0 && exception < minRequestAmount) {
                 return true;
             }
 
@@ -214,14 +222,7 @@ public class DegradeRule extends AbstractRule {
         return false;
     }
 
-    public int getRtMaxExceedN() {
-        return rtMaxExceedN;
-    }
 
-    public DegradeRule setRtMaxExceedN(int rtMaxExceedN) {
-        this.rtMaxExceedN = rtMaxExceedN;
-        return this;
-    }
 
     @Override
     public String toString() {
@@ -234,6 +235,21 @@ public class DegradeRule extends AbstractRule {
             "}";
     }
 
+    public int getRtSlowRequestAmount() {
+        return rtSlowRequestAmount;
+    }
+
+    public void setRtSlowRequestAmount(int rtSlowRequestAmount) {
+        this.rtSlowRequestAmount = rtSlowRequestAmount;
+    }
+
+    public int getMinRequestAmount() {
+        return minRequestAmount;
+    }
+
+    public void setMinRequestAmount(int minRequestAmount) {
+        this.minRequestAmount = minRequestAmount;
+    }
 
 
     private static final class ResetTask implements Runnable {
