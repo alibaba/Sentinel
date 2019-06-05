@@ -15,10 +15,10 @@
  */
 package com.alibaba.csp.sentinel.annotation.aspectj;
 
+import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.csp.sentinel.slots.block.degrade.DegradeException;
 import com.alibaba.csp.sentinel.util.MethodUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
@@ -36,7 +36,41 @@ import java.util.Arrays;
  */
 public abstract class AbstractSentinelAspectSupport {
 
-    protected String getResourceName(String resourceName, Method method) {
+    protected void traceException(Throwable ex) {
+        Tracer.trace(ex);
+    }
+
+    protected void traceException(Throwable ex, SentinelResource annotation) {
+        Class<? extends Throwable>[] exceptionsToIgnore = annotation.exceptionsToIgnore();
+        // The ignore list will be checked first.
+        if (exceptionsToIgnore.length > 0 && exceptionBelongsTo(ex, exceptionsToIgnore)) {
+            return;
+        }
+        if (exceptionBelongsTo(ex, annotation.exceptionsToTrace())) {
+            traceException(ex);
+        }
+    }
+
+    /**
+     * Check whether the exception is in provided list of exception classes.
+     *
+     * @param ex         provided throwable
+     * @param exceptions list of exceptions
+     * @return true if it is in the list, otherwise false
+     */
+    protected boolean exceptionBelongsTo(Throwable ex, Class<? extends Throwable>[] exceptions) {
+        if (exceptions == null) {
+            return false;
+        }
+        for (Class<? extends Throwable> exceptionClass : exceptions) {
+            if (exceptionClass.isAssignableFrom(ex.getClass())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected String getResourceName(String resourceName, /*@NonNull*/ Method method) {
         // If resource name is present in annotation, use this value.
         if (StringUtil.isNotBlank(resourceName)) {
             return resourceName;
@@ -45,25 +79,61 @@ public abstract class AbstractSentinelAspectSupport {
         return MethodUtil.resolveMethodName(method);
     }
 
-    protected Object handleBlockException(ProceedingJoinPoint pjp, SentinelResource annotation, BlockException ex)
-        throws Exception {
-        return handleBlockException(pjp, annotation.fallback(), annotation.blockHandler(),
-            annotation.blockHandlerClass(), ex);
+    protected Object handleFallback(ProceedingJoinPoint pjp, SentinelResource annotation, Throwable ex)
+        throws Throwable {
+        return handleFallback(pjp, annotation.fallback(), annotation.defaultFallback(), annotation.fallbackClass(), ex);
     }
 
-    protected Object handleBlockException(ProceedingJoinPoint pjp, String fallback, String blockHandler,
-                                          Class<?>[] blockHandlerClass, BlockException ex) throws Exception {
-        // Execute fallback for degrading if configured.
+    protected Object handleFallback(ProceedingJoinPoint pjp, String fallback, String defaultFallback,
+                                    Class<?>[] fallbackClass, Throwable ex) throws Throwable {
         Object[] originArgs = pjp.getArgs();
-        if (isDegradeFailure(ex)) {
-            Method method = extractFallbackMethod(pjp, fallback);
-            if (method != null) {
-                return method.invoke(pjp.getTarget(), originArgs);
+
+        // Execute fallback function if configured.
+        Method fallbackMethod = extractFallbackMethod(pjp, fallback, fallbackClass);
+        if (fallbackMethod != null) {
+            // Construct args.
+            int paramCount = fallbackMethod.getParameterTypes().length;
+            Object[] args;
+            if (paramCount == originArgs.length) {
+                args = originArgs;
+            } else {
+                args = Arrays.copyOf(originArgs, originArgs.length + 1);
+                args[args.length - 1] = ex;
             }
+            if (isStatic(fallbackMethod)) {
+                return fallbackMethod.invoke(null, args);
+            }
+            return fallbackMethod.invoke(pjp.getTarget(), args);
         }
+        // If fallback is absent, we'll try the defaultFallback if provided.
+        return handleDefaultFallback(pjp, defaultFallback, fallbackClass, ex);
+    }
+
+    protected Object handleDefaultFallback(ProceedingJoinPoint pjp, String defaultFallback,
+                                           Class<?>[] fallbackClass, Throwable ex) throws Throwable {
+        // Execute the default fallback function if configured.
+        Method fallbackMethod = extractDefaultFallbackMethod(pjp, defaultFallback, fallbackClass);
+        if (fallbackMethod != null) {
+            // Construct args.
+            Object[] args = fallbackMethod.getParameterTypes().length == 0 ? new Object[0] : new Object[] {ex};
+            if (isStatic(fallbackMethod)) {
+                return fallbackMethod.invoke(null, args);
+            }
+            return fallbackMethod.invoke(pjp.getTarget(), args);
+        }
+
+        // If no any fallback is present, then directly throw the exception.
+        throw ex;
+    }
+
+    protected Object handleBlockException(ProceedingJoinPoint pjp, SentinelResource annotation, BlockException ex)
+        throws Throwable {
+
         // Execute block handler if configured.
-        Method blockHandlerMethod = extractBlockHandlerMethod(pjp, blockHandler, blockHandlerClass);
+        Method blockHandlerMethod = extractBlockHandlerMethod(pjp, annotation.blockHandler(),
+            annotation.blockHandlerClass());
         if (blockHandlerMethod != null) {
+            Object[] originArgs = pjp.getArgs();
             // Construct args.
             Object[] args = Arrays.copyOf(originArgs, originArgs.length + 1);
             args[args.length - 1] = ex;
@@ -72,23 +142,21 @@ public abstract class AbstractSentinelAspectSupport {
             }
             return blockHandlerMethod.invoke(pjp.getTarget(), args);
         }
-        // If no block handler is present, then directly throw the exception.
-        throw ex;
+
+        // If no block handler is present, then go to fallback.
+        return handleFallback(pjp, annotation, ex);
     }
 
-    private boolean isDegradeFailure(/*@NonNull*/ BlockException ex) {
-        return ex instanceof DegradeException;
-    }
-
-    private Method extractFallbackMethod(ProceedingJoinPoint pjp, String fallbackName) {
+    private Method extractFallbackMethod(ProceedingJoinPoint pjp, String fallbackName, Class<?>[] locationClass) {
         if (StringUtil.isBlank(fallbackName)) {
             return null;
         }
-        Class<?> clazz = pjp.getTarget().getClass();
+        boolean mustStatic = locationClass != null && locationClass.length >= 1;
+        Class<?> clazz = mustStatic ? locationClass[0] : pjp.getTarget().getClass();
         MethodWrapper m = ResourceMetadataRegistry.lookupFallback(clazz, fallbackName);
         if (m == null) {
             // First time, resolve the fallback.
-            Method method = resolveFallbackInternal(pjp, fallbackName);
+            Method method = resolveFallbackInternal(pjp, fallbackName, clazz, mustStatic);
             // Cache the method instance.
             ResourceMetadataRegistry.updateFallbackFor(clazz, fallbackName, method);
             return method;
@@ -99,10 +167,53 @@ public abstract class AbstractSentinelAspectSupport {
         return m.getMethod();
     }
 
-    private Method resolveFallbackInternal(ProceedingJoinPoint pjp, /*@NonNull*/ String name) {
+    private Method extractDefaultFallbackMethod(ProceedingJoinPoint pjp, String defaultFallback,
+                                                Class<?>[] locationClass) {
+        if (StringUtil.isBlank(defaultFallback)) {
+            return null;
+        }
+        boolean mustStatic = locationClass != null && locationClass.length >= 1;
+        Class<?> clazz = mustStatic ? locationClass[0] : pjp.getTarget().getClass();
+
+        MethodWrapper m = ResourceMetadataRegistry.lookupDefaultFallback(clazz, defaultFallback);
+        if (m == null) {
+            // First time, resolve the default fallback.
+            Class<?> originReturnType = resolveMethod(pjp).getReturnType();
+            // Default fallback allows two kinds of parameter list.
+            // One is empty parameter list.
+            Class<?>[] defaultParamTypes = new Class<?>[0];
+            // The other is a single parameter {@link Throwable} to get relevant exception info.
+            Class<?>[] paramTypeWithException = new Class<?>[] {Throwable.class};
+            // We first find the default fallback with empty parameter list.
+            Method method = findMethod(mustStatic, clazz, defaultFallback, originReturnType, defaultParamTypes);
+            // If default fallback with empty params is absent, we then try to find the other one.
+            if (method == null) {
+                method = findMethod(mustStatic, clazz, defaultFallback, originReturnType, paramTypeWithException);
+            }
+            // Cache the method instance.
+            ResourceMetadataRegistry.updateDefaultFallbackFor(clazz, defaultFallback, method);
+            return method;
+        }
+        if (!m.isPresent()) {
+            return null;
+        }
+        return m.getMethod();
+    }
+
+    private Method resolveFallbackInternal(ProceedingJoinPoint pjp, /*@NonNull*/ String name, Class<?> clazz,
+                                           boolean mustStatic) {
         Method originMethod = resolveMethod(pjp);
-        Class<?>[] parameterTypes = originMethod.getParameterTypes();
-        return findMethod(false, pjp.getTarget().getClass(), name, originMethod.getReturnType(), parameterTypes);
+        // Fallback function allows two kinds of parameter list.
+        Class<?>[] defaultParamTypes = originMethod.getParameterTypes();
+        Class<?>[] paramTypesWithException = Arrays.copyOf(defaultParamTypes, defaultParamTypes.length + 1);
+        paramTypesWithException[paramTypesWithException.length - 1] = Throwable.class;
+        // We first find the fallback matching the signature of origin method.
+        Method method = findMethod(mustStatic, clazz, name, originMethod.getReturnType(), defaultParamTypes);
+        // If fallback matching the origin method is absent, we then try to find the other one.
+        if (method == null) {
+            method = findMethod(mustStatic, clazz, name, originMethod.getReturnType(), paramTypesWithException);
+        }
+        return method;
     }
 
     private Method extractBlockHandlerMethod(ProceedingJoinPoint pjp, String name, Class<?>[] locationClass) {

@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.dashboard.datasource.entity.rule;
 
+import com.alibaba.csp.sentinel.slots.block.Rule;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRule;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 
@@ -54,5 +55,10 @@ public class AuthorityRuleEntity extends AbstractRuleEntity<AuthorityRule> {
     @JsonIgnore
     public int getStrategy() {
         return rule.getStrategy();
+    }
+    
+    @Override
+    public Rule toRule() {
+        return rule;
     }
 }

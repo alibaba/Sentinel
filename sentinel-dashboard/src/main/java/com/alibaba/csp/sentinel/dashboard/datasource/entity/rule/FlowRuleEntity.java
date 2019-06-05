@@ -223,7 +223,8 @@ public class FlowRuleEntity implements RuleEntity {
         this.gmtModified = gmtModified;
     }
 
-    public FlowRule toFlowRule() {
+    @Override
+    public FlowRule toRule() {
         FlowRule flowRule = new FlowRule();
         flowRule.setCount(this.count);
         flowRule.setGrade(this.grade);

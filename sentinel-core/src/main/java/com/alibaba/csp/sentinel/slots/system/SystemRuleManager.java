@@ -88,6 +88,7 @@ public class SystemRuleManager {
     private final static SystemPropertyListener listener = new SystemPropertyListener();
     private static SentinelProperty<List<SystemRule>> currentProperty = new DynamicSentinelProperty<List<SystemRule>>();
 
+    @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private final static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1,
         new NamedThreadFactory("sentinel-system-status-record-task", true));
 
@@ -221,6 +222,7 @@ public class SystemRuleManager {
             qps = Double.MAX_VALUE;
 
             highestSystemLoadIsSet = false;
+            highestCpuUsageIsSet = false;
             maxRtIsSet = false;
             maxThreadIsSet = false;
             qpsIsSet = false;
@@ -238,6 +240,10 @@ public class SystemRuleManager {
 
     public static void setHighestSystemLoad(double highestSystemLoad) {
         SystemRuleManager.highestSystemLoad = highestSystemLoad;
+    }
+    
+    public static double getCpuUsageThreshold() {
+        return highestCpuUsage;
     }
 
     public static void loadSystemConf(SystemRule rule) {
