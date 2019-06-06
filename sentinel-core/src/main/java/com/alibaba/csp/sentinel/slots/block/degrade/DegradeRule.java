@@ -145,7 +145,7 @@ public class DegradeRule extends AbstractRule {
             return false;
         }
 
-        DegradeRule that = (DegradeRule)o;
+        DegradeRule that = (DegradeRule) o;
 
         if (count != that.count) {
             return false;
@@ -156,6 +156,13 @@ public class DegradeRule extends AbstractRule {
         if (grade != that.grade) {
             return false;
         }
+        if (rtSlowRequestAmount != that.rtSlowRequestAmount) {
+            return false;
+        }
+        if (minRequestAmount != that.minRequestAmount) {
+            return false;
+        }
+
         return true;
     }
 
@@ -165,6 +172,8 @@ public class DegradeRule extends AbstractRule {
         result = 31 * result + new Double(count).hashCode();
         result = 31 * result + timeWindow;
         result = 31 * result + grade;
+        result = 31 * result + rtSlowRequestAmount;
+        result = 31 * result + minRequestAmount;
         return result;
     }
 
@@ -223,16 +232,17 @@ public class DegradeRule extends AbstractRule {
     }
 
 
-
     @Override
     public String toString() {
         return "DegradeRule{" +
-            "resource=" + getResource() +
-            ", grade=" + grade +
-            ", count=" + count +
-            ", limitApp=" + getLimitApp() +
-            ", timeWindow=" + timeWindow +
-            "}";
+                "resource=" + getResource() +
+                ", grade=" + grade +
+                ", count=" + count +
+                ", limitApp=" + getLimitApp() +
+                ", timeWindow=" + timeWindow +
+                ", rtSlowRequestAmount=" + rtSlowRequestAmount +
+                ", minRequestAmount=" + minRequestAmount +
+                "}";
     }
 
     public int getRtSlowRequestAmount() {
