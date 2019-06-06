@@ -27,6 +27,8 @@ You can also add to [sentinel-group/sentinel-awesome](https://github.com/sentine
 - [sentinel-support](https://github.com/cdfive/sentinel-support): A support project for convenient Sentinel integration including properties file configuration, ActiveMQ integration and a JdbcDataSource implementation by [cdfive](https://github.com/cdfive)
 - [sentinel-multiDataSource-adapter](https://github.com/finefuture/sentinel-dashboard-X): Sentinel-dashborad multi-data source adapter has integrated Apollo configuration center and Nacos configuration center for bidirectional modification persistence, implementation by [finefuture](https://github.com/finefuture)
 
+- [sentinel-lib](https://github.com/code1986/sentinel-lib): config flow and degrade rule by annotation
+
 ## Blogs
 
 - [Sentinel 为 Dubbo 服务保驾护航](http://dubbo.apache.org/zh-cn/blog/sentinel-introduction-for-dubbo.html) by [Eric Zhao](https://github.com/sczyh30)
