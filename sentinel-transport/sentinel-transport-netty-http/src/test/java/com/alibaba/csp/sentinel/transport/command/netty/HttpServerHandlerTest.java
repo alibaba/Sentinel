@@ -16,13 +16,16 @@
 package com.alibaba.csp.sentinel.transport.command.netty;
 
 import com.alibaba.csp.sentinel.Constants;
+import com.alibaba.csp.sentinel.cluster.flow.rule.ClusterFlowRuleManager;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.init.InitExecutor;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.transport.CommandCenter;
 import com.alibaba.csp.sentinel.transport.command.NettyHttpCommandCenter;
+import com.alibaba.fastjson.JSON;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -34,6 +37,7 @@ import org.junit.Test;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -45,7 +49,6 @@ import static org.junit.Assert.assertEquals;
  * Test cases for {@link HttpServerHandler}.
  *
  * @author cdfive
- * @date 2018-12-17
  */
 public class HttpServerHandlerTest {
 
@@ -59,7 +62,7 @@ public class HttpServerHandlerTest {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        // don't execute InitExecutor.doInit, to avoid CommandCenter SPI loaded
+        // Don't execute InitExecutor.doInit, to avoid CommandCenter SPI loaded
         Field[] declaredFields = InitExecutor.class.getDeclaredFields();
         for (Field declaredField : declaredFields) {
             if (declaredField.getName().equals("initialized")) {
@@ -68,23 +71,27 @@ public class HttpServerHandlerTest {
             }
         }
 
-        // create NettyHttpCommandCenter to create HttpServer
+        // Create NettyHttpCommandCenter to create HttpServer
         CommandCenter commandCenter = new NettyHttpCommandCenter();
-        // call beforeStart to register handlers
+        // Call beforeStart to register handlers
         commandCenter.beforeStart();
     }
 
     @Before
     public void before() {
-        // the same Handlers in order as the ChannelPipeline in HttpServerInitializer
+        // The same Handlers in order as the ChannelPipeline in HttpServerInitializer
         HttpRequestDecoder httpRequestDecoder = new HttpRequestDecoder();
         HttpObjectAggregator httpObjectAggregator = new HttpObjectAggregator(1024 * 1024);
         HttpResponseEncoder httpResponseEncoder = new HttpResponseEncoder();
 
         HttpServerHandler httpServerHandler = new HttpServerHandler();
 
-        // create new EmbeddedChannel every method call
+        // Create new EmbeddedChannel every method call
         embeddedChannel = new EmbeddedChannel(httpRequestDecoder, httpObjectAggregator, httpResponseEncoder, httpServerHandler);
+
+        // Clear rules and namespaces
+        FlowRuleManager.loadRules(Collections.EMPTY_LIST);
+        ClusterFlowRuleManager.removeProperty("testNamespace");
     }
 
     @Test
@@ -92,9 +99,9 @@ public class HttpServerHandlerTest {
         String httpRequestStr = "GET / HTTP/1.1" + CRLF
                               + "Host: localhost:8719" + CRLF
                               + CRLF;
-        String body = "Invalid command";
+        String expectedBody = "Invalid command";
 
-        processError(httpRequestStr, body);
+        processError(httpRequestStr, expectedBody);
     }
 
     @Test
@@ -102,44 +109,49 @@ public class HttpServerHandlerTest {
         String httpRequestStr = "GET /aaa HTTP/1.1" + CRLF
                               + "Host: localhost:8719" + CRLF
                               + CRLF;
-        String body = String.format("Unknown command \"%s\"", "aaa");
+        String expectedBody = String.format("Unknown command \"%s\"", "aaa");
 
-        processError(httpRequestStr, body);
+        processError(httpRequestStr, expectedBody);
     }
 
+    /**
+     * {@link com.alibaba.csp.sentinel.command.handler.VersionCommandHandler}
+     */
     @Test
     public void testVersionCommand() {
         String httpRequestStr = "GET /version HTTP/1.1" + CRLF
                               + "Host: localhost:8719" + CRLF
                               + CRLF;
-        String body = Constants.SENTINEL_VERSION;
+        String expectedBody = Constants.SENTINEL_VERSION;
 
-        processSuccess(httpRequestStr, body);
+        processSuccess(httpRequestStr, expectedBody);
     }
 
+    /**
+     * {@link com.alibaba.csp.sentinel.command.handler.FetchActiveRuleCommandHandler}
+     */
     @Test
-    public void testGetRuleCommandInvalidType() {
+    public void testFetchActiveRuleCommandInvalidType() {
         String httpRequestStr = "GET /getRules HTTP/1.1" + CRLF
                               + "Host: localhost:8719" + CRLF
                               + CRLF;
-        String body = "invalid type";
+        String expectedBody = "invalid type";
 
-        processFailed(httpRequestStr, body);
+        processFailed(httpRequestStr, expectedBody);
     }
 
     @Test
-    public void testGetRuleCommandFlowEmptyRule() {
+    public void testFetchActiveRuleCommandEmptyRule() {
         String httpRequestStr = "GET /getRules?type=flow HTTP/1.1" + CRLF
                               + "Host: localhost:8719" + CRLF
                               + CRLF;
-        String body = "[]";
+        String expectedBody = "[]";
 
-        processSuccess(httpRequestStr, body);
+        processSuccess(httpRequestStr, expectedBody);
     }
 
-//    FIXME byteBuf.toString can't get body response now, need to find another way
-//    @Test
-    public void testGetRuleCommandFlowSomeRules() {
+    @Test
+    public void testFetchActiveRuleCommandSomeFlowRules() {
         List<FlowRule> rules = new ArrayList<FlowRule>();
         FlowRule rule1 = new FlowRule();
         rule1.setResource("key");
@@ -152,60 +164,125 @@ public class HttpServerHandlerTest {
         String httpRequestStr = "GET /getRules?type=flow HTTP/1.1" + CRLF
                               + "Host: localhost:8719" + CRLF
                               + CRLF;
-        String body = "";
 
-        processSuccess(httpRequestStr, body);
+        // body json
+        /*
+        String expectedBody = "[{\"clusterMode\":false,\"controlBehavior\":0,\"count\":20.0"
+                + ",\"grade\":1,\"limitApp\":\"default\",\"maxQueueingTimeMs\":500"
+                + ",\"resource\":\"key\",\"strategy\":0,\"warmUpPeriodSec\":10}]";
+        */
+        String expectedBody = JSON.toJSONString(rules);
+
+        processSuccess(httpRequestStr, expectedBody);
     }
 
-    private void processError(String httpRequestStr, String body) {
-        processError(httpRequestStr, BAD_REQUEST, body);
+    /**
+     * {@link com.alibaba.csp.sentinel.cluster.server.command.handler.FetchClusterFlowRulesCommandHandler}
+     *
+     * Note:
+     * To test the command whose mapping path and command name contain /
+     *
+     * The mapping path is /cluster/server/flowRules
+     * The command name is cluster/server/flowRules
+     */
+    @Test
+    public void testFetchClusterFlowRulesCommandEmptyRule() {
+        String httpRequestStr = "GET /cluster/server/flowRules HTTP/1.1" + CRLF
+                + "Host: localhost:8719" + CRLF
+                + CRLF;
+        String expectedBody = "[]";
+
+        processSuccess(httpRequestStr, expectedBody);
     }
 
-    private void processError(String httpRequestStr, HttpResponseStatus status, String body) {
+    @Test
+    public void testFetchClusterFlowRulesCommandSomeFlowRules() {
+        List<FlowRule> rules = new ArrayList<FlowRule>();
+        FlowRule rule1 = new FlowRule();
+        rule1.setClusterMode(true);
+        ClusterFlowConfig clusterConfig = new ClusterFlowConfig();
+        clusterConfig.setFlowId(111L);
+        rule1.setClusterConfig(clusterConfig);
+
+        rule1.setResource("key");
+        rule1.setCount(20);
+        rule1.setGrade(RuleConstant.FLOW_GRADE_QPS);
+        rule1.setLimitApp("default");
+        rules.add(rule1);
+
+        String namespace = "testNamespace";
+        ClusterFlowRuleManager.register2Property(namespace);
+        ClusterFlowRuleManager.loadRules(namespace, rules);
+
+        String httpRequestStr = "GET /cluster/server/flowRules HTTP/1.1" + CRLF
+                + "Host: localhost:8719" + CRLF
+                + CRLF;
+
+        // body json
+        /*
+        String expectedBody = "[{\"clusterConfig\":{\"fallbackToLocalWhenFail\":true,\"flowId\":111,\"sampleCount\":10"
+                + ",\"strategy\":0,\"thresholdType\":0,\"windowIntervalMs\":1000},\"clusterMode\":true,\"controlBehavior\":0"
+                + ",\"count\":20.0,\"grade\":1,\"limitApp\":\"default\",\"maxQueueingTimeMs\":500,\"resource\":\"key\""
+                + ",\"strategy\":0,\"warmUpPeriodSec\":10}]";
+        */
+        String expectedBody = JSON.toJSONString(rules);
+
+        processSuccess(httpRequestStr, expectedBody);
+    }
+
+    private void processError(String httpRequestStr, String expectedBody) {
+        processError(httpRequestStr, BAD_REQUEST, expectedBody);
+    }
+
+    private void processError(String httpRequestStr, HttpResponseStatus status, String expectedBody) {
         String httpResponseStr = processResponse(httpRequestStr);
-        assertErrorStatusAndBody(status, body, httpResponseStr);
+        assertErrorStatusAndBody(status, expectedBody, httpResponseStr);
     }
 
-    private void processSuccess(String httpRequestStr, String body) {
-        process(httpRequestStr, OK, body);
+    private void processSuccess(String httpRequestStr, String expectedBody) {
+        process(httpRequestStr, OK, expectedBody);
     }
 
-    private void processFailed(String httpRequestStr, String body) {
-        process(httpRequestStr, BAD_REQUEST, body);
+    private void processFailed(String httpRequestStr, String expectedBody) {
+        process(httpRequestStr, BAD_REQUEST, expectedBody);
     }
 
-    private void process(String httpRequestStr, HttpResponseStatus status, String body) {
+    private void process(String httpRequestStr, HttpResponseStatus status, String expectedBody) {
         String responseStr = processResponse(httpRequestStr);
-        assertStatusAndBody(status, body, responseStr);
+        assertStatusAndBody(status, expectedBody, responseStr);
     }
 
     private String processResponse(String httpRequestStr) {
         embeddedChannel.writeInbound(Unpooled.wrappedBuffer(httpRequestStr.getBytes(SENTINEL_CHARSET)));
 
-        ByteBuf byteBuf = embeddedChannel.readOutbound();
+        StringBuilder sb = new StringBuilder();
 
-        String responseStr = byteBuf.toString(SENTINEL_CHARSET);
-        return responseStr;
+        ByteBuf byteBuf;
+        while ((byteBuf = embeddedChannel.readOutbound()) != null) {
+            sb.append(byteBuf.toString(SENTINEL_CHARSET));
+        }
+
+        return sb.toString();
     }
 
-    private void assertErrorStatusAndBody(HttpResponseStatus status, String body, String httpResponseStr) {
+    private void assertErrorStatusAndBody(HttpResponseStatus status, String expectedBody, String httpResponseStr) {
         StringBuilder text = new StringBuilder();
         text.append(HttpVersion.HTTP_1_1.toString()).append(' ').append(status.toString()).append(CRLF);
         text.append("Content-Type: text/plain; charset=").append(SENTINEL_CHARSET_NAME).append(CRLF);
         text.append(CRLF);
-        text.append(body);
+        text.append(expectedBody);
 
         assertEquals(text.toString(), httpResponseStr);
     }
 
-    private void assertStatusAndBody(HttpResponseStatus status, String body, String httpResponseStr) {
+    private void assertStatusAndBody(HttpResponseStatus status, String expectedBody, String httpResponseStr) {
         StringBuilder text = new StringBuilder();
         text.append(HttpVersion.HTTP_1_1.toString()).append(' ').append(status.toString()).append(CRLF);
         text.append("Content-Type: text/plain; charset=").append(SENTINEL_CHARSET_NAME).append(CRLF);
-        text.append("content-length: " + body.length()).append(CRLF);
+        text.append("content-length: " + expectedBody.length()).append(CRLF);
         text.append("connection: close").append(CRLF);
         text.append(CRLF);
-        text.append(body);
+        text.append(expectedBody);
 
         assertEquals(text.toString(), httpResponseStr);
     }
