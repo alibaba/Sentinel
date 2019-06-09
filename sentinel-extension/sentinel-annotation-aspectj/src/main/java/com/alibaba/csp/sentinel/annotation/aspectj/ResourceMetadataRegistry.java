@@ -28,11 +28,16 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  */
 final class ResourceMetadataRegistry {
 
-    private static final Map<String, MethodWrapper> FALLBACK_MAP = new ConcurrentHashMap<String, MethodWrapper>();
-    private static final Map<String, MethodWrapper> BLOCK_HANDLER_MAP = new ConcurrentHashMap<String, MethodWrapper>();
+    private static final Map<String, MethodWrapper> FALLBACK_MAP = new ConcurrentHashMap<>();
+    private static final Map<String, MethodWrapper> DEFAULT_FALLBACK_MAP = new ConcurrentHashMap<>();
+    private static final Map<String, MethodWrapper> BLOCK_HANDLER_MAP = new ConcurrentHashMap<>();
 
     static MethodWrapper lookupFallback(Class<?> clazz, String name) {
         return FALLBACK_MAP.get(getKey(clazz, name));
+    }
+
+    static MethodWrapper lookupDefaultFallback(Class<?> clazz, String name) {
+        return DEFAULT_FALLBACK_MAP.get(getKey(clazz, name));
     }
 
     static MethodWrapper lookupBlockHandler(Class<?> clazz, String name) {
@@ -44,6 +49,13 @@ final class ResourceMetadataRegistry {
             throw new IllegalArgumentException("Bad argument");
         }
         FALLBACK_MAP.put(getKey(clazz, name), MethodWrapper.wrap(method));
+    }
+
+    static void updateDefaultFallbackFor(Class<?> clazz, String name, Method method) {
+        if (clazz == null || StringUtil.isBlank(name)) {
+            throw new IllegalArgumentException("Bad argument");
+        }
+        DEFAULT_FALLBACK_MAP.put(getKey(clazz, name), MethodWrapper.wrap(method));
     }
 
     static void updateBlockHandlerFor(Class<?> clazz, String name, Method method) {

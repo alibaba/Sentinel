@@ -222,6 +222,7 @@ public class SystemRuleManager {
             qps = Double.MAX_VALUE;
 
             highestSystemLoadIsSet = false;
+            highestCpuUsageIsSet = false;
             maxRtIsSet = false;
             maxThreadIsSet = false;
             qpsIsSet = false;
@@ -239,6 +240,10 @@ public class SystemRuleManager {
 
     public static void setHighestSystemLoad(double highestSystemLoad) {
         SystemRuleManager.highestSystemLoad = highestSystemLoad;
+    }
+    
+    public static double getCpuUsageThreshold() {
+        return highestCpuUsage;
     }
 
     public static void loadSystemConf(SystemRule rule) {
