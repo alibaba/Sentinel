@@ -23,6 +23,7 @@ import com.alibaba.csp.sentinel.cluster.client.codec.data.PingRequestDataWriter;
 import com.alibaba.csp.sentinel.cluster.client.codec.data.PingResponseDataDecoder;
 import com.alibaba.csp.sentinel.cluster.client.codec.registry.RequestDataWriterRegistry;
 import com.alibaba.csp.sentinel.cluster.client.codec.registry.ResponseDataDecodeRegistry;
+import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.init.InitFunc;
 import com.alibaba.csp.sentinel.init.InitOrder;
 
@@ -42,7 +43,8 @@ public class DefaultClusterClientInitFunc implements InitFunc {
     private void initDefaultEntityWriters() {
         RequestDataWriterRegistry.addWriter(ClientConstants.TYPE_PING, new PingRequestDataWriter());
         RequestDataWriterRegistry.addWriter(ClientConstants.TYPE_FLOW, new FlowRequestDataWriter());
-        RequestDataWriterRegistry.addWriter(ClientConstants.TYPE_PARAM_FLOW, new ParamFlowRequestDataWriter());
+        String maxParamBySize = SentinelConfig.getConfig(SentinelConfig.MAX_PARAM_BYTE_SIZE);
+        RequestDataWriterRegistry.addWriter(ClientConstants.TYPE_PARAM_FLOW, new ParamFlowRequestDataWriter(Integer.valueOf(maxParamBySize)));
     }
 
     private void initDefaultEntityDecoders() {

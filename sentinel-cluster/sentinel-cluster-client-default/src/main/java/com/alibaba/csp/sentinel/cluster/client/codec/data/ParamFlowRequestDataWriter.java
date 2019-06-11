@@ -15,15 +15,14 @@
  */
 package com.alibaba.csp.sentinel.cluster.client.codec.data;
 
-import java.util.Collection;
-
 import com.alibaba.csp.sentinel.cluster.ClusterConstants;
 import com.alibaba.csp.sentinel.cluster.codec.EntityWriter;
 import com.alibaba.csp.sentinel.cluster.request.data.ParamFlowRequestData;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.AssertUtil;
-
 import io.netty.buffer.ByteBuf;
+
+import java.util.Collection;
 
 /**
  * @author jialiang.linjl
@@ -55,8 +54,9 @@ public class ParamFlowRequestDataWriter implements EntityWriter<ParamFlowRequest
         target.writeInt(amount);
 
         // Serialize parameters with type flag.
-        for (Object param : entity.getParams()) {
-            encodeValue(param, target);
+        Object[] array = params.toArray();
+        for (int index = 0; index < amount; index++) {
+            encodeValue(array[index], target);
         }
     }
 
@@ -64,27 +64,27 @@ public class ParamFlowRequestDataWriter implements EntityWriter<ParamFlowRequest
         // Handle primitive type.
         if (param instanceof Integer || int.class.isInstance(param)) {
             target.writeByte(ClusterConstants.PARAM_TYPE_INTEGER);
-            target.writeInt((Integer)param);
+            target.writeInt((Integer) param);
         } else if (param instanceof String) {
-            encodeString((String)param, target);
+            encodeString((String) param, target);
         } else if (boolean.class.isInstance(param) || param instanceof Boolean) {
             target.writeByte(ClusterConstants.PARAM_TYPE_BOOLEAN);
-            target.writeBoolean((Boolean)param);
+            target.writeBoolean((Boolean) param);
         } else if (long.class.isInstance(param) || param instanceof Long) {
             target.writeByte(ClusterConstants.PARAM_TYPE_LONG);
-            target.writeLong((Long)param);
+            target.writeLong((Long) param);
         } else if (double.class.isInstance(param) || param instanceof Double) {
             target.writeByte(ClusterConstants.PARAM_TYPE_DOUBLE);
-            target.writeDouble((Double)param);
+            target.writeDouble((Double) param);
         } else if (float.class.isInstance(param) || param instanceof Float) {
             target.writeByte(ClusterConstants.PARAM_TYPE_FLOAT);
-            target.writeFloat((Float)param);
+            target.writeFloat((Float) param);
         } else if (byte.class.isInstance(param) || param instanceof Byte) {
             target.writeByte(ClusterConstants.PARAM_TYPE_BYTE);
-            target.writeByte((Byte)param);
+            target.writeByte((Byte) param);
         } else if (short.class.isInstance(param) || param instanceof Short) {
             target.writeByte(ClusterConstants.PARAM_TYPE_SHORT);
-            target.writeShort((Short)param);
+            target.writeShort((Short) param);
         } else {
             // Unexpected type, drop.
         }
@@ -110,10 +110,12 @@ public class ParamFlowRequestDataWriter implements EntityWriter<ParamFlowRequest
             int s = calculateParamTransportSize(param);
             if (s <= 0) {
                 RecordLog.warn("[ParamFlowRequestDataWriter] WARN: Non-primitive type detected in params of "
-                    + "cluster parameter flow control, which is not supported: " + param);
+                        + "cluster parameter flow control, which is not supported: " + param);
                 continue;
             }
             if (size + s > maxParamByteSize) {
+                RecordLog.warn("[ParamFlowRequestDataWriter] WARN: params size is too big." +
+                        " the configure value is : " + maxParamByteSize + ", the params size is: " + params.size());
                 break;
             }
             size += s;
@@ -132,7 +134,7 @@ public class ParamFlowRequestDataWriter implements EntityWriter<ParamFlowRequest
             return 5;
         } else if (value instanceof String) {
             // Layout for string: |type flag(1)|length(4)|string content|
-            String tmpValue = (String)value;
+            String tmpValue = (String) value;
             byte[] tmpChars = tmpValue.getBytes();
             return 1 + 4 + tmpChars.length;
         } else if (boolean.class.isInstance(value) || value instanceof Boolean) {
