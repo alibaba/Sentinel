@@ -16,15 +16,14 @@
 package com.alibaba.csp.sentinel.transport.command.netty;
 
 import com.alibaba.csp.sentinel.Constants;
-import com.alibaba.csp.sentinel.cluster.flow.rule.ClusterFlowRuleManager;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.init.InitExecutor;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.transport.CommandCenter;
 import com.alibaba.csp.sentinel.transport.command.NettyHttpCommandCenter;
+import com.alibaba.csp.sentinel.transport.command.handler.MultipleSlashNameCommandTestHandler;
 import com.alibaba.fastjson.JSON;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -89,9 +88,8 @@ public class HttpServerHandlerTest {
         // Create new EmbeddedChannel every method call
         embeddedChannel = new EmbeddedChannel(httpRequestDecoder, httpObjectAggregator, httpResponseEncoder, httpServerHandler);
 
-        // Clear rules and namespaces
+        // Clear flow rules
         FlowRuleManager.loadRules(Collections.EMPTY_LIST);
-        ClusterFlowRuleManager.removeProperty("testNamespace");
     }
 
     @Test
@@ -177,55 +175,16 @@ public class HttpServerHandlerTest {
     }
 
     /**
-     * {@link com.alibaba.csp.sentinel.cluster.server.command.handler.FetchClusterFlowRulesCommandHandler}
+     * {@link MultipleSlashNameCommandTestHandler}
      *
-     * Note:
-     * To test the command whose mapping path and command name contain /
-     *
-     * The mapping path is /cluster/server/flowRules
-     * The command name is cluster/server/flowRules
+     * Test command whose mapping path and command name contain multiple /
      */
     @Test
-    public void testFetchClusterFlowRulesCommandEmptyRule() {
-        String httpRequestStr = "GET /cluster/server/flowRules HTTP/1.1" + CRLF
+    public void testMultipleSlashNameCommand() {
+        String httpRequestStr = "GET /aa/bb/cc HTTP/1.1" + CRLF
                 + "Host: localhost:8719" + CRLF
                 + CRLF;
-        String expectedBody = "[]";
-
-        processSuccess(httpRequestStr, expectedBody);
-    }
-
-    @Test
-    public void testFetchClusterFlowRulesCommandSomeFlowRules() {
-        List<FlowRule> rules = new ArrayList<FlowRule>();
-        FlowRule rule1 = new FlowRule();
-        rule1.setClusterMode(true);
-        ClusterFlowConfig clusterConfig = new ClusterFlowConfig();
-        clusterConfig.setFlowId(111L);
-        rule1.setClusterConfig(clusterConfig);
-
-        rule1.setResource("key");
-        rule1.setCount(20);
-        rule1.setGrade(RuleConstant.FLOW_GRADE_QPS);
-        rule1.setLimitApp("default");
-        rules.add(rule1);
-
-        String namespace = "testNamespace";
-        ClusterFlowRuleManager.register2Property(namespace);
-        ClusterFlowRuleManager.loadRules(namespace, rules);
-
-        String httpRequestStr = "GET /cluster/server/flowRules HTTP/1.1" + CRLF
-                + "Host: localhost:8719" + CRLF
-                + CRLF;
-
-        // body json
-        /*
-        String expectedBody = "[{\"clusterConfig\":{\"fallbackToLocalWhenFail\":true,\"flowId\":111,\"sampleCount\":10"
-                + ",\"strategy\":0,\"thresholdType\":0,\"windowIntervalMs\":1000},\"clusterMode\":true,\"controlBehavior\":0"
-                + ",\"count\":20.0,\"grade\":1,\"limitApp\":\"default\",\"maxQueueingTimeMs\":500,\"resource\":\"key\""
-                + ",\"strategy\":0,\"warmUpPeriodSec\":10}]";
-        */
-        String expectedBody = JSON.toJSONString(rules);
+        String expectedBody = "MultipleSlashNameCommandTestHandler result";
 
         processSuccess(httpRequestStr, expectedBody);
     }
