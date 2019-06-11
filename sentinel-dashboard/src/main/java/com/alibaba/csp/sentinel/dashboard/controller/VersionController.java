@@ -16,31 +16,34 @@
 package com.alibaba.csp.sentinel.dashboard.controller;
 
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
+import com.alibaba.csp.sentinel.util.StringUtil;
+
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author hisenyuan
- * @date 2019-05-30 10:47:50
+ * @since 1.7.0
  */
 @RestController
-@RequestMapping(value = "/")
 public class VersionController {
-    @Value("${sentinel.dashboard.version:''}")
-    private String sentinelDashboardVersion;
-    private static String VERSION_PATTERN = "-";
 
-    @RequestMapping(value = "/getVersion")
-    public Result<String> getVersion() {
-        if (sentinelDashboardVersion != null) {
+    private static final String VERSION_PATTERN = "-";
+
+    @Value("${sentinel.dashboard.version:}")
+    private String sentinelDashboardVersion;
+
+    @GetMapping("/version")
+    public Result<String> apiGetVersion() {
+        if (StringUtil.isNotBlank(sentinelDashboardVersion)) {
             String res = sentinelDashboardVersion;
             if (sentinelDashboardVersion.contains(VERSION_PATTERN)) {
                 res = sentinelDashboardVersion.substring(0, sentinelDashboardVersion.indexOf(VERSION_PATTERN));
             }
             return Result.ofSuccess(res);
         } else {
-            return Result.ofFail(1, "getVersion failed");
+            return Result.ofFail(1, "getVersion failed: empty version");
         }
     }
 }
