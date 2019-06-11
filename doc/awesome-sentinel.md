@@ -27,7 +27,6 @@ You can also add to [sentinel-group/sentinel-awesome](https://github.com/sentine
 - [sentinel-support](https://github.com/cdfive/sentinel-support): A support project for convenient Sentinel integration including properties file configuration, ActiveMQ integration and a JdbcDataSource implementation by [cdfive](https://github.com/cdfive)
 - [Sentinel dashboard multi-data-source adapter](https://github.com/finefuture/sentinel-dashboard-X): Sentinel dashboard multi-data-source adapter has integrated Apollo and Nacos configuration center for bidirectional modification persistence. Implemented by [finefuture](https://github.com/finefuture)
 - [Sentinel Rule Annotation Support](https://github.com/code1986/sentinel-lib): A third-party library that supports configuring flow rule and degrade rule using annotation. Implemented by [code1986](https://github.com/code1986)
-- [sentinel-multiDataSource-adapter](https://github.com/finefuture/sentinel-dashboard-X): Sentinel-dashborad multi-data source adapter has integrated Apollo configuration center and Nacos configuration center for bidirectional modification persistence, implementation by [finefuture](https://github.com/finefuture)
 - [sentinel-pigeon-adapter](https://github.com/wchswchs/sentinel-pigeon): A RPC framework Pigeon adapter for Sentinel including provider and invoker rate limiting implementation by [wchswchs](https://github.com/wchswchs)
 
 ## Blogs
