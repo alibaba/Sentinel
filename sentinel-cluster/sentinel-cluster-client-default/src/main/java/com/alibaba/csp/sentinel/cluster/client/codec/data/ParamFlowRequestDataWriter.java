@@ -22,7 +22,9 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import io.netty.buffer.ByteBuf;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author jialiang.linjl
@@ -49,15 +51,40 @@ public class ParamFlowRequestDataWriter implements EntityWriter<ParamFlowRequest
 
         Collection<Object> params = entity.getParams();
 
-        // Write parameter amount.
-        int amount = calculateParamAmount(params);
-        target.writeInt(amount);
+        params = resolveValidParams(params);
+        target.writeInt(params.size());
 
         // Serialize parameters with type flag.
-        Object[] array = params.toArray();
-        for (int index = 0; index < amount; index++) {
-            encodeValue(array[index], target);
+        for (Object param : params) {
+            encodeValue(param, target);
         }
+    }
+
+    /**
+     * Get valid parameters in provided parameter list
+     *
+     * @param params
+     * @return
+     */
+    public List<Object> resolveValidParams(Collection<Object> params) {
+        List<Object> validParams = new ArrayList<>();
+        int size = 0;
+        for (Object param : params) {
+            int s = calculateParamTransportSize(param);
+            if (s <= 0) {
+                RecordLog.warn("[ParamFlowRequestDataWriter] WARN: Non-primitive type detected in params of "
+                        + "cluster parameter flow control, which is not supported: " + param);
+                continue;
+            }
+            if (size + s > maxParamByteSize) {
+                RecordLog.warn("[ParamFlowRequestDataWriter] WARN: params size is too big." +
+                        " the configure value is : " + maxParamByteSize + ", the params size is: " + params.size());
+                break;
+            }
+            size += s;
+            validParams.add(param);
+        }
+        return validParams;
     }
 
     private void encodeValue(Object param, ByteBuf target) {
@@ -97,32 +124,6 @@ public class ParamFlowRequestDataWriter implements EntityWriter<ParamFlowRequest
         target.writeBytes(tmpChars);
     }
 
-    /**
-     * Calculate amount of valid parameters in provided parameter list.
-     *
-     * @param params non-empty parameter list
-     * @return amount of valid parameters
-     */
-    int calculateParamAmount(/*@NonEmpty*/ Collection<Object> params) {
-        int size = 0;
-        int length = 0;
-        for (Object param : params) {
-            int s = calculateParamTransportSize(param);
-            if (s <= 0) {
-                RecordLog.warn("[ParamFlowRequestDataWriter] WARN: Non-primitive type detected in params of "
-                        + "cluster parameter flow control, which is not supported: " + param);
-                continue;
-            }
-            if (size + s > maxParamByteSize) {
-                RecordLog.warn("[ParamFlowRequestDataWriter] WARN: params size is too big." +
-                        " the configure value is : " + maxParamByteSize + ", the params size is: " + params.size());
-                break;
-            }
-            size += s;
-            length++;
-        }
-        return length;
-    }
 
     int calculateParamTransportSize(Object value) {
         if (value == null) {
