@@ -52,17 +52,13 @@ public class SentinelConfig {
     public static final String TOTAL_METRIC_FILE_COUNT = "csp.sentinel.metric.file.total.count";
     public static final String COLD_FACTOR = "csp.sentinel.flow.cold.factor";
     public static final String STATISTIC_MAX_RT = "csp.sentinel.statistic.max.rt";
-    /**
-     * cluster config
-     */
-    public static final String MAX_PARAM_BYTE_SIZE = "csp.sentinel.cluster.max.param.byte.size";
+
 
     static final String DEFAULT_CHARSET = "UTF-8";
     static final long DEFAULT_SINGLE_METRIC_FILE_SIZE = 1024 * 1024 * 50;
     static final int DEFAULT_TOTAL_METRIC_FILE_COUNT = 6;
     static final int DEFAULT_COLD_FACTOR = 3;
     static final int DEFAULT_STATISTIC_MAX_RT = 4900;
-    static final int DEFAULT_MAX_PARAM_BYTE_SIZE = 1024;
 
     static {
         try {
@@ -100,7 +96,6 @@ public class SentinelConfig {
         SentinelConfig.setConfig(TOTAL_METRIC_FILE_COUNT, String.valueOf(DEFAULT_TOTAL_METRIC_FILE_COUNT));
         SentinelConfig.setConfig(COLD_FACTOR, String.valueOf(DEFAULT_COLD_FACTOR));
         SentinelConfig.setConfig(STATISTIC_MAX_RT, String.valueOf(DEFAULT_STATISTIC_MAX_RT));
-        SentinelConfig.setConfig(MAX_PARAM_BYTE_SIZE,String.valueOf(DEFAULT_MAX_PARAM_BYTE_SIZE));
     }
 
     private static void loadProps() {
