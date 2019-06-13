@@ -54,35 +54,6 @@ public class ParamFlowRequestDataWriterTest {
 
     }
 
-   /* @Test
-    public void testCalculateParamAmountExceedsMaxSize() {
-        final int maxSize = 10;
-        ParamFlowRequestDataWriter writer = new ParamFlowRequestDataWriter(maxSize);
-        assertEquals(1, writer.calculateParamAmount(new ArrayList<Object>() {{
-            add(1);
-        }}));
-        assertEquals(2, writer.calculateParamAmount(new ArrayList<Object>() {{
-            add(1); add(64);
-        }}));
-        assertEquals(2, writer.calculateParamAmount(new ArrayList<Object>() {{
-            add(1); add(64); add(3);
-        }}));
-    }
-
-    @Test
-    public void testCalculateParamAmount() {
-        ParamFlowRequestDataWriter writer = new ParamFlowRequestDataWriter();
-        assertEquals(6, writer.calculateParamAmount(new ArrayList<Object>() {{
-            add(1); add(1d); add(1f); add((byte) 1); add("123"); add(true);
-        }}));
-        // POJO (non-primitive type) should not be regarded as a valid parameter.
-        assertEquals(0, writer.calculateParamAmount(new ArrayList<Object>() {{
-            add(new SomePojo());
-        }}));
-        assertEquals(1, writer.calculateParamAmount(new ArrayList<Object>() {{
-            add(new Object()); add(1);
-        }}));
-    }*/
 
     private static class SomePojo {
         private String param1;
