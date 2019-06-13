@@ -163,6 +163,5 @@ These are only part of the companies using Sentinel, for reference only. If you 
 ![亲宝宝](https://stlib.qbb6.com/wclt/img/home_hd/version1/title_logo.png)
 ![杭州光云科技](https://www.raycloud.com/images/logo.png)
 ![金汇金融](https://res.jinhui365.com/r/images/logo2.png?v=1.527)
-![Vivo](https://user-images.githubusercontent.com/9434884/49355264-c6f87600-f701-11e8-8109-054cf91df868.png)
 ![闪电购](http://cdn.52shangou.com/shandianbang/official-source/3.1.1/build/images/logo.png)
 ![拼多多](http://cdn.pinduoduo.com/assets/img/pdd_logo_v3.png)
