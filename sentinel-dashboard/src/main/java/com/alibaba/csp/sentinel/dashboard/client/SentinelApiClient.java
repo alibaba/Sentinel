@@ -599,7 +599,7 @@ public class SentinelApiClient {
         try {
             Map<String, String> params = new HashMap<>(1);
             params.put("data", JSON.toJSONString(config));
-            return executeCommand(app, ip, port, MODIFY_CLUSTER_CLIENT_CONFIG_PATH, params, true)
+            return executeCommand(app, ip, port, MODIFY_CLUSTER_CLIENT_CONFIG_PATH, params, false)
                 .thenCompose(e -> {
                     if (CommandConstants.MSG_SUCCESS.equals(e)) {
                         return CompletableFuture.completedFuture(null);
@@ -621,7 +621,7 @@ public class SentinelApiClient {
         try {
             Map<String, String> params = new HashMap<>(1);
             params.put("data", JSON.toJSONString(config));
-            return executeCommand(app, ip, port, MODIFY_CLUSTER_SERVER_FLOW_CONFIG_PATH, params, true)
+            return executeCommand(app, ip, port, MODIFY_CLUSTER_SERVER_FLOW_CONFIG_PATH, params, false)
                 .thenCompose(e -> {
                     if (CommandConstants.MSG_SUCCESS.equals(e)) {
                         return CompletableFuture.completedFuture(null);
