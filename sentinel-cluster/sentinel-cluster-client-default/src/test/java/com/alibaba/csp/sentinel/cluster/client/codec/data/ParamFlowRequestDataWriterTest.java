@@ -1,8 +1,9 @@
 package com.alibaba.csp.sentinel.cluster.client.codec.data;
 
-import java.util.ArrayList;
-
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -27,34 +28,32 @@ public class ParamFlowRequestDataWriterTest {
     }
 
     @Test
-    public void testCalculateParamAmountExceedsMaxSize() {
-        final int maxSize = 10;
+    public void testResolveValidParams() {
+
+        final int maxSize = 15;
         ParamFlowRequestDataWriter writer = new ParamFlowRequestDataWriter(maxSize);
-        assertEquals(1, writer.calculateParamAmount(new ArrayList<Object>() {{
+
+        ArrayList<Object> params = new ArrayList<Object>() {{
             add(1);
-        }}));
-        assertEquals(2, writer.calculateParamAmount(new ArrayList<Object>() {{
-            add(1); add(64);
-        }}));
-        assertEquals(2, writer.calculateParamAmount(new ArrayList<Object>() {{
-            add(1); add(64); add(3);
-        }}));
+            add(64);
+            add(3);
+        }};
+
+        List<Object> validParams = writer.resolveValidParams(params);
+        assertTrue(validParams.contains(1) && validParams.contains(64) && validParams.contains(3));
+
+        //when over maxSize, the exceed number should not be contained
+        params.add(5);
+        assertFalse(writer.resolveValidParams(params).contains(5));
+
+
+        //POJO (non-primitive type) should not be regarded as a valid parameter
+        assertTrue(writer.resolveValidParams(new ArrayList<Object>() {{
+            add(new SomePojo());
+        }}).size() == 0);
+
     }
 
-    @Test
-    public void testCalculateParamAmount() {
-        ParamFlowRequestDataWriter writer = new ParamFlowRequestDataWriter();
-        assertEquals(6, writer.calculateParamAmount(new ArrayList<Object>() {{
-            add(1); add(1d); add(1f); add((byte) 1); add("123"); add(true);
-        }}));
-        // POJO (non-primitive type) should not be regarded as a valid parameter.
-        assertEquals(0, writer.calculateParamAmount(new ArrayList<Object>() {{
-            add(new SomePojo());
-        }}));
-        assertEquals(1, writer.calculateParamAmount(new ArrayList<Object>() {{
-            add(new Object()); add(1);
-        }}));
-    }
 
     private static class SomePojo {
         private String param1;

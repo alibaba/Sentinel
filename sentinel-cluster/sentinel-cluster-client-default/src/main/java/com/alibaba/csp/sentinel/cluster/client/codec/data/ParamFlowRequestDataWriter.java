@@ -15,15 +15,16 @@
  */
 package com.alibaba.csp.sentinel.cluster.client.codec.data;
 
-import java.util.Collection;
-
 import com.alibaba.csp.sentinel.cluster.ClusterConstants;
 import com.alibaba.csp.sentinel.cluster.codec.EntityWriter;
 import com.alibaba.csp.sentinel.cluster.request.data.ParamFlowRequestData;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.AssertUtil;
-
 import io.netty.buffer.ByteBuf;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * @author jialiang.linjl
@@ -50,41 +51,67 @@ public class ParamFlowRequestDataWriter implements EntityWriter<ParamFlowRequest
 
         Collection<Object> params = entity.getParams();
 
-        // Write parameter amount.
-        int amount = calculateParamAmount(params);
-        target.writeInt(amount);
+        params = resolveValidParams(params);
+        target.writeInt(params.size());
 
         // Serialize parameters with type flag.
-        for (Object param : entity.getParams()) {
+        for (Object param : params) {
             encodeValue(param, target);
         }
+    }
+
+    /**
+     * Get valid parameters in provided parameter list
+     *
+     * @param params
+     * @return
+     */
+    public List<Object> resolveValidParams(Collection<Object> params) {
+        List<Object> validParams = new ArrayList<>();
+        int size = 0;
+        for (Object param : params) {
+            int s = calculateParamTransportSize(param);
+            if (s <= 0) {
+                RecordLog.warn("[ParamFlowRequestDataWriter] WARN: Non-primitive type detected in params of "
+                        + "cluster parameter flow control, which is not supported: " + param);
+                continue;
+            }
+            if (size + s > maxParamByteSize) {
+                RecordLog.warn("[ParamFlowRequestDataWriter] WARN: params size is too big." +
+                        " the configure value is : " + maxParamByteSize + ", the params size is: " + params.size());
+                break;
+            }
+            size += s;
+            validParams.add(param);
+        }
+        return validParams;
     }
 
     private void encodeValue(Object param, ByteBuf target) {
         // Handle primitive type.
         if (param instanceof Integer || int.class.isInstance(param)) {
             target.writeByte(ClusterConstants.PARAM_TYPE_INTEGER);
-            target.writeInt((Integer)param);
+            target.writeInt((Integer) param);
         } else if (param instanceof String) {
-            encodeString((String)param, target);
+            encodeString((String) param, target);
         } else if (boolean.class.isInstance(param) || param instanceof Boolean) {
             target.writeByte(ClusterConstants.PARAM_TYPE_BOOLEAN);
-            target.writeBoolean((Boolean)param);
+            target.writeBoolean((Boolean) param);
         } else if (long.class.isInstance(param) || param instanceof Long) {
             target.writeByte(ClusterConstants.PARAM_TYPE_LONG);
-            target.writeLong((Long)param);
+            target.writeLong((Long) param);
         } else if (double.class.isInstance(param) || param instanceof Double) {
             target.writeByte(ClusterConstants.PARAM_TYPE_DOUBLE);
-            target.writeDouble((Double)param);
+            target.writeDouble((Double) param);
         } else if (float.class.isInstance(param) || param instanceof Float) {
             target.writeByte(ClusterConstants.PARAM_TYPE_FLOAT);
-            target.writeFloat((Float)param);
+            target.writeFloat((Float) param);
         } else if (byte.class.isInstance(param) || param instanceof Byte) {
             target.writeByte(ClusterConstants.PARAM_TYPE_BYTE);
-            target.writeByte((Byte)param);
+            target.writeByte((Byte) param);
         } else if (short.class.isInstance(param) || param instanceof Short) {
             target.writeByte(ClusterConstants.PARAM_TYPE_SHORT);
-            target.writeShort((Short)param);
+            target.writeShort((Short) param);
         } else {
             // Unexpected type, drop.
         }
@@ -97,30 +124,6 @@ public class ParamFlowRequestDataWriter implements EntityWriter<ParamFlowRequest
         target.writeBytes(tmpChars);
     }
 
-    /**
-     * Calculate amount of valid parameters in provided parameter list.
-     *
-     * @param params non-empty parameter list
-     * @return amount of valid parameters
-     */
-    int calculateParamAmount(/*@NonEmpty*/ Collection<Object> params) {
-        int size = 0;
-        int length = 0;
-        for (Object param : params) {
-            int s = calculateParamTransportSize(param);
-            if (s <= 0) {
-                RecordLog.warn("[ParamFlowRequestDataWriter] WARN: Non-primitive type detected in params of "
-                    + "cluster parameter flow control, which is not supported: " + param);
-                continue;
-            }
-            if (size + s > maxParamByteSize) {
-                break;
-            }
-            size += s;
-            length++;
-        }
-        return length;
-    }
 
     int calculateParamTransportSize(Object value) {
         if (value == null) {
@@ -132,7 +135,7 @@ public class ParamFlowRequestDataWriter implements EntityWriter<ParamFlowRequest
             return 5;
         } else if (value instanceof String) {
             // Layout for string: |type flag(1)|length(4)|string content|
-            String tmpValue = (String)value;
+            String tmpValue = (String) value;
             byte[] tmpChars = tmpValue.getBytes();
             return 1 + 4 + tmpChars.length;
         } else if (boolean.class.isInstance(value) || value instanceof Boolean) {
