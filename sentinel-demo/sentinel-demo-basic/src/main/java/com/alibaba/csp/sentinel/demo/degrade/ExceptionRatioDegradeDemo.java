@@ -113,7 +113,7 @@ public class ExceptionRatioDegradeDemo {
         rule.setResource(KEY);
         // set limit exception ratio to 0.1
         rule.setCount(0.1);
-        rule.setGrade(RuleConstant.DEGRADE_GRADE_MIN_REQUEST_EXCEED_N);
+        rule.setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT);
         rule.setTimeWindow(10);
         rule.setMinRequestAmount(20);
         rules.add(rule);

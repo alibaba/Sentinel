@@ -91,10 +91,12 @@ public class DegradeTest {
         when(cn.totalQps()).thenReturn(8d);
         assertTrue(rule.passCheck(context, node, 1));
 
-        // Will true. While totalQps > minRequestAmount and exceptionCount < minRequestAmount
+        // Will true.
         when(cn.totalQps()).thenReturn(21d);
-        when(cn.exceptionQps()).thenReturn(19d);
+        when(cn.successQps()).thenReturn(9d);
+        when(cn.exceptionQps()).thenReturn(9d);
         assertTrue(rule.passCheck(context, node, 1));
+
 
         // Will true. While totalQps > minRequestAmount and  exceptionRation < count
         when(cn.totalQps()).thenReturn(100d);
@@ -102,11 +104,10 @@ public class DegradeTest {
         when(cn.exceptionQps()).thenReturn(10d);
         assertTrue(rule.passCheck(context, node, 1));
 
-
         // Will fail. While totalQps > minRequestAmount and exceptionRation > count
         rule.setMinRequestAmount(5);
         when(cn.totalQps()).thenReturn(12d);
-        when(cn.successQps()).thenReturn(6d);
+        when(cn.successQps()).thenReturn(8d);
         when(cn.exceptionQps()).thenReturn(6d);
         assertFalse(rule.passCheck(context, node, 1));
 

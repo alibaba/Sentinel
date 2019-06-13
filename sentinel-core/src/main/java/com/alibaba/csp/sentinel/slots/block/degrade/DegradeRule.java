@@ -208,6 +208,7 @@ public class DegradeRule extends AbstractRule {
                 return true;
             }
 
+            //in the same aligned statistic time window, success (aka. completed count) = exception count + non-exception count (realSuccess)
             double realSuccess = success - exception;
             if (realSuccess <= 0 && exception < minRequestAmount) {
                 return true;
