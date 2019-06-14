@@ -49,6 +49,7 @@ public class SentinelConfig {
     public static final String COLD_FACTOR = "csp.sentinel.flow.cold.factor";
     public static final String STATISTIC_MAX_RT = "csp.sentinel.statistic.max.rt";
 
+
     static final String DEFAULT_CHARSET = "UTF-8";
     static final long DEFAULT_SINGLE_METRIC_FILE_SIZE = 1024 * 1024 * 50;
     static final int DEFAULT_TOTAL_METRIC_FILE_COUNT = 6;

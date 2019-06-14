@@ -234,8 +234,8 @@ public class ArrayMetric implements Metric {
 
     @Override
     public long previousWindowBlock() {
-        WindowWrap<MetricBucket> wrap = data.currentWindow();
-        wrap = data.getPreviousWindow();
+        data.currentWindow();
+        WindowWrap<MetricBucket> wrap = data.getPreviousWindow();
         if (wrap == null) {
             return 0;
         }
@@ -244,8 +244,8 @@ public class ArrayMetric implements Metric {
 
     @Override
     public long previousWindowPass() {
-        WindowWrap<MetricBucket> wrap = data.currentWindow();
-        wrap = data.getPreviousWindow();
+        data.currentWindow();
+        WindowWrap<MetricBucket> wrap = data.getPreviousWindow();
         if (wrap == null) {
             return 0;
         }
