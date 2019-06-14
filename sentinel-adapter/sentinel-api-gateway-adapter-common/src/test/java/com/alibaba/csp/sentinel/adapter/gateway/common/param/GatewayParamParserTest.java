@@ -94,6 +94,7 @@ public class GatewayParamParserTest {
         final String api1 = "my_test_route_B";
         final String headerName = "X-Sentinel-Flag";
         final String paramName = "p";
+        final String cookieName = "myCookie";
         GatewayFlowRule routeRuleNoParam = new GatewayFlowRule(routeId1)
             .setCount(10)
             .setIntervalSec(10);
@@ -128,6 +129,13 @@ public class GatewayParamParserTest {
             .setParamItem(new GatewayParamFlowItem()
                 .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HOST)
             );
+        GatewayFlowRule routeRule5 = new GatewayFlowRule(routeId1)
+            .setCount(50)
+            .setIntervalSec(30)
+            .setParamItem(new GatewayParamFlowItem()
+                .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_COOKIE)
+                .setFieldName(cookieName)
+            );
         GatewayFlowRule apiRule1 = new GatewayFlowRule(api1)
             .setResourceMode(SentinelGatewayConstants.RESOURCE_MODE_CUSTOM_API_NAME)
             .setCount(5)
@@ -140,6 +148,7 @@ public class GatewayParamParserTest {
         rules.add(routeRule2);
         rules.add(routeRule3);
         rules.add(routeRule4);
+        rules.add(routeRule5);
         rules.add(routeRuleNoParam);
         rules.add(apiRule1);
         GatewayRuleManager.loadRules(rules);
@@ -148,19 +157,24 @@ public class GatewayParamParserTest {
         final String expectedAddress = "66.77.88.99";
         final String expectedHeaderValue1 = "Sentinel";
         final String expectedUrlParamValue1 = "17";
+        final String expectedCookieValue1 = "Sentinel-Foo";
+
         mockClientHostAddress(itemParser, expectedAddress);
         Map<String, String> expectedHeaders = new HashMap<String, String>() {{
             put(headerName, expectedHeaderValue1); put("Host", expectedHost);
         }};
         mockHeaders(itemParser, expectedHeaders);
         mockSingleUrlParam(itemParser, paramName, expectedUrlParamValue1);
+        mockSingleCookie(itemParser, cookieName, expectedCookieValue1);
+
         Object[] params = paramParser.parseParameterFor(routeId1, request, routeIdPredicate);
-        // Param length should be 5 (4 with parameters, 1 normal flow with generated constant)
-        assertThat(params.length).isEqualTo(5);
+        // Param length should be 6 (5 with parameters, 1 normal flow with generated constant)
+        assertThat(params.length).isEqualTo(6);
         assertThat(params[routeRule1.getParamItem().getIndex()]).isEqualTo(expectedAddress);
         assertThat(params[routeRule2.getParamItem().getIndex()]).isEqualTo(expectedHeaderValue1);
         assertThat(params[routeRule3.getParamItem().getIndex()]).isEqualTo(expectedUrlParamValue1);
         assertThat(params[routeRule4.getParamItem().getIndex()]).isEqualTo(expectedHost);
+        assertThat(params[routeRule5.getParamItem().getIndex()]).isEqualTo(expectedCookieValue1);
         assertThat(params[params.length - 1]).isEqualTo(SentinelGatewayConstants.GATEWAY_DEFAULT_PARAM);
 
         assertThat(paramParser.parseParameterFor(api1, request, routeIdPredicate).length).isZero();
@@ -194,6 +208,10 @@ public class GatewayParamParserTest {
 
     private void mockSingleHeader(/*@Mock*/ RequestItemParser parser, String key, String value) {
         when(parser.getHeader(any(), eq(key))).thenReturn(value);
+    }
+
+    private void mockSingleCookie(/*@Mock*/ RequestItemParser parser, String key, String value) {
+        when(parser.getCookieValue(any(), eq(key))).thenReturn(value);
     }
 
     @Before
