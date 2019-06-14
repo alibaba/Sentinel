@@ -116,7 +116,7 @@ public class SentinelApiClient {
 
     private CloseableHttpAsyncClient httpClient;
 
-    private static final SentinelVersion version160 = new SentinelVersion(1, 6, 0);
+    private static final SentinelVersion version161 = new SentinelVersion(1, 6, 1);
     
     @Autowired
     private AppManagement appManagement;
@@ -248,7 +248,7 @@ public class SentinelApiClient {
         boolean supportPost = StringUtil.isNotEmpty(app) && Optional.ofNullable(appManagement.getDetailApp(app))
                 .flatMap(e -> e.getMachine(ip, port))
                 .flatMap(m -> VersionUtils.parseVersion(m.getVersion())
-                    .map(v -> v.greaterOrEqual(version160)))
+                    .map(v -> v.greaterThan(version161)))
                 .orElse(false);
         if (!useHttpPost || !supportPost) {
             // Using GET in older versions, append parameters after url
@@ -599,7 +599,7 @@ public class SentinelApiClient {
         try {
             Map<String, String> params = new HashMap<>(1);
             params.put("data", JSON.toJSONString(config));
-            return executeCommand(app, ip, port, MODIFY_CLUSTER_CLIENT_CONFIG_PATH, params, false)
+            return executeCommand(app, ip, port, MODIFY_CLUSTER_CLIENT_CONFIG_PATH, params, true)
                 .thenCompose(e -> {
                     if (CommandConstants.MSG_SUCCESS.equals(e)) {
                         return CompletableFuture.completedFuture(null);
@@ -621,7 +621,7 @@ public class SentinelApiClient {
         try {
             Map<String, String> params = new HashMap<>(1);
             params.put("data", JSON.toJSONString(config));
-            return executeCommand(app, ip, port, MODIFY_CLUSTER_SERVER_FLOW_CONFIG_PATH, params, false)
+            return executeCommand(app, ip, port, MODIFY_CLUSTER_SERVER_FLOW_CONFIG_PATH, params, true)
                 .thenCompose(e -> {
                     if (CommandConstants.MSG_SUCCESS.equals(e)) {
                         return CompletableFuture.completedFuture(null);
