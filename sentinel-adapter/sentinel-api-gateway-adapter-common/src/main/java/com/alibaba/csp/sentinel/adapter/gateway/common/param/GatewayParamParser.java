@@ -42,8 +42,8 @@ public class GatewayParamParser<T> {
     /**
      * Parse parameters for given resource from the request entity on condition of the rule predicate.
      *
-     * @param resource valid resource name
-     * @param request valid request
+     * @param resource      valid resource name
+     * @param request       valid request
      * @param rulePredicate rule predicate indicating the rules to refer
      * @return the parameter array
      */
@@ -92,6 +92,8 @@ public class GatewayParamParser<T> {
                 return parseHeader(item, request);
             case SentinelGatewayConstants.PARAM_PARSE_STRATEGY_URL_PARAM:
                 return parseUrlParameter(item, request);
+            case SentinelGatewayConstants.PARAM_PARSE_STRATEGY_COOKIE:
+                return parseCookie(item, request);
             default:
                 return null;
         }
@@ -132,6 +134,17 @@ public class GatewayParamParser<T> {
         String paramName = item.getFieldName();
         String pattern = item.getPattern();
         String param = requestItemParser.getUrlParam(request, paramName);
+        if (pattern == null) {
+            return param;
+        }
+        // Match value according to regex pattern or exact mode.
+        return parseWithMatchStrategyInternal(item.getMatchStrategy(), param, pattern);
+    }
+
+    private String parseCookie(/*@Valid*/ GatewayParamFlowItem item, T request) {
+        String cookieName = item.getFieldName();
+        String pattern = item.getPattern();
+        String param = requestItemParser.getCookieValue(request, cookieName);
         if (pattern == null) {
             return param;
         }
