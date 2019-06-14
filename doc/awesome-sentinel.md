@@ -25,6 +25,9 @@ You can also add to [sentinel-group/sentinel-awesome](https://github.com/sentine
 ## Extensions / Integrations
 
 - [sentinel-support](https://github.com/cdfive/sentinel-support): A support project for convenient Sentinel integration including properties file configuration, ActiveMQ integration and a JdbcDataSource implementation by [cdfive](https://github.com/cdfive)
+- [Sentinel dashboard multi-data-source adapter](https://github.com/finefuture/sentinel-dashboard-X): Sentinel dashboard multi-data-source adapter has integrated Apollo and Nacos configuration center for bidirectional modification persistence. Implemented by [finefuture](https://github.com/finefuture)
+- [Sentinel Rule Annotation Support](https://github.com/code1986/sentinel-lib): A third-party library that supports configuring flow rule and degrade rule using annotation. Implemented by [code1986](https://github.com/code1986)
+- [sentinel-pigeon-adapter](https://github.com/wchswchs/sentinel-pigeon): A RPC framework Pigeon adapter for Sentinel including provider and invoker rate limiting implementation by [wchswchs](https://github.com/wchswchs)
 
 ## Blogs
 
@@ -50,3 +53,4 @@ You can also add to [sentinel-group/sentinel-awesome](https://github.com/sentine
 - [sentinel 深入浅出之原理篇FlowSlot](https://www.jianshu.com/p/53218d0d273e) by [shxz130](https://github.com/shxz130)
 - [sentinel 深入浅出之原理篇DegradeSlot](https://www.jianshu.com/p/e910d4840e4a) by [shxz130](https://github.com/shxz130)
 - [sentinel 深入浅出之原理篇协议拓展dubbo，grpc，web-servlet](https://www.jianshu.com/p/579bff0f34be) by [shxz130](https://github.com/shxz130)
+- [Alibaba Sentinel RESTful 接口流控处理优化](https://www.jianshu.com/p/96f5980d9798) by [luanlouis](https://github.com/luanlouis)

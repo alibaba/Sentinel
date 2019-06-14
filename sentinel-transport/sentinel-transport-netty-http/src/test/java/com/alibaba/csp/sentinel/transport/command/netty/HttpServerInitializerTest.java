@@ -30,30 +30,29 @@ import static org.mockito.Mockito.*;
  * Test cases for {@link HttpServerInitializer}.
  *
  * @author cdfive
- * @date 2018-12-19
  */
 public class HttpServerInitializerTest {
 
     @Test
     public void testInitChannel() throws Exception {
-        // mock Objects
+        // Mock Objects
         HttpServerInitializer httpServerInitializer = mock(HttpServerInitializer.class);
         SocketChannel socketChannel = mock(SocketChannel.class);
         ChannelPipeline channelPipeline = mock(ChannelPipeline.class);
 
-        // mock SocketChannel#pipeline() method
+        // Mock SocketChannel#pipeline() method
         when(socketChannel.pipeline()).thenReturn(channelPipeline);
 
         // HttpServerInitializer#initChannel(SocketChannel) call real method
         doCallRealMethod().when(httpServerInitializer).initChannel(socketChannel);
 
-        // start test for HttpServerInitializer#initChannel(SocketChannel)
+        // Start test for HttpServerInitializer#initChannel(SocketChannel)
         httpServerInitializer.initChannel(socketChannel);
 
-        // verify 4 times calling ChannelPipeline#addLast() method
+        // Verify 4 times calling ChannelPipeline#addLast() method
         verify(channelPipeline, times(4)).addLast(any(ChannelHandler.class));
 
-        // verify the order of calling ChannelPipeline#addLast() method
+        // Verify the order of calling ChannelPipeline#addLast() method
         InOrder inOrder = inOrder(channelPipeline);
         inOrder.verify(channelPipeline).addLast(any(HttpRequestDecoder.class));
         inOrder.verify(channelPipeline).addLast(any(HttpObjectAggregator.class));
