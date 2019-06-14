@@ -36,6 +36,10 @@ public final class RuleConstant {
      */
     public static final int DEGRADE_GRADE_EXCEPTION_COUNT = 2;
 
+
+    public static final int DEGRADE_GRADE_RT_MAX_EXCEED_N = 5;
+    public static final int DEGRADE_GRADE_MIN_REQUEST_EXCEED_N = 5;
+
     public static final int AUTHORITY_WHITE = 0;
     public static final int AUTHORITY_BLACK = 1;
 
