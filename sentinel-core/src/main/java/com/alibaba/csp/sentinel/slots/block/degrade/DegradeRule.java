@@ -15,12 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.block.degrade;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.ClusterNode;
@@ -28,6 +22,12 @@ import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * <p>
@@ -55,7 +55,15 @@ import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
  */
 public class DegradeRule extends AbstractRule {
 
-    private static final int RT_MAX_EXCEED_N = 5;
+    /**
+     * minimum number of consecutive slow requests that can trigger RT circuit breaking
+     */
+    private int rtSlowRequestAmount = RuleConstant.DEGRADE_GRADE_RT_MAX_EXCEED_N;
+
+    /**
+     * minimum number of requests (in an active statistic time span) that can trigger circuit breaking
+     */
+    private int minRequestAmount = RuleConstant.DEGRADE_GRADE_MIN_REQUEST_EXCEED_N;
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(
@@ -137,7 +145,7 @@ public class DegradeRule extends AbstractRule {
             return false;
         }
 
-        DegradeRule that = (DegradeRule)o;
+        DegradeRule that = (DegradeRule) o;
 
         if (count != that.count) {
             return false;
@@ -148,6 +156,13 @@ public class DegradeRule extends AbstractRule {
         if (grade != that.grade) {
             return false;
         }
+        if (rtSlowRequestAmount != that.rtSlowRequestAmount) {
+            return false;
+        }
+        if (minRequestAmount != that.minRequestAmount) {
+            return false;
+        }
+
         return true;
     }
 
@@ -157,6 +172,8 @@ public class DegradeRule extends AbstractRule {
         result = 31 * result + new Double(count).hashCode();
         result = 31 * result + timeWindow;
         result = 31 * result + grade;
+        result = 31 * result + rtSlowRequestAmount;
+        result = 31 * result + minRequestAmount;
         return result;
     }
 
@@ -179,20 +196,21 @@ public class DegradeRule extends AbstractRule {
             }
 
             // Sentinel will degrade the service only if count exceeds.
-            if (passCount.incrementAndGet() < RT_MAX_EXCEED_N) {
+            if (passCount.incrementAndGet() < rtSlowRequestAmount) {
                 return true;
             }
         } else if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
             double exception = clusterNode.exceptionQps();
             double success = clusterNode.successQps();
             double total = clusterNode.totalQps();
-            // if total qps less than RT_MAX_EXCEED_N, pass.
-            if (total < RT_MAX_EXCEED_N) {
+            // if total qps less than minRequestAmount, pass.
+            if (total < minRequestAmount) {
                 return true;
             }
 
+            //in the same aligned statistic time window, success (aka. completed count) = exception count + non-exception count (realSuccess)
             double realSuccess = success - exception;
-            if (realSuccess <= 0 && exception < RT_MAX_EXCEED_N) {
+            if (realSuccess <= 0 && exception < minRequestAmount) {
                 return true;
             }
 
@@ -214,16 +232,36 @@ public class DegradeRule extends AbstractRule {
         return false;
     }
 
+
     @Override
     public String toString() {
         return "DegradeRule{" +
-            "resource=" + getResource() +
-            ", grade=" + grade +
-            ", count=" + count +
-            ", limitApp=" + getLimitApp() +
-            ", timeWindow=" + timeWindow +
-            "}";
+                "resource=" + getResource() +
+                ", grade=" + grade +
+                ", count=" + count +
+                ", limitApp=" + getLimitApp() +
+                ", timeWindow=" + timeWindow +
+                ", rtSlowRequestAmount=" + rtSlowRequestAmount +
+                ", minRequestAmount=" + minRequestAmount +
+                "}";
     }
+
+    public int getRtSlowRequestAmount() {
+        return rtSlowRequestAmount;
+    }
+
+    public void setRtSlowRequestAmount(int rtSlowRequestAmount) {
+        this.rtSlowRequestAmount = rtSlowRequestAmount;
+    }
+
+    public int getMinRequestAmount() {
+        return minRequestAmount;
+    }
+
+    public void setMinRequestAmount(int minRequestAmount) {
+        this.minRequestAmount = minRequestAmount;
+    }
+
 
     private static final class ResetTask implements Runnable {
 
