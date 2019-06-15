@@ -65,7 +65,7 @@ public class LogBase {
         // By default, log to file
         if (StringUtil.isBlank(logType)) {
             logType = LOG_TYPE_FILE;
-        } else if (LOG_TYPE_FILE.equals(logType) && LOG_TYPE_CONSOLE.equals(logType)) {
+        } else if (!LOG_TYPE_FILE.equalsIgnoreCase(logType) && !LOG_TYPE_CONSOLE.equalsIgnoreCase(logType)) {
             logType = LOG_TYPE_FILE;
         }
 
@@ -101,10 +101,6 @@ public class LogBase {
      */
     public static boolean isLogNameUsePid() {
         return logNameUsePid;
-    }
-
-    public static boolean isLogToConsole() {
-        return LOG_TYPE_CONSOLE.endsWith(logType);
     }
 
     private static String addSeparator(String logDir) {
