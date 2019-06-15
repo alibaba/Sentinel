@@ -15,12 +15,14 @@
  */
 package com.alibaba.csp.sentinel.log;
 
+import java.io.UnsupportedEncodingException;
 import java.util.logging.*;
 
 /**
- * This <tt>Handler</tt> publishes log records to <tt>System.out</tt>.
+ * This Handler publishes log records to console by using {@link java.util.logging.StreamHandler}.
  *
- * Extends from {@link java.util.logging.ConsoleHandler}, and set the OutputStream to System.out.
+ * Print log of WARNING level or above to System.err,
+ * and print log of INFO level or below to System.out.
  *
  * To use this handler, add the following VM argument:
  * <pre>
@@ -29,35 +31,72 @@ import java.util.logging.*;
  *
  * @author cdfive
  */
-class ConsoleHandler extends StreamHandler {
+class ConsoleHandler extends Handler {
+
+    /**
+     * A Handler which publishes log records to System.out.
+     */
+    private StreamHandler stdoutHandler;
+
+    /**
+     * A Handler which publishes log records to System.err.
+     */
+    private StreamHandler stderrHandler;
+
+    /**
+     * Current Handler according to the current publish log level.
+     */
+    private StreamHandler currentHandler;
 
     public ConsoleHandler() {
-        super();
-        setOutputStream(System.out);
+        this.stdoutHandler = new StreamHandler(System.out, new CspFormatter());
+        this.stderrHandler = new StreamHandler(System.err, new CspFormatter());
+        this.currentHandler = this.stdoutHandler;
     }
 
-    /**
-     * Publish a <tt>LogRecord</tt>.
-     * <p>
-     * The logging request was made initially to a <tt>Logger</tt> object,
-     * which initialized the <tt>LogRecord</tt> and forwarded it here.
-     * <p>
-     * @param  record  description of the log event. A null record is
-     *                 silently ignored and is not published
-     */
+    @Override
+    public synchronized void setFormatter(Formatter newFormatter) throws SecurityException {
+        this.stdoutHandler.setFormatter(newFormatter);
+        this.stderrHandler.setFormatter(newFormatter);
+    }
+
+    @Override
+    public synchronized void setEncoding(String encoding) throws SecurityException, UnsupportedEncodingException {
+        this.stdoutHandler.setEncoding(encoding);
+        this.stderrHandler.setEncoding(encoding);
+    }
+
     @Override
     public void publish(LogRecord record) {
-        super.publish(record);
-        flush();
+        if (record.getLevel().intValue() >= Level.WARNING.intValue()) {
+            currentHandler = stderrHandler;
+        } else {
+            currentHandler = stdoutHandler;
+        }
+
+        currentHandler.publish(record);
+        currentHandler.flush();
     }
 
-    /**
-     * Override <tt>StreamHandler.close</tt> to do a flush but not
-     * to close the output stream.  That is, we do <b>not</b>
-     * close <tt>System.err</tt>.
-     */
     @Override
-    public void close() {
-        flush();
+    public void flush() {
+        currentHandler.flush();
+    }
+
+    @Override
+    public void close() throws SecurityException {
+        currentHandler.close();
+    }
+
+    public StreamHandler getStdoutHandler() {
+        return stdoutHandler;
+    }
+
+    public StreamHandler getStderrHandler() {
+        return stderrHandler;
+    }
+
+    public StreamHandler getCurrentHandler() {
+        return currentHandler;
     }
 }
