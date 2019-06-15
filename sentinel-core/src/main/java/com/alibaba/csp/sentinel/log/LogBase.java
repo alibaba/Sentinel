@@ -22,6 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.alibaba.csp.sentinel.util.PidUtil;
+import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
  * Default log base dir is ${user.home}/logs/csp/, we can use {@link #LOG_DIR} System property to override it.
@@ -35,15 +36,19 @@ public class LogBase {
 
     public static final String LOG_CHARSET = "utf-8";
 
+    public static final String LOG_TYPE_FILE = "file";
+    public static final String LOG_TYPE_CONSOLE = "console";
+
     private static final String DIR_NAME = "logs" + File.separator + "csp";
     private static final String USER_HOME = "user.home";
 
+    public static final String LOG_TYPE = "csp.sentinel.log.type";
     public static final String LOG_DIR = "csp.sentinel.log.dir";
     public static final String LOG_NAME_USE_PID = "csp.sentinel.log.use.pid";
 
-    private static boolean logNameUsePid = false;
-
+    private static String logType;
     private static String logBaseDir;
+    private static boolean logNameUsePid = false;
 
     static {
         try {
@@ -55,27 +60,38 @@ public class LogBase {
     }
 
     private static void init() {
-        // first use -D, then use user home.
-        String logDir = System.getProperty(LOG_DIR);
+        logType = System.getProperty(LOG_TYPE);
 
-        if (logDir == null || logDir.isEmpty()) {
-            logDir = System.getProperty(USER_HOME);
-            logDir = addSeparator(logDir) + DIR_NAME + File.separator;
+        // By default, log to file
+        if (StringUtil.isBlank(logType)) {
+            logType = LOG_TYPE_FILE;
+        } else if (LOG_TYPE_FILE.equals(logType) && LOG_TYPE_CONSOLE.equals(logType)) {
+            logType = LOG_TYPE_FILE;
         }
-        logDir = addSeparator(logDir);
-        File dir = new File(logDir);
-        if (!dir.exists()) {
-            if (!dir.mkdirs()) {
-                System.err.println("ERROR: create log base dir error: " + logDir);
+
+        if (LOG_TYPE_FILE.equals(logType)) {
+            // first use -D, then use user home.
+            String logDir = System.getProperty(LOG_DIR);
+
+            if (logDir == null || logDir.isEmpty()) {
+                logDir = System.getProperty(USER_HOME);
+                logDir = addSeparator(logDir) + DIR_NAME + File.separator;
             }
-        }
-        // logBaseDir must end with File.separator
-        logBaseDir = logDir;
-        System.out.println("INFO: log base dir is: " + logBaseDir);
+            logDir = addSeparator(logDir);
+            File dir = new File(logDir);
+            if (!dir.exists()) {
+                if (!dir.mkdirs()) {
+                    System.err.println("ERROR: create log base dir error: " + logDir);
+                }
+            }
+            // logBaseDir must end with File.separator
+            logBaseDir = logDir;
+            System.out.println("INFO: log base dir is: " + logBaseDir);
 
-        String usePid = System.getProperty(LOG_NAME_USE_PID, "");
-        logNameUsePid = "true".equalsIgnoreCase(usePid);
-        System.out.println("INFO: log name use pid is: " + logNameUsePid);
+            String usePid = System.getProperty(LOG_NAME_USE_PID, "");
+            logNameUsePid = "true".equalsIgnoreCase(usePid);
+            System.out.println("INFO: log name use pid is: " + logNameUsePid);
+        }
     }
 
     /**
@@ -85,6 +101,10 @@ public class LogBase {
      */
     public static boolean isLogNameUsePid() {
         return logNameUsePid;
+    }
+
+    public static boolean isLogToConsole() {
+        return LOG_TYPE_CONSOLE.endsWith(logType);
     }
 
     private static String addSeparator(String logDir) {
@@ -125,18 +145,37 @@ public class LogBase {
 
     protected static Handler makeLogger(String logName, Logger heliumRecordLog) {
         CspFormatter formatter = new CspFormatter();
-        String fileName = LogBase.getLogBaseDir() + logName;
-        if (isLogNameUsePid()) {
-            fileName += ".pid" + PidUtil.getPid();
-        }
+
         Handler handler = null;
-        try {
-            handler = new DateFileLogHandler(fileName + ".%d", 1024 * 1024 * 200, 4, true);
-            handler.setFormatter(formatter);
-            handler.setEncoding(LOG_CHARSET);
-        } catch (IOException e) {
-            e.printStackTrace();
+
+        // Create handler according to logType, set formatter to CspFormatter, set encoding to LOG_CHARSET
+        switch (logType) {
+            case LOG_TYPE_FILE:
+                String fileName = LogBase.getLogBaseDir() + logName;
+                if (isLogNameUsePid()) {
+                    fileName += ".pid" + PidUtil.getPid();
+                }
+                try {
+                    handler = new DateFileLogHandler(fileName + ".%d", 1024 * 1024 * 200, 4, true);
+                    handler.setFormatter(formatter);
+                    handler.setEncoding(LOG_CHARSET);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+            case LOG_TYPE_CONSOLE:
+                try {
+                    handler = new ConsoleHandler();
+                    handler.setFormatter(formatter);
+                    handler.setEncoding(LOG_CHARSET);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+            default:
+                break;
         }
+
         if (handler != null) {
             LoggerUtils.disableOtherHandlers(heliumRecordLog, handler);
         }
