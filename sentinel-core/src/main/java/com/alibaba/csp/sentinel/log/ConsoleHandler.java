@@ -43,15 +43,9 @@ class ConsoleHandler extends Handler {
      */
     private StreamHandler stderrHandler;
 
-    /**
-     * Current Handler according to the current publish log level.
-     */
-    private StreamHandler currentHandler;
-
     public ConsoleHandler() {
         this.stdoutHandler = new StreamHandler(System.out, new CspFormatter());
         this.stderrHandler = new StreamHandler(System.err, new CspFormatter());
-        this.currentHandler = this.stdoutHandler;
     }
 
     @Override
@@ -69,34 +63,23 @@ class ConsoleHandler extends Handler {
     @Override
     public void publish(LogRecord record) {
         if (record.getLevel().intValue() >= Level.WARNING.intValue()) {
-            currentHandler = stderrHandler;
+            stderrHandler.publish(record);
+            stderrHandler.flush();
         } else {
-            currentHandler = stdoutHandler;
+            stdoutHandler.publish(record);
+            stdoutHandler.flush();
         }
-
-        currentHandler.publish(record);
-        currentHandler.flush();
     }
 
     @Override
     public void flush() {
-        currentHandler.flush();
+        stdoutHandler.flush();
+        stderrHandler.flush();
     }
 
     @Override
     public void close() throws SecurityException {
-        currentHandler.close();
-    }
-
-    public StreamHandler getStdoutHandler() {
-        return stdoutHandler;
-    }
-
-    public StreamHandler getStderrHandler() {
-        return stderrHandler;
-    }
-
-    public StreamHandler getCurrentHandler() {
-        return currentHandler;
+        stdoutHandler.close();
+        stderrHandler.close();
     }
 }

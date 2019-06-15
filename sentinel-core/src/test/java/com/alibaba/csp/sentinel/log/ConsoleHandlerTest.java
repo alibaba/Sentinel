@@ -17,11 +17,12 @@ package com.alibaba.csp.sentinel.log;
 
 import org.junit.Test;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  * Test cases for {@link ConsoleHandler}.
@@ -32,31 +33,49 @@ public class ConsoleHandlerTest {
 
     @Test
     public void testPublish() {
+        ByteArrayOutputStream baosOut = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(baosOut));
+
+        ByteArrayOutputStream baosErr = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(baosErr));
+
+        CspFormatter cspFormatter = new CspFormatter();
         ConsoleHandler consoleHandler = new ConsoleHandler();
 
-        LogRecord logRecord = mock(LogRecord.class);
-        when(logRecord.getMillis()).thenReturn(System.currentTimeMillis());
+        LogRecord logRecord;
 
-        when(logRecord.getLevel()).thenReturn(Level.INFO);
-        when(logRecord.getMessage()).thenReturn("test info message");
+        // Test INFO level, should log to stdout
+        logRecord = new LogRecord(Level.INFO, "test info message");
         consoleHandler.publish(logRecord);
-        assertEquals(consoleHandler.getStdoutHandler(), consoleHandler.getCurrentHandler());
+        assertEquals(cspFormatter.format(logRecord), baosOut.toString());
+        assertEquals("", baosErr.toString());
+        baosOut.reset();
+        baosErr.reset();
 
-        when(logRecord.getLevel()).thenReturn(Level.WARNING);
-        when(logRecord.getMessage()).thenReturn("test warning message");
+        // Test INFO level, should log to stderr
+        logRecord = new LogRecord(Level.WARNING, "test warning message");
         consoleHandler.publish(logRecord);
-        assertEquals(consoleHandler.getStderrHandler(), consoleHandler.getCurrentHandler());
+        assertEquals(cspFormatter.format(logRecord), baosErr.toString());
+        assertEquals("", baosOut.toString());
+        baosOut.reset();
+        baosErr.reset();
 
-        // Default log level is INFO, to view FINE log message, add following config in $JAVA_HOME/jre/lib/logging.properties
+        // Test FINE level, no log by default
+        // Default log level is INFO, to log FINE message to stdout, add following config in $JAVA_HOME/jre/lib/logging.properties
         // java.util.logging.StreamHandler.level=FINE
-        when(logRecord.getLevel()).thenReturn(Level.FINE);
-        when(logRecord.getMessage()).thenReturn("test fine message");
+        logRecord = new LogRecord(Level.FINE, "test fine message");
         consoleHandler.publish(logRecord);
-        assertEquals(consoleHandler.getStdoutHandler(), consoleHandler.getCurrentHandler());
+        assertEquals("", baosOut.toString());
+        assertEquals("", baosErr.toString());
+        baosOut.reset();
+        baosErr.reset();
 
-        when(logRecord.getLevel()).thenReturn(Level.SEVERE);
-        when(logRecord.getMessage()).thenReturn("test severe message");
+        // Test SEVERE level, should log to stderr
+        logRecord = new LogRecord(Level.SEVERE, "test severe message");
         consoleHandler.publish(logRecord);
-        assertEquals(consoleHandler.getStderrHandler(), consoleHandler.getCurrentHandler());
+        assertEquals(cspFormatter.format(logRecord), baosErr.toString());
+        assertEquals("", baosOut.toString());
+        baosOut.reset();
+        baosErr.reset();
     }
 }
