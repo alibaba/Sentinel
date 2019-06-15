@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.log;
 
+import java.util.logging.*;
+
 /**
  * This <tt>Handler</tt> publishes log records to <tt>System.out</tt>.
  *
@@ -27,10 +29,35 @@ package com.alibaba.csp.sentinel.log;
  *
  * @author cdfive
  */
-class ConsoleHandler extends java.util.logging.ConsoleHandler {
+class ConsoleHandler extends StreamHandler {
 
     public ConsoleHandler() {
         super();
         setOutputStream(System.out);
+    }
+
+    /**
+     * Publish a <tt>LogRecord</tt>.
+     * <p>
+     * The logging request was made initially to a <tt>Logger</tt> object,
+     * which initialized the <tt>LogRecord</tt> and forwarded it here.
+     * <p>
+     * @param  record  description of the log event. A null record is
+     *                 silently ignored and is not published
+     */
+    @Override
+    public void publish(LogRecord record) {
+        super.publish(record);
+        flush();
+    }
+
+    /**
+     * Override <tt>StreamHandler.close</tt> to do a flush but not
+     * to close the output stream.  That is, we do <b>not</b>
+     * close <tt>System.err</tt>.
+     */
+    @Override
+    public void close() {
+        flush();
     }
 }
