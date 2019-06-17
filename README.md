@@ -98,18 +98,18 @@ For more information, please refer to [How To Use](https://github.com/alibaba/Se
 
 ### 4. Check the Result
 
-After running the demo for a while, you can see the following records in `~/logs/csp/${appName}-metrics.log`.
+After running the demo for a while, you can see the following records in `~/logs/csp/${appName}-metrics.log.{date}` (When using the default `DateFileLogHandler`).
 
 ```
-|--timestamp-|------date time----|-resource-|p |block|s |e|rt
-1529998904000|2018-06-26 15:41:44|HelloWorld|20|0    |20|0|0
-1529998905000|2018-06-26 15:41:45|HelloWorld|20|5579 |20|0|728
-1529998906000|2018-06-26 15:41:46|HelloWorld|20|15698|20|0|0
-1529998907000|2018-06-26 15:41:47|HelloWorld|20|19262|20|0|0
-1529998908000|2018-06-26 15:41:48|HelloWorld|20|19502|20|0|0
-1529998909000|2018-06-26 15:41:49|HelloWorld|20|18386|20|0|0
+|--timestamp-|------date time----|-resource-|p |block|s |e|rt  |occupied
+1529998904000|2018-06-26 15:41:44|HelloWorld|20|0    |20|0|0   |0
+1529998905000|2018-06-26 15:41:45|HelloWorld|20|5579 |20|0|728 |0
+1529998906000|2018-06-26 15:41:46|HelloWorld|20|15698|20|0|0   |0
+1529998907000|2018-06-26 15:41:47|HelloWorld|20|19262|20|0|0   |0
+1529998908000|2018-06-26 15:41:48|HelloWorld|20|19502|20|0|0   |0
+1529998909000|2018-06-26 15:41:49|HelloWorld|20|18386|20|0|0   |0
 
-p stands for incoming request, block for blocked by rules, success for success handled by Sentinel, e for exception count, rt for average response time (ms)
+p stands for incoming request, block for blocked by rules, success for success handled by Sentinel, e for exception count, rt for average response time (ms), occupied stands for occupiedPassQps since 1.5.0 which enable us booking more than 1 shot when entering.
 ```
 
 This shows that the demo can print "hello world" 20 times per second.
