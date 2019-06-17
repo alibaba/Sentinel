@@ -23,7 +23,7 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 
 /**
  * @author Eric Zhao
- * @since 1.7.0
+ * @since 1.6.2
  */
 public final class GatewayRegexCache {
 
