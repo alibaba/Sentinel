@@ -131,11 +131,15 @@ public interface Node extends OccupySupport, DebugSupport {
 
     /**
      * Get last second block QPS.
+     *
+     * @return last second block QPS.
      */
     double previousBlockQps();
 
     /**
      * Last window QPS.
+     *
+     * @return last window QPS
      */
     double previousPassQps();
 
