@@ -77,6 +77,26 @@ public class ParamFlowRuleEntity extends AbstractRuleEntity<ParamFlowRule> {
     }
 
     @JsonIgnore
+    public int getControlBehavior() {
+        return rule.getControlBehavior();
+    }
+
+    @JsonIgnore
+    public int getMaxQueueingTimeMs() {
+        return rule.getMaxQueueingTimeMs();
+    }
+
+    @JsonIgnore
+    public int getBurstCount() {
+        return rule.getBurstCount();
+    }
+
+    @JsonIgnore
+    public long getDurationInSec() {
+        return rule.getDurationInSec();
+    }
+
+    @JsonIgnore
     public boolean isClusterMode() {
         return rule.isClusterMode();
     }
@@ -85,9 +105,9 @@ public class ParamFlowRuleEntity extends AbstractRuleEntity<ParamFlowRule> {
     public ParamFlowClusterConfig getClusterConfig() {
         return rule.getClusterConfig();
     }
-    
+
     @Override
-    public Rule toRule() {
+    public ParamFlowRule toRule() {
         return rule;
     }
 }
