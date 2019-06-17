@@ -15,9 +15,9 @@
           </div>
 
           <div class="form-group">
-            <label class="col-sm-2 control-label" data-toggle="tooltip" title="流控针对应用，即流量入口的调用来源（origin）">来源应用</label>
+            <label class="col-sm-2 control-label" data-toggle="tooltip" title="流控针对的来源，即流量入口的调用来源（origin）">针对来源</label>
             <div class="col-sm-9">
-              <input type="text" class="form-control highlight-border" ng-model='currentRule.limitApp' placeholder='指调用方，"default"表示所有应用。'
+              <input type="text" class="form-control highlight-border" ng-model='currentRule.limitApp' placeholder='调用来源，"default"表示所有应用'
               />
             </div>
           </div>
@@ -72,9 +72,9 @@
             <label class="col-sm-2 control-label">失败退化</label>
             <div class="col-sm-8">
               <label class="checkbox-inline">
-                <input type="checkbox" name="clusterMode" ng-model="currentRule.clusterConfig.fallbackToLocalWhenFail">
+                <input type="checkbox" name="fallbackToLocalWhenFail" ng-model="currentRule.clusterConfig.fallbackToLocalWhenFail">
+                <i class="glyphicon glyphicon-info-sign"></i>&nbsp;如果 Token Server 不可用是否退化到单机限流
               </label>
-              <i class="glyphicon glyphicon-info-sign"></i>&nbsp;如果 Token Server 不可用是否退化到单机限流
             </div>
           </div>
 
