@@ -121,7 +121,7 @@ public final class ParamFlowChecker {
     static boolean passDefaultLocalCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int acquireCount,
                                          Object value) {
         ParameterMetric metric = getParameterMetric(resourceWrapper);
-        CacheMap<Object, AtomicInteger> tokenCounters = metric == null ? null : metric.getRuleTokenCounter(rule);
+        CacheMap<Object, AtomicLong> tokenCounters = metric == null ? null : metric.getRuleTokenCounter(rule);
         CacheMap<Object, AtomicLong> timeCounters = metric == null ? null : metric.getRuleTimeCounter(rule);
 
         if (tokenCounters == null || timeCounters == null) {
@@ -130,7 +130,7 @@ public final class ParamFlowChecker {
 
         // Calculate max token count (threshold)
         Set<Object> exclusionItems = rule.getParsedHotItems().keySet();
-        int tokenCount = (int)rule.getCount();
+        long tokenCount = (long)rule.getCount();
         if (exclusionItems.contains(value)) {
             tokenCount = rule.getParsedHotItems().get(value);
         }
@@ -139,7 +139,7 @@ public final class ParamFlowChecker {
             return false;
         }
 
-        int maxCount = tokenCount + rule.getBurstCount();
+        long maxCount = tokenCount + rule.getBurstCount();
         if (acquireCount > maxCount) {
             return false;
         }
@@ -150,7 +150,7 @@ public final class ParamFlowChecker {
             AtomicLong lastAddTokenTime = timeCounters.putIfAbsent(value, new AtomicLong(currentTime));
             if (lastAddTokenTime == null) {
                 // Token never added, just replenish the tokens and consume {@code acquireCount} immediately.
-                tokenCounters.putIfAbsent(value, new AtomicInteger(maxCount - acquireCount));
+                tokenCounters.putIfAbsent(value, new AtomicLong(maxCount - acquireCount));
                 return true;
             }
 
@@ -158,15 +158,15 @@ public final class ParamFlowChecker {
             long passTime = currentTime - lastAddTokenTime.get();
             // A simplified token bucket algorithm that will replenish the tokens only when statistic window has passed.
             if (passTime > rule.getDurationInSec() * 1000) {
-                AtomicInteger oldQps = tokenCounters.putIfAbsent(value, new AtomicInteger(maxCount - acquireCount));
+                AtomicLong oldQps = tokenCounters.putIfAbsent(value, new AtomicLong(maxCount - acquireCount));
                 if (oldQps == null) {
                     // Might not be accurate here.
                     lastAddTokenTime.set(currentTime);
                     return true;
                 } else {
-                    int restQps = oldQps.get();
-                    int toAddCount = (int)((passTime * tokenCount) / (rule.getDurationInSec() * 1000));
-                    int newQps = (restQps + toAddCount) > maxCount ? (maxCount - acquireCount)
+                    long restQps = oldQps.get();
+                    long toAddCount = (passTime * tokenCount) / (rule.getDurationInSec() * 1000);
+                    long newQps = toAddCount + restQps > maxCount ? (maxCount - acquireCount)
                         : (restQps + toAddCount - acquireCount);
 
                     if (newQps < 0) {
@@ -179,9 +179,9 @@ public final class ParamFlowChecker {
                     Thread.yield();
                 }
             } else {
-                AtomicInteger oldQps = tokenCounters.get(value);
+                AtomicLong oldQps = tokenCounters.get(value);
                 if (oldQps != null) {
-                    int oldQpsValue = oldQps.get();
+                    long oldQpsValue = oldQps.get();
                     if (oldQpsValue - acquireCount >= 0) {
                         if (oldQps.compareAndSet(oldQpsValue, oldQpsValue - acquireCount)) {
                             return true;
