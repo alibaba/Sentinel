@@ -36,17 +36,20 @@ public class LogBase {
 
     public static final String LOG_CHARSET = "utf-8";
 
-    public static final String LOG_TYPE_FILE = "file";
-    public static final String LOG_TYPE_CONSOLE = "console";
+    // Output biz log(RecordLog,CommandCenterLog) to file
+    public static final String LOG_OUTPUT_TYPE_FILE = "file";
+    // Output biz log(RecordLog,CommandCenterLog) to console
+    public static final String LOG_OUTPUT_TYPE_CONSOLE = "console";
 
     private static final String DIR_NAME = "logs" + File.separator + "csp";
     private static final String USER_HOME = "user.home";
 
-    public static final String LOG_TYPE = "csp.sentinel.log.type";
+    // Output type of biz log(RecordLog,CommandCenterLog)
+    public static final String LOG_OUTPUT_TYPE = "csp.sentinel.log.output.type";
     public static final String LOG_DIR = "csp.sentinel.log.dir";
     public static final String LOG_NAME_USE_PID = "csp.sentinel.log.use.pid";
 
-    private static String logType;
+    private static String logOutputType;
     private static String logBaseDir;
     private static boolean logNameUsePid = false;
 
@@ -60,13 +63,13 @@ public class LogBase {
     }
 
     private static void init() {
-        logType = System.getProperty(LOG_TYPE);
+        logOutputType = System.getProperty(LOG_OUTPUT_TYPE);
 
-        // By default, log to file
-        if (StringUtil.isBlank(logType)) {
-            logType = LOG_TYPE_FILE;
-        } else if (!LOG_TYPE_FILE.equalsIgnoreCase(logType) && !LOG_TYPE_CONSOLE.equalsIgnoreCase(logType)) {
-            logType = LOG_TYPE_FILE;
+        // By default, output biz log(RecordLog,CommandCenterLog) to file
+        if (StringUtil.isBlank(logOutputType)) {
+            logOutputType = LOG_OUTPUT_TYPE_FILE;
+        } else if (!LOG_OUTPUT_TYPE_FILE.equalsIgnoreCase(logOutputType) && !LOG_OUTPUT_TYPE_CONSOLE.equalsIgnoreCase(logOutputType)) {
+            logOutputType = LOG_OUTPUT_TYPE_FILE;
         }
 
         // first use -D, then use user home.
@@ -142,9 +145,9 @@ public class LogBase {
 
         Handler handler = null;
 
-        // Create handler according to logType, set formatter to CspFormatter, set encoding to LOG_CHARSET
-        switch (logType) {
-            case LOG_TYPE_FILE:
+        // Create handler according to logOutputType, set formatter to CspFormatter, set encoding to LOG_CHARSET
+        switch (logOutputType) {
+            case LOG_OUTPUT_TYPE_FILE:
                 String fileName = LogBase.getLogBaseDir() + logName;
                 if (isLogNameUsePid()) {
                     fileName += ".pid" + PidUtil.getPid();
@@ -157,7 +160,7 @@ public class LogBase {
                     e.printStackTrace();
                 }
                 break;
-            case LOG_TYPE_CONSOLE:
+            case LOG_OUTPUT_TYPE_CONSOLE:
                 try {
                     handler = new ConsoleHandler();
                     handler.setFormatter(formatter);

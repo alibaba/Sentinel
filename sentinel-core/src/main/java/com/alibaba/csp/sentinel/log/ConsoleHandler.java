@@ -26,7 +26,7 @@ import java.util.logging.*;
  *
  * To use this handler, add the following VM argument:
  * <pre>
- * -Dcsp.sentinel.log.type=console
+ * -Dcsp.sentinel.log.output.type=console
  * </pre>
  *
  * @author cdfive
