@@ -160,7 +160,7 @@ public class ParamFlowCheckerTest {
         ParameterMetric metric = new ParameterMetric();
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
         metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
-        metric.getRuleTokenCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(4000));
+        metric.getRuleTokenCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 
         assertTrue(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, list));
         assertFalse(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, list));
