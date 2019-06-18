@@ -15,7 +15,9 @@
  */
 package com.alibaba.csp.sentinel.adapter.gateway.common.rule;
 
+import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
+import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowItem;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
 
 /**
@@ -30,6 +32,18 @@ final class GatewayRuleConverter {
             .setCount(rule.getCount())
             .setGrade(rule.getGrade())
             .setMaxQueueingTimeMs(rule.getMaxQueueingTimeoutMs());
+    }
+
+    static ParamFlowItem generateNonMatchPassParamItem() {
+        return new ParamFlowItem().setClassType(String.class.getName())
+            .setCount(1000_0000)
+            .setObject(SentinelGatewayConstants.GATEWAY_NOT_MATCH_PARAM);
+    }
+
+    static ParamFlowItem generateNonMatchBlockParamItem() {
+        return new ParamFlowItem().setClassType(String.class.getName())
+            .setCount(0)
+            .setObject(SentinelGatewayConstants.GATEWAY_NOT_MATCH_PARAM);
     }
 
     static ParamFlowRule applyNonParamToParamRule(/*@Valid*/ GatewayFlowRule gatewayRule, int idx) {
@@ -63,7 +77,11 @@ final class GatewayRuleConverter {
         GatewayParamFlowItem gatewayItem = gatewayRule.getParamItem();
         // Apply the current idx to gateway rule item.
         gatewayItem.setIndex(idx);
-        // TODO: implement for pattern-based parameters.
+        // Apply for pattern-based parameters.
+        String valuePattern = gatewayItem.getPattern();
+        if (valuePattern != null) {
+            paramRule.getParamFlowItemList().add(generateNonMatchPassParamItem());
+        }
         return paramRule;
     }
 

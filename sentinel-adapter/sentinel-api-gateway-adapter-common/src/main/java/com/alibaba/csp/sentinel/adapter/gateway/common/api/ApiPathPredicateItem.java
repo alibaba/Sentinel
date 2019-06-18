@@ -17,6 +17,8 @@ package com.alibaba.csp.sentinel.adapter.gateway.common.api;
 
 import java.util.Objects;
 
+import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
+
 /**
  * @author Eric Zhao
  * @since 1.6.0
@@ -24,7 +26,7 @@ import java.util.Objects;
 public class ApiPathPredicateItem implements ApiPredicateItem {
 
     private String pattern;
-    private int matchStrategy;
+    private int matchStrategy = SentinelGatewayConstants.URL_MATCH_STRATEGY_EXACT;
 
     public ApiPathPredicateItem setPattern(String pattern) {
         this.pattern = pattern;

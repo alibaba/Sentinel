@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
+import com.alibaba.csp.sentinel.adapter.gateway.common.param.GatewayRegexCache;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
@@ -132,6 +133,16 @@ public final class GatewayRuleManager {
             return idxMap.get(resourceName);
         }
 
+        private void cacheRegexPattern(/*@NonNull*/ GatewayParamFlowItem item) {
+            String pattern = item.getPattern();
+            if (StringUtil.isNotEmpty(pattern) &&
+                item.getMatchStrategy() == SentinelGatewayConstants.PARAM_MATCH_STRATEGY_REGEX) {
+                if (GatewayRegexCache.getRegexPattern(pattern) == null) {
+                    GatewayRegexCache.addRegexPattern(pattern);
+                }
+            }
+        }
+
         private synchronized void applyGatewayRuleInternal(Set<GatewayFlowRule> conf) {
             if (conf == null || conf.isEmpty()) {
                 applyToConvertedParamMap(new HashSet<ParamFlowRule>());
@@ -163,6 +174,7 @@ public final class GatewayRuleManager {
                     if (paramFlowRules.add(GatewayRuleConverter.applyToParamRule(rule, idx))) {
                         idxMap.put(rule.getResource(), idx + 1);
                     }
+                    cacheRegexPattern(rule.getParamItem());
                 }
                 // Apply to the gateway rule map.
                 Set<GatewayFlowRule> ruleSet = gatewayRuleMap.get(resourceName);

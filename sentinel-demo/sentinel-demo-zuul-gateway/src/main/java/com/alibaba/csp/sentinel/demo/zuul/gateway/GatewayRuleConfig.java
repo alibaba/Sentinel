@@ -52,12 +52,12 @@ public class GatewayRuleConfig {
             .setPredicateItems(new HashSet<ApiPredicateItem>() {{
                 add(new ApiPathPredicateItem().setPattern("/ahas"));
                 add(new ApiPathPredicateItem().setPattern("/aliyun_product/**")
-                    .setMatchStrategy(SentinelGatewayConstants.PARAM_MATCH_STRATEGY_PREFIX));
+                    .setMatchStrategy(SentinelGatewayConstants.URL_MATCH_STRATEGY_PREFIX));
             }});
         ApiDefinition api2 = new ApiDefinition("another_customized_api")
             .setPredicateItems(new HashSet<ApiPredicateItem>() {{
                 add(new ApiPathPredicateItem().setPattern("/**")
-                    .setMatchStrategy(SentinelGatewayConstants.PARAM_MATCH_STRATEGY_PREFIX));
+                    .setMatchStrategy(SentinelGatewayConstants.URL_MATCH_STRATEGY_PREFIX));
             }});
         definitions.add(api1);
         definitions.add(api2);
