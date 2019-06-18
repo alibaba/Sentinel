@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.adapter.gateway.common.param;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayFlowRule;
@@ -153,13 +154,22 @@ public class GatewayParamParser<T> {
     }
 
     private String parseWithMatchStrategyInternal(int matchStrategy, String value, String pattern) {
-        // TODO: implement here.
         if (value == null) {
             return null;
         }
-        if (matchStrategy == SentinelGatewayConstants.PARAM_MATCH_STRATEGY_REGEX) {
-            return value;
+        switch (matchStrategy) {
+            case SentinelGatewayConstants.PARAM_MATCH_STRATEGY_EXACT:
+                return value.equals(pattern) ? value : SentinelGatewayConstants.GATEWAY_NOT_MATCH_PARAM;
+            case SentinelGatewayConstants.PARAM_MATCH_STRATEGY_CONTAINS:
+                return value.contains(pattern) ? value : SentinelGatewayConstants.GATEWAY_NOT_MATCH_PARAM;
+            case SentinelGatewayConstants.PARAM_MATCH_STRATEGY_REGEX:
+                Pattern regex = GatewayRegexCache.getRegexPattern(pattern);
+                if (regex == null) {
+                    return value;
+                }
+                return regex.matcher(value).matches() ? value : SentinelGatewayConstants.GATEWAY_NOT_MATCH_PARAM;
+            default:
+                return value;
         }
-        return value;
     }
 }
