@@ -16,12 +16,12 @@
 package com.alibaba.csp.sentinel.adapter.gateway.common.rule;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
-import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRuleManager;
+import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
 
 import org.junit.After;
 import org.junit.Before;
@@ -62,8 +62,8 @@ public class GatewayRuleManagerTest {
         rules.add(rule3);
         GatewayRuleManager.loadRules(rules);
 
-        assertTrue(FlowRuleManager.hasConfig(ahasRoute));
-        assertTrue(ParamFlowRuleManager.hasRules(ahasRoute));
+        List<ParamFlowRule> convertedRules = GatewayRuleManager.getConvertedParamRules(ahasRoute);
+        assertNotNull(convertedRules);
         assertEquals(0, (int)rule2.getParamItem().getIndex());
         assertEquals(0, (int)rule3.getParamItem().getIndex());
         assertTrue(GatewayRuleManager.getRulesForResource(ahasRoute).contains(rule1));

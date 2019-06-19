@@ -83,12 +83,12 @@ public class GatewayConfiguration {
             .setPredicateItems(new HashSet<ApiPredicateItem>() {{
                 add(new ApiPathPredicateItem().setPattern("/ahas"));
                 add(new ApiPathPredicateItem().setPattern("/product/**")
-                    .setMatchStrategy(SentinelGatewayConstants.PARAM_MATCH_STRATEGY_PREFIX));
+                    .setMatchStrategy(SentinelGatewayConstants.URL_MATCH_STRATEGY_PREFIX));
             }});
         ApiDefinition api2 = new ApiDefinition("another_customized_api")
             .setPredicateItems(new HashSet<ApiPredicateItem>() {{
                 add(new ApiPathPredicateItem().setPattern("/**")
-                    .setMatchStrategy(SentinelGatewayConstants.PARAM_MATCH_STRATEGY_PREFIX));
+                    .setMatchStrategy(SentinelGatewayConstants.URL_MATCH_STRATEGY_PREFIX));
             }});
         definitions.add(api1);
         definitions.add(api2);
@@ -125,6 +125,16 @@ public class GatewayConfiguration {
             .setParamItem(new GatewayParamFlowItem()
                 .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_URL_PARAM)
                 .setFieldName("pa")
+            )
+        );
+        rules.add(new GatewayFlowRule("httpbin_route")
+            .setCount(2)
+            .setIntervalSec(30)
+            .setParamItem(new GatewayParamFlowItem()
+                .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_URL_PARAM)
+                .setFieldName("type")
+                .setPattern("warn")
+                .setMatchStrategy(SentinelGatewayConstants.PARAM_MATCH_STRATEGY_CONTAINS)
             )
         );
 

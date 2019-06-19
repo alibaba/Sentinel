@@ -41,7 +41,7 @@ public interface RequestItemParser<T> {
      * Get the header associated with the header key.
      *
      * @param request valid request
-     * @param key valid header key
+     * @param key     valid header key
      * @return the header
      */
     String getHeader(T request, String key);
@@ -49,9 +49,19 @@ public interface RequestItemParser<T> {
     /**
      * Get the parameter value associated with the parameter name.
      *
-     * @param request valid request
+     * @param request   valid request
      * @param paramName valid parameter name
      * @return the parameter value
      */
     String getUrlParam(T request, String paramName);
+
+    /**
+     * Get the cookie value associated with the cookie name.
+     *
+     * @param request    valid request
+     * @param cookieName valid cookie name
+     * @return the cookie value
+     * @since 1.7.0
+     */
+    String getCookieValue(T request, String cookieName);
 }
