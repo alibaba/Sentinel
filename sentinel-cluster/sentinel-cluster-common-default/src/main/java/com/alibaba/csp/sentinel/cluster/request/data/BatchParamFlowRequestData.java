@@ -1,11 +1,11 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright 1999-2019 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,28 +15,28 @@
  */
 package com.alibaba.csp.sentinel.cluster.request.data;
 
-import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Eric Zhao
- * @since 1.4.0
+ * @since 1.7.0
  */
-public class ParamFlowRequestData {
+public class BatchParamFlowRequestData {
 
-    private long flowId;
+    private Set<Long> flowIds;
     private int count;
-
     /**
-     * The collection should be ordered.
+     * Pair: (paramIdx, paramObj)
      */
-    private Collection<Object> params;
+    private Map<Integer, Object> paramMap;
 
-    public long getFlowId() {
-        return flowId;
+    public Set<Long> getFlowIds() {
+        return flowIds;
     }
 
-    public ParamFlowRequestData setFlowId(long flowId) {
-        this.flowId = flowId;
+    public BatchParamFlowRequestData setFlowIds(Set<Long> flowIds) {
+        this.flowIds = flowIds;
         return this;
     }
 
@@ -44,26 +44,26 @@ public class ParamFlowRequestData {
         return count;
     }
 
-    public ParamFlowRequestData setCount(int count) {
+    public BatchParamFlowRequestData setCount(int count) {
         this.count = count;
         return this;
     }
 
-    public Collection<Object> getParams() {
-        return params;
+    public Map<Integer, Object> getParamMap() {
+        return paramMap;
     }
 
-    public ParamFlowRequestData setParams(Collection<Object> params) {
-        this.params = params;
+    public BatchParamFlowRequestData setParamMap(Map<Integer, Object> paramMap) {
+        this.paramMap = paramMap;
         return this;
     }
 
     @Override
     public String toString() {
-        return "ParamFlowRequestData{" +
-            "flowId=" + flowId +
+        return "BatchParamFlowRequestData{" +
+            "flowIds=" + flowIds +
             ", count=" + count +
-            ", params=" + params +
+            ", paramMap=" + paramMap +
             '}';
     }
 }

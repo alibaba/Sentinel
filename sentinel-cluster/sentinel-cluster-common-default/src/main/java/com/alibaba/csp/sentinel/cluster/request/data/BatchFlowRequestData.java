@@ -1,11 +1,11 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright 1999-2019 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,28 +15,24 @@
  */
 package com.alibaba.csp.sentinel.cluster.request.data;
 
-import java.util.Collection;
+import java.util.Set;
 
 /**
  * @author Eric Zhao
- * @since 1.4.0
+ * @since 1.7.0
  */
-public class ParamFlowRequestData {
+public class BatchFlowRequestData {
 
-    private long flowId;
+    private Set<Long> flowIds;
     private int count;
+    private boolean priority;
 
-    /**
-     * The collection should be ordered.
-     */
-    private Collection<Object> params;
-
-    public long getFlowId() {
-        return flowId;
+    public Set<Long> getFlowIds() {
+        return flowIds;
     }
 
-    public ParamFlowRequestData setFlowId(long flowId) {
-        this.flowId = flowId;
+    public BatchFlowRequestData setFlowIds(Set<Long> flowIds) {
+        this.flowIds = flowIds;
         return this;
     }
 
@@ -44,26 +40,26 @@ public class ParamFlowRequestData {
         return count;
     }
 
-    public ParamFlowRequestData setCount(int count) {
+    public BatchFlowRequestData setCount(int count) {
         this.count = count;
         return this;
     }
 
-    public Collection<Object> getParams() {
-        return params;
+    public boolean isPriority() {
+        return priority;
     }
 
-    public ParamFlowRequestData setParams(Collection<Object> params) {
-        this.params = params;
+    public BatchFlowRequestData setPriority(boolean priority) {
+        this.priority = priority;
         return this;
     }
 
     @Override
     public String toString() {
-        return "ParamFlowRequestData{" +
-            "flowId=" + flowId +
+        return "BatchFlowRequestData{" +
+            "flowIds=" + flowIds +
             ", count=" + count +
-            ", params=" + params +
+            ", priority=" + priority +
             '}';
     }
 }
