@@ -99,8 +99,8 @@ public class ParamFlowSlotTest {
 
         ParameterMetric metric = mock(ParameterMetric.class);
 
-        CacheMap<Object, AtomicLong> map = new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000);
-        CacheMap<Object, AtomicInteger> map2 = new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(4000);
+        CacheMap<Object, AtomicLong> map = new ConcurrentLinkedHashMapWrapper<>(4000);
+        CacheMap<Object, AtomicLong> map2 = new ConcurrentLinkedHashMapWrapper<>(4000);
         when(metric.getRuleTimeCounter(rule)).thenReturn(map);
         when(metric.getRuleTokenCounter(rule)).thenReturn(map2);
         map.put(argToGo, new AtomicLong(TimeUtil.currentTimeMillis()));

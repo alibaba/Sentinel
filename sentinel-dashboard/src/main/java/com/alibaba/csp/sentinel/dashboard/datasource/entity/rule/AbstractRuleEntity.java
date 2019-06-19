@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.dashboard.datasource.entity.rule;
 import java.util.Date;
 
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
+import com.alibaba.csp.sentinel.slots.block.Rule;
 
 /**
  * @author Eric Zhao
@@ -102,5 +103,10 @@ public abstract class AbstractRuleEntity<T extends AbstractRule> implements Rule
     public AbstractRuleEntity<T> setGmtModified(Date gmtModified) {
         this.gmtModified = gmtModified;
         return this;
+    }
+
+    @Override
+    public T toRule() {
+        return rule;
     }
 }

@@ -15,26 +15,30 @@
  */
 package com.alibaba.csp.sentinel.cluster.client.codec.data;
 
-import com.alibaba.csp.sentinel.cluster.codec.EntityDecoder;
-
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Eric Zhao
- * @since 1.4.0
  */
-public class PingResponseDataDecoder implements EntityDecoder<ByteBuf, Integer> {
+public class PingResponseDataDecoderTest {
 
-    @Override
-    public Integer decode(ByteBuf source) {
-        int size = source.readableBytes();
-        if (size == 1) {
-            // Compatible with old version (< 1.7.0).
-            return (int) source.readByte();
-        }
-        if (size >= 4) {
-            return source.readInt();
-        }
-        return -1;
+    @Test
+    public void testDecodePingResponseData() {
+        ByteBuf buf = Unpooled.buffer();
+        PingResponseDataDecoder decoder = new PingResponseDataDecoder();
+
+        int big = Integer.MAX_VALUE;
+        buf.writeInt(big);
+        assertThat(decoder.decode(buf)).isEqualTo(big);
+
+        byte small = 12;
+        buf.writeByte(small);
+        assertThat(decoder.decode(buf)).isEqualTo(small);
+
+        buf.release();
     }
 }
