@@ -15,10 +15,8 @@
  */
 package com.alibaba.csp.sentinel.cluster.server.codec.data;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import com.alibaba.csp.sentinel.cluster.ClusterConstants;
 import com.alibaba.csp.sentinel.cluster.codec.EntityDecoder;
 import com.alibaba.csp.sentinel.cluster.request.data.ParamFlowRequestData;
 
@@ -38,54 +36,11 @@ public class ParamFlowRequestDataDecoder implements EntityDecoder<ByteBuf, Param
                 .setFlowId(source.readLong())
                 .setCount(source.readInt());
 
-            int amount = source.readInt();
-            if (amount > 0) {
-                List<Object> params = new ArrayList<>(amount);
-                for (int i = 0; i < amount; i++) {
-                    decodeParam(source, params);
-                }
-
-                requestData.setParams(params);
-                return requestData;
-            }
+            List<Object> params = ParamDecodeUtils.decodeParams(source);
+            requestData.setParams(params);
+            return requestData;
         }
         return null;
     }
 
-    private boolean decodeParam(ByteBuf source, List<Object> params) {
-        byte paramType = source.readByte();
-
-        switch (paramType) {
-            case ClusterConstants.PARAM_TYPE_INTEGER:
-                params.add(source.readInt());
-                return true;
-            case ClusterConstants.PARAM_TYPE_STRING:
-                int length = source.readInt();
-                byte[] bytes = new byte[length];
-                source.readBytes(bytes);
-                // TODO: take care of charset?
-                params.add(new String(bytes));
-                return true;
-            case ClusterConstants.PARAM_TYPE_BOOLEAN:
-                params.add(source.readBoolean());
-                return true;
-            case ClusterConstants.PARAM_TYPE_DOUBLE:
-                params.add(source.readDouble());
-                return true;
-            case ClusterConstants.PARAM_TYPE_LONG:
-                params.add(source.readLong());
-                return true;
-            case ClusterConstants.PARAM_TYPE_FLOAT:
-                params.add(source.readFloat());
-                return true;
-            case ClusterConstants.PARAM_TYPE_BYTE:
-                params.add(source.readByte());
-                return true;
-            case ClusterConstants.PARAM_TYPE_SHORT:
-                params.add(source.readShort());
-                return true;
-            default:
-                return false;
-        }
-    }
 }

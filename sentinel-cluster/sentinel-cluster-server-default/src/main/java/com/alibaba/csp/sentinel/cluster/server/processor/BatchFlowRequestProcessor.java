@@ -1,11 +1,11 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright 1999-2019 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,34 +15,38 @@
  */
 package com.alibaba.csp.sentinel.cluster.server.processor;
 
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import com.alibaba.csp.sentinel.cluster.ClusterConstants;
 import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.TokenService;
 import com.alibaba.csp.sentinel.cluster.annotation.RequestType;
 import com.alibaba.csp.sentinel.cluster.request.ClusterRequest;
-import com.alibaba.csp.sentinel.cluster.request.data.ParamFlowRequestData;
+import com.alibaba.csp.sentinel.cluster.request.data.BatchFlowRequestData;
 import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
-import com.alibaba.csp.sentinel.cluster.response.data.FlowTokenResponseData;
+import com.alibaba.csp.sentinel.cluster.response.data.BatchFlowTokenResponseData;
 import com.alibaba.csp.sentinel.cluster.server.TokenServiceProvider;
 
 /**
  * @author Eric Zhao
- * @since 1.4.0
+ * @since 1.7.0
  */
-@RequestType(ClusterConstants.MSG_TYPE_PARAM_FLOW)
-public class ParamFlowRequestProcessor implements RequestProcessor<ParamFlowRequestData, FlowTokenResponseData> {
+@RequestType(ClusterConstants.MSG_TYPE_BATCH_FLOW)
+public class BatchFlowRequestProcessor implements RequestProcessor<BatchFlowRequestData, BatchFlowTokenResponseData> {
 
     @Override
-    public ClusterResponse<FlowTokenResponseData> processRequest(ClusterRequest<ParamFlowRequestData> request) {
+    public ClusterResponse<BatchFlowTokenResponseData> processRequest(ClusterRequest<BatchFlowRequestData> request) {
         TokenService tokenService = TokenServiceProvider.getService();
 
-        long flowId = request.getData().getFlowId();
+        // The flow ID set should be valid.
+        Set<Long> flowIds = request.getData().getFlowIds();
         int count = request.getData().getCount();
-        Collection<Object> args = request.getData().getParams();
+        boolean prioritized = request.getData().isPriority();
 
-        TokenResult result = tokenService.requestParamToken(flowId, count, args);
-        return ClusterResponseGenerator.toFlowResponse(result, request);
+        TokenResult result = tokenService.batchRequestToken(flowIds, count, prioritized);
+
+        return ClusterResponseGenerator.toBatchFlowResponse(result, request);
     }
 }

@@ -41,14 +41,6 @@ public class FlowRequestProcessor implements RequestProcessor<FlowRequestData, F
         boolean prioritized = request.getData().isPriority();
 
         TokenResult result = tokenService.requestToken(flowId, count, prioritized);
-        return toResponse(result, request);
-    }
-
-    private ClusterResponse<FlowTokenResponseData> toResponse(TokenResult result, ClusterRequest request) {
-        return new ClusterResponse<>(request.getId(), request.getType(), result.getStatus(),
-            new FlowTokenResponseData()
-                .setRemainingCount(result.getRemaining())
-                .setWaitInMs(result.getWaitInMs())
-        );
+        return ClusterResponseGenerator.toFlowResponse(result, request);
     }
 }

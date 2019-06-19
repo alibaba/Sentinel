@@ -26,6 +26,8 @@ import static org.junit.Assert.*;
  */
 public final class ClusterFlowTestUtil {
 
+    public static final String TEST_NAMESPACE = "$sentinel_unit_test";
+
     public static void assertResultPass(TokenResult result) {
         assertNotNull(result);
         assertEquals(TokenResultStatus.OK, (int) result.getStatus());

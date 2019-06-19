@@ -21,9 +21,11 @@ import com.alibaba.csp.sentinel.cluster.request.data.FlowRequestData;
 import io.netty.buffer.ByteBuf;
 
 /**
- * +-------------------+--------------+----------------+---------------+------------------+
- * | RequestID(8 byte) | Type(1 byte) | FlowID(4 byte) | Count(4 byte) | PriorityFlag (1) |
- * +-------------------+--------------+----------------+---------------+------------------+
+ * <pre>
+ * +----------------+---------------+------------------+
+ * | FlowID(8 byte) | Count(4 byte) | PriorityFlag (1) |
+ * +----------------+---------------+------------------+
+ * </pre>
  *
  * @author Eric Zhao
  * @since 1.4.0

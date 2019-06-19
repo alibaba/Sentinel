@@ -15,17 +15,16 @@
  */
 package com.alibaba.csp.sentinel.cluster.flow;
 
+import java.util.ArrayList;
+
 import com.alibaba.csp.sentinel.cluster.TokenResult;
-import com.alibaba.csp.sentinel.cluster.flow.statistic.ClusterMetricStatistics;
-import com.alibaba.csp.sentinel.cluster.flow.statistic.metric.ClusterMetric;
-import com.alibaba.csp.sentinel.slots.block.ClusterRuleConstant;
-import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
+import com.alibaba.csp.sentinel.cluster.flow.rule.ClusterFlowRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 
-import org.junit.Ignore;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
 import static com.alibaba.csp.sentinel.cluster.ClusterFlowTestUtil.*;
 
 /**
@@ -34,42 +33,16 @@ import static com.alibaba.csp.sentinel.cluster.ClusterFlowTestUtil.*;
  */
 public class ClusterFlowCheckerTest {
 
-    //@Test
-    public void testAcquireClusterTokenOccupyPass() {
-        long flowId = 98765L;
-        final int threshold = 5;
-        FlowRule clusterRule = new FlowRule("abc")
-            .setCount(threshold)
-            .setClusterMode(true)
-            .setClusterConfig(new ClusterFlowConfig()
-                .setFlowId(flowId)
-                .setThresholdType(ClusterRuleConstant.FLOW_THRESHOLD_GLOBAL));
-        int sampleCount = 5;
-        int intervalInMs = 1000;
-        int bucketLength = intervalInMs / sampleCount;
-        ClusterMetric metric = new ClusterMetric(sampleCount, intervalInMs);
-        ClusterMetricStatistics.putMetric(flowId, metric);
+    @Before
+    public void setUp() throws Exception {
+        ClusterFlowRuleManager.removeProperty(TEST_NAMESPACE);
+        ClusterFlowRuleManager.loadRules(TEST_NAMESPACE, new ArrayList<FlowRule>());
+    }
 
-        System.out.println(System.currentTimeMillis());
-        assertResultPass(tryAcquire(clusterRule, false));
-        assertResultPass(tryAcquire(clusterRule, false));
-        sleep(bucketLength);
-        assertResultPass(tryAcquire(clusterRule, false));
-        sleep(bucketLength);
-        assertResultPass(tryAcquire(clusterRule, true));
-        assertResultPass(tryAcquire(clusterRule, false));
-        assertResultBlock(tryAcquire(clusterRule, true));
-        sleep(bucketLength);
-        assertResultBlock(tryAcquire(clusterRule, false));
-        assertResultBlock(tryAcquire(clusterRule, false));
-        sleep(bucketLength);
-        assertResultBlock(tryAcquire(clusterRule, false));
-        assertResultWait(tryAcquire(clusterRule, true), bucketLength);
-        assertResultBlock(tryAcquire(clusterRule, false));
-        sleep(bucketLength);
-        assertResultPass(tryAcquire(clusterRule, false));
-
-        ClusterMetricStatistics.removeMetric(flowId);
+    @After
+    public void tearDown() throws Exception {
+        ClusterFlowRuleManager.removeProperty(TEST_NAMESPACE);
+        ClusterFlowRuleManager.loadRules(TEST_NAMESPACE, new ArrayList<FlowRule>());
     }
 
     private TokenResult tryAcquire(FlowRule clusterRule, boolean occupy) {

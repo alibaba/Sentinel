@@ -17,6 +17,9 @@ package com.alibaba.csp.sentinel.cluster.server.init;
 
 import com.alibaba.csp.sentinel.cluster.ClusterConstants;
 import com.alibaba.csp.sentinel.cluster.server.TokenServiceProvider;
+import com.alibaba.csp.sentinel.cluster.server.codec.data.BatchFlowRequestDataDecoder;
+import com.alibaba.csp.sentinel.cluster.server.codec.data.BatchFlowResponseDataWriter;
+import com.alibaba.csp.sentinel.cluster.server.codec.data.BatchParamFlowRequestDataDecoder;
 import com.alibaba.csp.sentinel.cluster.server.codec.data.FlowRequestDataDecoder;
 import com.alibaba.csp.sentinel.cluster.server.codec.data.FlowResponseDataWriter;
 import com.alibaba.csp.sentinel.cluster.server.codec.data.ParamFlowRequestDataDecoder;
@@ -51,12 +54,22 @@ public class DefaultClusterServerInitFunc implements InitFunc {
         ResponseDataWriterRegistry.addWriter(ClusterConstants.MSG_TYPE_PING, new PingResponseDataWriter());
         ResponseDataWriterRegistry.addWriter(ClusterConstants.MSG_TYPE_FLOW, new FlowResponseDataWriter());
         ResponseDataWriterRegistry.addWriter(ClusterConstants.MSG_TYPE_PARAM_FLOW, new FlowResponseDataWriter());
+
+        ResponseDataWriterRegistry.addWriter(ClusterConstants.MSG_TYPE_BATCH_FLOW,
+            new BatchFlowResponseDataWriter());
+        ResponseDataWriterRegistry.addWriter(ClusterConstants.MSG_TYPE_BATCH_PARAM_FLOW,
+            new BatchFlowResponseDataWriter());
     }
 
     private void initDefaultEntityDecoders() {
         RequestDataDecodeRegistry.addDecoder(ClusterConstants.MSG_TYPE_PING, new PingRequestDataDecoder());
         RequestDataDecodeRegistry.addDecoder(ClusterConstants.MSG_TYPE_FLOW, new FlowRequestDataDecoder());
         RequestDataDecodeRegistry.addDecoder(ClusterConstants.MSG_TYPE_PARAM_FLOW, new ParamFlowRequestDataDecoder());
+
+        RequestDataDecodeRegistry.addDecoder(ClusterConstants.MSG_TYPE_BATCH_FLOW,
+            new BatchFlowRequestDataDecoder());
+        RequestDataDecodeRegistry.addDecoder(ClusterConstants.MSG_TYPE_BATCH_PARAM_FLOW,
+            new BatchParamFlowRequestDataDecoder());
     }
 
     private void initDefaultProcessors() {

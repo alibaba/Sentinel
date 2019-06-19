@@ -16,6 +16,8 @@
 package com.alibaba.csp.sentinel.cluster.server;
 
 import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
 import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
@@ -55,6 +57,22 @@ public class DefaultEmbeddedTokenServer implements EmbeddedClusterTokenServer {
     public TokenResult requestParamToken(Long ruleId, int acquireCount, Collection<Object> params) {
         if (tokenService != null) {
             return tokenService.requestParamToken(ruleId, acquireCount, params);
+        }
+        return new TokenResult(TokenResultStatus.FAIL);
+    }
+
+    @Override
+    public TokenResult batchRequestToken(Set<Long> ruleIds, int acquireCount, boolean prioritized) {
+        if (tokenService != null) {
+            return tokenService.batchRequestToken(ruleIds, acquireCount, prioritized);
+        }
+        return new TokenResult(TokenResultStatus.FAIL);
+    }
+
+    @Override
+    public TokenResult batchRequestParamToken(Set<Long> ruleIds, int acquireCount, Map<Integer, Object> paramMap) {
+        if (tokenService != null) {
+            return tokenService.batchRequestParamToken(ruleIds, acquireCount, paramMap);
         }
         return new TokenResult(TokenResultStatus.FAIL);
     }

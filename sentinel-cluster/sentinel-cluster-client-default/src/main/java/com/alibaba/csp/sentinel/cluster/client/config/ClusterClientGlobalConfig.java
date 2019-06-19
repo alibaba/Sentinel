@@ -20,13 +20,15 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 
 /**
  * <p>
- * this class dedicated to reading startup configurations of cluster client
+ * This class is dedicated to retrieving startup configurations for cluster token client.
  * </p>
  *
  * @author lianglin
  * @since 1.7.0
  */
-public class ClusterClientStartUpConfig {
+public final class ClusterClientGlobalConfig {
+
+    public static final int DEFAULT_PARAM_MAX_SIZE = 1024;
 
     private static final String MAX_PARAM_BYTE_SIZE = "csp.sentinel.cluster.max.param.byte.size";
 
@@ -40,10 +42,10 @@ public class ClusterClientStartUpConfig {
         try {
             return maxParamByteSize == null ? null : Integer.valueOf(maxParamByteSize);
         } catch (Exception ex) {
-            RecordLog.warn("[ClusterClientStartUpConfig] Failed to parse maxParamByteSize: " + maxParamByteSize);
+            RecordLog.warn("[ClusterClientGlobalConfig] Failed to parse maxParamByteSize: " + maxParamByteSize);
             return null;
         }
     }
 
-
+    private ClusterClientGlobalConfig() {}
 }

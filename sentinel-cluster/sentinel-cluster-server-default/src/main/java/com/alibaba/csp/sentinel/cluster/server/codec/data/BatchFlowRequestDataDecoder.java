@@ -1,11 +1,11 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright 1999-2019 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,29 +15,34 @@
  */
 package com.alibaba.csp.sentinel.cluster.server.codec.data;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.alibaba.csp.sentinel.cluster.codec.EntityDecoder;
-import com.alibaba.csp.sentinel.cluster.request.data.FlowRequestData;
+import com.alibaba.csp.sentinel.cluster.request.data.BatchFlowRequestData;
 
 import io.netty.buffer.ByteBuf;
 
 /**
- * <p>
- * Decoder for {@link FlowRequestData} from {@code ByteBuf} stream. The layout:
- * </p>
- * <pre>
- * | flow ID (8) | count (4) | priority flag (1) |
- * </pre>
- *
  * @author Eric Zhao
- * @since 1.4.0
+ * @since 1.7.0
  */
-public class FlowRequestDataDecoder implements EntityDecoder<ByteBuf, FlowRequestData> {
+public class BatchFlowRequestDataDecoder implements EntityDecoder<ByteBuf, BatchFlowRequestData> {
 
     @Override
-    public FlowRequestData decode(ByteBuf source) {
-        if (source.readableBytes() >= 12) {
-            FlowRequestData requestData = new FlowRequestData()
-                .setFlowId(source.readLong())
+    public BatchFlowRequestData decode(ByteBuf source) {
+        if (source.readableBytes() >= 4) {
+            int batchSize = source.readInt();
+            if (batchSize <= 0) {
+                return null;
+            }
+            Set<Long> idSet = new HashSet<>();
+            for (int i = 0; i < batchSize; i++) {
+                idSet.add(source.readLong());
+            }
+
+            BatchFlowRequestData requestData = new BatchFlowRequestData()
+                .setFlowIds(idSet)
                 .setCount(source.readInt());
             if (source.readableBytes() >= 1) {
                 requestData.setPriority(source.readBoolean());

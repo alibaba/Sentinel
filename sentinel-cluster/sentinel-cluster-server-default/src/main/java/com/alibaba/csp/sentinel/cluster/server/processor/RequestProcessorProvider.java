@@ -15,12 +15,14 @@
  */
 package com.alibaba.csp.sentinel.cluster.server.processor;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.csp.sentinel.cluster.annotation.RequestType;
+import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.AssertUtil;
+import com.alibaba.csp.sentinel.util.SpiLoader;
 
 /**
  * @author Eric Zhao
@@ -28,19 +30,21 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
  */
 public final class RequestProcessorProvider {
 
-    private static final Map<Integer, RequestProcessor> PROCESSOR_MAP = new ConcurrentHashMap<>();
-
-    private static final ServiceLoader<RequestProcessor> SERVICE_LOADER = ServiceLoader.load(RequestProcessor.class);
+    private static final Map<Integer, RequestProcessor> PROCESSOR_MAP = new HashMap<>();
 
     static {
         loadAndInit();
     }
 
     private static void loadAndInit() {
-        for (RequestProcessor processor : SERVICE_LOADER) {
+        List<RequestProcessor> processors = SpiLoader.loadInstanceList(RequestProcessor.class);
+        for (RequestProcessor processor : processors) {
             Integer type = parseRequestType(processor);
             if (type != null) {
                 PROCESSOR_MAP.put(type, processor);
+            } else {
+                RecordLog.warn("[RequestProcessorProvider] Request type not provided, "
+                    + "ignoring the processor: {0}", processor.getClass().getCanonicalName());
             }
         }
     }
@@ -58,6 +62,12 @@ public final class RequestProcessorProvider {
         return PROCESSOR_MAP.get(type);
     }
 
+    /**
+     * Note: not thread-safe, only for unit test.
+     *
+     * @param type      processor type
+     * @param processor valid processor
+     */
     static void addProcessorIfAbsent(int type, RequestProcessor processor) {
         // TBD: use putIfAbsent in JDK 1.8.
         if (PROCESSOR_MAP.containsKey(type)) {
@@ -66,11 +76,16 @@ public final class RequestProcessorProvider {
         PROCESSOR_MAP.put(type, processor);
     }
 
+    /**
+     * Note: not thread-safe, only for unit test.
+     *
+     * @param type      processor type
+     * @param processor valid processor
+     */
     static void addProcessor(int type, RequestProcessor processor) {
         AssertUtil.notNull(processor, "processor cannot be null");
         PROCESSOR_MAP.put(type, processor);
     }
-
 
     private RequestProcessorProvider() {}
 }

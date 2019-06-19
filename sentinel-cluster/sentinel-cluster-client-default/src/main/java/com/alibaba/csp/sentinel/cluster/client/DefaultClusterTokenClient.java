@@ -16,6 +16,8 @@
 package com.alibaba.csp.sentinel.cluster.client;
 
 import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.alibaba.csp.sentinel.cluster.ClusterConstants;
@@ -29,9 +31,12 @@ import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfigManager
 import com.alibaba.csp.sentinel.cluster.client.config.ServerChangeObserver;
 import com.alibaba.csp.sentinel.cluster.log.ClusterClientStatLogUtil;
 import com.alibaba.csp.sentinel.cluster.request.ClusterRequest;
+import com.alibaba.csp.sentinel.cluster.request.data.BatchFlowRequestData;
+import com.alibaba.csp.sentinel.cluster.request.data.BatchParamFlowRequestData;
 import com.alibaba.csp.sentinel.cluster.request.data.FlowRequestData;
 import com.alibaba.csp.sentinel.cluster.request.data.ParamFlowRequestData;
 import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
+import com.alibaba.csp.sentinel.cluster.response.data.BatchFlowTokenResponseData;
 import com.alibaba.csp.sentinel.cluster.response.data.FlowTokenResponseData;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -154,14 +159,7 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
         FlowRequestData data = new FlowRequestData().setCount(acquireCount)
             .setFlowId(flowId).setPriority(prioritized);
         ClusterRequest<FlowRequestData> request = new ClusterRequest<>(ClusterConstants.MSG_TYPE_FLOW, data);
-        try {
-            TokenResult result = sendTokenRequest(request);
-            logForResult(result);
-            return result;
-        } catch (Exception ex) {
-            ClusterClientStatLogUtil.log(ex.getMessage());
-            return new TokenResult(TokenResultStatus.FAIL);
-        }
+        return sendTokenRequest(request);
     }
 
     @Override
@@ -172,14 +170,30 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
         ParamFlowRequestData data = new ParamFlowRequestData().setCount(acquireCount)
             .setFlowId(flowId).setParams(params);
         ClusterRequest<ParamFlowRequestData> request = new ClusterRequest<>(ClusterConstants.MSG_TYPE_PARAM_FLOW, data);
-        try {
-            TokenResult result = sendTokenRequest(request);
-            logForResult(result);
-            return result;
-        } catch (Exception ex) {
-            ClusterClientStatLogUtil.log(ex.getMessage());
-            return new TokenResult(TokenResultStatus.FAIL);
+        return sendTokenRequest(request);
+    }
+
+    @Override
+    public TokenResult batchRequestToken(Set<Long> ruleIds, int acquireCount, boolean prioritized) {
+        if (notValidBatchRequest(ruleIds, acquireCount)) {
+            return badRequest();
         }
+        BatchFlowRequestData data = new BatchFlowRequestData().setCount(acquireCount)
+            .setFlowIds(ruleIds).setPriority(prioritized);
+        ClusterRequest<BatchFlowRequestData> request = new ClusterRequest<>(ClusterConstants.MSG_TYPE_BATCH_FLOW, data);
+        return sendTokenRequest(request);
+    }
+
+    @Override
+    public TokenResult batchRequestParamToken(Set<Long> ruleIds, int acquireCount, Map<Integer, Object> paramMap) {
+        if (notValidBatchRequest(ruleIds, acquireCount) || paramMap == null || paramMap.isEmpty()) {
+            return badRequest();
+        }
+        BatchParamFlowRequestData data = new BatchParamFlowRequestData().setCount(acquireCount)
+            .setFlowIds(ruleIds).setParamMap(paramMap);
+        ClusterRequest<BatchParamFlowRequestData> request = new ClusterRequest<>(
+            ClusterConstants.MSG_TYPE_BATCH_PARAM_FLOW, data);
+        return sendTokenRequest(request);
     }
 
     private void logForResult(TokenResult result) {
@@ -194,7 +208,24 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
         }
     }
 
-    private TokenResult sendTokenRequest(ClusterRequest request) throws Exception {
+    /**
+     * Send the token request and log the result if error occurs.
+     *
+     * @param request valid token request
+     * @return the token result
+     */
+    private TokenResult sendTokenRequest(/*@Valid*/ ClusterRequest request) {
+        try {
+            TokenResult result = sendTokenRequestInternal(request);
+            logForResult(result);
+            return result;
+        } catch (Exception ex) {
+            ClusterClientStatLogUtil.log(ex.getMessage());
+            return new TokenResult(TokenResultStatus.FAIL);
+        }
+    }
+
+    private TokenResult sendTokenRequestInternal(ClusterRequest request) throws Exception {
         if (transportClient == null) {
             RecordLog.warn(
                 "[DefaultClusterTokenClient] Client not created, please check your config for cluster client");
@@ -203,15 +234,32 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
         ClusterResponse response = transportClient.sendRequest(request);
         TokenResult result = new TokenResult(response.getStatus());
         if (response.getData() != null) {
-            FlowTokenResponseData responseData = (FlowTokenResponseData)response.getData();
-            result.setRemaining(responseData.getRemainingCount())
-                .setWaitInMs(responseData.getWaitInMs());
+            if (response.getData() instanceof FlowTokenResponseData) {
+                FlowTokenResponseData responseData = (FlowTokenResponseData)response.getData();
+                result.setRemaining(responseData.getRemainingCount())
+                    .setWaitInMs(responseData.getWaitInMs());
+            } else if (response.getData() instanceof BatchFlowTokenResponseData) {
+                BatchFlowTokenResponseData responseData = (BatchFlowTokenResponseData)response.getData();
+                result.setWaitInMs(responseData.getWaitInMs());
+            }
         }
         return result;
     }
 
     private boolean notValidRequest(Long id, int count) {
         return id == null || id <= 0 || count <= 0;
+    }
+
+    private boolean notValidBatchRequest(Set<Long> idSet, int count) {
+        if (idSet == null || idSet.isEmpty()) {
+            return true;
+        }
+        for (Long id : idSet) {
+            if (id == null || id <= 0) {
+                return true;
+            }
+        }
+        return count <= 0;
     }
 
     private TokenResult badRequest() {

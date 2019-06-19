@@ -27,5 +27,7 @@ public final class ServerConstants {
 
     public static final String DEFAULT_NAMESPACE = "default";
 
+    public static final String ATTR_KEY_BLOCK_ID = "blockId";
+
     private ServerConstants() {}
 }
