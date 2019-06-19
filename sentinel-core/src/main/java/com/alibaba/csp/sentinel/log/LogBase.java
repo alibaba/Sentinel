@@ -15,21 +15,18 @@
  */
 package com.alibaba.csp.sentinel.log;
 
-import com.alibaba.csp.sentinel.config.ConfigLoadUtils;
 import com.alibaba.csp.sentinel.util.PidUtil;
-import com.alibaba.csp.sentinel.util.StringUtil;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Properties;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Default log base dir is ${user.home}/logs/csp/, we can use {@link #LOG_DIR} System property to override it.
+ * Default log base dir is ${user.home}/logs/csp/, we can use {@link LogConfigLocator#LOG_DIR} System property to override it.
  * Default log file name dose not contain pid, but if multi instances of the same app are running in the same
- * machine, we may want to distinguish the log file by pid number, in this case, {@link #LOG_NAME_USE_PID}
+ * machine, we may want to distinguish the log file by pid number, in this case, {@link LogConfigLocator#LOG_NAME_USE_PID}
  * System property could be configured as "true" to turn on this switch.
  *
  * @author leyou
@@ -37,12 +34,6 @@ import java.util.logging.Logger;
 public class LogBase {
 
     public static final String LOG_CHARSET = "utf-8";
-
-    private static final String DIR_NAME = "logs" + File.separator + "csp";
-    private static final String USER_HOME = "user.home";
-
-    public static final String LOG_DIR = "csp.sentinel.log.dir";
-    public static final String LOG_NAME_USE_PID = "csp.sentinel.log.use.pid";
 
     private static boolean logNameUsePid = false;
 
@@ -59,30 +50,23 @@ public class LogBase {
 
     private static void init() {
 
-        Properties properties = ConfigLoadUtils.loadProperties();
-        String logDir = (String) properties.get(LOG_DIR);
-        if (StringUtil.isBlank(logDir)) {
-            logDir = System.getProperty(USER_HOME);
-            logDir = addSeparator(logDir) + DIR_NAME + File.separator;
-        }
-        logDir = addSeparator(logDir);
+        String logDir = LogConfigLocator.locateLogDir();
         File dir = new File(logDir);
         if (!dir.exists()) {
             if (!dir.mkdirs()) {
                 System.err.println("ERROR: create log base dir error: " + logDir);
             }
         }
-        // logBaseDir must end with File.separator
         logBaseDir = logDir;
         System.out.println("INFO: log base dir is: " + logBaseDir);
 
-        String usePid = properties.getProperty(LOG_NAME_USE_PID, "");
+        String usePid = LogConfigLocator.locateLogUsePid();
         logNameUsePid = "true".equalsIgnoreCase(usePid);
         System.out.println("INFO: log name use pid is: " + logNameUsePid);
     }
 
     /**
-     * Whether log file name should contain pid. This switch is configured by {@link #LOG_NAME_USE_PID} System property.
+     * Whether log file name should contain pid. This switch is configured by {@link LogConfigLocator#LOG_NAME_USE_PID} System property.
      *
      * @return if log file name should contain pid, return true, otherwise return false.
      */
@@ -90,12 +74,7 @@ public class LogBase {
         return logNameUsePid;
     }
 
-    private static String addSeparator(String logDir) {
-        if (!logDir.endsWith(File.separator)) {
-            logDir += File.separator;
-        }
-        return logDir;
-    }
+
 
     protected static void log(Logger logger, Handler handler, Level level, String detail, Object... params) {
         if (detail == null) {

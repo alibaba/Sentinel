@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.util;
 
+import com.alibaba.csp.sentinel.log.RecordLog;
+
 import java.io.File;
 
 /**
@@ -55,9 +57,7 @@ public final class AppNameUtil {
 
     static {
         resolveAppName();
-        //here use RecordLog will lead to class-init circle-dependency problem
-        //RecordLog.info("App name resolved: " + appName);
-        System.out.println("App name resolved: " + appName);
+        RecordLog.info("App name resolved: " + appName);
     }
 
     public static void resolveAppName() {
