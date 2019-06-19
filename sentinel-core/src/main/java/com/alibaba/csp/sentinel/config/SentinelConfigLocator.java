@@ -26,6 +26,10 @@ import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
+ * <p>
+ * class responsible for loading the Sentinel Core configuration
+ * </p>
+ *
  * @author lianglin
  * @since 1.7.0
  */

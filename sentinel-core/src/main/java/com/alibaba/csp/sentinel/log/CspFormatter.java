@@ -28,7 +28,7 @@ class CspFormatter extends Formatter {
     private final ThreadLocal<SimpleDateFormat> dateFormatThreadLocal = new ThreadLocal<SimpleDateFormat>() {
         @Override
         public SimpleDateFormat initialValue() {
-            return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         }
     };
 
@@ -37,6 +37,7 @@ class CspFormatter extends Formatter {
         final DateFormat df = dateFormatThreadLocal.get();
         StringBuilder builder = new StringBuilder(1000);
         builder.append(df.format(new Date(record.getMillis()))).append(" ");
+        builder.append(record.getLevel().getName()).append(" ");
         builder.append(formatMessage(record));
 
         String throwable = "";

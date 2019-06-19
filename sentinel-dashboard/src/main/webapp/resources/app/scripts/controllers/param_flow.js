@@ -130,6 +130,9 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
 
     $scope.editRule = function (rule) {
       $scope.currentRule = angular.copy(rule);
+      if ($scope.currentRule.rule && $scope.currentRule.rule.durationInSec === undefined) {
+        $scope.currentRule.rule.durationInSec = 1;
+      }
       $scope.paramFlowRuleDialog = {
         title: '编辑热点规则',
         type: 'edit',
@@ -157,9 +160,14 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
           paramFlowItemList: [],
           count: 0,
           limitApp: 'default',
+          controlBehavior: 0,
+          durationInSec: 1,
+          burstCount: 0,
+          maxQueueingTimeMs: 0,
           clusterMode: false,
           clusterConfig: {
-            thresholdType: 0
+            thresholdType: 0,
+            fallbackToLocalWhenFail: true,
           }
         }
       };
@@ -167,6 +175,7 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
         title: '新增热点规则',
         type: 'add',
         confirmBtnText: '新增',
+        supportAdvanced: true,
         showAdvanceButton: true,
       };
       paramFlowRuleDialog = ngDialog.open({

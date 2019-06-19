@@ -61,9 +61,9 @@ public class RequestContextApiMatcher extends AbstractApiMatcher<RequestContext>
             return null;
         }
         switch (item.getMatchStrategy()) {
-            case SentinelGatewayConstants.PARAM_MATCH_STRATEGY_REGEX:
+            case SentinelGatewayConstants.URL_MATCH_STRATEGY_REGEX:
                 return ZuulRouteMatchers.regexPath(pattern);
-            case SentinelGatewayConstants.PARAM_MATCH_STRATEGY_PREFIX:
+            case SentinelGatewayConstants.URL_MATCH_STRATEGY_PREFIX:
                 return ZuulRouteMatchers.antPath(pattern);
             default:
                 return ZuulRouteMatchers.exactPath(pattern);

@@ -9,6 +9,10 @@ import java.util.List;
 import java.util.Properties;
 
 /**
+ * <p>
+ * util for loading config
+ * </p>
+ *
  * @author lianglin
  * @since 1.7.0
  */

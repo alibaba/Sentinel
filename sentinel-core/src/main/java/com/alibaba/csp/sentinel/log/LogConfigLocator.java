@@ -7,6 +7,10 @@ import java.io.File;
 import java.util.Properties;
 
 /**
+ * <p>
+ * class responsible for loading the Log configuration.
+ * </p>
+ *
  * @author lianglin
  * @since 1.7.0
  */
@@ -42,20 +46,24 @@ public class LogConfigLocator {
 
         }
 
-        if (System.getProperties().contains(LOG_DIR)) {
-            String oldValue = properties.getProperty(LOG_DIR);
-            String newValue = System.getProperties().getProperty(LOG_DIR);
-            properties.setProperty(LOG_DIR, newValue);
-            System.out.println("[LogConfig] JVM parameter overrides: " + LOG_DIR + " " + oldValue + " -> " + newValue);
+        String newLogDir = System.getProperty(LOG_DIR);
+        String oldLogDir = properties.getProperty(LOG_DIR);
+        if (StringUtil.isNotBlank(newLogDir)) {
+            properties.setProperty(LOG_DIR, newLogDir);
+        }
+        if (StringUtil.isNotBlank(oldLogDir) && StringUtil.isNotBlank(newLogDir)) {
+            System.out.println("[LogConfig] JVM parameter overrides: " + LOG_DIR + " " + oldLogDir + " -> " + newLogDir);
         }
 
-        if (System.getProperties().contains(LOG_NAME_USE_PID)) {
-            String oldValue = properties.getProperty(LOG_NAME_USE_PID);
-            String newValue = System.getProperties().getProperty(LOG_NAME_USE_PID);
-            properties.setProperty(LOG_NAME_USE_PID, System.getProperties().getProperty(LOG_DIR));
-            System.out.println("[LogConfig] JVM parameter overrides: " + LOG_NAME_USE_PID + " " + oldValue + " -> " + newValue);
-
+        String newLogUseId = System.getProperty(LOG_NAME_USE_PID);
+        String oldLogUseId = properties.getProperty(LOG_NAME_USE_PID);
+        if (StringUtil.isNotBlank(newLogUseId)) {
+            properties.setProperty(LOG_NAME_USE_PID, newLogDir);
         }
+        if (StringUtil.isNotBlank(oldLogUseId) && StringUtil.isNotBlank(newLogUseId)) {
+            System.out.println("[LogConfig] JVM parameter overrides: " + LOG_NAME_USE_PID + " " + oldLogUseId + " -> " + newLogUseId);
+        }
+
 
     }
 
