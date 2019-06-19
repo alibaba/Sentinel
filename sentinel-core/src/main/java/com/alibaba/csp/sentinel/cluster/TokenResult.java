@@ -30,7 +30,7 @@ public class TokenResult {
     private int remaining;
     private int waitInMs;
 
-    private Map<String, String> attachments;
+    private Map<String, Object> attachments;
 
     public TokenResult() {}
 
@@ -65,11 +65,11 @@ public class TokenResult {
         return this;
     }
 
-    public Map<String, String> getAttachments() {
+    public Map<String, Object> getAttachments() {
         return attachments;
     }
 
-    public TokenResult setAttachments(Map<String, String> attachments) {
+    public TokenResult setAttachments(Map<String, Object> attachments) {
         this.attachments = attachments;
         return this;
     }

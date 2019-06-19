@@ -100,6 +100,9 @@ public final class SpiLoader {
      * @since 1.6.0
      */
     public static <T> List<T> loadInstanceList(Class<T> clazz) {
+        if (clazz == null) {
+            return new ArrayList<>();
+        }
         try {
             String key = clazz.getName();
             // Not thread-safe, as it's expected to be resolved in a thread-safe context.
@@ -115,7 +118,7 @@ public final class SpiLoader {
             }
             return list;
         } catch (Throwable t) {
-            RecordLog.warn("[SpiLoader] ERROR: loadInstanceListSorted failed", t);
+            RecordLog.warn("[SpiLoader] ERROR: loadInstanceList failed for class: " + clazz.getSimpleName(), t);
             t.printStackTrace();
             return new ArrayList<>();
         }

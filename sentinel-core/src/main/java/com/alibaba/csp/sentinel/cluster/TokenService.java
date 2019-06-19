@@ -16,6 +16,8 @@
 package com.alibaba.csp.sentinel.cluster;
 
 import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Service interface of flow control.
@@ -28,9 +30,9 @@ public interface TokenService {
     /**
      * Request tokens from remote token server.
      *
-     * @param ruleId the unique rule ID
+     * @param ruleId       the unique rule ID
      * @param acquireCount token count to acquire
-     * @param prioritized whether the request is prioritized
+     * @param prioritized  whether the request is prioritized
      * @return result of the token request
      */
     TokenResult requestToken(Long ruleId, int acquireCount, boolean prioritized);
@@ -38,10 +40,32 @@ public interface TokenService {
     /**
      * Request tokens for a specific parameter from remote token server.
      *
-     * @param ruleId the unique rule ID
+     * @param ruleId       the unique rule ID
      * @param acquireCount token count to acquire
-     * @param params parameter list
+     * @param params       parameter list of the single rule
      * @return result of the token request
      */
     TokenResult requestParamToken(Long ruleId, int acquireCount, Collection<Object> params);
+
+    /**
+     * Request tokens in batch.
+     *
+     * @param ruleIds      the ID set of target rules
+     * @param acquireCount token count to acquire
+     * @param prioritized  whether the request is prioritized
+     * @return result of the token request
+     * @since 1.7.0
+     */
+    TokenResult batchRequestToken(Set<Long> ruleIds, int acquireCount, boolean prioritized);
+
+    /**
+     * Request tokens in batch for a specific list of parameters.
+     *
+     * @param ruleIds      the ID set of target rules
+     * @param acquireCount token count to acquire
+     * @param paramMap     parameter map for all available paramIdx of given cluster rules
+     * @return result of the token request
+     * @since 1.7.0
+     */
+    TokenResult batchRequestParamToken(Set<Long> ruleIds, int acquireCount, Map<Integer, Object> paramMap);
 }
