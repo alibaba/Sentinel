@@ -55,13 +55,13 @@ public class LogConfigLocator {
             System.out.println("[LogConfig] JVM parameter overrides: " + LOG_DIR + " " + oldLogDir + " -> " + newLogDir);
         }
 
-        String newLogUseId = System.getProperty(LOG_NAME_USE_PID);
-        String oldLogUseId = properties.getProperty(LOG_NAME_USE_PID);
-        if (StringUtil.isNotBlank(newLogUseId)) {
-            properties.setProperty(LOG_NAME_USE_PID, newLogDir);
+        String newLogNameUseId = System.getProperty(LOG_NAME_USE_PID);
+        String oldLogNameUseId = properties.getProperty(LOG_NAME_USE_PID);
+        if (StringUtil.isNotBlank(newLogNameUseId)) {
+            properties.setProperty(LOG_NAME_USE_PID, newLogNameUseId);
         }
-        if (StringUtil.isNotBlank(oldLogUseId) && StringUtil.isNotBlank(newLogUseId)) {
-            System.out.println("[LogConfig] JVM parameter overrides: " + LOG_NAME_USE_PID + " " + oldLogUseId + " -> " + newLogUseId);
+        if (StringUtil.isNotBlank(oldLogNameUseId) && StringUtil.isNotBlank(newLogNameUseId)) {
+            System.out.println("[LogConfig] JVM parameter overrides: " + LOG_NAME_USE_PID + " " + oldLogNameUseId + " -> " + newLogNameUseId);
         }
 
 
