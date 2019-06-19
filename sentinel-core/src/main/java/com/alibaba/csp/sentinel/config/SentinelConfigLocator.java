@@ -65,9 +65,11 @@ public class SentinelConfigLocator {
             fileName = path + AppNameUtil.getAppName() + ".properties";
             File file = new File(fileName);
             if (file.exists()) {
-                properties.putAll(ConfigUtil.loadPropertiesFromFile(fileName));
+                p = ConfigUtil.loadPropertiesFromFile(fileName);
             }
-        } else {
+        }
+
+        if (p != null && !p.isEmpty()) {
             properties.putAll(p);
         }
 

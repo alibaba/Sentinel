@@ -27,7 +27,7 @@ public final class ConfigUtil {
                 return loadPropertiesFromRelativeFile(fileName);
             }
         } else {
-            throw new RuntimeException("args error! the fileName must not empty!");
+            return null;
         }
     }
 
