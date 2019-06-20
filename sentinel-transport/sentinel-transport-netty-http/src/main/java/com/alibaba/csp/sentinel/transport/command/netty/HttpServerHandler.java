@@ -221,11 +221,15 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
         if (StringUtil.isEmpty(uri)) {
             return "";
         }
-        String[] arr = uri.split("/");
-        if (arr.length < 2) {
-            return "";
+
+        // Remove the / of the uri as the target(command name)
+        // Usually the uri is start with /
+        int start = uri.indexOf('/');
+        if (start != -1) {
+            return uri.substring(start + 1);
         }
-        return arr[1];
+
+        return uri;
     }
 
     private CommandHandler getHandler(String commandName) {

@@ -209,8 +209,7 @@ public abstract class LeapArray<T> {
         if (timeMillis < 0) {
             return null;
         }
-        long timeId = (timeMillis - windowLengthInMs) / windowLengthInMs;
-        int idx = (int)(timeId % array.length());
+        int idx = calculateTimeIdx(timeMillis - windowLengthInMs);
         timeMillis = timeMillis - windowLengthInMs;
         WindowWrap<T> wrap = array.get(idx);
 

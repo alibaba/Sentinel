@@ -22,6 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.alibaba.csp.sentinel.util.PidUtil;
+import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
  * Default log base dir is ${user.home}/logs/csp/, we can use {@link #LOG_DIR} System property to override it.
@@ -35,15 +36,22 @@ public class LogBase {
 
     public static final String LOG_CHARSET = "utf-8";
 
+    // Output biz log(RecordLog,CommandCenterLog) to file
+    public static final String LOG_OUTPUT_TYPE_FILE = "file";
+    // Output biz log(RecordLog,CommandCenterLog) to console
+    public static final String LOG_OUTPUT_TYPE_CONSOLE = "console";
+
     private static final String DIR_NAME = "logs" + File.separator + "csp";
     private static final String USER_HOME = "user.home";
 
+    // Output type of biz log(RecordLog,CommandCenterLog)
+    public static final String LOG_OUTPUT_TYPE = "csp.sentinel.log.output.type";
     public static final String LOG_DIR = "csp.sentinel.log.dir";
     public static final String LOG_NAME_USE_PID = "csp.sentinel.log.use.pid";
 
-    private static boolean logNameUsePid = false;
-
+    private static String logOutputType;
     private static String logBaseDir;
+    private static boolean logNameUsePid = false;
 
     static {
         try {
@@ -55,6 +63,15 @@ public class LogBase {
     }
 
     private static void init() {
+        logOutputType = System.getProperty(LOG_OUTPUT_TYPE);
+
+        // By default, output biz log(RecordLog,CommandCenterLog) to file
+        if (StringUtil.isBlank(logOutputType)) {
+            logOutputType = LOG_OUTPUT_TYPE_FILE;
+        } else if (!LOG_OUTPUT_TYPE_FILE.equalsIgnoreCase(logOutputType) && !LOG_OUTPUT_TYPE_CONSOLE.equalsIgnoreCase(logOutputType)) {
+            logOutputType = LOG_OUTPUT_TYPE_FILE;
+        }
+
         // first use -D, then use user home.
         String logDir = System.getProperty(LOG_DIR);
 
@@ -125,18 +142,37 @@ public class LogBase {
 
     protected static Handler makeLogger(String logName, Logger heliumRecordLog) {
         CspFormatter formatter = new CspFormatter();
-        String fileName = LogBase.getLogBaseDir() + logName;
-        if (isLogNameUsePid()) {
-            fileName += ".pid" + PidUtil.getPid();
-        }
+
         Handler handler = null;
-        try {
-            handler = new DateFileLogHandler(fileName + ".%d", 1024 * 1024 * 200, 4, true);
-            handler.setFormatter(formatter);
-            handler.setEncoding(LOG_CHARSET);
-        } catch (IOException e) {
-            e.printStackTrace();
+
+        // Create handler according to logOutputType, set formatter to CspFormatter, set encoding to LOG_CHARSET
+        switch (logOutputType) {
+            case LOG_OUTPUT_TYPE_FILE:
+                String fileName = LogBase.getLogBaseDir() + logName;
+                if (isLogNameUsePid()) {
+                    fileName += ".pid" + PidUtil.getPid();
+                }
+                try {
+                    handler = new DateFileLogHandler(fileName + ".%d", 1024 * 1024 * 200, 4, true);
+                    handler.setFormatter(formatter);
+                    handler.setEncoding(LOG_CHARSET);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+            case LOG_OUTPUT_TYPE_CONSOLE:
+                try {
+                    handler = new ConsoleHandler();
+                    handler.setFormatter(formatter);
+                    handler.setEncoding(LOG_CHARSET);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+            default:
+                break;
         }
+
         if (handler != null) {
             LoggerUtils.disableOtherHandlers(heliumRecordLog, handler);
         }

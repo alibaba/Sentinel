@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.adapter.gateway.common.rule;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
+import com.alibaba.csp.sentinel.adapter.gateway.common.param.GatewayRegexCache;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
@@ -131,6 +133,16 @@ public final class GatewayRuleManager {
             return idxMap.get(resourceName);
         }
 
+        private void cacheRegexPattern(/*@NonNull*/ GatewayParamFlowItem item) {
+            String pattern = item.getPattern();
+            if (StringUtil.isNotEmpty(pattern) &&
+                item.getMatchStrategy() == SentinelGatewayConstants.PARAM_MATCH_STRATEGY_REGEX) {
+                if (GatewayRegexCache.getRegexPattern(pattern) == null) {
+                    GatewayRegexCache.addRegexPattern(pattern);
+                }
+            }
+        }
+
         private synchronized void applyGatewayRuleInternal(Set<GatewayFlowRule> conf) {
             if (conf == null || conf.isEmpty()) {
                 applyToConvertedParamMap(new HashSet<ParamFlowRule>());
@@ -162,6 +174,7 @@ public final class GatewayRuleManager {
                     if (paramFlowRules.add(GatewayRuleConverter.applyToParamRule(rule, idx))) {
                         idxMap.put(rule.getResource(), idx + 1);
                     }
+                    cacheRegexPattern(rule.getParamItem());
                 }
                 // Apply to the gateway rule map.
                 Set<GatewayFlowRule> ruleSet = gatewayRuleMap.get(resourceName);
@@ -242,14 +255,18 @@ public final class GatewayRuleManager {
         if (item.getParseStrategy() < 0) {
             return false;
         }
-        if (item.getParseStrategy() == SentinelGatewayConstants.PARAM_PARSE_STRATEGY_URL_PARAM ||
-            item.getParseStrategy() == SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER) {
-            if (StringUtil.isBlank(item.getFieldName())) {
-                return false;
-            }
+        // Check required field name for item types.
+        if (FIELD_REQUIRED_SET.contains(item.getParseStrategy()) && StringUtil.isBlank(item.getFieldName())) {
+            return false;
         }
         return StringUtil.isEmpty(item.getPattern()) || item.getMatchStrategy() >= 0;
     }
+
+    private static final Set<Integer> FIELD_REQUIRED_SET = new HashSet<>(
+        Arrays.asList(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_URL_PARAM,
+            SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER,
+            SentinelGatewayConstants.PARAM_PARSE_STRATEGY_COOKIE)
+    );
 
     private GatewayRuleManager() {}
 }

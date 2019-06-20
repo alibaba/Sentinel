@@ -16,9 +16,11 @@
 package com.alibaba.csp.sentinel.adapter.gateway.sc;
 
 import java.net.InetSocketAddress;
+import java.util.Optional;
 
 import com.alibaba.csp.sentinel.adapter.gateway.common.param.RequestItemParser;
 
+import org.springframework.http.HttpCookie;
 import org.springframework.web.server.ServerWebExchange;
 
 /**
@@ -49,5 +51,12 @@ public class ServerWebExchangeItemParser implements RequestItemParser<ServerWebE
     @Override
     public String getUrlParam(ServerWebExchange exchange, String paramName) {
         return exchange.getRequest().getQueryParams().getFirst(paramName);
+    }
+
+    @Override
+    public String getCookieValue(ServerWebExchange exchange, String cookieName) {
+        return Optional.ofNullable(exchange.getResponse().getCookies().getFirst(cookieName))
+            .map(HttpCookie::getValue)
+            .orElse(null);
     }
 }

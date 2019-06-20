@@ -38,8 +38,48 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
 
 /**
  * @author jialiang.linjl
+ * @author Eric Zhao
  */
 public class ParamFlowDefaultCheckerTest extends AbstractTimeBasedTest {
+
+    @Test
+    public void testCheckQpsWithLongIntervalAndHighThreshold() {
+        // This test case is intended to avoid number overflow.
+        final String resourceName = "testCheckQpsWithLongIntervalAndHighThreshold";
+        final ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
+        int paramIdx = 0;
+
+        // Set a large threshold.
+        long threshold = 25000L;
+
+        ParamFlowRule rule = new ParamFlowRule(resourceName)
+            .setCount(threshold)
+            .setParamIdx(paramIdx);
+
+        String valueA = "valueA";
+        ParameterMetric metric = new ParameterMetric();
+        ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
+        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTokenCounterMap().put(rule,
+            new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+
+        // We mock the time directly to avoid unstable behaviour.
+        setCurrentMillis(System.currentTimeMillis());
+
+        assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+        assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+
+        // 24 hours passed.
+        // This can make `toAddCount` larger that Integer.MAX_VALUE.
+        sleep(1000 * 60 * 60 * 24);
+        assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+        assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+
+        // 48 hours passed.
+        sleep(1000 * 60 * 60 * 48);
+        assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+        assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
+    }
 
     @Test
     public void testParamFlowDefaultCheckSingleQps() {
@@ -59,7 +99,7 @@ public class ParamFlowDefaultCheckerTest extends AbstractTimeBasedTest {
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
         metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
         metric.getRuleTokenCounterMap().put(rule,
-            new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(4000));
+            new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 
         // We mock the time directly to avoid unstable behaviour.
         setCurrentMillis(System.currentTimeMillis());
@@ -99,7 +139,7 @@ public class ParamFlowDefaultCheckerTest extends AbstractTimeBasedTest {
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
         metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
         metric.getRuleTokenCounterMap().put(rule,
-            new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(4000));
+            new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 
         // We mock the time directly to avoid unstable behaviour.
         setCurrentMillis(System.currentTimeMillis());
@@ -169,7 +209,7 @@ public class ParamFlowDefaultCheckerTest extends AbstractTimeBasedTest {
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
         metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
         metric.getRuleTokenCounterMap().put(rule,
-            new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(4000));
+            new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 
         // We mock the time directly to avoid unstable behaviour.
         setCurrentMillis(System.currentTimeMillis());
@@ -222,7 +262,7 @@ public class ParamFlowDefaultCheckerTest extends AbstractTimeBasedTest {
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
         metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
         metric.getRuleTokenCounterMap().put(rule,
-            new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(4000));
+            new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
         int threadCount = 40;
 
         final CountDownLatch waitLatch = new CountDownLatch(threadCount);
