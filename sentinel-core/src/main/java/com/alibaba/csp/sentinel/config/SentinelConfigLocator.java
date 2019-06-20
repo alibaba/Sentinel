@@ -75,11 +75,11 @@ public class SentinelConfigLocator {
 
         for (Map.Entry<Object, Object> entry : new CopyOnWriteArraySet<>(System.getProperties().entrySet())) {
             String configKey = entry.getKey().toString();
-            String configValue = entry.getValue().toString();
-            String configValueOld = properties.getProperty(configKey);
-            properties.put(configKey, configValue);
-            if (configValueOld != null) {
-                RecordLog.info("[SentinelConfig] JVM parameter overrides {0}: {1} -> {2}", configKey, configValueOld, configValue);
+            String newConfigValue = entry.getValue().toString();
+            String oldConfigValue = properties.getProperty(configKey);
+            properties.put(configKey, newConfigValue);
+            if (oldConfigValue != null) {
+                RecordLog.info("[SentinelConfig] JVM parameter overrides {0}: {1} -> {2}", configKey, oldConfigValue, newConfigValue);
             }
         }
     }

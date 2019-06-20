@@ -60,7 +60,6 @@ public class SentinelConfig {
         try {
             initialize();
             loadProps();
-
             resolveAppType();
             RecordLog.info("[SentinelConfig] Application type resolved: " + appType);
         } catch (Throwable ex) {
