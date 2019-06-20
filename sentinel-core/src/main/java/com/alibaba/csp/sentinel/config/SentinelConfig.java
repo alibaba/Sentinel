@@ -95,7 +95,6 @@ public class SentinelConfig {
     }
 
     private static void loadProps() {
-
         Properties properties = SentinelConfigLocator.locateProperties();
         for (Object key : properties.keySet()) {
             setConfig((String) key, (String) properties.get(key));

@@ -40,7 +40,7 @@ public class SentinelConfigLocator {
     private static final String USER_HOME = "user.home";
 
     private static String SENTINEL_CONFIG = "csp.sentinel.config.file";
-    private static String DEFAULT_SENTINEL_CONFIG = "sentinel.properties";
+    private static String DEFAULT_SENTINEL_CONFIG_FILE = "sentinel.properties";
 
 
     private static Properties properties = new Properties();
@@ -54,7 +54,7 @@ public class SentinelConfigLocator {
 
         String fileName = System.getProperty(SENTINEL_CONFIG);
         if (StringUtil.isBlank(fileName)) {
-            fileName = DEFAULT_SENTINEL_CONFIG;
+            fileName = DEFAULT_SENTINEL_CONFIG_FILE;
         }
 
         Properties p = ConfigUtil.loadPropertiesFromFile(fileName);
