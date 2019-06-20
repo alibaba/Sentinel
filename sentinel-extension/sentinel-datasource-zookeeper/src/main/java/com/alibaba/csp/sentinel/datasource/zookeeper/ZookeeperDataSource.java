@@ -148,7 +148,6 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
                 }
             }
 
-
             this.nodeCache = new NodeCache(this.zkClient, this.path);
             this.nodeCache.getListenable().addListener(this.listener, this.pool);
             this.nodeCache.start();
@@ -193,22 +192,20 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
             return serverAddr;
         }
         StringBuilder builder = new StringBuilder();
-        builder.append(serverAddr).append("|").append("[");
-        for (AuthInfo authInfo : authInfos) {
-            builder.append(getAuthInfoKey(authInfo));
-            builder.append(",");
-        }
-        builder.deleteCharAt(builder.length() - 1);
-        builder.append("]");
+        builder.append(serverAddr).append(getAuthInfosKey(authInfos));
         return builder.toString();
     }
 
-    private  String getAuthInfoKey(AuthInfo authInfo) {
-        if (authInfo == null) {
-            return "{}";
+    private  String getAuthInfosKey(List<AuthInfo> authInfos) {
+        StringBuilder builder = new StringBuilder();
+        for (AuthInfo authInfo : authInfos) {
+            if (authInfo == null) {
+                builder.append("{}");
+            } else {
+                builder.append("{" + "sc=" + authInfo.getScheme() + ",au=" + Arrays.toString(authInfo.getAuth()) + "}");
+            }
         }
-        return "{" + "sc=" + authInfo.getScheme() +
-                ",au=" + Arrays.toString(authInfo.getAuth()) + "}";
+        return builder.toString();
     }
 
 
