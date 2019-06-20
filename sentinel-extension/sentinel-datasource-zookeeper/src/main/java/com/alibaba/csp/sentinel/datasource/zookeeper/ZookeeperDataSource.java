@@ -14,8 +14,6 @@ import org.apache.curator.framework.recipes.cache.NodeCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -190,52 +188,30 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
         return String.format("/%s/%s", groupId, dataId);
     }
 
-    private String getZkKey(final String serverAddr, final List<AuthInfo> authInfos) {
+    private  String getZkKey(final String serverAddr, final List<AuthInfo> authInfos) {
         if (authInfos == null || authInfos.size() == 0) {
             return serverAddr;
         }
-        Collections.sort(authInfos, new Comparator<AuthInfo>() {
-            @Override
-            public int compare(AuthInfo o1, AuthInfo o2) {
-                int c = o1.getScheme().compareTo(o2.getScheme());
-                if (c != 0) {
-                    return c;
-                }
-                byte[] auth1 = o1.getAuth();
-                byte[] auth2 = o2.getAuth();
-                if (auth1 == null && auth2 == null) {
-                    return 0;
-                }
-                if (auth1 == null) {
-                    return -1;
-                } else if (auth2 == null) {
-                    return 1;
-                }
-                int min = Math.min(auth1.length, auth2.length);
-                for (int i = 0; i < min; i++) {
-                    if (auth1[i] != auth2[i]) {
-                        return auth1[i] - auth2[i];
-                    }
-                }
-                return auth1.length - auth2.length;
-            }
-        });
-
-        return serverAddr + "|" + buildAutoString(authInfos);
-    }
-
-    private String buildAutoString(List<AuthInfo> authInfos) {
         StringBuilder builder = new StringBuilder();
+        builder.append(serverAddr).append("|").append("[");
         for (AuthInfo authInfo : authInfos) {
-            builder.append(authInfo.getScheme());
-            builder.append("|");
-            builder.append(Arrays.toString(authInfo.getAuth()));
-            builder.append("|");
+            builder.append(getAuthInfoKey(authInfo));
+            builder.append(",");
         }
         builder.deleteCharAt(builder.length() - 1);
+        builder.append("]");
         return builder.toString();
-
     }
+
+    private  String getAuthInfoKey(AuthInfo authInfo) {
+        if (authInfo == null) {
+            return "{}";
+        }
+        return "{" + "sc=" + authInfo.getScheme() +
+                ",au=" + Arrays.toString(authInfo.getAuth()) + "}";
+    }
+
+
 
 
 }
