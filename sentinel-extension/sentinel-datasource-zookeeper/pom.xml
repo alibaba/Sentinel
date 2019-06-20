@@ -68,6 +68,7 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

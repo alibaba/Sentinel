@@ -5,7 +5,6 @@ import com.alibaba.csp.sentinel.datasource.AbstractDataSource;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.fastjson.JSON;
 import org.apache.curator.framework.AuthInfo;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -14,6 +13,7 @@ import org.apache.curator.framework.recipes.cache.NodeCache;
 import org.apache.curator.framework.recipes.cache.NodeCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -221,7 +221,20 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
             }
         });
 
-        return serverAddr + "|" + JSON.toJSONString(authInfos);
+        return serverAddr + "|" + buildAutoString(authInfos);
+    }
+
+    private String buildAutoString(List<AuthInfo> authInfos) {
+        StringBuilder builder = new StringBuilder();
+        for (AuthInfo authInfo : authInfos) {
+            builder.append(authInfo.getScheme());
+            builder.append("|");
+            builder.append(Arrays.toString(authInfo.getAuth()));
+            builder.append("|");
+        }
+        builder.deleteCharAt(builder.length() - 1);
+        return builder.toString();
+
     }
 
 
