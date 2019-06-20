@@ -188,6 +188,12 @@ public class ParamFlowRuleController {
         if (entity.getParamIdx() == null || entity.getParamIdx() < 0) {
             return Result.ofFail(-1, "paramIdx should be valid");
         }
+        if (entity.getDurationInSec() <= 0) {
+            return Result.ofFail(-1, "durationInSec should be valid");
+        }
+        if (entity.getControlBehavior() < 0) {
+            return Result.ofFail(-1, "controlBehavior should be valid");
+        }
         return null;
     }
 

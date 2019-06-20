@@ -82,7 +82,7 @@ public class ParamFlowSlotTest {
         ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
         paramFlowSlot.entry(null, resourceWrapper, null, 1, false, "abc");
         // The parameter metric instance will not be created.
-        assertNull(ParamFlowSlot.getParamMetric(resourceWrapper));
+        assertNull(ParameterMetricStorage.getParamMetric(resourceWrapper));
     }
 
     @Test
@@ -99,14 +99,14 @@ public class ParamFlowSlotTest {
 
         ParameterMetric metric = mock(ParameterMetric.class);
 
-        CacheMap<Object, AtomicLong> map = new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000);
-        CacheMap<Object, AtomicInteger> map2 = new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(4000);
+        CacheMap<Object, AtomicLong> map = new ConcurrentLinkedHashMapWrapper<>(4000);
+        CacheMap<Object, AtomicLong> map2 = new ConcurrentLinkedHashMapWrapper<>(4000);
         when(metric.getRuleTimeCounter(rule)).thenReturn(map);
         when(metric.getRuleTokenCounter(rule)).thenReturn(map2);
         map.put(argToGo, new AtomicLong(TimeUtil.currentTimeMillis()));
 
         // Insert the mock metric to control pass or block.
-        ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
+        ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
 
         // The first entry will pass.
         paramFlowSlot.entry(null, resourceWrapper, null, 1, false, argToGo);
@@ -121,48 +121,16 @@ public class ParamFlowSlotTest {
         fail("The second entry should be blocked");
     }
 
-    @Test
-    public void testGetNullParamMetric() {
-        assertNull(ParamFlowSlot.getParamMetric(null));
-    }
-
-    @Test
-    public void testInitParamMetrics() {
-
-        ParamFlowRule rule = new ParamFlowRule();
-        rule.setParamIdx(1);
-        int index = 1;
-        String resourceName = "res-" + System.currentTimeMillis();
-        ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
-
-        assertNull(ParamFlowSlot.getParamMetric(resourceWrapper));
-
-        paramFlowSlot.initHotParamMetricsFor(resourceWrapper, rule);
-        ParameterMetric metric = ParamFlowSlot.getParamMetric(resourceWrapper);
-        assertNotNull(metric);
-        assertNotNull(metric.getRuleTimeCounterMap().get(rule));
-        assertNotNull(metric.getThreadCountMap().get(index));
-
-        // Duplicate init.
-        paramFlowSlot.initHotParamMetricsFor(resourceWrapper, rule);
-        assertSame(metric, ParamFlowSlot.getParamMetric(resourceWrapper));
-
-        ParamFlowRule rule2 = new ParamFlowRule();
-        rule2.setParamIdx(1);
-        assertSame(metric, ParamFlowSlot.getParamMetric(resourceWrapper));
-
-    }
-
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         ParamFlowRuleManager.loadRules(null);
-        ParamFlowSlot.getMetricsMap().clear();
+        ParameterMetricStorage.getMetricsMap().clear();
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         // Clean the metrics map.
-        ParamFlowSlot.getMetricsMap().clear();
         ParamFlowRuleManager.loadRules(null);
+        ParameterMetricStorage.getMetricsMap().clear();
     }
 }
