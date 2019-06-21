@@ -15,9 +15,9 @@
  */
 package com.alibaba.csp.sentinel.dashboard.datasource.entity.rule;
 
-import java.util.Date;
-
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
+
+import java.util.Date;
 
 /**
  * @author leyou
@@ -56,8 +56,9 @@ public class DegradeRuleEntity implements RuleEntity {
         return ip;
     }
 
-    public void setIp(String ip) {
+    public DegradeRuleEntity setIp(String ip) {
         this.ip = ip;
+        return this;
     }
 
     @Override
@@ -65,8 +66,9 @@ public class DegradeRuleEntity implements RuleEntity {
         return port;
     }
 
-    public void setPort(Integer port) {
+    public DegradeRuleEntity setPort(Integer port) {
         this.port = port;
+        return this;
     }
 
     @Override
@@ -84,48 +86,54 @@ public class DegradeRuleEntity implements RuleEntity {
         return app;
     }
 
-    public void setApp(String app) {
+    public DegradeRuleEntity setApp(String app) {
         this.app = app;
+        return this;
     }
 
     public String getResource() {
         return resource;
     }
 
-    public void setResource(String resource) {
+    public DegradeRuleEntity setResource(String resource) {
         this.resource = resource;
+        return this;
     }
 
     public String getLimitApp() {
         return limitApp;
     }
 
-    public void setLimitApp(String limitApp) {
+    public DegradeRuleEntity setLimitApp(String limitApp) {
         this.limitApp = limitApp;
+        return this;
     }
 
     public Double getCount() {
         return count;
     }
 
-    public void setCount(Double count) {
+    public DegradeRuleEntity setCount(Double count) {
         this.count = count;
+        return this;
     }
 
     public Integer getTimeWindow() {
         return timeWindow;
     }
 
-    public void setTimeWindow(Integer timeWindow) {
+    public DegradeRuleEntity setTimeWindow(Integer timeWindow) {
         this.timeWindow = timeWindow;
+        return this;
     }
 
     public Integer getGrade() {
         return grade;
     }
 
-    public void setGrade(Integer grade) {
+    public DegradeRuleEntity setGrade(Integer grade) {
         this.grade = grade;
+        return this;
     }
 
     @Override
@@ -133,16 +141,18 @@ public class DegradeRuleEntity implements RuleEntity {
         return gmtCreate;
     }
 
-    public void setGmtCreate(Date gmtCreate) {
+    public DegradeRuleEntity setGmtCreate(Date gmtCreate) {
         this.gmtCreate = gmtCreate;
+        return this;
     }
 
     public Date getGmtModified() {
         return gmtModified;
     }
 
-    public void setGmtModified(Date gmtModified) {
+    public DegradeRuleEntity setGmtModified(Date gmtModified) {
         this.gmtModified = gmtModified;
+        return this;
     }
 
     @Override

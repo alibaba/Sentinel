@@ -46,11 +46,26 @@ public class Result<R> {
         result.setMsg(msg);
         return result;
     }
+    public static <R> Result<R> ofFail(String msg) {
+        Result<R> result = new Result<>();
+        result.setSuccess(false);
+        result.setCode(ResponseCodeConstant.fail);
+        result.setMsg(msg);
+        return result;
+    }
 
     public static <R> Result<R> ofThrowable(int code, Throwable throwable) {
         Result<R> result = new Result<>();
         result.setSuccess(false);
         result.setCode(code);
+        result.setMsg(throwable.getClass().getName() + ", " + throwable.getMessage());
+        return result;
+    }
+
+    public static <R> Result<R> ofThrowable(Throwable throwable) {
+        Result<R> result = new Result<>();
+        result.setSuccess(false);
+        result.setCode(ResponseCodeConstant.fail);
         result.setMsg(throwable.getClass().getName() + ", " + throwable.getMessage());
         return result;
     }
