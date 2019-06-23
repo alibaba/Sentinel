@@ -15,26 +15,21 @@
  */
 package com.alibaba.csp.sentinel.dashboard.controller.v2;
 
-import java.util.Date;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.AuthUser;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
-import com.alibaba.csp.sentinel.util.StringUtil;
-
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
+import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
-import com.alibaba.csp.sentinel.dashboard.domain.Result;
-
+import com.alibaba.csp.sentinel.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,6 +39,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Flow rule controller (v2).
@@ -79,21 +78,26 @@ public class FlowControllerV2 {
             return Result.ofFail(-1, "app can't be null or empty");
         }
         try {
-            List<FlowRuleEntity> rules = ruleProvider.getRules(app);
-            if (rules != null && !rules.isEmpty()) {
-                for (FlowRuleEntity entity : rules) {
-                    entity.setApp(app);
-                    if (entity.getClusterConfig() != null && entity.getClusterConfig().getFlowId() != null) {
-                        entity.setId(entity.getClusterConfig().getFlowId());
-                    }
-                }
-            }
+            List<FlowRuleEntity> rules = getFlowRules(app);
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
             logger.error("Error when querying flow rules", throwable);
             return Result.ofThrowable(-1, throwable);
         }
+    }
+
+    private List<FlowRuleEntity> getFlowRules(String app) throws Exception {
+        List<FlowRuleEntity> rules = ruleProvider.getRules(app);
+        if (rules != null && !rules.isEmpty()) {
+            for (FlowRuleEntity entity : rules) {
+                entity.setApp(app);
+                if (entity.getClusterConfig() != null && entity.getClusterConfig().getFlowId() != null) {
+                    entity.setId(entity.getClusterConfig().getFlowId());
+                }
+            }
+        }
+        return rules;
     }
 
     private <R> Result<R> checkEntityInternal(FlowRuleEntity entity) {
@@ -156,6 +160,17 @@ public class FlowControllerV2 {
         entity.setLimitApp(entity.getLimitApp().trim());
         entity.setResource(entity.getResource().trim());
         try {
+
+            MachineInfo machineInfo = MachineInfo.of(entity.getApp(), entity.getIp(),
+                    entity.getPort());
+            List<FlowRuleEntity> machineRules = repository.findAllByMachine(machineInfo);
+            if (CollectionUtils.isEmpty(machineRules)) {
+                //When machineRules is empty it means two situation
+                //first: the machine rules is real empty
+                //second: the dashboard don not fetch the rules from machine successfully, because of dashboard reload,bad network...  and so on
+                //so we try fetch rules again, so we can improve the data override problem
+                repository.saveAll(getFlowRules(entity.getApp()));
+            }
             entity = repository.save(entity);
             publishRules(entity.getApp());
         } catch (Throwable throwable) {
