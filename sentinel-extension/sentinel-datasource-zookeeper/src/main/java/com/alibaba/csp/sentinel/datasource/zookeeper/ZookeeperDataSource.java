@@ -191,13 +191,13 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
         if (authInfos == null || authInfos.size() == 0) {
             return serverAddr;
         }
-        StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder(64);
         builder.append(serverAddr).append(getAuthInfosKey(authInfos));
         return builder.toString();
     }
 
     private  String getAuthInfosKey(List<AuthInfo> authInfos) {
-        StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder(32);
         for (AuthInfo authInfo : authInfos) {
             if (authInfo == null) {
                 builder.append("{}");
