@@ -15,14 +15,14 @@
  */
 package com.alibaba.csp.sentinel.adapter.dubbo;
 
+import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig;
+import com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
-
-import com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -71,5 +71,32 @@ public class DubboUtilsTest {
         String resourceName = DubboUtils.getResourceName(invoker, invocation);
 
         assertEquals("com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService:sayHello(java.lang.String,int)", resourceName);
+    }
+
+
+    /**
+     * When test
+     * Jvm args:
+     * -Dcsp.sentinel.dubbo.use.prefix=true
+     * -Dcsp.sentinel.dubbo.provider.prefix=dubbo-provider
+     * -Dcsp.sentinel.dubbo.consumer.prefix=dubbo-consumer
+     */
+    //@Test
+    public void testGetResourceNameWithPrefix(){
+        Invoker invoker = mock(Invoker.class);
+        when(invoker.getInterface()).thenReturn(DemoService.class);
+
+        Invocation invocation = mock(Invocation.class);
+        Method method = DemoService.class.getMethods()[0];
+        when(invocation.getMethodName()).thenReturn(method.getName());
+        when(invocation.getParameterTypes()).thenReturn(method.getParameterTypes());
+
+        String resourceName = DubboUtils.getResourceName(invoker, invocation, DubboConfig.getDubboProviderPrefix());
+        assertEquals(DubboConfig.getDubboProviderPrefix()+":"+"com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService:sayHello(java.lang.String,int)", resourceName);
+
+        resourceName = DubboUtils.getResourceName(invoker, invocation, DubboConfig.getDubboConsumerPrefix());
+        assertEquals(DubboConfig.getDubboConsumerPrefix()+":"+"com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService:sayHello(java.lang.String,int)", resourceName);
+
+
     }
 }
