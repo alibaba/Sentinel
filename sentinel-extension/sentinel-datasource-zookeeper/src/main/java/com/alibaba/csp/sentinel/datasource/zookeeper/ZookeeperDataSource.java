@@ -187,7 +187,7 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
         return String.format("/%s/%s", groupId, dataId);
     }
 
-    private  String getZkKey(final String serverAddr, final List<AuthInfo> authInfos) {
+    private String getZkKey(final String serverAddr, final List<AuthInfo> authInfos) {
         if (authInfos == null || authInfos.size() == 0) {
             return serverAddr;
         }
@@ -196,7 +196,7 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
         return builder.toString();
     }
 
-    private  String getAuthInfosKey(List<AuthInfo> authInfos) {
+    private String getAuthInfosKey(List<AuthInfo> authInfos) {
         StringBuilder builder = new StringBuilder(32);
         for (AuthInfo authInfo : authInfos) {
             if (authInfo == null) {
@@ -208,7 +208,9 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
         return builder.toString();
     }
 
-
+    public CuratorFramework getZkClient() {
+        return this.zkClient;
+    }
 
 
 }
