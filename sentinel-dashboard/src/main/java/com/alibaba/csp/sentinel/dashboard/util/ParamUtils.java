@@ -25,7 +25,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 public final class ParamUtils {
 
     public static  void checkBlank(String param, String errMsg) {
-        if (StringUtil.isEmpty(param)) {
+        if (StringUtil.isBlank(param)) {
             throw new ParamValidateFailedException(errMsg);
         }
     }
