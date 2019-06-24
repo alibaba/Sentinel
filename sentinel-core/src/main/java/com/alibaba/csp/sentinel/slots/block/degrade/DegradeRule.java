@@ -22,12 +22,12 @@ import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
+import com.alibaba.csp.sentinel.slots.statistic.base.LongAdder;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * <p>
@@ -178,7 +178,7 @@ public class DegradeRule extends AbstractRule {
 
     // Internal implementation (will be deprecated and moved outside).
 
-    private AtomicLong passCount = new AtomicLong(0);
+    private LongAdder passCount = new LongAdder();
     private final AtomicBoolean cut = new AtomicBoolean(false);
 
     @Override
@@ -195,12 +195,13 @@ public class DegradeRule extends AbstractRule {
         if (grade == RuleConstant.DEGRADE_GRADE_RT) {
             double rt = clusterNode.avgRt();
             if (rt < this.count) {
-                passCount.set(0);
+                passCount.reset();
                 return true;
             }
 
             // Sentinel will degrade the service only if count exceeds.
-            if (passCount.incrementAndGet() < rtSlowRequestAmount) {
+            passCount.increment();
+            if (passCount.sum() < rtSlowRequestAmount) {
                 return true;
             }
         } else if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
@@ -247,7 +248,7 @@ public class DegradeRule extends AbstractRule {
 
         @Override
         public void run() {
-            rule.passCount.set(0);
+            rule.passCount.reset();
             rule.cut.set(false);
         }
     }
