@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import static com.alibaba.csp.sentinel.util.ConfigUtil.addSeparator;
+
 /**
  * <p>
  * class responsible for loading the Sentinel Core configuration
@@ -84,12 +86,7 @@ public class SentinelConfigLocator {
         }
     }
 
-    private static String addSeparator(String logDir) {
-        if (!logDir.endsWith(File.separator)) {
-            logDir += File.separator;
-        }
-        return logDir;
-    }
+
 
     public static Properties locateProperties() {
         return properties;

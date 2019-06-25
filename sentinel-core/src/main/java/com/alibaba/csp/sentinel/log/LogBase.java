@@ -24,6 +24,8 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.alibaba.csp.sentinel.util.ConfigUtil.addSeparator;
+
 /**
  * Default log base dir is ${user.home}/logs/csp/, we can use {@link #LOG_DIR} System property to override it.
  * Default log file name dose not contain pid, but if multi instances of the same app are running in the same
@@ -118,6 +120,33 @@ public class LogBase {
         return logNameUsePid;
     }
 
+    /**
+     * Get log file base directory path, the returned path is guaranteed end with {@link File#separator}
+     *
+     * @return log file base directory path.
+     */
+    public static String getLogBaseDir() {
+        return logBaseDir;
+    }
+
+    /**
+     * Get log file output type the default value is "file"
+     *
+     * @return
+     */
+    public static String getLogOutputType() {
+        return logOutputType;
+    }
+
+    /**
+     * Get log file charSet the default value is utf-8
+     *
+     * @return
+     */
+    public static String getLogCharset() {
+        return logCharSet;
+    }
+
 
     protected static void log(Logger logger, Handler handler, Level level, String detail, Object... params) {
         if (detail == null) {
@@ -139,14 +168,6 @@ public class LogBase {
         logger.log(level, detail, throwable);
     }
 
-    /**
-     * Get log file base directory path, the returned path is guaranteed end with {@link File#separator}
-     *
-     * @return log file base directory path.
-     */
-    public static String getLogBaseDir() {
-        return logBaseDir;
-    }
 
     protected static Handler makeLogger(String logName, Logger heliumRecordLog) {
         CspFormatter formatter = new CspFormatter();
@@ -186,14 +207,6 @@ public class LogBase {
         }
         heliumRecordLog.setLevel(Level.ALL);
         return handler;
-    }
-
-
-    private static String addSeparator(String logDir) {
-        if (!logDir.endsWith(File.separator)) {
-            logDir += File.separator;
-        }
-        return logDir;
     }
 
 

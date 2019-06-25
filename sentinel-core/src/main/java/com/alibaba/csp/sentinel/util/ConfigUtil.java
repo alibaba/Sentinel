@@ -1,5 +1,6 @@
 package com.alibaba.csp.sentinel.util;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URL;
@@ -89,6 +90,13 @@ public final class ConfigUtil {
             classLoader = ConfigUtil.class.getClassLoader();
         }
         return classLoader;
+    }
+
+    public static String addSeparator(String logDir) {
+        if (!logDir.endsWith(File.separator)) {
+            logDir += File.separator;
+        }
+        return logDir;
     }
 
 
