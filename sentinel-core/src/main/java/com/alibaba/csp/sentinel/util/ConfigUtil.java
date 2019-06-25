@@ -20,6 +20,12 @@ import java.util.Properties;
 public final class ConfigUtil {
 
 
+    /**
+     * Return null if the file not exist
+     *
+     * @param fileName
+     * @return
+     */
     public static Properties loadPropertiesFromFile(String fileName) {
         if (StringUtil.isNotBlank(fileName)) {
             if (fileName.startsWith("/")) {
@@ -35,7 +41,13 @@ public final class ConfigUtil {
     private static Properties loadPropertiesFromAbsoluteFile(String fileName) {
         Properties properties = null;
         try {
-            FileInputStream input = new FileInputStream(fileName);
+
+            File file = new File(fileName);
+            if (!file.exists()) {
+                return null;
+            }
+
+            FileInputStream input = new FileInputStream(file);
             try {
                 properties = new Properties();
                 properties.load(input);
@@ -59,6 +71,10 @@ public final class ConfigUtil {
             }
         } catch (Throwable e) {
             e.printStackTrace();
+        }
+
+        if (list.isEmpty()) {
+            return null;
         }
 
         Properties properties = new Properties();

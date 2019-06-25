@@ -62,7 +62,7 @@ public class SentinelConfigLocator {
         Properties p = ConfigUtil.loadPropertiesFromFile(fileName);
 
         //old version config file
-        if (p == null || p.isEmpty()) {
+        if (p == null) {
             String path = addSeparator(System.getProperty(USER_HOME)) + DIR_NAME + File.separator;
             fileName = path + AppNameUtil.getAppName() + ".properties";
             File file = new File(fileName);
