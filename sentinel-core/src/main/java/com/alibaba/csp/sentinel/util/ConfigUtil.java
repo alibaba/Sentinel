@@ -20,18 +20,23 @@ import java.util.Properties;
 public final class ConfigUtil {
 
 
+    public static final String CLASSPATH_FILE_FLAG = "classpath:";
+
     /**
      * Return null if the file not exist
      *
      * @param fileName
      * @return
      */
-    public static Properties loadPropertiesFromFile(String fileName) {
+    public static Properties loadProperties(String fileName) {
         if (StringUtil.isNotBlank(fileName)) {
             if (fileName.startsWith(File.separator)) {
                 return loadPropertiesFromAbsoluteFile(fileName);
+            } else if (fileName.startsWith(CLASSPATH_FILE_FLAG)) {
+                return loadPropertiesFromClasspathFile(fileName);
             } else {
-                return loadPropertiesFromRelativeFile(fileName);
+                //todo relative file handle
+                return null;
             }
         } else {
             return null;
@@ -61,7 +66,10 @@ public final class ConfigUtil {
     }
 
 
-    private static Properties loadPropertiesFromRelativeFile(String fileName) {
+    private static Properties loadPropertiesFromClasspathFile(String fileName) {
+
+        fileName = fileName.substring(CLASSPATH_FILE_FLAG.length()).trim();
+
         List<URL> list = new ArrayList<URL>();
         try {
             Enumeration<URL> urls = getClassLoader().getResources(fileName);
@@ -115,5 +123,8 @@ public final class ConfigUtil {
         return logDir;
     }
 
+    public static void main(String[] args) {
+        System.out.println(CLASSPATH_FILE_FLAG.substring(CLASSPATH_FILE_FLAG.length()));
+    }
 
 }

@@ -59,7 +59,7 @@ public class SentinelConfigLoader {
             fileName = DEFAULT_SENTINEL_CONFIG_FILE;
         }
 
-        Properties p = ConfigUtil.loadPropertiesFromFile(fileName);
+        Properties p = ConfigUtil.loadProperties(fileName);
 
         //old version config file
         if (p == null) {
@@ -67,7 +67,7 @@ public class SentinelConfigLoader {
             fileName = path + AppNameUtil.getAppName() + ".properties";
             File file = new File(fileName);
             if (file.exists()) {
-                p = ConfigUtil.loadPropertiesFromFile(fileName);
+                p = ConfigUtil.loadProperties(fileName);
             }
         }
 

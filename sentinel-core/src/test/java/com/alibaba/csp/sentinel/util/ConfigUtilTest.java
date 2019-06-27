@@ -35,7 +35,7 @@ import static com.alibaba.csp.sentinel.util.ConfigUtil.addSeparator;
 public class ConfigUtilTest {
 
     @Test
-    public void testLoadPropertiesFromFile() throws IOException {
+    public void testLoadProperties() throws IOException {
 
         File file = null;
         String logOutputType = "utf-8", dir = "/data/logs/", fileName = "propertiesTest.properties";
@@ -53,13 +53,13 @@ public class ConfigUtilTest {
             out.close();
 
             //Load from absolutePath
-            Properties properties = ConfigUtil.loadPropertiesFromFile(file.getAbsolutePath());
+            Properties properties = ConfigUtil.loadProperties(file.getAbsolutePath());
             Assert.assertTrue(logOutputType.equals(properties.getProperty(LOG_OUTPUT_TYPE)));
             Assert.assertTrue(dir.equals(properties.getProperty(LOG_DIR)));
 
 
-            //Load from relativePath
-            properties = ConfigUtil.loadPropertiesFromFile(fileName);
+            //Load from classPath
+            properties = ConfigUtil.loadProperties(ConfigUtil.CLASSPATH_FILE_FLAG + fileName);
             Assert.assertTrue(logOutputType.equals(properties.getProperty(LOG_OUTPUT_TYPE)));
             Assert.assertTrue(dir.equals(properties.getProperty(LOG_DIR)));
 

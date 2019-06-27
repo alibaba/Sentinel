@@ -51,7 +51,7 @@ public class LogConfigLoader {
             file = DEFAULT_LOG_CONFIG_FILE;
         }
 
-        Properties p = ConfigUtil.loadPropertiesFromFile(file);
+        Properties p = ConfigUtil.loadProperties(file);
         if (p != null && !p.isEmpty()) {
             properties.putAll(p);
         }
