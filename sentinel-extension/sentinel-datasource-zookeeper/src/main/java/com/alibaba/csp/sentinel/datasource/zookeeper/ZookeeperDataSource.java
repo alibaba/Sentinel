@@ -208,7 +208,7 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
         return builder.toString();
     }
 
-    public CuratorFramework getZkClient() {
+    protected CuratorFramework getZkClient() {
         return this.zkClient;
     }
 
