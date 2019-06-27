@@ -79,7 +79,7 @@ public class LogBase {
 
     private static void loadProperties() {
 
-        Properties properties = LogConfigLocator.locateProperties();
+        Properties properties = LogConfigLoader.getProperties();
 
         logOutputType = properties.get(LOG_OUTPUT_TYPE) == null ? logOutputType : properties.getProperty(LOG_OUTPUT_TYPE);
         if (!LOG_OUTPUT_TYPE_FILE.equalsIgnoreCase(logOutputType) && !LOG_OUTPUT_TYPE_CONSOLE.equalsIgnoreCase(logOutputType)) {

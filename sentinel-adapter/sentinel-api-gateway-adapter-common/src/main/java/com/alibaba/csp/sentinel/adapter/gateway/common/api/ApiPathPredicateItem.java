@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
 
 import java.util.Objects;
 
+
 /**
  * @author Eric Zhao
  * @since 1.6.0
@@ -48,12 +49,18 @@ public class ApiPathPredicateItem implements ApiPredicateItem {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) { return true; }
-        if (o == null || getClass() != o.getClass()) { return false; }
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
-        ApiPathPredicateItem that = (ApiPathPredicateItem)o;
+        ApiPathPredicateItem that = (ApiPathPredicateItem) o;
 
-        if (matchStrategy != that.matchStrategy) { return false; }
+        if (matchStrategy != that.matchStrategy) {
+            return false;
+        }
         return Objects.equals(pattern, that.pattern);
     }
 
@@ -67,8 +74,8 @@ public class ApiPathPredicateItem implements ApiPredicateItem {
     @Override
     public String toString() {
         return "ApiPathPredicateItem{" +
-            "pattern='" + pattern + '\'' +
-            ", matchStrategy=" + matchStrategy +
-            '}';
+                "pattern='" + pattern + '\'' +
+                ", matchStrategy=" + matchStrategy +
+                '}';
     }
 }

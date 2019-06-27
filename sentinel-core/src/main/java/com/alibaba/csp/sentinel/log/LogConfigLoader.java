@@ -30,10 +30,10 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * @author lianglin
  * @since 1.7.0
  */
-public class LogConfigLocator {
+public class LogConfigLoader {
 
 
-    private static final String LOG_CONFIG = "csp.sentinel.config.file";
+    public static final String LOG_CONFIG = "csp.sentinel.config.file";
 
     private static final String DEFAULT_LOG_CONFIG_FILE = "sentinel.properties";
 
@@ -70,10 +70,9 @@ public class LogConfigLocator {
 
     }
 
-    public static Properties locateProperties() {
+    public static Properties getProperties() {
         return properties;
     }
-
 
 
 }

@@ -35,24 +35,24 @@ import static com.alibaba.csp.sentinel.util.ConfigUtil.addSeparator;
  * @author lianglin
  * @since 1.7.0
  */
-public class SentinelConfigLocator {
+public class SentinelConfigLoader {
 
 
     private static final String DIR_NAME = "logs" + File.separator + "csp";
     private static final String USER_HOME = "user.home";
 
-    private static String SENTINEL_CONFIG = "csp.sentinel.config.file";
+    public static final String SENTINEL_CONFIG = "csp.sentinel.config.file";
     private static String DEFAULT_SENTINEL_CONFIG_FILE = "sentinel.properties";
 
 
     private static Properties properties = new Properties();
 
     static {
-        locate();
+        load();
     }
 
 
-    private static void locate() {
+    private static void load() {
 
         String fileName = System.getProperty(SENTINEL_CONFIG);
         if (StringUtil.isBlank(fileName)) {
@@ -87,8 +87,7 @@ public class SentinelConfigLocator {
     }
 
 
-
-    public static Properties locateProperties() {
+    public static Properties getProperties() {
         return properties;
     }
 
