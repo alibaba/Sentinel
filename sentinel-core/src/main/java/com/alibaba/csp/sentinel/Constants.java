@@ -30,7 +30,7 @@ import com.alibaba.csp.sentinel.util.VersionUtil;
  */
 public final class Constants {
 
-    public static final String SENTINEL_VERSION = VersionUtil.getVersion("1.6.0");
+    public static final String SENTINEL_VERSION = VersionUtil.getVersion("1.7.0");
 
     public final static int MAX_CONTEXT_NAME_SIZE = 2000;
     public final static int MAX_SLOT_CHAIN_SIZE = 6000;
@@ -42,6 +42,16 @@ public final class Constants {
      * A virtual resource identifier for total inbound statistics (since 1.5.0).
      */
     public final static String TOTAL_IN_RESOURCE_NAME = "__total_inbound_traffic__";
+
+    /**
+     * A virtual resource identifier for cpu usage statistics (since 1.6.1).
+     */
+    public final static String CPU_USAGE_RESOURCE_NAME = "__cpu_usage__";
+
+    /**
+     * A virtual resource identifier for system load statistics (since 1.6.1).
+     */
+    public final static String SYSTEM_LOAD_RESOURCE_NAME = "__system_load__";
 
     /**
      * Global ROOT statistic node that represents the universal parent node.

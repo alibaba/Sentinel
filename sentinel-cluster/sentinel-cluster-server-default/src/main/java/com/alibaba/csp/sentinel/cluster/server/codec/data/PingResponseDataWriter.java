@@ -31,6 +31,6 @@ public class PingResponseDataWriter implements EntityWriter<Integer, ByteBuf> {
         if (entity == null || target == null) {
             return;
         }
-        target.writeByte(entity);
+        target.writeInt(entity);
     }
 }

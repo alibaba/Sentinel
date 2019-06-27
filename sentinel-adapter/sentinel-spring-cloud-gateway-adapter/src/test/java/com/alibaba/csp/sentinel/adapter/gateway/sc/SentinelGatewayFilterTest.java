@@ -44,14 +44,14 @@ public class SentinelGatewayFilterTest {
         ApiDefinition api1 = new ApiDefinition(apiName1)
             .setPredicateItems(Collections.singleton(
                 new ApiPathPredicateItem().setPattern("/product/**")
-                    .setMatchStrategy(SentinelGatewayConstants.PARAM_MATCH_STRATEGY_PREFIX)
+                    .setMatchStrategy(SentinelGatewayConstants.URL_MATCH_STRATEGY_PREFIX)
             ));
         String apiName2 = "another_customized_api";
         ApiDefinition api2 = new ApiDefinition(apiName2)
             .setPredicateItems(new HashSet<ApiPredicateItem>() {{
                 add(new ApiPathPredicateItem().setPattern("/something"));
                 add(new ApiPathPredicateItem().setPattern("/other/**")
-                    .setMatchStrategy(SentinelGatewayConstants.PARAM_MATCH_STRATEGY_PREFIX));
+                    .setMatchStrategy(SentinelGatewayConstants.URL_MATCH_STRATEGY_PREFIX));
             }});
         apiDefinitions.add(api1);
         apiDefinitions.add(api2);

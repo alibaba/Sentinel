@@ -58,7 +58,17 @@ public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
         } catch (BlockException ex) {
             return handleBlockException(pjp, annotation, ex);
         } catch (Throwable ex) {
-            traceException(ex, annotation);
+            Class<? extends Throwable>[] exceptionsToIgnore = annotation.exceptionsToIgnore();
+            // The ignore list will be checked first.
+            if (exceptionsToIgnore.length > 0 && exceptionBelongsTo(ex, exceptionsToIgnore)) {
+                throw ex;
+            }
+            if (exceptionBelongsTo(ex, annotation.exceptionsToTrace())) {
+                traceException(ex, annotation);
+                return handleFallback(pjp, annotation, ex);
+            }
+
+            // No fallback function can handle the exception, so throw it out.
             throw ex;
         } finally {
             if (entry != null) {

@@ -21,6 +21,8 @@ import com.alibaba.csp.sentinel.context.ContextTestUtil;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
+import com.alibaba.csp.sentinel.util.function.Function;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -101,11 +103,13 @@ public class FlowSlotTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testCheckFlowPass() throws Exception {
-        FlowSlot flowSlot = mock(FlowSlot.class);
+        FlowRuleChecker checker = mock(FlowRuleChecker.class);
+        FlowSlot flowSlot = new FlowSlot(checker);
         Context context = mock(Context.class);
         DefaultNode node = mock(DefaultNode.class);
-        doCallRealMethod().when(flowSlot).checkFlow(any(ResourceWrapper.class), any(Context.class),
+        doCallRealMethod().when(checker).checkFlow(any(Function.class), any(ResourceWrapper.class), any(Context.class),
             any(DefaultNode.class), anyInt(), anyBoolean());
 
         String resA = "resAK";
@@ -115,9 +119,9 @@ public class FlowSlotTest {
         // Here we only load rules for resA.
         FlowRuleManager.loadRules(Collections.singletonList(rule1));
 
-        when(flowSlot.canPassCheck(eq(rule1), any(Context.class), any(DefaultNode.class), anyInt(), anyBoolean()))
+        when(checker.canPassCheck(eq(rule1), any(Context.class), any(DefaultNode.class), anyInt(), anyBoolean()))
             .thenReturn(true);
-        when(flowSlot.canPassCheck(eq(rule2), any(Context.class), any(DefaultNode.class), anyInt(), anyBoolean()))
+        when(checker.canPassCheck(eq(rule2), any(Context.class), any(DefaultNode.class), anyInt(), anyBoolean()))
             .thenReturn(false);
 
         flowSlot.checkFlow(new StringResourceWrapper(resA, EntryType.IN), context, node, 1, false);
@@ -125,18 +129,20 @@ public class FlowSlotTest {
     }
 
     @Test(expected = FlowException.class)
+    @SuppressWarnings("unchecked")
     public void testCheckFlowBlock() throws Exception {
-        FlowSlot flowSlot = mock(FlowSlot.class);
+        FlowRuleChecker checker = mock(FlowRuleChecker.class);
+        FlowSlot flowSlot = new FlowSlot(checker);
         Context context = mock(Context.class);
         DefaultNode node = mock(DefaultNode.class);
-        doCallRealMethod().when(flowSlot).checkFlow(any(ResourceWrapper.class), any(Context.class),
+        doCallRealMethod().when(checker).checkFlow(any(Function.class), any(ResourceWrapper.class), any(Context.class),
             any(DefaultNode.class), anyInt(), anyBoolean());
 
         String resA = "resAK";
         FlowRule rule = new FlowRule(resA).setCount(10);
         FlowRuleManager.loadRules(Collections.singletonList(rule));
 
-        when(flowSlot.canPassCheck(any(FlowRule.class), any(Context.class), any(DefaultNode.class), anyInt(), anyBoolean()))
+        when(checker.canPassCheck(any(FlowRule.class), any(Context.class), any(DefaultNode.class), anyInt(), anyBoolean()))
             .thenReturn(false);
 
         flowSlot.checkFlow(new StringResourceWrapper(resA, EntryType.IN), context, node, 1, false);

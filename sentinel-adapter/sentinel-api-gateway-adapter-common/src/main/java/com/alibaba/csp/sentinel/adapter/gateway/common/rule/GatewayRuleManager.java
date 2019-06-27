@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.adapter.gateway.common.rule;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -24,15 +25,15 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
+import com.alibaba.csp.sentinel.adapter.gateway.common.param.GatewayRegexCache;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
-import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRuleManager;
+import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRuleUtil;
+import com.alibaba.csp.sentinel.slots.block.flow.param.ParameterMetricStorage;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
@@ -42,7 +43,12 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  */
 public final class GatewayRuleManager {
 
-    private static final Map<String, Set<GatewayFlowRule>> RULE_MAP = new ConcurrentHashMap<>();
+    /**
+     * Gateway flow rule map: (resource, [rules...])
+     */
+    private static final Map<String, Set<GatewayFlowRule>> GATEWAY_RULE_MAP = new ConcurrentHashMap<>();
+
+    private static final Map<String, List<ParamFlowRule>> CONVERTED_PARAM_RULE_MAP = new ConcurrentHashMap<>();
 
     private static final GatewayRulePropertyListener LISTENER = new GatewayRulePropertyListener();
     private static SentinelProperty<Set<GatewayFlowRule>> currentProperty = new DynamicSentinelProperty<>();
@@ -74,19 +80,35 @@ public final class GatewayRuleManager {
 
     public static Set<GatewayFlowRule> getRules() {
         Set<GatewayFlowRule> rules = new HashSet<>();
-        for (Set<GatewayFlowRule> ruleSet : RULE_MAP.values()) {
+        for (Set<GatewayFlowRule> ruleSet : GATEWAY_RULE_MAP.values()) {
             rules.addAll(ruleSet);
         }
         return rules;
     }
 
     public static Set<GatewayFlowRule> getRulesForResource(String resourceName) {
-        AssertUtil.assertNotBlank(resourceName, "resourceName cannot be blank");
-        Set<GatewayFlowRule> set = RULE_MAP.get(resourceName);
+        if (StringUtil.isBlank(resourceName)) {
+            return new HashSet<>();
+        }
+        Set<GatewayFlowRule> set = GATEWAY_RULE_MAP.get(resourceName);
         if (set == null) {
             return new HashSet<>();
         }
         return new HashSet<>(set);
+    }
+
+    /**
+     * <p>Get all converted parameter rules.</p>
+     * <p>Note: caller SHOULD NOT modify the list and rules.</p>
+     *
+     * @param resourceName valid resource name
+     * @return converted parameter rules
+     */
+    public static List<ParamFlowRule> getConvertedParamRules(String resourceName) {
+        if (StringUtil.isBlank(resourceName)) {
+            return new ArrayList<>();
+        }
+        return CONVERTED_PARAM_RULE_MAP.get(resourceName);
     }
 
     private static final class GatewayRulePropertyListener implements PropertyListener<Set<GatewayFlowRule>> {
@@ -94,26 +116,43 @@ public final class GatewayRuleManager {
         @Override
         public void configUpdate(Set<GatewayFlowRule> conf) {
             applyGatewayRuleInternal(conf);
-            RecordLog.info("[GatewayRuleManager] Gateway flow rules received: " + RULE_MAP);
+            RecordLog.info("[GatewayRuleManager] Gateway flow rules received: " + GATEWAY_RULE_MAP);
         }
 
         @Override
         public void configLoad(Set<GatewayFlowRule> conf) {
             applyGatewayRuleInternal(conf);
-            RecordLog.info("[GatewayRuleManager] Gateway flow rules loaded: " + RULE_MAP);
+            RecordLog.info("[GatewayRuleManager] Gateway flow rules loaded: " + GATEWAY_RULE_MAP);
+        }
+
+        private int getIdxInternal(Map<String, Integer> idxMap, String resourceName) {
+            // Prepare index map.
+            if (!idxMap.containsKey(resourceName)) {
+                idxMap.put(resourceName, 0);
+            }
+            return idxMap.get(resourceName);
+        }
+
+        private void cacheRegexPattern(/*@NonNull*/ GatewayParamFlowItem item) {
+            String pattern = item.getPattern();
+            if (StringUtil.isNotEmpty(pattern) &&
+                item.getMatchStrategy() == SentinelGatewayConstants.PARAM_MATCH_STRATEGY_REGEX) {
+                if (GatewayRegexCache.getRegexPattern(pattern) == null) {
+                    GatewayRegexCache.addRegexPattern(pattern);
+                }
+            }
         }
 
         private synchronized void applyGatewayRuleInternal(Set<GatewayFlowRule> conf) {
             if (conf == null || conf.isEmpty()) {
-                FlowRuleManager.loadRules(new ArrayList<FlowRule>());
-                ParamFlowRuleManager.loadRules(new ArrayList<ParamFlowRule>());
-                RULE_MAP.clear();
+                applyToConvertedParamMap(new HashSet<ParamFlowRule>());
+                GATEWAY_RULE_MAP.clear();
                 return;
             }
             Map<String, Set<GatewayFlowRule>> gatewayRuleMap = new ConcurrentHashMap<>();
             Map<String, Integer> idxMap = new HashMap<>();
-            List<FlowRule> flowRules = new ArrayList<>();
             Set<ParamFlowRule> paramFlowRules = new HashSet<>();
+            Map<String, List<GatewayFlowRule>> noParamMap = new HashMap<>();
 
             for (GatewayFlowRule rule : conf) {
                 if (!isValidRule(rule)) {
@@ -122,18 +161,20 @@ public final class GatewayRuleManager {
                 }
                 String resourceName = rule.getResource();
                 if (rule.getParamItem() == null) {
-                    // If param item is absent, it will be converted to normal flow rule.
-                    flowRules.add(GatewayRuleConverter.toFlowRule(rule));
-                } else {
-                    // Prepare index map.
-                    if (!idxMap.containsKey(resourceName)) {
-                        idxMap.put(resourceName, 0);
+                    // Cache the rules with no parameter config, then skip.
+                    List<GatewayFlowRule> noParamList = noParamMap.get(resourceName);
+                    if (noParamList == null) {
+                        noParamList = new ArrayList<>();
+                        noParamMap.put(resourceName, noParamList);
                     }
-                    int idx = idxMap.get(resourceName);
+                    noParamList.add(rule);
+                } else {
+                    int idx = getIdxInternal(idxMap, resourceName);
                     // Convert to parameter flow rule.
                     if (paramFlowRules.add(GatewayRuleConverter.applyToParamRule(rule, idx))) {
                         idxMap.put(rule.getResource(), idx + 1);
                     }
+                    cacheRegexPattern(rule.getParamItem());
                 }
                 // Apply to the gateway rule map.
                 Set<GatewayFlowRule> ruleSet = gatewayRuleMap.get(resourceName);
@@ -143,11 +184,51 @@ public final class GatewayRuleManager {
                 }
                 ruleSet.add(rule);
             }
-            FlowRuleManager.loadRules(flowRules);
-            ParamFlowRuleManager.loadRules(new ArrayList<>(paramFlowRules));
+            // Handle non-param mode rules.
+            for (Map.Entry<String, List<GatewayFlowRule>> e : noParamMap.entrySet()) {
+                List<GatewayFlowRule> rules = e.getValue();
+                if (rules == null || rules.isEmpty()) {
+                    continue;
+                }
+                for (GatewayFlowRule rule : rules) {
+                    int idx = getIdxInternal(idxMap, e.getKey());
+                    // Always use the same index (the last position).
+                    paramFlowRules.add(GatewayRuleConverter.applyNonParamToParamRule(rule, idx));
+                }
+            }
 
-            RULE_MAP.clear();
-            RULE_MAP.putAll(gatewayRuleMap);
+            applyToConvertedParamMap(paramFlowRules);
+
+            GATEWAY_RULE_MAP.clear();
+            GATEWAY_RULE_MAP.putAll(gatewayRuleMap);
+        }
+
+        private void applyToConvertedParamMap(Set<ParamFlowRule> paramFlowRules) {
+            Map<String, List<ParamFlowRule>> newRuleMap = ParamFlowRuleUtil.buildParamRuleMap(
+                new ArrayList<>(paramFlowRules));
+            if (newRuleMap == null || newRuleMap.isEmpty()) {
+                // No parameter flow rules, so clear all the metrics.
+                for (String resource : CONVERTED_PARAM_RULE_MAP.keySet()) {
+                    ParameterMetricStorage.clearParamMetricForResource(resource);
+                }
+                RecordLog.info("[GatewayRuleManager] No gateway rules, clearing parameter metrics of previous rules");
+                CONVERTED_PARAM_RULE_MAP.clear();
+                return;
+            }
+
+            // Clear unused parameter metrics.
+            Set<String> previousResources = CONVERTED_PARAM_RULE_MAP.keySet();
+            for (String resource : previousResources) {
+                if (!newRuleMap.containsKey(resource)) {
+                    ParameterMetricStorage.clearParamMetricForResource(resource);
+                }
+            }
+
+            // Apply to converted rule map.
+            CONVERTED_PARAM_RULE_MAP.clear();
+            CONVERTED_PARAM_RULE_MAP.putAll(newRuleMap);
+
+            RecordLog.info("[GatewayRuleManager] Converted internal param rules: " + CONVERTED_PARAM_RULE_MAP);
         }
     }
 
@@ -174,14 +255,18 @@ public final class GatewayRuleManager {
         if (item.getParseStrategy() < 0) {
             return false;
         }
-        if (item.getParseStrategy() == SentinelGatewayConstants.PARAM_PARSE_STRATEGY_URL_PARAM ||
-            item.getParseStrategy() == SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER) {
-            if (StringUtil.isBlank(item.getFieldName())) {
-                return false;
-            }
+        // Check required field name for item types.
+        if (FIELD_REQUIRED_SET.contains(item.getParseStrategy()) && StringUtil.isBlank(item.getFieldName())) {
+            return false;
         }
         return StringUtil.isEmpty(item.getPattern()) || item.getMatchStrategy() >= 0;
     }
+
+    private static final Set<Integer> FIELD_REQUIRED_SET = new HashSet<>(
+        Arrays.asList(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_URL_PARAM,
+            SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER,
+            SentinelGatewayConstants.PARAM_PARSE_STRATEGY_COOKIE)
+    );
 
     private GatewayRuleManager() {}
 }
