@@ -41,10 +41,10 @@ public class LogConfigLoader {
     private static final Properties properties = new Properties();
 
     static {
-        locate();
+        load();
     }
 
-    private static void locate() {
+    private static void load() {
 
         String file = System.getProperty(LOG_CONFIG);
         if (StringUtil.isBlank(file)) {
