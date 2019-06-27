@@ -28,7 +28,7 @@ public final class ConfigUtil {
      */
     public static Properties loadPropertiesFromFile(String fileName) {
         if (StringUtil.isNotBlank(fileName)) {
-            if (fileName.startsWith("/")) {
+            if (fileName.startsWith(File.separator)) {
                 return loadPropertiesFromAbsoluteFile(fileName);
             } else {
                 return loadPropertiesFromRelativeFile(fileName);
