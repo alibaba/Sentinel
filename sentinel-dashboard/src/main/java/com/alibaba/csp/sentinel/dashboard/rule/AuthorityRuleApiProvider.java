@@ -16,7 +16,7 @@
 package com.alibaba.csp.sentinel.dashboard.rule;
 
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.AuthorityRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -31,17 +31,19 @@ import java.util.Set;
  * @author lianglin
  * @since 1.7.0
  */
-@Component("degradeRuleDefaultProvider")
-public class DegradeRuleApiProvider extends AbstractDynamicRuleProvider<List<DegradeRuleEntity>>{
+
+@Component("authorityRuleDefaultProvider")
+public class AuthorityRuleApiProvider extends AbstractDynamicRuleProvider<List<AuthorityRuleEntity>> {
+
 
     @Autowired
     private SentinelApiClient sentinelApiClient;
+
     @Autowired
     private AppManagement appManagement;
 
-
     @Override
-    public List<DegradeRuleEntity> getRules(String appName) throws Exception {
+    public List<AuthorityRuleEntity> getRules(String appName) throws Exception {
         if (StringUtil.isBlank(appName)) {
             return new ArrayList<>();
         }
@@ -51,7 +53,7 @@ public class DegradeRuleApiProvider extends AbstractDynamicRuleProvider<List<Deg
             return new ArrayList<>();
         } else {
             MachineInfo machine = list.get(0);
-            return sentinelApiClient.fetchDegradeRuleOfMachine(machine.getApp(), machine.getIp(), machine.getPort());
+            return sentinelApiClient.fetchAuthorityRulesOfMachine(machine.getApp(), machine.getIp(), machine.getPort());
         }
     }
 }

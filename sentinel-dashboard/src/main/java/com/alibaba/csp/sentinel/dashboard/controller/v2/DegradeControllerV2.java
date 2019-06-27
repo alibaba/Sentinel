@@ -17,21 +17,23 @@ package com.alibaba.csp.sentinel.dashboard.controller.v2;
 
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.domain.ResponseCodeConstant;
+import com.alibaba.csp.sentinel.dashboard.domain.ResponseCode;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
-import com.alibaba.csp.sentinel.dashboard.util.ParamUtils;
-import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
@@ -43,7 +45,7 @@ import java.util.List;
  * @since 1.7.0
  */
 @RestController
-@RequestMapping(value = "v2/degrade", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "v2/degrade")
 public class DegradeControllerV2 {
 
     private final Logger logger = LoggerFactory.getLogger(DegradeControllerV2.class);
@@ -51,6 +53,7 @@ public class DegradeControllerV2 {
     @Autowired
     @Qualifier("degradeRuleDefaultProvider")
     private DynamicRuleProvider<List<DegradeRuleEntity>> ruleProvider;
+
     @Autowired
     @Qualifier("degradeRuleDefaultPublisher")
     private DynamicRulePublisher<List<DegradeRuleEntity>> rulePublisher;
@@ -63,14 +66,13 @@ public class DegradeControllerV2 {
 
 
 
-
-    @ResponseBody
-    @RequestMapping("/rules.json")
-    public Result<List<DegradeRuleEntity>> queryMachineRules(HttpServletRequest request, String app, String ip, Integer port) {
+    @GetMapping("/rules")
+    public Result<List<DegradeRuleEntity>> apiQueryMachineRules(HttpServletRequest request, String app) {
         try {
 
-            ParamUtils.checkBlank(ip, "ip can't be null or empty");
-            ParamUtils.checkNull(port, "port can't be null");
+            if(StringUtil.isBlank(app)){
+                return Result.ofFail(ResponseCode.fail,"app can't be null or empty");
+            }
 
             AuthService.AuthUser authUser = authService.getAuthUser(request);
             authUser.authTarget(app, AuthService.PrivilegeType.READ_RULE);
@@ -85,119 +87,100 @@ public class DegradeControllerV2 {
     }
 
 
-    @ResponseBody
-    @RequestMapping("/new.json")
-    public Result<DegradeRuleEntity> add(HttpServletRequest request,
-                                         String app, String ip, Integer port, String limitApp, String resource,
-                                         Double count, Integer timeWindow, Integer grade) {
-
-
-        DegradeRuleEntity entity = new DegradeRuleEntity();
-        try {
-            ParamUtils.checkBlank(app, "app can't be null or empty");
-            ParamUtils.checkBlank(ip, "ip can't be null or empty");
-            ParamUtils.checkNull(port, "port can't be null");
-            ParamUtils.checkBlank(limitApp, "limitApp can't be null or empty");
-            ParamUtils.checkBlank(resource, "resource can't be null or empty");
-            ParamUtils.checkNull(count, "count can't be null");
-            ParamUtils.checkNull(timeWindow, "timeWindow can't be null");
-            ParamUtils.checkNull(grade, "grade can't be null");
-            if (grade < RuleConstant.DEGRADE_GRADE_RT || grade > RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
-                return Result.ofFail(ResponseCodeConstant.fail, "Invalid grade: " + grade);
-            }
-
-            AuthService.AuthUser authUser = authService.getAuthUser(request);
-            authUser.authTarget(app, AuthService.PrivilegeType.WRITE_RULE);
-
-            Date date = new Date();
-            entity.setApp(app.trim())
-                    .setIp(ip)
-                    .setPort(port).setLimitApp(limitApp)
-                    .setResource(resource)
-                    .setCount(count)
-                    .setTimeWindow(timeWindow)
-                    .setGrade(grade)
-                    .setGmtCreate(date)
-                    .setGmtModified(date);
-            entity = repository.save(entity);
-            publishRules(entity.getApp());
-        } catch (Throwable throwable) {
-            logger.error("add error:", throwable);
-            return Result.ofThrowable(ResponseCodeConstant.fail, throwable);
-        }
-
-        return Result.ofSuccess(entity);
-
-    }
-
-
-    @ResponseBody
-    @RequestMapping("/save.json")
-    public Result<DegradeRuleEntity> updateIfNotNull(HttpServletRequest request,
-                                                     Long id, String app, String limitApp, String resource,
-                                                     Double count, Integer timeWindow, Integer grade) {
-
-        if (id == null) {
-            return Result.ofFail(ResponseCodeConstant.fail, "id can't be null");
-        }
-
-        DegradeRuleEntity entity = repository.findById(id);
-        if (entity == null) {
-            return Result.ofFail(ResponseCodeConstant.fail, "id " + id + " dose not exist");
-        }
-
-        if (grade != null) {
-            if (grade < RuleConstant.DEGRADE_GRADE_RT || grade > RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
-                return Result.ofFail(ResponseCodeConstant.fail, "Invalid grade: " + grade);
-            }
-        }
+    @PostMapping("/rule")
+    public Result<DegradeRuleEntity> apiAddRule(HttpServletRequest request, @RequestBody  DegradeRuleEntity entity) {
 
         try {
+            Result<DegradeRuleEntity> checkResult = checkEntity(entity);
+            if (checkResult != null) {
+                return checkResult;
+            }
 
             AuthService.AuthUser authUser = authService.getAuthUser(request);
             authUser.authTarget(entity.getApp(), AuthService.PrivilegeType.WRITE_RULE);
 
-            entity.setApp(StringUtil.isNotBlank(app) ? app.trim() : entity.getApp());
-            entity.setLimitApp(StringUtil.isNotBlank(limitApp) ? limitApp.trim() : entity.getLimitApp());
-            entity.setResource(StringUtil.isNotBlank(resource) ? resource.trim() : entity.getResource());
-            entity.setCount(count != null ? count : entity.getCount());
-            entity.setTimeWindow(timeWindow != null ? timeWindow : entity.getTimeWindow());
-            entity.setGrade(grade != null ? grade : entity.getGrade());
-            entity.setGmtModified(new Date());
+            Date date = new Date();
+            entity.setGmtCreate(date)
+                    .setGmtModified(date)
+                    .setResource(entity.getResource().trim())
+                    .setLimitApp(entity.getLimitApp().trim())
+                    .setApp(entity.getApp().trim())
+                    .setId(null);
 
             entity = repository.save(entity);
             publishRules(entity.getApp());
         } catch (Throwable throwable) {
+            logger.error("add error:", throwable);
+            return Result.ofThrowable(ResponseCode.fail, throwable);
+        }
+
+        return Result.ofSuccess(entity);
+
+    }
+
+
+
+
+    @PutMapping("/rule/{id}")
+    public Result<DegradeRuleEntity> apiUpdateRule(HttpServletRequest request,
+                                                   @PathVariable("id") Long id, @RequestBody DegradeRuleEntity entity) {
+
+        try {
+            if (id == null || id < 0) {
+                return Result.ofFail(ResponseCode.fail, "id is invalid");
+            }
+
+            if (entity == null) {
+                return Result.ofFail(ResponseCode.fail, "invalid body");
+            }
+
+            AuthService.AuthUser authUser = authService.getAuthUser(request);
+            authUser.authTarget(entity.getApp(), AuthService.PrivilegeType.WRITE_RULE);
+
+            DegradeRuleEntity oldEntity = repository.findById(id);
+            if (oldEntity != null) {
+                return Result.ofFail(ResponseCode.fail, "id " + id + " does not exist");
+            }
+
+            entity.setApp(oldEntity.getApp()).setIp(oldEntity.getIp()).setPort(oldEntity.getPort());
+            Result<DegradeRuleEntity> checkResult = checkEntity(entity);
+            if (checkResult != null) {
+                return checkResult;
+            }
+
+
+            entity.setGmtCreate(oldEntity.getGmtCreate()).setGmtModified(new Date()).setId(id);
+            entity = repository.save(entity);
+            if (entity == null) {
+                return Result.ofFail(ResponseCode.fail, "save entity fail");
+            }
+            publishRules(entity.getApp());
+        } catch (Throwable throwable) {
             logger.error("save error:", throwable);
-            return Result.ofThrowable(ResponseCodeConstant.fail, throwable);
+            return Result.ofThrowable(ResponseCode.fail, throwable);
         }
 
         return Result.ofSuccess(entity);
     }
 
 
-    @ResponseBody
-    @RequestMapping("/delete.json")
-    public Result<Long> delete(HttpServletRequest request, Long id) {
-
-        if (id == null) {
-            return Result.ofFail(ResponseCodeConstant.fail, "id can't be null");
+    @DeleteMapping("/rule/{id}")
+    public Result<Long> apiDeleteRule(HttpServletRequest request, @PathVariable("id") Long id) {
+        AuthService.AuthUser authUser = authService.getAuthUser(request);
+        if (id == null || id <= 0) {
+            return Result.ofFail(ResponseCode.fail, "Invalid id");
         }
         DegradeRuleEntity oldEntity = repository.findById(id);
         if (oldEntity == null) {
             return Result.ofSuccess(null);
         }
-        AuthService.AuthUser authUser = authService.getAuthUser(request);
         authUser.authTarget(oldEntity.getApp(), AuthService.PrivilegeType.DELETE_RULE);
-
         try {
             repository.delete(id);
             publishRules(oldEntity.getApp());
-        } catch (Throwable throwable) {
-            logger.error("delete error:", throwable);
-            return Result.ofThrowable(ResponseCodeConstant.fail, throwable);
+        } catch (Exception e) {
+            return Result.ofFail(ResponseCode.fail, e.getMessage());
         }
-
         return Result.ofSuccess(id);
     }
 
@@ -208,4 +191,33 @@ public class DegradeControllerV2 {
     }
 
 
-}
+    private <R> Result<R> checkEntity(DegradeRuleEntity entity) {
+        if (entity == null) {
+            return Result.ofFail(ResponseCode.fail, "entity is invalid");
+        }
+        if (StringUtil.isBlank(entity.getApp())) {
+            return Result.ofFail(ResponseCode.fail, "app can't be null or empty");
+        }
+        if (StringUtil.isBlank(entity.getResource())) {
+            return Result.ofFail(ResponseCode.fail, "resource can't be null or empty");
+        }
+        if (StringUtil.isEmpty(entity.getLimitApp())) {
+            return Result.ofFail(ResponseCode.fail, "limitApp can't be empty");
+        }
+        if (entity.getCount() == null || entity.getCount() < 0) {
+            return Result.ofFail(ResponseCode.fail, "count can't be null or less than zero");
+        }
+        if (entity.getTimeWindow() == null || entity.getTimeWindow() < 0) {
+            return Result.ofFail(ResponseCode.fail, "timeWindow can't be null or less than zero");
+        }
+        if (entity.getGrade() == null || entity.getGrade() < 0) {
+            return Result.ofFail(ResponseCode.fail, "grade can't be null or less than zero");
+        }
+        return null;
+    }
+
+
+
+
+
+    }

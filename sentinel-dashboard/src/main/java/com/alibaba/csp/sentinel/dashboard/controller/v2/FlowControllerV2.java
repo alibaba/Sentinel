@@ -15,22 +15,16 @@
  */
 package com.alibaba.csp.sentinel.dashboard.controller.v2;
 
-import java.util.Date;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.AuthUser;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
-import com.alibaba.csp.sentinel.util.StringUtil;
-
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.domain.ResponseCode;
+import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
-import com.alibaba.csp.sentinel.dashboard.domain.Result;
-
+import com.alibaba.csp.sentinel.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +38,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Flow rule controller (v2).
@@ -72,13 +70,15 @@ public class FlowControllerV2 {
 
     @GetMapping("/rules")
     public Result<List<FlowRuleEntity>> apiQueryMachineRules(HttpServletRequest request, @RequestParam String app) {
-        AuthUser authUser = authService.getAuthUser(request);
-        authUser.authTarget(app, PrivilegeType.READ_RULE);
 
-        if (StringUtil.isEmpty(app)) {
-            return Result.ofFail(-1, "app can't be null or empty");
-        }
         try {
+            if (StringUtil.isBlank(app)) {
+                return Result.ofFail(ResponseCode.fail, "app can't be null or empty");
+            }
+
+            AuthUser authUser = authService.getAuthUser(request);
+            authUser.authTarget(app, PrivilegeType.READ_RULE);
+
             List<FlowRuleEntity> rules = ruleProvider.getRules(app);
             if (rules != null && !rules.isEmpty()) {
                 for (FlowRuleEntity entity : rules) {
@@ -92,117 +92,73 @@ public class FlowControllerV2 {
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
             logger.error("Error when querying flow rules", throwable);
-            return Result.ofThrowable(-1, throwable);
+            return Result.ofThrowable(ResponseCode.fail, throwable);
         }
     }
 
-    private <R> Result<R> checkEntityInternal(FlowRuleEntity entity) {
-        if (entity == null) {
-            return Result.ofFail(-1, "invalid body");
-        }
-        if (StringUtil.isBlank(entity.getApp())) {
-            return Result.ofFail(-1, "app can't be null or empty");
-        }
-        if (StringUtil.isBlank(entity.getLimitApp())) {
-            return Result.ofFail(-1, "limitApp can't be null or empty");
-        }
-        if (StringUtil.isBlank(entity.getResource())) {
-            return Result.ofFail(-1, "resource can't be null or empty");
-        }
-        if (entity.getGrade() == null) {
-            return Result.ofFail(-1, "grade can't be null");
-        }
-        if (entity.getGrade() != 0 && entity.getGrade() != 1) {
-            return Result.ofFail(-1, "grade must be 0 or 1, but " + entity.getGrade() + " got");
-        }
-        if (entity.getCount() == null || entity.getCount() < 0) {
-            return Result.ofFail(-1, "count should be at lease zero");
-        }
-        if (entity.getStrategy() == null) {
-            return Result.ofFail(-1, "strategy can't be null");
-        }
-        if (entity.getStrategy() != 0 && StringUtil.isBlank(entity.getRefResource())) {
-            return Result.ofFail(-1, "refResource can't be null or empty when strategy!=0");
-        }
-        if (entity.getControlBehavior() == null) {
-            return Result.ofFail(-1, "controlBehavior can't be null");
-        }
-        int controlBehavior = entity.getControlBehavior();
-        if (controlBehavior == 1 && entity.getWarmUpPeriodSec() == null) {
-            return Result.ofFail(-1, "warmUpPeriodSec can't be null when controlBehavior==1");
-        }
-        if (controlBehavior == 2 && entity.getMaxQueueingTimeMs() == null) {
-            return Result.ofFail(-1, "maxQueueingTimeMs can't be null when controlBehavior==2");
-        }
-        if (entity.isClusterMode() && entity.getClusterConfig() == null) {
-            return Result.ofFail(-1, "cluster config should be valid");
-        }
-        return null;
-    }
 
     @PostMapping("/rule")
-    public Result<FlowRuleEntity> apiAddFlowRule(HttpServletRequest request, @RequestBody FlowRuleEntity entity) {
-        AuthUser authUser = authService.getAuthUser(request);
-        authUser.authTarget(entity.getApp(), PrivilegeType.WRITE_RULE);
+    public Result<FlowRuleEntity> apiAddRule(HttpServletRequest request, @RequestBody FlowRuleEntity entity) {
 
-        Result<FlowRuleEntity> checkResult = checkEntityInternal(entity);
-        if (checkResult != null) {
-            return checkResult;
-        }
-        entity.setId(null);
-        Date date = new Date();
-        entity.setGmtCreate(date);
-        entity.setGmtModified(date);
-        entity.setLimitApp(entity.getLimitApp().trim());
-        entity.setResource(entity.getResource().trim());
         try {
+            Result<FlowRuleEntity> checkResult = checkEntity(entity);
+            if (checkResult != null) {
+                return checkResult;
+            }
+
+            Date date = new Date();
+            entity.setGmtCreate(date)
+                    .setGmtModified(date)
+                    .setLimitApp(entity.getLimitApp().trim())
+                    .setResource(entity.getResource().trim())
+                    .setId(null);
+
+            AuthUser authUser = authService.getAuthUser(request);
+            authUser.authTarget(entity.getApp(), PrivilegeType.WRITE_RULE);
+
             entity = repository.save(entity);
             publishRules(entity.getApp());
         } catch (Throwable throwable) {
             logger.error("Failed to add flow rule", throwable);
-            return Result.ofThrowable(-1, throwable);
+            return Result.ofThrowable(ResponseCode.fail, throwable);
         }
         return Result.ofSuccess(entity);
     }
 
     @PutMapping("/rule/{id}")
-    public Result<FlowRuleEntity> apiUpdateFlowRule(HttpServletRequest request,
-                                                    @PathVariable("id") Long id,
-                                                    @RequestBody FlowRuleEntity entity) {
-        AuthUser authUser = authService.getAuthUser(request);
-        if (id == null || id <= 0) {
-            return Result.ofFail(-1, "Invalid id");
-        }
-        FlowRuleEntity oldEntity = repository.findById(id);
-        if (oldEntity == null) {
-            return Result.ofFail(-1, "id " + id + " does not exist");
-        }
-        if (entity == null) {
-            return Result.ofFail(-1, "invalid body");
-        }
-        authUser.authTarget(oldEntity.getApp(), PrivilegeType.WRITE_RULE);
+    public Result<FlowRuleEntity> apiUpdateRule(HttpServletRequest request,
+                                                @PathVariable("id") Long id, @RequestBody FlowRuleEntity entity) {
 
-        entity.setApp(oldEntity.getApp());
-        entity.setIp(oldEntity.getIp());
-        entity.setPort(oldEntity.getPort());
-        Result<FlowRuleEntity> checkResult = checkEntityInternal(entity);
-        if (checkResult != null) {
-            return checkResult;
-        }
-
-        entity.setId(id);
-        Date date = new Date();
-        entity.setGmtCreate(oldEntity.getGmtCreate());
-        entity.setGmtModified(date);
         try {
+            if (id == null || id <= 0) {
+                return Result.ofFail(ResponseCode.fail, "Invalid id");
+            }
+            if (entity == null) {
+                return Result.ofFail(ResponseCode.fail, "invalid body");
+            }
+            FlowRuleEntity oldEntity = repository.findById(id);
+            if (oldEntity == null) {
+                return Result.ofFail(ResponseCode.fail, "id " + id + " does not exist");
+            }
+
+            AuthUser authUser = authService.getAuthUser(request);
+            authUser.authTarget(oldEntity.getApp(), PrivilegeType.WRITE_RULE);
+
+            entity.setApp(oldEntity.getApp()).setIp(oldEntity.getIp()).setPort(oldEntity.getPort());
+            Result<FlowRuleEntity> checkResult = checkEntity(entity);
+            if (checkResult != null) {
+                return checkResult;
+            }
+
+            entity.setGmtCreate(oldEntity.getGmtCreate()).setGmtModified(new Date()).setId(id);
             entity = repository.save(entity);
             if (entity == null) {
-                return Result.ofFail(-1, "save entity fail");
+                return Result.ofFail(ResponseCode.fail, "save entity fail");
             }
             publishRules(oldEntity.getApp());
         } catch (Throwable throwable) {
             logger.error("Failed to update flow rule", throwable);
-            return Result.ofThrowable(-1, throwable);
+            return Result.ofThrowable(ResponseCode.fail, throwable);
         }
         return Result.ofSuccess(entity);
     }
@@ -211,7 +167,7 @@ public class FlowControllerV2 {
     public Result<Long> apiDeleteRule(HttpServletRequest request, @PathVariable("id") Long id) {
         AuthUser authUser = authService.getAuthUser(request);
         if (id == null || id <= 0) {
-            return Result.ofFail(-1, "Invalid id");
+            return Result.ofFail(ResponseCode.fail, "Invalid id");
         }
         FlowRuleEntity oldEntity = repository.findById(id);
         if (oldEntity == null) {
@@ -222,7 +178,7 @@ public class FlowControllerV2 {
             repository.delete(id);
             publishRules(oldEntity.getApp());
         } catch (Exception e) {
-            return Result.ofFail(-1, e.getMessage());
+            return Result.ofFail(ResponseCode.fail, e.getMessage());
         }
         return Result.ofSuccess(id);
     }
@@ -231,4 +187,49 @@ public class FlowControllerV2 {
         List<FlowRuleEntity> rules = repository.findAllByApp(app);
         rulePublisher.publish(app, rules);
     }
+
+    private <R> Result<R> checkEntity(FlowRuleEntity entity) {
+        if (entity == null) {
+            return Result.ofFail(ResponseCode.fail, "invalid body");
+        }
+        if (StringUtil.isBlank(entity.getApp())) {
+            return Result.ofFail(ResponseCode.fail, "app can't be null or empty");
+        }
+        if (StringUtil.isBlank(entity.getLimitApp())) {
+            return Result.ofFail(ResponseCode.fail, "limitApp can't be null or empty");
+        }
+        if (StringUtil.isBlank(entity.getResource())) {
+            return Result.ofFail(ResponseCode.fail, "resource can't be null or empty");
+        }
+        if (entity.getGrade() == null) {
+            return Result.ofFail(ResponseCode.fail, "grade can't be null");
+        }
+        if (entity.getGrade() != 0 && entity.getGrade() != 1) {
+            return Result.ofFail(ResponseCode.fail, "grade must be 0 or 1, but " + entity.getGrade() + " got");
+        }
+        if (entity.getCount() == null || entity.getCount() < 0) {
+            return Result.ofFail(ResponseCode.fail, "count should be at lease zero");
+        }
+        if (entity.getStrategy() == null) {
+            return Result.ofFail(ResponseCode.fail, "strategy can't be null");
+        }
+        if (entity.getStrategy() != 0 && StringUtil.isBlank(entity.getRefResource())) {
+            return Result.ofFail(ResponseCode.fail, "refResource can't be null or empty when strategy!=0");
+        }
+        if (entity.getControlBehavior() == null) {
+            return Result.ofFail(ResponseCode.fail, "controlBehavior can't be null");
+        }
+        int controlBehavior = entity.getControlBehavior();
+        if (controlBehavior == 1 && entity.getWarmUpPeriodSec() == null) {
+            return Result.ofFail(ResponseCode.fail, "warmUpPeriodSec can't be null when controlBehavior==1");
+        }
+        if (controlBehavior == 2 && entity.getMaxQueueingTimeMs() == null) {
+            return Result.ofFail(ResponseCode.fail, "maxQueueingTimeMs can't be null when controlBehavior==2");
+        }
+        if (entity.isClusterMode() && entity.getClusterConfig() == null) {
+            return Result.ofFail(ResponseCode.fail, "cluster config should be valid");
+        }
+        return null;
+    }
+
 }

@@ -16,14 +16,13 @@
 package com.alibaba.csp.sentinel.dashboard.rule;
 
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.AuthorityRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -31,27 +30,31 @@ import java.util.Set;
  * @author lianglin
  * @since 1.7.0
  */
-@Component("degradeRuleDefaultProvider")
-public class DegradeRuleApiProvider extends AbstractDynamicRuleProvider<List<DegradeRuleEntity>>{
+@Component("authorityRuleDefaultPublisher")
+public class AuthorityRulePublisher implements DynamicRulePublisher<List<AuthorityRuleEntity>> {
 
     @Autowired
     private SentinelApiClient sentinelApiClient;
     @Autowired
     private AppManagement appManagement;
 
-
     @Override
-    public List<DegradeRuleEntity> getRules(String appName) throws Exception {
-        if (StringUtil.isBlank(appName)) {
-            return new ArrayList<>();
+    public void publish(String app, List<AuthorityRuleEntity> rules) throws Exception {
+        if (StringUtil.isBlank(app)) {
+            return;
         }
-        Set<MachineInfo> machineInfos = appManagement.getDetailApp(appName).getMachines();
-        List<MachineInfo> list = sortMachineInfos(machineInfos);
-        if (list.isEmpty()) {
-            return new ArrayList<>();
-        } else {
-            MachineInfo machine = list.get(0);
-            return sentinelApiClient.fetchDegradeRuleOfMachine(machine.getApp(), machine.getIp(), machine.getPort());
+        if (rules == null) {
+            return;
         }
+        Set<MachineInfo> set = appManagement.getDetailApp(app).getMachines();
+
+        for (MachineInfo machine : set) {
+            if (!machine.isHealthy()) {
+                continue;
+            }
+            // TODO: parse the results
+            sentinelApiClient.setAuthorityRuleOfMachine(app, machine.getIp(), machine.getPort(), rules);
+        }
+
     }
 }

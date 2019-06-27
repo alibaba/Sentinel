@@ -49,7 +49,7 @@ public class Result<R> {
     public static <R> Result<R> ofFail(String msg) {
         Result<R> result = new Result<>();
         result.setSuccess(false);
-        result.setCode(ResponseCodeConstant.fail);
+        result.setCode(ResponseCode.fail);
         result.setMsg(msg);
         return result;
     }
@@ -65,7 +65,7 @@ public class Result<R> {
     public static <R> Result<R> ofThrowable(Throwable throwable) {
         Result<R> result = new Result<>();
         result.setSuccess(false);
-        result.setCode(ResponseCodeConstant.fail);
+        result.setCode(ResponseCode.fail);
         result.setMsg(throwable.getClass().getName() + ", " + throwable.getMessage());
         return result;
     }

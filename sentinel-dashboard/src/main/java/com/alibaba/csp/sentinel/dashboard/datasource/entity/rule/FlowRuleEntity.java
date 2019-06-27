@@ -15,10 +15,10 @@
  */
 package com.alibaba.csp.sentinel.dashboard.datasource.entity.rule;
 
-import java.util.Date;
-
 import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
+
+import java.util.Date;
 
 /**
  * @author leyou
@@ -84,8 +84,9 @@ public class FlowRuleEntity implements RuleEntity {
         return ip;
     }
 
-    public void setIp(String ip) {
+    public FlowRuleEntity setIp(String ip) {
         this.ip = ip;
+        return this;
     }
 
     @Override
@@ -93,8 +94,9 @@ public class FlowRuleEntity implements RuleEntity {
         return port;
     }
 
-    public void setPort(Integer port) {
+    public FlowRuleEntity setPort(Integer port) {
         this.port = port;
+        return this;
     }
 
     @Override
@@ -102,8 +104,9 @@ public class FlowRuleEntity implements RuleEntity {
         return app;
     }
 
-    public void setApp(String app) {
+    public FlowRuleEntity setApp(String app) {
         this.app = app;
+        return this;
     }
 
     @Override
@@ -120,72 +123,81 @@ public class FlowRuleEntity implements RuleEntity {
         return limitApp;
     }
 
-    public void setLimitApp(String limitApp) {
+    public FlowRuleEntity setLimitApp(String limitApp) {
         this.limitApp = limitApp;
+        return this;
     }
 
     public String getResource() {
         return resource;
     }
 
-    public void setResource(String resource) {
+    public FlowRuleEntity setResource(String resource) {
         this.resource = resource;
+        return this;
     }
 
     public Integer getGrade() {
         return grade;
     }
 
-    public void setGrade(Integer grade) {
+    public FlowRuleEntity setGrade(Integer grade) {
         this.grade = grade;
+        return this;
     }
 
     public Double getCount() {
         return count;
     }
 
-    public void setCount(Double count) {
+    public FlowRuleEntity setCount(Double count) {
         this.count = count;
+        return this;
     }
 
     public Integer getStrategy() {
         return strategy;
     }
 
-    public void setStrategy(Integer strategy) {
+    public FlowRuleEntity setStrategy(Integer strategy) {
         this.strategy = strategy;
+        return this;
     }
 
     public String getRefResource() {
         return refResource;
     }
 
-    public void setRefResource(String refResource) {
+    public FlowRuleEntity setRefResource(String refResource) {
         this.refResource = refResource;
+        return this;
     }
 
     public Integer getControlBehavior() {
         return controlBehavior;
     }
 
-    public void setControlBehavior(Integer controlBehavior) {
+    public FlowRuleEntity setControlBehavior(Integer controlBehavior) {
         this.controlBehavior = controlBehavior;
+        return this;
     }
 
     public Integer getWarmUpPeriodSec() {
         return warmUpPeriodSec;
     }
 
-    public void setWarmUpPeriodSec(Integer warmUpPeriodSec) {
+    public FlowRuleEntity setWarmUpPeriodSec(Integer warmUpPeriodSec) {
         this.warmUpPeriodSec = warmUpPeriodSec;
+        return this;
     }
 
     public Integer getMaxQueueingTimeMs() {
         return maxQueueingTimeMs;
     }
 
-    public void setMaxQueueingTimeMs(Integer maxQueueingTimeMs) {
+    public FlowRuleEntity setMaxQueueingTimeMs(Integer maxQueueingTimeMs) {
         this.maxQueueingTimeMs = maxQueueingTimeMs;
+        return this;
     }
 
     public boolean isClusterMode() {
@@ -211,16 +223,18 @@ public class FlowRuleEntity implements RuleEntity {
         return gmtCreate;
     }
 
-    public void setGmtCreate(Date gmtCreate) {
+    public FlowRuleEntity setGmtCreate(Date gmtCreate) {
         this.gmtCreate = gmtCreate;
+        return this;
     }
 
     public Date getGmtModified() {
         return gmtModified;
     }
 
-    public void setGmtModified(Date gmtModified) {
+    public FlowRuleEntity setGmtModified(Date gmtModified) {
         this.gmtModified = gmtModified;
+        return this;
     }
 
     @Override

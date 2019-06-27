@@ -35,4 +35,10 @@ public final class ParamUtils {
             throw new ParamValidateFailedException(errMsg);
         }
     }
+
+    public static void checkTrue(boolean isTrue, String errMsg){
+        if(isTrue){
+            throw new ParamValidateFailedException(errMsg);
+        }
+    }
 }
