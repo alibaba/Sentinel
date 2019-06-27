@@ -42,7 +42,7 @@ public class SentinelConfigLoader {
     private static final String USER_HOME = "user.home";
 
     public static final String SENTINEL_CONFIG = "csp.sentinel.config.file";
-    private static String DEFAULT_SENTINEL_CONFIG_FILE = "sentinel.properties";
+    private static String DEFAULT_SENTINEL_CONFIG_FILE = "classpath:sentinel.properties";
 
 
     private static Properties properties = new Properties();

@@ -35,7 +35,7 @@ public class LogConfigLoader {
 
     public static final String LOG_CONFIG = "csp.sentinel.config.file";
 
-    private static final String DEFAULT_LOG_CONFIG_FILE = "sentinel.properties";
+    private static final String DEFAULT_LOG_CONFIG_FILE = "classpath:sentinel.properties";
 
 
     private static final Properties properties = new Properties();
