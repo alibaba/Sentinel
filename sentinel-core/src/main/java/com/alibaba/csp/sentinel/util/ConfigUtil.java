@@ -35,8 +35,7 @@ public final class ConfigUtil {
             } else if (fileName.startsWith(CLASSPATH_FILE_FLAG)) {
                 return loadPropertiesFromClasspathFile(fileName);
             } else {
-                //todo relative file handle
-                return null;
+                return loadPropertiesFromRelativeFile(fileName);
             }
         } else {
             return null;
@@ -108,6 +107,12 @@ public final class ConfigUtil {
         return properties;
     }
 
+    private static Properties loadPropertiesFromRelativeFile(String fileName) {
+        String userDir = System.getProperty("user.dir");
+        String realFilePath = addSeparator(userDir) + fileName;
+        return loadPropertiesFromAbsoluteFile(realFilePath);
+    }
+
     private static ClassLoader getClassLoader() {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         if (classLoader == null) {
@@ -116,15 +121,13 @@ public final class ConfigUtil {
         return classLoader;
     }
 
-    public static String addSeparator(String logDir) {
-        if (!logDir.endsWith(File.separator)) {
-            logDir += File.separator;
+    public static String addSeparator(String dir) {
+        if (!dir.endsWith(File.separator)) {
+            dir += File.separator;
         }
-        return logDir;
+        return dir;
     }
 
-    public static void main(String[] args) {
-        System.out.println(CLASSPATH_FILE_FLAG.substring(CLASSPATH_FILE_FLAG.length()));
-    }
+
 
 }

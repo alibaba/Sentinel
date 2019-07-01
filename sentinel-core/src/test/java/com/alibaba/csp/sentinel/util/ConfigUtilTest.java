@@ -38,10 +38,12 @@ public class ConfigUtilTest {
     public void testLoadProperties() throws IOException {
 
         File file = null;
-        String logOutputType = "utf-8", dir = "/data/logs/", fileName = "propertiesTest.properties";
+        String logOutputType = "utf-8",
+                dir = "/data/logs/",
+                fileName = "propertiesTest.properties";
         try {
-            String userHome = System.getProperty("user.dir");
-            file = new File(addSeparator(userHome) + "target/classes/" + fileName);
+            String userDir = System.getProperty("user.dir");
+            file = new File(addSeparator(userDir) + "target/classes/" + fileName);
             if (!file.exists()) {
                 file.createNewFile();
             }
@@ -63,11 +65,23 @@ public class ConfigUtilTest {
             Assert.assertTrue(logOutputType.equals(properties.getProperty(LOG_OUTPUT_TYPE)));
             Assert.assertTrue(dir.equals(properties.getProperty(LOG_DIR)));
 
+
+            //Load from relativePath
+            properties = ConfigUtil.loadProperties("target/classes/" + fileName);
+            Assert.assertTrue(logOutputType.equals(properties.getProperty(LOG_OUTPUT_TYPE)));
+            Assert.assertTrue(dir.equals(properties.getProperty(LOG_DIR)));
+
         } finally {
             if (file != null) {
                 file.delete();
             }
         }
+
+    }
+
+    public static void main(String[] args){
+        String userDir = System.getProperty("user.dir");
+        System.out.println(userDir);
 
     }
 
