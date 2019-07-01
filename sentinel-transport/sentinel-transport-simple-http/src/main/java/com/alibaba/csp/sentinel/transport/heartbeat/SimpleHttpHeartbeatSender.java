@@ -120,7 +120,6 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
             }
         } catch (Exception ex) {
             RecordLog.warn("[SimpleHeartbeatSender] Parse dashboard list failed, current address list: " + newAddrs, ex);
-            ex.printStackTrace();
         }
         return newAddrs;
     }

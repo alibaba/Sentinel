@@ -69,7 +69,6 @@ public class SentinelConfig {
             RecordLog.info("[SentinelConfig] Application type resolved: " + appType);
         } catch (Throwable ex) {
             RecordLog.warn("[SentinelConfig] Failed to initialize", ex);
-            ex.printStackTrace();
         }
     }
 

@@ -55,10 +55,8 @@ public final class InitExecutor {
             }
         } catch (Exception ex) {
             RecordLog.warn("[InitExecutor] WARN: Initialization failed", ex);
-            ex.printStackTrace();
         } catch (Error error) {
             RecordLog.warn("[InitExecutor] ERROR: Initialization failed with fatal error", error);
-            error.printStackTrace();
         }
     }
 
