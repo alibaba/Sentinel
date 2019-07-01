@@ -44,10 +44,6 @@ public final class SlotChainProvider {
 
         resolveSlotChainBuilder();
 
-        if (slotChainBuilder == null) {
-            RecordLog.warn("[SlotChainProvider] Wrong state when resolving slot chain builder, using default");
-            slotChainBuilder = new DefaultSlotChainBuilder();
-        }
         return slotChainBuilder.build();
     }
 
@@ -58,7 +54,7 @@ public final class SlotChainProvider {
                 break;
             }
         }
-        if (slotChainBuilder == null){
+        if (slotChainBuilder == null) {
             // No custom builder, using default.
             slotChainBuilder = new DefaultSlotChainBuilder();
         }

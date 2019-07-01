@@ -50,7 +50,6 @@ public class NettyHttpCommandCenter implements CommandCenter {
                     server.start();
                 } catch (Exception ex) {
                     RecordLog.info("Start netty server error", ex);
-                    ex.printStackTrace();
                     System.exit(-1);
                 }
             }

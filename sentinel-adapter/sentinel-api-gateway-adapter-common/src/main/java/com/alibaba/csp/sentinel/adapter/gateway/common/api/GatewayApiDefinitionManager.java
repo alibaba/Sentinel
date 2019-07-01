@@ -54,7 +54,6 @@ public final class GatewayApiDefinitionManager {
             initializeApiChangeObserverSpi();
         } catch (Throwable ex) {
             RecordLog.warn("[GatewayApiDefinitionManager] Failed to initialize", ex);
-            ex.printStackTrace();
         }
     }
 

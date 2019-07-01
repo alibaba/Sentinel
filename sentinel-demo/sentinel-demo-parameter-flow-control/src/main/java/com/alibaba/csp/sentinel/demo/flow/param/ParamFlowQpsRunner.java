@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.demo.flow.param;
 
+import com.alibaba.csp.sentinel.log.RecordLog;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -120,7 +121,7 @@ class ParamFlowQpsRunner<T> {
                     blockFor(param);
                 } catch (Exception ex) {
                     // biz exception
-                    ex.printStackTrace();
+                    RecordLog.warn("[ParamFlowQpsRunner] run exception", ex);
                 } finally {
                     // total.incrementAndGet();
                     if (entry != null) {

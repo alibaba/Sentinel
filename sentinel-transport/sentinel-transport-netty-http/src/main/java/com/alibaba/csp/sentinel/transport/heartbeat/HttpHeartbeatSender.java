@@ -97,7 +97,6 @@ public class HttpHeartbeatSender implements HeartbeatSender {
             }
         } catch (Exception ex) {
             RecordLog.warn("[NettyHttpHeartbeatSender] Parse dashboard list failed, current address list: " + list, ex);
-            ex.printStackTrace();
         }
         return list;
     }
