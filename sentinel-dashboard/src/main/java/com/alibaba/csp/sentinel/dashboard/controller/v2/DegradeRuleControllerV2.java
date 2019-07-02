@@ -16,13 +16,12 @@
 package com.alibaba.csp.sentinel.dashboard.controller.v2;
 
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.AuthorityRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.domain.ResponseCode;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
-import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,29 +45,28 @@ import java.util.List;
  * @since 1.7.0
  */
 @RestController
-@RequestMapping(value = "v2/authority")
-public class AuthorityRuleControllerV2 {
+@RequestMapping(value = "v2/degrade")
+public class DegradeRuleControllerV2 {
 
     private final Logger logger = LoggerFactory.getLogger(DegradeRuleControllerV2.class);
 
     @Autowired
-    @Qualifier("authorityRuleDefaultProvider")
-    private DynamicRuleProvider<List<AuthorityRuleEntity>> ruleProvider;
+    @Qualifier("degradeRuleDefaultProvider")
+    private DynamicRuleProvider<List<DegradeRuleEntity>> ruleProvider;
 
     @Autowired
-    @Qualifier("authorityRuleDefaultPublisher")
-    private DynamicRulePublisher<List<AuthorityRuleEntity>> rulePublisher;
+    @Qualifier("degradeRuleDefaultPublisher")
+    private DynamicRulePublisher<List<DegradeRuleEntity>> rulePublisher;
 
     @Autowired
     private AuthService<HttpServletRequest> authService;
 
     @Autowired
-    private InMemoryRuleRepositoryAdapter<AuthorityRuleEntity> repository;
+    private InMemoryRuleRepositoryAdapter<DegradeRuleEntity> repository;
 
 
     @GetMapping("/rules")
-    public Result<List<AuthorityRuleEntity>> apiQueryMachineRules(HttpServletRequest request, String app) {
-
+    public Result<List<DegradeRuleEntity>> apiQueryMachineRules(HttpServletRequest request, String app) {
         try {
 
             if (StringUtil.isBlank(app)) {
@@ -80,20 +78,22 @@ public class AuthorityRuleControllerV2 {
                 authUser.authTarget(app, AuthService.PrivilegeType.READ_RULE);
             }
 
-            List<AuthorityRuleEntity> rules = ruleProvider.getRules(app);
+            List<DegradeRuleEntity> rules = ruleProvider.getRules(app);
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
-            logger.error("query authority rules error:", throwable);
+            logger.error("query degrade rules error:", throwable);
             return Result.ofThrowable(throwable);
         }
     }
 
-    @PostMapping("/rule")
-    public Result<AuthorityRuleEntity> apiAddRule(HttpServletRequest request, @RequestBody AuthorityRuleEntity entity) {
 
+    @PostMapping("/rule")
+    public Result<DegradeRuleEntity> apiAddRule(HttpServletRequest request, @RequestBody DegradeRuleEntity entity) {
+
+        DegradeRuleEntity resultEntity = null;
         try {
-            Result<AuthorityRuleEntity> checkResult = checkEntity(entity);
+            Result<DegradeRuleEntity> checkResult = checkEntity(entity);
             if (checkResult != null) {
                 return checkResult;
             }
@@ -104,23 +104,29 @@ public class AuthorityRuleControllerV2 {
             }
 
             Date date = new Date();
-            entity.setGmtCreate(date).setGmtModified(date).setId(null);
+            entity.setGmtCreate(date)
+                    .setGmtModified(date)
+                    .setResource(entity.getResource().trim())
+                    .setLimitApp(entity.getLimitApp().trim())
+                    .setApp(entity.getApp().trim())
+                    .setId(null);
 
-            entity = repository.save(entity);
-            publishRules(entity.getApp());
+            resultEntity = repository.save(entity);
+            publishRules(resultEntity.getApp());
         } catch (Throwable throwable) {
-            logger.error("add  authority rule error:", throwable);
+            logger.error("add degrade rule error:", throwable);
             return Result.ofThrowable(ResponseCode.fail, throwable);
         }
 
-        return Result.ofSuccess(entity);
+        return Result.ofSuccess(resultEntity);
 
     }
 
+
     @PutMapping("/rule/{id}")
-    public Result<AuthorityRuleEntity> apiUpdateRule(HttpServletRequest request,
-                                                     @PathVariable("id") Long id, @RequestBody AuthorityRuleEntity entity) {
-        AuthorityRuleEntity resultEntity = null;
+    public Result<DegradeRuleEntity> apiUpdateRule(HttpServletRequest request,
+                                                   @PathVariable("id") Long id, @RequestBody DegradeRuleEntity entity) {
+        DegradeRuleEntity resultEntity = null;
         try {
             if (id == null || id < 0) {
                 return Result.ofFail(ResponseCode.fail, "id is invalid");
@@ -135,13 +141,13 @@ public class AuthorityRuleControllerV2 {
                 authUser.authTarget(entity.getApp(), AuthService.PrivilegeType.WRITE_RULE);
             }
 
-            AuthorityRuleEntity oldEntity = repository.findById(id);
+            DegradeRuleEntity oldEntity = repository.findById(id);
             if (oldEntity != null) {
                 return Result.ofFail(ResponseCode.fail, "id " + id + " does not exist");
             }
 
             entity.setApp(oldEntity.getApp());
-            Result<AuthorityRuleEntity> checkResult = checkEntity(entity);
+            Result<DegradeRuleEntity> checkResult = checkEntity(entity);
             if (checkResult != null) {
                 return checkResult;
             }
@@ -153,7 +159,7 @@ public class AuthorityRuleControllerV2 {
             }
             publishRules(resultEntity.getApp());
         } catch (Throwable throwable) {
-            logger.error("update authority rule error:", throwable);
+            logger.error("update  degrade rule  error:", throwable);
             return Result.ofThrowable(ResponseCode.fail, throwable);
         }
 
@@ -167,7 +173,7 @@ public class AuthorityRuleControllerV2 {
         if (id == null || id <= 0) {
             return Result.ofFail(ResponseCode.fail, "Invalid id");
         }
-        AuthorityRuleEntity oldEntity = repository.findById(id);
+        DegradeRuleEntity oldEntity = repository.findById(id);
         if (oldEntity == null) {
             return Result.ofSuccess(null);
         }
@@ -181,7 +187,7 @@ public class AuthorityRuleControllerV2 {
             repository.delete(id);
             publishRules(oldEntity.getApp());
         } catch (Throwable throwable) {
-            logger.error("delete authority rule error:", throwable);
+            logger.error("delete  degrade rule  error:", throwable);
             return Result.ofFail(ResponseCode.fail, throwable.getMessage());
         }
         return Result.ofSuccess(id);
@@ -189,30 +195,32 @@ public class AuthorityRuleControllerV2 {
 
 
     private void publishRules(/*@NonNull*/ String app) throws Exception {
-        List<AuthorityRuleEntity> rules = repository.findAllByApp(app);
+        List<DegradeRuleEntity> rules = repository.findAllByApp(app);
         rulePublisher.publish(app, rules);
     }
 
 
-    private <R> Result<R> checkEntity(AuthorityRuleEntity entity) {
+    private <R> Result<R> checkEntity(DegradeRuleEntity entity) {
         if (entity == null) {
-            return Result.ofFail(ResponseCode.fail, "bad rule body");
+            return Result.ofFail(ResponseCode.fail, "entity is invalid");
         }
         if (StringUtil.isBlank(entity.getApp())) {
             return Result.ofFail(ResponseCode.fail, "app can't be null or empty");
         }
-        if (entity.getRule() == null) {
-            return Result.ofFail(ResponseCode.fail, "rule can't be null");
-        }
         if (StringUtil.isBlank(entity.getResource())) {
-            return Result.ofFail(ResponseCode.fail, "resource name cannot be null or empty");
+            return Result.ofFail(ResponseCode.fail, "resource can't be null or empty");
         }
         if (StringUtil.isBlank(entity.getLimitApp())) {
-            return Result.ofFail(ResponseCode.fail, "limitApp should be valid");
+            return Result.ofFail(ResponseCode.fail, "resource can't be null or empty");
         }
-        if (entity.getStrategy() != RuleConstant.AUTHORITY_WHITE
-                && entity.getStrategy() != RuleConstant.AUTHORITY_BLACK) {
-            return Result.ofFail(ResponseCode.fail, "Unknown strategy (must be blacklist or whitelist)");
+        if (entity.getCount() == null || entity.getCount() < 0) {
+            return Result.ofFail(ResponseCode.fail, "count can't be null or less than zero");
+        }
+        if (entity.getTimeWindow() == null || entity.getTimeWindow() < 0) {
+            return Result.ofFail(ResponseCode.fail, "timeWindow can't be null or less than zero");
+        }
+        if (entity.getGrade() == null || entity.getGrade() < 0) {
+            return Result.ofFail(ResponseCode.fail, "grade can't be null or less than zero");
         }
         return null;
     }

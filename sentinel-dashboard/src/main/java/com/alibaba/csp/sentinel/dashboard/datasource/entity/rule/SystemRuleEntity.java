@@ -15,9 +15,9 @@
  */
 package com.alibaba.csp.sentinel.dashboard.datasource.entity.rule;
 
-import java.util.Date;
-
 import com.alibaba.csp.sentinel.slots.system.SystemRule;
+
+import java.util.Date;
 
 /**
  * @author leyou
@@ -54,8 +54,9 @@ public class SystemRuleEntity implements RuleEntity {
         return ip;
     }
 
-    public void setIp(String ip) {
+    public SystemRuleEntity setIp(String ip) {
         this.ip = ip;
+        return this;
     }
 
     @Override
@@ -63,8 +64,9 @@ public class SystemRuleEntity implements RuleEntity {
         return port;
     }
 
-    public void setPort(Integer port) {
+    public SystemRuleEntity setPort(Integer port) {
         this.port = port;
+        return this;
     }
 
     @Override
@@ -82,40 +84,45 @@ public class SystemRuleEntity implements RuleEntity {
         return app;
     }
 
-    public void setApp(String app) {
+    public SystemRuleEntity setApp(String app) {
         this.app = app;
+        return this;
     }
 
     public Double getAvgLoad() {
         return avgLoad;
     }
 
-    public void setAvgLoad(Double avgLoad) {
+    public SystemRuleEntity setAvgLoad(Double avgLoad) {
         this.avgLoad = avgLoad;
+        return this;
     }
 
     public Long getAvgRt() {
         return avgRt;
     }
 
-    public void setAvgRt(Long avgRt) {
+    public SystemRuleEntity setAvgRt(Long avgRt) {
         this.avgRt = avgRt;
+        return this;
     }
 
     public Long getMaxThread() {
         return maxThread;
     }
 
-    public void setMaxThread(Long maxThread) {
+    public SystemRuleEntity setMaxThread(Long maxThread) {
         this.maxThread = maxThread;
+        return this;
     }
 
     public Double getQps() {
         return qps;
     }
 
-    public void setQps(Double qps) {
+    public SystemRuleEntity setQps(Double qps) {
         this.qps = qps;
+        return this;
     }
 
     @Override
@@ -123,16 +130,18 @@ public class SystemRuleEntity implements RuleEntity {
         return gmtCreate;
     }
 
-    public void setGmtCreate(Date gmtCreate) {
+    public SystemRuleEntity setGmtCreate(Date gmtCreate) {
         this.gmtCreate = gmtCreate;
+        return this;
     }
 
     public Date getGmtModified() {
         return gmtModified;
     }
 
-    public void setGmtModified(Date gmtModified) {
+    public SystemRuleEntity setGmtModified(Date gmtModified) {
         this.gmtModified = gmtModified;
+        return this;
     }
 
     @Override

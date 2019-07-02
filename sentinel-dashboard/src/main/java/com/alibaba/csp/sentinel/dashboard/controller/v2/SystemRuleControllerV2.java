@@ -16,7 +16,7 @@
 package com.alibaba.csp.sentinel.dashboard.controller.v2;
 
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.SystemRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.domain.ResponseCode;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
@@ -45,72 +45,70 @@ import java.util.List;
  * @since 1.7.0
  */
 @RestController
-@RequestMapping(value = "v2/degrade")
-public class DegradeControllerV2 {
+@RequestMapping("/v2/system")
+public class SystemRuleControllerV2 {
 
-    private final Logger logger = LoggerFactory.getLogger(DegradeControllerV2.class);
-
-    @Autowired
-    @Qualifier("degradeRuleDefaultProvider")
-    private DynamicRuleProvider<List<DegradeRuleEntity>> ruleProvider;
+    private final Logger logger = LoggerFactory.getLogger(SystemRuleControllerV2.class);
 
     @Autowired
-    @Qualifier("degradeRuleDefaultPublisher")
-    private DynamicRulePublisher<List<DegradeRuleEntity>> rulePublisher;
+    private InMemoryRuleRepositoryAdapter<SystemRuleEntity> repository;
+
+    @Autowired
+    @Qualifier("systemRuleDefaultProvider")
+    private DynamicRuleProvider<List<SystemRuleEntity>> ruleProvider;
+
+    @Autowired
+    @Qualifier("systemRuleDefaultPublisher")
+    private DynamicRulePublisher<List<SystemRuleEntity>> rulePublisher;
 
     @Autowired
     private AuthService<HttpServletRequest> authService;
 
-    @Autowired
-    private InMemoryRuleRepositoryAdapter<DegradeRuleEntity> repository;
-
-
 
     @GetMapping("/rules")
-    public Result<List<DegradeRuleEntity>> apiQueryMachineRules(HttpServletRequest request, String app) {
+    public Result<List<SystemRuleEntity>> apiQueryMachineRules(HttpServletRequest request, String app) {
+
         try {
 
-            if(StringUtil.isBlank(app)){
-                return Result.ofFail(ResponseCode.fail,"app can't be null or empty");
+            if (StringUtil.isBlank(app)) {
+                return Result.ofFail(ResponseCode.fail, "app can't be null or empty");
             }
 
             AuthService.AuthUser authUser = authService.getAuthUser(request);
-            authUser.authTarget(app, AuthService.PrivilegeType.READ_RULE);
+            if (authUser != null) {
+                authUser.authTarget(app, AuthService.PrivilegeType.READ_RULE);
+            }
 
-            List<DegradeRuleEntity> rules = ruleProvider.getRules(app);
+            List<SystemRuleEntity> rules = ruleProvider.getRules(app);
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
-            logger.error("queryApps error:", throwable);
+            logger.error("query system rules error:", throwable);
             return Result.ofThrowable(throwable);
         }
     }
 
-
     @PostMapping("/rule")
-    public Result<DegradeRuleEntity> apiAddRule(HttpServletRequest request, @RequestBody  DegradeRuleEntity entity) {
+    public Result<SystemRuleEntity> apiAddRule(HttpServletRequest request, @RequestBody SystemRuleEntity entity) {
 
         try {
-            Result<DegradeRuleEntity> checkResult = checkEntity(entity);
+            Result<SystemRuleEntity> checkResult = checkEntity(entity);
             if (checkResult != null) {
                 return checkResult;
             }
 
             AuthService.AuthUser authUser = authService.getAuthUser(request);
-            authUser.authTarget(entity.getApp(), AuthService.PrivilegeType.WRITE_RULE);
+            if (authUser != null) {
+                authUser.authTarget(entity.getApp(), AuthService.PrivilegeType.WRITE_RULE);
+            }
 
             Date date = new Date();
-            entity.setGmtCreate(date)
-                    .setGmtModified(date)
-                    .setResource(entity.getResource().trim())
-                    .setLimitApp(entity.getLimitApp().trim())
-                    .setApp(entity.getApp().trim())
-                    .setId(null);
+            entity.setGmtCreate(date).setGmtModified(date).setId(null);
 
             entity = repository.save(entity);
             publishRules(entity.getApp());
         } catch (Throwable throwable) {
-            logger.error("add error:", throwable);
+            logger.error("add system rule error:", throwable);
             return Result.ofThrowable(ResponseCode.fail, throwable);
         }
 
@@ -119,105 +117,104 @@ public class DegradeControllerV2 {
     }
 
 
-
-
     @PutMapping("/rule/{id}")
-    public Result<DegradeRuleEntity> apiUpdateRule(HttpServletRequest request,
-                                                   @PathVariable("id") Long id, @RequestBody DegradeRuleEntity entity) {
+    public Result<SystemRuleEntity> apiUpdateRule(HttpServletRequest request,
+                                                  @PathVariable("id") Long id, @RequestBody SystemRuleEntity entity) {
 
         try {
-            if (id == null || id < 0) {
-                return Result.ofFail(ResponseCode.fail, "id is invalid");
+            if (id == null || id <= 0) {
+                return Result.ofFail(ResponseCode.fail, "Invalid id");
             }
-
             if (entity == null) {
                 return Result.ofFail(ResponseCode.fail, "invalid body");
             }
-
-            AuthService.AuthUser authUser = authService.getAuthUser(request);
-            authUser.authTarget(entity.getApp(), AuthService.PrivilegeType.WRITE_RULE);
-
-            DegradeRuleEntity oldEntity = repository.findById(id);
-            if (oldEntity != null) {
+            SystemRuleEntity oldEntity = repository.findById(id);
+            if (oldEntity == null) {
                 return Result.ofFail(ResponseCode.fail, "id " + id + " does not exist");
             }
 
+            AuthService.AuthUser authUser = authService.getAuthUser(request);
+            if (authUser != null) {
+                authUser.authTarget(oldEntity.getApp(), AuthService.PrivilegeType.WRITE_RULE);
+            }
+
             entity.setApp(oldEntity.getApp()).setIp(oldEntity.getIp()).setPort(oldEntity.getPort());
-            Result<DegradeRuleEntity> checkResult = checkEntity(entity);
+            Result<SystemRuleEntity> checkResult = checkEntity(entity);
             if (checkResult != null) {
                 return checkResult;
             }
-
 
             entity.setGmtCreate(oldEntity.getGmtCreate()).setGmtModified(new Date()).setId(id);
             entity = repository.save(entity);
             if (entity == null) {
                 return Result.ofFail(ResponseCode.fail, "save entity fail");
             }
-            publishRules(entity.getApp());
+            publishRules(oldEntity.getApp());
         } catch (Throwable throwable) {
-            logger.error("save error:", throwable);
+            logger.error("Failed to update system rule", throwable);
             return Result.ofThrowable(ResponseCode.fail, throwable);
         }
-
         return Result.ofSuccess(entity);
     }
 
 
     @DeleteMapping("/rule/{id}")
     public Result<Long> apiDeleteRule(HttpServletRequest request, @PathVariable("id") Long id) {
-        AuthService.AuthUser authUser = authService.getAuthUser(request);
+
         if (id == null || id <= 0) {
             return Result.ofFail(ResponseCode.fail, "Invalid id");
         }
-        DegradeRuleEntity oldEntity = repository.findById(id);
+        SystemRuleEntity oldEntity = repository.findById(id);
         if (oldEntity == null) {
             return Result.ofSuccess(null);
         }
-        authUser.authTarget(oldEntity.getApp(), AuthService.PrivilegeType.DELETE_RULE);
+
+        AuthService.AuthUser authUser = authService.getAuthUser(request);
+        if (authUser != null) {
+            authUser.authTarget(oldEntity.getApp(), AuthService.PrivilegeType.DELETE_RULE);
+        }
+
         try {
             repository.delete(id);
             publishRules(oldEntity.getApp());
-        } catch (Exception e) {
-            return Result.ofFail(ResponseCode.fail, e.getMessage());
+        } catch (Throwable throwable) {
+            logger.error("Failed to delete system rule", throwable);
+            return Result.ofFail(ResponseCode.fail, throwable.getMessage());
         }
         return Result.ofSuccess(id);
     }
 
 
     private void publishRules(/*@NonNull*/ String app) throws Exception {
-        List<DegradeRuleEntity> rules = repository.findAllByApp(app);
+        List<SystemRuleEntity> rules = repository.findAllByApp(app);
         rulePublisher.publish(app, rules);
     }
 
-
-    private <R> Result<R> checkEntity(DegradeRuleEntity entity) {
+    private <R> Result<R> checkEntity(SystemRuleEntity entity) {
         if (entity == null) {
-            return Result.ofFail(ResponseCode.fail, "entity is invalid");
+            return Result.ofFail(ResponseCode.fail, "bad rule body");
         }
         if (StringUtil.isBlank(entity.getApp())) {
             return Result.ofFail(ResponseCode.fail, "app can't be null or empty");
         }
-        if (StringUtil.isBlank(entity.getResource())) {
-            return Result.ofFail(ResponseCode.fail, "resource can't be null or empty");
+        int notNullCount = countNotNullAndNotNegative(entity.getAvgLoad(), entity.getAvgRt(), entity.getMaxThread(), entity.getQps());
+        if (notNullCount != 1) {
+            return Result.ofFail(ResponseCode.fail, "only one of [avgLoad, avgRt, maxThread, qps] "
+                    + "value must be set >= 0, but " + notNullCount + " values get");
         }
-        if (StringUtil.isEmpty(entity.getLimitApp())) {
-            return Result.ofFail(ResponseCode.fail, "limitApp can't be empty");
-        }
-        if (entity.getCount() == null || entity.getCount() < 0) {
-            return Result.ofFail(ResponseCode.fail, "count can't be null or less than zero");
-        }
-        if (entity.getTimeWindow() == null || entity.getTimeWindow() < 0) {
-            return Result.ofFail(ResponseCode.fail, "timeWindow can't be null or less than zero");
-        }
-        if (entity.getGrade() == null || entity.getGrade() < 0) {
-            return Result.ofFail(ResponseCode.fail, "grade can't be null or less than zero");
-        }
+
         return null;
     }
 
 
-
-
-
+    private int countNotNullAndNotNegative(Number... values) {
+        int notNullCount = 0;
+        for (int i = 0; i < values.length; i++) {
+            if (values[i] != null && values[i].doubleValue() >= 0) {
+                notNullCount++;
+            }
+        }
+        return notNullCount;
     }
+
+}

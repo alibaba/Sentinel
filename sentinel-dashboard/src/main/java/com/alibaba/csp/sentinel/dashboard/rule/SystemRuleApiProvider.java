@@ -16,16 +16,14 @@
 package com.alibaba.csp.sentinel.dashboard.rule;
 
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.AuthorityRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.SystemRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -33,11 +31,9 @@ import java.util.Set;
  * @author lianglin
  * @since 1.7.0
  */
-@Component("authorityRuleDefaultPublisher")
-public class AuthorityRulePublisher implements DynamicRulePublisher<List<AuthorityRuleEntity>> {
 
-    private final Logger logger = LoggerFactory.getLogger(AuthorityRulePublisher.class);
-
+@Component("systemRuleDefaultProvider")
+public class SystemRuleApiProvider extends AbstractDynamicRuleProvider<List<SystemRuleEntity>> {
 
     @Autowired
     private SentinelApiClient sentinelApiClient;
@@ -45,20 +41,17 @@ public class AuthorityRulePublisher implements DynamicRulePublisher<List<Authori
     private AppManagement appManagement;
 
     @Override
-    public void publish(String app, List<AuthorityRuleEntity> rules) throws Exception {
-        if (StringUtil.isBlank(app)) {
-            return;
+    public List<SystemRuleEntity> getRules(String appName) throws Exception {
+        if (StringUtil.isBlank(appName)) {
+            return new ArrayList<>();
         }
-        if (rules == null) {
-            return;
+        Set<MachineInfo> machineInfos = appManagement.getDetailApp(appName).getMachines();
+        List<MachineInfo> list = sortMachineInfos(machineInfos);
+        if (list.isEmpty()) {
+            return new ArrayList<>();
+        } else {
+            MachineInfo machine = list.get(0);
+            return sentinelApiClient.fetchSystemRuleOfMachine(machine.getApp(), machine.getIp(), machine.getPort());
         }
-        Set<MachineInfo> set = appManagement.getDetailApp(app).getMachines();
-        if (!CollectionUtils.isEmpty(set)) {
-            set.stream().filter(MachineInfo::isHealthy).parallel()
-                    .forEach(machine -> sentinelApiClient.setAuthorityRuleOfMachine(app, machine.getIp(), machine.getPort(), rules));
-        }else{
-            logger.warn("app: {} no machines found to publish", app);
-        }
-
     }
 }

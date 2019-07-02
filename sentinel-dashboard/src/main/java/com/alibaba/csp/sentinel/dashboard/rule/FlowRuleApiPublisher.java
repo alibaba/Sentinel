@@ -15,17 +15,19 @@
  */
 package com.alibaba.csp.sentinel.dashboard.rule;
 
-import java.util.List;
-import java.util.Set;
-
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.util.StringUtil;
-
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author Eric Zhao
@@ -33,6 +35,9 @@ import org.springframework.stereotype.Component;
  */
 @Component("flowRuleDefaultPublisher")
 public class FlowRuleApiPublisher implements DynamicRulePublisher<List<FlowRuleEntity>> {
+
+    private final Logger logger = LoggerFactory.getLogger(FlowRuleApiPublisher.class);
+
 
     @Autowired
     private SentinelApiClient sentinelApiClient;
@@ -48,13 +53,12 @@ public class FlowRuleApiPublisher implements DynamicRulePublisher<List<FlowRuleE
             return;
         }
         Set<MachineInfo> set = appManagement.getDetailApp(app).getMachines();
-
-        for (MachineInfo machine : set) {
-            if (!machine.isHealthy()) {
-                continue;
-            }
-            // TODO: parse the results
-            sentinelApiClient.setFlowRuleOfMachine(app, machine.getIp(), machine.getPort(), rules);
+        if (!CollectionUtils.isEmpty(set)) {
+            set.stream().filter(MachineInfo::isHealthy).parallel()
+                    .forEach(machine -> sentinelApiClient.setFlowRuleOfMachine(app, machine.getIp(), machine.getPort(), rules));
+        } else {
+            logger.warn("app: {} no machines found to publish", app);
         }
+
     }
 }

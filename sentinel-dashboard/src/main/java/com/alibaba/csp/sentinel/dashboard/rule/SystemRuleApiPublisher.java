@@ -16,7 +16,7 @@
 package com.alibaba.csp.sentinel.dashboard.rule;
 
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.AuthorityRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.SystemRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -33,10 +33,11 @@ import java.util.Set;
  * @author lianglin
  * @since 1.7.0
  */
-@Component("authorityRuleDefaultPublisher")
-public class AuthorityRulePublisher implements DynamicRulePublisher<List<AuthorityRuleEntity>> {
 
-    private final Logger logger = LoggerFactory.getLogger(AuthorityRulePublisher.class);
+@Component("systemRuleDefaultPublisher")
+public class SystemRuleApiPublisher implements DynamicRulePublisher<List<SystemRuleEntity>> {
+
+    private final Logger logger = LoggerFactory.getLogger(SystemRuleApiPublisher.class);
 
 
     @Autowired
@@ -44,8 +45,9 @@ public class AuthorityRulePublisher implements DynamicRulePublisher<List<Authori
     @Autowired
     private AppManagement appManagement;
 
+
     @Override
-    public void publish(String app, List<AuthorityRuleEntity> rules) throws Exception {
+    public void publish(String app, List<SystemRuleEntity> rules) throws Exception {
         if (StringUtil.isBlank(app)) {
             return;
         }
@@ -55,10 +57,9 @@ public class AuthorityRulePublisher implements DynamicRulePublisher<List<Authori
         Set<MachineInfo> set = appManagement.getDetailApp(app).getMachines();
         if (!CollectionUtils.isEmpty(set)) {
             set.stream().filter(MachineInfo::isHealthy).parallel()
-                    .forEach(machine -> sentinelApiClient.setAuthorityRuleOfMachine(app, machine.getIp(), machine.getPort(), rules));
-        }else{
+                    .forEach(machine -> sentinelApiClient.setSystemRuleOfMachine(app, machine.getIp(), machine.getPort(), rules));
+        } else {
             logger.warn("app: {} no machines found to publish", app);
         }
-
     }
 }

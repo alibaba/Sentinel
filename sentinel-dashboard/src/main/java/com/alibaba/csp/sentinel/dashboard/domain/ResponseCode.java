@@ -6,5 +6,6 @@ package com.alibaba.csp.sentinel.dashboard.domain;
  */
 public class ResponseCode {
     public final static int fail = -1;
+    public final static int un_supported_version=4041;
     public final static int success = 0;
 }

@@ -20,8 +20,11 @@ import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEnti
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.util.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Set;
@@ -31,7 +34,10 @@ import java.util.Set;
  * @since 1.7.0
  */
 @Component("degradeRuleDefaultPublisher")
-public class DegradeRuleApiPublisher  implements DynamicRulePublisher<List<DegradeRuleEntity>>{
+public class DegradeRuleApiPublisher implements DynamicRulePublisher<List<DegradeRuleEntity>> {
+
+    private final Logger logger = LoggerFactory.getLogger(DegradeRuleApiPublisher.class);
+
 
     @Autowired
     private SentinelApiClient sentinelApiClient;
@@ -47,13 +53,11 @@ public class DegradeRuleApiPublisher  implements DynamicRulePublisher<List<Degra
             return;
         }
         Set<MachineInfo> set = appManagement.getDetailApp(app).getMachines();
-
-        for (MachineInfo machine : set) {
-            if (!machine.isHealthy()) {
-                continue;
-            }
-            // TODO: parse the results
-            sentinelApiClient.setDegradeRuleOfMachine(app, machine.getIp(), machine.getPort(), rules);
+        if (!CollectionUtils.isEmpty(set)) {
+            set.stream().filter(MachineInfo::isHealthy).parallel()
+                    .forEach(machine -> sentinelApiClient.setDegradeRuleOfMachine(app, machine.getIp(), machine.getPort(), rules));
+        } else {
+            logger.warn("app: {} no machines found to publish", app);
         }
 
     }

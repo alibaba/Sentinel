@@ -51,9 +51,9 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = "/v2/flow")
-public class FlowControllerV2 {
+public class FlowRuleControllerV2 {
 
-    private final Logger logger = LoggerFactory.getLogger(FlowControllerV2.class);
+    private final Logger logger = LoggerFactory.getLogger(FlowRuleControllerV2.class);
 
     @Autowired
     private InMemoryRuleRepositoryAdapter<FlowRuleEntity> repository;
@@ -77,7 +77,9 @@ public class FlowControllerV2 {
             }
 
             AuthUser authUser = authService.getAuthUser(request);
-            authUser.authTarget(app, PrivilegeType.READ_RULE);
+            if (authUser != null) {
+                authUser.authTarget(app, PrivilegeType.READ_RULE);
+            }
 
             List<FlowRuleEntity> rules = ruleProvider.getRules(app);
             if (rules != null && !rules.isEmpty()) {
@@ -106,6 +108,11 @@ public class FlowControllerV2 {
                 return checkResult;
             }
 
+            AuthUser authUser = authService.getAuthUser(request);
+            if (authUser != null) {
+                authUser.authTarget(entity.getApp(), PrivilegeType.WRITE_RULE);
+            }
+
             Date date = new Date();
             entity.setGmtCreate(date)
                     .setGmtModified(date)
@@ -113,8 +120,6 @@ public class FlowControllerV2 {
                     .setResource(entity.getResource().trim())
                     .setId(null);
 
-            AuthUser authUser = authService.getAuthUser(request);
-            authUser.authTarget(entity.getApp(), PrivilegeType.WRITE_RULE);
 
             entity = repository.save(entity);
             publishRules(entity.getApp());
@@ -142,7 +147,9 @@ public class FlowControllerV2 {
             }
 
             AuthUser authUser = authService.getAuthUser(request);
-            authUser.authTarget(oldEntity.getApp(), PrivilegeType.WRITE_RULE);
+            if (authUser != null) {
+                authUser.authTarget(oldEntity.getApp(), PrivilegeType.WRITE_RULE);
+            }
 
             entity.setApp(oldEntity.getApp()).setIp(oldEntity.getIp()).setPort(oldEntity.getPort());
             Result<FlowRuleEntity> checkResult = checkEntity(entity);
@@ -165,7 +172,6 @@ public class FlowControllerV2 {
 
     @DeleteMapping("/rule/{id}")
     public Result<Long> apiDeleteRule(HttpServletRequest request, @PathVariable("id") Long id) {
-        AuthUser authUser = authService.getAuthUser(request);
         if (id == null || id <= 0) {
             return Result.ofFail(ResponseCode.fail, "Invalid id");
         }
@@ -173,7 +179,11 @@ public class FlowControllerV2 {
         if (oldEntity == null) {
             return Result.ofSuccess(null);
         }
-        authUser.authTarget(oldEntity.getApp(), PrivilegeType.DELETE_RULE);
+
+        AuthUser authUser = authService.getAuthUser(request);
+        if (authUser != null) {
+            authUser.authTarget(oldEntity.getApp(), PrivilegeType.DELETE_RULE);
+        }
         try {
             repository.delete(id);
             publishRules(oldEntity.getApp());
