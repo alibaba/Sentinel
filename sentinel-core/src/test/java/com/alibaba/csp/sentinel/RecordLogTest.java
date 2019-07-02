@@ -15,13 +15,12 @@
  */
 package com.alibaba.csp.sentinel;
 
-import java.io.File;
-
 import com.alibaba.csp.sentinel.log.LogBase;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.PidUtil;
-
 import org.junit.Test;
+
+import java.io.File;
 
 import static org.junit.Assert.assertTrue;
 
@@ -46,14 +45,22 @@ public class RecordLogTest {
 
     @Test
     public void testChangeLogBase() {
-        String userHome = System.getProperty("user.home");
-        String newLogBase = userHome + File.separator + "tmpLogDir" + System.currentTimeMillis();
-        System.setProperty(LogBase.LOG_DIR, newLogBase);
+        File logDirFile = null;
+        try {
+            String userHome = System.getProperty("user.home");
+            String newLogBase = userHome + File.separator + "tmpLogDir" + System.currentTimeMillis();
+            System.setProperty(LogBase.LOG_DIR, newLogBase);
 
-        RecordLog.info("testChangeLogBase");
-        String logFileName = RecordLog.getLogBaseDir();
-        File[] files = new File(logFileName).listFiles();
-        assertTrue(files != null && files.length > 0);
+            RecordLog.info("testChangeLogBase");
+            String logFileName = RecordLog.getLogBaseDir();
+            logDirFile = new File(logFileName);
+            File[] files = logDirFile.listFiles();
+            assertTrue(files != null && files.length > 0);
+        } finally {
+          // deleteLogDir(logDirFile);
+        }
+
+
     }
 
     @Test
@@ -87,5 +94,18 @@ public class RecordLogTest {
             assertTrue(f.getName().contains("pid" + PidUtil.getPid()));
         }
     }
+
+    private void deleteLogDir(File logDirFile) {
+        if (logDirFile != null && logDirFile.isDirectory()) {
+            if (logDirFile.listFiles() != null) {
+                for (File file : logDirFile.listFiles()) {
+                    file.delete();
+                }
+            }
+            logDirFile.delete();
+        }
+    }
+
+
 
 }
