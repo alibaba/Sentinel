@@ -13,29 +13,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.rule.zookeeper;
+package com.alibaba.csp.sentinel.dashboard.rule;
 
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
+import com.alibaba.csp.sentinel.dashboard.config.ZookeeperConfigUtil;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.SystemRuleEntity;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import org.apache.curator.framework.CuratorFramework;
+import org.apache.zookeeper.data.Stat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Component("flowRuleZookeeperProvider")
-public class FlowRuleZookeeperProvider implements DynamicRuleProvider<List<FlowRuleEntity>> {
+/**
+ * @author lianglin
+ * @since 1.7.0
+ */
+
+@Component("systemRuleZookeeperProvider")
+public class SystemRuleZookeeperProvider extends AbstractDynamicRuleProvider<List<SystemRuleEntity>> {
+
 
     @Autowired
     private CuratorFramework zkClient;
+
     @Autowired
-    private Converter<String, List<FlowRuleEntity>> converter;
+    private Converter<String, List<SystemRuleEntity>> converter;
+
 
     @Override
-    public List<FlowRuleEntity> getRules(String appName) throws Exception {
-        String zkPath = ZookeeperConfigUtil.getPath(appName) + "/flow_rule";
+    public List<SystemRuleEntity> getRules(String appName) throws Exception {
+        String zkPath = ZookeeperConfigUtil.getPath(appName) + "/system_rule";
+        Stat stat = zkClient.checkExists().forPath(zkPath);
+        if (stat == null) {
+            return new ArrayList<>();
+        }
         byte[] bytes = zkClient.getData().forPath(zkPath);
         if (null == bytes || bytes.length == 0) {
             return new ArrayList<>();

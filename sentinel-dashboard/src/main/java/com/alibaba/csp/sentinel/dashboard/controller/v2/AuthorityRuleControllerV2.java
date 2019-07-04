@@ -49,14 +49,14 @@ import java.util.List;
 @RequestMapping(value = "v2/authority")
 public class AuthorityRuleControllerV2 {
 
-    private final Logger logger = LoggerFactory.getLogger(DegradeRuleControllerV2.class);
+    private final Logger logger = LoggerFactory.getLogger(AuthorityRuleControllerV2.class);
 
     @Autowired
-    @Qualifier("authorityRuleDefaultProvider")
+    @Qualifier("authorityRuleZookeeperProvider")
     private DynamicRuleProvider<List<AuthorityRuleEntity>> ruleProvider;
 
     @Autowired
-    @Qualifier("authorityRuleDefaultPublisher")
+    @Qualifier("authorityRuleZookeeperPublisher")
     private DynamicRulePublisher<List<AuthorityRuleEntity>> rulePublisher;
 
     @Autowired
@@ -136,7 +136,7 @@ public class AuthorityRuleControllerV2 {
             }
 
             AuthorityRuleEntity oldEntity = repository.findById(id);
-            if (oldEntity != null) {
+            if (oldEntity == null) {
                 return Result.ofFail(ResponseCode.fail, "id " + id + " does not exist");
             }
 

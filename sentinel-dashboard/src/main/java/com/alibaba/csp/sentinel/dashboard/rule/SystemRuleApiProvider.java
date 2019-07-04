@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.dashboard.rule;
 
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.SystemRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.discovery.AppInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -45,7 +46,11 @@ public class SystemRuleApiProvider extends AbstractDynamicRuleProvider<List<Syst
         if (StringUtil.isBlank(appName)) {
             return new ArrayList<>();
         }
-        Set<MachineInfo> machineInfos = appManagement.getDetailApp(appName).getMachines();
+        AppInfo appInfo = appManagement.getDetailApp(appName);
+        if(appInfo == null){
+            return new ArrayList<>();
+        }
+        Set<MachineInfo> machineInfos = appInfo.getMachines();
         List<MachineInfo> list = sortMachineInfos(machineInfos);
         if (list.isEmpty()) {
             return new ArrayList<>();

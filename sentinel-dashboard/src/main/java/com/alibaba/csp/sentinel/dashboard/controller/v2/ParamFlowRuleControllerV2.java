@@ -1,4 +1,18 @@
 /*
+ * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.alibaba.csp.sentinel.dashboard.controller.v2;
 
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
@@ -6,6 +20,7 @@ import com.alibaba.csp.sentinel.dashboard.client.CommandNotFoundException;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.SentinelVersion;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
+import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.domain.ResponseCode;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
@@ -18,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,12 +49,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
-*/
 /**
  * @author lianglin
  * @since 1.7.0
- *//*
-
+ */
 @RestController
 @RequestMapping("/v2/paramFlow")
 public class ParamFlowRuleControllerV2 {
@@ -49,11 +63,11 @@ public class ParamFlowRuleControllerV2 {
     private InMemoryRuleRepositoryAdapter<ParamFlowRuleEntity> repository;
 
     @Autowired
-    @Qualifier("defaultParamFlowRuleDefaultProvider")
+    @Qualifier("paramFlowRuleZookeeperProvider")
     private DynamicRuleProvider<List<ParamFlowRuleEntity>> ruleProvider;
 
     @Autowired
-    @Qualifier("defaultParamFlowRuleDefaultPublisher")
+    @Qualifier("paramFlowRuleZookeeperPublisher")
     private DynamicRulePublisher<List<ParamFlowRuleEntity>> rulePublisher;
 
     @Autowired
@@ -72,6 +86,10 @@ public class ParamFlowRuleControllerV2 {
 
             if (StringUtil.isBlank(app)) {
                 return Result.ofFail(ResponseCode.fail, "app can't be null or empty");
+            }
+
+            if (!checkIfSupported(app)) {
+                return unsupportedVersion();
             }
 
             AuthService.AuthUser authUser = authService.getAuthUser(request);
@@ -110,6 +128,7 @@ public class ParamFlowRuleControllerV2 {
             }
 
             Date date = new Date();
+            entity.getRule().setResource(entity.getResource().trim());
             entity.setGmtCreate(date).setGmtModified(date).setId(null);
 
             entity = repository.save(entity);
@@ -151,12 +170,12 @@ public class ParamFlowRuleControllerV2 {
                 authUser.authTarget(oldEntity.getApp(), AuthService.PrivilegeType.WRITE_RULE);
             }
 
-            entity.setApp(oldEntity.getApp()).setIp(oldEntity.getIp()).setPort(oldEntity.getPort());
+            entity.setApp(oldEntity.getApp());
             Result<ParamFlowRuleEntity> checkResult = checkEntity(entity);
             if (checkResult != null) {
                 return checkResult;
             }
-
+            entity.getRule().setResource(entity.getResource().trim());
             entity.setGmtCreate(oldEntity.getGmtCreate()).setGmtModified(new Date()).setId(id);
             entity = repository.save(entity);
             if (entity == null) {
@@ -204,10 +223,10 @@ public class ParamFlowRuleControllerV2 {
     }
 
 
-    private boolean checkIfSupported(String app, String ip, int port) {
+    private boolean checkIfSupported(String app) {
         try {
             return Optional.ofNullable(appManagement.getDetailApp(app))
-                    .flatMap(e -> e.getMachine(ip, port))
+                    .flatMap(e -> e.getMachines().stream().filter(MachineInfo::isHealthy).findFirst())
                     .flatMap(m -> VersionUtils.parseVersion(m.getVersion())
                             .map(v -> v.greaterOrEqual(version020)))
                     .orElse(true);
@@ -226,9 +245,7 @@ public class ParamFlowRuleControllerV2 {
                 "Sentinel client not supported for parameter flow control (unsupported version or dependency absent)");
     }
 
-    private void publishRules(*/
-/*@NonNull*//*
- String app) throws Exception {
+    private void publishRules(@NonNull String app) throws Exception {
         List<ParamFlowRuleEntity> rules = repository.findAllByApp(app);
         rulePublisher.publish(app, rules);
     }
@@ -240,6 +257,8 @@ public class ParamFlowRuleControllerV2 {
         if (StringUtil.isBlank(entity.getApp())) {
             return Result.ofFail(ResponseCode.fail, "app can't be null or empty");
         }
+
+        checkIfSupported(entity.getApp());
 
         if (entity.getRule() == null) {
             return Result.ofFail(ResponseCode.fail, "rule can't be null");
@@ -267,4 +286,3 @@ public class ParamFlowRuleControllerV2 {
 
 
 }
-*/

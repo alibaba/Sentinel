@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.dashboard.rule;
 
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.discovery.AppInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -52,9 +53,14 @@ public class DegradeRuleApiPublisher implements DynamicRulePublisher<List<Degrad
         if (rules == null) {
             return;
         }
-        Set<MachineInfo> set = appManagement.getDetailApp(app).getMachines();
-        if (!CollectionUtils.isEmpty(set)) {
-            set.stream().filter(MachineInfo::isHealthy).parallel()
+        AppInfo appInfo = appManagement.getDetailApp(app);
+        if(appInfo == null){
+            logger.error("could not find app:{} info", app);
+            return;
+        }
+        Set<MachineInfo> machineInfos = appInfo.getMachines();
+        if (!CollectionUtils.isEmpty(machineInfos)) {
+            machineInfos.stream().filter(MachineInfo::isHealthy).parallel()
                     .forEach(machine -> sentinelApiClient.setDegradeRuleOfMachine(app, machine.getIp(), machine.getPort(), rules));
         } else {
             logger.warn("app: {} no machines found to publish", app);

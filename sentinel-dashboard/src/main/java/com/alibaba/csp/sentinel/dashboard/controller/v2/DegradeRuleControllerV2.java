@@ -51,11 +51,11 @@ public class DegradeRuleControllerV2 {
     private final Logger logger = LoggerFactory.getLogger(DegradeRuleControllerV2.class);
 
     @Autowired
-    @Qualifier("degradeRuleDefaultProvider")
+    @Qualifier("degradeRuleZookeeperProvider")
     private DynamicRuleProvider<List<DegradeRuleEntity>> ruleProvider;
 
     @Autowired
-    @Qualifier("degradeRuleDefaultPublisher")
+    @Qualifier("degradeRuleZookeeperPublisher")
     private DynamicRulePublisher<List<DegradeRuleEntity>> rulePublisher;
 
     @Autowired
@@ -80,6 +80,7 @@ public class DegradeRuleControllerV2 {
 
             List<DegradeRuleEntity> rules = ruleProvider.getRules(app);
             rules = repository.saveAll(rules);
+
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
             logger.error("query degrade rules error:", throwable);
@@ -142,7 +143,7 @@ public class DegradeRuleControllerV2 {
             }
 
             DegradeRuleEntity oldEntity = repository.findById(id);
-            if (oldEntity != null) {
+            if (oldEntity == null) {
                 return Result.ofFail(ResponseCode.fail, "id " + id + " does not exist");
             }
 
