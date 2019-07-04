@@ -13,46 +13,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.rule;
+package com.alibaba.csp.sentinel.dashboard.rule.zookeeper;
 
-import com.alibaba.csp.sentinel.dashboard.config.ZookeeperConfigUtil;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.AuthorityRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
 import com.alibaba.csp.sentinel.datasource.Converter;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 import org.apache.curator.framework.CuratorFramework;
+import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.data.Stat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author lianglin
  * @since 1.7.0
  */
-@Component("authorityRuleZookeeperProvider")
-public class AuthorityRuleZookeeperProvider extends AbstractDynamicRuleProvider<List<AuthorityRuleEntity>> {
+@Component("authorityRuleZookeeperPublisher")
+public class AuthorityRuleZookeeperPublisher implements DynamicRulePublisher<List<AuthorityRuleEntity>> {
 
 
     @Autowired
     private CuratorFramework zkClient;
 
     @Autowired
-    private Converter<String, List<AuthorityRuleEntity>> converter;
+    private Converter<List<AuthorityRuleEntity>, String> converter;
 
     @Override
-    public List<AuthorityRuleEntity> getRules(String appName) throws Exception {
-        String zkPath = ZookeeperConfigUtil.getPath(appName) + "/authority_rule";
-        Stat stat = zkClient.checkExists().forPath(zkPath);
-        if (stat == null) {
-            return new ArrayList<>();
-        }
-        byte[] bytes = zkClient.getData().forPath(zkPath);
-        if (null == bytes || bytes.length == 0) {
-            return new ArrayList<>();
-        }
-        String s = new String(bytes);
+    public void publish(String app, List<AuthorityRuleEntity> rules) throws Exception {
+        AssertUtil.notEmpty(app, "app name cannot be empty");
 
-        return converter.convert(s);
+        String path = ZookeeperConfigUtil.getPath(app) + "/authority_rule";
+        Stat stat = zkClient.checkExists().forPath(path);
+        if (stat == null) {
+            zkClient.create().creatingParentContainersIfNeeded().withMode(CreateMode.PERSISTENT).forPath(path, null);
+        }
+        byte[] data = CollectionUtils.isEmpty(rules) ? "[]".getBytes() : converter.convert(rules).getBytes();
+        zkClient.setData().forPath(path, data);
+
     }
 }

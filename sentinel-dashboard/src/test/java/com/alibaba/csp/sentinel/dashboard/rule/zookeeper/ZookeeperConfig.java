@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.dashboard.rule.zookeeper;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.AuthorityRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.SystemRuleEntity;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.fastjson.JSON;
@@ -42,9 +43,6 @@ public class ZookeeperConfig {
         return s -> JSON.parseArray(s, FlowRuleEntity.class);
     }
 
-
-
-
     @Bean
     public Converter<List<DegradeRuleEntity>, String> degradeRuleEntityEncoder() {
         return JSON::toJSONString;
@@ -60,11 +58,21 @@ public class ZookeeperConfig {
         return JSON::toJSONString;
     }
 
-
     @Bean
     public Converter<String, List<SystemRuleEntity>> systemRuleEntityDecoder() {
         return s -> JSON.parseArray(s, SystemRuleEntity.class);
     }
+
+    @Bean
+    public Converter<List<ParamFlowRuleEntity>, String> paramFlowRuleEntityEncoder() {
+        return JSON::toJSONString;
+    }
+
+    @Bean
+    public Converter<String, List<ParamFlowRuleEntity>> paramFlowRuleEntityDecoder() {
+        return s -> JSON.parseArray(s, ParamFlowRuleEntity.class);
+    }
+
     @Bean
     public Converter<List<AuthorityRuleEntity>, String> authoriRuleEntityEncoder() {
         return JSON::toJSONString;

@@ -63,11 +63,11 @@ public class ParamFlowRuleControllerV2 {
     private InMemoryRuleRepositoryAdapter<ParamFlowRuleEntity> repository;
 
     @Autowired
-    @Qualifier("paramFlowRuleZookeeperProvider")
+    @Qualifier("paramFlowRuleDefaultProvider")
     private DynamicRuleProvider<List<ParamFlowRuleEntity>> ruleProvider;
 
     @Autowired
-    @Qualifier("paramFlowRuleZookeeperPublisher")
+    @Qualifier("paramFlowRuleDefaultPublisher")
     private DynamicRulePublisher<List<ParamFlowRuleEntity>> rulePublisher;
 
     @Autowired

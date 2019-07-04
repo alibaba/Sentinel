@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.rule;
+package com.alibaba.csp.sentinel.dashboard.rule.zookeeper;
 
-import com.alibaba.csp.sentinel.dashboard.config.ZookeeperConfigUtil;
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.AuthorityRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import org.apache.curator.framework.CuratorFramework;
@@ -32,27 +32,24 @@ import java.util.List;
  * @author lianglin
  * @since 1.7.0
  */
-@Component("authorityRuleZookeeperPublisher")
-public class AuthorityRuleZookeeperPublisher implements DynamicRulePublisher<List<AuthorityRuleEntity>> {
-
+@Component("paramFlowRuleZookeeperPublisher")
+public class ParamFlowRuleZookeeperPublisher implements DynamicRulePublisher<List<ParamFlowRuleEntity>> {
 
     @Autowired
     private CuratorFramework zkClient;
-
     @Autowired
-    private Converter<List<AuthorityRuleEntity>, String> converter;
+    private Converter<List<ParamFlowRuleEntity>, String> converter;
 
     @Override
-    public void publish(String app, List<AuthorityRuleEntity> rules) throws Exception {
+    public void publish(String app, List<ParamFlowRuleEntity> rules) throws Exception {
         AssertUtil.notEmpty(app, "app name cannot be empty");
 
-        String path = ZookeeperConfigUtil.getPath(app) + "/authority_rule";
+        String path = ZookeeperConfigUtil.getPath(app) + "/param_flow_rule";
         Stat stat = zkClient.checkExists().forPath(path);
         if (stat == null) {
             zkClient.create().creatingParentContainersIfNeeded().withMode(CreateMode.PERSISTENT).forPath(path, null);
         }
         byte[] data = CollectionUtils.isEmpty(rules) ? "[]".getBytes() : converter.convert(rules).getBytes();
         zkClient.setData().forPath(path, data);
-
     }
 }

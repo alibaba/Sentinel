@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.rule;
+package com.alibaba.csp.sentinel.dashboard.rule.zookeeper;
 
-import com.alibaba.csp.sentinel.dashboard.config.ZookeeperConfigUtil;
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.AuthorityRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.rule.AbstractDynamicRuleProvider;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.data.Stat;
@@ -30,18 +30,19 @@ import java.util.List;
  * @author lianglin
  * @since 1.7.0
  */
-@Component("paramFlowRuleZookeeperProvider")
-public class ParamFlowRuleZookeeperProvider extends AbstractDynamicRuleProvider<List<ParamFlowRuleEntity>> {
+@Component("authorityRuleZookeeperProvider")
+public class AuthorityRuleZookeeperProvider extends AbstractDynamicRuleProvider<List<AuthorityRuleEntity>> {
 
 
     @Autowired
     private CuratorFramework zkClient;
+
     @Autowired
-    private Converter<String, List<ParamFlowRuleEntity>> converter;
+    private Converter<String, List<AuthorityRuleEntity>> converter;
 
     @Override
-    public List<ParamFlowRuleEntity> getRules(String appName) throws Exception {
-        String zkPath = ZookeeperConfigUtil.getPath(appName)+"/param_flow_rule";
+    public List<AuthorityRuleEntity> getRules(String appName) throws Exception {
+        String zkPath = ZookeeperConfigUtil.getPath(appName) + "/authority_rule";
         Stat stat = zkClient.checkExists().forPath(zkPath);
         if (stat == null) {
             return new ArrayList<>();
@@ -54,6 +55,4 @@ public class ParamFlowRuleZookeeperProvider extends AbstractDynamicRuleProvider<
 
         return converter.convert(s);
     }
-
-
 }

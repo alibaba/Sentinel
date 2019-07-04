@@ -51,11 +51,11 @@ public class DegradeRuleControllerV2 {
     private final Logger logger = LoggerFactory.getLogger(DegradeRuleControllerV2.class);
 
     @Autowired
-    @Qualifier("degradeRuleZookeeperProvider")
+    @Qualifier("degradeRuleDefaultProvider")
     private DynamicRuleProvider<List<DegradeRuleEntity>> ruleProvider;
 
     @Autowired
-    @Qualifier("degradeRuleZookeeperPublisher")
+    @Qualifier("degradeRuleDefaultPublisher")
     private DynamicRulePublisher<List<DegradeRuleEntity>> rulePublisher;
 
     @Autowired

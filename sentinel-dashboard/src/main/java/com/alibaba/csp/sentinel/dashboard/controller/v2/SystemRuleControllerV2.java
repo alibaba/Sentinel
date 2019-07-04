@@ -54,11 +54,11 @@ public class SystemRuleControllerV2 {
     private InMemoryRuleRepositoryAdapter<SystemRuleEntity> repository;
 
     @Autowired
-    @Qualifier("systemRuleZookeeperProvider")
+    @Qualifier("systemRuleDefaultProvider")
     private DynamicRuleProvider<List<SystemRuleEntity>> ruleProvider;
 
     @Autowired
-    @Qualifier("systemRuleZookeeperPublisher")
+    @Qualifier("systemRuleDefaultPublisher")
     private DynamicRulePublisher<List<SystemRuleEntity>> rulePublisher;
 
     @Autowired

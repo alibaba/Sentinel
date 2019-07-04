@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEnti
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import org.apache.curator.framework.CuratorFramework;
+import org.apache.zookeeper.data.Stat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -40,7 +41,11 @@ public class DegradeRuleZookeeperProvider implements DynamicRuleProvider<List<De
 
     @Override
     public List<DegradeRuleEntity> getRules(String appName) throws Exception {
-        String zkPath = ZookeeperConfigUtil.getPath(appName);
+        String zkPath = ZookeeperConfigUtil.getPath(appName)+"/degrade_rule";
+        Stat stat = zkClient.checkExists().forPath(zkPath);
+        if (stat == null) {
+            return new ArrayList<>();
+        }
         byte[] bytes = zkClient.getData().forPath(zkPath);
         if (null == bytes || bytes.length == 0) {
             return new ArrayList<>();

@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.rule;
+package com.alibaba.csp.sentinel.dashboard.rule.zookeeper;
 
-import com.alibaba.csp.sentinel.dashboard.config.ZookeeperConfigUtil;
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.SystemRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import org.apache.curator.framework.CuratorFramework;
@@ -32,26 +32,24 @@ import java.util.List;
  * @author lianglin
  * @since 1.7.0
  */
-@Component("degradeRuleZookeeperPublisher")
-public class DegradeRuleZookeeperPublisher  implements DynamicRulePublisher<List<DegradeRuleEntity>> {
+@Component("systemRuleZookeeperPublisher")
+public class SystemRuleZookeeperPublisher implements DynamicRulePublisher<List<SystemRuleEntity>> {
 
     @Autowired
     private CuratorFramework zkClient;
-
     @Autowired
-    private Converter<List<DegradeRuleEntity>, String> converter;
+    private Converter<List<SystemRuleEntity>, String> converter;
 
     @Override
-    public void publish(String app, List<DegradeRuleEntity> rules) throws Exception {
+    public void publish(String app, List<SystemRuleEntity> rules) throws Exception {
         AssertUtil.notEmpty(app, "app name cannot be empty");
 
-        String path = ZookeeperConfigUtil.getPath(app) + "/degrade_rule";
+        String path = ZookeeperConfigUtil.getPath(app)+"/system_rule";
         Stat stat = zkClient.checkExists().forPath(path);
         if (stat == null) {
             zkClient.create().creatingParentContainersIfNeeded().withMode(CreateMode.PERSISTENT).forPath(path, null);
         }
         byte[] data = CollectionUtils.isEmpty(rules) ? "[]".getBytes() : converter.convert(rules).getBytes();
         zkClient.setData().forPath(path, data);
-
     }
 }

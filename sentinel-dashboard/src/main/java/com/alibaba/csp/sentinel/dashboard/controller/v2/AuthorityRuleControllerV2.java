@@ -52,11 +52,11 @@ public class AuthorityRuleControllerV2 {
     private final Logger logger = LoggerFactory.getLogger(AuthorityRuleControllerV2.class);
 
     @Autowired
-    @Qualifier("authorityRuleZookeeperProvider")
+    @Qualifier("authorityRuleDefaultProvider")
     private DynamicRuleProvider<List<AuthorityRuleEntity>> ruleProvider;
 
     @Autowired
-    @Qualifier("authorityRuleZookeeperPublisher")
+    @Qualifier("authorityRuleDefaultPublisher")
     private DynamicRulePublisher<List<AuthorityRuleEntity>> rulePublisher;
 
     @Autowired

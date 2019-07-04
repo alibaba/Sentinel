@@ -45,7 +45,7 @@ public class DegradeRuleZookeeperPublisher  implements DynamicRulePublisher<List
     public void publish(String app, List<DegradeRuleEntity> rules) throws Exception {
         AssertUtil.notEmpty(app, "app name cannot be empty");
 
-        String path = ZookeeperConfigUtil.getPath(app);
+        String path = ZookeeperConfigUtil.getPath(app) + "/degrade_rule";
         Stat stat = zkClient.checkExists().forPath(path);
         if (stat == null) {
             zkClient.create().creatingParentContainersIfNeeded().withMode(CreateMode.PERSISTENT).forPath(path, null);
