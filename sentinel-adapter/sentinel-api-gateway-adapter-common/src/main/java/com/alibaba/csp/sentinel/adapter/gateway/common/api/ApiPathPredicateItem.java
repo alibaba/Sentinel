@@ -15,9 +15,9 @@
  */
 package com.alibaba.csp.sentinel.adapter.gateway.common.api;
 
-import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
-
 import java.util.Objects;
+
+import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
 
 /**
  * @author Eric Zhao
