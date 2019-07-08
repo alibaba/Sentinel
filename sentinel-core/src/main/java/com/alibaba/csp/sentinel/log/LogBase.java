@@ -15,14 +15,16 @@
  */
 package com.alibaba.csp.sentinel.log;
 
+import com.alibaba.csp.sentinel.util.PidUtil;
+
 import java.io.File;
 import java.io.IOException;
+import java.util.Properties;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.alibaba.csp.sentinel.util.PidUtil;
-import com.alibaba.csp.sentinel.util.StringUtil;
+import static com.alibaba.csp.sentinel.util.ConfigUtil.addSeparator;
 
 /**
  * Default log base dir is ${user.home}/logs/csp/, we can use {@link #LOG_DIR} System property to override it.
@@ -34,66 +36,80 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  */
 public class LogBase {
 
-    public static final String LOG_CHARSET = "utf-8";
-
-    // Output biz log(RecordLog,CommandCenterLog) to file
-    public static final String LOG_OUTPUT_TYPE_FILE = "file";
-    // Output biz log(RecordLog,CommandCenterLog) to console
-    public static final String LOG_OUTPUT_TYPE_CONSOLE = "console";
 
     private static final String DIR_NAME = "logs" + File.separator + "csp";
-    private static final String USER_HOME = "user.home";
-
-    // Output type of biz log(RecordLog,CommandCenterLog)
-    public static final String LOG_OUTPUT_TYPE = "csp.sentinel.log.output.type";
     public static final String LOG_DIR = "csp.sentinel.log.dir";
     public static final String LOG_NAME_USE_PID = "csp.sentinel.log.use.pid";
+    public static final String LOG_OUTPUT_TYPE = "csp.sentinel.log.output.type";
+    public static final String LOG_CHARSET = "csp.sentinel.log.charset";
+    public static final String USER_HOME = "user.home";
 
+    /**
+     * Output biz log(RecordLog,CommandCenterLog) to file
+     */
+    public static final String LOG_OUTPUT_TYPE_FILE = "file";
+    /**
+     * Output biz log(RecordLog,CommandCenterLog) to console
+     */
+    public static final String LOG_OUTPUT_TYPE_CONSOLE = "console";
+    public static final String LOG_CHARSET_UTF8 = "utf-8";
+
+    private static boolean logNameUsePid;
     private static String logOutputType;
     private static String logBaseDir;
-    private static boolean logNameUsePid = false;
+    private static String logCharSet;
+
 
     static {
         try {
-            init();
+            initialize();
+            loadProperties();
         } catch (Throwable t) {
             System.err.println("[LogBase] FATAL ERROR when initializing log class");
             t.printStackTrace();
         }
     }
 
-    private static void init() {
-        logOutputType = System.getProperty(LOG_OUTPUT_TYPE);
+    private static void initialize() {
+        logNameUsePid = false;
+        logOutputType = LOG_OUTPUT_TYPE_FILE;
+        logBaseDir = addSeparator(System.getProperty(USER_HOME)) + DIR_NAME + File.separator;
+        logCharSet = LOG_CHARSET_UTF8;
+    }
 
-        // By default, output biz log(RecordLog,CommandCenterLog) to file
-        if (StringUtil.isBlank(logOutputType)) {
-            logOutputType = LOG_OUTPUT_TYPE_FILE;
-        } else if (!LOG_OUTPUT_TYPE_FILE.equalsIgnoreCase(logOutputType) && !LOG_OUTPUT_TYPE_CONSOLE.equalsIgnoreCase(logOutputType)) {
+    private static void loadProperties() {
+
+        Properties properties = LogConfigLoader.getProperties();
+
+        logOutputType = properties.get(LOG_OUTPUT_TYPE) == null ? logOutputType : properties.getProperty(LOG_OUTPUT_TYPE);
+        if (!LOG_OUTPUT_TYPE_FILE.equalsIgnoreCase(logOutputType) && !LOG_OUTPUT_TYPE_CONSOLE.equalsIgnoreCase(logOutputType)) {
             logOutputType = LOG_OUTPUT_TYPE_FILE;
         }
+        System.out.println("INFO: log out type is: " + logOutputType);
 
-        // first use -D, then use user home.
-        String logDir = System.getProperty(LOG_DIR);
 
-        if (logDir == null || logDir.isEmpty()) {
-            logDir = System.getProperty(USER_HOME);
-            logDir = addSeparator(logDir) + DIR_NAME + File.separator;
-        }
-        logDir = addSeparator(logDir);
-        File dir = new File(logDir);
+        logCharSet = properties.getProperty(LOG_CHARSET) == null ? logCharSet : properties.getProperty(LOG_CHARSET);
+        System.out.println("INFO: log charset is: " + logCharSet);
+
+
+        logBaseDir = properties.getProperty(LOG_DIR) == null ? logBaseDir : properties.getProperty(LOG_DIR);
+        addSeparator(logBaseDir);
+        File dir = new File(logBaseDir);
         if (!dir.exists()) {
             if (!dir.mkdirs()) {
-                System.err.println("ERROR: create log base dir error: " + logDir);
+                System.err.println("ERROR: create log base dir error: " + logBaseDir);
             }
         }
-        // logBaseDir must end with File.separator
-        logBaseDir = logDir;
         System.out.println("INFO: log base dir is: " + logBaseDir);
 
-        String usePid = System.getProperty(LOG_NAME_USE_PID, "");
+
+        String usePid = properties.getProperty(LOG_NAME_USE_PID);
         logNameUsePid = "true".equalsIgnoreCase(usePid);
         System.out.println("INFO: log name use pid is: " + logNameUsePid);
+
+
     }
+
 
     /**
      * Whether log file name should contain pid. This switch is configured by {@link #LOG_NAME_USE_PID} System property.
@@ -104,12 +120,33 @@ public class LogBase {
         return logNameUsePid;
     }
 
-    private static String addSeparator(String logDir) {
-        if (!logDir.endsWith(File.separator)) {
-            logDir += File.separator;
-        }
-        return logDir;
+    /**
+     * Get log file base directory path, the returned path is guaranteed end with {@link File#separator}
+     *
+     * @return log file base directory path.
+     */
+    public static String getLogBaseDir() {
+        return logBaseDir;
     }
+
+    /**
+     * Get log file output type the default value is "file"
+     *
+     * @return
+     */
+    public static String getLogOutputType() {
+        return logOutputType;
+    }
+
+    /**
+     * Get log file charSet the default value is utf-8
+     *
+     * @return
+     */
+    public static String getLogCharset() {
+        return logCharSet;
+    }
+
 
     protected static void log(Logger logger, Handler handler, Level level, String detail, Object... params) {
         if (detail == null) {
@@ -131,14 +168,6 @@ public class LogBase {
         logger.log(level, detail, throwable);
     }
 
-    /**
-     * Get log file base directory path, the returned path is guaranteed end with {@link File#separator}
-     *
-     * @return log file base directory path.
-     */
-    public static String getLogBaseDir() {
-        return logBaseDir;
-    }
 
     protected static Handler makeLogger(String logName, Logger heliumRecordLog) {
         CspFormatter formatter = new CspFormatter();
@@ -155,7 +184,7 @@ public class LogBase {
                 try {
                     handler = new DateFileLogHandler(fileName + ".%d", 1024 * 1024 * 200, 4, true);
                     handler.setFormatter(formatter);
-                    handler.setEncoding(LOG_CHARSET);
+                    handler.setEncoding(logCharSet);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -164,7 +193,7 @@ public class LogBase {
                 try {
                     handler = new ConsoleHandler();
                     handler.setFormatter(formatter);
-                    handler.setEncoding(LOG_CHARSET);
+                    handler.setEncoding(logCharSet);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -179,4 +208,6 @@ public class LogBase {
         heliumRecordLog.setLevel(Level.ALL);
         return handler;
     }
+
+
 }
