@@ -28,22 +28,19 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import static com.alibaba.csp.sentinel.util.ConfigUtil.addSeparator;
 
 /**
- * <p>
- * class responsible for loading the Sentinel Core configuration
- * </p>
+ * <p>The loader that responsible for loading Sentinel common configurations.</p>
  *
  * @author lianglin
  * @since 1.7.0
  */
-public class SentinelConfigLoader {
+public final class SentinelConfigLoader {
 
+    public static final String SENTINEL_CONFIG = "csp.sentinel.config.file";
 
     private static final String DIR_NAME = "logs" + File.separator + "csp";
     private static final String USER_HOME = "user.home";
 
-    public static final String SENTINEL_CONFIG = "csp.sentinel.config.file";
-    private static String DEFAULT_SENTINEL_CONFIG_FILE = "classpath:sentinel.properties";
-
+    private static final String DEFAULT_SENTINEL_CONFIG_FILE = "classpath:sentinel.properties";
 
     private static Properties properties = new Properties();
 
@@ -51,9 +48,7 @@ public class SentinelConfigLoader {
         load();
     }
 
-
     private static void load() {
-
         String fileName = System.getProperty(SENTINEL_CONFIG);
         if (StringUtil.isBlank(fileName)) {
             fileName = DEFAULT_SENTINEL_CONFIG_FILE;
@@ -61,7 +56,7 @@ public class SentinelConfigLoader {
 
         Properties p = ConfigUtil.loadProperties(fileName);
 
-        //old version config file
+        // Compatible with legacy config file path.
         if (p == null) {
             String path = addSeparator(System.getProperty(USER_HOME)) + DIR_NAME + File.separator;
             fileName = path + AppNameUtil.getAppName() + ".properties";
@@ -72,6 +67,7 @@ public class SentinelConfigLoader {
         }
 
         if (p != null && !p.isEmpty()) {
+            RecordLog.info("[SentinelConfigLoader] Loading Sentinel config from " + fileName);
             properties.putAll(p);
         }
 
@@ -81,7 +77,8 @@ public class SentinelConfigLoader {
             String oldConfigValue = properties.getProperty(configKey);
             properties.put(configKey, newConfigValue);
             if (oldConfigValue != null) {
-                RecordLog.info("[SentinelConfig] JVM parameter overrides {0}: {1} -> {2}", configKey, oldConfigValue, newConfigValue);
+                RecordLog.info("[SentinelConfigLoader] JVM parameter overrides {0}: {1} -> {2}",
+                        configKey, oldConfigValue, newConfigValue);
             }
         }
     }
