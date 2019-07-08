@@ -23,20 +23,16 @@ import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
- * <p>
- * class responsible for loading the Log configuration.
- * </p>
+ * <p>The loader that responsible for loading Sentinel log configurations.</p>
  *
  * @author lianglin
  * @since 1.7.0
  */
 public class LogConfigLoader {
 
-
     public static final String LOG_CONFIG = "csp.sentinel.config.file";
 
     private static final String DEFAULT_LOG_CONFIG_FILE = "classpath:sentinel.properties";
-
 
     private static final Properties properties = new Properties();
 
@@ -45,7 +41,6 @@ public class LogConfigLoader {
     }
 
     private static void load() {
-
         String file = System.getProperty(LOG_CONFIG);
         if (StringUtil.isBlank(file)) {
             file = DEFAULT_LOG_CONFIG_FILE;
@@ -60,19 +55,11 @@ public class LogConfigLoader {
         for (Map.Entry<Object, Object> entry : copy) {
             String configKey = entry.getKey().toString();
             String newConfigValue = entry.getValue().toString();
-            String oldConfigValue = properties.getProperty(configKey);
             properties.put(configKey, newConfigValue);
-            if (oldConfigValue != null) {
-                System.out.println("[LogConfig] JVM parameter overrides: " + configKey + " " + oldConfigValue + " -> " + newConfigValue);
-            }
         }
-
-
     }
 
     public static Properties getProperties() {
         return properties;
     }
-
-
 }
