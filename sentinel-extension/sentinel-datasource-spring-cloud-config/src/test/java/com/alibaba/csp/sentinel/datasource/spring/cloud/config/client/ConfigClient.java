@@ -19,6 +19,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
+ * When start client please rename client-bootstrap.yml to bootstrap.yml
  * @author lianglin
  * @since 1.7.0
  */
