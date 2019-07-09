@@ -15,18 +15,10 @@
  */
 package com.alibaba.csp.sentinel.datasource.spring.cloud.config;
 
-import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.datasource.AbstractDataSource;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import org.springframework.cloud.bootstrap.config.PropertySourceLocator;
-import org.springframework.core.env.Environment;
-import org.springframework.core.env.PropertySource;
-
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author lianglin
@@ -35,33 +27,17 @@ import java.util.concurrent.TimeUnit;
 public class SpringCloudConfigDataSource<T> extends AbstractDataSource<String, T> {
 
 
-    private ScheduledExecutorService poolExecutor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("sentinel-spring-application-ds-update"));
-
-    private PropertySourceLocator sourceLocator;
-
-    private Environment environment;
-
-    private String property;
+    private String ruleKey;
 
 
-    public SpringCloudConfigDataSource(final PropertySourceLocator sourceLocator,
-                                       final Environment environment, final String property, Converter<String, T> converter) {
+    public SpringCloudConfigDataSource(final String ruleKey, Converter<String, T> converter) {
         super(converter);
-        if (sourceLocator == null || environment == null
-                || StringUtil.isBlank(property)) {
-            throw new IllegalArgumentException(String.format("Bad argument: sourceLocator=[%s], environment=[%s], property=[%s]", sourceLocator, environment, property));
+        if (StringUtil.isBlank(ruleKey)) {
+            throw new IllegalArgumentException(String.format("Bad argument: ruleKey=[%s]", ruleKey));
         }
-        this.sourceLocator = sourceLocator;
-        this.environment = environment;
-        this.property = property;
-        loadInitialConfig();
-        poolExecutor.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                loadInitialConfig();
-            }
-        }, 3, 5, TimeUnit.SECONDS);
 
+        this.ruleKey = ruleKey;
+        loadInitialConfig();
     }
 
     private void loadInitialConfig() {
@@ -78,21 +54,12 @@ public class SpringCloudConfigDataSource<T> extends AbstractDataSource<String, T
 
     @Override
     public String readSource() {
-        PropertySource<?> locate = sourceLocator.locate(environment);
-        if (locate != null) {
-            Object value = locate.getProperty(this.property);
-            if (value instanceof String) {
-                return value.toString();
-            }
-        }
-        return null;
+        return  SentinelRuleStorage.retrieveRule(ruleKey);
     }
 
     @Override
     public void close() throws Exception {
-        if (poolExecutor != null) {
-            poolExecutor.shutdown();
-        }
+
     }
 
 

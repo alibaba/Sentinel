@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: sentinel
+  cloud:
+    config:
+      uri: http://localhost:10086/
+      profile: dev
+      label: master
+
+server:
+  port: 8080
+
