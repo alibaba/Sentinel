@@ -45,7 +45,7 @@ public final class ConfigUtil {
      */
     public static Properties loadProperties(String fileName) {
         if (StringUtil.isNotBlank(fileName)) {
-            if (fileName.startsWith(File.separator)) {
+            if (absolutePathStart(fileName)) {
                 return loadPropertiesFromAbsoluteFile(fileName);
             } else if (fileName.startsWith(CLASSPATH_FILE_FLAG)) {
                 return loadPropertiesFromClasspathFile(fileName);
@@ -77,6 +77,16 @@ public final class ConfigUtil {
             e.printStackTrace();
         }
         return properties;
+    }
+
+    private static boolean absolutePathStart(String path) {
+        File[] files = File.listRoots();
+        for (File file : files) {
+            if (path.startsWith(file.getPath())) {
+                return true;
+            }
+        }
+        return false;
     }
 
 
