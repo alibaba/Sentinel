@@ -20,7 +20,8 @@ angular.module('sentinelDashboardApp')
         AppService.getApps().success(
           function (data) {
             if (data.code === 0) {
-              let initHashApp = $location.path().split('/')[3];
+              var path = $location.path().split('/');
+              let initHashApp = path[path.length - 1];
               $scope.apps = data.data;
               $scope.apps = $scope.apps.map(function (item) {
                 if (item.app === initHashApp) {
