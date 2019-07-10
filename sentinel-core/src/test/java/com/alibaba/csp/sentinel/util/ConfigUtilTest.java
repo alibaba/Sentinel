@@ -49,7 +49,7 @@ public class ConfigUtilTest {
             }
             BufferedWriter out = new BufferedWriter(new FileWriter(file));
             out.write(LOG_OUTPUT_TYPE + "=" + logOutputType);
-            out.write("\n");
+            out.write(System.getProperty("line.separator"));
             out.write(LOG_DIR + "=" + dir);
             out.flush();
             out.close();
