@@ -27,18 +27,18 @@
               <thead>
                 <tr style="background: #F3F5F7;">
                   <td style="width: 34%;">
-                    资源名
+                    API 名称
                   </td>
-                  <td style="width: 6%;">
-                    资源类型
+                  <td style="width: 8%;">
+                    API 类型
                   </td>
-                  <td style="width: 7%;">通过QPS</td>
-                  <td style="width: 7%;">拒绝QPS</td>
+                  <td style="width: 7%;">通过 QPS</td>
+                  <td style="width: 7%;">拒绝 QPS</td>
                   <td style="width: 5%;">线程数</td>
-                  <td style="width: 6%;">平均RT</td>
+                  <td style="width: 6%;">平均 RT</td>
                   <td style="width: 6%;">分钟通过</td>
                   <td style="width: 6%;">分钟拒绝</td>
-                  <td style="width: 23%">操作</td>
+                  <td style="width: 20%">操作</td>
                 </tr>
                 <tr></tr>
               </thead>
@@ -50,7 +50,7 @@
                   </td>
                   <td>
                     <span ng-if="apiNames.indexOf(resource.resource) == -1">Route ID</span>
-                    <span ng-if="apiNames.indexOf(resource.resource) != -1">自定义API</span>
+                    <span ng-if="apiNames.indexOf(resource.resource) != -1">自定义 API</span>
                   </td>
                   <td>{{resource.passQps}}</td>
                   <td>{{resource.blockQps}}</td>

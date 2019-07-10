@@ -3,8 +3,8 @@
     <span style="font-size: 30px;font-weight: bold;">{{app}}</span>
   </div>
   <div class="col-md-6">
-    <button class="btn btn-default-inverse" style="float: right; margin-right: 10px;" ng-disabled="!macInputModel" ng-click="addNewApi()">
-      <i class="fa fa-plus"></i>&nbsp;&nbsp;新增API</button>
+    <button class="btn btn-outline-primary" style="float: right; margin-right: 10px;" ng-disabled="!macInputModel" ng-click="addNewApi()">
+      <i class="fa fa-plus"></i>&nbsp;&nbsp;新增 API 分组</button>
   </div>
 </div>
 
@@ -15,7 +15,7 @@
     <div class="col-md-12">
       <div class="card">
         <div class="inputs-header">
-          <span class="brand" style="font-size: 13px;">API管理</span>
+          <span class="brand" style="font-size: 13px;">API 分组管理</span>
           <button class="btn btn-primary" style="float: right; margin-right: 10px; height: 30px;font-size: 12px;" ng-click="getApis()">刷新</button>
           <input class="form-control witdh-200" placeholder="关键字" ng-model="searchKey">
           <div class="control-group" style="float:right;margin-right: 10px;margin-bottom: -10px;">
@@ -30,7 +30,7 @@
             <thead>
               <tr style="background: #F3F5F7;">
                 <td>
-                  API名称
+                  API 名称
                 </td>
                 <td>
                   匹配模式
@@ -54,8 +54,8 @@
                 </td>
                 <td>{{api.pattern}}</td>
                 <td ng-if="api.firstFlag==0" rowspan="{{api.itemSize}}" style="vertical-align: middle;">
-                  <button class="btn btn-xs btn-default" type="button" ng-click="editApi(api)" style="font-size: 12px; height:25px;">编辑</button>
-                  <button class="btn btn-xs btn-default" type="button" ng-click="deleteApi(api)" style="font-size: 12px; height:25px;">删除</button>
+                  <button class="btn btn-xs btn-outline-primary" type="button" ng-click="editApi(api)" style="font-size: 12px; height:25px;">编辑</button>
+                  <button class="btn btn-xs btn-outline-danger" type="button" ng-click="deleteApi(api)" style="font-size: 12px; height:25px;">删除</button>
                 </td>
               </tr>
             </tbody>

@@ -3,8 +3,8 @@
     <span style="font-size: 30px;font-weight: bold;">{{app}}</span>
   </div>
   <div class="col-md-6">
-    <button class="btn btn-default-inverse" style="float: right; margin-right: 10px;" ng-disabled="!macInputModel" ng-click="addNewRule()">
-      <i class="fa fa-plus"></i>&nbsp;&nbsp;新增流控规则</button>
+    <button class="btn btn-outline-primary" style="float: right; margin-right: 10px;" ng-disabled="!macInputModel" ng-click="addNewRule()">
+      <i class="fa fa-plus"></i>&nbsp;&nbsp;新增网关流控规则</button>
   </div>
 </div>
 
@@ -30,10 +30,10 @@
             <thead>
               <tr style="background: #F3F5F7;">
                 <td>
-                  API名称
+                  API 名称
                 </td>
                 <td>
-                  API类型
+                  API 类型
                 </td>
                 <td>
                   阈值类型
@@ -53,7 +53,7 @@
                 <td>{{rule.resource}}</td>
                 <td>
                   <span ng-if="rule.resourceMode == 0">Route ID</span>
-                  <span ng-if="rule.resourceMode == 1">API分组</span>
+                  <span ng-if="rule.resourceMode == 1">API 分组</span>
                 </td>
                 <td>
                   <span ng-if="rule.grade == 1">QPS</span>
@@ -61,8 +61,8 @@
                 </td>
                 <td>{{rule.count}}</td>
                 <td>
-                  <button class="btn btn-xs btn-default" type="button" ng-click="editRule(rule)" style="font-size: 12px; height:25px;">编辑</button>
-                  <button class="btn btn-xs btn-default" type="button" ng-click="deleteRule(rule)" style="font-size: 12px; height:25px;">删除</button>
+                  <button class="btn btn-xs btn-outline-primary" type="button" ng-click="editRule(rule)" style="font-size: 12px; height:25px;">编辑</button>
+                  <button class="btn btn-xs btn-outline-danger" type="button" ng-click="deleteRule(rule)" style="font-size: 12px; height:25px;">删除</button>
                 </td>
               </tr>
             </tbody>

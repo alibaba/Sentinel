@@ -72,13 +72,13 @@ app.controller('GatewayApiCtl', ['$scope', '$stateParams', 'GatewayApiService', 
     $scope.editApi = function (api) {
       $scope.currentApi = angular.copy(api);
       $scope.gatewayApiDialog = {
-        title: '编辑自定义API',
+        title: '编辑自定义 API',
         type: 'edit',
         confirmBtnText: '保存'
       };
       gatewayApiDialog = ngDialog.open({
         template: '/app/views/dialog/gateway/api-dialog.html',
-        width: 840,
+        width: 900,
         overlay: true,
         scope: $scope
       });
@@ -94,13 +94,13 @@ app.controller('GatewayApiCtl', ['$scope', '$stateParams', 'GatewayApiService', 
         predicateItems: [{matchStrategy: 0, pattern: ''}]
       };
       $scope.gatewayApiDialog = {
-        title: '新增自定义API',
+        title: '新增自定义 API',
         type: 'add',
         confirmBtnText: '新增'
       };
       gatewayApiDialog = ngDialog.open({
         template: '/app/views/dialog/gateway/api-dialog.html',
-        width: 840,
+        width: 900,
         overlay: true,
         scope: $scope
       });
