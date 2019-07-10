@@ -6,13 +6,13 @@ app.service('AuthService', ['$http', function ($http) {
       url: '/auth/login',
       params: param,
       method: 'POST'
-    })
-  }
+    });
+  };
 
   this.logout = function () {
     return $http({
       url: '/auth/logout',
       method: 'POST'
-    })
-  }
+    });
+  };
 }]);

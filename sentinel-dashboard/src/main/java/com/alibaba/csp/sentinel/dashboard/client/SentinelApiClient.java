@@ -30,9 +30,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayFlowRule;
 import com.alibaba.csp.sentinel.command.CommandConstants;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.command.vo.NodeVo;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.ApiDefinitionEntity;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayFlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.util.AsyncUtils;
 import com.alibaba.csp.sentinel.slots.block.Rule;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRule;
@@ -108,6 +111,12 @@ public class SentinelApiClient {
     private static final String MODIFY_CLUSTER_SERVER_TRANSPORT_CONFIG_PATH = "cluster/server/modifyTransportConfig";
     private static final String MODIFY_CLUSTER_SERVER_FLOW_CONFIG_PATH = "cluster/server/modifyFlowConfig";
     private static final String MODIFY_CLUSTER_SERVER_NAMESPACE_SET_PATH = "cluster/server/modifyNamespaceSet";
+
+    private static final String FETCH_GATEWAY_API_PATH = "gateway/getApiDefinitions";
+    private static final String MODIFY_GATEWAY_API_PATH = "gateway/updateApiDefinitions";
+
+    private static final String FETCH_GATEWAY_FLOW_RULE_PATH = "gateway/getRules";
+    private static final String MODIFY_GATEWAY_FLOW_RULE_PATH = "gateway/updateRules";
 
     private static final String FLOW_RULE_TYPE = "flow";
     private static final String DEGRADE_RULE_TYPE = "degrade";
@@ -691,6 +700,92 @@ public class SentinelApiClient {
         } catch (Exception ex) {
             logger.warn("Error when fetching cluster sever all config and basic info", ex);
             return AsyncUtils.newFailedFuture(ex);
+        }
+    }
+
+    public CompletableFuture<List<ApiDefinitionEntity>> fetchApis(String app, String ip, int port) {
+        if (StringUtil.isBlank(ip) || port <= 0) {
+            return AsyncUtils.newFailedFuture(new IllegalArgumentException("Invalid parameter"));
+        }
+
+        try {
+            return executeCommand(ip, port, FETCH_GATEWAY_API_PATH, false)
+                    .thenApply(r -> {
+                        List<ApiDefinitionEntity> entities = JSON.parseArray(r, ApiDefinitionEntity.class);
+                        if (entities != null) {
+                            for (ApiDefinitionEntity entity : entities) {
+                                entity.setApp(app);
+                                entity.setIp(ip);
+                                entity.setPort(port);
+                            }
+                        }
+                        return entities;
+                    });
+        } catch (Exception ex) {
+            logger.warn("Error when fetching gateway apis", ex);
+            return AsyncUtils.newFailedFuture(ex);
+        }
+    }
+
+    public boolean modifyApis(String app, String ip, int port, List<ApiDefinitionEntity> apis) {
+        if (apis == null) {
+            return true;
+        }
+
+        try {
+            AssertUtil.notEmpty(app, "Bad app name");
+            AssertUtil.notEmpty(ip, "Bad machine IP");
+            AssertUtil.isTrue(port > 0, "Bad machine port");
+            String data = JSON.toJSONString(
+                    apis.stream().map(r -> r.toApiDefinition()).collect(Collectors.toList()));
+            Map<String, String> params = new HashMap<>(2);
+            params.put("data", data);
+            String result = executeCommand(app, ip, port, MODIFY_GATEWAY_API_PATH, params, true).get();
+            logger.info("Modify gateway apis: {}", result);
+            return true;
+        } catch (Exception e) {
+            logger.warn("Error when modifying gateway apis", e);
+            return false;
+        }
+    }
+
+    public CompletableFuture<List<GatewayFlowRuleEntity>> fetchGatewayFlowRules(String app, String ip, int port) {
+        if (StringUtil.isBlank(ip) || port <= 0) {
+            return AsyncUtils.newFailedFuture(new IllegalArgumentException("Invalid parameter"));
+        }
+
+        try {
+            return executeCommand(ip, port, FETCH_GATEWAY_FLOW_RULE_PATH, false)
+                    .thenApply(r -> {
+                        List<GatewayFlowRule> gatewayFlowRules = JSON.parseArray(r, GatewayFlowRule.class);
+                        List<GatewayFlowRuleEntity> entities = gatewayFlowRules.stream().map(rule -> GatewayFlowRuleEntity.fromGatewayFlowRule(app, ip, port, rule)).collect(Collectors.toList());
+                        return entities;
+                    });
+        } catch (Exception ex) {
+            logger.warn("Error when fetching gateway flow rules", ex);
+            return AsyncUtils.newFailedFuture(ex);
+        }
+    }
+
+    public boolean modifyGatewayFlowRules(String app, String ip, int port, List<GatewayFlowRuleEntity> rules) {
+        if (rules == null) {
+            return true;
+        }
+
+        try {
+            AssertUtil.notEmpty(app, "Bad app name");
+            AssertUtil.notEmpty(ip, "Bad machine IP");
+            AssertUtil.isTrue(port > 0, "Bad machine port");
+            String data = JSON.toJSONString(
+                    rules.stream().map(r -> r.toGatewayFlowRule()).collect(Collectors.toList()));
+            Map<String, String> params = new HashMap<>(2);
+            params.put("data", data);
+            String result = executeCommand(app, ip, port, MODIFY_GATEWAY_FLOW_RULE_PATH, params, true).get();
+            logger.info("Modify gateway flow rules: {}", result);
+            return true;
+        } catch (Exception e) {
+            logger.warn("Error when modifying gateway apis", e);
+            return false;
         }
     }
 }

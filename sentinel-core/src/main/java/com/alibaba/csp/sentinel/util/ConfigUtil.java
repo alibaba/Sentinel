@@ -26,7 +26,7 @@ import java.util.Properties;
 
 /**
  * <p>
- * util for loading config
+ * Util class for loading configuration from file or command arguments.
  * </p>
  *
  * @author lianglin
@@ -34,14 +34,14 @@ import java.util.Properties;
  */
 public final class ConfigUtil {
 
-
     public static final String CLASSPATH_FILE_FLAG = "classpath:";
 
     /**
-     * Return null if the file not exist
+     * <p>Load the properties from provided file.</p>
+     * <p>Currently it supports reading from classpath file or local file.</p>
      *
-     * @param fileName
-     * @return
+     * @param fileName valid file path
+     * @return the retrieved properties from the file; null if the file not exist
      */
     public static Properties loadProperties(String fileName) {
         if (StringUtil.isNotBlank(fileName)) {
@@ -66,12 +66,9 @@ public final class ConfigUtil {
                 return null;
             }
 
-            FileInputStream input = new FileInputStream(file);
-            try {
+            try (FileInputStream input = new FileInputStream(file)) {
                 properties = new Properties();
                 properties.load(input);
-            } finally {
-                input.close();
             }
         } catch (Throwable e) {
             e.printStackTrace();
@@ -91,13 +88,12 @@ public final class ConfigUtil {
 
 
     private static Properties loadPropertiesFromClasspathFile(String fileName) {
-
         fileName = fileName.substring(CLASSPATH_FILE_FLAG.length()).trim();
 
-        List<URL> list = new ArrayList<URL>();
+        List<URL> list = new ArrayList<>();
         try {
             Enumeration<URL> urls = getClassLoader().getResources(fileName);
-            list = new ArrayList<URL>();
+            list = new ArrayList<>();
             while (urls.hasMoreElements()) {
                 list.add(urls.nextElement());
             }
@@ -153,5 +149,5 @@ public final class ConfigUtil {
         return dir;
     }
 
-
+    private ConfigUtil() {}
 }
