@@ -1,0 +1,98 @@
+<div class="row" style="margin-left: 1px; margin-top:10px; height: 50px;">
+  <div class="col-md-6" style="margin-bottom: 10px;">
+    <span style="font-size: 30px;font-weight: bold;">{{app}}</span>
+  </div>
+</div>
+
+<div class="separator"></div>
+
+<div class="container-fluid">
+  <div class="row" style="margin-top: 20px; margin-bottom: 20px;">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="inputs-header">
+          <span class="brand" style="font-size: 13px;">请求链路</span>
+          <button class="btn btn-primary" style="float: right; margin-right: 10px; height: 30px;font-size: 12px;" ng-click="queryIdentities()">刷新</button>
+          <input class="form-control witdh-200" placeholder="关键字" ng-model="searchKey" ng-change="searchChange(searchKey)">
+          <div class="control-group" style="float:right;margin-right: 10px;margin-bottom: -10px;">
+            <selectize id="gsInput" class="selectize-input-200" config="macsInputConfig" options="macsInputOptions" ng-model="macInputModel"
+              placeholder="机器"></selectize>
+          </div>
+        </div>
+
+        <!--.tools-header -->
+        <div class="card-body" style="padding: 0px 0px;">
+          <table rz-table id="identities" class="table" style="border-left: none; border-right:none;margin-top: 10px;">
+            <thead>
+              <thead>
+                <tr style="background: #F3F5F7;">
+                  <td style="width: 34%;">
+                    API 名称
+                  </td>
+                  <td style="width: 8%;">
+                    API 类型
+                  </td>
+                  <td style="width: 7%;">通过 QPS</td>
+                  <td style="width: 7%;">拒绝 QPS</td>
+                  <td style="width: 5%;">线程数</td>
+                  <td style="width: 6%;">平均 RT</td>
+                  <td style="width: 6%;">分钟通过</td>
+                  <td style="width: 6%;">分钟拒绝</td>
+                  <td style="width: 20%">操作</td>
+                </tr>
+                <tr></tr>
+              </thead>
+              <tbody>
+                <tr dir-paginate="resource in identities | itemsPerPage: pageSize" current-page="currentPage" pagination-id="entriesPagination"
+                  data-tt-id="{{resource.ttId}}" data-tt-parent-id="{{resource.parentTtId}}" data-tt-visible="{{resource.visible}}">
+                  <td style="white-space: normal; text-align: left;">
+                    <span style="word-wrap:break-word;word-break:break-all;">{{resource.resource}}</span>
+                  </td>
+                  <td>
+                    <span ng-if="apiNames.indexOf(resource.resource) == -1">Route ID</span>
+                    <span ng-if="apiNames.indexOf(resource.resource) != -1">自定义 API</span>
+                  </td>
+                  <td>{{resource.passQps}}</td>
+                  <td>{{resource.blockQps}}</td>
+                  <td>{{resource.threadNum}}</td>
+                  <td>{{resource.averageRt}}</td>
+                  <td>{{resource.oneMinutePass}}</td>
+                  <td ng-if="$index==pageSize-1 || (currentPage>=identities.length/pageSize && $index==identities.length%pageSize-1)" ng-init="initTreeTable()">
+                    {{resource.oneMinuteBlock}}</td>
+                  <td ng-if="!($index==pageSize-1 || (currentPage>=identities.length/pageSize && $index==identities.length%pageSize-1))"> {{resource.oneMinuteBlock}}</td>
+                  <td>
+                    <div class="control-group">
+                      <button class="btn btn-xs btn-default" type="button" ng-click="addNewGatewayFlowRule(resource.resource)" style="font-size: 12px; height:25px;">
+                        <i class="fa fa-plus"></i>&nbsp;流控</button>
+                      <button class="btn btn-xs btn-default" type="button" ng-click="addNewDegradeRule(resource.resource)" style="font-size: 12px; height:25px;">
+                        <i class="fa fa-plus"></i>&nbsp;降级</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+          </table>
+        </div>
+        <!-- .card-body -->
+        <div class="pagination-footer">
+          <dir-pagination-controls boundary-links="true" template-url="app/views/pagination.tpl.html" pagination-id="entriesPagination"
+            on-page-change="">
+          </dir-pagination-controls>
+          <div class="tools">
+            <span>共 {{totalCount}} 条记录, </span>
+            <span>
+              每页
+              <input class="form-control" ng-model="pageSize"> 条记录
+            </span>
+            <!--<span>第 {{currentPage}} / {{totalPage}} 页</span>-->
+          </div>
+          <!-- .tools -->
+        </div>
+        <!-- pagination-footer -->
+      </div>
+      <!-- .card -->
+    </div>
+    <!-- .col-md-12 -->
+  </div>
+  <!-- -->
+</div>
+<!-- .container-fluid -->

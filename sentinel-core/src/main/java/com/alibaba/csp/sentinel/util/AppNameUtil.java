@@ -15,9 +15,9 @@
  */
 package com.alibaba.csp.sentinel.util;
 
-import java.io.File;
-
 import com.alibaba.csp.sentinel.log.RecordLog;
+
+import java.io.File;
 
 /**
  * Util class for getting application name. This class uses the flowing order to get app's name:
