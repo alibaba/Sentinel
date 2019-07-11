@@ -21,6 +21,12 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
+ * ${@link SpringCloudConfigDataSource} A read-only {@code DataSource} with spring-cloud-config backend through
+ * ${@link SentinelRuleStorage} retrieve the spring-cloud-config data
+ * When the data in backend has been modified, if {@code DataSource} want to read the latest data.
+ * The backend should notice spring-cloud-client invoke the ${@link SentinelRuleLocator#refresh()}
+ * to update ${@link SentinelRuleStorage} data. Web hook may be a good notice way.
+ *
  * @author lianglin
  * @since 1.7.0
  */
@@ -54,7 +60,7 @@ public class SpringCloudConfigDataSource<T> extends AbstractDataSource<String, T
 
     @Override
     public String readSource() {
-        return  SentinelRuleStorage.retrieveRule(ruleKey);
+        return SentinelRuleStorage.retrieveRule(ruleKey);
     }
 
     @Override

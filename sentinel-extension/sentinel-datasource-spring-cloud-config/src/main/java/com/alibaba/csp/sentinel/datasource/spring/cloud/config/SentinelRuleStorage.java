@@ -18,6 +18,8 @@ package com.alibaba.csp.sentinel.datasource.spring.cloud.config;
 import org.springframework.core.env.PropertySource;
 
 /**
+ * Storage data pull from spring-config-cloud server
+ *
  * @author lianglin
  * @since 1.7.0
  */

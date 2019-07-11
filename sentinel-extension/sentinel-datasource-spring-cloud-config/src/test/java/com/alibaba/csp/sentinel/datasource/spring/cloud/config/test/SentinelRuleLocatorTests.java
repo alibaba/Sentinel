@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package com.alibaba.csp.sentinel.datasource.spring.cloud.config;
+package com.alibaba.csp.sentinel.datasource.spring.cloud.config.test;
 
+import com.alibaba.csp.sentinel.datasource.spring.cloud.config.SentinelRuleLocator;
+import com.alibaba.csp.sentinel.datasource.spring.cloud.config.SentinelRuleStorage;
 import com.alibaba.csp.sentinel.datasource.spring.cloud.config.config.DataSourceBootstrapConfiguration;
 import com.alibaba.csp.sentinel.datasource.spring.cloud.config.server.ConfigServer;
 import com.alibaba.csp.sentinel.util.StringUtil;

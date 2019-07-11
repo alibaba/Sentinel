@@ -17,15 +17,18 @@ package com.alibaba.csp.sentinel.datasource.spring.cloud.config.client;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.PropertySource;
 
 /**
- * When start client please rename client-bootstrap.yml to bootstrap.yml
  * @author lianglin
  * @since 1.7.0
  */
 @SpringBootApplication
+@ComponentScan("com.alibaba.csp.sentinel.datasource.spring.cloud.config.test")
+@PropertySource("classpath:config-client-application.properties")
 public class ConfigClient {
-    public static void main(String[] args){
+    public static void main(String[] args) {
         SpringApplication.run(ConfigClient.class);
     }
 }

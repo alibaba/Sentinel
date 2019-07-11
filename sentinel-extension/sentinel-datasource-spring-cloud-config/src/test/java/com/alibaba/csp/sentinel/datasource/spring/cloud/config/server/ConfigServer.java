@@ -21,7 +21,6 @@ import org.springframework.cloud.config.server.EnableConfigServer;
 import org.springframework.context.annotation.PropertySource;
 
 /**
- * When start server please rename bootstrap.yml to client-bootstrap.yml
  * @author lianglin
  * @since 1.7.0
  */

@@ -7,6 +7,4 @@ spring:
       profile: dev
       label: master
 
-server:
-  port: 8080
 

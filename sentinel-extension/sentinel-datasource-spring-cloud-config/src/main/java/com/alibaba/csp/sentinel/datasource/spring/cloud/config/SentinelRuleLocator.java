@@ -38,10 +38,10 @@ import static org.springframework.cloud.config.client.ConfigClientProperties.*;
 
 /**
  * <p>
- * {@link SentinelRuleLocator} responsible for fetch sentinel rules from remote server.
+ * {@link SentinelRuleLocator} responsible for pull sentinel rules from remote server.
  * It will retrieve the spring cloud config client configuration from  {@link org.springframework.core.env.Environment}
  * for example: spring.cloud.config.uri=uri, spring.cloud.config.profile=profile .... and so on.
- * When fetch rules successfully, save to {@link SentinelRuleStorage} to let other class retrieve.
+ * When pull rules successfully, save to {@link SentinelRuleStorage} for ${@link SpringCloudConfigDataSource} retrieve.
  * </p>
  *
  * @author lianglin
@@ -60,6 +60,13 @@ public class SentinelRuleLocator implements PropertySourceLocator {
         this.environment = environment;
     }
 
+
+    /**
+     * Responsible for pull data from remote server
+     *
+     * @param environment
+     * @return correct data if success else a empty propertySource or null
+     */
     @Override
     @Retryable(interceptor = "configServerRetryInterceptor")
     public org.springframework.core.env.PropertySource<?> locate(
