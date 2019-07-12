@@ -34,7 +34,7 @@ You can also add to [sentinel-group/sentinel-awesome](https://github.com/sentine
 - [Sentinel 为 Dubbo 服务保驾护航](http://dubbo.apache.org/zh-cn/blog/sentinel-introduction-for-dubbo.html) by [Eric Zhao](https://github.com/sczyh30)
 - [Sentinel 与 Hystrix 的对比](https://github.com/alibaba/Sentinel/wiki/Sentinel-%E4%B8%8E-Hystrix-%E7%9A%84%E5%AF%B9%E6%AF%94) by [Eric Zhao](https://github.com/sczyh30)
 - [Guideline: 从 Hystrix 迁移到 Sentinel](https://github.com/alibaba/Sentinel/wiki/Guideline:-%E4%BB%8E-Hystrix-%E8%BF%81%E7%A7%BB%E5%88%B0-Sentinel) by [Eric Zhao](https://github.com/sczyh30)
-- [Sentinel 控制台监控数据持久化【MySQL】(Spring Data JPA)](https://www.cnblogs.com/cdfive2018/p/9838577.html) by [cdfive](https://github.com/cdfive)
+- [Sentinel 控制台监控数据持久化【MySQL】](https://www.cnblogs.com/cdfive2018/p/9838577.html) by [cdfive](https://github.com/cdfive)
 - [Sentinel 控制台监控数据持久化【InfluxDB】](https://www.cnblogs.com/cdfive2018/p/9914838.html) by [cdfive](https://github.com/cdfive)
 - [Sentinel一体化监控解决方案 CrateDB+Grafana](https://blog.csdn.net/huyong1990/article/details/82392386) by [Young Hu](https://github.com/YoungHu)
 - [Sentinel 原理-全解析](https://mp.weixin.qq.com/s/7_pCkamNv0269e5l9_Wz7w) by [houyi](https://github.com/all4you)
@@ -54,3 +54,4 @@ You can also add to [sentinel-group/sentinel-awesome](https://github.com/sentine
 - [sentinel 深入浅出之原理篇DegradeSlot](https://www.jianshu.com/p/e910d4840e4a) by [shxz130](https://github.com/shxz130)
 - [sentinel 深入浅出之原理篇协议拓展dubbo，grpc，web-servlet](https://www.jianshu.com/p/579bff0f34be) by [shxz130](https://github.com/shxz130)
 - [Alibaba Sentinel RESTful 接口流控处理优化](https://www.jianshu.com/p/96f5980d9798) by [luanlouis](https://github.com/luanlouis)
+- [Sentinel 控制台前端开发环境搭建](https://www.cnblogs.com/cdfive2018/p/11084001.html) by [cdfive](https://github.com/cdfive)
