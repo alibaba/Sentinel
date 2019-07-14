@@ -1,0 +1,9 @@
+
+
+sentinel:
+  dashboard:
+    #启用zookeeper动态数据源
+    zk:
+      enabled: true
+      host: localhost:2181
+      ruleRootPath: /sentinel_rule
