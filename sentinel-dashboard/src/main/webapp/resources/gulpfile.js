@@ -50,6 +50,7 @@ const JS_APP = [
   'app/scripts/services/degradeservice.js',
   'app/scripts/services/degradeservice_v2.js',
   'app/scripts/services/systemservice.js',
+  'app/scripts/services/systemservice_v2.js',
   'app/scripts/services/machineservice.js',
   'app/scripts/services/identityservice.js',
   'app/scripts/services/metricservice.js',

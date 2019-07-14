@@ -266,7 +266,7 @@ angular
           }
       })
 
-      .state('dashboard.system', {
+      .state('dashboard.systemV1', {
         templateUrl: 'app/views/system.html',
         url: '/system/:app',
         controller: 'SystemCtl',
@@ -280,6 +280,22 @@ angular
             });
           }]
         }
+      })
+
+      .state('dashboard.system', {
+          templateUrl: 'app/views/system_v2.html',
+          url: '/v2/system/:app',
+          controller: 'SystemControllerV2',
+          resolve: {
+              loadMyFiles: ['$ocLazyLoad', function ($ocLazyLoad) {
+                  return $ocLazyLoad.load({
+                      name: 'sentinelDashboardApp',
+                      files: [
+                          'app/scripts/controllers/system_v2.js',
+                      ]
+                  });
+              }]
+          }
       })
 
       .state('dashboard.machine', {
