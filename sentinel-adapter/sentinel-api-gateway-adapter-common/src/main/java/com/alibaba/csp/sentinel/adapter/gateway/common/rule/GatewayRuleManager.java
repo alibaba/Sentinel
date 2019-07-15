@@ -15,15 +15,6 @@
  */
 package com.alibaba.csp.sentinel.adapter.gateway.common.rule;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
 import com.alibaba.csp.sentinel.adapter.gateway.common.param.GatewayRegexCache;
 import com.alibaba.csp.sentinel.log.RecordLog;
@@ -36,6 +27,19 @@ import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRuleUtil;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParameterMetricStorage;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Eric Zhao
@@ -115,13 +119,15 @@ public final class GatewayRuleManager {
 
         @Override
         public void configUpdate(Set<GatewayFlowRule> conf) {
-            applyGatewayRuleInternal(conf);
+            List<GatewayFlowRule> rules = transToSortedList(conf);
+            applyGatewayRuleInternal(rules);
             RecordLog.info("[GatewayRuleManager] Gateway flow rules received: " + GATEWAY_RULE_MAP);
         }
 
         @Override
         public void configLoad(Set<GatewayFlowRule> conf) {
-            applyGatewayRuleInternal(conf);
+            List<GatewayFlowRule> rules = transToSortedList(conf);
+            applyGatewayRuleInternal(rules);
             RecordLog.info("[GatewayRuleManager] Gateway flow rules loaded: " + GATEWAY_RULE_MAP);
         }
 
@@ -136,14 +142,14 @@ public final class GatewayRuleManager {
         private void cacheRegexPattern(/*@NonNull*/ GatewayParamFlowItem item) {
             String pattern = item.getPattern();
             if (StringUtil.isNotEmpty(pattern) &&
-                item.getMatchStrategy() == SentinelGatewayConstants.PARAM_MATCH_STRATEGY_REGEX) {
+                    item.getMatchStrategy() == SentinelGatewayConstants.PARAM_MATCH_STRATEGY_REGEX) {
                 if (GatewayRegexCache.getRegexPattern(pattern) == null) {
                     GatewayRegexCache.addRegexPattern(pattern);
                 }
             }
         }
 
-        private synchronized void applyGatewayRuleInternal(Set<GatewayFlowRule> conf) {
+        private synchronized void applyGatewayRuleInternal(List<GatewayFlowRule> conf) {
             if (conf == null || conf.isEmpty()) {
                 applyToConvertedParamMap(new HashSet<ParamFlowRule>());
                 GATEWAY_RULE_MAP.clear();
@@ -205,7 +211,7 @@ public final class GatewayRuleManager {
 
         private void applyToConvertedParamMap(Set<ParamFlowRule> paramFlowRules) {
             Map<String, List<ParamFlowRule>> newRuleMap = ParamFlowRuleUtil.buildParamRuleMap(
-                new ArrayList<>(paramFlowRules));
+                    new ArrayList<>(paramFlowRules));
             if (newRuleMap == null || newRuleMap.isEmpty()) {
                 // No parameter flow rules, so clear all the metrics.
                 for (String resource : CONVERTED_PARAM_RULE_MAP.keySet()) {
@@ -234,11 +240,11 @@ public final class GatewayRuleManager {
 
     public static boolean isValidRule(GatewayFlowRule rule) {
         if (rule == null || StringUtil.isBlank(rule.getResource()) || rule.getResourceMode() < 0
-            || rule.getGrade() < 0 || rule.getCount() < 0 || rule.getBurst() < 0 || rule.getControlBehavior() < 0) {
+                || rule.getGrade() < 0 || rule.getCount() < 0 || rule.getBurst() < 0 || rule.getControlBehavior() < 0) {
             return false;
         }
         if (rule.getGrade() == RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER
-            && rule.getMaxQueueingTimeoutMs() < 0) {
+                && rule.getMaxQueueingTimeoutMs() < 0) {
             return false;
         }
         if (rule.getIntervalSec() <= 0) {
@@ -263,10 +269,104 @@ public final class GatewayRuleManager {
     }
 
     private static final Set<Integer> FIELD_REQUIRED_SET = new HashSet<>(
-        Arrays.asList(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_URL_PARAM,
-            SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER,
-            SentinelGatewayConstants.PARAM_PARSE_STRATEGY_COOKIE)
+            Arrays.asList(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_URL_PARAM,
+                    SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER,
+                    SentinelGatewayConstants.PARAM_PARSE_STRATEGY_COOKIE)
     );
 
-    private GatewayRuleManager() {}
+    static List<GatewayFlowRule> transToSortedList(Collection<GatewayFlowRule> rules) {
+        if (rules == null) {
+            return null;
+        }
+        List<GatewayFlowRule> ruleList = new ArrayList<>(rules);
+        Collections.sort(ruleList, new Comparator<GatewayFlowRule>() {
+            @Override
+            public int compare(GatewayFlowRule r1, GatewayFlowRule r2) {
+
+                if (r1 == r2) {
+                    return 0;
+                }
+
+                if (r1.getResource().compareTo(r2.getResource()) != 0) {
+                    return r1.getResource().compareTo(r2.getResource());
+                }
+
+                if (r1.getResourceMode() != r2.getResourceMode()) {
+                    return r1.getResourceMode() - r2.getResourceMode();
+                }
+                if (r1.getGrade() != r2.getGrade()) {
+                    return r1.getGrade() - r2.getGrade();
+                }
+                if (Double.compare(r1.getCount(), r2.getCount()) != 0) {
+                    return Double.compare(r1.getCount(), r2.getCount());
+                }
+
+                if (r1.getControlBehavior() != r2.getControlBehavior()) {
+                    return r1.getControlBehavior() - r2.getControlBehavior();
+                }
+                if (r1.getBurst() != r2.getBurst()) {
+                    return r1.getBurst() - r2.getBurst();
+                }
+
+                if (r1.getIntervalSec() > r2.getIntervalSec()) {
+                    return 1;
+                } else if (r1.getIntervalSec() < r2.getIntervalSec()) {
+                    return -1;
+                }
+
+                if (r1.getMaxQueueingTimeoutMs() > r2.getMaxQueueingTimeoutMs()) {
+                    return 1;
+                } else if (r1.getMaxQueueingTimeoutMs() < r2.getMaxQueueingTimeoutMs()) {
+                    return -1;
+                }
+
+                int compare = compareGatewayParamFlowItem(r1.getParamItem(), r2.getParamItem());
+                if (compare != 0) {
+                    return compare;
+                }
+                return 0;
+            }
+        });
+        return ruleList;
+    }
+
+    static int compareGatewayParamFlowItem(GatewayParamFlowItem i1, GatewayParamFlowItem i2) {
+        if (i1 == i2) {
+            return 0;
+        } else if (i1 == null && i2 != null) {
+            return -1;
+        } else if (i1 != null && i2 == null) {
+            return 1;
+        }
+
+        if (!Objects.equals(i1.getFieldName(), i2.getFieldName())) {
+            if (i1.getFieldName() == null) {
+                return -1;
+            } else if (i2.getFieldName() == null) {
+                return 1;
+            }
+            return i1.getFieldName().compareTo(i2.getFieldName());
+        }
+        if (i1.getMatchStrategy() != i2.getMatchStrategy()) {
+            return i1.getMatchStrategy() - i2.getMatchStrategy();
+        }
+        if (i1.getParseStrategy() != i2.getParseStrategy()) {
+            return i1.getParseStrategy() - i2.getParseStrategy();
+        }
+        if (!Objects.equals(i1.getPattern(), i2.getPattern())) {
+            if (i1.getPattern() == null) {
+                return -1;
+            } else if (i2.getPattern() == null) {
+                return 1;
+            }
+            return i1.getPattern().compareTo(i2.getPattern());
+
+        }
+        return 0;
+
+    }
+
+
+    private GatewayRuleManager() {
+    }
 }
