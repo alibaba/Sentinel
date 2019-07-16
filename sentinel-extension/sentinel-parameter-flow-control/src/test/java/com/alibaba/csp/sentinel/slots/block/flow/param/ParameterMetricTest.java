@@ -68,7 +68,7 @@ public class ParameterMetricTest {
             .setParamIdx(1)
             .setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER);
         metric.initialize(rule3);
-        assertNotSame(timeRecordMap, metric.getRuleTimeCounter(rule3));
+        assertSame(timeRecordMap, metric.getRuleTimeCounter(rule3));
 
         metric.clear();
         assertEquals(0, metric.getThreadCountMap().size());

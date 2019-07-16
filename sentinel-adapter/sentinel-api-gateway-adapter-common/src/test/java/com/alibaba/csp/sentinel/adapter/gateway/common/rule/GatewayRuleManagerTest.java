@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.adapter.gateway.common.rule;
 import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
+import javafx.util.Pair;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -102,50 +103,7 @@ public class GatewayRuleManagerTest {
         assertTrue(GatewayRuleManager.isValidRule(good3));
     }
 
-    @Test
-    public void testReloadAndGet() {
 
-        for (int i = 0; i < 3; i++) {
-            Set<GatewayFlowRule> rules = new HashSet<>();
-            String ahasRoute = "ahas_route";
-
-            GatewayFlowRule rule1 = new GatewayFlowRule(ahasRoute)
-                    .setCount(40)
-                    .setIntervalSec(6)
-                    .setBurst(5)
-                    .setParamItem(new GatewayParamFlowItem()
-                            .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_CLIENT_IP)
-                    );
-            GatewayFlowRule rule2 = new GatewayFlowRule(ahasRoute)
-                    .setCount(40)
-                    .setIntervalSec(7)
-                    .setBurst(5)
-                    .setParamItem(new GatewayParamFlowItem()
-                            .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_CLIENT_IP)
-                    );
-            GatewayFlowRule rule3 = new GatewayFlowRule(ahasRoute)
-                    .setCount(40)
-                    .setIntervalSec(8)
-                    .setBurst(5)
-                    .setParamItem(new GatewayParamFlowItem()
-                            .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_CLIENT_IP)
-                    );
-            rules.add(rule1);
-            rules.add(rule2);
-            rules.add(rule3);
-            GatewayRuleManager.loadRules(rules);
-
-            List<ParamFlowRule> paramRules = GatewayRuleManager.getConvertedParamRules(ahasRoute);
-            assertTrue(paramRules.size() == rules.size());
-            assertTrue(rule1.getParamItem().getIndex() == 0);
-            assertTrue(rule2.getParamItem().getIndex() == 1);
-            assertTrue(rule3.getParamItem().getIndex() == 2);
-            assertTrue(GatewayRuleManager.getRulesForResource(ahasRoute).contains(rule1));
-            assertTrue(GatewayRuleManager.getRulesForResource(ahasRoute).contains(rule2));
-            assertTrue(GatewayRuleManager.getRulesForResource(ahasRoute).contains(rule3));
-        }
-
-    }
 
     @Before
     public void setUp() {
@@ -155,5 +113,9 @@ public class GatewayRuleManagerTest {
     @After
     public void tearDown() {
         GatewayRuleManager.loadRules(new HashSet<GatewayFlowRule>());
+    }
+
+    public static void main(String[] args){
+        Pair<String, Long> aaa = new Pair<>("aaa", 10L);
     }
 }

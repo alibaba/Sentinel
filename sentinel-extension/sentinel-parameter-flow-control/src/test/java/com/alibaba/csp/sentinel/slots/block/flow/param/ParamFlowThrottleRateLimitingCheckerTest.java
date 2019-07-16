@@ -15,22 +15,22 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow.param;
 
-import java.util.Random;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
 import com.alibaba.csp.sentinel.util.TimeUtil;
+import javafx.util.Pair;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.Random;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.Assert.assertEquals;
 
@@ -57,7 +57,7 @@ public class ParamFlowThrottleRateLimitingCheckerTest {
         String valueA = "valueA";
         ParameterMetric metric = new ParameterMetric();
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
-        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTimeCounterMap().put(new Pair<Object, Object>(rule.getParamIdx(), rule.getDurationInSec()), new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 
         long currentTime = TimeUtil.currentTimeMillis();
         long endTime = currentTime + rule.getDurationInSec() * 1000;
@@ -94,14 +94,14 @@ public class ParamFlowThrottleRateLimitingCheckerTest {
         long threshold = 5L;
 
         final ParamFlowRule rule = new ParamFlowRule(resourceName)
-            .setCount(threshold)
-            .setParamIdx(paramIdx)
-            .setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER);
+                .setCount(threshold)
+                .setParamIdx(paramIdx)
+                .setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER);
 
         final String valueA = "valueA";
         ParameterMetric metric = new ParameterMetric();
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
-        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTimeCounterMap().put(new Pair<Object, Object>(rule.getParamIdx(), rule.getDurationInSec()), new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 
         int threadCount = 40;
         System.out.println(metric.getRuleTimeCounter(rule));

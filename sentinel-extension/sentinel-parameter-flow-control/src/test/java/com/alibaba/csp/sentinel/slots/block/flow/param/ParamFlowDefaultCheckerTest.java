@@ -15,9 +15,16 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow.param;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
+import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
+import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
+import com.alibaba.csp.sentinel.test.AbstractTimeBasedTest;
+import com.alibaba.csp.sentinel.util.TimeUtil;
+import javafx.util.Pair;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
@@ -25,16 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.alibaba.csp.sentinel.EntryType;
-import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
-import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
-import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
-import com.alibaba.csp.sentinel.test.AbstractTimeBasedTest;
-import com.alibaba.csp.sentinel.util.TimeUtil;
+import static org.junit.Assert.*;
 
 /**
  * @author jialiang.linjl
@@ -53,15 +51,15 @@ public class ParamFlowDefaultCheckerTest extends AbstractTimeBasedTest {
         long threshold = 25000L;
 
         ParamFlowRule rule = new ParamFlowRule(resourceName)
-            .setCount(threshold)
-            .setParamIdx(paramIdx);
+                .setCount(threshold)
+                .setParamIdx(paramIdx);
 
         String valueA = "valueA";
         ParameterMetric metric = new ParameterMetric();
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
-        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
-        metric.getRuleTokenCounterMap().put(rule,
-            new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTimeCounterMap().put(new Pair<Object, Object>(rule.getParamIdx(), rule.getDurationInSec()), new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTokenCounterMap().put(new Pair<Object, Object>(rule.getParamIdx(), rule.getDurationInSec()),
+                new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 
         // We mock the time directly to avoid unstable behaviour.
         setCurrentMillis(System.currentTimeMillis());
@@ -97,9 +95,9 @@ public class ParamFlowDefaultCheckerTest extends AbstractTimeBasedTest {
         String valueA = "valueA";
         ParameterMetric metric = new ParameterMetric();
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
-        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
-        metric.getRuleTokenCounterMap().put(rule,
-            new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTimeCounterMap().put(new Pair<Object, Object>(rule.getParamIdx(), rule.getDurationInSec()), new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTokenCounterMap().put(new Pair<Object, Object>(rule.getParamIdx(), rule.getDurationInSec()),
+                new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 
         // We mock the time directly to avoid unstable behaviour.
         setCurrentMillis(System.currentTimeMillis());
@@ -137,9 +135,9 @@ public class ParamFlowDefaultCheckerTest extends AbstractTimeBasedTest {
         String valueA = "valueA";
         ParameterMetric metric = new ParameterMetric();
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
-        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
-        metric.getRuleTokenCounterMap().put(rule,
-            new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTimeCounterMap().put(new Pair<Object, Object>(rule.getParamIdx(), rule.getDurationInSec()), new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTokenCounterMap().put(new Pair<Object, Object>(rule.getParamIdx(), rule.getDurationInSec()),
+                new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 
         // We mock the time directly to avoid unstable behaviour.
         setCurrentMillis(System.currentTimeMillis());
@@ -207,9 +205,9 @@ public class ParamFlowDefaultCheckerTest extends AbstractTimeBasedTest {
         String valueA = "helloWorld";
         ParameterMetric metric = new ParameterMetric();
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
-        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
-        metric.getRuleTokenCounterMap().put(rule,
-            new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTimeCounterMap().put(new Pair<Object, Object>(rule.getParamIdx(), rule.getDurationInSec()), new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTokenCounterMap().put(new Pair<Object, Object>(rule.getParamIdx(), rule.getDurationInSec()),
+                new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 
         // We mock the time directly to avoid unstable behaviour.
         setCurrentMillis(System.currentTimeMillis());
@@ -260,9 +258,9 @@ public class ParamFlowDefaultCheckerTest extends AbstractTimeBasedTest {
         final String valueA = "valueA";
         ParameterMetric metric = new ParameterMetric();
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
-        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
-        metric.getRuleTokenCounterMap().put(rule,
-            new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTimeCounterMap().put(new Pair<Object, Object>(rule.getParamIdx(), rule.getDurationInSec()), new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTokenCounterMap().put(new Pair<Object, Object>(rule.getParamIdx(), rule.getDurationInSec()),
+                new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
         int threadCount = 40;
 
         final CountDownLatch waitLatch = new CountDownLatch(threadCount);

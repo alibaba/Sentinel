@@ -119,14 +119,14 @@ public final class GatewayRuleManager {
 
         @Override
         public void configUpdate(Set<GatewayFlowRule> conf) {
-            List<GatewayFlowRule> rules = transToSortedList(conf);
+            List<GatewayFlowRule> rules = sortToList(conf);
             applyGatewayRuleInternal(rules);
             RecordLog.info("[GatewayRuleManager] Gateway flow rules received: " + GATEWAY_RULE_MAP);
         }
 
         @Override
         public void configLoad(Set<GatewayFlowRule> conf) {
-            List<GatewayFlowRule> rules = transToSortedList(conf);
+            List<GatewayFlowRule> rules = sortToList(conf);
             applyGatewayRuleInternal(rules);
             RecordLog.info("[GatewayRuleManager] Gateway flow rules loaded: " + GATEWAY_RULE_MAP);
         }
@@ -274,7 +274,7 @@ public final class GatewayRuleManager {
                     SentinelGatewayConstants.PARAM_PARSE_STRATEGY_COOKIE)
     );
 
-    static List<GatewayFlowRule> transToSortedList(Collection<GatewayFlowRule> rules) {
+    static List<GatewayFlowRule> sortToList(Collection<GatewayFlowRule> rules) {
         if (rules == null) {
             return null;
         }
@@ -289,35 +289,6 @@ public final class GatewayRuleManager {
 
                 if (r1.getResource().compareTo(r2.getResource()) != 0) {
                     return r1.getResource().compareTo(r2.getResource());
-                }
-
-                if (r1.getResourceMode() != r2.getResourceMode()) {
-                    return r1.getResourceMode() - r2.getResourceMode();
-                }
-                if (r1.getGrade() != r2.getGrade()) {
-                    return r1.getGrade() - r2.getGrade();
-                }
-                if (Double.compare(r1.getCount(), r2.getCount()) != 0) {
-                    return Double.compare(r1.getCount(), r2.getCount());
-                }
-
-                if (r1.getControlBehavior() != r2.getControlBehavior()) {
-                    return r1.getControlBehavior() - r2.getControlBehavior();
-                }
-                if (r1.getBurst() != r2.getBurst()) {
-                    return r1.getBurst() - r2.getBurst();
-                }
-
-                if (r1.getIntervalSec() > r2.getIntervalSec()) {
-                    return 1;
-                } else if (r1.getIntervalSec() < r2.getIntervalSec()) {
-                    return -1;
-                }
-
-                if (r1.getMaxQueueingTimeoutMs() > r2.getMaxQueueingTimeoutMs()) {
-                    return 1;
-                } else if (r1.getMaxQueueingTimeoutMs() < r2.getMaxQueueingTimeoutMs()) {
-                    return -1;
                 }
 
                 int compare = compareGatewayParamFlowItem(r1.getParamItem(), r2.getParamItem());

@@ -15,16 +15,17 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow.param;
 
+import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
+import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
+import javafx.util.Pair;
+
 import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-
-import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
-import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
 
 /**
  * Metrics for frequent ("hot spot") parameters.
@@ -40,19 +41,23 @@ public class ParameterMetric {
 
     private final Object lock = new Object();
 
-    /**
-     * Format: (rule, (value, timeRecorder))
-     *
-     * @since 1.6.0
-     */
-    private final Map<ParamFlowRule, CacheMap<Object, AtomicLong>> ruleTimeCounters = new HashMap<>();
-    /**
-     * Format: (rule, (value, tokenCounter))
-     *
-     * @since 1.6.0
-     */
-    private final Map<ParamFlowRule, CacheMap<Object, AtomicLong>> ruleTokenCounter = new HashMap<>();
+
     private final Map<Integer, CacheMap<Object, AtomicInteger>> threadCountMap = new HashMap<>();
+
+    /**
+     * Format: ((idx,durationInSec), (value, tokenCounter))
+     *
+     * @since 1.7.0
+     */
+    private final Map<Pair<Object, Object>, CacheMap<Object, AtomicLong>> ruleTokenCounter = new HashMap<>();
+
+    /**
+     * Format: ((idx,durationInSec), (value, timeRecorder))
+     *
+     * @since 1.7.0
+     */
+    private final Map<Pair<Object, Object>, CacheMap<Object, AtomicLong>> ruleTimeCounters = new HashMap<>();
+
 
     /**
      * Get the token counter for given parameter rule.
@@ -62,7 +67,8 @@ public class ParameterMetric {
      * @since 1.6.0
      */
     public CacheMap<Object, AtomicLong> getRuleTokenCounter(ParamFlowRule rule) {
-        return ruleTokenCounter.get(rule);
+        return ruleTokenCounter.get(new Pair<Object, Object>(rule.getParamIdx(), rule.getDurationInSec()));
+        //return ruleTokenCounter.get(rule);
     }
 
     /**
@@ -73,7 +79,8 @@ public class ParameterMetric {
      * @since 1.6.0
      */
     public CacheMap<Object, AtomicLong> getRuleTimeCounter(ParamFlowRule rule) {
-        return ruleTimeCounters.get(rule);
+        return ruleTimeCounters.get(new Pair<Object, Object>(rule.getParamIdx(), rule.getDurationInSec()));
+        //return ruleTimeCounters.get(rule);
     }
 
     public void clear() {
@@ -85,20 +92,21 @@ public class ParameterMetric {
     }
 
     public void initialize(ParamFlowRule rule) {
-        if (!ruleTimeCounters.containsKey(rule)) {
+        Pair<Object, Object> paramRuleKey = new Pair<Object, Object>(rule.getParamIdx(), rule.getDurationInSec());
+        if (!ruleTimeCounters.containsKey(paramRuleKey)) {
             synchronized (lock) {
-                if (ruleTimeCounters.get(rule) == null) {
+                if (ruleTimeCounters.get(paramRuleKey) == null) {
                     long size = Math.min(BASE_PARAM_MAX_CAPACITY * rule.getDurationInSec(), TOTAL_MAX_CAPACITY);
-                    ruleTimeCounters.put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(size));
+                    ruleTimeCounters.put(paramRuleKey, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(size));
                 }
             }
         }
 
-        if (!ruleTokenCounter.containsKey(rule)) {
+        if (!ruleTokenCounter.containsKey(paramRuleKey)) {
             synchronized (lock) {
-                if (ruleTokenCounter.get(rule) == null) {
+                if (ruleTokenCounter.get(paramRuleKey) == null) {
                     long size = Math.min(BASE_PARAM_MAX_CAPACITY * rule.getDurationInSec(), TOTAL_MAX_CAPACITY);
-                    ruleTokenCounter.put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(size));
+                    ruleTokenCounter.put(paramRuleKey, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(size));
                 }
             }
         }
@@ -245,7 +253,7 @@ public class ParameterMetric {
      *
      * @return the token counter map
      */
-    Map<ParamFlowRule, CacheMap<Object, AtomicLong>> getRuleTokenCounterMap() {
+    Map<Pair<Object,Object>, CacheMap<Object, AtomicLong>> getRuleTokenCounterMap() {
         return ruleTokenCounter;
     }
 
@@ -253,7 +261,7 @@ public class ParameterMetric {
         return threadCountMap;
     }
 
-    Map<ParamFlowRule, CacheMap<Object, AtomicLong>> getRuleTimeCounterMap() {
+    Map<Pair<Object,Object>, CacheMap<Object, AtomicLong>> getRuleTimeCounterMap() {
         return ruleTimeCounters;
     }
 }

@@ -18,7 +18,7 @@ package com.alibaba.csp.sentinel.slots.block.flow.param;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
-
+import javafx.util.Pair;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,7 +48,7 @@ public class ParameterMetricStorageTest {
         ParameterMetricStorage.initParamMetricsFor(resourceWrapper, rule);
         ParameterMetric metric = ParameterMetricStorage.getParamMetric(resourceWrapper);
         assertNotNull(metric);
-        assertNotNull(metric.getRuleTimeCounterMap().get(rule));
+        assertNotNull(metric.getRuleTimeCounterMap().get(new Pair<Object, Object>(rule.getParamIdx(), rule.getDurationInSec())));
         assertNotNull(metric.getThreadCountMap().get(index));
 
         // Duplicate init.
