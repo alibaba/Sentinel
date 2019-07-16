@@ -75,7 +75,7 @@ public class CommonFilter implements Filter {
 
             // If you intend to exclude some URLs, you can convert the URLs to the empty string ""
             // in the UrlCleaner implementation.
-            if (StringUtil.isEmpty(target)) {
+            if (!StringUtil.isEmpty(target)) {
                 // Parse the request origin using registered origin parser.
                 String origin = parseOrigin(sRequest);
                 ContextUtil.enter(target, origin);
