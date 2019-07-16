@@ -73,19 +73,19 @@ public class CommonFilter implements Filter {
                 target = urlCleaner.clean(target);
             }
 
-            // Parse the request origin using registered origin parser.
-            String origin = parseOrigin(sRequest);
-
-            ContextUtil.enter(target, origin);
-            entry = SphU.entry(target, EntryType.IN);
-
-
-            // Add method specification if necessary
-            if (httpMethodSpecify) {
-                methodEntry = SphU.entry(sRequest.getMethod().toUpperCase() + COLON + target,
-                        EntryType.IN);
+            // If you intend to exclude some URLs, you can convert the URLs to the empty string ""
+            // in the UrlCleaner implementation.
+            if (!StringUtil.isEmpty(target)) {
+                // Parse the request origin using registered origin parser.
+                String origin = parseOrigin(sRequest);
+                ContextUtil.enter(target, origin);
+                entry = SphU.entry(target, EntryType.IN);
+                // Add method specification if necessary
+                if (httpMethodSpecify) {
+                    methodEntry = SphU.entry(sRequest.getMethod().toUpperCase() + COLON + target,
+                            EntryType.IN);
+                }
             }
-
             chain.doFilter(request, response);
         } catch (BlockException e) {
             HttpServletResponse sResponse = (HttpServletResponse) response;
