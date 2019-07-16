@@ -46,6 +46,8 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
                 rule.grade = 2;
               } else if (rule.qps >= 0) {
                 rule.grade = 3;
+              }else if (rule.avgCpu >= 0) {
+                  rule.grade = 4;
               }
             });
             $scope.rulesPageConfig.totalCount = $scope.rules.length;
@@ -119,6 +121,9 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
       } else if (rule.qps != -1) {
         ruleTypeDesc = 'QPS';
         ruleTypeCount = rule.qps;
+      }else if (rule.avgCpu != -1) {
+          ruleTypeDesc = 'CPU';
+          ruleTypeCount = rule.avgCpu;
       }
 
       $scope.confirmDialog = {

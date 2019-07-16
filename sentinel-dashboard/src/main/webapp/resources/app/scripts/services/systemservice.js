@@ -28,6 +28,8 @@ app.service('SystemService', ['$http', function ($http) {
       param.maxThread = rule.maxThread;
     } else if (rule.grade == 3) {// qps
       param.qps = rule.qps;
+    }else if (rule.grade == 4) {// cpu
+      param.avgCpu = rule.avgCpu;
     }
 
     return $http({
@@ -49,6 +51,8 @@ app.service('SystemService', ['$http', function ($http) {
       param.maxThread = rule.maxThread;
     } else if (rule.grade == 3) {// qps
       param.qps = rule.qps;
+    }else if (rule.grade == 4) {// cpu
+        param.avgCpu = rule.avgCpu;
     }
     return $http({
       url: '/system/save.json',

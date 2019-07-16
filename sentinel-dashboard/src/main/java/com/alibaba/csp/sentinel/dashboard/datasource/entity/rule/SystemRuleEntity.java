@@ -15,9 +15,9 @@
  */
 package com.alibaba.csp.sentinel.dashboard.datasource.entity.rule;
 
-import java.util.Date;
-
 import com.alibaba.csp.sentinel.slots.system.SystemRule;
+
+import java.util.Date;
 
 /**
  * @author leyou
@@ -33,6 +33,7 @@ public class SystemRuleEntity implements RuleEntity {
     private Long avgRt;
     private Long maxThread;
     private Double qps;
+    private Double avgCpu;
 
     private Date gmtCreate;
     private Date gmtModified;
@@ -43,6 +44,7 @@ public class SystemRuleEntity implements RuleEntity {
         entity.setIp(ip);
         entity.setPort(port);
         entity.setAvgLoad(rule.getHighestSystemLoad());
+        entity.setAvgCpu(rule.getHighestCpuUsage());
         entity.setAvgRt(rule.getAvgRt());
         entity.setMaxThread(rule.getMaxThread());
         entity.setQps(rule.getQps());
@@ -118,6 +120,14 @@ public class SystemRuleEntity implements RuleEntity {
         this.qps = qps;
     }
 
+    public Double getAvgCpu() {
+        return avgCpu;
+    }
+
+    public void setAvgCpu(Double avgCpu) {
+        this.avgCpu = avgCpu;
+    }
+
     @Override
     public Date getGmtCreate() {
         return gmtCreate;
@@ -142,6 +152,7 @@ public class SystemRuleEntity implements RuleEntity {
         rule.setAvgRt(avgRt);
         rule.setMaxThread(maxThread);
         rule.setQps(qps);
+        rule.setHighestCpuUsage(avgCpu);
         return rule;
     }
 }

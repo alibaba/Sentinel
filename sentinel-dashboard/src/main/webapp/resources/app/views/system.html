@@ -49,12 +49,14 @@
                   <span ng-if="rule.avgRt >= 0">RT</span>
                   <span ng-if="rule.maxThread >= 0">线程数</span>
                   <span ng-if="rule.qps >= 0">QPS</span>
+                  <span ng-if="rule.avgCpu >= 0">CPU</span>
                 </td>
                 <td style="word-wrap:break-word;word-break:break-all;">
                   <span ng-if="rule.avgLoad >= 0">{{rule.avgLoad}}</span>
                   <span ng-if="rule.avgRt >= 0">{{rule.avgRt}}</span>
                   <span ng-if="rule.maxThread >= 0">{{rule.maxThread}}</span>
                   <span ng-if="rule.qps >= 0">{{rule.qps}}</span>
+                  <span ng-if="rule.avgCpu >= 0">{{rule.avgCpu}}</span>
                 </td>
                 <td>
                   <button class="btn btn-xs btn-default" type="button" ng-click="editRule(rule)" style="font-size: 12px; height:25px;">编辑</button>
