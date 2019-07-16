@@ -15,18 +15,16 @@
  */
 package com.alibaba.csp.sentinel.adapter.gateway.common.rule;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
-
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -105,37 +103,38 @@ public class GatewayRuleManagerTest {
     }
 
     @Test
-    public void testReloadAndGet(){
-        Set<GatewayFlowRule> rules = new HashSet<>();
-        String ahasRoute = "ahas_route";
+    public void testReloadAndGet() {
 
-        GatewayFlowRule rule1 = new GatewayFlowRule(ahasRoute)
-                .setCount(40)
-                .setIntervalSec(6)
-                .setBurst(5)
-                .setParamItem(new GatewayParamFlowItem()
-                        .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_CLIENT_IP)
-                );
-        GatewayFlowRule rule2 = new GatewayFlowRule(ahasRoute)
-                .setCount(40)
-                .setIntervalSec(7)
-                .setBurst(5)
-                .setParamItem(new GatewayParamFlowItem()
-                        .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_CLIENT_IP)
-                );
-        GatewayFlowRule rule3 = new GatewayFlowRule(ahasRoute)
-                .setCount(40)
-                .setIntervalSec(8)
-                .setBurst(5)
-                .setParamItem(new GatewayParamFlowItem()
-                        .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_CLIENT_IP)
-                );
-        rules.add(rule1);
-        rules.add(rule2);
-        rules.add(rule3);
+        for (int i = 0; i < 3; i++) {
+            Set<GatewayFlowRule> rules = new HashSet<>();
+            String ahasRoute = "ahas_route";
 
-        for(int i = 0; i < 3; i++) {
+            GatewayFlowRule rule1 = new GatewayFlowRule(ahasRoute)
+                    .setCount(40)
+                    .setIntervalSec(6)
+                    .setBurst(5)
+                    .setParamItem(new GatewayParamFlowItem()
+                            .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_CLIENT_IP)
+                    );
+            GatewayFlowRule rule2 = new GatewayFlowRule(ahasRoute)
+                    .setCount(40)
+                    .setIntervalSec(7)
+                    .setBurst(5)
+                    .setParamItem(new GatewayParamFlowItem()
+                            .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_CLIENT_IP)
+                    );
+            GatewayFlowRule rule3 = new GatewayFlowRule(ahasRoute)
+                    .setCount(40)
+                    .setIntervalSec(8)
+                    .setBurst(5)
+                    .setParamItem(new GatewayParamFlowItem()
+                            .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_CLIENT_IP)
+                    );
+            rules.add(rule1);
+            rules.add(rule2);
+            rules.add(rule3);
             GatewayRuleManager.loadRules(rules);
+
             List<ParamFlowRule> paramRules = GatewayRuleManager.getConvertedParamRules(ahasRoute);
             assertTrue(paramRules.size() == rules.size());
             assertTrue(rule1.getParamItem().getIndex() == 0);
