@@ -110,7 +110,7 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
       var ruleTypeDesc = '';
       var ruleTypeCount = null;
       if (rule.highestSystemLoad != -1) {
-        ruleTypeDesc = '最大系统LOAD';
+        ruleTypeDesc = 'LOAD';
         ruleTypeCount = rule.highestSystemLoad;
       } else if (rule.avgRt != -1) {
         ruleTypeDesc = 'RT';
@@ -122,7 +122,7 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
         ruleTypeDesc = 'QPS';
         ruleTypeCount = rule.qps;
       }else if (rule.highestCpuUsage != -1) {
-          ruleTypeDesc = '最大CPU使用率';
+          ruleTypeDesc = 'CPU 使用率';
           ruleTypeCount = rule.highestCpuUsage;
       }
 
