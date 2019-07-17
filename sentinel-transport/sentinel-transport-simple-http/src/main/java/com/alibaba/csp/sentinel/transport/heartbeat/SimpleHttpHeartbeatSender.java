@@ -26,6 +26,7 @@ import com.alibaba.csp.sentinel.transport.heartbeat.client.SimpleHttpClient;
 import com.alibaba.csp.sentinel.transport.heartbeat.client.SimpleHttpRequest;
 import com.alibaba.csp.sentinel.transport.heartbeat.client.SimpleHttpResponse;
 import com.alibaba.csp.sentinel.util.StringUtil;
+import com.alibaba.csp.sentinel.util.function.Tuple2;
 
 /**
  * The heartbeat sender provides basic API for sending heartbeat request to provided target.
@@ -43,13 +44,13 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
     private final HeartbeatMessage heartBeat = new HeartbeatMessage();
     private final SimpleHttpClient httpClient = new SimpleHttpClient();
 
-    private final List<InetSocketAddress> addressList;
+    private final List<Tuple2<String, Integer>> addressList;
 
     private int currentAddressIdx = 0;
 
     public SimpleHttpHeartbeatSender() {
         // Retrieve the list of default addresses.
-        List<InetSocketAddress> newAddrs = getDefaultConsoleIps();
+        List<Tuple2<String, Integer>> newAddrs = TransportConfig.getConsoleServerList();
         RecordLog.info("[SimpleHttpHeartbeatSender] Default console address list retrieved: " + newAddrs);
         this.addressList = newAddrs;
     }
@@ -60,11 +61,12 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
             RecordLog.info("[SimpleHttpHeartbeatSender] Runtime port not initialized, won't send heartbeat");
             return false;
         }
-        InetSocketAddress addr = getAvailableAddress();
-        if (addr == null) {
+        Tuple2<String, Integer> addrInfo = getAvailableAddress();
+        if (addrInfo == null) {
             return false;
         }
 
+        InetSocketAddress addr = new InetSocketAddress(addrInfo.r1, addrInfo.r2);
         SimpleHttpRequest request = new SimpleHttpRequest(addr, TransportConfig.getHeartbeatApiPath());
         request.setParams(heartBeat.generateCurrentMessage());
         try {
@@ -83,7 +85,7 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
         return DEFAULT_INTERVAL;
     }
 
-    private InetSocketAddress getAvailableAddress() {
+    private Tuple2<String, Integer> getAvailableAddress() {
         if (addressList == null || addressList.isEmpty()) {
             return null;
         }
@@ -94,33 +96,4 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
         return addressList.get(index);
     }
 
-    private List<InetSocketAddress> getDefaultConsoleIps() {
-        List<InetSocketAddress> newAddrs = new ArrayList<InetSocketAddress>();
-        try {
-            String ipsStr = TransportConfig.getConsoleServer();
-            if (StringUtil.isEmpty(ipsStr)) {
-                RecordLog.warn("[SimpleHttpHeartbeatSender] Dashboard server address not configured");
-                return newAddrs;
-            }
-
-            for (String ipPortStr : ipsStr.split(",")) {
-                if (ipPortStr.trim().length() == 0) {
-                    continue;
-                }
-                if (ipPortStr.startsWith("http://")) {
-                    ipPortStr = ipPortStr.trim().substring(7);
-                }
-                String[] ipPort = ipPortStr.trim().split(":");
-                int port = 80;
-                if (ipPort.length > 1) {
-                    port = Integer.parseInt(ipPort[1].trim());
-                }
-                newAddrs.add(new InetSocketAddress(ipPort[0].trim(), port));
-            }
-        } catch (Exception ex) {
-            RecordLog.warn("[SimpleHeartbeatSender] Parse dashboard list failed, current address list: " + newAddrs, ex);
-            ex.printStackTrace();
-        }
-        return newAddrs;
-    }
 }
