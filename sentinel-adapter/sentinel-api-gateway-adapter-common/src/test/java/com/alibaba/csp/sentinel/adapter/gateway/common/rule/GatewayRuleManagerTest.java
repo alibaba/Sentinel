@@ -25,6 +25,7 @@ import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -39,24 +40,24 @@ public class GatewayRuleManagerTest {
         Set<GatewayFlowRule> rules = new HashSet<>();
         String ahasRoute = "ahas_route";
         GatewayFlowRule rule1 = new GatewayFlowRule(ahasRoute)
-            .setCount(500)
-            .setIntervalSec(1);
+                .setCount(500)
+                .setIntervalSec(1);
         GatewayFlowRule rule2 = new GatewayFlowRule(ahasRoute)
-            .setCount(20)
-            .setIntervalSec(2)
-            .setBurst(5)
-            .setParamItem(new GatewayParamFlowItem()
-                .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_CLIENT_IP)
-            );
+                .setCount(20)
+                .setIntervalSec(2)
+                .setBurst(5)
+                .setParamItem(new GatewayParamFlowItem()
+                        .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_CLIENT_IP)
+                );
         GatewayFlowRule rule3 = new GatewayFlowRule("complex_route_ZZZ")
-            .setCount(10)
-            .setIntervalSec(1)
-            .setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER)
-            .setMaxQueueingTimeoutMs(600)
-            .setParamItem(new GatewayParamFlowItem()
-                .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER)
-                .setFieldName("X-Sentinel-Flag")
-            );
+                .setCount(10)
+                .setIntervalSec(1)
+                .setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER)
+                .setMaxQueueingTimeoutMs(600)
+                .setParamItem(new GatewayParamFlowItem()
+                        .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER)
+                        .setFieldName("X-Sentinel-Flag")
+                );
         rules.add(rule1);
         rules.add(rule2);
         rules.add(rule3);
@@ -64,8 +65,8 @@ public class GatewayRuleManagerTest {
 
         List<ParamFlowRule> convertedRules = GatewayRuleManager.getConvertedParamRules(ahasRoute);
         assertNotNull(convertedRules);
-        assertEquals(0, (int)rule2.getParamItem().getIndex());
-        assertEquals(0, (int)rule3.getParamItem().getIndex());
+        assertEquals(0, (int) rule2.getParamItem().getIndex());
+        assertEquals(0, (int) rule3.getParamItem().getIndex());
         assertTrue(GatewayRuleManager.getRulesForResource(ahasRoute).contains(rule1));
         assertTrue(GatewayRuleManager.getRulesForResource(ahasRoute).contains(rule2));
     }
@@ -74,25 +75,25 @@ public class GatewayRuleManagerTest {
     public void testIsValidRule() {
         GatewayFlowRule bad1 = new GatewayFlowRule();
         GatewayFlowRule bad2 = new GatewayFlowRule("abc")
-            .setIntervalSec(0);
+                .setIntervalSec(0);
         GatewayFlowRule bad3 = new GatewayFlowRule("abc")
-            .setParamItem(new GatewayParamFlowItem()
-                .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_URL_PARAM));
+                .setParamItem(new GatewayParamFlowItem()
+                        .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_URL_PARAM));
         GatewayFlowRule bad4 = new GatewayFlowRule("abc")
-            .setParamItem(new GatewayParamFlowItem()
-                .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_URL_PARAM)
-                .setFieldName("p")
-                .setPattern("def")
-                .setMatchStrategy(-1)
-            );
+                .setParamItem(new GatewayParamFlowItem()
+                        .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_URL_PARAM)
+                        .setFieldName("p")
+                        .setPattern("def")
+                        .setMatchStrategy(-1)
+                );
         GatewayFlowRule good1 = new GatewayFlowRule("abc");
         GatewayFlowRule good2 = new GatewayFlowRule("abc")
-            .setParamItem(new GatewayParamFlowItem().setParseStrategy(0));
+                .setParamItem(new GatewayParamFlowItem().setParseStrategy(0));
         GatewayFlowRule good3 = new GatewayFlowRule("abc")
-            .setParamItem(new GatewayParamFlowItem()
-                .setMatchStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER)
-                .setFieldName("Origin")
-                .setPattern("def"));
+                .setParamItem(new GatewayParamFlowItem()
+                        .setMatchStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER)
+                        .setFieldName("Origin")
+                        .setPattern("def"));
         assertFalse(GatewayRuleManager.isValidRule(bad1));
         assertFalse(GatewayRuleManager.isValidRule(bad2));
         assertFalse(GatewayRuleManager.isValidRule(bad3));
@@ -103,6 +104,35 @@ public class GatewayRuleManagerTest {
         assertTrue(GatewayRuleManager.isValidRule(good3));
     }
 
+    @Test
+    public void testIdx() {
+        Random random = new Random();
+        for (int i = 0; i < 3; i++) {
+            Set<GatewayFlowRule> rules = new HashSet<>();
+            String ahasRoute = "ahas_route";
+            GatewayFlowRule rule1 = new GatewayFlowRule(ahasRoute)
+                    .setCount(random.nextInt(100))
+                    .setIntervalSec(1)
+                    .setBurst(random.nextInt(100))
+                    .setParamItem(new GatewayParamFlowItem()
+                            .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER)
+                            .setFieldName("Z-Sentinel-Flag")
+                    );
+            GatewayFlowRule rule2 = new GatewayFlowRule(ahasRoute)
+                    .setCount(random.nextInt(100))
+                    .setIntervalSec(2)
+                    .setBurst(random.nextInt(100))
+                    .setParamItem(new GatewayParamFlowItem()
+                            .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER)
+                            .setFieldName("X-Sentinel-Flag")
+                    );
+            rules.add(rule1);
+            rules.add(rule2);
+            GatewayRuleManager.loadRules(rules);
+            assertEquals(0, (int) rule2.getParamItem().getIndex());
+            assertEquals(1, (int) rule1.getParamItem().getIndex());
+        }
+    }
 
 
     @Before
@@ -115,7 +145,7 @@ public class GatewayRuleManagerTest {
         GatewayRuleManager.loadRules(new HashSet<GatewayFlowRule>());
     }
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         Pair<String, Long> aaa = new Pair<>("aaa", 10L);
     }
 }
