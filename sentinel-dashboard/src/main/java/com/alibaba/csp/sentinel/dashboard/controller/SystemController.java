@@ -132,9 +132,6 @@ public class SystemController {
             return Result.ofFail(-1, "only one of [highestSystemLoad, avgRt, maxThread, qps,highestCpuUsage] "
                 + "value must be set > 0, but " + notNullCount + " values get");
         }
-        if ( null!=highestSystemLoad && 1 < highestSystemLoad  ) {
-            return Result.ofFail(-1, "highestSystemLoad must <= 1");
-        }
         if (  null!=highestCpuUsage && 1 < highestCpuUsage ) {
             return Result.ofFail(-1, "highestCpuUsage must <= 1");
         }
@@ -224,9 +221,6 @@ public class SystemController {
         if (highestSystemLoad != null) {
             if (highestSystemLoad <= 0) {
                 return Result.ofFail(-1, "highestSystemLoad must >= 0");
-            }
-            if (highestSystemLoad > 1) {
-                return Result.ofFail(-1, "highestSystemLoad must <= 1");
             }
             entity.setHighestSystemLoad(highestSystemLoad);
         }
