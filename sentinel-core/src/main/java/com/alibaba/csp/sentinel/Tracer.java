@@ -22,6 +22,7 @@ import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.metric.extension.MetricExtension;
+import com.alibaba.csp.sentinel.slots.logger.SentinelExceptionLogUtil;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
@@ -32,8 +33,8 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
  */
 public class Tracer {
 
-    protected static Class<? extends Throwable>[] traceClasses;
-    protected static Class<? extends Throwable>[] ignoreClasses;
+    static Class<? extends Throwable>[] traceClasses;
+    static Class<? extends Throwable>[] ignoreClasses;
 
     protected Tracer() {}
 
@@ -114,12 +115,14 @@ public class Tracer {
         traceExceptionToNode(e, count, entry, curNode);
     }
 
-    private static void traceExceptionToNode(Throwable t, int count, Entry entry, DefaultNode curNode) {
+    private static void traceExceptionToNode(/*@NonNull*/ Throwable t, int count, /*@NonNull*/ Entry entry,
+                                                          DefaultNode curNode) {
         if (curNode == null) {
             return;
         }
+        String resourceName = entry.getResourceWrapper().getName();
         for (MetricExtension m : MetricExtensionProvider.getMetricExtensions()) {
-            m.addException(entry.getResourceWrapper().getName(), count, t);
+            m.addException(resourceName, count, t);
         }
 
         // clusterNode can be null when Constants.ON is false.
@@ -128,6 +131,7 @@ public class Tracer {
             return;
         }
         clusterNode.trace(t, count);
+        SentinelExceptionLogUtil.log(resourceName, getRootCause(t).getClass().getCanonicalName(), count);
     }
 
     /**
@@ -216,4 +220,16 @@ public class Tracer {
         }
         return true;
     }
+
+    private static Throwable getRootCause(/*@NonNull*/ Throwable t) {
+        int counter = 0;
+        Throwable cause = t;
+        while (cause.getCause() != null && counter++ < MAX_ROOT_CAUSE_STACK_DEPTH) {
+            cause = cause.getCause();
+        }
+
+        return cause;
+    }
+
+    private static final int MAX_ROOT_CAUSE_STACK_DEPTH = 10;
 }
