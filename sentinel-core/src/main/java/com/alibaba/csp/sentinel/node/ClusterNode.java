@@ -46,8 +46,7 @@ public class ClusterNode extends StatisticNode {
      * but a lock, as this lock only happens at the very beginning while concurrent map will hold the lock all the time.
      * </p>
      */
-    private Map<String, StatisticNode> originCountMap =
-        new LRUCache<String, StatisticNode>(Integer.getInteger("csp.sentinel.origin.count", 1024));
+    private Map<String, StatisticNode> originCountMap = buildLRUCache();
 
     private final ReentrantLock lock = new ReentrantLock();
 
@@ -74,7 +73,10 @@ public class ClusterNode extends StatisticNode {
                 if (statisticNode == null) {
                     // The node is absent, create a new node for the origin.
                     statisticNode = new StatisticNode();
-                    originCountMap.put(origin, statisticNode);
+                    Map<String, StatisticNode> newMap = buildLRUCache();
+                    newMap.putAll(originCountMap);
+                    newMap.put(origin, statisticNode);
+                    originCountMap = newMap;
                 }
             } finally {
                 lock.unlock();
@@ -85,6 +87,10 @@ public class ClusterNode extends StatisticNode {
 
     public synchronized Map<String, StatisticNode> getOriginCountMap() {
         return originCountMap;
+    }
+
+    private LRUCache<String, StatisticNode> buildLRUCache() {
+        return new LRUCache<String, StatisticNode>(Integer.getInteger("csp.sentinel.origin.count", 1024));
     }
 
     /**
