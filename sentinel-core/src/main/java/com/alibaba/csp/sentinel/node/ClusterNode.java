@@ -90,7 +90,8 @@ public class ClusterNode extends StatisticNode {
     }
 
     private LRUCache<String, StatisticNode> buildLRUCache() {
-        return new LRUCache<String, StatisticNode>(Integer.getInteger("csp.sentinel.origin.count", 1024));
+        return new LRUCache<String, StatisticNode>(
+            Integer.getInteger("csp.sentinel.origin.count", LRUCache.DEFAULT_CACHE_SIZE));
     }
 
     /**

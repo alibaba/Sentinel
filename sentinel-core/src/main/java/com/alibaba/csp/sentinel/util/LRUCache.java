@@ -8,7 +8,7 @@ import java.util.LinkedHashMap;
  * @date 2019/07/18
  */
 public class LRUCache<K, V> extends LinkedHashMap<K, V> {
-
+    static public final int DEFAULT_CACHE_SIZE = 1024;
     /**
      *
      */
@@ -17,7 +17,7 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
     private final int size;
 
     public LRUCache() {
-        this(1024);
+        this(DEFAULT_CACHE_SIZE);
     }
 
     public LRUCache(final int size) {
