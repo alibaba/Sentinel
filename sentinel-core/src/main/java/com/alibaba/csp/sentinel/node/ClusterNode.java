@@ -12,7 +12,6 @@ package com.alibaba.csp.sentinel.node;
  * specific language governing permissions and limitations under the License.
  */
 
-
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
