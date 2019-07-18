@@ -63,17 +63,7 @@ public class AppController {
             return Result.ofSuccess(null);
         }
         List<MachineInfo> list = new ArrayList<>(appInfo.getMachines());
-        Collections.sort(list, (o1, o2) -> {
-            int t = o1.getApp().compareTo(o2.getApp());
-            if (t != 0) {
-                return t;
-            }
-            t = o1.getIp().compareTo(o2.getIp());
-            if (t != 0) {
-                return t;
-            }
-            return o1.getPort().compareTo(o2.getPort());
-        });
+        Collections.sort(list, Comparator.comparing(MachineInfo::getApp).thenComparing(MachineInfo::getIp).thenComparingInt(MachineInfo::getPort));
         return Result.ofSuccess(MachineInfoVo.fromMachineInfoList(list));
     }
     

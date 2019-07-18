@@ -55,7 +55,7 @@ If your application is build in Maven, just add the following dependency in `pom
 <dependency>
     <groupId>com.alibaba.csp</groupId>
     <artifactId>sentinel-core</artifactId>
-    <version>1.6.0</version>
+    <version>1.6.1</version>
 </dependency>
 ```
 
@@ -98,18 +98,18 @@ For more information, please refer to [How To Use](https://github.com/alibaba/Se
 
 ### 4. Check the Result
 
-After running the demo for a while, you can see the following records in `~/logs/csp/${appName}-metrics.log`.
+After running the demo for a while, you can see the following records in `~/logs/csp/${appName}-metrics.log.{date}` (When using the default `DateFileLogHandler`).
 
 ```
-|--timestamp-|------date time----|-resource-|p |block|s |e|rt
-1529998904000|2018-06-26 15:41:44|HelloWorld|20|0    |20|0|0
-1529998905000|2018-06-26 15:41:45|HelloWorld|20|5579 |20|0|728
-1529998906000|2018-06-26 15:41:46|HelloWorld|20|15698|20|0|0
-1529998907000|2018-06-26 15:41:47|HelloWorld|20|19262|20|0|0
-1529998908000|2018-06-26 15:41:48|HelloWorld|20|19502|20|0|0
-1529998909000|2018-06-26 15:41:49|HelloWorld|20|18386|20|0|0
+|--timestamp-|------date time----|-resource-|p |block|s |e|rt  |occupied
+1529998904000|2018-06-26 15:41:44|HelloWorld|20|0    |20|0|0   |0
+1529998905000|2018-06-26 15:41:45|HelloWorld|20|5579 |20|0|728 |0
+1529998906000|2018-06-26 15:41:46|HelloWorld|20|15698|20|0|0   |0
+1529998907000|2018-06-26 15:41:47|HelloWorld|20|19262|20|0|0   |0
+1529998908000|2018-06-26 15:41:48|HelloWorld|20|19502|20|0|0   |0
+1529998909000|2018-06-26 15:41:49|HelloWorld|20|18386|20|0|0   |0
 
-p stands for incoming request, block for blocked by rules, success for success handled by Sentinel, e for exception count, rt for average response time (ms)
+p stands for incoming request, block for blocked by rules, success for success handled by Sentinel, e for exception count, rt for average response time (ms), occupied stands for occupiedPassQps since 1.5.0 which enable us booking more than 1 shot when entering.
 ```
 
 This shows that the demo can print "hello world" 20 times per second.
@@ -163,6 +163,5 @@ These are only part of the companies using Sentinel, for reference only. If you 
 ![亲宝宝](https://stlib.qbb6.com/wclt/img/home_hd/version1/title_logo.png)
 ![杭州光云科技](https://www.raycloud.com/images/logo.png)
 ![金汇金融](https://res.jinhui365.com/r/images/logo2.png?v=1.527)
-![Vivo](https://user-images.githubusercontent.com/9434884/49355264-c6f87600-f701-11e8-8109-054cf91df868.png)
 ![闪电购](http://cdn.52shangou.com/shandianbang/official-source/3.1.1/build/images/logo.png)
 ![拼多多](http://cdn.pinduoduo.com/assets/img/pdd_logo_v3.png)

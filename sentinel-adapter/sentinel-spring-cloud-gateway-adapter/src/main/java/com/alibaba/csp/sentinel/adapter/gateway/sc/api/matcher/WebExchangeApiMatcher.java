@@ -59,9 +59,9 @@ public class WebExchangeApiMatcher extends AbstractApiMatcher<ServerWebExchange>
             return Optional.empty();
         }
         switch (item.getMatchStrategy()) {
-            case SentinelGatewayConstants.PARAM_MATCH_STRATEGY_REGEX:
+            case SentinelGatewayConstants.URL_MATCH_STRATEGY_REGEX:
                 return Optional.of(RouteMatchers.regexPath(pattern));
-            case SentinelGatewayConstants.PARAM_MATCH_STRATEGY_PREFIX:
+            case SentinelGatewayConstants.URL_MATCH_STRATEGY_PREFIX:
                 return Optional.of(RouteMatchers.antPath(pattern));
             default:
                 return Optional.of(RouteMatchers.exactPath(pattern));

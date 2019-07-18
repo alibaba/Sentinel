@@ -15,13 +15,13 @@
  */
 package com.alibaba.csp.sentinel;
 
-import java.io.File;
-
 import com.alibaba.csp.sentinel.log.LogBase;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.PidUtil;
-
+import org.junit.Assert;
 import org.junit.Test;
+
+import java.io.File;
 
 import static org.junit.Assert.assertTrue;
 
@@ -44,21 +44,27 @@ public class RecordLogTest {
         }
     }
 
-    @Test
+    //Change LogBase It is not not work when integration Testing
+    //Because LogBase.LOG_DIR can be just static init for once and it will not be changed
+    //@Test
     public void testChangeLogBase() {
+
         String userHome = System.getProperty("user.home");
         String newLogBase = userHome + File.separator + "tmpLogDir" + System.currentTimeMillis();
         System.setProperty(LogBase.LOG_DIR, newLogBase);
 
         RecordLog.info("testChangeLogBase");
         String logFileName = RecordLog.getLogBaseDir();
+        Assert.assertTrue(newLogBase.equals(logFileName));
         File[] files = new File(logFileName).listFiles();
         assertTrue(files != null && files.length > 0);
+        deleteLogDir(new File(newLogBase));
+
+
     }
 
     @Test
     public void testLogBaseDir() {
-        RecordLog.info("testLogBaseDir");
         assertTrue(RecordLog.getLogBaseDir().startsWith(System.getProperty("user.home")));
     }
 
@@ -87,5 +93,18 @@ public class RecordLogTest {
             assertTrue(f.getName().contains("pid" + PidUtil.getPid()));
         }
     }
+
+    private void deleteLogDir(File logDirFile) {
+        if (logDirFile != null && logDirFile.isDirectory()) {
+            if (logDirFile.listFiles() != null) {
+                for (File file : logDirFile.listFiles()) {
+                    file.delete();
+                }
+            }
+            logDirFile.delete();
+        }
+    }
+
+
 
 }

@@ -100,7 +100,7 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
         try {
             String ipsStr = TransportConfig.getConsoleServer();
             if (StringUtil.isEmpty(ipsStr)) {
-                RecordLog.warn("[NettyHttpHeartbeatSender] Dashboard server address not configured");
+                RecordLog.warn("[SimpleHttpHeartbeatSender] Dashboard server address not configured");
                 return newAddrs;
             }
 

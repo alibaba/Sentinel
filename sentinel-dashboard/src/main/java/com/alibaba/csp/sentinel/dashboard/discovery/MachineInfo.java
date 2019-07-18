@@ -23,6 +23,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 public class MachineInfo implements Comparable<MachineInfo> {
 
     private String app = "";
+    private Integer appType = 0;
     private String hostname = "";
     private String ip = "";
     private Integer port = -1;
@@ -60,6 +61,14 @@ public class MachineInfo implements Comparable<MachineInfo> {
 
     public void setApp(String app) {
         this.app = app;
+    }
+
+    public Integer getAppType() {
+        return appType;
+    }
+
+    public void setAppType(Integer appType) {
+        this.appType = appType;
     }
 
     public String getHostname() {
@@ -139,6 +148,7 @@ public class MachineInfo implements Comparable<MachineInfo> {
     public String toString() {
         return new StringBuilder("MachineInfo {")
             .append("app='").append(app).append('\'')
+            .append(",appType='").append(appType).append('\'')
             .append(", hostname='").append(hostname).append('\'')
             .append(", ip='").append(ip).append('\'')
             .append(", port=").append(port)

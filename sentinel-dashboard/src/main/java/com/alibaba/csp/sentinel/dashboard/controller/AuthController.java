@@ -38,7 +38,7 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping("/auth")
 public class AuthController {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(AuthController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthController.class);
 
     @Value("${auth.username:sentinel}")
     private String authUsername;
@@ -47,7 +47,7 @@ public class AuthController {
     private String authPassword;
 
     @PostMapping("/login")
-    public Result login(HttpServletRequest request, String username, String password) {
+    public Result<AuthService.AuthUser> login(HttpServletRequest request, String username, String password) {
         if (StringUtils.isNotBlank(DashboardConfig.getAuthUsername())) {
             authUsername = DashboardConfig.getAuthUsername();
         }
@@ -63,17 +63,17 @@ public class AuthController {
          */
         if (StringUtils.isNotBlank(authUsername) && !authUsername.equals(username)
                 || StringUtils.isNotBlank(authPassword) && !authPassword.equals(password)) {
-            LOGGER.error("Login failed: Invalid username or password, username=" + username + ", password=" + password);
+            LOGGER.error("Login failed: Invalid username or password, username=" + username);
             return Result.ofFail(-1, "Invalid username or password");
         }
 
         AuthService.AuthUser authUser = new SimpleWebAuthServiceImpl.SimpleWebAuthUserImpl(username);
-        request.getSession().setAttribute(SimpleWebAuthServiceImpl.WEB_SESSTION_KEY, authUser);
+        request.getSession().setAttribute(SimpleWebAuthServiceImpl.WEB_SESSION_KEY, authUser);
         return Result.ofSuccess(authUser);
     }
 
     @RequestMapping(value = "/logout", method = RequestMethod.POST)
-    public Result logout(HttpServletRequest request) {
+    public Result<?> logout(HttpServletRequest request) {
         request.getSession().invalidate();
         return Result.ofSuccess(null);
     }

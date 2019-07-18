@@ -22,6 +22,7 @@ import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.metric.extension.MetricExtension;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
  * This class is used to record other exceptions except block exception.
@@ -29,7 +30,12 @@ import com.alibaba.csp.sentinel.metric.extension.MetricExtension;
  * @author jialiang.linjl
  * @author Eric Zhao
  */
-public final class Tracer {
+public class Tracer {
+
+    protected static Class<? extends Throwable>[] traceClasses;
+    protected static Class<? extends Throwable>[] ignoreClasses;
+
+    protected Tracer() {}
 
     /**
      * Trace provided {@link Throwable} and increment exception count to entry in current context.
@@ -47,7 +53,7 @@ public final class Tracer {
      * @param count exception count to add
      */
     public static void trace(Throwable e, int count) {
-        if (e == null || e instanceof BlockException) {
+        if (!shouldTrace(e)) {
             return;
         }
 
@@ -68,7 +74,7 @@ public final class Tracer {
      * @since 1.4.2
      */
     public static void traceContext(Throwable e, int count, Context context) {
-        if (e == null || e instanceof BlockException) {
+        if (!shouldTrace(e)) {
             return;
         }
         if (context == null) {
@@ -97,7 +103,7 @@ public final class Tracer {
      * @since 1.4.2
      */
     public static void traceEntry(Throwable e, int count, Entry entry) {
-        if (e == null || e instanceof BlockException) {
+        if (!shouldTrace(e)) {
             return;
         }
         if (entry == null || entry.getCurNode() == null) {
@@ -124,5 +130,90 @@ public final class Tracer {
         clusterNode.trace(t, count);
     }
 
-    private Tracer() {}
+    /**
+     * Set exception to trace. If not set, all Exception except for {@link BlockException} will be traced.
+     * <p>
+     * Note that if both {@link #setExceptionsToIgnore(Class[])} and this method is set,
+     * the ExceptionsToIgnore will be of higher precedence.
+     * </p>
+     *
+     * @param traceClasses the list of exception classes to trace.
+     * @since 1.6.1
+     */
+    @SafeVarargs
+    public static void setExceptionsToTrace(Class<? extends Throwable>... traceClasses) {
+        checkNotNull(traceClasses);
+        Tracer.traceClasses = traceClasses;
+    }
+
+    /**
+     * Get exception classes to trace.
+     *
+     * @return an array of exception classes to trace.
+     * @since 1.6.1
+     */
+    public static Class<? extends Throwable>[] getExceptionsToTrace() {
+        return traceClasses;
+    }
+
+    /**
+     * Set exceptions to ignore. if not set, all Exception except for {@link BlockException} will be traced.
+     * <p>
+     * Note that if both {@link #setExceptionsToTrace(Class[])} and this method is set,
+     * the ExceptionsToIgnore will be of higher precedence.
+     * </p>
+     *
+     * @param ignoreClasses the list of exception classes to ignore.
+     * @since 1.6.1
+     */
+    @SafeVarargs
+    public static void setExceptionsToIgnore(Class<? extends Throwable>... ignoreClasses) {
+        checkNotNull(ignoreClasses);
+        Tracer.ignoreClasses = ignoreClasses;
+    }
+
+    /**
+     * Get exception classes to ignore.
+     *
+     * @return an array of exception classes to ignore.
+     * @since 1.6.1
+     */
+    public static Class<? extends Throwable>[] getExceptionsToIgnore() {
+        return ignoreClasses;
+    }
+
+    private static void checkNotNull(Class<? extends Throwable>[] classes) {
+        AssertUtil.notNull(classes, "trace or ignore classes must not be null");
+        for (Class<? extends Throwable> clazz : classes) {
+            AssertUtil.notNull(clazz, "trace or ignore classes must not be null");
+        }
+    }
+
+    /**
+     * Check whether the throwable should be traced.
+     *
+     * @param t the throwable to check.
+     * @return true if the throwable should be traced, else return false.
+     */
+    protected static boolean shouldTrace(Throwable t) {
+        if (t == null || t instanceof BlockException) {
+            return false;
+        }
+        if (ignoreClasses != null) {
+            for (Class<? extends Throwable> clazz : ignoreClasses) {
+                if (clazz != null && clazz.isAssignableFrom(t.getClass())) {
+                    return false;
+                }
+            }
+        }
+        if (traceClasses != null) {
+            for (Class<? extends Throwable> clazz : traceClasses) {
+                if (clazz != null && clazz.isAssignableFrom(t.getClass())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return true;
+    }
 }
