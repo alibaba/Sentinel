@@ -51,7 +51,7 @@ public class ClusterNode extends StatisticNode {
      * but a lock, as this lock only happens at the very beginning while concurrent map will hold the lock all the time.
      * </p>
      */
-    private Map<String, StatisticNode> originCountMap = buildLRUCache();
+    private volatile Map<String, StatisticNode> originCountMap = buildLRUCache();
 
     private final ReentrantLock lock = new ReentrantLock();
 
@@ -85,7 +85,7 @@ public class ClusterNode extends StatisticNode {
         return statisticNode;
     }
 
-    public synchronized Map<String, StatisticNode> getOriginCountMap() {
+    public Map<String, StatisticNode> getOriginCountMap() {
         return originCountMap;
     }
 
