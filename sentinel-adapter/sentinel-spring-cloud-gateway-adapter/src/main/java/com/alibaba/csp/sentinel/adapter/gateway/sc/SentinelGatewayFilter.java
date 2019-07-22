@@ -34,6 +34,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.cloud.gateway.route.Route;
 import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
+import org.springframework.core.Ordered;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -41,7 +42,17 @@ import reactor.core.publisher.Mono;
  * @author Eric Zhao
  * @since 1.6.0
  */
-public class SentinelGatewayFilter implements GatewayFilter, GlobalFilter {
+public class SentinelGatewayFilter implements GatewayFilter, GlobalFilter, Ordered {
+
+    private final int order;
+
+    public SentinelGatewayFilter() {
+        this(Ordered.HIGHEST_PRECEDENCE);
+    }
+
+    public SentinelGatewayFilter(int order) {
+        this.order = order;
+    }
 
     private final GatewayParamParser<ServerWebExchange> paramParser = new GatewayParamParser<>(
         new ServerWebExchangeItemParser());
@@ -86,5 +97,10 @@ public class SentinelGatewayFilter implements GatewayFilter, GlobalFilter {
             .filter(m -> m.test(exchange))
             .map(WebExchangeApiMatcher::getApiName)
             .collect(Collectors.toSet());
+    }
+
+    @Override
+    public int getOrder() {
+        return order;
     }
 }
