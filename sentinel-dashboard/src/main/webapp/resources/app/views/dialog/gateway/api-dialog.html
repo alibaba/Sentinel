@@ -2,7 +2,6 @@
 	<span class="brand" style="font-weight:bold;">{{gatewayApiDialog.title}}</span>
 	<div class="card" style="margin-top: 20px;margin-bottom: 10px;">
 		<div class="panel-body">
-			<div class="row">
 				<form role="form" class="form-horizontal">
 					<div class="form-group">
 						<label class="col-sm-2 control-label">API 名称</label>
@@ -28,19 +27,16 @@
 						</div>
 						<div class="col-sm-1 control-label" align="center">
 							<button class="btn btn-outline-danger" ng-click="removeMatchPattern($index)"
-									align="center" ng-if="currentApi.predicateItems.length>1">X</button>
+									align="center" ng-if="currentApi.predicateItems.length > 1">X</button>
 						</div>
 					</div>
 
-					<div class="form-group">
-						<label class="col-sm-11 control-label" style="text-align: center;">
-								<button class="btn btn-outline-primary" ng-click="addNewMatchPattern()" align="center">
-									<i class="fa fa-plus"></i>新增匹配规则
-								</button>
-						</label>
+					<div class="form-group" style="text-align: center">
+						<button class="btn btn-outline-primary" ng-click="addNewMatchPattern()">
+							<i class="fa fa-plus"></i>&nbsp;新增匹配规则
+						</button>
 					</div>
 				</form>
-			</div>
 			<div class="separator"></div>
 			<div clss="row" style="margin-top: 20px;">
 				<button class="btn btn-outline-danger" style="float:right; height: 30px;font-size: 12px;margin-left: 10px;" ng-click="closeThisDialog()">取消</button>
