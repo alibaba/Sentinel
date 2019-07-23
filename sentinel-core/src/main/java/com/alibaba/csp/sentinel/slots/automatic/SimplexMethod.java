@@ -2,14 +2,11 @@ package com.alibaba.csp.sentinel.slots.automatic;
 
 public class SimplexMethod {
 
-    /*   constraint matrix   */
-    private static double A[][];
+    private static double A[][]; //约束矩阵
 
-    /*  the number of constraits */
-    private static int m;
+    private static int m; //约束的数量
 
-    /*  the number of variables */
-    private static int n;
+    private static int n; // 基变量数量
 
     private static double C[]; // 价值系数
 
@@ -17,9 +14,7 @@ public class SimplexMethod {
 
     private double theta[]; //b的检验数
 
-    /*  basic variables */
-    private int basedVar[];
-
+    private int basedVar[]; //基变量
 
     private double yita[]; //检验数，有n个决策变量的检验数
 
@@ -73,7 +68,7 @@ public class SimplexMethod {
         }
     }
 
-    // 找基变量，简单的拿最后m个决策变量，后期可优化，存储在basedVar数组中
+    // 找基变量，取后m个变量作为基变量
     private void findBasedVariables() {
 
         //取n个决策变量的最后m个作基变量
@@ -181,6 +176,7 @@ public class SimplexMethod {
     }
 
     //输出最优解
+    //TODO:按顺序返回基变量的取值
     private double[] printOptimum() {
         double[] x = new double[3];
         result = 0;
