@@ -72,8 +72,9 @@ public class AdaptiveDemo {
         List<AdaptiveRule> rules = new ArrayList<AdaptiveRule>();
         AdaptiveRule rule = new AdaptiveRule();
         rule.setResource(KEY);
-        rule.setCount(200);
-        rule.setMaxToken(2000);
+        //rule.setCount(40000);
+        rule.setMaxToken(80000);
+        rule.setTargetRadio(0.5);
         rules.add(rule);
         AdaptiveRuleManager.loadRules(rules);
     }
@@ -127,7 +128,7 @@ public class AdaptiveDemo {
                 }
                 Random random2 = new Random();
                 try {
-                    TimeUnit.MILLISECONDS.sleep(random2.nextInt(50));
+                    TimeUnit.MILLISECONDS.sleep(random2.nextInt(1));
                 } catch (InterruptedException e) {
                     // ignore
                 }
@@ -155,7 +156,7 @@ public class AdaptiveDemo {
                 }
                 Random random2 = new Random();
                 try {
-                    TimeUnit.MILLISECONDS.sleep(random2.nextInt(50));
+                    TimeUnit.MILLISECONDS.sleep(random2.nextInt(2));
                 } catch (InterruptedException e) {
                     // ignore
                 }

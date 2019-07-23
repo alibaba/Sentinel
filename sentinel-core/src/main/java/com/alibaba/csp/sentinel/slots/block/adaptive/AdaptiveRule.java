@@ -20,6 +20,8 @@ public class AdaptiveRule extends AbstractRule {
 
     private int maxToken;
 
+    private double targetRadio;
+
     public double getCount() {
         return count;
     }
@@ -33,6 +35,13 @@ public class AdaptiveRule extends AbstractRule {
 
     public AdaptiveRule setMaxToken(int maxToken) {
         this.maxToken = maxToken;
+        return this;
+    }
+
+    public double getTargetRadio() { return targetRadio; }
+
+    public AdaptiveRule setTargetRadio(double targetRadio) {
+        this.targetRadio = targetRadio;
         return this;
     }
 

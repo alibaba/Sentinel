@@ -152,6 +152,20 @@ public class ArrayMetric implements Metric {
     }
 
     @Override
+    public long maxRt() {
+        data.currentWindow();
+        long rt = 0;
+        List<MetricBucket> list = data.values();
+        for (MetricBucket window : list) {
+            if (window.maxRt() > rt) {
+                rt = window.maxRt();
+            }
+        }
+
+        return Math.min(Constants.TIME_DROP_VALVE, rt);
+    }
+
+    @Override
     public List<MetricNode> details() {
         List<MetricNode> details = new ArrayList<MetricNode>();
         data.currentWindow();

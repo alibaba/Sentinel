@@ -78,6 +78,13 @@ public interface Metric extends DebugSupport {
     long minRt();
 
     /**
+     * Get the maximal RT.
+     *
+     * @return maximal RT
+     */
+    long maxRt();
+
+    /**
      * Get aggregated metric nodes of all resources.
      *
      * @return metric node list of all resources

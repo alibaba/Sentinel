@@ -38,7 +38,7 @@ public final class AdaptiveRuleManager {
         try{
             currentProperty.updateValue(rules);
         } catch (Throwable e) {
-            RecordLog.warn("[AdaptiveRuleManager] Unexpected error when loading degrade rules", e);
+            RecordLog.warn("[AdaptiveRuleManager] Unexpected error when loading adaptive rules", e);
         }
     }
 

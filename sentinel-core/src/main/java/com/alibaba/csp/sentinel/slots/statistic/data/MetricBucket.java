@@ -30,6 +30,7 @@ public class MetricBucket {
     private final LongAdder[] counters;
 
     private volatile long minRt;
+    private volatile long maxRt;
 
     public MetricBucket() {
         MetricEvent[] events = MetricEvent.values();
@@ -38,6 +39,7 @@ public class MetricBucket {
             counters[event.ordinal()] = new LongAdder();
         }
         initMinRt();
+        initMaxRt();
     }
 
     public MetricBucket reset(MetricBucket bucket) {
@@ -46,13 +48,14 @@ public class MetricBucket {
             counters[event.ordinal()].add(bucket.get(event));
         }
         initMinRt();
+        initMaxRt();
         return this;
     }
 
     private void initMinRt() {
         this.minRt = Constants.TIME_DROP_VALVE;
     }
-
+    private void initMaxRt() { this.maxRt = 0; }
     /**
      * Reset the adders.
      *
@@ -63,6 +66,7 @@ public class MetricBucket {
             counters[event.ordinal()].reset();
         }
         initMinRt();
+        initMaxRt();
         return this;
     }
 
@@ -99,6 +103,10 @@ public class MetricBucket {
         return minRt;
     }
 
+    public long maxRt() {
+        return maxRt;
+    }
+
     public long success() {
         return get(MetricEvent.SUCCESS);
     }
@@ -129,6 +137,9 @@ public class MetricBucket {
         // Not thread-safe, but it's okay.
         if (rt < minRt) {
             minRt = rt;
+        }
+        if (rt > maxRt) {
+            maxRt = rt;
         }
     }
 

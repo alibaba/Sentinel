@@ -18,7 +18,8 @@ public class AdaptiveRuleChecker {
 
     protected AtomicLong storedTokens = new AtomicLong(0);
     protected AtomicLong lastFilledTime = new AtomicLong(0);
-
+    protected AtomicLong bucketCount = new AtomicLong(20000);
+    //protected long bucketCount = 2000;
     private static SystemStatusListener statusListener = null;
 
     public void checkAdaptive(ResourceWrapper resource, Context context, DefaultNode node, int count)
@@ -37,14 +38,50 @@ public class AdaptiveRuleChecker {
     }
 
     public boolean canPassCheck(AdaptiveRule rule, Context context, DefaultNode node, int acquireCount) {
-        long count = (long)(rule.getCount());
-        long passQps = (long)(node.getClusterNode().passQps());
-        long previousQps = (long)(node.getClusterNode().previousBlockQps());
+        double targetRadio = rule.getTargetRadio(); //目标通过率
         int maxToken = rule.getMaxToken();
-        syncToken(previousQps, count, maxToken);
+        double smoothing = 0.2;
+
+        long previousQps = (long)(node.getClusterNode().previousBlockQps());
+        long passQps = (long)(node.getClusterNode().passQps());
+        long totalQps = (long)(node.getClusterNode().totalQps());
+
+        double radio;
+        long newCount = bucketCount.get();
+        if (totalQps != 0) {
+            radio = passQps / totalQps;
+            if (Math.random() < (1 / totalQps)) {
+
+                // 计算限制范围[1.0, 2.0]的梯度
+                // 实际通过率越小，梯度值越大，以增加后续通过数
+                double gradientRadio = Math.max(1.0, Math.min(2.0, targetRadio / radio));
+
+                long avgRt = (long)(node.getClusterNode().avgRt());
+                long longTermRt = (long)(node.getClusterNode().longTermRt());
+                double gradientRt;
+                if (avgRt == 0) {
+                    gradientRt = 1;
+                } else {
+                    // 计算限制范围[0.5, 1.0]的梯度以过滤异常值
+                    // 实际 avgRt 越大，梯度值越小，说明需要限制通过数
+                    gradientRt = Math.max(0.5, Math.min(1.0, longTermRt / avgRt));
+                }
+
+                long currentCount = bucketCount.get();
+
+                // 最后的令牌发放速度由通过率和 Rt 共同决定
+                newCount = (long)(gradientRadio * gradientRt * currentCount);
+                // 使用平滑因子更新令牌发放速度（默认为0.2）
+                newCount = (long)(currentCount * (1 - smoothing) + newCount * smoothing);
+                bucketCount.compareAndSet(currentCount, newCount);
+            }
+        }
+
+        syncToken(previousQps, newCount, maxToken);
 
         long restToken = storedTokens.get();
-        if (passQps + acquireCount <= restToken || passQps + acquireCount <= count) {
+        //newCount = Math.max(newCount, restToken);
+        if (passQps + acquireCount <= restToken || passQps + acquireCount <= newCount) {
             return true;
         }
         return false;
