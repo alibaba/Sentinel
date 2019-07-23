@@ -45,11 +45,11 @@
               <tr dir-paginate="rule in rules | filter : searchKey | itemsPerPage: rulesPageConfig.pageSize " current-page="rulesPageConfig.currentPageIndex"
                 pagination-id="entriesPagination">
                 <td style="word-wrap:break-word;word-break:break-all;">
-                  <span ng-if="rule.highestSystemLoad >= 0">系统LOAD</span>
-                  <span ng-if="rule.avgRt >= 0">RT</span>
-                  <span ng-if="rule.maxThread >= 0">线程数</span>
-                  <span ng-if="rule.qps >= 0">QPS</span>
-                  <span ng-if="rule.highestCpuUsage >= 0">CPU使用率</span>
+                  <span ng-if="rule.highestSystemLoad >= 0">系统 load</span>
+                  <span ng-if="rule.avgRt >= 0">平均 RT</span>
+                  <span ng-if="rule.maxThread >= 0">并发数</span>
+                  <span ng-if="rule.qps >= 0">入口 QPS</span>
+                  <span ng-if="rule.highestCpuUsage >= 0">CPU 使用率</span>
                 </td>
                 <td style="word-wrap:break-word;word-break:break-all;">
                   <span ng-if="rule.highestSystemLoad >= 0">{{rule.highestSystemLoad}}</span>
