@@ -38,7 +38,7 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
             $scope.rules = data.data;
             $.each($scope.rules, function (idx, rule) {
               // rule.orginEnable = rule.enable;
-              if (rule.avgLoad >= 0) {
+              if (rule.highestSystemLoad >= 0) {
                 rule.grade = 0;
               } else if (rule.avgRt >= 0) {
                 rule.grade = 1;
@@ -46,6 +46,8 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
                 rule.grade = 2;
               } else if (rule.qps >= 0) {
                 rule.grade = 3;
+              }else if (rule.highestCpuUsage >= 0) {
+                  rule.grade = 4;
               }
             });
             $scope.rulesPageConfig.totalCount = $scope.rules.length;
@@ -107,9 +109,9 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
       $scope.currentRule = rule;
       var ruleTypeDesc = '';
       var ruleTypeCount = null;
-      if (rule.avgLoad != -1) {
-        ruleTypeDesc = 'LOAD';
-        ruleTypeCount = rule.avgLoad;
+      if (rule.highestSystemLoad != -1) {
+        ruleTypeDesc = '系统LOAD';
+        ruleTypeCount = rule.highestSystemLoad;
       } else if (rule.avgRt != -1) {
         ruleTypeDesc = 'RT';
         ruleTypeCount = rule.avgRt;
@@ -119,6 +121,9 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
       } else if (rule.qps != -1) {
         ruleTypeDesc = 'QPS';
         ruleTypeCount = rule.qps;
+      }else if (rule.highestCpuUsage != -1) {
+          ruleTypeDesc = 'CPU 使用率';
+          ruleTypeCount = rule.highestCpuUsage;
       }
 
       $scope.confirmDialog = {
@@ -159,8 +164,10 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
         if (data.code == 0) {
           getMachineRules();
           confirmDialog.close();
-        } else {
-          alert
+        }  else if(data.msg!=null){
+            alert(data.msg);
+        } else{
+            alert('失败!');
         }
       });
     };
@@ -170,8 +177,10 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
         if (data.code == 0) {
           getMachineRules();
           systemRuleDialog.close();
-        } else {
-          alert('失败!');
+        } else if(data.msg!=null){
+          alert(data.msg);
+        }else{
+            alert('失败!');
         }
       });
     };
@@ -190,8 +199,10 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
           } else {
             confirmDialog.close();
           }
-        } else {
-          alert('失败!');
+        } else if(data.msg!=null){
+            alert(data.msg);
+        }else{
+            alert('失败!');
         }
       });
     }
