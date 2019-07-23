@@ -91,9 +91,10 @@ public class SystemController {
     @ResponseBody
     @RequestMapping("/new.json")
     Result<?> add(HttpServletRequest request,
-                  String app, String ip, Integer port, Double avgLoad, Long avgRt, Long maxThread, Double qps) {
+                  String app, String ip, Integer port, Double avgLoad, Long avgRt, Integer maxThread, Double qps) {
         AuthUser authUser = authService.getAuthUser(request);
         authUser.authTarget(app, PrivilegeType.WRITE_RULE);
+
         if (StringUtil.isBlank(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
         }
@@ -126,7 +127,7 @@ public class SystemController {
         if (maxThread != null) {
             entity.setMaxThread(maxThread);
         } else {
-            entity.setMaxThread(-1L);
+            entity.setMaxThread(-1);
         }
         if (qps != null) {
             entity.setQps(qps);
@@ -151,8 +152,9 @@ public class SystemController {
     @ResponseBody
     @RequestMapping("/save.json")
     Result<?> updateIfNotNull(HttpServletRequest request,
-                              Long id, String app, Double avgLoad, Long avgRt, Long maxThread, Double qps) {
+                              Long id, String app, Double avgLoad, Long avgRt, Integer maxThread, Double qps) {
         AuthUser authUser = authService.getAuthUser(request);
+
         if (id == null) {
             return Result.ofFail(-1, "id can't be null");
         }

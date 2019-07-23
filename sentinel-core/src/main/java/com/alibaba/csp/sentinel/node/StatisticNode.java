@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+
 /**
  * <p>The statistic node keep three kinds of real-time statistics metrics:</p>
  * <ol>
@@ -93,7 +94,7 @@ public class StatisticNode implements Node {
      * by given {@code sampleCount}.
      */
     private transient volatile Metric rollingCounterInSecond = new ArrayMetric(SampleCountProperty.SAMPLE_COUNT,
-        IntervalProperty.INTERVAL);
+            IntervalProperty.INTERVAL);
 
     /**
      * Holds statistics of the recent 60 seconds. The windowLengthInMs is deliberately set to 1000 milliseconds,
@@ -105,6 +106,7 @@ public class StatisticNode implements Node {
      * The counter for thread count.
      */
     private LongAdder curThreadNum = new LongAdder();
+    private ConcurrentCounter curThreadNumLimiter = new ConcurrentCounter();
 
     /**
      * The last timestamp when metrics were fetched.
@@ -137,7 +139,7 @@ public class StatisticNode implements Node {
 
     private boolean isValidMetricNode(MetricNode node) {
         return node.getPassQps() > 0 || node.getBlockQps() > 0 || node.getSuccessQps() > 0
-            || node.getExceptionQps() > 0 || node.getRt() > 0 || node.getOccupiedPassQps() > 0;
+                || node.getExceptionQps() > 0 || node.getRt() > 0 || node.getOccupiedPassQps() > 0;
     }
 
     @Override
@@ -232,7 +234,12 @@ public class StatisticNode implements Node {
 
     @Override
     public int curThreadNum() {
-        return (int)curThreadNum.sum();
+        return (int) curThreadNum.sum();
+    }
+
+    @Override
+    public boolean curThreadLimiterResult() {
+        return curThreadNumLimiter.getCurTryAcquireResult();
     }
 
     @Override
@@ -263,6 +270,16 @@ public class StatisticNode implements Node {
     }
 
     @Override
+    public void tryUpdateThreadThreshold(int threadThreshold) {
+        curThreadNumLimiter.tryUpdateThredhold(threadThreshold);
+    }
+
+    @Override
+    public void tryAcquireThread() {
+        curThreadNumLimiter.tryAcquire();
+    }
+
+    @Override
     public void increaseThreadNum() {
         curThreadNum.increment();
     }
@@ -270,6 +287,7 @@ public class StatisticNode implements Node {
     @Override
     public void decreaseThreadNum() {
         curThreadNum.decrement();
+        curThreadNumLimiter.release();
     }
 
     @Override

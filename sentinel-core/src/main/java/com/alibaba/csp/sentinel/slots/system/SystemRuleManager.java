@@ -15,13 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.system;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
@@ -31,6 +24,13 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.property.SimplePropertyListener;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * <p>
@@ -72,7 +72,7 @@ public class SystemRuleManager {
     private static volatile double highestCpuUsage = Double.MAX_VALUE;
     private static volatile double qps = Double.MAX_VALUE;
     private static volatile long maxRt = Long.MAX_VALUE;
-    private static volatile long maxThread = Long.MAX_VALUE;
+    private static volatile int maxThread = Integer.MAX_VALUE;
     /**
      * mark whether the threshold are set by user.
      */
@@ -90,7 +90,7 @@ public class SystemRuleManager {
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private final static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1,
-        new NamedThreadFactory("sentinel-system-status-record-task", true));
+            new NamedThreadFactory("sentinel-system-status-record-task", true));
 
     static {
         checkSystemStatus.set(false);
@@ -218,7 +218,7 @@ public class SystemRuleManager {
             highestSystemLoad = Double.MAX_VALUE;
             highestCpuUsage = Double.MAX_VALUE;
             maxRt = Long.MAX_VALUE;
-            maxThread = Long.MAX_VALUE;
+            maxThread = Integer.MAX_VALUE;
             qps = Double.MAX_VALUE;
 
             highestSystemLoadIsSet = false;
@@ -308,7 +308,12 @@ public class SystemRuleManager {
 
         // total thread
         int currentThread = Constants.ENTRY_NODE == null ? 0 : Constants.ENTRY_NODE.curThreadNum();
-        if (currentThread > maxThread) {
+        boolean currentThreadLimiterResult = true;
+        if (Constants.ENTRY_NODE != null) {
+            Constants.ENTRY_NODE.tryUpdateThreadThreshold(maxThread);
+            currentThreadLimiterResult = Constants.ENTRY_NODE.curThreadLimiterResult();
+        }
+        if (currentThread > maxThread || !currentThreadLimiterResult) {
             throw new SystemBlockException(resourceWrapper.getName(), "thread");
         }
 

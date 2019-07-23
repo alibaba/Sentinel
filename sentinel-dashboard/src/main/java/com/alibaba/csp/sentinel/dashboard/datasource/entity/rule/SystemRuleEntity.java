@@ -31,7 +31,7 @@ public class SystemRuleEntity implements RuleEntity {
     private Integer port;
     private Double avgLoad;
     private Long avgRt;
-    private Long maxThread;
+    private Integer maxThread;
     private Double qps;
 
     private Date gmtCreate;
@@ -102,11 +102,11 @@ public class SystemRuleEntity implements RuleEntity {
         this.avgRt = avgRt;
     }
 
-    public Long getMaxThread() {
+    public Integer getMaxThread() {
         return maxThread;
     }
 
-    public void setMaxThread(Long maxThread) {
+    public void setMaxThread(Integer maxThread) {
         this.maxThread = maxThread;
     }
 

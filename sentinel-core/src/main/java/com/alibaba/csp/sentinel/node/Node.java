@@ -130,6 +130,11 @@ public interface Node extends OccupySupport, DebugSupport {
     int curThreadNum();
 
     /**
+     * Current thread limiter value.
+     */
+    boolean curThreadLimiterResult();
+
+    /**
      * Get last second block QPS.
      */
     double previousBlockQps();
@@ -174,6 +179,10 @@ public interface Node extends OccupySupport, DebugSupport {
      * @param count count to add
      */
     void increaseExceptionQps(int count);
+
+    void tryUpdateThreadThreshold(int threadThreshold);
+
+    void tryAcquireThread();
 
     /**
      * Increase current thread count.
