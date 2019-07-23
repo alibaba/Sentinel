@@ -29,20 +29,10 @@ public class SystemRuleEntity implements RuleEntity {
     private String app;
     private String ip;
     private Integer port;
-    /**
-     * 对应SystemRule 里的属性highestSystemLoad,这里做下调整
-     * @author tianyang5@yeah.net
-     * @time 2019年7月17日 18:30:32
-     */
     private Double highestSystemLoad;
     private Long avgRt;
     private Long maxThread;
     private Double qps;
-    /**
-     * 对应SystemRule 里的属性highestCpuUsage
-     * @author tianyang5@yeah.net
-     * @time 2019年7月17日 18:30:32
-     */
     private Double highestCpuUsage;
 
     private Date gmtCreate;

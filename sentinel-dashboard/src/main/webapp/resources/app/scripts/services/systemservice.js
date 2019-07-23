@@ -28,7 +28,7 @@ app.service('SystemService', ['$http', function ($http) {
       param.maxThread = rule.maxThread;
     } else if (rule.grade == 3) {// qps
       param.qps = rule.qps;
-    }else if (rule.grade == 4) {// cpu
+    } else if (rule.grade == 4) {// cpu
       param.highestCpuUsage = rule.highestCpuUsage;
     }
 
@@ -51,7 +51,7 @@ app.service('SystemService', ['$http', function ($http) {
       param.maxThread = rule.maxThread;
     } else if (rule.grade == 3) {// qps
       param.qps = rule.qps;
-    }else if (rule.grade == 4) {// cpu
+    } else if (rule.grade == 4) {// cpu
         param.highestCpuUsage = rule.highestCpuUsage;
     }
 
