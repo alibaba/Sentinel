@@ -88,10 +88,33 @@ public class SystemController {
         return notNullCount;
     }
 
+    /**
+     * @modify
+     * 目前代码里做了如下几点修改：
+     * 1】修改属性名称avgLoad 修改为highestSystemLoad
+     * 2】修改属性名称avgCpu 修改为highestCpuUsage
+     * 3】调用countNotNullAndNotNegative非空校验方法里增加参数highestCpuUsage,
+     * 4】修改notNullCount部分判断错误提示语,因为目前countNotNullAndNotNegative里针对=0的情况也做了限制
+     * 5】对于highestSystemLoad、highestCpuUsage增加>1 的这个判断
+     * @author tianyang5@yeah.net
+     * @time 2019年7月17日 18:30:32
+     * @modify
+     *
+     * @param request
+     * @param app
+     * @param ip
+     * @param port
+     * @param highestSystemLoad
+     * @param highestCpuUsage
+     * @param avgRt
+     * @param maxThread
+     * @param qps
+     * @return
+     */
     @ResponseBody
     @RequestMapping("/new.json")
     Result<?> add(HttpServletRequest request,
-                  String app, String ip, Integer port, Double avgLoad, Long avgRt, Long maxThread, Double qps) {
+                  String app, String ip, Integer port, Double highestSystemLoad,Double highestCpuUsage, Long avgRt, Long maxThread, Double qps) {
         AuthUser authUser = authService.getAuthUser(request);
         authUser.authTarget(app, PrivilegeType.WRITE_RULE);
         if (StringUtil.isBlank(app)) {
@@ -103,21 +126,32 @@ public class SystemController {
         if (port == null) {
             return Result.ofFail(-1, "port can't be null");
         }
-        int notNullCount = countNotNullAndNotNegative(avgLoad, avgRt, maxThread, qps);
+
+        int notNullCount = countNotNullAndNotNegative(highestSystemLoad, avgRt, maxThread, qps,highestCpuUsage);
         if (notNullCount != 1) {
-            return Result.ofFail(-1, "only one of [avgLoad, avgRt, maxThread, qps] "
-                + "value must be set >= 0, but " + notNullCount + " values get");
+            return Result.ofFail(-1, "only one of [highestSystemLoad, avgRt, maxThread, qps,highestCpuUsage] "
+                + "value must be set > 0, but " + notNullCount + " values get");
+        }
+        if (  null!=highestCpuUsage && 1 < highestCpuUsage ) {
+            return Result.ofFail(-1, "highestCpuUsage must <= 1");
         }
         SystemRuleEntity entity = new SystemRuleEntity();
         entity.setApp(app.trim());
         entity.setIp(ip.trim());
         entity.setPort(port);
         // -1 is a fake value
-        if (avgLoad != null) {
-            entity.setAvgLoad(avgLoad);
+        if ( null != highestSystemLoad  ) {
+            entity.setHighestSystemLoad(highestSystemLoad);
         } else {
-            entity.setAvgLoad(-1D);
+            entity.setHighestSystemLoad(-1D);
         }
+
+        if ( null !=  highestCpuUsage ) {
+            entity.setHighestCpuUsage(highestCpuUsage);
+        } else {
+            entity.setHighestCpuUsage(-1D);
+        }
+
         if (avgRt != null) {
             entity.setAvgRt(avgRt);
         } else {
@@ -148,10 +182,30 @@ public class SystemController {
         return Result.ofSuccess(entity);
     }
 
+    /**
+     * @modify
+     * 目前代码里做了如下几点修改：
+     * 1】修改属性名称avgLoad 修改为highestSystemLoad
+     * 2】修改属性名称avgCpu 修改为highestCpuUsage
+     * 1】对于highestSystemLoad、highestCpuUsage增加>1 的这个判断,调整原先<0的判断,调整为<=0  等于0的这种规则设置了也没有意义
+     * @author tianyang5@yeah.net
+     * @time 2019年7月17日 18:30:32
+     * @modify
+     *
+     * @param request
+     * @param id
+     * @param app
+     * @param highestSystemLoad
+     * @param highestCpuUsage
+     * @param avgRt
+     * @param maxThread
+     * @param qps
+     * @return
+     */
     @ResponseBody
     @RequestMapping("/save.json")
     Result<?> updateIfNotNull(HttpServletRequest request,
-                              Long id, String app, Double avgLoad, Long avgRt, Long maxThread, Double qps) {
+                              Long id, String app, Double highestSystemLoad,Double highestCpuUsage, Long avgRt, Long maxThread, Double qps) {
         AuthUser authUser = authService.getAuthUser(request);
         if (id == null) {
             return Result.ofFail(-1, "id can't be null");
@@ -164,11 +218,20 @@ public class SystemController {
         if (StringUtil.isNotBlank(app)) {
             entity.setApp(app.trim());
         }
-        if (avgLoad != null) {
-            if (avgLoad < 0) {
-                return Result.ofFail(-1, "avgLoad must >= 0");
+        if (highestSystemLoad != null) {
+            if (highestSystemLoad <= 0) {
+                return Result.ofFail(-1, "highestSystemLoad must >= 0");
             }
-            entity.setAvgLoad(avgLoad);
+            entity.setHighestSystemLoad(highestSystemLoad);
+        }
+        if (highestCpuUsage != null) {
+            if (highestCpuUsage < 0) {
+                return Result.ofFail(-1, "highestCpuUsage must >= 0");
+            }
+            if (highestCpuUsage > 1) {
+                return Result.ofFail(-1, "highestCpuUsage must <= 1");
+            }
+            entity.setHighestCpuUsage(highestCpuUsage);
         }
         if (avgRt != null) {
             if (avgRt < 0) {
