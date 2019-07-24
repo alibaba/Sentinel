@@ -51,6 +51,8 @@ block handler (the `UrlBlockHandler` interface) and register to `WebCallbackMana
 The `UrlCleaner` interface is designed for clean and unify the URL resource.
 For REST APIs, you have to clean the URL resource (e.g. `/foo/1` and `/foo/2` -> `/foo/:id`), or
 the amount of context and resources will exceed the threshold.
+The `UrlCleaner` interface can also exclude unused URLs(e.g. `/exclude/1` -> `/exclude/:id` -> `""`).
+The URLs will be filtered and not be resource in this way.
 
 `RequestOriginParser` interface is useful for extracting request origin (e.g. IP or appName from HTTP Header)
 from HTTP request. You can implement your own `RequestOriginParser` and register to `WebCallbackManager`.

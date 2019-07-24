@@ -17,9 +17,11 @@ package com.alibaba.csp.sentinel.adapter.gateway.common.command;
 
 import java.net.URLDecoder;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Set;
 
 import com.alibaba.csp.sentinel.adapter.gateway.common.api.ApiDefinition;
+import com.alibaba.csp.sentinel.adapter.gateway.common.api.ApiPathPredicateItem;
+import com.alibaba.csp.sentinel.adapter.gateway.common.api.ApiPredicateItem;
 import com.alibaba.csp.sentinel.adapter.gateway.common.api.GatewayApiDefinitionManager;
 import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
@@ -27,7 +29,9 @@ import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 
 /**
  * @author Eric Zhao
@@ -52,10 +56,36 @@ public class UpdateGatewayApiDefinitionGroupCommandHandler implements CommandHan
         RecordLog.info("[API Server] Receiving data change (type: gateway API definition): {0}", data);
 
         String result = SUCCESS_MSG;
-        List<ApiDefinition> apiDefinitions = JSONArray.parseArray(data, ApiDefinition.class);
-        GatewayApiDefinitionManager.loadApiDefinitions(new HashSet<>(apiDefinitions));
+
+        Set<ApiDefinition> apiDefinitions = parseJson(data);
+        GatewayApiDefinitionManager.loadApiDefinitions(apiDefinitions);
+
         return CommandResponse.ofSuccess(result);
     }
 
     private static final String SUCCESS_MSG = "success";
+
+    /**
+     * Parse json data to set of {@link ApiDefinition}.
+     *
+     * Since the predicateItems of {@link ApiDefinition} is set of interface,
+     * here we parse predicateItems to {@link ApiPathPredicateItem} temporarily.
+     */
+    private Set<ApiDefinition> parseJson(String data) {
+        Set<ApiDefinition> apiDefinitions = new HashSet<>();
+        JSONArray array = JSON.parseArray(data);
+        for (Object obj : array) {
+            JSONObject o = (JSONObject)obj;
+            ApiDefinition apiDefinition = new ApiDefinition((o.getString("apiName")));
+            Set<ApiPredicateItem> predicateItems = new HashSet<>();
+            JSONArray itemArray = o.getJSONArray("predicateItems");
+            if (itemArray != null) {
+                predicateItems.addAll(itemArray.toJavaList(ApiPathPredicateItem.class));
+            }
+            apiDefinition.setPredicateItems(predicateItems);
+            apiDefinitions.add(apiDefinition);
+        }
+
+        return apiDefinitions;
+    }
 }
