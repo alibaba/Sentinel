@@ -21,13 +21,15 @@ app.service('SystemService', ['$http', function ($http) {
       port: rule.port
     };
     if (rule.grade == 0) {// avgLoad
-      param.avgLoad = rule.avgLoad;
+      param.highestSystemLoad = rule.highestSystemLoad;
     } else if (rule.grade == 1) {// avgRt
       param.avgRt = rule.avgRt;
     } else if (rule.grade == 2) {// maxThread
       param.maxThread = rule.maxThread;
     } else if (rule.grade == 3) {// qps
       param.qps = rule.qps;
+    } else if (rule.grade == 4) {// cpu
+      param.highestCpuUsage = rule.highestCpuUsage;
     }
 
     return $http({
@@ -42,14 +44,17 @@ app.service('SystemService', ['$http', function ($http) {
       id: rule.id,
     };
     if (rule.grade == 0) {// avgLoad
-      param.avgLoad = rule.avgLoad;
+      param.highestSystemLoad = rule.highestSystemLoad;
     } else if (rule.grade == 1) {// avgRt
       param.avgRt = rule.avgRt;
     } else if (rule.grade == 2) {// maxThread
       param.maxThread = rule.maxThread;
     } else if (rule.grade == 3) {// qps
       param.qps = rule.qps;
+    } else if (rule.grade == 4) {// cpu
+        param.highestCpuUsage = rule.highestCpuUsage;
     }
+
     return $http({
       url: '/system/save.json',
       params: param,
