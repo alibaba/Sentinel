@@ -20,7 +20,9 @@ public class AdaptiveRule extends AbstractRule {
 
     private int maxToken;
 
-    private double targetRadio;
+    private double targetRatio;
+
+    private double expectRt;
 
     public double getCount() {
         return count;
@@ -38,10 +40,17 @@ public class AdaptiveRule extends AbstractRule {
         return this;
     }
 
-    public double getTargetRadio() { return targetRadio; }
+    public double getTargetRatio() { return targetRatio; }
 
-    public AdaptiveRule setTargetRadio(double targetRadio) {
-        this.targetRadio = targetRadio;
+    public AdaptiveRule setTargetRatio(double targetRatio) {
+        this.targetRatio = targetRatio;
+        return this;
+    }
+
+    public double getExpectRt() { return expectRt; }
+
+    public AdaptiveRule setExpectRt(double expectRt) {
+        this.expectRt = expectRt;
         return this;
     }
 
