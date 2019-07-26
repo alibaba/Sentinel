@@ -30,8 +30,6 @@ public class AutomaticRuleManager {
 
     public static int defaultCount = 125;
 
-    static FlowRuleChecker checker= new FlowRuleChecker();
-
     static public void checkFlow(ResourceWrapper resource, Context context, DefaultNode node, int count, boolean prioritized)
             throws BlockException {
 
@@ -60,8 +58,7 @@ public class AutomaticRuleManager {
     static void update(ResourceWrapper resource, Context context, Node node){
 
         try {
-            //更新各资源的统计数据
-            //System.out.println(updating.get());
+            //更新资源的统计数据
 
             String resourceName = resource.getName();
 
@@ -79,21 +76,15 @@ public class AutomaticRuleManager {
 
             if (updating.compareAndSet(false, true)) {
 
-                System.out.println("resourceName\tqps\trule");
-                for (String resourceName1 : rules.keySet()) {
-                    System.out.print(resourceName1 + "\t" + qpsRecord.get(resourceName1) + "\t" + rules.get(resourceName1).getCount());
-                    System.out.println();
-
-                }
-
                 latestUpdate = System.currentTimeMillis();
-                //更新 rules
 
+                //更新 rules
                 try {
                     updateRulesByQPS();
 
-                } catch (Exception e) {
-                    e.printStackTrace();
+                } catch (NullPointerException e) {
+                    //TODO：在第一次计算rules时由于qps为null会导致NPE
+
                 } finally {
                     updating.set(false);
                 }

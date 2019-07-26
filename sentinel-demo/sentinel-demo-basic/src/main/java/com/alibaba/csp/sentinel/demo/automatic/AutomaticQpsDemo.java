@@ -24,9 +24,6 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * @author jialiang.linjl
- */
 public class AutomaticQpsDemo {
 
 
@@ -36,8 +33,6 @@ public class AutomaticQpsDemo {
     private static AtomicInteger[] block = new AtomicInteger[3];
     private static AtomicInteger[] total = new AtomicInteger[3];
     private static volatile boolean stop = false;
-
-    private static final int threadCount = 32;
 
     private static int seconds = 60 + 40;
 
