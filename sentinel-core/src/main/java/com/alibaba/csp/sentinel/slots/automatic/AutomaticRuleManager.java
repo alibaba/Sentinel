@@ -5,14 +5,14 @@ import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleChecker;
-import com.alibaba.csp.sentinel.util.function.Function;
+
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AutomaticRuleManager {
 
@@ -22,72 +22,108 @@ public class AutomaticRuleManager {
 
     private static Map<String, Double> minRTRecord = new ConcurrentHashMap<String, Double>();
 
-    private static float maxSystemLoad = 50;
+    private static AtomicBoolean updating = new AtomicBoolean(false);
 
-    private static boolean updateFlag = false;
+    private static long latestUpdate;
+
+    private static float maxSystemLoad = 1;
+
+    public static int defaultCount = 125;
+
+    static FlowRuleChecker checker= new FlowRuleChecker();
 
     static public void checkFlow(ResourceWrapper resource, Context context, DefaultNode node, int count, boolean prioritized)
             throws BlockException {
 
         String resourceName = resource.getName();
+
         FlowRule rule;
         //找出当前资源的 rule，如果不存在则创建
         if(rules.get(resourceName)==null){
             rule = new FlowRule(resourceName);
-            // 初始化限流策略
-            rule.setCount(100);
-            rule.setGrade(RuleConstant.FLOW_GRADE_QPS);
+            // 设置初始值
+            rule.setCount(defaultCount);
             rule.setLimitApp("default");
             rules.put(resourceName,rule);
-        }else
+        }else{
             rule = rules.get(resourceName);
+        }
 
-        boolean canPass = rule.getRater().canPass(node, count, prioritized);
+
+        boolean canPass = canPass(context.getCurNode(), count, rule);
+
         if(!canPass)
             throw new FlowException(rule.getLimitApp(), rule);
 
     }
 
-    static void update(Node node){
+    static void update(ResourceWrapper resource, Context context, Node node){
 
-        //更新各资源的统计数据
-        for(String resourceName : rules.keySet()){
-            qpsRecord.put(resourceName,(int)(node.previousBlockQps()+node.previousPassQps()));
-            minRTRecord.put(resourceName,node.minRt());
-        }
+        try {
+            //更新各资源的统计数据
+            //System.out.println(updating.get());
 
-        //每秒进行一次更新
-        if(!updateFlag){
-            updateFlag = true;
-            while (true){
-                //更新 rules
-                updateRulesByQPS();
+            String resourceName = resource.getName();
 
-                try {
-                    Thread.sleep(1000);
-                }catch (InterruptedException e){
+            int totalQps = (int) (node.previousBlockQps() + node.previousPassQps());
+            qpsRecord.put(resourceName, totalQps);
+            double minRt = node.minRt();
+            if(minRt <= 0)
+                minRt = 0.1;
+            minRTRecord.put(resourceName, minRt );
+
+
+            //每秒进行一次更新
+            if (System.currentTimeMillis() - latestUpdate < 1000)
+                return;
+
+            if (updating.compareAndSet(false, true)) {
+
+                System.out.println("resourceName\tqps\trule");
+                for (String resourceName1 : rules.keySet()) {
+                    System.out.print(resourceName1 + "\t" + qpsRecord.get(resourceName1) + "\t" + rules.get(resourceName1).getCount());
+                    System.out.println();
 
                 }
+
+                latestUpdate = System.currentTimeMillis();
+                //更新 rules
+
+                try {
+                    updateRulesByQPS();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    updating.set(false);
+                }
+
             }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
     static private void updateRulesByQPS(){
         // 分两类情况：1. 当前总流量超出最大值 2.当前总流量未超过最大值
-        // 暂时不考虑其他应用造成的负载
+        // 暂不考虑其他应用造成的负载
+        // 暂时使用minRT作为负载系数来计算服务给系统造成的负载
 
 
         Set<String> resourceNameSet = rules.keySet();
 
         double currentLoad = 0;
         for(String resource : resourceNameSet){
-            currentLoad += qpsRecord.get(resource)*minRTRecord.get(resource);
-
+            currentLoad += qpsRecord.get(resource)*minRTRecord.get(resource)*0.001;
         }
+
+        System.out.println("currentLoad: "+currentLoad);
+
 
         double systemUseage = currentLoad/maxSystemLoad;
 
-        // 1. 系统能够处理所有请求时：根据各资源流量比例分配阈值
+
+        // 1. 系统能够处理所有请求时：根据各服务流量比例分配阈值
         if(systemUseage < 1){
             for(String resourceName : resourceNameSet){
                 FlowRule rule = rules.get(resourceName);
@@ -96,7 +132,7 @@ public class AutomaticRuleManager {
                 rule.setCount(maximumQPS);
                 rules.put(resourceName,rule);
             }
-        }else{ //2. 请求数超过系统处理能力时：保护最大
+        }else{ //2. 请求数超过系统处理能力时（流量洪峰）：在保护其他服务正常访问的前提下尽可能将流量分配到发生洪峰的服务
 
             double M = -500;
 
@@ -108,8 +144,17 @@ public class AutomaticRuleManager {
             rules.put("b",rules.get("b").setCount(maxQPS[1]));
             rules.put("c",rules.get("c").setCount(maxQPS[2]));
 
-
         }
+    }
+
+    static public boolean canPass(Node node, int acquireCount, FlowRule rule) {
+        int curCount = (int)(node.passQps());
+
+        if (curCount + acquireCount > rule.getCount()) {
+
+            return false;
+        }
+        return true;
     }
 
     /*
@@ -117,9 +162,10 @@ public class AutomaticRuleManager {
         TODO: 自动生成参数矩阵
      */
     public static double[] resolve(double[] C,double maxA,double maxB,double maxC){
-        double cA = minRTRecord.get("a");
-        double cB = minRTRecord.get("b");
-        double cC = minRTRecord.get("c");
+
+        double cA = 0.001f;
+        double cB = 0.001f;
+        double cC = 0.001f;
 
         double minA = 10;
         double minB = 10;

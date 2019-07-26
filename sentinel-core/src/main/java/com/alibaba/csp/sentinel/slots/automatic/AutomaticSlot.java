@@ -13,6 +13,7 @@ public class AutomaticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
                       boolean prioritized, Object... args) throws Throwable {
         AutomaticRuleManager.checkFlow(resourceWrapper, context, node, count, prioritized);
+        AutomaticRuleManager.update(resourceWrapper,context,node);
         fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }
 
