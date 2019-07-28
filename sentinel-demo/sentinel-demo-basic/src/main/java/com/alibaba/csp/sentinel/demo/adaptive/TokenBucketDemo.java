@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Liu Yiming
  * @date 2019-07-17 14:31
  */
-public class AdaptiveDemo {
+public class TokenBucketDemo {
 
     private static final String KEY = "abc";
 

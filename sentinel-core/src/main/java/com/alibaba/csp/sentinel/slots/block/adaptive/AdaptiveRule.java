@@ -3,6 +3,7 @@ package com.alibaba.csp.sentinel.slots.block.adaptive;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
+import com.alibaba.csp.sentinel.slots.block.flow.TrafficShapingController;
 
 /**
  * @author Liu Yiming
@@ -23,6 +24,8 @@ public class AdaptiveRule extends AbstractRule {
     private double targetRatio;
 
     private double expectRt;
+
+    private TrafficShapingController controller;
 
     public double getCount() {
         return count;
@@ -51,6 +54,15 @@ public class AdaptiveRule extends AbstractRule {
 
     public AdaptiveRule setExpectRt(double expectRt) {
         this.expectRt = expectRt;
+        return this;
+    }
+
+    TrafficShapingController getRater() {
+        return controller;
+    }
+
+    AdaptiveRule setRater(TrafficShapingController rater) {
+        this.controller = rater;
         return this;
     }
 

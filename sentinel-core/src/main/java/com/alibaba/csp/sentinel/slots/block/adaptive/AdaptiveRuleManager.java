@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author Liu Yiming
@@ -46,7 +47,7 @@ public final class AdaptiveRuleManager {
 
         @Override
         public void configUpdate(List<AdaptiveRule> conf) {
-            Map<String, Set<AdaptiveRule>> rules = loadAdaptiveConf(conf);
+            Map<String, Set<AdaptiveRule>> rules = AdaptiveRuleUtil.buildAdaptiveRuleMap(conf);
             if (rules != null) {
                 adaptiveRules.clear();
                 adaptiveRules.putAll(rules);
@@ -56,35 +57,12 @@ public final class AdaptiveRuleManager {
 
         @Override
         public void configLoad(List<AdaptiveRule> conf) {
-            Map<String, Set<AdaptiveRule>> rules = loadAdaptiveConf(conf);
+            Map<String, Set<AdaptiveRule>> rules = AdaptiveRuleUtil.buildAdaptiveRuleMap(conf);
             if (rules != null) {
                 adaptiveRules.clear();
                 adaptiveRules.putAll(rules);
             }
             RecordLog.info("[AdaptiveRuleManager] Adaptive rules received: " + adaptiveRules);
-        }
-
-        private Map<String, Set<AdaptiveRule>> loadAdaptiveConf(List<AdaptiveRule> list) {
-            Map<String, Set<AdaptiveRule>> newRuleMap = new ConcurrentHashMap<>();
-
-            if (list == null || list.isEmpty()) {
-                return newRuleMap;
-            }
-
-            for (AdaptiveRule rule : list) {
-                if (StringUtil.isBlank(rule.getLimitApp())) {
-                    rule.setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
-                }
-
-                String identity = rule.getResource();
-                Set<AdaptiveRule> ruleSet = newRuleMap.get(identity);
-                if (ruleSet == null) {
-                    ruleSet = new HashSet<>();
-                    newRuleMap.put(identity, ruleSet);
-                }
-                ruleSet.add(rule);
-            }
-            return newRuleMap;
         }
     }
 }
