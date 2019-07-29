@@ -30,6 +30,7 @@ import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.adapter.servlet.callback.WebCallbackManager;
+import com.alibaba.csp.sentinel.adapter.servlet.config.WebServletConfig;
 import com.alibaba.csp.sentinel.adapter.servlet.util.FilterUtil;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
@@ -52,26 +53,18 @@ public class CommonTotalFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response,
                          FilterChain chain) throws IOException, ServletException {
         HttpServletRequest sRequest = (HttpServletRequest)request;
-        String target = FilterUtil.filterTarget(sRequest);
-        target = WebCallbackManager.getUrlCleaner().clean(target);
 
         Entry entry = null;
         try {
-            ContextUtil.enter(target);
+            ContextUtil.enter(WebServletConfig.WEB_SERVLET_CONTEXT_NAME);
             entry = SphU.entry(TOTAL_URL_REQUEST);
             chain.doFilter(request, response);
         } catch (BlockException e) {
             HttpServletResponse sResponse = (HttpServletResponse)response;
             WebCallbackManager.getUrlBlockHandler().blocked(sRequest, sResponse, e);
-        } catch (IOException e2) {
+        } catch (IOException | ServletException | RuntimeException e2) {
             Tracer.trace(e2);
             throw e2;
-        } catch (ServletException e3) {
-            Tracer.trace(e3);
-            throw e3;
-        } catch (RuntimeException e4) {
-            Tracer.trace(e4);
-            throw e4;
         } finally {
             if (entry != null) {
                 entry.exit();
