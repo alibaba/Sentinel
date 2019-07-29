@@ -89,7 +89,7 @@ public class CommonFilterTest {
 
         // Test for url cleaner.
         testUrlCleaner();
-
+        testUrlExclusion();
         testCustomOriginParser();
     }
 
@@ -136,6 +136,25 @@ public class CommonFilterTest {
         assertNull(ClusterBuilderSlot.getClusterNode(url1));
         assertNull(ClusterBuilderSlot.getClusterNode(url2));
 
+        WebCallbackManager.setUrlCleaner(new DefaultUrlCleaner());
+    }
+
+    private void testUrlExclusion() throws Exception {
+        final String excludePrefix = "/exclude/";
+        String url = excludePrefix + 1;
+        WebCallbackManager.setUrlCleaner(new UrlCleaner() {
+            @Override
+            public String clean(String originUrl) {
+                if(originUrl.startsWith(excludePrefix)) {
+                    return "";
+                }
+                return originUrl;
+            }
+        });
+        this.mvc.perform(get(url).accept(MediaType.TEXT_PLAIN))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Exclude 1"));
+        assertNull(ClusterBuilderSlot.getClusterNode(url));
         WebCallbackManager.setUrlCleaner(new DefaultUrlCleaner());
     }
 
