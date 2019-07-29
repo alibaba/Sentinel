@@ -70,6 +70,8 @@ public @interface SentinelResource {
      */
     String defaultFallback() default "";
 
+    int timeOut() default 0;
+
     /**
      * The {@code fallback} is located in the same class with the original method by default.
      * However, if some methods share the same signature and intend to set the same fallback,
