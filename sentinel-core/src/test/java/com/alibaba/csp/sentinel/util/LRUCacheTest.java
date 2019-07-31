@@ -1,9 +1,10 @@
 package com.alibaba.csp.sentinel.util;
 
-
 import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+
 import static org.junit.Assert.assertArrayEquals;
 
 /***
@@ -48,4 +49,5 @@ public class LRUCacheTest {
     private LRUCache<String, String> buildLRUCache() {
         return new LRUCache<String, String>(3);
     }
+
 }
