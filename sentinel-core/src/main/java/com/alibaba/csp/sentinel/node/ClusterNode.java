@@ -20,7 +20,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.csp.sentinel.util.LRUCache;
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+import com.googlecode.concurrentlinkedhashmap.Weighers;
 
 /**
  * <p>
@@ -54,6 +55,8 @@ public class ClusterNode extends StatisticNode {
     private volatile Map<String, StatisticNode> originCountMap = buildLRUCache();
 
     private final ReentrantLock lock = new ReentrantLock();
+    
+    static private final long DEFAULT_CACHE_SIZE = 1024L;
 
     /**
      * <p>Get {@link Node} of the specific origin. Usually the origin is the Service Consumer's app name.</p>
@@ -73,10 +76,7 @@ public class ClusterNode extends StatisticNode {
                 if (statisticNode == null) {
                     // The node is absent, create a new node for the origin.
                     statisticNode = new StatisticNode();
-                    Map<String, StatisticNode> newMap = buildLRUCache();
-                    newMap.putAll(originCountMap);
-                    newMap.put(origin, statisticNode);
-                    originCountMap = newMap;
+                    originCountMap.put(origin, statisticNode);
                 }
             } finally {
                 lock.unlock();
@@ -89,9 +89,10 @@ public class ClusterNode extends StatisticNode {
         return originCountMap;
     }
 
-    private LRUCache<String, StatisticNode> buildLRUCache() {
-        return new LRUCache<String, StatisticNode>(
-            Integer.getInteger("csp.sentinel.origin.count", LRUCache.DEFAULT_CACHE_SIZE));
+    private ConcurrentLinkedHashMap<String, StatisticNode> buildLRUCache() {
+        return new ConcurrentLinkedHashMap.Builder<String, StatisticNode>()
+            .maximumWeightedCapacity(Long.getLong("csp.sentinel.origin.count", DEFAULT_CACHE_SIZE).longValue())
+            .weigher(Weighers.singleton()).build();
     }
 
     /**
