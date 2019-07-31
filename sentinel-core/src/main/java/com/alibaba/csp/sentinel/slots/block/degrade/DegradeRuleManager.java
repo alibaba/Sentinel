@@ -15,14 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.block.degrade;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.log.RecordLog;
@@ -33,8 +25,21 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.global.GlobalRuleConfig;
+import com.alibaba.csp.sentinel.slots.global.GlobalRuleManager;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static com.alibaba.csp.sentinel.slots.global.GlobalRuleType.DEGRADE;
 
 /**
  * @author youji.zj
@@ -70,9 +75,9 @@ public final class DegradeRuleManager {
     }
 
     public static void checkDegrade(ResourceWrapper resource, Context context, DefaultNode node, int count)
-        throws BlockException {
+            throws BlockException {
 
-        Set<DegradeRule> rules = degradeRules.get(resource.getName());
+        Collection<DegradeRule> rules = resolvedRules(resource.getName());
         if (rules == null) {
             return;
         }
@@ -82,6 +87,18 @@ public final class DegradeRuleManager {
                 throw new DegradeException(rule.getLimitApp(), rule);
             }
         }
+    }
+
+    private static Collection<DegradeRule> resolvedRules(String resource) {
+        List<DegradeRule> rules = new ArrayList<>();
+        Set<DegradeRule> ruleSet = degradeRules.get(resource);
+        if (rules != null) {
+            rules.addAll(ruleSet);
+        }
+        if (GlobalRuleConfig.isGlobalRuleSwitchOpen() && GlobalRuleManager.getRule(DEGRADE) != null) {
+            rules.add((DegradeRule) (GlobalRuleManager.getRule(DEGRADE)));
+        }
+        return rules;
     }
 
     public static boolean hasConfig(String resource) {

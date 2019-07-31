@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
@@ -31,8 +32,12 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
+import com.alibaba.csp.sentinel.slots.global.GlobalRuleConfig;
+import com.alibaba.csp.sentinel.slots.global.GlobalRuleManager;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.util.function.Function;
+
+import static com.alibaba.csp.sentinel.slots.global.GlobalRuleType.FLOW;
 
 /**
  * Rule checker for flow control rules.
@@ -46,7 +51,7 @@ public class FlowRuleChecker {
         if (ruleProvider == null || resource == null) {
             return;
         }
-        Collection<FlowRule> rules = ruleProvider.apply(resource.getName());
+        Collection<FlowRule> rules = resolvedRules(ruleProvider, resource);
         if (rules != null) {
             for (FlowRule rule : rules) {
                 if (!canPassCheck(rule, context, node, count, prioritized)) {
@@ -54,6 +59,17 @@ public class FlowRuleChecker {
                 }
             }
         }
+    }
+
+    private Collection<FlowRule> resolvedRules(Function<String, Collection<FlowRule>> ruleProvider, ResourceWrapper resource) {
+        Collection<FlowRule> flowRules = ruleProvider.apply(resource.getName());
+        if(GlobalRuleConfig.isGlobalRuleSwitchOpen() && GlobalRuleManager.getRule(FLOW) != null){
+            if(flowRules != null) {
+                flowRules = new ArrayList<>(flowRules);
+                flowRules.add((FlowRule) GlobalRuleManager.getRule(FLOW));
+            }
+        }
+        return flowRules;
     }
 
     public boolean canPassCheck(/*@NonNull*/ FlowRule rule, Context context, DefaultNode node,
