@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.slots.global;
+package com.alibaba.csp.sentinel.slots.block.global;
 
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
@@ -31,11 +31,12 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.alibaba.csp.sentinel.config.SentinelConfig.GLOBAL_RULE_RESOURCE_NAME;
-import static com.alibaba.csp.sentinel.slots.global.GlobalRuleType.DEGRADE;
-import static com.alibaba.csp.sentinel.slots.global.GlobalRuleType.FLOW;
+import static com.alibaba.csp.sentinel.slots.block.global.GlobalRuleType.DEGRADE;
+import static com.alibaba.csp.sentinel.slots.block.global.GlobalRuleType.FLOW;
 
 /**
  * @author lianglin
@@ -107,12 +108,18 @@ public class GlobalRuleManager {
 
         @Override
         public void configUpdate(List<AbstractRule> value) {
+            if(!GlobalRuleConfig.isGlobalRuleSwitchOpen()){
+                RecordLog.warn("[GlobalRuleManager] config update: the global rule switch is closed");
+            }
             resolvedValidRules(value);
             RecordLog.info("[GlobalRuleManager] Global rules received: " + globalRules);
         }
 
         @Override
         public void configLoad(List<AbstractRule> value) {
+            if(!GlobalRuleConfig.isGlobalRuleSwitchOpen()){
+                RecordLog.warn("[GlobalRuleManager] config load: the global rule switch is closed");
+            }
             resolvedValidRules(value);
             RecordLog.info("[GlobalRuleManager] Global rules loaded: " + globalRules);
 
@@ -120,26 +127,43 @@ public class GlobalRuleManager {
 
 
         private void resolvedValidRules(List<AbstractRule> rules) {
+
             globalRules.clear();
+            AbstractRule flowRule = null, degradeRule = null;
+
             if (rules != null) {
                 for (AbstractRule rule : rules) {
                     if (rule instanceof FlowRule && isValidGlobalRule(rule)) {
-                        globalRules.put(FLOW, rule);
+                        flowRule = rule;
                     } else if (rule instanceof DegradeRule && isValidGlobalRule(rule)) {
-                        globalRules.put(DEGRADE, rule);
+                        degradeRule = rule;
                     }
                 }
+
+                if (flowRule != null) {
+                    List<FlowRule> flowRules = new ArrayList<>(1);
+                    flowRules.add((FlowRule) flowRule);
+                    Map<String, List<FlowRule>> flowRuleMap = FlowRuleUtil.buildFlowRuleMap(flowRules);
+                    if (flowRuleMap.get(flowRule.getResource()) != null) {
+                        globalRules.put(FLOW, flowRuleMap.get(flowRule.getResource()).get(0));
+                    }
+                }
+                if (degradeRule != null) {
+                    List<DegradeRule> degradeRules = new ArrayList<>(1);
+                    degradeRules.add((DegradeRule) degradeRule);
+                    Map<String, Set<DegradeRule>> degradeRulesMap = DegradeRuleManager.loadDegradeConf(degradeRules);
+                    if (degradeRulesMap.get(degradeRule.getResource()) != null) {
+                        globalRules.put(DEGRADE, degradeRulesMap.get(degradeRule.getResource()).iterator().next());
+                    }
+
+                }
+
+
             }
         }
 
         private boolean isValidGlobalRule(AbstractRule rule) {
-            String globalRuleResourceName = SentinelConfig.getConfig(GLOBAL_RULE_RESOURCE_NAME);
-            if (rule instanceof FlowRule) {
-                return FlowRuleUtil.isValidRule((FlowRule) rule) && globalRuleResourceName.equals(rule.getResource());
-            } else if (rule instanceof DegradeRule) {
-                return DegradeRuleManager.isValidRule((DegradeRule) rule) && globalRuleResourceName.equals(rule.getResource());
-            }
-            return false;
+            return SentinelConfig.getConfig(GLOBAL_RULE_RESOURCE_NAME).equals(rule.getResource());
         }
 
     }

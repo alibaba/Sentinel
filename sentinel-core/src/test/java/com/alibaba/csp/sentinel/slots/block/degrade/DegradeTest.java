@@ -40,12 +40,14 @@ public class DegradeTest {
     public void testAverageRtDegrade() throws InterruptedException {
         String key = "test_degrade_average_rt";
         ClusterNode cn = mock(ClusterNode.class);
-        ClusterBuilderSlot.getClusterNodeMap().put(new StringResourceWrapper(key, EntryType.IN), cn);
+        StringResourceWrapper resourceWrapper = new StringResourceWrapper(key, EntryType.IN);
+        ClusterBuilderSlot.getClusterNodeMap().put(resourceWrapper, cn);
 
         Context context = mock(Context.class);
         DefaultNode node = mock(DefaultNode.class);
         when(node.getClusterNode()).thenReturn(cn);
         when(cn.avgRt()).thenReturn(2d);
+        when(node.getId()).thenReturn(resourceWrapper);
 
         int rtSlowRequestAmount = 10;
         DegradeRule rule = new DegradeRule();
@@ -73,11 +75,13 @@ public class DegradeTest {
     public void testExceptionRatioModeDegrade() throws Throwable {
         String key = "test_degrade_exception_ratio";
         ClusterNode cn = mock(ClusterNode.class);
-        ClusterBuilderSlot.getClusterNodeMap().put(new StringResourceWrapper(key, EntryType.IN), cn);
+        StringResourceWrapper resourceWrapper = new StringResourceWrapper(key, EntryType.IN);
+        ClusterBuilderSlot.getClusterNodeMap().put(resourceWrapper, cn);
 
         Context context = mock(Context.class);
         DefaultNode node = mock(DefaultNode.class);
         when(node.getClusterNode()).thenReturn(cn);
+        when(node.getId()).thenReturn(resourceWrapper);
 
         DegradeRule rule = new DegradeRule();
         rule.setCount(0.15);
@@ -125,11 +129,13 @@ public class DegradeTest {
         String key = "test_degrade_exception_count";
         ClusterNode cn = mock(ClusterNode.class);
         when(cn.totalException()).thenReturn(10L);
-        ClusterBuilderSlot.getClusterNodeMap().put(new StringResourceWrapper(key, EntryType.IN), cn);
+        StringResourceWrapper resourceWrapper = new StringResourceWrapper(key, EntryType.IN);
+        ClusterBuilderSlot.getClusterNodeMap().put(resourceWrapper, cn);
 
         Context context = mock(Context.class);
         DefaultNode node = mock(DefaultNode.class);
         when(node.getClusterNode()).thenReturn(cn);
+        when(node.getId()).thenReturn(resourceWrapper);
 
         DegradeRule rule = new DegradeRule();
         rule.setCount(4);

@@ -187,7 +187,7 @@ public class DegradeRule extends AbstractRule {
             return false;
         }
 
-        ClusterNode clusterNode = ClusterBuilderSlot.getClusterNode(this.getResource());
+        ClusterNode clusterNode = ClusterBuilderSlot.getClusterNode(node.getId().getName());
         if (clusterNode == null) {
             return true;
         }

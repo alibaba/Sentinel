@@ -25,8 +25,8 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import com.alibaba.csp.sentinel.slots.global.GlobalRuleConfig;
-import com.alibaba.csp.sentinel.slots.global.GlobalRuleManager;
+import com.alibaba.csp.sentinel.slots.block.global.GlobalRuleConfig;
+import com.alibaba.csp.sentinel.slots.block.global.GlobalRuleManager;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
@@ -39,7 +39,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.alibaba.csp.sentinel.slots.global.GlobalRuleType.DEGRADE;
+import static com.alibaba.csp.sentinel.slots.block.global.GlobalRuleType.DEGRADE;
 
 /**
  * @author youji.zj
@@ -77,29 +77,22 @@ public final class DegradeRuleManager {
     public static void checkDegrade(ResourceWrapper resource, Context context, DefaultNode node, int count)
             throws BlockException {
 
-        Collection<DegradeRule> rules = resolvedRules(resource.getName());
-        if (rules == null) {
-            return;
+        Collection<DegradeRule> rules = degradeRules.get(resource.getName());
+        if (rules != null) {
+            for (DegradeRule rule : rules) {
+                if (!rule.passCheck(context, node, count)) {
+                    throw new DegradeException(rule.getLimitApp(), rule);
+                }
+            }
         }
-
-        for (DegradeRule rule : rules) {
-            if (!rule.passCheck(context, node, count)) {
-                throw new DegradeException(rule.getLimitApp(), rule);
+        DegradeRule globalDegradeRule = (DegradeRule) GlobalRuleManager.getRule(DEGRADE);
+        if (GlobalRuleConfig.isGlobalRuleSwitchOpen() && globalDegradeRule != null) {
+            if (!globalDegradeRule.passCheck(context, node, count)) {
+                throw new DegradeException(globalDegradeRule.getLimitApp(), globalDegradeRule);
             }
         }
     }
 
-    private static Collection<DegradeRule> resolvedRules(String resource) {
-        List<DegradeRule> rules = new ArrayList<>();
-        Set<DegradeRule> ruleSet = degradeRules.get(resource);
-        if (rules != null) {
-            rules.addAll(ruleSet);
-        }
-        if (GlobalRuleConfig.isGlobalRuleSwitchOpen() && GlobalRuleManager.getRule(DEGRADE) != null) {
-            rules.add((DegradeRule) (GlobalRuleManager.getRule(DEGRADE)));
-        }
-        return rules;
-    }
 
     public static boolean hasConfig(String resource) {
         if (resource == null) {
@@ -191,35 +184,36 @@ public final class DegradeRuleManager {
             RecordLog.info("[DegradeRuleManager] Degrade rules loaded: " + degradeRules);
         }
 
-        private Map<String, Set<DegradeRule>> loadDegradeConf(List<DegradeRule> list) {
-            Map<String, Set<DegradeRule>> newRuleMap = new ConcurrentHashMap<>();
+    }
 
-            if (list == null || list.isEmpty()) {
-                return newRuleMap;
-            }
+    public static Map<String, Set<DegradeRule>> loadDegradeConf(List<DegradeRule> list) {
+        Map<String, Set<DegradeRule>> newRuleMap = new ConcurrentHashMap<>();
 
-            for (DegradeRule rule : list) {
-                if (!isValidRule(rule)) {
-                    RecordLog.warn(
-                        "[DegradeRuleManager] Ignoring invalid degrade rule when loading new rules: " + rule);
-                    continue;
-                }
-
-                if (StringUtil.isBlank(rule.getLimitApp())) {
-                    rule.setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
-                }
-
-                String identity = rule.getResource();
-                Set<DegradeRule> ruleSet = newRuleMap.get(identity);
-                if (ruleSet == null) {
-                    ruleSet = new HashSet<>();
-                    newRuleMap.put(identity, ruleSet);
-                }
-                ruleSet.add(rule);
-            }
-
+        if (list == null || list.isEmpty()) {
             return newRuleMap;
         }
+
+        for (DegradeRule rule : list) {
+            if (!isValidRule(rule)) {
+                RecordLog.warn(
+                        "[DegradeRuleManager] Ignoring invalid degrade rule when loading new rules: " + rule);
+                continue;
+            }
+
+            if (StringUtil.isBlank(rule.getLimitApp())) {
+                rule.setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
+            }
+
+            String identity = rule.getResource();
+            Set<DegradeRule> ruleSet = newRuleMap.get(identity);
+            if (ruleSet == null) {
+                ruleSet = new HashSet<>();
+                newRuleMap.put(identity, ruleSet);
+            }
+            ruleSet.add(rule);
+        }
+
+        return newRuleMap;
     }
 
     public static boolean isValidRule(DegradeRule rule) {
