@@ -129,7 +129,8 @@ public class GlobalRuleManager {
         private void resolvedValidRules(List<AbstractRule> rules) {
 
             globalRules.clear();
-            AbstractRule flowRule = null, degradeRule = null;
+            AbstractRule flowRule = null;
+            AbstractRule degradeRule = null;
 
             if (rules != null) {
                 for (AbstractRule rule : rules) {
@@ -168,19 +169,6 @@ public class GlobalRuleManager {
 
     }
 
-
-    public static void main(String[] args) {
-        DegradeRule rule = new DegradeRule();
-        rule.setCount(1);
-        rule.setResource(SentinelConfig.getConfig(GLOBAL_RULE_RESOURCE_NAME));
-        rule.setTimeWindow(2);
-        rule.setGrade(RuleConstant.DEGRADE_GRADE_RT);
-        rule.setRtSlowRequestAmount(10);
-        List<AbstractRule> rules = new ArrayList<>();
-        rules.add(rule);
-        GlobalRuleManager.loadRules(rules);
-        System.out.println(GlobalRuleManager.getRule(DEGRADE));
-    }
 
 
 }
