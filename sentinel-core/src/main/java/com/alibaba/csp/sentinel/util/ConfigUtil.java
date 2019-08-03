@@ -15,10 +15,14 @@
  */
 package com.alibaba.csp.sentinel.util;
 
+import com.alibaba.csp.sentinel.config.SentinelConfig;
+
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -66,9 +70,10 @@ public final class ConfigUtil {
                 return null;
             }
 
-            try (FileInputStream input = new FileInputStream(file)) {
+            try (BufferedReader bufferedReader =
+                         Files.newBufferedReader(Paths.get(fileName), Charset.forName(SentinelConfig.charset()))) {
                 properties = new Properties();
-                properties.load(input);
+                properties.load(bufferedReader);
             }
         } catch (Throwable e) {
             e.printStackTrace();
@@ -108,18 +113,11 @@ public final class ConfigUtil {
         Properties properties = new Properties();
         for (URL url : list) {
             try {
-                Properties p = new Properties();
-                InputStream input = url.openStream();
-                if (input != null) {
-                    try {
-                        p.load(input);
-                        properties.putAll(p);
-                    } finally {
-                        try {
-                            input.close();
-                        } catch (Throwable t) {
-                        }
-                    }
+                try (BufferedReader bufferedReader =
+                             Files.newBufferedReader(Paths.get(url.toURI()), Charset.forName(SentinelConfig.charset()))) {
+                    Properties p = new Properties();
+                    p.load(bufferedReader);
+                    properties.putAll(p);
                 }
             } catch (Throwable e) {
                 e.printStackTrace();
