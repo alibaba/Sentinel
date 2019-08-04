@@ -82,14 +82,14 @@ public class ConfigUtilTest {
 
     }
 
-//    @Test
+    @Test
     public void testLoadPropertiesWithCustomizedCharset() throws IOException {
 
         String charset = "GBK";
         SentinelConfig.setConfig(SentinelConfig.CHARSET, charset);
 
         File file = null;
-        String dir = new String("/data/日志/".getBytes(), charset),
+        String dir = "/data/日志/",
                 fileName = "propertiesTest.properties";
         try {
             String userDir = System.getProperty("user.dir");

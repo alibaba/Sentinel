@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.config.SentinelConfig;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -114,7 +115,7 @@ public final class ConfigUtil {
         for (URL url : list) {
             try {
                 try (BufferedReader bufferedReader =
-                             Files.newBufferedReader(Paths.get(url.toURI()), Charset.forName(SentinelConfig.charset()))) {
+                             new BufferedReader(new InputStreamReader(url.openStream(), Charset.forName(SentinelConfig.charset())))) {
                     Properties p = new Properties();
                     p.load(bufferedReader);
                     properties.putAll(p);
