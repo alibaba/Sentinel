@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import static com.alibaba.csp.sentinel.log.LogBase.LOG_DIR;
@@ -118,6 +119,7 @@ public class ConfigUtilTest {
             if (file != null) {
                 file.delete();
             }
+            SentinelConfig.setConfig(SentinelConfig.CHARSET, StandardCharsets.UTF_8.name());
         }
 
     }
