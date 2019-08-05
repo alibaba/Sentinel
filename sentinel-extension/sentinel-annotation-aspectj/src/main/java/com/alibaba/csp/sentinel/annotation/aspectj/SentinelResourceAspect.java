@@ -67,7 +67,6 @@ public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
                 traceException(ex);
                 return handleFallback(pjp, annotation, ex);
             }
-
             // No fallback function can handle the exception, so throw it out.
             throw ex;
         } finally {
