@@ -31,6 +31,7 @@ import com.alibaba.csp.sentinel.slotchain.SlotChainProvider;
 import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.Rule;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 
 /**
  * {@inheritDoc}
@@ -79,7 +80,9 @@ public class CtSph implements Sph {
             return asyncEntryWithNoChain(resourceWrapper, context);
         }
 
-        ProcessorSlot<Object> chain = lookProcessChain(resourceWrapper);
+        ProcessorSlot<Object> chain = lookProcessChainAndInitDefaultRules(resourceWrapper);
+
+
 
         // Means processor cache size exceeds {@link Constants.MAX_SLOT_CHAIN_SIZE}, so no rule checking will be done.
         if (chain == null) {
@@ -133,7 +136,7 @@ public class CtSph implements Sph {
             return new CtEntry(resourceWrapper, null, context);
         }
 
-        ProcessorSlot<Object> chain = lookProcessChain(resourceWrapper);
+        ProcessorSlot<Object> chain = lookProcessChainAndInitDefaultRules(resourceWrapper);
 
         /*
          * Means amount of resources (slot chain) exceeds {@link Constants.MAX_SLOT_CHAIN_SIZE},
@@ -191,7 +194,7 @@ public class CtSph implements Sph {
      * @param resourceWrapper target resource
      * @return {@link ProcessorSlotChain} of the resource
      */
-    ProcessorSlot<Object> lookProcessChain(ResourceWrapper resourceWrapper) {
+    ProcessorSlot<Object> lookProcessChainAndInitDefaultRules(ResourceWrapper resourceWrapper) {
         ProcessorSlotChain chain = chainMap.get(resourceWrapper);
         if (chain == null) {
             synchronized (LOCK) {
@@ -208,11 +211,17 @@ public class CtSph implements Sph {
                     newMap.putAll(chainMap);
                     newMap.put(resourceWrapper, chain);
                     chainMap = newMap;
+
+                    DegradeRuleManager.setDefaultDegrade(resourceWrapper.getName());
                 }
             }
         }
         return chain;
     }
+
+
+
+
 
     /**
      * Get current size of created slot chains.

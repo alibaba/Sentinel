@@ -151,6 +151,10 @@ public class FlowRuleManager {
 
         }
 
+        private static void createDefaultFlowRule(String resource){
+
+        }
+
 
     }
 

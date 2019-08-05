@@ -242,7 +242,7 @@ public final class DegradeRuleManager {
         return true;
     }
 
-    public static DegradeRule createDefaultRule(String resource) {
+    private static DegradeRule createDefaultRule(String resource) {
         DegradeRule rule = new DegradeRule(resource);
         rule.setCount(Double.valueOf(SentinelConfig.getConfig(STATISTIC_MAX_RT)));
         rule.setTimeWindow(1);

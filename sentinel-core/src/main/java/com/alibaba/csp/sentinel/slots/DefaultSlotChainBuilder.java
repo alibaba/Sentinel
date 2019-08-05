@@ -51,19 +51,6 @@ public class DefaultSlotChainBuilder implements SlotChainBuilder {
         return chain;
     }
 
-    @Override
-    public ProcessorSlotChain build(ResourceWrapper resource) {
-        ProcessorSlotChain chain = new DefaultProcessorSlotChain();
-        chain.addLast(new NodeSelectorSlot());
-        chain.addLast(new ClusterBuilderSlot());
-        chain.addLast(new LogSlot());
-        chain.addLast(new StatisticSlot());
-        chain.addLast(new SystemSlot());
-        chain.addLast(new AuthoritySlot());
-        chain.addLast(new FlowSlot());
-        chain.addLast(new DegradeSlot(resource));
 
-        return chain;
-    }
 
 }

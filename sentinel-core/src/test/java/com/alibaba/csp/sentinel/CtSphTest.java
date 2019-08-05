@@ -18,7 +18,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  * Test cases for Sentinel internal {@link CtSph}.
@@ -258,15 +257,15 @@ public class CtSphTest {
     public void testLookUpSlotChain() {
         ResourceWrapper r1 = new StringResourceWrapper("firstRes", EntryType.IN);
         assertFalse(CtSph.getChainMap().containsKey(r1));
-        ProcessorSlot<Object> chainR1 = ctSph.lookProcessChain(r1);
+        ProcessorSlot<Object> chainR1 = ctSph.lookProcessChainAndInitDefaultRules(r1);
         assertNotNull("The slot chain for r1 should be created", chainR1);
-        assertSame("Should return the cached slot chain once it has been created", chainR1, ctSph.lookProcessChain(r1));
+        assertSame("Should return the cached slot chain once it has been created", chainR1, ctSph.lookProcessChainAndInitDefaultRules(r1));
 
         fillFullResources();
         ResourceWrapper r2 = new StringResourceWrapper("secondRes", EntryType.IN);
         assertFalse(CtSph.getChainMap().containsKey(r2));
-        assertNull("The slot chain for r2 should not be created because amount exceeded", ctSph.lookProcessChain(r2));
-        assertNull(ctSph.lookProcessChain(r2));
+        assertNull("The slot chain for r2 should not be created because amount exceeded", ctSph.lookProcessChainAndInitDefaultRules(r2));
+        assertNull(ctSph.lookProcessChainAndInitDefaultRules(r2));
     }
 
     private void fillFullContext() {
