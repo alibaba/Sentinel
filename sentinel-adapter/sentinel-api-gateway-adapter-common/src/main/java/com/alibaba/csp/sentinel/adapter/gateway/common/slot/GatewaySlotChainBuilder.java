@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.adapter.gateway.common.slot;
 
 import com.alibaba.csp.sentinel.slotchain.DefaultProcessorSlotChain;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlotChain;
+import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slotchain.SlotChainBuilder;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthoritySlot;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeSlot;
@@ -53,5 +54,10 @@ public class GatewaySlotChainBuilder implements SlotChainBuilder {
         chain.addLast(new DegradeSlot());
 
         return chain;
+    }
+
+    @Override
+    public ProcessorSlotChain build(ResourceWrapper resource) {
+        return null;
     }
 }

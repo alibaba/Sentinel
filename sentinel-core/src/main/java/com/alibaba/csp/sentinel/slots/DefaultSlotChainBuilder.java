@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.slots;
 
 import com.alibaba.csp.sentinel.slotchain.DefaultProcessorSlotChain;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlotChain;
+import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slotchain.SlotChainBuilder;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthoritySlot;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeSlot;
@@ -46,6 +47,21 @@ public class DefaultSlotChainBuilder implements SlotChainBuilder {
         chain.addLast(new AuthoritySlot());
         chain.addLast(new FlowSlot());
         chain.addLast(new DegradeSlot());
+
+        return chain;
+    }
+
+    @Override
+    public ProcessorSlotChain build(ResourceWrapper resource) {
+        ProcessorSlotChain chain = new DefaultProcessorSlotChain();
+        chain.addLast(new NodeSelectorSlot());
+        chain.addLast(new ClusterBuilderSlot());
+        chain.addLast(new LogSlot());
+        chain.addLast(new StatisticSlot());
+        chain.addLast(new SystemSlot());
+        chain.addLast(new AuthoritySlot());
+        chain.addLast(new FlowSlot());
+        chain.addLast(new DegradeSlot(resource));
 
         return chain;
     }

@@ -30,4 +30,12 @@ public interface SlotChainBuilder {
      * @return a processor slot that chain some slots together
      */
     ProcessorSlotChain build();
+
+    /**
+     * Build the processor slot chain.
+     *
+     * @param resource
+     * @return
+     */
+    ProcessorSlotChain build(ResourceWrapper resource);
 }

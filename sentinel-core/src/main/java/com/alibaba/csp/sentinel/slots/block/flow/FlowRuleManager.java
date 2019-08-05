@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.node.metric.MetricTimerListener;
@@ -145,6 +146,12 @@ public class FlowRuleManager {
             }
             RecordLog.info("[FlowRuleManager] Flow rules loaded: " + flowRules);
         }
+
+        public static void setDefaultFlowRule(String resource){
+
+        }
+
+
     }
 
 }

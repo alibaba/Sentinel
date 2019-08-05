@@ -15,15 +15,8 @@
  */
 package com.alibaba.csp.sentinel.slots.block.degrade;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.alibaba.csp.sentinel.Constants;
+import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.DefaultNode;
@@ -35,6 +28,16 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static com.alibaba.csp.sentinel.config.SentinelConfig.STATISTIC_MAX_RT;
 
 /**
  * @author youji.zj
@@ -81,6 +84,14 @@ public final class DegradeRuleManager {
             if (!rule.passCheck(context, node, count)) {
                 throw new DegradeException(rule.getLimitApp(), rule);
             }
+        }
+    }
+
+    public static void setDefaultDegrade(String resource) {
+        if (degradeRules.get(resource) == null && SentinelConfig.globalRuleOpen()) {
+            Set<DegradeRule> newRules = new HashSet<>(1);
+            newRules.add(createDefaultRule(resource));
+            setRulesForResource(resource, newRules);
         }
     }
 
@@ -229,5 +240,14 @@ public final class DegradeRuleManager {
             return rule.getCount() <= 1 && rule.getMinRequestAmount() > 0;
         }
         return true;
+    }
+
+    public static DegradeRule createDefaultRule(String resource) {
+        DegradeRule rule = new DegradeRule(resource);
+        rule.setCount(Double.valueOf(SentinelConfig.getConfig(STATISTIC_MAX_RT)));
+        rule.setTimeWindow(1);
+        rule.setGrade(RuleConstant.DEGRADE_GRADE_RT);
+        rule.setRtSlowRequestAmount(RuleConstant.DEGRADE_DEFAULT_SLOW_REQUEST_AMOUNT);
+        return rule;
     }
 }
