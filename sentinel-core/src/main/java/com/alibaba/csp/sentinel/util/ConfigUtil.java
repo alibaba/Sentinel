@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -72,7 +73,7 @@ public final class ConfigUtil {
             }
 
             try (BufferedReader bufferedReader =
-                         Files.newBufferedReader(Paths.get(fileName), Charset.forName(SentinelConfig.charset()))) {
+                         Files.newBufferedReader(Paths.get(fileName), getCharset())) {
                 properties = new Properties();
                 properties.load(bufferedReader);
             }
@@ -114,7 +115,7 @@ public final class ConfigUtil {
         Properties properties = new Properties();
         for (URL url : list) {
             try (BufferedReader bufferedReader =
-                         new BufferedReader(new InputStreamReader(url.openStream(), Charset.forName(SentinelConfig.charset())))) {
+                         new BufferedReader(new InputStreamReader(url.openStream(), getCharset().newDecoder()))) {
                 Properties p = new Properties();
                 p.load(bufferedReader);
                 properties.putAll(p);
@@ -137,6 +138,12 @@ public final class ConfigUtil {
             classLoader = ConfigUtil.class.getClassLoader();
         }
         return classLoader;
+    }
+
+    private static Charset getCharset() {
+        // avoid static loop dependencies: SentinelConfig -> SentinelConfigLoader -> ConfigUtil -> SentinelConfig
+        // so not use SentinelConfig.charset()
+        return Charset.forName(System.getProperty(SentinelConfig.CHARSET, StandardCharsets.UTF_8.name()));
     }
 
     public static String addSeparator(String dir) {

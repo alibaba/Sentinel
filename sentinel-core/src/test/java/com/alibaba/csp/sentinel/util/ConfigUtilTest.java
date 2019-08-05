@@ -15,7 +15,6 @@
  */
 package com.alibaba.csp.sentinel.util;
 
-import com.alibaba.csp.sentinel.config.SentinelConfig;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -25,7 +24,6 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import static com.alibaba.csp.sentinel.log.LogBase.LOG_DIR;
@@ -83,11 +81,12 @@ public class ConfigUtilTest {
 
     }
 
+    //add Jvm parameter
+    //-Dcsp.sentinel.charset="GBK"
     @Test
     public void testLoadPropertiesWithCustomizedCharset() throws IOException {
 
         String charset = "GBK";
-        SentinelConfig.setConfig(SentinelConfig.CHARSET, charset);
 
         File file = null;
         String dir = "/data/日志/",
@@ -119,7 +118,6 @@ public class ConfigUtilTest {
             if (file != null) {
                 file.delete();
             }
-            SentinelConfig.setConfig(SentinelConfig.CHARSET, StandardCharsets.UTF_8.name());
         }
 
     }
