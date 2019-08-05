@@ -113,13 +113,11 @@ public final class ConfigUtil {
 
         Properties properties = new Properties();
         for (URL url : list) {
-            try {
-                try (BufferedReader bufferedReader =
-                             new BufferedReader(new InputStreamReader(url.openStream(), Charset.forName(SentinelConfig.charset())))) {
-                    Properties p = new Properties();
-                    p.load(bufferedReader);
-                    properties.putAll(p);
-                }
+            try (BufferedReader bufferedReader =
+                         new BufferedReader(new InputStreamReader(url.openStream(), Charset.forName(SentinelConfig.charset())))) {
+                Properties p = new Properties();
+                p.load(bufferedReader);
+                properties.putAll(p);
             } catch (Throwable e) {
                 e.printStackTrace();
             }
