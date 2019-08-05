@@ -65,12 +65,10 @@ public class SpringCouldDataSourceTest {
     /**
      * WebHook refresh config
      */
-    @PostMapping("/refresh")
+    @GetMapping("/refresh")
     @ResponseBody
     public List<FlowRule> refresh() {
         locator.refresh();
-        SpringCloudConfigDataSource dataSource = new SpringCloudConfigDataSource("flow_rule", converter);
-        FlowRuleManager.register2Property(dataSource.getProperty());
         return FlowRuleManager.getRules();
     }
 }

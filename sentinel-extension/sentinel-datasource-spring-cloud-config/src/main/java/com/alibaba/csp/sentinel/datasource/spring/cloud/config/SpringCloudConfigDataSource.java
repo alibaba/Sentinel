@@ -20,18 +20,26 @@ import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
- * ${@link SpringCloudConfigDataSource} A read-only {@code DataSource} with spring-cloud-config backend through
- * ${@link SentinelRuleStorage} retrieve the spring-cloud-config data
- * When the data in backend has been modified, if {@code DataSource} want to read the latest data.
- * The backend should notice spring-cloud-client invoke the ${@link SentinelRuleLocator#refresh()}
- * to update ${@link SentinelRuleStorage} data. Web hook may be a good notice way.
+ * ${@link SpringCloudConfigDataSource} A read-only {@code DataSource} with spring-cloud-config backend
+ * It retrieve the spring-cloud-config data stored in ${@link SentinelRuleStorage}
+ * When the data in backend has been modified, ${@link SentinelRuleStorage} will invoke ${@link SpringCloudConfigDataSource#updateValues()}
+ * to dynamic update values
  *
  * @author lianglin
  * @since 1.7.0
  */
 public class SpringCloudConfigDataSource<T> extends AbstractDataSource<String, T> {
 
+
+    private final static Map<SpringCloudConfigDataSource, SpringConfigListener> listeners;
+
+    static {
+        listeners = new ConcurrentHashMap<>();
+    }
 
     private String ruleKey;
 
@@ -44,6 +52,7 @@ public class SpringCloudConfigDataSource<T> extends AbstractDataSource<String, T
 
         this.ruleKey = ruleKey;
         loadInitialConfig();
+        initListener();
     }
 
     private void loadInitialConfig() {
@@ -58,6 +67,10 @@ public class SpringCloudConfigDataSource<T> extends AbstractDataSource<String, T
         }
     }
 
+    private void initListener() {
+        listeners.put(this, new SpringConfigListener(this));
+    }
+
     @Override
     public String readSource() {
         return SentinelRuleStorage.retrieveRule(ruleKey);
@@ -65,8 +78,32 @@ public class SpringCloudConfigDataSource<T> extends AbstractDataSource<String, T
 
     @Override
     public void close() throws Exception {
-
+        listeners.remove(this);
     }
 
+    public static void updateValues() {
+        for (SpringConfigListener listener : listeners.values()) {
+            listener.listenChanged();
+        }
+    }
 
+    private static class SpringConfigListener {
+
+        private SpringCloudConfigDataSource dataSource;
+
+        public SpringConfigListener(SpringCloudConfigDataSource dataSource) {
+            this.dataSource = dataSource;
+        }
+
+        public void listenChanged() {
+            try {
+                Object newValue = dataSource.loadConfig();
+                dataSource.getProperty().updateValue(newValue);
+            } catch (Exception e) {
+                RecordLog.warn("[SpringConfigListener] load config error: ", e);
+            }
+        }
+
+    }
 }
+

@@ -19,6 +19,7 @@ import org.springframework.core.env.PropertySource;
 
 /**
  * Storage data pull from spring-config-cloud server
+ * And notice ${@link SpringCloudConfigDataSource} update latest values
  *
  * @author lianglin
  * @since 1.7.0
@@ -29,10 +30,15 @@ public class SentinelRuleStorage {
 
     public static void setRulesSource(PropertySource<?> source) {
         rulesSource = source;
+        noticeSpringCloudDataSource();
     }
 
     public static String retrieveRule(String ruleKey) {
         return rulesSource == null ? null : (String) rulesSource.getProperty(ruleKey);
+    }
+
+    private static void noticeSpringCloudDataSource(){
+        SpringCloudConfigDataSource.updateValues();
     }
 
 }

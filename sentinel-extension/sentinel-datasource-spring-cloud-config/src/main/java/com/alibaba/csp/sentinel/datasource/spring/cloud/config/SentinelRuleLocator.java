@@ -38,9 +38,9 @@ import static org.springframework.cloud.config.client.ConfigClientProperties.*;
 
 /**
  * <p>
- * {@link SentinelRuleLocator} responsible for pull sentinel rules from remote server.
- * It will retrieve the spring cloud config client configuration from  {@link org.springframework.core.env.Environment}
- * for example: spring.cloud.config.uri=uri, spring.cloud.config.profile=profile .... and so on.
+ * {@link SentinelRuleLocator}  which pull sentinel rules from remote server.
+ * It retrieve configurations of spring-cloud-config client configurations from  {@link org.springframework.core.env.Environment}
+ * Such as spring.cloud.config.uri=uri, spring.cloud.config.profile=profile .... and so on.
  * When pull rules successfully, save to {@link SentinelRuleStorage} for ${@link SpringCloudConfigDataSource} retrieve.
  * </p>
  *
