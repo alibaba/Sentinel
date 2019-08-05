@@ -64,7 +64,7 @@ public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
                 throw ex;
             }
             if (exceptionBelongsTo(ex, annotation.exceptionsToTrace())) {
-                traceException(ex);//ex not belongsTo exceptionsToIgnore && belongsTo exceptionsToTrace
+                traceException(ex);//exceptionsToIgnore not include ex &&  exceptionsToTrace include ex
                 return handleFallback(pjp, annotation, ex);
             }
 
