@@ -82,7 +82,7 @@ public class DubboUtilsTest {
      * -Dcsp.sentinel.dubbo.consumer.prefix=dubbo-consumer
      */
     //@Test
-    public void testGetResourceNameWithPrefix(){
+    public void testGetResourceNameWithPrefix() {
         Invoker invoker = mock(Invoker.class);
         when(invoker.getInterface()).thenReturn(DemoService.class);
 
@@ -92,10 +92,10 @@ public class DubboUtilsTest {
         when(invocation.getParameterTypes()).thenReturn(method.getParameterTypes());
 
         String resourceName = DubboUtils.getResourceName(invoker, invocation, DubboConfig.getDubboProviderPrefix());
-        assertEquals(DubboConfig.getDubboProviderPrefix()+":"+"com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService:sayHello(java.lang.String,int)", resourceName);
+        assertEquals(DubboConfig.getDubboProviderPrefix() + "com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService:sayHello(java.lang.String,int)", resourceName);
 
         resourceName = DubboUtils.getResourceName(invoker, invocation, DubboConfig.getDubboConsumerPrefix());
-        assertEquals(DubboConfig.getDubboConsumerPrefix()+":"+"com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService:sayHello(java.lang.String,int)", resourceName);
+        assertEquals(DubboConfig.getDubboConsumerPrefix() + "com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService:sayHello(java.lang.String,int)", resourceName);
 
 
     }

@@ -54,7 +54,7 @@ public final class DubboUtils {
     public static String getResourceName(Invoker<?> invoker, Invocation invocation, String prefix) {
         if (StringUtil.isNotBlank(prefix)) {
             return new StringBuilder(64)
-                    .append(prefix).append(":")
+                    .append(prefix)
                     .append(getResourceName(invoker, invocation))
                     .toString();
         } else {

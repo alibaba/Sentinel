@@ -16,7 +16,6 @@
 package com.alibaba.csp.sentinel.adapter.dubbo.config;
 
 import com.alibaba.csp.sentinel.config.SentinelConfig;
-import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
  * <p>
@@ -28,18 +27,21 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  */
 public final class DubboConfig {
 
-    public static final String DUBBO_USE_PREFIX = "csp.sentinel.dubbo.use.prefix";
+    public static final String DUBBO_USE_PREFIX = "csp.sentinel.dubbo.resource.use.prefix";
     private static boolean usePrefix;
     private static final String TRUE_STR = "true";
 
-    public static final String DUBBO_PROVIDER_PREFIX = "csp.sentinel.dubbo.provider.prefix";
-    public static final String DUBBO_CONSUMER_PREFIX = "csp.sentinel.dubbo.consumer.prefix";
+    public static final String DUBBO_PROVIDER_PREFIX = "csp.sentinel.dubbo.resource.provider.prefix";
+    public static final String DUBBO_CONSUMER_PREFIX = "csp.sentinel.dubbo.resource.consumer.prefix";
+
+    private static final String DEFAULT_DUBBO_PROVIDER_PREFIX = "dubbo:provider:";
+    private static final String DEFAULT_DUBBO_CONSUMER_PREFIX = "dubbo:consumer:";
 
     static {
         String dubboUsePrefix = SentinelConfig.getConfig(DUBBO_USE_PREFIX);
-        if (StringUtil.isNotBlank(dubboUsePrefix) && TRUE_STR.equalsIgnoreCase(dubboUsePrefix)) {
+        if (TRUE_STR.equalsIgnoreCase(dubboUsePrefix)) {
             usePrefix = true;
-        }else{
+        } else {
             usePrefix = false;
         }
     }
@@ -47,14 +49,16 @@ public final class DubboConfig {
 
     public static String getDubboProviderPrefix() {
         if (usePrefix) {
-            return SentinelConfig.getConfig(DUBBO_PROVIDER_PREFIX);
+            String config = SentinelConfig.getConfig(DUBBO_PROVIDER_PREFIX);
+            return config != null ? config : DEFAULT_DUBBO_PROVIDER_PREFIX;
         }
         return null;
     }
 
     public static String getDubboConsumerPrefix() {
         if (usePrefix) {
-            return SentinelConfig.getConfig(DUBBO_CONSUMER_PREFIX);
+            String config = SentinelConfig.getConfig(DUBBO_CONSUMER_PREFIX);
+            return config != null ? config : DEFAULT_DUBBO_CONSUMER_PREFIX;
         }
         return null;
     }
