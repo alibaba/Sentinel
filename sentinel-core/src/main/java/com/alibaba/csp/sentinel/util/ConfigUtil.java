@@ -15,8 +15,6 @@
  */
 package com.alibaba.csp.sentinel.util;
 
-import com.alibaba.csp.sentinel.config.SentinelConfig;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -143,7 +141,7 @@ public final class ConfigUtil {
     private static Charset getCharset() {
         // avoid static loop dependencies: SentinelConfig -> SentinelConfigLoader -> ConfigUtil -> SentinelConfig
         // so not use SentinelConfig.charset()
-        return Charset.forName(System.getProperty(SentinelConfig.CHARSET, StandardCharsets.UTF_8.name()));
+        return Charset.forName(System.getProperty("csp.sentinel.charset", StandardCharsets.UTF_8.name()));
     }
 
     public static String addSeparator(String dir) {
