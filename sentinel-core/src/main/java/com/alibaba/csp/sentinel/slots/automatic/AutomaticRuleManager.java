@@ -7,7 +7,6 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleChecker;
 
 
 import java.util.*;
@@ -26,7 +25,9 @@ public class AutomaticRuleManager {
 
     private static long latestUpdate;
 
-    private static float maxSystemLoad = 1;
+    private static float maxUseage = 1;
+
+    private static float minFlow = 10;
 
     public static int defaultCount = 125;
 
@@ -47,7 +48,6 @@ public class AutomaticRuleManager {
             rule = rules.get(resourceName);
         }
 
-
         boolean canPass = canPass(context.getCurNode(), count, rule);
 
         if(!canPass)
@@ -55,44 +55,44 @@ public class AutomaticRuleManager {
 
     }
 
+    /*
+        每秒更新流控规则
+     */
     static void update(ResourceWrapper resource, Context context, Node node){
 
-        try {
-            //更新资源的统计数据
 
-            String resourceName = resource.getName();
+        //更新资源的统计数据
 
-            int totalQps = (int) (node.previousBlockQps() + node.previousPassQps());
-            qpsRecord.put(resourceName, totalQps);
-            double minRt = node.minRt();
-            if(minRt <= 0)
-                minRt = 0.1;
-            minRTRecord.put(resourceName, minRt );
+        String resourceName = resource.getName();
+
+        int totalQps = (int) (node.previousBlockQps() + node.previousPassQps());
+        qpsRecord.put(resourceName, totalQps);
+        double minRt = node.minRt();
+        if(minRt <= 0)
+            minRt = 0.1;
+        minRTRecord.put(resourceName, minRt );
 
 
-            //每秒进行一次更新
-            if (System.currentTimeMillis() - latestUpdate < 1000)
-                return;
+        //每秒进行一次更新
+        if (System.currentTimeMillis() - latestUpdate < 1000)
+            return;
 
-            if (updating.compareAndSet(false, true)) {
+        if (updating.compareAndSet(false, true)) {
 
-                latestUpdate = System.currentTimeMillis();
+            latestUpdate = System.currentTimeMillis();
 
-                //更新 rules
-                try {
-                    updateRulesByQPS();
+            //更新 rules
+            try {
+                updateRulesByQPS();
+            } catch (NullPointerException e) {
+                //TODO：在第一次计算rules时由于qps为null会导致NPE
 
-                } catch (NullPointerException e) {
-                    //TODO：在第一次计算rules时由于qps为null会导致NPE
-
-                } finally {
-                    updating.set(false);
-                }
-
+            } finally {
+                updating.set(false);
             }
-        }catch (Exception e){
-            e.printStackTrace();
+
         }
+
     }
 
     static private void updateRulesByQPS(){
@@ -102,41 +102,96 @@ public class AutomaticRuleManager {
 
 
         Set<String> resourceNameSet = rules.keySet();
+        int resourceNum = resourceNameSet.size();
 
-        double currentLoad = 0;
+        double currentUseage = 0;
         for(String resource : resourceNameSet){
-            currentLoad += qpsRecord.get(resource)*minRTRecord.get(resource)*0.001;
+            currentUseage += qpsRecord.get(resource)*minRTRecord.get(resource)*0.001;
         }
 
-        System.out.println("currentLoad: "+currentLoad);
+        System.out.println("currentUseage: "+currentUseage);
 
 
-        double systemUseage = currentLoad/maxSystemLoad;
+        double useageLevel = currentUseage/ maxUseage;
 
 
         // 1. 系统能够处理所有请求时：根据各服务流量比例分配阈值
-        if(systemUseage < 1){
+        if(useageLevel < 1){
             for(String resourceName : resourceNameSet){
                 FlowRule rule = rules.get(resourceName);
                 double currentQPS = qpsRecord.get(resourceName);
-                double maximumQPS = currentQPS / systemUseage;
+                double maximumQPS = currentQPS / useageLevel;
                 rule.setCount(maximumQPS);
                 rules.put(resourceName,rule);
             }
         }else{ //2. 请求数超过系统处理能力时（流量洪峰）：在保护其他服务正常访问的前提下尽可能将流量分配到发生洪峰的服务
 
-            double M = -500;
 
-            double[] C ={1, 1, 1, 0, 0, 0, 0, M, M, M, 0, 0, 0};
+            // 价值系数
+            double[] c = new double[resourceNum*3+1];
 
-            double[] maxQPS = resolve(C ,qpsRecord.get("a"),qpsRecord.get("b"),qpsRecord.get("c"));
+            for( int i =0;i<resourceNum;i++){
+                c[i] = 1;
+            }
 
-            rules.put("a",rules.get("a").setCount(maxQPS[0]));
-            rules.put("b",rules.get("b").setCount(maxQPS[1]));
-            rules.put("c",rules.get("c").setCount(maxQPS[2]));
+            //资源常数矩阵
+
+            //最大值约束
+            double[] qps = new double[resourceNum];
+
+
+            int i =0;
+            for(String resourceName : resourceNameSet){
+                qps[i] = qpsRecord.get(resourceName);
+                i+=1;
+            }
+
+            //最小值约束
+            double[] b = new double[resourceNum *2 +1];
+            b[0] = maxUseage;
+            for(int j =0;j<resourceNum;j++ ){
+                b[j+1] = qps[j];
+                b[j+1+resourceNum] = minFlow;
+            }
+
+            //tableaux
+            double[][] a = new double[b.length][c.length];
+            //第一行：机器性能约束
+            i = 0;
+            for(String resourceName : resourceNameSet){
+                a[0][i] = minRTRecord.get(resourceName);
+                i += 1;
+            }
+            a[0][2*resourceNum]=1;
+
+            //后 resourceNum 行:最小值约束
+            i = 0;
+            for(String resourceName : resourceNameSet){
+                a[i+1][i] = 0;
+                a[i+1][i+resourceNum]=-1;
+                a[i+1][i+resourceNum*2+1]=1;
+                i+=1;
+            }
+            //后 resourceNum 行:最大值约束
+            i=0;
+            for(String resourceName : resourceNameSet){
+                a[i+resourceNum+1][i] = 0;
+                a[i+resourceNum+1][i+resourceNum*3+1]=1;
+                i+=1;
+            }
+
+            TwoPhaseSimplex lp = new TwoPhaseSimplex(a,b,c);
+
+            double[] x = lp.primal();
+            i = 0;
+            for(String resourceName : resourceNameSet){
+                rules.put(resourceName,rules.get(resourceName).setCount(x[i]));
+                i+=1;
+            }
 
         }
     }
+
 
     static public boolean canPass(Node node, int acquireCount, FlowRule rule) {
         int curCount = (int)(node.passQps());
@@ -147,41 +202,5 @@ public class AutomaticRuleManager {
         }
         return true;
     }
-
-    /*
-        求解线性规划问题
-        TODO: 自动生成参数矩阵
-     */
-    public static double[] resolve(double[] C,double maxA,double maxB,double maxC){
-
-        double cA = 0.001f;
-        double cB = 0.001f;
-        double cC = 0.001f;
-
-        double minA = 10;
-        double minB = 10;
-        double minC = 10;
-
-        double m1 = maxSystemLoad;
-
-        double[][] A = {
-                {cA, cB, cC, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0},
-                {1, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0},
-                {0, 1, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0} ,
-                {0, 0, 1, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0},
-                {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0},
-                {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-                {0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        };
-
-        double[] b = {m1, minA, minB, minC, maxA, maxB, maxC};
-
-        SimplexMethod simplexMethod = new SimplexMethod(A,C,b);
-        return simplexMethod.solution();
-    }
-
-
-
-
 
 }
