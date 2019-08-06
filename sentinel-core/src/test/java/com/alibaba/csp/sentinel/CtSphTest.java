@@ -1,5 +1,6 @@
 package com.alibaba.csp.sentinel;
 
+import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.context.ContextTestUtil;
 import com.alibaba.csp.sentinel.context.ContextUtil;
@@ -12,7 +13,7 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slotchain.SlotChainProvider;
 import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -254,7 +255,7 @@ public class CtSphTest {
     }
 
     @Test
-    public void testLookUpSlotChain() {
+    public void testLookProcessChainAndInitDefaultRules() {
         ResourceWrapper r1 = new StringResourceWrapper("firstRes", EntryType.IN);
         assertFalse(CtSph.getChainMap().containsKey(r1));
         ProcessorSlot<Object> chainR1 = ctSph.lookProcessChainAndInitDefaultRules(r1);
@@ -266,6 +267,18 @@ public class CtSphTest {
         assertFalse(CtSph.getChainMap().containsKey(r2));
         assertNull("The slot chain for r2 should not be created because amount exceeded", ctSph.lookProcessChainAndInitDefaultRules(r2));
         assertNull(ctSph.lookProcessChainAndInitDefaultRules(r2));
+
+        CtSph.getChainMap().clear();
+        SentinelConfig.setConfig(SentinelConfig.GLOBAL_RULE_SWITCH, "on");
+        ResourceWrapper r3 = new StringResourceWrapper("test-default-degrade", EntryType.IN);
+        ProcessorSlot<Object> chainR3 = ctSph.lookProcessChainAndInitDefaultRules(r3);
+        assertTrue(DegradeRuleManager.hasConfig("test-default-degrade"));
+
+        //clear op
+        DegradeRuleManager.loadRules(null);
+        SentinelConfig.setConfig(SentinelConfig.GLOBAL_RULE_SWITCH, "off");
+        CtSph.getChainMap().clear();
+
     }
 
     private void fillFullContext() {

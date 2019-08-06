@@ -56,8 +56,4 @@ public class GatewaySlotChainBuilder implements SlotChainBuilder {
         return chain;
     }
 
-    @Override
-    public ProcessorSlotChain build(ResourceWrapper resource) {
-        return null;
-    }
 }

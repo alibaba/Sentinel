@@ -15,11 +15,17 @@
  */
 package com.alibaba.csp.sentinel.slots.block.degrade;
 
+import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import java.util.Arrays;
+
+import static com.alibaba.csp.sentinel.config.SentinelConfig.GLOBAL_RULE_SWITCH;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test cases for {@link DegradeRuleManager}.
@@ -28,31 +34,41 @@ import static org.junit.Assert.*;
  */
 public class DegradeRuleManagerTest {
 
+    @Before
+    public void setUp() {
+        clean();
+    }
+
+    @After
+    public void tearDown() {
+        clean();
+    }
+
     @Test
     public void testIsValidRule() {
         DegradeRule rule1 = new DegradeRule("abc");
         DegradeRule rule2 = new DegradeRule("cde")
-            .setCount(100)
-            .setGrade(RuleConstant.DEGRADE_GRADE_RT)
-            .setTimeWindow(-1);
+                .setCount(100)
+                .setGrade(RuleConstant.DEGRADE_GRADE_RT)
+                .setTimeWindow(-1);
         DegradeRule rule3 = new DegradeRule("xx")
-            .setCount(1.1)
-            .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO)
-            .setTimeWindow(2);
+                .setCount(1.1)
+                .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO)
+                .setTimeWindow(2);
         DegradeRule rule4 = new DegradeRule("yy")
-            .setCount(-3)
-            .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT)
-            .setTimeWindow(2);
+                .setCount(-3)
+                .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT)
+                .setTimeWindow(2);
         DegradeRule rule5 = new DegradeRule("Sentinel")
-            .setCount(97)
-            .setGrade(RuleConstant.DEGRADE_GRADE_RT)
-            .setTimeWindow(15)
-            .setRtSlowRequestAmount(0);
+                .setCount(97)
+                .setGrade(RuleConstant.DEGRADE_GRADE_RT)
+                .setTimeWindow(15)
+                .setRtSlowRequestAmount(0);
         DegradeRule rule6 = new DegradeRule("Sentinel")
-            .setCount(0.93d)
-            .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO)
-            .setTimeWindow(20)
-            .setMinRequestAmount(0);
+                .setCount(0.93d)
+                .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO)
+                .setTimeWindow(20)
+                .setMinRequestAmount(0);
         assertFalse(DegradeRuleManager.isValidRule(rule1));
         assertFalse(DegradeRuleManager.isValidRule(rule2));
         assertFalse(DegradeRuleManager.isValidRule(rule3));
@@ -61,5 +77,47 @@ public class DegradeRuleManagerTest {
         assertFalse(DegradeRuleManager.isValidRule(rule4));
         assertFalse(DegradeRuleManager.isValidRule(rule5));
         assertFalse(DegradeRuleManager.isValidRule(rule6));
+    }
+
+    @Test
+    public void testDefaultGradeRule() {
+
+        String resource = "test-grade-rt";
+        SentinelConfig.setConfig(GLOBAL_RULE_SWITCH, "on");
+
+        //create default degrade for resource
+        DegradeRuleManager.setDefaultDegrade(resource);
+        assertTrue(DegradeRuleManager.hasConfig(resource));
+        DegradeRule defaultRule = DegradeRuleManager.getRules(resource).iterator().next();
+        assertTrue(DegradeRuleManager.isValidRule(defaultRule));
+
+        DegradeRule rule2 = new DegradeRule("xx")
+                .setCount(0.1)
+                .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO)
+                .setTimeWindow(2);
+        DegradeRuleManager.loadRules(Arrays.asList(rule2));
+        assertTrue(DegradeRuleManager.isValidRule(rule2));
+        assertTrue(DegradeRuleManager.hasConfig("xx"));
+
+        //load other resource rule, the test-grade-rt rule still exist
+        assertTrue(DegradeRuleManager.hasConfig(resource));
+
+        DegradeRule rule3 = new DegradeRule(resource)
+                .setCount(0.5)
+                .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO)
+                .setTimeWindow(2);
+        DegradeRuleManager.loadRules(Arrays.asList(rule2, rule3));
+
+        assertTrue(DegradeRuleManager.hasConfig(resource));
+        assertTrue(DegradeRuleManager.hasConfig("xx"));
+        assertTrue(DegradeRuleManager.getRules(resource).contains(rule3));
+        assertFalse(DegradeRuleManager.getRules(resource).contains(defaultRule));
+
+
+    }
+
+    private void clean() {
+        SentinelConfig.setConfig(GLOBAL_RULE_SWITCH, "off");
+        DegradeRuleManager.loadRules(null);
     }
 }

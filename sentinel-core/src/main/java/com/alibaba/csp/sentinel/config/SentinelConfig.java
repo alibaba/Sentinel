@@ -200,7 +200,7 @@ public class SentinelConfig {
         }
     }
 
-    public static boolean globalRuleOpen() {
+    public static boolean isGlobalRuleOpen() {
         return GLOBAL_RULE_OPENED.equalsIgnoreCase(getConfig(GLOBAL_RULE_SWITCH));
     }
 }
