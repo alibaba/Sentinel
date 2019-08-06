@@ -37,10 +37,10 @@ public final class DubboConfig {
     private static final String DEFAULT_DUBBO_PROVIDER_PREFIX = "dubbo:provider:";
     private static final String DEFAULT_DUBBO_CONSUMER_PREFIX = "dubbo:consumer:";
 
-
-    public static boolean isUsePrefix(){
+    public static boolean isUsePrefix() {
         return TRUE_STR.equalsIgnoreCase(SentinelConfig.getConfig(DUBBO_USE_PREFIX));
     }
+
 
     public static String getDubboProviderPrefix() {
         if (isUsePrefix()) {
