@@ -46,7 +46,7 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
  */
 public class FlowRuleManager {
 
-    private static final Map<String, List<FlowRule>> flowRules = new ConcurrentHashMap<String, List<FlowRule>>();
+    private static Map<String, List<FlowRule>> flowRules = new ConcurrentHashMap<String, List<FlowRule>>();
 
     private static final FlowPropertyListener LISTENER = new FlowPropertyListener();
     private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
@@ -130,8 +130,7 @@ public class FlowRuleManager {
         public void configUpdate(List<FlowRule> value) {
             Map<String, List<FlowRule>> rules = FlowRuleUtil.buildFlowRuleMap(value);
             if (rules != null) {
-                flowRules.clear();
-                flowRules.putAll(rules);
+                refreshFlowRules(rules);
             }
             RecordLog.info("[FlowRuleManager] Flow rules received: " + flowRules);
         }
@@ -140,10 +139,18 @@ public class FlowRuleManager {
         public void configLoad(List<FlowRule> conf) {
             Map<String, List<FlowRule>> rules = FlowRuleUtil.buildFlowRuleMap(conf);
             if (rules != null) {
-                flowRules.clear();
-                flowRules.putAll(rules);
+                refreshFlowRules(rules);
             }
             RecordLog.info("[FlowRuleManager] Flow rules loaded: " + flowRules);
+        }
+        
+        private void refreshFlowRules( Map<String, List<FlowRule>> rules) {
+            if (ConcurrentHashMap.class.isAssignableFrom(rules.getClass())) {
+                flowRules = rules;
+            }else {
+                flowRules = new ConcurrentHashMap<>(rules);
+            }
+            
         }
     }
 
