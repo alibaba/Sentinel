@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
 
     <name>${project.artifactId}</name>
-    <description>The parent project of Sentinel ttt</description>
+    <description>The parent project of Sentinel</description>
     <url>https://github.com/alibaba/Sentinel</url>
     <licenses>
         <license>
