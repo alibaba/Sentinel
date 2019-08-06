@@ -2,6 +2,7 @@ package com.alibaba.csp.sentinel.slots.block.adaptive;
 
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.adaptive.controller.AdaptiveRateController;
+import com.alibaba.csp.sentinel.slots.block.adaptive.controller.PidController;
 import com.alibaba.csp.sentinel.slots.block.adaptive.controller.TokenBucketController;
 import com.alibaba.csp.sentinel.slots.block.flow.TrafficShapingController;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -56,8 +57,10 @@ public final class AdaptiveRuleUtil {
 
         // 根据expectRt判断是适合用漏桶还是用令牌桶
         if (rule.getExpectRt() <= 1000) {
-            return new TokenBucketController(rule.getTargetRatio(), rule.getExpectRt());
+            return new PidController(rule.getTargetRatio(), rule.getExpectRt());
         }
         return new AdaptiveRateController((int)rule.getExpectRt());
     }
+
+
 }
