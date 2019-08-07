@@ -17,12 +17,11 @@ package com.alibaba.csp.sentinel.util;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -71,7 +70,7 @@ public final class ConfigUtil {
             }
 
             try (BufferedReader bufferedReader =
-                         Files.newBufferedReader(Paths.get(fileName), getCharset())) {
+                         new BufferedReader(new InputStreamReader(new FileInputStream(file), getCharset()))) {
                 properties = new Properties();
                 properties.load(bufferedReader);
             }
@@ -113,7 +112,7 @@ public final class ConfigUtil {
         Properties properties = new Properties();
         for (URL url : list) {
             try (BufferedReader bufferedReader =
-                         new BufferedReader(new InputStreamReader(url.openStream(), getCharset().newDecoder()))) {
+                         new BufferedReader(new InputStreamReader(url.openStream(), getCharset()))) {
                 Properties p = new Properties();
                 p.load(bufferedReader);
                 properties.putAll(p);
