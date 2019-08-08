@@ -20,8 +20,10 @@ import org.junit.Test;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.Properties;
 
 import static com.alibaba.csp.sentinel.log.LogBase.LOG_DIR;
@@ -79,6 +81,45 @@ public class ConfigUtilTest {
 
     }
 
+    //add Jvm parameter
+    //-Dcsp.sentinel.charset="UTF-16"
+    //@Test
+    public void testLoadPropertiesWithCustomizedCharset() throws IOException {
 
+        String charset = "UTF-16";
+
+        File file = null;
+        String dir = "/data/logs/",
+                fileName = "propertiesTest.properties";
+        try {
+            String userDir = System.getProperty("user.dir");
+            file = new File(addSeparator(userDir) + "target/classes/" + fileName);
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(file), charset);
+            out.write(LOG_DIR + "=" + dir);
+            out.flush();
+            out.close();
+
+            //Load from absolutePath
+            Properties properties = ConfigUtil.loadProperties(file.getAbsolutePath());
+            Assert.assertTrue(dir.equals(properties.getProperty(LOG_DIR)));
+
+            //Load from classPath
+            properties = ConfigUtil.loadProperties(ConfigUtil.CLASSPATH_FILE_FLAG + fileName);
+            Assert.assertTrue(dir.equals(properties.getProperty(LOG_DIR)));
+
+            //Load from relativePath
+            properties = ConfigUtil.loadProperties("target/classes/" + fileName);
+            Assert.assertTrue(dir.equals(properties.getProperty(LOG_DIR)));
+
+        } finally {
+            if (file != null) {
+                file.delete();
+            }
+        }
+
+    }
 
 }
