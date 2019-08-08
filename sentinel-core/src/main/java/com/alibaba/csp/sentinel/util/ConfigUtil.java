@@ -15,10 +15,13 @@
  */
 package com.alibaba.csp.sentinel.util;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -66,9 +69,10 @@ public final class ConfigUtil {
                 return null;
             }
 
-            try (FileInputStream input = new FileInputStream(file)) {
+            try (BufferedReader bufferedReader =
+                         new BufferedReader(new InputStreamReader(new FileInputStream(file), getCharset()))) {
                 properties = new Properties();
-                properties.load(input);
+                properties.load(bufferedReader);
             }
         } catch (Throwable e) {
             e.printStackTrace();
@@ -107,20 +111,11 @@ public final class ConfigUtil {
 
         Properties properties = new Properties();
         for (URL url : list) {
-            try {
+            try (BufferedReader bufferedReader =
+                         new BufferedReader(new InputStreamReader(url.openStream(), getCharset()))) {
                 Properties p = new Properties();
-                InputStream input = url.openStream();
-                if (input != null) {
-                    try {
-                        p.load(input);
-                        properties.putAll(p);
-                    } finally {
-                        try {
-                            input.close();
-                        } catch (Throwable t) {
-                        }
-                    }
-                }
+                p.load(bufferedReader);
+                properties.putAll(p);
             } catch (Throwable e) {
                 e.printStackTrace();
             }
@@ -140,6 +135,12 @@ public final class ConfigUtil {
             classLoader = ConfigUtil.class.getClassLoader();
         }
         return classLoader;
+    }
+
+    private static Charset getCharset() {
+        // avoid static loop dependencies: SentinelConfig -> SentinelConfigLoader -> ConfigUtil -> SentinelConfig
+        // so not use SentinelConfig.charset()
+        return Charset.forName(System.getProperty("csp.sentinel.charset", StandardCharsets.UTF_8.name()));
     }
 
     public static String addSeparator(String dir) {
