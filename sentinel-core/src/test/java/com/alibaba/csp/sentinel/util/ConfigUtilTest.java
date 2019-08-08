@@ -82,14 +82,14 @@ public class ConfigUtilTest {
     }
 
     //add Jvm parameter
-    //-Dcsp.sentinel.charset="GBK"
+    //-Dcsp.sentinel.charset="UTF-16"
     //@Test
     public void testLoadPropertiesWithCustomizedCharset() throws IOException {
 
-        String charset = "GBK";
+        String charset = "UTF-16";
 
         File file = null;
-        String dir = "/data/日志/",
+        String dir = "/data/logs/",
                 fileName = "propertiesTest.properties";
         try {
             String userDir = System.getProperty("user.dir");
