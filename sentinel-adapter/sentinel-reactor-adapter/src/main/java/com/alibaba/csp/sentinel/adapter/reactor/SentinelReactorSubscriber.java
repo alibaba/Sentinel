@@ -160,7 +160,7 @@ public class SentinelReactorSubscriber<T> extends InheritableBaseSubscriber<T> {
 
     private boolean tryCompleteEntry() {
         if (currentEntry != null && entryExited.compareAndSet(false, true)) {
-            currentEntry.exit();
+            currentEntry.exit(1, entryConfig.getArgs());
             return true;
         }
         return false;

@@ -38,6 +38,16 @@ public class DashboardConfig {
     public static final int DEFAULT_MACHINE_HEALTHY_TIMEOUT_MS = 60_000;
 
     /**
+     * Login username
+     */
+    public static final String CONFIG_AUTH_USERNAME = "sentinel.dashboard.auth.username";
+
+    /**
+     * Login password
+     */
+    public static final String CONFIG_AUTH_PASSWORD = "sentinel.dashboard.auth.password";
+
+    /**
      * Hide application name in sidebar when it has no healthy machines after specific period in millisecond.
      */
     public static final String CONFIG_HIDE_APP_NO_MACHINE_MILLIS = "sentinel.dashboard.app.hideAppNoMachineMillis";
@@ -70,7 +80,22 @@ public class DashboardConfig {
         }
         return "";
     }
-    
+
+    protected static String getConfigStr(String name) {
+        if (cacheMap.containsKey(name)) {
+            return (String) cacheMap.get(name);
+        }
+
+        String val = getConfig(name);
+
+        if (StringUtils.isBlank(val)) {
+            return null;
+        }
+
+        cacheMap.put(name, val);
+        return val;
+    }
+
     protected static int getConfigInt(String name, int defaultVal, int minVal) {
         if (cacheMap.containsKey(name)) {
             return (int)cacheMap.get(name);
@@ -84,7 +109,15 @@ public class DashboardConfig {
         cacheMap.put(name, val);
         return val;
     }
-    
+
+    public static String getAuthUsername() {
+        return getConfigStr(CONFIG_AUTH_USERNAME);
+    }
+
+    public static String getAuthPassword() {
+        return getConfigStr(CONFIG_AUTH_PASSWORD);
+    }
+
     public static int getHideAppNoMachineMillis() {
         return getConfigInt(CONFIG_HIDE_APP_NO_MACHINE_MILLIS, 0, 60000);
     }

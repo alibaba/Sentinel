@@ -27,8 +27,13 @@ public class PingResponseDataDecoder implements EntityDecoder<ByteBuf, Integer> 
 
     @Override
     public Integer decode(ByteBuf source) {
-        if (source.readableBytes() >= 1) {
+        int size = source.readableBytes();
+        if (size == 1) {
+            // Compatible with old version (< 1.7.0).
             return (int) source.readByte();
+        }
+        if (size >= 4) {
+            return source.readInt();
         }
         return -1;
     }

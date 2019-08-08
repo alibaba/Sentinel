@@ -1,17 +1,10 @@
 package com.alibaba.csp.sentinel.datasource.zookeeper;
 
-import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.datasource.AbstractDataSource;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
-
 import org.apache.curator.framework.AuthInfo;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -19,8 +12,15 @@ import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.NodeCache;
 import org.apache.curator.framework.recipes.cache.NodeCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.data.Stat;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A read-only {@code DataSource} with ZooKeeper backend.
@@ -32,9 +32,13 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
     private static final int RETRY_TIMES = 3;
     private static final int SLEEP_TIME = 1000;
 
+    private static volatile Map<String, CuratorFramework> zkClientMap = new HashMap<>();
+    private static final Object lock = new Object();
+
+
     private final ExecutorService pool = new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS,
-        new ArrayBlockingQueue<Runnable>(1), new NamedThreadFactory("sentinel-zookeeper-ds-update"),
-        new ThreadPoolExecutor.DiscardOldestPolicy());
+            new ArrayBlockingQueue<Runnable>(1), new NamedThreadFactory("sentinel-zookeeper-ds-update"),
+            new ThreadPoolExecutor.DiscardOldestPolicy());
 
     private NodeCacheListener listener;
     private final String path;
@@ -116,16 +120,33 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
                 }
             };
 
-            if (authInfos == null || authInfos.size() == 0) {
-                this.zkClient = CuratorFrameworkFactory.newClient(serverAddr, new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES));
+            String zkKey = getZkKey(serverAddr, authInfos);
+            if (zkClientMap.containsKey(zkKey)) {
+                this.zkClient = zkClientMap.get(zkKey);
             } else {
-                this.zkClient = CuratorFrameworkFactory.builder().
-                        connectString(serverAddr).
-                        retryPolicy(new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES)).
-                        authorization(authInfos).
-                        build();
+                synchronized (lock) {
+                    if (!zkClientMap.containsKey(zkKey)) {
+                        CuratorFramework zc = null;
+                        if (authInfos == null || authInfos.size() == 0) {
+                            zc = CuratorFrameworkFactory.newClient(serverAddr, new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES));
+                        } else {
+                            zc = CuratorFrameworkFactory.builder().
+                                    connectString(serverAddr).
+                                    retryPolicy(new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES)).
+                                    authorization(authInfos).
+                                    build();
+                        }
+                        this.zkClient = zc;
+                        this.zkClient.start();
+                        Map<String, CuratorFramework> newZkClientMap = new HashMap<>(zkClientMap.size());
+                        newZkClientMap.putAll(zkClientMap);
+                        newZkClientMap.put(zkKey, zc);
+                        zkClientMap = newZkClientMap;
+                    } else {
+                        this.zkClient = zkClientMap.get(zkKey);
+                    }
+                }
             }
-            this.zkClient.start();
 
             this.nodeCache = new NodeCache(this.zkClient, this.path);
             this.nodeCache.getListenable().addListener(this.listener, this.pool);
@@ -165,4 +186,31 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
     private String getPath(String groupId, String dataId) {
         return String.format("/%s/%s", groupId, dataId);
     }
+
+    private String getZkKey(final String serverAddr, final List<AuthInfo> authInfos) {
+        if (authInfos == null || authInfos.size() == 0) {
+            return serverAddr;
+        }
+        StringBuilder builder = new StringBuilder(64);
+        builder.append(serverAddr).append(getAuthInfosKey(authInfos));
+        return builder.toString();
+    }
+
+    private String getAuthInfosKey(List<AuthInfo> authInfos) {
+        StringBuilder builder = new StringBuilder(32);
+        for (AuthInfo authInfo : authInfos) {
+            if (authInfo == null) {
+                builder.append("{}");
+            } else {
+                builder.append("{" + "sc=" + authInfo.getScheme() + ",au=" + Arrays.toString(authInfo.getAuth()) + "}");
+            }
+        }
+        return builder.toString();
+    }
+
+    protected CuratorFramework getZkClient() {
+        return this.zkClient;
+    }
+
+
 }

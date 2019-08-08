@@ -1,6 +1,7 @@
 # Sentinel Web Servlet Filter
 
-Sentinel provides Servlet filter integration to enable flow control for web requests. Add the following dependency in `pom.xml` (if you are using Maven):
+Sentinel provides Servlet filter integration to enable flow control for web requests.
+Add the following dependency in `pom.xml` (if you are using Maven):
 
 ```xml
 <dependency>
@@ -10,7 +11,7 @@ Sentinel provides Servlet filter integration to enable flow control for web requ
 </dependency>
 ```
 
-To use the filter, you can simply configure your `web.xml` with:
+To activate the filter, you can simply configure your `web.xml` with:
 
 ```xml
 <filter>
@@ -34,8 +35,9 @@ public class FilterConfig {
     public FilterRegistrationBean sentinelFilterRegistration() {
         FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>();
         registration.setFilter(new CommonFilter());
+        // Set the matching URL pattern for the filter.
         registration.addUrlPatterns("/*");
-        registration.setName("sentinelFilter");
+        registration.setName("sentinelCommonFilter");
         registration.setOrder(1);
 
         return registration;
@@ -43,7 +45,7 @@ public class FilterConfig {
 }
 ```
 
-When a request is blocked, Sentinel servlet filter will give a default page indicating the request blocked.
+When a request is blocked, Sentinel servlet filter will display a default page indicating the request is rejected.
 If customized block page is set (via `WebServletConfig.setBlockPage(blockPage)` method),
 the filter will redirect the request to provided URL. You can also implement your own
 block handler (the `UrlBlockHandler` interface) and register to `WebCallbackManager`.
@@ -51,6 +53,10 @@ block handler (the `UrlBlockHandler` interface) and register to `WebCallbackMana
 The `UrlCleaner` interface is designed for clean and unify the URL resource.
 For REST APIs, you have to clean the URL resource (e.g. `/foo/1` and `/foo/2` -> `/foo/:id`), or
 the amount of context and resources will exceed the threshold.
+
+If you need to exclude some URLs (that should not be recorded as Sentinel resources), you could also
+leverage the `UrlCleaner` interface. You may unify the unwanted URLs to the empty string `""`,
+then the URLs will be excluded (since Sentinel 1.6.3).
 
 `RequestOriginParser` interface is useful for extracting request origin (e.g. IP or appName from HTTP Header)
 from HTTP request. You can implement your own `RequestOriginParser` and register to `WebCallbackManager`.

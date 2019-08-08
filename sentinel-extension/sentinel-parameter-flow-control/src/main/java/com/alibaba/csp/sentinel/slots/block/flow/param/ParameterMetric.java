@@ -19,16 +19,12 @@ import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.node.IntervalProperty;
-import com.alibaba.csp.sentinel.node.SampleCountProperty;
 import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
 import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
-import com.alibaba.csp.sentinel.slots.statistic.metric.HotParameterLeapArray;
-import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
  * Metrics for frequent ("hot spot") parameters.
@@ -38,49 +34,79 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
  */
 public class ParameterMetric {
 
-    private final int sampleCount;
-    private final int intervalMs;
+    private static final int THREAD_COUNT_MAX_CAPACITY = 4000;
+    private static final int BASE_PARAM_MAX_CAPACITY = 4000;
+    private static final int TOTAL_MAX_CAPACITY = 20_0000;
 
-    public ParameterMetric() {
-        this(SampleCountProperty.SAMPLE_COUNT, IntervalProperty.INTERVAL);
+    private final Object lock = new Object();
+
+    /**
+     * Format: (rule, (value, timeRecorder))
+     *
+     * @since 1.6.0
+     */
+    private final Map<ParamFlowRule, CacheMap<Object, AtomicLong>> ruleTimeCounters = new HashMap<>();
+    /**
+     * Format: (rule, (value, tokenCounter))
+     *
+     * @since 1.6.0
+     */
+    private final Map<ParamFlowRule, CacheMap<Object, AtomicLong>> ruleTokenCounter = new HashMap<>();
+    private final Map<Integer, CacheMap<Object, AtomicInteger>> threadCountMap = new HashMap<>();
+
+    /**
+     * Get the token counter for given parameter rule.
+     *
+     * @param rule valid parameter rule
+     * @return the associated token counter
+     * @since 1.6.0
+     */
+    public CacheMap<Object, AtomicLong> getRuleTokenCounter(ParamFlowRule rule) {
+        return ruleTokenCounter.get(rule);
     }
 
-    public ParameterMetric(int sampleCount, int intervalInMs) {
-        AssertUtil.isTrue(sampleCount > 0, "sampleCount should be positive");
-        AssertUtil.isTrue(intervalInMs > 0, "window interval should be positive");
-        AssertUtil.isTrue(intervalInMs % sampleCount == 0, "time span needs to be evenly divided");
-        this.sampleCount = sampleCount;
-        this.intervalMs = intervalInMs;
+    /**
+     * Get the time record counter for given parameter rule.
+     *
+     * @param rule valid parameter rule
+     * @return the associated time counter
+     * @since 1.6.0
+     */
+    public CacheMap<Object, AtomicLong> getRuleTimeCounter(ParamFlowRule rule) {
+        return ruleTimeCounters.get(rule);
     }
 
-    private Map<Integer, HotParameterLeapArray> rollingParameters =
-        new ConcurrentHashMap<Integer, HotParameterLeapArray>();
-    private Map<Integer, CacheMap<Object, AtomicInteger>> threadCountMap =
-        new ConcurrentHashMap<Integer, CacheMap<Object, AtomicInteger>>();
-
-    public Map<Integer, HotParameterLeapArray> getRollingParameters() {
-        return rollingParameters;
+    public void clear() {
+        synchronized (lock) {
+            threadCountMap.clear();
+            ruleTimeCounters.clear();
+            ruleTokenCounter.clear();
+        }
     }
 
-    public Map<Integer, CacheMap<Object, AtomicInteger>> getThreadCountMap() {
-        return threadCountMap;
-    }
-
-    public synchronized void clear() {
-        rollingParameters.clear();
-        threadCountMap.clear();
-    }
-
-    public void initializeForIndex(int index) {
-        if (!rollingParameters.containsKey(index)) {
-            synchronized (this) {
-                // putIfAbsent
-                if (rollingParameters.get(index) == null) {
-                    rollingParameters.put(index, new HotParameterLeapArray(sampleCount, intervalMs));
+    public void initialize(ParamFlowRule rule) {
+        if (!ruleTimeCounters.containsKey(rule)) {
+            synchronized (lock) {
+                if (ruleTimeCounters.get(rule) == null) {
+                    long size = Math.min(BASE_PARAM_MAX_CAPACITY * rule.getDurationInSec(), TOTAL_MAX_CAPACITY);
+                    ruleTimeCounters.put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(size));
                 }
+            }
+        }
 
-                if (threadCountMap.get(index) == null) {
-                    threadCountMap.put(index,
+        if (!ruleTokenCounter.containsKey(rule)) {
+            synchronized (lock) {
+                if (ruleTokenCounter.get(rule) == null) {
+                    long size = Math.min(BASE_PARAM_MAX_CAPACITY * rule.getDurationInSec(), TOTAL_MAX_CAPACITY);
+                    ruleTokenCounter.put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(size));
+                }
+            }
+        }
+
+        if (!threadCountMap.containsKey(rule.getParamIdx())) {
+            synchronized (lock) {
+                if (threadCountMap.get(rule.getParamIdx()) == null) {
+                    threadCountMap.put(rule.getParamIdx(),
                         new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(THREAD_COUNT_MAX_CAPACITY));
                 }
             }
@@ -204,102 +230,30 @@ public class ParameterMetric {
         }
     }
 
-    public void addPass(int count, Object... args) {
-        add(RollingParamEvent.REQUEST_PASSED, count, args);
-    }
-
-    public void addBlock(int count, Object... args) {
-        add(RollingParamEvent.REQUEST_BLOCKED, count, args);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private void add(RollingParamEvent event, int count, Object... args) {
-        if (args == null) {
-            return;
-        }
-        try {
-            for (int index = 0; index < args.length; index++) {
-                HotParameterLeapArray param = rollingParameters.get(index);
-                if (param == null) {
-                    continue;
-                }
-
-                Object arg = args[index];
-                if (arg == null) {
-                    continue;
-                }
-                if (Collection.class.isAssignableFrom(arg.getClass())) {
-                    for (Object value : ((Collection)arg)) {
-                        param.addValue(event, count, value);
-                    }
-                } else if (arg.getClass().isArray()) {
-                    int length = Array.getLength(arg);
-                    for (int i = 0; i < length; i++) {
-                        Object value = Array.get(arg, i);
-                        param.addValue(event, count, value);
-                    }
-                } else {
-                    param.addValue(event, count, arg);
-                }
-
-            }
-        } catch (Throwable e) {
-            RecordLog.warn("[ParameterMetric] Param exception", e);
-        }
-    }
-
-    public double getPassParamQps(int index, Object value) {
-        try {
-            HotParameterLeapArray parameter = rollingParameters.get(index);
-            if (parameter == null || value == null) {
-                return -1;
-            }
-            return parameter.getRollingAvg(RollingParamEvent.REQUEST_PASSED, value);
-        } catch (Throwable e) {
-            RecordLog.info(e.getMessage(), e);
-        }
-
-        return -1;
-    }
-
-    public long getBlockParamQps(int index, Object value) {
-        try {
-            HotParameterLeapArray parameter = rollingParameters.get(index);
-            if (parameter == null || value == null) {
-                return -1;
-            }
-
-            return (long)rollingParameters.get(index).getRollingAvg(RollingParamEvent.REQUEST_BLOCKED, value);
-        } catch (Throwable e) {
-            RecordLog.info(e.getMessage(), e);
-        }
-
-        return -1;
-    }
-
-    public Map<Object, Double> getTopPassParamCount(int index, int number) {
-        try {
-            HotParameterLeapArray parameter = rollingParameters.get(index);
-            if (parameter == null) {
-                return new HashMap<Object, Double>();
-            }
-
-            return parameter.getTopValues(RollingParamEvent.REQUEST_PASSED, number);
-        } catch (Throwable e) {
-            RecordLog.info(e.getMessage(), e);
-        }
-
-        return new HashMap<Object, Double>();
-    }
-
     public long getThreadCount(int index, Object value) {
-        if (threadCountMap.get(index) == null) {
+        CacheMap<Object, AtomicInteger> cacheMap = threadCountMap.get(index);
+        if (cacheMap == null) {
             return 0;
         }
 
-        AtomicInteger count = threadCountMap.get(index).get(value);
+        AtomicInteger count = cacheMap.get(value);
         return count == null ? 0L : count.get();
     }
 
-    private static final long THREAD_COUNT_MAX_CAPACITY = 4000;
+    /**
+     * Get the token counter map. Package-private for test.
+     *
+     * @return the token counter map
+     */
+    Map<ParamFlowRule, CacheMap<Object, AtomicLong>> getRuleTokenCounterMap() {
+        return ruleTokenCounter;
+    }
+
+    Map<Integer, CacheMap<Object, AtomicInteger>> getThreadCountMap() {
+        return threadCountMap;
+    }
+
+    Map<ParamFlowRule, CacheMap<Object, AtomicLong>> getRuleTimeCounterMap() {
+        return ruleTimeCounters;
+    }
 }
