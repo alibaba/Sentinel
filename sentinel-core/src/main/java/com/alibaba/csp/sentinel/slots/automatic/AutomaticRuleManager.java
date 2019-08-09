@@ -188,7 +188,6 @@ public class AutomaticRuleManager {
                 rules.put(resourceName,rules.get(resourceName).setCount(x[i]));
                 i+=1;
             }
-
         }
     }
 
