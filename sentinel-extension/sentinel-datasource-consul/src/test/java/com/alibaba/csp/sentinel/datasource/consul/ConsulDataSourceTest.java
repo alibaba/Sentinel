@@ -53,7 +53,7 @@ public class ConsulDataSourceTest {
                         "\"controlBehavior\":0, \"warmUpPeriodSec\":10, \"maxQueueingTimeMs\":500, \"controller\":null}]";
         initConsulRuleData(flowRulesJson);
         rules = flowConfigParser.convert(flowRulesJson);
-        consulDataSource = new ConsulDataSource<>(flowConfigParser, host, port, ruleKey, waitTimeout);
+        consulDataSource = new ConsulDataSource<>(host, port, ruleKey, waitTimeout, flowConfigParser);
         FlowRuleManager.register2Property(consulDataSource.getProperty());
     }
 
