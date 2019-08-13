@@ -17,6 +17,10 @@ package com.alibaba.csp.sentinel.slots.block.degrade;
 
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.context.Context;
+import com.alibaba.csp.sentinel.event.Event;
+import com.alibaba.csp.sentinel.event.RuleStatusContentWrapper;
+import com.alibaba.csp.sentinel.event.RuleStatusPublisherProvider;
+import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
@@ -28,6 +32,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+
+import static com.alibaba.csp.sentinel.event.RuleStatus.CIRCUIT_BREAKER_CLOSE;
+import static com.alibaba.csp.sentinel.event.RuleStatus.CIRCUIT_BREAK_START;
 
 /**
  * <p>
@@ -57,9 +64,10 @@ public class DegradeRule extends AbstractRule {
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(
-        Runtime.getRuntime().availableProcessors(), new NamedThreadFactory("sentinel-degrade-reset-task", true));
+            Runtime.getRuntime().availableProcessors(), new NamedThreadFactory("sentinel-degrade-reset-task", true));
 
-    public DegradeRule() {}
+    public DegradeRule() {
+    }
 
     public DegradeRule(String resourceName) {
         setResource(resourceName);
@@ -141,15 +149,21 @@ public class DegradeRule extends AbstractRule {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) { return true; }
-        if (o == null || getClass() != o.getClass()) { return false; }
-        if (!super.equals(o)) { return false; }
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
         DegradeRule that = (DegradeRule) o;
         return Double.compare(that.count, count) == 0 &&
-            timeWindow == that.timeWindow &&
-            grade == that.grade &&
-            rtSlowRequestAmount == that.rtSlowRequestAmount &&
-            minRequestAmount == that.minRequestAmount;
+                timeWindow == that.timeWindow &&
+                grade == that.grade &&
+                rtSlowRequestAmount == that.rtSlowRequestAmount &&
+                minRequestAmount == that.minRequestAmount;
     }
 
     @Override
@@ -166,14 +180,14 @@ public class DegradeRule extends AbstractRule {
     @Override
     public String toString() {
         return "DegradeRule{" +
-            "resource=" + getResource() +
-            ", grade=" + grade +
-            ", count=" + count +
-            ", limitApp=" + getLimitApp() +
-            ", timeWindow=" + timeWindow +
-            ", rtSlowRequestAmount=" + rtSlowRequestAmount +
-            ", minRequestAmount=" + minRequestAmount +
-            "}";
+                "resource=" + getResource() +
+                ", grade=" + grade +
+                ", count=" + count +
+                ", limitApp=" + getLimitApp() +
+                ", timeWindow=" + timeWindow +
+                ", rtSlowRequestAmount=" + rtSlowRequestAmount +
+                ", minRequestAmount=" + minRequestAmount +
+                "}";
     }
 
     // Internal implementation (will be deprecated and moved outside).
@@ -232,6 +246,12 @@ public class DegradeRule extends AbstractRule {
         if (cut.compareAndSet(false, true)) {
             ResetTask resetTask = new ResetTask(this);
             pool.schedule(resetTask, timeWindow, TimeUnit.SECONDS);
+            try {
+                Event<RuleStatusContentWrapper<DegradeRule>> event = new Event<>(new RuleStatusContentWrapper<>(CIRCUIT_BREAK_START, this), DegradeRuleManager.class, System.currentTimeMillis());
+                RuleStatusPublisherProvider.getPublisher().asynPublish(event);
+            } catch (Exception ex) {
+                RecordLog.warn("[RuleStatusPublisherProvider.getPublisher] publish event error", ex);
+            }
         }
 
         return false;
@@ -249,6 +269,12 @@ public class DegradeRule extends AbstractRule {
         public void run() {
             rule.passCount.set(0);
             rule.cut.set(false);
+            try {
+                Event<RuleStatusContentWrapper<DegradeRule>> event = new Event<>(new RuleStatusContentWrapper<>(CIRCUIT_BREAKER_CLOSE, rule), DegradeRuleManager.class, System.currentTimeMillis());
+                RuleStatusPublisherProvider.getPublisher().asynPublish(event);
+            } catch (Exception ex) {
+                RecordLog.warn("[RuleStatusPublisherProvider.getPublisher] publish event error", ex);
+            }
         }
     }
 }
