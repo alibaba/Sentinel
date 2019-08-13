@@ -7,6 +7,7 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
+import com.alibaba.csp.sentinel.slots.block.flow.controller.DefaultController;
 
 
 import java.util.*;
@@ -43,12 +44,15 @@ public class AutomaticRuleManager {
             // 设置初始值
             rule.setCount(defaultCount);
             rule.setLimitApp("default");
+            rule.setGrade(1);
+            rule.setRater(new DefaultController(rule.getCount(),rule.getGrade()));
             rules.put(resourceName,rule);
         }else{
             rule = rules.get(resourceName);
         }
 
-        boolean canPass = canPass(context.getCurNode(), count, rule);
+        boolean canPass = rule.getRater().canPass(context.getCurNode(),count);
+//        boolean canPass = canPass(context.getCurNode(), count, rule);
 
         if(!canPass)
             throw new FlowException(rule.getLimitApp(), rule);
@@ -189,6 +193,7 @@ public class AutomaticRuleManager {
                 i+=1;
             }
         }
+        updateRaters();
     }
 
 
@@ -201,5 +206,14 @@ public class AutomaticRuleManager {
         }
         return true;
     }
+
+    private static void updateRaters(){
+        for(String resourceName:rules.keySet()){
+            FlowRule rule = rules.get(resourceName);
+            rule.setRater(new DefaultController(rule.getCount(), rule.getGrade()));
+            rules.put(resourceName,rule);
+        }
+    }
+
 
 }
