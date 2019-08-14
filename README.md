@@ -1,6 +1,6 @@
 <img src="https://user-images.githubusercontent.com/9434884/43697219-3cb4ef3a-9975-11e8-9a9c-73f4f537442d.png" alt="Sentinel Logo" width="50%">
 
-# Sentinel: Sentinel of Your Application
+# Sentinel: The Sentinel of Your Microservices
 
 [![Travis Build Status](https://travis-ci.org/alibaba/Sentinel.svg?branch=master)](https://travis-ci.org/alibaba/Sentinel)
 [![Codecov](https://codecov.io/gh/alibaba/Sentinel/branch/master/graph/badge.svg)](https://codecov.io/gh/alibaba/Sentinel)
@@ -55,7 +55,7 @@ If your application is build in Maven, just add the following dependency in `pom
 <dependency>
     <groupId>com.alibaba.csp</groupId>
     <artifactId>sentinel-core</artifactId>
-    <version>1.6.1</version>
+    <version>1.6.3</version>
 </dependency>
 ```
 
@@ -124,11 +124,14 @@ Samples can be found in the [sentinel-demo](https://github.com/alibaba/Sentinel/
 
 Sentinel also provides a simple dashboard application, on which you can monitor the clients and configure the rules in real time.
 
+![dashboard](https://user-images.githubusercontent.com/9434884/55449295-84866d80-55fd-11e9-94e5-d3441f4a2b63.png)
+
 For details please refer to [Dashboard](https://github.com/alibaba/Sentinel/wiki/Dashboard).
 
 ## Trouble Shooting and Logs
 
-Sentinel will generate logs for troubleshooting. All the information can be found in [logs](https://github.com/alibaba/Sentinel/wiki/Logs).
+Sentinel will generate logs for troubleshooting and real-time monitoring.
+All the information can be found in [logs](https://github.com/alibaba/Sentinel/wiki/Logs).
 
 ## Bugs and Feedback
 

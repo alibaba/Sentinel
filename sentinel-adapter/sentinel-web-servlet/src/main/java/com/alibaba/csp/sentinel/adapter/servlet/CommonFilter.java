@@ -33,6 +33,7 @@ import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.adapter.servlet.callback.RequestOriginParser;
 import com.alibaba.csp.sentinel.adapter.servlet.callback.UrlCleaner;
 import com.alibaba.csp.sentinel.adapter.servlet.callback.WebCallbackManager;
+import com.alibaba.csp.sentinel.adapter.servlet.config.WebServletConfig;
 import com.alibaba.csp.sentinel.adapter.servlet.util.FilterUtil;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
@@ -59,9 +60,8 @@ public class CommonFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         HttpServletRequest sRequest = (HttpServletRequest) request;
-        Entry entry = null;
-
-        Entry methodEntry = null;
+        Entry urlEntry = null;
+        Entry httpMethodUrlEntry = null;
 
         try {
             String target = FilterUtil.filterTarget(sRequest);
@@ -73,39 +73,34 @@ public class CommonFilter implements Filter {
                 target = urlCleaner.clean(target);
             }
 
-            // Parse the request origin using registered origin parser.
-            String origin = parseOrigin(sRequest);
-
-            ContextUtil.enter(target, origin);
-            entry = SphU.entry(target, EntryType.IN);
-
-
-            // Add method specification if necessary
-            if (httpMethodSpecify) {
-                methodEntry = SphU.entry(sRequest.getMethod().toUpperCase() + COLON + target,
-                        EntryType.IN);
+            // If you intend to exclude some URLs, you can convert the URLs to the empty string ""
+            // in the UrlCleaner implementation.
+            if (!StringUtil.isEmpty(target)) {
+                // Parse the request origin using registered origin parser.
+                String origin = parseOrigin(sRequest);
+                ContextUtil.enter(WebServletConfig.WEB_SERVLET_CONTEXT_NAME, origin);
+                urlEntry = SphU.entry(target, EntryType.IN);
+                // Add method specification if necessary
+                if (httpMethodSpecify) {
+                    httpMethodUrlEntry = SphU.entry(sRequest.getMethod().toUpperCase() + COLON + target,
+                            EntryType.IN);
+                }
             }
-
             chain.doFilter(request, response);
         } catch (BlockException e) {
             HttpServletResponse sResponse = (HttpServletResponse) response;
             // Return the block page, or redirect to another URL.
             WebCallbackManager.getUrlBlockHandler().blocked(sRequest, sResponse, e);
-        } catch (IOException e2) {
-            Tracer.trace(e2);
+        } catch (IOException | ServletException | RuntimeException e2) {
+            Tracer.traceEntry(e2, urlEntry);
+            Tracer.traceEntry(e2, httpMethodUrlEntry);
             throw e2;
-        } catch (ServletException e3) {
-            Tracer.trace(e3);
-            throw e3;
-        } catch (RuntimeException e4) {
-            Tracer.trace(e4);
-            throw e4;
         } finally {
-            if (methodEntry != null) {
-                methodEntry.exit();
+            if (httpMethodUrlEntry != null) {
+                httpMethodUrlEntry.exit();
             }
-            if (entry != null) {
-                entry.exit();
+            if (urlEntry != null) {
+                urlEntry.exit();
             }
             ContextUtil.exit();
         }
