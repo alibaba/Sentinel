@@ -20,8 +20,8 @@ import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlotEntryCallback;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowSlot;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParameterMetric;
+import com.alibaba.csp.sentinel.slots.block.flow.param.ParameterMetricStorage;
 
 /**
  * @author Eric Zhao
@@ -30,13 +30,12 @@ import com.alibaba.csp.sentinel.slots.block.flow.param.ParameterMetric;
 public class ParamFlowStatisticEntryCallback implements ProcessorSlotEntryCallback<DefaultNode> {
 
     @Override
-    public void onPass(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, Object... args)
-        throws Exception {
+    public void onPass(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, Object... args) {
         // The "hot spot" parameter metric is present only if parameter flow rules for the resource exist.
-        ParameterMetric parameterMetric = ParamFlowSlot.getParamMetric(resourceWrapper);
+        ParameterMetric parameterMetric = ParameterMetricStorage.getParamMetric(resourceWrapper);
 
         if (parameterMetric != null) {
-            parameterMetric.addPass(count, args);
+            parameterMetric.addThreadCount(args);
         }
     }
 

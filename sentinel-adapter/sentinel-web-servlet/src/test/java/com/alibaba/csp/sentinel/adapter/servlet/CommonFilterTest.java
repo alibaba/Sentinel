@@ -83,13 +83,13 @@ public class CommonFilterTest {
 
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
         assertNotNull(cn);
-        assertEquals(1, cn.passQps());
+        assertEquals(1, cn.passQps(), 0.01);
 
         testCommonBlockAndRedirectBlockPage(url, cn);
 
         // Test for url cleaner.
         testUrlCleaner();
-
+        testUrlExclusion();
         testCustomOriginParser();
     }
 
@@ -99,7 +99,7 @@ public class CommonFilterTest {
         this.mvc.perform(get(url).accept(MediaType.TEXT_PLAIN))
             .andExpect(status().isOk())
             .andExpect(content().string(FilterUtil.DEFAULT_BLOCK_MSG));
-        assertEquals(1, cn.blockQps());
+        assertEquals(1, cn.blockQps(), 0.01);
 
         // Test for redirect.
         String redirectUrl = "http://some-location.com";
@@ -132,10 +132,29 @@ public class CommonFilterTest {
             .andExpect(status().isOk())
             .andExpect(content().string("Hello 2"));
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(fooPrefix + "*");
-        assertEquals(2, cn.passQps());
+        assertEquals(2, cn.passQps(), 0.01);
         assertNull(ClusterBuilderSlot.getClusterNode(url1));
         assertNull(ClusterBuilderSlot.getClusterNode(url2));
 
+        WebCallbackManager.setUrlCleaner(new DefaultUrlCleaner());
+    }
+
+    private void testUrlExclusion() throws Exception {
+        final String excludePrefix = "/exclude/";
+        String url = excludePrefix + 1;
+        WebCallbackManager.setUrlCleaner(new UrlCleaner() {
+            @Override
+            public String clean(String originUrl) {
+                if(originUrl.startsWith(excludePrefix)) {
+                    return "";
+                }
+                return originUrl;
+            }
+        });
+        this.mvc.perform(get(url).accept(MediaType.TEXT_PLAIN))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Exclude 1"));
+        assertNull(ClusterBuilderSlot.getClusterNode(url));
         WebCallbackManager.setUrlCleaner(new DefaultUrlCleaner());
     }
 
@@ -171,6 +190,6 @@ public class CommonFilterTest {
     @After
     public void cleanUp() {
         FlowRuleManager.loadRules(null);
-        ClusterBuilderSlot.getClusterNodeMap().clear();
+        ClusterBuilderSlot.resetClusterNodes();
     }
 }

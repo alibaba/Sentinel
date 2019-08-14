@@ -105,7 +105,7 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
       let mac = $scope.macInputModel.split(':');
       ParamFlowService.queryMachineRules($scope.app, mac[0], mac[1])
         .success(function (data) {
-          if (data.code == 0 && data.data) {
+          if (data.code === 0 && data.data) {
             $scope.loadError = undefined;
             $scope.rules = data.data;
             $scope.rulesPageConfig.totalCount = $scope.rules.length;
@@ -129,7 +129,10 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
     var paramFlowRuleDialog;
 
     $scope.editRule = function (rule) {
-      $scope.currentRule = rule;
+      $scope.currentRule = angular.copy(rule);
+      if ($scope.currentRule.rule && $scope.currentRule.rule.durationInSec === undefined) {
+        $scope.currentRule.rule.durationInSec = 1;
+      }
       $scope.paramFlowRuleDialog = {
         title: '编辑热点规则',
         type: 'edit',
@@ -157,12 +160,22 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
           paramFlowItemList: [],
           count: 0,
           limitApp: 'default',
+          controlBehavior: 0,
+          durationInSec: 1,
+          burstCount: 0,
+          maxQueueingTimeMs: 0,
+          clusterMode: false,
+          clusterConfig: {
+            thresholdType: 0,
+            fallbackToLocalWhenFail: true,
+          }
         }
       };
       $scope.paramFlowRuleDialog = {
         title: '新增热点规则',
         type: 'add',
         confirmBtnText: '新增',
+        supportAdvanced: true,
         showAdvanceButton: true,
       };
       paramFlowRuleDialog = ngDialog.open({
@@ -290,7 +303,7 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
               $scope.machines = [];
               $scope.macsInputOptions = [];
               data.data.forEach(function (item) {
-                if (item.health) {
+                if (item.healthy) {
                   $scope.macsInputOptions.push({
                     text: item.ip + ':' + item.port,
                     value: item.ip + ':' + item.port

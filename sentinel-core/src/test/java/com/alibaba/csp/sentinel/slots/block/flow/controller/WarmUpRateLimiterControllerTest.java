@@ -22,15 +22,19 @@ public class WarmUpRateLimiterControllerTest {
 
         Node node = mock(Node.class);
 
-        when(node.passQps()).thenReturn(100L);
-        when(node.previousPassQps()).thenReturn(100L);
+        when(node.passQps()).thenReturn(100d);
+        when(node.previousPassQps()).thenReturn(100d);
 
         assertTrue(controller.canPass(node, 1));
 
+        // Easily fail in single request testing, so we increase it to 10 requests and test the average time
         long start = System.currentTimeMillis();
-        assertTrue(controller.canPass(node, 1));
-        long cost = System.currentTimeMillis() - start;
-        assertTrue(cost >= 100 && cost <= 110);
+        int requests = 10;
+        for (int i = 0; i < requests; i++) {
+            assertTrue(controller.canPass(node, 1));
+        }
+        float cost = (System.currentTimeMillis() - start) / 1.0f / requests;
+        assertTrue(Math.abs(cost - 100) < 10);
     }
 
     @Test
@@ -39,8 +43,8 @@ public class WarmUpRateLimiterControllerTest {
 
         Node node = mock(Node.class);
 
-        when(node.passQps()).thenReturn(100L);
-        when(node.previousPassQps()).thenReturn(100L);
+        when(node.passQps()).thenReturn(100d);
+        when(node.previousPassQps()).thenReturn(100d);
 
         assertTrue(controller.canPass(node, 1));
 

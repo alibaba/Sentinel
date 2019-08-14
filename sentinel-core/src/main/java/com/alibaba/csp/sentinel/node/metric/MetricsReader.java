@@ -41,9 +41,10 @@ class MetricsReader {
     /**
      * @return if should continue read, return true, else false.
      */
-    boolean readMetricsInOneFileByEndTime(List<MetricNode> list, String fileName,
-                                          long offset, long endTimeMs, String identity) throws Exception {
+    boolean readMetricsInOneFileByEndTime(List<MetricNode> list, String fileName, long offset,
+                                          long beginTimeMs, long endTimeMs, String identity) throws Exception {
         FileInputStream in = null;
+        long beginSecond = beginTimeMs / 1000;
         long endSecond = endTimeMs / 1000;
         try {
             in = new FileInputStream(fileName);
@@ -53,6 +54,10 @@ class MetricsReader {
             while ((line = reader.readLine()) != null) {
                 MetricNode node = MetricNode.fromFatString(line);
                 long currentSecond = node.getTimestamp() / 1000;
+                // currentSecond should >= beginSecond, otherwise a wrong metric file must occur
+                if (currentSecond < beginSecond) {
+                    return false;
+                }
                 if (currentSecond <= endSecond) {
                     // read all
                     if (identity == null) {
@@ -114,12 +119,12 @@ class MetricsReader {
      * When identity is null, all metric between the time intervalMs will be read, otherwise, only the specific
      * identity will be read.
      */
-    List<MetricNode> readMetricsByEndTime(List<String> fileNames, int pos,
-                                          long offset, long endTimeMs, String identity) throws Exception {
+    List<MetricNode> readMetricsByEndTime(List<String> fileNames, int pos, long offset,
+                                          long beginTimeMs, long endTimeMs, String identity) throws Exception {
         List<MetricNode> list = new ArrayList<MetricNode>(1024);
-        if (readMetricsInOneFileByEndTime(list, fileNames.get(pos++), offset, endTimeMs, identity)) {
+        if (readMetricsInOneFileByEndTime(list, fileNames.get(pos++), offset, beginTimeMs, endTimeMs, identity)) {
             while (pos < fileNames.size()
-                    && readMetricsInOneFileByEndTime(list, fileNames.get(pos++), 0, endTimeMs, identity)) {
+                && readMetricsInOneFileByEndTime(list, fileNames.get(pos++), 0, beginTimeMs, endTimeMs, identity)) {
             }
         }
         return list;

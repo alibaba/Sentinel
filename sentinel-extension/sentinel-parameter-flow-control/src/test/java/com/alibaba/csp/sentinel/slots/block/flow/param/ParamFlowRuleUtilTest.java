@@ -35,7 +35,7 @@ public class ParamFlowRuleUtilTest {
             .setCount(1)
             .setParamIdx(-1);
         assertFalse(ParamFlowRuleUtil.isValidRule(rule4));
-        assertFalse(ParamFlowRuleUtil.isValidRule(rule5));
+        assertTrue(ParamFlowRuleUtil.isValidRule(rule5));
 
         ParamFlowRule goodRule = new ParamFlowRule("abc")
             .setCount(10)

@@ -39,6 +39,21 @@ public class RateLimiterController implements TrafficShapingController {
 
     @Override
     public boolean canPass(Node node, int acquireCount) {
+        return canPass(node, acquireCount, false);
+    }
+
+    @Override
+    public boolean canPass(Node node, int acquireCount, boolean prioritized) {
+        // Pass when acquire count is less or equal than 0.
+        if (acquireCount <= 0) {
+            return true;
+        }
+        // Reject when count is less or equal than 0.
+        // Otherwise,the costTime will be max of long and waitTime will overflow in some cases.
+        if (count <= 0) {
+            return false;
+        }
+
         long currentTime = TimeUtil.currentTimeMillis();
         // Calculate the interval between every two requests.
         long costTime = Math.round(1.0 * (acquireCount) / count * 1000);
@@ -53,17 +68,20 @@ public class RateLimiterController implements TrafficShapingController {
         } else {
             // Calculate the time to wait.
             long waitTime = costTime + latestPassedTime.get() - TimeUtil.currentTimeMillis();
-            if (waitTime >= maxQueueingTimeMs) {
+            if (waitTime > maxQueueingTimeMs) {
                 return false;
             } else {
                 long oldTime = latestPassedTime.addAndGet(costTime);
                 try {
                     waitTime = oldTime - TimeUtil.currentTimeMillis();
-                    if (waitTime >= maxQueueingTimeMs) {
+                    if (waitTime > maxQueueingTimeMs) {
                         latestPassedTime.addAndGet(-costTime);
                         return false;
                     }
-                    Thread.sleep(waitTime);
+                    // in race condition waitTime may <= 0
+                    if (waitTime > 0) {
+                        Thread.sleep(waitTime);
+                    }
                     return true;
                 } catch (InterruptedException e) {
                 }

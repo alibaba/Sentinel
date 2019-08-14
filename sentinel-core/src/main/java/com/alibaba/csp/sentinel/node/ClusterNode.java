@@ -25,7 +25,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 /**
  * <p>
  * This class stores summary runtime statistics of the resource, including rt, thread count, qps
- * and so on. Same resource shares the same {@link ClusterNode} globally, no matter in witch
+ * and so on. Same resource shares the same {@link ClusterNode} globally, no matter in which
  * {@link com.alibaba.csp.sentinel.context.Context}.
  * </p>
  * <p>
@@ -43,9 +43,12 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 public class ClusterNode extends StatisticNode {
 
     /**
-     * The longer the application runs, the more stable this mapping will
-     * become. so we don't concurrent map but a lock. as this lock only happens
+     * <p>The origin map holds the pair: (origin, originNode) for one specific resource.</p>
+     * <p>
+     * The longer the application runs, the more stable this mapping will become.
+     * So we didn't use concurrent map here, but a lock, as this lock only happens
      * at the very beginning while concurrent map will hold the lock all the time.
+     * </p>
      */
     private Map<String, StatisticNode> originCountMap = new HashMap<String, StatisticNode>();
 
@@ -69,8 +72,7 @@ public class ClusterNode extends StatisticNode {
                 if (statisticNode == null) {
                     // The node is absent, create a new node for the origin.
                     statisticNode = new StatisticNode();
-                    HashMap<String, StatisticNode> newMap = new HashMap<String, StatisticNode>(
-                        originCountMap.size() + 1);
+                    HashMap<String, StatisticNode> newMap = new HashMap<>(originCountMap.size() + 1);
                     newMap.putAll(originCountMap);
                     newMap.put(origin, statisticNode);
                     originCountMap = newMap;
@@ -93,10 +95,11 @@ public class ClusterNode extends StatisticNode {
      * @param count     count to add
      */
     public void trace(Throwable throwable, int count) {
+        if (count <= 0) {
+            return;
+        }
         if (!BlockException.isBlockException(throwable)) {
-            for (int i = 0; i < count; i++) {
-                this.increaseExceptionQps();
-            }
+            this.increaseExceptionQps(count);
         }
     }
 }

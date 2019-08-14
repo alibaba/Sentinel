@@ -43,11 +43,23 @@ public class DegradeRuleManagerTest {
             .setCount(-3)
             .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT)
             .setTimeWindow(2);
+        DegradeRule rule5 = new DegradeRule("Sentinel")
+            .setCount(97)
+            .setGrade(RuleConstant.DEGRADE_GRADE_RT)
+            .setTimeWindow(15)
+            .setRtSlowRequestAmount(0);
+        DegradeRule rule6 = new DegradeRule("Sentinel")
+            .setCount(0.93d)
+            .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO)
+            .setTimeWindow(20)
+            .setMinRequestAmount(0);
         assertFalse(DegradeRuleManager.isValidRule(rule1));
         assertFalse(DegradeRuleManager.isValidRule(rule2));
         assertFalse(DegradeRuleManager.isValidRule(rule3));
         assertTrue(DegradeRuleManager.isValidRule(rule3.setCount(1.0d)));
         assertTrue(DegradeRuleManager.isValidRule(rule3.setCount(0.0d)));
         assertFalse(DegradeRuleManager.isValidRule(rule4));
+        assertFalse(DegradeRuleManager.isValidRule(rule5));
+        assertFalse(DegradeRuleManager.isValidRule(rule6));
     }
 }

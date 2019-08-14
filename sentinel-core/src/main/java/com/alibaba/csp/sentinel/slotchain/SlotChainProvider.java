@@ -15,12 +15,9 @@
  */
 package com.alibaba.csp.sentinel.slotchain;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ServiceLoader;
-
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.DefaultSlotChainBuilder;
+import java.util.ServiceLoader;
 
 /**
  * A provider for creating slot chains via resolved slot chain builder SPI.
@@ -30,7 +27,7 @@ import com.alibaba.csp.sentinel.slots.DefaultSlotChainBuilder;
  */
 public final class SlotChainProvider {
 
-    private static volatile SlotChainBuilder builder = null;
+    private static volatile SlotChainBuilder slotChainBuilder = null;
 
     private static final ServiceLoader<SlotChainBuilder> LOADER = ServiceLoader.load(SlotChainBuilder.class);
 
@@ -41,37 +38,33 @@ public final class SlotChainProvider {
      * @return new created slot chain
      */
     public static ProcessorSlotChain newSlotChain() {
-        if (builder != null) {
-            return builder.build();
+        if (slotChainBuilder != null) {
+            return slotChainBuilder.build();
         }
 
         resolveSlotChainBuilder();
 
-        if (builder == null) {
+        if (slotChainBuilder == null) {
             RecordLog.warn("[SlotChainProvider] Wrong state when resolving slot chain builder, using default");
-            builder = new DefaultSlotChainBuilder();
+            slotChainBuilder = new DefaultSlotChainBuilder();
         }
-        return builder.build();
+        return slotChainBuilder.build();
     }
 
     private static void resolveSlotChainBuilder() {
-        List<SlotChainBuilder> list = new ArrayList<SlotChainBuilder>();
-        boolean hasOther = false;
         for (SlotChainBuilder builder : LOADER) {
             if (builder.getClass() != DefaultSlotChainBuilder.class) {
-                hasOther = true;
-                list.add(builder);
+                slotChainBuilder = builder;
+                break;
             }
         }
-        if (hasOther) {
-            builder = list.get(0);
-        } else {
+        if (slotChainBuilder == null){
             // No custom builder, using default.
-            builder = new DefaultSlotChainBuilder();
+            slotChainBuilder = new DefaultSlotChainBuilder();
         }
 
         RecordLog.info("[SlotChainProvider] Global slot chain builder resolved: "
-            + builder.getClass().getCanonicalName());
+            + slotChainBuilder.getClass().getCanonicalName());
     }
 
     private SlotChainProvider() {}

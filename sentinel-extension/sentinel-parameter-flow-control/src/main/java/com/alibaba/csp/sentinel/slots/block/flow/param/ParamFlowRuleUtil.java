@@ -17,20 +17,38 @@ package com.alibaba.csp.sentinel.slots.block.flow.param;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleUtil;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
+import com.alibaba.csp.sentinel.util.function.Function;
+import com.alibaba.csp.sentinel.util.function.Predicate;
 
 /**
  * @author Eric Zhao
  */
 public final class ParamFlowRuleUtil {
 
+    /**
+     * Check whether the provided rule is valid.
+     *
+     * @param rule any parameter rule
+     * @return true if valid, otherwise false
+     */
     public static boolean isValidRule(ParamFlowRule rule) {
         return rule != null && !StringUtil.isBlank(rule.getResource()) && rule.getCount() >= 0
-            && rule.getParamIdx() != null && rule.getParamIdx() >= 0 && checkCluster(rule);
+            && rule.getGrade() >= 0 && rule.getParamIdx() != null
+            && rule.getBurstCount() >= 0 && rule.getControlBehavior() >= 0
+            && rule.getDurationInSec() > 0 && rule.getMaxQueueingTimeMs() >= 0
+            && checkCluster(rule);
     }
 
     private static boolean checkCluster(/*@PreChecked*/ ParamFlowRule rule) {
@@ -38,13 +56,24 @@ public final class ParamFlowRuleUtil {
             return true;
         }
         ParamFlowClusterConfig clusterConfig = rule.getClusterConfig();
-        return clusterConfig != null && validClusterRuleId(clusterConfig.getFlowId());
+        if (clusterConfig == null) {
+            return false;
+        }
+        if (!FlowRuleUtil.isWindowConfigValid(clusterConfig.getSampleCount(), clusterConfig.getWindowIntervalMs())) {
+            return false;
+        }
+        return validClusterRuleId(clusterConfig.getFlowId());
     }
 
     public static boolean validClusterRuleId(Long id) {
         return id != null && id > 0;
     }
 
+    /**
+     * Fill the parameter rule with parsed items.
+     *
+     * @param rule valid parameter rule
+     */
     public static void fillExceptionFlowItems(ParamFlowRule rule) {
         if (rule != null) {
             if (rule.getParamFlowItemList() == null) {
@@ -56,11 +85,111 @@ public final class ParamFlowRuleUtil {
         }
     }
 
-    static Map<Object, Integer> parseHotItems(List<ParamFlowItem> items) {
-        Map<Object, Integer> itemMap = new HashMap<Object, Integer>();
-        if (items == null || items.isEmpty()) {
-            return itemMap;
+    /**
+     * Build the flow rule map from raw list of flow rules, grouping by resource name.
+     *
+     * @param list raw list of flow rules
+     * @return constructed new flow rule map; empty map if list is null or empty, or no valid rules
+     * @since 1.6.1
+     */
+    public static Map<String, List<ParamFlowRule>> buildParamRuleMap(List<ParamFlowRule> list) {
+        return buildParamRuleMap(list, null);
+    }
+
+    /**
+     * Build the parameter flow rule map from raw list of rules, grouping by resource name.
+     *
+     * @param list          raw list of parameter flow rules
+     * @param filter        rule filter
+     * @return constructed new parameter flow rule map; empty map if list is null or empty, or no wanted rules
+     * @since 1.6.1
+     */
+    public static Map<String, List<ParamFlowRule>> buildParamRuleMap(List<ParamFlowRule> list,
+                                                                     Predicate<ParamFlowRule> filter) {
+        return buildParamRuleMap(list, filter, true);
+    }
+
+    /**
+     * Build the parameter flow rule map from raw list of rules, grouping by resource name.
+     *
+     * @param list          raw list of parameter flow rules
+     * @param filter        rule filter
+     * @param shouldSort    whether the rules should be sorted
+     * @return constructed new parameter flow rule map; empty map if list is null or empty, or no wanted rules
+     * @since 1.6.1
+     */
+    public static Map<String, List<ParamFlowRule>> buildParamRuleMap(List<ParamFlowRule> list,
+                                                                     Predicate<ParamFlowRule> filter,
+                                                                     boolean shouldSort) {
+        return buildParamRuleMap(list, EXTRACT_RESOURCE, filter, shouldSort);
+    }
+
+    /**
+     * Build the rule map from raw list of parameter flow rules, grouping by provided group function.
+     *
+     * @param list          raw list of parameter flow rules
+     * @param groupFunction grouping function of the map (by key)
+     * @param filter        rule filter
+     * @param shouldSort    whether the rules should be sorted
+     * @param <K>           type of key
+     * @return constructed new rule map; empty map if list is null or empty, or no wanted rules
+     * @since 1.6.1
+     */
+    public static <K> Map<K, List<ParamFlowRule>> buildParamRuleMap(List<ParamFlowRule> list,
+                                                                    Function<ParamFlowRule, K> groupFunction,
+                                                                    Predicate<ParamFlowRule> filter,
+                                                                    boolean shouldSort) {
+        AssertUtil.notNull(groupFunction, "groupFunction should not be null");
+        Map<K, List<ParamFlowRule>> newRuleMap = new ConcurrentHashMap<>();
+        if (list == null || list.isEmpty()) {
+            return newRuleMap;
         }
+        Map<K, Set<ParamFlowRule>> tmpMap = new ConcurrentHashMap<>();
+
+        for (ParamFlowRule rule : list) {
+            if (!ParamFlowRuleUtil.isValidRule(rule)) {
+                RecordLog.warn("[ParamFlowRuleManager] Ignoring invalid rule when loading new rules: " + rule);
+                continue;
+            }
+            if (filter != null && !filter.test(rule)) {
+                continue;
+            }
+            if (StringUtil.isBlank(rule.getLimitApp())) {
+                rule.setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
+            }
+
+            ParamFlowRuleUtil.fillExceptionFlowItems(rule);
+
+            K key = groupFunction.apply(rule);
+            if (key == null) {
+                continue;
+            }
+            Set<ParamFlowRule> flowRules = tmpMap.get(key);
+
+            if (flowRules == null) {
+                // Use hash set here to remove duplicate rules.
+                flowRules = new HashSet<>();
+                tmpMap.put(key, flowRules);
+            }
+
+            flowRules.add(rule);
+        }
+        for (Entry<K, Set<ParamFlowRule>> entries : tmpMap.entrySet()) {
+            List<ParamFlowRule> rules = new ArrayList<>(entries.getValue());
+            if (shouldSort) {
+                // TODO: Sort the rules.
+            }
+            newRuleMap.put(entries.getKey(), rules);
+        }
+
+        return newRuleMap;
+    }
+
+    static Map<Object, Integer> parseHotItems(List<ParamFlowItem> items) {
+        if (items == null || items.isEmpty()) {
+            return new HashMap<>();
+        }
+        Map<Object, Integer> itemMap = new HashMap<>(items.size());
         for (ParamFlowItem item : items) {
             // Value should not be null.
             Object value;
@@ -109,6 +238,13 @@ public final class ParamFlowRuleUtil {
 
         return value;
     }
+
+    private static final Function<ParamFlowRule, String> EXTRACT_RESOURCE = new Function<ParamFlowRule, String>() {
+        @Override
+        public String apply(ParamFlowRule rule) {
+            return rule.getResource();
+        }
+    };
 
     private ParamFlowRuleUtil() {}
 }

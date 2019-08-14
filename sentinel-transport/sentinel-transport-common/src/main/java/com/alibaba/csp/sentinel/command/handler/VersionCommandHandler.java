@@ -25,7 +25,7 @@ import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
  * @author jialiang.linjl
  * @author Eric Zhao
  */
-@CommandMapping(name = "version")
+@CommandMapping(name = "version", desc = "get sentinel version")
 public class VersionCommandHandler implements CommandHandler<String> {
 
     @Override

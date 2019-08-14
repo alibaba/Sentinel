@@ -19,8 +19,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import com.alibaba.csp.sentinel.EntryType;
-import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
 import org.junit.After;
@@ -40,33 +38,36 @@ public class ParamFlowRuleManagerTest {
     @Before
     public void setUp() {
         ParamFlowRuleManager.loadRules(null);
+        ParameterMetricStorage.getMetricsMap().clear();
     }
 
     @After
     public void tearDown() {
         ParamFlowRuleManager.loadRules(null);
+        ParameterMetricStorage.getMetricsMap().clear();
     }
 
     @Test
-    public void testLoadHotParamRulesClearingUnusedMetrics() {
+    public void testLoadParamRulesClearingUnusedMetrics() {
         final String resA = "resA";
         ParamFlowRule ruleA = new ParamFlowRule(resA)
             .setCount(1)
             .setParamIdx(0);
         ParamFlowRuleManager.loadRules(Collections.singletonList(ruleA));
-        ParamFlowSlot.getMetricsMap().put(new StringResourceWrapper(resA, EntryType.IN), new ParameterMetric());
-        assertNotNull(ParamFlowSlot.getHotParamMetricForName(resA));
+        ParameterMetricStorage.getMetricsMap().put(resA, new ParameterMetric());
+        assertNotNull(ParameterMetricStorage.getParamMetricForResource(resA));
 
         final String resB = "resB";
         ParamFlowRule ruleB = new ParamFlowRule(resB)
             .setCount(2)
             .setParamIdx(1);
         ParamFlowRuleManager.loadRules(Collections.singletonList(ruleB));
-        assertNull("The unused hot param metric should be cleared", ParamFlowSlot.getHotParamMetricForName(resA));
+        assertNull("The unused hot param metric should be cleared",
+            ParameterMetricStorage.getParamMetricForResource(resA));
     }
 
     @Test
-    public void testLoadHotParamRulesAndGet() {
+    public void testLoadParamRulesAndGet() {
         final String resA = "abc";
         final String resB = "foo";
         final String resC = "baz";
@@ -79,7 +80,7 @@ public class ParamFlowRuleManagerTest {
         ParamFlowRule ruleC = new ParamFlowRule(resA)
             .setCount(8)
             .setParamIdx(1)
-            .setGrade(RuleConstant.FLOW_GRADE_QPS);
+            .setGrade(RuleConstant.FLOW_GRADE_THREAD);
         // Rule D is for resource B.
         ParamFlowRule ruleD = new ParamFlowRule(resB)
             .setCount(9)

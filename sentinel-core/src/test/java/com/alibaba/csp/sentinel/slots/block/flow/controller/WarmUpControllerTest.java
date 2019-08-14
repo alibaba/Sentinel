@@ -23,39 +23,41 @@ import static org.mockito.Mockito.when;
 import org.junit.Test;
 
 import com.alibaba.csp.sentinel.node.Node;
-import com.alibaba.csp.sentinel.slots.block.flow.controller.WarmUpController;
+import com.alibaba.csp.sentinel.test.AbstractTimeBasedTest;
 
 /**
  * @author jialiang.linjl
  */
-public class WarmUpControllerTest {
+public class WarmUpControllerTest extends AbstractTimeBasedTest {
 
     @Test
     public void testWarmUp() throws InterruptedException {
         WarmUpController warmupController = new WarmUpController(10, 10, 3);
+        
+        setCurrentMillis(System.currentTimeMillis());
 
         Node node = mock(Node.class);
 
-        when(node.passQps()).thenReturn(8L);
-        when(node.previousPassQps()).thenReturn(1L);
+        when(node.passQps()).thenReturn(8d);
+        when(node.previousPassQps()).thenReturn(1d);
 
         assertFalse(warmupController.canPass(node, 1));
 
-        when(node.passQps()).thenReturn(1L);
-        when(node.previousPassQps()).thenReturn(1L);
+        when(node.passQps()).thenReturn(1d);
+        when(node.previousPassQps()).thenReturn(1d);
 
         assertTrue(warmupController.canPass(node, 1));
 
-        when(node.previousPassQps()).thenReturn(10L);
+        when(node.previousPassQps()).thenReturn(10d);
 
         for (int i = 0; i < 100; i++) {
-            Thread.sleep(1000);
+            sleep(100);
             warmupController.canPass(node, 1);
         }
-        when(node.passQps()).thenReturn(8L);
+        when(node.passQps()).thenReturn(8d);
         assertTrue(warmupController.canPass(node, 1));
 
-        when(node.passQps()).thenReturn(10L);
+        when(node.passQps()).thenReturn(10d);
         assertFalse(warmupController.canPass(node, 1));
     }
 }

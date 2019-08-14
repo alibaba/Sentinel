@@ -36,6 +36,9 @@ public final class RuleConstant {
      */
     public static final int DEGRADE_GRADE_EXCEPTION_COUNT = 2;
 
+    public static final int DEGRADE_DEFAULT_SLOW_REQUEST_AMOUNT = 5;
+    public static final int DEGRADE_DEFAULT_MIN_REQUEST_AMOUNT = 5;
+
     public static final int AUTHORITY_WHITE = 0;
     public static final int AUTHORITY_BLACK = 1;
 
@@ -50,6 +53,9 @@ public final class RuleConstant {
 
     public static final String LIMIT_APP_DEFAULT = "default";
     public static final String LIMIT_APP_OTHER = "other";
+
+    public static final int DEFAULT_SAMPLE_COUNT = 2;
+    public static final int DEFAULT_WINDOW_INTERVAL_MS = 1000;
 
     private RuleConstant() {}
 }

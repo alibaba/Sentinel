@@ -31,14 +31,13 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
       if (!$scope.macInputModel) {
         return;
       }
-      var mac = $scope.macInputModel.split(':');
+      let mac = $scope.macInputModel.split(':');
       SystemService.queryMachineRules($scope.app, mac[0], mac[1]).success(
         function (data) {
-          if (data.code == 0 && data.data) {
+          if (data.code === 0 && data.data) {
             $scope.rules = data.data;
             $.each($scope.rules, function (idx, rule) {
-              // rule.orginEnable = rule.enable;
-              if (rule.avgLoad >= 0) {
+              if (rule.highestSystemLoad >= 0) {
                 rule.grade = 0;
               } else if (rule.avgRt >= 0) {
                 rule.grade = 1;
@@ -46,6 +45,8 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
                 rule.grade = 2;
               } else if (rule.qps >= 0) {
                 rule.grade = 3;
+              } else if (rule.highestCpuUsage >= 0) {
+                  rule.grade = 4;
               }
             });
             $scope.rulesPageConfig.totalCount = $scope.rules.length;
@@ -54,11 +55,12 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
             $scope.rulesPageConfig.totalCount = 0;
           }
         });
-    };
+    }
+
     $scope.getMachineRules = getMachineRules;
     var systemRuleDialog;
     $scope.editRule = function (rule) {
-      $scope.currentRule = rule;
+      $scope.currentRule = angular.copy(rule);
       $scope.systemRuleDialog = {
         title: '编辑系统保护规则',
         type: 'edit',
@@ -94,22 +96,21 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
     };
 
     $scope.saveRule = function () {
-      if ($scope.systemRuleDialog.type == 'add') {
+      if ($scope.systemRuleDialog.type === 'add') {
         addNewRule($scope.currentRule);
-      } else if ($scope.systemRuleDialog.type == 'edit') {
+      } else if ($scope.systemRuleDialog.type === 'edit') {
         saveRule($scope.currentRule, true);
       }
-    }
-
+    };
 
     var confirmDialog;
     $scope.deleteRule = function (rule) {
       $scope.currentRule = rule;
       var ruleTypeDesc = '';
       var ruleTypeCount = null;
-      if (rule.avgLoad != -1) {
+      if (rule.highestSystemLoad != -1) {
         ruleTypeDesc = 'LOAD';
-        ruleTypeCount = rule.avgLoad;
+        ruleTypeCount = rule.highestSystemLoad;
       } else if (rule.avgRt != -1) {
         ruleTypeDesc = 'RT';
         ruleTypeCount = rule.avgRt;
@@ -119,6 +120,9 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
       } else if (rule.qps != -1) {
         ruleTypeDesc = 'QPS';
         ruleTypeCount = rule.qps;
+      }else if (rule.highestCpuUsage != -1) {
+          ruleTypeDesc = 'CPU 使用率';
+          ruleTypeCount = rule.highestCpuUsage;
       }
 
       $scope.confirmDialog = {
@@ -137,7 +141,7 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
 
 
     $scope.confirm = function () {
-      if ($scope.confirmDialog.type == 'delete_rule') {
+      if ($scope.confirmDialog.type === 'delete_rule') {
         deleteRule($scope.currentRule);
         // } else if ($scope.confirmDialog.type == 'enable_rule') {
         //     $scope.currentRule.enable = true;
@@ -156,42 +160,47 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
 
     function deleteRule(rule) {
       SystemService.deleteRule(rule).success(function (data) {
-        if (data.code == 0) {
+        if (data.code === 0) {
           getMachineRules();
           confirmDialog.close();
+        } else if (data.msg != null) {
+            alert('失败：' + data.msg);
         } else {
-          alert
+            alert('失败：未知错误');
         }
       });
-    };
+    }
 
     function addNewRule(rule) {
+      if (rule.grade == 4 && (rule.highestCpuUsage < 0 || rule.highestCpuUsage > 1)) {
+        alert('CPU 使用率模式的取值范围应为 [0.0, 1.0]，对应 0% - 100%');
+        return;
+      }
       SystemService.newRule(rule).success(function (data) {
-        if (data.code == 0) {
+        if (data.code === 0) {
           getMachineRules();
           systemRuleDialog.close();
+        } else if (data.msg != null) {
+          alert('失败：' + data.msg);
         } else {
-          alert('失败!');
+          alert('失败：未知错误');
         }
       });
-    };
+    }
 
     function saveRule(rule, edit) {
       SystemService.saveRule(rule).success(function (data) {
-        if (data.code == 0) {
-          // if (rule.enable) {
-          //    rule.orginEnable = true;
-          // } else {
-          //    rule.orginEnable = false;
-          // }
+        if (data.code === 0) {
           getMachineRules();
           if (edit) {
             systemRuleDialog.close();
           } else {
             confirmDialog.close();
           }
+        } else if (data.msg != null) {
+          alert('失败：' + data.msg);
         } else {
-          alert('失败!');
+          alert('失败：未知错误');
         }
       });
     }
@@ -199,13 +208,13 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
     function queryAppMachines() {
       MachineService.getAppMachines($scope.app).success(
         function (data) {
-          if (data.code == 0) {
+          if (data.code === 0) {
             // $scope.machines = data.data;
             if (data.data) {
               $scope.machines = [];
               $scope.macsInputOptions = [];
               data.data.forEach(function (item) {
-                if (item.health) {
+                if (item.healthy) {
                   $scope.macsInputOptions.push({
                     text: item.ip + ':' + item.port,
                     value: item.ip + ':' + item.port

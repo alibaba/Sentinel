@@ -15,11 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.block.degrade;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.ClusterNode;
@@ -27,6 +22,12 @@ import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * <p>
@@ -54,8 +55,7 @@ import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
  */
 public class DegradeRule extends AbstractRule {
 
-    private static final int RT_MAX_EXCEED_N = 5;
-
+    @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(
         Runtime.getRuntime().availableProcessors(), new NamedThreadFactory("sentinel-degrade-reset-task", true));
 
@@ -76,11 +76,23 @@ public class DegradeRule extends AbstractRule {
     private int timeWindow;
 
     /**
-     * Degrade strategy (0: average RT, 1: exception ratio).
+     * Degrade strategy (0: average RT, 1: exception ratio, 2: exception count).
      */
     private int grade = RuleConstant.DEGRADE_GRADE_RT;
 
-    private volatile boolean cut = false;
+    /**
+     * Minimum number of consecutive slow requests that can trigger RT circuit breaking.
+     *
+     * @since 1.7.0
+     */
+    private int rtSlowRequestAmount = RuleConstant.DEGRADE_DEFAULT_SLOW_REQUEST_AMOUNT;
+
+    /**
+     * Minimum number of requests (in an active statistic time span) that can trigger circuit breaking.
+     *
+     * @since 1.7.0
+     */
+    private int minRequestAmount = RuleConstant.DEGRADE_DEFAULT_MIN_REQUEST_AMOUNT;
 
     public int getGrade() {
         return grade;
@@ -91,10 +103,6 @@ public class DegradeRule extends AbstractRule {
         return this;
     }
 
-    private AtomicLong passCount = new AtomicLong(0);
-
-    private final Object lock = new Object();
-
     public double getCount() {
         return count;
     }
@@ -102,18 +110,6 @@ public class DegradeRule extends AbstractRule {
     public DegradeRule setCount(double count) {
         this.count = count;
         return this;
-    }
-
-    public boolean isCut() {
-        return cut;
-    }
-
-    private void setCut(boolean cut) {
-        this.cut = cut;
-    }
-
-    public AtomicLong getPassCount() {
-        return passCount;
     }
 
     public int getTimeWindow() {
@@ -125,30 +121,35 @@ public class DegradeRule extends AbstractRule {
         return this;
     }
 
+    public int getRtSlowRequestAmount() {
+        return rtSlowRequestAmount;
+    }
+
+    public DegradeRule setRtSlowRequestAmount(int rtSlowRequestAmount) {
+        this.rtSlowRequestAmount = rtSlowRequestAmount;
+        return this;
+    }
+
+    public int getMinRequestAmount() {
+        return minRequestAmount;
+    }
+
+    public DegradeRule setMinRequestAmount(int minRequestAmount) {
+        this.minRequestAmount = minRequestAmount;
+        return this;
+    }
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof DegradeRule)) {
-            return false;
-        }
-        if (!super.equals(o)) {
-            return false;
-        }
-
-        DegradeRule that = (DegradeRule)o;
-
-        if (count != that.count) {
-            return false;
-        }
-        if (timeWindow != that.timeWindow) {
-            return false;
-        }
-        if (grade != that.grade) {
-            return false;
-        }
-        return true;
+        if (this == o) { return true; }
+        if (o == null || getClass() != o.getClass()) { return false; }
+        if (!super.equals(o)) { return false; }
+        DegradeRule that = (DegradeRule) o;
+        return Double.compare(that.count, count) == 0 &&
+            timeWindow == that.timeWindow &&
+            grade == that.grade &&
+            rtSlowRequestAmount == that.rtSlowRequestAmount &&
+            minRequestAmount == that.minRequestAmount;
     }
 
     @Override
@@ -157,12 +158,32 @@ public class DegradeRule extends AbstractRule {
         result = 31 * result + new Double(count).hashCode();
         result = 31 * result + timeWindow;
         result = 31 * result + grade;
+        result = 31 * result + rtSlowRequestAmount;
+        result = 31 * result + minRequestAmount;
         return result;
     }
 
     @Override
+    public String toString() {
+        return "DegradeRule{" +
+            "resource=" + getResource() +
+            ", grade=" + grade +
+            ", count=" + count +
+            ", limitApp=" + getLimitApp() +
+            ", timeWindow=" + timeWindow +
+            ", rtSlowRequestAmount=" + rtSlowRequestAmount +
+            ", minRequestAmount=" + minRequestAmount +
+            "}";
+    }
+
+    // Internal implementation (will be deprecated and moved outside).
+
+    private AtomicLong passCount = new AtomicLong(0);
+    private final AtomicBoolean cut = new AtomicBoolean(false);
+
+    @Override
     public boolean passCheck(Context context, DefaultNode node, int acquireCount, Object... args) {
-        if (cut) {
+        if (cut.get()) {
             return false;
         }
 
@@ -179,20 +200,22 @@ public class DegradeRule extends AbstractRule {
             }
 
             // Sentinel will degrade the service only if count exceeds.
-            if (passCount.incrementAndGet() < RT_MAX_EXCEED_N) {
+            if (passCount.incrementAndGet() < rtSlowRequestAmount) {
                 return true;
             }
         } else if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
             double exception = clusterNode.exceptionQps();
             double success = clusterNode.successQps();
-            long total = clusterNode.totalQps();
-            // if total qps less than RT_MAX_EXCEED_N, pass.
-            if (total < RT_MAX_EXCEED_N) {
+            double total = clusterNode.totalQps();
+            // If total amount is less than minRequestAmount, the request will pass.
+            if (total < minRequestAmount) {
                 return true;
             }
 
+            // In the same aligned statistic time window,
+            // "success" (aka. completed count) = exception count + non-exception count (realSuccess)
             double realSuccess = success - exception;
-            if (realSuccess <= 0 && exception < RT_MAX_EXCEED_N) {
+            if (realSuccess <= 0 && exception < minRequestAmount) {
                 return true;
             }
 
@@ -206,27 +229,12 @@ public class DegradeRule extends AbstractRule {
             }
         }
 
-        synchronized (lock) {
-            if (!cut) {
-                // Automatically degrade.
-                cut = true;
-                ResetTask resetTask = new ResetTask(this);
-                pool.schedule(resetTask, timeWindow, TimeUnit.SECONDS);
-            }
-
-            return false;
+        if (cut.compareAndSet(false, true)) {
+            ResetTask resetTask = new ResetTask(this);
+            pool.schedule(resetTask, timeWindow, TimeUnit.SECONDS);
         }
-    }
 
-    @Override
-    public String toString() {
-        return "DegradeRule{" +
-            "resource=" + getResource() +
-            ", grade=" + grade +
-            ", count=" + count +
-            ", limitApp=" + getLimitApp() +
-            ", timeWindow=" + timeWindow +
-            "}";
+        return false;
     }
 
     private static final class ResetTask implements Runnable {
@@ -239,9 +247,8 @@ public class DegradeRule extends AbstractRule {
 
         @Override
         public void run() {
-            rule.getPassCount().set(0);
-            rule.setCut(false);
+            rule.passCount.set(0);
+            rule.cut.set(false);
         }
     }
 }
-

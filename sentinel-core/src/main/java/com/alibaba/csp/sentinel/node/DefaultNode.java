@@ -27,12 +27,12 @@ import com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot;
 
 /**
  * <p>
- * A {@link Node} use to hold statistics for specific resource name in the specific context.
+ * A {@link Node} used to hold statistics for specific resource name in the specific context.
  * Each distinct resource in each distinct {@link Context} will corresponding to a {@link DefaultNode}.
  * </p>
  * <p>
- * This class may have a list of sub {@link DefaultNode}s. sub-node will be created when
- * call {@link SphU}#entry() or {@link SphO}@entry() multi times in the same {@link Context}.
+ * This class may have a list of sub {@link DefaultNode}s. Child nodes will be created when
+ * calling {@link SphU}#entry() or {@link SphO}@entry() multiple times in the same {@link Context}.
  * </p>
  *
  * @author qinan.qn
@@ -48,7 +48,7 @@ public class DefaultNode extends StatisticNode {
     /**
      * The list of all child nodes.
      */
-    private volatile Set<Node> childList = new HashSet<Node>();
+    private volatile Set<Node> childList = new HashSet<>();
 
     /**
      * Associated cluster node.
@@ -85,7 +85,7 @@ public class DefaultNode extends StatisticNode {
         if (!childList.contains(node)) {
             synchronized (this) {
                 if (!childList.contains(node)) {
-                    Set<Node> newSet = new HashSet<Node>(childList.size() + 1);
+                    Set<Node> newSet = new HashSet<>(childList.size() + 1);
                     newSet.addAll(childList);
                     newSet.add(node);
                     childList = newSet;
@@ -99,7 +99,7 @@ public class DefaultNode extends StatisticNode {
      * Reset the child node list.
      */
     public void removeChildList() {
-        this.childList = new HashSet<Node>();
+        this.childList = new HashSet<>();
     }
 
     public Set<Node> getChildList() {
@@ -107,21 +107,21 @@ public class DefaultNode extends StatisticNode {
     }
 
     @Override
-    public void increaseBlockQps() {
-        super.increaseBlockQps();
-        this.clusterNode.increaseBlockQps();
+    public void increaseBlockQps(int count) {
+        super.increaseBlockQps(count);
+        this.clusterNode.increaseBlockQps(count);
     }
 
     @Override
-    public void increaseExceptionQps() {
-        super.increaseExceptionQps();
-        this.clusterNode.increaseExceptionQps();
+    public void increaseExceptionQps(int count) {
+        super.increaseExceptionQps(count);
+        this.clusterNode.increaseExceptionQps(count);
     }
 
     @Override
-    public void rt(long rt) {
-        super.rt(rt);
-        this.clusterNode.rt(rt);
+    public void addRtAndSuccess(long rt, int successCount) {
+        super.addRtAndSuccess(rt, successCount);
+        this.clusterNode.addRtAndSuccess(rt, successCount);
     }
 
     @Override
@@ -137,9 +137,9 @@ public class DefaultNode extends StatisticNode {
     }
 
     @Override
-    public void addPassRequest() {
-        super.addPassRequest();
-        this.clusterNode.addPassRequest();
+    public void addPassRequest(int count) {
+        super.addPassRequest(count);
+        this.clusterNode.addPassRequest(count);
     }
 
     public void printDefaultNode() {

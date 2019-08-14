@@ -16,11 +16,12 @@
 package com.alibaba.csp.sentinel.slots.system;
 
 import java.lang.management.ManagementFactory;
-import java.lang.management.OperatingSystemMXBean;
 
+import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.csp.sentinel.Constants;
+
+import com.sun.management.OperatingSystemMXBean;
 
 /**
  * @author jialiang.linjl
@@ -28,29 +29,37 @@ import com.alibaba.csp.sentinel.Constants;
 public class SystemStatusListener implements Runnable {
 
     volatile double currentLoad = -1;
+    volatile double currentCpuUsage = -1;
 
     volatile String reason = StringUtil.EMPTY;
-
-    static final int processor = ManagementFactory.getOperatingSystemMXBean().getAvailableProcessors();
 
     public double getSystemAverageLoad() {
         return currentLoad;
     }
 
+    public double getCpuUsage() {
+        return currentCpuUsage;
+    }
+
     @Override
     public void run() {
         try {
-            if (!SystemRuleManager.getCheckSystemStatus()) {
-                return;
-            }
-
-            // system average load
-            OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
-            currentLoad = operatingSystemMXBean.getSystemLoadAverage();
+            OperatingSystemMXBean osBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
+            currentLoad = osBean.getSystemLoadAverage();
+            /**
+             * Java Doc copied from {@link OperatingSystemMXBean#getSystemCpuLoad()}:</br>
+             * Returns the "recent cpu usage" for the whole system. This value is a double in the [0.0,1.0] interval.
+             * A value of 0.0 means that all CPUs were idle during the recent period of time observed, while a value
+             * of 1.0 means that all CPUs were actively running 100% of the time during the recent period being
+             * observed. All values betweens 0.0 and 1.0 are possible depending of the activities going on in the
+             * system. If the system recent cpu usage is not available, the method returns a negative value.
+             */
+            currentCpuUsage = osBean.getSystemCpuLoad();
 
             StringBuilder sb = new StringBuilder();
             if (currentLoad > SystemRuleManager.getHighestSystemLoad()) {
                 sb.append("load:").append(currentLoad).append(";");
+                sb.append("cpu:").append(currentCpuUsage).append(";");
                 sb.append("qps:").append(Constants.ENTRY_NODE.passQps()).append(";");
                 sb.append("rt:").append(Constants.ENTRY_NODE.avgRt()).append(";");
                 sb.append("thread:").append(Constants.ENTRY_NODE.curThreadNum()).append(";");

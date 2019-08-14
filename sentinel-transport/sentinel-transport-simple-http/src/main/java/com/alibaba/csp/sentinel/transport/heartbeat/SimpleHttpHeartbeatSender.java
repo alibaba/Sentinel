@@ -19,7 +19,6 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.transport.HeartbeatSender;
 import com.alibaba.csp.sentinel.transport.config.TransportConfig;
@@ -54,9 +53,6 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
         List<InetSocketAddress> newAddrs = getDefaultConsoleIps();
         RecordLog.info("[SimpleHttpHeartbeatSender] Default console address list retrieved: " + newAddrs);
         this.addressList = newAddrs;
-        // Set interval config.
-        String interval = System.getProperty(TransportConfig.HEARTBEAT_INTERVAL_MS, String.valueOf(DEFAULT_INTERVAL));
-        SentinelConfig.setConfig(TransportConfig.HEARTBEAT_INTERVAL_MS, interval);
     }
 
     @Override
@@ -78,7 +74,7 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
                 return true;
             }
         } catch (Exception e) {
-            RecordLog.info("Failed to send heart beat to " + addr + " : ", e);
+            RecordLog.warn("[SimpleHttpHeartbeatSender] Failed to send heartbeat to " + addr + " : ", e);
         }
         return false;
     }
@@ -104,6 +100,7 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
         try {
             String ipsStr = TransportConfig.getConsoleServer();
             if (StringUtil.isEmpty(ipsStr)) {
+                RecordLog.warn("[SimpleHttpHeartbeatSender] Dashboard server address not configured");
                 return newAddrs;
             }
 
@@ -122,7 +119,7 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
                 newAddrs.add(new InetSocketAddress(ipPort[0].trim(), port));
             }
         } catch (Exception ex) {
-            RecordLog.info("[SimpleHeartbeatSender] Parse console list failed, current address list: " + newAddrs, ex);
+            RecordLog.warn("[SimpleHeartbeatSender] Parse dashboard list failed, current address list: " + newAddrs, ex);
             ex.printStackTrace();
         }
         return newAddrs;

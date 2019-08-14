@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.transport.command.netty;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
@@ -39,10 +40,15 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.http.multipart.HttpData;
+import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
+import io.netty.handler.codec.http.multipart.InterfaceHttpData;
+import io.netty.handler.codec.http.multipart.InterfaceHttpData.HttpDataType;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -171,6 +177,32 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
                 }
             }
         }
+        // Deal with post method, parameter in post has more privilege compared to that in querystring
+        if (request.method().equals(HttpMethod.POST)) {
+            // support multi-part and form-urlencoded
+            HttpPostRequestDecoder postRequestDecoder = null;
+            try {
+                postRequestDecoder = new HttpPostRequestDecoder(request);
+                for (InterfaceHttpData data : postRequestDecoder.getBodyHttpDatas()) {
+                    data.retain(); // must retain each attr before destroy
+                    if (data.getHttpDataType() == HttpDataType.Attribute) {
+                        if (data instanceof HttpData) {
+                            HttpData httpData = (HttpData) data;
+                            try {
+                                String name = httpData.getName();
+                                String value = httpData.getString();
+                                serverRequest.addParam(name, value);
+                            } catch (IOException e) {
+                            }
+                        }
+                    }
+                }
+            } finally {
+                if (postRequestDecoder != null) {
+                    postRequestDecoder.destroy();
+                }
+            }
+        }
         // Parse command name.
         String target = parseTarget(queryStringDecoder.rawPath());
         serverRequest.addMetadata(HttpCommandUtils.REQUEST_TARGET, target);
@@ -189,11 +221,15 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
         if (StringUtil.isEmpty(uri)) {
             return "";
         }
-        String[] arr = uri.split("/");
-        if (arr.length < 2) {
-            return "";
+
+        // Remove the / of the uri as the target(command name)
+        // Usually the uri is start with /
+        int start = uri.indexOf('/');
+        if (start != -1) {
+            return uri.substring(start + 1);
         }
-        return arr[1];
+
+        return uri;
     }
 
     private CommandHandler getHandler(String commandName) {

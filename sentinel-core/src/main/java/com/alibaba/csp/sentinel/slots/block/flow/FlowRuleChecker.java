@@ -15,31 +15,54 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow;
 
-import com.alibaba.csp.sentinel.cluster.ClusterTokenClient;
-import com.alibaba.csp.sentinel.cluster.TokenClientProvider;
+import java.util.Collection;
+
+import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
+import com.alibaba.csp.sentinel.cluster.server.EmbeddedClusterTokenServerProvider;
+import com.alibaba.csp.sentinel.cluster.client.TokenClientProvider;
 import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
 import com.alibaba.csp.sentinel.cluster.TokenResult;
+import com.alibaba.csp.sentinel.cluster.TokenService;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.node.Node;
+import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 import com.alibaba.csp.sentinel.util.StringUtil;
+import com.alibaba.csp.sentinel.util.function.Function;
 
 /**
  * Rule checker for flow control rules.
  *
  * @author Eric Zhao
  */
-final class FlowRuleChecker {
+public class FlowRuleChecker {
 
-    static boolean passCheck(/*@NonNull*/ FlowRule rule, Context context, DefaultNode node, int acquireCount) {
-        return passCheck(rule, context, node, acquireCount, false);
+    public void checkFlow(Function<String, Collection<FlowRule>> ruleProvider, ResourceWrapper resource,
+                          Context context, DefaultNode node, int count, boolean prioritized) throws BlockException {
+        if (ruleProvider == null || resource == null) {
+            return;
+        }
+        Collection<FlowRule> rules = ruleProvider.apply(resource.getName());
+        if (rules != null) {
+            for (FlowRule rule : rules) {
+                if (!canPassCheck(rule, context, node, count, prioritized)) {
+                    throw new FlowException(rule.getLimitApp(), rule);
+                }
+            }
+        }
     }
 
-    static boolean passCheck(/*@NonNull*/ FlowRule rule, Context context, DefaultNode node, int acquireCount,
-                                          boolean prioritized) {
+    public boolean canPassCheck(/*@NonNull*/ FlowRule rule, Context context, DefaultNode node,
+                                                    int acquireCount) {
+        return canPassCheck(rule, context, node, acquireCount, false);
+    }
+
+    public boolean canPassCheck(/*@NonNull*/ FlowRule rule, Context context, DefaultNode node, int acquireCount,
+                                                    boolean prioritized) {
         String limitApp = rule.getLimitApp();
         if (limitApp == null) {
             return true;
@@ -59,39 +82,7 @@ final class FlowRuleChecker {
             return true;
         }
 
-        return rule.getRater().canPass(selectedNode, acquireCount);
-    }
-
-    static boolean passClusterCheck(FlowRule rule, Context context, DefaultNode node, int acquireCount,
-                                    boolean prioritized) {
-        try {
-            ClusterTokenClient client = TokenClientProvider.getClient();
-            if (client != null) {
-                TokenResult result = client.requestToken(rule.getClusterConfig().getFlowId(), acquireCount,
-                    prioritized);
-                switch (result.getStatus()) {
-                    case TokenResultStatus.OK:
-                        return true;
-                    case TokenResultStatus.SHOULD_WAIT:
-                        // Wait for next tick.
-                        Thread.sleep(result.getWaitInMs());
-                        return true;
-                    case TokenResultStatus.NO_RULE_EXISTS:
-                    case TokenResultStatus.BAD_REQUEST:
-                    case TokenResultStatus.FAIL:
-                        return passLocalCheck(rule, context, node, acquireCount, prioritized);
-                    case TokenResultStatus.BLOCKED:
-                    default:
-                        return false;
-                }
-            }
-            // If client is absent, then fallback to local mode.
-        } catch (Throwable ex) {
-            RecordLog.warn("[FlowRuleChecker] Request cluster token unexpected failed", ex);
-        }
-        // TODO: choose whether fallback to local or inactivate the rule.
-        // Downgrade to local flow control when token client or server for this rule is not available.
-        return passLocalCheck(rule, context, node, acquireCount, prioritized);
+        return rule.getRater().canPass(selectedNode, acquireCount, prioritized);
     }
 
     static Node selectReferenceNode(FlowRule rule, Context context, DefaultNode node) {
@@ -153,5 +144,67 @@ final class FlowRuleChecker {
         return null;
     }
 
-    private FlowRuleChecker() {}
+    private static boolean passClusterCheck(FlowRule rule, Context context, DefaultNode node, int acquireCount,
+                                            boolean prioritized) {
+        try {
+            TokenService clusterService = pickClusterService();
+            if (clusterService == null) {
+                return fallbackToLocalOrPass(rule, context, node, acquireCount, prioritized);
+            }
+            long flowId = rule.getClusterConfig().getFlowId();
+            TokenResult result = clusterService.requestToken(flowId, acquireCount, prioritized);
+            return applyTokenResult(result, rule, context, node, acquireCount, prioritized);
+            // If client is absent, then fallback to local mode.
+        } catch (Throwable ex) {
+            RecordLog.warn("[FlowRuleChecker] Request cluster token unexpected failed", ex);
+        }
+        // Fallback to local flow control when token client or server for this rule is not available.
+        // If fallback is not enabled, then directly pass.
+        return fallbackToLocalOrPass(rule, context, node, acquireCount, prioritized);
+    }
+
+    private static boolean fallbackToLocalOrPass(FlowRule rule, Context context, DefaultNode node, int acquireCount,
+                                                 boolean prioritized) {
+        if (rule.getClusterConfig().isFallbackToLocalWhenFail()) {
+            return passLocalCheck(rule, context, node, acquireCount, prioritized);
+        } else {
+            // The rule won't be activated, just pass.
+            return true;
+        }
+    }
+
+    private static TokenService pickClusterService() {
+        if (ClusterStateManager.isClient()) {
+            return TokenClientProvider.getClient();
+        }
+        if (ClusterStateManager.isServer()) {
+            return EmbeddedClusterTokenServerProvider.getServer();
+        }
+        return null;
+    }
+
+    private static boolean applyTokenResult(/*@NonNull*/ TokenResult result, FlowRule rule, Context context,
+                                                         DefaultNode node,
+                                                         int acquireCount, boolean prioritized) {
+        switch (result.getStatus()) {
+            case TokenResultStatus.OK:
+                return true;
+            case TokenResultStatus.SHOULD_WAIT:
+                // Wait for next tick.
+                try {
+                    Thread.sleep(result.getWaitInMs());
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                return true;
+            case TokenResultStatus.NO_RULE_EXISTS:
+            case TokenResultStatus.BAD_REQUEST:
+            case TokenResultStatus.FAIL:
+            case TokenResultStatus.TOO_MANY_REQUEST:
+                return fallbackToLocalOrPass(rule, context, node, acquireCount, prioritized);
+            case TokenResultStatus.BLOCKED:
+            default:
+                return false;
+        }
+    }
 }

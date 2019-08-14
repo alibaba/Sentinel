@@ -25,12 +25,59 @@
                     </div>
                     
                     <div class="form-group">
-						<label class="col-sm-2 control-label">限流阈值</label>
-						<div class="col-sm-9">
-							<input type="number" class="form-control highlight-border" ng-model='currentRule.rule.count' placeholder='请填入限流阈值' />
+						<div ng-if="!currentRule.rule.clusterMode">
+							<label class="col-sm-2 control-label">单机阈值</label>
+							<div class="col-sm-3">
+								<input type="number" class="form-control highlight-border" ng-model='currentRule.rule.count' placeholder='单机阈值' />
+							</div>
+							<label class="col-sm-3 control-label" title="统计窗口时间长度，单位为 s">统计窗口时长</label>
+							<div class="input-group col-sm-3">
+								<input type="number" class="form-control highlight-border"
+									   ng-model='currentRule.rule.durationInSec' min="1"
+									   placeholder='请填入统计窗口时长（单位为 秒）' />
+								<span class="input-group-addon">秒</span>
+							</div>
+						</div>
+						<div ng-if="currentRule.rule.clusterMode && currentRule.rule.clusterConfig.thresholdType == 0">
+							<label class="col-sm-2 control-label">均摊阈值</label>
+							<div class="col-sm-9">
+								<input type="number" class="form-control highlight-border" ng-model='currentRule.rule.count' placeholder='集群均摊阈值' />
+							</div>
+						</div>
+						<div ng-if="currentRule.rule.clusterMode && currentRule.rule.clusterConfig.thresholdType == 1">
+							<label class="col-sm-2 control-label">集群阈值</label>
+							<div class="col-sm-9">
+								<input type="number" class="form-control highlight-border" ng-model='currentRule.rule.count' placeholder='集群总体阈值' />
+							</div>
 						</div>
                     </div>
 
+					<div class="form-group">
+						<label class="col-sm-2 control-label">是否集群</label>
+						<div class="col-sm-2">
+							<input type="checkbox" name="clusterMode" ng-model="currentRule.rule.clusterMode">
+						</div>
+						<div ng-if="currentRule.rule.clusterMode">
+							<label class="col-sm-3 control-label">集群阈值模式</label>
+							<div class="col-sm-4">
+								<div class="form-control highlight-border" align="center">
+									<input type="radio" name="clusterThresholdType" value="0" ng-model='currentRule.rule.clusterConfig.thresholdType' />&nbsp;单机均摊&nbsp;&nbsp;
+									<input type="radio" name="clusterThresholdType" value="1" ng-model='currentRule.rule.clusterConfig.thresholdType' />&nbsp;总体阈值
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="form-group" ng-if="currentRule.rule.clusterMode">
+						<label class="col-sm-2 control-label">失败退化</label>
+						<div class="col-sm-8">
+							<div class="checkbox-inline">
+								<input type="checkbox" name="fallbackToLocalWhenFail"
+									   ng-model="currentRule.rule.clusterConfig.fallbackToLocalWhenFail">
+								<i class="glyphicon glyphicon-info-sign"></i>&nbsp;若选择，则 Token Server 不可用时将退化到单机限流
+							</div>
+						</div>
+					</div>
 
                     <!-- exclusion item part start -->
 					<div ng-if="!paramFlowRuleDialog.showAdvanceButton">

@@ -15,19 +15,28 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow.param;
 
-import java.util.Collections;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import com.alibaba.csp.sentinel.EntryType;
-import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
-import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
+import java.util.Collections;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
+import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
+import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
+import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
+import com.alibaba.csp.sentinel.util.TimeUtil;
 
 /**
  * Test cases for {@link ParamFlowSlot}.
@@ -40,12 +49,40 @@ public class ParamFlowSlotTest {
     private final ParamFlowSlot paramFlowSlot = new ParamFlowSlot();
 
     @Test
+    public void testNegativeParamIdx() throws Throwable {
+        String resourceName = "testNegativeParamIdx";
+        ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
+        ParamFlowRule rule = new ParamFlowRule(resourceName)
+            .setCount(1)
+            .setParamIdx(-1);
+        ParamFlowRuleManager.loadRules(Collections.singletonList(rule));
+        paramFlowSlot.entry(null, resourceWrapper, null, 1, false, "abc", "def", "ghi");
+        assertEquals(2, rule.getParamIdx().longValue());
+
+        rule.setParamIdx(-1);
+        ParamFlowRuleManager.loadRules(Collections.singletonList(rule));
+        paramFlowSlot.entry(null, resourceWrapper, null, 1, false, null);
+        // Null args will not trigger conversion.
+        assertEquals(-1, rule.getParamIdx().intValue());
+
+        rule.setParamIdx(-100);
+        ParamFlowRuleManager.loadRules(Collections.singletonList(rule));
+        paramFlowSlot.entry(null, resourceWrapper, null, 1, false, "abc", "def", "ghi");
+        assertEquals(100, rule.getParamIdx().longValue());
+
+        rule.setParamIdx(0);
+        ParamFlowRuleManager.loadRules(Collections.singletonList(rule));
+        paramFlowSlot.entry(null, resourceWrapper, null, 1, false, "abc", "def", "ghi");
+        assertEquals(0, rule.getParamIdx().longValue());
+    }
+
+    @Test
     public void testEntryWhenParamFlowRuleNotExists() throws Throwable {
         String resourceName = "testEntryWhenParamFlowRuleNotExists";
         ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
         paramFlowSlot.entry(null, resourceWrapper, null, 1, false, "abc");
         // The parameter metric instance will not be created.
-        assertNull(ParamFlowSlot.getParamMetric(resourceWrapper));
+        assertNull(ParameterMetricStorage.getParamMetric(resourceWrapper));
     }
 
     @Test
@@ -53,19 +90,23 @@ public class ParamFlowSlotTest {
         String resourceName = "testEntryWhenParamFlowExists";
         ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
         long argToGo = 1L;
-        double count = 10;
+        double count = 1;
         ParamFlowRule rule = new ParamFlowRule(resourceName)
             .setCount(count)
+            .setBurstCount(0)
             .setParamIdx(0);
         ParamFlowRuleManager.loadRules(Collections.singletonList(rule));
 
         ParameterMetric metric = mock(ParameterMetric.class);
-        // First pass, then blocked.
-        when(metric.getPassParamQps(rule.getParamIdx(), argToGo))
-            .thenReturn(count - 1)
-            .thenReturn(count);
+
+        CacheMap<Object, AtomicLong> map = new ConcurrentLinkedHashMapWrapper<>(4000);
+        CacheMap<Object, AtomicLong> map2 = new ConcurrentLinkedHashMapWrapper<>(4000);
+        when(metric.getRuleTimeCounter(rule)).thenReturn(map);
+        when(metric.getRuleTokenCounter(rule)).thenReturn(map2);
+        map.put(argToGo, new AtomicLong(TimeUtil.currentTimeMillis()));
+
         // Insert the mock metric to control pass or block.
-        ParamFlowSlot.getMetricsMap().put(resourceWrapper, metric);
+        ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
 
         // The first entry will pass.
         paramFlowSlot.entry(null, resourceWrapper, null, 1, false, argToGo);
@@ -80,39 +121,16 @@ public class ParamFlowSlotTest {
         fail("The second entry should be blocked");
     }
 
-    @Test
-    public void testGetNullParamMetric() {
-        assertNull(ParamFlowSlot.getParamMetric(null));
-    }
-
-    @Test
-    public void testInitParamMetrics() {
-        int index = 1;
-        String resourceName = "res-" + System.currentTimeMillis();
-        ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
-
-        assertNull(ParamFlowSlot.getParamMetric(resourceWrapper));
-
-        paramFlowSlot.initHotParamMetricsFor(resourceWrapper, index);
-        ParameterMetric metric = ParamFlowSlot.getParamMetric(resourceWrapper);
-        assertNotNull(metric);
-        assertNotNull(metric.getRollingParameters().get(index));
-
-        // Duplicate init.
-        paramFlowSlot.initHotParamMetricsFor(resourceWrapper, index);
-        assertSame(metric, ParamFlowSlot.getParamMetric(resourceWrapper));
-    }
-
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         ParamFlowRuleManager.loadRules(null);
-        ParamFlowSlot.getMetricsMap().clear();
+        ParameterMetricStorage.getMetricsMap().clear();
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         // Clean the metrics map.
-        ParamFlowSlot.getMetricsMap().clear();
         ParamFlowRuleManager.loadRules(null);
+        ParameterMetricStorage.getMetricsMap().clear();
     }
 }

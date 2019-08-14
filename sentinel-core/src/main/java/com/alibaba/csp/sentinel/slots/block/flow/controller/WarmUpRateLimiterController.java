@@ -22,24 +22,26 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
 
 /**
  * @author jialiang.linjl
+ * @since 1.4.0
  */
 public class WarmUpRateLimiterController extends WarmUpController {
 
-    final int timeOutInMs;
-    final AtomicLong latestPassedTime = new AtomicLong(-1);
+    private final int timeoutInMs;
+    private final AtomicLong latestPassedTime = new AtomicLong(-1);
 
-    /**
-     * @param count
-     * @param warmUpPeriodSec
-     */
     public WarmUpRateLimiterController(double count, int warmUpPeriodSec, int timeOutMs, int coldFactor) {
         super(count, warmUpPeriodSec, coldFactor);
-        this.timeOutInMs = timeOutMs;
+        this.timeoutInMs = timeOutMs;
     }
 
     @Override
     public boolean canPass(Node node, int acquireCount) {
-        long previousQps = node.previousPassQps();
+        return canPass(node, acquireCount, false);
+    }
+
+    @Override
+    public boolean canPass(Node node, int acquireCount, boolean prioritized) {
+        long previousQps = (long) node.previousPassQps();
         syncToken(previousQps);
 
         long currentTime = TimeUtil.currentTimeMillis();
@@ -63,17 +65,19 @@ public class WarmUpRateLimiterController extends WarmUpController {
             return true;
         } else {
             long waitTime = costTime + latestPassedTime.get() - currentTime;
-            if (waitTime >= timeOutInMs) {
+            if (waitTime > timeoutInMs) {
                 return false;
             } else {
                 long oldTime = latestPassedTime.addAndGet(costTime);
                 try {
                     waitTime = oldTime - TimeUtil.currentTimeMillis();
-                    if (waitTime >= timeOutInMs) {
+                    if (waitTime > timeoutInMs) {
                         latestPassedTime.addAndGet(-costTime);
                         return false;
                     }
-                    Thread.sleep(waitTime);
+                    if (waitTime > 0) {
+                        Thread.sleep(waitTime);
+                    }
                     return true;
                 } catch (InterruptedException e) {
                 }
@@ -82,4 +86,3 @@ public class WarmUpRateLimiterController extends WarmUpController {
         return false;
     }
 }
-
