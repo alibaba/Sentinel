@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.adapter.dubbo;
 
+import com.alibaba.csp.sentinel.util.StringUtil;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
@@ -35,9 +36,9 @@ public final class DubboUtils {
     public static String getResourceName(Invoker<?> invoker, Invocation invocation) {
         StringBuilder buf = new StringBuilder(64);
         buf.append(invoker.getInterface().getName())
-            .append(":")
-            .append(invocation.getMethodName())
-            .append("(");
+                .append(":")
+                .append(invocation.getMethodName())
+                .append("(");
         boolean isFirst = true;
         for (Class<?> clazz : invocation.getParameterTypes()) {
             if (!isFirst) {
@@ -50,5 +51,17 @@ public final class DubboUtils {
         return buf.toString();
     }
 
-    private DubboUtils() {}
+    public static String getResourceName(Invoker<?> invoker, Invocation invocation, String prefix) {
+        if (StringUtil.isNotBlank(prefix)) {
+            return new StringBuilder(64)
+                    .append(prefix)
+                    .append(getResourceName(invoker, invocation))
+                    .toString();
+        } else {
+            return getResourceName(invoker, invocation);
+        }
+    }
+
+    private DubboUtils() {
+    }
 }

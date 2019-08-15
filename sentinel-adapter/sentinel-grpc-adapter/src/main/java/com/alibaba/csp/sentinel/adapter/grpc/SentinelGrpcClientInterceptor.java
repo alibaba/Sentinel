@@ -15,28 +15,20 @@
  */
 package com.alibaba.csp.sentinel.adapter.grpc;
 
-import javax.annotation.Nullable;
-
-import com.alibaba.csp.sentinel.Entry;
+import com.alibaba.csp.sentinel.AsyncEntry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-
-import io.grpc.CallOptions;
-import io.grpc.Channel;
-import io.grpc.ClientCall;
-import io.grpc.ClientInterceptor;
-import io.grpc.ForwardingClientCall;
+import io.grpc.*;
 import io.grpc.ForwardingClientCallListener.SimpleForwardingClientCallListener;
-import io.grpc.Metadata;
-import io.grpc.MethodDescriptor;
-import io.grpc.Status;
+
+import javax.annotation.Nullable;
 
 /**
  * <p>gRPC client interceptor for Sentinel. Currently it only works with unary methods.</p>
- *
+ * <p>
  * Example code:
  * <pre>
  * public class ServiceClient {
@@ -52,7 +44,7 @@ import io.grpc.Status;
  *
  * }
  * </pre>
- *
+ * <p>
  * For server interceptor, see {@link SentinelGrpcServerInterceptor}.
  *
  * @author Eric Zhao
@@ -60,18 +52,20 @@ import io.grpc.Status;
 public class SentinelGrpcClientInterceptor implements ClientInterceptor {
 
     private static final Status FLOW_CONTROL_BLOCK = Status.UNAVAILABLE.withDescription(
-        "Flow control limit exceeded (client side)");
+            "Flow control limit exceeded (client side)");
 
     @Override
     public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(MethodDescriptor<ReqT, RespT> methodDescriptor,
                                                                CallOptions callOptions, Channel channel) {
         String resourceName = methodDescriptor.getFullMethodName();
-        Entry entry = null;
+        AsyncEntry asyncEntry = null;
         try {
-            entry = SphU.entry(resourceName, EntryType.OUT);
+            asyncEntry = SphU.asyncEntry(resourceName, EntryType.OUT);
+
+            final AsyncEntry tempEntry = asyncEntry;
             // Allow access, forward the call.
             return new ForwardingClientCall.SimpleForwardingClientCall<ReqT, RespT>(
-                channel.newCall(methodDescriptor, callOptions)) {
+                    channel.newCall(methodDescriptor, callOptions)) {
                 @Override
                 public void start(Listener<RespT> responseListener, Metadata headers) {
                     super.start(new SimpleForwardingClientCallListener<RespT>(responseListener) {
@@ -85,18 +79,14 @@ public class SentinelGrpcClientInterceptor implements ClientInterceptor {
                             super.onClose(status, trailers);
                             // Record the exception metrics.
                             if (!status.isOk()) {
-                                recordException(status.asRuntimeException());
+                                recordException(status.asRuntimeException(), tempEntry);
                             }
+                            tempEntry.exit();
                         }
                     }, headers);
                 }
 
-                @Override
-                public void cancel(@Nullable String message, @Nullable Throwable cause) {
-                    super.cancel(message, cause);
-                    // Record the exception metrics.
-                    recordException(cause);
-                }
+
             };
         } catch (BlockException e) {
             // Flow control threshold exceeded, block the call.
@@ -126,14 +116,25 @@ public class SentinelGrpcClientInterceptor implements ClientInterceptor {
 
                 }
             };
-        } finally {
-            if (entry != null) {
-                entry.exit();
+
+        } catch (RuntimeException e) {
+            //catch the RuntimeException newCall throws,
+            // entry is guaranteed to exit
+            if (asyncEntry != null) {
+                asyncEntry.exit();
             }
+            throw e;
+
+
         }
     }
 
-    private void recordException(Throwable t) {
-        Tracer.trace(t);
+    private void recordException(final Throwable t, AsyncEntry asyncEntry) {
+        ContextUtil.runOnContext(asyncEntry.getAsyncContext(), new Runnable() {
+            @Override
+            public void run() {
+                Tracer.trace(t);
+            }
+        });
     }
 }
