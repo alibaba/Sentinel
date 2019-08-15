@@ -98,6 +98,12 @@
             <artifactId>fastjson</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>19.0</version>
+        </dependency>
+
         <!-- for Nacos rule publisher sample -->
         <dependency>
             <groupId>com.alibaba.csp</groupId>
