@@ -66,7 +66,7 @@ public class AutomaticQpsDemo {
             t.start();
         }
         for (int i = 0; i < 15; i++) {
-            Thread t = new Thread(new RunTask("c",2));
+            Thread t = new Thread(new DegradedRunTask("c",2));
             t.setName("simulate-traffic-Task-C");
             t.start();
         }
@@ -144,6 +144,49 @@ public class AutomaticQpsDemo {
                     entry = SphU.entry(resourceName);
                     // token acquired, means pass
                     pass[resourceCode].addAndGet(1);
+                    TimeUnit.MILLISECONDS.sleep(3);
+
+                } catch (BlockException e1) {
+                    block[resourceCode].incrementAndGet();
+                } catch (Exception e2) {
+                    // biz exception
+                } finally {
+                    total[resourceCode].incrementAndGet();
+                    if (entry != null) {
+                        entry.exit();
+                    }
+                }
+
+                Random random2 = new Random();
+                try {
+                    TimeUnit.MILLISECONDS.sleep(random2.nextInt(50));
+                } catch (InterruptedException e) {
+                    // ignore
+                }
+            }
+        }
+    }
+
+    static class DegradedRunTask implements Runnable {
+
+        private String resourceName;
+        private int resourceCode;
+
+        public DegradedRunTask(String resourceName, int resourceCode){
+            this.resourceName = resourceName;
+            this.resourceCode = resourceCode;
+        }
+
+        @Override
+        public void run() {
+            while (!stop) {
+                Entry entry = null;
+
+                try {
+                    entry = SphU.entry(resourceName);
+                    // token acquired, means pass
+                    pass[resourceCode].addAndGet(1);
+                    TimeUnit.MILLISECONDS.sleep(50);
                 } catch (BlockException e1) {
                     block[resourceCode].incrementAndGet();
                 } catch (Exception e2) {

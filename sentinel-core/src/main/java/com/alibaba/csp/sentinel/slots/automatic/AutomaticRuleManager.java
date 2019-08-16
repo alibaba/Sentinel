@@ -28,6 +28,8 @@ public class AutomaticRuleManager {
 
     private static Map<String, Double> avgRTRecord = new ConcurrentHashMap<String, Double>();
 
+    private static Map<String,Integer> degradeTimer = new ConcurrentHashMap<String, Integer>();
+
     private static double cpuUseageRecord;
 
     private static AtomicBoolean updating = new AtomicBoolean(false);
@@ -60,6 +62,7 @@ public class AutomaticRuleManager {
             rule.setGrade(1);
             rule.setRater(new DefaultController(rule.getCount(),rule.getGrade()));
             rules.put(resourceName,rule);
+            degradeTimer.put(resourceName,0);
         }else{
             rule = rules.get(resourceName);
         }
@@ -72,6 +75,10 @@ public class AutomaticRuleManager {
 
     }
 
+    /**
+     * 统计监控数据
+     * 每秒更新一次流控规则
+     */
     static void update(ResourceWrapper resource, Context context, Node node){
 
         //更新资源的统计数据
@@ -103,19 +110,17 @@ public class AutomaticRuleManager {
             //更新 rules
             try {
                 updateRulesByQPS();
-
             } catch (Exception e) {
-                //
                 e.printStackTrace();
-
             } finally {
                 updating.set(false);
             }
-
         }
-
     }
 
+    /**
+     * 判断各资源的状态并计算出流控阈值
+     */
     static private void updateRulesByQPS(){
         // 分两类情况：1. 当前总流量超出最大值 2.当前总流量未超过最大值
         // 暂不考虑其他应用造成的负载
@@ -148,12 +153,31 @@ public class AutomaticRuleManager {
 
         double useageLevel = currentCpuUseage / aviliableUseage;
 
+        //熔断降级
+
+        //判断是否有资源处于异常需要被降级
+        for(String resource:resourceNameSet){
+            if(getDouble(avgRTRecord,resource)>50&&degradeTimer.get(resource)==0)
+                degradeTimer.put(resource,5);
+        }
+
+        //
+        TreeSet<String> activeResources = new TreeSet<String>();
+        //将正常状态的资源加入规则计算的集合，异常的资源流量降级
+        for(String resource:resourceNameSet){
+            if(degradeTimer.get(resource)==0)
+                activeResources.add(resource);
+            else{
+                rules.put(resource,rules.get(resource).setCount(0));
+                degradeTimer.put(resource,degradeTimer.get(resource)-1);
+            }
+        }
 
         // 1. 系统能够处理所有请求时：根据各服务流量比例分配阈值
         if(useageLevel < 1){
-            for(String resourceName : resourceNameSet){
+            for(String resourceName : activeResources){
                 FlowRule rule = rules.get(resourceName);
-                double currentQPS = qpsRecord.get(resourceName);
+                double currentQPS = getInt(qpsRecord,resourceName);
                 double maximumQPS = currentQPS / useageLevel;
                 rule.setCount(maximumQPS);
                 rules.put(resourceName,rule);
@@ -161,22 +185,16 @@ public class AutomaticRuleManager {
         }else{ //2. 请求数超过系统处理能力时（流量洪峰）：在保护其他服务正常访问的前提下尽可能将流量分配到发生洪峰的服务
 
 
-            double[] maxQPS = resolve();
+            double[] maxQPS = resolve(activeResources);
 
             int i = 0;
-            for(String resourceName : resourceNameSet){
+            for(String resourceName : activeResources){
                 rules.put(resourceName,rules.get(resourceName).setCount(maxQPS[i]));
                 i+=1;
             }
 
         }
         updateRaters();
-//        for(String resource : minRTRecord.keySet()){
-//            System.out.println("MinRT "+resource+'\t'+minRTRecord.get(resource));
-//        }
-//        for(String resource : avgRTRecord.keySet()){
-//            System.out.println("AvgRT "+resource+'\t'+avgRTRecord.get(resource));
-//        }
     }
 
     static public boolean canPass(Node node, int acquireCount, FlowRule rule) {
@@ -189,14 +207,14 @@ public class AutomaticRuleManager {
         return true;
     }
 
-    /*
-        求解线性规划问题
+    /**
+     * 根据资源生成单纯形表并求解线性规划问题
      */
-    private static double[] resolve(){
+    private static double[] resolve(Set<String> activeResources){
 
-        int resourceNum = rules.keySet().size();
+        int resourceNum = activeResources.size();
 
-        Set<String> resourceNameSet = rules.keySet();
+        Set<String> resourceNameSet = activeResources;
 
         // 价值系数 C
         double[] c = new double[resourceNum*4+1];
@@ -263,6 +281,10 @@ public class AutomaticRuleManager {
         return Arrays.copyOf(x,3);
     }
 
+
+    /**
+     * 将 FlowRule.count 更新到rater中
+     */
     private static void updateRaters(){
         for(String resourceName:rules.keySet()){
             FlowRule rule = rules.get(resourceName);
@@ -271,12 +293,11 @@ public class AutomaticRuleManager {
         }
     }
 
-    /*
-        防止在资源规则已经创建但是还没有资源的监控数据时进行流量计算NPE
-        int 类型存放 QPS 最小值为 0
-        double 类型存放 RT 最小值为 1
+    /**
+     *  防止在资源规则已经创建但是还没有资源的监控数据时进行流量计算NPE
+     *  int 类型存放 QPS 最小值为 0
+     *  double 类型存放 RT 最小值为 1
      */
-
     private static int getInt(Map<String,Integer> record,String key){
         if(record.get(key)== null)
             return 0;
