@@ -15,15 +15,14 @@
  */
 package com.alibaba.csp.sentinel.adapter.grpc;
 
-import java.util.concurrent.TimeUnit;
-
 import com.alibaba.csp.sentinel.adapter.grpc.gen.FooRequest;
 import com.alibaba.csp.sentinel.adapter.grpc.gen.FooResponse;
 import com.alibaba.csp.sentinel.adapter.grpc.gen.FooServiceGrpc;
-
 import io.grpc.ClientInterceptor;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * A simple wrapped gRPC client for FooService.
@@ -31,7 +30,6 @@ import io.grpc.ManagedChannelBuilder;
  * @author Eric Zhao
  */
 final class FooServiceClient {
-
     private final ManagedChannel channel;
     private final FooServiceGrpc.FooServiceBlockingStub blockingStub;
 
@@ -57,27 +55,11 @@ final class FooServiceClient {
         return blockingStub.sayHello(request);
     }
 
-
     FooResponse anotherHello(FooRequest request) {
         if (request == null) {
             throw new IllegalArgumentException("Request cannot be null");
         }
         return blockingStub.anotherHello(request);
-    }
-
-    FooResponse helloWithEx(FooRequest request) {
-        if (request == null) {
-            throw new IllegalArgumentException("Request cannot be null");
-        }
-        return blockingStub.helloWithEx(request);
-    }
-
-
-    FooResponse anotherHelloWithEx(FooRequest request) {
-        if (request == null) {
-            throw new IllegalArgumentException("Request cannot be null");
-        }
-        return blockingStub.anotherHelloWithEx(request);
     }
 
     void shutdown() throws InterruptedException {
