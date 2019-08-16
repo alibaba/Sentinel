@@ -24,45 +24,53 @@ import io.grpc.stub.StreamObserver;
  * Implementation of FooService defined in proto.
  */
 class FooServiceImpl extends FooServiceGrpc.FooServiceImplBase {
-
     @Override
     public void sayHello(FooRequest request, StreamObserver<FooResponse> responseObserver) {
-
-        String message = String.format("Hello %s! Your ID is %d.", request.getName(), request.getId());
-
-        FooResponse response = FooResponse.newBuilder().setMessage(message).build();
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
+        int id = request.getId();
+        switch (id) {
+            // Exception test
+            case -1:
+                responseObserver.onError(new IllegalAccessException("The id is error!"));
+                break;
+            // RT test
+            case -2:
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    responseObserver.onError(e);
+                    break;
+                }
+            default:
+                String message = String.format("Hello %s! Your ID is %d.", request.getName(), id);
+                FooResponse response = FooResponse.newBuilder().setMessage(message).build();
+                responseObserver.onNext(response);
+                responseObserver.onCompleted();
+                break;
+        }
     }
 
     @Override
     public void anotherHello(FooRequest request, StreamObserver<FooResponse> responseObserver) {
-
-        String message = String.format("Good day, %s (%d)", request.getName(), request.getId());
-        FooResponse response = FooResponse.newBuilder().setMessage(message).build();
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
-    }
-    @Override
-    public void helloWithEx(FooRequest request, StreamObserver<FooResponse> responseObserver) {
-        if (request.getId() == -1) {
-            responseObserver.onError(new IllegalAccessException("The id is error"));
-            return;
+        int id = request.getId();
+        switch (id) {
+            // Exception test
+            case -1:
+                responseObserver.onError(new IllegalAccessException("The id is error!"));
+                break;
+            // RT test
+            case -2:
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    responseObserver.onError(e);
+                    break;
+                }
+            default:
+                String message = String.format("Good day, %s (%d)", request.getName(), id);
+                FooResponse response = FooResponse.newBuilder().setMessage(message).build();
+                responseObserver.onNext(response);
+                responseObserver.onCompleted();
+                break;
         }
-        String message = String.format("Good day, %s (%d)", request.getName(), request.getId());
-        FooResponse response = FooResponse.newBuilder().setMessage(message).build();
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
-    }
-    @Override
-    public void anotherHelloWithEx(FooRequest request, StreamObserver<FooResponse> responseObserver) {
-        if (request.getId() == -1) {
-            responseObserver.onError(new IllegalAccessException("The id is error"));
-            return;
-        }
-        String message = String.format("Good day, %s (%d)", request.getName(), request.getId());
-        FooResponse response = FooResponse.newBuilder().setMessage(message).build();
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
     }
 }
