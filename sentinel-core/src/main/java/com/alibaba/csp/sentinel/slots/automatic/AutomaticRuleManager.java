@@ -62,7 +62,7 @@ public class AutomaticRuleManager {
             rule.setGrade(1);
             rule.setRater(new DefaultController(rule.getCount(),rule.getGrade()));
             rules.put(resourceName,rule);
-            degradeTimer.put(resourceName,0);
+            degradeTimer.put(resourceName, 0 );
         }else{
             rule = rules.get(resourceName);
         }
@@ -84,19 +84,19 @@ public class AutomaticRuleManager {
         //更新资源的统计数据
         String resourceName = resource.getName();
 
-        Integer totalQps = (int) (node.previousBlockQps() + node.previousPassQps());
+        int totalQps = (int) (node.previousBlockQps() + node.previousPassQps());
         qpsRecord.put(resourceName, totalQps);
 
-        Integer passedQps = (int)node.previousPassQps();
+        int passedQps = (int)node.previousPassQps();
         passedRecord.put(resourceName,passedQps);
 
         double minRt = node.minRt();
-
         if(minRt <= 0)
             minRt = 1;
-
         minRTRecord.put(resourceName, minRt );
+
         avgRTRecord.put(resourceName,node.avgRt());
+
         cpuUseageRecord = statusListener.getCpuUsage();
 
         //每秒更新一次rules
@@ -109,11 +109,17 @@ public class AutomaticRuleManager {
 
             //更新 rules
             try {
+
                 updateRulesByQPS();
+
             } catch (Exception e) {
+
                 e.printStackTrace();
+
             } finally {
+
                 updating.set(false);
+
             }
         }
     }
@@ -126,7 +132,6 @@ public class AutomaticRuleManager {
         // 暂不考虑其他应用造成的负载
         // 暂时使用minRT作为负载系数来计算服务给系统造成的负载
 
-
         Set<String> resourceNameSet = rules.keySet();
 
         //计算系统其他应用使用的负载 ( otherAppCpuUseage =  totalCpuUseage - sum(minRT*passedQPS) )
@@ -136,20 +141,14 @@ public class AutomaticRuleManager {
         }
         otherAppUseage = statusListener.getCpuUsage() - otherAppUseage;
 
-
         //计算当前流量需要的负载 ( currentCpuUseage = sum(minRT*totalQps) )
         double currentCpuUseage = 0;
         for(String resource : resourceNameSet){
             currentCpuUseage += getInt(qpsRecord,resource)*getDouble(minRTRecord,resource)*0.001;
         }
 
-        System.out.println("currentCpuUseage: "+currentCpuUseage);
-
         //计算当前可用的负载 ( aviliableCpuUseage = maxCpuUseage - otherAppCpuUseage )
         double aviliableUseage = maxSystemUseage - otherAppUseage;
-
-        System.out.println("aviliableUseage: "+aviliableUseage);
-
 
         double useageLevel = currentCpuUseage / aviliableUseage;
 
@@ -157,7 +156,7 @@ public class AutomaticRuleManager {
 
         //判断是否有资源处于异常需要被降级
         for(String resource:resourceNameSet){
-            if(getDouble(avgRTRecord,resource)>50&&degradeTimer.get(resource)==0)
+            if(getDouble(avgRTRecord,resource)> 50 && degradeTimer.get(resource) == 0)
                 degradeTimer.put(resource,5);
         }
 
@@ -165,7 +164,7 @@ public class AutomaticRuleManager {
         TreeSet<String> activeResources = new TreeSet<String>();
         //将正常状态的资源加入规则计算的集合，异常的资源流量降级
         for(String resource:resourceNameSet){
-            if(degradeTimer.get(resource)==0)
+            if( degradeTimer.get(resource) == 0)
                 activeResources.add(resource);
             else{
                 rules.put(resource,rules.get(resource).setCount(0));
@@ -182,7 +181,7 @@ public class AutomaticRuleManager {
                 rule.setCount(maximumQPS);
                 rules.put(resourceName,rule);
             }
-        }else{ //2. 请求数超过系统处理能力时（流量洪峰）：在保护其他服务正常访问的前提下尽可能将流量分配到发生洪峰的服务
+        }else{//2. 请求数超过系统处理能力时（流量洪峰）：在保护其他服务正常访问的前提下尽可能将流量分配到发生洪峰的服务
 
 
             double[] maxQPS = resolve(activeResources);
@@ -195,16 +194,6 @@ public class AutomaticRuleManager {
 
         }
         updateRaters();
-    }
-
-    static public boolean canPass(Node node, int acquireCount, FlowRule rule) {
-        int curCount = (int)(node.passQps());
-
-        if (curCount + acquireCount > rule.getCount()) {
-
-            return false;
-        }
-        return true;
     }
 
     /**
@@ -280,7 +269,6 @@ public class AutomaticRuleManager {
 
         return Arrays.copyOf(x,3);
     }
-
 
     /**
      * 将 FlowRule.count 更新到rater中
