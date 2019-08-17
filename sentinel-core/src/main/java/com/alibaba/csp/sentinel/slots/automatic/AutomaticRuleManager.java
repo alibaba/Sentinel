@@ -5,11 +5,11 @@ import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.controller.DefaultController;
 import com.alibaba.csp.sentinel.slots.system.SystemStatusListener;
-
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,6 +28,9 @@ public class AutomaticRuleManager {
      */
     private static Map<String, FlowRule> rules = new ConcurrentHashMap<String, FlowRule>();
 
+    /**
+     * 监控数据
+     */
     private static Map<String, Integer> qpsRecord = new ConcurrentHashMap<String, Integer>();
 
     private static Map<String, Integer> passedRecord = new ConcurrentHashMap<String, Integer>();
@@ -37,7 +40,7 @@ public class AutomaticRuleManager {
     private static Map<String, Double> avgRTRecord = new ConcurrentHashMap<String, Double>();
 
     /**
-     * 熔断降级资源计时器
+     * 熔断资源计时器
      */
     private static Map<String, Integer> degradeTimer = new ConcurrentHashMap<String, Integer>();
 
@@ -47,19 +50,7 @@ public class AutomaticRuleManager {
 
     private static long latestUpdateTime;
 
-    private static float maxCpuUseage = 80;
-
     private static SystemStatusListener statusListener = null;
-
-    /**
-     * 初始化流控阈值
-     */
-    public static int defaultCount = 125;
-
-    /**
-     * 熔断降级时间
-     */
-    public static int degradeTime = 4900;
 
     static {
         statusListener = new SystemStatusListener();
@@ -76,9 +67,9 @@ public class AutomaticRuleManager {
         if (rules.get(resourceName) == null) {
             rule = new FlowRule(resourceName);
             // 设置初始值
-            rule.setCount(defaultCount);
-            rule.setLimitApp("default");
-            rule.setGrade(1);
+            rule.setCount(AutomaticConfiguration.DEFAULT_COUNT);
+            rule.setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
+            rule.setGrade(RuleConstant.FLOW_GRADE_QPS);
             rule.setRater(new DefaultController(rule.getCount(), rule.getGrade()));
             rules.put(resourceName, rule);
             degradeTimer.put(resourceName, 0);
@@ -119,7 +110,7 @@ public class AutomaticRuleManager {
         cpuUseageRecord = statusListener.getCpuUsage();
 
         // 每秒更新一次 rules
-        if (System.currentTimeMillis() - latestUpdateTime < 1000) {
+        if (System.currentTimeMillis() - latestUpdateTime < AutomaticConfiguration.RULE_UPDATE_WINDOW) {
             return;
         }
 
@@ -168,15 +159,15 @@ public class AutomaticRuleManager {
         }
 
         // 当前可用的负载 ( aviliableCpuUseage = maxCpuUseage - otherAppCpuUseage )
-        double aviliableUseage = maxCpuUseage - otherAppUseage;
+        double availableUseage = AutomaticConfiguration.MAX_CPU_USEAGE - otherAppUseage;
 
-        double useageLevel = currentUseage / aviliableUseage;
+        double useageLevel = currentUseage / availableUseage;
 
         // 熔断降级
         // 判断是否有资源处于异常需要被降级
         for (String resource : resourceNameSet) {
-            if (getDouble(avgRTRecord, resource) > degradeTime && degradeTimer.get(resource) == 0) {
-                degradeTimer.put(resource, 5);
+            if (getDouble(avgRTRecord, resource) > AutomaticConfiguration.DEGRADE_RT && degradeTimer.get(resource) == 0) {
+                degradeTimer.put(resource, AutomaticConfiguration.DEGRADE_TIME_WINDOW);
             }
         }
 
@@ -196,19 +187,19 @@ public class AutomaticRuleManager {
         if (useageLevel < 1) {
             for (String resourceName : activeResources) {
                 FlowRule rule = rules.get(resourceName);
-                double currentQPS = getInt(qpsRecord, resourceName);
-                double maximumQPS = currentQPS / useageLevel;
-                rule.setCount(maximumQPS);
+                double currentQps = getInt(qpsRecord, resourceName);
+                double maximumQps = currentQps / useageLevel;
+                rule.setCount(maximumQps);
                 rules.put(resourceName, rule);
             }
         }
         // 2. 请求数超过系统处理能力时（流量洪峰）：在保护其他服务正常访问的前提下尽可能将流量分配到发生洪峰的服务
         else {
-            double[] maxQPS = resolve(activeResources);
+            double[] maxQps = resolve(activeResources);
 
             int i = 0;
             for (String resourceName : activeResources) {
-                rules.put(resourceName, rules.get(resourceName).setCount(maxQPS[i]));
+                rules.put(resourceName, rules.get(resourceName).setCount(maxQps[i]));
                 i += 1;
             }
 
@@ -252,7 +243,7 @@ public class AutomaticRuleManager {
         double[] b = new double[resourceNum * 2 + 1];
         b[0] = 1;
         for (int j = 0; j < resourceNum; j++) {
-            b[j + 1] = 10;
+            b[j + 1] = AutomaticConfiguration.RESOURCE_MIN_FLOW;
             b[j + 1 + resourceNum] = qps[j];
         }
 
