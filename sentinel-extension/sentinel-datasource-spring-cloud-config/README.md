@@ -1,7 +1,7 @@
 # Sentinel DataSource SpringCloudConfig
 
 Sentinel DataSource SpringCloudConfig provides integration with SpringCloudConfig so that SpringCloudConfig
-can be the dynamic rule data source of Sentinel. The data source can uses pull model (like web hook call back)
+can be the dynamic rule data source of Sentinel.
 
 To use Sentinel DataSource SpringCloudConfig, you should add the following dependency:
 
@@ -27,10 +27,13 @@ SpringCloudConfigDataSource dataSource = new SpringCloudConfigDataSource("flow_r
         FlowRuleManager.register2Property(dataSource.getProperty());
 ```
 
+If the client want to perceive the remote config changed, it can binding a git webhook callback with the ```com.alibaba.csp.sentinel.datasource.spring.cloud.config.SentinelRuleLocator.refresh```
+ API. Like test demo  ```com.alibaba.csp.sentinel.datasource.spring.cloud.config.test.SpringCouldDataSourceTest.refresh``` do.
 
-We had offer test cases and demo in:
-[com.alibaba.csp.sentinel.datasource.spring.cloud.config.test]
 
+We  offer test cases and demo in:
+[com.alibaba.csp.sentinel.datasource.spring.cloud.config.test]. 
+When you run test cases, please follow the steps:
 
 ```
 //first start config server
