@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.event;
+package com.alibaba.csp.sentinel.event.publisher;
 
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
+import com.alibaba.csp.sentinel.event.Event;
+import com.alibaba.csp.sentinel.event.subscriber.EventSubscriber;
 import com.alibaba.csp.sentinel.log.RecordLog;
 
 import java.util.HashSet;

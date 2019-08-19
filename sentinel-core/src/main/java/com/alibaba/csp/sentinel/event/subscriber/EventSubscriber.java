@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.event;
+package com.alibaba.csp.sentinel.event.subscriber;
 
-import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.event.Event;
 
 /**
  * @author lianglin
  * @since 1.7.0
  */
-public class DefaultEventSubscriber implements EventSubscriber {
-
-    @Override
-    public void listen(Event event) {
-        RecordLog.info("[DefaultEventSubscriber] receive event: {0}", event);
-    }
+public interface EventSubscriber {
+    /**
+     * Subscribe the event and make some  business logic processing
+     *
+     * @param event
+     */
+    void listen(Event event);
 }

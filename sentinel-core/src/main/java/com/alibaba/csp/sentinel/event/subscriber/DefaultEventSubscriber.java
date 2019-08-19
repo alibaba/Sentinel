@@ -13,26 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.event;
+package com.alibaba.csp.sentinel.event.subscriber;
+
+import com.alibaba.csp.sentinel.event.Event;
+import com.alibaba.csp.sentinel.log.RecordLog;
 
 /**
  * @author lianglin
  * @since 1.7.0
  */
-public final class EventPublisherProvider {
+public class DefaultEventSubscriber implements EventSubscriber {
 
-    private static final EventPublisher publisher;
-
-    static {
-        publisher = new DefaultEventPublisher();
-        for (EventSubscriber subscriber : EventSubscriberProvider.provide()) {
-            publisher.addSubscriber(subscriber);
-        }
+    @Override
+    public void listen(Event event) {
+        RecordLog.info("[DefaultEventSubscriber] receive event: {0}", event);
     }
-
-    public static EventPublisher getPublisher() {
-        return publisher;
-    }
-
-
 }

@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.event;
+package com.alibaba.csp.sentinel.event.subscriber;
+
+import com.alibaba.csp.sentinel.event.subscriber.DefaultEventSubscriber;
+import com.alibaba.csp.sentinel.event.subscriber.EventSubscriber;
 
 import java.util.ArrayList;
 import java.util.List;
