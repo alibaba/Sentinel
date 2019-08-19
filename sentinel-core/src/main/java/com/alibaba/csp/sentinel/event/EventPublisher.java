@@ -21,14 +21,14 @@ package com.alibaba.csp.sentinel.event;
  */
 public interface EventPublisher {
     /**
-     * Publish rule status change event
+     * Publish  event
      *
      * @param event
      */
     void publish(Event event);
 
     /**
-     * Publish rule status change event asynchronously
+     * Publish  event asynchronously
      *
      * @param event
      */
