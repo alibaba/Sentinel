@@ -15,19 +15,32 @@
  */
 package com.alibaba.csp.sentinel.event;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 /**
  * @author lianglin
  * @since 1.7.0
  */
-public class RuleStatusPublisherProviderTest {
+public enum EventType {
 
-    @Test
-    public void testProvide() {
-        EventPublisher publisher = RuleStatusPublisherProvider.getPublisher();
-        Assert.assertTrue(publisher != null);
+    CIRCUIT_BREAK_OPEN(1),
+
+    CIRCUIT_BREAKER_CLOSE(2);
+
+    EventType(int type) {
+        this.type = type;
     }
 
+    private int type;
+
+    public int getType() {
+        return type;
+    }
+
+    public static EventType getEventType(int type) {
+        for (EventType eventType : values()) {
+            if (eventType.getType() == type) {
+                return eventType;
+            }
+        }
+        return null;
+    }
 }

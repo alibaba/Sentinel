@@ -22,20 +22,20 @@ import org.junit.Test;
  * @author lianglin
  * @since 1.7.0
  */
-public class DefaultRuleStatusPublisherTest {
+public class DefaultEventPublisherTest {
 
     @Test
-    public void testDefaultRulePublisher() {
+    public void testDefaultEventPublisher() {
 
-        DefaultRuleStatusPublisher publisher = new DefaultRuleStatusPublisher();
+        DefaultEventPublisher publisher = new DefaultEventPublisher();
         Assert.assertTrue(publisher.getEventSubscribers().size() == 0);
 
-        DefaultRuleStatusSubscriber subscriber1 = new DefaultRuleStatusSubscriber();
+        DefaultEventSubscriber subscriber1 = new DefaultEventSubscriber();
         publisher.addSubscriber(subscriber1);
         Assert.assertTrue(publisher.getEventSubscribers().size() == 1);
         Assert.assertTrue(publisher.getEventSubscribers().contains(subscriber1));
 
-        DefaultRuleStatusSubscriber subscriber2 = new DefaultRuleStatusSubscriber();
+        DefaultEventSubscriber subscriber2 = new DefaultEventSubscriber();
         publisher.addSubscriber(subscriber2);
         Assert.assertTrue(publisher.getEventSubscribers().size() == 2);
         Assert.assertTrue(publisher.getEventSubscribers().contains(subscriber1));

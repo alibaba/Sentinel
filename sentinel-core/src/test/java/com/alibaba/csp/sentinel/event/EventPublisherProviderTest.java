@@ -15,26 +15,19 @@
  */
 package com.alibaba.csp.sentinel.event;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ServiceLoader;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author lianglin
  * @since 1.7.0
  */
-public final class RuleStatusSubscriberProvider {
+public class EventPublisherProviderTest {
 
-    private static final ServiceLoader<EventSubscriber> subscribers = ServiceLoader.load(EventSubscriber.class);
-
-    public static List<EventSubscriber> provide() {
-        List<EventSubscriber>  subscribers = new ArrayList<>();
-        for (EventSubscriber subscriber : subscribers) {
-            if (subscriber != null && subscriber.getClass() != DefaultRuleStatusSubscriber.class) {
-                 subscribers.add(subscriber);
-            }
-        }
-        subscribers.add(new DefaultRuleStatusSubscriber());
-        return subscribers;
+    @Test
+    public void testProvide() {
+        EventPublisher publisher = EventPublisherProvider.getPublisher();
+        Assert.assertTrue(publisher != null);
     }
+
 }

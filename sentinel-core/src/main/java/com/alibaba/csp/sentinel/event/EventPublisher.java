@@ -32,7 +32,7 @@ public interface EventPublisher {
      *
      * @param event
      */
-    void asynPublish(Event event);
+    void asyPublish(Event event);
 
     /**
      * Add subscriber

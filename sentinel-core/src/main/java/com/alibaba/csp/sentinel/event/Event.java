@@ -22,10 +22,11 @@ package com.alibaba.csp.sentinel.event;
 public class Event<T> {
 
 
-    public Event(T data, Object source, Long time) {
+    public Event(T data, String source, int type) {
         this.data = data;
         this.source = source;
-        this.time = time;
+        this.type = type;
+        this.timeStamp = System.currentTimeMillis();
     }
 
     /**
@@ -33,30 +34,45 @@ public class Event<T> {
      */
     private T data;
 
+
     /**
      * Event produce source
      */
-    private Object source;
+    private String source;
 
     /**
      * Event happen time
      */
-    private Long time;
+    private long timeStamp;
+
+    /**
+     * @see EventType
+     */
+    private int type;
+
 
     public T getData() {
-        return data;
+        return this.data;
     }
 
-    public void setData(T data) {
+    public void setBody(T data) {
         this.data = data;
     }
 
-    public Object getSource() {
-        return source;
+    public String getSource() {
+        return this.source;
     }
 
-    public void setSource(Object source) {
+    public void setSource(final String source) {
         this.source = source;
+    }
+
+    public long getTimeStamp() {
+        return this.timeStamp;
+    }
+
+    public void setTimeStamp(final long timeStamp) {
+        this.timeStamp = timeStamp;
     }
 
     @Override
@@ -64,15 +80,19 @@ public class Event<T> {
         return "{" +
                 "data=" + data +
                 ",source=" + source +
-                ",time=" + time +
+                ",type=" + type +
+                ",timeStamp=" + timeStamp +
                 "}";
     }
 
-    public Long getTime() {
-        return time;
+
+    public int getType() {
+        return type;
     }
 
-    public void setTime(Long time) {
-        this.time = time;
+    public void setType(int type) {
+        this.type = type;
     }
+
+
 }

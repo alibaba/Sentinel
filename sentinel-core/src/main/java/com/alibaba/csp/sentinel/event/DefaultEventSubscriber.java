@@ -15,21 +15,16 @@
  */
 package com.alibaba.csp.sentinel.event;
 
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.util.List;
+import com.alibaba.csp.sentinel.log.RecordLog;
 
 /**
  * @author lianglin
  * @since 1.7.0
  */
-public class RuleStatusSubscriberProviderTest {
+public class DefaultEventSubscriber implements EventSubscriber {
 
-    @Test
-    public void testProvide() {
-        List<EventSubscriber> subscribers = RuleStatusSubscriberProvider.provide();
-        Assert.assertTrue(subscribers.size() == 1);
-        Assert.assertTrue(subscribers.get(0).getClass() == DefaultRuleStatusSubscriber.class);
+    @Override
+    public void listen(Event event) {
+        RecordLog.info("[DefaultEventSubscriber] receive event: {0}", event);
     }
 }

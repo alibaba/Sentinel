@@ -18,8 +18,7 @@ package com.alibaba.csp.sentinel.slots.block.degrade;
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.event.Event;
-import com.alibaba.csp.sentinel.event.RuleStatusContentWrapper;
-import com.alibaba.csp.sentinel.event.RuleStatusPublisherProvider;
+import com.alibaba.csp.sentinel.event.EventPublisherProvider;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.DefaultNode;
@@ -33,8 +32,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static com.alibaba.csp.sentinel.event.RuleStatus.CIRCUIT_BREAKER_CLOSE;
-import static com.alibaba.csp.sentinel.event.RuleStatus.CIRCUIT_BREAK_START;
+import static com.alibaba.csp.sentinel.event.EventType.CIRCUIT_BREAKER_CLOSE;
+import static com.alibaba.csp.sentinel.event.EventType.CIRCUIT_BREAK_OPEN;
+
 
 /**
  * <p>
@@ -247,10 +247,10 @@ public class DegradeRule extends AbstractRule {
             ResetTask resetTask = new ResetTask(this);
             pool.schedule(resetTask, timeWindow, TimeUnit.SECONDS);
             try {
-                Event<RuleStatusContentWrapper<DegradeRule>> event = new Event<>(new RuleStatusContentWrapper<>(CIRCUIT_BREAK_START, this), DegradeRuleManager.class, System.currentTimeMillis());
-                RuleStatusPublisherProvider.getPublisher().asynPublish(event);
+                Event<DegradeRule> event = new Event<>(this, "Degrade.passCheck", CIRCUIT_BREAK_OPEN.getType());
+                EventPublisherProvider.getPublisher().asyPublish(event);
             } catch (Exception ex) {
-                RecordLog.warn("[RuleStatusPublisherProvider.getPublisher] publish event error", ex);
+                RecordLog.warn("[EventPublisherProvider.getPublisher] publish event error", ex);
             }
         }
 
@@ -270,10 +270,10 @@ public class DegradeRule extends AbstractRule {
             rule.passCount.set(0);
             rule.cut.set(false);
             try {
-                Event<RuleStatusContentWrapper<DegradeRule>> event = new Event<>(new RuleStatusContentWrapper<>(CIRCUIT_BREAKER_CLOSE, rule), DegradeRuleManager.class, System.currentTimeMillis());
-                RuleStatusPublisherProvider.getPublisher().asynPublish(event);
+                Event<DegradeRule> event = new Event<>(rule, "Degrade.ResetTask", CIRCUIT_BREAKER_CLOSE.getType());
+                EventPublisherProvider.getPublisher().asyPublish(event);
             } catch (Exception ex) {
-                RecordLog.warn("[RuleStatusPublisherProvider.getPublisher] publish event error", ex);
+                RecordLog.warn("[EventPublisherProvider.getPublisher] publish event error", ex);
             }
         }
     }

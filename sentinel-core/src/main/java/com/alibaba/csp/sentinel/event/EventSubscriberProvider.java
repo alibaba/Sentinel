@@ -15,24 +15,26 @@
  */
 package com.alibaba.csp.sentinel.event;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ServiceLoader;
+
 /**
  * @author lianglin
  * @since 1.7.0
  */
-public final class RuleStatusPublisherProvider {
+public final class EventSubscriberProvider {
 
-    private static final EventPublisher publisher;
+    private static final ServiceLoader<EventSubscriber> subscribers = ServiceLoader.load(EventSubscriber.class);
 
-    static {
-        publisher = new DefaultRuleStatusPublisher();
-        for (EventSubscriber subscriber : RuleStatusSubscriberProvider.provide()) {
-            publisher.addSubscriber(subscriber);
+    public static List<EventSubscriber> provide() {
+        List<EventSubscriber>  subscribers = new ArrayList<>();
+        for (EventSubscriber subscriber : subscribers) {
+            if (subscriber != null && subscriber.getClass() != DefaultEventSubscriber.class) {
+                 subscribers.add(subscriber);
+            }
         }
+        subscribers.add(new DefaultEventSubscriber());
+        return subscribers;
     }
-
-    public static EventPublisher getPublisher() {
-        return publisher;
-    }
-
-
 }

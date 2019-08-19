@@ -29,14 +29,14 @@ import java.util.concurrent.TimeUnit;
  * @author lianglin
  * @since 1.7.0
  */
-public class DefaultRuleStatusPublisher implements EventPublisher {
+public class DefaultEventPublisher implements EventPublisher {
 
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static ExecutorService pool = new ThreadPoolExecutor(
-            Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors(), 0L, TimeUnit.SECONDS
+            Runtime.getRuntime().availableProcessors(), 2 * Runtime.getRuntime().availableProcessors(), 60L, TimeUnit.SECONDS
             , new ArrayBlockingQueue<Runnable>(1000)
-            , new NamedThreadFactory("sentinel-rule-status-publish-task", true)
+            , new NamedThreadFactory("sentinel-event-publish-task", true)
             , new ThreadPoolExecutor.AbortPolicy());
 
     private final Set<EventSubscriber> eventSubscribers = new HashSet<>();
@@ -48,13 +48,13 @@ public class DefaultRuleStatusPublisher implements EventPublisher {
                 subscriber.listen(event);
             }
         } catch (Exception ex) {
-            RecordLog.warn("[DefaultRuleStatusPublisher] publish event error ", ex);
+            RecordLog.warn("[DefaultEventPublisher] publish event error ", ex);
         }
 
     }
 
     @Override
-    public void asynPublish(Event event) {
+    public void asyPublish(Event event) {
         pool.submit(new PublishEventTask(event));
     }
 
@@ -98,7 +98,7 @@ public class DefaultRuleStatusPublisher implements EventPublisher {
                     subscriber.listen(event);
                 }
             } catch (Exception ex) {
-                RecordLog.warn("[DefaultRuleStatusPublisher] publish event error ", ex);
+                RecordLog.warn("[DefaultEventPublisher] publish event error ", ex);
             }
         }
     }
