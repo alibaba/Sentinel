@@ -102,8 +102,8 @@ public class TokenBucketController implements TrafficShapingController {
                     bucketCount.compareAndSet(newCount, (long)(totalQps * targetRatio / 2));
                     newCount = bucketCount.get();
                 }
-                //System.out.println("statistic");
-                // 计算限制范围[1.0, 5.0]的梯度
+
+                // 计算限制范围[1.0, 2.0]的梯度
                 // 实际通过率越小，梯度值越大，以增加后续通过数
                 double gradientRatio = Math.max(1.0, Math.min(2.0, targetRatio / ratio));
 
@@ -119,12 +119,14 @@ public class TokenBucketController implements TrafficShapingController {
                     gradientRt = Math.max(0.5, Math.min(1.0, needRt / avgRt));
                 }
 
+                double cpuUsage = getCurrentCpuUsage();
+                double gradientCpu = Math.min(1.0, 0.6 / cpuUsage);
+
                 long currentCount = bucketCount.get();
-                //System.out.println("gradientRadio: " + gradientRatio + " ;gradientRt: " + gradientRt);
 
-
+                //newCount = (long)(gradientRatio * gradientRt * currentCount);
                 // 最后的令牌发放速度由通过率和 Rt 共同决定
-                newCount = (long)(gradientRatio * gradientRt * currentCount);
+                newCount = (long)(gradientRatio * gradientRt * gradientCpu * currentCount);
                 // 使用平滑因子更新令牌发放速度（默认为0.2）
                 newCount = (long)(currentCount * (1 - smoothing) + newCount * smoothing);
 
@@ -132,6 +134,8 @@ public class TokenBucketController implements TrafficShapingController {
 
 
             }
+
+            // Todo
             long newMaxToken = Math.max(newCount, (long)(previousTotalQps * targetRatio));
             long oldMaxToken = maxTokens.get();
             if (newMaxToken > oldMaxToken) {
