@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.event;
 
+import com.alibaba.csp.sentinel.event.subscriber.DefaultEventSubscriber;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import org.junit.Test;
 

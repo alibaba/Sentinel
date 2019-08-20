@@ -81,7 +81,7 @@ public class DefaultEventPublisher implements EventPublisher {
      *
      * @return
      */
-    protected Set<EventSubscriber> getEventSubscribers() {
+    public Set<EventSubscriber> getEventSubscribers() {
         return eventSubscribers;
     }
 

@@ -15,6 +15,9 @@
  */
 package com.alibaba.csp.sentinel.event;
 
+import com.alibaba.csp.sentinel.event.subscriber.DefaultEventSubscriber;
+import com.alibaba.csp.sentinel.event.subscriber.EventSubscriber;
+import com.alibaba.csp.sentinel.event.subscriber.EventSubscriberProvider;
 import org.junit.Assert;
 import org.junit.Test;
 

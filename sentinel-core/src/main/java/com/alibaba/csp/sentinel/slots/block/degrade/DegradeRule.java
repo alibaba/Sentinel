@@ -18,7 +18,7 @@ package com.alibaba.csp.sentinel.slots.block.degrade;
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.event.Event;
-import com.alibaba.csp.sentinel.event.EventPublisherProvider;
+import com.alibaba.csp.sentinel.event.publisher.EventPublisherProvider;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.DefaultNode;
