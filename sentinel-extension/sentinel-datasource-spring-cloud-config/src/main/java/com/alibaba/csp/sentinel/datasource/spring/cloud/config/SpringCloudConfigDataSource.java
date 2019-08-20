@@ -24,16 +24,21 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * ${@link SpringCloudConfigDataSource} A read-only {@code DataSource} with spring-cloud-config backend
- * It retrieve the spring-cloud-config data stored in ${@link SentinelRuleStorage}
- * When the data in backend has been modified, ${@link SentinelRuleStorage} will invoke ${@link SpringCloudConfigDataSource#updateValues()}
- * to dynamic update values
+ * <p>A read-only {@code DataSource} with Spring Cloud Config backend.</p>
+ * <p>
+ * It retrieves the Spring Cloud Config data stored in {@link SentinelRuleStorage}.
+ * When the data in the backend has been modified, {@link SentinelRuleStorage} will
+ * invoke {@link SpringCloudConfigDataSource#updateValues()} to update values dynamically.
+ * </p>
+ * <p>
+ * To notify the client that the remote config has changed, users could bind a git
+ * webhook callback with the {@link SentinelRuleLocator#refresh()} API.
+ * </p>
  *
  * @author lianglin
  * @since 1.7.0
  */
 public class SpringCloudConfigDataSource<T> extends AbstractDataSource<String, T> {
-
 
     private final static Map<SpringCloudConfigDataSource, SpringConfigListener> listeners;
 
@@ -41,8 +46,7 @@ public class SpringCloudConfigDataSource<T> extends AbstractDataSource<String, T
         listeners = new ConcurrentHashMap<>();
     }
 
-    private String ruleKey;
-
+    private final String ruleKey;
 
     public SpringCloudConfigDataSource(final String ruleKey, Converter<String, T> converter) {
         super(converter);
@@ -103,7 +107,5 @@ public class SpringCloudConfigDataSource<T> extends AbstractDataSource<String, T
                 RecordLog.warn("[SpringConfigListener] load config error: ", e);
             }
         }
-
     }
 }
-

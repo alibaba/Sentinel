@@ -1,9 +1,9 @@
-# Sentinel DataSource SpringCloudConfig
+# Sentinel DataSource Spring Cloud Config
 
-Sentinel DataSource SpringCloudConfig provides integration with SpringCloudConfig so that SpringCloudConfig
-can be the dynamic rule data source of Sentinel.
+Sentinel DataSource Spring Cloud Config provides integration with Spring Cloud Config
+so that Spring Cloud Config can be the dynamic rule data source of Sentinel.
 
-To use Sentinel DataSource SpringCloudConfig, you should add the following dependency:
+To use Sentinel DataSource Spring Cloud Config, you should add the following dependency:
 
 ```xml
 <dependency>
@@ -17,32 +17,25 @@ Then you can create an `SpringCloudConfigDataSource` and register to rule manage
 For instance:
 
 ```Java
-//flow_rule is the propery key in SpringConfigConfig
-SpringCloudConfigDataSource dataSource = new SpringCloudConfigDataSource("flow_rule", new Converter<String, List<FlowRule>>() {
-            @Override
-            public List<FlowRule> convert(String source) {
-                return JSON.parseArray(source, FlowRule.class);
-            }
-        });
-        FlowRuleManager.register2Property(dataSource.getProperty());
+ReadableDataSource<String, List<FlowRule>> flowRuleDs = new SpringCloudConfigDataSource<>(ruleKey, s -> JSON.parseArray(s, FlowRule.class));
+FlowRuleManager.register2Property(flowRuleDs.getProperty());
 ```
 
-If the client want to perceive the remote config changed, it can binding a git webhook callback with the ```com.alibaba.csp.sentinel.datasource.spring.cloud.config.SentinelRuleLocator.refresh```
- API. Like test demo  ```com.alibaba.csp.sentinel.datasource.spring.cloud.config.test.SpringCouldDataSourceTest.refresh``` do.
+To notify the client that the remote config has changed, we could bind a git webhook callback with the
+`com.alibaba.csp.sentinel.datasource.spring.cloud.config.SentinelRuleLocator.refresh` API.
+We may refer to the the sample `com.alibaba.csp.sentinel.datasource.spring.cloud.config.test.SpringCouldDataSourceTest#refresh` in test cases.
 
-
-We  offer test cases and demo in:
-[com.alibaba.csp.sentinel.datasource.spring.cloud.config.test]. 
-When you run test cases, please follow the steps:
+We offer test cases and demo in the package: `com.alibaba.csp.sentinel.datasource.spring.cloud.config.test`.
+When you are running test cases, please follow the steps:
 
 ```
-//first start config server
+// First, start the Spring Cloud config server
 com.alibaba.csp.sentinel.datasource.spring.cloud.config.server.ConfigServer
 
-//second start config client
+// Second, start the Spring Cloud config client
 com.alibaba.csp.sentinel.datasource.spring.cloud.config.client.ConfigClient
 
-//third run test cases and demo
+// Third, run the test cases and demo
 com.alibaba.csp.sentinel.datasource.spring.cloud.config.test.SentinelRuleLocatorTests
 com.alibaba.csp.sentinel.datasource.spring.cloud.config.test.SpringCouldDataSourceTest
 ```
