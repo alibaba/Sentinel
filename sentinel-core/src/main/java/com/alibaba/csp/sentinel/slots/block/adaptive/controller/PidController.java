@@ -98,15 +98,13 @@ public class PidController implements TrafficShapingController {
 
                 long currentCount = bucketCount.get();
 
-                newCount = currentCount + syncCountByPid2(node, expectRt);
-                //newCount = currentCount + syncCountByPid2();
+                newCount = currentCount + syncCountByPid2();
 
                 bucketCount.compareAndSet(currentCount, newCount);
 
 
             }
 
-            //Todo
             long newMaxToken = Math.max(newCount * 5, (long)(previousTotalQps * targetRatio));
             long oldMaxToken = maxTokens.get();
             if (newMaxToken > oldMaxToken) {
@@ -117,7 +115,7 @@ public class PidController implements TrafficShapingController {
     }
 
     // 位置式PID控制器
-    protected long syncCountByPid(ClusterNode node, double expectRt) {
+    protected long syncCountByPid() {
         double Kp = 1000, Ki = 5, Kd = 0;
         double errNum = 0.6 - getCurrentCpuUsage();
         //double errNum = expectRt - node.avgRt();
@@ -130,7 +128,7 @@ public class PidController implements TrafficShapingController {
     }
 
     // 增量式PID控制器
-    protected long syncCountByPid2(ClusterNode node, double expectRt) {
+    protected long syncCountByPid2() {
         double Kp = 1000, Ki = 2.5, Kd = 0;
         double errNum = 0.6 - getCurrentCpuUsage();
         //double errNum = expectRt - node.avgRt();
@@ -152,7 +150,7 @@ public class PidController implements TrafficShapingController {
         }
 
         long oldValue = storedTokens.get();
-        long newValue = addTokens(currentTime, passQps, count, maxToken);
+        long newValue = addTokens(currentTime, count, maxToken);
 
         if (storedTokens.compareAndSet(oldValue, newValue)) {
             long currentValue = storedTokens.addAndGet(0 - passQps);
@@ -164,7 +162,7 @@ public class PidController implements TrafficShapingController {
 
     }
 
-    private long addTokens(long currentTime, long passQps, long count, long maxToken) {
+    private long addTokens(long currentTime, long count, long maxToken) {
         long oldValue = storedTokens.get();
         long newValue = oldValue;
 

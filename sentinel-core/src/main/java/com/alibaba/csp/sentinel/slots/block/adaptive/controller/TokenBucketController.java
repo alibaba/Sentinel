@@ -135,7 +135,6 @@ public class TokenBucketController implements TrafficShapingController {
 
             }
 
-            // Todo
             long newMaxToken = Math.max(newCount, (long)(previousTotalQps * targetRatio));
             long oldMaxToken = maxTokens.get();
             if (newMaxToken > oldMaxToken) {
