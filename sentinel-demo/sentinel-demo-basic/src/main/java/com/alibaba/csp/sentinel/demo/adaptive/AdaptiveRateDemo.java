@@ -66,7 +66,7 @@ public class AdaptiveRateDemo {
          * CONTROL_BEHAVIOR_RATE_LIMITER means requests more than threshold will be queueing in the queue,
          * until the queueing time is more than {@link FlowRule#maxQueueingTimeMs}, the requests will be rejected.
          */
-        rule1.setExpectRt(20 * 1000);
+        rule1.setExpectRt(5 * 1000);
 
         rules.add(rule1);
         AdaptiveRuleManager.loadRules(rules);

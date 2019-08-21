@@ -3,6 +3,7 @@ package com.alibaba.csp.sentinel.demo.adaptive;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.adaptive.AdaptiveRule;
 import com.alibaba.csp.sentinel.slots.block.adaptive.AdaptiveRuleManager;
 import com.alibaba.csp.sentinel.util.TimeUtil;
@@ -28,8 +29,6 @@ public class TokenBucketDemo {
     private static volatile boolean stop = false;
     private static volatile boolean stop1 = false;
     private static volatile boolean stop2 = false;
-    private static volatile boolean start2 = false;
-    private static volatile boolean flag = false;
     private static final int threadCount = 100;
     private static int seconds = 60 + 40;
 
@@ -72,10 +71,9 @@ public class TokenBucketDemo {
         List<AdaptiveRule> rules = new ArrayList<AdaptiveRule>();
         AdaptiveRule rule = new AdaptiveRule();
         rule.setResource(KEY);
-        //rule.setCount(40000);
-        //rule.setMaxToken(80000);
         rule.setTargetRatio(0.5);
         rule.setExpectRt(0.5);
+        //rule.setGrade(RuleConstant.FLOW_ADAPTIVE_PID);
         rules.add(rule);
         AdaptiveRuleManager.loadRules(rules);
     }
