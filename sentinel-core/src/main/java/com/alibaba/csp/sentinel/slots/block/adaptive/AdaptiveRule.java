@@ -17,6 +17,8 @@ public class AdaptiveRule extends AbstractRule {
         setResource(resourceName);
     }
 
+    private int grade = -1;
+
     private double count;
 
     private int maxToken;
@@ -26,6 +28,15 @@ public class AdaptiveRule extends AbstractRule {
     private double expectRt;
 
     private TrafficShapingController controller;
+
+    public int getGrade() {
+        return grade;
+    }
+
+    public AdaptiveRule setGrade(int grade) {
+        this.grade = grade;
+        return this;
+    }
 
     public double getCount() {
         return count;

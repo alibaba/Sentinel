@@ -55,10 +55,13 @@ public final class AdaptiveRuleUtil {
 
     private static TrafficShapingController generateRater(AdaptiveRule rule) {
 
+        // 如果用户设置使用PID控制器，一律使用PidController
+        if(rule.getGrade() == 2) {
+            return new PidController(rule.getTargetRatio(), rule.getExpectRt());
+        }
         // 根据expectRt判断是适合用漏桶还是用令牌桶
         if (rule.getExpectRt() <= 200) {
             return new TokenBucketController(rule.getTargetRatio(), rule.getExpectRt());
-            //return new PidController(rule.getTargetRatio(), rule.getExpectRt());
         }
         return new AdaptiveRateController((int)rule.getExpectRt());
     }

@@ -25,6 +25,7 @@ public final class RuleConstant {
 
     public static final int FLOW_GRADE_THREAD = 0;
     public static final int FLOW_GRADE_QPS = 1;
+    public static final int FLOW_ADAPTIVE_PID = 2;
 
     public static final int DEGRADE_GRADE_RT = 0;
     /**
