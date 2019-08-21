@@ -12,7 +12,20 @@ angular.module('sentinelDashboardApp')
       replace: true,
       controller: function ($scope, $state, $window, AuthService) {
         if (!$window.localStorage.getItem('session_sentinel_admin')) {
-          $state.go('login');
+          AuthService.check().success(function (data) {
+            if (data.code == 0) {
+              $window.localStorage.setItem('session_sentinel_admin', {
+                username: data.data
+              });
+              if (data.data.id == 'FAKE_EMP_ID') {
+                document.getElementById('li-logout').style.display = 'none';
+              } else {
+                document.getElementById('li-logout').style.display = 'block';
+              }
+            } else {
+              $state.go('login');
+            }
+          });
         }
 
         $scope.logout = function () {

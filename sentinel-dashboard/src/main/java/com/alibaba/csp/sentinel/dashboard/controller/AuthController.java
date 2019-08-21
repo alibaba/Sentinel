@@ -16,12 +16,14 @@
 package com.alibaba.csp.sentinel.dashboard.controller;
 
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
+import com.alibaba.csp.sentinel.dashboard.auth.FakeAuthServiceImpl;
 import com.alibaba.csp.sentinel.dashboard.auth.SimpleWebAuthServiceImpl;
 import com.alibaba.csp.sentinel.dashboard.config.DashboardConfig;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,6 +47,9 @@ public class AuthController {
 
     @Value("${auth.password:sentinel}")
     private String authPassword;
+
+    @Autowired
+    private AuthService<HttpServletRequest> authService;
 
     @PostMapping("/login")
     public Result<AuthService.AuthUser> login(HttpServletRequest request, String username, String password) {
@@ -76,5 +81,17 @@ public class AuthController {
     public Result<?> logout(HttpServletRequest request) {
         request.getSession().invalidate();
         return Result.ofSuccess(null);
+    }
+
+    @RequestMapping(value = "/check")
+    public Result<?> check(HttpServletRequest request) {
+        AuthService.AuthUser authUser = authService.getAuthUser(request);
+        if (authUser == null) {
+            return Result.ofFail(-1, "Not logged in");
+        }
+        if (authService instanceof FakeAuthServiceImpl || request.getSession().getAttribute(SimpleWebAuthServiceImpl.WEB_SESSION_KEY) == null) {
+            request.getSession().setAttribute(SimpleWebAuthServiceImpl.WEB_SESSION_KEY, authUser);
+        }
+        return Result.ofSuccess(authUser);
     }
 }
