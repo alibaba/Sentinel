@@ -5,9 +5,10 @@ import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 
+/**
+ * @author Li Yudong
+ */
 public class AutomaticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
-
-
 
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,

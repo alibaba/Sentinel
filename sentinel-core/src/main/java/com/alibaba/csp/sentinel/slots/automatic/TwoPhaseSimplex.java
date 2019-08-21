@@ -1,10 +1,7 @@
 package com.alibaba.csp.sentinel.slots.automatic;
 
-/******************************************************************************
- *  Compilation:  javac TwoPhaseSimplex.java
- *  Execution:    java Simplex
- *  Dependencies: StdOut.java
- *
+
+/**
  *  Given an m-by-n matrix A, an m-length vector b, and an
  *  n-length vector c, solve the  LP { max cx : Ax <= b, x >= 0 }.
  *  Unlike Simplex.java, this version does not assume b >= 0,
@@ -14,81 +11,98 @@ package com.alibaba.csp.sentinel.slots.automatic;
  *  RHS in column m+n, the objective function in row m, and
  *  slack variables in columns m through m+n-1.
  *
- ******************************************************************************/
-
+ *  From: https://algs4.cs.princeton.edu/65reductions/
+ *
+ *  @author Li Yudong
+ */
 public class TwoPhaseSimplex {
     private static final double EPSILON = 1.0E-8;
 
-    private double[][] a;   // tableaux
-    // row m   = objective function
-    // row m+1 = artificial objective function
-    // column n to n+m-1 = slack variables
-    // column n+m to n+m+m-1 = artificial variables
+    /**
+     * tableaux
+     */
+    private double[][] a;
 
-    private int m;          // number of constraints
-    private int n;          // number of original variables
+    /**
+     * number of constraints
+     */
+    private int m;
 
-    private int[] basis;    // basis[i] = basic variable corresponding to row i
+    /**
+     * number of original variables
+     */
+    private int n;
 
-    // sets up the simplex tableaux
+    /**
+     * basis[i] = basic variable corresponding to row i
+     */
+    private int[] basis;
+
+    /**
+     * sets up the simplex tableaux
+     */
     public TwoPhaseSimplex(double[][] A, double[] b, double[] c) {
         m = b.length;
         n = c.length;
         a = new double[m+2][n+m+m+1];
-        for (int i = 0; i < m; i++)
-            for (int j = 0; j < n; j++)
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
                 a[i][j] = A[i][j];
-        for (int i = 0; i < m; i++)
-            a[i][n+i] = 1.0;
-        for (int i = 0; i < m; i++)
+            }
+        }
+        for (int i = 0; i < m; i++) {
+            a[i][n + i] = 1.0;
+        }
+        for (int i = 0; i < m; i++){
             a[i][n+m+m] = b[i];
-        for (int j = 0; j < n; j++)
+        }
+        for (int j = 0; j < n; j++) {
             a[m][j] = c[j];
+        }
 
         // if negative RHS, multiply by -1
         for (int i = 0; i < m; i++) {
             if (b[i] < 0) {
-                for (int j = 0; j <= n+m+m; j++)
+                for (int j = 0; j <= n+m+m; j++) {
                     a[i][j] = -a[i][j];
+                }
             }
         }
 
         // artificial variables form initial basis
-        for (int i = 0; i < m; i++)
-            a[i][n+m+i] = 1.0;
-        for (int i = 0; i < m; i++)
-            a[m+1][n+m+i] = -1.0;
-        for (int i = 0; i < m; i++)
-            pivot(i, n+m+i);
+        for (int i = 0; i < m; i++) {
+            a[i][n + m + i] = 1.0;
+        }
+        for (int i = 0; i < m; i++) {
+            a[m + 1][n + m + i] = -1.0;
+        }
+        for (int i = 0; i < m; i++) {
+            pivot(i, n + m + i);
+        }
 
         basis = new int[m];
-        for (int i = 0; i < m; i++)
+        for (int i = 0; i < m; i++) {
             basis[i] = n + m + i;
-
-        // StdOut.println("before phase I");
-        // show();
+        }
 
         phase1();
 
-        // StdOut.println("before phase II");
-        // show();
-
         phase2();
-
-        // StdOut.println("after phase II");
-        // show();
 
         // check optimality conditions
         assert check(A, b, c);
     }
 
-    // run phase I simplex algorithm to find basic feasible solution
+    /**
+     * run phase I simplex algorithm to find basic feasible solution
+     */
     private void phase1() {
         while (true) {
 
             // find entering column q
             int q = bland1();
-            if (q == -1) break;  // optimal
+            // optimal
+            if (q == -1) {break;}
 
             // find leaving row p
             int p = minRatioRule(q);
@@ -101,21 +115,27 @@ public class TwoPhaseSimplex {
             basis[p] = q;
             // show();
         }
-        if (a[m+1][n+m+m] > EPSILON) throw new ArithmeticException("Linear program is infeasible");
+        if (a[m+1][n+m+m] > EPSILON) {throw new ArithmeticException("Linear program is infeasible");}
     }
 
 
-    // run simplex algorithm starting from initial basic feasible solution
+    /**
+     *     run simplex algorithm starting from initial basic feasible solution
+     */
     private void phase2() {
         while (true) {
 
             // find entering column q
             int q = bland2();
-            if (q == -1) break;  // optimal
+            if (q == -1){
+                break;  // optimal
+            }
 
             // find leaving row p
             int p = minRatioRule(q);
-            if (p == -1) throw new ArithmeticException("Linear program is unbounded");
+            if (p == -1) {
+                throw new ArithmeticException("Linear program is unbounded");
+            }
 
             // pivot
             pivot(p, q);
@@ -125,74 +145,105 @@ public class TwoPhaseSimplex {
         }
     }
 
-    // lowest index of a non-basic column with a positive cost - using artificial objective function
+    /**
+     * lowest index of a non-basic column with a positive cost -
+     * using artificial objective function
+     */
     private int bland1() {
-        for (int j = 0; j < n+m; j++)
-            if (a[m+1][j] > EPSILON) return j;
-        return -1;  // optimal
+        for (int j = 0; j < n+m; j++) {
+            if (a[m + 1][j] > EPSILON) {
+                return j;
+            }
+        }
+        // optimal
+        return -1;
     }
 
-    // lowest index of a non-basic column with a positive cost
+    /**
+     * lowest index of a non-basic column with a positive cost
+     */
     private int bland2() {
-        for (int j = 0; j < n+m; j++)
-            if (a[m][j] > EPSILON) return j;
-        return -1;  // optimal
+        for (int j = 0; j < n+m; j++) {
+            if (a[m][j] > EPSILON){
+                return j;
+            }
+        }
+        // optimal
+        return -1;
     }
 
 
-    // find row p using min ratio rule (-1 if no such row)
+    /**
+     * find row p using min ratio rule (-1 if no such row)
+     */
     private int minRatioRule(int q) {
         int p = -1;
         for (int i = 0; i < m; i++) {
             // if (a[i][q] <= 0) continue;
-            if (a[i][q] <= EPSILON) continue;
-            else if (p == -1) p = i;
-            else if ((a[i][n+m+m] / a[i][q]) < (a[p][n+m+m] / a[p][q])) p = i;
+            if (a[i][q] <= EPSILON) {continue;}
+            else if (p == -1) {p = i;}
+            else if ((a[i][n+m+m] / a[i][q]) < (a[p][n+m+m] / a[p][q])) {p = i;}
         }
         return p;
     }
 
-    // pivot on entry (p, q) using Gauss-Jordan elimination
+    /**
+     * pivot on entry (p, q) using Gauss-Jordan elimination
+     */
     private void pivot(int p, int q) {
 
         // everything but row p and column q
-        for (int i = 0; i <= m+1; i++)
-            for (int j = 0; j <= n+m+m; j++)
-                if (i != p && j != q) a[i][j] -= a[p][j] * a[i][q] / a[p][q];
+        for (int i = 0; i <= m+1; i++) {
+            for (int j = 0; j <= n + m + m; j++) {
+                if (i != p && j != q) {a[i][j] -= a[p][j] * a[i][q] / a[p][q];}
+            }
+        }
 
         // zero out column q
-        for (int i = 0; i <= m+1; i++)
-            if (i != p) a[i][q] = 0.0;
+        for (int i = 0; i <= m+1; i++) {
+            if (i != p) {a[i][q] = 0.0;}
+        }
 
         // scale row p
-        for (int j = 0; j <= n+m+m; j++)
-            if (j != q) a[p][j] /= a[p][q];
+        for (int j = 0; j <= n+m+m; j++) {
+            if (j != q) {a[p][j] /= a[p][q];}
+        }
         a[p][q] = 1.0;
     }
 
-    // return optimal objective value
+    /**
+     *     return optimal objective value
+     */
     public double value() {
         return -a[m][n+m+m];
     }
 
-    // return primal solution vector
+    /**
+     *     return primal solution vector
+     */
     public double[] primal() {
         double[] x = new double[n];
-        for (int i = 0; i < m; i++)
-            if (basis[i] < n) x[basis[i]] = a[i][n+m+m];
+        for (int i = 0; i < m; i++) {
+            if (basis[i] < n) {x[basis[i]] = a[i][n + m + m];}
+        }
         return x;
     }
 
-    // return dual solution vector
+    /**
+     * return dual solution vector
+     */
     public double[] dual() {
         double[] y = new double[m];
-        for (int i = 0; i < m; i++)
-            y[i] = -a[m][n+i];
+        for (int i = 0; i < m; i++) {
+            y[i] = -a[m][n + i];
+        }
         return y;
     }
 
 
-    // is the solution primal feasible?
+    /**
+     * is the solution primal feasible?
+     */
     private boolean isPrimalFeasible(double[][] A, double[] b) {
         double[] x = primal();
 
@@ -219,7 +270,9 @@ public class TwoPhaseSimplex {
         return true;
     }
 
-    // is the solution dual feasible?
+    /**
+     * is the solution dual feasible?
+     */
     private boolean isDualFeasible(double[][] A, double[] c) {
         double[] y = dual();
 
@@ -246,7 +299,9 @@ public class TwoPhaseSimplex {
         return true;
     }
 
-    // check that optimal value = cx = yb
+    /**
+     * check that optimal value = cx = yb
+     */
     private boolean isOptimal(double[] b, double[] c) {
         double[] x = primal();
         double[] y = dual();
@@ -254,11 +309,13 @@ public class TwoPhaseSimplex {
 
         // check that value = cx = yb
         double value1 = 0.0;
-        for (int j = 0; j < x.length; j++)
+        for (int j = 0; j < x.length; j++) {
             value1 += c[j] * x[j];
+        }
         double value2 = 0.0;
-        for (int i = 0; i < y.length; i++)
+        for (int i = 0; i < y.length; i++) {
             value2 += y[i] * b[i];
+        }
         if (Math.abs(value - value1) > EPSILON || Math.abs(value - value2) > EPSILON) {
             System.out.println("value = " + value + ", cx = " + value1 + ", yb = " + value2);
             return false;
@@ -271,20 +328,23 @@ public class TwoPhaseSimplex {
         return isPrimalFeasible(A, b) && isDualFeasible(A, c) && isOptimal(b, c);
     }
 
-    // print tableaux
+    /**
+     * print tableaux
+     */
     public void show() {
         System.out.println("m = " + m);
         System.out.println("n = " + n);
         for (int i = 0; i <= m+1; i++) {
             for (int j = 0; j <= n+m+m; j++) {
                 System.out.printf("%7.2f ", a[i][j]);
-                if (j == n+m-1 || j == n+m+m-1) System.out.print(" |");
+                if (j == n+m-1 || j == n+m+m-1) {System.out.print(" |");}
             }
             System.out.println();
         }
         System.out.print("basis = ");
-        for (int i = 0; i < m; i++)
+        for (int i = 0; i < m; i++) {
             System.out.print(basis[i] + " ");
+        }
         System.out.println();
         System.out.println();
     }
@@ -301,11 +361,13 @@ public class TwoPhaseSimplex {
         }
         System.out.println("value = " + lp.value());
         double[] x = lp.primal();
-        for (int i = 0; i < x.length; i++)
+        for (int i = 0; i < x.length; i++) {
             System.out.println("x[" + i + "] = " + x[i]);
+        }
         double[] y = lp.dual();
-        for (int j = 0; j < y.length; j++)
+        for (int j = 0; j < y.length; j++) {
             System.out.println("y[" + j + "] = " + y[j]);
+        }
     }
 
 }

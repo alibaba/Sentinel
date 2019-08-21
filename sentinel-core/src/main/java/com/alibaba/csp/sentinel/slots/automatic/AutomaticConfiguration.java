@@ -1,11 +1,16 @@
 package com.alibaba.csp.sentinel.slots.automatic;
 
+/**
+ * Configuration for {AutomaticRuleManager}
+ *
+ * @author Li Yudong
+ */
 public class AutomaticConfiguration {
 
     /**
      * 系统 CPU useage 上限
      */
-    public static float MAX_CPU_USEAGE = 80;
+    public static float MAX_CPU_USEAGE = -1;
 
     /**
      * 初始化流控阈值

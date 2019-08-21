@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * AutomaticRuleManager 维护一套监控数据记录和流控规则
  * 流控规则根据实时流量动态计算
  *
- * @author P01son6415
+ * @author Li Yudong
  */
 public class AutomaticRuleManager {
 
@@ -90,7 +90,7 @@ public class AutomaticRuleManager {
      */
     static void update(ResourceWrapper resource, Context context, Node node) {
 
-        // 更新资源的统计数据
+        // 更新并保存资源的监控数据
         String resourceName = resource.getName();
 
         int totalQps = (int) (node.previousBlockQps() + node.previousPassQps());
@@ -313,5 +313,4 @@ public class AutomaticRuleManager {
             return record.get(key);
         }
     }
-
 }
