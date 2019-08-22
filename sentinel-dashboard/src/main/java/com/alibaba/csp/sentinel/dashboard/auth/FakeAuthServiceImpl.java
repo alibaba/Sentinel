@@ -15,10 +15,9 @@
  */
 package com.alibaba.csp.sentinel.dashboard.auth;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * A fake AuthService implementation, which will pass all user auth checking.
@@ -27,7 +26,6 @@ import org.springframework.stereotype.Component;
  * @since 1.5.0
  */
 @Component
-@ConditionalOnProperty(name = "auth.enabled", havingValue = "false", matchIfMissing = true)
 public class FakeAuthServiceImpl implements AuthService<HttpServletRequest> {
 
     @Override

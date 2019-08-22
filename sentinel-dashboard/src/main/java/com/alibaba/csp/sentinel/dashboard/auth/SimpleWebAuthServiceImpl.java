@@ -28,7 +28,7 @@ import javax.servlet.http.HttpSession;
  */
 @Component
 @Primary
-@ConditionalOnProperty(name = "auth.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "auth.enabled", matchIfMissing = true)
 public class SimpleWebAuthServiceImpl implements AuthService<HttpServletRequest> {
 
     public static final String WEB_SESSION_KEY = "session_sentinel_admin";
