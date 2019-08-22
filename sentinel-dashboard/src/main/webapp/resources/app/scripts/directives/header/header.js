@@ -17,16 +17,21 @@ angular.module('sentinelDashboardApp')
               $window.localStorage.setItem('session_sentinel_admin', JSON.stringify({
                 username: data.data
               }));
+              handleLogout($scope, data.data.id)
             } else {
               $state.go('login');
             }
           });
+        } else {
+          handleLogout($scope, JSON.parse($window.localStorage.getItem("session_sentinel_admin")).username.id)
         }
 
-        if (JSON.parse($window.localStorage.getItem("session_sentinel_admin")).username.id == 'FAKE_EMP_ID') {
-          $scope.showLogout = false;
-        } else {
-          $scope.showLogout = true;
+        function handleLogout($scope, id) {
+          if (id == 'FAKE_EMP_ID') {
+            $scope.showLogout = false;
+          } else {
+            $scope.showLogout = true;
+          }
         }
 
         $scope.logout = function () {
