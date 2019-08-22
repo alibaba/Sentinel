@@ -22,9 +22,9 @@ app.controller('LoginCtl', ['$scope', '$state', '$window', 'AuthService',
 
       AuthService.login(param).success(function (data) {
         if (data.code == 0) {
-          $window.localStorage.setItem('session_sentinel_admin', {
+          $window.localStorage.setItem('session_sentinel_admin', JSON.stringify({
             username: data.data
-          });
+          }));
 
           $state.go('dashboard');
         } else {

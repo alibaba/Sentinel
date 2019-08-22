@@ -11,21 +11,22 @@ angular.module('sentinelDashboardApp')
       restrict: 'E',
       replace: true,
       controller: function ($scope, $state, $window, AuthService) {
-        if (!$window.localStorage.getItem('session_sentinel_admin')) {
+        if (!$window.localStorage.getItem("session_sentinel_admin")) {
           AuthService.check().success(function (data) {
             if (data.code == 0) {
-              $window.localStorage.setItem('session_sentinel_admin', {
+              $window.localStorage.setItem('session_sentinel_admin', JSON.stringify({
                 username: data.data
-              });
-              if (data.data.id == 'FAKE_EMP_ID') {
-                document.getElementById('li-logout').style.display = 'none';
-              } else {
-                document.getElementById('li-logout').style.display = 'block';
-              }
+              }));
             } else {
               $state.go('login');
             }
           });
+        }
+
+        if (JSON.parse($window.localStorage.getItem("session_sentinel_admin")).username.id == 'FAKE_EMP_ID') {
+          $scope.showLogout = false;
+        } else {
+          $scope.showLogout = true;
         }
 
         $scope.logout = function () {
