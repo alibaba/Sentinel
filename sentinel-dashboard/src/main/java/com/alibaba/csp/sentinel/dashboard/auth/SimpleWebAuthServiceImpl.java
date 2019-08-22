@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.dashboard.auth;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,6 +27,7 @@ import javax.servlet.http.HttpSession;
  * @since 1.6.0
  */
 @Component
+@Primary
 @ConditionalOnProperty(name = "auth.enabled", havingValue = "true", matchIfMissing = true)
 public class SimpleWebAuthServiceImpl implements AuthService<HttpServletRequest> {
 
