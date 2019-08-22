@@ -28,11 +28,11 @@ import java.util.ServiceLoader;
  */
 public final class EventSubscriberProvider {
 
-    private static final ServiceLoader<EventSubscriber> subscribers = ServiceLoader.load(EventSubscriber.class);
+    private static final ServiceLoader<EventSubscriber> subscribersLoader = ServiceLoader.load(EventSubscriber.class);
 
     public static List<EventSubscriber> provide() {
         List<EventSubscriber>  subscribers = new ArrayList<>();
-        for (EventSubscriber subscriber : subscribers) {
+        for (EventSubscriber subscriber : subscribersLoader) {
             if (subscriber != null && subscriber.getClass() != DefaultEventSubscriber.class) {
                  subscribers.add(subscriber);
             }
