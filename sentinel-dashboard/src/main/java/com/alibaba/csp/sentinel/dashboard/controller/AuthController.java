@@ -27,7 +27,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
@@ -77,13 +76,13 @@ public class AuthController {
         return Result.ofSuccess(authUser);
     }
 
-    @RequestMapping(value = "/logout", method = RequestMethod.POST)
+    @PostMapping(value = "/logout")
     public Result<?> logout(HttpServletRequest request) {
         request.getSession().invalidate();
         return Result.ofSuccess(null);
     }
 
-    @RequestMapping(value = "/check")
+    @PostMapping(value = "/check")
     public Result<?> check(HttpServletRequest request) {
         AuthService.AuthUser authUser = authService.getAuthUser(request);
         if (authUser == null) {
