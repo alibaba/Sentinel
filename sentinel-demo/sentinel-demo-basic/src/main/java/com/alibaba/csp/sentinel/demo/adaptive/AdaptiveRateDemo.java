@@ -26,7 +26,7 @@ public class AdaptiveRateDemo {
 
     private static volatile CountDownLatch countDown;
 
-    private static final Integer requestQps = 100;
+    private static final Integer requestQps = 200;
     private static final Integer count = 10;
     private static final AtomicInteger done = new AtomicInteger();
     private static final AtomicInteger pass = new AtomicInteger();

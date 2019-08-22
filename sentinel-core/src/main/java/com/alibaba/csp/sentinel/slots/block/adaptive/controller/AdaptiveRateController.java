@@ -1,9 +1,14 @@
 package com.alibaba.csp.sentinel.slots.block.adaptive.controller;
 
+import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.slots.block.flow.TrafficShapingController;
+import com.alibaba.csp.sentinel.slots.system.SystemStatusListener;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -15,6 +20,16 @@ public class AdaptiveRateController implements TrafficShapingController {
 
     private final AtomicLong bucketCount = new AtomicLong(20);
     private final AtomicLong latestPassedTime = new AtomicLong(-1);
+
+    @SuppressWarnings("PMD.ThreadPoolCreationRule")
+    private final static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1,
+            new NamedThreadFactory("sentinel-system-status-record-task", true));
+    private static SystemStatusListener statusListener = null;
+
+    static {
+        statusListener = new SystemStatusListener();
+        scheduler.scheduleAtFixedRate(statusListener, 5, 1, TimeUnit.SECONDS);
+    }
 
     public AdaptiveRateController(int timeOut) {
         this.maxQueueingTimeMs = timeOut;
@@ -49,7 +64,7 @@ public class AdaptiveRateController implements TrafficShapingController {
             // Calculate the time to wait.
             long waitTime = costTime + latestPassedTime.get() - TimeUtil.currentTimeMillis();
             if (waitTime > maxQueueingTimeMs) {
-                long newCount = count * 2;
+                long newCount = (long)(count * 2 * Math.min(1.0, 0.6 / getCurrentCpuUsage()));
                 bucketCount.compareAndSet(count, newCount);
                 return false;
             } else {
@@ -58,7 +73,7 @@ public class AdaptiveRateController implements TrafficShapingController {
                     waitTime = oldTime - TimeUtil.currentTimeMillis();
                     if (waitTime > maxQueueingTimeMs) {
                         latestPassedTime.addAndGet(-costTime);
-                        long newCount = count * 2;
+                        long newCount = (long)(count * 2 * Math.min(1.0, 0.6 / getCurrentCpuUsage()));
                         bucketCount.compareAndSet(count, newCount);
                         return false;
                     }
@@ -72,5 +87,14 @@ public class AdaptiveRateController implements TrafficShapingController {
             }
         }
         return false;
+    }
+
+    public static double getCurrentCpuUsage() {
+        try {
+            return statusListener.getCpuUsage();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 }
