@@ -64,7 +64,7 @@ final class ClusterFlowChecker {
             return new TokenResult(TokenResultStatus.FAIL);
         }
 
-        double latestQps = metric.getAvg(ClusterFlowEvent.PASS_REQUEST);
+        double latestQps = metric.getAvg(ClusterFlowEvent.PASS);
         double globalThreshold = calcGlobalThreshold(rule) * ClusterServerConfigManager.getExceedCount();
         double nextRemaining = globalThreshold - latestQps - acquireCount;
 
