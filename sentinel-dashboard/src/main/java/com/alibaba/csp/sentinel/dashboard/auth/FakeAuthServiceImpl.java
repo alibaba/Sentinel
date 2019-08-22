@@ -27,7 +27,7 @@ import org.springframework.stereotype.Component;
  * @since 1.5.0
  */
 @Component
-@ConditionalOnProperty(name="auth.enabled", havingValue="false")
+@ConditionalOnProperty(name = "auth.enabled", havingValue = "false")
 public class FakeAuthServiceImpl implements AuthService<HttpServletRequest> {
 
     @Override
