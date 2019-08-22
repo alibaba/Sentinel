@@ -1,5 +1,6 @@
 package com.alibaba.csp.sentinel.slots.automatic;
 
+import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.node.Node;
@@ -13,6 +14,9 @@ import com.alibaba.csp.sentinel.slots.system.SystemStatusListener;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -44,7 +48,7 @@ public class AutomaticRuleManager {
      */
     private static Map<String, Integer> degradeTimer = new ConcurrentHashMap<String, Integer>();
 
-    private static double cpuUseageRecord;
+    private static double systemLoadRecord;
 
     private static AtomicBoolean updating = new AtomicBoolean(false);
 
@@ -52,8 +56,13 @@ public class AutomaticRuleManager {
 
     private static SystemStatusListener statusListener = null;
 
+    @SuppressWarnings("PMD.ThreadPoolCreationRule")
+    private final static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1,
+            new NamedThreadFactory("sentinel-automatic-status-record-task", true));
+
     static {
         statusListener = new SystemStatusListener();
+        scheduler.scheduleAtFixedRate(statusListener, 5, 1, TimeUnit.SECONDS);
     }
 
 
@@ -74,7 +83,9 @@ public class AutomaticRuleManager {
             rules.put(resourceName, rule);
             degradeTimer.put(resourceName, 0);
         } else {
+
             rule = rules.get(resourceName);
+
         }
 
         boolean canPass = rule.getRater().canPass(context.getCurNode(), count);
@@ -100,14 +111,12 @@ public class AutomaticRuleManager {
         passedRecord.put(resourceName, passedQps);
 
         double minRt = node.minRt();
-        if (minRt <= 0) {
-            minRt = 1;
-        }
+        if (minRt <= 0) {minRt = 1;}
         minRTRecord.put(resourceName, minRt);
 
         avgRTRecord.put(resourceName, node.avgRt());
 
-        cpuUseageRecord = statusListener.getCpuUsage();
+        systemLoadRecord = statusListener.getSystemAverageLoad();
 
         // 每秒更新一次 rules
         if (System.currentTimeMillis() - latestUpdateTime < AutomaticConfiguration.RULE_UPDATE_WINDOW) {
@@ -145,23 +154,25 @@ public class AutomaticRuleManager {
         Set<String> resourceNameSet = rules.keySet();
 
         // 计算系统负载
-        // 系统其他应用使用的负载 ( otherAppCpuUseage =  totalCpuUseage - sum(minRT*passedQPS) )
-        double otherAppUseage = 0;
+
+
+        // 系统其他应用使用的负载 ( otherAppLoad =  totalSystemLoad - sum(minRT*passedQPS) )
+        double otherAppLoad = 0;
         for (String resource : resourceNameSet) {
-            otherAppUseage += getInt(passedRecord, resource) * getDouble(minRTRecord, resource) * 0.001;
+            otherAppLoad += getInt(passedRecord, resource) * getDouble(minRTRecord, resource) * 0.001;
         }
-        otherAppUseage = cpuUseageRecord - otherAppUseage;
+        otherAppLoad = systemLoadRecord - otherAppLoad;
 
-        // 当前流量需要的负载 ( currentCpuUseage = sum(minRT*totalQps) )
-        double currentUseage = 0;
+        // 当前流量需要的负载 ( currentAppLoad = sum(minRT*totalQps) )
+        double currentAppLoad = 0;
         for (String resource : resourceNameSet) {
-            currentUseage += getInt(qpsRecord, resource) * getDouble(minRTRecord, resource) * 0.001;
+            currentAppLoad += getInt(qpsRecord, resource) * getDouble(minRTRecord, resource) * 0.001;
         }
 
-        // 当前可用的负载 ( aviliableCpuUseage = maxCpuUseage - otherAppCpuUseage )
-        double availableUseage = AutomaticConfiguration.MAX_CPU_USEAGE - otherAppUseage;
+        // 当前可用的负载 ( aviliableLoad = maxLoad - otherAppLoad )
+        double availableLoad = AutomaticConfiguration.MAX_SYSTEM_LOAD - otherAppLoad;
 
-        double useageLevel = currentUseage / availableUseage;
+        double loadLevel = currentAppLoad / availableLoad;
 
         // 熔断降级
         // 判断是否有资源处于异常需要被降级
@@ -184,11 +195,11 @@ public class AutomaticRuleManager {
 
         // 计算流控阈值
         // 1. 系统能够处理所有请求时：根据各服务流量比例分配阈值
-        if (useageLevel < 1) {
+        if (loadLevel < 1) {
             for (String resourceName : activeResources) {
                 FlowRule rule = rules.get(resourceName);
                 double currentQps = getInt(qpsRecord, resourceName);
-                double maximumQps = currentQps / useageLevel;
+                double maximumQps = currentQps / loadLevel;
                 rule.setCount(maximumQps);
                 rules.put(resourceName, rule);
             }

@@ -7,10 +7,11 @@ package com.alibaba.csp.sentinel.slots.automatic;
  */
 public class AutomaticConfiguration {
 
+
     /**
-     * 系统 CPU useage 上限
+     * System Load 阈值
      */
-    public static float MAX_CPU_USEAGE = -1;
+    public static float MAX_SYSTEM_LOAD = 5;
 
     /**
      * 初始化流控阈值
