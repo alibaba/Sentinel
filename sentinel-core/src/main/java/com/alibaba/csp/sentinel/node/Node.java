@@ -116,11 +116,25 @@ public interface Node extends OccupySupport, DebugSupport {
     double avgRt();
 
     /**
+     * Get average rt per minute.
+     *
+     * @return average response time per minute
+     */
+    double longTermRt();
+
+    /**
      * Get minimal response time.
      *
      * @return recorded minimal response time
      */
     double minRt();
+
+    /**
+     * Get maximal response time.
+     *
+     * @return recorded maximal response time
+     */
+    double maxRt();
 
     /**
      * Get current active thread count.

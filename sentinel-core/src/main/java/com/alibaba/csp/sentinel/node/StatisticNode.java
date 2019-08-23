@@ -102,6 +102,11 @@ public class StatisticNode implements Node {
     private transient Metric rollingCounterInMinute = new ArrayMetric(60, 60 * 1000, false);
 
     /**
+     * Holds statistics of the recent 10 seconds. The windowLengthInMs is deliberately set to 1000 milliseconds.
+     */
+    private transient Metric rollingCounterInTenSeconds = new ArrayMetric(10, 5 * 1000, false);
+
+    /**
      * The counter for thread count.
      */
     private LongAdder curThreadNum = new LongAdder();
@@ -226,8 +231,23 @@ public class StatisticNode implements Node {
     }
 
     @Override
+    public double longTermRt() {
+        long successCount = rollingCounterInTenSeconds.success();
+        if (successCount == 0) {
+            return 0;
+        }
+
+        return rollingCounterInTenSeconds.rt() * 1.0 / successCount;
+    }
+
+    @Override
     public double minRt() {
         return rollingCounterInSecond.minRt();
+    }
+
+    @Override
+    public double maxRt() {
+        return rollingCounterInSecond.maxRt();
     }
 
     @Override
@@ -248,6 +268,9 @@ public class StatisticNode implements Node {
 
         rollingCounterInMinute.addSuccess(successCount);
         rollingCounterInMinute.addRT(rt);
+
+        rollingCounterInTenSeconds.addSuccess(successCount);
+        rollingCounterInTenSeconds.addRT(rt);
     }
 
     @Override

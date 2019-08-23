@@ -78,6 +78,7 @@ public class CommonFilter implements Filter {
             if (!StringUtil.isEmpty(target)) {
                 // Parse the request origin using registered origin parser.
                 String origin = parseOrigin(sRequest);
+
                 ContextUtil.enter(WebServletConfig.WEB_SERVLET_CONTEXT_NAME, origin);
                 urlEntry = SphU.entry(target, EntryType.IN);
                 // Add method specification if necessary
