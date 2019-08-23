@@ -22,7 +22,6 @@
         <module>sentinel-datasource-spring-cloud-config</module>
         <module>sentinel-datasource-consul</module>
         <module>sentinel-adaptive-flow-control</module>
-        <module>sentinel-adaptive-flow-control</module>
     </modules>
 
 </project>
