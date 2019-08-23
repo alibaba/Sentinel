@@ -14,16 +14,14 @@ angular.module('sentinelDashboardApp')
         if (!$window.localStorage.getItem("session_sentinel_admin")) {
           AuthService.check().success(function (data) {
             if (data.code == 0) {
-              $window.localStorage.setItem('session_sentinel_admin', JSON.stringify({
-                username: data.data
-              }));
+              $window.localStorage.setItem('session_sentinel_admin', JSON.stringify(data.data));
               handleLogout($scope, data.data.id)
             } else {
               $state.go('login');
             }
           });
         } else {
-          handleLogout($scope, JSON.parse($window.localStorage.getItem("session_sentinel_admin")).username.id)
+          handleLogout($scope, JSON.parse($window.localStorage.getItem("session_sentinel_admin")).id)
         }
 
         function handleLogout($scope, id) {
