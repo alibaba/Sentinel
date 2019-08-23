@@ -32,16 +32,7 @@ public class AutomaticRuleManager {
      */
     private static Map<String, FlowRule> rules = new ConcurrentHashMap<String, FlowRule>();
 
-    /**
-     * 监控数据
-     */
-    private static Map<String, Integer> qpsRecord = new ConcurrentHashMap<String, Integer>();
-
-    private static Map<String, Integer> passedRecord = new ConcurrentHashMap<String, Integer>();
-
-    private static Map<String, Double> minRTRecord = new ConcurrentHashMap<String, Double>();
-
-    private static Map<String, Double> avgRTRecord = new ConcurrentHashMap<String, Double>();
+    private static Map<String,Node> nodes =new ConcurrentHashMap<String,Node>();
 
     /**
      * 熔断资源计时器
@@ -105,16 +96,16 @@ public class AutomaticRuleManager {
         String resourceName = resource.getName();
 
         int totalQps = (int) (node.previousBlockQps() + node.previousPassQps());
-        qpsRecord.put(resourceName, totalQps);
+        AutomaticStatistics.setTotalQps(resourceName,totalQps);
 
         int passedQps = (int) node.previousPassQps();
-        passedRecord.put(resourceName, passedQps);
+        AutomaticStatistics.setPassedQps(resourceName,passedQps);
 
         double minRt = node.minRt();
-        if (minRt <= 0) {minRt = 1;}
-        minRTRecord.put(resourceName, minRt);
+        AutomaticStatistics.setMinRt(resourceName, minRt);
 
-        avgRTRecord.put(resourceName, node.avgRt());
+        double avgRt = node.avgRt();
+        AutomaticStatistics.setAvgRt(resourceName,avgRt);
 
         systemLoadRecord = statusListener.getSystemAverageLoad();
 
@@ -154,22 +145,20 @@ public class AutomaticRuleManager {
         Set<String> resourceNameSet = rules.keySet();
 
         // 计算系统负载
-
-
         // 系统其他应用使用的负载 ( otherAppLoad =  totalSystemLoad - sum(minRT*passedQPS) )
         double otherAppLoad = 0;
         for (String resource : resourceNameSet) {
-            otherAppLoad += getInt(passedRecord, resource) * getDouble(minRTRecord, resource) * 0.001;
+            otherAppLoad += AutomaticStatistics.getPassedQps(resource) * AutomaticStatistics.getMinRt(resource) * 0.001;
         }
         otherAppLoad = systemLoadRecord - otherAppLoad;
 
         // 当前流量需要的负载 ( currentAppLoad = sum(minRT*totalQps) )
         double currentAppLoad = 0;
         for (String resource : resourceNameSet) {
-            currentAppLoad += getInt(qpsRecord, resource) * getDouble(minRTRecord, resource) * 0.001;
+            currentAppLoad += AutomaticStatistics.getTotalQps(resource) * AutomaticStatistics.getMinRt(resource) * 0.001;
         }
 
-        // 当前可用的负载 ( aviliableLoad = maxLoad - otherAppLoad )
+        // 当前可用的负载 ( availableLoad = maxLoad - otherAppLoad )
         double availableLoad = AutomaticConfiguration.MAX_SYSTEM_LOAD - otherAppLoad;
 
         double loadLevel = currentAppLoad / availableLoad;
@@ -177,7 +166,7 @@ public class AutomaticRuleManager {
         // 熔断降级
         // 判断是否有资源处于异常需要被降级
         for (String resource : resourceNameSet) {
-            if (getDouble(avgRTRecord, resource) > AutomaticConfiguration.DEGRADE_RT && degradeTimer.get(resource) == 0) {
+            if (AutomaticStatistics.getAvgRt(resource) > AutomaticConfiguration.DEGRADE_RT && degradeTimer.get(resource) == 0) {
                 degradeTimer.put(resource, AutomaticConfiguration.DEGRADE_TIME_WINDOW);
             }
         }
@@ -198,7 +187,7 @@ public class AutomaticRuleManager {
         if (loadLevel < 1) {
             for (String resourceName : activeResources) {
                 FlowRule rule = rules.get(resourceName);
-                double currentQps = getInt(qpsRecord, resourceName);
+                double currentQps = AutomaticStatistics.getTotalQps(resourceName);
                 double maximumQps = currentQps / loadLevel;
                 rule.setCount(maximumQps);
                 rules.put(resourceName, rule);
@@ -246,7 +235,7 @@ public class AutomaticRuleManager {
 
         int i = 0;
         for (String resourceName : resourceNameSet) {
-            qps[i] = qpsRecord.get(resourceName);
+            qps[i] = AutomaticStatistics.getTotalQps(resourceName);
             i += 1;
         }
 
@@ -264,7 +253,7 @@ public class AutomaticRuleManager {
         // 第一行：机器性能约束
         i = 0;
         for (String resourceName : resourceNameSet) {
-            a[0][i] = minRTRecord.get(resourceName) * 0.001;
+            a[0][i] = AutomaticStatistics.getMinRt(resourceName) * 0.001;
             i += 1;
         }
         a[0][2 * resourceNum] = 1;
@@ -304,24 +293,4 @@ public class AutomaticRuleManager {
         }
     }
 
-    /**
-     * 防止在资源规则已经创建但是还没有资源的监控数据时进行流量计算NPE
-     * int 类型存放 QPS 最小值为 0
-     * double 类型存放 RT 最小值为 1
-     */
-    private static int getInt(Map<String, Integer> record, String key) {
-        if (record.get(key) == null) {
-            return 0;
-        } else {
-            return record.get(key);
-        }
-    }
-
-    private static double getDouble(Map<String, Double> record, String key) {
-        if (record.get(key) == null) {
-            return 1;
-        } else {
-            return record.get(key);
-        }
-    }
 }
