@@ -26,11 +26,11 @@ public class GatewayFlowRuleNacosProvider implements DynamicRuleProvider<List<Ga
     private Converter<String, List<GatewayFlowRuleEntity>> converter;
 
     public static final String FLOW_DATA_ID_POSTFIX = "-gatewayFlowRule";
-    public static final String GROUP_ID = "DEFAULT_GROUP";
+    public static final String GROUP_ID_POSTFIX  = "_GROUP";
 
     @Override
     public List<GatewayFlowRuleEntity> getRules(String appName) throws Exception {
-        String rules = configService.getConfig(appName + FLOW_DATA_ID_POSTFIX, GROUP_ID, 3000);
+        String rules = configService.getConfig(appName + FLOW_DATA_ID_POSTFIX, appName + GROUP_ID_POSTFIX, 3000);
         if (StringUtil.isEmpty(rules)) {
             return new ArrayList<>();
         }
