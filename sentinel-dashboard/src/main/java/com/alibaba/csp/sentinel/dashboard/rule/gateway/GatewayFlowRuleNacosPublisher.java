@@ -25,7 +25,7 @@ public class GatewayFlowRuleNacosPublisher implements DynamicRulePublisher<List<
     private Converter<List<GatewayFlowRuleEntity>, String> converter;
 
     public static final String FLOW_DATA_ID_POSTFIX = ".gatewayFlowRule";
-    public static final String GROUP_ID = ".group";
+    public static final String GROUP_ID_POSTFIX  = ".group";
 
     @Override
     public void publish(String app, List<GatewayFlowRuleEntity> rules) throws Exception {
@@ -33,6 +33,6 @@ public class GatewayFlowRuleNacosPublisher implements DynamicRulePublisher<List<
         if (rules == null) {
             return;
         }
-        configService.publishConfig(app + FLOW_DATA_ID_POSTFIX,app + GROUP_ID, converter.convert(rules));
+        configService.publishConfig(app + FLOW_DATA_ID_POSTFIX,app + GROUP_ID_POSTFIX, converter.convert(rules));
     }
 }
