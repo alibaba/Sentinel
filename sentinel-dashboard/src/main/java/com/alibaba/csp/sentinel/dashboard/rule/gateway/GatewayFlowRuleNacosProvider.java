@@ -25,8 +25,8 @@ public class GatewayFlowRuleNacosProvider implements DynamicRuleProvider<List<Ga
     @Autowired
     private Converter<String, List<GatewayFlowRuleEntity>> converter;
 
-    public static final String FLOW_DATA_ID_POSTFIX = "-gatewayFlowRule";
-    public static final String GROUP_ID_POSTFIX  = "_GROUP";
+    public static final String FLOW_DATA_ID_POSTFIX = ".gatewayFlowRule";
+    public static final String GROUP_ID_POSTFIX  = ".group";
 
     @Override
     public List<GatewayFlowRuleEntity> getRules(String appName) throws Exception {

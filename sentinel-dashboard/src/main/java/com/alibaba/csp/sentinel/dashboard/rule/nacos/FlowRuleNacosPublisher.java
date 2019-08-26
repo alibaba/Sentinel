@@ -22,8 +22,8 @@ public class FlowRuleNacosPublisher implements DynamicRulePublisher<List<FlowRul
     @Autowired
     private Converter<List<FlowRuleEntity>, String> converter;
 
-    public static final String FLOW_DATA_ID_POSTFIX = "-flowRule";
-    public static final String GROUP_ID_POSTFIX  = "_GROUP";
+    public static final String FLOW_DATA_ID_POSTFIX = ".flowRule";
+    public static final String GROUP_ID_POSTFIX  = ".group";
 
     @Override
     public void publish(String app, List<FlowRuleEntity> rules) throws Exception {

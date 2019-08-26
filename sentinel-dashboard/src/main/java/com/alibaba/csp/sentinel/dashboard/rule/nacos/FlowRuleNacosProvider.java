@@ -23,8 +23,8 @@ public class FlowRuleNacosProvider implements DynamicRuleProvider<List<FlowRuleE
     @Autowired
     private Converter<String, List<FlowRuleEntity>> converter;
 
-    public static final String FLOW_DATA_ID_POSTFIX = "-flowRule";
-    public static final String GROUP_ID_POSTFIX  = "_GROUP";
+    public static final String FLOW_DATA_ID_POSTFIX = ".flowRule";
+    public static final String GROUP_ID_POSTFIX  = ".group";
 
     @Override
     public List<FlowRuleEntity> getRules(String appName) throws Exception {
