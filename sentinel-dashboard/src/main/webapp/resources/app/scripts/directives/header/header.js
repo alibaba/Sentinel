@@ -11,6 +11,12 @@ angular.module('sentinelDashboardApp')
       restrict: 'E',
       replace: true,
       controller: function ($scope, $state, $window, AuthService) {
+        AuthService.version().success(function (data) {
+          if (data.code == 0) {
+            $scope.dashboardVersion = data.data;
+          }
+        });
+
         if (!$window.localStorage.getItem("session_sentinel_admin")) {
           AuthService.check().success(function (data) {
             if (data.code == 0) {
