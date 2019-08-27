@@ -1,10 +1,32 @@
+/*
+ * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.alibaba.csp.sentinel.dashboard.controller.gateway;
 
+
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
-import com.alibaba.csp.sentinel.dashboard.controller.v2.FlowControllerV2;
+import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayFlowRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayParamFlowItemEntity;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
-import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
+import com.alibaba.csp.sentinel.dashboard.domain.vo.gateway.rule.AddFlowRuleReqVo;
+import com.alibaba.csp.sentinel.dashboard.domain.vo.gateway.rule.GatewayParamFlowItemVo;
+import com.alibaba.csp.sentinel.dashboard.domain.vo.gateway.rule.UpdateFlowRuleReqVo;
+import com.alibaba.csp.sentinel.dashboard.repository.gateway.InMemGatewayFlowRuleStore;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -15,191 +37,423 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import static com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants.*;
+import static com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayFlowRuleEntity.*;
+import static com.alibaba.csp.sentinel.slots.block.RuleConstant.*;
+
 /**
- * @author dinglang
- * @since 2019-08-14 19:39
+ * Gateway flow rule Controller for manage gateway flow rules.
+ *
+ * @author cdfive
+ * @since 1.7.0
  */
 @RestController
-@RequestMapping(value = "/Gateway/flow/v2")
+@RequestMapping(value = "/gateway/flow")
 public class GatewayFlowRuleControllerV2 {
-    private final Logger logger = LoggerFactory.getLogger(FlowControllerV2.class);
+
+    private final Logger logger = LoggerFactory.getLogger(GatewayFlowRuleControllerV2.class);
 
     @Autowired
-    private InMemoryRuleRepositoryAdapter<GatewayFlowRuleEntity> repository;
+    private InMemGatewayFlowRuleStore repository;
 
     @Autowired
     @Qualifier("gatewayFlowRuleNacosProvider")
     private DynamicRuleProvider<List<GatewayFlowRuleEntity>> ruleProvider;
-
     @Autowired
     @Qualifier("gatewayFlowRuleNacosPublisher")
     private DynamicRulePublisher<List<GatewayFlowRuleEntity>> rulePublisher;
 
+
     @Autowired
     private AuthService<HttpServletRequest> authService;
 
-    @GetMapping("/rules")
-    public Result<List<GatewayFlowRuleEntity>> apiQueryMachineRules(HttpServletRequest request, @RequestParam String app) {
+    @GetMapping("/list.json")
+    public Result<List<GatewayFlowRuleEntity>> queryFlowRules(HttpServletRequest request, String app, String ip, Integer port) {
         AuthService.AuthUser authUser = authService.getAuthUser(request);
         authUser.authTarget(app, AuthService.PrivilegeType.READ_RULE);
 
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
         }
+        if (StringUtil.isEmpty(ip)) {
+            return Result.ofFail(-1, "ip can't be null or empty");
+        }
+        if (port == null) {
+            return Result.ofFail(-1, "port can't be null");
+        }
+
         try {
+            // List<GatewayFlowRuleEntity> rules = sentinelApiClient.fetchGatewayFlowRules(app, ip, port).get();
             List<GatewayFlowRuleEntity> rules = ruleProvider.getRules(app);
-            if (rules != null && !rules.isEmpty()) {
-                for (GatewayFlowRuleEntity entity : rules) {
-                    entity.setApp(app);
-                  /*  if (entity.getClusterConfig() != null && entity.getClusterConfig().getFlowId() != null) {
-                        entity.setId(entity.getClusterConfig().getFlowId());
-                    }*/
-                }
-            }
-            rules = repository.saveAll(rules);
+            repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
-            logger.error("Error when querying flow rules", throwable);
+            logger.error("query gateway flow rules error:", throwable);
             return Result.ofThrowable(-1, throwable);
         }
     }
 
-    private <R> Result<R> checkEntityInternal(GatewayFlowRuleEntity entity) {
-        if (entity == null) {
-            return Result.ofFail(-1, "invalid body");
-        }
-        if (StringUtil.isBlank(entity.getApp())) {
+    @PostMapping("/new.json")
+    public Result<GatewayFlowRuleEntity> addFlowRule(HttpServletRequest request, @RequestBody AddFlowRuleReqVo reqVo) {
+        AuthService.AuthUser authUser = authService.getAuthUser(request);
+
+        String app = reqVo.getApp();
+        if (StringUtil.isBlank(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
         }
-      /*  if (StringUtil.isBlank(entity.getLimitApp())) {
-            return Result.ofFail(-1, "limitApp can't be null or empty");
-        }*/
-        if (StringUtil.isBlank(entity.getResource())) {
+
+        authUser.authTarget(app, AuthService.PrivilegeType.WRITE_RULE);
+
+        GatewayFlowRuleEntity entity = new GatewayFlowRuleEntity();
+        entity.setApp(app.trim());
+
+        String ip = reqVo.getIp();
+        if (StringUtil.isBlank(ip)) {
+            return Result.ofFail(-1, "ip can't be null or empty");
+        }
+        entity.setIp(ip.trim());
+
+        Integer port = reqVo.getPort();
+        if (port == null) {
+            return Result.ofFail(-1, "port can't be null");
+        }
+        entity.setPort(port);
+
+        // API类型, Route ID或API分组
+        Integer resourceMode = reqVo.getResourceMode();
+        if (resourceMode == null) {
+            return Result.ofFail(-1, "resourceMode can't be null");
+        }
+        if (!Arrays.asList(RESOURCE_MODE_ROUTE_ID, RESOURCE_MODE_CUSTOM_API_NAME).contains(resourceMode)) {
+            return Result.ofFail(-1, "invalid resourceMode: " + resourceMode);
+        }
+        entity.setResourceMode(resourceMode);
+
+        // API名称
+        String resource = reqVo.getResource();
+        if (StringUtil.isBlank(resource)) {
             return Result.ofFail(-1, "resource can't be null or empty");
         }
-        if (entity.getGrade() == null) {
+        entity.setResource(resource.trim());
+
+        // 针对请求属性
+        GatewayParamFlowItemVo paramItem = reqVo.getParamItem();
+        if (paramItem != null) {
+            GatewayParamFlowItemEntity itemEntity = new GatewayParamFlowItemEntity();
+            entity.setParamItem(itemEntity);
+
+            // 参数属性 0-ClientIP 1-Remote Host 2-Header 3-URL参数 4-Cookie
+            Integer parseStrategy = paramItem.getParseStrategy();
+            if (!Arrays.asList(PARAM_PARSE_STRATEGY_CLIENT_IP, PARAM_PARSE_STRATEGY_HOST, PARAM_PARSE_STRATEGY_HEADER
+                    , PARAM_PARSE_STRATEGY_URL_PARAM, PARAM_PARSE_STRATEGY_COOKIE).contains(parseStrategy)) {
+                return Result.ofFail(-1, "invalid parseStrategy: " + parseStrategy);
+            }
+            itemEntity.setParseStrategy(paramItem.getParseStrategy());
+
+            // 当参数属性为2-Header 3-URL参数 4-Cookie时，参数名称必填
+            if (Arrays.asList(PARAM_PARSE_STRATEGY_HEADER, PARAM_PARSE_STRATEGY_URL_PARAM, PARAM_PARSE_STRATEGY_COOKIE).contains(parseStrategy)) {
+                // 参数名称
+                String fieldName = paramItem.getFieldName();
+                if (StringUtil.isBlank(fieldName)) {
+                    return Result.ofFail(-1, "fieldName can't be null or empty");
+                }
+                itemEntity.setFieldName(paramItem.getFieldName());
+
+                String pattern = paramItem.getPattern();
+                // 如果匹配串不为空，验证匹配模式
+                if (StringUtil.isNotEmpty(pattern)) {
+                    itemEntity.setPattern(pattern);
+
+                    Integer matchStrategy = paramItem.getMatchStrategy();
+                    if (!Arrays.asList(PARAM_MATCH_STRATEGY_EXACT, PARAM_MATCH_STRATEGY_CONTAINS, PARAM_MATCH_STRATEGY_REGEX).contains(matchStrategy)) {
+                        return Result.ofFail(-1, "invalid matchStrategy: " + matchStrategy);
+                    }
+                    itemEntity.setMatchStrategy(matchStrategy);
+                }
+            }
+        }
+
+        // 阈值类型 0-线程数 1-QPS
+        Integer grade = reqVo.getGrade();
+        if (grade == null) {
             return Result.ofFail(-1, "grade can't be null");
         }
-        if (entity.getGrade() != 0 && entity.getGrade() != 1) {
-            return Result.ofFail(-1, "grade must be 0 or 1, but " + entity.getGrade() + " got");
+        if (!Arrays.asList(FLOW_GRADE_THREAD, FLOW_GRADE_QPS).contains(grade)) {
+            return Result.ofFail(-1, "invalid grade: " + grade);
         }
-        if (entity.getCount() == null || entity.getCount() < 0) {
+        entity.setGrade(grade);
+
+        // QPS阈值
+        Double count = reqVo.getCount();
+        if (count == null) {
+            return Result.ofFail(-1, "count can't be null");
+        }
+        if (count < 0) {
             return Result.ofFail(-1, "count should be at lease zero");
         }
-    /*    if (entity.getStrategy() == null) {
-            return Result.ofFail(-1, "strategy can't be null");
+        entity.setCount(count);
+
+        // 间隔
+        Long interval = reqVo.getInterval();
+        if (interval == null) {
+            return Result.ofFail(-1, "interval can't be null");
         }
-        if (entity.getStrategy() != 0 && StringUtil.isBlank(entity.getRefResource())) {
-            return Result.ofFail(-1, "refResource can't be null or empty when strategy!=0");
-        }*/
-        if (entity.getControlBehavior() == null) {
+        if (interval <= 0) {
+            return Result.ofFail(-1, "interval should be greater than zero");
+        }
+        entity.setInterval(interval);
+
+        // 间隔单位
+        Integer intervalUnit = reqVo.getIntervalUnit();
+        if (intervalUnit == null) {
+            return Result.ofFail(-1, "intervalUnit can't be null");
+        }
+        if (!Arrays.asList(INTERVAL_UNIT_SECOND, INTERVAL_UNIT_MINUTE, INTERVAL_UNIT_HOUR, INTERVAL_UNIT_DAY).contains(intervalUnit)) {
+            return Result.ofFail(-1, "Invalid intervalUnit: " + intervalUnit);
+        }
+        entity.setIntervalUnit(intervalUnit);
+
+        // 流控方式 0-快速失败 2-匀速排队
+        Integer controlBehavior = reqVo.getControlBehavior();
+        if (controlBehavior == null) {
             return Result.ofFail(-1, "controlBehavior can't be null");
         }
-        int controlBehavior = entity.getControlBehavior();
-    /*    if (controlBehavior == 1 && entity.getWarmUpPeriodSec() == null) {
-            return Result.ofFail(-1, "warmUpPeriodSec can't be null when controlBehavior==1");
+        if (!Arrays.asList(CONTROL_BEHAVIOR_DEFAULT, CONTROL_BEHAVIOR_RATE_LIMITER).contains(controlBehavior)) {
+            return Result.ofFail(-1, "invalid controlBehavior: " + controlBehavior);
         }
-        if (controlBehavior == 2 && entity.getMaxQueueingTimeMs() == null) {
-            return Result.ofFail(-1, "maxQueueingTimeMs can't be null when controlBehavior==2");
-        }
-        if (entity.isClusterMode() && entity.getClusterConfig() == null) {
-            return Result.ofFail(-1, "cluster config should be valid");
-        }*/
-        return null;
-    }
+        entity.setControlBehavior(controlBehavior);
 
-    @PostMapping("/rule")
-    public Result<GatewayFlowRuleEntity> apiAddFlowRule(HttpServletRequest request, @RequestBody GatewayFlowRuleEntity entity) {
-        AuthService.AuthUser authUser = authService.getAuthUser(request);
-        authUser.authTarget(entity.getApp(), AuthService.PrivilegeType.WRITE_RULE);
-
-        Result<GatewayFlowRuleEntity> checkResult = checkEntityInternal(entity);
-        if (checkResult != null) {
-            return checkResult;
+        if (CONTROL_BEHAVIOR_DEFAULT == controlBehavior) {
+            // 0-快速失败, 则Burst size必填
+            Integer burst = reqVo.getBurst();
+            if (burst == null) {
+                return Result.ofFail(-1, "burst can't be null");
+            }
+            if (burst < 0) {
+                return Result.ofFail(-1, "invalid burst: " + burst);
+            }
+            entity.setBurst(burst);
+        } else if (CONTROL_BEHAVIOR_RATE_LIMITER == controlBehavior) {
+            // 1-匀速排队, 则超时时间必填
+            Integer maxQueueingTimeoutMs = reqVo.getMaxQueueingTimeoutMs();
+            if (maxQueueingTimeoutMs == null) {
+                return Result.ofFail(-1, "maxQueueingTimeoutMs can't be null");
+            }
+            if (maxQueueingTimeoutMs < 0) {
+                return Result.ofFail(-1, "invalid maxQueueingTimeoutMs: " + maxQueueingTimeoutMs);
+            }
+            entity.setMaxQueueingTimeoutMs(maxQueueingTimeoutMs);
         }
-        entity.setId(null);
+
         Date date = new Date();
         entity.setGmtCreate(date);
         entity.setGmtModified(date);
-        // entity.setLimitApp(entity.getLimitApp().trim());
-        entity.setResource(entity.getResource().trim());
+
         try {
             entity = repository.save(entity);
-            publishRules(entity.getApp());
         } catch (Throwable throwable) {
-            logger.error("Failed to add flow rule", throwable);
+            logger.error("add gateway flow rule error:", throwable);
             return Result.ofThrowable(-1, throwable);
         }
+
+        if (!publishRules(app, ip, port)) {
+            logger.warn("publish gateway flow rules fail after add");
+        }
+
         return Result.ofSuccess(entity);
     }
 
-    @PutMapping("/rule/{id}")
-    public Result<GatewayFlowRuleEntity> apiUpdateFlowRule(HttpServletRequest request,
-                                                    @PathVariable("id") Long id,
-                                                    @RequestBody GatewayFlowRuleEntity entity) {
+    @PostMapping("/save.json")
+    public Result<GatewayFlowRuleEntity> updateFlowRule(HttpServletRequest request, @RequestBody UpdateFlowRuleReqVo reqVo) {
         AuthService.AuthUser authUser = authService.getAuthUser(request);
-        if (id == null || id <= 0) {
-            return Result.ofFail(-1, "Invalid id");
+
+        String app = reqVo.getApp();
+        if (StringUtil.isBlank(app)) {
+            return Result.ofFail(-1, "app can't be null or empty");
         }
-        GatewayFlowRuleEntity oldEntity = repository.findById(id);
-        if (oldEntity == null) {
-            return Result.ofFail(-1, "id " + id + " does not exist");
+
+        authUser.authTarget(app, AuthService.PrivilegeType.WRITE_RULE);
+
+        Long id = reqVo.getId();
+        if (id == null) {
+            return Result.ofFail(-1, "id can't be null");
         }
+
+        GatewayFlowRuleEntity entity = repository.findById(id);
         if (entity == null) {
-            return Result.ofFail(-1, "invalid body");
-        }
-        authUser.authTarget(oldEntity.getApp(), AuthService.PrivilegeType.WRITE_RULE);
-
-        entity.setApp(oldEntity.getApp());
-        entity.setIp(oldEntity.getIp());
-        entity.setPort(oldEntity.getPort());
-        Result<GatewayFlowRuleEntity> checkResult = checkEntityInternal(entity);
-        if (checkResult != null) {
-            return checkResult;
+            return Result.ofFail(-1, "gateway flow rule does not exist, id=" + id);
         }
 
-        entity.setId(id);
+        // 针对请求属性
+        GatewayParamFlowItemVo paramItem = reqVo.getParamItem();
+        if (paramItem != null) {
+            GatewayParamFlowItemEntity itemEntity = new GatewayParamFlowItemEntity();
+            entity.setParamItem(itemEntity);
+
+            // 参数属性 0-ClientIP 1-Remote Host 2-Header 3-URL参数 4-Cookie
+            Integer parseStrategy = paramItem.getParseStrategy();
+            if (!Arrays.asList(PARAM_PARSE_STRATEGY_CLIENT_IP, PARAM_PARSE_STRATEGY_HOST, PARAM_PARSE_STRATEGY_HEADER
+                    , PARAM_PARSE_STRATEGY_URL_PARAM, PARAM_PARSE_STRATEGY_COOKIE).contains(parseStrategy)) {
+                return Result.ofFail(-1, "invalid parseStrategy: " + parseStrategy);
+            }
+            itemEntity.setParseStrategy(paramItem.getParseStrategy());
+
+            // 当参数属性为2-Header 3-URL参数 4-Cookie时，参数名称必填
+            if (Arrays.asList(PARAM_PARSE_STRATEGY_HEADER, PARAM_PARSE_STRATEGY_URL_PARAM, PARAM_PARSE_STRATEGY_COOKIE).contains(parseStrategy)) {
+                // 参数名称
+                String fieldName = paramItem.getFieldName();
+                if (StringUtil.isBlank(fieldName)) {
+                    return Result.ofFail(-1, "fieldName can't be null or empty");
+                }
+                itemEntity.setFieldName(paramItem.getFieldName());
+
+                String pattern = paramItem.getPattern();
+                // 如果匹配串不为空，验证匹配模式
+                if (StringUtil.isNotEmpty(pattern)) {
+                    itemEntity.setPattern(pattern);
+
+                    Integer matchStrategy = paramItem.getMatchStrategy();
+                    if (!Arrays.asList(PARAM_MATCH_STRATEGY_EXACT, PARAM_MATCH_STRATEGY_CONTAINS, PARAM_MATCH_STRATEGY_REGEX).contains(matchStrategy)) {
+                        return Result.ofFail(-1, "invalid matchStrategy: " + matchStrategy);
+                    }
+                    itemEntity.setMatchStrategy(matchStrategy);
+                }
+            }
+        } else {
+            entity.setParamItem(null);
+        }
+
+        // 阈值类型 0-线程数 1-QPS
+        Integer grade = reqVo.getGrade();
+        if (grade == null) {
+            return Result.ofFail(-1, "grade can't be null");
+        }
+        if (!Arrays.asList(FLOW_GRADE_THREAD, FLOW_GRADE_QPS).contains(grade)) {
+            return Result.ofFail(-1, "invalid grade: " + grade);
+        }
+        entity.setGrade(grade);
+
+        // QPS阈值
+        Double count = reqVo.getCount();
+        if (count == null) {
+            return Result.ofFail(-1, "count can't be null");
+        }
+        if (count < 0) {
+            return Result.ofFail(-1, "count should be at lease zero");
+        }
+        entity.setCount(count);
+
+        // 间隔
+        Long interval = reqVo.getInterval();
+        if (interval == null) {
+            return Result.ofFail(-1, "interval can't be null");
+        }
+        if (interval <= 0) {
+            return Result.ofFail(-1, "interval should be greater than zero");
+        }
+        entity.setInterval(interval);
+
+        // 间隔单位
+        Integer intervalUnit = reqVo.getIntervalUnit();
+        if (intervalUnit == null) {
+            return Result.ofFail(-1, "intervalUnit can't be null");
+        }
+        if (!Arrays.asList(INTERVAL_UNIT_SECOND, INTERVAL_UNIT_MINUTE, INTERVAL_UNIT_HOUR, INTERVAL_UNIT_DAY).contains(intervalUnit)) {
+            return Result.ofFail(-1, "Invalid intervalUnit: " + intervalUnit);
+        }
+        entity.setIntervalUnit(intervalUnit);
+
+        // 流控方式 0-快速失败 2-匀速排队
+        Integer controlBehavior = reqVo.getControlBehavior();
+        if (controlBehavior == null) {
+            return Result.ofFail(-1, "controlBehavior can't be null");
+        }
+        if (!Arrays.asList(CONTROL_BEHAVIOR_DEFAULT, CONTROL_BEHAVIOR_RATE_LIMITER).contains(controlBehavior)) {
+            return Result.ofFail(-1, "invalid controlBehavior: " + controlBehavior);
+        }
+        entity.setControlBehavior(controlBehavior);
+
+        if (CONTROL_BEHAVIOR_DEFAULT == controlBehavior) {
+            // 0-快速失败, 则Burst size必填
+            Integer burst = reqVo.getBurst();
+            if (burst == null) {
+                return Result.ofFail(-1, "burst can't be null");
+            }
+            if (burst < 0) {
+                return Result.ofFail(-1, "invalid burst: " + burst);
+            }
+            entity.setBurst(burst);
+        } else if (CONTROL_BEHAVIOR_RATE_LIMITER == controlBehavior) {
+            // 2-匀速排队, 则超时时间必填
+            Integer maxQueueingTimeoutMs = reqVo.getMaxQueueingTimeoutMs();
+            if (maxQueueingTimeoutMs == null) {
+                return Result.ofFail(-1, "maxQueueingTimeoutMs can't be null");
+            }
+            if (maxQueueingTimeoutMs < 0) {
+                return Result.ofFail(-1, "invalid maxQueueingTimeoutMs: " + maxQueueingTimeoutMs);
+            }
+            entity.setMaxQueueingTimeoutMs(maxQueueingTimeoutMs);
+        }
+
         Date date = new Date();
-        entity.setGmtCreate(oldEntity.getGmtCreate());
         entity.setGmtModified(date);
+
         try {
             entity = repository.save(entity);
-            if (entity == null) {
-                return Result.ofFail(-1, "save entity fail");
-            }
-            publishRules(oldEntity.getApp());
         } catch (Throwable throwable) {
-            logger.error("Failed to update flow rule", throwable);
+            logger.error("update gateway flow rule error:", throwable);
             return Result.ofThrowable(-1, throwable);
         }
+
+        if (!publishRules(app, entity.getIp(), entity.getPort())) {
+            logger.warn("publish gateway flow rules fail after update");
+        }
+
         return Result.ofSuccess(entity);
     }
 
-    @DeleteMapping("/rule/{id}")
-    public Result<Long> apiDeleteRule(HttpServletRequest request, @PathVariable("id") Long id) {
+
+    @PostMapping("/delete.json")
+    public Result<Long> deleteFlowRule(HttpServletRequest request, Long id) {
         AuthService.AuthUser authUser = authService.getAuthUser(request);
-        if (id == null || id <= 0) {
-            return Result.ofFail(-1, "Invalid id");
+
+        if (id == null) {
+            return Result.ofFail(-1, "id can't be null");
         }
+
         GatewayFlowRuleEntity oldEntity = repository.findById(id);
         if (oldEntity == null) {
             return Result.ofSuccess(null);
         }
+
         authUser.authTarget(oldEntity.getApp(), AuthService.PrivilegeType.DELETE_RULE);
+
         try {
             repository.delete(id);
-            publishRules(oldEntity.getApp());
-        } catch (Exception e) {
-            return Result.ofFail(-1, e.getMessage());
+        } catch (Throwable throwable) {
+            logger.error("delete gateway flow rule error:", throwable);
+            return Result.ofThrowable(-1, throwable);
         }
+
+        if (!publishRules(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort())) {
+            logger.warn("publish gateway flow rules fail after delete");
+        }
+
         return Result.ofSuccess(id);
     }
 
-    private void publishRules(/*@NonNull*/ String app) throws Exception {
-        List<GatewayFlowRuleEntity> rules = repository.findAllByApp(app);
-        rulePublisher.publish(app, rules);
+    private boolean publishRules(String app, String ip, Integer port) {
+        List<GatewayFlowRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
+        //return sentinelApiClient.modifyGatewayFlowRules(app, ip, port, rules);
+        try {
+            rulePublisher.publish(app, rules);
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
     }
 }
