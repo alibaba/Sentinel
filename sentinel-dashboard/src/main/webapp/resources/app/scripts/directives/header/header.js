@@ -5,13 +5,13 @@
  * # adminPosHeader
  */
 angular.module('sentinelDashboardApp')
-  .directive('header', ['AuthService', function () {
+  .directive('header', ['VersionService', 'AuthService', function () {
     return {
       templateUrl: 'app/scripts/directives/header/header.html',
       restrict: 'E',
       replace: true,
-      controller: function ($scope, $state, $window, AuthService) {
-        AuthService.version().success(function (data) {
+      controller: function ($scope, $state, $window, VersionService, AuthService) {
+        VersionService.version().success(function (data) {
           if (data.code == 0) {
             $scope.dashboardVersion = data.data;
           }

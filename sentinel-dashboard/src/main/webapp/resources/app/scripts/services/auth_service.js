@@ -1,13 +1,6 @@
 var app = angular.module('sentinelDashboardApp');
 
 app.service('AuthService', ['$http', function ($http) {
-  this.version = function () {
-    return $http({
-      url: '/version',
-      method: 'GET'
-    });
-  };
-
   this.check = function () {
     return $http({
       url: '/auth/check',
