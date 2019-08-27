@@ -13,29 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.event.publisher;
-
-import com.alibaba.csp.sentinel.event.subscriber.EventSubscriber;
-import com.alibaba.csp.sentinel.event.subscriber.EventSubscriberProvider;
+package com.alibaba.csp.sentinel.event;
 
 /**
  * @author lianglin
  * @since 1.7.0
  */
-public final class EventPublisherProvider {
-
-    private static final EventPublisher publisher;
-
-    static {
-        publisher = new DefaultEventPublisher();
-        for (EventSubscriber subscriber : EventSubscriberProvider.provide()) {
-            publisher.addSubscriber(subscriber);
-        }
-    }
-
-    public static EventPublisher getPublisher() {
-        return publisher;
-    }
-
+public interface EventPublisher<T> {
+    /**
+     * Publish  event
+     *
+     * @param event
+     */
+    void publish(Event<T> event);
 
 }

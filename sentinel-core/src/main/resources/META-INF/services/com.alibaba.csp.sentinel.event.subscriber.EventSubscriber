@@ -1,2 +1,0 @@
-# Default event subscriber
-com.alibaba.csp.sentinel.event.subscriber.DefaultEventSubscriber

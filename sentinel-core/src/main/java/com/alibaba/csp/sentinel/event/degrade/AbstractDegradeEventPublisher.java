@@ -13,46 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.event.publisher;
+package com.alibaba.csp.sentinel.event.degrade;
 
+import com.alibaba.csp.sentinel.event.AbstractEventPublisher;
 import com.alibaba.csp.sentinel.event.Event;
-import com.alibaba.csp.sentinel.event.subscriber.EventSubscriber;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
+
+
 
 /**
  * @author lianglin
  * @since 1.7.0
  */
-public interface EventPublisher {
-    /**
-     * Publish  event
-     *
-     * @param event
-     */
-    void publish(Event event);
+public abstract class AbstractDegradeEventPublisher extends AbstractEventPublisher<DegradeRule> {
 
-    /**
-     * Publish  event asynchronously
-     *
-     * @param event
-     */
-    void asyPublish(Event event);
 
-    /**
-     * Add subscriber
-     *
-     * @param subscriber
-     */
-    void addSubscriber(EventSubscriber subscriber);
+    @Override
+    public boolean filter(Event<DegradeRule> event) {
+        return true;
+    }
 
-    /**
-     * Remove subscriber
-     *
-     * @param subscriber
-     */
-    void removeSubscriber(EventSubscriber subscriber);
 
-    /**
-     * Do some resource clean operation
-     */
-    void close();
+
 }

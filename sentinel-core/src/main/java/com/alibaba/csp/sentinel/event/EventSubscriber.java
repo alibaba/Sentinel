@@ -15,21 +15,17 @@
  */
 package com.alibaba.csp.sentinel.event;
 
-import com.alibaba.csp.sentinel.event.publisher.EventPublisher;
-import com.alibaba.csp.sentinel.event.publisher.EventPublisherProvider;
-import org.junit.Assert;
-import org.junit.Test;
+import com.alibaba.csp.sentinel.event.Event;
 
 /**
  * @author lianglin
  * @since 1.7.0
  */
-public class EventPublisherProviderTest {
-
-    @Test
-    public void testProvide() {
-        EventPublisher publisher = EventPublisherProvider.getPublisher();
-        Assert.assertTrue(publisher != null);
-    }
-
+public interface EventSubscriber<T> {
+    /**
+     * Subscribe  event and make some  business logic processing
+     *
+     * @param event
+     */
+    void listen(Event<T> event);
 }

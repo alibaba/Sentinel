@@ -13,19 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.event.subscriber;
+package com.alibaba.csp.sentinel.event.degrade;
 
 import com.alibaba.csp.sentinel.event.Event;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 
 /**
+ * Just Log the Degrade Event
+ *
  * @author lianglin
  * @since 1.7.0
  */
-public class DefaultEventSubscriber implements EventSubscriber {
+public class SentinelDegradeEventSubscriber extends AbstractDegradeEventSubscriber {
 
     @Override
-    public void listen(Event event) {
-        RecordLog.info("[DefaultEventSubscriber] receive event: {0}", event);
+    public void onOpen(Event<DegradeRule> event) {
+        RecordLog.info("[SentinelDegradeEventSubscriber] receive Circuit Breaker Open event, the trigger rule is {0}", event.getData());
+
+    }
+
+    @Override
+    public void onClose(Event<DegradeRule> event) {
+        RecordLog.info("[SentinelDegradeEventSubscriber] receive Circuit Breaker Closed event, the trigger rule is {0}", event.getData());
+
     }
 }

@@ -18,7 +18,8 @@ package com.alibaba.csp.sentinel.slots.block.degrade;
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.event.Event;
-import com.alibaba.csp.sentinel.event.publisher.EventPublisherProvider;
+import com.alibaba.csp.sentinel.event.degrade.AbstractDegradeEventPublisher;
+import com.alibaba.csp.sentinel.event.degrade.SentinelDegradeEventPublisher;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.DefaultNode;
@@ -61,6 +62,8 @@ import static com.alibaba.csp.sentinel.event.EventType.CIRCUIT_BREAK_OPEN;
  * @author jialiang.linjl
  */
 public class DegradeRule extends AbstractRule {
+
+    private static SentinelDegradeEventPublisher degradeEventPublisher = new SentinelDegradeEventPublisher();
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(
@@ -248,9 +251,9 @@ public class DegradeRule extends AbstractRule {
             pool.schedule(resetTask, timeWindow, TimeUnit.SECONDS);
             try {
                 Event<DegradeRule> event = new Event<>(this, "Degrade.passCheck", CIRCUIT_BREAK_OPEN.getType());
-                EventPublisherProvider.getPublisher().asyPublish(event);
+                degradeEventPublisher.publish(event);
             } catch (Exception ex) {
-                RecordLog.warn("[EventPublisherProvider.getPublisher] publish event error", ex);
+                RecordLog.warn("[DegradeEventPublisherProvider.getPublisher] publish event error", ex);
             }
         }
 
@@ -271,9 +274,9 @@ public class DegradeRule extends AbstractRule {
             rule.cut.set(false);
             try {
                 Event<DegradeRule> event = new Event<>(rule, "Degrade.ResetTask", CIRCUIT_BREAKER_CLOSE.getType());
-                EventPublisherProvider.getPublisher().asyPublish(event);
+                degradeEventPublisher.publish(event);
             } catch (Exception ex) {
-                RecordLog.warn("[EventPublisherProvider.getPublisher] publish event error", ex);
+                RecordLog.warn("[DegradeEventPublisherProvider.getPublisher] publish event error", ex);
             }
         }
     }

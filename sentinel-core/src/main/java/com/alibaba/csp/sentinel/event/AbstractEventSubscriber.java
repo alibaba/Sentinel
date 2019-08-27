@@ -15,24 +15,14 @@
  */
 package com.alibaba.csp.sentinel.event;
 
-import com.alibaba.csp.sentinel.event.subscriber.DefaultEventSubscriber;
-import com.alibaba.csp.sentinel.event.subscriber.EventSubscriber;
-import com.alibaba.csp.sentinel.event.subscriber.EventSubscriberProvider;
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.util.List;
-
 /**
  * @author lianglin
  * @since 1.7.0
  */
-public class EventSubscriberProviderTest {
+public abstract class AbstractEventSubscriber<T> implements EventFilter<T>, EventSubscriber<T> {
 
-    @Test
-    public void testProvide() {
-        List<EventSubscriber> subscribers = EventSubscriberProvider.provide();
-        Assert.assertTrue(subscribers.size() == 1);
-        Assert.assertTrue(subscribers.get(0).getClass() == DefaultEventSubscriber.class);
+    @Override
+    public boolean filter(Event<T> event) {
+        return true;
     }
 }

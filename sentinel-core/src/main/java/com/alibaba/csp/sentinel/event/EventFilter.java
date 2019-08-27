@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.event.subscriber;
-
-import com.alibaba.csp.sentinel.event.Event;
+package com.alibaba.csp.sentinel.event;
 
 /**
  * @author lianglin
  * @since 1.7.0
  */
-public interface EventSubscriber {
+public interface EventFilter<T> {
+
     /**
-     * Subscribe the event and make some  business logic processing
+     * Filter event
      *
      * @param event
+     * @return
      */
-    void listen(Event event);
+    boolean filter(Event<T> event);
 }
