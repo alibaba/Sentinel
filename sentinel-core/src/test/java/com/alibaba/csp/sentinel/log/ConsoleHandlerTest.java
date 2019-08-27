@@ -22,7 +22,7 @@ import java.io.PrintStream;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Test cases for {@link ConsoleHandler}.

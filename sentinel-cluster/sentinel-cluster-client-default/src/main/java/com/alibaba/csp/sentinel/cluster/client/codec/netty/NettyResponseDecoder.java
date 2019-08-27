@@ -18,10 +18,7 @@ package com.alibaba.csp.sentinel.cluster.client.codec.netty;
 import java.util.List;
 
 import com.alibaba.csp.sentinel.cluster.client.codec.ClientEntityCodecProvider;
-import com.alibaba.csp.sentinel.cluster.client.codec.registry.ResponseDataDecodeRegistry;
-import com.alibaba.csp.sentinel.cluster.codec.EntityDecoder;
 import com.alibaba.csp.sentinel.cluster.codec.response.ResponseEntityDecoder;
-import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
 import com.alibaba.csp.sentinel.cluster.response.Response;
 import com.alibaba.csp.sentinel.log.RecordLog;
 
