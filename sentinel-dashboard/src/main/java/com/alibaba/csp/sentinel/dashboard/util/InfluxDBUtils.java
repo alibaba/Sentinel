@@ -29,6 +29,8 @@ public class InfluxDBUtils {
 
         private static String password;
 
+        private static String retentionPolicy ="sentinel_metrics_police";
+
         private static InfluxDBResultMapper resultMapper = new InfluxDBResultMapper();
 
         @Value("${influxdb.url}")
@@ -58,7 +60,7 @@ public class InfluxDBUtils {
             try {
                 influxDB = InfluxDBFactory.connect(url, username, password);
                 influxDB.setDatabase(database);
-
+                influxDB.setRetentionPolicy(retentionPolicy);
                 t = callback.doCallBack(database, influxDB);
             } catch (Exception e) {
                 logger.error("[process exception]", e);

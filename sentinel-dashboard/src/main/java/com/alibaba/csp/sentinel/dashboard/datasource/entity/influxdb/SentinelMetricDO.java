@@ -2,7 +2,6 @@ package com.alibaba.csp.sentinel.dashboard.datasource.entity.influxdb;
 import org.influxdb.annotation.Column;
 import org.influxdb.annotation.Measurement;
 
-import java.time.Instant;
 
 /**
  * @author dinglang
@@ -12,7 +11,7 @@ import java.time.Instant;
 public class SentinelMetricDO {
 
     @Column(name = "time")
-    private Instant time;
+    private String time;
 
     @Column(name = "id")
     private Long id;
@@ -50,11 +49,11 @@ public class SentinelMetricDO {
     @Column(name = "resourceCode")
     private int resourceCode;
 
-    public Instant getTime() {
+    public String getTime() {
         return time;
     }
 
-    public void setTime(Instant time) {
+    public void setTime(String time) {
         this.time = time;
     }
 

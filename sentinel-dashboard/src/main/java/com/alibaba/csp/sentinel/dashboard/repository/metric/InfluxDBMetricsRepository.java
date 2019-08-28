@@ -1,16 +1,20 @@
 package com.alibaba.csp.sentinel.dashboard.repository.metric;
 
+import com.alibaba.csp.sentinel.dashboard.controller.MetricController;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.MetricEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.influxdb.SentinelMetricDO;
 import com.alibaba.csp.sentinel.dashboard.util.InfluxDBUtils;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.nacos.client.naming.utils.CollectionUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
-import org.apache.commons.lang.time.DateUtils;
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.Point;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -33,6 +37,9 @@ public class InfluxDBMetricsRepository implements MetricsRepository<MetricEntity
 
     /**北京时间领先UTC时间8小时 UTC: Universal Time Coordinated,世界统一时间*/
     private static final Integer UTC_8 = 8;
+
+    private static Logger logger = LoggerFactory.getLogger(MetricController.class);
+
 
     @Override
     public void save(MetricEntity metric) {
@@ -94,7 +101,7 @@ public class InfluxDBMetricsRepository implements MetricsRepository<MetricEntity
         sql.append(" AND resource=$resource");
         sql.append(" AND time>=$startTime");
         sql.append(" AND time<=$endTime");
-
+        sql.append("  tz('Asia/Shanghai') ");
         Map<String, Object> paramMap = new HashMap<String, Object>();
         paramMap.put("app", app);
         paramMap.put("resource", resource);
@@ -125,6 +132,7 @@ public class InfluxDBMetricsRepository implements MetricsRepository<MetricEntity
         sql.append("SELECT * FROM " + METRIC_MEASUREMENT);
         sql.append(" WHERE app=$app");
         sql.append(" AND time>=$startTime");
+        sql.append("  tz('Asia/Shanghai') ");
 
         Map<String, Object> paramMap = new HashMap<String, Object>();
         long startTime = System.currentTimeMillis() - 1000 * 60;
@@ -181,7 +189,13 @@ public class InfluxDBMetricsRepository implements MetricsRepository<MetricEntity
         metricEntity.setGmtCreate(new Date(SentinelMetricDO.getGmtCreate()));
         metricEntity.setGmtModified(new Date(SentinelMetricDO.getGmtModified()));
         metricEntity.setApp(SentinelMetricDO.getApp());
-        metricEntity.setTimestamp(Date.from(SentinelMetricDO.getTime().minusMillis(TimeUnit.HOURS.toMillis(UTC_8))));// 查询数据减8小时
+        //metricEntity.setTimestamp(Date.from(SentinelMetricDO.getTime().minusMillis(TimeUnit.HOURS.toMillis(UTC_8))));// 查询数据减8小时
+        SimpleDateFormat sdf =   new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss+08:00" );
+        try {
+            metricEntity.setTimestamp(sdf.parse(SentinelMetricDO.getTime()));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         metricEntity.setResource(SentinelMetricDO.getResource());
         metricEntity.setPassQps(SentinelMetricDO.getPassQps());
         metricEntity.setSuccessQps(SentinelMetricDO.getSuccessQps());
@@ -194,20 +208,25 @@ public class InfluxDBMetricsRepository implements MetricsRepository<MetricEntity
     }
 
     private void doSave(InfluxDB influxDB, MetricEntity metric) {
-        influxDB.write(Point.measurement(METRIC_MEASUREMENT)
-                .time(DateUtils.addHours(metric.getTimestamp(), UTC_8).getTime(), TimeUnit.MILLISECONDS)// 因InfluxDB默认UTC时间，按北京时间算写入数据加8小时
-                .tag("app", metric.getApp())
-                .tag("resource", metric.getResource())
-                .addField("id", metric.getId())
-                .addField("gmtCreate", metric.getGmtCreate().getTime())
-                .addField("gmtModified", metric.getGmtModified().getTime())
-                .addField("passQps", metric.getPassQps())
-                .addField("successQps", metric.getSuccessQps())
-                .addField("blockQps", metric.getBlockQps())
-                .addField("exceptionQps", metric.getExceptionQps())
-                .addField("rt", metric.getRt())
-                .addField("count", metric.getCount())
-                .addField("resourceCode", metric.getResourceCode())
-                .build());
+        try {
+            influxDB.write(Point.measurement(METRIC_MEASUREMENT)
+                    //.time(DateUtils.addHours(metric.getTimestamp(), UTC_8).getTime(), TimeUnit.MILLISECONDS)// 因InfluxDB默认UTC时间，按北京时间算写入数据加8小时
+                    .time(metric.getTimestamp().getTime(),TimeUnit.MILLISECONDS)
+                    .tag("app", metric.getApp())
+                    .tag("resource", metric.getResource())
+                    .addField("id", metric.getId())
+                    .addField("gmtCreate", metric.getGmtCreate().getTime())
+                    .addField("gmtModified", metric.getGmtModified().getTime())
+                    .addField("passQps", metric.getPassQps())
+                    .addField("successQps", metric.getSuccessQps())
+                    .addField("blockQps", metric.getBlockQps())
+                    .addField("exceptionQps", metric.getExceptionQps())
+                    .addField("rt", metric.getRt())
+                    .addField("count", metric.getCount())
+                    .addField("resourceCode", metric.getResourceCode())
+                    .build());
+        } catch (Exception ex) {
+            logger.error("写入sentinel_metric失败", ex);
+        }
     }
 }
