@@ -43,6 +43,7 @@ const CSS_APP = [
 const JS_APP = [
   'app/scripts/app.js',
   'app/scripts/filters/filters.js',
+  'app/scripts/services/version_service.js',
   'app/scripts/services/auth_service.js',
   'app/scripts/services/appservice.js',
   'app/scripts/services/flow_service_v1.js',
