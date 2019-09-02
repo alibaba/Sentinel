@@ -22,10 +22,10 @@ import java.util.Properties;
 @Configuration
 public class NacosConfig {
 
-    @Value("${nacos.config.server.address}")
+    @Value("${nacos.config.server-addr}")
     private  String nacosAddress;
 
-    @Value("${nacos.config.namespace.id}")
+    @Value("${nacos.config.namespace}")
     private  String nacosNamespaceId;
 
     @Bean
