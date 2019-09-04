@@ -95,7 +95,6 @@ public class DegradeController {
         if (!authUser.authTarget(app, PrivilegeType.WRITE_RULE)) {
             return Result.ofFail(-1, "Can't operate because of no privilege");
         }
-
         if (StringUtil.isBlank(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
         }
