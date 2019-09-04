@@ -61,7 +61,10 @@ public class DegradeController {
     @RequestMapping("/rules.json")
     public Result<List<DegradeRuleEntity>> queryMachineRules(HttpServletRequest request, String app, String ip, Integer port) {
         AuthUser authUser = authService.getAuthUser(request);
-        authUser.authTarget(app, PrivilegeType.READ_RULE);
+
+        if (!authUser.authTarget(app, PrivilegeType.READ_RULE)) {
+            return Result.ofFail(-1, "Can't operate because of no privilege");
+        }
 
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
@@ -88,7 +91,10 @@ public class DegradeController {
                                          String app, String ip, Integer port, String limitApp, String resource,
                                          Double count, Integer timeWindow, Integer grade) {
         AuthUser authUser = authService.getAuthUser(request);
-        authUser.authTarget(app, PrivilegeType.WRITE_RULE);
+
+        if (!authUser.authTarget(app, PrivilegeType.WRITE_RULE)) {
+            return Result.ofFail(-1, "Can't operate because of no privilege");
+        }
 
         if (StringUtil.isBlank(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
@@ -159,7 +165,9 @@ public class DegradeController {
         if (entity == null) {
             return Result.ofFail(-1, "id " + id + " dose not exist");
         }
-        authUser.authTarget(entity.getApp(), PrivilegeType.WRITE_RULE);
+        if (!authUser.authTarget(entity.getApp(), PrivilegeType.WRITE_RULE)) {
+            return Result.ofFail(-1, "Can't operate because of no privilege");
+        }
         if (StringUtil.isNotBlank(app)) {
             entity.setApp(app.trim());
         }
@@ -205,7 +213,9 @@ public class DegradeController {
         if (oldEntity == null) {
             return Result.ofSuccess(null);
         }
-        authUser.authTarget(oldEntity.getApp(), PrivilegeType.DELETE_RULE);
+        if (!authUser.authTarget(oldEntity.getApp(), PrivilegeType.DELETE_RULE)) {
+            return Result.ofFail(-1, "Can't operate because of no privilege");
+        }
         try {
             repository.delete(id);
         } catch (Throwable throwable) {

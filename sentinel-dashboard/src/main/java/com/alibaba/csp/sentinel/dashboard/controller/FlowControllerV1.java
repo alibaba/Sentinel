@@ -69,7 +69,9 @@ public class FlowControllerV1 {
                                                              @RequestParam String ip,
                                                              @RequestParam Integer port) {
         AuthUser authUser = authService.getAuthUser(request);
-        authUser.authTarget(app, PrivilegeType.READ_RULE);
+        if (!authUser.authTarget(app, PrivilegeType.READ_RULE)) {
+            return Result.ofFail(-1, "Can't operate because of no privilege");
+        }
 
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
@@ -140,7 +142,9 @@ public class FlowControllerV1 {
     @PostMapping("/rule")
     public Result<FlowRuleEntity> apiAddFlowRule(HttpServletRequest request, @RequestBody FlowRuleEntity entity) {
         AuthUser authUser = authService.getAuthUser(request);
-        authUser.authTarget(entity.getApp(), PrivilegeType.WRITE_RULE);
+        if (!authUser.authTarget(entity.getApp(), PrivilegeType.WRITE_RULE)) {
+            return Result.ofFail(-1, "Can't operate because of no privilege");
+        }
 
         Result<FlowRuleEntity> checkResult = checkEntityInternal(entity);
         if (checkResult != null) {
@@ -171,7 +175,9 @@ public class FlowControllerV1 {
                                                   Integer controlBehavior, Integer warmUpPeriodSec,
                                                   Integer maxQueueingTimeMs) {
         AuthUser authUser = authService.getAuthUser(request);
-        authUser.authTarget(app, PrivilegeType.WRITE_RULE);
+        if (!authUser.authTarget(app, PrivilegeType.WRITE_RULE)) {
+            return Result.ofFail(-1, "Can't operate because of no privilege");
+        }
 
         if (id == null) {
             return Result.ofFail(-1, "id can't be null");
@@ -255,7 +261,9 @@ public class FlowControllerV1 {
         if (oldEntity == null) {
             return Result.ofSuccess(null);
         }
-        authUser.authTarget(oldEntity.getApp(), PrivilegeType.DELETE_RULE);
+        if (!authUser.authTarget(oldEntity.getApp(), PrivilegeType.DELETE_RULE)) {
+            return Result.ofFail(-1, "Can't operate because of no privilege");
+        }
         try {
             repository.delete(id);
         } catch (Exception e) {

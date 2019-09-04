@@ -65,7 +65,9 @@ public class GatewayFlowRuleController {
     @GetMapping("/list.json")
     public Result<List<GatewayFlowRuleEntity>> queryFlowRules(HttpServletRequest request, String app, String ip, Integer port) {
         AuthService.AuthUser authUser = authService.getAuthUser(request);
-        authUser.authTarget(app, AuthService.PrivilegeType.READ_RULE);
+        if (!authUser.authTarget(app, AuthService.PrivilegeType.READ_RULE)) {
+            return Result.ofFail(-1, "Can't operate because of no privilege");
+        }
 
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
@@ -96,7 +98,9 @@ public class GatewayFlowRuleController {
             return Result.ofFail(-1, "app can't be null or empty");
         }
 
-        authUser.authTarget(app, AuthService.PrivilegeType.WRITE_RULE);
+        if (!authUser.authTarget(app, AuthService.PrivilegeType.WRITE_RULE)) {
+            return Result.ofFail(-1, "Can't operate because of no privilege");
+        }
 
         GatewayFlowRuleEntity entity = new GatewayFlowRuleEntity();
         entity.setApp(app.trim());
@@ -266,7 +270,9 @@ public class GatewayFlowRuleController {
             return Result.ofFail(-1, "app can't be null or empty");
         }
 
-        authUser.authTarget(app, AuthService.PrivilegeType.WRITE_RULE);
+        if (!authUser.authTarget(app, AuthService.PrivilegeType.WRITE_RULE)) {
+            return Result.ofFail(-1, "Can't operate because of no privilege");
+        }
 
         Long id = reqVo.getId();
         if (id == null) {
@@ -420,7 +426,9 @@ public class GatewayFlowRuleController {
             return Result.ofSuccess(null);
         }
 
-        authUser.authTarget(oldEntity.getApp(), AuthService.PrivilegeType.DELETE_RULE);
+        if (!authUser.authTarget(oldEntity.getApp(), AuthService.PrivilegeType.DELETE_RULE)) {
+            return Result.ofFail(-1, "Can't operate because of no privilege");
+        }
 
         try {
             repository.delete(id);
