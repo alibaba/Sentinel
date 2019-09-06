@@ -3,6 +3,7 @@ package com.alibaba.csp.sentinel.dashboard.rule.nacos;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayFlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEntity;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.nacos.api.PropertyKeyConst;
@@ -56,6 +57,16 @@ public class NacosConfig {
     @Bean
     public Converter<String, List<GatewayFlowRuleEntity>> gatewayFlowRuleEntityDecoder() {
         return s -> JSON.parseArray(s, GatewayFlowRuleEntity.class);
+    }
+
+    @Bean
+    public Converter<List<ParamFlowRuleEntity>, String> paramFlowRuleEntityEncoder() {
+        return JSON::toJSONString;
+    }
+
+    @Bean
+    public Converter<String, List<ParamFlowRuleEntity>> ParamFlowRuleEntityDecoder() {
+        return s -> JSON.parseArray(s, ParamFlowRuleEntity.class);
     }
 
     @Bean

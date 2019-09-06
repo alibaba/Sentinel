@@ -29,7 +29,7 @@ public class InfluxDBUtils {
 
         private static String password;
 
-        private static String retentionPolicy ="sentinel_metrics_police";
+        private static String retentionPolicy ="rp_3d";
 
         private static InfluxDBResultMapper resultMapper = new InfluxDBResultMapper();
 

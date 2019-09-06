@@ -47,14 +47,11 @@ public class InfluxDBMetricsRepository implements MetricsRepository<MetricEntity
             return;
         }
 
-        InfluxDBUtils.insert(SENTINEL_DATABASE, new InfluxDBUtils.InfluxDBInsertCallback() {
-            @Override
-            public void doCallBack(String database, InfluxDB influxDB) {
-                if (metric.getId() == null) {
-                    metric.setId(System.currentTimeMillis());
-                }
-                doSave(influxDB, metric);
+        InfluxDBUtils.insert(SENTINEL_DATABASE, (database, influxDB) -> {
+            if (metric.getId() == null) {
+                metric.setId(System.currentTimeMillis());
             }
+            doSave(influxDB, metric);
         });
     }
 
@@ -70,16 +67,13 @@ public class InfluxDBMetricsRepository implements MetricsRepository<MetricEntity
             return;
         }
 
-        InfluxDBUtils.insert(SENTINEL_DATABASE, new InfluxDBUtils.InfluxDBInsertCallback() {
-            @Override
-            public void doCallBack(String database, InfluxDB influxDB) {
-                while (iterator.hasNext()) {
-                    MetricEntity metric = iterator.next();
-                    if (metric.getId() == null) {
-                        metric.setId(System.currentTimeMillis());
-                    }
-                    doSave(influxDB, metric);
+        InfluxDBUtils.insert(SENTINEL_DATABASE, (database, influxDB) -> {
+            while (iterator.hasNext()) {
+                MetricEntity metric = iterator.next();
+                if (metric.getId() == null) {
+                    metric.setId(System.currentTimeMillis());
                 }
+                doSave(influxDB, metric);
             }
         });
     }
