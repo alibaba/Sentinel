@@ -21,7 +21,6 @@
         <dependency>
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-datasource-etcd</artifactId>
-            <version>1.7.0-SNAPSHOT</version>
         </dependency>
 
 

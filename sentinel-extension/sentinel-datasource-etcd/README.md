@@ -37,4 +37,4 @@ For instance:
 > Note: It needs to update JDK version to JDK8
 
 
-We've also provided an example: [sentinel-demo-etcd-datasource].
+We've also provided an example: [sentinel-demo-etcd-datasource](https://github.com/alibaba/Sentinel/tree/master/sentinel-demo/sentinel-demo-etcd-datasource)
