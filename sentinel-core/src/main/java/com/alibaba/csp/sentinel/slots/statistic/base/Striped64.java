@@ -136,6 +136,7 @@ abstract class Striped64 extends Number {
      * The corresponding ThreadLocal class
      */
     static final class ThreadHashCode extends ThreadLocal<HashCode> {
+        @Override
         public HashCode initialValue() { return new HashCode(); }
     }
 
@@ -330,6 +331,7 @@ abstract class Striped64 extends Number {
                 return java.security.AccessController.doPrivileged
                     (new java.security
                         .PrivilegedExceptionAction<sun.misc.Unsafe>() {
+                        @Override
                         public sun.misc.Unsafe run() throws Exception {
                             java.lang.reflect.Field f = sun.misc
                                 .Unsafe.class.getDeclaredField("theUnsafe");
