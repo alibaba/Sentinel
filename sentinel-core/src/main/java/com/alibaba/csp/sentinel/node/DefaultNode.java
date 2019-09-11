@@ -107,15 +107,15 @@ public class DefaultNode extends StatisticNode {
     }
 
     @Override
-    public void increaseBlockQps(int count) {
-        super.increaseBlockQps(count);
-        this.clusterNode.increaseBlockQps(count);
+    public void increaseBlockQps(long rt, int count) {
+        super.increaseBlockQps(rt,count);
+        this.clusterNode.increaseBlockQps(rt,count);
     }
 
     @Override
-    public void increaseExceptionQps(int count) {
-        super.increaseExceptionQps(count);
-        this.clusterNode.increaseExceptionQps(count);
+    public void increaseExceptionQps(long rt, int count) {
+        super.increaseExceptionQps(rt,count);
+        this.clusterNode.increaseExceptionQps(rt,count);
     }
 
     @Override

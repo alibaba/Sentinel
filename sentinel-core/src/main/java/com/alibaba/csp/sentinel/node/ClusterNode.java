@@ -99,7 +99,7 @@ public class ClusterNode extends StatisticNode {
             return;
         }
         if (!BlockException.isBlockException(throwable)) {
-            this.increaseExceptionQps(count);
+            this.increaseExceptionQps(0,count);
         }
     }
 }

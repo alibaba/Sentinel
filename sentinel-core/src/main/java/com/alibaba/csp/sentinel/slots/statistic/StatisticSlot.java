@@ -96,7 +96,7 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             context.getCurEntry().setError(e);
 
             // Add block count.
-            node.increaseBlockQps(count);
+            node.increaseBlockQps(rt,count);
             if (context.getCurEntry().getOriginNode() != null) {
                 context.getCurEntry().getOriginNode().increaseBlockQps(rt,count);
             }
@@ -117,7 +117,7 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             context.getCurEntry().setError(e);
 
             // This should not happen.
-            node.increaseExceptionQps(count);
+            node.increaseExceptionQps(rt,count);
             if (context.getCurEntry().getOriginNode() != null) {
                 context.getCurEntry().getOriginNode().increaseExceptionQps(rt,count);
             }
