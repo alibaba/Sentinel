@@ -51,6 +51,7 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
                       boolean prioritized, Object... args) throws Throwable {
+        long rt = TimeUtil.currentTimeMillis() - context.getCurEntry().getCreateTime();
         try {
             // Do some checking.
             fireEntry(context, resourceWrapper, node, count, prioritized, args);
@@ -97,12 +98,12 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             // Add block count.
             node.increaseBlockQps(count);
             if (context.getCurEntry().getOriginNode() != null) {
-                context.getCurEntry().getOriginNode().increaseBlockQps(count);
+                context.getCurEntry().getOriginNode().increaseBlockQps(rt,count);
             }
 
             if (resourceWrapper.getType() == EntryType.IN) {
                 // Add count for global inbound entry node for global statistics.
-                Constants.ENTRY_NODE.increaseBlockQps(count);
+                Constants.ENTRY_NODE.increaseBlockQps(rt,count);
             }
 
             // Handle block event with registered entry callback handlers.
@@ -118,11 +119,11 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             // This should not happen.
             node.increaseExceptionQps(count);
             if (context.getCurEntry().getOriginNode() != null) {
-                context.getCurEntry().getOriginNode().increaseExceptionQps(count);
+                context.getCurEntry().getOriginNode().increaseExceptionQps(rt,count);
             }
 
             if (resourceWrapper.getType() == EntryType.IN) {
-                Constants.ENTRY_NODE.increaseExceptionQps(count);
+                Constants.ENTRY_NODE.increaseExceptionQps(rt,count);
             }
             throw e;
         }

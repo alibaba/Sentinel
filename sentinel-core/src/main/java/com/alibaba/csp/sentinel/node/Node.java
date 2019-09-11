@@ -164,16 +164,18 @@ public interface Node extends OccupySupport, DebugSupport {
     /**
      * Increase the block count.
      *
+     * @param rt Current timestamp, calculated based on this
      * @param count count to add
      */
-    void increaseBlockQps(int count);
+    void increaseBlockQps(long rt, int count);
 
     /**
      * Add the biz exception count.
      *
+     * @param rt Current timestamp, calculated based on this
      * @param count count to add
      */
-    void increaseExceptionQps(int count);
+    void increaseExceptionQps(long rt, int count);
 
     /**
      * Increase current thread count.

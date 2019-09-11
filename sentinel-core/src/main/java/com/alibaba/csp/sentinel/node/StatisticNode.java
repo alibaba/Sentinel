@@ -251,13 +251,13 @@ public class StatisticNode implements Node {
     }
 
     @Override
-    public void increaseBlockQps(int count) {
+    public void increaseBlockQps(long rt, int count) {
         rollingCounterInSecond.addBlock(count);
         rollingCounterInMinute.addBlock(count);
     }
 
     @Override
-    public void increaseExceptionQps(int count) {
+    public void increaseExceptionQps(long rt, int count) {
         rollingCounterInSecond.addException(count);
         rollingCounterInMinute.addException(count);
     }
