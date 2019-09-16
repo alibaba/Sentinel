@@ -33,7 +33,7 @@ public class AuthInterceptor implements HandlerInterceptor {
                 }
                 String target = request.getParameter(authAction.targetName());
 
-                if (authUser.authTarget(target, authAction.value())) {
+                if (!authUser.authTarget(target, authAction.value())) {
                     responseNoPrivilegeMsg(response, authAction.message());
                     return false;
                 }
