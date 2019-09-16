@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.dashboard.controller.gateway;
 
+import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.ApiDefinitionEntity;
@@ -55,15 +56,9 @@ public class GatewayApiController {
     @Autowired
     private SentinelApiClient sentinelApiClient;
 
-    @Autowired
-    private AuthService<HttpServletRequest> authService;
-
     @GetMapping("/list.json")
-    public Result<List<ApiDefinitionEntity>> queryApis(HttpServletRequest request, String app, String ip, Integer port) {
-        AuthService.AuthUser authUser = authService.getAuthUser(request);
-        if (!authUser.authTarget(app, AuthService.PrivilegeType.READ_RULE)) {
-            return Result.ofFail(-1, "no privilege");
-        }
+    @AuthAction(AuthService.PrivilegeType.READ_RULE)
+    public Result<List<ApiDefinitionEntity>> queryApis(String app, String ip, Integer port) {
 
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
@@ -86,16 +81,12 @@ public class GatewayApiController {
     }
 
     @PostMapping("/new.json")
+    @AuthAction(AuthService.PrivilegeType.WRITE_RULE)
     public Result<ApiDefinitionEntity> addApi(HttpServletRequest request, @RequestBody AddApiReqVo reqVo) {
-        AuthService.AuthUser authUser = authService.getAuthUser(request);
 
         String app = reqVo.getApp();
         if (StringUtil.isBlank(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
-        }
-
-        if (!authUser.authTarget(app, AuthService.PrivilegeType.WRITE_RULE)) {
-            return Result.ofFail(-1, "no privilege");
         }
 
         ApiDefinitionEntity entity = new ApiDefinitionEntity();
@@ -173,16 +164,11 @@ public class GatewayApiController {
     }
 
     @PostMapping("/save.json")
-    public Result<ApiDefinitionEntity> updateApi(HttpServletRequest request, @RequestBody UpdateApiReqVo reqVo) {
-        AuthService.AuthUser authUser = authService.getAuthUser(request);
-
+    @AuthAction(AuthService.PrivilegeType.WRITE_RULE)
+    public Result<ApiDefinitionEntity> updateApi(@RequestBody UpdateApiReqVo reqVo) {
         String app = reqVo.getApp();
         if (StringUtil.isBlank(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
-        }
-
-        if (!authUser.authTarget(app, AuthService.PrivilegeType.WRITE_RULE)) {
-            return Result.ofFail(-1, "no privilege");
         }
 
         Long id = reqVo.getId();
@@ -241,9 +227,9 @@ public class GatewayApiController {
     }
 
     @PostMapping("/delete.json")
-    public Result<Long> deleteApi(HttpServletRequest request, Long id) {
-        AuthService.AuthUser authUser = authService.getAuthUser(request);
+    @AuthAction(AuthService.PrivilegeType.DELETE_RULE)
 
+    public Result<Long> deleteApi(Long id) {
         if (id == null) {
             return Result.ofFail(-1, "id can't be null");
         }
@@ -251,10 +237,6 @@ public class GatewayApiController {
         ApiDefinitionEntity oldEntity = repository.findById(id);
         if (oldEntity == null) {
             return Result.ofSuccess(null);
-        }
-
-        if (!authUser.authTarget(oldEntity.getApp(), AuthService.PrivilegeType.DELETE_RULE)) {
-            return Result.ofFail(-1, "no privilege");
         }
 
         try {

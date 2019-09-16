@@ -18,10 +18,8 @@ package com.alibaba.csp.sentinel.dashboard.controller.v2;
 import java.util.Date;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
+import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
-import com.alibaba.csp.sentinel.dashboard.auth.AuthService.AuthUser;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
@@ -67,15 +65,9 @@ public class FlowControllerV2 {
     @Qualifier("flowRuleDefaultPublisher")
     private DynamicRulePublisher<List<FlowRuleEntity>> rulePublisher;
 
-    @Autowired
-    private AuthService<HttpServletRequest> authService;
-
     @GetMapping("/rules")
-    public Result<List<FlowRuleEntity>> apiQueryMachineRules(HttpServletRequest request, @RequestParam String app) {
-        AuthUser authUser = authService.getAuthUser(request);
-        if (!authUser.authTarget(app, PrivilegeType.READ_RULE)) {
-            return Result.ofFail(-1, "no privilege");
-        }
+    @AuthAction(PrivilegeType.READ_RULE)
+    public Result<List<FlowRuleEntity>> apiQueryMachineRules(@RequestParam String app) {
 
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
@@ -143,11 +135,8 @@ public class FlowControllerV2 {
     }
 
     @PostMapping("/rule")
-    public Result<FlowRuleEntity> apiAddFlowRule(HttpServletRequest request, @RequestBody FlowRuleEntity entity) {
-        AuthUser authUser = authService.getAuthUser(request);
-        if (!authUser.authTarget(entity.getApp(), PrivilegeType.WRITE_RULE)) {
-            return Result.ofFail(-1, "no privilege");
-        }
+    @AuthAction(value = AuthService.PrivilegeType.WRITE_RULE)
+    public Result<FlowRuleEntity> apiAddFlowRule(@RequestBody FlowRuleEntity entity) {
 
         Result<FlowRuleEntity> checkResult = checkEntityInternal(entity);
         if (checkResult != null) {
@@ -170,10 +159,10 @@ public class FlowControllerV2 {
     }
 
     @PutMapping("/rule/{id}")
-    public Result<FlowRuleEntity> apiUpdateFlowRule(HttpServletRequest request,
-                                                    @PathVariable("id") Long id,
+    @AuthAction(AuthService.PrivilegeType.WRITE_RULE)
+
+    public Result<FlowRuleEntity> apiUpdateFlowRule(@PathVariable("id") Long id,
                                                     @RequestBody FlowRuleEntity entity) {
-        AuthUser authUser = authService.getAuthUser(request);
         if (id == null || id <= 0) {
             return Result.ofFail(-1, "Invalid id");
         }
@@ -183,9 +172,6 @@ public class FlowControllerV2 {
         }
         if (entity == null) {
             return Result.ofFail(-1, "invalid body");
-        }
-        if (!authUser.authTarget(oldEntity.getApp(), PrivilegeType.WRITE_RULE)) {
-            return Result.ofFail(-1, "no privilege");
         }
 
         entity.setApp(oldEntity.getApp());
@@ -214,8 +200,8 @@ public class FlowControllerV2 {
     }
 
     @DeleteMapping("/rule/{id}")
-    public Result<Long> apiDeleteRule(HttpServletRequest request, @PathVariable("id") Long id) {
-        AuthUser authUser = authService.getAuthUser(request);
+    @AuthAction(PrivilegeType.DELETE_RULE)
+    public Result<Long> apiDeleteRule(@PathVariable("id") Long id) {
         if (id == null || id <= 0) {
             return Result.ofFail(-1, "Invalid id");
         }
@@ -223,9 +209,7 @@ public class FlowControllerV2 {
         if (oldEntity == null) {
             return Result.ofSuccess(null);
         }
-        if (!authUser.authTarget(oldEntity.getApp(), PrivilegeType.DELETE_RULE)) {
-            return Result.ofFail(-1, "no privilege");
-        }
+
         try {
             repository.delete(id);
             publishRules(oldEntity.getApp());

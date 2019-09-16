@@ -18,10 +18,7 @@ package com.alibaba.csp.sentinel.dashboard.controller;
 import java.util.Date;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
-import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
-import com.alibaba.csp.sentinel.dashboard.auth.AuthService.AuthUser;
+import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.RuleRepository;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -51,8 +48,6 @@ public class SystemController {
     private RuleRepository<SystemRuleEntity, Long> repository;
     @Autowired
     private SentinelApiClient sentinelApiClient;
-    @Autowired
-    private AuthService<HttpServletRequest> authService;
 
     private <R> Result<R> checkBasicParams(String app, String ip, Integer port) {
         if (StringUtil.isEmpty(app)) {
@@ -71,13 +66,9 @@ public class SystemController {
     }
 
     @GetMapping("/rules.json")
-    public Result<List<SystemRuleEntity>> apiQueryMachineRules(HttpServletRequest request, String app, String ip,
+    @AuthAction(PrivilegeType.READ_RULE)
+    public Result<List<SystemRuleEntity>> apiQueryMachineRules(String app, String ip,
                                                                Integer port) {
-        AuthUser authUser = authService.getAuthUser(request);
-        if (!authUser.authTarget(app, PrivilegeType.READ_RULE)) {
-            return Result.ofFail(-1, "no privilege");
-        }
-
         Result<List<SystemRuleEntity>> checkResult = checkBasicParams(app, ip, port);
         if (checkResult != null) {
             return checkResult;
@@ -103,13 +94,10 @@ public class SystemController {
     }
 
     @RequestMapping("/new.json")
-    public Result<SystemRuleEntity> apiAdd(HttpServletRequest request, String app, String ip, Integer port,
+    @AuthAction(PrivilegeType.WRITE_RULE)
+    public Result<SystemRuleEntity> apiAdd(String app, String ip, Integer port,
                                            Double highestSystemLoad, Double highestCpuUsage, Long avgRt,
                                            Long maxThread, Double qps) {
-        AuthUser authUser = authService.getAuthUser(request);
-        if (!authUser.authTarget(app, PrivilegeType.WRITE_RULE)) {
-            return Result.ofFail(-1, "no privilege");
-        }
 
         Result<SystemRuleEntity> checkResult = checkBasicParams(app, ip, port);
         if (checkResult != null) {
@@ -172,10 +160,9 @@ public class SystemController {
     }
 
     @GetMapping("/save.json")
-    public Result<SystemRuleEntity> apiUpdateIfNotNull(HttpServletRequest request,
-                                        Long id, String app, Double highestSystemLoad, Double highestCpuUsage,
-                                        Long avgRt, Long maxThread, Double qps) {
-        AuthUser authUser = authService.getAuthUser(request);
+    @AuthAction(PrivilegeType.WRITE_RULE)
+    public Result<SystemRuleEntity> apiUpdateIfNotNull(Long id, String app, Double highestSystemLoad,
+            Double highestCpuUsage, Long avgRt, Long maxThread, Double qps) {
         if (id == null) {
             return Result.ofFail(-1, "id can't be null");
         }
@@ -183,9 +170,7 @@ public class SystemController {
         if (entity == null) {
             return Result.ofFail(-1, "id " + id + " dose not exist");
         }
-        if (!authUser.authTarget(entity.getApp(), PrivilegeType.WRITE_RULE)) {
-            return Result.ofFail(-1, "no privilege");
-        }
+
         if (StringUtil.isNotBlank(app)) {
             entity.setApp(app.trim());
         }
@@ -237,17 +222,14 @@ public class SystemController {
     }
 
     @RequestMapping("/delete.json")
-    public Result<?> delete(HttpServletRequest request, Long id) {
-        AuthUser authUser = authService.getAuthUser(request);
+    @AuthAction(PrivilegeType.DELETE_RULE)
+    public Result<?> delete(Long id) {
         if (id == null) {
             return Result.ofFail(-1, "id can't be null");
         }
         SystemRuleEntity oldEntity = repository.findById(id);
         if (oldEntity == null) {
             return Result.ofSuccess(null);
-        }
-        if (!authUser.authTarget(oldEntity.getApp(), PrivilegeType.DELETE_RULE)) {
-            return Result.ofFail(-1, "no privilege");
         }
         try {
             repository.delete(id);
