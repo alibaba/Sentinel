@@ -73,9 +73,7 @@ public class FlowControllerV2 {
     @GetMapping("/rules")
     public Result<List<FlowRuleEntity>> apiQueryMachineRules(HttpServletRequest request, @RequestParam String app) {
         AuthUser authUser = authService.getAuthUser(request);
-        if (!authUser.authTarget(app, PrivilegeType.READ_RULE)) {
-            return Result.ofFail(-1, "no privilege");
-        }
+        authUser.authTarget(app, PrivilegeType.READ_RULE);
 
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
@@ -145,9 +143,7 @@ public class FlowControllerV2 {
     @PostMapping("/rule")
     public Result<FlowRuleEntity> apiAddFlowRule(HttpServletRequest request, @RequestBody FlowRuleEntity entity) {
         AuthUser authUser = authService.getAuthUser(request);
-        if (!authUser.authTarget(entity.getApp(), PrivilegeType.WRITE_RULE)) {
-            return Result.ofFail(-1, "no privilege");
-        }
+        authUser.authTarget(entity.getApp(), PrivilegeType.WRITE_RULE);
 
         Result<FlowRuleEntity> checkResult = checkEntityInternal(entity);
         if (checkResult != null) {
@@ -184,9 +180,7 @@ public class FlowControllerV2 {
         if (entity == null) {
             return Result.ofFail(-1, "invalid body");
         }
-        if (!authUser.authTarget(oldEntity.getApp(), PrivilegeType.WRITE_RULE)) {
-            return Result.ofFail(-1, "no privilege");
-        }
+        authUser.authTarget(oldEntity.getApp(), PrivilegeType.WRITE_RULE);
 
         entity.setApp(oldEntity.getApp());
         entity.setIp(oldEntity.getIp());
@@ -223,9 +217,7 @@ public class FlowControllerV2 {
         if (oldEntity == null) {
             return Result.ofSuccess(null);
         }
-        if (!authUser.authTarget(oldEntity.getApp(), PrivilegeType.DELETE_RULE)) {
-            return Result.ofFail(-1, "no privilege");
-        }
+        authUser.authTarget(oldEntity.getApp(), PrivilegeType.DELETE_RULE);
         try {
             repository.delete(id);
             publishRules(oldEntity.getApp());

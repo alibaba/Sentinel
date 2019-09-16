@@ -61,9 +61,7 @@ public class GatewayApiController {
     @GetMapping("/list.json")
     public Result<List<ApiDefinitionEntity>> queryApis(HttpServletRequest request, String app, String ip, Integer port) {
         AuthService.AuthUser authUser = authService.getAuthUser(request);
-        if (!authUser.authTarget(app, AuthService.PrivilegeType.READ_RULE)) {
-            return Result.ofFail(-1, "no privilege");
-        }
+        authUser.authTarget(app, AuthService.PrivilegeType.READ_RULE);
 
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
@@ -94,9 +92,7 @@ public class GatewayApiController {
             return Result.ofFail(-1, "app can't be null or empty");
         }
 
-        if (!authUser.authTarget(app, AuthService.PrivilegeType.WRITE_RULE)) {
-            return Result.ofFail(-1, "no privilege");
-        }
+        authUser.authTarget(app, AuthService.PrivilegeType.WRITE_RULE);
 
         ApiDefinitionEntity entity = new ApiDefinitionEntity();
         entity.setApp(app.trim());
@@ -181,9 +177,7 @@ public class GatewayApiController {
             return Result.ofFail(-1, "app can't be null or empty");
         }
 
-        if (!authUser.authTarget(app, AuthService.PrivilegeType.WRITE_RULE)) {
-            return Result.ofFail(-1, "no privilege");
-        }
+        authUser.authTarget(app, AuthService.PrivilegeType.WRITE_RULE);
 
         Long id = reqVo.getId();
         if (id == null) {
@@ -253,9 +247,7 @@ public class GatewayApiController {
             return Result.ofSuccess(null);
         }
 
-        if (!authUser.authTarget(oldEntity.getApp(), AuthService.PrivilegeType.DELETE_RULE)) {
-            return Result.ofFail(-1, "no privilege");
-        }
+        authUser.authTarget(oldEntity.getApp(), AuthService.PrivilegeType.DELETE_RULE);
 
         try {
             repository.delete(id);

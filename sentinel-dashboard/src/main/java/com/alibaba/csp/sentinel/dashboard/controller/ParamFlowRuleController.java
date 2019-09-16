@@ -91,9 +91,7 @@ public class ParamFlowRuleController {
                                                                         @RequestParam String ip,
                                                                         @RequestParam Integer port) {
         AuthUser authUser = authService.getAuthUser(request);
-        if (!authUser.authTarget(app, PrivilegeType.READ_RULE)) {
-            return Result.ofFail(-1, "no privilege");
-        }
+        authUser.authTarget(app, PrivilegeType.READ_RULE);
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app cannot be null or empty");
         }
@@ -132,9 +130,7 @@ public class ParamFlowRuleController {
     public Result<ParamFlowRuleEntity> apiAddParamFlowRule(HttpServletRequest request,
                                                            @RequestBody ParamFlowRuleEntity entity) {
         AuthUser authUser = authService.getAuthUser(request);
-        if (!authUser.authTarget(entity.getApp(), PrivilegeType.WRITE_RULE)) {
-            return Result.ofFail(-1, "no privilege");
-        }
+        authUser.authTarget(entity.getApp(), PrivilegeType.WRITE_RULE);
         Result<ParamFlowRuleEntity> checkResult = checkEntityInternal(entity);
         if (checkResult != null) {
             return checkResult;
@@ -213,9 +209,7 @@ public class ParamFlowRuleController {
         if (oldEntity == null) {
             return Result.ofFail(-1, "id " + id + " does not exist");
         }
-        if (!authUser.authTarget(oldEntity.getApp(), PrivilegeType.WRITE_RULE)) {
-            return Result.ofFail(-1, "no privilege");
-        }
+        authUser.authTarget(oldEntity.getApp(), PrivilegeType.WRITE_RULE);
         Result<ParamFlowRuleEntity> checkResult = checkEntityInternal(entity);
         if (checkResult != null) {
             return checkResult;
@@ -254,9 +248,7 @@ public class ParamFlowRuleController {
         if (oldEntity == null) {
             return Result.ofSuccess(null);
         }
-        if (!authUser.authTarget(oldEntity.getApp(), PrivilegeType.DELETE_RULE)) {
-            return Result.ofFail(-1, "no privilege");
-        }
+        authUser.authTarget(oldEntity.getApp(), PrivilegeType.DELETE_RULE);
         try {
             repository.delete(id);
             publishRules(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort()).get();

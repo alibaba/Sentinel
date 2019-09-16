@@ -74,9 +74,7 @@ public class SystemController {
     public Result<List<SystemRuleEntity>> apiQueryMachineRules(HttpServletRequest request, String app, String ip,
                                                                Integer port) {
         AuthUser authUser = authService.getAuthUser(request);
-        if (!authUser.authTarget(app, PrivilegeType.READ_RULE)) {
-            return Result.ofFail(-1, "no privilege");
-        }
+        authUser.authTarget(app, PrivilegeType.READ_RULE);
 
         Result<List<SystemRuleEntity>> checkResult = checkBasicParams(app, ip, port);
         if (checkResult != null) {
@@ -107,9 +105,7 @@ public class SystemController {
                                            Double highestSystemLoad, Double highestCpuUsage, Long avgRt,
                                            Long maxThread, Double qps) {
         AuthUser authUser = authService.getAuthUser(request);
-        if (!authUser.authTarget(app, PrivilegeType.WRITE_RULE)) {
-            return Result.ofFail(-1, "no privilege");
-        }
+        authUser.authTarget(app, PrivilegeType.WRITE_RULE);
 
         Result<SystemRuleEntity> checkResult = checkBasicParams(app, ip, port);
         if (checkResult != null) {
@@ -183,9 +179,7 @@ public class SystemController {
         if (entity == null) {
             return Result.ofFail(-1, "id " + id + " dose not exist");
         }
-        if (!authUser.authTarget(entity.getApp(), PrivilegeType.WRITE_RULE)) {
-            return Result.ofFail(-1, "no privilege");
-        }
+        authUser.authTarget(entity.getApp(), PrivilegeType.WRITE_RULE);
         if (StringUtil.isNotBlank(app)) {
             entity.setApp(app.trim());
         }
@@ -246,9 +240,7 @@ public class SystemController {
         if (oldEntity == null) {
             return Result.ofSuccess(null);
         }
-        if (!authUser.authTarget(oldEntity.getApp(), PrivilegeType.DELETE_RULE)) {
-            return Result.ofFail(-1, "no privilege");
-        }
+        authUser.authTarget(oldEntity.getApp(), PrivilegeType.DELETE_RULE);
         try {
             repository.delete(id);
         } catch (Throwable throwable) {
