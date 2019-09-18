@@ -41,17 +41,14 @@ public class SentinelWebFluxFilter implements WebFilter {
         // exchange.getAttributeOrDefault(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE, path)
         String path = exchange.getRequest().getPath().value();
 
-        if(StringUtil.isEmpty(WebFluxCallbackManager.getUrlCleaner().apply(exchange, path))){
+        String finalPath = WebFluxCallbackManager.getUrlCleaner().apply(exchange, path);
+        if(StringUtil.isEmpty(finalPath)){
             return chain.filter(exchange);
         }
-        return chain.filter(exchange)
-            .transform(buildSentinelTransformer(exchange, path));
+        return chain.filter(exchange).transform(buildSentinelTransformer(exchange, finalPath));
     }
 
-    private SentinelReactorTransformer<Void> buildSentinelTransformer(ServerWebExchange exchange, String path) {
-        String finalPath = Optional.ofNullable(WebFluxCallbackManager.getUrlCleaner())
-            .map(f -> f.apply(exchange, path))
-            .orElse(path);
+    private SentinelReactorTransformer<Void> buildSentinelTransformer(ServerWebExchange exchange, String finalPath) {
         String origin = Optional.ofNullable(WebFluxCallbackManager.getRequestOriginParser())
             .map(f -> f.apply(exchange))
             .orElse(EMPTY_ORIGIN);
