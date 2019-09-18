@@ -22,6 +22,7 @@ import com.alibaba.csp.sentinel.adapter.reactor.ContextConfig;
 import com.alibaba.csp.sentinel.adapter.reactor.EntryConfig;
 import com.alibaba.csp.sentinel.adapter.reactor.SentinelReactorTransformer;
 import com.alibaba.csp.sentinel.adapter.spring.webflux.callback.WebFluxCallbackManager;
+import com.alibaba.csp.sentinel.util.StringUtil;
 
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
@@ -36,15 +37,18 @@ public class SentinelWebFluxFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        return chain.filter(exchange)
-            .transform(buildSentinelTransformer(exchange));
-    }
-
-    private SentinelReactorTransformer<Void> buildSentinelTransformer(ServerWebExchange exchange) {
         // Maybe we can get the URL pattern elsewhere via:
         // exchange.getAttributeOrDefault(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE, path)
-
         String path = exchange.getRequest().getPath().value();
+
+        if(StringUtil.isEmpty(WebFluxCallbackManager.getUrlCleaner().apply(exchange, path))){
+            return chain.filter(exchange);
+        }
+        return chain.filter(exchange)
+            .transform(buildSentinelTransformer(exchange, path));
+    }
+
+    private SentinelReactorTransformer<Void> buildSentinelTransformer(ServerWebExchange exchange, String path) {
         String finalPath = Optional.ofNullable(WebFluxCallbackManager.getUrlCleaner())
             .map(f -> f.apply(exchange, path))
             .orElse(path);
