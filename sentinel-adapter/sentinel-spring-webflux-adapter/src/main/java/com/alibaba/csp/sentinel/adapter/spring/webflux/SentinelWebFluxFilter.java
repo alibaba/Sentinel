@@ -50,8 +50,8 @@ public class SentinelWebFluxFilter implements WebFilter {
 
     private SentinelReactorTransformer<Void> buildSentinelTransformer(ServerWebExchange exchange, String finalPath) {
         String origin = Optional.ofNullable(WebFluxCallbackManager.getRequestOriginParser())
-                .map(f -> f.apply(exchange))
-                .orElse(EMPTY_ORIGIN);
+            .map(f -> f.apply(exchange))
+            .orElse(EMPTY_ORIGIN);
 
         return new SentinelReactorTransformer<>(new EntryConfig(finalPath, EntryType.IN, new ContextConfig(finalPath, origin)));
     }
