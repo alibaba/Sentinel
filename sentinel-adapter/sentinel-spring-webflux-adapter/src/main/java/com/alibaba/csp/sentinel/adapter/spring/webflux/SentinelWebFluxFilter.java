@@ -42,7 +42,7 @@ public class SentinelWebFluxFilter implements WebFilter {
         String path = exchange.getRequest().getPath().value();
 
         String finalPath = WebFluxCallbackManager.getUrlCleaner().apply(exchange, path);
-        if(StringUtil.isEmpty(finalPath)){
+        if (StringUtil.isEmpty(finalPath)) {
             return chain.filter(exchange);
         }
         return chain.filter(exchange).transform(buildSentinelTransformer(exchange, finalPath));
@@ -50,11 +50,10 @@ public class SentinelWebFluxFilter implements WebFilter {
 
     private SentinelReactorTransformer<Void> buildSentinelTransformer(ServerWebExchange exchange, String finalPath) {
         String origin = Optional.ofNullable(WebFluxCallbackManager.getRequestOriginParser())
-            .map(f -> f.apply(exchange))
-            .orElse(EMPTY_ORIGIN);
+                .map(f -> f.apply(exchange))
+                .orElse(EMPTY_ORIGIN);
 
-        return new SentinelReactorTransformer<>(
-            new EntryConfig(finalPath, EntryType.IN, new ContextConfig(finalPath, origin)));
+        return new SentinelReactorTransformer<>(new EntryConfig(finalPath, EntryType.IN, new ContextConfig(finalPath, origin)));
     }
 
     private static final String EMPTY_ORIGIN = "";
