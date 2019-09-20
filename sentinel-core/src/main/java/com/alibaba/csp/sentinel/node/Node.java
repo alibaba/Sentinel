@@ -15,11 +15,11 @@
  */
 package com.alibaba.csp.sentinel.node;
 
-import java.util.Map;
-
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
 import com.alibaba.csp.sentinel.slots.statistic.metric.DebugSupport;
+
+import java.util.Map;
 
 /**
  * Holds real-time statistics for resources.
@@ -154,12 +154,20 @@ public interface Node extends OccupySupport, DebugSupport {
     void addPassRequest(int count);
 
     /**
-     * Add rt and success count.
+     * Add rt and success count. (counting in second)
      *
      * @param rt      response time
      * @param success success count to add
      */
-    void addRtAndSuccess(long rt, int success);
+    void addRtAndSuccessInSecond(long rt, int success);
+
+    /**
+     * Add rt and success count. (counting in second)
+     *
+     * @param rt      response time
+     * @param success success count to add
+     */
+    void addRtAndSuccessInMinute(long rt,int success);
 
     /**
      * Increase the block count.

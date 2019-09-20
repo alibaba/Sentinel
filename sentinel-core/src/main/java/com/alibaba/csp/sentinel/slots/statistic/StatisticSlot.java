@@ -15,20 +15,20 @@
  */
 package com.alibaba.csp.sentinel.slots.statistic;
 
-import java.util.Collection;
-
-import com.alibaba.csp.sentinel.slotchain.ProcessorSlotEntryCallback;
-import com.alibaba.csp.sentinel.slotchain.ProcessorSlotExitCallback;
-import com.alibaba.csp.sentinel.slots.block.flow.PriorityWaitException;
-import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
+import com.alibaba.csp.sentinel.slotchain.ProcessorSlotEntryCallback;
+import com.alibaba.csp.sentinel.slotchain.ProcessorSlotExitCallback;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.flow.PriorityWaitException;
+import com.alibaba.csp.sentinel.util.TimeUtil;
+
+import java.util.Collection;
 
 /**
  * <p>
@@ -141,9 +141,9 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             }
 
             // Record response time and success count.
-            node.addRtAndSuccess(rt, count);
+            node.addRtAndSuccessInSecond(rt, count);
             if (context.getCurEntry().getOriginNode() != null) {
-                context.getCurEntry().getOriginNode().addRtAndSuccess(rt, count);
+                context.getCurEntry().getOriginNode().addRtAndSuccessInMinute(rt, count);
             }
 
             node.decreaseThreadNum();
@@ -153,7 +153,7 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             }
 
             if (resourceWrapper.getType() == EntryType.IN) {
-                Constants.ENTRY_NODE.addRtAndSuccess(rt, count);
+                Constants.ENTRY_NODE.addRtAndSuccessInMinute(rt, count);
                 Constants.ENTRY_NODE.decreaseThreadNum();
             }
         } else {

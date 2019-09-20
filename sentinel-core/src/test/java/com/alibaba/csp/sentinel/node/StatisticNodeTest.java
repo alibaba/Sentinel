@@ -15,10 +15,11 @@
  */
 package com.alibaba.csp.sentinel.node;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.util.TimeUtil;
-import org.junit.Assert;
-import org.junit.Test;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -35,8 +36,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Test cases for {@link StatisticNode}.
@@ -143,7 +144,7 @@ public class StatisticNodeTest {
                 assertTrue(node.curThreadNum() < THREAD_COUNT);
 
                 long rt = TimeUtil.currentTimeMillis() - startTime;
-                node.addRtAndSuccess(rt, 1);
+                //node.addRtAndSuccess(rt, 1);
 
                 // wait random 0.5 second for simulate method call interval,
                 // otherwise the curThreadNum will always be THREAD_COUNT at the beginning

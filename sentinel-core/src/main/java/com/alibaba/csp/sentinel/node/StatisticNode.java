@@ -242,11 +242,14 @@ public class StatisticNode implements Node {
     }
 
     @Override
-    public void addRtAndSuccess(long rt, int successCount) {
+    public void addRtAndSuccessInSecond(long rt, int successCount) {
         rollingCounterInSecond.addSuccess(successCount);
         rollingCounterInSecond.addRT(rt);
+    }
 
-        rollingCounterInMinute.addSuccess(successCount);
+    @Override
+    public void addRtAndSuccessInMinute(long rt, int success) {
+        rollingCounterInMinute.addSuccess(success);
         rollingCounterInMinute.addRT(rt);
     }
 
