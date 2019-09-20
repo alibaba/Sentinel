@@ -15,16 +15,23 @@
  */
 package com.alibaba.csp.sentinel.adapter.grpc;
 
-import com.alibaba.csp.sentinel.AsyncEntry;
+import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
-import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-import io.grpc.*;
-import io.grpc.ForwardingClientCallListener.SimpleForwardingClientCallListener;
+import io.grpc.CallOptions;
+import io.grpc.Channel;
+import io.grpc.ClientCall;
+import io.grpc.ClientInterceptor;
+import io.grpc.ForwardingClientCall;
+import io.grpc.ForwardingClientCallListener;
+import io.grpc.Metadata;
+import io.grpc.MethodDescriptor;
+import io.grpc.Status;
 
 import javax.annotation.Nullable;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * <p>gRPC client interceptor for Sentinel. Currently it only works with unary methods.</p>
@@ -50,43 +57,54 @@ import javax.annotation.Nullable;
  * @author Eric Zhao
  */
 public class SentinelGrpcClientInterceptor implements ClientInterceptor {
-
     private static final Status FLOW_CONTROL_BLOCK = Status.UNAVAILABLE.withDescription(
             "Flow control limit exceeded (client side)");
 
     @Override
     public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(MethodDescriptor<ReqT, RespT> methodDescriptor,
                                                                CallOptions callOptions, Channel channel) {
-        String resourceName = methodDescriptor.getFullMethodName();
-        AsyncEntry asyncEntry = null;
+        String fullMethodName = methodDescriptor.getFullMethodName();
+        Entry entry = null;
         try {
-            asyncEntry = SphU.asyncEntry(resourceName, EntryType.OUT);
-
-            final AsyncEntry tempEntry = asyncEntry;
+            entry = SphU.asyncEntry(fullMethodName, EntryType.OUT);
+            final AtomicReference<Entry> atomicReferenceEntry = new AtomicReference<>(entry);
             // Allow access, forward the call.
             return new ForwardingClientCall.SimpleForwardingClientCall<ReqT, RespT>(
                     channel.newCall(methodDescriptor, callOptions)) {
                 @Override
                 public void start(Listener<RespT> responseListener, Metadata headers) {
-                    super.start(new SimpleForwardingClientCallListener<RespT>(responseListener) {
-                        @Override
-                        public void onReady() {
-                            super.onReady();
-                        }
-
+                    super.start(new ForwardingClientCallListener.SimpleForwardingClientCallListener<RespT>(responseListener) {
                         @Override
                         public void onClose(Status status, Metadata trailers) {
-                            super.onClose(status, trailers);
-                            // Record the exception metrics.
-                            if (!status.isOk()) {
-                                recordException(status.asRuntimeException(), tempEntry);
+                            Entry entry = atomicReferenceEntry.get();
+                            if (entry != null) {
+                                // Record the exception metrics.
+                                if (!status.isOk()) {
+                                    Tracer.traceEntry(status.asRuntimeException(), entry);
+                                }
+                                entry.exit();
+                                atomicReferenceEntry.set(null);
                             }
-                            tempEntry.exit();
+                            super.onClose(status, trailers);
                         }
                     }, headers);
                 }
 
-
+                /**
+                 * Some Exceptions will only call cancel.
+                 */
+                @Override
+                public void cancel(@Nullable String message, @Nullable Throwable cause) {
+                    Entry entry = atomicReferenceEntry.get();
+                    // Some Exceptions will call onClose and cancel.
+                    if (entry != null) {
+                        // Record the exception metrics.
+                        Tracer.traceEntry(cause, entry);
+                        entry.exit();
+                        atomicReferenceEntry.set(null);
+                    }
+                    super.cancel(message, cause);
+                }
             };
         } catch (BlockException e) {
             // Flow control threshold exceeded, block the call.
@@ -98,43 +116,27 @@ public class SentinelGrpcClientInterceptor implements ClientInterceptor {
 
                 @Override
                 public void request(int numMessages) {
-
                 }
 
                 @Override
                 public void cancel(@Nullable String message, @Nullable Throwable cause) {
-
                 }
 
                 @Override
                 public void halfClose() {
-
                 }
 
                 @Override
                 public void sendMessage(ReqT message) {
-
                 }
             };
-
         } catch (RuntimeException e) {
-            //catch the RuntimeException newCall throws,
-            // entry is guaranteed to exit
-            if (asyncEntry != null) {
-                asyncEntry.exit();
+            // Catch the RuntimeException newCall throws, entry is guaranteed to exit.
+            if (entry != null) {
+                Tracer.traceEntry(e, entry);
+                entry.exit();
             }
             throw e;
-
-
         }
-    }
-
-    private void recordException(final Throwable t, AsyncEntry asyncEntry) {
-        ContextUtil.runOnContext(asyncEntry.getAsyncContext(), new Runnable() {
-            @Override
-            public void run() {
-                Tracer.trace(t);
-            }
-        });
     }
 }

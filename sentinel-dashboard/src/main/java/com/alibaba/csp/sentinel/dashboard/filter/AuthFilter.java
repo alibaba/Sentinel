@@ -75,10 +75,10 @@ public class AuthFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
 
-        String requestURI = httpRequest.getRequestURI();
+        String servletPath = httpRequest.getServletPath();
 
         // Exclude the urls which needn't auth
-        if (authFilterExcludeUrls.contains(requestURI)) {
+        if (authFilterExcludeUrls.contains(servletPath)) {
             chain.doFilter(request, response);
             return;
         }
@@ -94,7 +94,7 @@ public class AuthFilter implements Filter {
                 authFilterExcludeUrlSuffix = URL_SUFFIX_DOT + authFilterExcludeUrlSuffix;
             }
 
-            if (requestURI.endsWith(authFilterExcludeUrlSuffix)) {
+            if (servletPath.endsWith(authFilterExcludeUrlSuffix)) {
                 chain.doFilter(request, response);
                 return;
             }
