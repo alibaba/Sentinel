@@ -133,7 +133,7 @@ public class ConsulDataSource<T> extends AbstractDataSource<String, T> {
     }
 
     private class ConsulKVWatcher implements Runnable {
-        private boolean running = true;
+        private volatile boolean running = true;
 
         @Override
         public void run() {
