@@ -24,11 +24,10 @@ import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
 import com.alibaba.csp.sentinel.datasource.WritableDataSource;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 
 import java.net.URLDecoder;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -55,9 +54,9 @@ public class UpdateGatewayRuleCommandHandler implements CommandHandler<String> {
         RecordLog.info(String.format("[API Server] Receiving rule change (type: gateway rule): %s", data));
 
         String result = SUCCESS_MSG;
-        List<GatewayFlowRule> flowRules = JSONArray.parseArray(data, GatewayFlowRule.class);
-        GatewayRuleManager.loadRules(new HashSet<>(flowRules));
-        if (!writeToDataSource(gatewayFlowWds, new HashSet<>(flowRules))) {
+        Set<GatewayFlowRule> flowRules = JSON.parseObject(data,new TypeReference<Set<GatewayFlowRule>>(){});
+        GatewayRuleManager.loadRules(flowRules);
+        if (!writeToDataSource(gatewayFlowWds, flowRules)) {
             result = WRITE_DS_FAILURE_MSG;
         }
         return CommandResponse.ofSuccess(result);
@@ -93,5 +92,4 @@ public class UpdateGatewayRuleCommandHandler implements CommandHandler<String> {
 
     private static final String SUCCESS_MSG = "success";
     private static final String WRITE_DS_FAILURE_MSG = "partial success (write data source failed)";
-
 }
