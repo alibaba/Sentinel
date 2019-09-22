@@ -44,8 +44,8 @@ public class GatewaySlotChainBuilder implements SlotChainBuilder {
         chain.addLast(new LogSlot());
         chain.addLast(new StatisticSlot());
         // Rule checking slot
-        chain.addLast(new SystemSlot());
         chain.addLast(new AuthoritySlot());
+        chain.addLast(new SystemSlot());
         chain.addLast(new GatewayFlowSlot());
 
         chain.addLast(new ParamFlowSlot());
