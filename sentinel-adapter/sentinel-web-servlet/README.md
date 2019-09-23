@@ -55,7 +55,7 @@ For REST APIs, you have to clean the URL resource (e.g. `/foo/1` and `/foo/2` ->
 the amount of context and resources will exceed the threshold.
 
 If you need to exclude some URLs (that should not be recorded as Sentinel resources), you could also
-leverage the `UrlCleaner` interface. You may unify the unwanted URLs to the empty string `""`,
+leverage the `UrlCleaner` interface. You may unify the unwanted URLs to the empty string `""` or `null`,
 then the URLs will be excluded (since Sentinel 1.6.3).
 
 `RequestOriginParser` interface is useful for extracting request origin (e.g. IP or appName from HTTP Header)
