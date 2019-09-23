@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.dashboard.datasource.entity;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.AuthorityRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEntity;
+import com.alibaba.csp.sentinel.enums.AuthorityStrategy;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRule;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowClusterConfig;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
@@ -37,9 +38,9 @@ public class JsonSerializeTest {
 
         AuthorityRuleEntity authorityRule = new AuthorityRuleEntity();
         AuthorityRule rule = new AuthorityRule();
-        rule.setStrategy(0).setLimitApp("default").setResource("rs");
+        rule.setStrategy(AuthorityStrategy.White).setLimitApp("default").setResource("rs");
         authorityRule.setRule(rule);
-        Assert.assertTrue("{\"rule\":{\"limitApp\":\"default\",\"resource\":\"rs\",\"strategy\":0}}".equals(JSON.toJSONString(authorityRule)));
+        Assert.assertTrue("{\"rule\":{\"limitApp\":\"default\",\"resource\":\"rs\",\"strategy\":\"White\"}}".equals(JSON.toJSONString(authorityRule)));
     }
 
     @Test

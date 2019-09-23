@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.dashboard.datasource.entity.rule;
 
+import com.alibaba.csp.sentinel.enums.AuthorityStrategy;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRule;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.fastjson.annotation.JSONField;
@@ -56,7 +57,7 @@ public class AuthorityRuleEntity extends AbstractRuleEntity<AuthorityRule> {
 
     @JsonIgnore
     @JSONField(serialize = false)
-    public int getStrategy() {
+    public AuthorityStrategy getStrategy() {
         return rule.getStrategy();
     }
 }

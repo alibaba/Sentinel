@@ -16,9 +16,9 @@
 package com.alibaba.csp.sentinel.slots.block.authority;
 
 import com.alibaba.csp.sentinel.context.Context;
+import com.alibaba.csp.sentinel.enums.AuthorityStrategy;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
-import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
 /**
  * Authority rule is designed for limiting by request origins.
@@ -27,16 +27,13 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
  */
 public class AuthorityRule extends AbstractRule {
 
-    /**
-     * Mode: 0 for whitelist; 1 for blacklist.
-     */
-    private int strategy = RuleConstant.AUTHORITY_WHITE;
+    private AuthorityStrategy strategy = AuthorityStrategy.White;
 
-    public int getStrategy() {
+    public AuthorityStrategy getStrategy() {
         return strategy;
     }
 
-    public AuthorityRule setStrategy(int strategy) {
+    public AuthorityRule setStrategy(AuthorityStrategy strategy) {
         this.strategy = strategy;
         return this;
     }
@@ -55,7 +52,7 @@ public class AuthorityRule extends AbstractRule {
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + strategy;
+        result = 31 * result + strategy.getValue();
         return result;
     }
 

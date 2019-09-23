@@ -51,17 +51,8 @@ final class AuthorityRuleChecker {
 
             contain = exactlyMatch;
         }
-
-        int strategy = rule.getStrategy();
-        if (strategy == RuleConstant.AUTHORITY_BLACK && contain) {
-            return false;
-        }
-
-        if (strategy == RuleConstant.AUTHORITY_WHITE && !contain) {
-            return false;
-        }
-
-        return true;
+        //move the logic into AuthorityStrategy
+        return rule.getStrategy().pass(contain);
     }
 
     private AuthorityRuleChecker() {}

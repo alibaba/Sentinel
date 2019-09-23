@@ -153,6 +153,6 @@ public final class AuthorityRuleManager {
 
     public static boolean isValidRule(AuthorityRule rule) {
         return rule != null && !StringUtil.isBlank(rule.getResource())
-            && rule.getStrategy() >= 0 && StringUtil.isNotBlank(rule.getLimitApp());
+            && rule.getStrategy() != null && StringUtil.isNotBlank(rule.getLimitApp());
     }
 }

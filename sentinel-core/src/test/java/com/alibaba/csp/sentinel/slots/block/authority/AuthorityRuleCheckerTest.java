@@ -2,7 +2,7 @@ package com.alibaba.csp.sentinel.slots.block.authority;
 
 import com.alibaba.csp.sentinel.context.ContextTestUtil;
 import com.alibaba.csp.sentinel.context.ContextUtil;
-import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.enums.AuthorityStrategy;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,22 +31,22 @@ public class AuthorityRuleCheckerTest {
                 .setResource(resourceName)
                 .setLimitApp(origin + ",appB")
                 .as(AuthorityRule.class)
-                .setStrategy(RuleConstant.AUTHORITY_WHITE);
+                .setStrategy(AuthorityStrategy.White);
             AuthorityRule ruleB = new AuthorityRule()
                 .setResource(resourceName)
                 .setLimitApp("appB")
                 .as(AuthorityRule.class)
-                .setStrategy(RuleConstant.AUTHORITY_WHITE);
+                .setStrategy(AuthorityStrategy.White);
             AuthorityRule ruleC = new AuthorityRule()
                 .setResource(resourceName)
                 .setLimitApp(origin)
                 .as(AuthorityRule.class)
-                .setStrategy(RuleConstant.AUTHORITY_BLACK);
+                .setStrategy(AuthorityStrategy.Black);
             AuthorityRule ruleD = new AuthorityRule()
                 .setResource(resourceName)
                 .setLimitApp("appC")
                 .as(AuthorityRule.class)
-                .setStrategy(RuleConstant.AUTHORITY_BLACK);
+                .setStrategy(AuthorityStrategy.Black);
 
             assertTrue(AuthorityRuleChecker.passCheck(ruleA, ContextUtil.getContext()));
             assertFalse(AuthorityRuleChecker.passCheck(ruleB, ContextUtil.getContext()));

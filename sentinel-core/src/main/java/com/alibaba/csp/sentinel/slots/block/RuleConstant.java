@@ -39,7 +39,13 @@ public final class RuleConstant {
     public static final int DEGRADE_DEFAULT_SLOW_REQUEST_AMOUNT = 5;
     public static final int DEGRADE_DEFAULT_MIN_REQUEST_AMOUNT = 5;
 
+    /**
+     * Since this refactor, these two constants should never be used again,
+     * Use <code>AuthorityStrategy</code> instead.
+     */
+    @Deprecated
     public static final int AUTHORITY_WHITE = 0;
+    @Deprecated
     public static final int AUTHORITY_BLACK = 1;
 
     public static final int STRATEGY_DIRECT = 0;

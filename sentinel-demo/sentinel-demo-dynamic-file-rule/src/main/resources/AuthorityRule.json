@@ -1,0 +1,12 @@
+[
+  {
+    "resource": "abc",
+    "limitApp": "app1,app2",
+    "strategy": 0
+  },
+  {
+    "resource": "bcd",
+    "limitApp": "app1,app2",
+    "strategy": "White"
+  }
+]

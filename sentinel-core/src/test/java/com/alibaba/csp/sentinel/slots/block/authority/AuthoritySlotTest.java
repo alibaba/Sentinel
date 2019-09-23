@@ -5,9 +5,9 @@ import java.util.Collections;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.context.ContextTestUtil;
 import com.alibaba.csp.sentinel.context.ContextUtil;
+import com.alibaba.csp.sentinel.enums.AuthorityStrategy;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
-import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
 import org.junit.After;
 import org.junit.Before;
@@ -33,7 +33,7 @@ public class AuthoritySlotTest {
                 .setResource(resourceName)
                 .setLimitApp(origin + ",appB")
                 .as(AuthorityRule.class)
-                .setStrategy(RuleConstant.AUTHORITY_WHITE);
+                .setStrategy(AuthorityStrategy.White);
 
             AuthorityRuleManager.loadRules(Collections.singletonList(ruleA));
             authoritySlot.checkBlackWhiteAuthority(resourceWrapper, ContextUtil.getContext());
@@ -42,7 +42,7 @@ public class AuthoritySlotTest {
                 .setResource(resourceName)
                 .setLimitApp("appD")
                 .as(AuthorityRule.class)
-                .setStrategy(RuleConstant.AUTHORITY_BLACK);
+                .setStrategy(AuthorityStrategy.Black);
 
             AuthorityRuleManager.loadRules(Collections.singletonList(ruleB));
             authoritySlot.checkBlackWhiteAuthority(resourceWrapper, ContextUtil.getContext());
@@ -62,7 +62,7 @@ public class AuthoritySlotTest {
                 .setResource(resourceName)
                 .setLimitApp(origin + ",appC")
                 .as(AuthorityRule.class)
-                .setStrategy(RuleConstant.AUTHORITY_BLACK);
+                .setStrategy(AuthorityStrategy.Black);
 
             AuthorityRuleManager.loadRules(Collections.singletonList(ruleA));
             authoritySlot.checkBlackWhiteAuthority(resourceWrapper, ContextUtil.getContext());
@@ -82,7 +82,7 @@ public class AuthoritySlotTest {
                 .setResource(resourceName)
                 .setLimitApp("appB, appE")
                 .as(AuthorityRule.class)
-                .setStrategy(RuleConstant.AUTHORITY_WHITE);
+                .setStrategy(AuthorityStrategy.White);
 
             AuthorityRuleManager.loadRules(Collections.singletonList(ruleB));
             authoritySlot.checkBlackWhiteAuthority(resourceWrapper, ContextUtil.getContext());

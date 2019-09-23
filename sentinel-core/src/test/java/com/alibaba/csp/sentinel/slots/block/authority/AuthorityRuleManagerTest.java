@@ -3,7 +3,7 @@ package com.alibaba.csp.sentinel.slots.block.authority;
 import java.util.Collections;
 import java.util.List;
 
-import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.enums.AuthorityStrategy;
 
 import org.junit.After;
 import org.junit.Test;
@@ -29,7 +29,7 @@ public class AuthorityRuleManagerTest {
         AuthorityRule rule = new AuthorityRule();
         rule.setResource(resourceName);
         rule.setLimitApp("a,b");
-        rule.setStrategy(RuleConstant.AUTHORITY_WHITE);
+        rule.setStrategy(AuthorityStrategy.White);
         AuthorityRuleManager.loadRules(Collections.singletonList(rule));
 
         List<AuthorityRule> rules = AuthorityRuleManager.getRules();

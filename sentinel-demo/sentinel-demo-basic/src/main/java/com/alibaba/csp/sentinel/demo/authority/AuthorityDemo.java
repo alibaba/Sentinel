@@ -20,8 +20,8 @@ import java.util.Collections;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.context.ContextUtil;
+import com.alibaba.csp.sentinel.enums.AuthorityStrategy;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRule;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRuleManager;
 
@@ -71,7 +71,7 @@ public class AuthorityDemo {
     private static void initWhiteRules() {
         AuthorityRule rule = new AuthorityRule();
         rule.setResource(RESOURCE_NAME);
-        rule.setStrategy(RuleConstant.AUTHORITY_WHITE);
+        rule.setStrategy(AuthorityStrategy.White);
         rule.setLimitApp("appA,appE");
         AuthorityRuleManager.loadRules(Collections.singletonList(rule));
     }
@@ -79,7 +79,7 @@ public class AuthorityDemo {
     private static void initBlackRules() {
         AuthorityRule rule = new AuthorityRule();
         rule.setResource(RESOURCE_NAME);
-        rule.setStrategy(RuleConstant.AUTHORITY_BLACK);
+        rule.setStrategy(AuthorityStrategy.Black);
         rule.setLimitApp("appA,appB");
         AuthorityRuleManager.loadRules(Collections.singletonList(rule));
     }

@@ -49,8 +49,8 @@
                             <td style="word-wrap:break-word;word-break:break-all;">{{ruleEntity.rule.resource}}</td>
                             <td style="word-wrap:break-word;word-break:break-all;">{{ruleEntity.rule.limitApp }}</td>
                             <td>
-                                <span ng-if="ruleEntity.rule.strategy == 0">白名单</span>
-                                <span ng-if="ruleEntity.rule.strategy == 1">黑名单</span>
+                                <span ng-if="ruleEntity.rule.strategy == 'White'">白名单</span>
+                                <span ng-if="ruleEntity.rule.strategy == 'Black'">黑名单</span>
                             </td>
                             <td>
                                 <button class="btn btn-xs btn-default" type="button" ng-click="editRule(ruleEntity)" style="font-size: 12px; height:25px;">编辑</button>
