@@ -38,6 +38,7 @@ public class AuthorityDemo {
 
     public static void main(String[] args) {
         System.out.println("========Testing for black list========");
+        //limit "appA,appB"
         initBlackRules();
         testFor(RESOURCE_NAME, "appA");
         testFor(RESOURCE_NAME, "appB");
@@ -45,6 +46,7 @@ public class AuthorityDemo {
         testFor(RESOURCE_NAME, "appE");
 
         System.out.println("========Testing for white list========");
+        //limit "appA,appE"
         initWhiteRules();
         testFor(RESOURCE_NAME, "appA");
         testFor(RESOURCE_NAME, "appB");

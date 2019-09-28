@@ -55,7 +55,9 @@ public class ExceptionCountDegradeDemo {
     private static int seconds = 60 + 40;
 
     public static void main(String[] args) throws Exception {
+        // 统计数量
         tick();
+        // 初始化降级规则
         initDegradeRule();
 
         for (int i = 0; i < threadCount; i++) {
@@ -103,6 +105,7 @@ public class ExceptionCountDegradeDemo {
         rule.setResource(KEY);
         // set limit exception count to 4
         rule.setCount(4);
+        // 异常数量
         rule.setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT);
         /**
          * When degrading by {@link RuleConstant#DEGRADE_GRADE_EXCEPTION_COUNT}, time window
@@ -110,7 +113,8 @@ public class ExceptionCountDegradeDemo {
          * summed by minute, when a short time window elapsed, the degradation condition
          * may still be satisfied.
          */
-        rule.setTimeWindow(10);
+        // 熔断后恢复时间
+        rule.setTimeWindow(200);
         rules.add(rule);
         DegradeRuleManager.loadRules(rules);
     }

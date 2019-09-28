@@ -30,6 +30,25 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  */
 public class CommandHandlerProvider implements Iterable<CommandHandler> {
 
+    /**
+     * com.alibaba.csp.sentinel.command.handler.BasicInfoCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.FetchActiveRuleCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.FetchClusterNodeByIdCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.FetchClusterNodeHumanCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.FetchJsonTreeCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.FetchOriginCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.FetchSimpleClusterNodeCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.FetchSystemStatusCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.FetchTreeCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.ModifyRulesCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.OnOffGetCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.OnOffSetCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.SendMetricCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.VersionCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.cluster.FetchClusterModeCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.cluster.ModifyClusterModeCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.ApiCommandHandler
+     */
     private final ServiceLoader<CommandHandler> serviceLoader = ServiceLoader.load(CommandHandler.class);
 
     /**
@@ -42,6 +61,7 @@ public class CommandHandlerProvider implements Iterable<CommandHandler> {
         for (CommandHandler handler : serviceLoader) {
             String name = parseCommandName(handler);
             if (!StringUtil.isEmpty(name)) {
+                // 根据CommandMapping为key，handler为value放入map
                 map.put(name, handler);
             }
         }

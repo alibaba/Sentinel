@@ -28,7 +28,9 @@ import com.alibaba.csp.sentinel.log.RecordLog;
  * @author Eric Zhao
  */
 public final class InitExecutor {
-
+    /**
+     * 是否已初始化完成
+     */
     private static AtomicBoolean initialized = new AtomicBoolean(false);
 
     /**
@@ -38,17 +40,25 @@ public final class InitExecutor {
      * The initialization will be executed only once.
      */
     public static void doInit() {
+        // 是否已经开始初始化，如果已开始初始化直接返回
         if (!initialized.compareAndSet(false, true)) {
             return;
         }
         try {
+            // 通过spi去加载 com.alibaba.csp.sentinel.init.InitFunc中的实现类,
+            // CommandCenterInitFunc，-1
+            // HeartbeatSenderInitFunc，-1
+            // MetricCallbackInit，2147483647
+            // ParamFlowStatisticSlotCallbackInit，2147483647
             ServiceLoader<InitFunc> loader = ServiceLoader.load(InitFunc.class);
             List<OrderWrapper> initList = new ArrayList<OrderWrapper>();
             for (InitFunc initFunc : loader) {
                 RecordLog.info("[InitExecutor] Found init func: " + initFunc.getClass().getCanonicalName());
+                // 根据权重进行排序
                 insertSorted(initList, initFunc);
             }
             for (OrderWrapper w : initList) {
+                // 循环执行各初始化方法
                 w.func.init();
                 RecordLog.info(String.format("[InitExecutor] Executing %s with order %d",
                     w.func.getClass().getCanonicalName(), w.order));

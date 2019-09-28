@@ -30,10 +30,12 @@ public final class CommandCenterProvider {
     private static CommandCenter commandCenter = null;
 
     static {
+        // 创建commandCenter实例，
         resolveInstance();
     }
 
     private static void resolveInstance() {
+        // 使用SpiLoader的loadHighestPriorityInstance方法获取一个高优先级的CommandCenter实例，此处返回的是SimpleHttpCommandCenter
         CommandCenter resolveCommandCenter = SpiLoader.loadHighestPriorityInstance(CommandCenter.class);
 
         if (resolveCommandCenter == null) {

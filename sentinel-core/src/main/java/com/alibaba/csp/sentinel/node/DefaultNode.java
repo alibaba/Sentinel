@@ -34,6 +34,7 @@ import com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot;
  * This class may have a list of sub {@link DefaultNode}s. Child nodes will be created when
  * calling {@link SphU}#entry() or {@link SphO}@entry() multiple times in the same {@link Context}.
  * </p>
+ * 节点是用来保存某个资源的各种实时统计信息的，他是一个接口，通过访问节点，就可以获取到对应资源的实时状态，以此为依据进行限流和降级操作。
  *
  * @author qinan.qn
  * @see NodeSelectorSlot

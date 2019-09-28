@@ -30,7 +30,7 @@ import com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot;
  * <li>the {@link EntranceNode}: the root of the current invocation
  * tree.</li>
  * <li>the current {@link Entry}: the current invocation point.</li>
- * <li>the current {@link Node}: the statistics related to the
+ * <li>the current {@link Node}: the statistics related to the （与条目相关的统计信息）
  * {@link Entry}.</li>
  * <li>the origin: The origin is useful when we want to control different
  * invoker/consumer separately. Usually the origin could be the Service Consumer's app name
@@ -47,7 +47,7 @@ import com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot;
  * <p>
  * Same resource in different context will count separately, see {@link NodeSelectorSlot}.
  * </p>
- *
+ * 此类保存当前调用的元数据
  * @author jialiang.linjl
  * @author leyou(lihao)
  * @author Eric Zhao
@@ -58,21 +58,25 @@ public class Context {
 
     /**
      * Context name.
+     * 上下文名称
      */
     private final String name;
 
     /**
      * The entrance node of current invocation tree.
+     * 当前调用的根树
      */
     private DefaultNode entranceNode;
 
     /**
      * Current processing entry.
+     * 当前调用点
      */
     private Entry curEntry;
 
     /**
      * The origin of this context (usually indicate different invokers, e.g. service consumer name or origin IP).
+     * 当我们想要分别控制不同的调用程序/使用者时，origin非常有用。通常来源可以是服务消费者的应用程序名或来源IP
      */
     private String origin = "";
 
@@ -177,6 +181,11 @@ public class Context {
      * @return the parent node of the current.
      */
     public Node getLastNode() {
+        // 如果curEntry不存在时，返回entranceNode
+        // 否则返回curEntry的lastNode，
+        // 需要注意的是curEntry的lastNode是获取的parent的curNode，
+        // 如果每次进入的资源不同，就会每次都创建一个CtEntry，则parent为null，
+        // 所以curEntry.getLastNode()也为null
         if (curEntry != null && curEntry.getLastNode() != null) {
             return curEntry.getLastNode();
         } else {

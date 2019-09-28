@@ -144,6 +144,7 @@ public class PaceFlowDemo {
          * until the queueing time is more than {@link FlowRule#maxQueueingTimeMs}, the requests will be rejected.
          */
         rule1.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER);
+        // 最长排队等待时间：20s
         rule1.setMaxQueueingTimeMs(20 * 1000);
 
         rules.add(rule1);

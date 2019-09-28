@@ -49,10 +49,13 @@ class CtEntry extends Entry {
         if (context instanceof NullContext) {
             return;
         }
+        // 获取「上下文」中上一次的入口
         this.parent = context.getCurEntry();
         if (parent != null) {
+            // 然后将当前入口设置为上一次入口的子节点
             ((CtEntry)parent).child = this;
         }
+        // 设置「上下文」的当前入口为该类本身
         context.setCurEntry(this);
     }
 

@@ -66,7 +66,9 @@ public class SimpleHttpCommandCenter implements CommandCenter {
     @SuppressWarnings("rawtypes")
     public void beforeStart() throws Exception {
         // Register handlers
+        // CommandHandlerProvider单例模式创建对象，把CommandHandler实例放入map对象中
         Map<String, CommandHandler> handlers = CommandHandlerProvider.getInstance().namedHandlers();
+        // 把CommandHandler实例放入handlerMap对象中
         registerCommands(handlers);
     }
 
@@ -98,11 +100,13 @@ public class SimpleHttpCommandCenter implements CommandCenter {
             @Override
             public void run() {
                 boolean success = false;
+                // 获取可用的端口用以创建一个ServerSocket，默认8719端口，如果端口被占用，会自动尝试获取下一个端口，尝试3次。
                 ServerSocket serverSocket = getServerSocketFromBasePort(port);
 
                 if (serverSocket != null) {
                     CommandCenterLog.info("[CommandCenter] Begin listening at port " + serverSocket.getLocalPort());
                     socketReference = serverSocket;
+                    // 在主线程中启动ServerThread用以接受socket请求
                     executor.submit(new ServerThread(serverSocket));
                     success = true;
                     port = serverSocket.getLocalPort();
@@ -186,7 +190,9 @@ public class SimpleHttpCommandCenter implements CommandCenter {
                 Socket socket = null;
                 try {
                     socket = this.serverSocket.accept();
+                    // 设置socket超时时间
                     setSocketSoTimeout(socket);
+                    // 将接收到的socket封装到HttpEventTask中由业务线程去处理
                     HttpEventTask eventTask = new HttpEventTask(socket);
                     bizExecutor.submit(eventTask);
                 } catch (Exception e) {

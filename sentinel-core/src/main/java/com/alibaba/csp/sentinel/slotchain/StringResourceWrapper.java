@@ -29,6 +29,7 @@ public class StringResourceWrapper extends ResourceWrapper {
         if (name == null) {
             throw new IllegalArgumentException("Resource name cannot be null");
         }
+        //abc OUT
         this.name = name;
         this.type = type;
     }

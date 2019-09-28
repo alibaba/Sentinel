@@ -114,6 +114,20 @@ public class CtSph implements Sph {
         return asyncEntryWithPriorityInternal(resourceWrapper, count, false, args);
     }
 
+    /**
+     * 1.对参数和全局配置项做检测，如果不符合要求就直接返回了一个CtEntry对象，不会再进行后面的限流检测，否则进入下面的检测流程。
+     * 2.根据包装过的资源对象获取对应的SlotChain
+     * 3.执行SlotChain的entry方法
+     *  3.1.如果SlotChain的entry方法抛出了BlockException，则将该异常继续向上抛出
+     *  3.2.如果SlotChain的entry方法正常执行了，则最后会将该entry对象返回
+     * 4.如果上层方法捕获了BlockException，则说明请求被限流了，否则请求能正常执行
+     * @param resourceWrapper
+     * @param count
+     * @param prioritized
+     * @param args
+     * @return
+     * @throws BlockException
+     */
     private Entry entryWithPriority(ResourceWrapper resourceWrapper, int count, boolean prioritized, Object... args)
         throws BlockException {
         Context context = ContextUtil.getContext();
@@ -132,7 +146,7 @@ public class CtSph implements Sph {
         if (!Constants.ON) {
             return new CtEntry(resourceWrapper, null, context);
         }
-
+        // 获取该资源对应的SlotChain
         ProcessorSlot<Object> chain = lookProcessChain(resourceWrapper);
 
         /*
@@ -142,12 +156,14 @@ public class CtSph implements Sph {
         if (chain == null) {
             return new CtEntry(resourceWrapper, null, context);
         }
-
+        // 创建子Entry，每创建一个新的Entry对象时，都会重新设置context的curEntry，并将context原来的curEntry设置为该新Entry对象的父节点，
         Entry e = new CtEntry(resourceWrapper, chain, context);
         try {
+            // 执行Slot的entry方法
             chain.entry(context, resourceWrapper, null, count, prioritized, args);
         } catch (BlockException e1) {
             e.exit(count, args);
+            // 抛出BlockExecption
             throw e1;
         } catch (Throwable e1) {
             // This should not happen, unless there are errors existing in Sentinel internal.
@@ -201,7 +217,7 @@ public class CtSph implements Sph {
                     if (chainMap.size() >= Constants.MAX_SLOT_CHAIN_SIZE) {
                         return null;
                     }
-
+                    // 具体构造chain的方法
                     chain = SlotChainProvider.newSlotChain();
                     Map<ResourceWrapper, ProcessorSlotChain> newMap = new HashMap<ResourceWrapper, ProcessorSlotChain>(
                         chainMap.size() + 1);

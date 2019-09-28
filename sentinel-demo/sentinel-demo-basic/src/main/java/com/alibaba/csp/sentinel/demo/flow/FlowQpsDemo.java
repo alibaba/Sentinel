@@ -21,6 +21,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.SphU;
@@ -61,12 +62,20 @@ public class FlowQpsDemo {
     private static void initFlowQpsRule() {
         List<FlowRule> rules = new ArrayList<FlowRule>();
         FlowRule rule1 = new FlowRule();
+        // 资源名，即限流规则的作用对象
         rule1.setResource(KEY);
-        // set limit qps to 20
+        // set limit qps to 20 限流阈值
         rule1.setCount(20);
+        // 限流阈值类型（QPS 或并发线程数）
         rule1.setGrade(RuleConstant.FLOW_GRADE_QPS);
+        // 流控针对的调用来源，若为 default 则不区分调用来源
         rule1.setLimitApp("default");
+        // 调用关系限流策略
+        // rule1.setStrategy(RuleConstant.STRATEGY_DIRECT);
+        // 流量控制效果（直接拒绝、Warm Up、匀速排队）
+        // rule1.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_DEFAULT);
         rules.add(rule1);
+        // 加载限流的规则
         FlowRuleManager.loadRules(rules);
     }
 
@@ -133,8 +142,8 @@ public class FlowQpsDemo {
         @Override
         public void run() {
             while (!stop) {
+                ContextUtil.enter("entrancel", "appA");
                 Entry entry = null;
-
                 try {
                     entry = SphU.entry(KEY);
                     // token acquired, means pass
@@ -149,7 +158,7 @@ public class FlowQpsDemo {
                         entry.exit();
                     }
                 }
-
+                ContextUtil.exit();
                 Random random2 = new Random();
                 try {
                     TimeUnit.MILLISECONDS.sleep(random2.nextInt(50));

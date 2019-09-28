@@ -29,14 +29,16 @@ public class CommandCenterInitFunc implements InitFunc {
 
     @Override
     public void init() throws Exception {
+        // 通过spi获取CommandCenter实例
         CommandCenter commandCenter = CommandCenterProvider.getCommandCenter();
 
         if (commandCenter == null) {
             RecordLog.warn("[CommandCenterInitFunc] Cannot resolve CommandCenter");
             return;
         }
-
+        //通过spi获取commandHandle实例集合，放入commandCenter的map中
         commandCenter.beforeStart();
+
         commandCenter.start();
         RecordLog.info("[CommandCenterInit] Starting command center: "
                 + commandCenter.getClass().getCanonicalName());
