@@ -10,6 +10,18 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>sentinel-zuul2-adapter</artifactId>
     <packaging>jar</packaging>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <properties>
         <zuul.version>2.1.5</zuul.version>
@@ -29,7 +41,7 @@
             <groupId>com.netflix.zuul</groupId>
             <artifactId>zuul-core</artifactId>
             <version>${zuul.version}</version>
-            <scope>provided</scope>
+<!--            <scope>provided</scope>-->
             <exclusions>
                 <exclusion>
                     <groupId>org.mockito</groupId>
@@ -37,7 +49,12 @@
                 </exclusion>
             </exclusions>
         </dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>5.1.9.RELEASE</version>
+		</dependency>
 
-    </dependencies>
+	</dependencies>
 
 </project>
