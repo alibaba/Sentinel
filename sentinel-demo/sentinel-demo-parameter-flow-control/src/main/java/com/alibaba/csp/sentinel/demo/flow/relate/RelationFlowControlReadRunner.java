@@ -74,8 +74,9 @@ public class RelationFlowControlReadRunner {
 				} catch (BlockException e) {
 					blockFor();
 				} finally {
-					if (null != entry)
+					if (null != entry){
 						entry.exit();
+					}
 					ContextUtil.exit();
 				}
 			}
