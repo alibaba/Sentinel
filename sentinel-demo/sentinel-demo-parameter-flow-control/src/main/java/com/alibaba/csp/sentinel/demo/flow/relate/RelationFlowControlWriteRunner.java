@@ -66,14 +66,14 @@ public class RelationFlowControlWriteRunner {
 		public void run() {
 
 			while (!stop) {
-				// 前10秒，qps=20
-				if (seconds > 1190) {
+				// 60-51秒，qps=20
+				if (seconds > 50) {
 					sleep(1000);
-					// 10-30秒，qps=200，触发关联限流
-				} else if (seconds > 1170) {
+					// 50-31秒，qps=200，触发关联限流
+				} else if (seconds > 30) {
 					sleep(100);
 				} else {
-					// 30-60秒，qps=20，关联限流解除
+					// 30-0秒，qps=20，关联限流解除
 					sleep(1000);
 				}
 				ContextUtil.enter(resourceName);
