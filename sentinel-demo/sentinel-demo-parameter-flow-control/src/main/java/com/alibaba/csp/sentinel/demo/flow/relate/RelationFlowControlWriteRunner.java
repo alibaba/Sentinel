@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Created by zhangyide on 2019-09-29
  */
-public class FlowQpsRelateWriteRunner {
+public class RelationFlowControlWriteRunner {
 	private final String resourceName;
 	private int seconds;
 	private final int threadCount;
@@ -23,7 +23,8 @@ public class FlowQpsRelateWriteRunner {
 
 	private volatile boolean stop = false;
 
-	public FlowQpsRelateWriteRunner(String resourceName, int seconds, int threadCount) {
+
+	public RelationFlowControlWriteRunner(String resourceName, int seconds, int threadCount) {
 		assertTrue(StringUtil.isNotBlank(resourceName), "Resource name cannot be empty");
 		assertTrue(seconds > 0, "Time period should be positive");
 		this.resourceName = resourceName;
@@ -39,14 +40,14 @@ public class FlowQpsRelateWriteRunner {
 
 	void simulateTraffic() {
 		for (int i = 0; i < threadCount; i++) {
-			Thread t = new Thread(new FlowQpsRelateWriteRunner.RunTask());
+			Thread t = new Thread(new RelationFlowControlWriteRunner.RunTask());
 			t.setName("sentinel-simulate-traffic-write-task-" + i);
 			t.start();
 		}
 	}
 
 	void tick() {
-		Thread timer = new Thread(new FlowQpsRelateWriteRunner.TimerTask());
+		Thread timer = new Thread(new RelationFlowControlWriteRunner.TimerTask());
 		timer.setName("sentinel-timer-write-task");
 		timer.start();
 	}

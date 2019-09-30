@@ -9,17 +9,17 @@ import java.util.Arrays;
 /**
  * Created by zhangyide on 2019-09-23
  */
-public class FlowQpsRelateDemo {
+public class RelationFlowControlDemo {
 
 	static String node_read = "read";
 	static String node_write = "write";
 
 	public static void main(String[] args) {
-		initParamFlowRules();
+		relationFlowRules();
 		final int threadCount = 20;
-		FlowQpsRelateReadRunner readRunner = new FlowQpsRelateReadRunner(node_read, 60, threadCount);
+		RelationFlowControlReadRunner readRunner = new RelationFlowControlReadRunner(node_read, 60, threadCount);
 		readRunner.tick();
-		FlowQpsRelateWriteRunner writeRunner = new FlowQpsRelateWriteRunner(node_write, 60, threadCount);
+		RelationFlowControlWriteRunner writeRunner = new RelationFlowControlWriteRunner(node_write, 60, threadCount);
 		writeRunner.tick();
 
 		try {
@@ -32,7 +32,7 @@ public class FlowQpsRelateDemo {
 
 	}
 
-	private static void initParamFlowRules() {
+	private static void relationFlowRules() {
 		FlowRule rule = new FlowRule();
 		rule.setResource(node_read);
 		rule.setGrade(RuleConstant.FLOW_GRADE_QPS);
