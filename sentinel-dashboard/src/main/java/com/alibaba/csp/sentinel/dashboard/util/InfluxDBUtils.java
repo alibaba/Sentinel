@@ -29,6 +29,7 @@ public class InfluxDBUtils {
 
         private static String password;
 
+        //influxDB持久化策略名称
         private static String retentionPolicy ="rp_3d";
 
         private static InfluxDBResultMapper resultMapper = new InfluxDBResultMapper();
