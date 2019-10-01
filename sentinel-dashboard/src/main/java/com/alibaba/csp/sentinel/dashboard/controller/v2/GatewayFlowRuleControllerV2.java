@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.controller.gateway;
+package com.alibaba.csp.sentinel.dashboard.controller.v2;
 
 
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
-import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayFlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayParamFlowItemEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
@@ -26,10 +25,13 @@ import com.alibaba.csp.sentinel.dashboard.domain.vo.gateway.rule.AddFlowRuleReqV
 import com.alibaba.csp.sentinel.dashboard.domain.vo.gateway.rule.GatewayParamFlowItemVo;
 import com.alibaba.csp.sentinel.dashboard.domain.vo.gateway.rule.UpdateFlowRuleReqVo;
 import com.alibaba.csp.sentinel.dashboard.repository.gateway.InMemGatewayFlowRuleStore;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,9 +39,9 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import static com.alibaba.csp.sentinel.slots.block.RuleConstant.*;
 import static com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants.*;
 import static com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayFlowRuleEntity.*;
+import static com.alibaba.csp.sentinel.slots.block.RuleConstant.*;
 
 /**
  * Gateway flow rule Controller for manage gateway flow rules.
@@ -48,16 +50,21 @@ import static com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.Gatew
  * @since 1.7.0
  */
 @RestController
-@RequestMapping(value = "/v1/gateway/flow")
-public class GatewayFlowRuleController {
+@RequestMapping(value = "/gateway/flow")
+public class GatewayFlowRuleControllerV2 {
 
-    private final Logger logger = LoggerFactory.getLogger(GatewayFlowRuleController.class);
+    private final Logger logger = LoggerFactory.getLogger(GatewayFlowRuleControllerV2.class);
 
     @Autowired
     private InMemGatewayFlowRuleStore repository;
 
     @Autowired
-    private SentinelApiClient sentinelApiClient;
+    @Qualifier("gatewayFlowRuleNacosProvider")
+    private DynamicRuleProvider<List<GatewayFlowRuleEntity>> ruleProvider;
+    @Autowired
+    @Qualifier("gatewayFlowRuleNacosPublisher")
+    private DynamicRulePublisher<List<GatewayFlowRuleEntity>> rulePublisher;
+
 
     @Autowired
     private AuthService<HttpServletRequest> authService;
@@ -78,7 +85,8 @@ public class GatewayFlowRuleController {
         }
 
         try {
-            List<GatewayFlowRuleEntity> rules = sentinelApiClient.fetchGatewayFlowRules(app, ip, port).get();
+            // List<GatewayFlowRuleEntity> rules = sentinelApiClient.fetchGatewayFlowRules(app, ip, port).get();
+            List<GatewayFlowRuleEntity> rules = ruleProvider.getRules(app);
             repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
@@ -438,6 +446,12 @@ public class GatewayFlowRuleController {
 
     private boolean publishRules(String app, String ip, Integer port) {
         List<GatewayFlowRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return sentinelApiClient.modifyGatewayFlowRules(app, ip, port, rules);
+        //return sentinelApiClient.modifyGatewayFlowRules(app, ip, port, rules);
+        try {
+            rulePublisher.publish(app, rules);
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
     }
 }

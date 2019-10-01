@@ -88,7 +88,7 @@ public class GatewayFlowRuleControllerTest {
 
     @Test
     public void testQueryFlowRules() throws Exception {
-        String path = "/gateway/flow/list.json";
+        String path = "/v1/gateway/flow/list.json";
 
         List<GatewayFlowRuleEntity> entities = new ArrayList<>();
 
@@ -164,7 +164,7 @@ public class GatewayFlowRuleControllerTest {
 
     @Test
     public void testAddFlowRule() throws Exception {
-        String path = "/gateway/flow/new.json";
+        String path = "/v1/gateway/flow/new.json";
 
         AddFlowRuleReqVo reqVo = new AddFlowRuleReqVo();
         reqVo.setApp(TEST_APP);
@@ -218,7 +218,7 @@ public class GatewayFlowRuleControllerTest {
 
     @Test
     public void testUpdateFlowRule() throws Exception {
-        String path = "/gateway/flow/save.json";
+        String path = "/v1/gateway/flow/save.json";
 
         // Add one entity into memory repository for update
         GatewayFlowRuleEntity addEntity = new GatewayFlowRuleEntity();
@@ -302,7 +302,7 @@ public class GatewayFlowRuleControllerTest {
 
     @Test
     public void testDeleteFlowRule() throws Exception {
-        String path = "/gateway/flow/delete.json";
+        String path = "/v1/gateway/flow/delete.json";
 
         // Add one entity into memory repository for delete
         GatewayFlowRuleEntity addEntity = new GatewayFlowRuleEntity();
