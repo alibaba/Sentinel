@@ -57,7 +57,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 0.2.1
  */
 @RestController
-@RequestMapping(value = "/paramFlow/v1")
+@RequestMapping(value = "/v1/paramFlow")
 public class ParamFlowRuleController {
 
     private final Logger logger = LoggerFactory.getLogger(ParamFlowRuleController.class);

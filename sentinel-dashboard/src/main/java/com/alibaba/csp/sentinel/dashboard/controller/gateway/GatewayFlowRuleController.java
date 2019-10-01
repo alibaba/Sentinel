@@ -48,7 +48,7 @@ import static com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.Gatew
  * @since 1.7.0
  */
 @RestController
-@RequestMapping(value = "/gateway/flow/v1")
+@RequestMapping(value = "/v1/gateway/flow")
 public class GatewayFlowRuleController {
 
     private final Logger logger = LoggerFactory.getLogger(GatewayFlowRuleController.class);

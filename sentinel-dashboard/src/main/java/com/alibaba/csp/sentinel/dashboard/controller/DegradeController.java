@@ -44,7 +44,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author leyou
  */
 @Controller
-@RequestMapping(value = "/degrade/v1", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/v1/degrade", produces = MediaType.APPLICATION_JSON_VALUE)
 public class DegradeController {
 
     private final Logger logger = LoggerFactory.getLogger(DegradeController.class);
