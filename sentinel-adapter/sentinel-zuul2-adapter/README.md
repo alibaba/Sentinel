@@ -1,11 +1,13 @@
-# Sentinel Zuul Adapter
+# Sentinel Zuul2 Adapter
 
-Sentinel Zuul2 Adapter provides **route level** and **customized API level**
+Sentinel Zuul2 Adapter provides  **customized API level**
 flow control for Zuul API Gateway.
 
 > *Note*: this adapter support Zuul 2.x.
 
 ## How to use
+
+> You can refer to demo `sentinel-demo-zuul2-gateway`
 
 1. Add Maven dependency to your `pom.xml`:
 
@@ -18,45 +20,6 @@ flow control for Zuul API Gateway.
 ```
 
 2. Register filters
-
-For Spring Cloud Zuul users, we only need to inject the three filters in Spring configuration class like this:
-
-```java
-@Configuration
-public class ZuulConfig {
-
-    @Bean
-    public ZuulFilter sentinelZuulPreFilter() {
-        // We can provider the filter order here.
-        return new SentinelZuulPreFilter(10000);
-    }
-
-    @Bean
-    public ZuulFilter sentinelZuulPostFilter() {
-        return new SentinelZuulPostFilter(1000);
-    }
-
-    @Bean
-    public ZuulFilter sentinelZuulErrorFilter() {
-        return new SentinelZuulErrorFilter(-1);
-    }
-}
-```
-
-For original Zuul users:
-
-```java
-// Get filter registry
-final FilterRegistry r = FilterRegistry.instance();
-
-// We need to register all three filters.
-SentinelZuulPreFilter sentinelPreFilter = new SentinelZuulPreFilter();
-r.put("sentinelZuulPreFilter", sentinelPreFilter);
-SentinelZuulPostFilter postFilter = new SentinelZuulPostFilter();
-r.put("sentinelZuulPostFilter", postFilter);
-SentinelZuulErrorFilter errorFilter = new SentinelZuulErrorFilter();
-r.put("sentinelZuulErrorFilter", errorFilter);
-```
 
 ## How it works
 
@@ -140,8 +103,8 @@ You can register customized request origin parser like this:
 ```java
 public class MyRequestOriginParser implements RequestOriginParser {
     @Override
-    public String parseOrigin(HttpServletRequest request) {
-        return request.getRemoteAddr();
+    public String parseOrigin(HttpRequestMessage request) {
+        return request.getInboundRequest().getOriginalHost() + ":" + request.getInboundRequest().getOriginalPort();
     }
 }
 ```

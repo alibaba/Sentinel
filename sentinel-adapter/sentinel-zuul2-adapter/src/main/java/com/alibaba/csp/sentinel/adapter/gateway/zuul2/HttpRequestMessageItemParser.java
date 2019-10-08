@@ -4,6 +4,7 @@ import com.alibaba.csp.sentinel.adapter.gateway.common.param.RequestItemParser;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 
 public class HttpRequestMessageItemParser implements RequestItemParser<HttpRequestMessage> {
+
     @Override
     public String getPath(HttpRequestMessage request) {
         return request.getInboundRequest().getPath();

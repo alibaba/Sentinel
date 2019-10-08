@@ -22,43 +22,10 @@ public class ZuulClasspathFiltersModule extends AbstractModule {
 
         bind(FilterUsageNotifier.class).to(BasicFilterUsageNotifier.class);
 
-//        ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(2);
-//
-//        bind(ScheduledExecutorService.class).toInstance(scheduledThreadPoolExecutor);
-        
-//        HikariConfig hikariConfig = new HikariConfig();
-//        hikariConfig.setJdbcUrl(getConfigInstance().getString("com.claro.config.proxyroutes.jdbc.url"));
-//        hikariConfig.setUsername(getConfigInstance().getString("com.claro.config.proxyroutes.jdbc.username"));
-//        hikariConfig.setPassword(getConfigInstance().getString("com.claro.config.proxyroutes.jdbc.password"));
-//        hikariConfig.addDataSourceProperty("cachePrepStmts","true");
-//        hikariConfig.addDataSourceProperty("prepStmtCacheSize","250");
-//        hikariConfig.addDataSourceProperty("prepStmtCacheSqlLimit","2048");
-//        DataSource configDatasource = new HikariDataSource(hikariConfig);
-        
-//        bind(DataSource.class).toInstance(configDatasource);
-        
-//        HttpClient httpClient = HttpClientBuilder.create()
-//        		.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
-//        		.build();
-//
-//        bind(HttpClient.class).toInstance(httpClient);
-        
-//        bind(ProxyConfigurationDAO.class);
-//
-//        bind(APIMAuthorizationService.class);
-//
-//        bind(ProxyConfigurationService.class);
-        
         Multibinder<ZuulFilter> filterMultibinder = Multibinder.newSetBinder(binder(), ZuulFilter.class);
         filterMultibinder.addBinding().toInstance(new SentinelZuulInboundFilter(500));
         filterMultibinder.addBinding().toInstance(new SentinelZuulOutboundFilter(500));
-        filterMultibinder.addBinding().toInstance(new DemoZuulInboundFilter(1000));
         filterMultibinder.addBinding().toInstance(new SentinelZuulEndpoint());
         filterMultibinder.addBinding().toInstance(new Route());
-//        filterMultibinder.addBinding().to(ForwardFilter.class);
-//        filterMultibinder.addBinding().to(APIMAuthorizationFilter.class);
-//        filterMultibinder.addBinding().to(InboundLoggingFilter.class);
-//        filterMultibinder.addBinding().to(OutboundLoggingFilter.class);
-        
     }
 }

@@ -21,23 +21,6 @@ package com.alibaba.csp.sentinel.adapter.gateway.zuul2.constants;
  * @author tiger
  */
 public class ZuulConstant {
-
-
-    public static final String SERVICE_ID_KEY = "serviceId";
-
-    public static final String PROXY_ID_KEY = "proxy";
-
-    public static final String ERROR_TYPE = "error";
-
-
-    public static final String POST_TYPE = "post";
-
-
-    public static final String PRE_TYPE = "pre";
-
-
-    public static final String ROUTE_TYPE = "route";
-
     /**
      * Filter Order for SEND_RESPONSE_FILTER_ORDER
      */
@@ -56,7 +39,8 @@ public class ZuulConstant {
     public static final String ZUUL_CTX_SENTINEL_ENTRIES_KEY = "_sentinel_entries";
 
 
-    public static final String ZUUL_CTX_SENTINEL_FAIL_ROUTE = "_sentinel_fail_route";
+    public static final String ZUUL_CTX_SENTINEL_FALLBACK_ROUTE = "_sentinel_fallback_route";
+    public static final String ZUUL_CTX_SENTINEL_BLOCK_FLAG = "_sentinel_fail_route";
 
     private ZuulConstant(){}
 }

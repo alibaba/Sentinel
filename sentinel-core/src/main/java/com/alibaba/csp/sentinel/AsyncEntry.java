@@ -92,7 +92,6 @@ public class AsyncEntry extends CtEntry {
     @Override
     protected Entry trueExit(int count, Object... args) throws ErrorEntryFreeException {
         exitForContext(asyncContext, count, args);
-
         return parent;
     }
 }
