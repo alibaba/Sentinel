@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.datasource.etcd;
 import com.alibaba.csp.sentinel.datasource.AbstractDataSource;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.log.RecordLog;
+
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
 import io.etcd.jetcd.KeyValue;
@@ -38,48 +39,46 @@ import java.util.concurrent.CompletableFuture;
  */
 public class EtcdDataSource<T> extends AbstractDataSource<String, T> {
 
-
-    private Client client;
+    private final Client client;
     private Watch.Watcher watcher;
 
-    private String key;
+    private final String key;
     private Charset charset = Charset.forName(EtcdConfig.getCharset());
 
     /**
-     * Create Etcd Data Source, Retrieve Connect Config Properties from ${@link EtcdConfig}
+     * Create an etcd data-source. The connection configuration will be retrieved from {@link EtcdConfig}.
      *
-     * @param key    Config key
-     * @param parser Value Parser
+     * @param key    config key
+     * @param parser data parser
      */
     public EtcdDataSource(String key, Converter<String, T> parser) {
         super(parser);
         if (!EtcdConfig.isAuthEnable()) {
             this.client = Client.builder()
-                    .endpoints(EtcdConfig.getEndPoints().split(",")).build();
+                .endpoints(EtcdConfig.getEndPoints().split(",")).build();
         } else {
             this.client = Client.builder()
-                    .endpoints(EtcdConfig.getEndPoints().split(","))
-                    .user(ByteSequence.from(EtcdConfig.getUser(), charset))
-                    .password(ByteSequence.from(EtcdConfig.getPassword(), charset))
-                    .authority(EtcdConfig.getAuthority())
-                    .build();
+                .endpoints(EtcdConfig.getEndPoints().split(","))
+                .user(ByteSequence.from(EtcdConfig.getUser(), charset))
+                .password(ByteSequence.from(EtcdConfig.getPassword(), charset))
+                .authority(EtcdConfig.getAuthority())
+                .build();
         }
         this.key = key;
         loadInitialConfig();
         initWatcher();
-
     }
-
 
     private void loadInitialConfig() {
         try {
             T newValue = loadConfig();
             if (newValue == null) {
-                RecordLog.warn("[EtcdDataSource] WARN: initial application is null, you may have to check your data source");
+                RecordLog.warn(
+                    "[EtcdDataSource] Initial configuration is null, you may have to check your data source");
             }
             getProperty().updateValue(newValue);
         } catch (Exception ex) {
-            RecordLog.warn("[EtcdDataSource] Error when loading initial application", ex);
+            RecordLog.warn("[EtcdDataSource] Error when loading initial configuration", ex);
         }
     }
 
@@ -92,16 +91,15 @@ public class EtcdDataSource<T> extends AbstractDataSource<String, T> {
                         T newValue = loadConfig();
                         getProperty().updateValue(newValue);
                     } catch (Exception e) {
-                        RecordLog.warn("[EtcdDataSource] update rule config error: ", e);
+                        RecordLog.warn("[EtcdDataSource] Failed to update config", e);
                     }
                 } else if (eventType == WatchEvent.EventType.DELETE) {
+                    RecordLog.info("[EtcdDataSource] Cleaning config for key <{0}>", key);
                     getProperty().updateValue(null);
-                    RecordLog.info("[EtcdDataSource] clean rule config of {0}", key);
                 }
             }
         });
     }
-
 
     @Override
     public String readSource() throws Exception {
@@ -116,7 +114,7 @@ public class EtcdDataSource<T> extends AbstractDataSource<String, T> {
             try {
                 watcher.close();
             } catch (Exception ex) {
-                RecordLog.info("[EtcdDataSource] close watcher error", ex);
+                RecordLog.info("[EtcdDataSource] Failed to close watcher", ex);
             }
         }
         if (client != null) {

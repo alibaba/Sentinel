@@ -1,7 +1,9 @@
 # Sentinel DataSource Etcd
 
-Sentinel DataSource Etcd provides integration with Etcd so that Etcd
+Sentinel DataSource Etcd provides integration with etcd so that etcd
 can be the dynamic rule data source of Sentinel. The data source uses push model (watcher).
+
+> **NOTE**: This module requires JDK 1.8 or later.
 
 To use Sentinel DataSource Etcd, you should add the following dependency:
 
@@ -12,29 +14,26 @@ To use Sentinel DataSource Etcd, you should add the following dependency:
     <version>x.y.z</version>
 </dependency>
 ```
-Configure Etcd Connect Properties By Config File (for example sentinel.properties)
+
+We could configure Etcd connection configuration by config file (for example `sentinel.properties`):
 
 ```
-csp.sentinel.etcd.end.points=http://ip1:port1,http://ip2:port2
+csp.sentinel.etcd.endpoints=http://ip1:port1,http://ip2:port2
 csp.sentinel.etcd.user=your_user
 csp.sentinel.etcd.password=your_password
 csp.sentinel.etcd.charset=your_charset
-csp.sentinel.etcd.auth.enable=true //if ture open user/password or ssl check
-csp.sentinel.etcd.authority=authority //ssl
+csp.sentinel.etcd.auth.enable=true # if ture, then open user/password or ssl check
+csp.sentinel.etcd.authority=authority # ssl
 ```
-or JVM args(Add -D prefix)
 
+Or we could configure via JVM -D args or via `SentinelConfig.setConfig(key, value)`.
 
-Then you can create an `EtcdDataSource` and register to rule managers.
-For instance:
+Then we can create an `EtcdDataSource` and register to rule managers. For instance:
 
 ```java
-  //`rule_key` is the rule config key
-  ReadableDataSource<String, List<FlowRule>> flowRuleEtcdDataSource = new EtcdDataSource<>(rule_key, (rule) -> JSON.parseArray(rule, FlowRule.class));
-  FlowRuleManager.register2Property(flowRuleEtcdDataSource.getProperty());
+// `rule_key` is the rule config key
+ReadableDataSource<String, List<FlowRule>> flowRuleEtcdDataSource = new EtcdDataSource<>(rule_key, (rule) -> JSON.parseArray(rule, FlowRule.class));
+FlowRuleManager.register2Property(flowRuleEtcdDataSource.getProperty());
 ```
-
-> Note: It needs to update JDK version to JDK8
-
 
 We've also provided an example: [sentinel-demo-etcd-datasource](https://github.com/alibaba/Sentinel/tree/master/sentinel-demo/sentinel-demo-etcd-datasource)
