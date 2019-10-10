@@ -19,15 +19,14 @@ import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
- * Configure Etcd Connect Properties
+ * Etcd connection configuration.
  *
  * @author lianglin
  * @since 1.7.0
  */
 public final class EtcdConfig {
 
-
-    public final static String END_POINTS = "csp.sentinel.etcd.end.points";
+    public final static String END_POINTS = "csp.sentinel.etcd.endpoints";
     public final static String USER = "csp.sentinel.etcd.user";
     public final static String PASSWORD = "csp.sentinel.etcd.password";
     public final static String CHARSET = "csp.sentinel.etcd.charset";
@@ -35,7 +34,6 @@ public final class EtcdConfig {
     public final static String AUTHORITY = "csp.sentinel.etcd.authority";
 
     private final static String ENABLED = "true";
-
 
     public static String getEndPoints() {
         return SentinelConfig.getConfig(END_POINTS);
@@ -50,25 +48,21 @@ public final class EtcdConfig {
     }
 
     public static String getCharset() {
-        String etcdCharSet = SentinelConfig.getConfig(CHARSET);
-        if (StringUtil.isNotBlank(etcdCharSet)) {
-            return etcdCharSet;
+        String etcdCharset = SentinelConfig.getConfig(CHARSET);
+        if (StringUtil.isNotBlank(etcdCharset)) {
+            return etcdCharset;
         }
         return SentinelConfig.charset();
     }
 
     public static boolean isAuthEnable() {
-        if (ENABLED.equalsIgnoreCase(SentinelConfig.getConfig(AUTH_ENABLE))) {
-            return true;
-        }
-        return false;
+        return ENABLED.equalsIgnoreCase(SentinelConfig.getConfig(AUTH_ENABLE));
     }
 
     public static String getAuthority() {
         return SentinelConfig.getConfig(AUTHORITY);
     }
 
-    private EtcdConfig() {
-    };
+    private EtcdConfig() {}
 
 }
