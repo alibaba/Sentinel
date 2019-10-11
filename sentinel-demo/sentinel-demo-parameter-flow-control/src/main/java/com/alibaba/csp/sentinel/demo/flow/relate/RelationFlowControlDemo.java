@@ -14,6 +14,12 @@ public class RelationFlowControlDemo {
 	static String node_read = "read";
 	static String node_write = "write";
 
+	/**
+	 * First 10 seconds,the QPS of the write runner is 20. The read runner is not blocked.
+	 * In next 20 seconds,the QPS of the write runner changes to 200. The read runner is blocked because the
+	 * threshold of relation flow is 30.
+	 * Last 30 seconds, the QPS of the write runner becomes 20. The read runner continues running.
+	 */
 	public static void main(String[] args) {
 		relationFlowRules();
 		final int threadCount = 20;
