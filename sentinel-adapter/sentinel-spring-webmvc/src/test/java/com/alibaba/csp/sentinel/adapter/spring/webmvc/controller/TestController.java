@@ -1,4 +1,4 @@
-package com.alibaba.csp.sentinel.adapter.spring.webmvc;
+package com.alibaba.csp.sentinel.adapter.spring.webmvc.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

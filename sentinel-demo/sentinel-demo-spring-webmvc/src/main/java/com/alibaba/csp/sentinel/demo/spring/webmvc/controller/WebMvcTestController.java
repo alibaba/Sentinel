@@ -15,33 +15,49 @@
  */
 package com.alibaba.csp.sentinel.demo.spring.webmvc.controller;
 
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * @author Eric Zhao
+ * @author zhangkai
  */
 @RestController
 public class WebMvcTestController {
 
     @GetMapping("/hello")
     public String apiHello() {
+        doBusiness();
         return "Hello!";
     }
 
     @GetMapping("/err")
     public String apiError() {
+        doBusiness();
         return "Oops...";
     }
 
     @GetMapping("/foo/{id}")
     public String apiFoo(@PathVariable("id") Long id) {
+        doBusiness();
         return "Hello " + id;
     }
 
     @GetMapping("/exclude/{id}")
     public String apiExclude(@PathVariable("id") Long id) {
+        doBusiness();
         return "Exclude " + id;
     }
+
+    private void doBusiness() {
+        Random random = new Random(1);
+        try {
+            TimeUnit.MILLISECONDS.sleep(random.nextInt(100));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

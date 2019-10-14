@@ -8,14 +8,15 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
  * @author taodizhou
  * @description
- * @date 2019-09-25
+ * @date 2019-10-14
+ * <code>
+ *   -Dcsp.sentinel.dashboard.server=127.0.0.1:8080 -Dproject.name=sentinel-demo-spring-webmvc
+ * </code>
  */
 @SpringBootApplication
 public class WebMvcDemoApplication {
 
   public static void main(String[] args) {
-    System.setProperty(TransportConfig.CONSOLE_SERVER, "127.0.0.1:8080");
-    System.setProperty("project.name", "sentinel-demo-spring-webmvc");
     SpringApplication.run(WebMvcDemoApplication.class);
   }
 }
