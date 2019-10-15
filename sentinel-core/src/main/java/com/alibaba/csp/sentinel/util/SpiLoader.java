@@ -23,6 +23,7 @@ import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.spi.ServiceLoaderUtil;
 import com.alibaba.csp.sentinel.spi.SpiOrder;
 
 /**
@@ -34,12 +35,13 @@ public final class SpiLoader {
     private static final Map<String, ServiceLoader> SERVICE_LOADER_MAP = new ConcurrentHashMap<String, ServiceLoader>();
 
     public static <T> T loadFirstInstance(Class<T> clazz) {
+        AssertUtil.notNull(clazz, "SPI class cannot be null");
         try {
             String key = clazz.getName();
             // Not thread-safe, as it's expected to be resolved in a thread-safe context.
             ServiceLoader<T> serviceLoader = SERVICE_LOADER_MAP.get(key);
             if (serviceLoader == null) {
-                serviceLoader = ServiceLoader.load(clazz);
+                serviceLoader = ServiceLoaderUtil.getServiceLoader(clazz);
                 SERVICE_LOADER_MAP.put(key, serviceLoader);
             }
 
@@ -51,6 +53,41 @@ public final class SpiLoader {
             }
         } catch (Throwable t) {
             RecordLog.warn("[SpiLoader] ERROR: loadFirstInstance failed", t);
+            t.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Load the first-found specific SPI instance (excluding provided default SPI class).
+     * If no other SPI implementation found, then create a default SPI instance.
+     *
+     * @param clazz        class of the SPI interface
+     * @param defaultClass class of the default SPI implementation (if no other implementation found)
+     * @param <T>          SPI type
+     * @return the first specific SPI instance if exists, or else the default SPI instance
+     * @since 1.7.0
+     */
+    public static <T> T loadFirstInstanceOrDefault(Class<T> clazz, Class<? extends T> defaultClass) {
+        AssertUtil.notNull(clazz, "SPI class cannot be null");
+        AssertUtil.notNull(defaultClass, "default SPI class cannot be null");
+        try {
+            String key = clazz.getName();
+            // Not thread-safe, as it's expected to be resolved in a thread-safe context.
+            ServiceLoader<T> serviceLoader = SERVICE_LOADER_MAP.get(key);
+            if (serviceLoader == null) {
+                serviceLoader = ServiceLoaderUtil.getServiceLoader(clazz);
+                SERVICE_LOADER_MAP.put(key, serviceLoader);
+            }
+
+            for (T instance : serviceLoader) {
+                if (instance.getClass() != defaultClass) {
+                    return instance;
+                }
+            }
+            return defaultClass.newInstance();
+        } catch (Throwable t) {
+            RecordLog.warn("[SpiLoader] ERROR: loadFirstInstanceOrDefault failed", t);
             t.printStackTrace();
             return null;
         }
@@ -70,7 +107,7 @@ public final class SpiLoader {
             // Not thread-safe, as it's expected to be resolved in a thread-safe context.
             ServiceLoader<T> serviceLoader = SERVICE_LOADER_MAP.get(key);
             if (serviceLoader == null) {
-                serviceLoader = ServiceLoader.load(clazz);
+                serviceLoader = ServiceLoaderUtil.getServiceLoader(clazz);
                 SERVICE_LOADER_MAP.put(key, serviceLoader);
             }
 
@@ -105,7 +142,7 @@ public final class SpiLoader {
             // Not thread-safe, as it's expected to be resolved in a thread-safe context.
             ServiceLoader<T> serviceLoader = SERVICE_LOADER_MAP.get(key);
             if (serviceLoader == null) {
-                serviceLoader = ServiceLoader.load(clazz);
+                serviceLoader = ServiceLoaderUtil.getServiceLoader(clazz);
                 SERVICE_LOADER_MAP.put(key, serviceLoader);
             }
 
@@ -135,7 +172,7 @@ public final class SpiLoader {
             // Not thread-safe, as it's expected to be resolved in a thread-safe context.
             ServiceLoader<T> serviceLoader = SERVICE_LOADER_MAP.get(key);
             if (serviceLoader == null) {
-                serviceLoader = ServiceLoader.load(clazz);
+                serviceLoader = ServiceLoaderUtil.getServiceLoader(clazz);
                 SERVICE_LOADER_MAP.put(key, serviceLoader);
             }
 
