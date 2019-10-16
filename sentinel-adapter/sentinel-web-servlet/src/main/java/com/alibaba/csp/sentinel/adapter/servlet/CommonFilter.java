@@ -47,7 +47,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  */
 public class CommonFilter implements Filter {
 
-    private final static String HTTP_METHOD_SPECIFY = "HTTP_METHOD_SPECIFY";
+    public final static String HTTP_METHOD_SPECIFY = "HTTP_METHOD_SPECIFY";
     private final static String COLON = ":";
     private boolean httpMethodSpecify = false;
 
