@@ -85,7 +85,7 @@ public class TestInterceptor {
 
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(totalTarget);
         assertNotNull(cn);
-        assertEquals(1, cn.passQps(), 0.01);
+        assertEquals(3, cn.passQps(), 0.01);
     }
 
     private void configureRulesFor(String resource, int count, String limitApp) {
