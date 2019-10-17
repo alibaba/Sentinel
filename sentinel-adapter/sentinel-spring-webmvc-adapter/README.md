@@ -1,6 +1,7 @@
 # Sentinel Spring MVC Interceptor
 
 Sentinel provides Spring MVC Interceptor integration to enable flow control for web requests, And support url like '/foo/{id}'
+
 Add the following dependency in `pom.xml` (if you are using Maven):
 
 ```xml
