@@ -26,12 +26,12 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.adapter.servlet.callback.WebCallbackManager;
 import com.alibaba.csp.sentinel.adapter.servlet.config.WebServletConfig;
-import com.alibaba.csp.sentinel.adapter.servlet.util.FilterUtil;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 
