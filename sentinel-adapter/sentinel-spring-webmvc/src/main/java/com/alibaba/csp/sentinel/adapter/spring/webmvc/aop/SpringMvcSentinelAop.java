@@ -7,6 +7,8 @@ import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.adapter.servlet.callback.RequestOriginParser;
 import com.alibaba.csp.sentinel.adapter.servlet.callback.UrlCleaner;
 import com.alibaba.csp.sentinel.adapter.servlet.callback.WebCallbackManager;
+import com.alibaba.csp.sentinel.adapter.spring.webmvc.config.SpringMvcRequestOriginParser;
+import com.alibaba.csp.sentinel.adapter.spring.webmvc.config.SpringMvcSentinelAopConfig;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -23,7 +25,19 @@ import org.springframework.web.servlet.HandlerMapping;
  * @description
  * @date 2019-10-14
  */
-public class SpringMvcAop {
+public class SpringMvcSentinelAop {
+  private static final String EMPTY_ORIGIN = "";
+  private final static String COLON = ":";
+  private SpringMvcSentinelAopConfig config;
+
+  public SpringMvcSentinelAop(SpringMvcSentinelAopConfig config) {
+    this.config = config;
+  }
+
+  public SpringMvcSentinelAop() {
+    this.config = new SpringMvcSentinelAopConfig();
+  }
+
   public Object aroundAop(ProceedingJoinPoint point) throws Throwable{
     //获取目标方法完整路径
     RequestAttributes ra = RequestContextHolder.getRequestAttributes();
@@ -32,6 +46,7 @@ public class SpringMvcAop {
     String target = getTarget(request);
 
     Entry urlEntry = null;
+    Entry httpMethodUrlEntry = null;
     try {
       UrlCleaner urlCleaner = WebCallbackManager.getUrlCleaner();
       if (urlCleaner != null) {
@@ -39,8 +54,13 @@ public class SpringMvcAop {
       }
 
       if (StringUtil.isNotEmpty(target)) {
-        ContextUtil.enter("SDK", EMPTY_ORIGIN);
+        String origin = parseOrigin(request);
+        ContextUtil.enter(config.getContextName(), origin);
         urlEntry = SphU.entry(target, EntryType.IN);
+        if (config.isHttpMethodSpecify()) {
+          httpMethodUrlEntry = SphU.entry(request.getMethod().toUpperCase() + COLON + target,
+              EntryType.IN);
+        }
       }
       //调用目标方法
       Object result = null;
@@ -53,6 +73,9 @@ public class SpringMvcAop {
       Tracer.traceEntry(e2, urlEntry);
       throw e2;
     } finally {
+      if (httpMethodUrlEntry != null) {
+        httpMethodUrlEntry.exit();
+      }
       if (urlEntry != null) {
         urlEntry.exit();
       }
@@ -63,9 +86,9 @@ public class SpringMvcAop {
   protected String getTarget(HttpServletRequest request) {
     return (String) request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
   }
-  protected static final String EMPTY_ORIGIN = "";
-  protected static String parseOrigin(HttpServletRequest request) {
-    RequestOriginParser originParser = WebCallbackManager.getRequestOriginParser();
+
+  protected String parseOrigin(HttpServletRequest request) {
+    SpringMvcRequestOriginParser originParser = config.getOriginParser();
     String origin = EMPTY_ORIGIN;
     if (originParser != null) {
       origin = originParser.parseOrigin(request);

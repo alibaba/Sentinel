@@ -62,6 +62,9 @@
       <artifactId>spring-boot-starter-aop</artifactId>
       <version>2.1.9.RELEASE</version>
     </dependency>
-
+    <dependency>
+      <groupId>com.alibaba</groupId>
+      <artifactId>fastjson</artifactId>
+    </dependency>
   </dependencies>
 </project>
