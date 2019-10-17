@@ -53,7 +53,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
 }
 ```
 
-Config BlockException handler
+Config BlockException handler:
 
 ```java
 @ControllerAdvice
