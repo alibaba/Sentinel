@@ -52,6 +52,8 @@ public class CommonTotalFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response,
                          FilterChain chain) throws IOException, ServletException {
+        // SentinelHandlerInterceptor will disable when using CommonFilter and SentinelHandlerInterceptor
+        request.setAttribute(Constants.SENTINEL_REQUEST_ATTR_WEB_SERVLET_ENABLE_KEY, true);
         HttpServletRequest sRequest = (HttpServletRequest)request;
 
         Entry entry = null;
@@ -70,6 +72,7 @@ public class CommonTotalFilter implements Filter {
                 entry.exit();
             }
             ContextUtil.exit();
+            request.removeAttribute(Constants.SENTINEL_REQUEST_ATTR_WEB_SERVLET_ENABLE_KEY);
         }
     }
 

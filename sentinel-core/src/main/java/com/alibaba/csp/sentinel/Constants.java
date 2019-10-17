@@ -76,4 +76,9 @@ public final class Constants {
     public static volatile boolean ON = true;
 
     private Constants() {}
+
+    /**
+     * A virtual resource identifier at request attr for sentinel-web-servlet filter is enable
+     */
+    public final static String SENTINEL_REQUEST_ATTR_WEB_SERVLET_ENABLE_KEY = "sentinel_request_attr_web_servlet_enable_key";
 }

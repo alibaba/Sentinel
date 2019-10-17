@@ -15,14 +15,13 @@
  */
 package com.alibaba.csp.sentinel.dashboard.config;
 
-import com.alibaba.csp.sentinel.adapter.servlet.CommonFilter;
 import com.alibaba.csp.sentinel.dashboard.filter.AuthFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.alibaba.scp.sentinel.adapter.spring.webmvc.SentinelHandlerInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -34,8 +33,6 @@ import javax.servlet.Filter;
  */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
-
-    private final Logger logger = LoggerFactory.getLogger(WebConfig.class);
 
     @Autowired
     private AuthFilter authFilter;
@@ -50,21 +47,9 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addViewController("/").setViewName("forward:/index.htm");
     }
 
-    /**
-     * Add {@link CommonFilter} to the server, this is the simplest way to use Sentinel
-     * for Web application.
-     */
-    @Bean
-    public FilterRegistrationBean sentinelFilterRegistration() {
-        FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>();
-        registration.setFilter(new CommonFilter());
-        registration.addUrlPatterns("/*");
-        registration.setName("sentinelFilter");
-        registration.setOrder(1);
-
-        logger.info("Sentinel servlet CommonFilter registered");
-
-        return registration;
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new SentinelHandlerInterceptor()).addPathPatterns("/**");
     }
 
     @Bean

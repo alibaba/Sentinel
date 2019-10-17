@@ -26,7 +26,7 @@
         </dependency>
         <dependency>
             <groupId>com.alibaba.csp</groupId>
-            <artifactId>sentinel-web-servlet</artifactId>
+            <artifactId>sentinel-spring-webmvc-adapter</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
