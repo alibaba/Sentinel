@@ -35,15 +35,8 @@ public class TestInterceptor {
     @Autowired
     private MockMvc mvc;
 
-
     @Test
-    public void testSpringMvc() throws Exception {
-        testBase();
-        testOriginParser();
-        testTotalInterceptor();
-    }
-
-    private void testBase() throws Exception {
+    public void testBase() throws Exception {
         String url = "/hello";
         this.mvc.perform(get(url))
                 .andExpect(status().isOk())
@@ -54,7 +47,8 @@ public class TestInterceptor {
         assertEquals(1, cn.passQps(), 0.01);
     }
 
-    private void testOriginParser() throws Exception {
+    @Test
+    public void testOriginParser() throws Exception {
         String springMvcPathVariableUrl = "/foo/{id}";
         String limitOrigin = "userA";
         final String headerName = "S-User";
@@ -76,13 +70,15 @@ public class TestInterceptor {
         FlowRuleManager.loadRules(null);
     }
 
-    private void testTotalInterceptor() throws Exception {
+    @Test
+    public void testTotalInterceptor() throws Exception {
         String url = "/hello";
         String totalTarget = "my_spring_mvc_total_url_request";
-        this.mvc.perform(get(url))
-                .andExpect(status().isOk())
-                .andExpect(content().string(HELLO_STR));
-
+        for (int i = 0;i < 3;i++) {
+            this.mvc.perform(get(url))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(HELLO_STR));
+        }
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(totalTarget);
         assertNotNull(cn);
         assertEquals(3, cn.passQps(), 0.01);
