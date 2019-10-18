@@ -15,25 +15,17 @@
  */
 package com.alibaba.scp.sentinel.adapter.spring.webmvc.callback;
 
-import java.io.IOException;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.scp.sentinel.adapter.spring.webmvc.util.InterceptorUtil;
-
 /***
- * The default {@link UrlBlockHandler}.
- *
  * @author zhaoyuguang
  */
-public class DefaultUrlBlockHandler implements UrlBlockHandler {
+public interface UrlCleaner {
 
-    @Override
-    public void blocked(HttpServletRequest request, HttpServletResponse response, BlockException ex)
-            throws IOException {
-        // Directly redirect to the default flow control (blocked) page or customized block page.
-        InterceptorUtil.blockRequest(request, response);
-    }
+    /***
+     * <p>Process the url. Some path variables should be handled and unified.</p>
+     * <p>e.g. collect_item_relation--10200012121-.html will be converted to collect_item_relation.html</p>
+     *
+     * @param originUrl original url
+     * @return processed url
+     */
+    String clean(String originUrl);
 }

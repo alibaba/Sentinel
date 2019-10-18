@@ -31,6 +31,7 @@
         <module>sentinel-demo-cluster</module>
         <module>sentinel-demo-command-handler</module>
         <module>sentinel-demo-spring-webflux</module>
+        <module>sentinel-demo-spring-webmvc</module>
         <module>sentinel-demo-apache-dubbo</module>
         <module>sentinel-demo-spring-cloud-gateway</module>
         <module>sentinel-demo-zuul-gateway</module>

@@ -16,14 +16,20 @@
 package com.alibaba.scp.sentinel.adapter.spring.webmvc.config;
 
 import com.alibaba.csp.sentinel.config.SentinelConfig;
+import com.alibaba.scp.sentinel.adapter.spring.webmvc.callback.RequestOriginParser;
+import com.alibaba.scp.sentinel.adapter.spring.webmvc.callback.UrlCleaner;
 
 /**
  * @author zhaoyuguang
  */
-public class SpringWebmvcConfig {
+public class SentinelSpringWebmvcConfig {
 
     public static final String SPRING_WEBMVC_CONTEXT_NAME = "sentinel_spring_webmvc_context";
     public static final String SENTINEL_REQUEST_ATTR_SPRING_WEBMVC_KEY = "sentinel_request_attr_spring_webmvc_key";
+
+    private UrlCleaner urlCleaner;
+    private RequestOriginParser originParser;
+    private boolean httpMethodSpecify = false;
 
     public static final String BLOCK_PAGE = "csp.sentinel.spring.webmvc.block.page";
 
@@ -33,5 +39,29 @@ public class SpringWebmvcConfig {
 
     public static void setBlockPage(String blockPage) {
         SentinelConfig.setConfig(BLOCK_PAGE, blockPage);
+    }
+
+    public UrlCleaner getUrlCleaner() {
+        return urlCleaner;
+    }
+
+    public void setUrlCleaner(UrlCleaner urlCleaner) {
+        this.urlCleaner = urlCleaner;
+    }
+
+    public RequestOriginParser getOriginParser() {
+        return originParser;
+    }
+
+    public void setOriginParser(RequestOriginParser originParser) {
+        this.originParser = originParser;
+    }
+
+    public boolean isHttpMethodSpecify() {
+        return httpMethodSpecify;
+    }
+
+    public void setHttpMethodSpecify(boolean httpMethodSpecify) {
+        this.httpMethodSpecify = httpMethodSpecify;
     }
 }

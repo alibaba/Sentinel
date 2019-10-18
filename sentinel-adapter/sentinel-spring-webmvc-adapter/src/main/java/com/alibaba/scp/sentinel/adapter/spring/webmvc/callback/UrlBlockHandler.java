@@ -15,11 +15,12 @@
  */
 package com.alibaba.scp.sentinel.adapter.spring.webmvc.callback;
 
-import com.alibaba.csp.sentinel.slots.block.BlockException;
+import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 
 /***
  * The URL block handler handles requests when blocked.

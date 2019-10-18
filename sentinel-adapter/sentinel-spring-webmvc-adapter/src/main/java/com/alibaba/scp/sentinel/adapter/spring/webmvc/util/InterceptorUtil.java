@@ -15,13 +15,14 @@
  */
 package com.alibaba.scp.sentinel.adapter.spring.webmvc.util;
 
-import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.scp.sentinel.adapter.spring.webmvc.config.SpringWebmvcConfig;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.PrintWriter;
+
+import com.alibaba.csp.sentinel.util.StringUtil;
+import com.alibaba.scp.sentinel.adapter.spring.webmvc.config.SentinelSpringWebmvcConfig;
 
 /**
  * Util class for Spring webmvc interceptor.
@@ -37,10 +38,10 @@ public final class InterceptorUtil {
             url.append("?").append(request.getQueryString());
         }
 
-        if (StringUtil.isBlank(SpringWebmvcConfig.getBlockPage())) {
+        if (StringUtil.isBlank(SentinelSpringWebmvcConfig.getBlockPage())) {
             writeDefaultBlockedPage(response);
         } else {
-            String redirectUrl = SpringWebmvcConfig.getBlockPage() + "?http_referer=" + url.toString();
+            String redirectUrl = SentinelSpringWebmvcConfig.getBlockPage() + "?http_referer=" + url.toString();
             // Redirect to the customized block page.
             response.sendRedirect(redirectUrl);
         }
