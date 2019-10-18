@@ -36,11 +36,17 @@ public class OccupiableBucketLeapArray extends LeapArray<MetricBucket> {
         this.borrowArray = new FutureBucketLeapArray(sampleCount, intervalInMs);
     }
 
+    /**
+     * 创建一个新的Bucket（统计桶）
+     * @param time
+     * @return
+     */
     @Override
     public MetricBucket newEmptyBucket(long time) {
         MetricBucket newBucket = new MetricBucket();
-
+        // time是否在当前桶中，是则放回，否则null
         MetricBucket borrowBucket = borrowArray.getWindowValue(time);
+        // 处于当前桶中，新桶继承当前桶的统计数据
         if (borrowBucket != null) {
             newBucket.reset(borrowBucket);
         }

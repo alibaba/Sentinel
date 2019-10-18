@@ -32,6 +32,7 @@ public final class MethodUtil {
 
     /**
      * Parse and resolve the method name, then cache to the map.
+     * 解析并解析方法名，然后缓存到映射。
      *
      * @param method method instance
      * @return resolved method name

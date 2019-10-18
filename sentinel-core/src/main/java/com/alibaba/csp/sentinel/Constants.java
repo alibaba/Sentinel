@@ -55,6 +55,7 @@ public final class Constants {
 
     /**
      * Global ROOT statistic node that represents the universal parent node.
+     * 表示通用父节点的全局根统计节点。
      */
     public final static DefaultNode ROOT = new EntranceNode(new StringResourceWrapper(ROOT_ID, EntryType.IN),
         new ClusterNode());

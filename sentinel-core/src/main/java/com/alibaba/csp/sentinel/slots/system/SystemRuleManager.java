@@ -303,6 +303,8 @@ public final class SystemRuleManager {
 
         // total qps
         double currentQps = Constants.ENTRY_NODE == null ? 0.0 : Constants.ENTRY_NODE.successQps();
+
+        System.out.println(currentQps);
         if (currentQps > qps) {
             throw new SystemBlockException(resourceWrapper.getName(), "qps");
         }

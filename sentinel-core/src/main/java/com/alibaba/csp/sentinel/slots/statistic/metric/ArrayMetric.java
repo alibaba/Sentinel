@@ -28,6 +28,7 @@ import com.alibaba.csp.sentinel.slots.statistic.metric.occupy.OccupiableBucketLe
 
 /**
  * The basic metric class in Sentinel using a {@link BucketLeapArray} internal.
+ * Sentinel中的基本度量标准类，使用内部{@link BucketLeapArray}。
  *
  * @author jialiang.linjl
  * @author Eric Zhao
@@ -36,11 +37,17 @@ public class ArrayMetric implements Metric {
 
     private final LeapArray<MetricBucket> data;
 
+    /**
+     *
+     * @param sampleCount 存储桶数量
+     * @param intervalInMs 统计时长单位ms
+     */
     public ArrayMetric(int sampleCount, int intervalInMs) {
         this.data = new OccupiableBucketLeapArray(sampleCount, intervalInMs);
     }
 
     public ArrayMetric(int sampleCount, int intervalInMs, boolean enableOccupy) {
+        // 是否启用占用
         if (enableOccupy) {
             this.data = new OccupiableBucketLeapArray(sampleCount, intervalInMs);
         } else {
@@ -59,8 +66,9 @@ public class ArrayMetric implements Metric {
     public long success() {
         data.currentWindow();
         long success = 0;
-
+        // 获取滚动窗口中所有的有效窗口
         List<MetricBucket> list = data.values();
+        // 所有有效窗口的成功数累加
         for (MetricBucket window : list) {
             success += window.success();
         }
@@ -211,7 +219,9 @@ public class ArrayMetric implements Metric {
 
     @Override
     public void addSuccess(int count) {
+        // 获取当前时间戳对应的window信息
         WindowWrap<MetricBucket> wrap = data.currentWindow();
+        // 原子递增，底层通过枚举找到数组中对应的LongAddr，然后递增
         wrap.value().addSuccess(count);
     }
 

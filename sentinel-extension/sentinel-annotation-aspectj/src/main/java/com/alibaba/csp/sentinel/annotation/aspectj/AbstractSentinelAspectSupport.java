@@ -31,6 +31,7 @@ import java.util.Arrays;
 
 /**
  * Some common functions for Sentinel annotation aspect.
+ * Sentinel 注解切面类的一些常见功能。
  *
  * @author Eric Zhao
  */
@@ -89,6 +90,7 @@ public abstract class AbstractSentinelAspectSupport {
         Object[] originArgs = pjp.getArgs();
 
         // Execute fallback function if configured.
+        // 如果已配置，则执行回退功能。
         Method fallbackMethod = extractFallbackMethod(pjp, fallback, fallbackClass);
         if (fallbackMethod != null) {
             // Construct args.
@@ -112,12 +114,14 @@ public abstract class AbstractSentinelAspectSupport {
             }
         }
         // If fallback is absent, we'll try the defaultFallback if provided.
+        // 如果没有回退，我们将尝试默认回退（如果提供）。
         return handleDefaultFallback(pjp, defaultFallback, fallbackClass, ex);
     }
 
     protected Object handleDefaultFallback(ProceedingJoinPoint pjp, String defaultFallback,
                                            Class<?>[] fallbackClass, Throwable ex) throws Throwable {
         // Execute the default fallback function if configured.
+        // 如果已配置，则执行默认回退功能。
         Method fallbackMethod = extractDefaultFallbackMethod(pjp, defaultFallback, fallbackClass);
         if (fallbackMethod != null) {
             // Construct args.
@@ -134,6 +138,7 @@ public abstract class AbstractSentinelAspectSupport {
         }
 
         // If no any fallback is present, then directly throw the exception.
+        // 如果不存在任何回退，则直接抛出异常。
         throw ex;
     }
 
@@ -141,6 +146,7 @@ public abstract class AbstractSentinelAspectSupport {
         throws Throwable {
 
         // Execute block handler if configured.
+        // 执行块处理程序（如果已配置）。
         Method blockHandlerMethod = extractBlockHandlerMethod(pjp, annotation.blockHandler(),
             annotation.blockHandlerClass());
         if (blockHandlerMethod != null) {
@@ -160,6 +166,7 @@ public abstract class AbstractSentinelAspectSupport {
         }
 
         // If no block handler is present, then go to fallback.
+        // 如果不存在块处理程序，则转到回退。
         return handleFallback(pjp, annotation, ex);
     }
 
@@ -301,9 +308,11 @@ public abstract class AbstractSentinelAspectSupport {
     }
 
     protected Method resolveMethod(ProceedingJoinPoint joinPoint) {
+        // 获取封装了署名信息的对象,在该对象中可以获取到目标方法名,所属类的Class等信息
         MethodSignature signature = (MethodSignature)joinPoint.getSignature();
+        // 获取被代理的对象，获取类对象，初始化对象
         Class<?> targetClass = joinPoint.getTarget().getClass();
-
+        // 根据方法名，参数，获取到类上的方法
         Method method = getDeclaredMethodFor(targetClass, signature.getName(),
             signature.getMethod().getParameterTypes());
         if (method == null) {

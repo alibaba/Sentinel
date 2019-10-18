@@ -32,6 +32,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
  * Manager for gateway API definitions.
+ * 网关API定义的管理器。
  *
  * @author Eric Zhao
  * @since 1.6.0
@@ -79,6 +80,7 @@ public final class GatewayApiDefinitionManager {
 
     /**
      * Load given gateway API definitions and apply to downstream observers.
+     * 加载给定的网关API定义并将其应用于下游观察者。
      *
      * @param apiDefinitions set of gateway API definitions
      * @return true if updated, or else false

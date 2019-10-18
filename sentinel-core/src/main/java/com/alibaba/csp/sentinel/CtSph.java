@@ -143,6 +143,7 @@ public class CtSph implements Sph {
         }
 
         // Global switch is close, no rule checking will do.
+        // 全局开关已关闭，不进行规则检查。
         if (!Constants.ON) {
             return new CtEntry(resourceWrapper, null, context);
         }

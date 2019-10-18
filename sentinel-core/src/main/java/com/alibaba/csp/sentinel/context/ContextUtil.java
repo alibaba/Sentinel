@@ -46,6 +46,7 @@ public class ContextUtil {
 
     /**
      * Store the context in ThreadLocal for easy access.
+     * 将上下文存储在threadlocal中以便于访问。
      */
     private static ThreadLocal<Context> contextHolder = new ThreadLocal<>();
 
@@ -59,12 +60,15 @@ public class ContextUtil {
 
     static {
         // Cache the entrance node for default context.
+        // 缓存默认上下文的入口节点。
         initDefaultContext();
     }
 
     private static void initDefaultContext() {
+        // 初始化上下文名称
         String defaultContextName = Constants.CONTEXT_DEFAULT_NAME;
         EntranceNode node = new EntranceNode(new StringResourceWrapper(defaultContextName, EntryType.IN), null);
+        // 创建一个父节点machine-root，把子节点添加进去
         Constants.ROOT.addChild(node);
         contextNameNodeMap.put(defaultContextName, node);
     }

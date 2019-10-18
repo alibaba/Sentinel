@@ -21,6 +21,7 @@ import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
 
 /**
  * A kind of {@code BucketLeapArray} that only reserves for future buckets.
+ * 一种{@code BucketLeapArray}，仅保留给以后的存储桶。
  *
  * @author jialiang.linjl
  * @since 1.5.0
@@ -47,7 +48,7 @@ public class FutureBucketLeapArray extends LeapArray<MetricBucket> {
 
     @Override
     public boolean isWindowDeprecated(long time, WindowWrap<MetricBucket> windowWrap) {
-        // Tricky: will only calculate for future.
+        // Tricky: will only calculate for future.只会为将来计算。
         return time >= windowWrap.windowStart();
     }
 }

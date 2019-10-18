@@ -49,15 +49,19 @@ public class HeartbeatSenderInitFunc implements InitFunc {
 
     @Override
     public void init() {
+        // 通过spi获取HeartbeatSender实例,此处返回的是SimpleHttpHeartbeatSender
         HeartbeatSender sender = HeartbeatSenderProvider.getHeartbeatSender();
         if (sender == null) {
             RecordLog.warn("[HeartbeatSenderInitFunc] WARN: No HeartbeatSender loaded");
             return;
         }
-
+        // 创建一个任务调度线程池
         initSchedulerIfNeeded();
+        // 从配置获取任务调度时间，如果没有默认1000 * 10ms
         long interval = retrieveInterval(sender);
+        // 设置调度时间
         setIntervalIfNotExists(interval);
+        // 启动心跳任务
         scheduleHeartbeatTask(sender, interval);
     }
 
@@ -76,6 +80,7 @@ public class HeartbeatSenderInitFunc implements InitFunc {
                 + "in Sentinel config property: " + intervalInConfig);
             return intervalInConfig;
         } else {
+            // 10000ms
             long senderInterval = sender.intervalMs();
             RecordLog.info("[HeartbeatSenderInit] Heartbeat interval not configured in "
                 + "config property or invalid, using sender default: " + senderInterval);

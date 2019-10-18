@@ -71,6 +71,7 @@ public final class ParamFlowRuleUtil {
 
     /**
      * Fill the parameter rule with parsed items.
+     * 用已解析的项目填充参数规则。
      *
      * @param rule valid parameter rule
      */
@@ -126,6 +127,7 @@ public final class ParamFlowRuleUtil {
 
     /**
      * Build the rule map from raw list of parameter flow rules, grouping by provided group function.
+     * 从参数流规则的原始列表构建规则图，并按提供的组功能分组。
      *
      * @param list          raw list of parameter flow rules
      * @param groupFunction grouping function of the map (by key)

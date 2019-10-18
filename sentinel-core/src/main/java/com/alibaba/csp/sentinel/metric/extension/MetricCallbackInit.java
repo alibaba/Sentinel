@@ -7,15 +7,18 @@ import com.alibaba.csp.sentinel.slots.statistic.StatisticSlotCallbackRegistry;
 
 /**
  * Register callbacks for metric extension.
- *
+ * 为metric扩展注册回调
  * @author Carpenter Lee
  * @since 1.6.1
  */
 public class MetricCallbackInit implements InitFunc {
     @Override
     public void init() throws Exception {
+        //添加回调函数
+        //key是com.alibaba.csp.sentinel.metric.extension.callback.MetricEntryCallback
         StatisticSlotCallbackRegistry.addEntryCallback(MetricEntryCallback.class.getCanonicalName(),
             new MetricEntryCallback());
+        //key是com.alibaba.csp.sentinel.metric.extension.callback.MetricExitCallback
         StatisticSlotCallbackRegistry.addExitCallback(MetricExitCallback.class.getCanonicalName(),
             new MetricExitCallback());
     }

@@ -45,7 +45,7 @@ public class FlowQpsDemo {
 
     private static final int threadCount = 32;
 
-    private static int seconds = 60 + 40;
+    private static int seconds = 600 + 40;
 
     public static void main(String[] args) throws Exception {
         initFlowQpsRule();
@@ -142,7 +142,6 @@ public class FlowQpsDemo {
         @Override
         public void run() {
             while (!stop) {
-                ContextUtil.enter("entrancel", "appA");
                 Entry entry = null;
                 try {
                     entry = SphU.entry(KEY);
@@ -158,7 +157,6 @@ public class FlowQpsDemo {
                         entry.exit();
                     }
                 }
-                ContextUtil.exit();
                 Random random2 = new Random();
                 try {
                     TimeUnit.MILLISECONDS.sleep(random2.nextInt(50));

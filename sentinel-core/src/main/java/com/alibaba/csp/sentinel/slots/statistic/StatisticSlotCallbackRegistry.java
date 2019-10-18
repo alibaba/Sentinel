@@ -26,6 +26,8 @@ import com.alibaba.csp.sentinel.slotchain.ProcessorSlotExitCallback;
 /**
  * <p>
  * Callback registry for {@link StatisticSlot}. Now two kind of callbacks are supported:
+ * StatisticSlotCallbackRegistry是一个StatisticSlot回调注册器，目前只有两种回调支持，ProcessorSlotEntryCallback和ProcessorSlotExitCallback。
+ * ProcessorSlotEntryCallback是在资源正常调用时处理，ProcessorSlotExitCallback是在发送BlockException异常或者资源退出时调用。
  * <ul>
  * <li>{@link ProcessorSlotEntryCallback}: callback for entry (passed and blocked)</li>
  * <li>{@link ProcessorSlotExitCallback}: callback for exiting {@link StatisticSlot}</li>

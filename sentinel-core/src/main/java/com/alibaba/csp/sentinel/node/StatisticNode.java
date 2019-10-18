@@ -26,7 +26,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * <p>The statistic node keep three kinds of real-time statistics metrics:</p>
+ * <p>
+ * The statistic node keep three kinds of real-time statistics metrics:
+ * 统计节点保留三种实时统计指标：
+ * </p>
  * <ol>
  * <li>metrics in second level ({@code rollingCounterInSecond})</li>
  * <li>metrics in minute level ({@code rollingCounterInMinute})</li>
@@ -36,12 +39,15 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>
  * Sentinel use sliding window to record and count the resource statistics in real-time.
  * The sliding window infrastructure behind the {@link ArrayMetric} is {@code LeapArray}.
+ * Sentinel使用滑动窗口实时记录和统计资源统计信息。 {@link ArrayMetric}后面的滑动窗口基础结构是{@code LeapArray}。
  * </p>
  *
  * <p>
  * case 1: When the first request comes in, Sentinel will create a new window bucket of
  * a specified time-span to store running statics, such as total response time(rt),
  * incoming request(QPS), block request(bq), etc. And the time-span is defined by sample count.
+ * 情况1：当第一个请求进入时，Sentinel将创建一个指定时间跨度的新窗口存储区，
+ * 以存储运行中的静态信息，例如总响应时间（rt），传入请求（QPS），阻止请求（bq ）等。时间范围由样本计数定义。
  * </p>
  * <pre>
  * 	0      100ms
@@ -54,9 +60,15 @@ import java.util.concurrent.ConcurrentHashMap;
  * Sentinel use the statics of the valid buckets to decide whether this request can be passed.
  * For example, if a rule defines that only 100 requests can be passed,
  * it will sum all qps in valid buckets, and compare it to the threshold defined in rule.
+ * Sentinel使用有效存储桶的静态参数来确定是否可以传递此请求。
+ * 例如，如果一条规则定义只能传递100个请求，则将对所有有效桶
+ * 中的所有qps求和，并将其与规则中定义的阈值进行比较。
  * </p>
  *
- * <p>case 2: continuous requests</p>
+ * <p>
+ *      case 2: continuous requests
+ *      情况2：连续请求
+ * </p>
  * <pre>
  *  0    100ms    200ms    300ms
  *  +-------+-------+-------+-----→ Sliding Windows
@@ -65,7 +77,10 @@ import java.util.concurrent.ConcurrentHashMap;
  *                   request
  * </pre>
  *
- * <p>case 3: requests keeps coming, and previous buckets become invalid</p>
+ * <p>
+ *     case 3: requests keeps coming, and previous buckets become invalid
+ *     情况3：请求不断出现，以前的存储桶无效
+ * </p>
  * <pre>
  *  0    100ms    200ms	  800ms	   900ms  1000ms    1300ms
  *  +-------+-------+ ...... +-------+-------+ ...... +-------+-----→ Sliding Windows
@@ -74,7 +89,10 @@ import java.util.concurrent.ConcurrentHashMap;
  *                                                    request
  * </pre>
  *
- * <p>The sliding window should become:</p>
+ * <p>
+ *     The sliding window should become:
+ *     滑动窗口应变为：
+ * </p>
  * <pre>
  * 300ms     800ms  900ms  1000ms  1300ms
  *  + ...... +-------+ ...... +-------+-----→ Sliding Windows
@@ -91,6 +109,8 @@ public class StatisticNode implements Node {
     /**
      * Holds statistics of the recent {@code INTERVAL} seconds. The {@code INTERVAL} is divided into time spans
      * by given {@code sampleCount}.
+     * 每秒的滚动计数器 SAMPLE_COUNT为2对应LeapArray中的sample count，IntervalProperty.INTERVAL为1000代表1s，1s分为两个桶，保存数据。
+     * 基于每秒统计，既qps
      */
     private transient volatile Metric rollingCounterInSecond = new ArrayMetric(SampleCountProperty.SAMPLE_COUNT,
         IntervalProperty.INTERVAL);
@@ -98,16 +118,20 @@ public class StatisticNode implements Node {
     /**
      * Holds statistics of the recent 60 seconds. The windowLengthInMs is deliberately set to 1000 milliseconds,
      * meaning each bucket per second, in this way we can get accurate statistics of each second.
+     * 保存最近60秒的统计信息。 windowLengthInMs故意设置为1000毫秒，表示每秒每个存储桶，这样我们就可以获得每秒的准确统计信息。
+     * 基于每分钟统计
      */
     private transient Metric rollingCounterInMinute = new ArrayMetric(60, 60 * 1000, false);
 
     /**
      * The counter for thread count.
+     * 线程计数计数器。
      */
     private LongAdder curThreadNum = new LongAdder();
 
     /**
      * The last timestamp when metrics were fetched.
+     * 获取指标的最后一个时间戳。
      */
     private long lastFetchTime = -1;
 

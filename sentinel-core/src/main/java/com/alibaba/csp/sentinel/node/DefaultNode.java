@@ -34,7 +34,8 @@ import com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot;
  * This class may have a list of sub {@link DefaultNode}s. Child nodes will be created when
  * calling {@link SphU}#entry() or {@link SphO}@entry() multiple times in the same {@link Context}.
  * </p>
- * 节点是用来保存某个资源的各种实时统计信息的，他是一个接口，通过访问节点，就可以获取到对应资源的实时状态，以此为依据进行限流和降级操作。
+ * 节点是用来保存某个资源的各种实时统计信息的，他是一个接口，通过访问节点，
+ * 就可以获取到对应资源的实时状态，以此为依据进行限流和降级操作。
  *
  * @author qinan.qn
  * @see NodeSelectorSlot
@@ -43,16 +44,19 @@ public class DefaultNode extends StatisticNode {
 
     /**
      * The resource associated with the node.
+     * 与节点关联的资源。
      */
     private ResourceWrapper id;
 
     /**
      * The list of all child nodes.
+     * 所有子节点的列表。
      */
     private volatile Set<Node> childList = new HashSet<>();
 
     /**
      * Associated cluster node.
+     * 关联的群集节点。
      */
     private ClusterNode clusterNode;
 
@@ -75,6 +79,7 @@ public class DefaultNode extends StatisticNode {
 
     /**
      * Add child node to current node.
+     * 将子节点添加到当前节点。
      *
      * @param node valid child node
      */
@@ -98,6 +103,7 @@ public class DefaultNode extends StatisticNode {
 
     /**
      * Reset the child node list.
+     * 重置子节点列表。
      */
     public void removeChildList() {
         this.childList = new HashSet<>();

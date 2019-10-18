@@ -20,6 +20,7 @@ import java.util.Set;
 
 /**
  * A group of HTTP API patterns.
+ *  一组HTTP API模式。
  *
  * @author Eric Zhao
  * @since 1.6.0

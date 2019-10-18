@@ -46,10 +46,10 @@ public final class InitExecutor {
         }
         try {
             // 通过spi去加载 com.alibaba.csp.sentinel.init.InitFunc中的实现类,
-            // CommandCenterInitFunc，-1
-            // HeartbeatSenderInitFunc，-1
-            // MetricCallbackInit，2147483647
-            // ParamFlowStatisticSlotCallbackInit，2147483647
+            // CommandCenterInitFunc，-1 ， 创建ServerSocket(bio)处理获取统计数据的请求
+            // HeartbeatSenderInitFunc，-1， 发送心跳任务调度
+            // MetricCallbackInit，2147483647，注册了两个回调实例MetricEntryCallback和MetricExitCallback
+            // ParamFlowStatisticSlotCallbackInit，2147483647, 注册了热点限流的统计ParamFlowStatisticEntryCallback和ParamFlowStatisticExitCallback
             ServiceLoader<InitFunc> loader = ServiceLoader.load(InitFunc.class);
             List<OrderWrapper> initList = new ArrayList<OrderWrapper>();
             for (InitFunc initFunc : loader) {

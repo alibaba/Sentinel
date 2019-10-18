@@ -53,6 +53,25 @@ public class SimpleHttpCommandCenter implements CommandCenter {
     private static final int DEFAULT_PORT = 8719;
 
     @SuppressWarnings("rawtypes")
+    /**
+     * com.alibaba.csp.sentinel.command.handler.BasicInfoCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.FetchActiveRuleCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.FetchClusterNodeByIdCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.FetchClusterNodeHumanCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.FetchJsonTreeCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.FetchOriginCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.FetchSimpleClusterNodeCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.FetchSystemStatusCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.FetchTreeCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.ModifyRulesCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.OnOffGetCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.OnOffSetCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.SendMetricCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.VersionCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.cluster.FetchClusterModeCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.cluster.ModifyClusterModeCommandHandler
+     * com.alibaba.csp.sentinel.command.handler.ApiCommandHandler
+     */
     private static final Map<String, CommandHandler> handlerMap = new ConcurrentHashMap<String, CommandHandler>();
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
@@ -74,7 +93,9 @@ public class SimpleHttpCommandCenter implements CommandCenter {
 
     @Override
     public void start() throws Exception {
+        // 线程数等于CPU数
         int nThreads = Runtime.getRuntime().availableProcessors();
+        // 处理具体http请求的线程池
         this.bizExecutor = new ThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS,
             new ArrayBlockingQueue<Runnable>(10),
             new NamedThreadFactory("sentinel-command-center-service-executor"),
@@ -88,7 +109,6 @@ public class SimpleHttpCommandCenter implements CommandCenter {
 
         Runnable serverInitTask = new Runnable() {
             int port;
-
             {
                 try {
                     port = Integer.parseInt(TransportConfig.getPort());

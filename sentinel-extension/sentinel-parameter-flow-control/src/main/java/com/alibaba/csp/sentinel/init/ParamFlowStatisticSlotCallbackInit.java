@@ -22,6 +22,7 @@ import com.alibaba.csp.sentinel.slots.statistic.StatisticSlotCallbackRegistry;
 /**
  * Init function for adding callbacks to {@link StatisticSlotCallbackRegistry} to record metrics
  * for frequent parameters in {@link com.alibaba.csp.sentinel.slots.statistic.StatisticSlot}.
+ * 把热点限流的统计ParamFlowStatisticSlotCallbackInit注册到ProcessorSlotEntryCallback
  *
  * @author Eric Zhao
  * @since 0.2.0

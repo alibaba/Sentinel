@@ -70,7 +70,7 @@ public class HttpEventTask implements Runnable {
 
             printWriter = new PrintWriter(
                 new OutputStreamWriter(outputStream, Charset.forName(SentinelConfig.charset())));
-
+            //GET /metric?startTime=1569838813000&endTime=1569838819000&refetch=false HTTP/1.1
             String line = in.readLine();
             CommandCenterLog.info("[SimpleHttpCommandCenter] socket income: " + line
                 + "," + socket.getInetAddress());
@@ -139,6 +139,8 @@ public class HttpEventTask implements Runnable {
             }
 
             // Find the matching command handler.
+            // commandName
+            // SendMetricCommandHandler.handle
             CommandHandler<?> commandHandler = SimpleHttpCommandCenter.getHandler(commandName);
             if (commandHandler != null) {
                 CommandResponse<?> response = commandHandler.handle(request);
@@ -194,6 +196,22 @@ public class HttpEventTask implements Runnable {
             // Write 200 OK status line.
             writeOkStatusLine(printWriter);
             // Here we directly use `toString` to encode the result to plain text.
+            //client response
+            //1569839011000|abc|21|1241|21|0|0|0
+            //1569839012000|abc|20|1271|20|0|0|0
+            //1569839013000|abc|20|1288|20|0|0|0
+            //1569839014000|abc|20|1261|20|0|0|0
+            //1569839015000|abc|20|1273|20|0|0|0
+            //1569839016000|abc|20|1264|20|0|0|0
+            //1569839017000|abc|20|1217|20|0|0|0
+            //1569839019000|__cpu_usage__|378|0|0|0|0|0
+
+            //dashboard response
+            //1569839068000|/registry/machine|9|0|9|0|3|0
+            //1569839068000|__total_inbound_traffic__|9|0|9|0|3|0
+            //1569839069000|/registry/machine|1|0|1|0|2|0
+            //1569839069000|__total_inbound_traffic__|1|0|1|0|2|0
+            //1569839075000|__cpu_usage__|749|0|0|0|0|0
             byte[] buffer = response.getResult().toString().getBytes(SentinelConfig.charset());
             rawOutputStream.write(buffer);
             rawOutputStream.flush();

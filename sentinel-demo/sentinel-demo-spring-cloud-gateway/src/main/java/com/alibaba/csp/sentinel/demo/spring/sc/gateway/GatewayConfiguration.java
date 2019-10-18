@@ -62,6 +62,7 @@ public class GatewayConfiguration {
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SentinelGatewayBlockExceptionHandler sentinelGatewayBlockExceptionHandler() {
         // Register the block exception handler for Spring Cloud Gateway.
+        // 为Spring Cloud网关注册块异常处理程序。
         return new SentinelGatewayBlockExceptionHandler(viewResolvers, serverCodecConfigurer);
     }
 
@@ -81,7 +82,9 @@ public class GatewayConfiguration {
         Set<ApiDefinition> definitions = new HashSet<>();
         ApiDefinition api1 = new ApiDefinition("some_customized_api")
             .setPredicateItems(new HashSet<ApiPredicateItem>() {{
+                // 准确匹配方式
                 add(new ApiPathPredicateItem().setPattern("/ahas"));
+                // 前缀匹配方式
                 add(new ApiPathPredicateItem().setPattern("/product/**")
                     .setMatchStrategy(SentinelGatewayConstants.URL_MATCH_STRATEGY_PREFIX));
             }});
@@ -102,10 +105,16 @@ public class GatewayConfiguration {
             .setIntervalSec(1)
         );
         rules.add(new GatewayFlowRule("aliyun_route")
+                .setCount(3)
+                .setIntervalSec(1)
+        );
+        rules.add(new GatewayFlowRule("aliyun_route")
             .setCount(2)
             .setIntervalSec(2)
+                //应对突发请求时额外允许的请求数目。
             .setBurst(2)
             .setParamItem(new GatewayParamFlowItem()
+                    // 参数分析策略客户端IP
                 .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_CLIENT_IP)
             )
         );

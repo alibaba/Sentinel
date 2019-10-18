@@ -239,6 +239,7 @@ public class FlowControllerV1 {
             logger.error("save error:", throwable);
             return Result.ofThrowable(-1, throwable);
         }
+        // 规则发布到客户端
         if (!publishRules(entity.getApp(), entity.getIp(), entity.getPort())) {
             logger.info("publish flow rules fail after rule update");
         }

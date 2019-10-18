@@ -68,6 +68,7 @@ public class WindowWrap<T> {
 
     /**
      * Reset start timestamp of current bucket to provided time.
+     * 将当前存储桶的开始时间戳重置为提供的时间。
      *
      * @param startTime valid start timestamp
      * @return bucket after reset
@@ -79,6 +80,7 @@ public class WindowWrap<T> {
 
     /**
      * Check whether given timestamp is in current bucket.
+     * 检查给定的时间戳记是否在当前存储桶中。
      *
      * @param timeMillis valid timestamp in ms
      * @return true if the given time is in current bucket, otherwise false

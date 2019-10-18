@@ -63,7 +63,6 @@ import org.springframework.stereotype.Component;
 
 /**
  * Fetch metric of machines.
- * 拉取client数据
  *
  * @author leyou
  */
@@ -98,7 +97,6 @@ public class MetricFetcher {
         int cores = Runtime.getRuntime().availableProcessors() * 2;
         long keepAliveTime = 0;
         int queueSize = 2048;
-        //拒絕策略：对拒绝任务直接抛弃,没有异常信息
         RejectedExecutionHandler handler = new DiscardPolicy();
         fetchService = new ThreadPoolExecutor(cores, cores,
             keepAliveTime, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(queueSize),
@@ -111,7 +109,7 @@ public class MetricFetcher {
             .setSoTimeout(3000)
             .setIoThreadCount(Runtime.getRuntime().availableProcessors() * 2)
             .build();
-        //帶返回值異步非阻塞對象創建
+
         httpclient = HttpAsyncClients.custom()
             .setRedirectStrategy(new DefaultRedirectStrategy() {
                 @Override
@@ -127,7 +125,6 @@ public class MetricFetcher {
     }
 
     private void start() {
-        // 10秒后执行，每1秒执行一次
         fetchScheduleService.scheduleAtFixedRate(() -> {
             try {
                 fetchAllApp();
@@ -151,7 +148,6 @@ public class MetricFetcher {
 
     /**
      * Traverse each APP, and then pull the metric of all machines for that APP.
-     * 遍历所有app，然后拉取所有机器app的metric
      */
     private void fetchAllApp() {
         List<String> apps = appManagement.getAppNames();

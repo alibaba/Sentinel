@@ -37,13 +37,6 @@ public class SimpleMachineDiscovery implements MachineDiscovery {
     @Override
     public long addMachine(MachineInfo machineInfo) {
         AssertUtil.notNull(machineInfo, "machineInfo cannot be null");
-        /*
-             只有在当前 Map 中 key 对应的值不存在或为 null 时
-             才调用 mappingFunction
-             并在 mappingFunction 执行结果非 null 时
-             将结果跟 key 关联．
-             mappingFunction 为空时 将抛出空指针异常
-        */
         AppInfo appInfo = apps.computeIfAbsent(machineInfo.getApp(), o -> new AppInfo(machineInfo.getApp(), machineInfo.getAppType()));
         appInfo.addMachine(machineInfo);
         return 1;

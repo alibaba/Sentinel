@@ -23,12 +23,15 @@ import com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot;
 /**
  * <p>
  * A {@link Node} represents the entrance of the invocation tree.
+ * 表示调用树的入口。
  * </p>
  * <p>
  * One {@link Context} will related to a {@link EntranceNode},
+ * 一个Context将与EntranceNode相关，
  * which represents the entrance of the invocation tree. New {@link EntranceNode} will be created if
  * current context does't have one. Note that same context name will share same {@link EntranceNode}
  * globally.
+ * 它表示调用树的入口。如果当前上下文没有EntranceNode，则将创建新的EntranceNode。请注意，相同的上下文名称将全局共享相同的EntranceNode。
  * </p>
  *
  * @author qinan.qn
