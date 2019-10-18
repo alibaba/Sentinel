@@ -42,6 +42,10 @@ public class SentinelHandlerInterceptor extends HandlerInterceptorAdapter {
     private final static String COLON = ":";
     private SentinelSpringWebmvcConfig config;
 
+    public SentinelHandlerInterceptor() {
+        config = new SentinelSpringWebmvcConfig();
+    }
+
     public SentinelHandlerInterceptor(SentinelSpringWebmvcConfig config) {
         this.config = config == null ? new SentinelSpringWebmvcConfig() : config;
     }
