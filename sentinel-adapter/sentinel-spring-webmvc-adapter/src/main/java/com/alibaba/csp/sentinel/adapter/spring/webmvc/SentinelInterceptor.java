@@ -95,11 +95,14 @@ public class SentinelInterceptor extends AbstractSentinelInterceptor {
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
                                 Object handler, Exception ex) throws Exception {
         EntryContainer entryContainer = getEntryContainerInReqeust(request, config.getRequestAttributeName());
-        if (entryContainer.getHttpMethodUrlEntry() != null) {
-            entryContainer.getHttpMethodUrlEntry().exit();
-        }
-        if (entryContainer.getUrlEntry() != null) {
-            entryContainer.getUrlEntry().exit();
+        if (entryContainer != null) {
+            if (entryContainer.getHttpMethodUrlEntry() != null) {
+                entryContainer.getHttpMethodUrlEntry().exit();
+            }
+            if (entryContainer.getUrlEntry() != null) {
+                entryContainer.getUrlEntry().exit();
+            }
+            removeEntryContainerInReqeust(request, config.getRequestAttributeName());
         }
         ContextUtil.exit();
     }

@@ -48,4 +48,8 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
         }
         return (EntryContainer) entityContainerObject;
     }
+
+    protected void removeEntryContainerInReqeust(HttpServletRequest request, String attrKey) {
+        request.removeAttribute(attrKey);
+    }
 }
