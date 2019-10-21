@@ -24,6 +24,7 @@
         <module>sentinel-spring-webflux-adapter</module>
         <module>sentinel-api-gateway-adapter-common</module>
         <module>sentinel-spring-cloud-gateway-adapter</module>
+        <module>sentinel-spring-webmvc-adapter</module>
     </modules>
 
     <dependencyManagement>
