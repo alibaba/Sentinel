@@ -1,0 +1,74 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+"ا" "" "" "a" // alif isol & init 
+                
+"ب" "" "" "b1" // ba' isol
+        
+"ت" "" "" "t1" // ta' isol
+        
+"ث" "" "" "t1" // tha' isol
+
+"ج" "" "" "(dZ1|Z1)" // jim isol
+        
+"ح" "" "" "(h1|1)" // h.a' isol
+    
+"خ" "" "" "x1" // kha' isol
+    
+"د" "" "" "d1" // dal isol & init
+           
+"ذ" "" "" "d1" // dhal isol & init
+        
+"ر" "" "" "r1" // dhal isol & init
+    
+"ز" "" "" "z1" // za' isol & init
+        
+"س" "" "" "s1" // sin isol
+    
+"ش" "" "" "S1" // shin isol
+    
+"ص" "" "" "s1" // s.ad isol
+    
+"ض" "" "" "d1" // d.ad isol
+        
+"ط" "" "" "t1" // t.a' isol
+        
+"ظ" "" "" "z1" // z.a' isol
+        
+"ع" "" "" "(h1|1)" // ayin isol 
+    
+"غ" "" "" "g1" // ghayin isol
+    
+"ف" "" "" "f1" // fa' isol
+    
+"ق" "" "" "k1" // qaf isol
+    
+"ك" "" "" "k1" // kaf isol
+    
+"ل" "" "" "l1" // lam isol
+    
+"م" "" "" "m1" // mim isol
+    
+"ن" "" "" "n1" // nun isol
+    
+"ه" "" "" "(h1|1)" // h isol
+        
+"و" "" "" "(u|v1)" // waw, isol + init
+               
+    
+"ي‎" "" "" "(i|j1)" // ya' isol

@@ -1,0 +1,107 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include gen_exact_approx_common
+
+"ts" "" "" "C" // for not confusion Gutes [=guts] and Guts [=guc]
+"tS" "" "" "C" // same reason
+"S" "" "" "s"
+"p" "" "" "f"   
+"b" "^" "" "b"    
+"b" "" "" "(b|v)"    
+        
+"ja" "" "" "i"
+"jA" "" "" "i"  
+"je" "" "" "i"
+"jE" "" "" "i"
+"aj" "" "" "i"
+"Aj" "" "" "i"
+"I" "" "" "i"
+"j" "" "" "i"
+    
+"a" "^" "" "1"
+"A" "^" "" "1"
+"e" "^" "" "1"
+"E" "^" "" "1"
+"Y" "^" "" "1"
+    
+"a" "" "$" "1"
+"A" "" "$" "1"
+"e" "" "$" "1"
+"E" "" "$" "1"
+"Y" "" "$" "1"
+    
+"a" "" "" ""
+"A" "" "" ""
+"e" "" "" ""
+"E" "" "" ""
+"Y" "" "" ""
+    
+"oj" "^" "" "(u|vi)"
+"Oj" "^" "" "(u|vi)"
+"uj" "^" "" "(u|vi)"
+"Uj" "^" "" "(u|vi)" 
+    
+"oj" "" "" "u"
+"Oj" "" "" "u"
+"uj" "" "" "u"
+"Uj" "" "" "u" 
+    
+"ou" "^" "" "(u|v|1)"
+"o" "^" "" "(u|v|1)"
+"O" "^" "" "(u|v|1)"
+"U" "^" "" "(u|v|1)"
+"u" "^" "" "(u|v|1)"
+    
+"o" "" "$" "(u|1)"
+"O" "" "$" "(u|1)"
+"u" "" "$" "(u|1)"
+"U" "" "$" "(u|1)"
+    
+"ou" "" "" "u"
+"o" "" "" "u"
+"O" "" "" "u"
+"U" "" "" "u"
+        
+"VV" "" "" "u" // alef/ayin + vov from ruleshebrew
+"V" "" "" "v" // tsvey-vov from ruleshebrew;; only Ashkenazic
+"L" "^" "" "1" // alef/ayin from  ruleshebrew
+"L" "" "$" "1" // alef/ayin from  ruleshebrew
+"L" "" "" " " // alef/ayin from  ruleshebrew
+"WW" "^" "" "(vi|u)" // vav-yod from  ruleshebrew
+"WW" "" "" "u" // vav-yod from  ruleshebrew
+"W" "^" "" "(u|v)" // vav from  ruleshebrew
+"W" "" "" "u" // vav from  ruleshebrew
+    
+    //"g" "" "" "(g|Z)"
+    //"z" "" "" "(z|Z)"
+    //"d" "" "" "(d|dZ)"
+   
+"TB" "" "$" "(t|s)" // tav from ruleshebrew; only Ashkenazic
+"TB" "" "" "t" // tav from ruleshebrew; only Ashkenazic    
+"T" "" "" "t"   // tet from  ruleshebrew
+    
+   //"k" "" "" "(k|x)"
+   //"x" "" "" "(k|x)"
+"K" "" "" "k" // kof and initial kaf from ruleshebrew
+"X" "" "" "x" // khet and final kaf from ruleshebrew
+    
+"H" "^" "" "(x|1)"
+"H" "" "$" "(x|1)"
+"H" "" "" "(x|)"
+"h" "^" "" "1"
+"h" "" "" ""

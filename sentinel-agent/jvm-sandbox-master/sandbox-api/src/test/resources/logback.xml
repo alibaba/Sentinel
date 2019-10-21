@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration scan="true" scanPeriod="10000">
+
+    <appender name="STDOUT-APPENDER" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %5level %msg%n</pattern>　　
+        </encoder>
+    </appender>
+
+    <root level="debug">
+        <appender-ref ref="STDOUT-APPENDER"/>
+    </root>
+
+</configuration>

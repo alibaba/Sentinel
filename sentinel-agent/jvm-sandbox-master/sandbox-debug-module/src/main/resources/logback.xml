@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration scan="true" scanPeriod="10000">
+
+    <!-- DEBUG模块：Servlet监控日志 -->
+    <logger name="DEBUG-SERVLET-ACCESS" level="INFO">
+        <appender class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${user.home}/logs/sandbox/debug/servlet-access.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <FileNamePattern>${user.home}/logs/sandbox/debug/servlet-access.log.%d{yyyy-MM-dd}</FileNamePattern>
+                <MaxHistory>30</MaxHistory>
+            </rollingPolicy>
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %msg%n</pattern>
+                <charset>UTF-8</charset>
+            </encoder>
+        </appender>
+    </logger>
+
+    <!-- DEBUG模块：Servlet输出日志
+    <logger name="DEBUG-SERVLET-PRINTER" level="INFO">
+        <appender class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${user.home}/logs/sandbox/debug/servlet-printer.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <FileNamePattern>${user.home}/logs/sandbox/debug/servlet-printer.log.%d{yyyy-MM-dd}</FileNamePattern>
+                <MaxHistory>30</MaxHistory>
+            </rollingPolicy>
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %msg%n</pattern>
+                <charset>UTF-8</charset>
+            </encoder>
+        </appender>
+    </logger>
+    -->
+
+    <!-- DEBUG模块：Exception监控日志 -->
+    <logger name="DEBUG-EXCEPTION-LOGGER" level="INFO">
+        <appender class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${user.home}/logs/sandbox/debug/exception-monitor.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <FileNamePattern>${user.home}/logs/sandbox/debug/exception-monitor.log.%d{yyyy-MM-dd}</FileNamePattern>
+                <MaxHistory>30</MaxHistory>
+            </rollingPolicy>
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %msg%n</pattern>
+                <charset>UTF-8</charset>
+            </encoder>
+        </appender>
+    </logger>
+
+    <!-- DEBUG模块：JDBC监控日志 -->
+    <logger name="DEBUG-JDBC-LOGGER" level="INFO">
+        <appender class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${user.home}/logs/sandbox/debug/jdbc-monitor.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <FileNamePattern>${user.home}/logs/sandbox/debug/jdbc-monitor.log.%d{yyyy-MM-dd}</FileNamePattern>
+                <MaxHistory>30</MaxHistory>
+            </rollingPolicy>
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %msg%n</pattern>
+                <charset>UTF-8</charset>
+            </encoder>
+        </appender>
+    </logger>
+
+    <!-- DEBUG模块：JDBC监控日志 -->
+    <logger name="DEBUG-SPRING-LOGGER" level="INFO">
+        <appender class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${user.home}/logs/sandbox/debug/spring-monitor.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <FileNamePattern>${user.home}/logs/sandbox/debug/spring-monitor.log.%d{yyyy-MM-dd}</FileNamePattern>
+                <MaxHistory>30</MaxHistory>
+            </rollingPolicy>
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %msg%n</pattern>
+                <charset>UTF-8</charset>
+            </encoder>
+        </appender>
+    </logger>
+
+    <!-- DEBUG模块默认日志 -->
+    <root level="INFO">
+        <appender class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${user.home}/logs/sandbox/debug/debug.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <FileNamePattern>${user.home}/logs/sandbox/debug/debug.log.%d{yyyy-MM-dd}</FileNamePattern>
+                <MaxHistory>30</MaxHistory>
+            </rollingPolicy>
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %msg%n</pattern>
+                <charset>UTF-8</charset>
+            </encoder>
+        </appender>
+    </root>
+
+    <!-- DEBUG模块：LifeCycle监控日志 -->
+    <logger name="DEBUG-LIFECYCLE-LOGGER" level="INFO">
+        <appender class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${user.home}/logs/sandbox/debug/lifecycle-monitor.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <FileNamePattern>${user.home}/logs/sandbox/debug/lifecycle-monitor.log.%d{yyyy-MM-dd}</FileNamePattern>
+                <MaxHistory>30</MaxHistory>
+            </rollingPolicy>
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %msg%n</pattern>
+                <charset>UTF-8</charset>
+            </encoder>
+        </appender>
+    </logger>
+</configuration>

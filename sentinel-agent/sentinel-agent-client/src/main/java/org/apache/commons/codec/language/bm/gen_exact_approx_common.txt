@@ -1,0 +1,79 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// GENERAL
+"h" "" "$" ""
+
+// VOICED - UNVOICED CONSONANTS
+"b" "" "[fktSs]" "p"
+"b" "" "p" ""
+"b" "" "$" "p"
+"p" "" "[vgdZz]" "b" // Ashk: "v" excluded (everythere)
+"p" "" "b" ""
+    
+"v" "" "[pktSs]" "f"
+"v" "" "f" ""
+"v" "" "$" "f"
+"f" "" "[vbgdZz]" "v"
+"f" "" "v" ""
+    
+"g" "" "[pftSs]" "k"
+"g" "" "k" ""
+"g" "" "$" "k"
+"k" "" "[vbdZz]" "g"
+"k" "" "g" ""
+    
+"d" "" "[pfkSs]" "t"
+"d" "" "t" ""
+"d" "" "$" "t"
+"t" "" "[vbgZz]" "d"
+"t" "" "d" ""
+    
+"s" "" "dZ" ""
+"s" "" "tS" ""
+    
+"z" "" "[pfkSt]" "s"
+"z" "" "[sSzZ]" ""
+"s" "" "[sSzZ]" ""
+"Z" "" "[sSzZ]" ""
+"S" "" "[sSzZ]" ""
+       
+// SIMPLIFICATION OF CONSONANT CLUSTERS
+"jnm" "" "" "jm"
+
+// DOUBLE --> SINGLE
+"ji" "^" "" "i"
+"jI" "^" "" "I"
+        
+"a" "" "[aA]" "" 
+"a" "A" "" "" 
+"A" "" "A" ""
+       
+"b" "" "b" ""
+"d" "" "d" ""
+"f" "" "f" ""
+"g" "" "g" ""
+"j" "" "j" ""
+"k" "" "k" ""
+"l" "" "l" ""
+"m" "" "m" ""
+"n" "" "n" ""
+"p" "" "p" ""
+"r" "" "r" ""
+"t" "" "t" ""
+"v" "" "v" ""
+"z" "" "z" ""

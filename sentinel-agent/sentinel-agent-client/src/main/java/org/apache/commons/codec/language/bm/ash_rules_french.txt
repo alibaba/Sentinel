@@ -1,0 +1,91 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// Ashkenazic
+
+// CONSONANTS
+"kh" "" "" "x" // foreign
+"ph" "" "" "f"
+    
+"ç" "" "" "s"
+"x" "" "" "ks"
+"ch" "" "" "S"
+"c" "" "[eiyéèê]" "s"
+"c" "" "" "k"
+"gn" "" "" "(n|gn)"
+"g" "" "[eiy]" "Z" 
+"gue" "" "$" "k"     
+"gu" "" "[eiy]" "g" 
+   //array("aill" "" "e" "aj" // non Jewish
+   //array("ll" "" "e" "(l|j)" // non Jewish
+"que" "" "$" "k"
+"qu" "" "" "k"
+"q" "" "" "k"
+"s" "[aeiouyéèê]" "[aeiouyéèê]" "z"
+"h" "[bdgt]" "" "" // translit from Arabic
+"h" "" "$" "" // foreign
+"j" "" "" "Z"
+"w" "" "" "v"
+"ouh" "" "[aioe]" "(v|uh)"
+"ou" "" "[aeio]" "v" 
+"uo" "" "" "(vo|o)"
+"u" "" "[aeio]" "v" 
+      
+// VOWELS
+"aue" "" "" "aue" 
+"eau" "" "" "o" 
+  //array("au" "" "" "(o|au)" // non Jewish
+"ai" "" "" "aj" // [e] is non Jewish
+"ay" "" "" "aj" // [e] is non Jewish
+"é" "" "" "e"
+"ê" "" "" "e"
+"è" "" "" "e"
+"à" "" "" "a"
+"â" "" "" "a"
+"où" "" "" "u"
+"ou" "" "" "u"
+"oi" "" "" "oj" // [ua] is non Jewish
+"ei" "" "" "aj" // [e] is non Jewish
+"ey" "" "" "aj" // [e] non Jewish
+    //array("eu" "" "" "(e|o)" // non Jewish
+"y" "[ou]" "" "j"
+"e" "" "$" "(e|)"
+"i" "" "[aou]" "j"
+"y" "" "[aoeu]" "j"
+"y" "" "" "i"
+       
+  // TRIVIAL      
+"a" "" "" "a"
+"b" "" "" "b"
+"d" "" "" "d"
+"e" "" "" "E" // only Ashkenazic
+"f" "" "" "f"
+"g" "" "" "g"
+"h" "" "" "h"
+"i" "" "" "I" // only Ashkenazic
+"k" "" "" "k"
+"l" "" "" "l"
+"m" "" "" "m"
+"n" "" "" "n"
+"o" "" "" "o"
+"p" "" "" "p"
+"r" "" "" "r"
+"s" "" "" "s"
+"t" "" "" "t"
+"u" "" "" "u"
+"v" "" "" "v"
+"z" "" "" "z"

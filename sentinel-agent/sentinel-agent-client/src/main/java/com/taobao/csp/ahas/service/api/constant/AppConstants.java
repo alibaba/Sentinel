@@ -1,0 +1,40 @@
+package com.taobao.csp.ahas.service.api.constant;
+
+public interface AppConstants {
+   int HOST_TYPE = 0;
+   int CONTAINER_TYPE = 1;
+   String JAVA_SDK = "JAVA_SDK";
+   String JAVA_AGENT = "JAVA_AGENT";
+   String DEFAULT_BASE_DIR = "/var/lib";
+   String DEFAULT_LOG_BASE_UNIX = "/var/lib/aliyunahas/agent/logs";
+   String DEFAULT_LOG_BASE_WIN = "/logs/aliyunahas/agent/logs";
+   String DEFAULT_MACHINE_BASE_DIR = "/var/lib/aliyunahas/agent";
+   String MACHINE_ID_FILE = "machine-id";
+   String CERT_FILE = ".ahas.cert";
+   String SYNC = "ahas.sync";
+   String FORCE_VPC = "ahas.force.vpc";
+   String VPC_URL = "ahas.vpc.url";
+   String HEARTBEAT_PERIOD = "ahas.heartbeat.period";
+   String HARVEST_PERIOD = "ahas.harvest.period";
+   String CERT = "ahas.cert";
+   String MACHINE_ID = "ahas.machine.id";
+   String LICENSE = "ahas.license";
+   String DEBUG = "ahas.debug";
+   String HOME = "ahas.home";
+   String HOME_ENV = "AHAS_HOME";
+   String ENV = "ahas.env";
+   String NAMESPACE = "ahas.namespace";
+   String REGION_ID = "ahas.region";
+   String LOG_LEVEL = "ahas.log.level";
+   String LOG_SIZE = "ahas.log.size";
+   String LOG_COUNT = "ahas.log.count";
+   String LOG_PATH = "ahas.log.path";
+   String CONFIG_FILE = "ahas.config.file";
+   String GATEWAY_HOST = "ahas.gateway.host";
+   String ACM_HOST = "ahas.acm.host";
+   String AHAS_SCOPE = "ahas.scope";
+   String AHAS_VERSION = "ahas.version";
+   String AHAS_BUILD_NUMBER = "ahas.build.number";
+   String PUBLIC_SCOPE = "public";
+   String PRIVATE_SCOPE = "private";
+}

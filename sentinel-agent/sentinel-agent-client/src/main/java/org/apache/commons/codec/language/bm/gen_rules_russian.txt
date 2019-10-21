@@ -1,0 +1,142 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+//GENERAL// CONVERTING FEMININE TO MASCULINE
+"yna" "" "$" "(in|ina)" 
+"ina" "" "$" "(in|ina)" 
+"liova" "" "$" "(lof|lef)" 
+"lova" "" "$" "(lof|lef|lova)" 
+"ova" "" "$" "(of|ova)" 
+"eva" "" "$" "(ef|ova)" 
+"aia" "" "$" "(aja|i)" 
+"aja" "" "$" "(aja|i)" 
+"aya" "" "$" "(aja|i)" 
+
+//SPECIAL CONSONANTS
+"tsya" "" "" "tsa" 
+"tsyu" "" "" "tsu" 
+"tsia" "" "" "tsa" 
+"tsie" "" "" "tse" 
+"tsio" "" "" "tso"   
+"tsye" "" "" "tse" 
+"tsyo" "" "" "tso" 
+"tsiu" "" "" "tsu" 
+"sie" "" "" "se" 
+"sio" "" "" "so"   
+"zie" "" "" "ze" 
+"zio" "" "" "zo"   
+"sye" "" "" "se" 
+"syo" "" "" "so"   
+"zye" "" "" "ze" 
+"zyo" "" "" "zo"   
+
+"ger" "" "$" "ger" 
+"gen" "" "$" "gen" 
+"gin" "" "$" "gin" 
+"gg" "" "" "g" 
+"g" "[jaeoiuy]" "[aeoiu]" "g" 
+"g" "" "[aeoiu]" "(g|h)" 
+
+"kh" "" "" "x"
+"ch" "" "" "(tS|x)" 
+"sch" "" "" "(StS|S)"
+"ssh" "" "" "S"
+"sh" "" "" "S"
+"zh" "" "" "Z" 
+"tz" "" "$" "ts" 
+"tz" "" "" "(ts|tz)" 
+"c" "" "[iey]" "s" 
+"qu" "" "" "(kv|k)" 
+"s" "" "s" ""
+
+//SPECIAL VOWELS
+"lya" "" "" "la" 
+"lyu" "" "" "lu"  
+"lia" "" "" "la" // not in DJSRE
+"liu" "" "" "lu"  // not in DJSRE
+"lja" "" "" "la" // not in DJSRE
+"lju" "" "" "lu"  // not in DJSRE
+"le" "" "" "(lo|lE)" //not in DJSRE
+"lyo" "" "" "(lo|le)" //not in DJSRE
+"lio" "" "" "(lo|le)" 
+
+"ije" "" "" "je"
+"ie" "" "" "je"
+"iye" "" "" "je"
+"iie" "" "" "je"
+"yje" "" "" "je"
+"ye" "" "" "je"
+"yye" "" "" "je"
+"yie" "" "" "je"
+
+"ij" "" "[aou]" "j"
+"iy" "" "[aou]" "j"
+"ii" "" "[aou]" "j"
+"yj" "" "[aou]" "j"
+"yy" "" "[aou]" "j"
+"yi" "" "[aou]" "j"
+
+"io" "" "" "(jo|e)" 
+"i" "" "[au]" "j" 
+"i" "[aeou]" "" "j" 
+"yo" "" "" "(jo|e)" 
+"y" "" "[au]" "j"
+"y" "[aeiou]" "" "j" 
+
+"ii" "" "$" "i" 
+"iy" "" "$" "i" 
+"yy" "" "$" "i" 
+"yi" "" "$" "i" 
+"yj" "" "$" "i"
+"ij" "" "$" "i"
+
+"e" "^" "" "(je|E)" 
+"ee" "" "" "(aje|i)" 
+"e" "[aou]" "" "je" 
+"oo" "" "" "(oo|u)" 
+"'" "" "" "" 
+"\"" "" "" ""
+
+"aue" "" "" "aue"
+
+// LATIN ALPHABET 
+"a" "" "" "a"
+"b" "" "" "b"
+"c" "" "" "k" 
+"d" "" "" "d"
+"e" "" "" "E"
+"f" "" "" "f"
+"g" "" "" "g" 
+"h" "" "" "h" 
+"i" "" "" "I"
+"j" "" "" "j" 
+"k" "" "" "k"
+"l" "" "" "l"
+"m" "" "" "m"
+"n" "" "" "n"
+"o" "" "" "o"
+"p" "" "" "p"
+"q" "" "" "k" 
+"r" "" "" "r"
+"s" "" "" "s"
+"t" "" "" "t"
+"u" "" "" "u"
+"v" "" "" "v"
+"w" "" "" "v" 
+"x" "" "" "ks" 
+"y" "" "" "I"
+"z" "" "" "z"

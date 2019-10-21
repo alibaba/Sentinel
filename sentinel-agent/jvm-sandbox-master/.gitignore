@@ -1,0 +1,29 @@
+## for IDEA
+.idea
+*.iml
+
+## for maven
+pom.xml.versionsBackup
+sandbox-api/target/
+sandbox-common-api/target/
+sandbox-core/target/
+sandbox-provider-api/target/
+sandbox-spy/target/
+sandbox-agent/target/
+sandbox-debug-module/target/
+sandbox-mgr-module/target/
+sandbox-mgr-provider/target/
+sandbox-module-starter/target/
+target/
+
+## for eclipse and vscode
+.classpath
+.project
+.settings
+.factorypath
+
+## for vim
+*.swp
+*.swo
+*.swn
+

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>sandbox</artifactId>
+        <groupId>com.alibaba.jvm.sandbox</groupId>
+        <version>1.2.2</version>
+    </parent>
+    <artifactId>sandbox-provider-api</artifactId>
+    <name>sandbox-provider-api ${sandbox.version}</name>
+    
+    <dependencies>
+        <dependency>
+            <groupId>com.alibaba.jvm.sandbox</groupId>
+            <artifactId>sandbox-common-api</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>

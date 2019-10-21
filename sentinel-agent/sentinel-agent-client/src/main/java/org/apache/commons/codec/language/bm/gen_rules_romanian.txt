@@ -1,0 +1,64 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+"ce" "" "" "tSe"
+"ci" "" "" "(tSi|tS)"
+"ch" "" "[ei]" "k"
+"ch" "" "" "x" // foreign
+
+"gi" "" "" "(dZi|dZ)"
+"g" "" "[ei]" "dZ"
+"gh" "" "" "g"
+
+"i" "[aeou]" "" "j"
+"i" "" "[aeou]" "j"
+"ţ" "" "" "ts"
+"ş" "" "" "S"
+"qu" "" "" "k"    
+
+"î" "" "" "i"
+"ea" "" "" "ja"
+"ă" "" "" "(e|a)"
+"aue" "" "" "aue"
+
+// LATIN ALPHABET
+"a" "" "" "a"
+"b" "" "" "b"
+"c" "" "" "k"
+"d" "" "" "d"
+"e" "" "" "E"
+"f" "" "" "f"
+"g" "" "" "g"
+"h" "" "" "(x|h)"
+"i" "" "" "I"
+"j" "" "" "Z"
+"k" "" "" "k"
+"l" "" "" "l"
+"m" "" "" "m"
+"n" "" "" "n"
+"o" "" "" "o"
+"p" "" "" "p"
+"q" "" "" "k"    
+"r" "" "" "r"
+"s" "" "" "s"
+"t" "" "" "t"
+"u" "" "" "u"
+"v" "" "" "v"
+"w" "" "" "v"    
+"x" "" "" "ks"    
+"y" "" "" "i"    
+"z" "" "" "z"

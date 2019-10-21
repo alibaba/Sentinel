@@ -1,0 +1,13 @@
+language: generic
+
+cache:
+  directories:
+    - "$HOME/.m2/repository"
+
+script:
+  - export JAVA_HOME=$HOME/openjdk8
+  - $TRAVIS_BUILD_DIR/install-jdk.sh --install openjdk8 --target $JAVA_HOME
+  - mvn -PgithubCI -X clean cobertura:cobertura -Dmaven.test.skip=false
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

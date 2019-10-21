@@ -1,0 +1,104 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+"kh" "" "" "x" // foreign
+"ch" "" "" "S"
+"ss" "" "" "s"
+"sc" "" "[ei]" "s"
+"sç" "" "[aou]" "s"
+"ç" "" "" "s"
+"c" "" "[ei]" "s"
+//  "c" "" "[aou]" "(k|C)"
+
+"s" "^" "" "s"
+"s" "[aáuiíoóeéêy]" "[aáuiíoóeéêy]" "z"
+"s" "" "[dglmnrv]" "(Z|S)" // Z is Brazil
+
+"z" "" "$" "(Z|s|S)" // s and S in Brazil
+"z" "" "[bdgv]" "(Z|z)" // Z in Brazil
+"z" "" "[ptckf]" "(s|S|z)" // s and S in Brazil
+
+"gu" "" "[eiu]" "g"    
+"gu" "" "[ao]" "gv"    
+"g" "" "[ei]" "Z"
+"qu" "" "[eiu]" "k"    
+"qu" "" "[ao]" "kv"    
+
+"uo" "" "" "(vo|o|u)"
+"u" "" "[aei]" "v" 
+
+"lh" "" "" "l"
+"nh" "" "" "nj"
+"h" "[bdgt]" "" "" // translit. from Arabic
+
+"ex" "" "[aáuiíoóeéêy]" "(ez|eS|eks)" // ez in Brazil
+"ex" "" "[cs]" "e" 
+
+"y" "[aáuiíoóeéê]" "" "j"
+"y" "" "[aeiíou]" "j"
+"m" "" "[bcdfglnprstv]" "(m|n)" // maybe to add a rule for m/n before a consonant that disappears [preceding vowel becomes nasalized]
+"m" "" "$" "(m|n)" // maybe to add a rule for final m/n that disappears [preceding vowel becomes nasalized]
+
+"ão" "" "" "(au|an|on)"
+"ãe" "" "" "(aj|an)"
+"ãi" "" "" "(aj|an)"
+"õe" "" "" "(oj|on)"
+"i" "[aáuoóeéê]" "" "j"
+"i" "" "[aeou]" "j"
+
+"â" "" "" "a"
+"à" "" "" "a"
+"á" "" "" "a"
+"ã" "" "" "(a|an|on)"
+"é" "" "" "e"
+"ê" "" "" "e"
+"í" "" "" "i"
+"ô" "" "" "o"
+"ó" "" "" "o"
+"õ" "" "" "(o|on)"
+"ú" "" "" "u"
+"ü" "" "" "u"
+
+"aue" "" "" "aue"
+
+// LATIN ALPHABET
+"a" "" "" "a"
+"b" "" "" "b"
+"c" "" "" "k"
+"d" "" "" "d"
+"e" "" "" "(e|i)"
+"f" "" "" "f"
+"g" "" "" "g"
+"h" "" "" "h"
+"i" "" "" "i"
+"j" "" "" "Z" 
+"k" "" "" "k"
+"l" "" "" "l"
+"m" "" "" "m"
+"n" "" "" "n"
+"o" "" "" "(o|u)"
+"p" "" "" "p"
+"q" "" "" "k"    
+"r" "" "" "r"
+"s" "" "" "S"
+"t" "" "" "t"
+"u" "" "" "u"
+"v" "" "" "v"
+"w" "" "" "v"    
+"x" "" "" "(S|ks)"   
+"y" "" "" "i"   
+"z" "" "" "z"

@@ -1,0 +1,85 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// GENERAL
+
+// Includes both Spanish (Castillian) & Catalan
+
+// CONSONANTS
+"ñ" "" "" "(n|nj)"
+"ny" "" "" "nj" // Catalan
+"ç" "" "" "s" // Catalan
+
+"ig" "[aeiou]" "" "(tS|ig)" // tS is Catalan
+"ix" "[aeiou]" "" "S" // Catalan
+"tx" "" "" "tS" // Catalan
+"tj" "" "$" "tS" // Catalan
+"tj" "" "" "dZ" // Catalan
+"tg" "" "" "(tg|dZ)" // dZ is Catalan
+"ch" "" "" "(tS|dZ)" // dZ is typical for Argentina
+"bh" "" "" "b" // translit. from Arabic
+"h" "[dgt]" "" "" // translit. from Arabic
+"h" "" "$" "" // foreign
+//"ll" "" "" "(l|Z)" // Z is typical for Argentina, only Ashkenazic
+"m" "" "[bpvf]" "(m|n)"
+"c" "" "[ei]" "s" 
+//  "c" "" "[aou]" "(k|C)"
+"gu" "" "[ei]" "(g|gv)" // "gv" because "u" can actually be "ü"
+"g" "" "[ei]" "(x|g|dZ)"  // "g" only for foreign words; dZ is Catalan
+"qu" "" "" "k"
+
+"uo" "" "" "(vo|o)"    
+"u" "" "[aei]" "v"
+
+// SPECIAL VOWELS
+"ü" "" "" "v"
+"á" "" "" "a"
+"é" "" "" "e"
+"í" "" "" "i"
+"ó" "" "" "o"
+"ú" "" "" "u"
+"à" "" "" "a"  // Catalan
+"è" "" "" "e" // Catalan
+"ò" "" "" "o"  // Catalan
+
+// LATIN ALPHABET      
+"a" "" "" "a"
+"b" "" "" "B"
+"c" "" "" "k"
+"d" "" "" "d"
+"e" "" "" "e"
+"f" "" "" "f"
+"g" "" "" "g" 
+"h" "" "" "h"
+"i" "" "" "i"
+"j" "" "" "(x|Z)" // Z is Catalan
+"k" "" "" "k"
+"l" "" "" "l"
+"m" "" "" "m"
+"n" "" "" "n"
+"o" "" "" "o"
+"p" "" "" "p"
+"q" "" "" "k"
+"r" "" "" "r"
+"s" "" "" "s"
+"t" "" "" "t"
+"u" "" "" "u"
+"v" "" "" "V"
+"w" "" "" "v" // foreign words
+"x" "" "" "(ks|gz|S)" // ks is Spanish, all are Catalan
+"y" "" "" "(i|j)"
+"z" "" "" "(z|s)" // as "c" befoire "e" or "i", in Spain it is like unvoiced English "th"

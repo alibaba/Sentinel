@@ -1,0 +1,367 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+  // format of each entry rule in the table
+  //   (pattern, left context, right context, phonetic)
+  // where
+  //   pattern is a sequence of characters that might appear in the word to be transliterated
+  //   left context is the context that precedes the pattern
+  //   right context is the context that follows the pattern
+  //   phonetic is the result that this rule generates
+  //
+  // note that both left context and right context can be regular expressions
+  // ex: left context of ^ would mean start of word
+  //     left context of [aeiouy] means following a vowel
+  //     right context of [^aeiouy] means preceding a consonant
+  //     right context of e$ means preceding a final e
+
+//GENERIC
+
+// CONVERTING FEMININE TO MASCULINE
+"yna" "" "$" "(in[russian]|ina)" 
+"ina" "" "$" "(in[russian]|ina)" 
+"liova" "" "$" "(lova|lof[russian]|lef[russian])"
+"lova" "" "$" "(lova|lof[russian]|lef[russian]|l[czech]|el[czech])"   
+"kova" "" "$" "(kova|kof[russian]|k[czech]|ek[czech])"   
+"ova" "" "$" "(ova|of[russian]|[czech])"   
+"ová" "" "$" "(ova|[czech])"   
+"eva" "" "$" "(eva|ef[russian])"   
+"aia" "" "$" "(aja|i[russian])"
+"aja" "" "$" "(aja|i[russian])" 
+"aya" "" "$" "(aja|i[russian])" 
+    
+"lowa" "" "$" "(lova|lof[polish]|l[polish]|el[polish])"   
+"kowa" "" "$" "(kova|kof[polish]|k[polish]|ek[polish])"   
+"owa" "" "$" "(ova|of[polish]|)"   
+"lowna" "" "$" "(lovna|levna|l[polish]|el[polish])" 
+"kowna" "" "$" "(kovna|k[polish]|ek[polish])"  
+"owna" "" "$" "(ovna|[polish])"  
+"lówna" "" "$" "(l|el)"  // polish
+"kówna" "" "$" "(k|ek)"  // polish
+"ówna" "" "$" ""         // polish
+"á" "" "$" "(a|i[czech])" 
+"a" "" "$" "(a|i[polish+czech])" 
+    
+// CONSONANTS
+"pf" "" "" "(pf|p|f)" 
+"que" "" "$" "(k[french]|ke|kve)"
+"qu" "" "" "(kv|k)" 
+ 
+"m" "" "[bfpv]" "(m|n)" 
+"m" "[aeiouy]" "[aeiouy]" "m"  
+"m" "[aeiouy]" "" "(m|n[french+portuguese])"  // nasal
+ 
+"ly" "" "[au]" "l" 
+"li" "" "[au]" "l" 
+"lio" "" "" "(lo|le[russian])" 
+"lyo" "" "" "(lo|le[russian])" 
+  //array("ll" "" "" "(l|J[spanish])"  // Disabled Argentinian rule
+"lt" "u" "$" "(lt|[french])" 
+    
+"v" "^" "" "(v|f[german]|b[spanish])" 
+
+"ex" "" "[aáuiíoóeéêy]" "(ez[portuguese]|eS[portuguese]|eks|egz)" 
+"ex" "" "[cs]" "(e[portuguese]|ek)" 
+"x" "u" "$" "(ks|[french])" 
+   
+"ck" "" "" "(k|tsk[polish+czech])"
+"cz" "" "" "(tS|tsz[czech])" // Polish
+   
+    //Proceccing of "h" in various combinations         
+"rh" "^" "" "r"
+"dh" "^" "" "d"
+"bh" "^" "" "b"
+     
+"ph" "" "" "(ph|f)"
+"kh" "" "" "(x[russian+english]|kh)"  
+  
+"lh" "" "" "(lh|l[portuguese])" 
+"nh" "" "" "(nh|nj[portuguese])" 
+        
+"ssch" "" "" "S"      // german
+"chsch" "" "" "xS"    // german
+"tsch" "" "" "tS"     // german 
+    
+    ///"desch" "^" "" "deS" 
+    ///"desh" "^" "" "(dES|de[french])" 
+    ///"des" "^" "[^aeiouy]" "(dEs|de[french])" 
+    
+"sch" "[aeiouy]" "[ei]" "(S|StS[russian]|sk[romanian+italian])" 
+"sch" "[aeiouy]" "" "(S|StS[russian])" 
+"sch" "" "[ei]" "(sk[romanian+italian]|S|StS[russian])"
+"sch" "" "" "(S|StS[russian])"
+"ssh" "" "" "S" 
+    
+"sh" "" "[äöü]" "sh"      // german 
+"sh" "" "[aeiou]" "(S[russian+english]|sh)"
+"sh" "" "" "S" 
+ 
+"zh" "" "" "(Z[english+russian]|zh|tsh[german])" 
+    
+"chs" "" "" "(ks[german]|xs|tSs[russian+english])" 
+"ch" "" "[ei]" "(x|tS[spanish+english+russian]|k[romanian+italian]|S[portuguese+french])" 
+"ch" "" "" "(x|tS[spanish+english+russian]|S[portuguese+french])"  
+ 
+"th" "^" "" "t"     // english+german+greeklatin
+"th" "" "[äöüaeiou]" "(t[english+german+greeklatin]|th)"
+"th" "" "" "t"  // english+german+greeklatin
+   
+"gh" "" "[ei]" "(g[romanian+italian+greeklatin]|gh)" 
+          
+"ouh" "" "[aioe]" "(v[french]|uh)"
+"uh" "" "[aioe]" "(v|uh)"
+"h" "." "$" "" // match h at the end of words, but not as a single letter
+"h" "[aeiouyäöü]" "" ""  // german
+"h" "^" "" "(h|x[romanian+greeklatin]|H[english+romanian+polish+french+portuguese+italian+spanish])" 
+         
+    //Processing of "ci" "ce" & "cy"
+"cia" "" "" "(tSa[polish]|tsa)"  // Polish
+"cią" "" "[bp]" "(tSom|tsom)"     // Polish
+"cią" "" "" "(tSon[polish]|tson)" // Polish
+"cię" "" "[bp]" "(tSem[polish]|tsem)" // Polish
+"cię" "" "" "(tSen[polish]|tsen)" // Polish
+"cie" "" "" "(tSe[polish]|tse)"  // Polish
+"cio" "" "" "(tSo[polish]|tso)"  // Polish
+"ciu" "" "" "(tSu[polish]|tsu)" // Polish
+
+"sci" "" "$" "(Si[italian]|stsi[polish+czech]|dZi[turkish]|tSi[polish+romanian]|tS[romanian]|si)" 
+"sc" "" "[ei]" "(S[italian]|sts[polish+czech]|dZ[turkish]|tS[polish+romanian]|s)" 
+"ci" "" "$" "(tsi[polish+czech]|dZi[turkish]|tSi[polish+romanian]|tS[romanian]|si)" 
+"cy" "" "" "(si|tsi[polish])" 
+"c" "" "[ei]" "(ts[polish+czech]|dZ[turkish]|tS[polish+romanian]|k[greeklatin]|s)" 
+      
+    //Processing of "s"      
+"sç" "" "[aeiou]" "(s|stS[turkish])"
+"ssz" "" "" "S" // polish
+"sz" "^" "" "(S|s[hungarian])" // polish
+"sz" "" "$" "(S|s[hungarian])" // polish
+"sz" "" "" "(S|s[hungarian]|sts[german])" // polish
+"ssp" "" "" "(Sp[german]|sp)"
+"sp" "" "" "(Sp[german]|sp)"
+"sst" "" "" "(St[german]|st)"
+"st" "" "" "(St[german]|st)" 
+"ss" "" "" "s"
+"sj" "^" "" "S" // dutch
+"sj" "" "$" "S" // dutch
+"sj" "" "" "(sj|S[dutch]|sx[spanish]|sZ[romanian+turkish])" 
+  
+"sia" "" "" "(Sa[polish]|sa[polish]|sja)" 
+"sią" "" "[bp]" "(Som[polish]|som)" // polish
+"sią" "" "" "(Son[polish]|son)" // polish
+"się" "" "[bp]" "(Sem[polish]|sem)" // polish
+"się" "" "" "(Sen[polish]|sen)" // polish
+"sie" "" "" "(se|sje|Se[polish]|zi[german])" 
+    
+"sio" "" "" "(So[polish]|so)" 
+"siu" "" "" "(Su[polish]|sju)" 
+     
+"si" "[äöëaáuiíoóeéêy]" "" "(Si[polish]|si|zi[portuguese+french+italian+german])"
+"si" "" "" "(Si[polish]|si|zi[german])"
+"s" "[aáuiíoóeéêy]" "[aáuíoóeéêy]" "(s|z[portuguese+french+italian+german])" 
+"s" "" "[aeouäöë]" "(s|z[german])"
+"s" "[aeiouy]" "[dglmnrv]" "(s|z|Z[portuguese]|[french])" // Groslot
+"s" "" "[dglmnrv]" "(s|z|Z[portuguese])" 
+                 
+    //Processing of "g"   
+"gue" "" "$" "(k[french]|gve)"  // portuguese+spanish
+"gu" "" "[ei]" "(g[french]|gv[portuguese+spanish])" // portuguese+spanish
+"gu" "" "[ao]" "gv"     // portuguese+spanish
+"guy" "" "" "gi"  // french
+    
+"gli" "" "" "(glI|l[italian])" 
+"gni" "" "" "(gnI|ni[italian+french])"
+"gn" "" "[aeou]" "(n[italian+french]|nj[italian+french]|gn)"
+    
+"ggie" "" "" "(je[greeklatin]|dZe)" // dZ is Italian
+"ggi" "" "[aou]" "(j[greeklatin]|dZ)" // dZ is Italian
+        
+"ggi" "[yaeiou]" "[aou]" "(gI|dZ[italian]|j[greeklatin])"  
+"gge" "[yaeiou]" "" "(gE|xe[spanish]|gZe[portuguese+french]|dZe[english+romanian+italian+spanish]|je[greeklatin])" 
+"ggi" "[yaeiou]" "" "(gI|xi[spanish]|gZi[portuguese+french]|dZi[english+romanian+italian+spanish]|i[greeklatin])" 
+"ggi" "" "[aou]" "(gI|dZ[italian]|j[greeklatin])" 
+    
+"gie" "" "$" "(ge|gi[german]|ji[french]|dZe[italian])" 
+"gie" "" "" "(ge|gi[german]|dZe[italian]|je[greeklatin])" 
+"gi" "" "[aou]" "(i[greeklatin]|dZ)" // dZ is Italian
+        
+"ge" "[yaeiou]" "" "(gE|xe[spanish]|Ze[portuguese+french]|dZe[english+romanian+italian+spanish])" 
+"gi" "[yaeiou]" "" "(gI|xi[spanish]|Zi[portuguese+french]|dZi[english+romanian+italian+spanish])" 
+"ge" "" "" "(gE|xe[spanish]|hE[russian]|je[greeklatin]|Ze[portuguese+french]|dZe[english+romanian+italian+spanish])" 
+"gi" "" "" "(gI|xi[spanish]|hI[russian]|i[greeklatin]|Zi[portuguese+french]|dZi[english+romanian+italian+spanish])" 
+"gy" "" "[aeouáéóúüöőű]" "(gi|dj[hungarian])"
+"gy" "" "" "(gi|d[hungarian])" 
+"g" "[yaeiou]" "[aouyei]" "g" 
+"g" "" "[aouei]" "(g|h[russian])" 
+    
+    //Processing of "j"        
+"ij" "" "" "(i|ej[dutch]|ix[spanish]|iZ[french+romanian+turkish+portuguese])" 
+"j" "" "[aoeiuy]" "(j|dZ[english]|x[spanish]|Z[french+romanian+turkish+portuguese])" 
+         
+    //Processing of "z"    
+"rz" "t" "" "(S[polish]|r)" // polish
+"rz" "" "" "(rz|rts[german]|Z[polish]|r[polish]|rZ[polish])" 
+        
+"tz" "" "$" "(ts|tS[english+german])" 
+"tz" "^" "" "(ts[english+german+russian]|tS[english+german])" 
+"tz" "" "" "(ts[english+german+russian]|tz)" 
+    
+"zia" "" "[bcdgkpstwzż]" "(Za[polish]|za[polish]|zja)" 
+"zia" "" "" "(Za[polish]|zja)" 
+"zią" "" "[bp]" "(Zom[polish]|zom)"  // polish
+"zią" "" "" "(Zon[polish]|zon)" // polish
+"zię" "" "[bp]" "(Zem[polish]|zem)" // polish
+"zię" "" "" "(Zen[polish]|zen)" // polish
+"zie" "" "[bcdgkpstwzż]" "(Ze[polish]|ze[polish]|ze|tsi[german])" 
+"zie" "" "" "(ze|Ze[polish]|tsi[german])" 
+"zio" "" "" "(Zo[polish]|zo)" 
+"ziu" "" "" "(Zu[polish]|zju)" 
+"zi" "" "" "(Zi[polish]|zi|tsi[german]|dzi[italian]|tsi[italian]|si[spanish])" 
+
+"z" "" "$" "(s|ts[german]|ts[italian]|S[portuguese])" // ts It, s/S/Z Port, s in Sp, z Fr
+"z" "" "[bdgv]" "(z|dz[italian]|Z[portuguese])" // dz It, Z/z Port, z Sp & Fr
+"z" "" "[ptckf]" "(s|ts[italian]|S[portuguese])" // ts It, s/S/z Port, z/s Sp
+              
+ // VOWELS  
+"aue" "" "" "aue" 
+"oue" "" "" "(oue|ve[french])" 
+"eau" "" "" "o" // French
+        
+"ae" "" "" "(Y[german]|aje[russian]|ae)" 
+"ai" "" "" "aj" 
+"au" "" "" "(au|o[french])" 
+"ay" "" "" "aj" 
+"ão" "" "" "(au|an)" // Port
+"ãe" "" "" "(aj|an)" // Port
+"ãi" "" "" "(aj|an)" // Port
+"ea" "" "" "(ea|ja[romanian])"
+"ee" "" "" "(i[english]|aje[russian]|e)" 
+"ei" "" "" "(aj|ej)"
+"eu" "" "" "(eu|Yj[german]|ej[german]|oj[german]|Y[dutch])"
+"ey" "" "" "(aj|ej)"
+"ia" "" "" "ja" 
+"ie" "" "" "(i[german]|e[polish]|ije[russian]|Q[dutch]|je)" 
+"ii" "" "$" "i" // russian
+"io" "" "" "(jo|e[russian])"
+"iu" "" "" "ju" 
+"iy" "" "$" "i" // russian
+"oe" "" "" "(Y[german]|oje[russian]|u[dutch]|oe)" 
+"oi" "" "" "oj" 
+"oo" "" "" "(u[english]|o)" 
+"ou" "" "" "(ou|u[french+greeklatin]|au[dutch])" 
+"où" "" "" "u" // french
+"oy" "" "" "oj" 
+"õe" "" "" "(oj|on)" // Port
+"ua" "" "" "va"
+"ue" "" "" "(Q[german]|uje[russian]|ve)" 
+"ui" "" "" "(uj|vi|Y[dutch])" 
+"uu" "" "" "(u|Q[dutch])" 
+"uo" "" "" "(vo|o)"
+"uy" "" "" "uj" 
+"ya" "" "" "ja" 
+"ye" "" "" "(je|ije[russian])"
+"yi" "^" "" "i"
+"yi" "" "$" "i" // russian
+"yo" "" "" "(jo|e[russian])"
+"yu" "" "" "ju" 
+"yy" "" "$" "i" // russian
+    
+"i" "[áóéê]" "" "j"
+"y" "[áóéê]" "" "j"
+         
+"e" "^" "" "(e|je[russian])" 
+"e" "" "$" "(e|EE[english+french])" 
+            
+// LANGUAGE SPECIFIC CHARACTERS 
+"ą" "" "[bp]" "om" // polish
+"ą" "" "" "on"  // polish
+"ä" "" "" "Y" 
+"á" "" "" "a" // Port & Sp
+"à" "" "" "a" 
+"â" "" "" "a" 
+"ã" "" "" "(a|an)" // Port
+"ă" "" "" "(e[romanian]|a)" // romanian
+"č" "" "" "tS" // czech
+"ć" "" "" "(tS[polish]|ts)"  // polish
+"ç" "" "" "(s|tS[turkish])"
+"ď" "" "" "(d|dj[czech])"
+"ę" "" "[bp]" "em" // polish
+"ę" "" "" "en" // polish
+"é" "" "" "e" 
+"è" "" "" "e" 
+"ê" "" "" "e" 
+"ě" "" "" "(e|je[czech])" 
+"ğ" "" "" "" // turkish
+"í" "" "" "i" 
+"î" "" "" "i" 
+"ı" "" "" "(i|e[turkish]|[turkish])" 
+"ł" "" "" "l" 
+"ń" "" "" "(n|nj[polish])" // polish
+"ñ" "" "" "(n|nj[spanish])" 
+"ó" "" "" "(u[polish]|o)"  
+"ô" "" "" "o" // Port & Fr
+"õ" "" "" "(o|on[portuguese]|Y[hungarian])" 
+"ò" "" "" "o"  // Sp & It
+"ö" "" "" "Y"
+"ř" "" "" "(r|rZ[czech])"
+"ś" "" "" "(S[polish]|s)" 
+"ş" "" "" "S" // romanian+turkish
+"š" "" "" "S" // czech
+"ţ" "" "" "ts"  // romanian
+"ť" "" "" "(t|tj[czech])"
+"ű" "" "" "Q" // hungarian
+"ü" "" "" "(Q|u[portuguese+spanish])"
+"ú" "" "" "u" 
+"ů" "" "" "u" // czech
+"ù" "" "" "u" // french
+"ý" "" "" "i"  // czech
+"ż" "" "" "Z" // polish
+"ź" "" "" "(Z[polish]|z)" 
+   
+"ß" "" "" "s" // german
+"'" "" "" "" // russian
+"\"" "" "" "" // russian
+ 
+"o" "" "[bcćdgklłmnńrsśtwzźż]" "(O|P[polish])"    
+    
+ // LATIN ALPHABET
+"a" "" "" "A"
+"b" "" "" "B" 
+"c" "" "" "(k|ts[polish+czech]|dZ[turkish])" 
+"d" "" "" "d"
+"e" "" "" "E"
+"f" "" "" "f"
+   //array("g" "" "" "(g|x[dutch])" // Dutch sound disabled
+"g" "" "" "g"
+"h" "" "" "(h|x[romanian]|H[french+portuguese+italian+spanish])" 
+"i" "" "" "I"
+"j" "" "" "(j|x[spanish]|Z[french+romanian+turkish+portuguese])" 
+"k" "" "" "k"
+"l" "" "" "l"
+"m" "" "" "m"
+"n" "" "" "n"
+"o" "" "" "O"
+"p" "" "" "p"
+"q" "" "" "k"
+"r" "" "" "r"
+"s" "" "" "(s|S[portuguese])" 
+"t" "" "" "t"
+"u" "" "" "U"
+"v" "" "" "V" 
+"w" "" "" "(v|w[english+dutch])"     
+"x" "" "" "(ks|gz|S[portuguese+spanish])"   // S/ks Port & Sp, gz Sp, It only ks
+"y" "" "" "i"
+"z" "" "" "(z|ts[german]|dz[italian]|ts[italian]|s[spanish])" // ts/dz It, z Port & Fr, z/s Sp

@@ -1,0 +1,99 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// GENERAL
+"ця" "" "" "tsa"
+"цю" "" "" "tsu"
+"циа" "" "" "tsa"
+"цие" "" "" "tse"
+"цио" "" "" "tso"
+"циу" "" "" "tsu"
+"сие" "" "" "se"
+"сио" "" "" "so"
+"зие" "" "" "ze"
+"зио" "" "" "zo"
+"с" "" "с" ""
+
+"гауз" "" "$" "haus"
+"гаус" "" "$" "haus"
+"гольц" "" "$" "holts"
+"геймер" "" "$" "(hejmer|hajmer)"
+"гейм" "" "$" "(hejm|hajm)"
+"гоф" "" "$" "hof"
+"гер" "" "$" "ger"
+"ген" "" "$" "gen"
+"гин" "" "$" "gin"
+"г" "(й|ё|я|ю|ы|а|е|о|и|у)" "(а|е|о|и|у)" "g"
+"г" "" "(а|е|о|и|у)" "(g|h)"
+
+"ля" "" "" "la"
+"лю" "" "" "lu"
+"лё" "" "" "(le|lo)"
+"лио" "" "" "(le|lo)"
+"ле" "" "" "(lE|lo)"
+
+"ийе" "" "" "je"
+"ие" "" "" "je"
+"ыйе" "" "" "je"
+"ые" "" "" "je"
+"ий" "" "(а|о|у)" "j"
+"ый" "" "(а|о|у)" "j"
+"ий" "" "$" "i"
+"ый" "" "$" "i"
+
+"ей" "^" "" "(jej|ej)"
+"е" "(а|е|о|у)" "" "je"
+"е" "^" "" "je"
+"эй" "" "" "ej"
+"ей" "" "" "ej"
+
+"ауе" "" "" "aue"
+"ауэ" "" "" "aue"
+
+"а" "" "" "a"
+"б" "" "" "b"
+"в" "" "" "v"
+"г" "" "" "g"
+"д" "" "" "d"
+"е" "" "" "E"
+"ё" "" "" "(e|jo)"
+"ж" "" "" "Z"
+"з" "" "" "z"
+"и" "" "" "I"
+"й" "" "" "j"
+"к" "" "" "k"
+"л" "" "" "l"
+"м" "" "" "m"
+"н" "" "" "n"
+"о" "" "" "o"
+"п" "" "" "p"
+"р" "" "" "r"
+"с" "" "" "s"
+"т" "" "" "t"
+"у" "" "" "u"
+"ф" "" "" "f"
+"х" "" "" "x"
+"ц" "" "" "ts"
+"ч" "" "" "tS"
+"ш" "" "" "S"
+"щ" "" "" "StS"
+"ъ" "" "" ""
+"ы" "" "" "I"
+"ь" "" "" ""
+"э" "" "" "E"
+"ю" "" "" "ju"
+"я" "" "" "ja"

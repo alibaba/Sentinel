@@ -1,0 +1,4 @@
+# Default slot chain builder
+com.alibaba.csp.sentinel.slots.DefaultSlotChainBuilder
+com.alibaba.csp.sentinel.slots.HotParamSlotChainBuilder
+com.alibaba.csp.sentinel.adapter.gateway.common.slot.GatewaySlotChainBuilder

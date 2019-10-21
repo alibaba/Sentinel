@@ -1,0 +1,100 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+  </head>
+  <body>
+    <p>Interfaces and classes used by
+    the various implementations in the sub-packages.</p>
+
+    <p>Definitive implementations of commonly used encoders and decoders.</p>
+
+    <p>Codec is currently comprised of a modest set of utilities and a
+    simple framework for String encoding and decoding in three categories:
+    Binary Encoders, Language Encoders, and Network Encoders. </p>
+
+    <h4><a name="Common Encoders">Binary Encoders</a></h4>
+
+    <table border="1" width="100%" cellspacing="2" cellpadding="3">
+  	  <tbody>
+        <tr>
+          <td> 
+            <a href="binary/Base64.html">
+              org.apache.commons.codec.binary.Base64</a>
+          </td>
+          <td> 
+            Provides Base64 content-transfer-encoding as defined in 
+            <a href="http://www.ietf.org/rfc/rfc2045.txt"> RFC 2045</a> 
+          </td>
+          <td>Production</td>
+        </tr>
+        <tr>
+          <td>
+           <a href="binary/Hex.html">
+             org.apache.commons.codec.binary.Hex</a>
+          </td>
+          <td> 
+            Converts an array of bytes into an array of characters
+            representing the hexadecimal values of each byte in order 
+          </td>
+          <td>Production</td>
+        </tr>
+      </tbody>
+    </table>
+    <h4> 
+      <a name="Language Encoders">Language Encoders</a> 
+    </h4>
+    <p> 
+      Codec contains a number of commonly used language and phonetic
+      encoders
+    </p>
+    <table border="1" width="100%" cellspacing="2" cellpadding="3">
+      <tbody>
+        <tr>
+          <td> 
+            <a href="#">org.apache.commons.codec.language.Soundex</a>
+          </td>
+          <td>Implementation of the Soundex algorithm.</td>
+          <td>Production</td>
+        </tr>
+        <tr>
+          <td> 
+            <a href="#">org.apache.commons.codec.language.Metaphone</a>
+          </td>
+          <td>Implementation of the Metaphone algorithm.</td>
+          <td>Production</td>
+        </tr>
+      </tbody>
+    </table>
+    <h4><a name="Network_Encoders">Network Encoders</a></h4>
+    <h4> </h4>
+    <p> Codec contains network related encoders </p>
+    <table border="1" width="100%" cellspacing="2" cellpadding="3">
+      <tbody>
+        <tr>
+          <td> 
+            <a href="#">org.apache.commons.codec.net.URLCodec</a>
+          </td>
+          <td>Implements the 'www-form-urlencoded' encoding scheme.</td>
+          <td>Production</td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+  </body>
+</html>

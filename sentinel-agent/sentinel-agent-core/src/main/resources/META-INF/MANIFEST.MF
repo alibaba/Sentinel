@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Archiver-Version: Plexus Archiver
+Created-By: Apache Maven 3.6.1
+Premain-Class: com.alibaba.csp.starter.AgentStarter
+Agent-Version: 1.5.0-25-g863c1f1
+Built-By: guxin
+Built-Date: 2019-07-29T03:17:04Z
+Agent-Class: com.alibaba.csp.starter.AgentStarter
+Can-Redefine-Classes: true
+Can-Retransform-Classes: true
+Build-Jdk: 1.8.0_152
+Main-Class: com.alibaba.csp.starter.AgentStarter
+

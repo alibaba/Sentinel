@@ -40,10 +40,11 @@ public class FooConsumerBootstrap {
 
         FooServiceConsumer service = consumerContext.getBean(FooServiceConsumer.class);
 
-        for (int i = 0; i < 15; i++) {
+        for (int i = 0; i < 150000; i++) {
             try {
                 String message = service.sayHello("Eric");
                 System.out.println("Success: " + message);
+                Thread.sleep(200);
             } catch (SentinelRpcException ex) {
                 System.out.println("Blocked");
             } catch (Exception ex) {

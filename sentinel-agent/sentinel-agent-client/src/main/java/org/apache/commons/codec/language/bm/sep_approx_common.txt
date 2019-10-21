@@ -1,0 +1,115 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include sep_exact_approx_common
+
+"bens" "^" "" "(binz|s)" 
+"benS" "^" "" "(binz|s)" 
+"ben" "^" "" "(bin|)" 
+
+"abens" "^" "" "(abinz|binz|s)" 
+"abenS" "^" "" "(abinz|binz|s)" 
+"aben" "^" "" "(abin|bin|)"
+
+"els" "^" "" "(ilz|alz|s)" 
+"elS" "^" "" "(ilz|alz|s)" 
+"el" "^" "" "(il|al|)" 
+"als" "^" "" "(alz|s)" 
+"alS" "^" "" "(alz|s)" 
+"al" "^" "" "(al|)" 
+
+//"dels" "^" "" "(dilz|s)" 
+//"delS" "^" "" "(dilz|s)" 
+"del" "^" "" "(dil|)" 
+"dela" "^" "" "(dila|)" 
+//"delo" "^" "" "(dila|)" 
+"da" "^" "" "(da|)" 
+"de" "^" "" "(di|)" 
+//"des" "^" "" "(dis|dAs|)" 
+//"di" "^" "" "(di|)" 
+//"dos" "^" "" "(das|dus|)" 
+
+"oa" "" "" "(va|a|D)"
+"oe" "" "" "(vi|D)"
+"ae" "" "" "D"
+
+/// "s" "" "$" "(s|)" // Attia(s)
+/// "C" "" "" "s"  // "c" could actually be "�"
+
+"n" "" "[bp]" "m"
+
+"h" "" "" "(|h|f)" // sound "h" (absent) can be expressed via /x/, Cojab in Spanish = Kohab ; Hakim = Fakim
+"x" "" "" "h"
+
+// DIPHTHONGS ARE APPROXIMATELY equivalent
+"aja" "^" "" "(Da|ia)"                         
+"aje" "^" "" "(Di|Da|i|ia)"                         
+"aji" "^" "" "(Di|i)"                         
+"ajo" "^" "" "(Du|Da|iu|ia)"                         
+"aju" "^" "" "(Du|iu)"                         
+
+"aj" "" "" "D"                         
+"ej" "" "" "D"                         
+"oj" "" "" "D"                         
+"uj" "" "" "D"                         
+"au" "" "" "D"                         
+"eu" "" "" "D"                         
+"ou" "" "" "D"                         
+
+"a" "^" "" "(a|)"  // Arabic
+
+"ja" "^" "" "ia"                         
+"je" "^" "" "i"                         
+"jo" "^" "" "(iu|ia)"                         
+"ju" "^" "" "iu"                         
+
+"ja" "" "" "a"                         
+"je" "" "" "i"                         
+"ji" "" "" "i"                         
+"jo" "" "" "u"                         
+"ju" "" "" "u"                         
+
+"j" "" "" "i"                         
+
+// CONSONANTS {z & Z & dZ; s & S} are approximately interchangeable
+"s" "" "[rmnl]" "z"
+"S" "" "[rmnl]" "z"
+"s" "[rmnl]" "" "z"
+"S" "[rmnl]" "" "z" 
+
+"dS" "" "$" "S"
+"dZ" "" "$" "S"
+"Z" "" "$" "S"
+"S" "" "$" "(S|s)"
+"z" "" "$" "(S|s)"
+
+"S" "" "" "s"
+"dZ" "" "" "z"
+"Z" "" "" "z"
+
+"i" "" "$" "(i|)" // often in Arabic
+"e" "" "" "i"
+
+"o" "" "$" "(a|u)"
+"o" "" "" "u"
+
+// special character to deal correctly in Hebrew match
+"B" "" "" "b" 
+"V" "" "" "v" 
+
+// Arabic
+"p" "^" "" "b"

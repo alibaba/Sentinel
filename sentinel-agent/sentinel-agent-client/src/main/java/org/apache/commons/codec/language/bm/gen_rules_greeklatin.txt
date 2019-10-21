@@ -1,0 +1,118 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+"au" "" "$" "af"
+"au" "" "[kpstfh]" "af"
+"au" "" "" "av"
+"eu" "" "$" "ef"
+"eu" "" "[kpstfh]" "ef"
+"eu" "" "" "ev"
+"ou" "" "" "u"
+
+"gge" "[aeiouy]" "" "(nje|je)" // aggelopoulos
+"ggi" "[aeiouy]" "[aou]" "(nj|j)" 
+"ggi" "[aeiouy]" "" "(ni|i)" 
+"gge" "" "" "je"
+"ggi" "" "" "i"
+"gg" "[aeiouy]" "" "(ng|g)"
+"gg" "" "" "g" 
+"gk" "^" "" "g"
+"gke" "[aeiouy]" "" "(nje|je)"
+"gki" "[aeiouy]" "" "(ni|i)"
+"gke" "" "" "je"
+"gki" "" "" "i"
+"gk" "[aeiouy]" "" "(ng|g)"
+"gk" "" "" "g" 
+"nghi" "" "[aouy]" "Nj"
+"nghi" "" "" "(Ngi|Ni)" 
+"nghe" "" "[aouy]" "Nj"
+"nghe" "" "" "(Nje|Nge)" 
+"ghi" "" "[aouy]" "j"
+"ghi" "" "" "(gi|i)" 
+"ghe" "" "[aouy]" "j"
+"ghe" "" "" "(je|ge)" 
+"ngh" "" "" "Ng"
+"gh" "" "" "g"
+"ngi" "" "[aouy]" "Nj" 
+"ngi" "" "" "(Ngi|Ni)" 
+"nge" "" "[aouy]" "Nj" 
+"nge" "" "" "(Nje|Nge)" 
+"gi" "" "[aouy]" "j" 
+"gi" "" "" "(gi|i)" // what about Pantazis = Pantagis ???
+"ge" "" "[aouy]" "j" 
+"ge" "" "" "(je|ge)" 
+"ng" "" "" "Ng" // fragakis = fraggakis = frangakis; angel = agel = aggel 
+
+"i" "" "[aeou]" "j"
+"i" "[aeou]" "" "j"  
+"y" "" "[aeou]" "j"
+"y" "[aeou]" "" "j"  
+"yi" "" "[aeou]" "j"
+"yi" "" "" "i"
+
+"ch" "" "" "x"
+"kh" "" "" "x"
+"dh" "" "" "d"  // actually as "th" in English "that"
+"dj" "" "" "dZ" // Turkish words
+"ph" "" "" "f"
+"th" "" "" "t"
+"kz" "" "" "gz"
+"tz" "" "" "dz" 
+"s" "" "[bgdmnr]" "z"
+
+"mb" "" "" "(mb|b)" // Liberis = Limperis = Limberis
+"mp" "^" "" "b"
+"mp" "[aeiouy]" "" "mp"
+"mp" "" "" "b"
+"nt" "^" "" "d"
+"nt" "[aeiouy]" "" "(nd|nt)" // Greek "nd"
+"nt" "" "" "(nt|d)" // Greek "d" after any consonant
+
+"á" "" "" "a"  
+"é" "" "" "e"  
+"í" "" "" "i"  
+"ó" "" "" "o"  
+"óu" "" "" "u"  
+"ú" "" "" "u" 
+"ý" "" "" "(i|Q|u)" // [ü]
+
+"a" "" "" "a"
+"b" "" "" "(b|v)" // beta: modern "v", old "b"
+"c" "" "" "k"
+"d" "" "" "d"    // modern like "th" in English "them", old "d"
+"e" "" "" "e"
+"f" "" "" "f" 
+"g" "" "" "g" 
+"h" "" "" "x"
+"i" "" "" "i"
+"j" "" "" "(j|Z)" // Panajotti = Panaiotti; Louijos = Louizos; Pantajis = Pantazis = Pantagis
+"k" "" "" "k"
+"l" "" "" "l"
+"m" "" "" "m"
+"n" "" "" "n"
+"ο" "" "" "o"
+"p" "" "" "p"
+"q" "" "" "k" // foreign
+"r" "" "" "r"
+"s" "" "" "s"
+"t" "" "" "t" 
+"u" "" "" "u" 
+"v" "" "" "v" 
+"w" "" "" "v" // foreign
+"x" "" "" "ks"
+"y" "" "" "(i|Q|u)" // [ü] 
+"z" "" "" "z"

@@ -1,0 +1,4 @@
+com.taobao.csp.ahas.service.servlet.ServletContextAspectPlugin
+com.taobao.csp.ahas.service.dubbo.DubboFilterAspectPlugin
+com.taobao.csp.ahas.service.sc.gateway.ScGatewayFilterAspectPlugin
+com.taobao.csp.ahas.service.zuul.ZuulFilterAspectPlugin

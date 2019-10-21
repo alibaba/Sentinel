@@ -1,0 +1,76 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+"kh" "" "" "x" // foreign
+
+"gli" "" "" "(l|gli)"
+"gn" "" "[aeou]" "(n|nj|gn)"
+"gni" "" "" "(ni|gni)"
+
+"gi" "" "[aeou]" "dZ"
+"gg" "" "[ei]" "dZ"
+"g" "" "[ei]" "dZ"
+"h" "[bdgt]" "" "g" // gh is It; others from Arabic translit
+
+"ci" "" "[aeou]" "tS"
+"ch" "" "[ei]" "k"
+"sc" "" "[ei]" "S" 
+"cc" "" "[ei]" "tS"
+"c" "" "[ei]" "tS"
+"s" "[aeiou]" "[aeiou]" "z"
+
+"i" "[aeou]" "" "j"
+"i" "" "[aeou]" "j"
+"y" "[aeou]" "" "j" // foreign
+"y" "" "[aeou]" "j" // foreign
+
+"qu" "" "" "k"    
+"uo" "" "" "(vo|o)"
+"u" "" "[aei]" "v" 
+
+"�" "" "" "e" 
+"�" "" "" "e" 
+"�" "" "" "o"  
+"�" "" "" "o" 
+
+// LATIN ALPHABET    
+"a" "" "" "a"
+"b" "" "" "b"
+"c" "" "" "k"
+"d" "" "" "d"
+"e" "" "" "e"
+"f" "" "" "f"
+"g" "" "" "g"
+"h" "" "" "h"
+"i" "" "" "i"
+"j" "" "" "(Z|dZ|j)" // foreign
+"k" "" "" "k"
+"l" "" "" "l"
+"m" "" "" "m"
+"n" "" "" "n"
+"o" "" "" "o"
+"p" "" "" "p"
+"q" "" "" "k"    
+"r" "" "" "r"
+"s" "" "" "s"
+"t" "" "" "t"
+"u" "" "" "u"
+"v" "" "" "v"
+"w" "" "" "v"    // foreign
+"x" "" "" "ks"    // foreign
+"y" "" "" "i"    // foreign
+"z" "" "" "(ts|dz)"

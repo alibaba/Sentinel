@@ -1,0 +1,3 @@
+com.alibaba.fastjson.support.jaxrs.FastJsonAutoDiscoverable
+org.glassfish.jersey.logging.LoggingFeatureAutoDiscoverable
+org.glassfish.jersey.server.filter.internal.ServerFiltersAutoDiscoverable

@@ -1,0 +1,52 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// These rules are applied after the word has been transliterated into the phonetic alphabet
+// These rules are substitution rules within the phonetic character space rather than mapping rules
+
+// format of each entry rule in the table
+//   (pattern, left context, right context, phonetic)
+// where
+//   pattern is a sequence of characters that might appear after a word has been transliterated into phonetic alphabet
+//   left context is the context that precedes the pattern
+//   right context is the context that follows the pattern
+//   phonetic is the result that this rule generates
+//
+// note that both left context and right context can be regular expressions
+// ex: left context of ^ would mean start of word
+//     right context of $ means end of word
+//
+// match occurs if all of the following are true:
+//   portion of word matches the pattern
+//   that portion satisfies the context
+
+// A, E, I, O, P, U should create variants, but a, e, i, o, u should not create any new variant
+// Q = ü ; Y = ä = ö
+
+
+"A" "" "" "a"
+"B" "" "" "a"
+
+"E" "" "" "e"
+"F" "" "" "e"
+
+"I" "" "" "i"
+"O" "" "" "o"
+"P" "" "" "o"
+"U" "" "" "u"
+
+"J" "" "" "l"

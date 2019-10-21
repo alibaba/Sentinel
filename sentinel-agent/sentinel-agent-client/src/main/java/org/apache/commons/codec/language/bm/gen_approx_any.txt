@@ -1,0 +1,124 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// GENERIC
+// A, E, I, O, P, U should create variants, but a, e, i, o, u should not create any new variant
+// Q = ü ; Y = ä = ö
+// EE = final "e" (english or french)
+
+// VOWELS
+    // "ALL" DIPHTHONGS are interchangeable BETWEEN THEM and with monophthongs of which they are composed ("D" means "diphthong")
+    //  {a,o} are totally interchangeable if non-stressed; in German "a/o" can actually be from "ä/ö" (that are equivalent to "e")
+    //  {i,e} are interchangeable if non-stressed, while in German "u" can actually be from "ü" (that is equivalent to "i")
+
+"mb" "" "" "(mb|b[greeklatin])"
+"mp" "" "" "(mp|b[greeklatin])"
+"ng" "" "" "(ng|g[greeklatin])"
+
+"B" "" "" "(b|v[spanish])"
+"V" "" "" "(v|b[spanish])"
+    
+    // French word-final and word-part-final letters
+"t" "" "$" "(t|[french])"
+"g" "n" "$" "(g|[french])"
+"k" "n" "$" "(k|[french])"
+"p" "" "$" "(p|[french])"
+"r" "[Ee]" "$" "(r|[french])"
+"s" "" "$" "(s|[french])"
+"t" "[aeiouAEIOU]" "[^aeiouAEIOU]" "(t|[french])" // Petitjean
+"s" "[aeiouAEIOU]" "[^aeiouAEIOU]" "(s|[french])" // Groslot, Grosleau
+    //array("p" "[aeiouAEIOU]" "[^aeiouAEIOU]" "(p|[$french])" 
+    
+"I" "[aeiouAEIBFOUQY]" "" "i"
+"I" "" "[^aeiouAEBFIOU]e" "(Q[german]|i|D[english])"  // "line"
+"I" "" "$" "i"
+"I" "" "[^k]$" "i"
+"Ik" "[lr]" "$" "(ik|Qk[german])"
+"Ik" "" "$" "ik"
+"sIts" "" "$" "(sits|sQts[german])"
+"Its" "" "$" "its"
+"I" "" "" "(Q[german]|i)"
+   
+"lEE" "[bdfgkmnprsStvzZ]" "" "(li|il[english])"  // Apple = Appel
+"rEE" "[bdfgkmnprsStvzZ]" "" "(ri|ir[english])"
+"lE" "[bdfgkmnprsStvzZ]" "" "(li|il[english]|lY[german])"  // Applebaum < Appelbaum
+"rE" "[bdfgkmnprsStvzZ]" "" "(ri|ir[english]|rY[german])"
+    
+"ea" "" "" "(D|a|i)"
+    
+"au" "" "" "(D|a|u)"
+"ou" "" "" "(D|o|u)"
+"eu" "" "" "(D|e|u)"
+    
+"ai" "" "" "(D|a|i)"
+"Ai" "" "" "(D|a|i)"
+"oi" "" "" "(D|o|i)"
+"Oi" "" "" "(D|o|i)"
+"ui" "" "" "(D|u|i)"
+"Ui" "" "" "(D|u|i)"
+"ei" "" "" "(D|i)"
+"Ei" "" "" "(D|i)"
+    
+"iA" "" "$" "(ia|io)" 
+"iA" "" "" "(ia|io|iY[german])"
+"A" "" "[^aeiouAEBFIOU]e" "(a|o|Y[german]|D[english])" // "plane"
+    
+    
+"E" "i[^aeiouAEIOU]" "" "(i|Y[german]|[english])" // Wineberg (vineberg/vajneberg) --> vajnberg
+"E" "a[^aeiouAEIOU]" "" "(i|Y[german]|[english])" //  Shaneberg (shaneberg/shejneberg) --> shejnberg
+    
+"E" "" "[fklmnprst]$" "i"
+"E" "" "ts$" "i"
+"E" "" "$" "i"
+"E" "[DaoiuAOIUQY]" "" "i"
+"E" "" "[aoAOQY]" "i"
+"E" "" "" "(i|Y[$german])"
+        
+"P" "" "" "(o|u)" 
+    
+"O" "" "[fklmnprstv]$" "o"
+"O" "" "ts$" "o"
+"O" "" "$" "o"
+"O" "[oeiuQY]" "" "o"
+"O" "" "" "(o|Y[$german])"
+"O" "" "" "o"
+    
+"A" "" "[fklmnprst]$" "(a|o)"
+"A" "" "ts$" "(a|o)"
+"A" "" "$" "(a|o)"
+"A" "[oeiuQY]" "" "(a|o)"
+"A" "" "" "(a|o|Y[$german])"
+"A" "" "" "(a|o)"
+
+"U" "" "$" "u"
+"U" "[DoiuQY]" "" "u"
+"U" "" "[^k]$" "u"
+"Uk" "[lr]" "$" "(uk|Qk[german])"
+"Uk" "" "$" "uk"
+"sUts" "" "$" "(suts|sQts[german])"
+"Uts" "" "$" "uts"
+"U" "" "" "(u|Q[german])"
+"U" "" "" "u"
+
+"e" "" "[fklmnprstv]$" "i"
+"e" "" "ts$" "i"
+"e" "" "$" "i"
+"e" "[DaoiuAOIUQY]" "" "i"
+"e" "" "[aoAOQY]" "i"
+"e" "" "" "(i|Y[german])"
+        
+"a" "" "" "(a|o)"

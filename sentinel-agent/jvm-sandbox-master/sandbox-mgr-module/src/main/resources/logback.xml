@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration scan="false">
+
+    <!-- MGR模块默认日志 -->
+    <root level="INFO">
+        <appender class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${user.home}/logs/sandbox/sandbox-mgr.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <FileNamePattern>${user.home}/logs/sandbox/sandbox-mgr.log.%d{yyyy-MM-dd}</FileNamePattern>
+                <MaxHistory>30</MaxHistory>
+            </rollingPolicy>
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %msg%n</pattern>
+                <charset>UTF-8</charset>
+            </encoder>
+        </appender>
+    </root>
+
+</configuration>
