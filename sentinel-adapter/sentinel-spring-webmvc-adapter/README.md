@@ -62,11 +62,14 @@ public class SentinelSringMvcBlockHandlerConfig {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     @ExceptionHandler(BlockException.class)
     @ResponseBody
-    public ResultWrapper sentinelBlockHandler(BlockException e) {
+    public JSONObject sentinelBlockHandler(BlockException e) {
         AbstractRule rule = e.getRule();
         //Log
         logger.info("Blocked by sentinel, {}", rule.toString());
         //Return object
+        JSONObject bolckedJson = new JSONObject();
+        bolckedJson.put("code", -2);
+        bolckedJson.put("message", "Blocked by Sentinel");
         return ResultWrapper.blocked();
     }
 }
