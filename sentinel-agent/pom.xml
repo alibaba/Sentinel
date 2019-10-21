@@ -16,9 +16,5 @@
         <module>sentinel-agent-core</module>
         <module>sentinel-agent-client</module>
         <module>sentinel-agent-demo</module>
-        <module>sentinel-agent-common</module>
-        <module>sentinel-agent-core</module>
-        <module>sentinel-agent-client</module>
-        <module>sentinel-agent-demo</module>
     </modules>
 </project>
