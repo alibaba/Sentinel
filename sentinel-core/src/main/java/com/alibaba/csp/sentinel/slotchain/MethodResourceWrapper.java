@@ -47,7 +47,7 @@ public class MethodResourceWrapper extends ResourceWrapper {
 
     @Override
     public String getShowName() {
-        return IdUtil.truncate(this.name);
+        return name;
     }
 
     @Override
