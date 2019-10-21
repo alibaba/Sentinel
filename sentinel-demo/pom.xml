@@ -34,6 +34,7 @@
         <module>sentinel-demo-apache-dubbo</module>
         <module>sentinel-demo-spring-cloud-gateway</module>
         <module>sentinel-demo-zuul-gateway</module>
+        <module>sentinel-demo-etcd-datasource</module>
     </modules>
 
     <dependencies>

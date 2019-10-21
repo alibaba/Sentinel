@@ -15,19 +15,20 @@
  */
 package com.alibaba.csp.sentinel.adapter.gateway.common.command;
 
-import java.net.URLDecoder;
-import java.util.HashSet;
-import java.util.List;
-
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayFlowRule;
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayRuleManager;
 import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
+import com.alibaba.csp.sentinel.datasource.WritableDataSource;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
+
+import java.net.URLDecoder;
+import java.util.Set;
 
 /**
  * @author Eric Zhao
@@ -35,6 +36,7 @@ import com.alibaba.fastjson.JSONArray;
  */
 @CommandMapping(name = "gateway/updateRules", desc = "Update gateway rules")
 public class UpdateGatewayRuleCommandHandler implements CommandHandler<String> {
+    private static WritableDataSource<Set<GatewayFlowRule>> gatewayFlowWds = null;
 
     @Override
     public CommandResponse<String> handle(CommandRequest request) {
@@ -52,10 +54,43 @@ public class UpdateGatewayRuleCommandHandler implements CommandHandler<String> {
         RecordLog.info(String.format("[API Server] Receiving rule change (type: gateway rule): %s", data));
 
         String result = SUCCESS_MSG;
-        List<GatewayFlowRule> flowRules = JSONArray.parseArray(data, GatewayFlowRule.class);
-        GatewayRuleManager.loadRules(new HashSet<>(flowRules));
+	    Set<GatewayFlowRule> flowRules = JSON.parseObject(data, new TypeReference<Set<GatewayFlowRule>>() {
+	    });
+        GatewayRuleManager.loadRules(flowRules);
+        if (!writeToDataSource(gatewayFlowWds, flowRules)) {
+            result = WRITE_DS_FAILURE_MSG;
+        }
         return CommandResponse.ofSuccess(result);
     }
 
+    /**
+     * Write target value to given data source.
+     *
+     * @param dataSource writable data source
+     * @param value target value to save
+     * @param <T> value type
+     * @return true if write successful or data source is empty; false if error occurs
+     */
+    private <T> boolean writeToDataSource(WritableDataSource<T> dataSource, T value) {
+        if (dataSource != null) {
+            try {
+                dataSource.write(value);
+            } catch (Exception e) {
+                RecordLog.warn("Write data source failed", e);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public synchronized static WritableDataSource<Set<GatewayFlowRule>> getWritableDataSource() {
+        return gatewayFlowWds;
+    }
+
+    public synchronized static void setWritableDataSource(WritableDataSource<Set<GatewayFlowRule>> gatewayFlowWds) {
+        UpdateGatewayRuleCommandHandler.gatewayFlowWds = gatewayFlowWds;
+    }
+
     private static final String SUCCESS_MSG = "success";
+    private static final String WRITE_DS_FAILURE_MSG = "partial success (write data source failed)";
 }
