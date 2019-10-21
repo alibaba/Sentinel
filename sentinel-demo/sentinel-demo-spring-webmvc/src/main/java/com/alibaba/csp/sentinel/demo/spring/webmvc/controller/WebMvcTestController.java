@@ -17,14 +17,12 @@ package com.alibaba.csp.sentinel.demo.spring.webmvc.controller;
 
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Test controller
- *
  * @Author kaizi2009
  */
 @RestController
