@@ -11,60 +11,60 @@ import static org.junit.Assert.*;
 
 /**
  * Test cases for {@link FlowResponseDataDecoder}
+ *
  * @author nick-tan
  * @version 1.0
  * @date 2019/10/19
  */
 public class FlowResponseDataDecoderTest {
 
-    @Test
-    public void decode() {
-        FlowResponseDataDecoder decoder=new FlowResponseDataDecoder();
-        ByteBuf buf=Unpooled.buffer();
-        FlowTokenResponseData response=decoder.decode(buf);
+	@Test
+	public void decode() {
+		FlowResponseDataDecoder decoder = new FlowResponseDataDecoder();
+		ByteBuf buf = Unpooled.buffer();
+		FlowTokenResponseData response = decoder.decode(buf);
 
-        Assert.assertNotNull(response);
+		Assert.assertNotNull(response);
 
-        buf.release();
+		buf.release();
 
-    }
+	}
 
-    @Test
-    public void decodeWithReadableBytesOf8() {
-        FlowResponseDataDecoder decoder=new FlowResponseDataDecoder();
-        ByteBuf byteBuf=Unpooled.buffer();
-        byteBuf.writeInt(1);
-        byteBuf.writeInt(2);
-        FlowTokenResponseData response=decoder.decode(byteBuf);
+	@Test
+	public void decodeWithReadableBytesOf8() {
+		FlowResponseDataDecoder decoder = new FlowResponseDataDecoder();
+		ByteBuf byteBuf = Unpooled.buffer();
+		byteBuf.writeInt(1);
+		byteBuf.writeInt(2);
+		FlowTokenResponseData response = decoder.decode(byteBuf);
 
-        Assert.assertNotNull(response);
+		Assert.assertNotNull(response);
 
-        byteBuf.release();
-    }
+		byteBuf.release();
+	}
 
-    @Test
-    public void decodeWithReadableBytesLargerThan8() {
-        FlowResponseDataDecoder decoder=new FlowResponseDataDecoder();
-        ByteBuf byteBuf=Unpooled.buffer();
-        byteBuf.writeInt(1);
-        byteBuf.writeInt(2);
-        byteBuf.writeInt(3);
-        FlowTokenResponseData response=decoder.decode(byteBuf);
-        Assert.assertNotNull(response);
+	@Test
+	public void decodeWithReadableBytesLargerThan8() {
+		FlowResponseDataDecoder decoder = new FlowResponseDataDecoder();
+		ByteBuf byteBuf = Unpooled.buffer();
+		byteBuf.writeInt(1);
+		byteBuf.writeInt(2);
+		byteBuf.writeInt(3);
+		FlowTokenResponseData response = decoder.decode(byteBuf);
+		Assert.assertNotNull(response);
 
-        byteBuf.release();
-    }
+		byteBuf.release();
+	}
 
-    @Test
-    public void decodeWithReadableByteLesserThan8() {
-        FlowResponseDataDecoder decoder=new FlowResponseDataDecoder();
-        ByteBuf byteBuf=Unpooled.buffer();
-        byteBuf.writeInt(3);
-        FlowTokenResponseData response=decoder.decode(byteBuf);
-        Assert.assertNotNull(response);
+	@Test
+	public void decodeWithReadableByteLesserThan8() {
+		FlowResponseDataDecoder decoder = new FlowResponseDataDecoder();
+		ByteBuf byteBuf = Unpooled.buffer();
+		byteBuf.writeInt(3);
+		FlowTokenResponseData response = decoder.decode(byteBuf);
+		Assert.assertNotNull(response);
 
-        byteBuf.release();
-    }
-
+		byteBuf.release();
+	}
 
 }

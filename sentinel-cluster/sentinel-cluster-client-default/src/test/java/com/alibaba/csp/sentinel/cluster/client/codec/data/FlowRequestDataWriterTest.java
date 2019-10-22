@@ -10,52 +10,53 @@ import static org.junit.Assert.*;
 
 /**
  * Test cases for {@link FlowRequestDataWriter}
+ *
  * @author nick-tan
  * @version 1.0
  * @date 2019/10/19
  */
 public class FlowRequestDataWriterTest {
 
-    /**
-     * normal
-     */
-    @Test
-    public void writeTo() {
-        FlowRequestDataWriter writer=new FlowRequestDataWriter();
+	/**
+	 * normal
+	 */
+	@Test
+	public void writeTo() {
+		FlowRequestDataWriter writer = new FlowRequestDataWriter();
 
-        FlowRequestData entity=new FlowRequestData();
-        entity.setCount(1);
-        entity.setFlowId(1L);
-        entity.setPriority(true);
+		FlowRequestData entity = new FlowRequestData();
+		entity.setCount(1);
+		entity.setFlowId(1L);
+		entity.setPriority(true);
 
-        ByteBuf buf= Unpooled.buffer();
-        writer.writeTo(entity,buf);
-        buf.release();
-    }
+		ByteBuf buf = Unpooled.buffer();
+		writer.writeTo(entity, buf);
+		buf.release();
+	}
 
-    /**
-     * illegal ByteBuf
-     */
-    @Test(expected = NullPointerException.class)
-    public void writeToIllegalByteBuf() {
-        FlowRequestDataWriter writer=new FlowRequestDataWriter();
+	/**
+	 * illegal ByteBuf
+	 */
+	@Test(expected = NullPointerException.class)
+	public void writeToIllegalByteBuf() {
+		FlowRequestDataWriter writer = new FlowRequestDataWriter();
 
-        FlowRequestData entity=new FlowRequestData();
-        entity.setCount(1);
-        entity.setFlowId(1L);
-        entity.setPriority(true);
-        writer.writeTo(entity,null);
-    }
+		FlowRequestData entity = new FlowRequestData();
+		entity.setCount(1);
+		entity.setFlowId(1L);
+		entity.setPriority(true);
+		writer.writeTo(entity, null);
+	}
 
-    /**
-     * illegal FlowRequestData
-     */
-    @Test(expected = NullPointerException.class)
-    public void writeToIllegalFlowRequestData() {
-        FlowRequestDataWriter writer=new FlowRequestDataWriter();
+	/**
+	 * illegal FlowRequestData
+	 */
+	@Test(expected = NullPointerException.class)
+	public void writeToIllegalFlowRequestData() {
+		FlowRequestDataWriter writer = new FlowRequestDataWriter();
 
-        ByteBuf buf= Unpooled.buffer();
-        writer.writeTo(null,buf);
-        buf.release();
-    }
+		ByteBuf buf = Unpooled.buffer();
+		writer.writeTo(null, buf);
+		buf.release();
+	}
 }
