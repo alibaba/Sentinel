@@ -107,7 +107,7 @@ public class CommonFilterMethodTest {
         configureRulesFor(GET + ":" + url, 0);
         // The request will be blocked and response is default block message.
         this.mvc.perform(get(url).accept(MediaType.TEXT_PLAIN))
-                .andExpect(status().isOk())
+                .andExpect(status().isTooManyRequests())
                 .andExpect(content().string(FilterUtil.DEFAULT_BLOCK_MSG));
         assertEquals(1, cnGet.blockQps(), 0.01);
 

@@ -28,6 +28,8 @@ public class WebServletConfig {
 
     public static final String BLOCK_PAGE = "csp.sentinel.web.servlet.block.page";
 
+    public static final String BLOCK_PAGE_HTTP_STATUS = "csp.sentinel.web.servlet.block.page.http.status";
+
     /**
      * Get redirecting page when Sentinel blocking for {@link CommonFilter} or
      * {@link CommonTotalFilter} occurs.
@@ -40,5 +42,20 @@ public class WebServletConfig {
 
     public static void setBlockPage(String blockPage) {
         SentinelConfig.setConfig(BLOCK_PAGE, blockPage);
+    }
+
+    /**
+     * Return status 429 in the default block page,
+     * you can use -Dcsp.sentinel.web.servlet.block.page.http.status=200 or other http status,
+     * to set http status which you want of the default block page.
+     *
+     * @return http status
+     */
+    public static int getBlockPageHttpStatus() {
+        return Integer.parseInt(SentinelConfig.getConfig(BLOCK_PAGE_HTTP_STATUS));
+    }
+
+    public static void setBlockPageHttpStatus(int httpStatus) {
+        SentinelConfig.setConfig(BLOCK_PAGE_HTTP_STATUS, String.valueOf(httpStatus));
     }
 }

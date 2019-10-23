@@ -48,12 +48,14 @@ public class SentinelConfig {
     public static final String TOTAL_METRIC_FILE_COUNT = "csp.sentinel.metric.file.total.count";
     public static final String COLD_FACTOR = "csp.sentinel.flow.cold.factor";
     public static final String STATISTIC_MAX_RT = "csp.sentinel.statistic.max.rt";
+    public static final String BLOCK_PAGE_HTTP_STATUS = "csp.sentinel.web.servlet.block.page.http.status";
 
     static final String DEFAULT_CHARSET = "UTF-8";
     static final long DEFAULT_SINGLE_METRIC_FILE_SIZE = 1024 * 1024 * 50;
     static final int DEFAULT_TOTAL_METRIC_FILE_COUNT = 6;
     static final int DEFAULT_COLD_FACTOR = 3;
     static final int DEFAULT_STATISTIC_MAX_RT = 4900;
+    static final int HTTP_STATUS_TOO_MANY_REQUESTS = 429;
 
     static {
         try {
@@ -90,6 +92,7 @@ public class SentinelConfig {
         setConfig(TOTAL_METRIC_FILE_COUNT, String.valueOf(DEFAULT_TOTAL_METRIC_FILE_COUNT));
         setConfig(COLD_FACTOR, String.valueOf(DEFAULT_COLD_FACTOR));
         setConfig(STATISTIC_MAX_RT, String.valueOf(DEFAULT_STATISTIC_MAX_RT));
+        setConfig(BLOCK_PAGE_HTTP_STATUS, String.valueOf(HTTP_STATUS_TOO_MANY_REQUESTS));
     }
 
     private static void loadProps() {

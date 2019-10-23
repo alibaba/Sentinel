@@ -65,7 +65,7 @@ public final class FilterUtil {
         }
 
         if (StringUtil.isBlank(WebServletConfig.getBlockPage())) {
-            writeDefaultBlockedPage(response);
+            writeDefaultBlockedPage(response, WebServletConfig.getBlockPageHttpStatus());
         } else {
             String redirectUrl = WebServletConfig.getBlockPage() + "?http_referer=" + url.toString();
             // Redirect to the customized block page.
@@ -73,7 +73,8 @@ public final class FilterUtil {
         }
     }
 
-    private static void writeDefaultBlockedPage(HttpServletResponse response) throws IOException {
+    private static void writeDefaultBlockedPage(HttpServletResponse response, int httpStatus) throws IOException {
+        response.setStatus(httpStatus);
         PrintWriter out = response.getWriter();
         out.print(DEFAULT_BLOCK_MSG);
         out.flush();
