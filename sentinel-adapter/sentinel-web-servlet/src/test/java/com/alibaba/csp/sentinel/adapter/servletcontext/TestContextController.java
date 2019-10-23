@@ -16,11 +16,10 @@
 package com.alibaba.csp.sentinel.adapter.servletcontext;
 
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * @author Eric Zhao
+ * @author zhaoyuguang
  */
 @RestController
 public class TestContextController {
@@ -28,20 +27,5 @@ public class TestContextController {
     @GetMapping("/hello")
     public String apiHello() {
         return "Hello!";
-    }
-
-    @GetMapping("/err")
-    public String apiError() {
-        return "Oops...";
-    }
-
-    @GetMapping("/foo/{id}")
-    public String apiFoo(@PathVariable("id") Long id) {
-        return "Hello " + id;
-    }
-
-    @GetMapping("/exclude/{id}")
-    public String apiExclude(@PathVariable("id") Long id) {
-        return "Exclude " + id;
     }
 }

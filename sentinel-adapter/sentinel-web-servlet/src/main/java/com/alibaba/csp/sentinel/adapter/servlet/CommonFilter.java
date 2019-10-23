@@ -56,7 +56,9 @@ public class CommonFilter implements Filter {
     @Override
     public void init(FilterConfig filterConfig) {
         httpMethodSpecify = Boolean.parseBoolean(filterConfig.getInitParameter(HTTP_METHOD_SPECIFY));
-        webContextUnify = Boolean.parseBoolean(filterConfig.getInitParameter(WEB_CONTEXT_UNIFY));
+        if (filterConfig.getInitParameter(WEB_CONTEXT_UNIFY) != null) {
+            webContextUnify = Boolean.parseBoolean(filterConfig.getInitParameter(WEB_CONTEXT_UNIFY));
+        }
     }
 
     @Override

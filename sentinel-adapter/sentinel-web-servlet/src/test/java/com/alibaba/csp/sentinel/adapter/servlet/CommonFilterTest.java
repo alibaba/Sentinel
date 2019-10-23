@@ -19,6 +19,7 @@ import java.util.Collections;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.adapter.servlet.callback.DefaultUrlCleaner;
 import com.alibaba.csp.sentinel.adapter.servlet.callback.RequestOriginParser;
 import com.alibaba.csp.sentinel.adapter.servlet.callback.UrlCleaner;
@@ -26,6 +27,8 @@ import com.alibaba.csp.sentinel.adapter.servlet.callback.WebCallbackManager;
 import com.alibaba.csp.sentinel.adapter.servlet.config.WebServletConfig;
 import com.alibaba.csp.sentinel.adapter.servlet.util.FilterUtil;
 import com.alibaba.csp.sentinel.node.ClusterNode;
+import com.alibaba.csp.sentinel.node.EntranceNode;
+import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
@@ -43,7 +46,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.Assert.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -84,6 +87,17 @@ public class CommonFilterTest {
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
         assertNotNull(cn);
         assertEquals(1, cn.passQps(), 0.01);
+
+        String context = "";
+        for (Node n : Constants.ROOT.getChildList()) {
+            if (n instanceof EntranceNode) {
+                String id = ((EntranceNode) n).getId().getName();
+                if (url.equals(id)) {
+                    context = ((EntranceNode) n).getId().getName();
+                }
+            }
+        }
+        assertEquals("", context);
 
         testCommonBlockAndRedirectBlockPage(url, cn);
 
