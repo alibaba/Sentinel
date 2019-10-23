@@ -48,9 +48,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author zhaoyuguang
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = TestApplication.class)
+@SpringBootTest(classes = TestContextApplication.class,
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-public class CommonFilterTest {
+public class CommonFilterContextTest {
 
     private static final String HELLO_STR = "Hello!";
 

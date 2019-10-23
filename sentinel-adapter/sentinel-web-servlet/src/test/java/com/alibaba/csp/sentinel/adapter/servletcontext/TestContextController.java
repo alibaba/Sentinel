@@ -15,25 +15,33 @@
  */
 package com.alibaba.csp.sentinel.adapter.servletcontext;
 
-import com.alibaba.csp.sentinel.adapter.servlet.CommonFilter;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
- * @author zhaoyuguang
+ * @author Eric Zhao
  */
-@Configuration
-public class FilterConfig {
+@RestController
+public class TestContextController {
 
-    @Bean
-    public FilterRegistrationBean sentinelFilterRegistration() {
-        FilterRegistrationBean registration = new FilterRegistrationBean();
-        registration.setFilter(new CommonFilter());
-        registration.addUrlPatterns("/*");
-        registration.setName("sentinelFilter");
-        registration.setOrder(1);
+    @GetMapping("/hello")
+    public String apiHello() {
+        return "Hello!";
+    }
 
-        return registration;
+    @GetMapping("/err")
+    public String apiError() {
+        return "Oops...";
+    }
+
+    @GetMapping("/foo/{id}")
+    public String apiFoo(@PathVariable("id") Long id) {
+        return "Hello " + id;
+    }
+
+    @GetMapping("/exclude/{id}")
+    public String apiExclude(@PathVariable("id") Long id) {
+        return "Exclude " + id;
     }
 }

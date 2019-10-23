@@ -15,6 +15,17 @@
  */
 package com.alibaba.csp.sentinel.adapter.servlet;
 
+import java.io.IOException;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
@@ -28,11 +39,6 @@ import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-
 /***
  * Servlet filter that integrates with Sentinel.
  *
@@ -42,7 +48,7 @@ import java.io.IOException;
 public class CommonFilter implements Filter {
 
     private final static String HTTP_METHOD_SPECIFY = "HTTP_METHOD_SPECIFY";
-    public final static String WEB_CONTEXT_UNIFY = "UNIFORM_CONTEXT";
+    public final static String WEB_CONTEXT_UNIFY = "WEB_CONTEXT_UNIFY";
     private final static String COLON = ":";
     private boolean httpMethodSpecify = false;
     private boolean webContextUnify = true;
