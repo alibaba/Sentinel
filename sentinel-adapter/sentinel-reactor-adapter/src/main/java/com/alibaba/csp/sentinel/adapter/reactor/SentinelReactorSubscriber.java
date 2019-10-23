@@ -155,7 +155,7 @@ public class SentinelReactorSubscriber<T> extends InheritableBaseSubscriber<T> {
 
     @Override
     protected void hookOnCancel() {
-
+        tryCompleteEntry();
     }
 
     private boolean tryCompleteEntry() {
