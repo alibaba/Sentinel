@@ -81,7 +81,6 @@ public class CommonFilterContextTest {
         assertNotNull(cn);
         assertEquals(1, cn.passQps(), 0.01);
         String context = "";
-        assertEquals(2, Constants.ROOT.getChildList().size());
         for (Node n : Constants.ROOT.getChildList()) {
             if (n instanceof EntranceNode) {
                 String id = ((EntranceNode) n).getId().getName();
