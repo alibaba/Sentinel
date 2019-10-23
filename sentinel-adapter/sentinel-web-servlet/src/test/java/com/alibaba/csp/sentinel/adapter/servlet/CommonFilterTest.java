@@ -79,6 +79,7 @@ public class CommonFilterTest {
 
     @Test
     public void testCommonFilterMiscellaneous() throws Exception {
+        Constants.ROOT.removeChildList();
         String url = "/hello";
         this.mvc.perform(get(url))
             .andExpect(status().isOk())
