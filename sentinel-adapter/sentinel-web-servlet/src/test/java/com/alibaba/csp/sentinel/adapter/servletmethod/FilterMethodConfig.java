@@ -17,7 +17,6 @@ public class FilterMethodConfig {
         registration.setFilter(new CommonFilter());
         registration.addUrlPatterns("/*");
         registration.addInitParameter("HTTP_METHOD_SPECIFY", "true");
-        registration.addInitParameter(CommonFilter.WEB_CONTEXT_UNIFY, "false");
         registration.setName("sentinelFilter");
         registration.setOrder(1);
 
