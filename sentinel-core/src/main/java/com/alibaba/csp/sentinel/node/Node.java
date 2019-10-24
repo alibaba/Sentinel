@@ -116,6 +116,13 @@ public interface Node extends OccupySupport, DebugSupport {
     double avgRt();
 
     /**
+     * Get minimal response time per minute.
+     *
+     * @return recorded minimal response time
+     */
+    double minRtMin();
+
+    /**
      * Get minimal response time.
      *
      * @return recorded minimal response time

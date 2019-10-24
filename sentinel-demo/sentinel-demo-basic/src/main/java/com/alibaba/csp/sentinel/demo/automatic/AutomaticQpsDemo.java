@@ -55,17 +55,17 @@ public class AutomaticQpsDemo {
 
     private static void simulateTraffic() {
         // 模拟不同服务的流量
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 18; i++) {
             Thread t = new Thread(new RunTask("a",0));
             t.setName("simulate-traffic-Task-A");
             t.start();
         }
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 15; i++) {
             Thread t = new Thread(new RunTask("b",1));
             t.setName("simulate-traffic-Task-B");
             t.start();
         }
-        for (int i = 0; i < 15; i++) {
+        for (int i = 0; i < 13; i++) {
             Thread t = new Thread(new DegradedRunTask("c",2));
             t.setName("simulate-traffic-Task-C");
             t.start();
@@ -143,8 +143,8 @@ public class AutomaticQpsDemo {
                 try {
                     entry = SphU.entry(resourceName);
                     // token acquired, means pass
+                    DoublingTest.threeSum(300);
                     pass[resourceCode].addAndGet(1);
-                    TimeUnit.MILLISECONDS.sleep(3);
 
                 } catch (BlockException e1) {
                     block[resourceCode].incrementAndGet();
@@ -159,7 +159,7 @@ public class AutomaticQpsDemo {
 
                 Random random2 = new Random();
                 try {
-                    TimeUnit.MILLISECONDS.sleep(random2.nextInt(50));
+                    TimeUnit.MILLISECONDS.sleep(random2.nextInt(200));
                 } catch (InterruptedException e) {
                     // ignore
                 }
@@ -185,8 +185,8 @@ public class AutomaticQpsDemo {
                 try {
                     entry = SphU.entry(resourceName);
                     // token acquired, means pass
+                    DoublingTest.threeSum(500);
                     pass[resourceCode].addAndGet(1);
-                    TimeUnit.MILLISECONDS.sleep(50);
                 } catch (BlockException e1) {
                     block[resourceCode].incrementAndGet();
                 } catch (Exception e2) {
@@ -200,11 +200,42 @@ public class AutomaticQpsDemo {
 
                 Random random2 = new Random();
                 try {
-                    TimeUnit.MILLISECONDS.sleep(random2.nextInt(50));
+                    TimeUnit.MILLISECONDS.sleep(random2.nextInt(400));
                 } catch (InterruptedException e) {
                     // ignore
                 }
             }
         }
     }
+
+    static class DoublingTest {
+
+        public static double threeSum(int N){
+
+            Random r = new Random(1);
+            int[] a = new int[N];
+            for(int i =0;i<N;i++){
+                a[i] = r.nextInt();
+            }
+            int cnt = count(a);
+            return cnt;
+
+        }
+
+        public static int count(int[] a){
+            int N = a.length;
+            int cnt = 0;
+            for(int i = 0; i<N;i++){
+                for(int j = i+1;j<N;j++){
+                    for(int k = j+1; k<N;k++){
+                        if(a[i]+a[j]+a[k] == 0){
+                            cnt++;
+                        }
+                    }
+                }
+            }
+            return cnt;
+        }
+    }
+
 }

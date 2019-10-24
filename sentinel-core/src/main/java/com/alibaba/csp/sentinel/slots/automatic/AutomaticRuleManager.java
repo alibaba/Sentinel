@@ -4,6 +4,7 @@ import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.node.Node;
+import com.alibaba.csp.sentinel.node.StatisticNode;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
@@ -39,7 +40,7 @@ public class AutomaticRuleManager {
      */
     private static Map<String, Integer> degradeTimer = new ConcurrentHashMap<String, Integer>();
 
-    private static double systemLoadRecord;
+    private static double currentSystemLoad;
 
     private static AtomicBoolean updating = new AtomicBoolean(false);
 
@@ -53,9 +54,8 @@ public class AutomaticRuleManager {
 
     static {
         statusListener = new SystemStatusListener();
-        scheduler.scheduleAtFixedRate(statusListener, 5, 1, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(statusListener, 0, 1, TimeUnit.SECONDS);
     }
-
 
     static public void checkFlow(ResourceWrapper resource, Context context, DefaultNode node, int count, boolean prioritized)
             throws BlockException {
@@ -74,16 +74,13 @@ public class AutomaticRuleManager {
             rules.put(resourceName, rule);
             degradeTimer.put(resourceName, 0);
         } else {
-
             rule = rules.get(resourceName);
-
         }
 
         boolean canPass = rule.getRater().canPass(context.getCurNode(), count);
         if (!canPass) {
             throw new FlowException(rule.getLimitApp(), rule);
         }
-
     }
 
     /**
@@ -92,22 +89,9 @@ public class AutomaticRuleManager {
      */
     static void update(ResourceWrapper resource, Context context, Node node) {
 
-        // 更新并保存资源的监控数据
-        String resourceName = resource.getName();
-
-        int totalQps = (int) (node.previousBlockQps() + node.previousPassQps());
-        AutomaticStatistics.setTotalQps(resourceName,totalQps);
-
-        int passedQps = (int) node.previousPassQps();
-        AutomaticStatistics.setPassedQps(resourceName,passedQps);
-
-        double minRt = node.minRt();
-        AutomaticStatistics.setMinRt(resourceName, minRt);
-
-        double avgRt = node.avgRt();
-        AutomaticStatistics.setAvgRt(resourceName,avgRt);
-
-        systemLoadRecord = statusListener.getSystemAverageLoad();
+        if(nodes.get(resource.getName())==null){
+            nodes.put(resource.getName(),node);
+        }
 
         // 每秒更新一次 rules
         if (System.currentTimeMillis() - latestUpdateTime < AutomaticConfiguration.RULE_UPDATE_WINDOW) {
@@ -116,22 +100,19 @@ public class AutomaticRuleManager {
 
         if (updating.compareAndSet(false, true)) {
 
+            currentSystemLoad = statusListener.getSystemAverageLoad();
+
+            System.out.println("CPU: "+statusListener.getCpuUsage());
+            System.out.println("Load: "+statusListener.getSystemAverageLoad());
+
             latestUpdateTime = System.currentTimeMillis();
 
-            try {
+            updateRulesByQps();
 
-                updateRulesByQps();
+            updating.set(false);
 
-            } catch (Exception e) {
-
-                e.printStackTrace();
-
-            } finally {
-
-                updating.set(false);
-
-            }
         }
+
     }
 
     /**
@@ -144,51 +125,63 @@ public class AutomaticRuleManager {
 
         Set<String> resourceNameSet = rules.keySet();
 
-        // 计算系统负载
-        // 系统其他应用使用的负载 ( otherAppLoad =  totalSystemLoad - sum(minRT*passedQPS) )
-        double otherAppLoad = 0;
-        for (String resource : resourceNameSet) {
-            otherAppLoad += AutomaticStatistics.getPassedQps(resource) * AutomaticStatistics.getMinRt(resource) * 0.001;
-        }
-        otherAppLoad = systemLoadRecord - otherAppLoad;
-
-        // 当前流量需要的负载 ( currentAppLoad = sum(minRT*totalQps) )
-        double currentAppLoad = 0;
-        for (String resource : resourceNameSet) {
-            currentAppLoad += AutomaticStatistics.getTotalQps(resource) * AutomaticStatistics.getMinRt(resource) * 0.001;
-        }
-
-        // 当前可用的负载 ( availableLoad = maxLoad - otherAppLoad )
-        double availableLoad = AutomaticConfiguration.MAX_SYSTEM_LOAD - otherAppLoad;
-
-        double loadLevel = currentAppLoad / availableLoad;
+        // 将正常状态的资源加入规则计算的集合，异常的资源流量降级
 
         // 熔断降级
         // 判断是否有资源处于异常需要被降级
+        TreeSet<String> activeResources = new TreeSet<String>();
         for (String resource : resourceNameSet) {
-            if (AutomaticStatistics.getAvgRt(resource) > AutomaticConfiguration.DEGRADE_RT && degradeTimer.get(resource) == 0) {
+            Node node = nodes.get(resource);
+            if (node.avgRt() > AutomaticConfiguration.DEGRADE_RT && degradeTimer.get(resource) == 0) {
                 degradeTimer.put(resource, AutomaticConfiguration.DEGRADE_TIME_WINDOW);
             }
         }
 
-        TreeSet<String> activeResources = new TreeSet<String>();
-        // 将正常状态的资源加入规则计算的集合，异常的资源流量降级
         for (String resource : resourceNameSet) {
             if (degradeTimer.get(resource) == 0) {
                 activeResources.add(resource);
             } else {
-                rules.put(resource, rules.get(resource).setCount(0));
+                rules.put(resource, rules.get(resource).setCount(AutomaticConfiguration.DEGRADE_FLOW));
                 degradeTimer.put(resource, degradeTimer.get(resource) - 1);
             }
         }
+
+        // 计算系统负载
+
+        double otherAppLoad = 0;
+        double currentAppLoad = 0;
+        for (String resource : activeResources) {
+            Node node = nodes.get(resource);
+            // 系统其他应用使用的负载 ( otherAppLoad =  totalSystemLoad - sum(minRT*passedQPS) )
+            otherAppLoad += node.previousPassQps()*node.minRtMin()*0.001;
+
+            // 当前流量需要的负载 ( currentAppLoad = sum(minRT*totalQps) )
+            currentAppLoad += (node.previousPassQps()+node.previousBlockQps())*node.minRtMin()*0.001;
+        }
+
+
+        otherAppLoad = currentSystemLoad - otherAppLoad;
+
+        // 当前可用的负载 ( availableLoad = maxLoad - otherAppLoad )
+        double availableLoad =  3*statusListener.getAvailableProcessors() - otherAppLoad;
+
+        double loadLevel = currentAppLoad / availableLoad;
+
+        System.out.println("currentAppLoad: "+currentAppLoad);
+        System.out.println("availableLoad: "+availableLoad);
+
 
         // 计算流控阈值
         // 1. 系统能够处理所有请求时：根据各服务流量比例分配阈值
         if (loadLevel < 1) {
             for (String resourceName : activeResources) {
+                Node node = nodes.get(resourceName);
                 FlowRule rule = rules.get(resourceName);
-                double currentQps = AutomaticStatistics.getTotalQps(resourceName);
+                double currentQps = node.previousPassQps();
                 double maximumQps = currentQps / loadLevel;
+                if(maximumQps<AutomaticConfiguration.RESOURCE_MIN_FLOW){
+                    maximumQps = AutomaticConfiguration.RESOURCE_MIN_FLOW;
+                }
                 rule.setCount(maximumQps);
                 rules.put(resourceName, rule);
             }
@@ -196,6 +189,11 @@ public class AutomaticRuleManager {
         // 2. 请求数超过系统处理能力时（流量洪峰）：在保护其他服务正常访问的前提下尽可能将流量分配到发生洪峰的服务
         else {
             double[] maxQps = resolve(activeResources);
+            for (int i = 0; i<maxQps.length;i++){
+                if(maxQps[i]<AutomaticConfiguration.RESOURCE_MIN_FLOW){
+                    maxQps[i] = AutomaticConfiguration.RESOURCE_MIN_FLOW;
+                }
+            }
 
             int i = 0;
             for (String resourceName : activeResources) {
@@ -235,7 +233,8 @@ public class AutomaticRuleManager {
 
         int i = 0;
         for (String resourceName : resourceNameSet) {
-            qps[i] = AutomaticStatistics.getTotalQps(resourceName);
+            Node node = nodes.get(resourceName);
+            qps[i] = node.previousBlockQps()+node.previousPassQps();
             i += 1;
         }
 
@@ -253,7 +252,8 @@ public class AutomaticRuleManager {
         // 第一行：机器性能约束
         i = 0;
         for (String resourceName : resourceNameSet) {
-            a[0][i] = AutomaticStatistics.getMinRt(resourceName) * 0.001;
+            Node node = nodes.get(resourceName);
+            a[0][i] = node.minRtMin() * 0.001;
             i += 1;
         }
         a[0][2 * resourceNum] = 1;

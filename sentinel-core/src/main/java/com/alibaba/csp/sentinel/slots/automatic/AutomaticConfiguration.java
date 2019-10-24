@@ -11,7 +11,7 @@ public class AutomaticConfiguration {
     /**
      * System Load 阈值
      */
-    public static float MAX_SYSTEM_LOAD = 5;
+    public static float MAX_SYSTEM_LOAD = 4.5f;
 
     /**
      * 初始化流控阈值
@@ -22,6 +22,11 @@ public class AutomaticConfiguration {
      * 规则更新频率（ms)
      */
     public static long RULE_UPDATE_WINDOW = 1000;
+
+    /**
+     * 熔断降级后的流量
+     */
+    public static int DEGRADE_FLOW = 1;
 
     /**
      * 资源流控阈值最小值

@@ -30,6 +30,7 @@ public class SystemStatusListener implements Runnable {
 
     volatile double currentLoad = -1;
     volatile double currentCpuUsage = -1;
+    int availableProcessors = 0;
 
     volatile String reason = StringUtil.EMPTY;
 
@@ -41,11 +42,18 @@ public class SystemStatusListener implements Runnable {
         return currentCpuUsage;
     }
 
+    public int getAvailableProcessors() {
+        return availableProcessors;
+    }
+
     @Override
     public void run() {
         try {
             OperatingSystemMXBean osBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
+
             currentLoad = osBean.getSystemLoadAverage();
+
+            availableProcessors = osBean.getAvailableProcessors();
             /**
              * Java Doc copied from {@link OperatingSystemMXBean#getSystemCpuLoad()}:</br>
              * Returns the "recent cpu usage" for the whole system. This value is a double in the [0.0,1.0] interval.
