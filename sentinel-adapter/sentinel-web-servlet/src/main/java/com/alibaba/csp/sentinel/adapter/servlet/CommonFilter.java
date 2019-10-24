@@ -42,18 +42,27 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 /***
  * Servlet filter that integrates with Sentinel.
  *
+ * @author zhaoyuguang
  * @author youji.zj
  * @author Eric Zhao
  */
 public class CommonFilter implements Filter {
 
     private final static String HTTP_METHOD_SPECIFY = "HTTP_METHOD_SPECIFY";
+    /**
+     * Use the path of the url as the context, if necessary, but pay attention to the number of context EntranceNode
+     */
+    public final static String WEB_CONTEXT_UNIFY = "WEB_CONTEXT_UNIFY";
     private final static String COLON = ":";
     private boolean httpMethodSpecify = false;
+    private boolean webContextUnify = true;
 
     @Override
     public void init(FilterConfig filterConfig) {
         httpMethodSpecify = Boolean.parseBoolean(filterConfig.getInitParameter(HTTP_METHOD_SPECIFY));
+        if (filterConfig.getInitParameter(WEB_CONTEXT_UNIFY) != null) {
+            webContextUnify = Boolean.parseBoolean(filterConfig.getInitParameter(WEB_CONTEXT_UNIFY));
+        }
     }
 
     @Override
@@ -78,7 +87,7 @@ public class CommonFilter implements Filter {
             if (!StringUtil.isEmpty(target)) {
                 // Parse the request origin using registered origin parser.
                 String origin = parseOrigin(sRequest);
-                ContextUtil.enter(WebServletConfig.WEB_SERVLET_CONTEXT_NAME, origin);
+                ContextUtil.enter(webContextUnify ? WebServletConfig.WEB_SERVLET_CONTEXT_NAME : target, origin);
                 urlEntry = SphU.entry(target, EntryType.IN);
                 // Add method specification if necessary
                 if (httpMethodSpecify) {
