@@ -114,12 +114,12 @@ public class FlowRule extends AbstractRule {
         return this;
     }
 
-    FlowRule setRater(TrafficShapingController rater) {
+    public FlowRule setRater(TrafficShapingController rater) {
         this.controller = rater;
         return this;
     }
 
-    TrafficShapingController getRater() {
+    public TrafficShapingController getRater() {
         return controller;
     }
 

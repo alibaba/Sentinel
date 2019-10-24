@@ -231,6 +231,11 @@ public class StatisticNode implements Node {
     }
 
     @Override
+    public double minRtMin() {
+        return rollingCounterInMinute.minRt();
+    }
+
+    @Override
     public int curThreadNum() {
         return (int)curThreadNum.sum();
     }
