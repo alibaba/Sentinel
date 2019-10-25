@@ -24,6 +24,8 @@ package com.alibaba.csp.sentinel.slots.block;
 public abstract class BlockException extends Exception {
 
     public static final String BLOCK_EXCEPTION_FLAG = "SentinelBlockException";
+
+    public static final int MAX_COUNTER = 50;
     /**
      * <p>this constant RuntimeException has no stack trace, just has a message
      * {@link #BLOCK_EXCEPTION_FLAG} that marks its name.
@@ -103,14 +105,46 @@ public abstract class BlockException extends Exception {
 
         int counter = 0;
         Throwable cause = t;
-        while (cause != null && counter++ < 50) {
-            if ((cause instanceof BlockException) || (BLOCK_EXCEPTION_FLAG.equals(cause.getMessage()))) {
+        while (cause != null && counter++ < MAX_COUNTER) {
+            if (isBlockThrowable(cause)) {
                 return true;
             }
             cause = cause.getCause();
         }
 
         return false;
+    }
+
+    /**
+     * Get sentinel blocked exception. One exception is sentinel blocked
+     * exception only when:
+     * <ul>
+     * <li>the exception or its (sub-)cause is {@link BlockException}, or</li>
+     * <li>the exception's message is or any of its sub-cause's message equals to {@link #BLOCK_EXCEPTION_FLAG}</li>
+     * </ul>
+     *
+     * @param t the exception.
+     * @return return sentinel blocked exception.
+     */
+    public static BlockException getBlockException(Throwable t) {
+        if (null == t) {
+            return null;
+        }
+
+        int counter = 0;
+        Throwable cause = t;
+        while (cause != null && counter++ < MAX_COUNTER) {
+            if (isBlockThrowable(cause)) {
+                return (BlockException) cause;
+            }
+            cause = cause.getCause();
+        }
+
+        return null;
+    }
+
+    private static boolean isBlockThrowable(Throwable cause) {
+        return (cause instanceof BlockException) || (BLOCK_EXCEPTION_FLAG.equals(cause.getMessage()));
     }
 
     public AbstractRule getRule() {

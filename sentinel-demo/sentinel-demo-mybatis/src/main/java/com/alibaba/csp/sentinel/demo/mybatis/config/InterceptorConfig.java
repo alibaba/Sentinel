@@ -1,0 +1,68 @@
+/*
+ * Copyright 1999-2019 Alibaba Group Holding Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.alibaba.csp.sentinel.demo.mybatis.config;
+
+import com.alibaba.csp.sentinel.adapter.mybatis.SentinelMapperInterceptor;
+import com.alibaba.csp.sentinel.adapter.mybatis.SentinelReadInterceptor;
+import com.alibaba.csp.sentinel.adapter.mybatis.SentinelTotalInterceptor;
+import com.alibaba.csp.sentinel.adapter.mybatis.SentinelWriteInterceptor;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import javax.annotation.PostConstruct;
+import java.util.Collections;
+
+/**
+ * @author kaizi2009
+ */
+@Configuration
+public class InterceptorConfig {
+
+    @Bean
+    public SentinelReadInterceptor newReadInterceptor() {
+        SentinelReadInterceptor interceptor = new SentinelReadInterceptor();
+        return interceptor;
+    }
+
+    @Bean
+    public SentinelWriteInterceptor newWriteInterceptor() {
+        SentinelWriteInterceptor interceptor = new SentinelWriteInterceptor();
+        return interceptor;
+    }
+
+    @Bean
+    public SentinelTotalInterceptor newTotalInterceptor() {
+        SentinelTotalInterceptor interceptor = new SentinelTotalInterceptor();
+        return interceptor;
+    }
+
+    @Bean
+    public SentinelMapperInterceptor newSentinelInterceptor() {
+        return new SentinelMapperInterceptor(resourceName -> resourceName.replace("com.alibaba.csp.sentinel.", ""));
+    }
+
+    @PostConstruct
+    public void configFlowRule() {
+        FlowRule rule = new FlowRule()
+                .setCount(1)
+                .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT);
+        rule.setResource(SentinelTotalInterceptor.RESOURCE_NAME);
+        FlowRuleManager.loadRules(Collections.singletonList(rule));
+    }
+}
