@@ -15,13 +15,10 @@
  */
 package com.alibaba.csp.sentinel.cluster.server;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ServiceLoader;
-
 import com.alibaba.csp.sentinel.cluster.TokenService;
 import com.alibaba.csp.sentinel.cluster.flow.DefaultTokenService;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.util.SpiLoader;
 
 /**
  * @author Eric Zhao
@@ -30,8 +27,6 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 public final class TokenServiceProvider {
 
     private static TokenService service = null;
-
-    private static final ServiceLoader<TokenService> LOADER = ServiceLoader.load(TokenService.class);
 
     static {
         resolveTokenServiceSpi();
@@ -42,24 +37,12 @@ public final class TokenServiceProvider {
     }
 
     private static void resolveTokenServiceSpi() {
-        boolean hasOther = false;
-        List<TokenService> list = new ArrayList<TokenService>();
-        for (TokenService service : LOADER) {
-            if (service.getClass() != DefaultTokenService.class) {
-                hasOther = true;
-                list.add(service);
-            }
-        }
-
-        if (hasOther) {
-            // Pick the first.
-            service = list.get(0);
+        service = SpiLoader.loadFirstInstanceOrDefault(TokenService.class, DefaultTokenService.class);
+        if (service != null) {
+            RecordLog.info("[TokenServiceProvider] Global token service resolved: "
+                + service.getClass().getCanonicalName());
         } else {
-            // No custom token service, using default.
-            service = new DefaultTokenService();
+            RecordLog.warn("[TokenServiceProvider] Unable to resolve TokenService: no SPI found");
         }
-
-        RecordLog.info("[TokenServiceProvider] Global token service resolved: "
-            + service.getClass().getCanonicalName());
     }
 }
