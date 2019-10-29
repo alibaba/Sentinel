@@ -37,8 +37,12 @@ public final class DubboConfig {
     private static final String DEFAULT_DUBBO_PROVIDER_PREFIX = "dubbo:provider:";
     private static final String DEFAULT_DUBBO_CONSUMER_PREFIX = "dubbo:consumer:";
 
+    public static final String DUBBO_INTERFACE_GROUP_VERSION_ENABLED = "csp.sentinel.dubbo.interface.group.version.enabled";
 
-    public static boolean isUsePrefix(){
+    public static final String TRACE_BIZ_EXCEPTION_ENABLED = "csp.sentinel.dubbo.trace.biz.exception.enabled";
+
+
+    public static boolean isUsePrefix() {
         return TRUE_STR.equalsIgnoreCase(SentinelConfig.getConfig(DUBBO_USE_PREFIX));
     }
 
@@ -58,5 +62,16 @@ public final class DubboConfig {
         return null;
     }
 
+    public static Boolean getDubboInterfaceGroupAndVersionEnabled() {
+        return TRUE_STR.equalsIgnoreCase(SentinelConfig.getConfig(DUBBO_INTERFACE_GROUP_VERSION_ENABLED));
+    }
+
+    public static Boolean getDubboBizExceptionTraceEnabled() {
+        String traceBizExceptionEnabled = SentinelConfig.getConfig(TRACE_BIZ_EXCEPTION_ENABLED);
+        if (StringUtil.isNotBlank(traceBizExceptionEnabled)) {
+            return TRUE_STR.equalsIgnoreCase(traceBizExceptionEnabled);
+        }
+        return true;
+    }
 
 }

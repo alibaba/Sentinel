@@ -15,9 +15,15 @@
  */
 package com.alibaba.csp.sentinel;
 
+import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig;
+import com.alibaba.csp.sentinel.config.SentinelConfig;
+import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 
 import org.apache.dubbo.rpc.RpcContext;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * Base test class, provide common methods for subClass
@@ -33,8 +39,17 @@ public class BaseTest {
      * Clean up resources for context, clusterNodeMap, processorSlotChainMap
      */
     protected static void cleanUpAll() {
-        RpcContext.removeContext();
-        ClusterBuilderSlot.getClusterNodeMap().clear();
-        CtSph.resetChainMap();
+        try {
+            RpcContext.removeContext();
+            ClusterBuilderSlot.getClusterNodeMap().clear();
+            CtSph.resetChainMap();
+            Method method = ContextUtil.class.getDeclaredMethod("resetContextMap");
+            method.setAccessible(true);
+            method.invoke(null, null);
+            ContextUtil.exit();
+            SentinelConfig.setConfig(DubboConfig.DUBBO_INTERFACE_GROUP_VERSION_ENABLED, "true");
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
     }
 }
