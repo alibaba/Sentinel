@@ -41,7 +41,7 @@
 
     <properties>
         <!-- Compile libs -->
-        <fastjson.version>1.2.56</fastjson.version>
+        <fastjson.version>1.2.60</fastjson.version>
 
         <!-- Test libs -->
         <junit.version>4.12</junit.version>
@@ -118,6 +118,11 @@
             <dependency>
                 <groupId>com.alibaba.csp</groupId>
                 <artifactId>sentinel-datasource-apollo</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-datasource-etcd</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

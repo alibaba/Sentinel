@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.ServiceLoader;
 
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
+import com.alibaba.csp.sentinel.spi.ServiceLoaderUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
@@ -30,7 +31,8 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  */
 public class CommandHandlerProvider implements Iterable<CommandHandler> {
 
-    private final ServiceLoader<CommandHandler> serviceLoader = ServiceLoader.load(CommandHandler.class);
+    private final ServiceLoader<CommandHandler> serviceLoader = ServiceLoaderUtil.getServiceLoader(
+        CommandHandler.class);
 
     /**
      * Get all command handlers annotated with {@link CommandMapping} with command name.

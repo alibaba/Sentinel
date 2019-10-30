@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.adapter.dubbo;
 
+import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
@@ -27,9 +28,9 @@ abstract class AbstractDubboFilter implements Filter {
     protected String getResourceName(Invoker<?> invoker, Invocation invocation) {
         StringBuilder buf = new StringBuilder(64);
         buf.append(invoker.getInterface().getName())
-            .append(":")
-            .append(invocation.getMethodName())
-            .append("(");
+                .append(":")
+                .append(invocation.getMethodName())
+                .append("(");
         boolean isFirst = true;
         for (Class<?> clazz : invocation.getParameterTypes()) {
             if (!isFirst) {
@@ -40,5 +41,17 @@ abstract class AbstractDubboFilter implements Filter {
         }
         buf.append(")");
         return buf.toString();
+    }
+
+    protected String getResourceName(Invoker<?> invoker, Invocation invocation, String prefix) {
+        if (StringUtil.isBlank(prefix)) {
+            return getResourceName(invoker, invocation);
+        }
+        StringBuilder buf = new StringBuilder(64);
+        return buf.append(prefix)
+                .append(getResourceName(invoker, invocation))
+                .toString();
+
+
     }
 }

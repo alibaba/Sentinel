@@ -19,6 +19,9 @@
         <module>sentinel-datasource-redis</module>
         <module>sentinel-annotation-aspectj</module>
         <module>sentinel-parameter-flow-control</module>
+        <module>sentinel-datasource-spring-cloud-config</module>
+        <module>sentinel-datasource-consul</module>
+        <module>sentinel-datasource-etcd</module>
     </modules>
 
 </project>
