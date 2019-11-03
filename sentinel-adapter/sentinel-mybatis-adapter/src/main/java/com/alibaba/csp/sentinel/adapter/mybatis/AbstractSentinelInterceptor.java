@@ -48,7 +48,7 @@ public abstract class AbstractSentinelInterceptor implements Interceptor {
             String resourceName = getResourceName(mappedStatement);
             if (StringUtil.isNotEmpty(resourceName)) {
                 ContextUtil.enter(getContextName(), "");
-                entry = SphU.entry(resourceName, EntryType.IN);
+                entry = SphU.entry(resourceName, EntryType.OUT);
             }
             return invocation.proceed();
         } catch (BlockException e) {
