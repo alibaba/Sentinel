@@ -43,25 +43,17 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
-        Entry urlEntry = null;
-        Entry httpMethodUrlEntry = null;
 
         try {
             String resourceName = getResourceName(request);
 
-            if (!StringUtil.isEmpty(resourceName)) {
+            if (StringUtil.isNotEmpty(resourceName)) {
                 // Parse the request origin using registered origin parser.
                 String origin = parseOrigin(request);
                 ContextUtil.enter(SPRING_MVC_CONTEXT_NAME, origin);
-                urlEntry = SphU.entry(resourceName, EntryType.IN);
-                // Add method specification if necessary
-                if (baseWebMvcConfig.isHttpMethodSpecify()) {
-                    httpMethodUrlEntry = SphU.entry(request.getMethod().toUpperCase() + COLON + resourceName,
-                            EntryType.IN);
-                }
-                final EntryContainer entryContainer = new EntryContainer().setUrlEntry(urlEntry)
-                        .setHttpMethodUrlEntry(httpMethodUrlEntry);
-                setEntryContainerInReqeust(request, baseWebMvcConfig.getRequestAttributeName(), entryContainer);
+                Entry entry = SphU.entry(resourceName, EntryType.IN);
+
+                setEntryInReqeust(request, baseWebMvcConfig.getRequestAttributeName(), entry);
             }
             return true;
         } catch (BlockException e) {
@@ -80,11 +72,10 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
                                 Object handler, Exception ex) throws Exception {
-        EntryContainer entryContainer = getEntryContainerInReqeust(request, baseWebMvcConfig.getRequestAttributeName());
-        if (entryContainer != null) {
-            traceExceptionAndExit(entryContainer.getHttpMethodUrlEntry(), ex);
-            traceExceptionAndExit(entryContainer.getUrlEntry(), ex);
-            removeEntryContainerInReqeust(request);
+        Entry entry = getEntryInReqeust(request, baseWebMvcConfig.getRequestAttributeName());
+        if (entry != null) {
+            traceExceptionAndExit(entry, ex);
+            removeEntryInReqeust(request);
         }
         ContextUtil.exit();
     }
@@ -94,21 +85,21 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
                            ModelAndView modelAndView) throws Exception {
     }
 
-    protected void setEntryContainerInReqeust(HttpServletRequest request, String name, EntryContainer entryContainer) {
+    protected void setEntryInReqeust(HttpServletRequest request, String name, Entry entry) {
         Object attrVal = request.getAttribute(name);
         if (attrVal != null) {
             RecordLog.warn(String.format("Already exist attribute name '%s' in request, please set `requestAttributeName`", name));
         } else {
-            request.setAttribute(name, entryContainer);
+            request.setAttribute(name, entry);
         }
     }
 
-    protected EntryContainer getEntryContainerInReqeust(HttpServletRequest request, String attrKey) {
-        Object entityContainerObject = request.getAttribute(attrKey);
-        return entityContainerObject == null ? null : (EntryContainer) entityContainerObject;
+    protected Entry getEntryInReqeust(HttpServletRequest request, String attrKey) {
+        Object entryObject = request.getAttribute(attrKey);
+        return entryObject == null ? null : (Entry) entryObject;
     }
 
-    protected void removeEntryContainerInReqeust(HttpServletRequest request) {
+    protected void removeEntryInReqeust(HttpServletRequest request) {
         request.removeAttribute(baseWebMvcConfig.getRequestAttributeName());
     }
 

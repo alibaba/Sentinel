@@ -45,7 +45,7 @@ public class SentinelTotalInterceptor extends AbstractSentinelInterceptor {
         } else {
             this.config = config;
         }
-        RecordLog.info(String.format("SentinelInterceptor config: requestAttributeName=%s, originParser=%s, httpMethodSpecify=%s, blockExceptionHandler=%s, totalResourceName=%s", config.getRequestAttributeName(), config.getOriginParser(), config.isHttpMethodSpecify(), config.getBlockExceptionHandler(), config.getTotalResourceName()));
+        RecordLog.info(String.format("SentinelInterceptor config: requestAttributeName=%s, originParser=%s, blockExceptionHandler=%s, totalResourceName=%s", config.getRequestAttributeName(), config.getOriginParser(), config.getBlockExceptionHandler(), config.getTotalResourceName()));
         return this;
     }
 

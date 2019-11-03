@@ -68,7 +68,6 @@ public class InterceptorConfig implements WebMvcConfigurer {
         SentinelWebMvcTotalConfig config = new SentinelWebMvcTotalConfig();
 
         //Custom configuration if necessary
-        config.setHttpMethodSpecify(true);
         config.setRequestAttributeName("my_sentinel_spring_mvc_total_entity_container");
         config.setTotalResourceName("my-spring-mvc-total-url-request");
 

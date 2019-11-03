@@ -38,6 +38,14 @@ public class ResultWrapper {
         this.code = code;
     }
 
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
     public static ResultWrapper blocked() {
         return new ResultWrapper(-1, "Blocked by Sentinel");
     }

@@ -94,16 +94,16 @@ Configuration
 
 | name | description | type | default value |
 |------|------------|------|-------|
-| blockExceptionHandler | The handler when blocked by sentinel, there are three options:<br/>1. The default value is null, you can hanlde `BlockException` in spring MVC;<br/>2.Use `DefaultBlockExceptionHandler`;<br/>3. `implements BlockExceptionHandler`  | `BlockExceptionHandler` | `null` |
+| blockExceptionHandler| The handler when blocked by sentinel, there are three options:<br/>1. The default value is null, you can hanlde `BlockException` in spring MVC;<br/>2.Use `DefaultBlockExceptionHandler`;<br/>3. `implements BlockExceptionHandler`  | `BlockExceptionHandler` | `null` |
 | originParser | `RequestOriginParser` interface is useful for extracting request origin (e.g. IP or appName from HTTP Header) from HTTP request | `RequestOriginParser` | `null` |
-| httpMethodSpecify | Specify http method, for example: GET:/hello | `boolean` | `false` |
 
 - `SentinelWebMvcConfig` configuration
 
 | name | description | type | default value |
 |------|------------|------|-------|
 | urlCleaner | The `UrlCleaner` interface is designed for clean and unify the URL resource. For REST APIs, you can to clean the URL resource (e.g. `/api/user/getById` and `/api/user/getByName` -> `/api/user/getBy*`), avoid the amount of context and will exceed the threshold | `UrlCleaner` | `null` |
-| requestAttributeName | Attribute name in request used by sentinel, please check record log, if it is already used, please set | `String` | sentinel_spring_mvc_entity_container |
+| requestAttributeName | Attribute name in request used by sentinel, please check record log, if it is already used, please set | `String` | sentinel_spring_mvc_entry_container |
+| httpMethodSpecify | Specify http method, for example: GET:/hello | `boolean` | `false` |
 
 
 `SentinelWebMvcTotalConfig` configuration
@@ -111,5 +111,5 @@ Configuration
 | name | description | type | default value |
 |------|------------|------|-------|
 | totalResourceName | The resource name in `SentinelTotalInterceptor` | `String` | spring-mvc-total-url-request |
-| requestAttributeName | Attribute name in request used by sentinel, please check record log, if it is already used, please set | `String` | sentinel_spring_mvc_total_entity_container |
+| requestAttributeName | Attribute name in request used by sentinel, please check record log, if it is already used, please set | `String` | sentinel_spring_mvc_total_entry_container |
 

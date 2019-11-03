@@ -27,7 +27,6 @@ public abstract class BaseWebMvcConfig {
     protected String requestAttributeName;
     protected BlockExceptionHandler blockExceptionHandler;
     protected RequestOriginParser originParser;
-    protected boolean httpMethodSpecify;
 
     public String getRequestAttributeName() {
         return requestAttributeName;
@@ -51,14 +50,6 @@ public abstract class BaseWebMvcConfig {
 
     public void setOriginParser(RequestOriginParser originParser) {
         this.originParser = originParser;
-    }
-
-    public boolean isHttpMethodSpecify() {
-        return httpMethodSpecify;
-    }
-
-    public void setHttpMethodSpecify(boolean httpMethodSpecify) {
-        this.httpMethodSpecify = httpMethodSpecify;
     }
 
 }

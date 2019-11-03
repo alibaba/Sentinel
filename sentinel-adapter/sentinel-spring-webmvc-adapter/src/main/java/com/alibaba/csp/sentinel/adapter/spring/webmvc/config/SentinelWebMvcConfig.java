@@ -22,8 +22,9 @@ import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.UrlCleaner;
  */
 public class SentinelWebMvcConfig extends BaseWebMvcConfig {
 
-    public static final String DEFAULT_REQUEST_ATTRIBUTE_NAME = "sentinel_spring_mvc_entity_container";
+    public static final String DEFAULT_REQUEST_ATTRIBUTE_NAME = "sentinel_spring_mvc_entry_container";
     private UrlCleaner urlCleaner;
+    protected boolean httpMethodSpecify;
 
     public SentinelWebMvcConfig() {
         super();
@@ -36,5 +37,13 @@ public class SentinelWebMvcConfig extends BaseWebMvcConfig {
 
     public void setUrlCleaner(UrlCleaner urlCleaner) {
         this.urlCleaner = urlCleaner;
+    }
+
+    public boolean isHttpMethodSpecify() {
+        return httpMethodSpecify;
+    }
+
+    public void setHttpMethodSpecify(boolean httpMethodSpecify) {
+        this.httpMethodSpecify = httpMethodSpecify;
     }
 }

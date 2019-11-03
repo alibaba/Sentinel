@@ -21,6 +21,7 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.alibaba.csp.sentinel.util.StringUtil;
 import org.springframework.web.servlet.HandlerMapping;
 
 /**
@@ -68,6 +69,10 @@ public class SentinelInterceptor extends AbstractSentinelInterceptor {
         UrlCleaner urlCleaner = config.getUrlCleaner();
         if (urlCleaner != null) {
             resourceName = urlCleaner.clean(resourceName);
+        }
+        // Add method specification if necessary
+        if (StringUtil.isNotEmpty(resourceName) && config.isHttpMethodSpecify()) {
+            resourceName = request.getMethod().toUpperCase() + COLON + resourceName;
         }
         return resourceName;
     }

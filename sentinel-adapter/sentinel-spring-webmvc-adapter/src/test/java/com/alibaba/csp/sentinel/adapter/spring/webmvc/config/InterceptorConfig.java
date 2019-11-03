@@ -17,9 +17,15 @@ package com.alibaba.csp.sentinel.adapter.spring.webmvc.config;
 
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.SentinelInterceptor;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.SentinelTotalInterceptor;
+import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.BlockExceptionHandler;
+import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.RequestOriginParser;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Config sentinel interceptor
@@ -42,22 +48,30 @@ public class InterceptorConfig implements WebMvcConfigurer {
         //Config
         SentinelWebMvcConfig config = new SentinelWebMvcConfig();
 
-        config.setBlockExceptionHandler((request, response, e) -> {
-            String resourceName = e.getRule().getResource();
-            //Depending on your situation, you can choose to process or throw
-            if ("/hello".equals(resourceName)) {
-                //Do something ......
-                //Write string or json string;
-                response.getWriter().write("/Blocked by sentinel");
-            } else {
-                //Handle in global exception handling
-                throw e;
+        config.setBlockExceptionHandler(new BlockExceptionHandler() {
+            @Override
+            public void handle(HttpServletRequest request, HttpServletResponse response, BlockException e) throws Exception {
+                String resourceName = e.getRule().getResource();
+                //Depending on your situation, you can choose to process or throw
+                if ("/hello".equals(resourceName)) {
+                    //Do something ......
+                    //Write string or json string;
+                    response.getWriter().write("/Blocked by sentinel");
+                } else {
+                    //Handle in global exception handling
+                    throw e;
+                }
             }
         });
 
         //Custom configuration if necessary
-        config.setHttpMethodSpecify(true);
-        config.setOriginParser(request -> request.getHeader("S-user"));
+        config.setHttpMethodSpecify(false);
+        config.setOriginParser(new RequestOriginParser() {
+            @Override
+            public String parseOrigin(HttpServletRequest request) {
+                return request.getHeader("S-user");
+            }
+        });
 
         //Add sentinel interceptor
         registry.addInterceptor(new SentinelInterceptor(config)).addPathPatterns("/**");
