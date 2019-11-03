@@ -42,4 +42,9 @@ public class UserController {
         return teacherMapper.testSqlException(1);
     }
 
+    @GetMapping("/getUser")
+    public UserPO getUser() {
+        return userMapper.selectById(1);
+    }
+
 }

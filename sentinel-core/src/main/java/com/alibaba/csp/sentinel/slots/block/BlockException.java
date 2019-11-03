@@ -20,6 +20,7 @@ package com.alibaba.csp.sentinel.slots.block;
  * circuit breaking or system protection triggered.
  *
  * @author youji.zj
+ * @author kaizi2009
  */
 public abstract class BlockException extends Exception {
 

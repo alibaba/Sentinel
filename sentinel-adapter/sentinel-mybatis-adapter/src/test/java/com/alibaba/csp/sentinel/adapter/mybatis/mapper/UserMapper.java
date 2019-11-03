@@ -16,14 +16,7 @@
 package com.alibaba.csp.sentinel.adapter.mybatis.mapper;
 
 import com.alibaba.csp.sentinel.adapter.mybatis.po.UserPO;
-import org.apache.ibatis.annotations.Delete;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.One;
-import org.apache.ibatis.annotations.Result;
-import org.apache.ibatis.annotations.ResultMap;
-import org.apache.ibatis.annotations.Results;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.*;
 import org.apache.ibatis.mapping.FetchType;
 import org.springframework.stereotype.Repository;
 
@@ -39,6 +32,12 @@ public interface UserMapper {
             @Result(column = "name", property = "name"),
     })
     UserPO selectById(Integer id);
+
+    @Select("select * from t_user where id = #{id} and name = #{name}")
+    UserPO selectByIdAndName(@Param("id") Integer id, @Param("name") String name);
+
+    @Select("select * from t_user where id = #{id} and name = #{name}")
+    UserPO selectByIdAndName1(UserPO user);
 
     @Delete("delete from t_user where id = #{id}")
     void delete(Integer id);

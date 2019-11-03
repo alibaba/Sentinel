@@ -22,6 +22,7 @@ public interface ResourceNameCleaner {
 
     /**
      * Clean resource name
+     *
      * @param resourceName
      * @return
      */

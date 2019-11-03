@@ -18,9 +18,7 @@ package com.alibaba.csp.sentinel.adapter.mybatis;
 
 import com.alibaba.csp.sentinel.adapter.mybatis.callback.ResourceNameCleaner;
 import org.apache.ibatis.executor.Executor;
-import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
-import org.apache.ibatis.mapping.SqlSource;
 import org.apache.ibatis.plugin.Intercepts;
 import org.apache.ibatis.plugin.Signature;
 import org.apache.ibatis.session.ResultHandler;
@@ -41,33 +39,12 @@ import org.apache.ibatis.session.RowBounds;
                 args = {MappedStatement.class, Object.class}
         )
 })
-public class SentinelMapperInterceptor extends AbstractSentinelInterceptor {
-    private ResourceNameCleaner resourceNameCleaner;
-
-    public SentinelMapperInterceptor() {
-        super();
-    }
-
-    public SentinelMapperInterceptor(ResourceNameCleaner resourceNameCleaner) {
-        super();
-        this.resourceNameCleaner = resourceNameCleaner;
-    }
+public class SentinelCommandTypeInterceptor extends AbstractSentinelInterceptor {
+    public static final String RESOURCE_NAME_PREFIX = "mybatis-command-type-";
 
     @Override
     protected String getResourceName(MappedStatement mappedStatement) {
-        String resourceName = mappedStatement.getId();
-        if (getResourceNameCleaner() != null) {
-            resourceName = getResourceNameCleaner().clean(resourceName);
-        }
-        return resourceName;
+        return RESOURCE_NAME_PREFIX + mappedStatement.getSqlCommandType().name();
     }
 
-    public SentinelMapperInterceptor setResourceNameCleaner(ResourceNameCleaner resourceNameCleaner) {
-        this.resourceNameCleaner = resourceNameCleaner;
-        return this;
-    }
-
-    public ResourceNameCleaner getResourceNameCleaner() {
-        return resourceNameCleaner;
-    }
 }

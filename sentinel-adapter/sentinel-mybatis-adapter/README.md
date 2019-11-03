@@ -11,7 +11,7 @@ Add the following dependency in `pom.xml` (if you are using Maven)
 </dependency>
 ```
 
-Configure interceptor, there are four interceptors to choose.
+Configure interceptor, there are six interceptors to choose.
 
 ```java
 @Configuration
@@ -31,6 +31,14 @@ public class InterceptorConfig {
     @Bean
     public SentinelMapperInterceptor newSentinelInterceptor() {
         return new SentinelMapperInterceptor();
+    }
+    @Bean
+    public SentinelSqlInterceptor newSentinelSqlInterceptor() {
+        return new SentinelSqlInterceptor();
+    }
+    @Bean
+    public SentinelCommandTypeInterceptor newSentinelCommandTypeInterceptor() {
+        return new SentinelCommandTypeInterceptor();
     }
 }
 ```
@@ -57,7 +65,12 @@ public SentinelMapperInterceptor newSentinelInterceptor() {
 
 `SentinelTotalInterceptor` is database total flow control.
 
+`SentinelSqlInterceptor` is `Mybatis` sql flow control(e.g. `SELECT * FROM user`).
+
+`SentinelCommandTypeInterceptor` is `Mybatis` command type flow control(e.g. `mybatis-command-type-SELECT`), command type: `org.apache.ibatis.mapping.SqlCommandType`.
+
 `SentinelMapperInterceptor` is `Mybatis` Mapper Interface flow control, you can configure `ResourceNameCleaner` in `SentinelMapperInterceptor`.
+
 
 `ResourceNameCleaner` can clean resource name, for example:
 1. `com.alibaba.csp.sentinel.demo.mybatis.mapper.UserMapper.getById` -> `UserMapper.getById`

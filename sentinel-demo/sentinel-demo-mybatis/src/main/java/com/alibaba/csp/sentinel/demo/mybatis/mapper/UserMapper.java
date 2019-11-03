@@ -30,7 +30,7 @@ public interface UserMapper {
             @Result(column = "id", property = "id"),
             @Result(column = "name", property = "name"),
     })
-    UserPO selectById(Integer id);
+    UserPO selectById(@Param("id") Integer id);
 
     @Delete("delete from t_user where id = #{id}")
     void delete(Integer id);

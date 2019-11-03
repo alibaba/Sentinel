@@ -26,10 +26,14 @@ import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.ibatis.exceptions.ExceptionFactory;
 import org.apache.ibatis.mapping.MappedStatement;
+import org.apache.ibatis.mapping.ParameterMap;
+import org.apache.ibatis.mapping.ParameterMapping;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.plugin.Invocation;
 import org.apache.ibatis.plugin.Plugin;
@@ -80,6 +84,7 @@ public abstract class AbstractSentinelInterceptor implements Interceptor {
 
     /**
      * Get sentinel resource name
+     *
      * @param mappedStatement
      * @return resource name
      */

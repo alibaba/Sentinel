@@ -15,10 +15,7 @@
  */
 package com.alibaba.csp.sentinel.adapter.mybatis.config;
 
-import com.alibaba.csp.sentinel.adapter.mybatis.SentinelMapperInterceptor;
-import com.alibaba.csp.sentinel.adapter.mybatis.SentinelReadInterceptor;
-import com.alibaba.csp.sentinel.adapter.mybatis.SentinelTotalInterceptor;
-import com.alibaba.csp.sentinel.adapter.mybatis.SentinelWriteInterceptor;
+import com.alibaba.csp.sentinel.adapter.mybatis.*;
 import com.alibaba.csp.sentinel.adapter.mybatis.callback.ResourceNameCleaner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,5 +43,15 @@ public class InterceptorConfig {
     @Bean
     public SentinelMapperInterceptor newSentinelInterceptor() {
         return new SentinelMapperInterceptor();
+    }
+
+    @Bean
+    public SentinelSqlInterceptor newSentinelSqlInterceptor() {
+        return new SentinelSqlInterceptor();
+    }
+
+    @Bean
+    public SentinelCommandTypeInterceptor newSentinelCommandTypeInterceptor() {
+        return new SentinelCommandTypeInterceptor();
     }
 }

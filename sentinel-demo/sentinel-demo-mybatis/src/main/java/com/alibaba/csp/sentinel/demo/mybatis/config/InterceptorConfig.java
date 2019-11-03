@@ -15,10 +15,7 @@
  */
 package com.alibaba.csp.sentinel.demo.mybatis.config;
 
-import com.alibaba.csp.sentinel.adapter.mybatis.SentinelMapperInterceptor;
-import com.alibaba.csp.sentinel.adapter.mybatis.SentinelReadInterceptor;
-import com.alibaba.csp.sentinel.adapter.mybatis.SentinelTotalInterceptor;
-import com.alibaba.csp.sentinel.adapter.mybatis.SentinelWriteInterceptor;
+import com.alibaba.csp.sentinel.adapter.mybatis.*;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
@@ -57,12 +54,14 @@ public class InterceptorConfig {
         return new SentinelMapperInterceptor(resourceName -> resourceName.replace("com.alibaba.csp.sentinel.", ""));
     }
 
-    @PostConstruct
-    public void configFlowRule() {
-        FlowRule rule = new FlowRule()
-                .setCount(1)
-                .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT);
-        rule.setResource(SentinelTotalInterceptor.RESOURCE_NAME);
-        FlowRuleManager.loadRules(Collections.singletonList(rule));
+    @Bean
+    public SentinelSqlInterceptor newSentinelSqlInterceptor() {
+        return new SentinelSqlInterceptor();
     }
+
+    @Bean
+    public SentinelCommandTypeInterceptor newSentinelCommandTypeInterceptor() {
+        return new SentinelCommandTypeInterceptor();
+    }
+
 }

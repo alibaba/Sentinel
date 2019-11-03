@@ -15,8 +15,6 @@
  */
 package com.alibaba.csp.sentinel.adapter.mybatis.test;
 
-import com.alibaba.csp.sentinel.adapter.mybatis.po.TeacherPO;
-import com.alibaba.csp.sentinel.adapter.mybatis.po.UserPO;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
@@ -29,35 +27,29 @@ import static org.junit.Assert.assertNotNull;
 /**
  * @author kaizi2009
  */
-public class TestMybatisTransactional extends BaseJunit {
+public class TestSqlInterceptor extends BaseJunit {
 
     @Test
-    public void testTransactional() {
-        configureRulesFor(TEACHER_RESOURCE_NAME_DELETE, 1);
+    public void testSqlInterceptor() {
+        String resourceName = "select * from t_user where id = ?";
+        configureRulesFor(resourceName, 1);
 
-        userService.deleteUserAndTeacher(2, 2);
+        userMapper.selectById(ID_1);
 
         //Will be limited
-        int deleteUserId = 3;
-        int deleteTeacherId = 3;
         try {
-            userService.deleteUserAndTeacher(deleteUserId, deleteTeacherId);
+            userMapper.selectById(ID_1);
         } catch (MyBatisSystemException e) {
             BlockException blockException = BlockException.getBlockException(e);
             assertNotNull(blockException);
         }
 
         //limited assert
-        ClusterNode cn = ClusterBuilderSlot.getClusterNode(TEACHER_RESOURCE_NAME_DELETE);
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode(resourceName);
         assertNotNull(cn);
         assertEquals(1, cn.passQps(), 0.01);
         assertEquals(1, cn.blockQps(), 0.01);
 
-        //Rollback assert
-        UserPO user = userMapper.selectById(deleteUserId);
-        assertNotNull(user);
-        TeacherPO teacher = teacherMapper.selectById(deleteTeacherId);
-        assertNotNull(teacher);
     }
 
 
