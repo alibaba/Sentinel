@@ -70,7 +70,7 @@ class CtEntry extends Entry {
             if (context.getCurEntry() != this) {
                 String curEntryNameInContext = context.getCurEntry() == null ? null : context.getCurEntry().getResourceWrapper().getName();
                 // Clean previous call stack.
-                CtEntry e = (CtEntry)context.getCurEntry();
+                CtEntry e = (CtEntry) context.getCurEntry();
                 while (e != null) {
                     e.exit(count, args);
                     e = (CtEntry)e.parent;

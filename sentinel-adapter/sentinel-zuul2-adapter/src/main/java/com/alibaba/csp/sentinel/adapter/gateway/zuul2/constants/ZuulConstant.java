@@ -18,29 +18,27 @@ package com.alibaba.csp.sentinel.adapter.gateway.zuul2.constants;
 
 
 /**
- * @author tiger
+ * @author wavesZh
  */
 public class ZuulConstant {
     /**
-     * Filter Order for SEND_RESPONSE_FILTER_ORDER
+     * Zuul {@link com.netflix.zuul.context.SessionContext} key for proxying (route ID).
      */
-    public static final int SEND_RESPONSE_FILTER_ORDER = 1000;
-
+    public static final String PROXY_ID_KEY = "proxy";
     /**
      * Zuul use Sentinel as default context when serviceId is empty.
      */
     public static final String ZUUL_DEFAULT_CONTEXT = "zuul_default_context";
-
     /**
      * Zuul context key for keeping Sentinel entries.
-     *
-     * @since 1.6.0
      */
     public static final String ZUUL_CTX_SENTINEL_ENTRIES_KEY = "_sentinel_entries";
 
-
     public static final String ZUUL_CTX_SENTINEL_FALLBACK_ROUTE = "_sentinel_fallback_route";
-    public static final String ZUUL_CTX_SENTINEL_BLOCK_FLAG = "_sentinel_fail_route";
+    /**
+     * Indicate if request is blocked .
+     */
+    public static final String ZUUL_CTX_SENTINEL_BLOCKED_FLAG = "_sentinel_blocked_flag";
 
     private ZuulConstant(){}
 }

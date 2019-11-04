@@ -130,7 +130,7 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
     public void exit(Context context, ResourceWrapper resourceWrapper, int count, Object... args) {
-        DefaultNode node = (DefaultNode)context.getCurNode();
+        DefaultNode node = (DefaultNode) context.getCurNode();
 
         if (context.getCurEntry().getError() == null) {
             // Calculate response time (max RT is TIME_DROP_VALVE).

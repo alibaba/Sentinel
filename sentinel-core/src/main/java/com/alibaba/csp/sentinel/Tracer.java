@@ -110,7 +110,7 @@ public class Tracer {
             return;
         }
 
-        DefaultNode curNode = (DefaultNode)entry.getCurNode();
+        DefaultNode curNode = (DefaultNode) entry.getCurNode();
         traceExceptionToNode(e, count, entry, curNode);
     }
 

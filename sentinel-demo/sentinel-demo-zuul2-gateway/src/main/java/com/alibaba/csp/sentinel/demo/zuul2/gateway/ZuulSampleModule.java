@@ -41,12 +41,18 @@ public class ZuulSampleModule extends AbstractModule {
 
         install(new ZuulClasspathFiltersModule());
         // general server bindings
-        bind(ServerStatusManager.class); // health/discovery status
-        bind(SessionContextDecorator.class).to(ZuulSessionContextDecorator.class); // decorate new sessions when requests come in
-        bind(Registry.class).to(DefaultRegistry.class); // atlas metrics registry
-        bind(RequestCompleteHandler.class).to(BasicRequestCompleteHandler.class); // metrics post-request completion
-        bind(AbstractDiscoveryClientOptionalArgs.class).to(DiscoveryClient.DiscoveryClientOptionalArgs.class); // discovery client
-        bind(RequestMetricsPublisher.class).to(BasicRequestMetricsPublisher.class); // timings publisher
+        // health/discovery status
+        bind(ServerStatusManager.class);
+        // decorate new sessions when requests come in
+        bind(SessionContextDecorator.class).to(ZuulSessionContextDecorator.class);
+        // atlas metrics registry
+        bind(Registry.class).to(DefaultRegistry.class);
+        // metrics post-request completion
+        bind(RequestCompleteHandler.class).to(BasicRequestCompleteHandler.class);
+        // discovery client
+        bind(AbstractDiscoveryClientOptionalArgs.class).to(DiscoveryClient.DiscoveryClientOptionalArgs.class);
+        // timings publisher
+        bind(RequestMetricsPublisher.class).to(BasicRequestMetricsPublisher.class);
 
         // access logger, including request ID generator
         bind(AccessLogPublisher.class).toInstance(new AccessLogPublisher("ACCESS",

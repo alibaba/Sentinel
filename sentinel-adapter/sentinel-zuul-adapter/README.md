@@ -88,7 +88,7 @@ The invocation chain resembles this:
 
 ## Fallbacks
 
-You can implement `SentinelFallbackProvider` to define your own fallback provider when Sentinel `BlockException` is thrown.
+You can implement `ZuulBlockFallbackProvider` to define your own fallback provider when Sentinel `BlockException` is thrown.
 The default fallback provider is `DefaultBlockFallbackProvider`.
 
 By default fallback route is proxy ID (or customized API name).

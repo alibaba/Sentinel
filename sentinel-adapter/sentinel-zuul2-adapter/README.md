@@ -1,9 +1,9 @@
 # Sentinel Zuul2 Adapter
 
-Sentinel Zuul2 Adapter provides  **customized API level**
+Sentinel Zuul2 Adapter provides  **route level** and **customized API level**
 flow control for Zuul API Gateway.
 
-> *Note*: this adapter support Zuul 2.x.
+> *Note*: this adapter only support Zuul 2.x.
 
 ## How to use
 
@@ -21,28 +21,24 @@ flow control for Zuul API Gateway.
 
 2. Register filters
 
+```java
+filterMultibinder.addBinding().toInstance(new SentinelZuulInboundFilter(500));
+filterMultibinder.addBinding().toInstance(new SentinelZuulOutboundFilter(500));
+filterMultibinder.addBinding().toInstance(new SentinelZuulEndpoint());
+```
+
+> If you want to use **route level** flow control, you need to implement a inbound filter for grouping and matching route additionally.
+In the filter, you find route id and put it into SessionContext with using ZuulConstant.PROXY_ID_KEY as key.
+
 ## How it works
+
+As Zuul 2.x is based on netty, a event-drive model, so we use `AsyncEntry` to do flow control.
 
 As Zuul run as per thread per connection block model, we add filters around route filter to trace Sentinel statistics.
 
-- `SentinelZuulPreFilter`: This pre-filter will regard all proxy ID (`proxy` in `RequestContext`) and all customized API as resources. When a `BlockException` caught, the filter will try to find a fallback to execute.
-- `SentinelZuulPostFilter`: When the response has no exception caught, the post filter will complete the entries.
-- `SentinelZuulErroFilter`:  When an exception is caught, the filter will trace the exception and complete the entries.
-
-<img width="792" src="https://user-images.githubusercontent.com/9305625/47277113-6b5da780-d5ef-11e8-8a0a-93a6b09b0887.png">
-
-The order of filters can be changed via the constructor.
-
-The invocation chain resembles this:
-
-```bash
--EntranceNode: sentinel_gateway_context$$route$$another-route-b(t:0 pq:0.0 bq:0.0 tq:0.0 rt:0.0 prq:0.0 1mp:8 1mb:1 1mt:9)
---another-route-b(t:0 pq:0.0 bq:0.0 tq:0.0 rt:0.0 prq:0.0 1mp:4 1mb:1 1mt:5)
---another_customized_api(t:0 pq:0.0 bq:0.0 tq:0.0 rt:0.0 prq:0.0 1mp:4 1mb:0 1mt:4)
--EntranceNode: sentinel_gateway_context$$route$$my-route-1(t:0 pq:0.0 bq:0.0 tq:0.0 rt:0.0 prq:0.0 1mp:6 1mb:0 1mt:6)
---my-route-1(t:0 pq:0.0 bq:0.0 tq:0.0 rt:0.0 prq:0.0 1mp:2 1mb:0 1mt:2)
---some_customized_api(t:0 pq:0.0 bq:0.0 tq:0.0 rt:0.0 prq:0.0 1mp:2 1mb:0 1mt:2)
-```
+- `SentinelZuulInboundFilter`: This inbound filter will regard all proxy ID (`proxy` in `SessionContext`) and all customized API as resources. When a `BlockException` caught, the filter will set endpoint to find a fallback to execute.
+- `SentinelZuulOutboundFilter`: When the response has no exception caught, the post filter will trace the exception and complete the entries.
+- `SentinelZuulEndpoint`: When an exception is caught, the filter will find a fallback to execute.
 
 ## Integration with Sentinel Dashboard
 
@@ -51,7 +47,7 @@ The invocation chain resembles this:
 
 ## Fallbacks
 
-You can implement `SentinelFallbackProvider` to define your own fallback provider when Sentinel `BlockException` is thrown.
+You can implement `ZuulBlockFallbackProvider` to define your own fallback provider when Sentinel `BlockException` is thrown.
 The default fallback provider is `DefaultBlockFallbackProvider`.
 
 By default fallback route is proxy ID (or customized API name).

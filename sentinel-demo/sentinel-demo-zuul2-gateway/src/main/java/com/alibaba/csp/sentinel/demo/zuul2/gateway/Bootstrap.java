@@ -12,7 +12,6 @@ import com.alibaba.csp.sentinel.adapter.gateway.common.api.GatewayApiDefinitionM
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayFlowRule;
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayParamFlowItem;
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayRuleManager;
-import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.google.inject.Injector;
 import com.google.inject.Scopes;
 import com.netflix.appinfo.EurekaInstanceConfig;
@@ -21,13 +20,8 @@ import com.netflix.config.ConfigurationManager;
 import com.netflix.governator.InjectorBuilder;
 import com.netflix.zuul.netty.server.BaseServerStartup;
 import com.netflix.zuul.netty.server.Server;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class Bootstrap {
-    private static final Logger log = LoggerFactory.getLogger(Bootstrap.class);
-
-
     public static void main(String[] args) {
         new Bootstrap().start();
     }
@@ -51,29 +45,8 @@ public class Bootstrap {
 
     private void initGatewayRules() {
         Set<GatewayFlowRule> rules = new HashSet<>();
-        rules.add(new GatewayFlowRule("aliyun")
-                .setCount(4)
-                .setIntervalSec(1)
-        );
-        rules.add(new GatewayFlowRule("aliyun")
-                .setCount(2)
-                .setIntervalSec(2)
-                .setBurst(2)
-                .setParamItem(new GatewayParamFlowItem()
-                        .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_CLIENT_IP)
-                )
-        );
-        rules.add(new GatewayFlowRule("another")
-                .setCount(4)
-                .setIntervalSec(1)
-                .setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER)
-                .setMaxQueueingTimeoutMs(600)
-                .setParamItem(new GatewayParamFlowItem()
-                        .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER)
-                        .setFieldName("X-Sentinel-Flag")
-                )
-        );
-        rules.add(new GatewayFlowRule("another")
+        rules.add(new GatewayFlowRule("another_customized_api")
+                .setResourceMode(SentinelGatewayConstants.RESOURCE_MODE_CUSTOM_API_NAME)
                 .setCount(1)
                 .setIntervalSec(1)
                 .setParamItem(new GatewayParamFlowItem()
@@ -81,7 +54,6 @@ public class Bootstrap {
                         .setFieldName("pa")
                 )
         );
-
         rules.add(new GatewayFlowRule("some_customized_api")
                 .setResourceMode(SentinelGatewayConstants.RESOURCE_MODE_CUSTOM_API_NAME)
                 .setCount(5)
