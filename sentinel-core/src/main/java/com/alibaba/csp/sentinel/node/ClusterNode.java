@@ -15,12 +15,13 @@
  */
 package com.alibaba.csp.sentinel.node;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+import com.googlecode.concurrentlinkedhashmap.Weighers;
 
 /**
  * <p>
@@ -43,16 +44,19 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 public class ClusterNode extends StatisticNode {
 
     /**
-     * <p>The origin map holds the pair: (origin, originNode) for one specific resource.</p>
      * <p>
-     * The longer the application runs, the more stable this mapping will become.
-     * So we didn't use concurrent map here, but a lock, as this lock only happens
-     * at the very beginning while concurrent map will hold the lock all the time.
+     * The origin map holds the pair: (origin, originNode) for one specific resource.
+     * </p>
+     * <p>
+     * The longer the application runs, the more stable this mapping will become. So we didn't use concurrent map here,
+     * but a lock, as this lock only happens at the very beginning while concurrent map will hold the lock all the time.
      * </p>
      */
-    private Map<String, StatisticNode> originCountMap = new HashMap<String, StatisticNode>();
+    private Map<String, StatisticNode> originCountMap = buildLRUCache();
 
     private final ReentrantLock lock = new ReentrantLock();
+    
+    static private final long DEFAULT_CACHE_SIZE = 1024L;
 
     /**
      * <p>Get {@link Node} of the specific origin. Usually the origin is the Service Consumer's app name.</p>
@@ -72,10 +76,7 @@ public class ClusterNode extends StatisticNode {
                 if (statisticNode == null) {
                     // The node is absent, create a new node for the origin.
                     statisticNode = new StatisticNode();
-                    HashMap<String, StatisticNode> newMap = new HashMap<>(originCountMap.size() + 1);
-                    newMap.putAll(originCountMap);
-                    newMap.put(origin, statisticNode);
-                    originCountMap = newMap;
+                    originCountMap.put(origin, statisticNode);
                 }
             } finally {
                 lock.unlock();
@@ -84,8 +85,14 @@ public class ClusterNode extends StatisticNode {
         return statisticNode;
     }
 
-    public synchronized Map<String, StatisticNode> getOriginCountMap() {
+    public Map<String, StatisticNode> getOriginCountMap() {
         return originCountMap;
+    }
+
+    private ConcurrentLinkedHashMap<String, StatisticNode> buildLRUCache() {
+        return new ConcurrentLinkedHashMap.Builder<String, StatisticNode>()
+            .maximumWeightedCapacity(Long.getLong("csp.sentinel.origin.count", DEFAULT_CACHE_SIZE).longValue())
+            .weigher(Weighers.singleton()).build();
     }
 
     /**
