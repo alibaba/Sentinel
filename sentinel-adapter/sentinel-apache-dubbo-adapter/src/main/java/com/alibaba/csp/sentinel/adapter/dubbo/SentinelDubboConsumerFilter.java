@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.adapter.dubbo;
 
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.ResourceTypeConstants;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig;
@@ -54,8 +55,9 @@ public class SentinelDubboConsumerFilter implements Filter {
         Entry methodEntry = null;
         try {
             String resourceName = DubboUtils.getResourceName(invoker, invocation, DubboConfig.getDubboConsumerPrefix());
-            interfaceEntry = SphU.entry(invoker.getInterface().getName(), EntryType.OUT);
-            methodEntry = SphU.entry(resourceName, EntryType.OUT);
+            interfaceEntry = SphU.entry(invoker.getInterface().getName(),
+                ResourceTypeConstants.COMMON_RPC, EntryType.OUT);
+            methodEntry = SphU.entry(resourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT);
 
             Result result = invoker.invoke(invocation);
             if (result.hasException()) {
