@@ -139,7 +139,11 @@
         	<version>1.16.1</version>
         	<scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.influxdb</groupId>
+            <artifactId>influxdb-java</artifactId>
+            <version>2.14</version>
+        </dependency>
         <dependency>
             <groupId>com.alibaba.nacos</groupId>
             <artifactId>nacos-client</artifactId>
