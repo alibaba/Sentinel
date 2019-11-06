@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.alibaba.csp.sentinel.command.vo.NodeVo;
+import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
  * @author leyou
@@ -56,7 +57,7 @@ public class ResourceTreeNode {
             ResourceTreeNode node = fromNodeVo(vo);
             map.put(node.id, node);
             // real root
-            if (node.parentId == null) {
+            if (StringUtil.isEmpty(node.parentId)) {
                 root = node;
             } else if (map.containsKey(node.parentId)) {
                 map.get(node.parentId).children.add(node);
