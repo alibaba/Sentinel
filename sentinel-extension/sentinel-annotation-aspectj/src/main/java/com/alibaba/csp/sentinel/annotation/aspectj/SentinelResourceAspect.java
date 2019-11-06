@@ -50,9 +50,10 @@ public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
         }
         String resourceName = getResourceName(annotation.value(), originMethod);
         EntryType entryType = annotation.entryType();
+        int resourceType = annotation.resourceType();
         Entry entry = null;
         try {
-            entry = SphU.entry(resourceName, entryType, 1, pjp.getArgs());
+            entry = SphU.entry(resourceName, resourceType, entryType, pjp.getArgs());
             Object result = pjp.proceed();
             return result;
         } catch (BlockException ex) {
