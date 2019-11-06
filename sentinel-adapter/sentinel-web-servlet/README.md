@@ -39,7 +39,8 @@ public class FilterConfig {
         registration.addUrlPatterns("/*");
         registration.setName("sentinelCommonFilter");
         registration.setOrder(1);
-
+        // Set whether to support the specified HTTP method for the filter.
+        registration.addInitParameter(CommonFilter.HTTP_METHOD_SPECIFY, "false");
         return registration;
     }
 }
