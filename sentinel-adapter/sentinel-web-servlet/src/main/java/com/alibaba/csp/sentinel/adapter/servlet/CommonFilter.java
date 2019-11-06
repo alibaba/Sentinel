@@ -39,21 +39,30 @@ import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
-/***
+/**
  * Servlet filter that integrates with Sentinel.
  *
- * @author zhaoyuguang
  * @author youji.zj
  * @author Eric Zhao
+ * @author zhaoyuguang
  */
 public class CommonFilter implements Filter {
 
-    public final static String HTTP_METHOD_SPECIFY = "HTTP_METHOD_SPECIFY";
     /**
-     * Use the path of the url as the context, if necessary, but pay attention to the number of context EntranceNode
+     * Specify whether the URL resource name should contain the HTTP method prefix (e.g. {@code POST:}).
      */
-    public final static String WEB_CONTEXT_UNIFY = "WEB_CONTEXT_UNIFY";
+    public static final String HTTP_METHOD_SPECIFY = "HTTP_METHOD_SPECIFY";
+    /**
+     * If enabled, use the URL path as the context name, or else use the default
+     * {@link WebServletConfig#WEB_SERVLET_CONTEXT_NAME}. Please pay attention to the number of context (EntranceNode),
+     * which may affect the memory footprint.
+     *
+     * @since 1.7.0
+     */
+    public static final String WEB_CONTEXT_UNIFY = "WEB_CONTEXT_UNIFY";
+
     private final static String COLON = ":";
+
     private boolean httpMethodSpecify = false;
     private boolean webContextUnify = true;
 
@@ -87,7 +96,8 @@ public class CommonFilter implements Filter {
             if (!StringUtil.isEmpty(target)) {
                 // Parse the request origin using registered origin parser.
                 String origin = parseOrigin(sRequest);
-                ContextUtil.enter(webContextUnify ? WebServletConfig.WEB_SERVLET_CONTEXT_NAME : target, origin);
+                String contextName = webContextUnify ? WebServletConfig.WEB_SERVLET_CONTEXT_NAME : target;
+                ContextUtil.enter(contextName, origin);
                 urlEntry = SphU.entry(target, EntryType.IN);
                 // Add method specification if necessary
                 if (httpMethodSpecify) {
