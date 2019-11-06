@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.ResourceTypeConstants;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.adapter.servlet.callback.RequestOriginParser;
@@ -79,7 +80,6 @@ public class CommonFilter implements Filter {
             throws IOException, ServletException {
         HttpServletRequest sRequest = (HttpServletRequest) request;
         Entry urlEntry = null;
-        Entry httpMethodUrlEntry = null;
 
         try {
             String target = FilterUtil.filterTarget(sRequest);
@@ -98,11 +98,13 @@ public class CommonFilter implements Filter {
                 String origin = parseOrigin(sRequest);
                 String contextName = webContextUnify ? WebServletConfig.WEB_SERVLET_CONTEXT_NAME : target;
                 ContextUtil.enter(contextName, origin);
-                urlEntry = SphU.entry(target, EntryType.IN);
-                // Add method specification if necessary
+
                 if (httpMethodSpecify) {
-                    httpMethodUrlEntry = SphU.entry(sRequest.getMethod().toUpperCase() + COLON + target,
-                            EntryType.IN);
+                    // Add HTTP method prefix if necessary.
+                    String pathWithHttpMethod = sRequest.getMethod().toUpperCase() + COLON + target;
+                    urlEntry = SphU.entry(pathWithHttpMethod, ResourceTypeConstants.COMMON_WEB, EntryType.IN);
+                } else {
+                    urlEntry = SphU.entry(target, ResourceTypeConstants.COMMON_WEB, EntryType.IN);
                 }
             }
             chain.doFilter(request, response);
@@ -112,12 +114,8 @@ public class CommonFilter implements Filter {
             WebCallbackManager.getUrlBlockHandler().blocked(sRequest, sResponse, e);
         } catch (IOException | ServletException | RuntimeException e2) {
             Tracer.traceEntry(e2, urlEntry);
-            Tracer.traceEntry(e2, httpMethodUrlEntry);
             throw e2;
         } finally {
-            if (httpMethodUrlEntry != null) {
-                httpMethodUrlEntry.exit();
-            }
             if (urlEntry != null) {
                 urlEntry.exit();
             }
