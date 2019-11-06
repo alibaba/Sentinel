@@ -45,6 +45,7 @@ You can also add to [sentinel-group/sentinel-awesome](https://github.com/sentine
 - [Guideline: 从 Hystrix 迁移到 Sentinel](https://sentinelguard.io/zh-cn/blog/guideline-migrate-from-hystrix-to-sentinel.html) by [Eric Zhao](https://github.com/sczyh30)
 - [Sentinel 控制台监控数据持久化【MySQL】](https://www.cnblogs.com/cdfive2018/p/9838577.html) by [cdfive](https://github.com/cdfive)
 - [Sentinel 控制台监控数据持久化【InfluxDB】](https://www.cnblogs.com/cdfive2018/p/9914838.html) by [cdfive](https://github.com/cdfive)
+- [Sentinel 控制台监控数据持久化【Apollo】](https://blog.csdn.net/caodegao/article/details/100009618) by [cookiejoo](https://github.com/cookiejoo)
 - [Sentinel一体化监控解决方案 CrateDB + Grafana](https://blog.csdn.net/huyong1990/article/details/82392386) by [Young Hu](https://github.com/YoungHu)
 - Sentinel 源码解析系列 by [houyi](https://github.com/all4you)
   - [Sentinel 原理-全解析](https://mp.weixin.qq.com/s/7_pCkamNv0269e5l9_Wz7w)

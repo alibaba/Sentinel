@@ -46,32 +46,35 @@ public class SystemStatusListener implements Runnable {
         try {
             OperatingSystemMXBean osBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
             currentLoad = osBean.getSystemLoadAverage();
-            /**
+            /*
              * Java Doc copied from {@link OperatingSystemMXBean#getSystemCpuLoad()}:</br>
              * Returns the "recent cpu usage" for the whole system. This value is a double in the [0.0,1.0] interval.
              * A value of 0.0 means that all CPUs were idle during the recent period of time observed, while a value
              * of 1.0 means that all CPUs were actively running 100% of the time during the recent period being
-             * observed. All values betweens 0.0 and 1.0 are possible depending of the activities going on in the
+             * observed. All values between 0.0 and 1.0 are possible depending of the activities going on in the
              * system. If the system recent cpu usage is not available, the method returns a negative value.
              */
             currentCpuUsage = osBean.getSystemCpuLoad();
 
-            StringBuilder sb = new StringBuilder();
-            if (currentLoad > SystemRuleManager.getHighestSystemLoad()) {
-                sb.append("load:").append(currentLoad).append(";");
-                sb.append("cpu:").append(currentCpuUsage).append(";");
-                sb.append("qps:").append(Constants.ENTRY_NODE.passQps()).append(";");
-                sb.append("rt:").append(Constants.ENTRY_NODE.avgRt()).append(";");
-                sb.append("thread:").append(Constants.ENTRY_NODE.curThreadNum()).append(";");
-                sb.append("success:").append(Constants.ENTRY_NODE.successQps()).append(";");
-                sb.append("minRt:").append(Constants.ENTRY_NODE.minRt()).append(";");
-                sb.append("maxSuccess:").append(Constants.ENTRY_NODE.maxSuccessQps()).append(";");
-                RecordLog.info(sb.toString());
+            if (currentLoad > SystemRuleManager.getSystemLoadThreshold()) {
+                writeSystemStatusLog();
             }
-
         } catch (Throwable e) {
-            RecordLog.info("could not get system error ", e);
+            RecordLog.warn("[SystemStatusListener] Failed to get system metrics from JMX", e);
         }
     }
 
+    private void writeSystemStatusLog() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Load exceeds the threshold: ");
+        sb.append("load:").append(String.format("%.4f", currentLoad)).append("; ");
+        sb.append("cpuUsage:").append(String.format("%.4f", currentCpuUsage)).append("; ");
+        sb.append("qps:").append(String.format("%.4f", Constants.ENTRY_NODE.passQps())).append("; ");
+        sb.append("rt:").append(String.format("%.4f", Constants.ENTRY_NODE.avgRt())).append("; ");
+        sb.append("thread:").append(Constants.ENTRY_NODE.curThreadNum()).append("; ");
+        sb.append("success:").append(String.format("%.4f", Constants.ENTRY_NODE.successQps())).append("; ");
+        sb.append("minRt:").append(String.format("%.2f", Constants.ENTRY_NODE.minRt())).append("; ");
+        sb.append("maxSuccess:").append(String.format("%.2f", Constants.ENTRY_NODE.maxSuccessQps())).append("; ");
+        RecordLog.info(sb.toString());
+    }
 }

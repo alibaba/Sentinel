@@ -15,15 +15,14 @@
  */
 package com.alibaba.csp.sentinel.adapter.grpc;
 
-import java.util.concurrent.TimeUnit;
-
 import com.alibaba.csp.sentinel.adapter.grpc.gen.FooRequest;
 import com.alibaba.csp.sentinel.adapter.grpc.gen.FooResponse;
 import com.alibaba.csp.sentinel.adapter.grpc.gen.FooServiceGrpc;
-
 import io.grpc.ClientInterceptor;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * A simple wrapped gRPC client for FooService.
@@ -31,22 +30,21 @@ import io.grpc.ManagedChannelBuilder;
  * @author Eric Zhao
  */
 final class FooServiceClient {
-
     private final ManagedChannel channel;
     private final FooServiceGrpc.FooServiceBlockingStub blockingStub;
 
     FooServiceClient(String host, int port) {
         this.channel = ManagedChannelBuilder.forAddress(host, port)
-            .usePlaintext()
-            .build();
+                .usePlaintext()
+                .build();
         this.blockingStub = FooServiceGrpc.newBlockingStub(this.channel);
     }
 
     FooServiceClient(String host, int port, ClientInterceptor interceptor) {
         this.channel = ManagedChannelBuilder.forAddress(host, port)
-            .usePlaintext()
-            .intercept(interceptor)
-            .build();
+                .usePlaintext()
+                .intercept(interceptor)
+                .build();
         this.blockingStub = FooServiceGrpc.newBlockingStub(this.channel);
     }
 
