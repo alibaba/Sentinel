@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.adapter.dubbo;
 
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.ResourceTypeConstants;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig;
@@ -60,18 +61,23 @@ public class SentinelDubboProviderFilter extends AbstractDubboFilter implements 
             String resourceName = getResourceName(invoker, invocation, DubboConfig.getDubboProviderPrefix());
             String interfaceName = invoker.getInterface().getName();
             ContextUtil.enter(resourceName, application);
-            interfaceEntry = SphU.entry(interfaceName, EntryType.IN);
-            methodEntry = SphU.entry(resourceName, EntryType.IN, 1, invocation.getArguments());
+            interfaceEntry = SphU.entry(interfaceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN);
+            methodEntry = SphU.entry(resourceName, ResourceTypeConstants.COMMON_RPC,
+                EntryType.IN, invocation.getArguments());
 
             Result result = invoker.invoke(invocation);
             if (result.hasException()) {
-                Tracer.trace(result.getException());
+                Throwable e = result.getException();
+                // Record common exception.
+                Tracer.traceEntry(e, interfaceEntry);
+                Tracer.traceEntry(e, methodEntry);
             }
             return result;
         } catch (BlockException e) {
             return DubboFallbackRegistry.getProviderFallback().handle(invoker, invocation, e);
         } catch (RpcException e) {
-            Tracer.trace(e);
+            Tracer.traceEntry(e, interfaceEntry);
+            Tracer.traceEntry(e, methodEntry);
             throw e;
         } finally {
             if (methodEntry != null) {
