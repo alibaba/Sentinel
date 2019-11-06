@@ -227,8 +227,9 @@ public class DegradeControllerV2 {
     }
 
     private boolean publishRules(String app, String ip, Integer port) {
-        List<DegradeRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
+        //List<DegradeRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
         //return sentinelApiClient.setDegradeRuleOfMachine(app, ip, port, rules);
+        List<DegradeRuleEntity> rules = repository.findAllByApp(app);
         try {
             rulePublisher.publish(app, rules);
             return true;

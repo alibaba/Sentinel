@@ -258,8 +258,9 @@ public class ParamFlowRuleControllerV2 {
     }
 
     private void publishRules(String app, String ip, Integer port) throws Exception {
-        List<ParamFlowRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
+        //List<ParamFlowRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
         //return sentinelApiClient.setParamFlowRuleOfMachine(app, ip, port, rules);
+        List<ParamFlowRuleEntity> rules = repository.findAllByApp(app);
 
         rulePublisher.publish(app,rules);
     }

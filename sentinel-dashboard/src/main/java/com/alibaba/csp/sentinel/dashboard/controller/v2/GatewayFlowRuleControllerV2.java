@@ -445,8 +445,9 @@ public class GatewayFlowRuleControllerV2 {
     }
 
     private boolean publishRules(String app, String ip, Integer port) {
-        List<GatewayFlowRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
+        //List<GatewayFlowRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
         //return sentinelApiClient.modifyGatewayFlowRules(app, ip, port, rules);
+        List<GatewayFlowRuleEntity> rules = repository.findAllByApp(app);
         try {
             rulePublisher.publish(app, rules);
             return true;
