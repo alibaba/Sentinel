@@ -48,7 +48,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  */
 public class CommonFilter implements Filter {
 
-    private final static String HTTP_METHOD_SPECIFY = "HTTP_METHOD_SPECIFY";
+    public final static String HTTP_METHOD_SPECIFY = "HTTP_METHOD_SPECIFY";
     /**
      * Use the path of the url as the context, if necessary, but pay attention to the number of context EntranceNode
      */
