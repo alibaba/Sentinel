@@ -57,12 +57,12 @@ public final class Constants {
      * Global ROOT statistic node that represents the universal parent node.
      */
     public final static DefaultNode ROOT = new EntranceNode(new StringResourceWrapper(ROOT_ID, EntryType.IN),
-        new ClusterNode());
+        new ClusterNode(ROOT_ID, ResourceTypeConstants.COMMON));
 
     /**
      * Global statistic node for inbound traffic. Usually used for {@link SystemRule} checking.
      */
-    public final static ClusterNode ENTRY_NODE = new ClusterNode();
+    public final static ClusterNode ENTRY_NODE = new ClusterNode(TOTAL_IN_RESOURCE_NAME, ResourceTypeConstants.COMMON);
 
     /**
      * Response time that exceeds TIME_DROP_VALVE will be calculated as TIME_DROP_VALVE. Default value is 4900 ms.
