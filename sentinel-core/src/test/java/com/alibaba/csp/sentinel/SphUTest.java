@@ -38,7 +38,7 @@ public class SphUTest {
 
         assertNotNull(e);
         assertEquals(e.resourceWrapper.getName(), "resourceName");
-        assertEquals(e.resourceWrapper.getType(), EntryType.OUT);
+        assertEquals(e.resourceWrapper.getEntryType(), EntryType.OUT);
         assertEquals(ContextUtil.getContext().getName(), Constants.CONTEXT_DEFAULT_NAME);
 
         e.exit();
@@ -53,7 +53,7 @@ public class SphUTest {
         assertTrue(StringUtil
             .equalsIgnoreCase(e.resourceWrapper.getName(),
                 "com.alibaba.csp.sentinel.SphUTest:testMethodEntryNormal()"));
-        assertEquals(e.resourceWrapper.getType(), EntryType.OUT);
+        assertEquals(e.resourceWrapper.getEntryType(), EntryType.OUT);
         assertEquals(ContextUtil.getContext().getName(), Constants.CONTEXT_DEFAULT_NAME);
 
         e.exit();
@@ -78,7 +78,7 @@ public class SphUTest {
 
         assertNotNull(e);
         assertEquals("resourceName", e.resourceWrapper.getName());
-        assertEquals(e.resourceWrapper.getType(), EntryType.OUT);
+        assertEquals(e.resourceWrapper.getEntryType(), EntryType.OUT);
         assertEquals(ContextUtil.getContext().getName(), Constants.CONTEXT_DEFAULT_NAME);
 
         e.exit(2);
@@ -93,7 +93,7 @@ public class SphUTest {
         assertTrue(StringUtil
             .equalsIgnoreCase(e.resourceWrapper.getName(),
                 "com.alibaba.csp.sentinel.SphUTest:testMethodEntryNormal()"));
-        assertEquals(e.resourceWrapper.getType(), EntryType.OUT);
+        assertEquals(e.resourceWrapper.getEntryType(), EntryType.OUT);
 
         e.exit(2);
     }
@@ -102,7 +102,7 @@ public class SphUTest {
     public void testStringEntryType() throws BlockException {
         Entry e = SphU.entry("resourceName", EntryType.IN);
 
-        assertSame(e.resourceWrapper.getType(), EntryType.IN);
+        assertSame(e.resourceWrapper.getEntryType(), EntryType.IN);
 
         e.exit();
     }
@@ -112,7 +112,7 @@ public class SphUTest {
         Method method = SphUTest.class.getMethod("testMethodEntryNormal");
         Entry e = SphU.entry(method, EntryType.IN);
 
-        assertSame(e.resourceWrapper.getType(), EntryType.IN);
+        assertSame(e.resourceWrapper.getEntryType(), EntryType.IN);
 
         e.exit();
     }
@@ -121,7 +121,7 @@ public class SphUTest {
     public void testStringEntryCountType() throws BlockException {
         Entry e = SphU.entry("resourceName", EntryType.IN, 2);
 
-        assertSame(e.resourceWrapper.getType(), EntryType.IN);
+        assertSame(e.resourceWrapper.getEntryType(), EntryType.IN);
 
         e.exit(2);
     }
@@ -131,7 +131,7 @@ public class SphUTest {
         Method method = SphUTest.class.getMethod("testMethodEntryNormal");
         Entry e = SphU.entry(method, EntryType.IN, 2);
 
-        assertSame(e.resourceWrapper.getType(), EntryType.IN);
+        assertSame(e.resourceWrapper.getEntryType(), EntryType.IN);
 
         e.exit();
     }
@@ -141,7 +141,7 @@ public class SphUTest {
         final String arg0 = "foo";
         final String arg1 = "baz";
         Entry e = SphU.entry("resourceName", EntryType.IN, 2, arg0, arg1);
-        assertSame(e.resourceWrapper.getType(), EntryType.IN);
+        assertSame(e.resourceWrapper.getEntryType(), EntryType.IN);
 
         e.exit(2, arg0, arg1);
     }
@@ -153,7 +153,7 @@ public class SphUTest {
         Method method = SphUTest.class.getMethod("testMethodEntryNormal");
         Entry e = SphU.entry(method, EntryType.IN, 2, arg0, arg1);
 
-        assertSame(e.resourceWrapper.getType(), EntryType.IN);
+        assertSame(e.resourceWrapper.getEntryType(), EntryType.IN);
 
         e.exit(2, arg0, arg1);
     }
