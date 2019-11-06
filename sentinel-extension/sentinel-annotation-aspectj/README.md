@@ -1,7 +1,7 @@
 # Sentinel Annotation AspectJ
 
 This extension is an AOP implementation using AspectJ for Sentinel annotations.
-Currently only runtime waving is supported.
+Currently only runtime weaving is supported.
 
 ## Annotation
 

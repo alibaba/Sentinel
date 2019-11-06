@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.adapter.servletmethod;
+package com.alibaba.csp.sentinel.adapter.servletcontext;
 
-import com.alibaba.csp.sentinel.adapter.servlet.config.WebServletConfig;
-import com.alibaba.csp.sentinel.adapter.servlet.util.FilterUtil;
+import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.node.ClusterNode;
+import com.alibaba.csp.sentinel.node.EntranceNode;
+import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
@@ -29,36 +30,27 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * @author zhaoyuguang
- * @author Roger Law
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = TestApplication.class,
+@SpringBootTest(classes = TestContextApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-public class CommonFilterMethodTest {
+public class CommonFilterContextTest {
 
     private static final String HELLO_STR = "Hello!";
-
-    private static final String HELLO_POST_STR = "Hello Post!";
-
-    private static final String GET = "GET";
-
-    private static final String POST = "POST";
-
-    private static final String COLON = ":";
 
     @Autowired
     private MockMvc mvc;
@@ -85,43 +77,19 @@ public class CommonFilterMethodTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(HELLO_STR));
 
-        ClusterNode cnGet = ClusterBuilderSlot.getClusterNode(GET + COLON + url);
-        assertNotNull(cnGet);
-        assertEquals(1, cnGet.passQps(), 0.01);
-
-
-        ClusterNode cnPost = ClusterBuilderSlot.getClusterNode(POST + COLON + url);
-        assertNull(cnPost);
-
-        this.mvc.perform(post(url))
-                .andExpect(status().isOk())
-                .andExpect(content().string(HELLO_POST_STR));
-
-        cnPost = ClusterBuilderSlot.getClusterNode(POST + COLON + url);
-        assertNotNull(cnPost);
-        assertEquals(1, cnPost.passQps(), 0.01);
-
-        testCommonBlockAndRedirectBlockPage(url, cnGet, cnPost);
-    }
-
-    private void testCommonBlockAndRedirectBlockPage(String url, ClusterNode cnGet, ClusterNode cnPost) throws Exception {
-        configureRulesFor(GET + ":" + url, 0);
-        // The request will be blocked and response is default block message.
-        this.mvc.perform(get(url).accept(MediaType.TEXT_PLAIN))
-                .andExpect(status().isTooManyRequests())
-                .andExpect(content().string(FilterUtil.DEFAULT_BLOCK_MSG));
-        assertEquals(1, cnGet.blockQps(), 0.01);
-
-        // Test for post pass
-        this.mvc.perform(post(url))
-                .andExpect(status().isOk())
-                .andExpect(content().string(HELLO_POST_STR));
-
-        assertEquals(2, cnPost.passQps(), 0.01);
-
-
-        FlowRuleManager.loadRules(null);
-        WebServletConfig.setBlockPage("");
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
+        assertNotNull(cn);
+        assertEquals(1, cn.passQps(), 0.01);
+        String context = "";
+        for (Node n : Constants.ROOT.getChildList()) {
+            if (n instanceof EntranceNode) {
+                String id = ((EntranceNode) n).getId().getName();
+                if (url.equals(id)) {
+                    context = ((EntranceNode) n).getId().getName();
+                }
+            }
+        }
+        assertEquals(url, context);
     }
 
     @After

@@ -15,11 +15,13 @@
  */
 package com.alibaba.csp.sentinel.node;
 
+import java.util.List;
 import java.util.Map;
 
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
 import com.alibaba.csp.sentinel.slots.statistic.metric.DebugSupport;
+import com.alibaba.csp.sentinel.util.function.Predicate;
 
 /**
  * Holds real-time statistics for resources.
@@ -145,6 +147,15 @@ public interface Node extends OccupySupport, DebugSupport {
      * @return valid metric nodes of resources
      */
     Map<Long, MetricNode> metrics();
+
+    /**
+     * Fetch all raw metric items that satisfies the time predicate.
+     *
+     * @param timePredicate time predicate
+     * @return raw metric items that satisfies the time predicate
+     * @since 1.7.0
+     */
+    List<MetricNode> rawMetricsInMin(Predicate<Long> timePredicate);
 
     /**
      * Add pass count.
