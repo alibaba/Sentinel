@@ -20,6 +20,7 @@ import com.alibaba.csp.sentinel.slots.statistic.base.LongAdder;
 import com.alibaba.csp.sentinel.slots.statistic.metric.ArrayMetric;
 import com.alibaba.csp.sentinel.slots.statistic.metric.Metric;
 import com.alibaba.csp.sentinel.util.TimeUtil;
+import com.alibaba.csp.sentinel.util.function.Predicate;
 
 import java.util.List;
 import java.util.Map;
@@ -129,6 +130,11 @@ public class StatisticNode implements Node {
         lastFetchTime = newLastFetchTime;
 
         return metrics;
+    }
+
+    @Override
+    public List<MetricNode> rawMetricsInMin(Predicate<Long> timePredicate) {
+        return rollingCounterInMinute.detailsOnCondition(timePredicate);
     }
 
     private boolean isNodeInTime(MetricNode node, long currentTime) {

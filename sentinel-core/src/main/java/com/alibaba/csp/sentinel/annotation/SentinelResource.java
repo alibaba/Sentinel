@@ -41,6 +41,12 @@ public @interface SentinelResource {
     EntryType entryType() default EntryType.OUT;
 
     /**
+     * @return the classification (type) of the resource
+     * @since 1.7.0
+     */
+    int resourceType() default 0;
+
+    /**
      * @return name of the block exception function, empty by default
      */
     String blockHandler() default "";
