@@ -41,7 +41,7 @@
             <groupId>com.netflix.zuul</groupId>
             <artifactId>zuul-core</artifactId>
             <version>${zuul.version}</version>
-<!--            <scope>provided</scope>-->
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.mockito</groupId>
