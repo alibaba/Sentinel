@@ -45,16 +45,27 @@
             <exclusions>
                 <exclusion>
                     <groupId>org.mockito</groupId>
-                    <artifactId>mockito-all</artifactId>
+                    <artifactId>mockito-core</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
+
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
 			<version>5.1.9.RELEASE</version>
 		</dependency>
 
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
 	</dependencies>
 
 </project>

@@ -39,8 +39,8 @@ public class SentinelZuulEndpoint extends HttpSyncEndpoint {
         String fallBackRoute = (String) context.get(ZuulConstant.ZUUL_CTX_SENTINEL_FALLBACK_ROUTE);
         ZuulBlockFallbackProvider zuulBlockFallbackProvider = ZuulBlockFallbackManager.getFallbackProvider(
                 fallBackRoute);
-        HttpResponseMessage resp = new HttpResponseMessageImpl(context, request, 200);
         BlockResponse response = zuulBlockFallbackProvider.fallbackResponse(fallBackRoute, throwable);
+        HttpResponseMessage resp = new HttpResponseMessageImpl(context, request, response.getCode());
         resp.setBodyAsText(response.toString());
         return resp;
     }

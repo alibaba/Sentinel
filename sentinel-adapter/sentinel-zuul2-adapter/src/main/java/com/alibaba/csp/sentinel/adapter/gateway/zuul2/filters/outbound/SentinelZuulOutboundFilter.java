@@ -78,7 +78,6 @@ public class SentinelZuulOutboundFilter extends HttpOutboundFilter {
 				}
 				asyncEntry.exit();
 			}
-			ContextUtil.exit();
 			return response;
 		} finally {
 			remove(context);

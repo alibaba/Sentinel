@@ -111,7 +111,7 @@ public class SentinelZuulInboundFilter extends HttpInboundFilter {
                 doSentinelEntry(apiName, RESOURCE_MODE_CUSTOM_API_NAME, request, asyncEntries);
             }
             return Observable.just(request);
-        } catch (Throwable t) {
+        } catch (BlockException t) {
 			context.put(ZuulConstant.ZUUL_CTX_SENTINEL_BLOCKED_FLAG, Boolean.TRUE);
 			context.put(ZuulConstant.ZUUL_CTX_SENTINEL_FALLBACK_ROUTE, fallBackRoute);
             context.setEndpoint(blockedEndpointName);
@@ -120,7 +120,7 @@ public class SentinelZuulInboundFilter extends HttpInboundFilter {
             if (!asyncEntries.isEmpty()) {
                 context.put(ZuulConstant.ZUUL_CTX_SENTINEL_ENTRIES_KEY, asyncEntries);
                 // clear context to avoid another request use incorrect context
-                ContextUtil.replaceContext(null);
+                ContextUtil.exit();
             }
         }
     }
