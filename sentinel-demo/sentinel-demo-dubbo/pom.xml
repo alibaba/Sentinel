@@ -25,7 +25,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.31.Final</version>
+            <version>4.1.42.Final</version>
         </dependency>
 
         <!-- As demo use @DubboComponentScan to config, which is implemented in dubbo-config-spring module -->

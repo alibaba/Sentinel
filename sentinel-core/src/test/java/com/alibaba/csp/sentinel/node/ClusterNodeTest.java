@@ -41,7 +41,7 @@ public class ClusterNodeTest {
 
     @Test
     public void testGetOrCreateOriginNodeSingleThread() {
-        ClusterNode clusterNode = new ClusterNode();
+        ClusterNode clusterNode = new ClusterNode("test");
 
         String origin1 = "origin1";
         Node originNode1 = clusterNode.getOrCreateOriginNode(origin1);
@@ -74,7 +74,7 @@ public class ClusterNodeTest {
         final int testTimes = 10;
 
         for (int times = 0; times < testTimes; times++) {
-            final ClusterNode clusterNode = new ClusterNode();
+            final ClusterNode clusterNode = new ClusterNode("test");
 
             // Store all distinct nodes by calling ClusterNode#getOrCreateOriginNode.
             // Here we need a thread-safe concurrent set (created from ConcurrentHashMap).
@@ -130,7 +130,7 @@ public class ClusterNodeTest {
 
     @Test
     public void testTraceException() {
-        ClusterNode clusterNode = new ClusterNode();
+        ClusterNode clusterNode = new ClusterNode("test");
 
         Exception exception = new RuntimeException("test");
 

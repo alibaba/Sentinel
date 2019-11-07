@@ -29,7 +29,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  * @author leyou
  * @author Eric Zhao
  */
-public interface Sph {
+public interface Sph extends SphResourceTypeSupport {
 
     /**
      * Create a protected resource.
