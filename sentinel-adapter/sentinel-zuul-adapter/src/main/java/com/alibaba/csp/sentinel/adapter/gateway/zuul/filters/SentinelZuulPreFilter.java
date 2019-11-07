@@ -97,7 +97,8 @@ public class SentinelZuulPreFilter extends ZuulFilter {
                     return r.getResourceMode() == resType;
                 }
             });
-        AsyncEntry entry = SphU.asyncEntry(resourceName, EntryType.IN, 1, params);
+        AsyncEntry entry = SphU.asyncEntry(resourceName, ResourceTypeConstants.COMMON_API_GATEWAY,
+                EntryType.IN, params);
         EntryHolder holder = new EntryHolder(entry, params);
         holders.push(holder);
     }
