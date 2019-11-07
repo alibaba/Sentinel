@@ -69,7 +69,7 @@ public final class EnvoySentinelRuleConverter {
             return -1L;
         }
         // Add offset to avoid negative ID.
-        return Integer.MAX_VALUE + key.hashCode();
+        return (long) Integer.MAX_VALUE + key.hashCode();
     }
 
     public static String generateKey(String domain, EnvoyRlsRule.ResourceDescriptor descriptor) {
