@@ -23,6 +23,7 @@ import java.util.Set;
 
 import com.alibaba.csp.sentinel.AsyncEntry;
 import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.ResourceTypeConstants;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.adapter.gateway.common.param.GatewayParamParser;
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayFlowRule;
@@ -96,7 +97,8 @@ public class SentinelZuulPreFilter extends ZuulFilter {
                     return r.getResourceMode() == resType;
                 }
             });
-        AsyncEntry entry = SphU.asyncEntry(resourceName, EntryType.IN, 1, params);
+        AsyncEntry entry = SphU.asyncEntry(resourceName, ResourceTypeConstants.COMMON_API_GATEWAY,
+            EntryType.IN, params);
         asyncEntries.push(entry);
     }
 

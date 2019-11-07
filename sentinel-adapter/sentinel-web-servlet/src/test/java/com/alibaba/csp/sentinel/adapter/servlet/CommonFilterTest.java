@@ -41,6 +41,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -50,6 +51,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
+ * @author zhaoyuguang
  * @author Eric Zhao
  */
 @RunWith(SpringRunner.class)
@@ -111,10 +113,16 @@ public class CommonFilterTest {
     private void testCommonBlockAndRedirectBlockPage(String url, ClusterNode cn) throws Exception {
         configureRulesFor(url, 0);
         // The request will be blocked and response is default block message.
+        WebServletConfig.setBlockPageHttpStatus(HttpStatus.OK.value());
         this.mvc.perform(get(url).accept(MediaType.TEXT_PLAIN))
             .andExpect(status().isOk())
             .andExpect(content().string(FilterUtil.DEFAULT_BLOCK_MSG));
         assertEquals(1, cn.blockQps(), 0.01);
+
+        WebServletConfig.setBlockPageHttpStatus(HttpStatus.TOO_MANY_REQUESTS.value());
+        this.mvc.perform(get(url).accept(MediaType.TEXT_PLAIN))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(content().string(FilterUtil.DEFAULT_BLOCK_MSG));
 
         // Test for redirect.
         String redirectUrl = "http://some-location.com";
@@ -192,7 +200,7 @@ public class CommonFilterTest {
             .andExpect(content().string(HELLO_STR));
         // This will be blocked.
         this.mvc.perform(get(url).accept(MediaType.TEXT_PLAIN).header(headerName, limitOrigin))
-            .andExpect(status().isOk())
+            .andExpect(status().isTooManyRequests())
             .andExpect(content().string(FilterUtil.DEFAULT_BLOCK_MSG));
         this.mvc.perform(get(url).accept(MediaType.TEXT_PLAIN))
             .andExpect(status().isOk())

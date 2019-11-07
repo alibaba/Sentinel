@@ -27,6 +27,13 @@ import java.util.Date;
  */
 public class MetricNode {
 
+    private String resource;
+    /**
+     * Resource classification (e.g. SQL or RPC)
+     * @since 1.7.0
+     */
+    private int classification;
+
     private long timestamp;
     private long passQps;
     private long blockQps;
@@ -38,8 +45,10 @@ public class MetricNode {
      * @since 1.5.0
      */
     private long occupiedPassQps;
-
-    private String resource;
+    /**
+     * @since 1.7.0
+     */
+    private int concurrency;
 
     public long getTimestamp() {
         return timestamp;
@@ -105,12 +114,38 @@ public class MetricNode {
         this.resource = resource;
     }
 
+    public int getClassification() {
+        return classification;
+    }
+
+    public MetricNode setClassification(int classification) {
+        this.classification = classification;
+        return this;
+    }
+
+    public int getConcurrency() {
+        return concurrency;
+    }
+
+    public MetricNode setConcurrency(int concurrency) {
+        this.concurrency = concurrency;
+        return this;
+    }
+
     @Override
     public String toString() {
-        return "MetricNode{" + "timestamp=" + timestamp + ", passQps=" + passQps + ", blockQps=" + blockQps
-            + ", successQps=" + successQps + ", exceptionQps=" + exceptionQps + ", rt=" + rt
-            + ", occupiedPassQps=" + occupiedPassQps + ", resource='"
-            + resource + '\'' + '}';
+        return "MetricNode{" +
+            "resource='" + resource + '\'' +
+            ", classification=" + classification +
+            ", timestamp=" + timestamp +
+            ", passQps=" + passQps +
+            ", blockQps=" + blockQps +
+            ", successQps=" + successQps +
+            ", exceptionQps=" + exceptionQps +
+            ", rt=" + rt +
+            ", concurrency=" + concurrency +
+            ", occupiedPassQps=" + occupiedPassQps +
+            '}';
     }
 
     /**
@@ -132,7 +167,9 @@ public class MetricNode {
         sb.append(successQps).append("|");
         sb.append(exceptionQps).append("|");
         sb.append(rt).append("|");
-        sb.append(occupiedPassQps);
+        sb.append(occupiedPassQps).append("|");
+        sb.append(concurrency).append("|");
+        sb.append(classification);
         return sb.toString();
     }
 
@@ -152,8 +189,14 @@ public class MetricNode {
         node.setSuccessQps(Long.parseLong(strs[4]));
         node.setExceptionQps(Long.parseLong(strs[5]));
         node.setRt(Long.parseLong(strs[6]));
-        if (strs.length == 8) {
+        if (strs.length >= 8) {
             node.setOccupiedPassQps(Long.parseLong(strs[7]));
+        }
+        if (strs.length >= 9) {
+            node.setConcurrency(Integer.parseInt(strs[8]));
+        }
+        if (strs.length == 10) {
+            node.setClassification(Integer.parseInt(strs[9]));
         }
         return node;
     }
@@ -180,7 +223,9 @@ public class MetricNode {
         sb.append(getSuccessQps()).append("|");
         sb.append(getExceptionQps()).append("|");
         sb.append(getRt()).append("|");
-        sb.append(getOccupiedPassQps());
+        sb.append(getOccupiedPassQps()).append("|");
+        sb.append(concurrency).append("|");
+        sb.append(classification);
         sb.append('\n');
         return sb.toString();
     }
@@ -202,8 +247,14 @@ public class MetricNode {
         node.setSuccessQps(Long.parseLong(strs[5]));
         node.setExceptionQps(Long.parseLong(strs[6]));
         node.setRt(Long.parseLong(strs[7]));
-        if (strs.length == 9) {
+        if (strs.length >= 9) {
             node.setOccupiedPassQps(Long.parseLong(strs[8]));
+        }
+        if (strs.length >= 10) {
+            node.setConcurrency(Integer.parseInt(strs[9]));
+        }
+        if (strs.length == 11) {
+            node.setClassification(Integer.parseInt(strs[10]));
         }
         return node;
     }

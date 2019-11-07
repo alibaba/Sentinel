@@ -15,8 +15,12 @@
  */
 package com.alibaba.csp.sentinel.util;
 
+import java.util.Collection;
+
 /**
  * Util class for checking arguments.
+ *
+ * @author Eric Zhao
  */
 public class AssertUtil {
 
@@ -24,6 +28,12 @@ public class AssertUtil {
 
     public static void notEmpty(String string, String message) {
         if (StringUtil.isEmpty(string)) {
+            throw new IllegalArgumentException(message);
+        }
+    }
+
+    public static void assertNotEmpty(Collection<?> collection, String message) {
+        if (collection == null || collection.isEmpty()) {
             throw new IllegalArgumentException(message);
         }
     }
