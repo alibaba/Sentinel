@@ -22,9 +22,9 @@ import com.alibaba.csp.sentinel.Entry;
  */
 class EntryHolder {
 
-    private Entry entry;
+    final private Entry entry;
 
-    private  Object[] params;
+    final private Object[] params;
 
     public EntryHolder(Entry entry, Object[] params) {
         this.entry = entry;
