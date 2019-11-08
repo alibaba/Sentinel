@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import com.alibaba.csp.sentinel.AsyncEntry;
 import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.adapter.gateway.zuul2.constants.ZuulConstant;
+import com.alibaba.csp.sentinel.adapter.gateway.zuul2.filters.EntryHolder;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.netflix.zuul.context.SessionContext;
@@ -70,13 +71,13 @@ public class SentinelZuulOutboundFilter extends HttpOutboundFilter {
 			if (CollectionUtils.isEmpty(errors)) {
 				notBlocked = false;
 			}
-			Deque<AsyncEntry> asyncEntries = (Deque<AsyncEntry>) context.get(ZuulConstant.ZUUL_CTX_SENTINEL_ENTRIES_KEY);
-			while (!asyncEntries.isEmpty()) {
-				AsyncEntry asyncEntry = asyncEntries.pop();
+			Deque<EntryHolder> holders = (Deque<EntryHolder>) context.get(ZuulConstant.ZUUL_CTX_SENTINEL_ENTRIES_KEY);
+			while (!holders.isEmpty()) {
+				EntryHolder holder = holders.pop();
 				if (notBlocked) {
-					Tracer.traceEntry(context.getError(), asyncEntry);
+					Tracer.traceEntry(context.getError(), holder.getEntry());
 				}
-				asyncEntry.exit();
+				holder.getEntry().exit(1, holder.getParams());
 			}
 			return response;
 		} finally {

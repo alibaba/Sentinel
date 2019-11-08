@@ -31,6 +31,7 @@ import com.alibaba.csp.sentinel.adapter.gateway.zuul2.api.ZuulGatewayApiMatcherM
 import com.alibaba.csp.sentinel.adapter.gateway.zuul2.api.matcher.HttpRequestMessageApiMatcher;
 import com.alibaba.csp.sentinel.adapter.gateway.zuul2.callback.ZuulGatewayCallbackManager;
 import com.alibaba.csp.sentinel.adapter.gateway.zuul2.constants.ZuulConstant;
+import com.alibaba.csp.sentinel.adapter.gateway.zuul2.filters.EntryHolder;
 import com.alibaba.csp.sentinel.adapter.gateway.zuul2.filters.endpoint.SentinelZuulEndpoint;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
@@ -59,6 +60,11 @@ public class SentinelZuulInboundFilter extends HttpInboundFilter {
      * if executor is null, flow control action will do on I/O thread
      */
     private final Executor executor;
+    /**
+     * true if blocked but the rest of inbound filters will be skipped;
+     * false even if blocked, user can invoke other inbound filters by yourself.
+     */
+    private final boolean fastError;
 
     private final GatewayParamParser<HttpRequestMessage> paramParser = new GatewayParamParser<>(
             new HttpRequestMessageItemParser());
@@ -68,13 +74,14 @@ public class SentinelZuulInboundFilter extends HttpInboundFilter {
     }
 
 	public SentinelZuulInboundFilter(int order, Executor executor) {
-        this(order, DEFAULT_BLOCK_ENDPOINT_NAME, executor);
+        this(order, DEFAULT_BLOCK_ENDPOINT_NAME, executor, true);
 	}
 
-    public SentinelZuulInboundFilter(int order, String blockedEndpointName, Executor executor) {
+    public SentinelZuulInboundFilter(int order, String blockedEndpointName, Executor executor, boolean fastError) {
         this.order = order;
 		this.blockedEndpointName = blockedEndpointName;
 		this.executor = executor;
+		this.fastError = fastError;
 	}
 
     @Override
@@ -94,13 +101,13 @@ public class SentinelZuulInboundFilter extends HttpInboundFilter {
     private Observable<HttpRequestMessage> apply(HttpRequestMessage request) {
         SessionContext context = request.getContext();
         String origin = parseOrigin(request);
-        Deque<AsyncEntry> asyncEntries = new ArrayDeque<>();
+        Deque<EntryHolder> holders = new ArrayDeque<>();
         String routeId = (String) context.get(ZuulConstant.PROXY_ID_KEY);
         String fallBackRoute = routeId;
         try {
             if (StringUtil.isNotBlank(routeId)) {
                 ContextUtil.enter(GATEWAY_CONTEXT_ROUTE_PREFIX + routeId, origin);
-                doSentinelEntry(routeId, RESOURCE_MODE_ROUTE_ID, request, asyncEntries);
+                doSentinelEntry(routeId, RESOURCE_MODE_ROUTE_ID, request, holders);
             }
             Set<String> matchingApis = pickMatchingApiDefinitions(request);
             if (!matchingApis.isEmpty() && ContextUtil.getContext() == null) {
@@ -108,26 +115,32 @@ public class SentinelZuulInboundFilter extends HttpInboundFilter {
             }
             for (String apiName : matchingApis) {
                 fallBackRoute = apiName;
-                doSentinelEntry(apiName, RESOURCE_MODE_CUSTOM_API_NAME, request, asyncEntries);
+                doSentinelEntry(apiName, RESOURCE_MODE_CUSTOM_API_NAME, request, holders);
             }
             return Observable.just(request);
         } catch (BlockException t) {
-			context.put(ZuulConstant.ZUUL_CTX_SENTINEL_BLOCKED_FLAG, Boolean.TRUE);
-			context.put(ZuulConstant.ZUUL_CTX_SENTINEL_FALLBACK_ROUTE, fallBackRoute);
-            context.setEndpoint(blockedEndpointName);
+            context.put(ZuulConstant.ZUUL_CTX_SENTINEL_BLOCKED_FLAG, Boolean.TRUE);
+            context.put(ZuulConstant.ZUUL_CTX_SENTINEL_FALLBACK_ROUTE, fallBackRoute);
+            if (fastError) {
+                context.setShouldSendErrorResponse(true);
+                context.setErrorEndpoint(blockedEndpointName);
+            } else {
+                context.setEndpoint(blockedEndpointName);
+            }
             return Observable.error(t);
         } finally {
-            if (!asyncEntries.isEmpty()) {
-                context.put(ZuulConstant.ZUUL_CTX_SENTINEL_ENTRIES_KEY, asyncEntries);
-                // clear context to avoid another request use incorrect context
-                ContextUtil.exit();
+            if (!holders.isEmpty()) {
+                context.put(ZuulConstant.ZUUL_CTX_SENTINEL_ENTRIES_KEY, holders);
             }
+            // clear context to avoid another request use incorrect context
+            ContextUtil.exit();
         }
     }
 
-    private void doSentinelEntry(String resourceName, final int resType, HttpRequestMessage input, Deque<AsyncEntry> asyncEntries) throws BlockException {
+    private void doSentinelEntry(String resourceName, final int resType, HttpRequestMessage input, Deque<EntryHolder> holders) throws BlockException {
         Object[] params = paramParser.parseParameterFor(resourceName, input, r -> r.getResourceMode() == resType);
-        asyncEntries.push(SphU.asyncEntry(resourceName, EntryType.IN, 1, params));
+        AsyncEntry entry = SphU.asyncEntry(resourceName, EntryType.IN, 1, params);
+        holders.push(new EntryHolder(entry, params));
     }
 
     private String parseOrigin(HttpRequestMessage request) {
