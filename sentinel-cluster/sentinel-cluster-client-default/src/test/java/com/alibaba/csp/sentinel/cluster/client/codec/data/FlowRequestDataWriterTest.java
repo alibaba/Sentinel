@@ -17,46 +17,54 @@ import static org.junit.Assert.*;
  */
 public class FlowRequestDataWriterTest {
 
-	/**
-	 * normal
-	 */
-	@Test
-	public void writeTo() {
-		FlowRequestDataWriter writer = new FlowRequestDataWriter();
+    /**
+     * normal
+     */
+    @Test
+    public void writeTo() {
+        FlowRequestDataWriter writer = new FlowRequestDataWriter();
 
-		FlowRequestData entity = new FlowRequestData();
-		entity.setCount(1);
-		entity.setFlowId(1L);
-		entity.setPriority(true);
+        FlowRequestData entity = new FlowRequestData();
+        entity.setCount(1);
+        entity.setFlowId(2L);
+        entity.setPriority(true);
 
-		ByteBuf buf = Unpooled.buffer();
-		writer.writeTo(entity, buf);
-		buf.release();
-	}
+        ByteBuf buf = Unpooled.buffer();
+        writer.writeTo(entity, buf);
 
-	/**
-	 * illegal ByteBuf
-	 */
-	@Test(expected = NullPointerException.class)
-	public void writeToIllegalByteBuf() {
-		FlowRequestDataWriter writer = new FlowRequestDataWriter();
+        Assert.assertEquals(13, buf.readableBytes());
 
-		FlowRequestData entity = new FlowRequestData();
-		entity.setCount(1);
-		entity.setFlowId(1L);
-		entity.setPriority(true);
-		writer.writeTo(entity, null);
-	}
+        //
+        Assert.assertEquals(2L, buf.readLong());
+        Assert.assertEquals(1, buf.readInt());
+        Assert.assertEquals(true, buf.readBoolean());
 
-	/**
-	 * illegal FlowRequestData
-	 */
-	@Test(expected = NullPointerException.class)
-	public void writeToIllegalFlowRequestData() {
-		FlowRequestDataWriter writer = new FlowRequestDataWriter();
+        buf.release();
+    }
 
-		ByteBuf buf = Unpooled.buffer();
-		writer.writeTo(null, buf);
-		buf.release();
-	}
+    /**
+     * illegal ByteBuf
+     */
+    @Test(expected = NullPointerException.class)
+    public void writeToIllegalByteBuf() {
+        FlowRequestDataWriter writer = new FlowRequestDataWriter();
+
+        FlowRequestData entity = new FlowRequestData();
+        entity.setCount(1);
+        entity.setFlowId(1L);
+        entity.setPriority(true);
+        writer.writeTo(entity, null);
+    }
+
+    /**
+     * illegal FlowRequestData
+     */
+    @Test(expected = NullPointerException.class)
+    public void writeToIllegalFlowRequestData() {
+        FlowRequestDataWriter writer = new FlowRequestDataWriter();
+
+        ByteBuf buf = Unpooled.buffer();
+        writer.writeTo(null, buf);
+        buf.release();
+    }
 }
