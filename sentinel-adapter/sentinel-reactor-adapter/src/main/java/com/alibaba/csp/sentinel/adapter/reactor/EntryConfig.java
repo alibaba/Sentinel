@@ -47,6 +47,10 @@ public class EntryConfig {
         this(resourceName, entryType, 1, new Object[0], contextConfig);
     }
 
+    public EntryConfig(String resourceName, int resourceType, EntryType entryType, ContextConfig contextConfig) {
+        this(resourceName, resourceType, entryType, 1, new Object[0], contextConfig);
+    }
+
     public EntryConfig(String resourceName, EntryType entryType, int acquireCount, Object[] args) {
         this(resourceName, entryType, acquireCount, args, null);
     }
