@@ -55,7 +55,7 @@ If your application is build in Maven, just add the following dependency in `pom
 <dependency>
     <groupId>com.alibaba.csp</groupId>
     <artifactId>sentinel-core</artifactId>
-    <version>1.6.3</version>
+    <version>1.7.0</version>
 </dependency>
 ```
 
@@ -74,6 +74,7 @@ try (Entry entry = SphU.entry("HelloWorld")) {
     // Handle rejected request.
     e.printStackTrace();
 }
+// try-with-resources auto exit
 ```
 
 So far the code modification is done. We also provide [annotation support module](https://github.com/alibaba/Sentinel/blob/master/sentinel-extension/sentinel-annotation-aspectj/README.md) to define resource easier.
