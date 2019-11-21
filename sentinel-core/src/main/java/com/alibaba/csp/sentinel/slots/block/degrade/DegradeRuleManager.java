@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.alibaba.csp.sentinel.Constants;
+import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.DefaultNode;
@@ -211,7 +211,7 @@ public final class DegradeRuleManager {
         if (!baseValid) {
             return false;
         }
-        int maxAllowedRt = Constants.TIME_DROP_VALVE;
+        int maxAllowedRt = SentinelConfig.statisticMaxRt();
         if (rule.getGrade() == RuleConstant.DEGRADE_GRADE_RT) {
             if (rule.getRtSlowRequestAmount() <= 0) {
                 return false;
