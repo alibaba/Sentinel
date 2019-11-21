@@ -15,7 +15,7 @@
  */
 package com.alibaba.csp.sentinel.slots.statistic.data;
 
-import com.alibaba.csp.sentinel.Constants;
+import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.slots.statistic.MetricEvent;
 import com.alibaba.csp.sentinel.slots.statistic.base.LongAdder;
 
@@ -50,7 +50,7 @@ public class MetricBucket {
     }
 
     private void initMinRt() {
-        this.minRt = Constants.TIME_DROP_VALVE;
+        this.minRt = SentinelConfig.statisticMaxRt();
     }
 
     /**
