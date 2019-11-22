@@ -95,7 +95,7 @@ public class LogBase {
 
 
         logBaseDir = properties.getProperty(LOG_DIR) == null ? logBaseDir : properties.getProperty(LOG_DIR);
-        addSeparator(logBaseDir);
+        logBaseDir = addSeparator(logBaseDir);
         File dir = new File(logBaseDir);
         if (!dir.exists()) {
             if (!dir.mkdirs()) {
