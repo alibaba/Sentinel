@@ -20,7 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * The origin parser parses request origin (e.g. IP, user, appName) from HTTP request.
  *
- * @Author kaizi2009
+ * @author kaizi2009
  */
 public interface RequestOriginParser {
 

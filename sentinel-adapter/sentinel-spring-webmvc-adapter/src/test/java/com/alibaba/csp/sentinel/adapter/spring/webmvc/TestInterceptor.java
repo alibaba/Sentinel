@@ -41,7 +41,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * @Author kaizi2009
+ * @author kaizi2009
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TestApplication.class)

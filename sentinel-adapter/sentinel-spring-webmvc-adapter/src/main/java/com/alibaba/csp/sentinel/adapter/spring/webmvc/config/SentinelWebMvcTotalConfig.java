@@ -17,7 +17,7 @@ package com.alibaba.csp.sentinel.adapter.spring.webmvc.config;
 
 
 /**
- * @Author kaizi2009
+ * @author kaizi2009
  */
 public class SentinelWebMvcTotalConfig extends BaseWebMvcConfig {
     public static final String DEFAULT_TOTAL_RESOURCE_NAME = "spring-mvc-total-url-request";

@@ -21,7 +21,7 @@ import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.RequestOriginPars
 /**
  * Common config
  *
- * @Author kaizi2009
+ * @author kaizi2009
  */
 public abstract class BaseWebMvcConfig {
     protected String requestAttributeName;

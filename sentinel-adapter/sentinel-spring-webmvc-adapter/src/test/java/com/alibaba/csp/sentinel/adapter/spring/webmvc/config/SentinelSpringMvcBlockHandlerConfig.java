@@ -28,11 +28,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 /**
  * Config 'BlockException' handler, handler it in spring veb 'ExceptionHandler'
  *
- * @Author kaizi2009
+ * @author kaizi2009
  */
 @ControllerAdvice
 @Order(0)
-public class SentinelSringMvcBlockHandlerConfig {
+public class SentinelSpringMvcBlockHandlerConfig {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @ExceptionHandler(BlockException.class)

@@ -21,7 +21,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 /**
- * @Author kaizi2009
+ * @author kaizi2009
  */
 @SpringBootApplication
 public class TestApplication {
