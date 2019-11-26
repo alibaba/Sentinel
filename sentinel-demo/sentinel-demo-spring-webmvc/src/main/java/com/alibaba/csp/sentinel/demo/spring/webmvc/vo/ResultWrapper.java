@@ -18,7 +18,7 @@ package com.alibaba.csp.sentinel.demo.spring.webmvc.vo;
 import com.alibaba.fastjson.JSONObject;
 
 /**
- * @Author kaizi2009
+ * @author kaizi2009
  */
 public class ResultWrapper {
 

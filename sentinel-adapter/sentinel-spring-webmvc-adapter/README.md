@@ -53,7 +53,7 @@ Configure 'BlockException' handler, there are three options:
 ```java
 @ControllerAdvice
 @Order(0)
-public class SentinelSringMvcBlockHandlerConfig {
+public class SentinelSpringMvcBlockHandlerConfig {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     @ExceptionHandler(BlockException.class)
     @ResponseBody

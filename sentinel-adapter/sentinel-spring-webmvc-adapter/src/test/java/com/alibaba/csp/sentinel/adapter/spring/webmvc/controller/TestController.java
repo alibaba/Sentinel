@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * @Author kaizi2009
+ * @author kaizi2009
  */
 @RestController
 public class TestController {

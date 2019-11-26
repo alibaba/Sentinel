@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * Spring mvc interceptor for all requests.
  *
- * @Author kaizi2009
+ * @author kaizi2009
  */
 public class SentinelTotalInterceptor extends AbstractSentinelInterceptor {
     private SentinelWebMvcTotalConfig config;

@@ -25,7 +25,7 @@ import java.io.PrintWriter;
 /**
  * Default `BlockException` handler
  *
- * @Author kaizi2009
+ * @author kaizi2009
  */
 public class DefaultBlockExceptionHandler implements BlockExceptionHandler {
 

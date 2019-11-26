@@ -27,7 +27,7 @@ import org.springframework.web.servlet.HandlerMapping;
 /**
  * Spring mvc interceptor that integrates with sentinel.
  *
- * @Author kaizi2009
+ * @author kaizi2009
  */
 public class SentinelInterceptor extends AbstractSentinelInterceptor {
     private SentinelWebMvcConfig config;

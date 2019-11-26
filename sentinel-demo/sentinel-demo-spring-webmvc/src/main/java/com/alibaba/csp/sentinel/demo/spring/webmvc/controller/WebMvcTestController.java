@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Test controller
- * @Author kaizi2009
+ * @author kaizi2009
  */
 @RestController
 public class WebMvcTestController {

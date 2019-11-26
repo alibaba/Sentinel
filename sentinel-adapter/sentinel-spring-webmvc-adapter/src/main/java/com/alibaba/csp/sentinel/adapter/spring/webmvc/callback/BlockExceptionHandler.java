@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Handle BlockException
  *
- * @Author kaizi2009
+ * @author kaizi2009
  */
 public interface BlockExceptionHandler {
 

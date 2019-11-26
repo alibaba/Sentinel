@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Config sentinel interceptor
  *
- * @Author kaizi2009
+ * @author kaizi2009
  */
 @Configuration
 public class InterceptorConfig implements WebMvcConfigurer {

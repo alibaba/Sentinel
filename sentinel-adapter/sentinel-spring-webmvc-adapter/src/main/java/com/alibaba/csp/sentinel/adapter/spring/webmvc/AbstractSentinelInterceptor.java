@@ -31,7 +31,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
- * @Author kaizi2009
+ * @author kaizi2009
  */
 public abstract class AbstractSentinelInterceptor implements HandlerInterceptor {
 
@@ -53,7 +53,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
                 ContextUtil.enter(SPRING_MVC_CONTEXT_NAME, origin);
                 Entry entry = SphU.entry(resourceName, EntryType.IN);
 
-                setEntryInReqeust(request, baseWebMvcConfig.getRequestAttributeName(), entry);
+                setEntryInRequest(request, baseWebMvcConfig.getRequestAttributeName(), entry);
             }
             return true;
         } catch (BlockException e) {
@@ -72,10 +72,10 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
                                 Object handler, Exception ex) throws Exception {
-        Entry entry = getEntryInReqeust(request, baseWebMvcConfig.getRequestAttributeName());
+        Entry entry = getEntryInRequest(request, baseWebMvcConfig.getRequestAttributeName());
         if (entry != null) {
             traceExceptionAndExit(entry, ex);
-            removeEntryInReqeust(request);
+            removeEntryInRequest(request);
         }
         ContextUtil.exit();
     }
@@ -85,7 +85,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
                            ModelAndView modelAndView) throws Exception {
     }
 
-    protected void setEntryInReqeust(HttpServletRequest request, String name, Entry entry) {
+    protected void setEntryInRequest(HttpServletRequest request, String name, Entry entry) {
         Object attrVal = request.getAttribute(name);
         if (attrVal != null) {
             RecordLog.warn(String.format("Already exist attribute name '%s' in request, please set `requestAttributeName`", name));
@@ -94,12 +94,12 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
         }
     }
 
-    protected Entry getEntryInReqeust(HttpServletRequest request, String attrKey) {
+    protected Entry getEntryInRequest(HttpServletRequest request, String attrKey) {
         Object entryObject = request.getAttribute(attrKey);
         return entryObject == null ? null : (Entry) entryObject;
     }
 
-    protected void removeEntryInReqeust(HttpServletRequest request) {
+    protected void removeEntryInRequest(HttpServletRequest request) {
         request.removeAttribute(baseWebMvcConfig.getRequestAttributeName());
     }
 

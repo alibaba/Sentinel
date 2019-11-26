@@ -18,7 +18,7 @@ package com.alibaba.csp.sentinel.adapter.spring.webmvc.callback;
 /**
  * Clean sentinel target
  *
- * @Author kaizi2009
+ * @author kaizi2009
  */
 public interface UrlCleaner {
 
