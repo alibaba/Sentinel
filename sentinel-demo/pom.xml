@@ -35,6 +35,7 @@
         <module>sentinel-demo-spring-cloud-gateway</module>
         <module>sentinel-demo-zuul-gateway</module>
         <module>sentinel-demo-etcd-datasource</module>
+        <module>sentinel-demo-spring-webmvc</module>
     </modules>
 
     <dependencies>
