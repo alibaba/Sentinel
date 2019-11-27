@@ -19,12 +19,20 @@ import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.UrlCleaner;
 
 /**
  * @author kaizi2009
+ * @since 1.7.1
  */
 public class SentinelWebMvcConfig extends BaseWebMvcConfig {
 
-    public static final String DEFAULT_REQUEST_ATTRIBUTE_NAME = "sentinel_spring_mvc_entry_container";
+    public static final String DEFAULT_REQUEST_ATTRIBUTE_NAME = "$$sentinel_spring_web_entry_attr";
+
+    /**
+     * Specify the URL cleaner that unifies the URL resources.
+     */
     private UrlCleaner urlCleaner;
-    protected boolean httpMethodSpecify;
+    /**
+     * Specify whether the URL resource name should contain the HTTP method prefix (e.g. {@code POST:}).
+     */
+    private boolean httpMethodSpecify;
 
     public SentinelWebMvcConfig() {
         super();
@@ -35,15 +43,28 @@ public class SentinelWebMvcConfig extends BaseWebMvcConfig {
         return urlCleaner;
     }
 
-    public void setUrlCleaner(UrlCleaner urlCleaner) {
+    public SentinelWebMvcConfig setUrlCleaner(UrlCleaner urlCleaner) {
         this.urlCleaner = urlCleaner;
+        return this;
     }
 
     public boolean isHttpMethodSpecify() {
         return httpMethodSpecify;
     }
 
-    public void setHttpMethodSpecify(boolean httpMethodSpecify) {
+    public SentinelWebMvcConfig setHttpMethodSpecify(boolean httpMethodSpecify) {
         this.httpMethodSpecify = httpMethodSpecify;
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return "SentinelWebMvcConfig{" +
+            "urlCleaner=" + urlCleaner +
+            ", httpMethodSpecify=" + httpMethodSpecify +
+            ", requestAttributeName='" + requestAttributeName + '\'' +
+            ", blockExceptionHandler=" + blockExceptionHandler +
+            ", originParser=" + originParser +
+            '}';
     }
 }

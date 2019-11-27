@@ -16,7 +16,6 @@
 package com.alibaba.csp.sentinel.demo.spring.webmvc.config;
 
 import com.alibaba.csp.sentinel.demo.spring.webmvc.vo.ResultWrapper;
-import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,20 +25,23 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
- * Config blocked handler
+ * Spring configuration for global exception handler.
+ * This will be activated when the {@code BlockExceptionHandler}
+ * throws {@link BlockException directly}.
+ *
  * @author kaizi2009
  */
 @ControllerAdvice
 @Order(0)
 public class SentinelSpringMvcBlockHandlerConfig {
+
     private Logger logger = LoggerFactory.getLogger(this.getClass());
+
     @ExceptionHandler(BlockException.class)
     @ResponseBody
     public ResultWrapper sentinelBlockHandler(BlockException e) {
-        AbstractRule rule = e.getRule();
-        //Log
-        logger.info("Blocked by sentinel, {}", rule.toString());
-        //Return object
+        logger.warn("Blocked by Sentinel: {}", e.getRule());
+        // Return the customized result.
         return ResultWrapper.blocked();
     }
 }

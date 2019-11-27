@@ -15,13 +15,14 @@
  */
 package com.alibaba.csp.sentinel.adapter.spring.webmvc.config;
 
-
 /**
  * @author kaizi2009
+ * @since 1.7.1
  */
 public class SentinelWebMvcTotalConfig extends BaseWebMvcConfig {
+
     public static final String DEFAULT_TOTAL_RESOURCE_NAME = "spring-mvc-total-url-request";
-    public static final String DEFAULT_REQUEST_ATTRIBUTE_NAME = "sentinel_spring_mvc_total_entry_container";
+    public static final String DEFAULT_REQUEST_ATTRIBUTE_NAME = "$$sentinel_spring_web_total_entry_attr";
 
     private String totalResourceName = DEFAULT_TOTAL_RESOURCE_NAME;
 
@@ -34,14 +35,18 @@ public class SentinelWebMvcTotalConfig extends BaseWebMvcConfig {
         return totalResourceName;
     }
 
-    /**
-     * Config total resource name
-     *
-     * @param totalResourceName
-     * @return
-     */
-    public void setTotalResourceName(String totalResourceName) {
+    public SentinelWebMvcTotalConfig setTotalResourceName(String totalResourceName) {
         this.totalResourceName = totalResourceName;
+        return this;
     }
 
+    @Override
+    public String toString() {
+        return "SentinelWebMvcTotalConfig{" +
+            "totalResourceName='" + totalResourceName + '\'' +
+            ", requestAttributeName='" + requestAttributeName + '\'' +
+            ", blockExceptionHandler=" + blockExceptionHandler +
+            ", originParser=" + originParser +
+            '}';
+    }
 }

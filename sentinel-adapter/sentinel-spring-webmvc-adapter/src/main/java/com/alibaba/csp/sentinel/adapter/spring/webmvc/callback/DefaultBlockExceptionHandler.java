@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 
 /**
- * Default `BlockException` handler
+ * Default handler for the blocked request.
  *
  * @author kaizi2009
  */
@@ -31,6 +31,9 @@ public class DefaultBlockExceptionHandler implements BlockExceptionHandler {
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, BlockException e) throws Exception {
+        // Return 429 (Too Many Requests) by default.
+        response.setStatus(429);
+
         StringBuffer url = request.getRequestURL();
 
         if ("GET".equals(request.getMethod()) && StringUtil.isNotBlank(request.getQueryString())) {

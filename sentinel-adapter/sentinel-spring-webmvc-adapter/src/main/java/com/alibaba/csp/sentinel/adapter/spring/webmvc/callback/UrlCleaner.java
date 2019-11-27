@@ -16,17 +16,17 @@
 package com.alibaba.csp.sentinel.adapter.spring.webmvc.callback;
 
 /**
- * Clean sentinel target
+ * Unify the resource target.
  *
  * @author kaizi2009
  */
 public interface UrlCleaner {
 
     /**
-     * Clean sentinel target
+     * Unify the resource target.
      *
-     * @param originUrl
-     * @return
+     * @param originUrl the original URL
+     * @return the unified resource name
      */
     String clean(String originUrl);
 }

@@ -16,37 +16,31 @@
 package com.alibaba.csp.sentinel.adapter.spring.webmvc;
 
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.config.SentinelWebMvcTotalConfig;
-import com.alibaba.csp.sentinel.log.RecordLog;
 
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * Spring mvc interceptor for all requests.
+ * The web interceptor for all requests, which will unify all URL as
+ * a single resource name (configured in {@link SentinelWebMvcTotalConfig}).
  *
  * @author kaizi2009
+ * @since 1.7.1
  */
-public class SentinelTotalInterceptor extends AbstractSentinelInterceptor {
-    private SentinelWebMvcTotalConfig config;
+public class SentinelWebTotalInterceptor extends AbstractSentinelInterceptor {
 
-    public SentinelTotalInterceptor(SentinelWebMvcTotalConfig config) {
-        super();
-        setConfig(config);
-        setBaseWebMvcConfig(config);
-    }
+    private final SentinelWebMvcTotalConfig config;
 
-    public SentinelTotalInterceptor() {
-        this(new SentinelWebMvcTotalConfig());
-    }
-
-    public SentinelTotalInterceptor setConfig(SentinelWebMvcTotalConfig config) {
+    public SentinelWebTotalInterceptor(SentinelWebMvcTotalConfig config) {
+        super(config);
         if (config == null) {
             this.config = new SentinelWebMvcTotalConfig();
-            RecordLog.info("Config is null, use default config");
         } else {
             this.config = config;
         }
-        RecordLog.info(String.format("SentinelInterceptor config: requestAttributeName=%s, originParser=%s, blockExceptionHandler=%s, totalResourceName=%s", config.getRequestAttributeName(), config.getOriginParser(), config.getBlockExceptionHandler(), config.getTotalResourceName()));
-        return this;
+    }
+
+    public SentinelWebTotalInterceptor() {
+        this(new SentinelWebMvcTotalConfig());
     }
 
     @Override
