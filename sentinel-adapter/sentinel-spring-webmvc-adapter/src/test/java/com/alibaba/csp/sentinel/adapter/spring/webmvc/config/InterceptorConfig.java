@@ -15,8 +15,8 @@
  */
 package com.alibaba.csp.sentinel.adapter.spring.webmvc.config;
 
-import com.alibaba.csp.sentinel.adapter.spring.webmvc.SentinelInterceptor;
-import com.alibaba.csp.sentinel.adapter.spring.webmvc.SentinelTotalInterceptor;
+import com.alibaba.csp.sentinel.adapter.spring.webmvc.SentinelWebInterceptor;
+import com.alibaba.csp.sentinel.adapter.spring.webmvc.SentinelWebTotalInterceptor;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.BlockExceptionHandler;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.RequestOriginParser;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
@@ -74,7 +74,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
         });
 
         //Add sentinel interceptor
-        registry.addInterceptor(new SentinelInterceptor(config)).addPathPatterns("/**");
+        registry.addInterceptor(new SentinelWebInterceptor(config)).addPathPatterns("/**");
     }
 
     private void addSpringMvcTotalInterceptor(InterceptorRegistry registry) {
@@ -86,6 +86,6 @@ public class InterceptorConfig implements WebMvcConfigurer {
         config.setTotalResourceName("my_spring_mvc_total_url_request");
 
         //Add sentinel interceptor
-        registry.addInterceptor(new SentinelTotalInterceptor(config)).addPathPatterns("/**");
+        registry.addInterceptor(new SentinelWebTotalInterceptor(config)).addPathPatterns("/**");
     }
 }

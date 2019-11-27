@@ -21,19 +21,19 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Handle BlockException
+ * Handler for the blocked request.
  *
  * @author kaizi2009
  */
 public interface BlockExceptionHandler {
 
     /**
-     * Handle BlockException
+     * Handle the request when blocked.
      *
-     * @param request
-     * @param response
-     * @param e Depending on your situation, you can choose to process or throw BlockException
-     * @throws Exception
+     * @param request  Servlet request
+     * @param response Servlet response
+     * @param e        the block exception
+     * @throws Exception users may throw out the BlockException or other error occurs
      */
     void handle(HttpServletRequest request, HttpServletResponse response, BlockException e) throws Exception;
 

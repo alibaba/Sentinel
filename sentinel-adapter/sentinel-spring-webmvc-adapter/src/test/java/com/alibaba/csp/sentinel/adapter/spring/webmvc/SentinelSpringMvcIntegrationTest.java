@@ -1,4 +1,3 @@
-package com.alibaba.csp.sentinel.adapter.spring.webmvc;
 /*
  * Copyright 1999-2019 Alibaba Group Holding Ltd.
  *
@@ -14,6 +13,7 @@ package com.alibaba.csp.sentinel.adapter.spring.webmvc;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.alibaba.csp.sentinel.adapter.spring.webmvc;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -46,7 +46,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TestApplication.class)
 @AutoConfigureMockMvc
-public class TestInterceptor {
+public class SentinelSpringMvcIntegrationTest {
 
     private static final String HELLO_STR = "Hello!";
     @Autowired

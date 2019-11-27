@@ -17,13 +17,16 @@ package com.alibaba.csp.sentinel.adapter.spring.webmvc.config;
 
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.BlockExceptionHandler;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.RequestOriginParser;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
- * Common config
+ * Common base configuration for Spring Web MVC adapter.
  *
  * @author kaizi2009
+ * @since 1.7.1
  */
 public abstract class BaseWebMvcConfig {
+
     protected String requestAttributeName;
     protected BlockExceptionHandler blockExceptionHandler;
     protected RequestOriginParser originParser;
@@ -51,5 +54,4 @@ public abstract class BaseWebMvcConfig {
     public void setOriginParser(RequestOriginParser originParser) {
         this.originParser = originParser;
     }
-
 }

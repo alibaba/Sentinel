@@ -20,38 +20,47 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.ResourceTypeConstants;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.config.BaseWebMvcConfig;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
+
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
  * @author kaizi2009
+ * @since 1.7.1
  */
 public abstract class AbstractSentinelInterceptor implements HandlerInterceptor {
 
-    public static final String SPRING_MVC_CONTEXT_NAME = "spring_mvc_context";
+    public static final String SENTINEL_SPRING_WEB_CONTEXT_NAME = "sentinel_spring_web_context";
     private static final String EMPTY_ORIGIN = "";
-    protected static final String COLON = ":";
-    private BaseWebMvcConfig baseWebMvcConfig;
+
+    private final BaseWebMvcConfig baseWebMvcConfig;
+
+    public AbstractSentinelInterceptor(BaseWebMvcConfig config) {
+        AssertUtil.notNull(config, "BaseWebMvcConfig should not be null");
+        AssertUtil.assertNotBlank(config.getRequestAttributeName(), "requestAttributeName should not be blank");
+        this.baseWebMvcConfig = config;
+    }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
-            throws Exception {
-
+        throws Exception {
         try {
             String resourceName = getResourceName(request);
 
             if (StringUtil.isNotEmpty(resourceName)) {
                 // Parse the request origin using registered origin parser.
                 String origin = parseOrigin(request);
-                ContextUtil.enter(SPRING_MVC_CONTEXT_NAME, origin);
-                Entry entry = SphU.entry(resourceName, EntryType.IN);
+                ContextUtil.enter(SENTINEL_SPRING_WEB_CONTEXT_NAME, origin);
+                Entry entry = SphU.entry(resourceName, ResourceTypeConstants.COMMON_WEB, EntryType.IN);
 
                 setEntryInRequest(request, baseWebMvcConfig.getRequestAttributeName(), entry);
             }
@@ -63,9 +72,10 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
     }
 
     /**
-     * Get sentinel resource name.
-     * @param request
-     * @return
+     * Return the resource name of the target web resource.
+     *
+     * @param request web request
+     * @return the resource name of the target web resource.
      */
     protected abstract String getResourceName(HttpServletRequest request);
 
@@ -88,7 +98,8 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
     protected void setEntryInRequest(HttpServletRequest request, String name, Entry entry) {
         Object attrVal = request.getAttribute(name);
         if (attrVal != null) {
-            RecordLog.warn(String.format("Already exist attribute name '%s' in request, please set `requestAttributeName`", name));
+            RecordLog.warn("[{}] The attribute key '{0}' already exists in request, please set `requestAttributeName`",
+                getClass().getSimpleName(), name);
         } else {
             request.setAttribute(name, entry);
         }
@@ -96,7 +107,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
 
     protected Entry getEntryInRequest(HttpServletRequest request, String attrKey) {
         Object entryObject = request.getAttribute(attrKey);
-        return entryObject == null ? null : (Entry) entryObject;
+        return entryObject == null ? null : (Entry)entryObject;
     }
 
     protected void removeEntryInRequest(HttpServletRequest request) {
@@ -112,11 +123,12 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
         }
     }
 
-    protected void handleBlockException(HttpServletRequest request, HttpServletResponse response, BlockException e) throws Exception {
+    protected void handleBlockException(HttpServletRequest request, HttpServletResponse response, BlockException e)
+        throws Exception {
         if (baseWebMvcConfig.getBlockExceptionHandler() != null) {
             baseWebMvcConfig.getBlockExceptionHandler().handle(request, response, e);
         } else {
-            //Throw BlockException, handle it in spring mvc
+            // Throw BlockException directly. Users need to handle it in Spring global exception handler.
             throw e;
         }
     }
@@ -132,7 +144,4 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
         return origin;
     }
 
-    protected void setBaseWebMvcConfig(BaseWebMvcConfig config) {
-        this.baseWebMvcConfig = config;
-    }
 }

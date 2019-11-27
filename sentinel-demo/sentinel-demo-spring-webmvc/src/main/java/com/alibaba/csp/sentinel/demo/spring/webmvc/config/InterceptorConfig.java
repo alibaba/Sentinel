@@ -15,10 +15,12 @@
  */
 package com.alibaba.csp.sentinel.demo.spring.webmvc.config;
 
-import com.alibaba.csp.sentinel.adapter.spring.webmvc.SentinelInterceptor;
-import com.alibaba.csp.sentinel.adapter.spring.webmvc.SentinelTotalInterceptor;
+import com.alibaba.csp.sentinel.adapter.spring.webmvc.SentinelWebInterceptor;
+import com.alibaba.csp.sentinel.adapter.spring.webmvc.SentinelWebTotalInterceptor;
+import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.DefaultBlockExceptionHandler;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.config.SentinelWebMvcConfig;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.config.SentinelWebMvcTotalConfig;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -33,34 +35,28 @@ public class InterceptorConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        //Add sentinel interceptor
+        // Add Sentinel interceptor
         addSpringMvcInterceptor(registry);
-
-        //If you want to sentinel the total flow, you can add total interceptor
-        addSpringMvcTotalInterceptor(registry);
     }
 
     private void addSpringMvcInterceptor(InterceptorRegistry registry) {
-        //Config
         SentinelWebMvcConfig config = new SentinelWebMvcConfig();
 
-        config.setBlockExceptionHandler((request, response, e) -> {
-            //Depending on your situation, you can choose to process or throw
-            boolean needThrow = true;
-            if (needThrow) {
-                throw e;
-            } else {
-                //Write string or json string;
-                response.getWriter().write("Blocked by sentinel");
-            }
-        });
+        // Depending on your situation, you can choose to process the BlockException via
+        // the BlockExceptionHandler or throw it directly, then handle it
+        // in Spring web global exception handler.
 
-        //Custom configuration if necessary
+        // config.setBlockExceptionHandler((request, response, e) -> { throw e; });
+
+        // Use the default handler.
+        config.setBlockExceptionHandler(new DefaultBlockExceptionHandler());
+
+        // Custom configuration if necessary
         config.setHttpMethodSpecify(true);
         config.setOriginParser(request -> request.getHeader("S-user"));
 
-        //Add sentinel interceptor
-        registry.addInterceptor(new SentinelInterceptor(config)).addPathPatterns("/**");
+        // Add sentinel interceptor
+        registry.addInterceptor(new SentinelWebInterceptor(config)).addPathPatterns("/**");
     }
 
     private void addSpringMvcTotalInterceptor(InterceptorRegistry registry) {
@@ -72,6 +68,6 @@ public class InterceptorConfig implements WebMvcConfigurer {
         config.setTotalResourceName("my-spring-mvc-total-url-request");
 
         //Add sentinel interceptor
-        registry.addInterceptor(new SentinelTotalInterceptor(config)).addPathPatterns("/**");
+        registry.addInterceptor(new SentinelWebTotalInterceptor(config)).addPathPatterns("/**");
     }
 }

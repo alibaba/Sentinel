@@ -17,7 +17,6 @@ package com.alibaba.csp.sentinel.adapter.spring.webmvc;
 
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.config.SentinelWebMvcConfig;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.UrlCleaner;
-import com.alibaba.csp.sentinel.log.RecordLog;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -25,42 +24,32 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 import org.springframework.web.servlet.HandlerMapping;
 
 /**
- * Spring mvc interceptor that integrates with sentinel.
+ * Spring Web MVC interceptor that integrates with Sentinel.
  *
  * @author kaizi2009
+ * @since 1.7.1
  */
-public class SentinelInterceptor extends AbstractSentinelInterceptor {
-    private SentinelWebMvcConfig config;
+public class SentinelWebInterceptor extends AbstractSentinelInterceptor {
 
-    public SentinelInterceptor(SentinelWebMvcConfig config) {
-        super();
-        setConfig(config);
-        super.setBaseWebMvcConfig(config);
-    }
+    private final SentinelWebMvcConfig config;
 
-    public SentinelInterceptor() {
+    public SentinelWebInterceptor() {
         this(new SentinelWebMvcConfig());
     }
 
-    public SentinelInterceptor setConfig(SentinelWebMvcConfig config) {
+    public SentinelWebInterceptor(SentinelWebMvcConfig config) {
+        super(config);
         if (config == null) {
+            // Use the default config by default.
             this.config = new SentinelWebMvcConfig();
-            RecordLog.info("Config is null, use default config");
         } else {
             this.config = config;
         }
-        RecordLog.info(String.format("SentinelInterceptor config: requestAttributeName=%s, originParser=%s, httpMethodSpecify=%s, blockExceptionHandler=%s, urlCleaner=%s", config.getRequestAttributeName(), config.getOriginParser(), config.isHttpMethodSpecify(), config.getBlockExceptionHandler(), config.getUrlCleaner()));
-        return this;
     }
 
-    /**
-     * Get target in HttpServletRequest
-     *
-     * @param request
-     * @return
-     */
     @Override
     protected String getResourceName(HttpServletRequest request) {
+        // Resolve the Spring Web URL pattern from the request attribute.
         Object resourceNameObject = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
         if (resourceNameObject == null || !(resourceNameObject instanceof String)) {
             return null;
@@ -72,7 +61,7 @@ public class SentinelInterceptor extends AbstractSentinelInterceptor {
         }
         // Add method specification if necessary
         if (StringUtil.isNotEmpty(resourceName) && config.isHttpMethodSpecify()) {
-            resourceName = request.getMethod().toUpperCase() + COLON + resourceName;
+            resourceName = request.getMethod().toUpperCase() + ":" + resourceName;
         }
         return resourceName;
     }
