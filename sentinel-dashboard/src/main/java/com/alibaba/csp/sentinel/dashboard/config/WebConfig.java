@@ -16,8 +16,11 @@
 package com.alibaba.csp.sentinel.dashboard.config;
 
 import com.alibaba.csp.sentinel.adapter.servlet.CommonFilter;
-import com.alibaba.csp.sentinel.dashboard.auth.AuthInterceptor;
-import com.alibaba.csp.sentinel.dashboard.filter.AuthFilter;
+import com.alibaba.csp.sentinel.adapter.servlet.callback.WebCallbackManager;
+import com.alibaba.csp.sentinel.dashboard.auth.AuthorizationInterceptor;
+import com.alibaba.csp.sentinel.dashboard.auth.LoginAuthenticationFilter;
+import com.alibaba.csp.sentinel.util.StringUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +32,7 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.Filter;
 
 /**
@@ -40,14 +44,14 @@ public class WebConfig implements WebMvcConfigurer {
     private final Logger logger = LoggerFactory.getLogger(WebConfig.class);
 
     @Autowired
-    private AuthFilter authFilter;
+    private LoginAuthenticationFilter loginAuthenticationFilter;
 
     @Autowired
-    private AuthInterceptor authInterceptor;
+    private AuthorizationInterceptor authorizationInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(authInterceptor).addPathPatterns("/**");
+        registry.addInterceptor(authorizationInterceptor).addPathPatterns("/**");
     }
 
     @Override
@@ -77,10 +81,24 @@ public class WebConfig implements WebMvcConfigurer {
         return registration;
     }
 
+    @PostConstruct
+    public void doInit() {
+        // Example: register a UrlCleaner to exclude URLs of common static resources.
+        WebCallbackManager.setUrlCleaner(url -> {
+            if (StringUtil.isEmpty(url)) {
+                return url;
+            }
+            if (url.endsWith(".js") || url.endsWith(".css") || url.endsWith("html")) {
+                return null;
+            }
+            return url;
+        });
+    }
+
     @Bean
     public FilterRegistrationBean authenticationFilterRegistration() {
         FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>();
-        registration.setFilter(authFilter);
+        registration.setFilter(loginAuthenticationFilter);
         registration.addUrlPatterns("/*");
         registration.setName("authenticationFilter");
         registration.setOrder(0);
