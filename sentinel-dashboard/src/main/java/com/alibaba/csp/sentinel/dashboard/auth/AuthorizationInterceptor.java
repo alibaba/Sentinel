@@ -27,8 +27,14 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.Method;
 
+/**
+ * The web interceptor for privilege-based authorization.
+ *
+ * @author lkxiaolou
+ * @since 1.7.1
+ */
 @Component
-public class AuthInterceptor implements HandlerInterceptor {
+public class AuthorizationInterceptor implements HandlerInterceptor {
 
     @Autowired
     private AuthService<HttpServletRequest> authService;
