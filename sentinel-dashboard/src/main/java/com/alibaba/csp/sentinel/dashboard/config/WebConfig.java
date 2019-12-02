@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.dashboard.config;
 
 import com.alibaba.csp.sentinel.adapter.servlet.CommonFilter;
+import com.alibaba.csp.sentinel.dashboard.auth.AuthInterceptor;
 import com.alibaba.csp.sentinel.dashboard.filter.AuthFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -39,6 +41,14 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Autowired
     private AuthFilter authFilter;
+
+    @Autowired
+    private AuthInterceptor authInterceptor;
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(authInterceptor).addPathPatterns("/**");
+    }
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
