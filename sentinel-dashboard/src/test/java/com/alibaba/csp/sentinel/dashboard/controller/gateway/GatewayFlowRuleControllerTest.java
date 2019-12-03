@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.dashboard.controller.gateway;
 
+import com.alibaba.csp.sentinel.dashboard.auth.AuthorizationInterceptor;
 import com.alibaba.csp.sentinel.dashboard.auth.FakeAuthServiceImpl;
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayFlowRuleEntity;
@@ -63,7 +64,8 @@ import static org.mockito.BDDMockito.*;
  */
 @RunWith(SpringRunner.class)
 @WebMvcTest(GatewayFlowRuleController.class)
-@Import({FakeAuthServiceImpl.class, InMemGatewayFlowRuleStore.class, AppManagement.class, SimpleMachineDiscovery.class})
+@Import({FakeAuthServiceImpl.class, InMemGatewayFlowRuleStore.class, AppManagement.class, SimpleMachineDiscovery.class,
+        AuthorizationInterceptor.class })
 public class GatewayFlowRuleControllerTest {
 
     private static final String TEST_APP = "test_app";

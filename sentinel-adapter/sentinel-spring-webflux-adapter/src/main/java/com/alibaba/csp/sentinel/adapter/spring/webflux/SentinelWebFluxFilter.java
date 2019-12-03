@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.adapter.spring.webflux;
 import java.util.Optional;
 
 import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.ResourceTypeConstants;
 import com.alibaba.csp.sentinel.adapter.reactor.ContextConfig;
 import com.alibaba.csp.sentinel.adapter.reactor.EntryConfig;
 import com.alibaba.csp.sentinel.adapter.reactor.SentinelReactorTransformer;
@@ -45,7 +46,8 @@ public class SentinelWebFluxFilter implements WebFilter {
         if (StringUtil.isEmpty(finalPath)) {
             return chain.filter(exchange);
         }
-        return chain.filter(exchange).transform(buildSentinelTransformer(exchange, finalPath));
+        return chain.filter(exchange)
+            .transform(buildSentinelTransformer(exchange, finalPath));
     }
 
     private SentinelReactorTransformer<Void> buildSentinelTransformer(ServerWebExchange exchange, String finalPath) {
@@ -53,7 +55,8 @@ public class SentinelWebFluxFilter implements WebFilter {
             .map(f -> f.apply(exchange))
             .orElse(EMPTY_ORIGIN);
 
-        return new SentinelReactorTransformer<>(new EntryConfig(finalPath, EntryType.IN, new ContextConfig(finalPath, origin)));
+        return new SentinelReactorTransformer<>(new EntryConfig(finalPath, ResourceTypeConstants.COMMON_WEB,
+            EntryType.IN, new ContextConfig(finalPath, origin)));
     }
 
     private static final String EMPTY_ORIGIN = "";
