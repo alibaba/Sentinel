@@ -3,6 +3,7 @@ package com.alibaba.csp.sentinel.demo.zuul2.gateway;
 import com.alibaba.csp.sentinel.adapter.gateway.zuul2.filters.endpoint.SentinelZuulEndpoint;
 import com.alibaba.csp.sentinel.adapter.gateway.zuul2.filters.inbound.SentinelZuulInboundFilter;
 import com.alibaba.csp.sentinel.adapter.gateway.zuul2.filters.outbound.SentinelZuulOutboundFilter;
+import com.alibaba.csp.sentinel.demo.zuul2.gateway.filters.Route;
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
 import com.netflix.zuul.BasicFilterUsageNotifier;

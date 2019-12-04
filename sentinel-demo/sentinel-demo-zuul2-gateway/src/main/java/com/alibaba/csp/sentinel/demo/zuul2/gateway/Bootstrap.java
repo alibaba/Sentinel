@@ -29,8 +29,7 @@ public class Bootstrap {
     public void start() {
         Server server;
         try {
-            initCustomizedApis();
-            initGatewayRules();
+            new GatewayRuleConfig().doInit();
 
             ConfigurationManager.loadCascadedPropertiesFromResources("application");
             Injector injector = InjectorBuilder.fromModule(new ZuulModule()).createInjector();

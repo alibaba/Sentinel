@@ -22,10 +22,6 @@ package com.alibaba.csp.sentinel.adapter.gateway.zuul2.constants;
  */
 public class ZuulConstant {
     /**
-     * Zuul {@link com.netflix.zuul.context.SessionContext} key for proxying (route ID).
-     */
-    public static final String PROXY_ID_KEY = "proxy";
-    /**
      * Zuul use Sentinel as default context when serviceId is empty.
      */
     public static final String ZUUL_DEFAULT_CONTEXT = "zuul_default_context";

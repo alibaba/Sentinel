@@ -102,7 +102,7 @@ public class SentinelZuulInboundFilter extends HttpInboundFilter {
         SessionContext context = request.getContext();
         String origin = parseOrigin(request);
         Deque<EntryHolder> holders = new ArrayDeque<>();
-        String routeId = (String) context.get(ZuulConstant.PROXY_ID_KEY);
+        String routeId = context.getRouteVIP();
         String fallBackRoute = routeId;
         try {
             if (StringUtil.isNotBlank(routeId)) {

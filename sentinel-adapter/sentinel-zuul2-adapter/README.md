@@ -27,9 +27,6 @@ filterMultibinder.addBinding().toInstance(new SentinelZuulOutboundFilter(500));
 filterMultibinder.addBinding().toInstance(new SentinelZuulEndpoint());
 ```
 
-> If you want to use **route level** flow control, you need to implement a inbound filter for grouping and matching route additionally.
-In the filter, you find route id and put it into SessionContext with using ZuulConstant.PROXY_ID_KEY as key.
-
 ## How it works
 
 As Zuul 2.x is based on netty, a event-drive model, so we use `AsyncEntry` to do flow control.
