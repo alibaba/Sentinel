@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.util;
 
+import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
 
 import java.io.File;
@@ -23,7 +24,7 @@ import java.io.File;
  * Util class for getting application name. This class uses the flowing order to get app's name:
  *
  * <ol>
- * <li>get {@code project.name} from System Properties, if not null, use the value as app name;</li>
+ * <li>get {@code project.name} from {@link SentinelConfig#props}, if not null, use the value as app name;</li>
  * <li>get {@code sun.java.command} from System properties, remove path, arguments and ".jar" or ".JAR"
  * suffix, use the result as app name. Note that whitespace in file name or path is not allowed, or a
  * wrong app name may be gotten, For example:
@@ -61,8 +62,7 @@ public final class AppNameUtil {
     }
 
     public static void resolveAppName() {
-        String app = System.getProperty(APP_NAME);
-        // use -Dproject.name first
+        String app = SentinelConfig.getConfig(SentinelConfig.APP_NAME);
         if (!isEmpty(app)) {
             appName = app;
             return;
@@ -88,6 +88,7 @@ public final class AppNameUtil {
             command = command.substring(0, command.length() - 4);
         }
         appName = command;
+        SentinelConfig.setConfig(SentinelConfig.APP_NAME, appName);
     }
 
     public static String getAppName() {

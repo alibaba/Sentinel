@@ -43,6 +43,8 @@ public final class SentinelConfig {
     private static final Map<String, String> props = new ConcurrentHashMap<>();
     private static int appType = APP_TYPE_COMMON;
 
+
+    public static final String APP_NAME = "csp.sentinel.project.name";
     public static final String APP_TYPE = "csp.sentinel.app.type";
     public static final String CHARSET = "csp.sentinel.charset";
     public static final String SINGLE_METRIC_FILE_SIZE = "csp.sentinel.metric.file.single.size";

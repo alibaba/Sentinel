@@ -56,16 +56,6 @@ public final class SentinelConfigLoader {
 
         Properties p = ConfigUtil.loadProperties(fileName);
 
-        // Compatible with legacy config file path.
-        if (p == null) {
-            String path = addSeparator(System.getProperty(USER_HOME)) + DIR_NAME + File.separator;
-            fileName = path + AppNameUtil.getAppName() + ".properties";
-            File file = new File(fileName);
-            if (file.exists()) {
-                p = ConfigUtil.loadProperties(fileName);
-            }
-        }
-
         if (p != null && !p.isEmpty()) {
             RecordLog.info("[SentinelConfigLoader] Loading Sentinel config from " + fileName);
             properties.putAll(p);
