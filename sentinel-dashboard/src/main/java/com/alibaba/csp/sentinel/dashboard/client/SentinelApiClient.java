@@ -393,7 +393,7 @@ public class SentinelApiClient {
      * @return
      */
     public List<NodeVo> fetchClusterNodeOfMachine(String ip, int port, boolean includeZero) {
-        String type = "noZero";
+        String type = "notZero";
         if (includeZero) {
             type = "zero";
         }
