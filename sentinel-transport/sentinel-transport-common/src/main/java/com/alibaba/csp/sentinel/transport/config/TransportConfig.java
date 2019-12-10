@@ -29,6 +29,9 @@ public class TransportConfig {
     public static final String SERVER_PORT = "csp.sentinel.api.port";
     public static final String HEARTBEAT_INTERVAL_MS = "csp.sentinel.heartbeat.interval.ms";
     public static final String HEARTBEAT_CLIENT_IP = "csp.sentinel.heartbeat.client.ip";
+    public static final String HEARTBEAT_API_PATH = "csp.sentinel.heartbeat.api.path";
+
+    public static final String HEARTBEAT_DEFAULT_PATH = "/registry/machine";
 
     private static int runtimePort = -1;
 
@@ -93,5 +96,19 @@ public class TransportConfig {
             ip = HostNameUtil.getIp();
         }
         return ip;
+    }
+
+    /**
+     * Get dashboard heartbeat api path.
+     * If the context path not configured,it will be the default api path
+     *
+     * @return api path.
+     */
+    public static String getHeartbeatApiPath() {
+        String apiPath = SentinelConfig.getConfig(HEARTBEAT_API_PATH);
+        if (StringUtil.isBlank(apiPath)) {
+            return HEARTBEAT_DEFAULT_PATH;
+        }
+        return apiPath + HEARTBEAT_DEFAULT_PATH;
     }
 }
