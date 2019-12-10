@@ -73,7 +73,7 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
                 return true;
             }
         } catch (Exception e) {
-            RecordLog.warn("[SimpleHttpHeartbeatSender] Failed to send heartbeat to " + addr + " : ", e);
+            RecordLog.warn("[SimpleHttpHeartbeatSender] Failed to send heartbeat to " + addr, e);
         }
         return false;
     }

@@ -99,16 +99,20 @@ public class TransportConfig {
     }
 
     /**
-     * Get dashboard heartbeat api path.
-     * If the context path not configured,it will be the default api path
+     * Get the heartbeat api path. If the machine registry path of the dashboard
+     * is modified, then the API path should also be consistent with the API path of the dashboard.
      *
-     * @return api path.
+     * @return the heartbeat api path
+     * @since 1.7.1
      */
     public static String getHeartbeatApiPath() {
         String apiPath = SentinelConfig.getConfig(HEARTBEAT_API_PATH);
         if (StringUtil.isBlank(apiPath)) {
             return HEARTBEAT_DEFAULT_PATH;
         }
-        return apiPath + HEARTBEAT_DEFAULT_PATH;
+        if (!apiPath.startsWith("/")) {
+            apiPath = "/" + apiPath;
+        }
+        return apiPath;
     }
 }
