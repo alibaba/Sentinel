@@ -45,6 +45,7 @@ public class DubboUtilsTest {
         SentinelConfig.setConfig("csp.sentinel.dubbo.resource.use.prefix", "true");
         SentinelConfig.setConfig(DubboConfig.DUBBO_PROVIDER_PREFIX, "");
         SentinelConfig.setConfig(DubboConfig.DUBBO_CONSUMER_PREFIX, "");
+        SentinelConfig.setConfig(DubboConfig.DUBBO_INTERFACE_GROUP_VERSION_ENABLED, "false");
     }
 
 
@@ -83,12 +84,12 @@ public class DubboUtilsTest {
     }
 
     @Test
-    public void testGetResourceName() {
+    public void testGetResourceName() throws NoSuchMethodException {
         Invoker invoker = mock(Invoker.class);
         when(invoker.getInterface()).thenReturn(DemoService.class);
 
         Invocation invocation = mock(Invocation.class);
-        Method method = DemoService.class.getMethods()[0];
+        Method method = DemoService.class.getDeclaredMethod("sayHello", String.class, int.class);
         when(invocation.getMethodName()).thenReturn(method.getName());
         when(invocation.getParameterTypes()).thenReturn(method.getParameterTypes());
 
@@ -99,7 +100,7 @@ public class DubboUtilsTest {
     }
 
     @Test
-    public void testGetResourceNameWithGroupAndVersion() {
+    public void testGetResourceNameWithGroupAndVersion() throws NoSuchMethodException {
         Invoker invoker = mock(Invoker.class);
         URL url = URL.valueOf("dubbo://127.0.0.1:2181")
                 .addParameter(CommonConstants.VERSION_KEY, "1.0.0")
@@ -109,7 +110,7 @@ public class DubboUtilsTest {
         when(invoker.getInterface()).thenReturn(DemoService.class);
 
         Invocation invocation = mock(Invocation.class);
-        Method method = DemoService.class.getMethods()[0];
+        Method method = DemoService.class.getDeclaredMethod("sayHello", String.class, int.class);
         when(invocation.getMethodName()).thenReturn(method.getName());
         when(invocation.getParameterTypes()).thenReturn(method.getParameterTypes());
 
@@ -120,12 +121,12 @@ public class DubboUtilsTest {
 
 
     @Test
-    public void testGetResourceNameWithPrefix() {
+    public void testGetResourceNameWithPrefix() throws NoSuchMethodException {
         Invoker invoker = mock(Invoker.class);
         when(invoker.getInterface()).thenReturn(DemoService.class);
 
         Invocation invocation = mock(Invocation.class);
-        Method method = DemoService.class.getMethods()[0];
+        Method method = DemoService.class.getDeclaredMethod("sayHello", String.class, int.class);
         when(invocation.getMethodName()).thenReturn(method.getName());
         when(invocation.getParameterTypes()).thenReturn(method.getParameterTypes());
 

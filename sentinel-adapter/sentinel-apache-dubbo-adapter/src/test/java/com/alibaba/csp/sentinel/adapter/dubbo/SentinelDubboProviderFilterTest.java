@@ -58,6 +58,7 @@ public class SentinelDubboProviderFilterTest extends BaseTest {
 
     @Before
     public void setUp() {
+        constructInvokerAndInvocation();
         cleanUpAll();
     }
 
@@ -70,18 +71,10 @@ public class SentinelDubboProviderFilterTest extends BaseTest {
     public void testInvoke() {
         final String originApplication = "consumerA";
 
-        final Invoker invoker = mock(Invoker.class);
-        URL url = URL.valueOf("dubbo://127.0.0.1:2181")
-                .addParameter(CommonConstants.VERSION_KEY, "1.0.0")
-                .addParameter(CommonConstants.GROUP_KEY, "grp1")
-                .addParameter(CommonConstants.SIDE_KEY, CommonConstants.PROVIDER_SIDE)
-                .addParameter(CommonConstants.INTERFACE_KEY, DemoService.class.getName());
+        URL url = invoker.getUrl()
+                .addParameter(CommonConstants.SIDE_KEY, CommonConstants.PROVIDER_SIDE);
         when(invoker.getUrl()).thenReturn(url);
 
-        final Invocation invocation = mock(Invocation.class);
-        Method method = DemoService.class.getMethods()[0];
-        when(invocation.getMethodName()).thenReturn(method.getName());
-        when(invocation.getParameterTypes()).thenReturn(method.getParameterTypes());
         when(invocation.getAttachment(DubboUtils.SENTINEL_DUBBO_APPLICATION_KEY, ""))
                 .thenReturn(originApplication);
 

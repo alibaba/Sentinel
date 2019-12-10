@@ -63,13 +63,14 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
 
             if (InvokeMode.SYNC == invokeMode) {
                 interfaceEntry = SphU.entry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT);
+                rpcContext.set(DubboUtils.DUBBO_INTERFACE_ENTRY_KEY, interfaceEntry);
                 methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT, invocation.getArguments());
             } else {
                 // should generate the AsyncEntry when the invoke model in future or async
                 interfaceEntry = SphU.asyncEntry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT);
+                rpcContext.set(DubboUtils.DUBBO_INTERFACE_ENTRY_KEY, interfaceEntry);
                 methodEntry = SphU.asyncEntry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT, 1, invocation.getArguments());
             }
-            rpcContext.set(DubboUtils.DUBBO_INTERFACE_ENTRY_KEY, interfaceEntry);
             rpcContext.set(DubboUtils.DUBBO_METHOD_ENTRY_KEY, methodEntry);
             return invoker.invoke(invocation);
         } catch (BlockException e) {

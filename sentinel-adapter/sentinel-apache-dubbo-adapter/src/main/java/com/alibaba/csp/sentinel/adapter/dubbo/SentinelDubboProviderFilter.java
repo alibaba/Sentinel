@@ -65,8 +65,8 @@ public class SentinelDubboProviderFilter extends BaseSentinelDubboFilter {
             // at entrance of invocation chain only (for inbound traffic).
             ContextUtil.enter(methodResourceName, application);
             interfaceEntry = SphU.entry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN);
-            methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN, invocation.getArguments());
             rpcContext.set(DubboUtils.DUBBO_INTERFACE_ENTRY_KEY, interfaceEntry);
+            methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN, invocation.getArguments());
             rpcContext.set(DubboUtils.DUBBO_METHOD_ENTRY_KEY, methodEntry);
             return invoker.invoke(invocation);
         } catch (BlockException e) {

@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.adapter.dubbo;
 import com.alibaba.csp.sentinel.BaseTest;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig;
 import com.alibaba.csp.sentinel.adapter.dubbo.fallback.DubboFallback;
 import com.alibaba.csp.sentinel.adapter.dubbo.fallback.DubboFallbackRegistry;
 import com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService;
@@ -30,14 +31,15 @@ import com.alibaba.csp.sentinel.node.StatisticNode;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.support.RpcUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -51,6 +53,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
+import static com.alibaba.csp.sentinel.slots.block.RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -68,9 +71,12 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
 
     private SentinelDubboConsumerFilter filter = new SentinelDubboConsumerFilter();
 
+
     @Before
     public void setUp() {
         cleanUpAll();
+        initFallback();
+        constructInvokerAndInvocation();
     }
 
     @After
@@ -87,6 +93,17 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
         FlowRuleManager.loadRules(flowRules);
     }
 
+    public void initDegradeRule(String resource) {
+        DegradeRule degradeRule = new DegradeRule(resource)
+                .setCount(0.5)
+                .setGrade(DEGRADE_GRADE_EXCEPTION_RATIO);
+        List<DegradeRule> degradeRules = new ArrayList<>();
+        degradeRules.add(degradeRule);
+        degradeRule.setTimeWindow(1);
+        DegradeRuleManager.loadRules(degradeRules);
+    }
+
+
     public void initFallback() {
         DubboFallbackRegistry.setConsumerFallback(new DubboFallback() {
             @Override
@@ -100,50 +117,123 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
     }
 
     @Test
-    public void testFallback() throws InterruptedException {
-        final Invoker invoker = mock(Invoker.class);
-        URL url = URL.valueOf("dubbo://127.0.0.1:2181")
-                .addParameter(CommonConstants.VERSION_KEY, "1.0.0")
-                .addParameter(CommonConstants.GROUP_KEY, "grp1")
-                .addParameter(CommonConstants.INTERFACE_KEY, DemoService.class.getName());
-        when(invoker.getUrl()).thenReturn(url);
-        when(invoker.getInterface()).thenReturn(DemoService.class);
-
-        final Invocation invocation = mock(Invocation.class);
+    public void testInterfaceLevelFollowControlAsync() throws InterruptedException {
         when(invocation.getAttachment(ASYNC_KEY)).thenReturn(Boolean.TRUE.toString());
-        Method method = DemoService.class.getMethods()[0];
-        when(invocation.getMethodName()).thenReturn(method.getName());
-        when(invocation.getParameterTypes()).thenReturn(method.getParameterTypes());
-        AsyncRpcResult normalResult = AsyncRpcResult.newDefaultAsyncResult("normal", invocation);
-        when(invoker.invoke(invocation)).thenReturn(normalResult);
         initFlowRule(invoker.getUrl().getColonSeparatedKey());
-        initFallback();
-        Result result1 = filter.invoke(invoker, invocation);
-        assertEquals(normalResult, result1);
+        Result result1 = responseBack(requestGo(false, invocation));
+        assertEquals("normal", result1.getValue());
         // should fallback because the qps > 1
-        Result result2 = filter.invoke(invoker, invocation);
+        Result result2 = responseBack(requestGo(false, invocation));
         assertEquals("fallback", result2.getValue());
         // sleeping 1000 ms to reset qps
         Thread.sleep(1000);
-        Result result3 = filter.invoke(invoker, invocation);
-        assertEquals(normalResult, result3);
+        Result result3 = responseBack(requestGo(false, invocation));
+        assertEquals("normal", result3.getValue());
+
+        verifyInvocationStructureForCallFinish();
     }
 
     @Test
-    public void testInvokeAsync() throws InterruptedException {
-        final Invoker invoker = mock(Invoker.class);
-        URL url = URL.valueOf("dubbo://127.0.0.1:2181")
-                .addParameter(CommonConstants.VERSION_KEY, "1.0.0")
-                .addParameter(CommonConstants.GROUP_KEY, "grp1")
-                .addParameter(CommonConstants.INTERFACE_KEY, DemoService.class.getName());
-        when(invoker.getUrl()).thenReturn(url);
-        when(invoker.getInterface()).thenReturn(DemoService.class);
-
-        final Invocation invocation = mock(Invocation.class);
+    public void testDegradeAsync() throws InterruptedException {
         when(invocation.getAttachment(ASYNC_KEY)).thenReturn(Boolean.TRUE.toString());
-        Method method = DemoService.class.getMethods()[0];
-        when(invocation.getMethodName()).thenReturn(method.getName());
-        when(invocation.getParameterTypes()).thenReturn(method.getParameterTypes());
+
+        initDegradeRule(invoker.getUrl().getColonSeparatedKey());
+        Result result = requestGo(false, invocation);
+        verifyInvocationStructureForAsyncCall(invoker, invocation);
+        responseBack(result);
+        assertEquals("normal", result.getValue());
+        // inc the clusterNode's exception to trigger the fallback
+        for (int i = 0; i < 5; i++) {
+            responseBack(requestGo(true, invocation));
+            verifyInvocationStructureForCallFinish();
+        }
+        Result result2 = responseBack(requestGo(false, invocation));
+        assertEquals("fallback", result2.getValue());
+        // sleeping 1000 ms to reset exception
+        Thread.sleep(1000);
+
+        Result result3 = responseBack(requestGo(false, invocation));
+        assertEquals("normal", result3.getValue());
+
+        Context context = ContextUtil.getContext();
+        assertNull(context);
+    }
+
+    @Test
+    public void testDegradeSync() throws InterruptedException {
+
+        initDegradeRule(invoker.getUrl().getColonSeparatedKey());
+        Result result = requestGo(false, invocation);
+        verifyInvocationStructure(invoker, invocation);
+        responseBack(result);
+        assertEquals("normal", result.getValue());
+        // inc the clusterNode's exception to trigger the fallback
+        for (int i = 0; i < 5; i++) {
+            responseBack(requestGo(true, invocation));
+            verifyInvocationStructureForCallFinish();
+        }
+        Result result2 = responseBack(requestGo(false, invocation));
+        assertEquals("fallback", result2.getValue());
+        // sleeping 1000 ms to reset exception
+        Thread.sleep(1000);
+
+        Result result3 = responseBack(requestGo(false, invocation));
+        assertEquals("normal", result3.getValue());
+
+        Context context = ContextUtil.getContext();
+        assertNull(context);
+    }
+
+
+    @Test
+    public void testMethodFlowControlAsync() {
+        when(invocation.getAttachment(ASYNC_KEY)).thenReturn(Boolean.TRUE.toString());
+        initFlowRule(DubboUtils.getResourceName(invoker, invocation, DubboConfig.getDubboConsumerPrefix()));
+        responseBack(requestGo(false, invocation));
+
+        responseBack(requestGo(false, invocation));
+
+        Invocation invocation2 = mock(Invocation.class);
+        Method method = DemoService.class.getMethods()[1];
+        when(invocation2.getMethodName()).thenReturn(method.getName());
+        when(invocation2.getParameterTypes()).thenReturn(method.getParameterTypes());
+        Result result2 = responseBack(requestGo(false, invocation2));
+        verifyInvocationStructureForCallFinish();
+        assertEquals("normal", result2.getValue());
+
+        // the method of invocation should be blocked
+        Result fallback = requestGo(false, invocation);
+        assertNotNull(RpcContext.getContext().get(DubboUtils.DUBBO_INTERFACE_ENTRY_KEY));
+        assertNull(RpcContext.getContext().get(DubboUtils.DUBBO_METHOD_ENTRY_KEY));
+        responseBack(fallback);
+        assertEquals("fallback", fallback.getValue());
+        verifyInvocationStructureForCallFinish();
+
+
+    }
+
+    public Result requestGo(boolean exception, Invocation currentInvocation) {
+        AsyncRpcResult result = null;
+
+        if (exception) {
+            result = AsyncRpcResult.newDefaultAsyncResult(new Exception("error"), currentInvocation);
+        } else {
+            result = AsyncRpcResult.newDefaultAsyncResult("normal", currentInvocation);
+        }
+        when(invoker.invoke(currentInvocation)).thenReturn(result);
+        return filter.invoke(invoker, currentInvocation);
+    }
+
+    public Result responseBack(Result result) {
+        filter.listener().onResponse(result, invoker, invocation);
+        return result;
+    }
+
+
+    @Test
+    public void testInvokeAsync() throws InterruptedException {
+
+        when(invocation.getAttachment(ASYNC_KEY)).thenReturn(Boolean.TRUE.toString());
 
         final Result result = mock(Result.class);
         when(result.hasException()).thenReturn(false);
@@ -161,18 +251,6 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
 
     @Test
     public void testInvokeSync() {
-        final Invoker invoker = mock(Invoker.class);
-        URL url = URL.valueOf("dubbo://127.0.0.1:2181")
-                .addParameter(CommonConstants.VERSION_KEY, "1.0.0")
-                .addParameter(CommonConstants.GROUP_KEY, "grp1")
-                .addParameter(CommonConstants.INTERFACE_KEY, DemoService.class.getName());
-        when(invoker.getUrl()).thenReturn(url);
-        when(invoker.getInterface()).thenReturn(DemoService.class);
-
-        final Invocation invocation = mock(Invocation.class);
-        Method method = DemoService.class.getMethods()[0];
-        when(invocation.getMethodName()).thenReturn(method.getName());
-        when(invocation.getParameterTypes()).thenReturn(method.getParameterTypes());
 
         final Result result = mock(Result.class);
         when(result.hasException()).thenReturn(false);
@@ -297,6 +375,17 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
         Map<String, StatisticNode> interfaceOriginCountMap = interfaceClusterNode.getOriginCountMap();
         assertEquals(0, interfaceOriginCountMap.size());
     }
+
+
+    private void verifyInvocationStructureForCallFinish() {
+        Context context = ContextUtil.getContext();
+        assertNull(context);
+        Entry interfaceEntry = (Entry) RpcContext.getContext().get(DubboUtils.DUBBO_INTERFACE_ENTRY_KEY);
+        Entry methodEntry = (Entry) RpcContext.getContext().get(DubboUtils.DUBBO_METHOD_ENTRY_KEY);
+        assertNull(interfaceEntry);
+        assertNull(methodEntry);
+    }
+
 
     public DefaultNode getNode(String resourceName, DefaultNode root) {
 
