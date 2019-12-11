@@ -64,4 +64,22 @@ public class TransportConfigTest {
         SentinelConfig.setConfig(TransportConfig.HEARTBEAT_CLIENT_IP, "");
         assertTrue(StringUtil.isNotEmpty(TransportConfig.getHeartbeatClientIp()));
     }
+
+    @Test
+    public void testGetHeartbeatApiPath() {
+        // use default heartbeat api path
+        assertTrue(StringUtil.isNotEmpty(TransportConfig.getHeartbeatApiPath()));
+        assertEquals(TransportConfig.HEARTBEAT_DEFAULT_PATH, TransportConfig.getHeartbeatApiPath());
+
+        // config heartbeat api path
+        SentinelConfig.setConfig(TransportConfig.HEARTBEAT_API_PATH, "/demo");
+        assertTrue(StringUtil.isNotEmpty(TransportConfig.getHeartbeatApiPath()));
+        assertEquals("/demo", TransportConfig.getHeartbeatApiPath());
+
+        SentinelConfig.setConfig(TransportConfig.HEARTBEAT_API_PATH, "demo/registry");
+        assertEquals("/demo/registry", TransportConfig.getHeartbeatApiPath());
+
+        SentinelConfig.removeConfig(TransportConfig.HEARTBEAT_API_PATH);
+        assertEquals(TransportConfig.HEARTBEAT_DEFAULT_PATH, TransportConfig.getHeartbeatApiPath());
+    }
 }

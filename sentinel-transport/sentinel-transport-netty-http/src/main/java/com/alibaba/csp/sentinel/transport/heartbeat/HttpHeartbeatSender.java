@@ -109,7 +109,7 @@ public class HttpHeartbeatSender implements HeartbeatSender {
         }
         URIBuilder uriBuilder = new URIBuilder();
         uriBuilder.setScheme("http").setHost(consoleHost).setPort(consolePort)
-            .setPath("/registry/machine")
+            .setPath(TransportConfig.getHeartbeatApiPath())
             .setParameter("app", AppNameUtil.getAppName())
             .setParameter("app_type", String.valueOf(SentinelConfig.getAppType()))
             .setParameter("v", Constants.SENTINEL_VERSION)

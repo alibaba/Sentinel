@@ -23,6 +23,7 @@ import java.util.Set;
 
 import com.alibaba.csp.sentinel.AsyncEntry;
 import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.ResourceTypeConstants;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.adapter.gateway.common.param.GatewayParamParser;
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayFlowRule;
@@ -88,7 +89,7 @@ public class SentinelZuulPreFilter extends ZuulFilter {
     }
 
     private void doSentinelEntry(String resourceName, final int resType, RequestContext requestContext,
-                                 Deque<AsyncEntry> asyncEntries) throws BlockException {
+                                 Deque<EntryHolder> holders) throws BlockException {
         Object[] params = paramParser.parseParameterFor(resourceName, requestContext,
             new Predicate<GatewayFlowRule>() {
                 @Override
@@ -96,8 +97,10 @@ public class SentinelZuulPreFilter extends ZuulFilter {
                     return r.getResourceMode() == resType;
                 }
             });
-        AsyncEntry entry = SphU.asyncEntry(resourceName, EntryType.IN, 1, params);
-        asyncEntries.push(entry);
+        AsyncEntry entry = SphU.asyncEntry(resourceName, ResourceTypeConstants.COMMON_API_GATEWAY,
+                EntryType.IN, params);
+        EntryHolder holder = new EntryHolder(entry, params);
+        holders.push(holder);
     }
 
     @Override
@@ -106,12 +109,12 @@ public class SentinelZuulPreFilter extends ZuulFilter {
         String origin = parseOrigin(ctx.getRequest());
         String routeId = (String)ctx.get(ZuulConstant.PROXY_ID_KEY);
 
-        Deque<AsyncEntry> asyncEntries = new ArrayDeque<>();
+        Deque<EntryHolder> holders = new ArrayDeque<>();
         String fallBackRoute = routeId;
         try {
             if (StringUtil.isNotBlank(routeId)) {
                 ContextUtil.enter(GATEWAY_CONTEXT_ROUTE_PREFIX + routeId, origin);
-                doSentinelEntry(routeId, RESOURCE_MODE_ROUTE_ID, ctx, asyncEntries);
+                doSentinelEntry(routeId, RESOURCE_MODE_ROUTE_ID, ctx, holders);
             }
 
             Set<String> matchingApis = pickMatchingApiDefinitions(ctx);
@@ -120,7 +123,7 @@ public class SentinelZuulPreFilter extends ZuulFilter {
             }
             for (String apiName : matchingApis) {
                 fallBackRoute = apiName;
-                doSentinelEntry(apiName, RESOURCE_MODE_CUSTOM_API_NAME, ctx, asyncEntries);
+                doSentinelEntry(apiName, RESOURCE_MODE_CUSTOM_API_NAME, ctx, holders);
             }
         } catch (BlockException ex) {
             ZuulBlockFallbackProvider zuulBlockFallbackProvider = ZuulBlockFallbackManager.getFallbackProvider(
@@ -138,8 +141,8 @@ public class SentinelZuulPreFilter extends ZuulFilter {
         } finally {
             // We don't exit the entry here. We need to exit the entries in post filter to record Rt correctly.
             // So here the entries will be carried in the request context.
-            if (!asyncEntries.isEmpty()) {
-                ctx.put(ZuulConstant.ZUUL_CTX_SENTINEL_ENTRIES_KEY, asyncEntries);
+            if (!holders.isEmpty()) {
+                ctx.put(ZuulConstant.ZUUL_CTX_SENTINEL_ENTRIES_KEY, holders);
             }
         }
         return null;
