@@ -113,6 +113,10 @@ public class HttpEventTask implements Runnable {
                     String headerName = bodyLine.substring(0, index);
                     String header = bodyLine.substring(index + 1).trim();
                     if (StringUtil.equalsIgnoreCase("content-type", headerName)) {
+                        int idx = header.indexOf(";");
+                        if(idx > 0){
+                            header = header.substring(0,idx).trim();
+                        }
                         if (StringUtil.equals("application/x-www-form-urlencoded", header)) {
                             supported = true;
                         } else {
