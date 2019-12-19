@@ -156,7 +156,7 @@ public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
                 node = map.get(context.getName());
                 if (node == null) {
                     node = new DefaultNode(resourceWrapper, null);
-                    HashMap<String, DefaultNode> cacheMap = new HashMap<String, DefaultNode>(map.size());
+                    HashMap<String, DefaultNode> cacheMap = new HashMap<String, DefaultNode>(map.size() + 1);
                     cacheMap.putAll(map);
                     cacheMap.put(context.getName(), node);
                     map = cacheMap;
