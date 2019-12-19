@@ -62,6 +62,7 @@ import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ServerFlowConfig
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ServerTransportConfig;
 import com.alibaba.csp.sentinel.dashboard.util.VersionUtils;
 
+import org.apache.http.Consts;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -175,12 +176,7 @@ public class SentinelApiClient {
             for (Entry<String, String> entry : params.entrySet()) {
                 list.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
             }
-            try {
-                httpPost.setEntity(new UrlEncodedFormEntity(list));
-            } catch (UnsupportedEncodingException e) {
-                logger.warn("httpPostContent encode entity error: {}", params, e);
-                return null;
-            }
+            httpPost.setEntity(new UrlEncodedFormEntity(list, Consts.UTF_8));
         }
         return httpPost;
     }
