@@ -72,10 +72,10 @@ public class HttpEventTask implements Runnable {
                 new OutputStreamWriter(outputStream, Charset.forName(SentinelConfig.charset())));
 
             String line = in.readLine();
-            CommandCenterLog.info("[SimpleHttpCommandCenter] socket income: " + line
-                + "," + socket.getInetAddress());
+            CommandCenterLog.info("[SimpleHttpCommandCenter] Socket income: " + line
+                + ", addr: " + socket.getInetAddress());
             CommandRequest request = parseRequest(line);
-            
+
             if (line.length() > 4 && StringUtil.equalsIgnoreCase("POST", line.substring(0, 4))) {
                 // Deal with post method
                 // Now simple-http only support form-encoded post request.
@@ -95,12 +95,12 @@ public class HttpEventTask implements Runnable {
                         parseParams(postData, request);
                         break;
                     }
-                    
+
                     bodyLine = in.readLine();
                     if (bodyLine == null) {
                         break;
                     }
-                    // Body seperator
+                    // Body separator
                     if (StringUtil.isEmpty(bodyLine)) {
                         bodyNext = true;
                         continue;
@@ -114,22 +114,24 @@ public class HttpEventTask implements Runnable {
                     String header = bodyLine.substring(index + 1).trim();
                     if (StringUtil.equalsIgnoreCase("content-type", headerName)) {
                         int idx = header.indexOf(";");
-                        if (idx > 0){
+                        if (idx > 0) {
                             header = header.substring(0, idx).trim();
                         }
                         if (StringUtil.equals("application/x-www-form-urlencoded", header)) {
                             supported = true;
                         } else {
+                            CommandCenterLog.warn("Content-Type not supported: " + header);
                             // not support request
                             break;
                         }
                     } else if (StringUtil.equalsIgnoreCase("content-length", headerName)) {
                         try {
-                            int len = new Integer(header);
+                            int len = Integer.parseInt(header);
                             if (len > 0) {
                                 maxLength = len;
                             }
                         } catch (Exception e) {
+                            CommandCenterLog.warn("Malformed content-length header value: " + header);
                         }
                     }
                 }
@@ -265,7 +267,7 @@ public class HttpEventTask implements Runnable {
         parseParams(parameterStr, request);
         return request;
     }
-    
+
     private void parseParams(String queryString, CommandRequest request) {
         for (String parameter : queryString.split("&")) {
             if (StringUtil.isBlank(parameter)) {
