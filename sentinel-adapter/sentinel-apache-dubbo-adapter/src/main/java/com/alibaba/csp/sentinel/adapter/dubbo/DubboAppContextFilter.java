@@ -15,7 +15,7 @@
  */
 package com.alibaba.csp.sentinel.adapter.dubbo;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -34,7 +34,7 @@ public class DubboAppContextFilter implements Filter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        String application = invoker.getUrl().getParameter(Constants.APPLICATION_KEY);
+        String application = invoker.getUrl().getParameter(CommonConstants.APPLICATION_KEY);
         if (application != null) {
             RpcContext.getContext().setAttachment(DubboUtils.SENTINEL_DUBBO_APPLICATION_KEY, application);
         }

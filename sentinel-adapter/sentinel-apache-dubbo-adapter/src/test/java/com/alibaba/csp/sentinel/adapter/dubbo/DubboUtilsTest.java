@@ -18,6 +18,8 @@ package com.alibaba.csp.sentinel.adapter.dubbo;
 import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig;
 import com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.junit.After;
@@ -29,7 +31,9 @@ import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * @author cdfive
@@ -41,6 +45,7 @@ public class DubboUtilsTest {
         SentinelConfig.setConfig("csp.sentinel.dubbo.resource.use.prefix", "true");
         SentinelConfig.setConfig(DubboConfig.DUBBO_PROVIDER_PREFIX, "");
         SentinelConfig.setConfig(DubboConfig.DUBBO_CONSUMER_PREFIX, "");
+        SentinelConfig.setConfig(DubboConfig.DUBBO_INTERFACE_GROUP_VERSION_ENABLED, "false");
     }
 
 
@@ -49,6 +54,7 @@ public class DubboUtilsTest {
         SentinelConfig.setConfig("csp.sentinel.dubbo.resource.use.prefix", "false");
         SentinelConfig.setConfig(DubboConfig.DUBBO_PROVIDER_PREFIX, "");
         SentinelConfig.setConfig(DubboConfig.DUBBO_CONSUMER_PREFIX, "");
+        SentinelConfig.setConfig(DubboConfig.DUBBO_INTERFACE_GROUP_VERSION_ENABLED, "false");
     }
 
 
@@ -78,27 +84,49 @@ public class DubboUtilsTest {
     }
 
     @Test
-    public void testGetResourceName() {
+    public void testGetResourceName() throws NoSuchMethodException {
         Invoker invoker = mock(Invoker.class);
         when(invoker.getInterface()).thenReturn(DemoService.class);
 
         Invocation invocation = mock(Invocation.class);
-        Method method = DemoService.class.getMethods()[0];
+        Method method = DemoService.class.getDeclaredMethod("sayHello", String.class, int.class);
         when(invocation.getMethodName()).thenReturn(method.getName());
         when(invocation.getParameterTypes()).thenReturn(method.getParameterTypes());
 
         String resourceName = DubboUtils.getResourceName(invoker, invocation);
 
         assertEquals("com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService:sayHello(java.lang.String,int)", resourceName);
+
     }
 
     @Test
-    public void testGetResourceNameWithPrefix() {
+    public void testGetResourceNameWithGroupAndVersion() throws NoSuchMethodException {
+        Invoker invoker = mock(Invoker.class);
+        URL url = URL.valueOf("dubbo://127.0.0.1:2181")
+                .addParameter(CommonConstants.VERSION_KEY, "1.0.0")
+                .addParameter(CommonConstants.GROUP_KEY, "grp1")
+                .addParameter(CommonConstants.INTERFACE_KEY, DemoService.class.getName());
+        when(invoker.getUrl()).thenReturn(url);
+        when(invoker.getInterface()).thenReturn(DemoService.class);
+
+        Invocation invocation = mock(Invocation.class);
+        Method method = DemoService.class.getDeclaredMethod("sayHello", String.class, int.class);
+        when(invocation.getMethodName()).thenReturn(method.getName());
+        when(invocation.getParameterTypes()).thenReturn(method.getParameterTypes());
+
+        String resourceNameUseGroupAndVersion = DubboUtils.getResourceName(invoker, invocation, true);
+
+        assertEquals("com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService:1.0.0:grp1:sayHello(java.lang.String,int)", resourceNameUseGroupAndVersion);
+    }
+
+
+    @Test
+    public void testGetResourceNameWithPrefix() throws NoSuchMethodException {
         Invoker invoker = mock(Invoker.class);
         when(invoker.getInterface()).thenReturn(DemoService.class);
 
         Invocation invocation = mock(Invocation.class);
-        Method method = DemoService.class.getMethods()[0];
+        Method method = DemoService.class.getDeclaredMethod("sayHello", String.class, int.class);
         when(invocation.getMethodName()).thenReturn(method.getName());
         when(invocation.getParameterTypes()).thenReturn(method.getParameterTypes());
 

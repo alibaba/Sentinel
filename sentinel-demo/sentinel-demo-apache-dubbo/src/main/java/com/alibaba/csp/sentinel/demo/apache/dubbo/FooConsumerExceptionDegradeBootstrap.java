@@ -22,14 +22,13 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.SentinelRpcException;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import org.apache.dubbo.rpc.AsyncRpcResult;
+import org.apache.dubbo.rpc.RpcContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Please add the following VM arguments:
@@ -39,55 +38,24 @@ import java.util.List;
  * -Dproject.name=dubbo-consumer-demo
  * </pre>
  *
- * @author Eric Zhao
+ * @author Zechao zheng
  */
-public class FooConsumerBootstrap {
+public class FooConsumerExceptionDegradeBootstrap {
 
     private static final String INTERFACE_RES_KEY = FooService.class.getName();
     private static final String RES_KEY = INTERFACE_RES_KEY + ":sayHello(java.lang.String)";
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
         AnnotationConfigApplicationContext consumerContext = new AnnotationConfigApplicationContext();
         consumerContext.register(ConsumerConfiguration.class);
         consumerContext.refresh();
-        initFlowRule(10, false);
 
         FooServiceConsumer service = consumerContext.getBean(FooServiceConsumer.class);
-
-        for (int i = 0; i < 15; i++) {
-            try {
-                String message = service.sayHello("Eric");
-                System.out.println("Success: " + message);
-            } catch (SentinelRpcException ex) {
-                System.out.println("Blocked");
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }
-
-        // method flowcontrol
-        Thread.sleep(1000);
-        initFlowRule(20, true);
-        for (int i = 0; i < 10; i++) {
-            try {
-                String message = service.sayHello("Eric");
-                System.out.println("Success: " + message);
-            } catch (SentinelRpcException ex) {
-                System.out.println("Blocked");
-                System.out.println("fallback:" + service.doAnother());
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }
-
-        // fallback to result
-        Thread.sleep(1000);
+        initExceptionFallback(3);
         registryCustomFallback();
-
         for (int i = 0; i < 10; i++) {
             try {
-                String message = service.sayHello("Eric");
+                String message = service.exceptionTest(true, false);
                 System.out.println("Result: " + message);
             } catch (SentinelRpcException ex) {
                 System.out.println("Blocked");
@@ -95,13 +63,12 @@ public class FooConsumerBootstrap {
                 ex.printStackTrace();
             }
         }
-        // fallback to exception
-        Thread.sleep(1000);
-        registryCustomFallbackForCustomException();
-
+        // sleep 3s to skip the time window
+        initExceptionFallback(3);
+        Thread.sleep(3000);
         for (int i = 0; i < 10; i++) {
             try {
-                String message = service.sayHello("Eric");
+                String message = service.exceptionTest(false, true);
                 System.out.println("Result: " + message);
             } catch (SentinelRpcException ex) {
                 System.out.println("Blocked");
@@ -110,18 +77,28 @@ public class FooConsumerBootstrap {
             }
         }
 
-        Thread.sleep(1000);
-        registryCustomFallbackWhenFallbackError();
+        initExceptionFallback(3);
+        Thread.sleep(3000);
+
+        try {
+            // timeout to trigger the fallback
+            CompletableFuture<String> completableFuture = RpcContext.getContext().asyncCall(() -> service.exceptionTest(false, true));
+            System.out.println("Result: " + completableFuture.get());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         for (int i = 0; i < 10; i++) {
             try {
-                String message = service.sayHello("Eric");
-                System.out.println("Result: " + message);
+                CompletableFuture<String> result = RpcContext.getContext().asyncCall(() -> service.exceptionTest(false, true));
+                System.out.println("Result: " + result.get());
             } catch (SentinelRpcException ex) {
                 System.out.println("Blocked");
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
         }
+
     }
 
     public static void registryCustomFallback() {
@@ -130,31 +107,13 @@ public class FooConsumerBootstrap {
 
     }
 
-    public static void registryCustomFallbackForCustomException() {
-        DubboFallbackRegistry.setConsumerFallback(
-                (invoker, invocation, ex) -> AsyncRpcResult.newDefaultAsyncResult(new RuntimeException("fallback"), invocation));
-    }
+    public static void initExceptionFallback(int timewindow) {
+        DegradeRule degradeRule = new DegradeRule(INTERFACE_RES_KEY)
+                .setCount(0.5)
+                .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO)
+                .setTimeWindow(timewindow)
+                .setMinRequestAmount(1);
+        DegradeRuleManager.loadRules(Collections.singletonList(degradeRule));
 
-    public static void registryCustomFallbackWhenFallbackError() {
-        DubboFallbackRegistry.setConsumerFallback(
-                (invoker, invocation, ex) -> {
-                    throw new RuntimeException("fallback");
-                });
-    }
-
-
-    private static void initFlowRule(int interfaceFlowLimit, boolean method) {
-        FlowRule flowRule = new FlowRule(INTERFACE_RES_KEY)
-                .setCount(interfaceFlowLimit)
-                .setGrade(RuleConstant.FLOW_GRADE_QPS);
-        List<FlowRule> list = new ArrayList<>();
-        if (method) {
-            FlowRule flowRule1 = new FlowRule(RES_KEY)
-                    .setCount(5)
-                    .setGrade(RuleConstant.FLOW_GRADE_QPS);
-            list.add(flowRule1);
-        }
-        list.add(flowRule);
-        FlowRuleManager.loadRules(list);
     }
 }
