@@ -132,7 +132,7 @@ public class ClusterNodeTest {
 
     @Test
     public void testTraceException() {
-        ClusterNode clusterNode = new ClusterNode();
+        ClusterNode clusterNode = new ClusterNode("test");
         DefaultNode defaultNode = new DefaultNode(new StringResourceWrapper("test", EntryType.IN), clusterNode);
 
         Exception exception = new RuntimeException("test");
