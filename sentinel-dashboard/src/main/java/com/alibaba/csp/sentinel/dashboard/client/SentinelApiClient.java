@@ -62,6 +62,7 @@ import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ServerFlowConfig
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ServerTransportConfig;
 import com.alibaba.csp.sentinel.dashboard.util.VersionUtils;
 
+import org.apache.http.Consts;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -175,12 +176,7 @@ public class SentinelApiClient {
             for (Entry<String, String> entry : params.entrySet()) {
                 list.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
             }
-            try {
-                httpPost.setEntity(new UrlEncodedFormEntity(list));
-            } catch (UnsupportedEncodingException e) {
-                logger.warn("httpPostContent encode entity error: {}", params, e);
-                return null;
-            }
+            httpPost.setEntity(new UrlEncodedFormEntity(list, Consts.UTF_8));
         }
         return httpPost;
     }
@@ -369,14 +365,41 @@ public class SentinelApiClient {
             params.put("type", type);
             params.put("data", data);
             String result = executeCommand(app, ip, port, SET_RULES_PATH, params, true).get();
-            logger.info("setRules: {}", result);
+            logger.info("setRules result: {}, type={}", result, type);
             return true;
-        } catch (InterruptedException | ExecutionException e) {
-            logger.warn("setRules api failed: {}", type, e);
+        } catch (InterruptedException e) {
+            logger.warn("setRules API failed: {}", type, e);
+            return false;
+        } catch (ExecutionException e) {
+            logger.warn("setRules API failed: {}", type, e.getCause());
             return false;
         } catch (Exception e) {
-            logger.warn("setRules failed", e);
+            logger.error("setRules API failed, type={}", type, e);
             return false;
+        }
+    }
+
+    private CompletableFuture<Void> setRulesAsync(String app, String ip, int port, String type, List<? extends RuleEntity> entities) {
+        try {
+            AssertUtil.notNull(entities, "rules cannot be null");
+            AssertUtil.notEmpty(app, "Bad app name");
+            AssertUtil.notEmpty(ip, "Bad machine IP");
+            AssertUtil.isTrue(port > 0, "Bad machine port");
+            String data = JSON.toJSONString(
+                entities.stream().map(r -> r.toRule()).collect(Collectors.toList()));
+            Map<String, String> params = new HashMap<>(2);
+            params.put("type", type);
+            params.put("data", data);
+            return executeCommand(app, ip, port, SET_RULES_PATH, params, true)
+                .thenCompose(r -> {
+                    if ("success".equalsIgnoreCase(r.trim())) {
+                        return CompletableFuture.completedFuture(null);
+                    }
+                    return AsyncUtils.newFailedFuture(new CommandFailedException(r));
+                });
+        } catch (Exception e) {
+            logger.error("setRulesAsync API failed, type={}", type, e);
+            return AsyncUtils.newFailedFuture(e);
         }
     }
 
@@ -393,7 +416,7 @@ public class SentinelApiClient {
      * @return
      */
     public List<NodeVo> fetchClusterNodeOfMachine(String ip, int port, boolean includeZero) {
-        String type = "noZero";
+        String type = "notZero";
         if (includeZero) {
             type = "zero";
         }
@@ -489,6 +512,10 @@ public class SentinelApiClient {
      */
     public boolean setFlowRuleOfMachine(String app, String ip, int port, List<FlowRuleEntity> rules) {
         return setRules(app, ip, port, FLOW_RULE_TYPE, rules);
+    }
+
+    public CompletableFuture<Void> setFlowRuleOfMachineAsync(String app, String ip, int port, List<FlowRuleEntity> rules) {
+        return setRulesAsync(app, ip, port, FLOW_RULE_TYPE, rules);
     }
 
     /**
