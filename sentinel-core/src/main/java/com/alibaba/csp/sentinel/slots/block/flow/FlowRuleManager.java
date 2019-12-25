@@ -48,16 +48,28 @@ public class FlowRuleManager {
 
     private static final Map<String, List<FlowRule>> flowRules = new ConcurrentHashMap<String, List<FlowRule>>();
 
-    private static final FlowPropertyListener LISTENER = new FlowPropertyListener();
+    private static final List<PropertyListener<List<FlowRule>>> LISTENERS = new ArrayList<>();
     private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1,
-        new NamedThreadFactory("sentinel-metrics-record-task", true));
+            new NamedThreadFactory("sentinel-metrics-record-task", true));
 
     static {
-        currentProperty.addListener(LISTENER);
+        LISTENERS.add(new FlowPropertyListener());
+        for (PropertyListener<List<FlowRule>> listener : LISTENERS) {
+            currentProperty.addListener(listener);
+        }
         SCHEDULER.scheduleAtFixedRate(new MetricTimerListener(), 0, 1, TimeUnit.SECONDS);
+    }
+
+    public static void addListener(PropertyListener<List<FlowRule>> listener) {
+        synchronized (LISTENERS) {
+            if(!LISTENERS.contains(listener)) {
+                LISTENERS.add(listener);
+                currentProperty.addListener(listener);
+            }
+        }
     }
 
     /**
@@ -68,10 +80,13 @@ public class FlowRuleManager {
      */
     public static void register2Property(SentinelProperty<List<FlowRule>> property) {
         AssertUtil.notNull(property, "property cannot be null");
-        synchronized (LISTENER) {
+        synchronized (LISTENERS) {
             RecordLog.info("[FlowRuleManager] Registering new property to flow rule manager");
-            currentProperty.removeListener(LISTENER);
-            property.addListener(LISTENER);
+
+            for (PropertyListener<List<FlowRule>> listener : LISTENERS) {
+                currentProperty.removeListener(listener);
+                property.addListener(listener);
+            }
             currentProperty = property;
         }
     }
