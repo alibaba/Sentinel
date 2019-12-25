@@ -20,13 +20,25 @@ import com.alibaba.csp.sentinel.slots.block.SentinelRpcException;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Result;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
  * @author Eric Zhao
  */
 public class DubboFallbackRegistryTest {
+
+    @Before
+    public void setUp() {
+        DubboFallbackRegistry.setConsumerFallback(new DefaultDubboFallback());
+    }
+
+    @After
+    public void tearDown() {
+        DubboFallbackRegistry.setConsumerFallback(new DefaultDubboFallback());
+    }
 
     @Test(expected = SentinelRpcException.class)
     public void testDefaultFallback() {
