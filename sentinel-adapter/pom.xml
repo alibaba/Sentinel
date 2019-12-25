@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-parent</artifactId>
-        <version>1.7.0</version>
+        <version>1.7.1</version>
     </parent>
     <artifactId>sentinel-adapter</artifactId>
     <packaging>pom</packaging>
@@ -24,6 +24,7 @@
         <module>sentinel-spring-webflux-adapter</module>
         <module>sentinel-api-gateway-adapter-common</module>
         <module>sentinel-spring-cloud-gateway-adapter</module>
+        <module>sentinel-spring-webmvc-adapter</module>
     </modules>
 
     <dependencyManagement>
