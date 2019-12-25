@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-parent</artifactId>
-        <version>1.7.1</version>
+        <version>1.7.2-SNAPSHOT</version>
     </parent>
     <artifactId>sentinel-demo</artifactId>
     <packaging>pom</packaging>
@@ -51,6 +51,13 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
                 <version>${maven.deploy.version}</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
