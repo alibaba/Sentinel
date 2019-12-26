@@ -7,7 +7,7 @@ import static com.alibaba.csp.sentinel.cluster.redis.RedisClusterTestUtil.*;
 
 public class RedisClusterTokenServiceTest {
 
-    @Test
+//    @Test
     public void testRequestTokenByRedisCluster() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
         long flowId = 100L;
         int count = 5;
