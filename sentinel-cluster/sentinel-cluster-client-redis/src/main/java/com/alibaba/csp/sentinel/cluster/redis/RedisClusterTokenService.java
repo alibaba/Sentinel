@@ -36,7 +36,7 @@ public class RedisClusterTokenService implements ClusterTokenClient {
             return new TokenResult(TokenResultStatus.NO_RULE_EXISTS);
         }
 
-        int rs = redisClient.executeLua(LuaUtil.FLOW_CHECKER_LUA, createRequestData(flowId, acquireCount));
+        int rs = redisClient.requestToken(LuaUtil.FLOW_CHECKER_LUA, createRequestData(flowId, acquireCount));
         redisClient.close();
         return new TokenResult(rs)
                 .setRemaining(0)

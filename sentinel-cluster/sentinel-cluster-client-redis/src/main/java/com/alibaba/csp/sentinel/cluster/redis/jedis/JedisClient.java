@@ -23,7 +23,7 @@ public class JedisClient implements RedisClient {
     }
 
     @Override
-    public int executeLua(String luaCode, RequestData requestData) {
+    public int requestToken(String luaCode, RequestData requestData) {
         String lua = LuaUtil.loadLuaCodeIfNeed(luaCode);
 
         String luaSha = LuaUtil.loadLuaShaIfNeed(lua, new Function<String, String>() {
@@ -50,6 +50,22 @@ public class JedisClient implements RedisClient {
         }
     }
 
+    @Override
+    public void resetFlowMetrics(Set<Long> flowIds) {
+        if(flowIds == null || flowIds.isEmpty()) {
+            return;
+        }
+
+        String[] delTokenKeys = new String[flowIds.size()];
+        int i = 0;
+        for (Long flowId : flowIds) {
+            delTokenKeys[i] = LuaUtil.toLuaParam(FLOW_CHECKER_TOKEN_KEY, flowId);
+            i++;
+        }
+        jedis.del(delTokenKeys);
+    }
+
+
     public void publishRule(FlowRule rule) {
         ClusterFlowConfig clusterFlowConfig = rule.getClusterConfig();
 
@@ -59,20 +75,27 @@ public class JedisClient implements RedisClient {
         config.put(WINDOW_LENGTH_IN_MS_KEY, String.valueOf(clusterFlowConfig.getWindowIntervalMs()/clusterFlowConfig.getSampleCount()));
         config.put(THRESHOLD_COUNT_KEY, String.valueOf(rule.getCount()));
         jedis.hset(LuaUtil.toLuaParam(FLOW_RULE_CONFIG_KEY, clusterFlowConfig.getFlowId()), config);
+        jedis.del(LuaUtil.toLuaParam(FLOW_CHECKER_TOKEN_KEY, clusterFlowConfig.getFlowId()));
     }
 
     @Override
-    public void clearRule(Set<Long> ruleIds) {
-        if(ruleIds == null || ruleIds.isEmpty()) {
+    public void clearRule(Set<Long> flowIds) {
+        if(flowIds == null || flowIds.isEmpty()) {
             return;
         }
 
-        String[] delKeys = new String[ruleIds.size()];
+        String[] delConfigKeys = new String[flowIds.size()];
+        String[] delTokenKeys = new String[flowIds.size()];
+
         int i = 0;
-        for (Long ruleId : ruleIds) {
-            delKeys[i++] = LuaUtil.toLuaParam(FLOW_RULE_CONFIG_KEY, ruleId);
+        for (Long flowId : flowIds) {
+            delConfigKeys[i] = LuaUtil.toLuaParam(FLOW_RULE_CONFIG_KEY, flowId);
+            delTokenKeys[i] = LuaUtil.toLuaParam(FLOW_CHECKER_TOKEN_KEY, flowId);
+            i++;
         }
-        jedis.del(delKeys);
+        // todo 考虑批量操作导致阻塞
+        jedis.del(delConfigKeys);
+        jedis.del(delTokenKeys);
     }
 
     @Override

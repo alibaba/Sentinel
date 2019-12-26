@@ -8,12 +8,14 @@ import java.util.Set;
 public interface RedisClient {
 
     /**
-     * execute redis lua code
+     * request token from redis
      * @param luaCode
      * @param requestData
      * @return
      */
-    int executeLua(String luaCode, RequestData requestData);
+    int requestToken(String luaCode, RequestData requestData);
+
+    void resetFlowMetrics(Set<Long> flowIds);
 
     /**
      * publish rule to redis
@@ -23,9 +25,9 @@ public interface RedisClient {
 
     /**
      * clear redis rule
-     * @param ruleIds
+     * @param flowIds
      */
-    void clearRule(Set<Long> ruleIds);
+    void clearRule(Set<Long> flowIds);
 
     /**
      * close redis client

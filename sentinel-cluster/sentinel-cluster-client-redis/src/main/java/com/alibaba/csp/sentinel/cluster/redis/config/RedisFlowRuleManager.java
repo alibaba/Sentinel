@@ -9,7 +9,6 @@ import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleUtil;
 
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +51,7 @@ public class RedisFlowRuleManager {
             return;
         }
 
+        Set<Long> resetFlowMetricsIds = new HashSet<>();
         for (FlowRule rule : flowRules) {
             if(!rule.isClusterMode()) {
                 continue;
@@ -71,8 +71,10 @@ public class RedisFlowRuleManager {
                     continue;
                 }
                 redisClient.publishRule(rule);
+                resetFlowMetricsIds.add(rule.getClusterConfig().getFlowId());
             }
         }
+        redisClient.resetFlowMetrics(resetFlowMetricsIds);
         RedisFlowRuleManager.flowRules = newRules;
     }
 

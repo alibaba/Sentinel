@@ -1,10 +1,8 @@
 package com.alibaba.csp.sentinel.cluster.redis.config;
 
-
 import java.util.ArrayList;
 import java.util.List;
-
-
+import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
@@ -30,8 +28,13 @@ public final class ClusterClientConfigManager {
     private static final List<ServerChangeObserver> SERVER_CHANGE_OBSERVERS = new ArrayList<>();
 
     static {
+        setToClient();
         bindPropertyListener();
         initServerChangeObserver();
+    }
+
+    private static void setToClient() {
+        ClusterStateManager.setToClient();
     }
 
     private static void bindPropertyListener() {

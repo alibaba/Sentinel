@@ -1,6 +1,5 @@
 package com.alibaba.csp.sentinel.cluster.redis.init;
 
-import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
 import com.alibaba.csp.sentinel.cluster.redis.config.RedisClientFactoryManager;
 import com.alibaba.csp.sentinel.cluster.redis.config.RedisFlowRuleManager;
 import com.alibaba.csp.sentinel.init.InitFunc;
@@ -12,13 +11,8 @@ public class RedisClusterClientInitFunc implements InitFunc {
 
     @Override
     public void init() throws Exception {
-        setToClient();
         initJedisClient();
         addRedisFlowRuleListener();
-    }
-
-    private void setToClient() {
-        ClusterStateManager.setToClient();
     }
 
     private void addRedisFlowRuleListener() {

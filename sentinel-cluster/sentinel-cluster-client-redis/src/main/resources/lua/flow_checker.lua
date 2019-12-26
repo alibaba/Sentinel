@@ -2,15 +2,14 @@ local redisKey = "sentinel:cluster:token:{"..KEYS[1].."}";
 local configKey = "sentinel:cluster:config:{"..KEYS[1].."}";
 local acq = tonumber(string.sub(KEYS[2], 0, #KEYS[2] - #KEYS[1] - 2));
 
+-- get config from redis
 local config = redis.call("HGETALL", configKey);
 if(config == false or config == nil)
 then
     return -2;
 end;
 
-
-
-local sampleCount,windowLengthInMs,thresholdCount;
+local sampleCount,windowLengthInMs,thresholdCount,intervalInMs;
 for i = 1, #config, 2 do
     if("sampleCount" == config[i])
     then
@@ -21,23 +20,27 @@ for i = 1, #config, 2 do
     elseif("thresholdCount" == config[i])
     then
         thresholdCount = tonumber(config[i + 1]);
+    elseif("intervalInMs" == config[i])
+    then
+        intervalInMs = tonumber(config[i + 1]);
     end
 end
 
+--calculate current bucket
 local times=redis.call('TIME');
-local index = (times[1]*1000+times[2]/1000)/windowLengthInMs;
+local bucketIdx = (times[1]*1000+times[2]/1000)/windowLengthInMs;
 
-local indexStr = string.format("%d",index);
+local bucketIdxStr = string.format("%d",bucketIdx);
 
-local count = redis.call('HGET',redisKey,indexStr);
+local isExistBucket = redis.call('HGET',redisKey,bucketIdxStr);
 
-if(count == false or count == nil)
+if(isExistBucket == false or isExistBucket == nil)
 then
-    -- 清除过期数据
+    -- delete expired bucket
     local allKeys = redis.call('HKEYS', redisKey);
     local delKeys = {};
     local dekIdx = 1;
-    local lastIndex = (index - sampleCount);
+    local lastIndex = (bucketIdx - sampleCount);
     for key, value in pairs(allKeys) do
         if(tonumber(value) <= lastIndex)
         then
@@ -52,27 +55,27 @@ then
         redis.call("HDEL", redisKey, unpack(delKeys));
     end
 
-    -- 添加新的key
-    redis.call('HSET',redisKey, indexStr, 0);
+    -- add new bucket
+    redis.call('HSET',redisKey, bucketIdxStr, 0);
 end;
 
 
--- 统计总数
+-- count bucket sum
 local datas = redis.call('HVALS', redisKey);
 local sum = 0;
 for key, value in pairs(datas) do
     sum = sum + tonumber(value);
 end
 
--- 限流判断
-count = sum / sampleCount + acq;
-if(count > thresholdCount)
+-- check qps
+local qps = sum / (intervalInMs / 1000);
+if(thresholdCount - qps < acq)
 then
     return -1;
 end
 
--- 增加次数
+-- add acq num
 redis.replicate_commands();
-redis.call('HINCRBYFLOAT',redisKey,indexStr,acq);
+redis.call('HINCRBYFLOAT',redisKey,bucketIdxStr,acq);
 
-return count;
+return 1;

@@ -22,7 +22,7 @@ public class JedisClusterClient implements RedisClient {
     }
 
     @Override
-    public int executeLua(String luaCode, RequestData requestData) {
+    public int requestToken(String luaCode, RequestData requestData) {
         final String flowId = String.valueOf(requestData.getFlowId());
 
         final String lua = LuaUtil.loadLuaCodeIfNeed(luaCode);
@@ -50,6 +50,17 @@ public class JedisClusterClient implements RedisClient {
     }
 
     @Override
+    public void resetFlowMetrics(Set<Long> flowIds) {
+        if(flowIds == null || flowIds.isEmpty()) {
+            return;
+        }
+
+        for (Long flowId : flowIds) {
+            jedisCluster.del(LuaUtil.toLuaParam(FLOW_CHECKER_TOKEN_KEY, flowId));
+        }
+    }
+
+    @Override
     public void publishRule(FlowRule rule) {
         ClusterFlowConfig clusterFlowConfig = rule.getClusterConfig();
 
@@ -69,6 +80,7 @@ public class JedisClusterClient implements RedisClient {
 
         for (Long ruleId : flowIds) {
             jedisCluster.del(LuaUtil.toLuaParam(FLOW_RULE_CONFIG_KEY, ruleId));
+            jedisCluster.del(LuaUtil.toLuaParam(FLOW_CHECKER_TOKEN_KEY, ruleId));
         }
     }
 
