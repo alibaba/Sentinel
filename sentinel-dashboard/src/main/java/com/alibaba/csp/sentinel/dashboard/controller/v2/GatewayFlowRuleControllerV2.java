@@ -19,6 +19,7 @@ package com.alibaba.csp.sentinel.dashboard.controller.v2;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayFlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayParamFlowItemEntity;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.dashboard.domain.vo.gateway.rule.AddFlowRuleReqVo;
@@ -86,9 +87,17 @@ public class GatewayFlowRuleControllerV2 {
 
         try {
             // List<GatewayFlowRuleEntity> rules = sentinelApiClient.fetchGatewayFlowRules(app, ip, port).get();
+
             List<GatewayFlowRuleEntity> rules = ruleProvider.getRules(app);
-            repository.saveAll(rules);
+            if (rules != null && !rules.isEmpty()) {
+                for (GatewayFlowRuleEntity entity : rules) {
+                    entity.setApp(app);
+
+                }
+            }
+            rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
+
         } catch (Throwable throwable) {
             logger.error("query gateway flow rules error:", throwable);
             return Result.ofThrowable(-1, throwable);
