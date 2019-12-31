@@ -9,6 +9,7 @@ import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.util.function.Function;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Pipeline;
 
 import java.util.*;
 
@@ -50,23 +51,7 @@ public class JedisClient implements RedisClient {
         }
     }
 
-    @Override
-    public void resetFlowMetrics(Set<Long> flowIds) {
-        if(flowIds == null || flowIds.isEmpty()) {
-            return;
-        }
-
-        String[] delTokenKeys = new String[flowIds.size()];
-        int i = 0;
-        for (Long flowId : flowIds) {
-            delTokenKeys[i] = LuaUtil.toLuaParam(FLOW_CHECKER_TOKEN_KEY, flowId);
-            i++;
-        }
-        jedis.del(delTokenKeys);
-    }
-
-
-    public void publishRule(FlowRule rule) {
+    public void resetFlowRule(FlowRule rule) {
         ClusterFlowConfig clusterFlowConfig = rule.getClusterConfig();
 
         Map<String, String> config = new HashMap<>();
@@ -74,8 +59,12 @@ public class JedisClient implements RedisClient {
         config.put(INTERVAL_IN_MS_KEY, String.valueOf(clusterFlowConfig.getWindowIntervalMs()));
         config.put(WINDOW_LENGTH_IN_MS_KEY, String.valueOf(clusterFlowConfig.getWindowIntervalMs()/clusterFlowConfig.getSampleCount()));
         config.put(THRESHOLD_COUNT_KEY, String.valueOf(rule.getCount()));
-        jedis.hset(LuaUtil.toLuaParam(FLOW_RULE_CONFIG_KEY, clusterFlowConfig.getFlowId()), config);
-        jedis.del(LuaUtil.toLuaParam(FLOW_CHECKER_TOKEN_KEY, clusterFlowConfig.getFlowId()));
+
+        Pipeline pipeline = jedis.pipelined();
+        pipeline.hset(LuaUtil.toLuaParam(FLOW_RULE_CONFIG_KEY, clusterFlowConfig.getFlowId()), config);
+        pipeline.del(LuaUtil.toLuaParam(FLOW_CHECKER_TOKEN_KEY, clusterFlowConfig.getFlowId()));
+        pipeline.sync();
+        pipeline.close();
     }
 
     @Override

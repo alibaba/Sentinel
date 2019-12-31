@@ -52,7 +52,7 @@ public class RedisClusterTokenService implements ClusterTokenClient {
 
     @Override
     public TokenResult requestParamToken(Long aLong, int i, Collection<Object> collection) {
-        return null;
+        throw new UnsupportedOperationException("RedisClusterTokenService cannot supported request param token now");
     }
 
 

@@ -3,29 +3,41 @@ package com.alibaba.csp.sentinel.cluster.redis.config;
 import com.alibaba.csp.sentinel.cluster.redis.RedisClient;
 import com.alibaba.csp.sentinel.cluster.redis.RedisClientFactory;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
+import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleUtil;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RedisFlowRuleManager {
     public static volatile boolean publishRuleToRedis = true;
-    private static Map<Long, FlowRule> flowRules = new ConcurrentHashMap();
-    private static final RedisFlowPropertyListener LISTENER = new RedisFlowPropertyListener();
 
-    public static void addRedisFlowRuleListener() {
-        FlowRuleManager.addListener(LISTENER);
+    private static final Map<String, List<FlowRule>> flowRules = new ConcurrentHashMap<String, List<FlowRule>>();
+    private static Map<Long, FlowRule> flowIdToRules = new ConcurrentHashMap();
+    private static final RedisFlowPropertyListener LISTENER = new RedisFlowPropertyListener();
+    private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
+
+    static {
+        currentProperty.addListener(LISTENER);
     }
 
-    public static FlowRule getFlowRule(long flowId) {
-        return flowRules.get(flowId);
+    public static void register2Property(SentinelProperty<List<FlowRule>> property) {
+        AssertUtil.notNull(property, "property cannot be null");
+        synchronized (LISTENER) {
+            RecordLog.info("[FlowRuleManager] Registering new property to flow rule manager");
+            currentProperty.removeListener(LISTENER);
+            property.addListener(LISTENER);
+            currentProperty = property;
+        }
+    }
+
+    public static void loadRules(List<FlowRule> rules) {
+        currentProperty.updateValue(rules);
     }
 
     private static void updateRule(List<FlowRule> flowRules) {
@@ -36,7 +48,7 @@ public class RedisFlowRuleManager {
             return;
         }
 
-        Map<Long, FlowRule> oldRules = RedisFlowRuleManager.flowRules;
+        Map<Long, FlowRule> oldRules = RedisFlowRuleManager.flowIdToRules;
         RedisClient redisClient = factory.getClient();
         publishFlowRule(flowRules, oldRules, redisClient);
         clearFlowRule(oldRules, redisClient);
@@ -44,15 +56,15 @@ public class RedisFlowRuleManager {
         redisClient.close();
     }
 
-    private static void publishFlowRule(List<FlowRule> flowRules, Map<Long, FlowRule> oldRules, RedisClient redisClient) {
-        Map<Long, FlowRule> newRules = new ConcurrentHashMap();
-        if(flowRules == null) {
-            RedisFlowRuleManager.flowRules = newRules;
+    private static void publishFlowRule(List<FlowRule> confRule, Map<Long, FlowRule> oldRules, RedisClient redisClient) {
+        RedisFlowRuleManager.flowIdToRules = new ConcurrentHashMap<>();
+        RedisFlowRuleManager.flowRules.clear();
+
+        if(confRule == null) {
             return;
         }
 
-        Set<Long> resetFlowMetricsIds = new HashSet<>();
-        for (FlowRule rule : flowRules) {
+        for (FlowRule rule : confRule) {
             if(!rule.isClusterMode()) {
                 continue;
             }
@@ -62,7 +74,7 @@ public class RedisFlowRuleManager {
                 continue;
             }
 
-            newRules.put(rule.getClusterConfig().getFlowId(), rule);
+            RedisFlowRuleManager.flowIdToRules.put(rule.getClusterConfig().getFlowId(), rule);
             if(RedisFlowRuleManager.publishRuleToRedis) {
                 FlowRule existRule = oldRules.get(rule.getClusterConfig().getFlowId());
                 if (existRule != null && !isChangeRule(existRule, rule)) {
@@ -70,18 +82,18 @@ public class RedisFlowRuleManager {
                             "[RedisFlowRuleManager] not publish to redis on same flow rule: " + rule);
                     continue;
                 }
-                redisClient.publishRule(rule);
-                resetFlowMetricsIds.add(rule.getClusterConfig().getFlowId());
+                redisClient.resetFlowRule(rule);
             }
         }
-        redisClient.resetFlowMetrics(resetFlowMetricsIds);
-        RedisFlowRuleManager.flowRules = newRules;
+
+        Map<String, List<FlowRule>> rules = FlowRuleUtil.buildFlowRuleMap(new ArrayList<>(RedisFlowRuleManager.flowIdToRules.values()));
+        RedisFlowRuleManager.flowRules.putAll(rules);
     }
 
     private static void clearFlowRule(Map<Long, FlowRule> oldRules, RedisClient redisClient) {
         Set<Long> deleteFlowIds = new HashSet<>();
         for (Map.Entry<Long, FlowRule> oldRuleEntry : oldRules.entrySet()) {
-            if(!RedisFlowRuleManager.flowRules.containsKey(oldRuleEntry.getKey())) {
+            if(!RedisFlowRuleManager.flowIdToRules.containsKey(oldRuleEntry.getKey())) {
                 deleteFlowIds.add(oldRuleEntry.getKey());
             }
         }
@@ -96,6 +108,14 @@ public class RedisFlowRuleManager {
                 || oldClusterConfig.getSampleCount() != newClusterConfig.getSampleCount()
                 || oldClusterConfig.getWindowIntervalMs() != newClusterConfig.getWindowIntervalMs()
                 || Double.doubleToLongBits(oldRule.getCount()) != Double.doubleToLongBits(newRule.getCount());
+    }
+
+    public static FlowRule getFlowRule(long flowId) {
+        return flowIdToRules.get(flowId);
+    }
+
+    public static Map<String, List<FlowRule>> getFlowRuleMap() {
+        return flowRules;
     }
 
     private static final class RedisFlowPropertyListener implements PropertyListener<List<FlowRule>> {

@@ -9,10 +9,6 @@ import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 
-/**
- * @author Eric Zhao
- * @since 1.4.0
- */
 public final class ClusterClientConfigManager {
 
     /**
@@ -115,8 +111,8 @@ public final class ClusterClientConfigManager {
             return false;
         }
 
-        if(!ClusterClientConfig.validDistributedType.contains(config.getDistributedType())
-            || (config.getDistributedType() == ClusterClientConfig.getRedisDistributedSentinel() && config.getMasterName() == null)
+        if(!ClusterClientConfig.validDistributedType.contains(config.getClusterType())
+            || (config.getClusterType() == ClusterClientConfig.getRedisSentinel() && config.getMasterName() == null)
             || config.getHostAndPorts() == null || config.getHostAndPorts().isEmpty()) {
             return false;
         }

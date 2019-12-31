@@ -15,13 +15,11 @@ public interface RedisClient {
      */
     int requestToken(String luaCode, RequestData requestData);
 
-    void resetFlowMetrics(Set<Long> flowIds);
-
     /**
-     * publish rule to redis
+     * reset rule(public rule and clear flow metrics)
      * @param rule
      */
-    void publishRule(FlowRule rule);
+    void resetFlowRule(FlowRule rule);
 
     /**
      * clear redis rule

@@ -2,15 +2,11 @@ package com.alibaba.csp.sentinel.cluster.redis;
 
 import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
-import com.alibaba.csp.sentinel.cluster.redis.config.ClusterClientConfig;
-import com.alibaba.csp.sentinel.cluster.redis.config.ClusterClientConfigManager;
-import com.alibaba.csp.sentinel.cluster.redis.config.HostAndPort;
-import com.alibaba.csp.sentinel.cluster.redis.config.RedisClientFactoryManager;
+import com.alibaba.csp.sentinel.cluster.redis.config.*;
 import com.alibaba.csp.sentinel.cluster.redis.jedis.JedisClusterClientFactory;
 import com.alibaba.csp.sentinel.cluster.redis.util.ClientConstants;
 import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import redis.clients.jedis.JedisCluster;
 
 import java.lang.reflect.Field;
@@ -44,7 +40,7 @@ public class RedisClusterTestUtil {
                 .setCount(count)
                 .setClusterMode(true)
                 .setClusterConfig(new ClusterFlowConfig().setFlowId(flowId).setSampleCount(sampleCount).setWindowIntervalMs(windowIntervalMs)));
-        FlowRuleManager.loadRules(rules);
+        RedisFlowRuleManager.loadRules(rules);
     }
 
     private static volatile JedisCluster jedisCluster;

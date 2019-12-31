@@ -52,14 +52,14 @@ public class RedisClientFactoryManager implements ServerChangeObserver{
 
         LuaUtil.resetLuaSha();
         if(clientType == JEDIS_CLIENT) {
-            if(clientConfig.getDistributedType() == ClusterClientConfig.REDIS_DISTRIBUTED_CLUSTER) {
+            if(clientConfig.getClusterType() == ClusterClientConfig.REDIS_CLUSTER) {
                 factory = new JedisClusterClientFactory(clientConfig);
-            } else if(clientConfig.getDistributedType() == ClusterClientConfig.REDIS_DISTRIBUTED_SINGLE) {
+            } else if(clientConfig.getClusterType() == ClusterClientConfig.REDIS_SINGLE) {
                 factory = new JedisClientFactory(clientConfig);
-            } else if(clientConfig.getDistributedType() == ClusterClientConfig.REDIS_DISTRIBUTED_SENTINEL) {
+            } else if(clientConfig.getClusterType() == ClusterClientConfig.REDIS_SENTINEL) {
                 factory = new JedisSentinelFactory(clientConfig);
             } else {
-                throw new IllegalArgumentException("cannot init process redis distributed type:" + clientConfig.getDistributedType());
+                throw new IllegalArgumentException("cannot init process redis distributed type:" + clientConfig.getClusterType());
             }
         } else if(clientType == LETTUCE_CLIENT) {
             // todo

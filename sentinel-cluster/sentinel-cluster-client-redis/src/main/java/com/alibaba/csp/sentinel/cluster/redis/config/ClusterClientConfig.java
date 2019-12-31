@@ -5,12 +5,12 @@ import com.alibaba.csp.sentinel.cluster.redis.util.ClientConstants;
 import java.util.*;
 
 public class ClusterClientConfig {
-    public static final int REDIS_DISTRIBUTED_SINGLE = 1;
-    public static final int REDIS_DISTRIBUTED_SENTINEL = 2;
-    public static final int REDIS_DISTRIBUTED_CLUSTER = 3;
+    public static final int REDIS_SINGLE = 1;
+    public static final int REDIS_SENTINEL = 2;
+    public static final int REDIS_CLUSTER = 3;
     public static final Set<Integer> validDistributedType
-            = new HashSet<>(Arrays.asList(REDIS_DISTRIBUTED_SINGLE, REDIS_DISTRIBUTED_SENTINEL, REDIS_DISTRIBUTED_CLUSTER));
-    public int distributedType;
+            = new HashSet<>(Arrays.asList(REDIS_SINGLE, REDIS_SENTINEL, REDIS_CLUSTER));
+    public int clusterType;
     private String masterName;
     public List<HostAndPort> hostAndPorts;
 
@@ -27,7 +27,7 @@ public class ClusterClientConfig {
         List<HostAndPort> hostAndPorts = new ArrayList<>();
         hostAndPorts.add(hostAndPort);
         config.hostAndPorts = hostAndPorts;
-        config.distributedType = REDIS_DISTRIBUTED_SINGLE;
+        config.clusterType = REDIS_SINGLE;
         return config;
     }
 
@@ -35,14 +35,14 @@ public class ClusterClientConfig {
         ClusterClientConfig config = new ClusterClientConfig();
         config.hostAndPorts = hostAndPorts;
         config.masterName = masterName;
-        config.distributedType = REDIS_DISTRIBUTED_SENTINEL;
+        config.clusterType = REDIS_SENTINEL;
         return  config;
     }
 
     public static ClusterClientConfig ofCluster(List<HostAndPort> hostAndPorts) {
         ClusterClientConfig config = new ClusterClientConfig();
         config.hostAndPorts = hostAndPorts;
-        config.distributedType = REDIS_DISTRIBUTED_CLUSTER;
+        config.clusterType = REDIS_CLUSTER;
         return  config;
     }
 
@@ -91,20 +91,20 @@ public class ClusterClientConfig {
         return this;
     }
 
-    public static int getRedisDistributedSingle() {
-        return REDIS_DISTRIBUTED_SINGLE;
+    public static int getRedisSingle() {
+        return REDIS_SINGLE;
     }
 
-    public static int getRedisDistributedSentinel() {
-        return REDIS_DISTRIBUTED_SENTINEL;
+    public static int getRedisSentinel() {
+        return REDIS_SENTINEL;
     }
 
-    public static int getRedisDistributedCluster() {
-        return REDIS_DISTRIBUTED_CLUSTER;
+    public static int getRedisCluster() {
+        return REDIS_CLUSTER;
     }
 
-    public int getDistributedType() {
-        return distributedType;
+    public int getClusterType() {
+        return clusterType;
     }
 
     public List<HostAndPort> getHostAndPorts() {

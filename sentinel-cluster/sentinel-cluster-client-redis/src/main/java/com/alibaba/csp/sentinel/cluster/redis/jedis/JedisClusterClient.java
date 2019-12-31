@@ -50,18 +50,7 @@ public class JedisClusterClient implements RedisClient {
     }
 
     @Override
-    public void resetFlowMetrics(Set<Long> flowIds) {
-        if(flowIds == null || flowIds.isEmpty()) {
-            return;
-        }
-
-        for (Long flowId : flowIds) {
-            jedisCluster.del(LuaUtil.toLuaParam(FLOW_CHECKER_TOKEN_KEY, flowId));
-        }
-    }
-
-    @Override
-    public void publishRule(FlowRule rule) {
+    public void resetFlowRule(FlowRule rule) {
         ClusterFlowConfig clusterFlowConfig = rule.getClusterConfig();
 
         Map<String, String> config = new HashMap<>();
@@ -69,7 +58,10 @@ public class JedisClusterClient implements RedisClient {
         config.put(INTERVAL_IN_MS_KEY, String.valueOf(clusterFlowConfig.getWindowIntervalMs()));
         config.put(WINDOW_LENGTH_IN_MS_KEY, String.valueOf(clusterFlowConfig.getWindowIntervalMs()/clusterFlowConfig.getSampleCount()));
         config.put(THRESHOLD_COUNT_KEY, String.valueOf(rule.getCount()));
+
+        // jedisCluster not support pipeline
         jedisCluster.hset(LuaUtil.toLuaParam(FLOW_RULE_CONFIG_KEY, clusterFlowConfig.getFlowId()), config);
+        jedisCluster.del(LuaUtil.toLuaParam(FLOW_CHECKER_TOKEN_KEY, clusterFlowConfig.getFlowId()));
     }
 
     @Override
