@@ -98,7 +98,7 @@ public class MetricFetcher {
     public MetricFetcher() {
         int cores = Runtime.getRuntime().availableProcessors() * 2;
         long keepAliveTime = 0;
-        int queueSize = 2048;
+        int queueSize = 4096;
         RejectedExecutionHandler handler = new DiscardPolicy();
         fetchService = new ThreadPoolExecutor(cores, cores,
             keepAliveTime, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(queueSize),
