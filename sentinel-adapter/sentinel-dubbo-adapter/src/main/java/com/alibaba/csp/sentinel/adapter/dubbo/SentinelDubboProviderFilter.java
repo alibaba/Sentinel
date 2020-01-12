@@ -32,6 +32,8 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
 
+import static com.alibaba.dubbo.common.Constants.PROVIDER;
+
 /**
  * <p>Dubbo service provider filter for Sentinel. Auto activated by default.</p>
  *
@@ -43,7 +45,7 @@ import com.alibaba.dubbo.rpc.RpcException;
  * @author leyou
  * @author Eric Zhao
  */
-@Activate(group = "provider")
+@Activate(group = PROVIDER)
 public class SentinelDubboProviderFilter extends AbstractDubboFilter implements Filter {
 
     public SentinelDubboProviderFilter() {
