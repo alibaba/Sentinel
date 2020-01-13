@@ -32,6 +32,8 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
+
 /**
  * <p>Dubbo service consumer filter for Sentinel. Auto activated by default.</p>
  * <p>
@@ -43,7 +45,7 @@ import org.apache.dubbo.rpc.support.RpcUtils;
  * @author Carpenter Lee
  * @author Eric Zhao
  */
-@Activate(group = "consumer")
+@Activate(group = CONSUMER)
 public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
 
     public SentinelDubboConsumerFilter() {
