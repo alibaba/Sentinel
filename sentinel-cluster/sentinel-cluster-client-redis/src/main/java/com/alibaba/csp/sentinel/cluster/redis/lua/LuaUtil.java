@@ -11,6 +11,13 @@ public class LuaUtil {
     private static Map<String, String> luaCodeMapper = new HashMap<>();
     private static Map<String, String> luaShaMapper;
 
+    // need reset lua sha when rebuild redis client
+    public static void resetLuaSha() {
+        synchronized (LuaUtil.class) {
+            luaShaMapper = new HashMap<>();
+        }
+    }
+
     public static String loadLuaCodeIfNeed(String luaSign) {
         String lua = luaCodeMapper.get(luaSign);
         if(lua == null) {
@@ -35,12 +42,6 @@ public class LuaUtil {
             return out.toString();
         } catch (Exception e) {
             throw new IllegalArgumentException("cannot load luaCode:" + luaId,e);
-        }
-    }
-
-    public static void resetLuaSha() {
-        synchronized (LuaUtil.class) {
-            luaShaMapper = new HashMap<>();
         }
     }
 

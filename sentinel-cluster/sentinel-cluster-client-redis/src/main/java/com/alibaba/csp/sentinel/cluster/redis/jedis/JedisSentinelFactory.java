@@ -14,7 +14,7 @@ public class JedisSentinelFactory  implements RedisClientFactory {
     private JedisSentinelPool sentinelPool;
 
     public JedisSentinelFactory(ClusterClientConfig clientConfig) {
-        Set sentinelNodes = new HashSet();
+        Set<String> sentinelNodes = new HashSet<String>();
         for (HostAndPort hostAndPort : clientConfig.getHostAndPorts()) {
             sentinelNodes.add(new redis.clients.jedis.HostAndPort(hostAndPort.getHostText(), hostAndPort.getPort()).toString());
         }

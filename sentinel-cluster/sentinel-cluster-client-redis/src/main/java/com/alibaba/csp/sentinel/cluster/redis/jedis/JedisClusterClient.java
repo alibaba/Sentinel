@@ -22,26 +22,24 @@ public class JedisClusterClient implements RedisClient {
     }
 
     @Override
-    public int requestToken(String luaCode, RequestData requestData) {
+    public int requestToken(String luaId, RequestData requestData) {
         final String flowId = String.valueOf(requestData.getFlowId());
 
-        final String lua = LuaUtil.loadLuaCodeIfNeed(luaCode);
-
-        int slot = JedisClusterCRC16.getSlot(flowId);  // positioning slots by flowId
-        String luaSha = LuaUtil.loadLuaShaIfNeed(slot + lua, new Function<String, String>() {
+        final String luaCode = LuaUtil.loadLuaCodeIfNeed(luaId);
+        String luaSha = LuaUtil.loadLuaShaIfNeed(JedisClusterCRC16.getSlot(flowId) + luaCode, new Function<String, String>() {
             public String apply(String s) {
-                return jedisCluster.scriptLoad(lua, flowId);
+                return jedisCluster.scriptLoad(luaCode, flowId);
             }
         });
 
-        Object o = jedisCluster.evalsha(luaSha, Arrays.asList(
+        Object evalResult = jedisCluster.evalsha(luaSha, Arrays.asList(
                 flowId,
                 LuaUtil.toLuaParam(requestData.getAcquireCount(), flowId)
         ), new ArrayList<String>());
-        if(o == null) {
+        if(evalResult == null) {
             return TokenResultStatus.FAIL;
         } else {
-            if(Integer.parseInt(o.toString()) > 0) {
+            if(Integer.parseInt(evalResult.toString()) > 0) {
                 return TokenResultStatus.OK;
             } else {
                 return TokenResultStatus.BLOCKED;
@@ -50,7 +48,7 @@ public class JedisClusterClient implements RedisClient {
     }
 
     @Override
-    public void resetFlowRule(FlowRule rule) {
+    public void resetRedisRuleAndMetrics(FlowRule rule) {
         ClusterFlowConfig clusterFlowConfig = rule.getClusterConfig();
 
         Map<String, String> config = new HashMap<>();
@@ -65,7 +63,7 @@ public class JedisClusterClient implements RedisClient {
     }
 
     @Override
-    public void clearRule(Set<Long> flowIds) {
+    public void clearRuleAndMetrics(Set<Long> flowIds) {
         if(flowIds == null || flowIds.isEmpty()) {
             return;
         }

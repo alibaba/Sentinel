@@ -70,6 +70,8 @@ public final class SlotChainProvider {
         }
 
         for (SlotChainExtender extender : slotChainExtenders) {
+            RecordLog.info("[SlotChainProvider] slot chain extender resolved: "
+                    + extender.getClass().getCanonicalName());
             slotChain = extender.extend(slotChain);
         }
         return slotChain;

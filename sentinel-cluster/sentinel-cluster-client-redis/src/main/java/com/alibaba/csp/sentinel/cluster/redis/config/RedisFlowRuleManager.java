@@ -17,8 +17,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RedisFlowRuleManager {
     public static volatile boolean publishRuleToRedis = true;
 
-    private static final Map<String, List<FlowRule>> flowRules = new ConcurrentHashMap<String, List<FlowRule>>();
-    private static Map<Long, FlowRule> flowIdToRules = new ConcurrentHashMap();
+    private static Map<String, List<FlowRule>> flowRules = new HashMap<String, List<FlowRule>>();
+    private static Map<Long, FlowRule> flowIdToRule = new HashMap();
     private static final RedisFlowPropertyListener LISTENER = new RedisFlowPropertyListener();
     private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
 
@@ -40,7 +40,7 @@ public class RedisFlowRuleManager {
         currentProperty.updateValue(rules);
     }
 
-    private static void updateRule(List<FlowRule> flowRules) {
+    private static void updateRule(List<FlowRule> confRules) {
         RedisClientFactory factory = RedisClientFactoryManager.getFactory();
         if (factory == null) {
             RecordLog.warn(
@@ -48,21 +48,19 @@ public class RedisFlowRuleManager {
             return;
         }
 
-        Map<Long, FlowRule> oldRules = RedisFlowRuleManager.flowIdToRules;
         RedisClient redisClient = factory.getClient();
-        publishFlowRule(flowRules, oldRules, redisClient);
-        clearFlowRule(oldRules, redisClient);
+
+        confRules = confRules == null ? new ArrayList<FlowRule>() : confRules;
+        Map<Long, FlowRule> oldRules = RedisFlowRuleManager.flowIdToRule;
+        updateLocaleRule(confRules);
+        resetRedisRuleAndMetrics(oldRules, redisClient);
+        clearInvalidRuleAndMetrics(oldRules, redisClient);
 
         redisClient.close();
     }
 
-    private static void publishFlowRule(List<FlowRule> confRule, Map<Long, FlowRule> oldRules, RedisClient redisClient) {
-        RedisFlowRuleManager.flowIdToRules = new ConcurrentHashMap<>();
-        RedisFlowRuleManager.flowRules.clear();
-
-        if(confRule == null) {
-            return;
-        }
+    private static void updateLocaleRule(List<FlowRule> confRule) {
+        RedisFlowRuleManager.flowIdToRule = new ConcurrentHashMap<>();
 
         for (FlowRule rule : confRule) {
             if(!rule.isClusterMode()) {
@@ -74,30 +72,36 @@ public class RedisFlowRuleManager {
                 continue;
             }
 
-            RedisFlowRuleManager.flowIdToRules.put(rule.getClusterConfig().getFlowId(), rule);
-            if(RedisFlowRuleManager.publishRuleToRedis) {
-                FlowRule existRule = oldRules.get(rule.getClusterConfig().getFlowId());
-                if (existRule != null && !isChangeRule(existRule, rule)) {
-                    RecordLog.warn(
-                            "[RedisFlowRuleManager] not publish to redis on same flow rule: " + rule);
-                    continue;
-                }
-                redisClient.resetFlowRule(rule);
-            }
+            RedisFlowRuleManager.flowIdToRule.put(rule.getClusterConfig().getFlowId(), rule);
         }
 
-        Map<String, List<FlowRule>> rules = FlowRuleUtil.buildFlowRuleMap(new ArrayList<>(RedisFlowRuleManager.flowIdToRules.values()));
-        RedisFlowRuleManager.flowRules.putAll(rules);
+        RedisFlowRuleManager.flowRules = FlowRuleUtil.buildFlowRuleMap(new ArrayList<FlowRule>(RedisFlowRuleManager.flowIdToRule.values()));
     }
 
-    private static void clearFlowRule(Map<Long, FlowRule> oldRules, RedisClient redisClient) {
+    private static void resetRedisRuleAndMetrics(Map<Long, FlowRule> oldRules, RedisClient redisClient) {
+        if(!RedisFlowRuleManager.publishRuleToRedis) {
+            return ;
+        }
+
+        for (FlowRule rule : RedisFlowRuleManager.flowIdToRule.values()) {
+            FlowRule existRule = oldRules.get(rule.getClusterConfig().getFlowId());
+            if (existRule != null && !isChangeRule(existRule, rule)) {
+                RecordLog.warn(
+                        "[RedisFlowRuleManager] would not publish to redis on same flow rule: " + rule);
+                continue;
+            }
+            redisClient.resetRedisRuleAndMetrics(rule);
+        }
+    }
+
+    private static void clearInvalidRuleAndMetrics(Map<Long, FlowRule> oldRules, RedisClient redisClient) {
         Set<Long> deleteFlowIds = new HashSet<>();
         for (Map.Entry<Long, FlowRule> oldRuleEntry : oldRules.entrySet()) {
-            if(!RedisFlowRuleManager.flowIdToRules.containsKey(oldRuleEntry.getKey())) {
+            if(!RedisFlowRuleManager.flowIdToRule.containsKey(oldRuleEntry.getKey())) {
                 deleteFlowIds.add(oldRuleEntry.getKey());
             }
         }
-        redisClient.clearRule(deleteFlowIds);
+        redisClient.clearRuleAndMetrics(deleteFlowIds);
     }
 
     private static boolean isChangeRule(FlowRule oldRule, FlowRule newRule) {
@@ -111,7 +115,7 @@ public class RedisFlowRuleManager {
     }
 
     public static FlowRule getFlowRule(long flowId) {
-        return flowIdToRules.get(flowId);
+        return flowIdToRule.get(flowId);
     }
 
     public static Map<String, List<FlowRule>> getFlowRuleMap() {

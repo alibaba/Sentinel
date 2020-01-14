@@ -9,7 +9,7 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 public class RedisClusterClientInitFunc implements InitFunc {
 
     @Override
-    public void init() throws Exception {
+    public void init() {
         initJedisClient();
     }
 

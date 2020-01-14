@@ -3,11 +3,11 @@ package com.alibaba.csp.sentinel.cluster.redis.flow;
 import com.alibaba.csp.sentinel.cluster.redis.RedisClusterTokenService;
 import org.junit.Test;
 
-import static com.alibaba.csp.sentinel.cluster.redis.RedisClusterTestUtil.*;
 import static com.alibaba.csp.sentinel.cluster.redis.RedisFlowTestUtil.assertResultBlock;
 import static com.alibaba.csp.sentinel.cluster.redis.RedisFlowTestUtil.assertResultPass;
+import static com.alibaba.csp.sentinel.cluster.redis.RedisSingleTestUtil.*;
 
-public class RedisClusterTokenServiceTest {
+public class RedisClusterTokenServiceInSingleTest {
 
 //    @Test
     public void testRequestTokenByRedisCluster() throws InterruptedException, NoSuchFieldException, IllegalAccessException {

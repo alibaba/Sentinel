@@ -69,14 +69,6 @@ public class RedisClusterTestUtil {
     }
 
 
-    public static void assertResultPass(TokenResult result) {
-        assertNotNull(result);
-        assertEquals(TokenResultStatus.OK, (int) result.getStatus());
-    }
 
-    public static void assertResultBlock(TokenResult result) {
-        assertNotNull(result);
-        assertEquals(TokenResultStatus.BLOCKED, (int) result.getStatus());
-    }
 
 }

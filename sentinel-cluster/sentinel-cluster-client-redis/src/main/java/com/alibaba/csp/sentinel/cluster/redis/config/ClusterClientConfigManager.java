@@ -59,14 +59,11 @@ public final class ClusterClientConfigManager {
 
     public static void addServerChangeObserver(ServerChangeObserver observer) {
         AssertUtil.notNull(observer, "observer cannot be null");
-        SERVER_CHANGE_OBSERVERS.add(observer);
+        synchronized (SERVER_CHANGE_OBSERVERS) {
+            SERVER_CHANGE_OBSERVERS.add(observer);
+        }
     }
 
-    /**
-     * Apply new {@link ClusterClientConfig}, while the former assignConfig will be replaced.
-     *
-     * @param config new assignConfig to apply
-     */
     public static void applyNewConfig(ClusterClientConfig config) {
         clientConfigProperty.updateValue(config);
     }
@@ -111,7 +108,7 @@ public final class ClusterClientConfigManager {
             return false;
         }
 
-        if(!ClusterClientConfig.validDistributedType.contains(config.getClusterType())
+        if(!ClusterClientConfig.validClusterType.contains(config.getClusterType())
             || (config.getClusterType() == ClusterClientConfig.getRedisSentinel() && config.getMasterName() == null)
             || config.getHostAndPorts() == null || config.getHostAndPorts().isEmpty()) {
             return false;

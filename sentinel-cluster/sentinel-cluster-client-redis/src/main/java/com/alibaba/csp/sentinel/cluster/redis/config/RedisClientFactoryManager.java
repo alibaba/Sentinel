@@ -5,6 +5,7 @@ import com.alibaba.csp.sentinel.cluster.redis.jedis.JedisClientFactory;
 import com.alibaba.csp.sentinel.cluster.redis.jedis.JedisClusterClientFactory;
 import com.alibaba.csp.sentinel.cluster.redis.jedis.JedisSentinelFactory;
 import com.alibaba.csp.sentinel.cluster.redis.lua.LuaUtil;
+import com.alibaba.csp.sentinel.log.RecordLog;
 
 public class RedisClientFactoryManager implements ServerChangeObserver{
     public static final int JEDIS_CLIENT = 1;
@@ -43,6 +44,7 @@ public class RedisClientFactoryManager implements ServerChangeObserver{
 
     private static void rebuildClientFactory() {
         if(clientType == UNKNOWN_CLIENT || clientConfig == null) {
+            RecordLog.info("[RedisClientFactoryManager] cannot build client factory, clientType: " + clientType + ", clientConfig:" + clientConfig);
             return;
         }
 

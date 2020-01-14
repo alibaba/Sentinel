@@ -8,7 +8,7 @@ public class ClusterClientConfig {
     public static final int REDIS_SINGLE = 1;
     public static final int REDIS_SENTINEL = 2;
     public static final int REDIS_CLUSTER = 3;
-    public static final Set<Integer> validDistributedType
+    public static final Set<Integer> validClusterType
             = new HashSet<>(Arrays.asList(REDIS_SINGLE, REDIS_SENTINEL, REDIS_CLUSTER));
     public int clusterType;
     private String masterName;
@@ -131,5 +131,22 @@ public class ClusterClientConfig {
     public ClusterClientConfig setMaxAttempts(Integer maxAttempts) {
         this.maxAttempts = maxAttempts;
         return this;
+    }
+
+
+    @Override
+    public String toString() {
+        return "ClusterClientConfig{" +
+                "clusterType=" + clusterType +
+                ", masterName='" + masterName + '\'' +
+                ", hostAndPorts=" + hostAndPorts +
+                ", maxWaitMillis=" + maxWaitMillis +
+                ", maxActive=" + maxActive +
+                ", maxIdle=" + maxIdle +
+                ", minIdle=" + minIdle +
+                ", connectTimeout=" + connectTimeout +
+                ", maxAttempts=" + maxAttempts +
+                ", password='" + password + '\'' +
+                '}';
     }
 }

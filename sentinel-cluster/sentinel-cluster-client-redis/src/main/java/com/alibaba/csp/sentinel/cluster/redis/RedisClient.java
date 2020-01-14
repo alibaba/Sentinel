@@ -19,13 +19,13 @@ public interface RedisClient {
      * reset rule(public rule and clear flow metrics)
      * @param rule
      */
-    void resetFlowRule(FlowRule rule);
+    void resetRedisRuleAndMetrics(FlowRule rule);
 
     /**
      * clear redis rule
      * @param flowIds
      */
-    void clearRule(Set<Long> flowIds);
+    void clearRuleAndMetrics(Set<Long> flowIds);
 
     /**
      * close redis client

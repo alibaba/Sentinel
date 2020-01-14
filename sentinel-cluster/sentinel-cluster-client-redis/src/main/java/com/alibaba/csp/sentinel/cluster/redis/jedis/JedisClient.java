@@ -24,20 +24,18 @@ public class JedisClient implements RedisClient {
     }
 
     @Override
-    public int requestToken(String luaCode, RequestData requestData) {
-        String lua = LuaUtil.loadLuaCodeIfNeed(luaCode);
-
-        String luaSha = LuaUtil.loadLuaShaIfNeed(lua, new Function<String, String>() {
+    public int requestToken(String luaId, RequestData requestData) {
+        String luaCode = LuaUtil.loadLuaCodeIfNeed(luaId);
+        String luaSha = LuaUtil.loadLuaShaIfNeed(luaCode, new Function<String, String>() {
             public String apply(String s) {
                 return jedis.scriptLoad(s);
             }
         });
 
-        String key = String.valueOf(requestData.getFlowId());
-
+        String flowId = String.valueOf(requestData.getFlowId());
         Object evalResult = jedis.evalsha(luaSha, Arrays.asList(
-                key,
-                LuaUtil.toLuaParam(requestData.getAcquireCount(), key)
+                flowId,
+                LuaUtil.toLuaParam(requestData.getAcquireCount(), flowId)
         ), new ArrayList<String>());
 
         if(evalResult == null) {
@@ -51,7 +49,7 @@ public class JedisClient implements RedisClient {
         }
     }
 
-    public void resetFlowRule(FlowRule rule) {
+    public void resetRedisRuleAndMetrics(FlowRule rule) {
         ClusterFlowConfig clusterFlowConfig = rule.getClusterConfig();
 
         Map<String, String> config = new HashMap<>();
@@ -68,7 +66,7 @@ public class JedisClient implements RedisClient {
     }
 
     @Override
-    public void clearRule(Set<Long> flowIds) {
+    public void clearRuleAndMetrics(Set<Long> flowIds) {
         if(flowIds == null || flowIds.isEmpty()) {
             return;
         }
