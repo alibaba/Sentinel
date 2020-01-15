@@ -15,6 +15,14 @@
  */
 package com.alibaba.csp.sentinel.transport.command.http;
 
+import com.alibaba.csp.sentinel.command.CommandHandler;
+import com.alibaba.csp.sentinel.command.CommandRequest;
+import com.alibaba.csp.sentinel.command.CommandResponse;
+import com.alibaba.csp.sentinel.config.SentinelConfig;
+import com.alibaba.csp.sentinel.log.CommandCenterLog;
+import com.alibaba.csp.sentinel.transport.command.SimpleHttpCommandCenter;
+import com.alibaba.csp.sentinel.transport.util.HttpCommandUtils;
+import com.alibaba.csp.sentinel.util.StringUtil;
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
@@ -28,14 +36,6 @@ import java.net.Socket;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 
-import com.alibaba.csp.sentinel.command.CommandHandler;
-import com.alibaba.csp.sentinel.command.CommandRequest;
-import com.alibaba.csp.sentinel.command.CommandResponse;
-import com.alibaba.csp.sentinel.config.SentinelConfig;
-import com.alibaba.csp.sentinel.log.CommandCenterLog;
-import com.alibaba.csp.sentinel.transport.command.SimpleHttpCommandCenter;
-import com.alibaba.csp.sentinel.transport.util.HttpCommandUtils;
-import com.alibaba.csp.sentinel.util.StringUtil;
 
 /***
  * The task handles incoming command request in HTTP protocol.
@@ -293,7 +293,9 @@ public class HttpEventTask implements Runnable {
     }
     
     protected static void parseSingleParam(String single, CommandRequest request) {
-        if (single == null || single.length() < 3) return;
+        if (single == null || single.length() < 3) {
+            return;
+        }
         
         int index = single.indexOf('=');
         if (index <= 0 || index >= single.length() - 1) {
@@ -321,7 +323,9 @@ public class HttpEventTask implements Runnable {
     protected static void parseParams(String queryString, CommandRequest request) {
         int offset = 0, pos = -1;
         
-        if (queryString == null || queryString.length() < 1) return;
+        if (queryString == null || queryString.length() < 1) {
+            return;
+        }
         
         // check anchor
         queryString = removeAnchor(queryString);
