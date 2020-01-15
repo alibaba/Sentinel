@@ -17,10 +17,12 @@ package com.alibaba.csp.sentinel.transport.command.http;
 
 import java.io.BufferedReader;
 import java.io.Closeable;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.URLDecoder;
@@ -74,7 +76,7 @@ public class HttpEventTask implements Runnable {
             String line = in.readLine();
             CommandCenterLog.info("[SimpleHttpCommandCenter] Socket income: " + line
                 + ", addr: " + socket.getInetAddress());
-            CommandRequest request = parseRequest(line);
+            CommandRequest request = parseRequestArgs(line);
 
             if (line.length() > 4 && StringUtil.equalsIgnoreCase("POST", line.substring(0, 4))) {
                 // Deal with post method
@@ -82,17 +84,13 @@ public class HttpEventTask implements Runnable {
                 String bodyLine = null;
                 boolean bodyNext = false;
                 boolean supported = false;
-                int maxLength = 8192;
                 while (true) {
                     // Body processing
                     if (bodyNext) {
                         if (!supported) {
                             break;
                         }
-                        char[] bodyBytes = new char[maxLength];
-                        int read = in.read(bodyBytes);
-                        String postData = new String(bodyBytes, 0, read);
-                        parseParams(postData, request);
+                        consumePostBody(in, request);
                         break;
                     }
 
@@ -117,21 +115,12 @@ public class HttpEventTask implements Runnable {
                         if (idx > 0) {
                             header = header.substring(0, idx).trim();
                         }
-                        if (StringUtil.equals("application/x-www-form-urlencoded", header)) {
+                        if (StringUtil.equalsIgnoreCase("application/x-www-form-urlencoded", header)) {
                             supported = true;
                         } else {
                             CommandCenterLog.warn("Content-Type not supported: " + header);
-                            // not support request
+                            // Not supported request type
                             break;
-                        }
-                    } else if (StringUtil.equalsIgnoreCase("content-length", headerName)) {
-                        try {
-                            int len = Integer.parseInt(header);
-                            if (len > 0) {
-                                maxLength = len;
-                            }
-                        } catch (Exception e) {
-                            CommandCenterLog.warn("Malformed content-length header value: " + header);
                         }
                     }
                 }
@@ -179,6 +168,19 @@ public class HttpEventTask implements Runnable {
             closeResource(socket);
         }
     }
+    
+    protected static void consumePostBody(Reader in, CommandRequest request) throws IOException {
+        StringBuilder builder = new StringBuilder();
+        char[] buf = new char[1024];
+        while (true) {
+            int read = in.read(buf);
+            if (read <= 0) {
+                break;
+            }
+            builder.append(buf, 0, read);
+        }
+        parseParams(builder.toString(), request);
+    }
 
     private void closeResource(Closeable closeable) {
         if (closeable != null) {
@@ -190,7 +192,7 @@ public class HttpEventTask implements Runnable {
         }
     }
 
-    private void handleResponse(CommandResponse response, /*@NonNull*/ final PrintWriter printWriter,
+    private <T> void handleResponse(CommandResponse<T> response, /*@NonNull*/ final PrintWriter printWriter,
         /*@NonNull*/ final OutputStream rawOutputStream) throws Exception {
         if (response.isSuccess()) {
             if (response.getResult() == null) {
@@ -250,7 +252,7 @@ public class HttpEventTask implements Runnable {
      * @param line HTTP request line
      * @return parsed command request
      */
-    private CommandRequest parseRequest(String line) {
+    protected CommandRequest parseRequestArgs(String line) {
         CommandRequest request = new CommandRequest();
         if (StringUtil.isBlank(line)) {
             return request;
@@ -267,25 +269,76 @@ public class HttpEventTask implements Runnable {
         parseParams(parameterStr, request);
         return request;
     }
+    
+    /**
+     * Truncate query from "a=1&b=2#mark" to "a=1&b=2"
+     * 
+     * @param str
+     * @return
+     */
+    protected static String removeAnchor(String str) {
+        if (str == null || str.length() == 0) {
+            return str;
+        }
+        
+        int anchor = str.indexOf('#');
+        
+        if (anchor == 0) {
+            return "";
+        } else if (anchor > 0) {
+            return str.substring(0, anchor);
+        }
+        
+        return str;
+    }
+    
+    protected static void parseSingleParam(String single, CommandRequest request) {
+        if (single == null || single.length() < 3) return;
+        
+        int index = single.indexOf('=');
+        if (index <= 0 || index >= single.length() - 1) {
+            // empty key/val or nothing found
+            return;
+        }
 
-    private void parseParams(String queryString, CommandRequest request) {
-        for (String parameter : queryString.split("&")) {
-            if (StringUtil.isBlank(parameter)) {
+        String value = StringUtil.trim(single.substring(index + 1));
+        String key = StringUtil.trim(single.substring(0, index));
+        try {
+            key = URLDecoder.decode(key, SentinelConfig.charset());
+            value = URLDecoder.decode(value, SentinelConfig.charset());
+        } catch (UnsupportedEncodingException e) {
+        }
+        
+        request.addParam(key, value);
+    }
+
+    /**
+     * Parse parameters in query into request
+     * 
+     * @param queryString
+     * @param request
+     */
+    protected static void parseParams(String queryString, CommandRequest request) {
+        int offset = 0, pos = -1;
+        
+        if (queryString == null || queryString.length() < 1) return;
+        
+        // check anchor
+        queryString = removeAnchor(queryString);
+        
+        while (true) {
+            offset = pos + 1;
+            pos = queryString.indexOf('&', offset);
+            if (offset == pos) {
+                // empty
                 continue;
             }
+            parseSingleParam(queryString.substring(offset, pos == -1 ? queryString.length() : pos), request);
 
-            String[] keyValue = parameter.split("=");
-            if (keyValue.length != 2) {
-                continue;
+            if (pos < 0) {
+                // reach the end
+                break;
             }
-
-            String value = StringUtil.trim(keyValue[1]);
-            try {
-                value = URLDecoder.decode(value, SentinelConfig.charset());
-            } catch (UnsupportedEncodingException e) {
-            }
-
-            request.addParam(StringUtil.trim(keyValue[0]), value);
         }
     }
 
