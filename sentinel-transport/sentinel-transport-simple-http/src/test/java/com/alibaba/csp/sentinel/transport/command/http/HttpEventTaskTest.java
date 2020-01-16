@@ -1,8 +1,12 @@
 package com.alibaba.csp.sentinel.transport.command.http;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
+import java.io.BufferedReader;
 import java.io.CharArrayReader;
 import java.io.IOException;
 import java.io.StringReader;
@@ -13,6 +17,29 @@ import org.junit.Test;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 
 public class HttpEventTaskTest {
+    
+    @Test
+    public void processQueryString() {
+        CommandRequest request;
+        
+        request = HttpEventTask.processQueryString(null);
+        assertNotNull(request);
+        
+        request = HttpEventTask.processQueryString(null);
+        assertNotNull(request);
+        
+        request = HttpEventTask.processQueryString("get /?a=1&b=2&c=3#mark HTTP/1.0");
+        assertNotNull(request);
+        assertEquals("1", request.getParam("a"));
+        assertEquals("2", request.getParam("b"));
+        assertEquals("3", request.getParam("c"));
+        
+        request = HttpEventTask.processQueryString("post /test?a=3&b=4&c=3#mark HTTP/1.0");
+        assertNotNull(request);
+        assertEquals("3", request.getParam("a"));
+        assertEquals("4", request.getParam("b"));
+        assertEquals("3", request.getParam("c"));
+    }
     
     @Test
     public void removeAnchor() {
@@ -132,5 +159,55 @@ public class HttpEventTaskTest {
             assertEquals(" ", request.getParam("a "));
             assertEquals("的", request.getParam("b"));
         }
+    }
+    
+    @Test
+    public void processHeaderField() {
+        assertTrue(HttpEventTask.processHeaderField(null));
+        assertTrue(HttpEventTask.processHeaderField(""));
+        assertTrue(HttpEventTask.processHeaderField(":"));
+        assertTrue(HttpEventTask.processHeaderField("a:1"));
+        assertTrue(HttpEventTask.processHeaderField("a: 2"));
+        assertTrue(HttpEventTask.processHeaderField("Content-Encoding: utf-8"));
+        assertTrue(HttpEventTask.processHeaderField("Content-Type:application/x-www-form-urlencoded"));
+        assertTrue(HttpEventTask.processHeaderField("Content-Type: application/x-www-form-urlencoded;charset=utf-8"));
+        assertTrue(HttpEventTask.processHeaderField("Content-Type:application/x-www-form-urlencoded; charset=utf-8"));
+        
+        assertFalse(HttpEventTask.processHeaderField("Content-Type:application/json"));
+        assertFalse(HttpEventTask.processHeaderField("Content-Type:application/json; charset=utf-8"));
+        assertFalse(HttpEventTask.processHeaderField("Content-Type: application/json; charset=utf-8"));
+    }
+    
+    @Test
+    public void processPostRequest() throws IOException {
+        CommandRequest request;
+        
+        request = new CommandRequest();
+        request.addParam("a", "1");
+        HttpEventTask.processPostRequest(new BufferedReader(new StringReader("")), request);
+        assertEquals("1", request.getParam("a"));
+        HttpEventTask.processPostRequest(new BufferedReader(new StringReader("Host: demo.com\r\n" + 
+                "Accept: */*\r\n" + 
+                "Accept-Language: en-us\r\n" + 
+                "Accept-Encoding: gzip, deflate\r\n" + 
+                "Content-Type: application/x-www-form-urlencoded; charset=UTF-8\r\n" + 
+                "Connection: keep-alive\r\n" + 
+                "Content-Length: 7\r\n" + 
+                "\r\n" + 
+                "a=3&b=5")), request);
+        assertEquals("3", request.getParam("a"));
+        assertEquals("5", request.getParam("b"));
+        
+        HttpEventTask.processPostRequest(new BufferedReader(new StringReader("Host: demo.com\r\n" + 
+                "Accept: */*\r\n" + 
+                "Accept-Language: en-us\r\n" + 
+                "Accept-Encoding: gzip, deflate\r\n" + 
+                "Content-Type: application/json\r\n" + 
+                "Connection: keep-alive\r\n" + 
+                "Content-Length: 7\r\n" + 
+                "\r\n" + 
+                "a=1&b=2")), request);
+        assertEquals("3", request.getParam("a"));
+        assertEquals("5", request.getParam("b"));
     }
 }

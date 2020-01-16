@@ -73,57 +73,14 @@ public class HttpEventTask implements Runnable {
             printWriter = new PrintWriter(
                 new OutputStreamWriter(outputStream, Charset.forName(SentinelConfig.charset())));
 
-            String line = in.readLine();
-            CommandCenterLog.info("[SimpleHttpCommandCenter] Socket income: " + line
+            String firstLine = in.readLine();
+            CommandCenterLog.info("[SimpleHttpCommandCenter] Socket income: " + firstLine
                 + ", addr: " + socket.getInetAddress());
-            CommandRequest request = parseRequestArgs(line);
+            CommandRequest request = processQueryString(firstLine);
 
-            if (line.length() > 4 && StringUtil.equalsIgnoreCase("POST", line.substring(0, 4))) {
+            if (firstLine.length() > 4 && StringUtil.equalsIgnoreCase("POST", firstLine.substring(0, 4))) {
                 // Deal with post method
-                // Now simple-http only support form-encoded post request.
-                String bodyLine = null;
-                boolean bodyNext = false;
-                boolean supported = false;
-                while (true) {
-                    // Body processing
-                    if (bodyNext) {
-                        if (!supported) {
-                            break;
-                        }
-                        consumePostBody(in, request);
-                        break;
-                    }
-
-                    bodyLine = in.readLine();
-                    if (bodyLine == null) {
-                        break;
-                    }
-                    // Body separator
-                    if (StringUtil.isEmpty(bodyLine)) {
-                        bodyNext = true;
-                        continue;
-                    }
-                    // Header processing
-                    int index = bodyLine.indexOf(":");
-                    if (index < 1) {
-                        continue;
-                    }
-                    String headerName = bodyLine.substring(0, index);
-                    String header = bodyLine.substring(index + 1).trim();
-                    if (StringUtil.equalsIgnoreCase("content-type", headerName)) {
-                        int idx = header.indexOf(";");
-                        if (idx > 0) {
-                            header = header.substring(0, idx).trim();
-                        }
-                        if (StringUtil.equalsIgnoreCase("application/x-www-form-urlencoded", header)) {
-                            supported = true;
-                        } else {
-                            CommandCenterLog.warn("Content-Type not supported: " + header);
-                            // Not supported request type
-                            break;
-                        }
-                    }
-                }
+                processPostRequest(in, request);
             }
 
             // Validate the target command.
@@ -145,7 +102,7 @@ public class HttpEventTask implements Runnable {
             printWriter.flush();
 
             long cost = System.currentTimeMillis() - start;
-            CommandCenterLog.info("[SimpleHttpCommandCenter] Deal a socket task: " + line
+            CommandCenterLog.info("[SimpleHttpCommandCenter] Deal a socket task: " + firstLine
                 + ", address: " + socket.getInetAddress() + ", time cost: " + cost + " ms");
         } catch (Throwable e) {
             CommandCenterLog.warn("[SimpleHttpCommandCenter] CommandCenter error", e);
@@ -169,6 +126,87 @@ public class HttpEventTask implements Runnable {
         }
     }
     
+    /**
+     * Try to process the body of POST request additionally.
+     * 
+     * @param bufferedReader
+     * @param request
+     * @throws IOException
+     */
+    protected static void processPostRequest(BufferedReader bufferedReader, CommandRequest request) throws IOException {
+     // Now simple-http only support form-encoded post request.
+        String bodyLine = null;
+        boolean bodyNext = false;
+        boolean supported = true;
+        while (true) {
+            // Body processing
+            if (bodyNext) {
+                if (!supported) {
+                    break;
+                }
+                consumePostBody(bufferedReader, request);
+                break;
+            }
+
+            bodyLine = bufferedReader.readLine();
+            if (bodyLine == null) {
+                break;
+            }
+            // Body separator
+            if (StringUtil.isEmpty(bodyLine)) {
+                bodyNext = true;
+                continue;
+            }
+            // Header processing
+            supported &= processHeaderField(bodyLine);
+            if (!supported) {
+                break;
+            }
+        }
+    }
+    
+    /**
+     * Process header lines in http request
+     * 
+     * @param line
+     * @return return false indicating the request can not be supported 
+     */
+    protected static boolean processHeaderField(String line) {
+        if (line == null || line.length() < 1) {
+            return true;
+        }
+        int index = line.indexOf(":");
+        if (index < 1) {
+            return true;
+        }
+        String headerName = line.substring(0, index);
+        String header = line.substring(index + 1).trim();
+        if (StringUtil.equalsIgnoreCase("content-type", headerName)) {
+            int idx = header.indexOf(";");
+            if (idx > 0) {
+                header = header.substring(0, idx).toLowerCase().trim();
+            } else {
+                header = header.toLowerCase();
+            }
+            // Actually in RFC "x-*" shouldn't have any properties like "type/subtype; key=val"
+            // But some library do add it. So we will be compatible with that but force to
+            // encoding specified in configuration as legacy processing will do.
+            if (!header.contains("application/x-www-form-urlencoded")) {
+                CommandCenterLog.warn("Content-Type not supported: " + header);
+                // Not supported request type
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /**
+     * Consume all the body submitted and parse params into {@link CommandRequest}
+     * 
+     * @param in
+     * @param request
+     * @throws IOException
+     */
     protected static void consumePostBody(Reader in, CommandRequest request) throws IOException {
         StringBuilder builder = new StringBuilder();
         char[] buf = new char[1024];
@@ -252,7 +290,7 @@ public class HttpEventTask implements Runnable {
      * @param line HTTP request line
      * @return parsed command request
      */
-    protected CommandRequest parseRequestArgs(String line) {
+    protected static CommandRequest processQueryString(String line) {
         CommandRequest request = new CommandRequest();
         if (StringUtil.isBlank(line)) {
             return request;
