@@ -162,6 +162,14 @@ public class SentinelApiClient {
                 .orElse(false);
     }
     
+    /**
+     * Check wheter target instance (identified by tuple of app-ip:port)
+     * supports the form of "xxxxx; xx=xx" in "Content-Type" header.
+     * 
+     * @param app target app name
+     * @param ip target node's address
+     * @param port target node's port
+     */
     protected boolean isSupportEnhancedContentType(String app, String ip, int port) {
         return StringUtil.isNotEmpty(app) && Optional.ofNullable(appManagement.getDetailApp(app))
                 .flatMap(e -> e.getMachine(ip, port))
@@ -188,6 +196,14 @@ public class SentinelApiClient {
         return queryStringBuilder;
     }
     
+    /**
+     * Build an `HttpUriRequest` in POST way.
+     * 
+     * @param url
+     * @param params
+     * @param supportEnhancedContentType see {@link #isSupportEnhancedContentType(String, String, int)}
+     * @return
+     */
     protected static HttpUriRequest postRequest(String url, Map<String, String> params, boolean supportEnhancedContentType) {
         HttpPost httpPost = new HttpPost(url);
         if (params != null && params.size() > 0) {
