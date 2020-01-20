@@ -38,7 +38,7 @@ public class CommandCenterLogTest {
         while (count++ < 1000) {
             log.clearLog();
             CommandCenterLog.info("Count {}", count);
-            String str = String.format("INFO  commandCenterLogLogger - Count %d\r\n", count);
+            String str = String.format("INFO  commandCenterLogLogger - Count %d" + System.lineSeparator(), count);
             Assert.assertEquals(str, log.getLog());
         }
 
@@ -46,7 +46,7 @@ public class CommandCenterLogTest {
         while (count++ < 2000) {
             log.clearLog();
             CommandCenterLog.warn("Count {}", count);
-            String str = String.format("WARN  commandCenterLogLogger - Count %d\r\n", count);
+            String str = String.format("WARN  commandCenterLogLogger - Count %d" + System.lineSeparator(), count);
             Assert.assertEquals(str, log.getLog());
         }
 
@@ -54,7 +54,7 @@ public class CommandCenterLogTest {
         while (count++ < 3000) {
             log.clearLog();
             CommandCenterLog.trace("Count {}", count);
-            String str = String.format("TRACE commandCenterLogLogger - Count %d\r\n", count);
+            String str = String.format("TRACE commandCenterLogLogger - Count %d" + System.lineSeparator(), count);
             Assert.assertEquals(str, log.getLog());
         }
 
@@ -62,7 +62,7 @@ public class CommandCenterLogTest {
         while (count++ < 4000) {
             log.clearLog();
             CommandCenterLog.debug("Count {}", count);
-            String str = String.format("DEBUG commandCenterLogLogger - Count %d\r\n", count);
+            String str = String.format("DEBUG commandCenterLogLogger - Count %d" + System.lineSeparator(), count);
             Assert.assertEquals(str, log.getLog());
         }
 
@@ -70,7 +70,7 @@ public class CommandCenterLogTest {
         while (count++ < 5000) {
             log.clearLog();
             CommandCenterLog.error("Count {}", count);
-            String str = String.format("ERROR commandCenterLogLogger - Count %d\r\n", count);
+            String str = String.format("ERROR commandCenterLogLogger - Count %d" + System.lineSeparator(), count);
             Assert.assertEquals(str, log.getLog());
         }
     }
@@ -84,31 +84,31 @@ public class CommandCenterLogTest {
         // info test
         CommandCenterLog.info("Error", e);
         // split the log for test
-        String[] logSplit = log.getLog().split("\r\n");
+        String[] logSplit = log.getLog().split(System.lineSeparator());
         Assert.assertEquals("INFO  commandCenterLogLogger - Error", logSplit[0]);
 
         // warn test
         log.clearLog();
         CommandCenterLog.warn("Error", e);
-        logSplit = log.getLog().split("\r\n");
+        logSplit = log.getLog().split(System.lineSeparator());
         Assert.assertEquals("WARN  commandCenterLogLogger - Error", logSplit[0]);
 
         // trace test
         log.clearLog();
         CommandCenterLog.trace("Error", e);
-        logSplit = log.getLog().split("\r\n");
+        logSplit = log.getLog().split(System.lineSeparator());
         Assert.assertEquals("TRACE commandCenterLogLogger - Error", logSplit[0]);
 
         // debug test
         log.clearLog();
         CommandCenterLog.debug("Error", e);
-        logSplit = log.getLog().split("\r\n");
+        logSplit = log.getLog().split(System.lineSeparator());
         Assert.assertEquals("DEBUG commandCenterLogLogger - Error", logSplit[0]);
 
         // error test
         log.clearLog();
         CommandCenterLog.error("Error", e);
-        logSplit = log.getLog().split("\r\n");
+        logSplit = log.getLog().split(System.lineSeparator());
         Assert.assertEquals("ERROR commandCenterLogLogger - Error", logSplit[0]);
     }
 
