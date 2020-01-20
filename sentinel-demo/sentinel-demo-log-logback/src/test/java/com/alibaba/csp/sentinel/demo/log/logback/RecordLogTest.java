@@ -15,96 +15,101 @@
  */
 package com.alibaba.csp.sentinel.demo.log.logback;
 
-import com.alibaba.csp.sentinel.log.LogBase;
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.util.PidUtil;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
-
-import java.io.File;
-
-import static org.junit.Assert.assertTrue;
+import org.junit.contrib.java.lang.system.SystemOutRule;
 
 /**
- * @author xuyue
+ * @author xue8
  */
 public class RecordLogTest {
+    @Rule
+    public SystemOutRule log = new SystemOutRule().enableLog();
+
+    @Test
+    public void testLog() {
+        RecordLog.info("init");
+        log.clearLog();
+        int count = 0;
+
+        // info test
+        while (count++ < 1000) {
+            log.clearLog();
+            RecordLog.info("Count {}", count);
+            String str = String.format("INFO  recordLogLogger - Count %d\r\n", count);
+            Assert.assertEquals(str, log.getLog());
+        }
+
+        // warn test
+        while (count++ < 2000) {
+            log.clearLog();
+            RecordLog.warn("Count {}", count);
+            String str = String.format("WARN  recordLogLogger - Count %d\r\n", count);
+            Assert.assertEquals(str, log.getLog());
+        }
+
+        // trace test
+        while (count++ < 3000) {
+            log.clearLog();
+            RecordLog.trace("Count {}", count);
+            String str = String.format("TRACE recordLogLogger - Count %d\r\n", count);
+            Assert.assertEquals(str, log.getLog());
+        }
+
+        // debug test
+        while (count++ < 4000) {
+            log.clearLog();
+            RecordLog.debug("Count {}", count);
+            String str = String.format("DEBUG recordLogLogger - Count %d\r\n", count);
+            Assert.assertEquals(str, log.getLog());
+        }
+
+        // test error
+        while (count++ < 5000) {
+            log.clearLog();
+            RecordLog.error("Count {}", count);
+            String str = String.format("ERROR recordLogLogger - Count %d\r\n", count);
+            Assert.assertEquals(str, log.getLog());
+        }
+    }
 
     @Test
     public void testLogException() {
+        RecordLog.info("init");
+        log.clearLog();
         Exception e = new Exception("ex");
+
+        // info test
         RecordLog.info("Error", e);
+        // split the log for test
+        String[] logSplit = log.getLog().split("\r\n");
+        Assert.assertEquals("INFO  recordLogLogger - Error", logSplit[0]);
+
+        // warn test
+        log.clearLog();
+        RecordLog.warn("Error", e);
+        logSplit = log.getLog().split("\r\n");
+        Assert.assertEquals("WARN  recordLogLogger - Error", logSplit[0]);
+
+        // trace test
+        log.clearLog();
+        RecordLog.trace("Error", e);
+        logSplit = log.getLog().split("\r\n");
+        Assert.assertEquals("TRACE recordLogLogger - Error", logSplit[0]);
+
+        // debug test
+        log.clearLog();
+        RecordLog.debug("Error", e);
+        logSplit = log.getLog().split("\r\n");
+        Assert.assertEquals("DEBUG recordLogLogger - Error", logSplit[0]);
+
+        // error test
+        log.clearLog();
+        RecordLog.error("Error", e);
+        logSplit = log.getLog().split("\r\n");
+        Assert.assertEquals("ERROR recordLogLogger - Error", logSplit[0]);
     }
-
-    @Test
-    public void testLogRolling() {
-        int count = 1000;
-        while (--count > 0) {
-            RecordLog.info("Count " + count);
-        }
-    }
-
-    //Change LogBase It is not not work when integration Testing
-    //Because LogBase.LOG_DIR can be just static init for once and it will not be changed
-    //@Test
-    public void testChangeLogBase() {
-
-        String userHome = System.getProperty("user.home");
-        String newLogBase = userHome + File.separator + "tmpLogDir" + System.currentTimeMillis();
-        System.setProperty(LogBase.LOG_DIR, newLogBase);
-
-        RecordLog.info("testChangeLogBase");
-        String logFileName = RecordLog.getLogBaseDir();
-        Assert.assertTrue(newLogBase.equals(logFileName));
-        File[] files = new File(logFileName).listFiles();
-        assertTrue(files != null && files.length > 0);
-        deleteLogDir(new File(newLogBase));
-
-
-    }
-
-    @Test
-    public void testLogBaseDir() {
-        assertTrue(RecordLog.getLogBaseDir().startsWith(System.getProperty("user.home")));
-    }
-
-    public void testLogNameNotUsePid() {
-        String userHome = System.getProperty("user.home");
-        String newLogBase = userHome + File.separator + "tmpLogDir" + System.currentTimeMillis();
-        System.setProperty(LogBase.LOG_DIR, newLogBase);
-        RecordLog.info("testLogNameNotUsePid");
-        File[] files = new File(newLogBase).listFiles();
-        assertTrue(files != null && files.length > 0);
-        for (File f : files) {
-            assertTrue(!f.getName().contains("pid" + PidUtil.getPid()));
-        }
-    }
-
-    public void testLogNameUsePid() {
-        String userHome = System.getProperty("user.home");
-        String newLogBase = userHome + File.separator + "tmpLogDir" + System.currentTimeMillis();
-        System.setProperty(LogBase.LOG_DIR, newLogBase);
-        System.setProperty(LogBase.LOG_NAME_USE_PID, "true");
-
-        RecordLog.info("testLogNameUsePid");
-        File[] files = new File(newLogBase).listFiles();
-        assertTrue(files != null && files.length > 0);
-        for (File f : files) {
-            assertTrue(f.getName().contains("pid" + PidUtil.getPid()));
-        }
-    }
-
-    private void deleteLogDir(File logDirFile) {
-        if (logDirFile != null && logDirFile.isDirectory()) {
-            if (logDirFile.listFiles() != null) {
-                for (File file : logDirFile.listFiles()) {
-                    file.delete();
-                }
-            }
-            logDirFile.delete();
-        }
-    }
-
-
 
 }

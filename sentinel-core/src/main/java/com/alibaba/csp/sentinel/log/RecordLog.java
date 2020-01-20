@@ -24,7 +24,6 @@ import java.util.ServiceLoader;
  * @author youji.zj
  */
 public class RecordLog extends LogBase {
-
     private static com.alibaba.csp.sentinel.log.Logger log = null;
 
     static {
@@ -47,25 +46,49 @@ public class RecordLog extends LogBase {
         if (logger != null) {
             log = logger;
         } else {
-            // Use default.
+            // Use default implementations.
             log = new RecordLogLogging();
         }
     }
 
-    public static void info(String detail, Object... params) {
-        log.info(detail, params);
+    public static void info(String format, Object... arguments) {
+        log.info(format, arguments);
     }
 
-    public static void info(String detail, Throwable e) {
-        log.info(detail, e);
+    public static void info(String msg, Throwable e) {
+        log.info(msg, e);
     }
 
-    public static void warn(String detail, Object... params) {
-        log.warn(detail, params);
+    public static void warn(String format, Object... arguments) {
+        log.warn(format, arguments);
     }
 
-    public static void warn(String detail, Throwable e) {
-        log.warn(detail, e);
+    public static void warn(String msg, Throwable e) {
+        log.warn(msg, e);
+    }
+
+    public static void trace(String format, Object... arguments) {
+        log.trace(format, arguments);
+    }
+
+    public static void trace(String msg, Throwable e) {
+        log.trace(msg, e);
+    }
+
+    public static void debug(String format, Object... arguments) {
+        log.debug(format, arguments);
+    }
+
+    public static void debug(String msg, Throwable e) {
+        log.debug(msg, e);
+    }
+
+    public static void error(String format, Object... arguments) {
+        log.error(format, arguments);
+    }
+
+    public static void error(String msg, Throwable e) {
+        log.error(msg, e);
     }
 
 }

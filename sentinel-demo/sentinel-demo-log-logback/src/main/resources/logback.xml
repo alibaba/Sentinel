@@ -2,7 +2,7 @@
 <configuration scan="false" scanPeriod="60000" debug="false">
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <layout class="ch.qos.logback.classic.PatternLayout">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
+            <pattern>%-5level %logger - %msg%n</pattern>
         </layout>
     </appender>
 
@@ -10,7 +10,7 @@
         <file>sentinel-record.log</file>
         <append>true</append>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
+            <pattern>%-5level %logger - %msg%n</pattern>
         </encoder>
     </appender>
 
@@ -18,16 +18,16 @@
         <file>sentinel-command-center.log</file>
         <append>true</append>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
+            <pattern>%-5level %logger - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <logger name="recordLogLogger" level="info">
+    <logger name="recordLogLogger" level="trace">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />
     </logger>
 
-    <logger name="commandCenterLogLogger" level="info">
+    <logger name="commandCenterLogLogger" level="trace">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE2" />
     </logger>
