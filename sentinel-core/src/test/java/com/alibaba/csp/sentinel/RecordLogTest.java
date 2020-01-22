@@ -107,4 +107,14 @@ public class RecordLogTest {
 
 
 
+    // Because log only writes into the file,
+    // can't read the log(file conflict), so no assertion in this unit test.
+    @Test
+    public void testMessageFormatter() {
+        RecordLog.info("1 2 {} 4 {} 6", "3", "5");
+        RecordLog.info("1 2 {} 4 {} 6", "3");
+        RecordLog.info("1 2 {} 4 {} 6");
+
+        RecordLog.info("1 2 \\{} 4 {} 6", "5");
+    }
 }
