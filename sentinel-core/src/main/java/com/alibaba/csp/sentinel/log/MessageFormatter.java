@@ -19,6 +19,12 @@
  * This code copy from SLF4J which licensed under the MIT License.
  *
  */
+
+/**
+ *              Copyright notice
+ * This code copy from SLF4J which licensed under the MIT License.
+ *
+ */
 package com.alibaba.csp.sentinel.log;
 
 
@@ -310,8 +316,9 @@ final public class MessageFormatter {
             final int len = a.length;
             for (int i = 0; i < len; i++) {
                 deeplyAppendParameter(sbuf, a[i], seenMap);
-                if (i != len - 1)
+                if (i != len - 1) {
                     sbuf.append(", ");
+                }
             }
             // allow repeats in siblings
             seenMap.remove(a);
@@ -326,8 +333,9 @@ final public class MessageFormatter {
         final int len = a.length;
         for (int i = 0; i < len; i++) {
             sbuf.append(a[i]);
-            if (i != len - 1)
+            if (i != len - 1) {
                 sbuf.append(", ");
+            }
         }
         sbuf.append(']');
     }
@@ -337,8 +345,9 @@ final public class MessageFormatter {
         final int len = a.length;
         for (int i = 0; i < len; i++) {
             sbuf.append(a[i]);
-            if (i != len - 1)
+            if (i != len - 1) {
                 sbuf.append(", ");
+            }
         }
         sbuf.append(']');
     }
@@ -348,8 +357,9 @@ final public class MessageFormatter {
         final int len = a.length;
         for (int i = 0; i < len; i++) {
             sbuf.append(a[i]);
-            if (i != len - 1)
+            if (i != len - 1) {
                 sbuf.append(", ");
+            }
         }
         sbuf.append(']');
     }
@@ -359,8 +369,9 @@ final public class MessageFormatter {
         final int len = a.length;
         for (int i = 0; i < len; i++) {
             sbuf.append(a[i]);
-            if (i != len - 1)
+            if (i != len - 1) {
                 sbuf.append(", ");
+            }
         }
         sbuf.append(']');
     }
@@ -370,8 +381,9 @@ final public class MessageFormatter {
         final int len = a.length;
         for (int i = 0; i < len; i++) {
             sbuf.append(a[i]);
-            if (i != len - 1)
+            if (i != len - 1) {
                 sbuf.append(", ");
+            }
         }
         sbuf.append(']');
     }
@@ -381,8 +393,9 @@ final public class MessageFormatter {
         final int len = a.length;
         for (int i = 0; i < len; i++) {
             sbuf.append(a[i]);
-            if (i != len - 1)
+            if (i != len - 1) {
                 sbuf.append(", ");
+            }
         }
         sbuf.append(']');
     }
@@ -392,8 +405,9 @@ final public class MessageFormatter {
         final int len = a.length;
         for (int i = 0; i < len; i++) {
             sbuf.append(a[i]);
-            if (i != len - 1)
+            if (i != len - 1) {
                 sbuf.append(", ");
+            }
         }
         sbuf.append(']');
     }
@@ -403,8 +417,9 @@ final public class MessageFormatter {
         final int len = a.length;
         for (int i = 0; i < len; i++) {
             sbuf.append(a[i]);
-            if (i != len - 1)
+            if (i != len - 1) {
                 sbuf.append(", ");
+            }
         }
         sbuf.append(']');
     }
