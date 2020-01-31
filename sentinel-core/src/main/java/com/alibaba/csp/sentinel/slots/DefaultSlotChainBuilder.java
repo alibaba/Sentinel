@@ -37,7 +37,8 @@ public class DefaultSlotChainBuilder implements SlotChainBuilder {
     public ProcessorSlotChain build() {
         ProcessorSlotChain chain = new DefaultProcessorSlotChain();
 
-        List<ProcessorSlot> sortedSlotList = SpiLoader.loadInstanceListSorted(ProcessorSlot.class);
+        // Note: the instances of ProcessorSlot should be different, since they are not stateless.
+        List<ProcessorSlot> sortedSlotList = SpiLoader.loadDifferentInstanceListSorted(ProcessorSlot.class);
         for (ProcessorSlot slot : sortedSlotList) {
             if (!(slot instanceof AbstractLinkedProcessorSlot)) {
                 RecordLog.warn("The ProcessorSlot(" + slot.getClass().getCanonicalName() + ") is not an instance of AbstractLinkedProcessorSlot, can't be added into ProcessorSlotChain");

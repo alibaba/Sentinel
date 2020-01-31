@@ -106,9 +106,41 @@ public class SpiLoaderTest {
         for (int i = 0; i < sortedSlots.size(); i++) {
             ProcessorSlot slot = sortedSlots.get(i);
             ProcessorSlot slot2 = sortedSlots2.get(i);
+            assertEquals(slot.getClass(), slot2.getClass());
+        }
+    }
+
+    @Test
+    public void testLoadDifferentInstanceListSorted() {
+        List<ProcessorSlot> sortedSlots = SpiLoader.loadInstanceListSorted(ProcessorSlot.class);
+        assertNotNull(sortedSlots);
+
+        // Total 8 default slot in sentinel-core
+        assertEquals(8, sortedSlots.size());
+
+        // Verify the order of slot
+        int index = 0;
+        assertTrue(sortedSlots.get(index++) instanceof NodeSelectorSlot);
+        assertTrue(sortedSlots.get(index++) instanceof ClusterBuilderSlot);
+        assertTrue(sortedSlots.get(index++) instanceof LogSlot);
+        assertTrue(sortedSlots.get(index++) instanceof StatisticSlot);
+        assertTrue(sortedSlots.get(index++) instanceof SystemSlot);
+        assertTrue(sortedSlots.get(index++) instanceof AuthoritySlot);
+        assertTrue(sortedSlots.get(index++) instanceof FlowSlot);
+        assertTrue(sortedSlots.get(index++) instanceof DegradeSlot);
+
+        // Verify each call return different instances
+        List<ProcessorSlot> sortedSlots2 = SpiLoader.loadDifferentInstanceListSorted(ProcessorSlot.class);
+        assertNotSame(sortedSlots, sortedSlots2);
+        assertEquals(sortedSlots.size(), sortedSlots2.size());
+        for (int i = 0; i < sortedSlots.size(); i++) {
+            ProcessorSlot slot = sortedSlots.get(i);
+            ProcessorSlot slot2 = sortedSlots2.get(i);
+            assertEquals(slot.getClass(), slot2.getClass());
+
+            // Verify the instances are different
             assertNotSame(slot, slot2);
             assertNotEquals(slot, slot2);
-            assertEquals(slot.getClass(), slot2.getClass());
         }
     }
 }
