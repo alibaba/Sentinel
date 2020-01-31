@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.adapter.gateway.common.param;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayFlowRule;
@@ -42,8 +43,8 @@ public class GatewayParamParser<T> {
     /**
      * Parse parameters for given resource from the request entity on condition of the rule predicate.
      *
-     * @param resource valid resource name
-     * @param request valid request
+     * @param resource      valid resource name
+     * @param request       valid request
      * @param rulePredicate rule predicate indicating the rules to refer
      * @return the parameter array
      */
@@ -92,6 +93,8 @@ public class GatewayParamParser<T> {
                 return parseHeader(item, request);
             case SentinelGatewayConstants.PARAM_PARSE_STRATEGY_URL_PARAM:
                 return parseUrlParameter(item, request);
+            case SentinelGatewayConstants.PARAM_PARSE_STRATEGY_COOKIE:
+                return parseCookie(item, request);
             default:
                 return null;
         }
@@ -100,7 +103,7 @@ public class GatewayParamParser<T> {
     private String parseClientIp(/*@Valid*/ GatewayParamFlowItem item, T request) {
         String clientIp = requestItemParser.getRemoteAddress(request);
         String pattern = item.getPattern();
-        if (pattern == null) {
+        if (StringUtil.isEmpty(pattern)) {
             return clientIp;
         }
         return parseWithMatchStrategyInternal(item.getMatchStrategy(), clientIp, pattern);
@@ -111,7 +114,7 @@ public class GatewayParamParser<T> {
         String pattern = item.getPattern();
         // TODO: what if the header has multiple values?
         String headerValue = requestItemParser.getHeader(request, headerKey);
-        if (pattern == null) {
+        if (StringUtil.isEmpty(pattern)) {
             return headerValue;
         }
         // Match value according to regex pattern or exact mode.
@@ -121,7 +124,7 @@ public class GatewayParamParser<T> {
     private String parseHost(/*@Valid*/ GatewayParamFlowItem item, T request) {
         String pattern = item.getPattern();
         String host = requestItemParser.getHeader(request, "Host");
-        if (pattern == null) {
+        if (StringUtil.isEmpty(pattern)) {
             return host;
         }
         // Match value according to regex pattern or exact mode.
@@ -132,7 +135,18 @@ public class GatewayParamParser<T> {
         String paramName = item.getFieldName();
         String pattern = item.getPattern();
         String param = requestItemParser.getUrlParam(request, paramName);
-        if (pattern == null) {
+        if (StringUtil.isEmpty(pattern)) {
+            return param;
+        }
+        // Match value according to regex pattern or exact mode.
+        return parseWithMatchStrategyInternal(item.getMatchStrategy(), param, pattern);
+    }
+
+    private String parseCookie(/*@Valid*/ GatewayParamFlowItem item, T request) {
+        String cookieName = item.getFieldName();
+        String pattern = item.getPattern();
+        String param = requestItemParser.getCookieValue(request, cookieName);
+        if (StringUtil.isEmpty(pattern)) {
             return param;
         }
         // Match value according to regex pattern or exact mode.
@@ -140,13 +154,22 @@ public class GatewayParamParser<T> {
     }
 
     private String parseWithMatchStrategyInternal(int matchStrategy, String value, String pattern) {
-        // TODO: implement here.
         if (value == null) {
             return null;
         }
-        if (matchStrategy == SentinelGatewayConstants.PARAM_MATCH_STRATEGY_REGEX) {
-            return value;
+        switch (matchStrategy) {
+            case SentinelGatewayConstants.PARAM_MATCH_STRATEGY_EXACT:
+                return value.equals(pattern) ? value : SentinelGatewayConstants.GATEWAY_NOT_MATCH_PARAM;
+            case SentinelGatewayConstants.PARAM_MATCH_STRATEGY_CONTAINS:
+                return value.contains(pattern) ? value : SentinelGatewayConstants.GATEWAY_NOT_MATCH_PARAM;
+            case SentinelGatewayConstants.PARAM_MATCH_STRATEGY_REGEX:
+                Pattern regex = GatewayRegexCache.getRegexPattern(pattern);
+                if (regex == null) {
+                    return value;
+                }
+                return regex.matcher(value).matches() ? value : SentinelGatewayConstants.GATEWAY_NOT_MATCH_PARAM;
+            default:
+                return value;
         }
-        return value;
     }
 }

@@ -36,7 +36,6 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  */
 public class SimpleHttpHeartbeatSender implements HeartbeatSender {
 
-    private static final String HEARTBEAT_PATH = "/registry/machine";
     private static final int OK_STATUS = 200;
 
     private static final long DEFAULT_INTERVAL = 1000 * 10;
@@ -66,7 +65,7 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
             return false;
         }
 
-        SimpleHttpRequest request = new SimpleHttpRequest(addr, HEARTBEAT_PATH);
+        SimpleHttpRequest request = new SimpleHttpRequest(addr, TransportConfig.getHeartbeatApiPath());
         request.setParams(heartBeat.generateCurrentMessage());
         try {
             SimpleHttpResponse response = httpClient.post(request);
@@ -74,7 +73,7 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
                 return true;
             }
         } catch (Exception e) {
-            RecordLog.warn("[SimpleHttpHeartbeatSender] Failed to send heartbeat to " + addr + " : ", e);
+            RecordLog.warn("[SimpleHttpHeartbeatSender] Failed to send heartbeat to " + addr, e);
         }
         return false;
     }
@@ -100,7 +99,7 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
         try {
             String ipsStr = TransportConfig.getConsoleServer();
             if (StringUtil.isEmpty(ipsStr)) {
-                RecordLog.warn("[NettyHttpHeartbeatSender] Dashboard server address not configured");
+                RecordLog.warn("[SimpleHttpHeartbeatSender] Dashboard server address not configured");
                 return newAddrs;
             }
 

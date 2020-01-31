@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.ResourceTypeConstants;
 import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
 import com.alibaba.csp.sentinel.adapter.gateway.common.param.GatewayParamParser;
 import com.alibaba.csp.sentinel.adapter.gateway.sc.callback.GatewayCallbackManager;
@@ -34,6 +35,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.cloud.gateway.route.Route;
 import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
+import org.springframework.core.Ordered;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -41,7 +43,17 @@ import reactor.core.publisher.Mono;
  * @author Eric Zhao
  * @since 1.6.0
  */
-public class SentinelGatewayFilter implements GatewayFilter, GlobalFilter {
+public class SentinelGatewayFilter implements GatewayFilter, GlobalFilter, Ordered {
+
+    private final int order;
+
+    public SentinelGatewayFilter() {
+        this(Ordered.HIGHEST_PRECEDENCE);
+    }
+
+    public SentinelGatewayFilter(int order) {
+        this.order = order;
+    }
 
     private final GatewayParamParser<ServerWebExchange> paramParser = new GatewayParamParser<>(
         new ServerWebExchangeItemParser());
@@ -59,8 +71,8 @@ public class SentinelGatewayFilter implements GatewayFilter, GlobalFilter {
                 .map(f -> f.apply(exchange))
                 .orElse("");
             asyncResult = asyncResult.transform(
-                new SentinelReactorTransformer<>(new EntryConfig(routeId, EntryType.IN,
-                    1, params, new ContextConfig(contextName(routeId), origin)))
+                new SentinelReactorTransformer<>(new EntryConfig(routeId, ResourceTypeConstants.COMMON_API_GATEWAY,
+                    EntryType.IN, 1, params, new ContextConfig(contextName(routeId), origin)))
             );
         }
 
@@ -69,7 +81,8 @@ public class SentinelGatewayFilter implements GatewayFilter, GlobalFilter {
             Object[] params = paramParser.parseParameterFor(apiName, exchange,
                 r -> r.getResourceMode() == SentinelGatewayConstants.RESOURCE_MODE_CUSTOM_API_NAME);
             asyncResult = asyncResult.transform(
-                new SentinelReactorTransformer<>(new EntryConfig(apiName, EntryType.IN, 1, params))
+                new SentinelReactorTransformer<>(new EntryConfig(apiName, ResourceTypeConstants.COMMON_API_GATEWAY,
+                    EntryType.IN, 1, params))
             );
         }
 
@@ -86,5 +99,10 @@ public class SentinelGatewayFilter implements GatewayFilter, GlobalFilter {
             .filter(m -> m.test(exchange))
             .map(WebExchangeApiMatcher::getApiName)
             .collect(Collectors.toSet());
+    }
+
+    @Override
+    public int getOrder() {
+        return order;
     }
 }

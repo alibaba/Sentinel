@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.adapter.gateway.zuul;
 
+import javax.servlet.http.Cookie;
+
 import com.alibaba.csp.sentinel.adapter.gateway.common.param.RequestItemParser;
 
 import com.netflix.zuul.context.RequestContext;
@@ -43,5 +45,19 @@ public class RequestContextItemParser implements RequestItemParser<RequestContex
     @Override
     public String getUrlParam(RequestContext requestContext, String paramName) {
         return requestContext.getRequest().getParameter(paramName);
+    }
+
+    @Override
+    public String getCookieValue(RequestContext requestContext, String cookieName) {
+        Cookie[] cookies = requestContext.getRequest().getCookies();
+        if (cookies == null || cookieName == null) {
+            return null;
+        }
+        for (Cookie cookie : cookies) {
+            if (cookie != null && cookieName.equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+        return null;
     }
 }

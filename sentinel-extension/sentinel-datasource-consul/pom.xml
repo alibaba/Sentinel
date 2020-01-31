@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>sentinel-extension</artifactId>
+        <groupId>com.alibaba.csp</groupId>
+        <version>1.7.2-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>sentinel-datasource-consul</artifactId>
+    <packaging>jar</packaging>
+
+    <properties>
+        <java.source.version>1.8</java.source.version>
+        <java.target.version>1.8</java.target.version>
+        <consul.version>1.4.2</consul.version>
+        <consul.process.version>2.0.0</consul.process.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-datasource-extension</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ecwid.consul</groupId>
+            <artifactId>consul-api</artifactId>
+            <version>${consul.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.pszymczyk.consul</groupId>
+            <artifactId>embedded-consul</artifactId>
+            <version>${consul.process.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-parent</artifactId>
-        <version>1.7.0-SNAPSHOT</version>
+        <version>1.7.2-SNAPSHOT</version>
     </parent>
     <artifactId>sentinel-extension</artifactId>
     <packaging>pom</packaging>
@@ -19,6 +19,9 @@
         <module>sentinel-datasource-redis</module>
         <module>sentinel-annotation-aspectj</module>
         <module>sentinel-parameter-flow-control</module>
+        <module>sentinel-datasource-spring-cloud-config</module>
+        <module>sentinel-datasource-consul</module>
+        <module>sentinel-datasource-etcd</module>
     </modules>
 
 </project>

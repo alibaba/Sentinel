@@ -5,14 +5,14 @@
     <parent>
         <artifactId>sentinel-demo</artifactId>
         <groupId>com.alibaba.csp</groupId>
-        <version>1.7.0-SNAPSHOT</version>
+        <version>1.7.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>sentinel-demo-zookeeper-datasource</artifactId>
 
     <properties>
-        <zookeeper.version>3.4.13</zookeeper.version>
+        <zookeeper.version>3.4.14</zookeeper.version>
         <curator.version>4.0.1</curator.version>
     </properties>
 

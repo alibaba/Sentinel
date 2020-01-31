@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.alibaba.csp.sentinel.Constants;
+import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.DefaultNode;
@@ -211,16 +211,22 @@ public final class DegradeRuleManager {
         if (!baseValid) {
             return false;
         }
-        // Warn for RT mode that exceeds the {@code TIME_DROP_VALVE}.
-        int maxAllowedRt = Constants.TIME_DROP_VALVE;
-        if (rule.getGrade() == RuleConstant.DEGRADE_GRADE_RT && rule.getCount() > maxAllowedRt) {
-            RecordLog.warn(String.format("[DegradeRuleManager] WARN: setting large RT threshold (%.1f ms) in RT mode"
-                    + " will not take effect since it exceeds the max allowed value (%d ms)", rule.getCount(),
-                maxAllowedRt));
+        int maxAllowedRt = SentinelConfig.statisticMaxRt();
+        if (rule.getGrade() == RuleConstant.DEGRADE_GRADE_RT) {
+            if (rule.getRtSlowRequestAmount() <= 0) {
+                return false;
+            }
+            // Warn for RT mode that exceeds the {@code TIME_DROP_VALVE}.
+            if (rule.getCount() > maxAllowedRt) {
+                RecordLog.warn(String.format("[DegradeRuleManager] WARN: setting large RT threshold (%.1f ms)"
+                        + " in RT mode will not take effect since it exceeds the max allowed value (%d ms)",
+                    rule.getCount(), maxAllowedRt));
+            }
         }
+
         // Check exception ratio mode.
-        if (rule.getGrade() == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO && rule.getCount() > 1) {
-            return false;
+        if (rule.getGrade() == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
+            return rule.getCount() <= 1 && rule.getMinRequestAmount() > 0;
         }
         return true;
     }

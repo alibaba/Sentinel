@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-parent</artifactId>
-        <version>1.7.0-SNAPSHOT</version>
+        <version>1.7.2-SNAPSHOT</version>
     </parent>
     <artifactId>sentinel-transport</artifactId>
     <description>The transport module of Sentinel</description>

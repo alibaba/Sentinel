@@ -94,6 +94,7 @@ public class GatewayParamParserTest {
         final String api1 = "my_test_route_B";
         final String headerName = "X-Sentinel-Flag";
         final String paramName = "p";
+        final String cookieName = "myCookie";
         GatewayFlowRule routeRuleNoParam = new GatewayFlowRule(routeId1)
             .setCount(10)
             .setIntervalSec(10);
@@ -128,6 +129,13 @@ public class GatewayParamParserTest {
             .setParamItem(new GatewayParamFlowItem()
                 .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HOST)
             );
+        GatewayFlowRule routeRule5 = new GatewayFlowRule(routeId1)
+            .setCount(50)
+            .setIntervalSec(30)
+            .setParamItem(new GatewayParamFlowItem()
+                .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_COOKIE)
+                .setFieldName(cookieName)
+            );
         GatewayFlowRule apiRule1 = new GatewayFlowRule(api1)
             .setResourceMode(SentinelGatewayConstants.RESOURCE_MODE_CUSTOM_API_NAME)
             .setCount(5)
@@ -140,6 +148,7 @@ public class GatewayParamParserTest {
         rules.add(routeRule2);
         rules.add(routeRule3);
         rules.add(routeRule4);
+        rules.add(routeRule5);
         rules.add(routeRuleNoParam);
         rules.add(apiRule1);
         GatewayRuleManager.loadRules(rules);
@@ -148,19 +157,24 @@ public class GatewayParamParserTest {
         final String expectedAddress = "66.77.88.99";
         final String expectedHeaderValue1 = "Sentinel";
         final String expectedUrlParamValue1 = "17";
+        final String expectedCookieValue1 = "Sentinel-Foo";
+
         mockClientHostAddress(itemParser, expectedAddress);
         Map<String, String> expectedHeaders = new HashMap<String, String>() {{
             put(headerName, expectedHeaderValue1); put("Host", expectedHost);
         }};
         mockHeaders(itemParser, expectedHeaders);
         mockSingleUrlParam(itemParser, paramName, expectedUrlParamValue1);
+        mockSingleCookie(itemParser, cookieName, expectedCookieValue1);
+
         Object[] params = paramParser.parseParameterFor(routeId1, request, routeIdPredicate);
-        // Param length should be 5 (4 with parameters, 1 normal flow with generated constant)
-        assertThat(params.length).isEqualTo(5);
+        // Param length should be 6 (5 with parameters, 1 normal flow with generated constant)
+        assertThat(params.length).isEqualTo(6);
         assertThat(params[routeRule1.getParamItem().getIndex()]).isEqualTo(expectedAddress);
         assertThat(params[routeRule2.getParamItem().getIndex()]).isEqualTo(expectedHeaderValue1);
         assertThat(params[routeRule3.getParamItem().getIndex()]).isEqualTo(expectedUrlParamValue1);
         assertThat(params[routeRule4.getParamItem().getIndex()]).isEqualTo(expectedHost);
+        assertThat(params[routeRule5.getParamItem().getIndex()]).isEqualTo(expectedCookieValue1);
         assertThat(params[params.length - 1]).isEqualTo(SentinelGatewayConstants.GATEWAY_DEFAULT_PARAM);
 
         assertThat(paramParser.parseParameterFor(api1, request, routeIdPredicate).length).isZero();
@@ -170,6 +184,125 @@ public class GatewayParamParserTest {
         params = paramParser.parseParameterFor(api1, request, apiNamePredicate);
         assertThat(params.length).isEqualTo(1);
         assertThat(params[apiRule1.getParamItem().getIndex()]).isEqualTo(expectedUrlParamValue2);
+    }
+
+    @Test
+    public void testParseParametersWithEmptyItemPattern() {
+        RequestItemParser<Object> itemParser = mock(RequestItemParser.class);
+        GatewayParamParser<Object> paramParser = new GatewayParamParser<>(itemParser);
+        // Create a fake request.
+        Object request = new Object();
+        // Prepare gateway rules.
+        Set<GatewayFlowRule> rules = new HashSet<>();
+        final String routeId = "my_test_route_DS(*H";
+        final String headerName = "X-Sentinel-Flag";
+        GatewayFlowRule routeRule1 = new GatewayFlowRule(routeId)
+            .setCount(10)
+            .setIntervalSec(2)
+            .setParamItem(new GatewayParamFlowItem()
+                .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER)
+                .setFieldName(headerName)
+                .setPattern("")
+                .setMatchStrategy(SentinelGatewayConstants.PARAM_MATCH_STRATEGY_EXACT)
+            );
+        rules.add(routeRule1);
+        GatewayRuleManager.loadRules(rules);
+
+        mockSingleHeader(itemParser, headerName, "Sent1nel");
+        Object[] params = paramParser.parseParameterFor(routeId, request, routeIdPredicate);
+        assertThat(params.length).isEqualTo(1);
+        // Empty pattern should not take effect.
+        assertThat(params[routeRule1.getParamItem().getIndex()]).isEqualTo("Sent1nel");
+    }
+
+    @Test
+    public void testParseParametersWithItemPatternMatching() {
+        RequestItemParser<Object> itemParser = mock(RequestItemParser.class);
+        GatewayParamParser<Object> paramParser = new GatewayParamParser<>(itemParser);
+        // Create a fake request.
+        Object request = new Object();
+
+        // Prepare gateway rules.
+        Set<GatewayFlowRule> rules = new HashSet<>();
+        final String routeId1 = "my_test_route_F&@";
+        final String api1 = "my_test_route_E5K";
+        final String headerName = "X-Sentinel-Flag";
+        final String paramName = "p";
+
+        String nameEquals = "Wow";
+        String nameContains = "warn";
+        String valueRegex = "\\d+";
+        GatewayFlowRule routeRule1 = new GatewayFlowRule(routeId1)
+            .setCount(10)
+            .setIntervalSec(1)
+            .setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER)
+            .setMaxQueueingTimeoutMs(600)
+            .setParamItem(new GatewayParamFlowItem()
+                .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER)
+                .setFieldName(headerName)
+                .setPattern(nameEquals)
+                .setMatchStrategy(SentinelGatewayConstants.PARAM_MATCH_STRATEGY_EXACT)
+            );
+        GatewayFlowRule routeRule2 = new GatewayFlowRule(routeId1)
+            .setCount(20)
+            .setIntervalSec(1)
+            .setBurst(5)
+            .setParamItem(new GatewayParamFlowItem()
+                .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_URL_PARAM)
+                .setFieldName(paramName)
+                .setPattern(nameContains)
+                .setMatchStrategy(SentinelGatewayConstants.PARAM_MATCH_STRATEGY_CONTAINS)
+            );
+        GatewayFlowRule apiRule1 = new GatewayFlowRule(api1)
+            .setResourceMode(SentinelGatewayConstants.RESOURCE_MODE_CUSTOM_API_NAME)
+            .setCount(5)
+            .setIntervalSec(1)
+            .setParamItem(new GatewayParamFlowItem()
+                .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_URL_PARAM)
+                .setFieldName(paramName)
+                .setPattern(valueRegex)
+                .setMatchStrategy(SentinelGatewayConstants.PARAM_MATCH_STRATEGY_REGEX)
+            );
+        rules.add(routeRule1);
+        rules.add(routeRule2);
+        rules.add(apiRule1);
+        GatewayRuleManager.loadRules(rules);
+
+        mockSingleHeader(itemParser, headerName, nameEquals);
+        mockSingleUrlParam(itemParser, paramName, nameContains);
+        Object[] params = paramParser.parseParameterFor(routeId1, request, routeIdPredicate);
+        assertThat(params.length).isEqualTo(2);
+        assertThat(params[routeRule1.getParamItem().getIndex()]).isEqualTo(nameEquals);
+        assertThat(params[routeRule2.getParamItem().getIndex()]).isEqualTo(nameContains);
+
+        mockSingleHeader(itemParser, headerName, nameEquals + "_foo");
+        mockSingleUrlParam(itemParser, paramName, nameContains + "_foo");
+        params = paramParser.parseParameterFor(routeId1, request, routeIdPredicate);
+        assertThat(params.length).isEqualTo(2);
+        assertThat(params[routeRule1.getParamItem().getIndex()])
+            .isEqualTo(SentinelGatewayConstants.GATEWAY_NOT_MATCH_PARAM);
+        assertThat(params[routeRule2.getParamItem().getIndex()])
+            .isEqualTo(nameContains + "_foo");
+
+        mockSingleHeader(itemParser, headerName, "foo");
+        mockSingleUrlParam(itemParser, paramName, "foo");
+        params = paramParser.parseParameterFor(routeId1, request, routeIdPredicate);
+        assertThat(params.length).isEqualTo(2);
+        assertThat(params[routeRule1.getParamItem().getIndex()])
+            .isEqualTo(SentinelGatewayConstants.GATEWAY_NOT_MATCH_PARAM);
+        assertThat(params[routeRule2.getParamItem().getIndex()])
+            .isEqualTo(SentinelGatewayConstants.GATEWAY_NOT_MATCH_PARAM);
+
+        mockSingleUrlParam(itemParser, paramName, "23");
+        params = paramParser.parseParameterFor(api1, request, apiNamePredicate);
+        assertThat(params.length).isEqualTo(1);
+        assertThat(params[apiRule1.getParamItem().getIndex()]).isEqualTo("23");
+
+        mockSingleUrlParam(itemParser, paramName, "some233");
+        params = paramParser.parseParameterFor(api1, request, apiNamePredicate);
+        assertThat(params.length).isEqualTo(1);
+        assertThat(params[apiRule1.getParamItem().getIndex()])
+            .isEqualTo(SentinelGatewayConstants.GATEWAY_NOT_MATCH_PARAM);
     }
 
     private void mockClientHostAddress(/*@Mock*/ RequestItemParser parser, String address) {
@@ -196,15 +329,21 @@ public class GatewayParamParserTest {
         when(parser.getHeader(any(), eq(key))).thenReturn(value);
     }
 
+    private void mockSingleCookie(/*@Mock*/ RequestItemParser parser, String key, String value) {
+        when(parser.getCookieValue(any(), eq(key))).thenReturn(value);
+    }
+
     @Before
     public void setUp() {
         GatewayApiDefinitionManager.loadApiDefinitions(new HashSet<ApiDefinition>());
         GatewayRuleManager.loadRules(new HashSet<GatewayFlowRule>());
+        GatewayRegexCache.clear();
     }
 
     @After
     public void tearDown() {
         GatewayApiDefinitionManager.loadApiDefinitions(new HashSet<ApiDefinition>());
         GatewayRuleManager.loadRules(new HashSet<GatewayFlowRule>());
+        GatewayRegexCache.clear();
     }
 }

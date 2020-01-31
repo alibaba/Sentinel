@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-parent</artifactId>
-        <version>1.7.0-SNAPSHOT</version>
+        <version>1.7.2-SNAPSHOT</version>
     </parent>
     <artifactId>sentinel-demo</artifactId>
     <packaging>pom</packaging>
@@ -34,6 +34,8 @@
         <module>sentinel-demo-apache-dubbo</module>
         <module>sentinel-demo-spring-cloud-gateway</module>
         <module>sentinel-demo-zuul-gateway</module>
+        <module>sentinel-demo-etcd-datasource</module>
+        <module>sentinel-demo-spring-webmvc</module>
     </modules>
 
     <dependencies>
@@ -49,6 +51,13 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
                 <version>${maven.deploy.version}</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
                 <configuration>
                     <skip>true</skip>
                 </configuration>

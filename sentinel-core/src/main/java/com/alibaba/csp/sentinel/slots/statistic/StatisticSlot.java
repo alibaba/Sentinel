@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.slots.statistic;
 
 import java.util.Collection;
 
+import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlotEntryCallback;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlotExitCallback;
 import com.alibaba.csp.sentinel.slots.block.flow.PriorityWaitException;
@@ -67,7 +68,7 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 context.getCurEntry().getOriginNode().addPassRequest(count);
             }
 
-            if (resourceWrapper.getType() == EntryType.IN) {
+            if (resourceWrapper.getEntryType() == EntryType.IN) {
                 // Add count for global inbound entry node for global statistics.
                 Constants.ENTRY_NODE.increaseThreadNum();
                 Constants.ENTRY_NODE.addPassRequest(count);
@@ -84,7 +85,7 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 context.getCurEntry().getOriginNode().increaseThreadNum();
             }
 
-            if (resourceWrapper.getType() == EntryType.IN) {
+            if (resourceWrapper.getEntryType() == EntryType.IN) {
                 // Add count for global inbound entry node for global statistics.
                 Constants.ENTRY_NODE.increaseThreadNum();
             }
@@ -102,7 +103,7 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 context.getCurEntry().getOriginNode().increaseBlockQps(count);
             }
 
-            if (resourceWrapper.getType() == EntryType.IN) {
+            if (resourceWrapper.getEntryType() == EntryType.IN) {
                 // Add count for global inbound entry node for global statistics.
                 Constants.ENTRY_NODE.increaseBlockQps(count);
             }
@@ -123,7 +124,7 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 context.getCurEntry().getOriginNode().increaseExceptionQps(count);
             }
 
-            if (resourceWrapper.getType() == EntryType.IN) {
+            if (resourceWrapper.getEntryType() == EntryType.IN) {
                 Constants.ENTRY_NODE.increaseExceptionQps(count);
             }
             throw e;
@@ -135,10 +136,11 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         DefaultNode node = (DefaultNode)context.getCurNode();
 
         if (context.getCurEntry().getError() == null) {
-            // Calculate response time (max RT is TIME_DROP_VALVE).
+            // Calculate response time (max RT is statisticMaxRt from SentinelConfig).
             long rt = TimeUtil.currentTimeMillis() - context.getCurEntry().getCreateTime();
-            if (rt > Constants.TIME_DROP_VALVE) {
-                rt = Constants.TIME_DROP_VALVE;
+            int maxStatisticRt = SentinelConfig.statisticMaxRt();
+            if (rt > maxStatisticRt) {
+                rt = maxStatisticRt;
             }
 
             // Record response time and success count.
@@ -153,7 +155,7 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 context.getCurEntry().getOriginNode().decreaseThreadNum();
             }
 
-            if (resourceWrapper.getType() == EntryType.IN) {
+            if (resourceWrapper.getEntryType() == EntryType.IN) {
                 Constants.ENTRY_NODE.addRtAndSuccess(rt, count);
                 Constants.ENTRY_NODE.decreaseThreadNum();
             }

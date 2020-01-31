@@ -1,10 +1,10 @@
 <div class="header">
   <nav class="navbar navbar-fixed-top navbar-inverse" style="" role="navigation">
     <div class="navbar-brand">
-      <span style="color: #fff;font-size: 26px;">Sentinel 控制台</span>
+      <span style="color: #fff;font-size: 26px;" ng-model="dashboardVersion">Sentinel 控制台 {{dashboardVersion}}</span>
     </div>
     <ul class="nav navbar-nav navbar-right">
-      <li>
+      <li ng-show="showLogout">
         <a href="javascript:void(0);" ng-click="logout()"
            style="margin: 3px 15px 0 0;"><span class="glyphicon glyphicon-log-out"></span>&nbsp;注销</a>
       </li>

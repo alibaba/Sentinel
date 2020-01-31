@@ -28,6 +28,7 @@ public class ApplicationEntity {
     private Date gmtCreate;
     private Date gmtModified;
     private String app;
+    private Integer appType;
     private String activeConsole;
     private Date lastFetch;
 
@@ -63,6 +64,14 @@ public class ApplicationEntity {
         this.app = app;
     }
 
+    public Integer getAppType() {
+        return appType;
+    }
+
+    public void setAppType(Integer appType) {
+        this.appType = appType;
+    }
+
     public String getActiveConsole() {
         return activeConsole;
     }
@@ -80,7 +89,7 @@ public class ApplicationEntity {
     }
 
     public AppInfo toAppInfo() {
-        return new AppInfo(app);
+        return new AppInfo(app, appType);
     }
 
     @Override

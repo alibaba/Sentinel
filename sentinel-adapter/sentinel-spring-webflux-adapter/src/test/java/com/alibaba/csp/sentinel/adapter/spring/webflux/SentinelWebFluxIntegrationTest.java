@@ -102,6 +102,26 @@ public class SentinelWebFluxIntegrationTest {
     }
 
     @Test
+    public void testCustomizedIgnoreUrlCleaner() throws Exception {
+        final String fooPrefix = "/foo/";
+        String url1 = fooPrefix + 1;
+        WebFluxCallbackManager.setUrlCleaner(((exchange, originUrl) -> {
+            if (originUrl.startsWith(fooPrefix)) {
+                return "";
+            }
+            return originUrl;
+        }));
+        this.webClient.get()
+                .uri(url1)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(String.class).isEqualTo("Hello 1");
+
+        assertNull(ClusterBuilderSlot.getClusterNode(url1));
+        WebFluxCallbackManager.resetUrlCleaner();
+    }
+
+    @Test
     public void testCustomizedBlockRequestHandler() throws Exception {
         String url = "/error";
         String prefix = "blocked: ";

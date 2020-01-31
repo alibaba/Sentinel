@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-parent</artifactId>
-        <version>1.7.0-SNAPSHOT</version>
+        <version>1.7.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>sentinel-dashboard</artifactId>
@@ -36,6 +36,11 @@
         <dependency>
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-parameter-flow-control</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-api-gateway-adapter-common</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -175,6 +180,7 @@
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
+                <filtering>true</filtering>
             </resource>
 
             <resource>

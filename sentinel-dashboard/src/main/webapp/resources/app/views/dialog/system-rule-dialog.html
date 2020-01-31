@@ -9,40 +9,41 @@
             <label class="col-sm-2 control-label">阈值类型</label>
             <div class="col-sm-9">
               <div class="form-control" ng-if="systemRuleDialog.type == 'edit'" align="center">
-                <!--avgLoad -->
-                <input type="radio" name="grade" value="0" ng-model='currentRule.grade' ng-disabled="systemRuleDialog.type == 'edit'" />&nbsp;LOAD&nbsp;&nbsp;
+                <!--highestSystemLoad -->
+                <input type="radio" name="grade" value="0" checked ng-model='currentRule.grade' ng-disabled="systemRuleDialog.type == 'edit'" />&nbsp;LOAD&nbsp;&nbsp;
                 <!--avgRt -->
                 <input type="radio" name="grade" value="1" ng-model='currentRule.grade' ng-disabled="systemRuleDialog.type == 'edit'" />&nbsp;RT&nbsp;&nbsp;
                 <!--maxThread -->
                 <input type="radio" name="grade" value="2" ng-model='currentRule.grade' ng-disabled="systemRuleDialog.type == 'edit'" />&nbsp;线程数&nbsp;&nbsp;
                 <!--qps -->
-                <input type="radio" name="grade" value="3" checked ng-model='currentRule.grade' ng-disabled="systemRuleDialog.type == 'edit'"
-                />&nbsp;入口 QPS
+                <input type="radio" name="grade" value="3" ng-model='currentRule.grade' ng-disabled="systemRuleDialog.type == 'edit'"/>&nbsp;入口 QPS&nbsp;&nbsp;
+                <!--highestCpuUsage -->
+                <input type="radio" name="grade" value="4" ng-model='currentRule.grade' ng-disabled="systemRuleDialog.type == 'edit'" />&nbsp;CPU 使用率&nbsp;&nbsp;
+
               </div>
               <div class="form-control highlight-border" ng-if="systemRuleDialog.type == 'add'" align="center">
-                <!--avgLoad -->
+                <!--highestSystemLoad -->
                 <input type="radio" name="grade" value="0" ng-model='currentRule.grade' ng-disabled="systemRuleDialog.type == 'edit'" />&nbsp;LOAD&nbsp;&nbsp;
                 <!--avgRt -->
                 <input type="radio" name="grade" value="1" ng-model='currentRule.grade' ng-disabled="systemRuleDialog.type == 'edit'" />&nbsp;RT&nbsp;&nbsp;
                 <!--maxThread -->
                 <input type="radio" name="grade" value="2" ng-model='currentRule.grade' ng-disabled="systemRuleDialog.type == 'edit'" />&nbsp;线程数&nbsp;&nbsp;
                 <!--qps -->
-                <input type="radio" name="grade" value="3" checked ng-model='currentRule.grade' ng-disabled="systemRuleDialog.type == 'edit'"
-                />&nbsp;入口 QPS
+                <input type="radio" name="grade" value="3" ng-model='currentRule.grade' ng-disabled="systemRuleDialog.type == 'edit'"/>&nbsp;入口 QPS&nbsp;&nbsp;
+                <!--highestCpuUsage -->
+                <input type="radio" name="grade" value="4" checked ng-model='currentRule.grade' ng-disabled="systemRuleDialog.type == 'edit'" />&nbsp;CPU 使用率&nbsp;&nbsp;
+
               </div>
             </div>
           </div>
           <div class="form-group">
             <label class="col-sm-2 control-label">阈值</label>
             <div class="col-sm-9">
-              <input type='number' class="form-control highlight-border" ng-model='currentRule.avgLoad' placeholder="[0, ~)的小数" ng-if="currentRule.grade == 0"
-              />
-              <input type='number' class="form-control highlight-border" ng-model='currentRule.avgRt' placeholder="[0, ~)的整数" ng-if="currentRule.grade == 1"
-              />
-              <input type='number' class="form-control highlight-border" ng-model='currentRule.maxThread' placeholder="[0, ~)的整数" ng-if="currentRule.grade == 2"
-              />
-              <input type='number' class="form-control highlight-border" ng-model='currentRule.qps' placeholder="[0, ~)的小数" ng-if="currentRule.grade == 3"
-              />
+              <input type='number' min="0" class="form-control highlight-border" ng-model='currentRule.highestSystemLoad' placeholder="[0, ~)的正整数" ng-if="currentRule.grade == 0"/>
+              <input type='number' min="0" class="form-control highlight-border" ng-model='currentRule.avgRt' placeholder="[0, ~)的正整数" ng-if="currentRule.grade == 1"/>
+              <input type='number' min="0" class="form-control highlight-border" ng-model='currentRule.maxThread' placeholder="[0, ~)的正整数" ng-if="currentRule.grade == 2"/>
+              <input type='number' min="0" class="form-control highlight-border" ng-model='currentRule.qps' placeholder="[0, ~)的正整数" ng-if="currentRule.grade == 3"/>
+              <input type='number' min="0" class="form-control highlight-border" ng-model='currentRule.highestCpuUsage' placeholder="[0, 1]的小数，代表百分比" ng-if="currentRule.grade == 4"/>
             </div>
           </div>
         </form>

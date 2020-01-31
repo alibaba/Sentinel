@@ -31,7 +31,6 @@ import static org.junit.Assert.*;
  * Test cases for {@link HttpServer}.
  *
  * @author cdfive
- * @date 2018-12-19
  */
 public class HttpServerTest {
 
@@ -39,20 +38,20 @@ public class HttpServerTest {
 
     @BeforeClass
     public static void beforeClass() {
-        // note: clear handlerMap first, as other test case may init HttpServer.handlerMap
+        // Note: clear handlerMap first, as other test case may init HttpServer.handlerMap
         // if not, run mvn test, the next assertEquals(0, HttpServer.handlerMap.size()) may fail
         HttpServer.handlerMap.clear();
 
-        // create new HttpServer
+        // Create new HttpServer
         httpServer = new HttpServer();
 
-        // no handler in handlerMap at first
+        // No handler in handlerMap at first
         assertEquals(0, HttpServer.handlerMap.size());
     }
 
     @Before
     public void before() {
-        // clear handlerMap every method call
+        // Clear handlerMap every method call
         HttpServer.handlerMap.clear();
     }
 
@@ -61,37 +60,37 @@ public class HttpServerTest {
         String commandName;
         CommandHandler handler;
 
-        // if commandName is null, no handler added in handlerMap
+        // If commandName is null, no handler added in handlerMap
         commandName = null;
         handler = new VersionCommandHandler();
         httpServer.registerCommand(commandName, handler);
         assertEquals(0, HttpServer.handlerMap.size());
 
-        // if commandName is "", no handler added in handlerMap
+        // If commandName is "", no handler added in handlerMap
         commandName = "";
         handler = new VersionCommandHandler();
         httpServer.registerCommand(commandName, handler);
         assertEquals(0, HttpServer.handlerMap.size());
 
-        // if handler is null, no handler added in handlerMap
+        // If handler is null, no handler added in handlerMap
         commandName = "version";
         handler = null;
         httpServer.registerCommand(commandName, handler);
         assertEquals(0, HttpServer.handlerMap.size());
 
-        // add one handler, commandName:version, handler:VersionCommandHandler
+        // Add one handler, commandName:version, handler:VersionCommandHandler
         commandName = "version";
         handler = new VersionCommandHandler();
         httpServer.registerCommand(commandName, handler);
         assertEquals(1, HttpServer.handlerMap.size());
 
-        // add the same name Handler, no handler added in handlerMap
+        // Add the same name Handler, no handler added in handlerMap
         commandName = "version";
         handler = new VersionCommandHandler();
         httpServer.registerCommand(commandName, handler);
         assertEquals(1, HttpServer.handlerMap.size());
 
-        // add another handler, commandName:basicInfo, handler:BasicInfoCommandHandler
+        // Add another handler, commandName:basicInfo, handler:BasicInfoCommandHandler
         commandName = "basicInfo";
         handler = new BasicInfoCommandHandler();
         httpServer.registerCommand(commandName, handler);
@@ -102,16 +101,16 @@ public class HttpServerTest {
     public void testRegisterCommands() {
         Map<String, CommandHandler> handlerMap = null;
 
-        // if handlerMap is null, no handler added in handlerMap
+        // If handlerMap is null, no handler added in handlerMap
         httpServer.registerCommands(handlerMap);
         assertEquals(0, HttpServer.handlerMap.size());
 
-        // add handler from CommandHandlerProvider
+        // Add handler from CommandHandlerProvider
         handlerMap = CommandHandlerProvider.getInstance().namedHandlers();
         httpServer.registerCommands(handlerMap);
-        // check same size
+        // Check same size
         assertEquals(handlerMap.size(), HttpServer.handlerMap.size());
-        // check not same reference
+        // Check not same reference
         assertTrue(handlerMap != HttpServer.handlerMap);
     }
 }

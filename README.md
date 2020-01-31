@@ -1,6 +1,6 @@
 <img src="https://user-images.githubusercontent.com/9434884/43697219-3cb4ef3a-9975-11e8-9a9c-73f4f537442d.png" alt="Sentinel Logo" width="50%">
 
-# Sentinel: Sentinel of Your Application
+# Sentinel: The Sentinel of Your Microservices
 
 [![Travis Build Status](https://travis-ci.org/alibaba/Sentinel.svg?branch=master)](https://travis-ci.org/alibaba/Sentinel)
 [![Codecov](https://codecov.io/gh/alibaba/Sentinel/branch/master/graph/badge.svg)](https://codecov.io/gh/alibaba/Sentinel)
@@ -30,8 +30,9 @@ See the [中文文档](https://github.com/alibaba/Sentinel/wiki/%E4%BB%8B%E7%BB%
 
 See the [Wiki](https://github.com/alibaba/Sentinel/wiki) for full documentation, examples, blog posts, operational details and other information.
 
-Sentinel provides integration module for various open-source frameworks and libraries
-(e.g. Spring Cloud, Apache Dubbo, gRPC, Spring WebFlux, Reactor). You can refer to [the document](https://github.com/alibaba/Sentinel/wiki/Adapters-to-Popular-Framework) for more information.
+Sentinel provides integration modules for various open-source frameworks
+(e.g. Spring Cloud, Apache Dubbo, gRPC, Spring WebFlux, Reactor) and service mesh.
+You can refer to [the document](https://github.com/alibaba/Sentinel/wiki/Adapters-to-Popular-Framework) for more information.
 
 If you are using Sentinel, please [**leave a comment here**](https://github.com/alibaba/Sentinel/issues/18) to tell us your scenario to make Sentinel better.
 It's also encouraged to add the link of your blog post, tutorial, demo or customized components to [**Awesome Sentinel**](./doc/awesome-sentinel.md).
@@ -55,7 +56,7 @@ If your application is build in Maven, just add the following dependency in `pom
 <dependency>
     <groupId>com.alibaba.csp</groupId>
     <artifactId>sentinel-core</artifactId>
-    <version>1.6.1</version>
+    <version>1.7.1</version>
 </dependency>
 ```
 
@@ -74,6 +75,7 @@ try (Entry entry = SphU.entry("HelloWorld")) {
     // Handle rejected request.
     e.printStackTrace();
 }
+// try-with-resources auto exit
 ```
 
 So far the code modification is done. We also provide [annotation support module](https://github.com/alibaba/Sentinel/blob/master/sentinel-extension/sentinel-annotation-aspectj/README.md) to define resource easier.
@@ -98,18 +100,18 @@ For more information, please refer to [How To Use](https://github.com/alibaba/Se
 
 ### 4. Check the Result
 
-After running the demo for a while, you can see the following records in `~/logs/csp/${appName}-metrics.log`.
+After running the demo for a while, you can see the following records in `~/logs/csp/${appName}-metrics.log.{date}` (When using the default `DateFileLogHandler`).
 
 ```
-|--timestamp-|------date time----|-resource-|p |block|s |e|rt
-1529998904000|2018-06-26 15:41:44|HelloWorld|20|0    |20|0|0
-1529998905000|2018-06-26 15:41:45|HelloWorld|20|5579 |20|0|728
-1529998906000|2018-06-26 15:41:46|HelloWorld|20|15698|20|0|0
-1529998907000|2018-06-26 15:41:47|HelloWorld|20|19262|20|0|0
-1529998908000|2018-06-26 15:41:48|HelloWorld|20|19502|20|0|0
-1529998909000|2018-06-26 15:41:49|HelloWorld|20|18386|20|0|0
+|--timestamp-|------date time----|-resource-|p |block|s |e|rt  |occupied
+1529998904000|2018-06-26 15:41:44|HelloWorld|20|0    |20|0|0   |0
+1529998905000|2018-06-26 15:41:45|HelloWorld|20|5579 |20|0|728 |0
+1529998906000|2018-06-26 15:41:46|HelloWorld|20|15698|20|0|0   |0
+1529998907000|2018-06-26 15:41:47|HelloWorld|20|19262|20|0|0   |0
+1529998908000|2018-06-26 15:41:48|HelloWorld|20|19502|20|0|0   |0
+1529998909000|2018-06-26 15:41:49|HelloWorld|20|18386|20|0|0   |0
 
-p stands for incoming request, block for blocked by rules, success for success handled by Sentinel, e for exception count, rt for average response time (ms)
+p stands for incoming request, block for blocked by rules, success for success handled by Sentinel, e for exception count, rt for average response time (ms), occupied stands for occupiedPassQps since 1.5.0 which enable us booking more than 1 shot when entering.
 ```
 
 This shows that the demo can print "hello world" 20 times per second.
@@ -124,11 +126,14 @@ Samples can be found in the [sentinel-demo](https://github.com/alibaba/Sentinel/
 
 Sentinel also provides a simple dashboard application, on which you can monitor the clients and configure the rules in real time.
 
+![dashboard](https://user-images.githubusercontent.com/9434884/55449295-84866d80-55fd-11e9-94e5-d3441f4a2b63.png)
+
 For details please refer to [Dashboard](https://github.com/alibaba/Sentinel/wiki/Dashboard).
 
 ## Trouble Shooting and Logs
 
-Sentinel will generate logs for troubleshooting. All the information can be found in [logs](https://github.com/alibaba/Sentinel/wiki/Logs).
+Sentinel will generate logs for troubleshooting and real-time monitoring.
+All the information can be found in [logs](https://github.com/alibaba/Sentinel/wiki/Logs).
 
 ## Bugs and Feedback
 
@@ -163,6 +168,5 @@ These are only part of the companies using Sentinel, for reference only. If you 
 ![亲宝宝](https://stlib.qbb6.com/wclt/img/home_hd/version1/title_logo.png)
 ![杭州光云科技](https://www.raycloud.com/images/logo.png)
 ![金汇金融](https://res.jinhui365.com/r/images/logo2.png?v=1.527)
-![Vivo](https://user-images.githubusercontent.com/9434884/49355264-c6f87600-f701-11e8-8109-054cf91df868.png)
 ![闪电购](http://cdn.52shangou.com/shandianbang/official-source/3.1.1/build/images/logo.png)
 ![拼多多](http://cdn.pinduoduo.com/assets/img/pdd_logo_v3.png)

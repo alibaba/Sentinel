@@ -30,9 +30,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayFlowRule;
 import com.alibaba.csp.sentinel.command.CommandConstants;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.command.vo.NodeVo;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.ApiDefinitionEntity;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayFlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.util.AsyncUtils;
 import com.alibaba.csp.sentinel.slots.block.Rule;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRule;
@@ -59,12 +62,14 @@ import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ServerFlowConfig
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ServerTransportConfig;
 import com.alibaba.csp.sentinel.dashboard.util.VersionUtils;
 
+import org.apache.http.Consts;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
@@ -89,6 +94,8 @@ public class SentinelApiClient {
     private static Logger logger = LoggerFactory.getLogger(SentinelApiClient.class);
 
     private static final Charset DEFAULT_CHARSET = Charset.forName(SentinelConfig.charset());
+    private static final String HTTP_HEADER_CONTENT_TYPE = "Content-Type";
+    private static final String HTTP_HEADER_CONTENT_TYPE_URLENCODED = ContentType.create(URLEncodedUtils.CONTENT_TYPE).toString();
 
     private static final String RESOURCE_URL_PATH = "jsonTree";
     private static final String CLUSTER_NODE_PATH = "clusterNode";
@@ -102,12 +109,17 @@ public class SentinelApiClient {
     private static final String FETCH_CLUSTER_CLIENT_CONFIG_PATH = "cluster/client/fetchConfig";
     private static final String MODIFY_CLUSTER_CLIENT_CONFIG_PATH = "cluster/client/modifyConfig";
 
-    private static final String FETCH_CLUSTER_SERVER_ALL_CONFIG_PATH = "cluster/server/fetchConfig";
     private static final String FETCH_CLUSTER_SERVER_BASIC_INFO_PATH = "cluster/server/info";
 
     private static final String MODIFY_CLUSTER_SERVER_TRANSPORT_CONFIG_PATH = "cluster/server/modifyTransportConfig";
     private static final String MODIFY_CLUSTER_SERVER_FLOW_CONFIG_PATH = "cluster/server/modifyFlowConfig";
     private static final String MODIFY_CLUSTER_SERVER_NAMESPACE_SET_PATH = "cluster/server/modifyNamespaceSet";
+
+    private static final String FETCH_GATEWAY_API_PATH = "gateway/getApiDefinitions";
+    private static final String MODIFY_GATEWAY_API_PATH = "gateway/updateApiDefinitions";
+
+    private static final String FETCH_GATEWAY_FLOW_RULE_PATH = "gateway/getRules";
+    private static final String MODIFY_GATEWAY_FLOW_RULE_PATH = "gateway/updateRules";
 
     private static final String FLOW_RULE_TYPE = "flow";
     private static final String DEGRADE_RULE_TYPE = "degrade";
@@ -117,6 +129,7 @@ public class SentinelApiClient {
     private CloseableHttpAsyncClient httpClient;
 
     private static final SentinelVersion version160 = new SentinelVersion(1, 6, 0);
+    private static final SentinelVersion version171 = new SentinelVersion(1, 7, 1);
     
     @Autowired
     private AppManagement appManagement;
@@ -141,6 +154,30 @@ public class SentinelApiClient {
         return statusCode == 400 && StringUtil.isNotEmpty(body) && body.contains(CommandConstants.MSG_UNKNOWN_COMMAND_PREFIX);
     }
     
+    protected boolean isSupportPost(String app, String ip, int port) {
+        return StringUtil.isNotEmpty(app) && Optional.ofNullable(appManagement.getDetailApp(app))
+                .flatMap(e -> e.getMachine(ip, port))
+                .flatMap(m -> VersionUtils.parseVersion(m.getVersion())
+                    .map(v -> v.greaterOrEqual(version160)))
+                .orElse(false);
+    }
+    
+    /**
+     * Check wheter target instance (identified by tuple of app-ip:port)
+     * supports the form of "xxxxx; xx=xx" in "Content-Type" header.
+     * 
+     * @param app target app name
+     * @param ip target node's address
+     * @param port target node's port
+     */
+    protected boolean isSupportEnhancedContentType(String app, String ip, int port) {
+        return StringUtil.isNotEmpty(app) && Optional.ofNullable(appManagement.getDetailApp(app))
+                .flatMap(e -> e.getMachine(ip, port))
+                .flatMap(m -> VersionUtils.parseVersion(m.getVersion())
+                    .map(v -> v.greaterOrEqual(version171)))
+                .orElse(false);
+    }
+    
     private StringBuilder queryString(Map<String, String> params) {
         StringBuilder queryStringBuilder = new StringBuilder();
         for (Entry<String, String> entry : params.entrySet()) {
@@ -159,18 +196,24 @@ public class SentinelApiClient {
         return queryStringBuilder;
     }
     
-    private HttpUriRequest postRequest(String url, Map<String, String> params) {
+    /**
+     * Build an `HttpUriRequest` in POST way.
+     * 
+     * @param url
+     * @param params
+     * @param supportEnhancedContentType see {@link #isSupportEnhancedContentType(String, String, int)}
+     * @return
+     */
+    protected static HttpUriRequest postRequest(String url, Map<String, String> params, boolean supportEnhancedContentType) {
         HttpPost httpPost = new HttpPost(url);
         if (params != null && params.size() > 0) {
             List<NameValuePair> list = new ArrayList<>(params.size());
             for (Entry<String, String> entry : params.entrySet()) {
                 list.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
             }
-            try {
-                httpPost.setEntity(new UrlEncodedFormEntity(list));
-            } catch (UnsupportedEncodingException e) {
-                logger.warn("httpPostContent encode entity error: {}", params, e);
-                return null;
+            httpPost.setEntity(new UrlEncodedFormEntity(list, Consts.UTF_8));
+            if (!supportEnhancedContentType) {
+                httpPost.setHeader(HTTP_HEADER_CONTENT_TYPE, HTTP_HEADER_CONTENT_TYPE_URLENCODED);
             }
         }
         return httpPost;
@@ -188,7 +231,7 @@ public class SentinelApiClient {
     private String getBody(HttpResponse response) throws Exception {
         Charset charset = null;
         try {
-            String contentTypeStr = response.getFirstHeader("Content-type").getValue();
+            String contentTypeStr = response.getFirstHeader(HTTP_HEADER_CONTENT_TYPE).getValue();
             if (StringUtil.isNotEmpty(contentTypeStr)) {
                 ContentType contentType = ContentType.parse(contentTypeStr);
                 charset = contentType.getCharset();
@@ -245,12 +288,7 @@ public class SentinelApiClient {
         if (params == null) {
             params = Collections.emptyMap();
         }
-        boolean supportPost = StringUtil.isNotEmpty(app) && Optional.ofNullable(appManagement.getDetailApp(app))
-                .flatMap(e -> e.getMachine(ip, port))
-                .flatMap(m -> VersionUtils.parseVersion(m.getVersion())
-                    .map(v -> v.greaterOrEqual(version160)))
-                .orElse(false);
-        if (!useHttpPost || !supportPost) {
+        if (!useHttpPost || !isSupportPost(app, ip, port)) {
             // Using GET in older versions, append parameters after url
             if (!params.isEmpty()) {
                 if (urlBuilder.indexOf("?") == -1) {
@@ -263,7 +301,8 @@ public class SentinelApiClient {
             return executeCommand(new HttpGet(urlBuilder.toString()));
         } else {
             // Using POST
-            return executeCommand(postRequest(urlBuilder.toString(), params));
+            return executeCommand(
+                    postRequest(urlBuilder.toString(), params, isSupportEnhancedContentType(app, ip, port)));
         }
     }
     
@@ -360,14 +399,41 @@ public class SentinelApiClient {
             params.put("type", type);
             params.put("data", data);
             String result = executeCommand(app, ip, port, SET_RULES_PATH, params, true).get();
-            logger.info("setRules: {}", result);
+            logger.info("setRules result: {}, type={}", result, type);
             return true;
-        } catch (InterruptedException | ExecutionException e) {
-            logger.warn("setRules api failed: {}", type, e);
+        } catch (InterruptedException e) {
+            logger.warn("setRules API failed: {}", type, e);
+            return false;
+        } catch (ExecutionException e) {
+            logger.warn("setRules API failed: {}", type, e.getCause());
             return false;
         } catch (Exception e) {
-            logger.warn("setRules failed", e);
+            logger.error("setRules API failed, type={}", type, e);
             return false;
+        }
+    }
+
+    private CompletableFuture<Void> setRulesAsync(String app, String ip, int port, String type, List<? extends RuleEntity> entities) {
+        try {
+            AssertUtil.notNull(entities, "rules cannot be null");
+            AssertUtil.notEmpty(app, "Bad app name");
+            AssertUtil.notEmpty(ip, "Bad machine IP");
+            AssertUtil.isTrue(port > 0, "Bad machine port");
+            String data = JSON.toJSONString(
+                entities.stream().map(r -> r.toRule()).collect(Collectors.toList()));
+            Map<String, String> params = new HashMap<>(2);
+            params.put("type", type);
+            params.put("data", data);
+            return executeCommand(app, ip, port, SET_RULES_PATH, params, true)
+                .thenCompose(r -> {
+                    if ("success".equalsIgnoreCase(r.trim())) {
+                        return CompletableFuture.completedFuture(null);
+                    }
+                    return AsyncUtils.newFailedFuture(new CommandFailedException(r));
+                });
+        } catch (Exception e) {
+            logger.error("setRulesAsync API failed, type={}", type, e);
+            return AsyncUtils.newFailedFuture(e);
         }
     }
 
@@ -384,7 +450,7 @@ public class SentinelApiClient {
      * @return
      */
     public List<NodeVo> fetchClusterNodeOfMachine(String ip, int port, boolean includeZero) {
-        String type = "noZero";
+        String type = "notZero";
         if (includeZero) {
             type = "zero";
         }
@@ -480,6 +546,10 @@ public class SentinelApiClient {
      */
     public boolean setFlowRuleOfMachine(String app, String ip, int port, List<FlowRuleEntity> rules) {
         return setRules(app, ip, port, FLOW_RULE_TYPE, rules);
+    }
+
+    public CompletableFuture<Void> setFlowRuleOfMachineAsync(String app, String ip, int port, List<FlowRuleEntity> rules) {
+        return setRulesAsync(app, ip, port, FLOW_RULE_TYPE, rules);
     }
 
     /**
@@ -691,6 +761,92 @@ public class SentinelApiClient {
         } catch (Exception ex) {
             logger.warn("Error when fetching cluster sever all config and basic info", ex);
             return AsyncUtils.newFailedFuture(ex);
+        }
+    }
+
+    public CompletableFuture<List<ApiDefinitionEntity>> fetchApis(String app, String ip, int port) {
+        if (StringUtil.isBlank(ip) || port <= 0) {
+            return AsyncUtils.newFailedFuture(new IllegalArgumentException("Invalid parameter"));
+        }
+
+        try {
+            return executeCommand(ip, port, FETCH_GATEWAY_API_PATH, false)
+                    .thenApply(r -> {
+                        List<ApiDefinitionEntity> entities = JSON.parseArray(r, ApiDefinitionEntity.class);
+                        if (entities != null) {
+                            for (ApiDefinitionEntity entity : entities) {
+                                entity.setApp(app);
+                                entity.setIp(ip);
+                                entity.setPort(port);
+                            }
+                        }
+                        return entities;
+                    });
+        } catch (Exception ex) {
+            logger.warn("Error when fetching gateway apis", ex);
+            return AsyncUtils.newFailedFuture(ex);
+        }
+    }
+
+    public boolean modifyApis(String app, String ip, int port, List<ApiDefinitionEntity> apis) {
+        if (apis == null) {
+            return true;
+        }
+
+        try {
+            AssertUtil.notEmpty(app, "Bad app name");
+            AssertUtil.notEmpty(ip, "Bad machine IP");
+            AssertUtil.isTrue(port > 0, "Bad machine port");
+            String data = JSON.toJSONString(
+                    apis.stream().map(r -> r.toApiDefinition()).collect(Collectors.toList()));
+            Map<String, String> params = new HashMap<>(2);
+            params.put("data", data);
+            String result = executeCommand(app, ip, port, MODIFY_GATEWAY_API_PATH, params, true).get();
+            logger.info("Modify gateway apis: {}", result);
+            return true;
+        } catch (Exception e) {
+            logger.warn("Error when modifying gateway apis", e);
+            return false;
+        }
+    }
+
+    public CompletableFuture<List<GatewayFlowRuleEntity>> fetchGatewayFlowRules(String app, String ip, int port) {
+        if (StringUtil.isBlank(ip) || port <= 0) {
+            return AsyncUtils.newFailedFuture(new IllegalArgumentException("Invalid parameter"));
+        }
+
+        try {
+            return executeCommand(ip, port, FETCH_GATEWAY_FLOW_RULE_PATH, false)
+                    .thenApply(r -> {
+                        List<GatewayFlowRule> gatewayFlowRules = JSON.parseArray(r, GatewayFlowRule.class);
+                        List<GatewayFlowRuleEntity> entities = gatewayFlowRules.stream().map(rule -> GatewayFlowRuleEntity.fromGatewayFlowRule(app, ip, port, rule)).collect(Collectors.toList());
+                        return entities;
+                    });
+        } catch (Exception ex) {
+            logger.warn("Error when fetching gateway flow rules", ex);
+            return AsyncUtils.newFailedFuture(ex);
+        }
+    }
+
+    public boolean modifyGatewayFlowRules(String app, String ip, int port, List<GatewayFlowRuleEntity> rules) {
+        if (rules == null) {
+            return true;
+        }
+
+        try {
+            AssertUtil.notEmpty(app, "Bad app name");
+            AssertUtil.notEmpty(ip, "Bad machine IP");
+            AssertUtil.isTrue(port > 0, "Bad machine port");
+            String data = JSON.toJSONString(
+                    rules.stream().map(r -> r.toGatewayFlowRule()).collect(Collectors.toList()));
+            Map<String, String> params = new HashMap<>(2);
+            params.put("data", data);
+            String result = executeCommand(app, ip, port, MODIFY_GATEWAY_FLOW_RULE_PATH, params, true).get();
+            logger.info("Modify gateway flow rules: {}", result);
+            return true;
+        } catch (Exception e) {
+            logger.warn("Error when modifying gateway apis", e);
+            return false;
         }
     }
 }

@@ -98,7 +98,7 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
           let url = '/dashboard/flow/' + $scope.app;
           $location.path(url);
         } else {
-          alert('失败!');
+          alert('失败：' + data.msg);
         }
       }).error((data, header, config, status) => {
           alert('未知错误');
@@ -110,10 +110,10 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
             return;
         }
       FlowService.newRule(flowRuleDialogScope.currentRule).success(function (data) {
-        if (data.code == 0) {
+        if (data.code === 0) {
           flowRuleDialog.close();
         } else {
-          alert('失败!');
+            alert('失败：' + data.msg);
         }
       });
     }
@@ -159,12 +159,12 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
             return;
         }
       DegradeService.newRule(degradeRuleDialogScope.currentRule).success(function (data) {
-        if (data.code == 0) {
+        if (data.code === 0) {
           degradeRuleDialog.close();
           var url = '/dashboard/degrade/' + $scope.app;
           $location.path(url);
         } else {
-          alert('失败!');
+          alert('失败：' + data.msg);
         }
       });
     }
@@ -174,10 +174,10 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
             return;
         }
       DegradeService.newRule(degradeRuleDialogScope.currentRule).success(function (data) {
-        if (data.code == 0) {
+        if (data.code === 0) {
           degradeRuleDialog.close();
         } else {
-          alert('失败!');
+            alert('失败：' + data.msg);
         }
       });
     }
@@ -322,6 +322,15 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
                   paramFlowItemList: [],
                   count: 0,
                   limitApp: 'default',
+                  controlBehavior: 0,
+                  durationInSec: 1,
+                  burstCount: 0,
+                  maxQueueingTimeMs: 0,
+                  clusterMode: false,
+                  clusterConfig: {
+                      thresholdType: 0,
+                      fallbackToLocalWhenFail: true,
+                  }
               }
           };
 

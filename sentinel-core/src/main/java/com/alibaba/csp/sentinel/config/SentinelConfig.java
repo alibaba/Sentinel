@@ -15,26 +15,23 @@
  */
 package com.alibaba.csp.sentinel.config;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
-
-import com.alibaba.csp.sentinel.log.LogBase;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.AppNameUtil;
 import com.alibaba.csp.sentinel.util.AssertUtil;
+import com.alibaba.csp.sentinel.util.StringUtil;
+
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * The universal local config center of Sentinel. The config is retrieved from command line arguments
- * and {@code ${user.home}/logs/csp/${appName}.properties} file by default.
+ * The universal local configuration center of Sentinel. The config is retrieved from command line arguments
+ * and customized properties file by default.
  *
  * @author leyou
  * @author Eric Zhao
  */
-public class SentinelConfig {
+public final class SentinelConfig {
 
     /**
      * The default application type.
@@ -52,18 +49,19 @@ public class SentinelConfig {
     public static final String TOTAL_METRIC_FILE_COUNT = "csp.sentinel.metric.file.total.count";
     public static final String COLD_FACTOR = "csp.sentinel.flow.cold.factor";
     public static final String STATISTIC_MAX_RT = "csp.sentinel.statistic.max.rt";
+    public static final String SPI_CLASSLOADER = "csp.sentinel.spi.classloader";
 
     static final String DEFAULT_CHARSET = "UTF-8";
     static final long DEFAULT_SINGLE_METRIC_FILE_SIZE = 1024 * 1024 * 50;
     static final int DEFAULT_TOTAL_METRIC_FILE_COUNT = 6;
     static final int DEFAULT_COLD_FACTOR = 3;
-    static final int DEFAULT_STATISTIC_MAX_RT = 4900;
+
+    public static final int DEFAULT_STATISTIC_MAX_RT = 4900;
 
     static {
         try {
             initialize();
             loadProps();
-
             resolveAppType();
             RecordLog.info("[SentinelConfig] Application type resolved: " + appType);
         } catch (Throwable ex) {
@@ -90,48 +88,17 @@ public class SentinelConfig {
 
     private static void initialize() {
         // Init default properties.
-        SentinelConfig.setConfig(CHARSET, DEFAULT_CHARSET);
-        SentinelConfig.setConfig(SINGLE_METRIC_FILE_SIZE, String.valueOf(DEFAULT_SINGLE_METRIC_FILE_SIZE));
-        SentinelConfig.setConfig(TOTAL_METRIC_FILE_COUNT, String.valueOf(DEFAULT_TOTAL_METRIC_FILE_COUNT));
-        SentinelConfig.setConfig(COLD_FACTOR, String.valueOf(DEFAULT_COLD_FACTOR));
-        SentinelConfig.setConfig(STATISTIC_MAX_RT, String.valueOf(DEFAULT_STATISTIC_MAX_RT));
+        setConfig(CHARSET, DEFAULT_CHARSET);
+        setConfig(SINGLE_METRIC_FILE_SIZE, String.valueOf(DEFAULT_SINGLE_METRIC_FILE_SIZE));
+        setConfig(TOTAL_METRIC_FILE_COUNT, String.valueOf(DEFAULT_TOTAL_METRIC_FILE_COUNT));
+        setConfig(COLD_FACTOR, String.valueOf(DEFAULT_COLD_FACTOR));
+        setConfig(STATISTIC_MAX_RT, String.valueOf(DEFAULT_STATISTIC_MAX_RT));
     }
 
     private static void loadProps() {
-        // Resolve app name.
-        AppNameUtil.resolveAppName();
-        try {
-            String appName = AppNameUtil.getAppName();
-            if (appName == null) {
-                appName = "";
-            }
-            // We first retrieve the properties from the property file.
-            String fileName = LogBase.getLogBaseDir() + appName + ".properties";
-            File file = new File(fileName);
-            if (file.exists()) {
-                RecordLog.info("[SentinelConfig] Reading config from " + fileName);
-                FileInputStream fis = new FileInputStream(fileName);
-                Properties fileProps = new Properties();
-                fileProps.load(fis);
-                fis.close();
-
-                for (Object key : fileProps.keySet()) {
-                    SentinelConfig.setConfig((String)key, (String)fileProps.get(key));
-                }
-            }
-        } catch (Throwable ioe) {
-            RecordLog.info(ioe.getMessage(), ioe);
-        }
-
-        // JVM parameter override file config.
-        for (Map.Entry<Object, Object> entry : new CopyOnWriteArraySet<>(System.getProperties().entrySet())) {
-            String configKey = entry.getKey().toString();
-            String configValue = entry.getValue().toString();
-            String configValueOld = getConfig(configKey);
-            SentinelConfig.setConfig(configKey, configValue);
-            if (configValueOld != null) {
-                RecordLog.info("[SentinelConfig] JVM parameter overrides {0}: {1} -> {2}", configKey, configValueOld, configValue);
-            }
+        Properties properties = SentinelConfigLoader.getProperties();
+        for (Object key : properties.keySet()) {
+            setConfig((String) key, (String) properties.get(key));
         }
     }
 
@@ -189,7 +156,7 @@ public class SentinelConfig {
             return Long.parseLong(props.get(SINGLE_METRIC_FILE_SIZE));
         } catch (Throwable throwable) {
             RecordLog.warn("[SentinelConfig] Parse singleMetricFileSize fail, use default value: "
-                + DEFAULT_SINGLE_METRIC_FILE_SIZE, throwable);
+                    + DEFAULT_SINGLE_METRIC_FILE_SIZE, throwable);
             return DEFAULT_SINGLE_METRIC_FILE_SIZE;
         }
     }
@@ -199,7 +166,7 @@ public class SentinelConfig {
             return Integer.parseInt(props.get(TOTAL_METRIC_FILE_COUNT));
         } catch (Throwable throwable) {
             RecordLog.warn("[SentinelConfig] Parse totalMetricFileCount fail, use default value: "
-                + DEFAULT_TOTAL_METRIC_FILE_COUNT, throwable);
+                    + DEFAULT_TOTAL_METRIC_FILE_COUNT, throwable);
             return DEFAULT_TOTAL_METRIC_FILE_COUNT;
         }
     }
@@ -221,13 +188,28 @@ public class SentinelConfig {
         }
     }
 
+    /**
+     * <p>Get the max RT value that Sentinel could accept.</p>
+     * <p>Response time that exceeds {@code statisticMaxRt} will be recorded as this value.
+     * The default value is {@link #DEFAULT_STATISTIC_MAX_RT}.</p>
+     *
+     * @return the max allowed RT value
+     * @since 1.4.1
+     */
     public static int statisticMaxRt() {
+        String v = props.get(STATISTIC_MAX_RT);
         try {
-            return Integer.parseInt(props.get(STATISTIC_MAX_RT));
+            if (StringUtil.isEmpty(v)) {
+                return DEFAULT_STATISTIC_MAX_RT;
+            }
+            return Integer.parseInt(v);
         } catch (Throwable throwable) {
-            RecordLog.warn("[SentinelConfig] Parse statisticMaxRt fail, use default value: "
-                    + DEFAULT_STATISTIC_MAX_RT, throwable);
+            RecordLog.warn("[SentinelConfig] Invalid statisticMaxRt value: {0}, using the default value instead: "
+                    + DEFAULT_STATISTIC_MAX_RT, v, throwable);
+            SentinelConfig.setConfig(STATISTIC_MAX_RT, String.valueOf(DEFAULT_STATISTIC_MAX_RT));
             return DEFAULT_STATISTIC_MAX_RT;
         }
     }
+
+    private SentinelConfig() {}
 }

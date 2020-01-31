@@ -22,10 +22,10 @@ import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
@@ -38,7 +38,7 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping("/auth")
 public class AuthController {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(AuthController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthController.class);
 
     @Value("${auth.username:sentinel}")
     private String authUsername;
@@ -46,8 +46,11 @@ public class AuthController {
     @Value("${auth.password:sentinel}")
     private String authPassword;
 
+    @Autowired
+    private AuthService<HttpServletRequest> authService;
+
     @PostMapping("/login")
-    public Result login(HttpServletRequest request, String username, String password) {
+    public Result<AuthService.AuthUser> login(HttpServletRequest request, String username, String password) {
         if (StringUtils.isNotBlank(DashboardConfig.getAuthUsername())) {
             authUsername = DashboardConfig.getAuthUsername();
         }
@@ -63,18 +66,27 @@ public class AuthController {
          */
         if (StringUtils.isNotBlank(authUsername) && !authUsername.equals(username)
                 || StringUtils.isNotBlank(authPassword) && !authPassword.equals(password)) {
-            LOGGER.error("Login failed: Invalid username or password, username=" + username + ", password=" + password);
+            LOGGER.error("Login failed: Invalid username or password, username=" + username);
             return Result.ofFail(-1, "Invalid username or password");
         }
 
         AuthService.AuthUser authUser = new SimpleWebAuthServiceImpl.SimpleWebAuthUserImpl(username);
-        request.getSession().setAttribute(SimpleWebAuthServiceImpl.WEB_SESSTION_KEY, authUser);
+        request.getSession().setAttribute(SimpleWebAuthServiceImpl.WEB_SESSION_KEY, authUser);
         return Result.ofSuccess(authUser);
     }
 
-    @RequestMapping(value = "/logout", method = RequestMethod.POST)
-    public Result logout(HttpServletRequest request) {
+    @PostMapping(value = "/logout")
+    public Result<?> logout(HttpServletRequest request) {
         request.getSession().invalidate();
         return Result.ofSuccess(null);
+    }
+
+    @PostMapping(value = "/check")
+    public Result<?> check(HttpServletRequest request) {
+        AuthService.AuthUser authUser = authService.getAuthUser(request);
+        if (authUser == null) {
+            return Result.ofFail(-1, "Not logged in");
+        }
+        return Result.ofSuccess(authUser);
     }
 }
