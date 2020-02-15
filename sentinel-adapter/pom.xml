@@ -25,6 +25,7 @@
         <module>sentinel-api-gateway-adapter-common</module>
         <module>sentinel-spring-cloud-gateway-adapter</module>
         <module>sentinel-spring-webmvc-adapter</module>
+        <module>sentinel-apache-dubbo-springboot</module>
     </modules>
 
     <dependencyManagement>
