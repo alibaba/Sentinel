@@ -2,6 +2,7 @@ local redisKey = "sentinel:cluster:token:{"..KEYS[1].."}";
 local configKey = "sentinel:cluster:config:{"..KEYS[1].."}";
 local acq = tonumber(string.sub(KEYS[2], 0, #KEYS[2] - #KEYS[1] - 2));
 
+redis.replicate_commands();
 -- get config from redis
 local config = redis.call("HGETALL", configKey);
 if(config == false or config == nil)
@@ -49,7 +50,7 @@ then
         end
     end
 
-    redis.replicate_commands()
+
     if(dekIdx > 1)
     then
         redis.call("HDEL", redisKey, unpack(delKeys));
@@ -75,7 +76,6 @@ then
 end
 
 -- add acq num
-redis.replicate_commands();
 redis.call('HINCRBYFLOAT',redisKey,bucketIdxStr,acq);
 
 return 1;
