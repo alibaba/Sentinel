@@ -227,7 +227,7 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
     }
 
     public Result responseBack(Result result) {
-        filter.listener().onResponse(result, invoker, invocation);
+        filter.listener().onMessage(result, invoker, invocation);
         return result;
     }
 
@@ -265,7 +265,7 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
         filter.invoke(invoker, invocation);
         verify(invoker).invoke(invocation);
 
-        filter.listener().onResponse(result, invoker, invocation);
+        filter.listener().onMessage(result, invoker, invocation);
         Context context = ContextUtil.getContext();
         assertNull(context);
     }
