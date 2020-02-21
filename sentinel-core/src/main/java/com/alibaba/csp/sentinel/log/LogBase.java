@@ -152,11 +152,10 @@ public class LogBase {
             return;
         }
         LoggerUtils.disableOtherHandlers(logger, handler);
-        if (params.length == 0) {
-            logger.log(level, detail);
-        } else {
-            logger.log(level, detail, params);
-        }
+
+        FormattingTuple formattingTuple = MessageFormatter.arrayFormat(detail, params);
+        String message = formattingTuple.getMessage();
+        logger.log(level, message);
     }
 
     protected static void log(Logger logger, Handler handler, Level level, String detail, Throwable throwable) {

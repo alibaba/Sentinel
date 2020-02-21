@@ -36,6 +36,7 @@
         <module>sentinel-demo-zuul-gateway</module>
         <module>sentinel-demo-etcd-datasource</module>
         <module>sentinel-demo-spring-webmvc</module>
+        <module>sentinel-demo-log-logback</module>
     </modules>
 
     <dependencies>
