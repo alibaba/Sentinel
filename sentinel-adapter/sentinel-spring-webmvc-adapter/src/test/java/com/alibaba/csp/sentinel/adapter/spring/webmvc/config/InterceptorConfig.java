@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.adapter.spring.webmvc.SentinelWebInterceptor;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.SentinelWebTotalInterceptor;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.BlockExceptionHandler;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.RequestOriginParser;
+import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.UrlCleaner;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -70,6 +71,16 @@ public class InterceptorConfig implements WebMvcConfigurer {
             @Override
             public String parseOrigin(HttpServletRequest request) {
                 return request.getHeader("S-user");
+            }
+        });
+
+        config.setUrlCleaner(new UrlCleaner() {
+            @Override
+            public String clean(HttpServletRequest request, String originUrl) {
+                if ("0".equals(request.getAttribute("id"))) {
+                    return "/foo/*";
+                }
+                return originUrl;
             }
         });
 

@@ -57,7 +57,7 @@ public class SentinelWebInterceptor extends AbstractSentinelInterceptor {
         String resourceName = (String) resourceNameObject;
         UrlCleaner urlCleaner = config.getUrlCleaner();
         if (urlCleaner != null) {
-            resourceName = urlCleaner.clean(resourceName);
+            resourceName = urlCleaner.clean(request, resourceName);
         }
         // Add method specification if necessary
         if (StringUtil.isNotEmpty(resourceName) && config.isHttpMethodSpecify()) {

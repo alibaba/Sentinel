@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.adapter.spring.webmvc.callback;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * Unify the resource target.
  *
@@ -25,8 +27,9 @@ public interface UrlCleaner {
     /**
      * Unify the resource target.
      *
+     * @param request the web request
      * @param originUrl the original URL
      * @return the unified resource name
      */
-    String clean(String originUrl);
+    String clean(HttpServletRequest request, String originUrl);
 }

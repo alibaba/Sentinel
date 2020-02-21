@@ -88,6 +88,27 @@ public class SentinelSpringMvcIntegrationTest {
     }
 
     @Test
+    public void testUrlCleaner() throws Exception {
+        String springMvcPathVariableUrl = "/foo/{id}";
+        String limitOrigin = "userA";
+        final String headerName = "S-User";
+        configureRulesFor(springMvcPathVariableUrl, 0, limitOrigin);
+
+        this.mvc.perform(get("/foo/1").accept(MediaType.TEXT_PLAIN).header(headerName, limitOrigin).requestAttr("id", "0"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("foo 1"));
+
+        // This will be blocked and reponse json.
+        this.mvc.perform(
+                get("/foo/2").accept(MediaType.APPLICATION_JSON).header(headerName, limitOrigin))
+                .andExpect(status().isOk())
+                .andExpect(content().json(ResultWrapper.blocked().toJsonString()));
+        this.mvc.perform(get("/foo/3").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string(ResultWrapper.blocked().toJsonString()));
+    }
+
+    @Test
     public void testTotalInterceptor() throws Exception {
         String url = "/hello";
         String totalTarget = "my_spring_mvc_total_url_request";
