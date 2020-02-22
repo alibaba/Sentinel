@@ -19,11 +19,11 @@ import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
+import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig;
 import com.alibaba.csp.sentinel.adapter.dubbo.fallback.DubboFallbackRegistry;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -34,7 +34,7 @@ import org.apache.dubbo.rpc.RpcException;
 /**
  * <p>Apache Dubbo service provider filter that enables integration with Sentinel. Auto activated by default.</p>
  * <p>Note: this only works for Apache Dubbo 2.7.x or above version.</p>
- *
+ * <p>
  * If you want to disable the provider filter, you can configure:
  * <pre>
  * &lt;dubbo:provider filter="-sentinel.dubbo.provider.filter"/&gt;
@@ -58,7 +58,7 @@ public class SentinelDubboProviderFilter implements Filter {
         Entry interfaceEntry = null;
         Entry methodEntry = null;
         try {
-            String resourceName = DubboUtils.getResourceName(invoker, invocation);
+            String resourceName = DubboUtils.getResourceName(invoker, invocation, DubboConfig.getDubboProviderPrefix());
             String interfaceName = invoker.getInterface().getName();
             // Only need to create entrance context at provider side, as context will take effect
             // at entrance of invocation chain only (for inbound traffic).

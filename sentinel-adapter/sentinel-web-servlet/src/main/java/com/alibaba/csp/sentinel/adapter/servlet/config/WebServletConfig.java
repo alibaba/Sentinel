@@ -24,6 +24,8 @@ import com.alibaba.csp.sentinel.config.SentinelConfig;
  */
 public class WebServletConfig {
 
+    public static final String WEB_SERVLET_CONTEXT_NAME = "sentinel_web_servlet_context";
+
     public static final String BLOCK_PAGE = "csp.sentinel.web.servlet.block.page";
 
     /**

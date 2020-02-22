@@ -103,7 +103,7 @@ public class GatewayParamParser<T> {
     private String parseClientIp(/*@Valid*/ GatewayParamFlowItem item, T request) {
         String clientIp = requestItemParser.getRemoteAddress(request);
         String pattern = item.getPattern();
-        if (pattern == null) {
+        if (StringUtil.isEmpty(pattern)) {
             return clientIp;
         }
         return parseWithMatchStrategyInternal(item.getMatchStrategy(), clientIp, pattern);
@@ -114,7 +114,7 @@ public class GatewayParamParser<T> {
         String pattern = item.getPattern();
         // TODO: what if the header has multiple values?
         String headerValue = requestItemParser.getHeader(request, headerKey);
-        if (pattern == null) {
+        if (StringUtil.isEmpty(pattern)) {
             return headerValue;
         }
         // Match value according to regex pattern or exact mode.
@@ -124,7 +124,7 @@ public class GatewayParamParser<T> {
     private String parseHost(/*@Valid*/ GatewayParamFlowItem item, T request) {
         String pattern = item.getPattern();
         String host = requestItemParser.getHeader(request, "Host");
-        if (pattern == null) {
+        if (StringUtil.isEmpty(pattern)) {
             return host;
         }
         // Match value according to regex pattern or exact mode.
@@ -135,7 +135,7 @@ public class GatewayParamParser<T> {
         String paramName = item.getFieldName();
         String pattern = item.getPattern();
         String param = requestItemParser.getUrlParam(request, paramName);
-        if (pattern == null) {
+        if (StringUtil.isEmpty(pattern)) {
             return param;
         }
         // Match value according to regex pattern or exact mode.
@@ -146,7 +146,7 @@ public class GatewayParamParser<T> {
         String cookieName = item.getFieldName();
         String pattern = item.getPattern();
         String param = requestItemParser.getCookieValue(request, cookieName);
-        if (pattern == null) {
+        if (StringUtil.isEmpty(pattern)) {
             return param;
         }
         // Match value according to regex pattern or exact mode.

@@ -30,12 +30,12 @@
     "angularjs-bootstrap-datetimepicker": "^1.1.4",
     "bootstrap-switch": "^3.3.4",
     "bootstrap-tagsinput": "~0.7.1",
+    "lodash": "^4.17.15",
     "moment": "^2.12.0",
     "ng-dialog": "^0.6.6",
     "ng-tags-input": "~3.0.0",
     "oclazyload": "^1.1.0",
-    "selectize": "^0.12.1",
-    "lodash": ">=4.17.11"
+    "selectize": "^0.12.1"
   },
   "devDependencies": {
     "gulp": "^3.9.1",
