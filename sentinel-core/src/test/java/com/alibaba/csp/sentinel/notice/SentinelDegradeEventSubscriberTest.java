@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.event;
+package com.alibaba.csp.sentinel.notice;
 
-import com.alibaba.csp.sentinel.event.degrade.SentinelDegradeEventSubscriber;
+import com.alibaba.csp.sentinel.notice.degrade.SentinelDegradeEventSubscriber;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import org.junit.Test;
 
@@ -29,7 +29,7 @@ public class SentinelDegradeEventSubscriberTest {
     @Test
     public void testOnOpen() {
         EventSubscriber subscriber = new SentinelDegradeEventSubscriber();
-        Event<DegradeRule> degradeRuleEvent = new Event<>(new DegradeRule(), "test", EventType.CIRCUIT_BREAK_OPEN.getType());
+        Event<DegradeRule> degradeRuleEvent = new Event<>(new DegradeRule(), "test", NoticeType.CIRCUIT_BREAK_OPEN.getType());
         //check sentinel-record.log
         subscriber.listen(degradeRuleEvent);
     }
@@ -37,7 +37,7 @@ public class SentinelDegradeEventSubscriberTest {
     @Test
     public void testOnClose() {
         EventSubscriber subscriber = new SentinelDegradeEventSubscriber();
-        Event<DegradeRule> degradeRuleEvent = new Event<>(new DegradeRule(), "test", EventType.CIRCUIT_BREAKER_CLOSE.getType());
+        Event<DegradeRule> degradeRuleEvent = new Event<>(new DegradeRule(), "test", NoticeType.CIRCUIT_BREAKER_CLOSE.getType());
         //check sentinel-record.log.
         subscriber.listen(degradeRuleEvent);
     }

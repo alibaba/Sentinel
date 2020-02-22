@@ -17,9 +17,8 @@ package com.alibaba.csp.sentinel.slots.block.degrade;
 
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.context.Context;
-import com.alibaba.csp.sentinel.event.Event;
-import com.alibaba.csp.sentinel.event.degrade.AbstractDegradeEventPublisher;
-import com.alibaba.csp.sentinel.event.degrade.SentinelDegradeEventPublisher;
+import com.alibaba.csp.sentinel.notice.Event;
+import com.alibaba.csp.sentinel.notice.degrade.SentinelDegradeEventPublisher;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.DefaultNode;
@@ -33,8 +32,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static com.alibaba.csp.sentinel.event.EventType.CIRCUIT_BREAKER_CLOSE;
-import static com.alibaba.csp.sentinel.event.EventType.CIRCUIT_BREAK_OPEN;
+import static com.alibaba.csp.sentinel.notice.NoticeType.CIRCUIT_BREAKER_CLOSE;
+import static com.alibaba.csp.sentinel.notice.NoticeType.CIRCUIT_BREAK_OPEN;
 
 
 /**

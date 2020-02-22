@@ -13,19 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.event;
+package com.alibaba.csp.sentinel.notice;
 
-import com.alibaba.csp.sentinel.event.Event;
+import com.alibaba.csp.sentinel.notice.degrade.SentinelDegradeEventPublisher;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author lianglin
  * @since 1.7.0
  */
-public interface EventSubscriber<T> {
-    /**
-     * Subscribe  event and make some  business logic processing
-     *
-     * @param event
-     */
-    void listen(Event<T> event);
+public class SentinelDegradeEventPublisherTest {
+
+    @Test
+    public void test(){
+        SentinelDegradeEventPublisher publisher = new SentinelDegradeEventPublisher();
+        Assert.assertTrue(publisher.eventSubscribers.size() > 0);
+    }
+
 }

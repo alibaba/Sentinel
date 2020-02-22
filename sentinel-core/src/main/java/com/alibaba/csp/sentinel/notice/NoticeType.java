@@ -13,16 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.event;
+package com.alibaba.csp.sentinel.notice;
 
 /**
  * @author lianglin
  * @since 1.7.0
  */
-public abstract class AbstractEventSubscriber<T> implements EventFilter<T>, EventSubscriber<T> {
-
-    @Override
-    public boolean filter(Event<T> event) {
-        return true;
-    }
+public enum NoticeType {
+    CIRCUIT_BREAK_OPEN, CIRCUIT_BREAKER_CLOSE
 }
