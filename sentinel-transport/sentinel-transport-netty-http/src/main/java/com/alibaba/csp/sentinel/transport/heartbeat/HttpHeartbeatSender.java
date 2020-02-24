@@ -15,7 +15,6 @@
  */
 package com.alibaba.csp.sentinel.transport.heartbeat;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.alibaba.csp.sentinel.Constants;
@@ -58,7 +57,7 @@ public class HttpHeartbeatSender implements HeartbeatSender {
 
     public HttpHeartbeatSender() {
         this.client = HttpClients.createDefault();
-        List<Tuple2<String, Integer>> dashboardList = parseDashboardList();
+        List<Tuple2<String, Integer>> dashboardList = TransportConfig.getConsoleServerList();
         if (dashboardList == null || dashboardList.isEmpty()) {
             RecordLog.info("[NettyHttpHeartbeatSender] No dashboard available");
         } else {
@@ -66,40 +65,6 @@ public class HttpHeartbeatSender implements HeartbeatSender {
             consolePort = dashboardList.get(0).r2;
             RecordLog.info("[NettyHttpHeartbeatSender] Dashboard address parsed: <" + consoleHost + ':' + consolePort + ">");
         }
-    }
-
-    protected static List<Tuple2<String, Integer>> parseDashboardList() {
-        List<Tuple2<String, Integer>> list = new ArrayList<Tuple2<String, Integer>>();
-        try {
-            String ipsStr = TransportConfig.getConsoleServer();
-            if (StringUtil.isBlank(ipsStr)) {
-                RecordLog.warn("[NettyHttpHeartbeatSender] Dashboard server address is not configured");
-                return list;
-            }
-
-            for (String ipPortStr : ipsStr.split(",")) {
-                if (ipPortStr.trim().length() == 0) {
-                    continue;
-                }
-                ipPortStr = ipPortStr.trim();
-                if (ipPortStr.startsWith("http://")) {
-                    ipPortStr = ipPortStr.substring(7);
-                }
-                if (ipPortStr.startsWith(":")) {
-                    continue;
-                }
-                String[] ipPort = ipPortStr.trim().split(":");
-                int port = 80;
-                if (ipPort.length > 1) {
-                    port = Integer.parseInt(ipPort[1].trim());
-                }
-                list.add(Tuple2.of(ipPort[0].trim(), port));
-            }
-        } catch (Exception ex) {
-            RecordLog.warn("[NettyHttpHeartbeatSender] Parse dashboard list failed, current address list: " + list, ex);
-            ex.printStackTrace();
-        }
-        return list;
     }
 
     @Override
