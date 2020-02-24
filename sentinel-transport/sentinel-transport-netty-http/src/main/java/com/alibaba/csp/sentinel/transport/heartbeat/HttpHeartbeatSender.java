@@ -33,7 +33,6 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -60,7 +59,7 @@ public class HttpHeartbeatSender implements HeartbeatSender {
 
     public HttpHeartbeatSender() {
         this.client = HttpClients.createDefault();
-        List<Tuple2<String, Integer>> dashboardList = parseDashboardList();
+        List<Tuple2<String, Integer>> dashboardList = TransportConfig.getConsoleServerList();
         if (dashboardList == null || dashboardList.isEmpty()) {
             RecordLog.info("[NettyHttpHeartbeatSender] No dashboard available");
         } else {
@@ -70,44 +69,9 @@ public class HttpHeartbeatSender implements HeartbeatSender {
         }
     }
 
-    protected static List<Tuple2<String, Integer>> parseDashboardList() {
-        List<Tuple2<String, Integer>> list = new ArrayList<Tuple2<String, Integer>>();
-        try {
-            String ipsStr = TransportConfig.getConsoleServer();
-            if (StringUtil.isBlank(ipsStr)) {
-                RecordLog.warn("[NettyHttpHeartbeatSender] Dashboard server address is not configured");
-                return list;
-            }
-
-            for (String ipPortStr : ipsStr.split(",")) {
-                if (ipPortStr.trim().length() == 0) {
-                    continue;
-                }
-                ipPortStr = ipPortStr.trim();
-                if (ipPortStr.startsWith("http://")) {
-                    ipPortStr = ipPortStr.substring(7);
-                }
-                if (ipPortStr.startsWith(":")) {
-                    continue;
-                }
-                String[] ipPort = ipPortStr.trim().split(":");
-                int port = 80;
-                if (ipPort.length > 1) {
-                    port = Integer.parseInt(ipPort[1].trim());
-                }
-                list.add(Tuple2.of(ipPort[0].trim(), port));
-            }
-        } catch (Exception ex) {
-            RecordLog.warn("[NettyHttpHeartbeatSender] Parse dashboard list failed, current address list: " + list, ex);
-            ex.printStackTrace();
-        }
-        return list;
-    }
-
     @Override
     public boolean sendHeartbeat() throws Exception {
-        if (StringUtil.isEmpty(consoleHost) || invalidPort(consolePort)) {
-            RecordLog.warn("[HttpHeartbeatSender] Failed to send heartbeat for invalid args consoleHost:{0} consolePort:{1}", consoleHost, consolePort);
+        if (StringUtil.isEmpty(consoleHost)) {
             return false;
         }
         URIBuilder uriBuilder = new URIBuilder();
@@ -121,7 +85,7 @@ public class HttpHeartbeatSender implements HeartbeatSender {
             .setParameter("ip", TransportConfig.getHeartbeatClientIp())
             .setParameter("port", TransportConfig.getPort())
             .setParameter("pid", String.valueOf(PidUtil.getPid()));
-      
+
         HttpGet request = new HttpGet(uriBuilder.build());
         request.setConfig(requestConfig);
         // Send heartbeat request.
@@ -165,13 +129,5 @@ public class HttpHeartbeatSender implements HeartbeatSender {
         return code > 499 && code < 600;
     }
 
-    /**
-     * normal [0,65535]
-     *
-     * @param port
-     * @return
-     */
-    private boolean invalidPort(int port) {
-        return port < 0 || port > 65535;
-    }
+
 }
