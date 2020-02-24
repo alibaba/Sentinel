@@ -15,10 +15,6 @@
  */
 package com.alibaba.csp.sentinel.transport.heartbeat;
 
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.transport.HeartbeatSender;
 import com.alibaba.csp.sentinel.transport.config.TransportConfig;
@@ -26,6 +22,10 @@ import com.alibaba.csp.sentinel.transport.heartbeat.client.SimpleHttpClient;
 import com.alibaba.csp.sentinel.transport.heartbeat.client.SimpleHttpRequest;
 import com.alibaba.csp.sentinel.transport.heartbeat.client.SimpleHttpResponse;
 import com.alibaba.csp.sentinel.util.StringUtil;
+
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The heartbeat sender provides basic API for sending heartbeat request to provided target.
@@ -72,6 +72,8 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
             SimpleHttpResponse response = httpClient.post(request);
             if (response.getStatusCode() == OK_STATUS) {
                 return true;
+            } else if (clientErrorCode(response.getStatusCode()) || serverErrorCode(response.getStatusCode())) {
+                RecordLog.warn("[SimpleHttpHeartbeatSender] Failed to send heartbeat to " + addr + ", response : ", response);
             }
         } catch (Exception e) {
             RecordLog.warn("[SimpleHttpHeartbeatSender] Failed to send heartbeat to " + addr + " : ", e);
@@ -123,5 +125,25 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
             ex.printStackTrace();
         }
         return newAddrs;
+    }
+
+    /**
+     * 4XX Client Error
+     *
+     * @param code
+     * @return
+     */
+    private boolean clientErrorCode(int code) {
+        return code > 399 && code < 500;
+    }
+
+    /**
+     * 5XX Server Error
+     *
+     * @param code
+     * @return
+     */
+    private boolean serverErrorCode(int code) {
+        return code > 499 && code < 600;
     }
 }
