@@ -42,8 +42,8 @@ public class DefaultSlotChainBuilder implements SlotChainBuilder {
         chain.addLast(new ClusterBuilderSlot());
         chain.addLast(new LogSlot());
         chain.addLast(new StatisticSlot());
-        chain.addLast(new SystemSlot());
         chain.addLast(new AuthoritySlot());
+        chain.addLast(new SystemSlot());
         chain.addLast(new FlowSlot());
         chain.addLast(new DegradeSlot());
 

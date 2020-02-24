@@ -17,19 +17,21 @@ package com.alibaba.csp.sentinel.adapter.dubbo;
 
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.ResourceTypeConstants;
 import com.alibaba.csp.sentinel.SphU;
-import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig;
 import com.alibaba.csp.sentinel.adapter.dubbo.fallback.DubboFallbackRegistry;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 
 /**
  * <p>Apache Dubbo service provider filter that enables integration with Sentinel. Auto activated by default.</p>
@@ -43,8 +45,8 @@ import org.apache.dubbo.rpc.RpcException;
  * @author Carpenter Lee
  * @author Eric Zhao
  */
-@Activate(group = "provider")
-public class SentinelDubboProviderFilter implements Filter {
+@Activate(group = PROVIDER)
+public class SentinelDubboProviderFilter extends BaseSentinelDubboFilter {
 
     public SentinelDubboProviderFilter() {
         RecordLog.info("Sentinel Apache Dubbo provider filter initialized");
@@ -54,40 +56,26 @@ public class SentinelDubboProviderFilter implements Filter {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         // Get origin caller.
         String application = DubboUtils.getApplication(invocation, "");
-
+        RpcContext rpcContext = RpcContext.getContext();
         Entry interfaceEntry = null;
         Entry methodEntry = null;
         try {
-            String resourceName = DubboUtils.getResourceName(invoker, invocation, DubboConfig.getDubboProviderPrefix());
-            String interfaceName = invoker.getInterface().getName();
+            String methodResourceName = DubboUtils.getResourceName(invoker, invocation, DubboConfig.getDubboProviderPrefix());
+            String interfaceResourceName = DubboConfig.getDubboInterfaceGroupAndVersionEnabled() ? invoker.getUrl().getColonSeparatedKey()
+                    : invoker.getInterface().getName();
             // Only need to create entrance context at provider side, as context will take effect
             // at entrance of invocation chain only (for inbound traffic).
-            ContextUtil.enter(resourceName, application);
-            interfaceEntry = SphU.entry(interfaceName, EntryType.IN);
-            methodEntry = SphU.entry(resourceName, EntryType.IN, 1, invocation.getArguments());
-
-            Result result = invoker.invoke(invocation);
-            if (result.hasException()) {
-                Throwable e = result.getException();
-                // Record common exception.
-                Tracer.traceEntry(e, interfaceEntry);
-                Tracer.traceEntry(e, methodEntry);
-            }
-            return result;
+            ContextUtil.enter(methodResourceName, application);
+            interfaceEntry = SphU.entry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN);
+            rpcContext.set(DubboUtils.DUBBO_INTERFACE_ENTRY_KEY, interfaceEntry);
+            methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN, invocation.getArguments());
+            rpcContext.set(DubboUtils.DUBBO_METHOD_ENTRY_KEY, methodEntry);
+            return invoker.invoke(invocation);
         } catch (BlockException e) {
             return DubboFallbackRegistry.getProviderFallback().handle(invoker, invocation, e);
-        } catch (RpcException e) {
-            Tracer.traceEntry(e, interfaceEntry);
-            Tracer.traceEntry(e, methodEntry);
-            throw e;
-        } finally {
-            if (methodEntry != null) {
-                methodEntry.exit(1, invocation.getArguments());
-            }
-            if (interfaceEntry != null) {
-                interfaceEntry.exit();
-            }
-            ContextUtil.exit();
         }
     }
+
+
 }
+

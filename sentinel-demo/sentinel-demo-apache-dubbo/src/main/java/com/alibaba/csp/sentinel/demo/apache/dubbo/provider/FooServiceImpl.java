@@ -15,11 +15,10 @@
  */
 package com.alibaba.csp.sentinel.demo.apache.dubbo.provider;
 
-import java.time.LocalDateTime;
-
 import com.alibaba.csp.sentinel.demo.apache.dubbo.FooService;
-
 import org.apache.dubbo.config.annotation.Service;
+
+import java.time.LocalDateTime;
 
 /**
  * @author Eric Zhao
@@ -36,4 +35,20 @@ public class FooServiceImpl implements FooService {
     public String doAnother() {
         return LocalDateTime.now().toString();
     }
+
+    @Override
+    public String exceptionTest(boolean biz, boolean timeout) {
+        if (biz) {
+            throw new RuntimeException("biz exception");
+        }
+        if (timeout) {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        return "Success";
+    }
+
 }

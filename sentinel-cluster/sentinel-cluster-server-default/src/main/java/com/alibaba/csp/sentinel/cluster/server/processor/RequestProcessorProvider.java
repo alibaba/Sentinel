@@ -20,6 +20,7 @@ import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.csp.sentinel.cluster.annotation.RequestType;
+import com.alibaba.csp.sentinel.spi.ServiceLoaderUtil;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
@@ -30,7 +31,8 @@ public final class RequestProcessorProvider {
 
     private static final Map<Integer, RequestProcessor> PROCESSOR_MAP = new ConcurrentHashMap<>();
 
-    private static final ServiceLoader<RequestProcessor> SERVICE_LOADER = ServiceLoader.load(RequestProcessor.class);
+    private static final ServiceLoader<RequestProcessor> SERVICE_LOADER = ServiceLoaderUtil.getServiceLoader(
+        RequestProcessor.class);
 
     static {
         loadAndInit();
@@ -70,7 +72,6 @@ public final class RequestProcessorProvider {
         AssertUtil.notNull(processor, "processor cannot be null");
         PROCESSOR_MAP.put(type, processor);
     }
-
 
     private RequestProcessorProvider() {}
 }

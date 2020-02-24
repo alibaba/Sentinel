@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.adapter.dubbo;
 
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.ResourceTypeConstants;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig;
@@ -30,6 +31,8 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
 
+import static com.alibaba.dubbo.common.Constants.CONSUMER;
+
 /**
  * <p>Dubbo service consumer filter for Sentinel. Auto activated by default.</p>
  *
@@ -41,7 +44,7 @@ import com.alibaba.dubbo.rpc.RpcException;
  * @author leyou
  * @author Eric Zhao
  */
-@Activate(group = "consumer")
+@Activate(group = CONSUMER)
 public class SentinelDubboConsumerFilter extends AbstractDubboFilter implements Filter {
 
     public SentinelDubboConsumerFilter() {
@@ -54,19 +57,23 @@ public class SentinelDubboConsumerFilter extends AbstractDubboFilter implements 
         Entry methodEntry = null;
         try {
             String resourceName = getResourceName(invoker, invocation, DubboConfig.getDubboConsumerPrefix());
-            interfaceEntry = SphU.entry(invoker.getInterface().getName(), EntryType.OUT);
-            methodEntry = SphU.entry(resourceName, EntryType.OUT);
+            interfaceEntry = SphU.entry(invoker.getInterface().getName(), ResourceTypeConstants.COMMON_RPC,
+                EntryType.OUT);
+            methodEntry = SphU.entry(resourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT);
 
             Result result = invoker.invoke(invocation);
             if (result.hasException()) {
+                Throwable e = result.getException();
                 // Record common exception.
-                Tracer.trace(result.getException());
+                Tracer.traceEntry(e, interfaceEntry);
+                Tracer.traceEntry(e, methodEntry);
             }
             return result;
         } catch (BlockException e) {
             return DubboFallbackRegistry.getConsumerFallback().handle(invoker, invocation, e);
         } catch (RpcException e) {
-            Tracer.trace(e);
+            Tracer.traceEntry(e, interfaceEntry);
+            Tracer.traceEntry(e, methodEntry);
             throw e;
         } finally {
             if (methodEntry != null) {

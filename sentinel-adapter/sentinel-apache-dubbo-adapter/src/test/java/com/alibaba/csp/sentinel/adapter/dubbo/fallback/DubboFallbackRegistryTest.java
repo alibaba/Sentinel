@@ -18,16 +18,27 @@ package com.alibaba.csp.sentinel.adapter.dubbo.fallback;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.SentinelRpcException;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
-
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcResult;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
  * @author Eric Zhao
  */
 public class DubboFallbackRegistryTest {
+
+    @Before
+    public void setUp() {
+        DubboFallbackRegistry.setConsumerFallback(new DefaultDubboFallback());
+    }
+
+    @After
+    public void tearDown() {
+        DubboFallbackRegistry.setConsumerFallback(new DefaultDubboFallback());
+    }
 
     @Test(expected = SentinelRpcException.class)
     public void testDefaultFallback() {
@@ -41,7 +52,7 @@ public class DubboFallbackRegistryTest {
     public void testCustomFallback() {
         BlockException ex = new FlowException("xxx");
         DubboFallbackRegistry.setConsumerFallback(
-            (invoker, invocation, e) -> new RpcResult("Error: " + e.getClass().getName()));
+                (invoker, invocation, e) -> AsyncRpcResult.newDefaultAsyncResult("Error: " + e.getClass().getName(), invocation));
         Result result = DubboFallbackRegistry.getConsumerFallback()
             .handle(null, null, ex);
         Assert.assertFalse("The invocation should not fail", result.hasException());

@@ -17,7 +17,7 @@ package com.alibaba.csp.sentinel.slotchain;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.DefaultSlotChainBuilder;
-import java.util.ServiceLoader;
+import com.alibaba.csp.sentinel.util.SpiLoader;
 
 /**
  * A provider for creating slot chains via resolved slot chain builder SPI.
@@ -28,8 +28,6 @@ import java.util.ServiceLoader;
 public final class SlotChainProvider {
 
     private static volatile SlotChainBuilder slotChainBuilder = null;
-
-    private static final ServiceLoader<SlotChainBuilder> LOADER = ServiceLoader.load(SlotChainBuilder.class);
 
     /**
      * The load and pick process is not thread-safe, but it's okay since the method should be only invoked
@@ -42,29 +40,18 @@ public final class SlotChainProvider {
             return slotChainBuilder.build();
         }
 
-        resolveSlotChainBuilder();
+        // Resolve the slot chain builder SPI.
+        slotChainBuilder = SpiLoader.loadFirstInstanceOrDefault(SlotChainBuilder.class, DefaultSlotChainBuilder.class);
 
         if (slotChainBuilder == null) {
+            // Should not go through here.
             RecordLog.warn("[SlotChainProvider] Wrong state when resolving slot chain builder, using default");
             slotChainBuilder = new DefaultSlotChainBuilder();
+        } else {
+            RecordLog.info("[SlotChainProvider] Global slot chain builder resolved: "
+                + slotChainBuilder.getClass().getCanonicalName());
         }
         return slotChainBuilder.build();
-    }
-
-    private static void resolveSlotChainBuilder() {
-        for (SlotChainBuilder builder : LOADER) {
-            if (builder.getClass() != DefaultSlotChainBuilder.class) {
-                slotChainBuilder = builder;
-                break;
-            }
-        }
-        if (slotChainBuilder == null){
-            // No custom builder, using default.
-            slotChainBuilder = new DefaultSlotChainBuilder();
-        }
-
-        RecordLog.info("[SlotChainProvider] Global slot chain builder resolved: "
-            + slotChainBuilder.getClass().getCanonicalName());
     }
 
     private SlotChainProvider() {}
