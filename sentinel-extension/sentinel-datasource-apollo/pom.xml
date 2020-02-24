@@ -5,14 +5,14 @@
   <parent>
     <artifactId>sentinel-extension</artifactId>
     <groupId>com.alibaba.csp</groupId>
-    <version>1.7.0-SNAPSHOT</version>
+    <version>1.7.2-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>sentinel-datasource-apollo</artifactId>
 
   <properties>
-    <apollo.version>1.3.0</apollo.version>
+    <apollo.version>1.5.0</apollo.version>
   </properties>
 
   <dependencies>

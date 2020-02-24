@@ -112,16 +112,16 @@ public class HttpHeartbeatSender implements HeartbeatSender {
         }
         URIBuilder uriBuilder = new URIBuilder();
         uriBuilder.setScheme("http").setHost(consoleHost).setPort(consolePort)
-                .setPath("/registry/machine")
-                .setParameter("app", AppNameUtil.getAppName())
-                .setParameter("app_type", String.valueOf(SentinelConfig.getAppType()))
-                .setParameter("v", Constants.SENTINEL_VERSION)
-                .setParameter("version", String.valueOf(System.currentTimeMillis()))
-                .setParameter("hostname", HostNameUtil.getHostName())
-                .setParameter("ip", TransportConfig.getHeartbeatClientIp())
-                .setParameter("port", TransportConfig.getPort())
-                .setParameter("pid", String.valueOf(PidUtil.getPid()));
-
+            .setPath(TransportConfig.getHeartbeatApiPath())
+            .setParameter("app", AppNameUtil.getAppName())
+            .setParameter("app_type", String.valueOf(SentinelConfig.getAppType()))
+            .setParameter("v", Constants.SENTINEL_VERSION)
+            .setParameter("version", String.valueOf(System.currentTimeMillis()))
+            .setParameter("hostname", HostNameUtil.getHostName())
+            .setParameter("ip", TransportConfig.getHeartbeatClientIp())
+            .setParameter("port", TransportConfig.getPort())
+            .setParameter("pid", String.valueOf(PidUtil.getPid()));
+      
         HttpGet request = new HttpGet(uriBuilder.build());
         request.setConfig(requestConfig);
         // Send heartbeat request.

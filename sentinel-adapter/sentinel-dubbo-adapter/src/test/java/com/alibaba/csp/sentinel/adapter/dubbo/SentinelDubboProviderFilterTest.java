@@ -92,7 +92,7 @@ public class SentinelDubboProviderFilterTest extends BaseTest {
         DefaultNode entranceNode = context.getEntranceNode();
         ResourceWrapper entranceResource = entranceNode.getId();
         assertEquals(resourceName, entranceResource.getName());
-        assertSame(EntryType.IN, entranceResource.getType());
+        assertSame(EntryType.IN, entranceResource.getEntryType());
 
         // As SphU.entry(interfaceName, EntryType.IN);
         Set<Node> childList = entranceNode.getChildList();
@@ -100,7 +100,7 @@ public class SentinelDubboProviderFilterTest extends BaseTest {
         DefaultNode interfaceNode = (DefaultNode) childList.iterator().next();
         ResourceWrapper interfaceResource = interfaceNode.getId();
         assertEquals(DemoService.class.getName(), interfaceResource.getName());
-        assertSame(EntryType.IN, interfaceResource.getType());
+        assertSame(EntryType.IN, interfaceResource.getEntryType());
 
         // As SphU.entry(resourceName, EntryType.IN, 1, invocation.getArguments());
         childList = interfaceNode.getChildList();
@@ -108,7 +108,7 @@ public class SentinelDubboProviderFilterTest extends BaseTest {
         DefaultNode methodNode = (DefaultNode) childList.iterator().next();
         ResourceWrapper methodResource = methodNode.getId();
         assertEquals(resourceName, methodResource.getName());
-        assertSame(EntryType.IN, methodResource.getType());
+        assertSame(EntryType.IN, methodResource.getEntryType());
 
         // Verify curEntry
         Entry curEntry = context.getCurEntry();

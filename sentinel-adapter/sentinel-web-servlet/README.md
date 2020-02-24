@@ -39,13 +39,17 @@ public class FilterConfig {
         registration.addUrlPatterns("/*");
         registration.setName("sentinelCommonFilter");
         registration.setOrder(1);
-
+        // Set whether to support the specified HTTP method prefix for the filter.
+        registration.addInitParameter(CommonFilter.HTTP_METHOD_SPECIFY, "false");
         return registration;
     }
 }
 ```
 
 When a request is blocked, Sentinel servlet filter will display a default page indicating the request is rejected.
+The HTTP status code of the default block page is **429 (Too Many Requests)**. You can customize it
+via the `csp.sentinel.web.servlet.block.status` configuration item (since 1.7.0).
+
 If customized block page is set (via `WebServletConfig.setBlockPage(blockPage)` method),
 the filter will redirect the request to provided URL. You can also implement your own
 block handler (the `UrlBlockHandler` interface) and register to `WebCallbackManager`.
@@ -55,8 +59,8 @@ For REST APIs, you have to clean the URL resource (e.g. `/foo/1` and `/foo/2` ->
 the amount of context and resources will exceed the threshold.
 
 If you need to exclude some URLs (that should not be recorded as Sentinel resources), you could also
-leverage the `UrlCleaner` interface. You may unify the unwanted URLs to the empty string `""`,
+leverage the `UrlCleaner` interface. You may unify the unwanted URLs to the empty string `""` or `null`,
 then the URLs will be excluded (since Sentinel 1.6.3).
 
-`RequestOriginParser` interface is useful for extracting request origin (e.g. IP or appName from HTTP Header)
+The `RequestOriginParser` interface is useful for extracting request origin (e.g. IP or appName from HTTP Header)
 from HTTP request. You can implement your own `RequestOriginParser` and register to `WebCallbackManager`.
