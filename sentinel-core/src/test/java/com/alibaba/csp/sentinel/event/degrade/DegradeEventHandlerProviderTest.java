@@ -13,12 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.notice;
+package com.alibaba.csp.sentinel.event.degrade;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author lianglin
- * @since 1.7.0
+ * @since 2020-02-24
  */
-public enum NoticeType {
-    CIRCUIT_BREAK_OPEN, CIRCUIT_BREAKER_CLOSE
+public class DegradeEventHandlerProviderTest {
+
+    @Test
+    public void testLoad(){
+        AbstractDegradeEventHandler handler = DegradeEventHandlerProvider.getHandler();
+        Assert.assertTrue(handler != null);
+    }
+
 }

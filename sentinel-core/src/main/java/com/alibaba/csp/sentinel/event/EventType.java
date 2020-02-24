@@ -13,22 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.notice;
-
-import com.alibaba.csp.sentinel.notice.degrade.SentinelDegradeEventPublisher;
-import org.junit.Assert;
-import org.junit.Test;
+package com.alibaba.csp.sentinel.event;
 
 /**
  * @author lianglin
- * @since 1.7.0
+ * @since  1.7.1
  */
-public class SentinelDegradeEventPublisherTest {
+public enum EventType {
+    CIRCUIT_BREAK_OPEN(1), CIRCUIT_BREAKER_CLOSE(2);
+    private int type;
 
-    @Test
-    public void test(){
-        SentinelDegradeEventPublisher publisher = new SentinelDegradeEventPublisher();
-        Assert.assertTrue(publisher.eventSubscribers.size() > 0);
+    EventType(int type) {
+        this.type = type;
     }
 
+    public int getType() {
+        return type;
+    }
 }

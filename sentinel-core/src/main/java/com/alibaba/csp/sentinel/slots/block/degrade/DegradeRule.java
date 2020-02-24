@@ -17,9 +17,9 @@ package com.alibaba.csp.sentinel.slots.block.degrade;
 
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.context.Context;
-import com.alibaba.csp.sentinel.notice.Event;
-import com.alibaba.csp.sentinel.notice.degrade.SentinelDegradeEventPublisher;
-import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.event.Event;
+import com.alibaba.csp.sentinel.event.EventHandleManager;
+import com.alibaba.csp.sentinel.event.EventType;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
@@ -31,9 +31,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-
-import static com.alibaba.csp.sentinel.notice.NoticeType.CIRCUIT_BREAKER_CLOSE;
-import static com.alibaba.csp.sentinel.notice.NoticeType.CIRCUIT_BREAK_OPEN;
 
 
 /**
@@ -62,7 +59,6 @@ import static com.alibaba.csp.sentinel.notice.NoticeType.CIRCUIT_BREAK_OPEN;
  */
 public class DegradeRule extends AbstractRule {
 
-    private static SentinelDegradeEventPublisher degradeEventPublisher = new SentinelDegradeEventPublisher();
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(
@@ -248,12 +244,7 @@ public class DegradeRule extends AbstractRule {
         if (cut.compareAndSet(false, true)) {
             ResetTask resetTask = new ResetTask(this);
             pool.schedule(resetTask, timeWindow, TimeUnit.SECONDS);
-            try {
-                Event<DegradeRule> event = new Event<>(this, "Degrade.passCheck", CIRCUIT_BREAK_OPEN.getType());
-                degradeEventPublisher.publish(event);
-            } catch (Exception ex) {
-                RecordLog.warn("[DegradeEventPublisherProvider.getPublisher] publish event error", ex);
-            }
+            EventHandleManager.getInstance().accept(new Event(EventType.CIRCUIT_BREAK_OPEN.getType(), this));
         }
 
         return false;
@@ -271,12 +262,8 @@ public class DegradeRule extends AbstractRule {
         public void run() {
             rule.passCount.set(0);
             rule.cut.set(false);
-            try {
-                Event<DegradeRule> event = new Event<>(rule, "Degrade.ResetTask", CIRCUIT_BREAKER_CLOSE.getType());
-                degradeEventPublisher.publish(event);
-            } catch (Exception ex) {
-                RecordLog.warn("[DegradeEventPublisherProvider.getPublisher] publish event error", ex);
-            }
+            EventHandleManager.getInstance().accept(new Event(EventType.CIRCUIT_BREAKER_CLOSE.getType(), rule));
+
         }
     }
 }

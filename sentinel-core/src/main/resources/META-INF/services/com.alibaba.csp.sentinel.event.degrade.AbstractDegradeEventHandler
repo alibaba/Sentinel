@@ -1,0 +1,2 @@
+# Default Degrade event handler
+com.alibaba.csp.sentinel.event.degrade.DefaultDegradeEventHandler
