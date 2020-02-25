@@ -96,7 +96,7 @@ public class HttpHeartbeatSender implements HeartbeatSender {
             return true;
         } else if (clientErrorCode(statusCode) || serverErrorCode(statusCode)) {
             RecordLog.warn("[HttpHeartbeatSender] Failed to send heartbeat to "
-                    + consoleHost + ":" + consolePort + ", response : ", response);
+                    + consoleHost + ":" + consolePort + ", http status code: {0}", statusCode);
         }
 
         return false;
