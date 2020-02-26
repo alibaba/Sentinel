@@ -16,9 +16,12 @@
 package com.alibaba.csp.sentinel.adapter.sofa.rpc;
 
 import com.alibaba.csp.sentinel.Constants;
+import com.alibaba.csp.sentinel.CtSph;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
+
+import java.lang.reflect.Method;
 
 /**
  * Base test class, provide common methods for sub test class.
@@ -42,5 +45,14 @@ public class BaseTest {
         Constants.ROOT.removeChildList();
 
         ClusterBuilderSlot.getClusterNodeMap().clear();
+
+        // Clear chainMap in CtSph
+        try {
+            Method resetChainMapMethod = CtSph.class.getDeclaredMethod("resetChainMap");
+            resetChainMapMethod.setAccessible(true);
+            resetChainMapMethod.invoke(null);
+        } catch (Exception e) {
+            // Empty
+        }
     }
 }
