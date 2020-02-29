@@ -20,6 +20,7 @@ import com.alibaba.csp.sentinel.adapter.sofa.rpc.fallback.SofaRpcFallbackRegistr
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alipay.sofa.rpc.common.RpcConstants;
+import com.alipay.sofa.rpc.core.exception.RpcErrorType;
 import com.alipay.sofa.rpc.core.exception.SofaRpcException;
 import com.alipay.sofa.rpc.core.request.SofaRequest;
 import com.alipay.sofa.rpc.core.response.SofaResponse;
@@ -72,10 +73,18 @@ public class SentinelSofaRpcProviderFilter extends AbstractSofaRpcFilter {
 
             SofaResponse response = invoker.invoke(request);
 
-            Object appResponse = response.getAppResponse();
-            if (appResponse instanceof Throwable) {
-                Tracer.traceEntry((Throwable) appResponse, interfaceEntry);
-                Tracer.traceEntry((Throwable) appResponse, methodEntry);
+            response.setErrorMsg("test error msg");
+
+            if (response.isError()) {
+                SofaRpcException rpcException = new SofaRpcException(RpcErrorType.SERVER_FILTER, response.getErrorMsg());
+                Tracer.traceEntry(rpcException, interfaceEntry);
+                Tracer.traceEntry(rpcException, methodEntry);
+            } else {
+                Object appResponse = response.getAppResponse();
+                if (appResponse instanceof Throwable) {
+                    Tracer.traceEntry((Throwable) appResponse, interfaceEntry);
+                    Tracer.traceEntry((Throwable) appResponse, methodEntry);
+                }
             }
 
             return response;
@@ -84,7 +93,14 @@ public class SentinelSofaRpcProviderFilter extends AbstractSofaRpcFilter {
         } catch (SofaRpcException e) {
             Tracer.traceEntry(e, interfaceEntry);
             Tracer.traceEntry(e, methodEntry);
+
             throw e;
+        } catch (Throwable t) {
+            SofaRpcException rpcException = new SofaRpcException(RpcErrorType.SERVER_FILTER, t);
+            Tracer.traceEntry(rpcException, interfaceEntry);
+            Tracer.traceEntry(rpcException, methodEntry);
+
+            throw rpcException;
         } finally {
             if (methodEntry != null) {
                 methodEntry.exit(1, getMethodArguments(request));

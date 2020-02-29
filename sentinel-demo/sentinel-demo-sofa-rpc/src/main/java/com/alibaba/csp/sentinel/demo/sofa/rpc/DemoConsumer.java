@@ -73,7 +73,7 @@ public class DemoConsumer {
             }
         }
 
-        System.exit(0);
         System.out.println("DemoConsumer exit!");
+        System.exit(0);
     }
 }

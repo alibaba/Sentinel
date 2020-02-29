@@ -12,7 +12,7 @@
     <artifactId>sentinel-demo-sofa-rpc</artifactId>
 
     <properties>
-        <sofa-rpc-all.version>5.6.0</sofa-rpc-all.version>
+        <sofa-rpc-all.version>5.6.4</sofa-rpc-all.version>
         <slf4j-log4j12.version>1.7.21</slf4j-log4j12.version>
     </properties>
 

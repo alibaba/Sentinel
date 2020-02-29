@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.*;
 import com.alibaba.csp.sentinel.adapter.sofa.rpc.fallback.SofaRpcFallbackRegistry;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alipay.sofa.rpc.common.RpcConstants;
+import com.alipay.sofa.rpc.core.exception.RpcErrorType;
 import com.alipay.sofa.rpc.core.exception.SofaRpcException;
 import com.alipay.sofa.rpc.core.request.SofaRequest;
 import com.alipay.sofa.rpc.core.response.SofaResponse;
@@ -31,9 +32,9 @@ import static com.alibaba.csp.sentinel.adapter.sofa.rpc.SofaRpcUtils.getMethodRe
 import static com.alibaba.csp.sentinel.adapter.sofa.rpc.SofaRpcUtils.getMethodArguments;
 
 /**
- * SOFARPC service provider filter for Sentinel, auto activated by default.
+ * SOFARPC service consumer filter for Sentinel, auto activated by default.
  *
- * If you want to disable the provider filter, you can configure:
+ * If you want to disable the consumer filter, you can configure:
  * <pre>ConsumerConfig.setParameter("sofa.rpc.sentinel.enabled", "false");</pre>
  *
  * or add setting in rpc-config.json:
@@ -63,10 +64,16 @@ public class SentinelSofaRpcConsumerFilter extends AbstractSofaRpcFilter {
 
             SofaResponse response = invoker.invoke(request);
 
-            Object appResponse = response.getAppResponse();
-            if (appResponse instanceof Throwable) {
-                Tracer.traceEntry((Throwable) appResponse, interfaceEntry);
-                Tracer.traceEntry((Throwable) appResponse, methodEntry);
+            if (response.isError()) {
+                SofaRpcException rpcException = new SofaRpcException(RpcErrorType.SERVER_FILTER, response.getErrorMsg());
+                Tracer.traceEntry(rpcException, interfaceEntry);
+                Tracer.traceEntry(rpcException, methodEntry);
+            } else {
+                Object appResponse = response.getAppResponse();
+                if (appResponse instanceof Throwable) {
+                    Tracer.traceEntry((Throwable) appResponse, interfaceEntry);
+                    Tracer.traceEntry((Throwable) appResponse, methodEntry);
+                }
             }
 
             return response;
@@ -75,10 +82,17 @@ public class SentinelSofaRpcConsumerFilter extends AbstractSofaRpcFilter {
         } catch (SofaRpcException e) {
             Tracer.traceEntry(e, interfaceEntry);
             Tracer.traceEntry(e, methodEntry);
+
             throw e;
+        } catch (Throwable t) {
+            SofaRpcException rpcException = new SofaRpcException(RpcErrorType.SERVER_FILTER, t);
+            Tracer.traceEntry(rpcException, interfaceEntry);
+            Tracer.traceEntry(rpcException, methodEntry);
+
+            throw rpcException;
         } finally {
             if (methodEntry != null) {
-                methodEntry.exit();
+                methodEntry.exit(1, getMethodArguments(request));
             }
 
             if (interfaceEntry != null) {
