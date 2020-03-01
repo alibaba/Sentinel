@@ -34,11 +34,15 @@ public class DefaultSofaRpcFallbackTest {
         SofaRpcFallback sofaRpcFallback = new DefaultSofaRpcFallback();
         BlockException blockException = mock(BlockException.class);
 
+        boolean throwSentinelRpcException = false;
+        boolean causeIsBlockException = false;
         try {
             sofaRpcFallback.handle(null, null, blockException);
         } catch (Exception e) {
-            assertTrue(e instanceof SentinelRpcException);
-            assertTrue(e.getCause() instanceof BlockException);
+            throwSentinelRpcException = e instanceof SentinelRpcException;
+            causeIsBlockException = e.getCause() instanceof BlockException;
         }
+        assertTrue(throwSentinelRpcException);
+        assertTrue(causeIsBlockException);
     }
 }
