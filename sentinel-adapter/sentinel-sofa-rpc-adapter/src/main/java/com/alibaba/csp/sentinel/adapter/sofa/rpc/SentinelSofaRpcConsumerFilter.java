@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.adapter.sofa.rpc;
 import com.alibaba.csp.sentinel.*;
 import com.alibaba.csp.sentinel.adapter.sofa.rpc.fallback.SofaRpcFallbackRegistry;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+
 import com.alipay.sofa.rpc.common.RpcConstants;
 import com.alipay.sofa.rpc.core.exception.SofaRpcException;
 import com.alipay.sofa.rpc.core.request.SofaRequest;
@@ -59,7 +60,8 @@ public class SentinelSofaRpcConsumerFilter extends AbstractSofaRpcFilter {
         Entry methodEntry = null;
         try {
             interfaceEntry = SphU.entry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT);
-            methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT, getMethodArguments(request));
+            methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC,
+                EntryType.OUT, getMethodArguments(request));
 
             SofaResponse response = invoker.invoke(request);
 

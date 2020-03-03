@@ -28,6 +28,7 @@ consumerConfig.setParameter("sofa.rpc.sentinel.enabled", "false");
 ```
 
 or add setting in `rpc-config.json` file, and its priority is lower than above.
+
 ```json
 {
   "sofa.rpc.sentinel.enabled": true

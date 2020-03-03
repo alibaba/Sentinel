@@ -56,4 +56,6 @@ public class SofaRpcUtils {
     public static Object[] getMethodArguments(SofaRequest request) {
         return request.getMethodArgs();
     }
+
+    private SofaRpcUtils() {}
 }

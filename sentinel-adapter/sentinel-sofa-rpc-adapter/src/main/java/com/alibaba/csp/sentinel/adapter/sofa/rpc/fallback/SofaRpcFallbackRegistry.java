@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.adapter.sofa.rpc.fallback;
 
+import com.alibaba.csp.sentinel.util.AssertUtil;
+
 /**
  * Global Sentinel fallback registry for SOFARPC services.
  *
@@ -30,6 +32,7 @@ public final class SofaRpcFallbackRegistry {
     }
 
     public static void setProviderFallback(SofaRpcFallback providerFallback) {
+        AssertUtil.notNull(providerFallback, "providerFallback cannot be null");
         SofaRpcFallbackRegistry.providerFallback = providerFallback;
     }
 
@@ -38,6 +41,7 @@ public final class SofaRpcFallbackRegistry {
     }
 
     public static void setConsumerFallback(SofaRpcFallback consumerFallback) {
+        AssertUtil.notNull(consumerFallback, "consumerFallback cannot be null");
         SofaRpcFallbackRegistry.consumerFallback = consumerFallback;
     }
 
