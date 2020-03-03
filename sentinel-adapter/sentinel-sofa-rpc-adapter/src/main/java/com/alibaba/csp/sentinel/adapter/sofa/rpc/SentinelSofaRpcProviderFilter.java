@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.*;
 import com.alibaba.csp.sentinel.adapter.sofa.rpc.fallback.SofaRpcFallbackRegistry;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+
 import com.alipay.sofa.rpc.common.RpcConstants;
 import com.alipay.sofa.rpc.core.exception.SofaRpcException;
 import com.alipay.sofa.rpc.core.request.SofaRequest;
@@ -58,17 +59,18 @@ public class SentinelSofaRpcProviderFilter extends AbstractSofaRpcFilter {
             return invoker.invoke(request);
         }
 
-        String applicationName = getApplicationName(request);
+        String callerApp = getApplicationName(request);
         String interfaceResourceName = getInterfaceResourceName(request);
         String methodResourceName = getMethodResourceName(request);
 
         Entry interfaceEntry = null;
         Entry methodEntry = null;
         try {
-            ContextUtil.enter(methodResourceName, applicationName);
+            ContextUtil.enter(methodResourceName, callerApp);
 
             interfaceEntry = SphU.entry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN);
-            methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN, getMethodArguments(request));
+            methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC,
+                EntryType.IN, getMethodArguments(request));
 
             SofaResponse response = invoker.invoke(request);
 
@@ -82,11 +84,9 @@ public class SentinelSofaRpcProviderFilter extends AbstractSofaRpcFilter {
             if (methodEntry != null) {
                 methodEntry.exit(1, getMethodArguments(request));
             }
-
             if (interfaceEntry != null) {
                 interfaceEntry.exit();
             }
-
             ContextUtil.exit();
         }
     }

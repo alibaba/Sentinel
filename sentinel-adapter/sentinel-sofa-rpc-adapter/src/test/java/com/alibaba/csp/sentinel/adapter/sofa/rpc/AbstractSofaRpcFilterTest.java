@@ -1,6 +1,5 @@
 package com.alibaba.csp.sentinel.adapter.sofa.rpc;
 
-import com.alibaba.csp.sentinel.adapter.sofa.rpc.config.SofaRpcConfig;
 import com.alipay.sofa.rpc.codec.Serializer;
 import com.alipay.sofa.rpc.common.RpcConfigs;
 import com.alipay.sofa.rpc.config.ConsumerConfig;
@@ -23,12 +22,12 @@ public class AbstractSofaRpcFilterTest {
 
     @Before
     public void setUp() {
-        removeRpcConfig(SofaRpcConfig.SOFA_RPC_SENTINEL_ENABLED);
+        removeRpcConfig(SentinelConstants.SOFA_RPC_SENTINEL_ENABLED);
     }
 
     @After
     public void cleanUp() {
-        removeRpcConfig(SofaRpcConfig.SOFA_RPC_SENTINEL_ENABLED);
+        removeRpcConfig(SentinelConstants.SOFA_RPC_SENTINEL_ENABLED);
     }
 
     @Test
@@ -40,13 +39,13 @@ public class AbstractSofaRpcFilterTest {
         FilterInvoker invoker = new FilterInvoker(null, null, providerConfig);
         assertTrue(providerFilter.needToLoad(invoker));
 
-        providerConfig.setParameter(SofaRpcConfig.SOFA_RPC_SENTINEL_ENABLED, "false");
+        providerConfig.setParameter(SentinelConstants.SOFA_RPC_SENTINEL_ENABLED, "false");
         assertFalse(providerFilter.needToLoad(invoker));
 
-        providerConfig.setParameter(SofaRpcConfig.SOFA_RPC_SENTINEL_ENABLED, "");
+        providerConfig.setParameter(SentinelConstants.SOFA_RPC_SENTINEL_ENABLED, "");
         assertTrue(providerFilter.needToLoad(invoker));
 
-        RpcConfigs.putValue(SofaRpcConfig.SOFA_RPC_SENTINEL_ENABLED, "false");
+        RpcConfigs.putValue(SentinelConstants.SOFA_RPC_SENTINEL_ENABLED, "false");
         assertFalse(providerFilter.needToLoad(invoker));
     }
 
@@ -59,13 +58,13 @@ public class AbstractSofaRpcFilterTest {
         FilterInvoker invoker = new FilterInvoker(null, null, consumerConfig);
         assertTrue(consumerFilter.needToLoad(invoker));
 
-        consumerConfig.setParameter(SofaRpcConfig.SOFA_RPC_SENTINEL_ENABLED, "false");
+        consumerConfig.setParameter(SentinelConstants.SOFA_RPC_SENTINEL_ENABLED, "false");
         assertFalse(consumerFilter.needToLoad(invoker));
 
-        consumerConfig.setParameter(SofaRpcConfig.SOFA_RPC_SENTINEL_ENABLED, "");
+        consumerConfig.setParameter(SentinelConstants.SOFA_RPC_SENTINEL_ENABLED, "");
         assertTrue(consumerFilter.needToLoad(invoker));
 
-        RpcConfigs.putValue(SofaRpcConfig.SOFA_RPC_SENTINEL_ENABLED, "false");
+        RpcConfigs.putValue(SentinelConstants.SOFA_RPC_SENTINEL_ENABLED, "false");
         assertFalse(consumerFilter.needToLoad(invoker));
     }
 
@@ -85,14 +84,14 @@ public class AbstractSofaRpcFilterTest {
         FilterInvoker consumerInvoker = new FilterInvoker(null, null, consumerConfig);
         assertTrue(consumerFilter.needToLoad(consumerInvoker));
 
-        providerConfig.setParameter(SofaRpcConfig.SOFA_RPC_SENTINEL_ENABLED, "false");
+        providerConfig.setParameter(SentinelConstants.SOFA_RPC_SENTINEL_ENABLED, "false");
         assertFalse(providerFilter.needToLoad(providerInvoker));
         assertTrue(consumerFilter.needToLoad(consumerInvoker));
 
-        providerConfig.setParameter(SofaRpcConfig.SOFA_RPC_SENTINEL_ENABLED, "");
+        providerConfig.setParameter(SentinelConstants.SOFA_RPC_SENTINEL_ENABLED, "");
         assertTrue(providerFilter.needToLoad(providerInvoker));
 
-        RpcConfigs.putValue(SofaRpcConfig.SOFA_RPC_SENTINEL_ENABLED, "false");
+        RpcConfigs.putValue(SentinelConstants.SOFA_RPC_SENTINEL_ENABLED, "false");
         assertFalse(providerFilter.needToLoad(providerInvoker));
         assertFalse(consumerFilter.needToLoad(consumerInvoker));
     }
