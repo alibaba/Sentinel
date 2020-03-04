@@ -15,14 +15,14 @@
  */
 package com.alibaba.csp.sentinel.transport.config;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.HostNameUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.util.function.Tuple2;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author leyou

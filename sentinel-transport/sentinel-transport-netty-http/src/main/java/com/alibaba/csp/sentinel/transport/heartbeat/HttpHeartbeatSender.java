@@ -15,26 +15,25 @@
  */
 package com.alibaba.csp.sentinel.transport.heartbeat;
 
-import java.util.List;
-
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
-import com.alibaba.csp.sentinel.spi.SpiOrder;
-import com.alibaba.csp.sentinel.transport.config.TransportConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.spi.SpiOrder;
+import com.alibaba.csp.sentinel.transport.HeartbeatSender;
+import com.alibaba.csp.sentinel.transport.config.TransportConfig;
 import com.alibaba.csp.sentinel.util.AppNameUtil;
 import com.alibaba.csp.sentinel.util.HostNameUtil;
-import com.alibaba.csp.sentinel.transport.HeartbeatSender;
 import com.alibaba.csp.sentinel.util.PidUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.util.function.Tuple2;
-
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+
+import java.util.List;
 
 /**
  * @author Eric Zhao
@@ -44,6 +43,9 @@ import org.apache.http.impl.client.HttpClients;
 public class HttpHeartbeatSender implements HeartbeatSender {
 
     private final CloseableHttpClient client;
+
+    private static final int OK_STATUS = 200;
+
 
     private final int timeoutMs = 3000;
     private final RequestConfig requestConfig = RequestConfig.custom()
@@ -89,11 +91,43 @@ public class HttpHeartbeatSender implements HeartbeatSender {
         // Send heartbeat request.
         CloseableHttpResponse response = client.execute(request);
         response.close();
-        return true;
+        int statusCode = response.getStatusLine().getStatusCode();
+        if (statusCode == OK_STATUS) {
+            return true;
+        } else if (clientErrorCode(statusCode) || serverErrorCode(statusCode)) {
+            RecordLog.warn("[HttpHeartbeatSender] Failed to send heartbeat to "
+                    + consoleHost + ":" + consolePort + ", http status code: {0}", statusCode);
+        }
+
+        return false;
+
+
     }
 
     @Override
     public long intervalMs() {
         return 5000;
     }
+
+    /**
+     * 4XX Client Error
+     *
+     * @param code
+     * @return
+     */
+    private boolean clientErrorCode(int code) {
+        return code > 399 && code < 500;
+    }
+
+    /**
+     * 5XX Server Error
+     *
+     * @param code
+     * @return
+     */
+    private boolean serverErrorCode(int code) {
+        return code > 499 && code < 600;
+    }
+
+
 }
