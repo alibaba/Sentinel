@@ -55,8 +55,9 @@ public class RedisFlowRuleManager {
     }
 
     private static List<FlowRule> clearInvalidRule(List<FlowRule> confRules) {
-        if(confRules == null)
+        if(confRules == null) {
             return new ArrayList<>();
+        }
 
         List<FlowRule> validRules = new ArrayList<>();
         for (FlowRule rule : confRules) {
