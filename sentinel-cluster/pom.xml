@@ -25,7 +25,7 @@
         <module>sentinel-cluster-common-default</module>
         <module>sentinel-cluster-server-envoy-rls</module>
         <module>sentinel-cluster-client-redis</module>
-  </modules>
+    </modules>
 
     <dependencyManagement>
         <dependencies>

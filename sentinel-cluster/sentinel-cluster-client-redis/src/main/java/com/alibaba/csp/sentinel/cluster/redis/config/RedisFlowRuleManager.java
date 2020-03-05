@@ -1,7 +1,7 @@
 package com.alibaba.csp.sentinel.cluster.redis.config;
 
-import com.alibaba.csp.sentinel.cluster.redis.RedisClient;
-import com.alibaba.csp.sentinel.cluster.redis.RedisClientFactory;
+import com.alibaba.csp.sentinel.cluster.redis.RedisProcessor;
+import com.alibaba.csp.sentinel.cluster.redis.RedisProcessorFactory;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
@@ -10,17 +10,15 @@ import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleUtil;
 import com.alibaba.csp.sentinel.util.AssertUtil;
-
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class RedisFlowRuleManager {
     public static volatile boolean publishRuleToRedis = true;
 
-    private static Map<String, List<FlowRule>> flowRules = new HashMap<String, List<FlowRule>>();
+    private static Map<String, List<FlowRule>> flowRules = new HashMap<>();
     private static Map<Long, FlowRule> flowIdToRule = new HashMap();
     private static final RedisFlowPropertyListener LISTENER = new RedisFlowPropertyListener();
-    private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
+    private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<>();
 
     static {
         currentProperty.addListener(LISTENER);
@@ -41,28 +39,27 @@ public class RedisFlowRuleManager {
     }
 
     private static void updateRule(List<FlowRule> confRules) {
-        RedisClientFactory factory = RedisClientFactoryManager.getFactory();
+        RedisProcessorFactory factory = RedisProcessorFactoryManager.getFactory();
         if (factory == null) {
             RecordLog.warn(
-                    "[RedisFlowRuleManager]  cannot get RedisClientFactory, please init redis config");
+                    "[RedisFlowRuleManager]  cannot get RedisProcessorFactory, please init redis config");
             return;
         }
 
-        RedisClient redisClient = factory.getClient();
-
-        confRules = confRules == null ? new ArrayList<FlowRule>() : confRules;
-        Map<Long, FlowRule> oldRules = RedisFlowRuleManager.flowIdToRule;
+        confRules = clearInvalidRule(confRules);
+        RedisProcessor redisProcessor = factory.getProcessor();
+        resetRedisRuleAndMetrics(confRules, redisProcessor);
+        clearExpiredRuleAndMetrics(confRules, redisProcessor);
         updateLocaleRule(confRules);
-        resetRedisRuleAndMetrics(oldRules, redisClient);
-        clearInvalidRuleAndMetrics(oldRules, redisClient);
-
-        redisClient.close();
+        redisProcessor.close();
     }
 
-    private static void updateLocaleRule(List<FlowRule> confRule) {
-        RedisFlowRuleManager.flowIdToRule = new ConcurrentHashMap<>();
+    private static List<FlowRule> clearInvalidRule(List<FlowRule> confRules) {
+        if(confRules == null)
+            return new ArrayList<>();
 
-        for (FlowRule rule : confRule) {
+        List<FlowRule> validRules = new ArrayList<>();
+        for (FlowRule rule : confRules) {
             if(!rule.isClusterMode()) {
                 continue;
             }
@@ -71,37 +68,46 @@ public class RedisFlowRuleManager {
                         "[RedisFlowRuleManager] Ignoring invalid flow rule when loading new flow rules: " + rule);
                 continue;
             }
-
-            RedisFlowRuleManager.flowIdToRule.put(rule.getClusterConfig().getFlowId(), rule);
+            validRules.add(rule);
         }
-
-        RedisFlowRuleManager.flowRules = FlowRuleUtil.buildFlowRuleMap(new ArrayList<FlowRule>(RedisFlowRuleManager.flowIdToRule.values()));
+        return validRules;
     }
 
-    private static void resetRedisRuleAndMetrics(Map<Long, FlowRule> oldRules, RedisClient redisClient) {
+    private static void resetRedisRuleAndMetrics(List<FlowRule> confRules, RedisProcessor redisProcessor) {
         if(!RedisFlowRuleManager.publishRuleToRedis) {
             return ;
         }
-
-        for (FlowRule rule : RedisFlowRuleManager.flowIdToRule.values()) {
-            FlowRule existRule = oldRules.get(rule.getClusterConfig().getFlowId());
+        for (FlowRule rule : confRules) {
+            FlowRule existRule = RedisFlowRuleManager.flowIdToRule.get(rule.getClusterConfig().getFlowId());
             if (existRule != null && !isChangeRule(existRule, rule)) {
                 RecordLog.warn(
                         "[RedisFlowRuleManager] would not publish to redis on same flow rule: " + rule);
                 continue;
             }
-            redisClient.resetRedisRuleAndMetrics(rule);
+            redisProcessor.resetRedisRuleAndMetrics(rule);
         }
     }
 
-    private static void clearInvalidRuleAndMetrics(Map<Long, FlowRule> oldRules, RedisClient redisClient) {
+    private static void clearExpiredRuleAndMetrics(List<FlowRule> confRules, RedisProcessor redisProcessor) {
+        Set<Long> newFlowIds = new HashSet<>();
+        for (FlowRule confRule : confRules) {
+            newFlowIds.add(confRule.getClusterConfig().getFlowId());
+        }
         Set<Long> deleteFlowIds = new HashSet<>();
-        for (Map.Entry<Long, FlowRule> oldRuleEntry : oldRules.entrySet()) {
-            if(!RedisFlowRuleManager.flowIdToRule.containsKey(oldRuleEntry.getKey())) {
-                deleteFlowIds.add(oldRuleEntry.getKey());
+        for (Map.Entry<Long, FlowRule> oldRule : RedisFlowRuleManager.flowIdToRule.entrySet()) {
+            if(!newFlowIds.contains(oldRule.getKey())) {
+                deleteFlowIds.add(oldRule.getKey());
             }
         }
-        redisClient.clearRuleAndMetrics(deleteFlowIds);
+        redisProcessor.clearRuleAndMetrics(deleteFlowIds);
+    }
+
+    private static void updateLocaleRule(List<FlowRule> confRule) {
+        RedisFlowRuleManager.flowIdToRule.clear();
+        for (FlowRule rule : confRule) {
+            RedisFlowRuleManager.flowIdToRule.put(rule.getClusterConfig().getFlowId(), rule);
+        }
+        RedisFlowRuleManager.flowRules = FlowRuleUtil.buildFlowRuleMap(new ArrayList<FlowRule>(RedisFlowRuleManager.flowIdToRule.values()));
     }
 
     private static boolean isChangeRule(FlowRule oldRule, FlowRule newRule) {

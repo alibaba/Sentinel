@@ -14,6 +14,6 @@ public class ClientConstants {
     public static final String INTERVAL_IN_MS_KEY = "intervalInMs";
     public static final String WINDOW_LENGTH_IN_MS_KEY = "windowLengthInMs";
     public static final String THRESHOLD_COUNT_KEY = "thresholdCount";
-
+    public static final String FLOW_CHECKER_LUA = "flow_checker";
 
 }

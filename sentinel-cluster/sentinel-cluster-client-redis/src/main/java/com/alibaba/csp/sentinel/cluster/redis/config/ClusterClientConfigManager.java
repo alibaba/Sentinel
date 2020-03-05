@@ -10,26 +10,22 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 
 public final class ClusterClientConfigManager {
-
     /**
      * Client Config properties.
      */
     private static volatile ClusterClientConfig clientConfig;
-
     private static final PropertyListener<ClusterClientConfig> CONFIG_PROPERTY_LISTENER
             = new ClientConfigPropertyListener();
-
     private static SentinelProperty<ClusterClientConfig> clientConfigProperty = new DynamicSentinelProperty<>();
-
     private static final List<ServerChangeObserver> SERVER_CHANGE_OBSERVERS = new ArrayList<>();
 
     static {
-        setToClient();
+        setToClusterClient();
         bindPropertyListener();
         initServerChangeObserver();
     }
 
-    private static void setToClient() {
+    private static void setToClusterClient() {
         ClusterStateManager.setToClient();
     }
 
@@ -39,7 +35,7 @@ public final class ClusterClientConfigManager {
     }
 
     private static void initServerChangeObserver() {
-        SERVER_CHANGE_OBSERVERS.add(new RedisClientFactoryManager());
+        SERVER_CHANGE_OBSERVERS.add(new RedisProcessorFactoryManager());
     }
 
     private static void removePropertyListener() {
@@ -89,9 +85,7 @@ public final class ClusterClientConfigManager {
                         "[ClusterClientConfigManager] Invalid cluster client assignConfig, ignoring: " + config);
                 return;
             }
-
             RecordLog.info("[ClusterClientConfigManager] Updating to new client assignConfig: " + config);
-
             updateClientConfigChange(config);
         }
     }
@@ -107,13 +101,11 @@ public final class ClusterClientConfigManager {
         if(config == null) {
             return false;
         }
-
         if(!ClusterClientConfig.validClusterType.contains(config.getClusterType())
             || (config.getClusterType() == ClusterClientConfig.getRedisSentinel() && config.getMasterName() == null)
             || config.getHostAndPorts() == null || config.getHostAndPorts().isEmpty()) {
             return false;
         }
-
         return true;
     }
 

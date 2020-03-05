@@ -1,6 +1,6 @@
 package com.alibaba.csp.sentinel.cluster.redis.init;
 
-import com.alibaba.csp.sentinel.cluster.redis.config.RedisClientFactoryManager;
+import com.alibaba.csp.sentinel.cluster.redis.config.RedisProcessorFactoryManager;
 import com.alibaba.csp.sentinel.init.InitFunc;
 import com.alibaba.csp.sentinel.init.InitOrder;
 import com.alibaba.csp.sentinel.log.RecordLog;
@@ -22,6 +22,6 @@ public class RedisClusterClientInitFunc implements InitFunc {
             return ;
         }
 
-        RedisClientFactoryManager.setClientType(RedisClientFactoryManager.JEDIS_CLIENT);
+        RedisProcessorFactoryManager.setClientType(RedisProcessorFactoryManager.JEDIS_CLIENT);
     }
 }
