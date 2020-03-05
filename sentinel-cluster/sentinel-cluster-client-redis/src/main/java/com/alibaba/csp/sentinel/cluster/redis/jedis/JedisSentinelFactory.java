@@ -1,7 +1,7 @@
 package com.alibaba.csp.sentinel.cluster.redis.jedis;
 
-import com.alibaba.csp.sentinel.cluster.redis.RedisClient;
-import com.alibaba.csp.sentinel.cluster.redis.RedisClientFactory;
+import com.alibaba.csp.sentinel.cluster.redis.RedisProcessor;
+import com.alibaba.csp.sentinel.cluster.redis.RedisProcessorFactory;
 import com.alibaba.csp.sentinel.cluster.redis.config.ClusterClientConfig;
 import com.alibaba.csp.sentinel.cluster.redis.config.HostAndPort;
 import redis.clients.jedis.JedisPoolConfig;
@@ -10,7 +10,7 @@ import redis.clients.jedis.JedisSentinelPool;
 import java.util.HashSet;
 import java.util.Set;
 
-public class JedisSentinelFactory  implements RedisClientFactory {
+public class JedisSentinelFactory  implements RedisProcessorFactory {
     private JedisSentinelPool sentinelPool;
 
     public JedisSentinelFactory(ClusterClientConfig clientConfig) {
@@ -30,8 +30,8 @@ public class JedisSentinelFactory  implements RedisClientFactory {
     }
 
     @Override
-    public RedisClient getClient() {
-        return new JedisClient(sentinelPool.getResource());
+    public RedisProcessor getProcessor() {
+        return new JedisProcessor(sentinelPool.getResource());
     }
 
     @Override

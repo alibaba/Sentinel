@@ -4,30 +4,30 @@ import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
 import com.alibaba.csp.sentinel.cluster.TokenServerDescriptor;
 import com.alibaba.csp.sentinel.cluster.client.ClusterTokenClient;
-import com.alibaba.csp.sentinel.cluster.redis.config.RedisClientFactoryManager;
+import com.alibaba.csp.sentinel.cluster.redis.config.RedisProcessorFactoryManager;
 import com.alibaba.csp.sentinel.cluster.redis.config.RedisFlowRuleManager;
 import com.alibaba.csp.sentinel.cluster.redis.lua.LuaUtil;
 import com.alibaba.csp.sentinel.cluster.redis.request.RequestData;
+import com.alibaba.csp.sentinel.cluster.redis.util.ClientConstants;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import java.util.Collection;
 
 public class RedisClusterTokenService implements ClusterTokenClient {
-
     @Override
     public TokenResult requestToken(Long flowId, int acquireCount, boolean prioritized) {
         if (notValidRequest(flowId, acquireCount)) {
             return badRequest();
         }
 
-        RedisClientFactory redisClientFactory = RedisClientFactoryManager.getFactory();
-        if(redisClientFactory == null) {
+        RedisProcessorFactory redisProcessorFactory = RedisProcessorFactoryManager.getFactory();
+        if(redisProcessorFactory == null) {
             RecordLog.warn(
-                    "[RedisClusterTokenService]  cannot get RedisClientFactory, please init redis config");
+                    "[RedisClusterTokenService]  cannot get RedisProcessorFactory, please init redis config");
             return clientFail();
         }
 
-        RedisClient redisClient = redisClientFactory.getClient();
+        RedisProcessor redisProcessor = redisProcessorFactory.getProcessor();
 
         FlowRule rule = getFlowRule(flowId);
         if (rule == null) {
@@ -36,8 +36,8 @@ public class RedisClusterTokenService implements ClusterTokenClient {
             return new TokenResult(TokenResultStatus.NO_RULE_EXISTS);
         }
 
-        int rs = redisClient.requestToken(LuaUtil.FLOW_CHECKER_LUA, createRequestData(flowId, acquireCount));
-        redisClient.close();
+        int rs = redisProcessor.requestToken(ClientConstants.FLOW_CHECKER_LUA, createRequestData(flowId, acquireCount));
+        redisProcessor.close();
         // todo remaining value
         return new TokenResult(rs)
                 .setRemaining(0)
@@ -55,7 +55,6 @@ public class RedisClusterTokenService implements ClusterTokenClient {
     public TokenResult requestParamToken(Long aLong, int i, Collection<Object> collection) {
         throw new UnsupportedOperationException("RedisClusterTokenService cannot supported request param token now");
     }
-
 
     private FlowRule getFlowRule(Long flowId) {
         return RedisFlowRuleManager.getFlowRule(flowId);

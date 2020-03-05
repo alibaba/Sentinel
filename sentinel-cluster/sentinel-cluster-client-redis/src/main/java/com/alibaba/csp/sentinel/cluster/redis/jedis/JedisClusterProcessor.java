@@ -1,50 +1,40 @@
 package com.alibaba.csp.sentinel.cluster.redis.jedis;
 
-import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
-import com.alibaba.csp.sentinel.cluster.redis.RedisClient;
+import com.alibaba.csp.sentinel.cluster.redis.RedisProcessor;
 import com.alibaba.csp.sentinel.cluster.redis.lua.LuaUtil;
+import com.alibaba.csp.sentinel.cluster.redis.lua.RedisScriptLoader;
 import com.alibaba.csp.sentinel.cluster.redis.request.RequestData;
 import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
-import com.alibaba.csp.sentinel.util.function.Function;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.util.JedisClusterCRC16;
-
 import java.util.*;
 
 import static com.alibaba.csp.sentinel.cluster.redis.util.ClientConstants.*;
 
-public class JedisClusterClient implements RedisClient {
+public class JedisClusterProcessor implements RedisProcessor {
     private JedisCluster jedisCluster;
 
-    public JedisClusterClient(JedisCluster jedisCluster) {
+    public JedisClusterProcessor(JedisCluster jedisCluster) {
         this.jedisCluster = jedisCluster;
     }
 
     @Override
     public int requestToken(String luaId, RequestData requestData) {
-        final String flowId = String.valueOf(requestData.getFlowId());
+        String flowIdStr = String.valueOf(requestData.getFlowId());
 
-        final String luaCode = LuaUtil.loadLuaCodeIfNeed(luaId);
-        String luaSha = LuaUtil.loadLuaShaIfNeed(JedisClusterCRC16.getSlot(flowId) + luaCode, new Function<String, String>() {
-            public String apply(String s) {
-                return jedisCluster.scriptLoad(luaCode, flowId);
+        String luaSha = LuaUtil.loadLuaShaIfNeed(luaId, requestData.getFlowId(), JedisClusterCRC16.getSlot(flowIdStr),
+                new RedisScriptLoader() {
+            public String load(String luaCode, long flowId) {
+                return jedisCluster.scriptLoad(luaCode, String.valueOf(flowId));
             }
         });
 
         Object evalResult = jedisCluster.evalsha(luaSha, Arrays.asList(
-                flowId,
-                LuaUtil.toLuaParam(requestData.getAcquireCount(), flowId)
+                flowIdStr,
+                LuaUtil.toLuaParam(requestData.getAcquireCount(), flowIdStr)
         ), new ArrayList<String>());
-        if(evalResult == null) {
-            return TokenResultStatus.FAIL;
-        } else {
-            if(Integer.parseInt(evalResult.toString()) > 0) {
-                return TokenResultStatus.OK;
-            } else {
-                return TokenResultStatus.BLOCKED;
-            }
-        }
+        return LuaUtil.toTokenStatus(evalResult);
     }
 
     @Override

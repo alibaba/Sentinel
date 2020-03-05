@@ -5,7 +5,7 @@ import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 
 import java.util.Set;
 
-public interface RedisClient {
+public interface RedisProcessor {
 
     /**
      * request token from redis

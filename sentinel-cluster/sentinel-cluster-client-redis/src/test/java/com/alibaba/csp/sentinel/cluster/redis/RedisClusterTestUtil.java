@@ -1,9 +1,7 @@
 package com.alibaba.csp.sentinel.cluster.redis;
 
-import com.alibaba.csp.sentinel.cluster.TokenResult;
-import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
 import com.alibaba.csp.sentinel.cluster.redis.config.*;
-import com.alibaba.csp.sentinel.cluster.redis.jedis.JedisClusterClientFactory;
+import com.alibaba.csp.sentinel.cluster.redis.jedis.JedisClusterProcessorFactory;
 import com.alibaba.csp.sentinel.cluster.redis.util.ClientConstants;
 import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
@@ -14,8 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class RedisClusterTestUtil {
 
@@ -48,9 +44,9 @@ public class RedisClusterTestUtil {
         if(jedisCluster == null) {
             synchronized (RedisClusterTestUtil.class) {
                 if(jedisCluster == null) {
-                    JedisClusterClientFactory factory = (JedisClusterClientFactory) RedisClientFactoryManager.getFactory();
+                    JedisClusterProcessorFactory factory = (JedisClusterProcessorFactory) RedisProcessorFactoryManager.getFactory();
 
-                    Field field = JedisClusterClientFactory.class.getDeclaredField("jedisCluster");
+                    Field field = JedisClusterProcessorFactory.class.getDeclaredField("jedisCluster");
                     field.setAccessible(true);
                     jedisCluster = (JedisCluster) field.get(factory);
                 }

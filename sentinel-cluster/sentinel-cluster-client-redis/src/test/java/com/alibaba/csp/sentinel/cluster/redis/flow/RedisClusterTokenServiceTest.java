@@ -8,7 +8,6 @@ import static com.alibaba.csp.sentinel.cluster.redis.RedisFlowTestUtil.assertRes
 import static com.alibaba.csp.sentinel.cluster.redis.RedisFlowTestUtil.assertResultPass;
 
 public class RedisClusterTokenServiceTest {
-
 //    @Test
     public void testRequestTokenByRedisCluster() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
         long flowId = 100L;

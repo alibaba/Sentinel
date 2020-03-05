@@ -1,11 +1,11 @@
 package com.alibaba.csp.sentinel.cluster.redis;
 
-public interface RedisClientFactory {
+public interface RedisProcessorFactory {
     /**
-     * create redis client
+     * create redis processor
      * @return
      */
-    RedisClient getClient();
+    RedisProcessor getProcessor();
 
     /**
      * destroy factory

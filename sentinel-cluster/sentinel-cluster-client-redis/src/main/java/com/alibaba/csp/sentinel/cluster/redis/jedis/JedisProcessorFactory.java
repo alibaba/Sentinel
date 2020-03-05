@@ -1,17 +1,17 @@
 package com.alibaba.csp.sentinel.cluster.redis.jedis;
 
-import com.alibaba.csp.sentinel.cluster.redis.RedisClient;
-import com.alibaba.csp.sentinel.cluster.redis.RedisClientFactory;
+import com.alibaba.csp.sentinel.cluster.redis.RedisProcessor;
+import com.alibaba.csp.sentinel.cluster.redis.RedisProcessorFactory;
 import com.alibaba.csp.sentinel.cluster.redis.config.ClusterClientConfig;
 import com.alibaba.csp.sentinel.cluster.redis.config.HostAndPort;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 
-public class JedisClientFactory implements RedisClientFactory {
+public class JedisProcessorFactory implements RedisProcessorFactory {
     private JedisPool pool;
 
-    public JedisClientFactory(ClusterClientConfig clientConfig) {
+    public JedisProcessorFactory(ClusterClientConfig clientConfig) {
         JedisPoolConfig poolConfig = new JedisPoolConfig();
         poolConfig.setMaxWaitMillis(clientConfig.getMaxWaitMillis());
         poolConfig.setMaxTotal(clientConfig.getMaxActive());
@@ -27,8 +27,8 @@ public class JedisClientFactory implements RedisClientFactory {
     }
 
     @Override
-    public RedisClient getClient() {
-        return new JedisClient(pool.getResource());
+    public RedisProcessor getProcessor() {
+        return new JedisProcessor(pool.getResource());
     }
 
     @Override

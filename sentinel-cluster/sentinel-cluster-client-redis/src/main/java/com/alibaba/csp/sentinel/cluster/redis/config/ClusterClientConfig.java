@@ -10,10 +10,9 @@ public class ClusterClientConfig {
     public static final int REDIS_CLUSTER = 3;
     public static final Set<Integer> validClusterType
             = new HashSet<>(Arrays.asList(REDIS_SINGLE, REDIS_SENTINEL, REDIS_CLUSTER));
-    public int clusterType;
+    private int clusterType;
     private String masterName;
-    public List<HostAndPort> hostAndPorts;
-
+    private List<HostAndPort> hostAndPorts;
     private Integer maxWaitMillis = ClientConstants.DEFAULT_MAX_WAIT_MILLIS;
     private Integer maxActive = ClientConstants.DEFAULT_MAX_ACTIVE;
     private Integer maxIdle = ClientConstants.DEFAULT_MAX_IDLE;
@@ -132,7 +131,6 @@ public class ClusterClientConfig {
         this.maxAttempts = maxAttempts;
         return this;
     }
-
 
     @Override
     public String toString() {
