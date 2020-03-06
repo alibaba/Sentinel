@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.dashboard.repository.metric;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.MetricEntity;
 import com.alibaba.csp.sentinel.util.StringUtil;
+import com.alibaba.csp.sentinel.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
      */
     private Map<String, Map<String, LinkedHashMap<Long, MetricEntity>>> allMetrics = new ConcurrentHashMap<>();
 
-    private ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+    private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
 
     @Override
@@ -60,7 +61,7 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
                         @Override
                         protected boolean removeEldestEntry(Entry<Long, MetricEntity> eldest) {
                             // Metric older than {@link #MAX_METRIC_LIVE_TIME_MS} will be removed.
-                            return eldest.getKey() < System.currentTimeMillis() - MAX_METRIC_LIVE_TIME_MS;
+                            return eldest.getKey() < TimeUtil.currentTimeMillis() - MAX_METRIC_LIVE_TIME_MS;
                         }
                     }).put(entity.getTimestamp().getTime(), entity);
         } finally {
