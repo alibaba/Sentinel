@@ -21,9 +21,9 @@ public class JedisClusterProcessor implements RedisProcessor {
 
     @Override
     public int requestToken(String luaId, RequestData requestData) {
-        String flowIdStr = String.valueOf(requestData.getFlowId());
+        long flowId = requestData.getFlowId();
 
-        String luaSha = LuaUtil.loadLuaShaIfNeed(luaId, requestData.getFlowId(), JedisClusterCRC16.getSlot(flowIdStr),
+        String luaSha = LuaUtil.loadLuaShaIfNeed(luaId, requestData.getFlowId(), JedisClusterCRC16.getSlot(String.valueOf(flowId)),
                 new RedisScriptLoader() {
             public String load(String luaCode, long flowId) {
                 return jedisCluster.scriptLoad(luaCode, String.valueOf(flowId));
@@ -31,14 +31,14 @@ public class JedisClusterProcessor implements RedisProcessor {
         });
 
         Object evalResult = jedisCluster.evalsha(luaSha, Arrays.asList(
-                flowIdStr,
-                LuaUtil.toLuaParam(requestData.getAcquireCount(), flowIdStr)
+                String.valueOf(flowId),
+                LuaUtil.toTokenParam(requestData.getNamespace(), flowId, requestData.getAcquireCount())
         ), new ArrayList<String>());
         return LuaUtil.toTokenStatus(evalResult);
     }
 
     @Override
-    public void resetRedisRuleAndMetrics(FlowRule rule) {
+    public void resetRedisRuleAndMetrics(String namespace, FlowRule rule) {
         ClusterFlowConfig clusterFlowConfig = rule.getClusterConfig();
 
         Map<String, String> config = new HashMap<>();
@@ -48,19 +48,19 @@ public class JedisClusterProcessor implements RedisProcessor {
         config.put(THRESHOLD_COUNT_KEY, String.valueOf(rule.getCount()));
 
         // jedisCluster not support pipeline
-        jedisCluster.hset(LuaUtil.toLuaParam(FLOW_RULE_CONFIG_KEY, clusterFlowConfig.getFlowId()), config);
-        jedisCluster.del(LuaUtil.toLuaParam(FLOW_CHECKER_TOKEN_KEY, clusterFlowConfig.getFlowId()));
+        jedisCluster.hset(LuaUtil.toConfigKey(namespace, clusterFlowConfig.getFlowId()), config);
+        jedisCluster.del(LuaUtil.toTokenKey(namespace, clusterFlowConfig.getFlowId()));
     }
 
     @Override
-    public void clearRuleAndMetrics(Set<Long> flowIds) {
+    public void clearRuleAndMetrics(String namespace, Set<Long> flowIds) {
         if(flowIds == null || flowIds.isEmpty()) {
             return;
         }
 
         for (Long ruleId : flowIds) {
-            jedisCluster.del(LuaUtil.toLuaParam(FLOW_RULE_CONFIG_KEY, ruleId));
-            jedisCluster.del(LuaUtil.toLuaParam(FLOW_CHECKER_TOKEN_KEY, ruleId));
+            jedisCluster.del(LuaUtil.toConfigKey(namespace, ruleId));
+            jedisCluster.del(LuaUtil.toTokenKey(namespace, ruleId));
         }
     }
 

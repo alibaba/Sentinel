@@ -35,7 +35,7 @@ public class RedisFlowRuleManagerInSingleTest {
                 .setCount(5)
                 .setClusterMode(true)
                 .setClusterConfig(new ClusterFlowConfig().setFlowId(103L).setSampleCount(10).setWindowIntervalMs(5000)));
-        RedisFlowRuleManager.loadRules(rules);
+        RedisFlowRuleManager.loadRules("redisTokenTest", rules);
         FlowRule rule = getRule(101);
         assertEquals(rule.getClusterConfig().getSampleCount(), 2);
         rule = getRule(102);
@@ -50,7 +50,7 @@ public class RedisFlowRuleManagerInSingleTest {
                 .setCount(5)
                 .setClusterMode(true)
                 .setClusterConfig(new ClusterFlowConfig().setFlowId(102L).setSampleCount(8).setWindowIntervalMs(2000)));
-        RedisFlowRuleManager.loadRules(rules);
+        RedisFlowRuleManager.loadRules("redisTokenTest", rules);
         rule = getRule(101);
         assertEquals(rule.getClusterConfig().getSampleCount(), 4);
         rule = getRule(102);
@@ -61,7 +61,7 @@ public class RedisFlowRuleManagerInSingleTest {
 
     public FlowRule getRule(long flowId) throws NoSuchFieldException, IllegalAccessException {
         Jedis jedis = initJedisClient();
-        Map<String, String> map = jedis.hgetAll(LuaUtil.toLuaParam(FLOW_RULE_CONFIG_KEY, flowId));
+        Map<String, String> map = jedis.hgetAll(LuaUtil.toConfigKey("redisTokenTest", flowId));
         if(map == null || map.isEmpty())
             return null;
 

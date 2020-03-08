@@ -9,7 +9,7 @@ import static com.alibaba.csp.sentinel.cluster.redis.RedisSingleTestUtil.*;
 
 public class RedisClusterTokenServiceInSingleTest {
 
-//    @Test
+    @Test
     public void testRequestTokenByRedisCluster() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
         long flowId = 100L;
         int count = 5;

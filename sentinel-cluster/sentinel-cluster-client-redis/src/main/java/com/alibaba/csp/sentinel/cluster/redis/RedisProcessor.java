@@ -19,13 +19,13 @@ public interface RedisProcessor {
      * reset rule(public rule and clear flow metrics)
      * @param rule
      */
-    void resetRedisRuleAndMetrics(FlowRule rule);
+    void resetRedisRuleAndMetrics(String namespace, FlowRule rule);
 
     /**
      * clear redis rule
      * @param flowIds
      */
-    void clearRuleAndMetrics(Set<Long> flowIds);
+    void clearRuleAndMetrics(String namespace, Set<Long> flowIds);
 
     /**
      * close redis client

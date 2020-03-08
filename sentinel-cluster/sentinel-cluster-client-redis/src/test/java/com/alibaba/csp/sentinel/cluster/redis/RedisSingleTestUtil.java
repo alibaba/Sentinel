@@ -42,6 +42,6 @@ public class RedisSingleTestUtil {
                 .setCount(count)
                 .setClusterMode(true)
                 .setClusterConfig(new ClusterFlowConfig().setFlowId(flowId).setSampleCount(sampleCount).setWindowIntervalMs(windowIntervalMs)));
-        RedisFlowRuleManager.loadRules(rules);
+        RedisFlowRuleManager.loadRules("redisTokenTest", rules);
     }
 }

@@ -36,7 +36,7 @@ public class RedisClusterTestUtil {
                 .setCount(count)
                 .setClusterMode(true)
                 .setClusterConfig(new ClusterFlowConfig().setFlowId(flowId).setSampleCount(sampleCount).setWindowIntervalMs(windowIntervalMs)));
-        RedisFlowRuleManager.loadRules(rules);
+        RedisFlowRuleManager.loadRules("redisTokenTest", rules);
     }
 
     private static volatile JedisCluster jedisCluster;

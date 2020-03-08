@@ -48,6 +48,8 @@ public class RedisClusterTokenService implements ClusterTokenClient {
         RequestData requestData = new RequestData();
         requestData.setFlowId(flowId);
         requestData.setAcquireCount(acquireCount);
+        requestData.setNamespace(RedisFlowRuleManager.getNamespace(flowId));
+        RedisFlowRuleManager.getNamespace(flowId);
         return requestData;
     }
 
