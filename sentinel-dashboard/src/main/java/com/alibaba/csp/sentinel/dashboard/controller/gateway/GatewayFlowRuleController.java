@@ -146,32 +146,17 @@ public class GatewayFlowRuleController {
                     return Result.ofFail(-1, "fieldName can't be null or empty");
                 }
                 itemEntity.setFieldName(paramItem.getFieldName());
+            }
+            String pattern = paramItem.getPattern();
 
-                String pattern = paramItem.getPattern();
-                // 如果匹配串不为空，验证匹配模式
-                if (StringUtil.isNotEmpty(pattern)) {
-                    itemEntity.setPattern(pattern);
-
-                    Integer matchStrategy = paramItem.getMatchStrategy();
-                    if (!Arrays.asList(PARAM_MATCH_STRATEGY_EXACT, PARAM_MATCH_STRATEGY_CONTAINS, PARAM_MATCH_STRATEGY_REGEX).contains(matchStrategy)) {
-                        return Result.ofFail(-1, "invalid matchStrategy: " + matchStrategy);
-                    }
-                    itemEntity.setMatchStrategy(matchStrategy);
+            // 如果匹配串不为空，验证匹配模式
+            if (StringUtil.isNotEmpty(pattern)) {
+                itemEntity.setPattern(pattern);
+                Integer matchStrategy = paramItem.getMatchStrategy();
+                if (!Arrays.asList(PARAM_MATCH_STRATEGY_EXACT, PARAM_MATCH_STRATEGY_CONTAINS, PARAM_MATCH_STRATEGY_REGEX).contains(matchStrategy)) {
+                    return Result.ofFail(-1, "invalid matchStrategy: " + matchStrategy);
                 }
-
-                // 当参数属性为0-ClientIp 1-Host时，可以选择匹配
-            }else if (Arrays.asList(PARAM_PARSE_STRATEGY_CLIENT_IP, PARAM_PARSE_STRATEGY_HOST).contains(parseStrategy)){
-                String pattern = paramItem.getPattern();
-                // 如果匹配串不为空，验证匹配模式
-                if (StringUtil.isNotEmpty(pattern)) {
-                    itemEntity.setPattern(pattern);
-
-                    Integer matchStrategy = paramItem.getMatchStrategy();
-                    if (!Arrays.asList(PARAM_MATCH_STRATEGY_EXACT, PARAM_MATCH_STRATEGY_CONTAINS, PARAM_MATCH_STRATEGY_REGEX).contains(matchStrategy)) {
-                        return Result.ofFail(-1, "invalid matchStrategy: " + matchStrategy);
-                    }
-                    itemEntity.setMatchStrategy(matchStrategy);
-                }
+                itemEntity.setMatchStrategy(matchStrategy);
             }
         }
 
@@ -306,31 +291,17 @@ public class GatewayFlowRuleController {
                     return Result.ofFail(-1, "fieldName can't be null or empty");
                 }
                 itemEntity.setFieldName(paramItem.getFieldName());
+            }
+            String pattern = paramItem.getPattern();
 
-                String pattern = paramItem.getPattern();
-                // 如果匹配串不为空，验证匹配模式
-                if (StringUtil.isNotEmpty(pattern)) {
-                    itemEntity.setPattern(pattern);
-
-                    Integer matchStrategy = paramItem.getMatchStrategy();
-                    if (!Arrays.asList(PARAM_MATCH_STRATEGY_EXACT, PARAM_MATCH_STRATEGY_CONTAINS, PARAM_MATCH_STRATEGY_REGEX).contains(matchStrategy)) {
-                        return Result.ofFail(-1, "invalid matchStrategy: " + matchStrategy);
-                    }
-                    itemEntity.setMatchStrategy(matchStrategy);
+            // 如果匹配串不为空，验证匹配模式
+            if (StringUtil.isNotEmpty(pattern)) {
+                itemEntity.setPattern(pattern);
+                Integer matchStrategy = paramItem.getMatchStrategy();
+                if (!Arrays.asList(PARAM_MATCH_STRATEGY_EXACT, PARAM_MATCH_STRATEGY_CONTAINS, PARAM_MATCH_STRATEGY_REGEX).contains(matchStrategy)) {
+                    return Result.ofFail(-1, "invalid matchStrategy: " + matchStrategy);
                 }
-                // 当参数属性为0-ClientIp 1-Host时，可以选择匹配
-            }else if (Arrays.asList(PARAM_PARSE_STRATEGY_CLIENT_IP, PARAM_PARSE_STRATEGY_HOST).contains(parseStrategy)){
-                String pattern = paramItem.getPattern();
-                // 如果匹配串不为空，验证匹配模式
-                if (StringUtil.isNotEmpty(pattern)) {
-                    itemEntity.setPattern(pattern);
-
-                    Integer matchStrategy = paramItem.getMatchStrategy();
-                    if (!Arrays.asList(PARAM_MATCH_STRATEGY_EXACT, PARAM_MATCH_STRATEGY_CONTAINS, PARAM_MATCH_STRATEGY_REGEX).contains(matchStrategy)) {
-                        return Result.ofFail(-1, "invalid matchStrategy: " + matchStrategy);
-                    }
-                    itemEntity.setMatchStrategy(matchStrategy);
-                }
+                itemEntity.setMatchStrategy(matchStrategy);
             }
         } else {
             entity.setParamItem(null);
