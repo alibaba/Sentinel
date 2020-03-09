@@ -53,6 +53,9 @@ public class InterceptorConfig implements WebMvcConfigurer {
 
         // Custom configuration if necessary
         config.setHttpMethodSpecify(true);
+        // If set false, entrance contexts will be separated by different URLs,
+        // which is useful to support "chain" relation flow strategy.
+        config.setWebContextUnify(true);
         config.setOriginParser(request -> request.getHeader("S-user"));
 
         // Add sentinel interceptor
