@@ -34,6 +34,11 @@ public class SentinelWebMvcConfig extends BaseWebMvcConfig {
      */
     private boolean httpMethodSpecify;
 
+    /**
+     * Specify whether unify web context(i.e. use the default context name), and is true by default.
+     */
+    private boolean webContextUnify = true;
+
     public SentinelWebMvcConfig() {
         super();
         setRequestAttributeName(DEFAULT_REQUEST_ATTRIBUTE_NAME);
@@ -57,11 +62,21 @@ public class SentinelWebMvcConfig extends BaseWebMvcConfig {
         return this;
     }
 
+    public boolean isWebContextUnify() {
+        return webContextUnify;
+    }
+
+    public SentinelWebMvcConfig setWebContextUnify(boolean webContextUnify) {
+        this.webContextUnify = webContextUnify;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "SentinelWebMvcConfig{" +
             "urlCleaner=" + urlCleaner +
             ", httpMethodSpecify=" + httpMethodSpecify +
+            ", webContextUnify=" + webContextUnify +
             ", requestAttributeName='" + requestAttributeName + '\'' +
             ", blockExceptionHandler=" + blockExceptionHandler +
             ", originParser=" + originParser +
