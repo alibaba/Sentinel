@@ -22,14 +22,16 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
-import java.io.CharArrayReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Arrays;
+import java.util.Map;
 
 import org.junit.Test;
 
 import com.alibaba.csp.sentinel.command.CommandRequest;
+import com.alibaba.csp.sentinel.transport.command.exception.BadRequestException;
+import com.alibaba.csp.sentinel.transport.command.exception.ContentTypeNotSupportedException;
 
 public class HttpEventTaskTest {
     
@@ -139,58 +141,17 @@ public class HttpEventTaskTest {
     }
     
     @Test
-    public void consumePostBody() throws IOException {
-        CommandRequest request;
+    public void parsePostHeaders() throws IOException {
+        Map<String, String> map;
         
-        request = new CommandRequest();
-        HttpEventTask.consumePostBody(new StringReader(""), request);
-        assertEquals(0, request.getParameters().size());
+        map = HttpEventTask.parsePostHeaders(new BufferedReader(new StringReader("")));
+        assertNull(map);
         
-        request = new CommandRequest();
-        HttpEventTask.consumePostBody(new StringReader("=a"), request);
-        assertEquals(0, request.getParameters().size());
+        map = HttpEventTask.parsePostHeaders(new BufferedReader(new StringReader("Content-type:  test \r\n\r\nbody")));
+        assertEquals("test", map.get("content-type"));
         
-        request = new CommandRequest();
-        HttpEventTask.consumePostBody(new StringReader("a="), request);
-        assertEquals(0, request.getParameters().size());
-        
-        request = new CommandRequest();
-        HttpEventTask.consumePostBody(new StringReader("a+=%20&b=%E7%9A%84"), request);
-        assertEquals(2, request.getParameters().size());
-        assertEquals(" ", request.getParam("a "));
-        assertEquals("的", request.getParam("b"));
-        
-        {
-            // Capacity test
-            request = new CommandRequest();
-            char[] buf = new char[1024 * 1024];
-            Arrays.fill(buf, '&');
-            String str = "a+=%20&b=%E7%9A%84";
-            for (int i = 0, j = buf.length - 1024; i < str.length(); i ++, j ++) {
-                buf[j] = str.charAt(i);
-            }
-            HttpEventTask.consumePostBody(new CharArrayReader(buf), request);
-            assertEquals(2, request.getParameters().size());
-            assertEquals(" ", request.getParam("a "));
-            assertEquals("的", request.getParam("b"));
-        }
-    }
-    
-    @Test
-    public void processHeaderField() {
-        assertTrue(HttpEventTask.processHeaderField(null));
-        assertTrue(HttpEventTask.processHeaderField(""));
-        assertTrue(HttpEventTask.processHeaderField(":"));
-        assertTrue(HttpEventTask.processHeaderField("a:1"));
-        assertTrue(HttpEventTask.processHeaderField("a: 2"));
-        assertTrue(HttpEventTask.processHeaderField("Content-Encoding: utf-8"));
-        assertTrue(HttpEventTask.processHeaderField("Content-Type:application/x-www-form-urlencoded"));
-        assertTrue(HttpEventTask.processHeaderField("Content-Type: application/x-www-form-urlencoded;charset=utf-8"));
-        assertTrue(HttpEventTask.processHeaderField("Content-Type:application/x-www-form-urlencoded; charset=utf-8"));
-        
-        assertFalse(HttpEventTask.processHeaderField("Content-Type:application/json"));
-        assertFalse(HttpEventTask.processHeaderField("Content-Type:application/json; charset=utf-8"));
-        assertFalse(HttpEventTask.processHeaderField("Content-Type: application/json; charset=utf-8"));
+        map = HttpEventTask.parsePostHeaders(new BufferedReader(new StringReader("Content-Encoding: utf-8\r\n\r\nbody")));
+        assertEquals("utf-8", map.get("content-encoding"));
     }
     
     @Test
@@ -199,30 +160,87 @@ public class HttpEventTaskTest {
         
         request = new CommandRequest();
         request.addParam("a", "1");
-        HttpEventTask.processPostRequest(new BufferedReader(new StringReader("")), request);
-        assertEquals("1", request.getParam("a"));
-        HttpEventTask.processPostRequest(new BufferedReader(new StringReader("Host: demo.com\r\n" + 
-                "Accept: */*\r\n" + 
-                "Accept-Language: en-us\r\n" + 
-                "Accept-Encoding: gzip, deflate\r\n" + 
-                "Content-Type: application/x-www-form-urlencoded; charset=UTF-8\r\n" + 
-                "Connection: keep-alive\r\n" + 
-                "Content-Length: 7\r\n" + 
-                "\r\n" + 
-                "a=3&b=5")), request);
-        assertEquals("3", request.getParam("a"));
-        assertEquals("5", request.getParam("b"));
         
-        HttpEventTask.processPostRequest(new BufferedReader(new StringReader("Host: demo.com\r\n" + 
-                "Accept: */*\r\n" + 
-                "Accept-Language: en-us\r\n" + 
-                "Accept-Encoding: gzip, deflate\r\n" + 
-                "Content-Type: application/json\r\n" + 
-                "Connection: keep-alive\r\n" + 
-                "Content-Length: 7\r\n" + 
-                "\r\n" + 
-                "a=1&b=2")), request);
-        assertEquals("3", request.getParam("a"));
-        assertEquals("5", request.getParam("b"));
+        // illegal(empty) request
+        try {
+            HttpEventTask.processPostRequest(new BufferedReader(new StringReader("")), request);
+            assertFalse(true); // should not reach here
+        } catch (Exception e) {
+            assertTrue(e instanceof BadRequestException);
+        }
+        assertEquals("1", request.getParam("a"));
+        
+        // normal request
+        try {
+            HttpEventTask.processPostRequest(new BufferedReader(new StringReader("Host: demo.com\r\n" + 
+                    "Accept: */*\r\n" + 
+                    "Accept-Language: en-us\r\n" + 
+                    "Accept-Encoding: gzip, deflate\r\n" + 
+                    "Content-Type: application/x-www-form-urlencoded; charset=UTF-8\r\n" + 
+                    "Connection: keep-alive\r\n" + 
+                    "Content-Length: 7\r\n" + 
+                    "\r\n" + 
+                    "a=3&b=5")), request);
+            assertEquals("3", request.getParam("a"));
+            assertEquals("5", request.getParam("b"));
+        } catch (Exception e) {
+            assertTrue(false); // should not reach here
+        }
+        
+        // not supported request
+        try {
+            HttpEventTask.processPostRequest(new BufferedReader(new StringReader("Host: demo.com\r\n" + 
+                    "Accept: */*\r\n" + 
+                    "Accept-Language: en-us\r\n" + 
+                    "Accept-Encoding: gzip, deflate\r\n" + 
+                    "Content-Type: application/json\r\n" + 
+                    "Connection: keep-alive\r\n" + 
+                    "Content-Length: 7\r\n" + 
+                    "\r\n" + 
+                    "a=1&b=2")), request);
+            assertTrue(false); // should not reach here
+        } catch (Exception e) {
+            assertTrue(e instanceof ContentTypeNotSupportedException);
+        }
+        
+        // Capacity test
+        char[] buf = new char[1024 * 1024];
+        Arrays.fill(buf, '&');
+        String padding = new String(buf);
+        try {
+            request = new CommandRequest();
+            HttpEventTask.processPostRequest(new BufferedReader(new StringReader("Host: demo.com\r\n" + 
+                    "Accept: */*\r\n" + 
+                    "Accept-Language: en-us\r\n" + 
+                    "Accept-Encoding: gzip, deflate\r\n" + 
+                    "Content-Type: application/x-www-form-urlencoded\r\n" + 
+                    "Connection: keep-alive\r\n" + 
+                    "Content-Length: 7\r\n" + 
+                    "\r\n" + 
+                    padding +
+                    "a=1&b=2")), request);
+            assertEquals(0, request.getParameters().size());
+        } catch (Exception e) {
+            assertTrue(false);
+        }
+        try {
+            String querystring = "a+=+&b=%E7%9A%84";
+            request = new CommandRequest();
+            HttpEventTask.processPostRequest(new BufferedReader(new StringReader("Host: demo.com\r\n" + 
+                    "Accept: */*\r\n" + 
+                    "Accept-Language: en-us\r\n" + 
+                    "Accept-Encoding: gzip, deflate\r\n" + 
+                    "Content-Type: application/x-www-form-urlencoded\r\n" + 
+                    "Connection: keep-alive\r\n" + 
+                    "Content-Length: " + (padding.length() + querystring.length()) + "\r\n" + 
+                    "\r\n" + 
+                    padding +
+                    querystring)), request);
+            assertEquals(2, request.getParameters().size());
+            assertEquals(" ", request.getParam("a "));
+            assertEquals("的", request.getParam("b"));
+        } catch (Exception e) {
+            assertTrue(false);
+        }
     }
 }

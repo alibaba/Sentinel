@@ -20,7 +20,10 @@ import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.CommandCenterLog;
+import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.transport.command.SimpleHttpCommandCenter;
+import com.alibaba.csp.sentinel.transport.command.exception.BadRequestException;
+import com.alibaba.csp.sentinel.transport.command.exception.ContentTypeNotSupportedException;
 import com.alibaba.csp.sentinel.transport.util.HttpCommandUtils;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import java.io.BufferedReader;
@@ -30,11 +33,12 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /***
@@ -44,6 +48,7 @@ import java.nio.charset.Charset;
  * @author Eric Zhao
  */
 public class HttpEventTask implements Runnable {
+    private static final String SERVER_ERROR_MESSAGE = "Command server error";
 
     private final Socket socket;
 
@@ -104,6 +109,10 @@ public class HttpEventTask implements Runnable {
             long cost = System.currentTimeMillis() - start;
             CommandCenterLog.info("[SimpleHttpCommandCenter] Deal a socket task: " + firstLine
                 + ", address: " + socket.getInetAddress() + ", time cost: " + cost + " ms");
+        } catch (BadRequestException e) {
+            badRequest(printWriter, "Bad request");
+        } catch (ContentTypeNotSupportedException e) {
+            badRequest(printWriter, "Content type is not supported");
         } catch (Throwable e) {
             CommandCenterLog.warn("[SimpleHttpCommandCenter] CommandCenter error", e);
             try {
@@ -132,92 +141,136 @@ public class HttpEventTask implements Runnable {
      * @param bufferedReader
      * @param request
      * @throws IOException
+     * @throws BadRequestException
+     * @throws ContentTypeNotSupportedException 
      */
-    protected static void processPostRequest(BufferedReader bufferedReader, CommandRequest request) throws IOException {
-     // Now simple-http only support form-encoded post request.
-        String bodyLine = null;
-        boolean bodyNext = false;
-        boolean supported = true;
+    protected static void processPostRequest(BufferedReader bufferedReader, CommandRequest request)
+            throws BadRequestException, IOException, ContentTypeNotSupportedException {
+        Map<String, String> headerMap = parsePostHeaders(bufferedReader);
+        
+        if (headerMap == null) {
+            // illegal request
+            RecordLog.warn("Illegal request read");
+            throw new BadRequestException();
+        }
+        
+        if (headerMap.containsKey("content-type") && !checkSupport(headerMap.get("content-type"))) {
+            // not support Content-type
+            RecordLog.warn("Not supported Content-Type: {}", headerMap.get("content-type"));
+            throw new ContentTypeNotSupportedException();
+        }
+        
+        int bodyLength;
+        try {
+            bodyLength = Integer.parseInt(headerMap.get("content-length"));
+        } catch (Exception e) {
+            // illegal request without Content-length header
+            RecordLog.warn("No available Content-Length in headers");
+            throw new BadRequestException();
+        }
+        
+        parseParams(readBody(bufferedReader, bodyLength), request);
+    }
+    
+    /**
+     * Process header line in request
+     * 
+     * @param line
+     * @return return headers in a Map, null for illegal request
+     * @throws IOException 
+     */
+    protected static Map<String, String> parsePostHeaders(BufferedReader reader) throws IOException {
+        Map<String, String> headerMap = new HashMap<String, String>(4);
+        String line;
         while (true) {
-            // Body processing
-            if (bodyNext) {
-                if (!supported) {
-                    break;
-                }
-                consumePostBody(bufferedReader, request);
-                break;
+            line = reader.readLine();
+            if (line == null) {
+                // no body
+                return null;
             }
-
-            bodyLine = bufferedReader.readLine();
-            if (bodyLine == null) {
-                break;
+            if (line.length() == 0) {
+                // empty line, body ahead
+                return headerMap;
             }
-            // Body separator
-            if (StringUtil.isEmpty(bodyLine)) {
-                bodyNext = true;
+            int index = line.indexOf(":");
+            if (index < 1) {
+                // empty value, abandon
                 continue;
             }
-            // Header processing
-            supported &= processHeaderField(bodyLine);
-            if (!supported) {
-                break;
+            String headerName = line.substring(0, index).trim().toLowerCase();
+            String headerValue = line.substring(index + 1).trim();
+            if (headerValue.length() > 0) {
+                headerMap.put(headerName, headerValue);
             }
         }
     }
     
-    /**
-     * Process header lines in http request
-     * 
-     * @param line
-     * @return return false indicating the request can not be supported 
-     */
-    protected static boolean processHeaderField(String line) {
-        if (line == null || line.length() < 1) {
-            return true;
+    private static boolean checkSupport(String contentType) {
+        int idx = contentType.indexOf(";");
+        String type;
+        if (idx > 0) {
+            type = contentType.substring(0, idx).toLowerCase().trim();
+        } else {
+            type = contentType.toLowerCase();
         }
-        int index = line.indexOf(":");
-        if (index < 1) {
-            return true;
-        }
-        String headerName = line.substring(0, index);
-        String header = line.substring(index + 1).trim();
-        if (StringUtil.equalsIgnoreCase("content-type", headerName)) {
-            int idx = header.indexOf(";");
-            if (idx > 0) {
-                header = header.substring(0, idx).toLowerCase().trim();
-            } else {
-                header = header.toLowerCase();
-            }
-            // Actually in RFC "x-*" shouldn't have any properties like "type/subtype; key=val"
-            // But some library do add it. So we will be compatible with that but force to
-            // encoding specified in configuration as legacy processing will do.
-            if (!header.contains("application/x-www-form-urlencoded")) {
-                CommandCenterLog.warn("Content-Type not supported: " + header);
-                // Not supported request type
-                return false;
-            }
+        // Actually in RFC "x-*" shouldn't have any properties like "type/subtype; key=val"
+        // But some library do add it. So we will be compatible with that but force to
+        // encoding specified in configuration as legacy processing will do.
+        if (!type.contains("application/x-www-form-urlencoded")) {
+            CommandCenterLog.warn("Content-Type not supported: " + contentType);
+            // Not supported request type
+            // Now simple-http only support form-encoded post request.
+            return false;
         }
         return true;
+    }
+    
+    private static String readBody(BufferedReader in, int bodyLength) throws IOException {
+        int read = 0;
+        StringBuilder sb = new StringBuilder();
+        char[] buf = new char[512];
+        while (read < bodyLength) {
+            int l = in.read(buf);
+            if (l < 0) {
+                break;
+            }
+            if (l == 0) continue;
+            read += l;
+            sb.append(buf, 0, l);
+        }
+        return sb.toString();
     }
     
     /**
      * Consume all the body submitted and parse params into {@link CommandRequest}
      * 
-     * @param in
+     * @param queryString
      * @param request
-     * @throws IOException
      */
-    protected static void consumePostBody(Reader in, CommandRequest request) throws IOException {
-        StringBuilder builder = new StringBuilder();
-        char[] buf = new char[1024];
+    protected static void parseParams(String queryString, CommandRequest request) {
+        if (queryString == null || queryString.length() < 1) {
+            return;
+        }
+        
+        int offset = 0, pos = -1;
+        
+        // check anchor
+        queryString = removeAnchor(queryString);
+        
         while (true) {
-            int read = in.read(buf);
-            if (read <= 0) {
+            offset = pos + 1;
+            pos = queryString.indexOf('&', offset);
+            if (offset == pos) {
+                // empty
+                continue;
+            }
+            parseSingleParam(queryString.substring(offset, pos == -1 ? queryString.length() : pos), request);
+
+            if (pos < 0) {
+                // reach the end
                 break;
             }
-            builder.append(buf, 0, read);
         }
-        parseParams(builder.toString(), request);
     }
 
     private void closeResource(Closeable closeable) {
@@ -351,39 +404,5 @@ public class HttpEventTask implements Runnable {
         
         request.addParam(key, value);
     }
-
-    /**
-     * Parse parameters in query into request
-     * 
-     * @param queryString
-     * @param request
-     */
-    protected static void parseParams(String queryString, CommandRequest request) {
-        int offset = 0, pos = -1;
-        
-        if (queryString == null || queryString.length() < 1) {
-            return;
-        }
-        
-        // check anchor
-        queryString = removeAnchor(queryString);
-        
-        while (true) {
-            offset = pos + 1;
-            pos = queryString.indexOf('&', offset);
-            if (offset == pos) {
-                // empty
-                continue;
-            }
-            parseSingleParam(queryString.substring(offset, pos == -1 ? queryString.length() : pos), request);
-
-            if (pos < 0) {
-                // reach the end
-                break;
-            }
-        }
-    }
-
-    private static final String SERVER_ERROR_MESSAGE = "Command server error";
 
 }
