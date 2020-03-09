@@ -47,7 +47,7 @@ Below is a simple demo that guides new users to use Sentinel in just 3 steps. It
 
 ### 1. Add Dependency
 
-**Note:** Sentinel requires Java 7 or later.
+**Note:** Sentinel requires Java 7 or later. Java 8 is required if building the whole project or the dashboard.
 
 If your application is build in Maven, just add the following dependency in `pom.xml`.
 
