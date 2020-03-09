@@ -147,8 +147,8 @@ public class GatewayFlowRuleController {
                 }
                 itemEntity.setFieldName(paramItem.getFieldName());
             }
-            String pattern = paramItem.getPattern();
 
+            String pattern = paramItem.getPattern();
             // 如果匹配串不为空，验证匹配模式
             if (StringUtil.isNotEmpty(pattern)) {
                 itemEntity.setPattern(pattern);
@@ -292,8 +292,8 @@ public class GatewayFlowRuleController {
                 }
                 itemEntity.setFieldName(paramItem.getFieldName());
             }
-            String pattern = paramItem.getPattern();
 
+            String pattern = paramItem.getPattern();
             // 如果匹配串不为空，验证匹配模式
             if (StringUtil.isNotEmpty(pattern)) {
                 itemEntity.setPattern(pattern);
