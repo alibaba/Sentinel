@@ -252,7 +252,9 @@ public class HttpEventTask implements Runnable {
             if (l < 0) {
                 break;
             }
-            if (l == 0) continue;
+            if (l == 0) {
+                continue;
+            }
             pos += l;
         }
         // Only allow partial
@@ -323,7 +325,9 @@ public class HttpEventTask implements Runnable {
         out.print("HTTP/1.0 " + statusCode.toString() + "\r\n"
                 + "Content-Length: " + (message == null ? 0 : message.length()) + "\r\n"
                 + "Connection: close\r\n\r\n");
-        if (message != null) out.print(message);
+        if (message != null) {
+            out.print(message);
+        }
         out.flush();
         writtenHead = true;
     }
