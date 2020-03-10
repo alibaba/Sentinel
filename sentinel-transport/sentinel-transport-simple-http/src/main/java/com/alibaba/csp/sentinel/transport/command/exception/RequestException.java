@@ -15,13 +15,29 @@
  */
 package com.alibaba.csp.sentinel.transport.command.exception;
 
+import com.alibaba.csp.sentinel.transport.http.StatusCode;
+
 /**
- * Not supported request
+ * Represent exception with status code processing a request
  * 
  * @author jason
  *
  */
-public class ContentTypeNotSupportedException extends Exception {
+public class RequestException extends Exception {
     private static final long serialVersionUID = 1L;
-
+    
+    private StatusCode statusCode = StatusCode.BAD_REQUEST;
+    
+    public RequestException() {
+        super();
+    }
+    
+    public RequestException(StatusCode statusCode, String msg) {
+        super(msg);
+        this.statusCode = statusCode;
+    }
+    
+    public StatusCode getStatusCode() {
+        return statusCode;
+    }
 }

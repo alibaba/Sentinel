@@ -22,6 +22,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Arrays;
@@ -30,8 +31,8 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.alibaba.csp.sentinel.command.CommandRequest;
-import com.alibaba.csp.sentinel.transport.command.exception.BadRequestException;
-import com.alibaba.csp.sentinel.transport.command.exception.ContentTypeNotSupportedException;
+import com.alibaba.csp.sentinel.transport.command.exception.RequestException;
+import com.alibaba.csp.sentinel.transport.http.StatusCode;
 
 public class HttpEventTaskTest {
     
@@ -144,13 +145,13 @@ public class HttpEventTaskTest {
     public void parsePostHeaders() throws IOException {
         Map<String, String> map;
         
-        map = HttpEventTask.parsePostHeaders(new BufferedReader(new StringReader("")));
-        assertNull(map);
+        map = HttpEventTask.parsePostHeaders(new ByteArrayInputStream("".getBytes()));
+        assertTrue(map.size() == 0);
         
-        map = HttpEventTask.parsePostHeaders(new BufferedReader(new StringReader("Content-type:  test \r\n\r\nbody")));
+        map = HttpEventTask.parsePostHeaders(new ByteArrayInputStream("Content-type:  test \r\n\r\nbody".getBytes()));
         assertEquals("test", map.get("content-type"));
         
-        map = HttpEventTask.parsePostHeaders(new BufferedReader(new StringReader("Content-Encoding: utf-8\r\n\r\nbody")));
+        map = HttpEventTask.parsePostHeaders(new ByteArrayInputStream("Content-Encoding: utf-8\r\n\r\nbody".getBytes()));
         assertEquals("utf-8", map.get("content-encoding"));
     }
     
@@ -163,33 +164,33 @@ public class HttpEventTaskTest {
         
         // illegal(empty) request
         try {
-            HttpEventTask.processPostRequest(new BufferedReader(new StringReader("")), request);
+            HttpEventTask.processPostRequest(new ByteArrayInputStream("".getBytes()), request);
             assertFalse(true); // should not reach here
         } catch (Exception e) {
-            assertTrue(e instanceof BadRequestException);
+            assertTrue(e instanceof RequestException);
         }
         assertEquals("1", request.getParam("a"));
         
         // normal request
         try {
-            HttpEventTask.processPostRequest(new BufferedReader(new StringReader("Host: demo.com\r\n" + 
+            HttpEventTask.processPostRequest(new ByteArrayInputStream(("Host: demo.com\r\n" + 
                     "Accept: */*\r\n" + 
                     "Accept-Language: en-us\r\n" + 
                     "Accept-Encoding: gzip, deflate\r\n" + 
                     "Content-Type: application/x-www-form-urlencoded; charset=UTF-8\r\n" + 
                     "Connection: keep-alive\r\n" + 
-                    "Content-Length: 7\r\n" + 
+                    "Content-Length: 10\r\n" + 
                     "\r\n" + 
-                    "a=3&b=5")), request);
+                    "a=3&b=5的").getBytes()), request);
             assertEquals("3", request.getParam("a"));
-            assertEquals("5", request.getParam("b"));
+            assertEquals("5的", request.getParam("b"));
         } catch (Exception e) {
             assertTrue(false); // should not reach here
         }
         
         // not supported request
         try {
-            HttpEventTask.processPostRequest(new BufferedReader(new StringReader("Host: demo.com\r\n" + 
+            HttpEventTask.processPostRequest(new ByteArrayInputStream(("Host: demo.com\r\n" + 
                     "Accept: */*\r\n" + 
                     "Accept-Language: en-us\r\n" + 
                     "Accept-Encoding: gzip, deflate\r\n" + 
@@ -197,10 +198,10 @@ public class HttpEventTaskTest {
                     "Connection: keep-alive\r\n" + 
                     "Content-Length: 7\r\n" + 
                     "\r\n" + 
-                    "a=1&b=2")), request);
+                    "a=1&b=2").getBytes()), request);
             assertTrue(false); // should not reach here
-        } catch (Exception e) {
-            assertTrue(e instanceof ContentTypeNotSupportedException);
+        } catch (RequestException e) {
+            assertTrue(e.getStatusCode() == StatusCode.UNSUPPORTED_MEDIA_TYPE);
         }
         
         // Capacity test
@@ -209,7 +210,7 @@ public class HttpEventTaskTest {
         String padding = new String(buf);
         try {
             request = new CommandRequest();
-            HttpEventTask.processPostRequest(new BufferedReader(new StringReader("Host: demo.com\r\n" + 
+            HttpEventTask.processPostRequest(new ByteArrayInputStream(("Host: demo.com\r\n" + 
                     "Accept: */*\r\n" + 
                     "Accept-Language: en-us\r\n" + 
                     "Accept-Encoding: gzip, deflate\r\n" + 
@@ -218,27 +219,27 @@ public class HttpEventTaskTest {
                     "Content-Length: 7\r\n" + 
                     "\r\n" + 
                     padding +
-                    "a=1&b=2")), request);
+                    "a=1&b=2").getBytes()), request);
             assertEquals(0, request.getParameters().size());
         } catch (Exception e) {
             assertTrue(false);
         }
         try {
-            String querystring = "a+=+&b=%E7%9A%84";
+            String querystring = "a+=+&b=%E7%9A%84的";
             request = new CommandRequest();
-            HttpEventTask.processPostRequest(new BufferedReader(new StringReader("Host: demo.com\r\n" + 
+            HttpEventTask.processPostRequest(new ByteArrayInputStream(("Host: demo.com\r\n" + 
                     "Accept: */*\r\n" + 
                     "Accept-Language: en-us\r\n" + 
                     "Accept-Encoding: gzip, deflate\r\n" + 
                     "Content-Type: application/x-www-form-urlencoded\r\n" + 
                     "Connection: keep-alive\r\n" + 
-                    "Content-Length: " + (padding.length() + querystring.length()) + "\r\n" + 
+                    "Content-Length: " + (padding.length() + querystring.getBytes().length) + "\r\n" + 
                     "\r\n" + 
                     padding +
-                    querystring)), request);
+                    querystring).getBytes()), request);
             assertEquals(2, request.getParameters().size());
             assertEquals(" ", request.getParam("a "));
-            assertEquals("的", request.getParam("b"));
+            assertEquals("的的", request.getParam("b"));
         } catch (Exception e) {
             assertTrue(false);
         }

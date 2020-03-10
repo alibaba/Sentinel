@@ -22,14 +22,16 @@ import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.CommandCenterLog;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.transport.command.SimpleHttpCommandCenter;
-import com.alibaba.csp.sentinel.transport.command.exception.BadRequestException;
-import com.alibaba.csp.sentinel.transport.command.exception.ContentTypeNotSupportedException;
+import com.alibaba.csp.sentinel.transport.command.exception.RequestException;
+import com.alibaba.csp.sentinel.transport.http.StatusCode;
 import com.alibaba.csp.sentinel.transport.util.HttpCommandUtils;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import java.io.BufferedReader;
+
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -68,30 +70,30 @@ public class HttpEventTask implements Runnable {
             return;
         }
 
-        BufferedReader in = null;
         PrintWriter printWriter = null;
+        InputStream inputStream = null;
         try {
             long start = System.currentTimeMillis();
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream(), SentinelConfig.charset()));
+            inputStream = new BufferedInputStream(socket.getInputStream());
             OutputStream outputStream = socket.getOutputStream();
 
             printWriter = new PrintWriter(
                 new OutputStreamWriter(outputStream, Charset.forName(SentinelConfig.charset())));
 
-            String firstLine = in.readLine();
+            String firstLine = readLine(inputStream);
             CommandCenterLog.info("[SimpleHttpCommandCenter] Socket income: " + firstLine
                 + ", addr: " + socket.getInetAddress());
             CommandRequest request = processQueryString(firstLine);
 
             if (firstLine.length() > 4 && StringUtil.equalsIgnoreCase("POST", firstLine.substring(0, 4))) {
                 // Deal with post method
-                processPostRequest(in, request);
+                processPostRequest(inputStream, request);
             }
 
             // Validate the target command.
             String commandName = HttpCommandUtils.getTarget(request);
             if (StringUtil.isBlank(commandName)) {
-                badRequest(printWriter, "Invalid command");
+                writeResponse(printWriter, StatusCode.BAD_REQUEST, "Invalid command");
                 return;
             }
 
@@ -99,27 +101,25 @@ public class HttpEventTask implements Runnable {
             CommandHandler<?> commandHandler = SimpleHttpCommandCenter.getHandler(commandName);
             if (commandHandler != null) {
                 CommandResponse<?> response = commandHandler.handle(request);
-                handleResponse(response, printWriter, outputStream);
+                handleResponse(response, printWriter);
             } else {
                 // No matching command handler.
-                badRequest(printWriter, "Unknown command `" + commandName + '`');
+                writeResponse(printWriter, StatusCode.BAD_REQUEST, "Unknown command `" + commandName + '`');
             }
-            printWriter.flush();
 
             long cost = System.currentTimeMillis() - start;
             CommandCenterLog.info("[SimpleHttpCommandCenter] Deal a socket task: " + firstLine
                 + ", address: " + socket.getInetAddress() + ", time cost: " + cost + " ms");
-        } catch (BadRequestException e) {
-            badRequest(printWriter, "Bad request");
-        } catch (ContentTypeNotSupportedException e) {
-            badRequest(printWriter, "Content type is not supported");
+        } catch (RequestException e) {
+            writeResponse(printWriter, e.getStatusCode(), e.getMessage());
         } catch (Throwable e) {
             CommandCenterLog.warn("[SimpleHttpCommandCenter] CommandCenter error", e);
             try {
                 if (printWriter != null) {
                     String errorMessage = SERVER_ERROR_MESSAGE;
+                    e.printStackTrace();
                     if (!writtenHead) {
-                        internalError(printWriter, errorMessage);
+                        writeResponse(printWriter, StatusCode.INTERNAL_SERVER_ERROR, errorMessage);
                     } else {
                         printWriter.println(errorMessage);
                     }
@@ -129,67 +129,85 @@ public class HttpEventTask implements Runnable {
                 CommandCenterLog.warn("[SimpleHttpCommandCenter] Close server socket failed", e);
             }
         } finally {
-            closeResource(in);
+            closeResource(inputStream);
             closeResource(printWriter);
             closeResource(socket);
         }
     }
     
+    private static String readLine(InputStream in) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream(64);
+        int data;
+        while (true) {
+            data = in.read();
+            if (data < 0) {
+                break;
+            }
+            if (data == '\n') {
+                break;
+            }
+            bos.write(data);
+        }
+        byte[] arr = bos.toByteArray();
+        if (arr.length > 0 && arr[arr.length - 1] == '\r') {
+            return new String(arr, 0, arr.length - 1, SentinelConfig.charset());
+        }
+        return new String(arr, SentinelConfig.charset());
+    }
+    
     /**
      * Try to process the body of POST request additionally.
      * 
-     * @param bufferedReader
+     * @param in
      * @param request
+     * @throws RequestException
      * @throws IOException
-     * @throws BadRequestException
-     * @throws ContentTypeNotSupportedException 
      */
-    protected static void processPostRequest(BufferedReader bufferedReader, CommandRequest request)
-            throws BadRequestException, IOException, ContentTypeNotSupportedException {
-        Map<String, String> headerMap = parsePostHeaders(bufferedReader);
+    protected static void processPostRequest(InputStream in, CommandRequest request)
+            throws RequestException, IOException {
+        Map<String, String> headerMap = parsePostHeaders(in);
         
         if (headerMap == null) {
             // illegal request
             RecordLog.warn("Illegal request read");
-            throw new BadRequestException();
+            throw new RequestException(StatusCode.BAD_REQUEST, "");
         }
         
         if (headerMap.containsKey("content-type") && !checkSupport(headerMap.get("content-type"))) {
             // not support Content-type
             RecordLog.warn("Not supported Content-Type: {}", headerMap.get("content-type"));
-            throw new ContentTypeNotSupportedException();
+            throw new RequestException(StatusCode.UNSUPPORTED_MEDIA_TYPE, 
+                    "Only form-encoded post request is supported");
         }
         
-        int bodyLength;
+        int bodyLength = 0;
         try {
             bodyLength = Integer.parseInt(headerMap.get("content-length"));
         } catch (Exception e) {
+        }
+        if (bodyLength < 1) {
             // illegal request without Content-length header
             RecordLog.warn("No available Content-Length in headers");
-            throw new BadRequestException();
+            throw new RequestException(StatusCode.LENGTH_REQUIRED, "No legal Content-Length");
         }
         
-        parseParams(readBody(bufferedReader, bodyLength), request);
+        parseParams(readBody(in, bodyLength), request);
     }
     
     /**
      * Process header line in request
      * 
-     * @param line
+     * @param in
      * @return return headers in a Map, null for illegal request
      * @throws IOException 
      */
-    protected static Map<String, String> parsePostHeaders(BufferedReader reader) throws IOException {
+    protected static Map<String, String> parsePostHeaders(InputStream in) throws IOException {
         Map<String, String> headerMap = new HashMap<String, String>(4);
         String line;
         while (true) {
-            line = reader.readLine();
-            if (line == null) {
-                // no body
-                return null;
-            }
-            if (line.length() == 0) {
-                // empty line, body ahead
+            line = readLine(in);
+            if (line == null || line.length() == 0) {
+                // empty line
                 return headerMap;
             }
             int index = line.indexOf(":");
@@ -225,20 +243,20 @@ public class HttpEventTask implements Runnable {
         return true;
     }
     
-    private static String readBody(BufferedReader in, int bodyLength) throws IOException {
-        int read = 0;
-        StringBuilder sb = new StringBuilder();
-        char[] buf = new char[512];
-        while (read < bodyLength) {
-            int l = in.read(buf);
+    private static String readBody(InputStream in, int bodyLength) 
+            throws IOException, RequestException {
+        byte[] buf = new byte[bodyLength];
+        int pos = 0;
+        while (pos < bodyLength) {
+            int l = in.read(buf, pos, Math.min(512, bodyLength - pos));
             if (l < 0) {
                 break;
             }
             if (l == 0) continue;
-            read += l;
-            sb.append(buf, 0, l);
+            pos += l;
         }
-        return sb.toString();
+        // Only allow partial
+        return new String(buf, 0, pos, SentinelConfig.charset());
     }
     
     /**
@@ -283,56 +301,29 @@ public class HttpEventTask implements Runnable {
         }
     }
 
-    private <T> void handleResponse(CommandResponse<T> response, /*@NonNull*/ final PrintWriter printWriter,
-        /*@NonNull*/ final OutputStream rawOutputStream) throws Exception {
+    private <T> void handleResponse(CommandResponse<T> response, final PrintWriter printWriter) throws Exception {
         if (response.isSuccess()) {
             if (response.getResult() == null) {
-                writeOkStatusLine(printWriter);
+                writeResponse(printWriter, StatusCode.OK, null);
                 return;
             }
-            // Write 200 OK status line.
-            writeOkStatusLine(printWriter);
             // Here we directly use `toString` to encode the result to plain text.
             byte[] buffer = response.getResult().toString().getBytes(SentinelConfig.charset());
-            rawOutputStream.write(buffer);
-            rawOutputStream.flush();
+            writeResponse(printWriter, StatusCode.OK, new String(buffer));
         } else {
             String msg = SERVER_ERROR_MESSAGE;
             if (response.getException() != null) {
                 msg = response.getException().getMessage();
             }
-            badRequest(printWriter, msg);
+            writeResponse(printWriter, StatusCode.BAD_REQUEST, msg);
         }
     }
-
-    /**
-     * Write `400 Bad Request` HTTP response status line and message body, then flush.
-     */
-    private void badRequest(/*@NonNull*/ final PrintWriter out, String message) {
-        out.print("HTTP/1.1 400 Bad Request\r\n"
-            + "Connection: close\r\n\r\n");
-        out.print(message);
-        out.flush();
-        writtenHead = true;
-    }
-
-    /**
-     * Write `500 Internal Server Error` HTTP response status line and message body, then flush.
-     */
-    private void internalError(/*@NonNull*/ final PrintWriter out, String message) {
-        out.print("HTTP/1.1 500 Internal Server Error\r\n"
-            + "Connection: close\r\n\r\n");
-        out.print(message);
-        out.flush();
-        writtenHead = true;
-    }
-
-    /**
-     * Write `200 OK` HTTP response status line and flush.
-     */
-    private void writeOkStatusLine(/*@NonNull*/ final PrintWriter out) {
-        out.print("HTTP/1.1 200 OK\r\n"
-            + "Connection: close\r\n\r\n");
+    
+    private void writeResponse(PrintWriter out, StatusCode statusCode, String message) {
+        out.print("HTTP/1.0 " + statusCode.toString() + "\r\n"
+                + "Content-Length: " + (message == null ? 0 : message.length()) + "\r\n"
+                + "Connection: close\r\n\r\n");
+        if (message != null) out.print(message);
         out.flush();
         writtenHead = true;
     }
