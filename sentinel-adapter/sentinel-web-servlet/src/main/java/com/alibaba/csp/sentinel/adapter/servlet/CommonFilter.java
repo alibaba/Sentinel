@@ -54,7 +54,7 @@ public class CommonFilter implements Filter {
      */
     public static final String HTTP_METHOD_SPECIFY = "HTTP_METHOD_SPECIFY";
     /**
-     * If enabled, use the URL path as the context name, or else use the default
+     * If enabled, use the default context name, or else use the URL path as the context name,
      * {@link WebServletConfig#WEB_SERVLET_CONTEXT_NAME}. Please pay attention to the number of context (EntranceNode),
      * which may affect the memory footprint.
      *
