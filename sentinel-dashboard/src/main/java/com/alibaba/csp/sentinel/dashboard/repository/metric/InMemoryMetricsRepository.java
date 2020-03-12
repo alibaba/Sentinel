@@ -53,7 +53,7 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
 
     @Override
     public void save(MetricEntity entity, String app) {
-        allMetrics.get(app).computeIfAbsent(entity.getResource(), e -> new LinkedHashMap<Long, MetricEntity>(100) {
+        allMetrics.computeIfAbsent(app, e -> new HashMap<>(16)).computeIfAbsent(entity.getResource(), e -> new LinkedHashMap<Long, MetricEntity>(100) {
             @Override
             protected boolean removeEldestEntry(Map.Entry<Long, MetricEntity> eldest) {
                 return eldest.getKey() < System.currentTimeMillis() - MAX_METRIC_LIVE_TIME_MS;
