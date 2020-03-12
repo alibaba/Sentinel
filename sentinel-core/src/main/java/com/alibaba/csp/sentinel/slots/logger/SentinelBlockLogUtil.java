@@ -19,7 +19,7 @@ import com.alibaba.csp.sentinel.eagleeye.EagleEye;
 import com.alibaba.csp.sentinel.eagleeye.StatLogger;
 import com.alibaba.csp.sentinel.log.LogBase;
 
-public class EagleEyeLogUtil {
+public class SentinelBlockLogUtil {
 
     public static final String FILE_NAME = "sentinel-block.log";
 

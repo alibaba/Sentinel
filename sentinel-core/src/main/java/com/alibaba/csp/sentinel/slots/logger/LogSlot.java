@@ -25,22 +25,25 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 /**
  * A {@link com.alibaba.csp.sentinel.slotchain.ProcessorSlot} that is response for logging block exceptions
  * to provide concrete logs for troubleshooting.
+ *
+ * @author jialiang.linjl
+ * @author Eric Zhao
  */
 public class LogSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
-    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode obj, int count, boolean prioritized, Object... args)
+    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode obj, int count, boolean prioritized,
+                      Object... args)
         throws Throwable {
         try {
             fireEntry(context, resourceWrapper, obj, count, prioritized, args);
         } catch (BlockException e) {
-            EagleEyeLogUtil.log(resourceWrapper.getName(), e.getClass().getSimpleName(), e.getRuleLimitApp(),
+            SentinelBlockLogUtil.log(resourceWrapper.getName(), e.getClass().getSimpleName(), e.getRuleLimitApp(),
                 context.getOrigin(), count);
             throw e;
         } catch (Throwable e) {
             RecordLog.warn("Unexpected entry exception", e);
         }
-
     }
 
     @Override

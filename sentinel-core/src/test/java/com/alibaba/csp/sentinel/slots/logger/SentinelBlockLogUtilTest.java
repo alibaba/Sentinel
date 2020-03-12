@@ -15,13 +15,13 @@ import static org.awaitility.Awaitility.await;
 /**
  * @author Carpenter Lee
  */
-public class EagleEyeLogUtilTest {
+public class SentinelBlockLogUtilTest {
 
     @Test
     public void testWriteLog() throws Exception {
-        EagleEyeLogUtil.log("resourceName", "BlockException", "app1", "origin", 1);
+        SentinelBlockLogUtil.log("resourceName", "BlockException", "app1", "origin", 1);
 
-        final File file = new File(RecordLog.getLogBaseDir() + EagleEyeLogUtil.FILE_NAME);
+        final File file = new File(RecordLog.getLogBaseDir() + SentinelBlockLogUtil.FILE_NAME);
         await().timeout(2, TimeUnit.SECONDS)
             .until(new Callable<File>() {
                 @Override
@@ -31,18 +31,18 @@ public class EagleEyeLogUtilTest {
             }, FileMatchers.anExistingFile());
     }
 
-    //Change LogBase It is not not work when integration Testing
-    //Because LogBase.LOG_DIR can be just static init for once and it will not be changed
+    // Change LogBase It is not not work when integration Testing
+    // Because LogBase.LOG_DIR can be just static init for once and it will not be changed
     //@Test
     public void testChangeLogBase() throws Exception {
         String userHome = System.getProperty("user.home");
         String newLogBase = userHome + File.separator + "tmpLogDir" + System.currentTimeMillis();
         System.setProperty(LogBase.LOG_DIR, newLogBase);
 
-        EagleEyeLogUtil.log("resourceName", "BlockException", "app1", "origin", 1);
+        SentinelBlockLogUtil.log("resourceName", "BlockException", "app1", "origin", 1);
 
 
-        final File file = new File(RecordLog.getLogBaseDir() + EagleEyeLogUtil.FILE_NAME);
+        final File file = new File(RecordLog.getLogBaseDir() + SentinelBlockLogUtil.FILE_NAME);
         await().timeout(2, TimeUnit.SECONDS)
                 .until(new Callable<File>() {
                     @Override
