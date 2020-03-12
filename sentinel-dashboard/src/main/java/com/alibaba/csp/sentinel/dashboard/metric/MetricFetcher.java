@@ -134,7 +134,7 @@ public class MetricFetcher {
         }, 10, intervalSecond, TimeUnit.SECONDS);
     }
 
-    private void writeMetric(Map<String, MetricEntity> map) {
+    private void writeMetric(Map<String, MetricEntity> map, String app) {
         if (map.isEmpty()) {
             return;
         }
@@ -143,7 +143,7 @@ public class MetricFetcher {
             entity.setGmtCreate(date);
             entity.setGmtModified(date);
         }
-        metricStore.saveAll(map.values());
+        metricStore.saveAll(map.values(), app);
     }
 
     /**
@@ -255,7 +255,7 @@ public class MetricFetcher {
         //logger.info("finished " + msg + " metric for " + app + ", time intervalMs [" + startTime + ", " + endTime
         //    + "], total machines=" + machines.size() + ", dead=" + dead + ", fetch success="
         //    + success + ", fetch fail=" + fail + ", time cost=" + cost + " ms");
-        writeMetric(metricMap);
+        writeMetric(metricMap, app);
     }
 
     private void doFetchAppMetric(final String app) {

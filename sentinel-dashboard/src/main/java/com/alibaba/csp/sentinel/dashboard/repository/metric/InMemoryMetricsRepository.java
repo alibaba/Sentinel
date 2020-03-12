@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
@@ -46,46 +47,68 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
      */
     private Map<String, Map<String, LinkedHashMap<Long, MetricEntity>>> allMetrics = new ConcurrentHashMap<>();
 
-    private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+
+    private Map<String, ReadWriteLock> appLockMap = new ConcurrentHashMap(); //lock seperate by app
 
 
     @Override
-    public void save(MetricEntity entity) {
-        if (entity == null || StringUtil.isBlank(entity.getApp())) {
-            return;
-        }
-        readWriteLock.writeLock().lock();
-        try {
-            allMetrics.computeIfAbsent(entity.getApp(), e -> new HashMap<>(16))
-                    .computeIfAbsent(entity.getResource(), e -> new LinkedHashMap<Long, MetricEntity>() {
-                        @Override
-                        protected boolean removeEldestEntry(Entry<Long, MetricEntity> eldest) {
-                            // Metric older than {@link #MAX_METRIC_LIVE_TIME_MS} will be removed.
-                            return eldest.getKey() < TimeUtil.currentTimeMillis() - MAX_METRIC_LIVE_TIME_MS;
-                        }
-                    }).put(entity.getTimestamp().getTime(), entity);
-        } finally {
-            readWriteLock.writeLock().unlock();
-        }
-
+    public void save(MetricEntity entity, String app) {
+        allMetrics.get(app).computeIfAbsent(entity.getResource(), e -> new LinkedHashMap<Long, MetricEntity>(100) {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<Long, MetricEntity> eldest) {
+                return eldest.getKey() < System.currentTimeMillis() - MAX_METRIC_LIVE_TIME_MS;
+            }
+        }).put(entity.getTimestamp().getTime(), entity);
     }
 
     @Override
-    public void saveAll(Iterable<MetricEntity> metrics) {
+    public void saveAll(Iterable<MetricEntity> metrics, String app) {
+
         if (metrics == null) {
             return;
         }
-        readWriteLock.writeLock().lock();
+
+        if (appLockMap.get(app) == null) { //DCL to the same app concurrent request
+
+            synchronized (this) {
+                if (appLockMap.get(app) == null) {
+                    appLockMap.put(app, new ReentrantReadWriteLock());
+                    allMetrics.put(app, new HashMap<>(256));
+                    lockAndWriteData(appLockMap.get(app), app, metrics);
+                } else { //
+                    lockAndWriteData(appLockMap.get(app), app, metrics);
+                }
+            }
+
+        } else {
+            lockAndWriteData(appLockMap.get(app), app, metrics);
+        }
+
+
+    }
+
+
+    /**
+     * seperate lock by app to enhance write performance
+     *
+     * @param readWriteLock
+     * @param metrics
+     */
+    private void lockAndWriteData(ReadWriteLock readWriteLock, String app, Iterable<MetricEntity> metrics) {
         try {
-            metrics.forEach(this::save);
+            readWriteLock.writeLock().lock();
+            metrics.forEach(entity -> save(entity, app));
         } finally {
-            readWriteLock.writeLock().unlock();
+            readWriteLock.writeLock().unlock(); //release write lock
         }
     }
 
     @Override
     public List<MetricEntity> queryByAppAndResourceBetween(String app, String resource,
                                                            long startTime, long endTime) {
+        if (appLockMap.get(app) == null) {
+            return new ArrayList<>(0);
+        }
         List<MetricEntity> results = new ArrayList<>();
         if (StringUtil.isBlank(app)) {
             return results;
@@ -98,7 +121,7 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
         if (metricsMap == null) {
             return results;
         }
-        readWriteLock.readLock().lock();
+        appLockMap.get(app).readLock().lock();
         try {
             for (Entry<Long, MetricEntity> entry : metricsMap.entrySet()) {
                 if (entry.getKey() >= startTime && entry.getKey() <= endTime) {
@@ -107,12 +130,15 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
             }
             return results;
         } finally {
-            readWriteLock.readLock().unlock();
+            appLockMap.get(app).readLock().unlock();
         }
     }
 
     @Override
     public List<String> listResourcesOfApp(String app) {
+        if (appLockMap.get(app) == null) {
+            return new ArrayList<>(0);
+        }
         List<String> results = new ArrayList<>();
         if (StringUtil.isBlank(app)) {
             return results;
@@ -125,7 +151,7 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
         final long minTimeMs = System.currentTimeMillis() - 1000 * 60;
         Map<String, MetricEntity> resourceCount = new ConcurrentHashMap<>(32);
 
-        readWriteLock.readLock().lock();
+        appLockMap.get(app).readLock().lock();
         try {
             for (Entry<String, LinkedHashMap<Long, MetricEntity>> resourceMetrics : resourceMap.entrySet()) {
                 for (Entry<Long, MetricEntity> metrics : resourceMetrics.getValue().entrySet()) {
@@ -160,7 +186,7 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
                     .map(Entry::getKey)
                     .collect(Collectors.toList());
         } finally {
-            readWriteLock.readLock().unlock();
+            appLockMap.get(app).readLock().unlock();
         }
     }
 }

@@ -30,14 +30,14 @@ public interface MetricsRepository<T> {
      *
      * @param metric metric data to save
      */
-    void save(T metric);
+    void save(T metric, String app);
 
     /**
      * Save all metrics to the storage repository.
      *
      * @param metrics metrics to save
      */
-    void saveAll(Iterable<T> metrics);
+    void saveAll(Iterable<T> metrics, String app);
 
     /**
      * Get all metrics by {@code appName} and {@code resourceName} between a period of time.
