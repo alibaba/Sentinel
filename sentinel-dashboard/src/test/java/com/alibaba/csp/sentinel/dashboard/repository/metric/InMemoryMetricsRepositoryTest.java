@@ -73,7 +73,7 @@ public class InMemoryMetricsRepositoryTest {
         entry.setExceptionQps(1L);
         entry.setBlockQps(0L);
         entry.setSuccessQps(1L);
-        inMemoryMetricsRepository.save(entry);
+        inMemoryMetricsRepository.save(entry, "app");
         List<String> resources = inMemoryMetricsRepository.listResourcesOfApp("testSave");
         Assert.assertTrue(resources.size() == 1 && "testResource".equals(resources.get(0)));
     }
@@ -93,7 +93,7 @@ public class InMemoryMetricsRepositoryTest {
             entry.setSuccessQps(1L);
             entities.add(entry);
         }
-        inMemoryMetricsRepository.saveAll(entities);
+        inMemoryMetricsRepository.saveAll(entities, "app");
         List<String> result = inMemoryMetricsRepository.listResourcesOfApp("testSaveAll");
         Assert.assertTrue(result.size() == entities.size());
     }
@@ -110,7 +110,7 @@ public class InMemoryMetricsRepositoryTest {
         expireEntry.setExceptionQps(1L);
         expireEntry.setBlockQps(0L);
         expireEntry.setSuccessQps(1L);
-        inMemoryMetricsRepository.save(expireEntry);
+        inMemoryMetricsRepository.save(expireEntry, "app");
 
         MetricEntity entry = new MetricEntity();
         entry.setApp(DEFAULT_APP);
@@ -120,7 +120,7 @@ public class InMemoryMetricsRepositoryTest {
         entry.setExceptionQps(1L);
         entry.setBlockQps(0L);
         entry.setSuccessQps(1L);
-        inMemoryMetricsRepository.save(entry);
+        inMemoryMetricsRepository.save(entry, "app");
 
         List<MetricEntity> list = inMemoryMetricsRepository.queryByAppAndResourceBetween(
                 DEFAULT_APP, DEFAULT_RESOURCE, now - EXPIRE_TIME, now);
@@ -186,7 +186,7 @@ public class InMemoryMetricsRepositoryTest {
             entry.setExceptionQps(1L);
             entry.setBlockQps(0L);
             entry.setSuccessQps(1L);
-            inMemoryMetricsRepository.save(entry);
+            inMemoryMetricsRepository.save(entry, "app");
         }
     }
 
