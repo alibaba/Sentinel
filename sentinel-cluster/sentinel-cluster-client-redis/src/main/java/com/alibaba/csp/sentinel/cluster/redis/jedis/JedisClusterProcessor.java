@@ -23,15 +23,16 @@ public class JedisClusterProcessor implements RedisProcessor {
     public int requestToken(String luaId, RequestData requestData) {
         long flowId = requestData.getFlowId();
 
-        String luaSha = LuaUtil.loadLuaShaIfNeed(luaId, requestData.getFlowId(), JedisClusterCRC16.getSlot(String.valueOf(flowId)),
+        String flowKey = LuaUtil.toTokenParam(requestData.getNamespace(), flowId);
+        String luaSha = LuaUtil.loadLuaShaIfNeed(luaId, flowKey, JedisClusterCRC16.getSlot(flowKey),
                 new RedisScriptLoader() {
-            public String load(String luaCode, long flowId) {
-                return jedisCluster.scriptLoad(luaCode, String.valueOf(flowId));
+            public String load(String luaCode, String slotKey) {
+                return jedisCluster.scriptLoad(luaCode, slotKey);
             }
         });
 
         Object evalResult = jedisCluster.evalsha(luaSha, Arrays.asList(
-                String.valueOf(flowId),
+                flowKey,
                 LuaUtil.toTokenParam(requestData.getNamespace(), flowId, requestData.getAcquireCount())
         ), new ArrayList<String>());
         return LuaUtil.toTokenStatus(evalResult);

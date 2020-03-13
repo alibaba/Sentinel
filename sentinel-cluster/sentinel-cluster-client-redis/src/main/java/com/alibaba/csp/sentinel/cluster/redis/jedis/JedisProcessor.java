@@ -25,14 +25,14 @@ public class JedisProcessor implements RedisProcessor {
     @Override
     public int requestToken(String luaId, RequestData requestData) {
         long flowId = requestData.getFlowId();
-        String luaSha = LuaUtil.loadLuaShaIfNeed(luaId, flowId, new RedisScriptLoader() {
-            public String load(String luaCode, long flowId) {
+        String luaSha = LuaUtil.loadLuaShaIfNeed(luaId, new RedisScriptLoader() {
+            public String load(String luaCode, String slotKey) {
                 return jedis.scriptLoad(luaCode);
             }
         });
 
         Object evalResult = jedis.evalsha(luaSha, Arrays.asList(
-                String.valueOf(flowId),
+                LuaUtil.toTokenParam(requestData.getNamespace(), flowId),
                 LuaUtil.toTokenParam(requestData.getNamespace(), flowId, requestData.getAcquireCount())
         ), new ArrayList<String>());
 

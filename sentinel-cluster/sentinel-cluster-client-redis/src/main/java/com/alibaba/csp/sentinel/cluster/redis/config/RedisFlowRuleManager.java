@@ -11,15 +11,13 @@ import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleUtil;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 public class RedisFlowRuleManager {
     public static volatile boolean publishRuleToRedis = true;
 
-    private static final ConcurrentMap<String, List<FlowRule>> SOURCE_TO_FLOW_RULES = new ConcurrentHashMap<>();
-    private static final Map<Long, FlowRule> FLOW_ID_TO_RULE = new HashMap();
-    private static final Map<Long, String> FLOW_ID_TO_NAMESPACE = new HashMap<>();
+    private static Map<String, List<FlowRule>> SOURCE_TO_FLOW_RULES = new HashMap<>();
+    private static Map<Long, FlowRule> FLOW_ID_TO_RULE = new HashMap();
+    private static Map<Long, String> FLOW_ID_TO_NAMESPACE = new HashMap<>();
 
     private static final Map<String, SentinelProperty<List<FlowRule>>> NAMESPACE_TO_PROPERTY = new HashMap<>();
     private static final Map<String, RedisFlowPropertyListener> NAMESPACE_TO_LISTENER = new HashMap<>();
@@ -44,7 +42,13 @@ public class RedisFlowRuleManager {
     }
 
     public static void loadRules(String namespace, List<FlowRule> rules) {
-        RedisFlowRuleManager.NAMESPACE_TO_PROPERTY.get(namespace).updateValue(rules);
+        SentinelProperty<List<FlowRule>> property = RedisFlowRuleManager.NAMESPACE_TO_PROPERTY.get(namespace);
+        if(property == null) {
+            RecordLog.warn(
+                    "[RedisFlowRuleManager] namespace not register");
+            return;
+        }
+        property.updateValue(rules);
     }
 
     private static void updateRule(String namespace, List<FlowRule> newRules) {
@@ -55,15 +59,15 @@ public class RedisFlowRuleManager {
             return;
         }
 
-        newRules = clearInvalidRule(newRules);
+        newRules = clearInvalidRule(namespace, newRules);
         RedisProcessor redisProcessor = factory.getProcessor();
         resetRedisRuleAndMetrics(namespace, newRules, redisProcessor);
-        clearExpiredRuleAndMetrics(namespace, newRules, redisProcessor);
+        clearRedisExpiredRuleAndMetrics(namespace, newRules, redisProcessor);
         updateLocaleRule(namespace, newRules);
         redisProcessor.close();
     }
 
-    private static List<FlowRule> clearInvalidRule(List<FlowRule> newRules) {
+    private static List<FlowRule> clearInvalidRule(String namespace, List<FlowRule> newRules) {
         if(newRules == null) {
             return new ArrayList<>();
         }
@@ -76,6 +80,12 @@ public class RedisFlowRuleManager {
             if (!FlowRuleUtil.isValidRule(rule)) {
                 RecordLog.warn(
                         "[RedisFlowRuleManager] Ignoring invalid flow rule when loading new flow rules: " + rule);
+                continue;
+            }
+            String existNamespace = FLOW_ID_TO_NAMESPACE.get(rule.getClusterConfig().getFlowId());
+            if(existNamespace != null && !namespace.equals(existNamespace)) {
+                RecordLog.warn(
+                        "[RedisFlowRuleManager] flowId exist in other namespace: " + rule);
                 continue;
             }
             validRules.add(rule);
@@ -99,10 +109,10 @@ public class RedisFlowRuleManager {
     }
 
     private static Set<Long> getExpiredFlowIds(String namespace, List<FlowRule> newRules) {
-        Set<Long> namespaceFlowIds = new HashSet<>();
+        Set<Long> expiredFlowIds = new HashSet<>();
         for (Map.Entry<Long, String> entry : RedisFlowRuleManager.FLOW_ID_TO_NAMESPACE.entrySet()) {
             if(namespace.equals(entry.getValue())) {
-                namespaceFlowIds.add(entry.getKey());
+                expiredFlowIds.add(entry.getKey());
             }
         }
 
@@ -110,11 +120,11 @@ public class RedisFlowRuleManager {
         for (FlowRule newRule : newRules) {
             newFlowIds.add(newRule.getClusterConfig().getFlowId());
         }
-        namespaceFlowIds.removeAll(newFlowIds);
-        return namespaceFlowIds;
+        expiredFlowIds.removeAll(newFlowIds);
+        return expiredFlowIds;
     }
 
-    private static void clearExpiredRuleAndMetrics(String namespace, List<FlowRule> newRules, RedisProcessor redisProcessor) {
+    private static void clearRedisExpiredRuleAndMetrics(String namespace, List<FlowRule> newRules, RedisProcessor redisProcessor) {
         Set<Long> expiredFlowIds = getExpiredFlowIds(namespace, newRules);
         redisProcessor.clearRuleAndMetrics(namespace, expiredFlowIds);
     }
@@ -122,18 +132,24 @@ public class RedisFlowRuleManager {
     private static void updateLocaleRule(String namespace, List<FlowRule> newRules) {
         Set<Long> expiredFlowIds = getExpiredFlowIds(namespace, newRules);
 
+        Map<Long, FlowRule> newFlowIdToRule = new HashMap<>();
+        newFlowIdToRule.putAll(RedisFlowRuleManager.FLOW_ID_TO_RULE);
+        Map<Long, String> newFlowIdToNamespace = new HashMap<>();
+        newFlowIdToNamespace.putAll(RedisFlowRuleManager.FLOW_ID_TO_NAMESPACE);
+        Map<String, List<FlowRule>> newSourceToRules = new HashMap<>();
+        newSourceToRules.putAll(RedisFlowRuleManager.SOURCE_TO_FLOW_RULES);
+        // clear expired rule
         for (Long oldFlowId : expiredFlowIds) {
-            RedisFlowRuleManager.FLOW_ID_TO_NAMESPACE.remove(oldFlowId);
-            RedisFlowRuleManager.FLOW_ID_TO_RULE.remove(oldFlowId);
+            newFlowIdToNamespace.remove(oldFlowId);
+            newFlowIdToRule.remove(oldFlowId);
         }
-
+        // add new rule
         for (FlowRule rule : newRules) {
-            RedisFlowRuleManager.FLOW_ID_TO_NAMESPACE.put(rule.getClusterConfig().getFlowId(), namespace);
-            RedisFlowRuleManager.FLOW_ID_TO_RULE.put(rule.getClusterConfig().getFlowId(), rule);
+            newFlowIdToNamespace.put(rule.getClusterConfig().getFlowId(), namespace);
+            newFlowIdToRule.put(rule.getClusterConfig().getFlowId(), rule);
         }
-
-        //
-        for (Map.Entry<String, List<FlowRule>> sourceRules : RedisFlowRuleManager.SOURCE_TO_FLOW_RULES.entrySet()) {
+        // clear expired rule from sourceRules
+        for (Map.Entry<String, List<FlowRule>> sourceRules : newSourceToRules.entrySet()) {
             Iterator<FlowRule>  iterator = sourceRules.getValue().iterator();
             while (iterator.hasNext()) {
                 FlowRule rule = iterator.next();
@@ -142,16 +158,20 @@ public class RedisFlowRuleManager {
                 }
             }
         }
-
-        Map<String, List<FlowRule>> addSourceFlowRuleMap = FlowRuleUtil.buildFlowRuleMap(new ArrayList<>(RedisFlowRuleManager.FLOW_ID_TO_RULE.values()));
+        // add new rule to sourceRules
+        Map<String, List<FlowRule>> addSourceFlowRuleMap = FlowRuleUtil.buildFlowRuleMap(new ArrayList<>(newRules));
         for (Map.Entry<String, List<FlowRule>> addSourceFlows : addSourceFlowRuleMap.entrySet()) {
-            List<FlowRule> existSourceRules = RedisFlowRuleManager.SOURCE_TO_FLOW_RULES.get(addSourceFlows.getKey());
+            List<FlowRule> existSourceRules = newSourceToRules.get(addSourceFlows.getKey());
             if(existSourceRules == null) {
-                RedisFlowRuleManager.SOURCE_TO_FLOW_RULES.put(addSourceFlows.getKey(), addSourceFlows.getValue());
+                newSourceToRules.put(addSourceFlows.getKey(), addSourceFlows.getValue());
             } else {
                 existSourceRules.addAll(addSourceFlows.getValue());
             }
         }
+
+        RedisFlowRuleManager.FLOW_ID_TO_RULE = newFlowIdToRule;
+        RedisFlowRuleManager.FLOW_ID_TO_NAMESPACE = newFlowIdToNamespace;
+        RedisFlowRuleManager.SOURCE_TO_FLOW_RULES = newSourceToRules;
     }
 
     private static boolean isChangeRule(FlowRule oldRule, FlowRule newRule) {
@@ -165,17 +185,14 @@ public class RedisFlowRuleManager {
     }
 
     public static FlowRule getFlowRule(long flowId) {
-        // todo 线程不安全  写时复制
         return FLOW_ID_TO_RULE.get(flowId);
     }
 
     public static String getNamespace(long flowId) {
-        // todo 线程不安全
         return FLOW_ID_TO_NAMESPACE.get(flowId);
     }
 
     public static Map<String, List<FlowRule>> getFlowRuleMap() {
-        // todo 线程不安全
         return SOURCE_TO_FLOW_RULES;
     }
 

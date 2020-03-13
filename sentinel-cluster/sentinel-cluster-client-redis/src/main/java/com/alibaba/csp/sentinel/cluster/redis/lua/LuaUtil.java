@@ -47,11 +47,11 @@ public class LuaUtil {
         }
     }
 
-    public static String loadLuaShaIfNeed(String luaId, long flowId, RedisScriptLoader scriptLoader) {
-        return loadLuaShaIfNeed(luaId, flowId, null, scriptLoader);
+    public static String loadLuaShaIfNeed(String luaId,  RedisScriptLoader scriptLoader) {
+        return loadLuaShaIfNeed(luaId, null, null, scriptLoader);
     }
 
-    public static String loadLuaShaIfNeed(String luaId, long flowId, Integer slot, RedisScriptLoader scriptLoader) {
+    public static String loadLuaShaIfNeed(String luaId, String slotKey, Integer slot, RedisScriptLoader scriptLoader) {
         String cacheKey = luaId;
         if(slot != null) {
             cacheKey = cacheKey + slot;
@@ -64,8 +64,8 @@ public class LuaUtil {
                 if(sha == null) {
 
                     String luaCode = loadLuaCodeIfNeed(luaId);
-                    sha = scriptLoader.load(luaCode, flowId);
-                    luaShaMapper.put(luaCode, sha);
+                    sha = scriptLoader.load(luaCode, slotKey);
+                    luaShaMapper.put(cacheKey, sha);
                 }
             }
         }
@@ -81,9 +81,16 @@ public class LuaUtil {
     }
 
     public static String toTokenParam(String namespace, long flowId, Object param) {
+        if(param == null) {
+            return "{" + namespace + "-" + flowId + "}";
+        }
+
         return param + "{" +  namespace + "-" + flowId + "}";
     }
 
+    public static String toTokenParam(String namespace, long flowId) {
+        return "{" + namespace + "-" + flowId + "}";
+    }
 
 //    public static String toLuaParam(Object val, Object slotKey) {
 //        return  val + "{" + slotKey + "}" ;
