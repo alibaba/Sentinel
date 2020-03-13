@@ -48,7 +48,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  * @author jialiang.linjl
  * @author Eric Zhao
  */
-@SpiOrder(-6000)
+@SpiOrder(-7000)
 public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override

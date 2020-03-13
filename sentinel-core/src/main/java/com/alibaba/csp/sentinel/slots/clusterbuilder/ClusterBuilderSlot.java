@@ -45,7 +45,7 @@ import com.alibaba.csp.sentinel.spi.SpiOrder;
  *
  * @author jialiang.linjl
  */
-@SpiOrder(-8000)
+@SpiOrder(-9000)
 public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     /**

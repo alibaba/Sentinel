@@ -211,7 +211,7 @@ public final class SpiLoader {
      */
     public static <T> List<T> loadDifferentInstanceListSorted(Class<T> clazz) {
         try {
-            // To make sure the instances loaded are different.
+            // Not use SERVICE_LOADER_MAP, to make sure the instances loaded are different.
             ServiceLoader<T> serviceLoader = ServiceLoaderUtil.getServiceLoader(clazz);
 
             List<SpiOrderWrapper<T>> orderWrappers = new ArrayList<>();
@@ -228,7 +228,7 @@ public final class SpiLoader {
             }
             return list;
         } catch (Throwable t) {
-            RecordLog.warn("[SpiLoader] ERROR: loadInstanceListSorted failed", t);
+            RecordLog.warn("[SpiLoader] ERROR: loadDifferentInstanceListSorted failed", t);
             t.printStackTrace();
             return new ArrayList<>();
         }

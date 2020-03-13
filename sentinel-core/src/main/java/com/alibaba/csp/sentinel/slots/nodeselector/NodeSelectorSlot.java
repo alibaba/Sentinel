@@ -123,7 +123,7 @@ import java.util.Map;
  * @see EntranceNode
  * @see ContextUtil
  */
-@SpiOrder(-9000)
+@SpiOrder(-10000)
 public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
 
     /**

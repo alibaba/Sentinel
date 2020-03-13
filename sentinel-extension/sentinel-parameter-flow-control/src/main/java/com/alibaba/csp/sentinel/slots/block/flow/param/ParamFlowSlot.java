@@ -31,7 +31,7 @@ import java.util.List;
  * @author Eric Zhao
  * @since 0.2.0
  */
-@SpiOrder(-5000)
+@SpiOrder(-3000)
 public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override

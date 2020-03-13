@@ -59,10 +59,10 @@ public class DefaultSlotChainBuilderTest {
         assertTrue(next instanceof StatisticSlot);
 
         next = next.getNext();
-        assertTrue(next instanceof SystemSlot);
+        assertTrue(next instanceof AuthoritySlot);
 
         next = next.getNext();
-        assertTrue(next instanceof AuthoritySlot);
+        assertTrue(next instanceof SystemSlot);
 
         next = next.getNext();
         assertTrue(next instanceof FlowSlot);

@@ -28,7 +28,7 @@ import com.alibaba.csp.sentinel.spi.SpiOrder;
  * @author jialiang.linjl
  * @author leyou
  */
-@SpiOrder(-4000)
+@SpiOrder(-5000)
 public class SystemSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
