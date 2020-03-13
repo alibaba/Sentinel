@@ -4,6 +4,9 @@
 out
 gen
 
+# Visual Studio Code
+.history/
+
 # Maven
 target/
 pom.xml.tag
