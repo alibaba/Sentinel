@@ -94,8 +94,8 @@ public class SpiLoaderTest {
         assertTrue(sortedSlots.get(index++) instanceof ClusterBuilderSlot);
         assertTrue(sortedSlots.get(index++) instanceof LogSlot);
         assertTrue(sortedSlots.get(index++) instanceof StatisticSlot);
-        assertTrue(sortedSlots.get(index++) instanceof SystemSlot);
         assertTrue(sortedSlots.get(index++) instanceof AuthoritySlot);
+        assertTrue(sortedSlots.get(index++) instanceof SystemSlot);
         assertTrue(sortedSlots.get(index++) instanceof FlowSlot);
         assertTrue(sortedSlots.get(index++) instanceof DegradeSlot);
 
@@ -124,8 +124,8 @@ public class SpiLoaderTest {
         assertTrue(sortedSlots.get(index++) instanceof ClusterBuilderSlot);
         assertTrue(sortedSlots.get(index++) instanceof LogSlot);
         assertTrue(sortedSlots.get(index++) instanceof StatisticSlot);
-        assertTrue(sortedSlots.get(index++) instanceof SystemSlot);
         assertTrue(sortedSlots.get(index++) instanceof AuthoritySlot);
+        assertTrue(sortedSlots.get(index++) instanceof SystemSlot);
         assertTrue(sortedSlots.get(index++) instanceof FlowSlot);
         assertTrue(sortedSlots.get(index++) instanceof DegradeSlot);
 
