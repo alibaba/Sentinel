@@ -31,6 +31,8 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
 
+import static com.alibaba.dubbo.common.Constants.CONSUMER;
+
 /**
  * <p>Dubbo service consumer filter for Sentinel. Auto activated by default.</p>
  *
@@ -42,7 +44,7 @@ import com.alibaba.dubbo.rpc.RpcException;
  * @author leyou
  * @author Eric Zhao
  */
-@Activate(group = "consumer")
+@Activate(group = CONSUMER)
 public class SentinelDubboConsumerFilter extends AbstractDubboFilter implements Filter {
 
     public SentinelDubboConsumerFilter() {

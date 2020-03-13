@@ -97,6 +97,7 @@ config.setBlockExceptionHandler((request, response, e) -> {
 | urlCleaner | The `UrlCleaner` interface is designed for clean and unify the URL resource. | `UrlCleaner` | - |
 | requestAttributeName | Attribute key in request used by Sentinel (internal) | `String` | `$$sentinel_spring_web_entry_attr` |
 | httpMethodSpecify | Specify whether the URL resource name should contain the HTTP method prefix (e.g. `POST:`). | `boolean` | `false` |
+| webContextUnify | Specify whether unify web context(i.e. use the default context name). | `boolean` | `true` |
 
 - `SentinelWebMvcTotalConfig` configuration:
 

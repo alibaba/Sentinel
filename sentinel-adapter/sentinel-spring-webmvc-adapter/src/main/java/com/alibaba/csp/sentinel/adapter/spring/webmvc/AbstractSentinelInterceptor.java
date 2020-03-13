@@ -59,7 +59,8 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
             if (StringUtil.isNotEmpty(resourceName)) {
                 // Parse the request origin using registered origin parser.
                 String origin = parseOrigin(request);
-                ContextUtil.enter(SENTINEL_SPRING_WEB_CONTEXT_NAME, origin);
+                String contextName = getContextName(request);
+                ContextUtil.enter(contextName, origin);
                 Entry entry = SphU.entry(resourceName, ResourceTypeConstants.COMMON_WEB, EntryType.IN);
 
                 setEntryInRequest(request, baseWebMvcConfig.getRequestAttributeName(), entry);
@@ -78,6 +79,16 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
      * @return the resource name of the target web resource.
      */
     protected abstract String getResourceName(HttpServletRequest request);
+
+    /**
+     * Return the context name of the target web resource.
+     *
+     * @param request web request
+     * @return the context name of the target web resource.
+     */
+    protected String getContextName(HttpServletRequest request) {
+        return SENTINEL_SPRING_WEB_CONTEXT_NAME;
+    }
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
