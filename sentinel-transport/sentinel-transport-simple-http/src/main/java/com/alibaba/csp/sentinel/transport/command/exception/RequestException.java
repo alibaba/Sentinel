@@ -15,7 +15,7 @@
  */
 package com.alibaba.csp.sentinel.transport.command.exception;
 
-import com.alibaba.csp.sentinel.transport.http.StatusCode;
+import com.alibaba.csp.sentinel.transport.command.http.StatusCode;
 
 /**
  * Represent exception with status code processing a request

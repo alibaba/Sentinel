@@ -23,7 +23,6 @@ import com.alibaba.csp.sentinel.log.CommandCenterLog;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.transport.command.SimpleHttpCommandCenter;
 import com.alibaba.csp.sentinel.transport.command.exception.RequestException;
-import com.alibaba.csp.sentinel.transport.http.StatusCode;
 import com.alibaba.csp.sentinel.transport.util.HttpCommandUtils;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
@@ -323,7 +322,7 @@ public class HttpEventTask implements Runnable {
     
     private void writeResponse(PrintWriter out, StatusCode statusCode, String message) {
         out.print("HTTP/1.0 " + statusCode.toString() + "\r\n"
-                + "Content-Length: " + (message == null ? 0 : message.length()) + "\r\n"
+                + "Content-Length: " + (message == null ? 0 : message.getBytes().length) + "\r\n"
                 + "Connection: close\r\n\r\n");
         if (message != null) {
             out.print(message);

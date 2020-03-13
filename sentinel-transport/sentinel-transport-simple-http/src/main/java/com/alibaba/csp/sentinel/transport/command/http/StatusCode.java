@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.transport.http;
+package com.alibaba.csp.sentinel.transport.command.http;
 
 public enum StatusCode {
     OK(200, "OK"),

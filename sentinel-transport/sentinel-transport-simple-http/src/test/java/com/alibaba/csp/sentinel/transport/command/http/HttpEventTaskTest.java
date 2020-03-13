@@ -32,7 +32,6 @@ import org.junit.Test;
 
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.transport.command.exception.RequestException;
-import com.alibaba.csp.sentinel.transport.http.StatusCode;
 
 public class HttpEventTaskTest {
     
