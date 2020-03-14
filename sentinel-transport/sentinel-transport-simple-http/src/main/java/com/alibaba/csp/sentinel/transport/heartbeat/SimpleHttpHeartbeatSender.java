@@ -31,7 +31,7 @@ import java.util.List;
  * This implementation is based on a trivial HTTP client.
  *
  * @author Eric Zhao
- * @author leyou
+ * @author Carpenter Lee
  */
 public class SimpleHttpHeartbeatSender implements HeartbeatSender {
 
@@ -49,14 +49,18 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
     public SimpleHttpHeartbeatSender() {
         // Retrieve the list of default addresses.
         List<Tuple2<String, Integer>> newAddrs = TransportConfig.getConsoleServerList();
-        RecordLog.info("[SimpleHttpHeartbeatSender] Default console address list retrieved: " + newAddrs);
+        if (newAddrs.isEmpty()) {
+            RecordLog.warn("[SimpleHttpHeartbeatSender] Dashboard server address not configured or not available");
+        } else {
+            RecordLog.info("[SimpleHttpHeartbeatSender] Default console address list retrieved: " + newAddrs);
+        }
         this.addressList = newAddrs;
     }
 
     @Override
     public boolean sendHeartbeat() throws Exception {
         if (TransportConfig.getRuntimePort() <= 0) {
-            RecordLog.info("[SimpleHttpHeartbeatSender] Runtime port not initialized, won't send heartbeat");
+            RecordLog.info("[SimpleHttpHeartbeatSender] Command server port not initialized, won't send heartbeat");
             return false;
         }
         Tuple2<String, Integer> addrInfo = getAvailableAddress();
@@ -72,7 +76,8 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
             if (response.getStatusCode() == OK_STATUS) {
                 return true;
             } else if (clientErrorCode(response.getStatusCode()) || serverErrorCode(response.getStatusCode())) {
-                RecordLog.warn("[SimpleHttpHeartbeatSender] Failed to send heartbeat to " + addr + ", http status code: {0}", response.getStatusCode());
+                RecordLog.warn("[SimpleHttpHeartbeatSender] Failed to send heartbeat to " + addr
+                    + ", http status code: " + response.getStatusCode());
             }
         } catch (Exception e) {
             RecordLog.warn("[SimpleHttpHeartbeatSender] Failed to send heartbeat to " + addr, e);
@@ -96,23 +101,10 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
         return addressList.get(index);
     }
 
-
-    /**
-     * 4XX Client Error
-     *
-     * @param code
-     * @return
-     */
     private boolean clientErrorCode(int code) {
         return code > 399 && code < 500;
     }
 
-    /**
-     * 5XX Server Error
-     *
-     * @param code
-     * @return
-     */
     private boolean serverErrorCode(int code) {
         return code > 499 && code < 600;
     }
