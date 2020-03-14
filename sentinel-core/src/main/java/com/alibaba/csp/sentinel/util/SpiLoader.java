@@ -114,7 +114,7 @@ public final class SpiLoader {
             SpiOrderWrapper<T> w = null;
             for (T spi : serviceLoader) {
                 int order = SpiOrderResolver.resolveOrder(spi);
-                RecordLog.info("[SpiLoader] Found {0} SPI: {1} with order " + order, clazz.getSimpleName(),
+                RecordLog.info("[SpiLoader] Found {} SPI: {} with order " + order, clazz.getSimpleName(),
                     spi.getClass().getCanonicalName());
                 if (w == null || order < w.order) {
                     w = new SpiOrderWrapper<>(order, spi);
@@ -181,7 +181,7 @@ public final class SpiLoader {
                 int order = SpiOrderResolver.resolveOrder(spi);
                 // Since SPI is lazy initialized in ServiceLoader, we use online sort algorithm here.
                 SpiOrderResolver.insertSorted(orderWrappers, spi, order);
-                RecordLog.info("[SpiLoader] Found {0} SPI: {1} with order " + order, clazz.getSimpleName(),
+                RecordLog.info("[SpiLoader] Found {} SPI: {} with order " + order, clazz.getSimpleName(),
                     spi.getClass().getCanonicalName());
             }
             List<T> list = new ArrayList<>();

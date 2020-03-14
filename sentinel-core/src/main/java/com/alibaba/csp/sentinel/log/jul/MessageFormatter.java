@@ -14,18 +14,8 @@
  * limitations under the License.
  */
 
-/**
- *              Copyright notice
- * This code copy from SLF4J which licensed under the MIT License.
- *
- */
-
-/**
- *              Copyright notice
- * This code copy from SLF4J which licensed under the MIT License.
- *
- */
-package com.alibaba.csp.sentinel.log;
+// Copyright notice: This code was copied from SLF4J which licensed under the MIT License.
+package com.alibaba.csp.sentinel.log.jul;
 
 
 // contributors: lizongbo: proposed special treatment of array parameter values

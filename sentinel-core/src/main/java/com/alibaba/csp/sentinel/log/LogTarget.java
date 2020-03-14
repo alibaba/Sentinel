@@ -19,14 +19,16 @@ import java.lang.annotation.*;
 
 /**
  * @author xue8
+ * @since 1.7.2
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
 public @interface LogTarget {
     /**
-     * Returns the kinds of log type.
-     * @return Returns the kinds of log type
+     * Returns the logger name.
+     *
+     * @return the logger name. Record logger by default
      */
-    LogType value() default LogType.RECORD_LOG;
+    String value() default RecordLog.LOGGER_NAME;
 }
