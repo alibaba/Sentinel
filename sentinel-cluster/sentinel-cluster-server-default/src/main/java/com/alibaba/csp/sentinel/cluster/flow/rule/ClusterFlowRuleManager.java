@@ -25,7 +25,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.alibaba.csp.sentinel.cluster.flow.statistic.ClusterMetricStatistics;
 import com.alibaba.csp.sentinel.cluster.flow.statistic.metric.ClusterMetric;
 import com.alibaba.csp.sentinel.cluster.server.ServerConstants;
-import com.alibaba.csp.sentinel.cluster.server.config.ClusterServerConfigManager;
 import com.alibaba.csp.sentinel.cluster.server.connection.ConnectionManager;
 import com.alibaba.csp.sentinel.cluster.server.util.ClusterRuleUtil;
 import com.alibaba.csp.sentinel.log.RecordLog;

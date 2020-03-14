@@ -22,10 +22,6 @@ import com.alibaba.csp.sentinel.slots.block.ClusterRuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 
-import org.junit.Ignore;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
 import static com.alibaba.csp.sentinel.cluster.ClusterFlowTestUtil.*;
 
 /**
@@ -39,11 +35,11 @@ public class ClusterFlowCheckerTest {
         long flowId = 98765L;
         final int threshold = 5;
         FlowRule clusterRule = new FlowRule("abc")
-            .setCount(threshold)
-            .setClusterMode(true)
-            .setClusterConfig(new ClusterFlowConfig()
-                .setFlowId(flowId)
-                .setThresholdType(ClusterRuleConstant.FLOW_THRESHOLD_GLOBAL));
+                .setCount(threshold)
+                .setClusterMode(true)
+                .setClusterConfig(new ClusterFlowConfig()
+                        .setFlowId(flowId)
+                        .setThresholdType(ClusterRuleConstant.FLOW_THRESHOLD_GLOBAL));
         int sampleCount = 5;
         int intervalInMs = 1000;
         int bucketLength = intervalInMs / sampleCount;

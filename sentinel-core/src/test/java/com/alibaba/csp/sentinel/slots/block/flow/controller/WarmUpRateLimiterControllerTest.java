@@ -1,9 +1,6 @@
 package com.alibaba.csp.sentinel.slots.block.flow.controller;
 
 import com.alibaba.csp.sentinel.node.Node;
-import com.alibaba.csp.sentinel.node.StatisticNode;
-import com.alibaba.csp.sentinel.slots.block.flow.controller.WarmUpRateLimiterController;
-
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
