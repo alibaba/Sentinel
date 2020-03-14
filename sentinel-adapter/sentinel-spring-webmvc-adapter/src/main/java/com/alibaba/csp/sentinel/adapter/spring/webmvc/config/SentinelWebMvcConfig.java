@@ -29,6 +29,7 @@ public class SentinelWebMvcConfig extends BaseWebMvcConfig {
      * Specify the URL cleaner that unifies the URL resources.
      */
     private UrlCleaner urlCleaner;
+
     /**
      * Specify whether the URL resource name should contain the HTTP method prefix (e.g. {@code POST:}).
      */
@@ -36,6 +37,8 @@ public class SentinelWebMvcConfig extends BaseWebMvcConfig {
 
     /**
      * Specify whether unify web context(i.e. use the default context name), and is true by default.
+     *
+     * @since 1.7.2
      */
     private boolean webContextUnify = true;
 
