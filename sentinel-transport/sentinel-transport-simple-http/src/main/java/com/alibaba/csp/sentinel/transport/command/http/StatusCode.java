@@ -15,7 +15,13 @@
  */
 package com.alibaba.csp.sentinel.transport.command.http;
 
+/**
+ * @author Jason Joo
+ */
 public enum StatusCode {
+    /**
+     * 200 OK.
+     */
     OK(200, "OK"),
     BAD_REQUEST(400, "Bad Request"),
     REQUEST_TIMEOUT(408, "Request Timeout"),
@@ -27,7 +33,7 @@ public enum StatusCode {
     private String desc;
     private String representation;
     
-    private StatusCode(int code, String desc) {
+    StatusCode(int code, String desc) {
         this.code = code;
         this.desc = desc;
         this.representation = code + " " + desc;

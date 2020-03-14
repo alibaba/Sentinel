@@ -20,7 +20,6 @@ import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.CommandCenterLog;
-import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.transport.command.SimpleHttpCommandCenter;
 import com.alibaba.csp.sentinel.transport.command.exception.RequestException;
 import com.alibaba.csp.sentinel.transport.util.HttpCommandUtils;
@@ -41,15 +40,17 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
-
-/***
+/**
  * The task handles incoming command request in HTTP protocol.
  *
  * @author youji.zj
  * @author Eric Zhao
+ * @author Jason Joo
  */
 public class HttpEventTask implements Runnable {
-    private static final String SERVER_ERROR_MESSAGE = "Command server error";
+
+    public static final String SERVER_ERROR_MESSAGE = "Command server error";
+    public static final String INVALID_COMMAND_MESSAGE = "Invalid command";
 
     private final Socket socket;
 
@@ -92,7 +93,7 @@ public class HttpEventTask implements Runnable {
             // Validate the target command.
             String commandName = HttpCommandUtils.getTarget(request);
             if (StringUtil.isBlank(commandName)) {
-                writeResponse(printWriter, StatusCode.BAD_REQUEST, "Invalid command");
+                writeResponse(printWriter, StatusCode.BAD_REQUEST, INVALID_COMMAND_MESSAGE);
                 return;
             }
 
@@ -133,7 +134,7 @@ public class HttpEventTask implements Runnable {
             closeResource(socket);
         }
     }
-    
+
     private static String readLine(InputStream in) throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream(64);
         int data;
@@ -153,32 +154,32 @@ public class HttpEventTask implements Runnable {
         }
         return new String(arr, SentinelConfig.charset());
     }
-    
+
     /**
      * Try to process the body of POST request additionally.
-     * 
+     *
      * @param in
      * @param request
      * @throws RequestException
      * @throws IOException
      */
     protected static void processPostRequest(InputStream in, CommandRequest request)
-            throws RequestException, IOException {
+        throws RequestException, IOException {
         Map<String, String> headerMap = parsePostHeaders(in);
-        
+
         if (headerMap == null) {
             // illegal request
-            RecordLog.warn("Illegal request read");
+            CommandCenterLog.warn("Illegal request read: null headerMap");
             throw new RequestException(StatusCode.BAD_REQUEST, "");
         }
-        
-        if (headerMap.containsKey("content-type") && !checkSupport(headerMap.get("content-type"))) {
-            // not support Content-type
-            RecordLog.warn("Not supported Content-Type: {}", headerMap.get("content-type"));
-            throw new RequestException(StatusCode.UNSUPPORTED_MEDIA_TYPE, 
-                    "Only form-encoded post request is supported");
+
+        if (headerMap.containsKey("content-type") && !checkContentTypeSupported(headerMap.get("content-type"))) {
+            // not supported Content-type
+            CommandCenterLog.warn("Request not supported: unsupported Content-Type: " + headerMap.get("content-type"));
+            throw new RequestException(StatusCode.UNSUPPORTED_MEDIA_TYPE,
+                "Only form-encoded post request is supported");
         }
-        
+
         int bodyLength = 0;
         try {
             bodyLength = Integer.parseInt(headerMap.get("content-length"));
@@ -186,19 +187,19 @@ public class HttpEventTask implements Runnable {
         }
         if (bodyLength < 1) {
             // illegal request without Content-length header
-            RecordLog.warn("No available Content-Length in headers");
+            CommandCenterLog.warn("Request not supported: no available Content-Length in headers");
             throw new RequestException(StatusCode.LENGTH_REQUIRED, "No legal Content-Length");
         }
-        
+
         parseParams(readBody(in, bodyLength), request);
     }
-    
+
     /**
      * Process header line in request
-     * 
+     *
      * @param in
      * @return return headers in a Map, null for illegal request
-     * @throws IOException 
+     * @throws IOException
      */
     protected static Map<String, String> parsePostHeaders(InputStream in) throws IOException {
         Map<String, String> headerMap = new HashMap<String, String>(4);
@@ -221,8 +222,8 @@ public class HttpEventTask implements Runnable {
             }
         }
     }
-    
-    private static boolean checkSupport(String contentType) {
+
+    private static boolean checkContentTypeSupported(String contentType) {
         int idx = contentType.indexOf(";");
         String type;
         if (idx > 0) {
@@ -234,16 +235,15 @@ public class HttpEventTask implements Runnable {
         // But some library do add it. So we will be compatible with that but force to
         // encoding specified in configuration as legacy processing will do.
         if (!type.contains("application/x-www-form-urlencoded")) {
-            CommandCenterLog.warn("Content-Type not supported: " + contentType);
             // Not supported request type
             // Now simple-http only support form-encoded post request.
             return false;
         }
         return true;
     }
-    
-    private static String readBody(InputStream in, int bodyLength) 
-            throws IOException, RequestException {
+
+    private static String readBody(InputStream in, int bodyLength)
+        throws IOException, RequestException {
         byte[] buf = new byte[bodyLength];
         int pos = 0;
         while (pos < bodyLength) {
@@ -259,10 +259,10 @@ public class HttpEventTask implements Runnable {
         // Only allow partial
         return new String(buf, 0, pos, SentinelConfig.charset());
     }
-    
+
     /**
      * Consume all the body submitted and parse params into {@link CommandRequest}
-     * 
+     *
      * @param queryString
      * @param request
      */
@@ -270,12 +270,12 @@ public class HttpEventTask implements Runnable {
         if (queryString == null || queryString.length() < 1) {
             return;
         }
-        
+
         int offset = 0, pos = -1;
-        
+
         // check anchor
         queryString = removeAnchor(queryString);
-        
+
         while (true) {
             offset = pos + 1;
             pos = queryString.indexOf('&', offset);
@@ -319,11 +319,11 @@ public class HttpEventTask implements Runnable {
             writeResponse(printWriter, StatusCode.BAD_REQUEST, msg);
         }
     }
-    
+
     private void writeResponse(PrintWriter out, StatusCode statusCode, String message) {
         out.print("HTTP/1.0 " + statusCode.toString() + "\r\n"
-                + "Content-Length: " + (message == null ? 0 : message.getBytes().length) + "\r\n"
-                + "Connection: close\r\n\r\n");
+            + "Content-Length: " + (message == null ? 0 : message.getBytes().length) + "\r\n"
+            + "Connection: close\r\n\r\n");
         if (message != null) {
             out.print(message);
         }
@@ -354,10 +354,10 @@ public class HttpEventTask implements Runnable {
         parseParams(parameterStr, request);
         return request;
     }
-    
+
     /**
      * Truncate query from "a=1&b=2#mark" to "a=1&b=2"
-     * 
+     *
      * @param str
      * @return
      */
@@ -365,23 +365,23 @@ public class HttpEventTask implements Runnable {
         if (str == null || str.length() == 0) {
             return str;
         }
-        
+
         int anchor = str.indexOf('#');
-        
+
         if (anchor == 0) {
             return "";
         } else if (anchor > 0) {
             return str.substring(0, anchor);
         }
-        
+
         return str;
     }
-    
+
     protected static void parseSingleParam(String single, CommandRequest request) {
         if (single == null || single.length() < 3) {
             return;
         }
-        
+
         int index = single.indexOf('=');
         if (index <= 0 || index >= single.length() - 1) {
             // empty key/val or nothing found
@@ -395,7 +395,7 @@ public class HttpEventTask implements Runnable {
             value = URLDecoder.decode(value, SentinelConfig.charset());
         } catch (UnsupportedEncodingException e) {
         }
-        
+
         request.addParam(key, value);
     }
 
