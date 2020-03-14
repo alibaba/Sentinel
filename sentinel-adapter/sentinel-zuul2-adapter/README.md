@@ -3,11 +3,11 @@
 This adapter provides **route level** and **customized API level**
 flow control for Zuul 2.x API Gateway.
 
-> *Note*: this adapter only support Zuul 2.x.
+> *Note*: this adapter only supports Zuul 2.x.
 
 ## How to use
 
-> You can refer to demo `sentinel-demo-zuul2-gateway`
+> You can refer to demo [`sentinel-demo-zuul2-gateway`](https://github.com/alibaba/Sentinel/tree/master/sentinel-demo/sentinel-demo-zuul2-gateway).
 
 1. Add Maven dependency to your `pom.xml`:
 
@@ -29,9 +29,9 @@ filterMultibinder.addBinding().toInstance(new SentinelZuulEndpoint());
 
 ## How it works
 
-As Zuul 2.x is based on netty, a event-drive model, so we use `AsyncEntry` to do flow control.
+As Zuul 2.x is based on Netty, an event-driven asynchronous model, so we use `AsyncEntry`.
 
-- `SentinelZuulInboundFilter`: This inbound filter will regard all proxy ID (`proxy` in `SessionContext`) and all customized API as resources. When a `BlockException` caught, the filter will set endpoint to find a fallback to execute.
+- `SentinelZuulInboundFilter`: This inbound filter will regard all routes (`routeVIP` in `SessionContext` by default) and all customized API as resources. When a `BlockException` caught, the filter will set endpoint to find a fallback to execute.
 - `SentinelZuulOutboundFilter`: When the response has no exception caught, the post filter will trace the exception and complete the entries.
 - `SentinelZuulEndpoint`: When an exception is caught, the filter will find a fallback to execute.
 
@@ -39,6 +39,8 @@ As Zuul 2.x is based on netty, a event-drive model, so we use `AsyncEntry` to do
 
 1. Start [Sentinel Dashboard](https://github.com/alibaba/Sentinel/wiki/Dashboard).
 2. You can configure the rules in Sentinel dashboard or via dynamic rule configuration.
+
+> You may need to add `-Dcsp.sentinel.app.type=1` property to mark this application as API gateway.
 
 ## Fallbacks
 
@@ -84,18 +86,5 @@ Default block response:
     "code":429,
     "message":"Sentinel block exception",
     "route":"/"
-}
-```
-
-## Request origin parser
-
-You can register customized request origin parser like this:
-
-```java
-public class MyRequestOriginParser implements RequestOriginParser {
-    @Override
-    public String parseOrigin(HttpRequestMessage request) {
-        return request.getInboundRequest().getOriginalHost() + ":" + request.getInboundRequest().getOriginalPort();
-    }
 }
 ```

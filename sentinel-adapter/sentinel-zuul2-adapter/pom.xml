@@ -41,6 +41,7 @@
             </exclusions>
         </dependency>
 
+        <!-- The Spring library is introduced for AntMatcher -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>

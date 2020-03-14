@@ -17,26 +17,19 @@
 package com.alibaba.csp.sentinel.adapter.gateway.zuul2.filters.outbound;
 
 import java.util.Deque;
-import java.util.List;
-import java.util.stream.Collectors;
 
-import com.alibaba.csp.sentinel.AsyncEntry;
 import com.alibaba.csp.sentinel.Tracer;
-import com.alibaba.csp.sentinel.adapter.gateway.zuul2.constants.ZuulConstant;
+import com.alibaba.csp.sentinel.adapter.gateway.zuul2.constants.SentinelZuul2Constants;
 import com.alibaba.csp.sentinel.adapter.gateway.zuul2.filters.EntryHolder;
-import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.netflix.zuul.context.SessionContext;
-import com.netflix.zuul.filters.FilterError;
 import com.netflix.zuul.filters.http.HttpOutboundFilter;
 import com.netflix.zuul.message.http.HttpResponseMessage;
-import org.apache.commons.collections.CollectionUtils;
 import rx.Observable;
 
 /**
- * Zuul2 outboundFilter for Sentinel.
- * <p>
- * The filter will complete the entries and trace the exception that happen in previous filters.
+ * The Zuul outbound filter which will complete the Sentinel entries and
+ * trace the exception that happened in previous filters.
  *
  * @author wavesZh
  */
@@ -61,23 +54,18 @@ public class SentinelZuulOutboundFilter extends HttpOutboundFilter {
     public HttpResponseMessage apply(HttpResponseMessage response) {
         SessionContext context = response.getContext();
 
-        if (context.get(ZuulConstant.ZUUL_CTX_SENTINEL_ENTRIES_KEY) == null) {
+        if (context.get(SentinelZuul2Constants.ZUUL_CTX_SENTINEL_ENTRIES_KEY) == null) {
             return response;
         }
-        List<FilterError> errors = context.getFilterErrors().stream()
-                .filter(e -> BlockException.isBlockException(e.getException()))
-                .collect(Collectors.toList());
-        boolean notBlocked = true;
-        if (CollectionUtils.isEmpty(errors)) {
-            notBlocked = false;
-        }
-        Deque<EntryHolder> holders = (Deque<EntryHolder>) context.get(ZuulConstant.ZUUL_CTX_SENTINEL_ENTRIES_KEY);
+        boolean previousBlocked = context.getFilterErrors().stream()
+            .anyMatch(e -> BlockException.isBlockException(e.getException()));
+        Deque<EntryHolder> holders = (Deque<EntryHolder>) context.get(SentinelZuul2Constants.ZUUL_CTX_SENTINEL_ENTRIES_KEY);
         while (!holders.isEmpty()) {
             EntryHolder holder = holders.pop();
-            if (notBlocked) {
+            if (!previousBlocked) {
                 Tracer.traceEntry(context.getError(), holder.getEntry());
+                holder.getEntry().exit(1, holder.getParams());
             }
-            holder.getEntry().exit(1, holder.getParams());
         }
         return response;
     }

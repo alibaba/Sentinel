@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.csp.sentinel.adapter.gateway.zuul2.filters.inbound;
 
 import java.util.ArrayDeque;
@@ -21,20 +20,22 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.function.Function;
 
 import com.alibaba.csp.sentinel.AsyncEntry;
 import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.ResourceTypeConstants;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.adapter.gateway.common.param.GatewayParamParser;
 import com.alibaba.csp.sentinel.adapter.gateway.zuul2.HttpRequestMessageItemParser;
 import com.alibaba.csp.sentinel.adapter.gateway.zuul2.api.ZuulGatewayApiMatcherManager;
 import com.alibaba.csp.sentinel.adapter.gateway.zuul2.api.matcher.HttpRequestMessageApiMatcher;
-import com.alibaba.csp.sentinel.adapter.gateway.zuul2.callback.ZuulGatewayCallbackManager;
-import com.alibaba.csp.sentinel.adapter.gateway.zuul2.constants.ZuulConstant;
+import com.alibaba.csp.sentinel.adapter.gateway.zuul2.constants.SentinelZuul2Constants;
 import com.alibaba.csp.sentinel.adapter.gateway.zuul2.filters.EntryHolder;
 import com.alibaba.csp.sentinel.adapter.gateway.zuul2.filters.endpoint.SentinelZuulEndpoint;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.http.HttpInboundFilter;
@@ -45,7 +46,7 @@ import rx.schedulers.Schedulers;
 import static com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants.*;
 
 /**
- * Zuul2 inboundFilter for Sentinel.
+ * The Zuul inbound filter wrapped with Sentinel route and customized API group entries.
  *
  * @author wavesZh
  */
@@ -57,31 +58,53 @@ public class SentinelZuulInboundFilter extends HttpInboundFilter {
 
     private final String blockedEndpointName;
     /**
-     * if executor is null, flow control action will do on I/O thread
+     * If the executor is null, flow control action will be performed on I/O thread
      */
     private final Executor executor;
     /**
-     * true if blocked but the rest of inbound filters will be skipped;
-     * false even if blocked, user can invoke other inbound filters by yourself.
+     * If true, the rest of inbound filters will be skipped when the request is blocked.
      */
     private final boolean fastError;
+    private final Function<HttpRequestMessage, String> routeExtractor;
 
     private final GatewayParamParser<HttpRequestMessage> paramParser = new GatewayParamParser<>(
             new HttpRequestMessageItemParser());
 
+    /**
+     * Constructor of the inbound filter, which extracts the route from the context route VIP attribute by default.
+     *
+     * @param order the order of the filter
+     */
     public SentinelZuulInboundFilter(int order) {
-        this(order, null);
+        this(order, m -> m.getContext().getRouteVIP());
     }
 
-	public SentinelZuulInboundFilter(int order, Executor executor) {
-        this(order, DEFAULT_BLOCK_ENDPOINT_NAME, executor, true);
-	}
+    public SentinelZuulInboundFilter(int order, Function<HttpRequestMessage, String> routeExtractor) {
+        this(order, null, routeExtractor);
+    }
 
-    public SentinelZuulInboundFilter(int order, String blockedEndpointName, Executor executor, boolean fastError) {
+    public SentinelZuulInboundFilter(int order, Executor executor, Function<HttpRequestMessage, String> routeExtractor) {
+        this(order, DEFAULT_BLOCK_ENDPOINT_NAME, executor, true, routeExtractor);
+    }
+
+    /**
+     * Constructor of the inbound filter.
+     *
+     * @param order the order of the filter
+     * @param blockedEndpointName the endpoint to go when the request is blocked
+     * @param executor the executor where Sentinel do flow checking. If null, it will be executed in current thread.
+     * @param fastError whether the rest of the filters will be skipped if the request is blocked
+     * @param routeExtractor the route ID extractor
+     */
+    public SentinelZuulInboundFilter(int order, String blockedEndpointName, Executor executor, boolean fastError,
+                                     Function<HttpRequestMessage, String> routeExtractor) {
+        AssertUtil.notEmpty(blockedEndpointName, "blockedEndpointName cannot be empty");
+        AssertUtil.notNull(routeExtractor, "routeExtractor cannot be null");
         this.order = order;
 		this.blockedEndpointName = blockedEndpointName;
 		this.executor = executor;
 		this.fastError = fastError;
+		this.routeExtractor = routeExtractor;
 	}
 
     @Override
@@ -100,18 +123,17 @@ public class SentinelZuulInboundFilter extends HttpInboundFilter {
 
     private Observable<HttpRequestMessage> apply(HttpRequestMessage request) {
         SessionContext context = request.getContext();
-        String origin = parseOrigin(request);
         Deque<EntryHolder> holders = new ArrayDeque<>();
-        String routeId = context.getRouteVIP();
+        String routeId = routeExtractor.apply(request);
         String fallBackRoute = routeId;
         try {
             if (StringUtil.isNotBlank(routeId)) {
-                ContextUtil.enter(GATEWAY_CONTEXT_ROUTE_PREFIX + routeId, origin);
+                ContextUtil.enter(GATEWAY_CONTEXT_ROUTE_PREFIX + routeId);
                 doSentinelEntry(routeId, RESOURCE_MODE_ROUTE_ID, request, holders);
             }
             Set<String> matchingApis = pickMatchingApiDefinitions(request);
             if (!matchingApis.isEmpty() && ContextUtil.getContext() == null) {
-                ContextUtil.enter(ZuulConstant.ZUUL_DEFAULT_CONTEXT, origin);
+                ContextUtil.enter(SentinelZuul2Constants.ZUUL_DEFAULT_CONTEXT);
             }
             for (String apiName : matchingApis) {
                 fallBackRoute = apiName;
@@ -119,8 +141,8 @@ public class SentinelZuulInboundFilter extends HttpInboundFilter {
             }
             return Observable.just(request);
         } catch (BlockException t) {
-            context.put(ZuulConstant.ZUUL_CTX_SENTINEL_BLOCKED_FLAG, Boolean.TRUE);
-            context.put(ZuulConstant.ZUUL_CTX_SENTINEL_FALLBACK_ROUTE, fallBackRoute);
+            context.put(SentinelZuul2Constants.ZUUL_CTX_SENTINEL_BLOCKED_FLAG, Boolean.TRUE);
+            context.put(SentinelZuul2Constants.ZUUL_CTX_SENTINEL_FALLBACK_ROUTE, fallBackRoute);
             if (fastError) {
                 context.setShouldSendErrorResponse(true);
                 context.setErrorEndpoint(blockedEndpointName);
@@ -130,7 +152,7 @@ public class SentinelZuulInboundFilter extends HttpInboundFilter {
             return Observable.error(t);
         } finally {
             if (!holders.isEmpty()) {
-                context.put(ZuulConstant.ZUUL_CTX_SENTINEL_ENTRIES_KEY, holders);
+                context.put(SentinelZuul2Constants.ZUUL_CTX_SENTINEL_ENTRIES_KEY, holders);
             }
             // clear context to avoid another request use incorrect context
             ContextUtil.exit();
@@ -139,12 +161,8 @@ public class SentinelZuulInboundFilter extends HttpInboundFilter {
 
     private void doSentinelEntry(String resourceName, final int resType, HttpRequestMessage input, Deque<EntryHolder> holders) throws BlockException {
         Object[] params = paramParser.parseParameterFor(resourceName, input, r -> r.getResourceMode() == resType);
-        AsyncEntry entry = SphU.asyncEntry(resourceName, EntryType.IN, 1, params);
+        AsyncEntry entry = SphU.asyncEntry(resourceName, ResourceTypeConstants.COMMON_API_GATEWAY, EntryType.IN, params);
         holders.push(new EntryHolder(entry, params));
-    }
-
-    private String parseOrigin(HttpRequestMessage request) {
-        return ZuulGatewayCallbackManager.getOriginParser().parseOrigin(request);
     }
 
     private Set<String> pickMatchingApiDefinitions(HttpRequestMessage message) {
