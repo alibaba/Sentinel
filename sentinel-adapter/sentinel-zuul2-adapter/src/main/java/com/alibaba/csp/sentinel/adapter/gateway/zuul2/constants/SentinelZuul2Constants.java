@@ -16,15 +16,14 @@
 
 package com.alibaba.csp.sentinel.adapter.gateway.zuul2.constants;
 
-
 /**
  * @author wavesZh
  */
-public class ZuulConstant {
+public class SentinelZuul2Constants {
     /**
-     * Zuul use Sentinel as default context when serviceId is empty.
+     * The default entrance (context) name when the routeId is empty.
      */
-    public static final String ZUUL_DEFAULT_CONTEXT = "zuul_default_context";
+    public static final String ZUUL_DEFAULT_CONTEXT = "zuul2_default_context";
     /**
      * Zuul context key for keeping Sentinel entries.
      */
@@ -36,5 +35,5 @@ public class ZuulConstant {
      */
     public static final String ZUUL_CTX_SENTINEL_BLOCKED_FLAG = "_sentinel_blocked_flag";
 
-    private ZuulConstant(){}
+    private SentinelZuul2Constants() {}
 }

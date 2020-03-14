@@ -19,7 +19,7 @@ package com.alibaba.csp.sentinel.adapter.gateway.zuul2.fallback;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 
 /**
- * Default Fallback provider for sentinel {@link BlockException}, {@literal *} meant for all routes.
+ * Default fallback provider for Sentinel {@link BlockException}, {@literal *} meant for all routes.
  *
  * @author tiger
  */
@@ -33,7 +33,7 @@ public class DefaultBlockFallbackProvider implements ZuulBlockFallbackProvider {
     @Override
     public BlockResponse fallbackResponse(String route, Throwable cause) {
         if (cause instanceof BlockException) {
-            return new BlockResponse(429, "Sentinel block exception", route);
+            return new BlockResponse(429, "SentinelBlockException", route);
         } else {
             return new BlockResponse(500, "System Error", route);
         }

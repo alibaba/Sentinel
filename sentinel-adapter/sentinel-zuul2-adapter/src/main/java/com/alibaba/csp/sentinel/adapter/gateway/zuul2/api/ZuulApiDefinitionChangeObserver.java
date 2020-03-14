@@ -22,7 +22,7 @@ import com.alibaba.csp.sentinel.adapter.gateway.common.api.ApiDefinitionChangeOb
 
 /**
  * @author Eric Zhao
- * @since 1.6.0
+ * @since 1.7.2
  */
 public class ZuulApiDefinitionChangeObserver implements ApiDefinitionChangeObserver {
 
