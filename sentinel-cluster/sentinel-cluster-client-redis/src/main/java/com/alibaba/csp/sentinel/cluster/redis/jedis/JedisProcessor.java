@@ -24,22 +24,22 @@ public class JedisProcessor implements RedisProcessor {
 
     @Override
     public int requestToken(String luaId, RequestData requestData) {
-        String luaSha = LuaUtil.loadLuaShaIfNeed(luaId, requestData.getFlowId(), new RedisScriptLoader() {
-            public String load(String luaCode, long flowId) {
+        long flowId = requestData.getFlowId();
+        String luaSha = LuaUtil.loadLuaShaIfNeed(luaId, new RedisScriptLoader() {
+            public String load(String luaCode, String slotKey) {
                 return jedis.scriptLoad(luaCode);
             }
         });
 
-        String flowIdStr = String.valueOf(requestData.getFlowId());
         Object evalResult = jedis.evalsha(luaSha, Arrays.asList(
-                flowIdStr,
-                LuaUtil.toLuaParam(requestData.getAcquireCount(), flowIdStr)
+                LuaUtil.toTokenParam(requestData.getNamespace(), flowId),
+                LuaUtil.toTokenParam(requestData.getNamespace(), flowId, requestData.getAcquireCount())
         ), new ArrayList<String>());
 
         return LuaUtil.toTokenStatus(evalResult);
     }
 
-    public void resetRedisRuleAndMetrics(FlowRule rule) {
+    public void resetRedisRuleAndMetrics(String namespace, FlowRule rule) {
         ClusterFlowConfig clusterFlowConfig = rule.getClusterConfig();
 
         Map<String, String> config = new HashMap<>();
@@ -49,14 +49,14 @@ public class JedisProcessor implements RedisProcessor {
         config.put(THRESHOLD_COUNT_KEY, String.valueOf(rule.getCount()));
 
         Pipeline pipeline = jedis.pipelined();
-        pipeline.hset(LuaUtil.toLuaParam(FLOW_RULE_CONFIG_KEY, clusterFlowConfig.getFlowId()), config);
-        pipeline.del(LuaUtil.toLuaParam(FLOW_CHECKER_TOKEN_KEY, clusterFlowConfig.getFlowId()));
+        pipeline.hset(LuaUtil.toConfigKey(namespace, clusterFlowConfig.getFlowId()), config);
+        pipeline.del(LuaUtil.toTokenKey(namespace, clusterFlowConfig.getFlowId()));
         pipeline.sync();
         pipeline.close();
     }
 
     @Override
-    public void clearRuleAndMetrics(Set<Long> flowIds) {
+    public void clearRuleAndMetrics(String namespace, Set<Long> flowIds) {
         if(flowIds == null || flowIds.isEmpty()) {
             return;
         }
@@ -66,8 +66,8 @@ public class JedisProcessor implements RedisProcessor {
 
         int i = 0;
         for (Long flowId : flowIds) {
-            delConfigKeys[i] = LuaUtil.toLuaParam(FLOW_RULE_CONFIG_KEY, flowId);
-            delTokenKeys[i] = LuaUtil.toLuaParam(FLOW_CHECKER_TOKEN_KEY, flowId);
+            delTokenKeys[i] = LuaUtil.toConfigKey(namespace, flowId);
+            delConfigKeys[i] = LuaUtil.toTokenKey(namespace, flowId);
             i++;
         }
         // todo 考虑批量操作导致阻塞

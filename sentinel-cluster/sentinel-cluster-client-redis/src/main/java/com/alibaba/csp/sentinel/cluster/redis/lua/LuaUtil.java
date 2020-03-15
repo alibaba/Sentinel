@@ -1,11 +1,13 @@
 package com.alibaba.csp.sentinel.cluster.redis.lua;
 
-import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
 
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.alibaba.csp.sentinel.cluster.redis.util.ClientConstants.FLOW_CHECKER_TOKEN_KEY;
+import static com.alibaba.csp.sentinel.cluster.redis.util.ClientConstants.FLOW_RULE_CONFIG_KEY;
 
 public class LuaUtil {
     private static Map<String, String> luaCodeMapper = new HashMap<>();
@@ -45,11 +47,11 @@ public class LuaUtil {
         }
     }
 
-    public static String loadLuaShaIfNeed(String luaId, long flowId, RedisScriptLoader scriptLoader) {
-        return loadLuaShaIfNeed(luaId, flowId, null, scriptLoader);
+    public static String loadLuaShaIfNeed(String luaId,  RedisScriptLoader scriptLoader) {
+        return loadLuaShaIfNeed(luaId, null, null, scriptLoader);
     }
 
-    public static String loadLuaShaIfNeed(String luaId, long flowId, Integer slot, RedisScriptLoader scriptLoader) {
+    public static String loadLuaShaIfNeed(String luaId, String slotKey, Integer slot, RedisScriptLoader scriptLoader) {
         String cacheKey = luaId;
         if(slot != null) {
             cacheKey = cacheKey + slot;
@@ -62,18 +64,37 @@ public class LuaUtil {
                 if(sha == null) {
 
                     String luaCode = loadLuaCodeIfNeed(luaId);
-                    sha = scriptLoader.load(luaCode, flowId);
-                    luaShaMapper.put(luaCode, sha);
+                    sha = scriptLoader.load(luaCode, slotKey);
+                    luaShaMapper.put(cacheKey, sha);
                 }
             }
         }
         return sha;
     }
 
-
-    public static String toLuaParam(Object val, Object slotKey) {
-        return  val + "{" + slotKey + "}" ;
+    public static String toConfigKey(String namespace, long flowId) {
+        return FLOW_RULE_CONFIG_KEY + "{" +  namespace + "-" + flowId + "}";
     }
+
+    public static String toTokenKey(String namespace, long flowId) {
+        return FLOW_CHECKER_TOKEN_KEY + "{" +  namespace + "-" + flowId + "}";
+    }
+
+    public static String toTokenParam(String namespace, long flowId, Object param) {
+        if(param == null) {
+            return "{" + namespace + "-" + flowId + "}";
+        }
+
+        return param + "{" +  namespace + "-" + flowId + "}";
+    }
+
+    public static String toTokenParam(String namespace, long flowId) {
+        return "{" + namespace + "-" + flowId + "}";
+    }
+
+//    public static String toLuaParam(Object val, Object slotKey) {
+//        return  val + "{" + slotKey + "}" ;
+//    }
 
     public static int toTokenStatus(Object luaResult) {
         if(luaResult == null) {

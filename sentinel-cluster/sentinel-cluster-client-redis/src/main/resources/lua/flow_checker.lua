@@ -1,11 +1,11 @@
-local redisKey = "sentinel:cluster:token:{"..KEYS[1].."}";
-local configKey = "sentinel:cluster:config:{"..KEYS[1].."}";
-local acq = tonumber(string.sub(KEYS[2], 0, #KEYS[2] - #KEYS[1] - 2));
+local redisKey = "sentinel:token:"..KEYS[1];
+local configKey = "sentinel:config:"..KEYS[1];
+local acq = tonumber(string.sub(KEYS[2], 0, #KEYS[2] - #KEYS[1]));
 
 redis.replicate_commands();
 -- get config from redis
 local config = redis.call("HGETALL", configKey);
-if(config == false or config == nil)
+if(next(config) == nil)
 then
     return -2;
 end;
@@ -35,7 +35,7 @@ local bucketIdxStr = string.format("%d",bucketIdx);
 
 local isExistBucket = redis.call('HGET',redisKey,bucketIdxStr);
 
-if(isExistBucket == false or isExistBucket == nil)
+if(isExistBucket == false)
 then
     -- delete expired bucket
     local allKeys = redis.call('HKEYS', redisKey);
