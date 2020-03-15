@@ -8,7 +8,7 @@ public class ClusterClientConfig {
     public static final int REDIS_SINGLE = 1;
     public static final int REDIS_SENTINEL = 2;
     public static final int REDIS_CLUSTER = 3;
-    public static final Set<Integer> validClusterType
+    public static final Set<Integer> VALID_CLUSTER_TYPE
             = new HashSet<>(Arrays.asList(REDIS_SINGLE, REDIS_SENTINEL, REDIS_CLUSTER));
     private int clusterType;
     private String masterName;

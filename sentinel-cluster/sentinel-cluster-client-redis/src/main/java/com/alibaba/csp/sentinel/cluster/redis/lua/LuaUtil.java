@@ -13,7 +13,9 @@ public class LuaUtil {
     private static Map<String, String> luaCodeMapper = new HashMap<>();
     private static Map<String, String> luaShaMapper = new HashMap<>();
 
-    // need reset lua sha when rebuild redis client
+    /**
+     * we need reset lua sha when rebuild redis client
+     */
     public static void resetLuaSha() {
         synchronized (LuaUtil.class) {
             luaShaMapper.clear();

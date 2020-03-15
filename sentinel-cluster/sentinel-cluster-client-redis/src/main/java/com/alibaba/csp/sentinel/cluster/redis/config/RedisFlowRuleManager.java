@@ -85,7 +85,7 @@ public class RedisFlowRuleManager {
             String existNamespace = FLOW_ID_TO_NAMESPACE.get(rule.getClusterConfig().getFlowId());
             if(existNamespace != null && !namespace.equals(existNamespace)) {
                 RecordLog.warn(
-                        "[RedisFlowRuleManager] flowId exist in other namespace: " + rule);
+                        "[RedisFlowRuleManager] Ignoring flowId exist in other namespace: " + rule);
                 continue;
             }
             validRules.add(rule);
@@ -132,11 +132,11 @@ public class RedisFlowRuleManager {
     private static void updateLocaleRule(String namespace, List<FlowRule> newRules) {
         Set<Long> expiredFlowIds = getExpiredFlowIds(namespace, newRules);
 
-        Map<Long, FlowRule> newFlowIdToRule = new HashMap<>();
+        Map<Long, FlowRule> newFlowIdToRule = new HashMap<>(RedisFlowRuleManager.FLOW_ID_TO_RULE.size());
         newFlowIdToRule.putAll(RedisFlowRuleManager.FLOW_ID_TO_RULE);
-        Map<Long, String> newFlowIdToNamespace = new HashMap<>();
+        Map<Long, String> newFlowIdToNamespace = new HashMap<>(RedisFlowRuleManager.FLOW_ID_TO_NAMESPACE.size());
         newFlowIdToNamespace.putAll(RedisFlowRuleManager.FLOW_ID_TO_NAMESPACE);
-        Map<String, List<FlowRule>> newSourceToRules = new HashMap<>();
+        Map<String, List<FlowRule>> newSourceToRules = new HashMap<>(RedisFlowRuleManager.SOURCE_TO_FLOW_RULES.size());
         newSourceToRules.putAll(RedisFlowRuleManager.SOURCE_TO_FLOW_RULES);
         // clear expired rule
         for (Long oldFlowId : expiredFlowIds) {

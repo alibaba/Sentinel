@@ -42,7 +42,7 @@ public class JedisProcessor implements RedisProcessor {
     public void resetRedisRuleAndMetrics(String namespace, FlowRule rule) {
         ClusterFlowConfig clusterFlowConfig = rule.getClusterConfig();
 
-        Map<String, String> config = new HashMap<>();
+        Map<String, String> config = new HashMap<>(4);
         config.put(SAMPLE_COUNT_KEY, String.valueOf(clusterFlowConfig.getSampleCount()));
         config.put(INTERVAL_IN_MS_KEY, String.valueOf(clusterFlowConfig.getWindowIntervalMs()));
         config.put(WINDOW_LENGTH_IN_MS_KEY, String.valueOf(clusterFlowConfig.getWindowIntervalMs()/clusterFlowConfig.getSampleCount()));

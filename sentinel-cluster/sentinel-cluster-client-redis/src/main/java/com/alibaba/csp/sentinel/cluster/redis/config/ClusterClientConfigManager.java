@@ -101,9 +101,13 @@ public final class ClusterClientConfigManager {
         if(config == null) {
             return false;
         }
-        if(!ClusterClientConfig.validClusterType.contains(config.getClusterType())
-            || (config.getClusterType() == ClusterClientConfig.getRedisSentinel() && config.getMasterName() == null)
-            || config.getHostAndPorts() == null || config.getHostAndPorts().isEmpty()) {
+        boolean invalidClusterType = !(ClusterClientConfig.VALID_CLUSTER_TYPE.contains(config.getClusterType()));
+        boolean invalidSentinelConfig = config.getClusterType() == ClusterClientConfig.getRedisSentinel()
+                && config.getMasterName() == null;
+        boolean noHostAndPorts = config.getHostAndPorts() == null || config.getHostAndPorts().isEmpty();
+        if(invalidClusterType
+            || invalidSentinelConfig
+            || noHostAndPorts) {
             return false;
         }
         return true;
