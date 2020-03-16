@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.log;
+package com.alibaba.csp.sentinel.transport.log;
 
+import com.alibaba.csp.sentinel.log.LoggerSpiProvider;
 import com.alibaba.csp.sentinel.log.jul.JavaLoggingAdapter;
 
 /**
