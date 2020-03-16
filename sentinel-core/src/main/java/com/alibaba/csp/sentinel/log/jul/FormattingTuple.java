@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 
-/**
- *              Copyright notice
- * This code copy from SLF4J which licensed under the MIT License.
- *
- */
-package com.alibaba.csp.sentinel.log;
+// Copyright notice: This code was copied from SLF4J which licensed under the MIT License.
+package com.alibaba.csp.sentinel.log.jul;
 
 /**
  * Holds the results of formatting done by {@link MessageFormatter}.

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.log;
+package com.alibaba.csp.sentinel.log.jul;
 
 import org.junit.Test;
 
@@ -21,6 +21,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+
+import com.alibaba.csp.sentinel.log.jul.ConsoleHandler;
+import com.alibaba.csp.sentinel.log.jul.CspFormatter;
 
 import static org.junit.Assert.*;
 
