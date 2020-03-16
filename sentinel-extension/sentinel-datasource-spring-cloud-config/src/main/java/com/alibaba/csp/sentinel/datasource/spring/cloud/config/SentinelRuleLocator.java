@@ -50,7 +50,6 @@ import static org.springframework.cloud.config.client.ConfigClientProperties.*;
 @Order(0)
 public class SentinelRuleLocator implements PropertySourceLocator {
 
-
     private RestTemplate restTemplate;
     private ConfigClientProperties defaultProperties;
     private org.springframework.core.env.Environment environment;
@@ -150,10 +149,7 @@ public class SentinelRuleLocator implements PropertySourceLocator {
                     result.getName(), result.getPropertySources().size(),
                     propertyCount));
         }
-
-
     }
-
 
     private Environment getRemoteEnvironment(RestTemplate restTemplate,
                                              ConfigClientProperties properties, String label, String state) {
@@ -163,10 +159,11 @@ public class SentinelRuleLocator implements PropertySourceLocator {
         String token = properties.getToken();
         int noOfUrls = properties.getUri().length;
         if (noOfUrls > 1) {
-            RecordLog.info("Multiple Config Server Urls found listed.");
+            RecordLog.debug("Multiple Config Server Urls found listed.");
         }
 
-        RecordLog.info("properties = {0},label={1}, state={2}", properties, label, state);
+        RecordLog.info("[SentinelRuleLocator] getRemoteEnvironment, properties = {},label={}, state={}",
+            properties, label, state);
 
         Object[] args = new String[]{name, profile};
         if (StringUtils.hasText(label)) {

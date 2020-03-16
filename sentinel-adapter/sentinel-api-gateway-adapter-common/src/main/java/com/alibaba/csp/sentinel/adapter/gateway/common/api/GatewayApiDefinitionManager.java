@@ -62,8 +62,8 @@ public final class GatewayApiDefinitionManager {
         List<ApiDefinitionChangeObserver> listeners = SpiLoader.loadInstanceList(ApiDefinitionChangeObserver.class);
         for (ApiDefinitionChangeObserver e : listeners) {
             API_CHANGE_OBSERVERS.put(e.getClass().getCanonicalName(), e);
-            RecordLog.info("[GatewayApiDefinitionManager] ApiDefinitionChangeObserver added: {0}",
-                e.getClass().getCanonicalName());
+            RecordLog.info("[GatewayApiDefinitionManager] ApiDefinitionChangeObserver added: "
+                + e.getClass().getCanonicalName());
         }
     }
 
