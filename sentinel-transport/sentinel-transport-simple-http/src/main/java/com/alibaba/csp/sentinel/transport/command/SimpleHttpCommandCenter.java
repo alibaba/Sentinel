@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandHandlerProvider;
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
-import com.alibaba.csp.sentinel.log.CommandCenterLog;
+import com.alibaba.csp.sentinel.transport.log.CommandCenterLog;
 import com.alibaba.csp.sentinel.transport.CommandCenter;
 import com.alibaba.csp.sentinel.transport.command.http.HttpEventTask;
 import com.alibaba.csp.sentinel.transport.config.TransportConfig;
