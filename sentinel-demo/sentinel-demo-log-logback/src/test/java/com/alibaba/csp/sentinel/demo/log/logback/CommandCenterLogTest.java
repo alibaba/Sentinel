@@ -15,7 +15,7 @@
  */
 package com.alibaba.csp.sentinel.demo.log.logback;
 
-import com.alibaba.csp.sentinel.log.CommandCenterLog;
+import com.alibaba.csp.sentinel.transport.log.CommandCenterLog;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;

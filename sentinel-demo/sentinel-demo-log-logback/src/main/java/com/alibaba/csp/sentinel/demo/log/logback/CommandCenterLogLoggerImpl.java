@@ -15,7 +15,7 @@
  */
 package com.alibaba.csp.sentinel.demo.log.logback;
 
-import com.alibaba.csp.sentinel.log.CommandCenterLog;
+import com.alibaba.csp.sentinel.transport.log.CommandCenterLog;
 import com.alibaba.csp.sentinel.log.LogTarget;
 import com.alibaba.csp.sentinel.log.Logger;
 import org.slf4j.LoggerFactory;
