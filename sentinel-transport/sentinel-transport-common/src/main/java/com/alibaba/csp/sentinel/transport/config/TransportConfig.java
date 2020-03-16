@@ -25,7 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author leyou
+ * @author Carpenter Lee
+ * @author Jason Joo
  */
 public class TransportConfig {
 
@@ -66,7 +67,6 @@ public class TransportConfig {
         String config = SentinelConfig.getConfig(CONSOLE_SERVER);
         List<Tuple2<String, Integer>> list = new ArrayList<Tuple2<String, Integer>>();
         if (StringUtil.isBlank(config)) {
-            RecordLog.warn("Dashboard server address is not configured");
             return list;
         }
         

@@ -15,77 +15,73 @@
  */
 package com.alibaba.csp.sentinel.log;
 
-import java.util.Iterator;
-import java.util.ServiceLoader;
+import com.alibaba.csp.sentinel.log.jul.JavaLoggingAdapter;
 
 /**
  * Logger for command center.
+ *
+ * @author Eric Zhao
  */
 public class CommandCenterLog {
-    private static com.alibaba.csp.sentinel.log.Logger log = null;
+
+    public static final String LOGGER_NAME = "sentinelCommandCenterLogger";
+    public static final String DEFAULT_LOG_FILENAME = "command-center.log";
+
+    private static com.alibaba.csp.sentinel.log.Logger logger = null;
 
     static {
-        ServiceLoader<Logger> load = ServiceLoader.load(Logger.class);
-        Logger logger = null;
-        Iterator<Logger> iterator = load.iterator();
-        while (iterator.hasNext()) {
-            Logger next = iterator.next();
-            LogTarget annotation = next.getClass().getAnnotation(LogTarget.class);
-            if (annotation == null) {
-                continue;
+        try {
+            // Load user-defined logger implementation first.
+            logger = LoggerSpiProvider.getLogger(LOGGER_NAME);
+            if (logger == null) {
+                // If no customized loggers are provided, we use the default logger based on JUL.
+                logger = new JavaLoggingAdapter(LOGGER_NAME, DEFAULT_LOG_FILENAME);
             }
-            String value = annotation.value().name();
-            if (value.equals(LogType.COMMAND_CENTER_LOG.name())) {
-                logger = next;
-                break;
-            }
-        }
-        // Use user implementations.
-        if (logger != null) {
-            log = logger;
-        } else {
-            // Use default implementations.
-            log = new CommandCenterLogLogging();
+        } catch (Throwable t) {
+            System.err.println("Error: failed to initialize Sentinel CommandCenterLog");
+            t.printStackTrace();
         }
     }
 
     public static void info(String format, Object... arguments) {
-        log.info(format, arguments);
+        logger.info(format, arguments);
     }
 
     public static void info(String msg, Throwable e) {
-        log.info(msg, e);
+        logger.info(msg, e);
     }
 
     public static void warn(String format, Object... arguments) {
-        log.warn(format, arguments);
+        logger.warn(format, arguments);
     }
 
     public static void warn(String msg, Throwable e) {
-        log.warn(msg, e);
+        logger.warn(msg, e);
     }
 
     public static void trace(String format, Object... arguments) {
-        log.trace(format, arguments);
+        logger.trace(format, arguments);
     }
 
     public static void trace(String msg, Throwable e) {
-        log.trace(msg, e);
+        logger.trace(msg, e);
     }
 
     public static void debug(String format, Object... arguments) {
-        log.debug(format, arguments);
+        logger.debug(format, arguments);
     }
 
     public static void debug(String msg, Throwable e) {
-        log.debug(msg, e);
+        logger.debug(msg, e);
     }
 
     public static void error(String format, Object... arguments) {
-        log.error(format, arguments);
+        logger.error(format, arguments);
     }
 
     public static void error(String msg, Throwable e) {
-        log.error(msg, e);
+        logger.error(msg, e);
     }
+
+    private CommandCenterLog() {}
 }
