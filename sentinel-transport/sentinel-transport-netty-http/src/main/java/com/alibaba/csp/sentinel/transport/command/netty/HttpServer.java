@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import com.alibaba.csp.sentinel.command.CommandHandler;
-import com.alibaba.csp.sentinel.log.CommandCenterLog;
+import com.alibaba.csp.sentinel.transport.log.CommandCenterLog;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.transport.config.TransportConfig;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -78,7 +78,7 @@ public final class HttpServer {
                     break;
                 } catch (Exception e) {
                     TimeUnit.MILLISECONDS.sleep(30);
-                    RecordLog.warn("[HttpServer] Netty server bind error, port={0}, retry={1}", newPort, retryCount);
+                    RecordLog.warn("[HttpServer] Netty server bind error, port={}, retry={}", newPort, retryCount);
                     retryCount ++;
                 }
             }
