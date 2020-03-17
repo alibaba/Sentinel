@@ -127,7 +127,7 @@ public final class ClusterParamFlowRuleManager {
         }
         synchronized (UPDATE_LOCK) {
             RecordLog.info("[ClusterParamFlowRuleManager] Registering new property to cluster param rule manager"
-                + " for namespace <{0}>", namespace);
+                + " for namespace <{}>", namespace);
             registerPropertyInternal(namespace, property);
         }
     }
@@ -167,7 +167,7 @@ public final class ClusterParamFlowRuleManager {
                 PROPERTY_MAP.remove(namespace);
             }
             RecordLog.info("[ClusterParamFlowRuleManager] Removing property from cluster flow rule manager"
-                + " for namespace <{0}>", namespace);
+                + " for namespace <{}>", namespace);
         }
     }
 
@@ -303,14 +303,14 @@ public final class ClusterParamFlowRuleManager {
         @Override
         public void configLoad(List<ParamFlowRule> conf) {
             applyClusterParamRules(conf, namespace);
-            RecordLog.info("[ClusterParamFlowRuleManager] Cluster parameter rules loaded for namespace <{0}>: {1}",
+            RecordLog.info("[ClusterParamFlowRuleManager] Cluster parameter rules loaded for namespace <{}>: {}",
                 namespace, PARAM_RULES);
         }
 
         @Override
         public void configUpdate(List<ParamFlowRule> conf) {
             applyClusterParamRules(conf, namespace);
-            RecordLog.info("[ClusterParamFlowRuleManager] Cluster parameter rules received for namespace <{0}>: {1}",
+            RecordLog.info("[ClusterParamFlowRuleManager] Cluster parameter rules received for namespace <{}>: {}",
                 namespace, PARAM_RULES);
         }
     }

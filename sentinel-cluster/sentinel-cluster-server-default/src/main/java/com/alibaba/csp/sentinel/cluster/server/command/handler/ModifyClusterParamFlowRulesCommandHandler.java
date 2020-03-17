@@ -47,7 +47,7 @@ public class ModifyClusterParamFlowRulesCommandHandler implements CommandHandler
         }
         try {
             data = URLDecoder.decode(data, "UTF-8");
-            RecordLog.info("[ModifyClusterParamFlowRulesCommandHandler] Receiving cluster param rules for namespace <{0}>: {1}", namespace, data);
+            RecordLog.info("Receiving cluster param rules for namespace <{}> from command handler: {}", namespace, data);
 
             List<ParamFlowRule> flowRules = JSONArray.parseArray(data, ParamFlowRule.class);
             ClusterParamFlowRuleManager.loadRules(namespace, flowRules);
