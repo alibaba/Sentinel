@@ -56,7 +56,7 @@ public class UpdateGatewayApiDefinitionGroupCommandHandler implements CommandHan
             return CommandResponse.ofFailure(e, "decode gateway API definition data error");
         }
 
-        RecordLog.info("[API Server] Receiving data change (type: gateway API definition): {0}", data);
+        RecordLog.info("[API Server] Receiving data change (type: gateway API definition): {}", data);
 
         String result = SUCCESS_MSG;
 
