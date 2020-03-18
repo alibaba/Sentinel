@@ -19,7 +19,7 @@ import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
-import com.alibaba.csp.sentinel.log.CommandCenterLog;
+import com.alibaba.csp.sentinel.transport.log.CommandCenterLog;
 import com.alibaba.csp.sentinel.transport.command.SimpleHttpCommandCenter;
 import com.alibaba.csp.sentinel.transport.command.exception.RequestException;
 import com.alibaba.csp.sentinel.transport.util.HttpCommandUtils;
@@ -126,7 +126,7 @@ public class HttpEventTask implements Runnable {
                     printWriter.flush();
                 }
             } catch (Exception e1) {
-                CommandCenterLog.warn("[SimpleHttpCommandCenter] Close server socket failed", e);
+                CommandCenterLog.warn("Failed to write error response", e1);
             }
         } finally {
             closeResource(inputStream);

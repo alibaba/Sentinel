@@ -16,18 +16,19 @@
 package com.alibaba.csp.sentinel.log;
 
 /**
- * Provide logger SPI interface.
- * The default implementation is {@link java.util.logging}.
- *
- * Notice, the placeholder only supports the most popular placeholder convention (slf4j).
- * So, if you're not using slf4j, you should create adapters compatible with placeholders "{}".
+ * <p>The universal logger SPI interface.</p>
+ * <p>Notice: the placeholder only supports the most popular placeholder convention (slf4j).
+ * So, if you're not using slf4j, you should create adapters compatible with placeholders "{}".</p>
  *
  * @author xue8
+ * @since 1.7.2
  */
 public interface Logger {
+
     /**
      * Log a message at the INFO level according to the specified format
      * and arguments.
+     *
      * @param format    the format string
      * @param arguments a list of arguments
      */
@@ -45,6 +46,7 @@ public interface Logger {
     /**
      * Log a message at the WARN level according to the specified format
      * and arguments.
+     *
      * @param format    the format string
      * @param arguments a list of arguments
      */
@@ -62,6 +64,7 @@ public interface Logger {
     /**
      * Log a message at the TRACE level according to the specified format
      * and arguments.
+     *
      * @param format    the format string
      * @param arguments a list of arguments
      */
@@ -79,6 +82,7 @@ public interface Logger {
     /**
      * Log a message at the DEBUG level according to the specified format
      * and arguments.
+     *
      * @param format    the format string
      * @param arguments a list of arguments
      */
@@ -96,6 +100,7 @@ public interface Logger {
     /**
      * Log a message at the ERROR level according to the specified format
      * and arguments.
+     *
      * @param format    the format string
      * @param arguments a list of arguments
      */

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.log;
+package com.alibaba.csp.sentinel.log.jul;
 
 import java.io.File;
 import java.io.IOException;

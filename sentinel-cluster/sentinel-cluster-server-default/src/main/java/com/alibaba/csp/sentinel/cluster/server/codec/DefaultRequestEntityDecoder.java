@@ -46,7 +46,7 @@ public class DefaultRequestEntityDecoder implements RequestEntityDecoder<ByteBuf
 
             EntityDecoder<ByteBuf, ?> dataDecoder = RequestDataDecodeRegistry.getDecoder(type);
             if (dataDecoder == null) {
-                RecordLog.warn("Unknown type of request data decoder: {0}", type);
+                RecordLog.warn("Unknown type of request data decoder: {}", type);
                 return null;
             }
 
