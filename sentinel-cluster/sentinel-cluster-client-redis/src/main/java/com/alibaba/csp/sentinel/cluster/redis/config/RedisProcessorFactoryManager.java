@@ -28,11 +28,19 @@ public class RedisProcessorFactoryManager implements ServerChangeObserver{
         return clientType;
     }
 
+    /**
+     * not thread safe
+     * @param clientType
+     */
     public static void setClientType(int clientType) {
         RedisProcessorFactoryManager.clientType = clientType;
         rebuildClientFactory();
     }
 
+    /**
+     * not thread safe
+     * @param assignConfig new cluster assignment config
+     */
     @Override
     public void onRemoteServerChange(ClusterClientConfig assignConfig) {
         RedisProcessorFactoryManager.clientConfig = assignConfig;

@@ -1,6 +1,6 @@
 package com.alibaba.csp.sentinel.cluster.redis;
 
-import com.alibaba.csp.sentinel.cluster.redis.config.RedisFlowRuleManager;
+import com.alibaba.csp.sentinel.cluster.redis.config.RedisClusterFlowRuleManager;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
@@ -49,7 +49,7 @@ public class RedisClusterFlowSlot extends AbstractLinkedProcessorSlot<DefaultNod
         @Override
         public Collection<FlowRule> apply(String resource) {
             // Flow rule map should not be null.
-            Map<String, List<FlowRule>> flowRules = RedisFlowRuleManager.getFlowRuleMap();
+            Map<String, List<FlowRule>> flowRules = RedisClusterFlowRuleManager.getFlowRuleMap();
             return flowRules.get(resource);
         }
     };

@@ -2,11 +2,10 @@ package com.alibaba.csp.sentinel.cluster.redis.rule;
 
 import com.alibaba.csp.sentinel.cluster.redis.RedisTestProcessor;
 import com.alibaba.csp.sentinel.cluster.redis.SingleJedisTestProcessor;
-import com.alibaba.csp.sentinel.cluster.redis.config.RedisFlowRuleManager;
+import com.alibaba.csp.sentinel.cluster.redis.config.RedisClusterFlowRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import junit.framework.TestCase;
-import org.junit.Test;
 
 
 import java.util.*;
@@ -37,8 +36,8 @@ public class SingleJedisRuleManagerTest {
                 .setCount(5)
                 .setClusterMode(true)
                 .setClusterConfig(new ClusterFlowConfig().setFlowId(103L).setSampleCount(10).setWindowIntervalMs(5000)));
-        RedisFlowRuleManager.registerNamespace(namespace);
-        RedisFlowRuleManager.loadRules(namespace, rules);
+        RedisClusterFlowRuleManager.registerNamespace(namespace);
+        RedisClusterFlowRuleManager.loadRules(namespace, rules);
 
         FlowRule rule = testProcessor.getRule(namespace, 101L);
         assertEquals(rule.getClusterConfig().getSampleCount(), 2);
@@ -64,7 +63,7 @@ public class SingleJedisRuleManagerTest {
                 .setCount(5)
                 .setClusterMode(true)
                 .setClusterConfig(new ClusterFlowConfig().setFlowId(104L).setSampleCount(10).setWindowIntervalMs(500)));
-        RedisFlowRuleManager.loadRules(namespace, rules);
+        RedisClusterFlowRuleManager.loadRules(namespace, rules);
         rule = testProcessor.getRule(namespace, 101L);
         assertEquals(rule.getClusterConfig().getSampleCount(), 4);
         rule = testProcessor.getRule(namespace, 102L);
@@ -79,7 +78,7 @@ public class SingleJedisRuleManagerTest {
         assertTrue(flowIds.contains(104L));
 
         String namespace2 = "namespace2";
-        RedisFlowRuleManager.registerNamespace(namespace2);
+        RedisClusterFlowRuleManager.registerNamespace(namespace2);
         rules.clear();
 
         rules.add(new FlowRule(sourceName)
@@ -91,7 +90,7 @@ public class SingleJedisRuleManagerTest {
                 .setCount(5)
                 .setClusterMode(true)
                 .setClusterConfig(new ClusterFlowConfig().setFlowId(105L).setSampleCount(10).setWindowIntervalMs(500)));
-        RedisFlowRuleManager.loadRules(namespace2, rules);
+        RedisClusterFlowRuleManager.loadRules(namespace2, rules);
 
         rule = testProcessor.getRule(namespace, 101L);
         assertEquals(rule.getClusterConfig().getSampleCount(), 4);
@@ -104,7 +103,7 @@ public class SingleJedisRuleManagerTest {
     }
 
     public Set<Long> getFlowIdBySource(String sourceName) {
-        List<FlowRule> rules = RedisFlowRuleManager.getFlowRuleMap().get(sourceName);
+        List<FlowRule> rules = RedisClusterFlowRuleManager.getFlowRuleMap().get(sourceName);
         Set<Long> flowIds = new HashSet<>();
         for (FlowRule rule : rules) {
             flowIds.add(rule.getClusterConfig().getFlowId());

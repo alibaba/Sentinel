@@ -18,7 +18,7 @@ public class LuaUtil {
      */
     public static void resetLuaSha() {
         synchronized (LuaUtil.class) {
-            luaShaMapper.clear();
+            luaShaMapper = new HashMap<>(luaShaMapper.size());
         }
     }
 
@@ -61,10 +61,9 @@ public class LuaUtil {
 
         String sha = luaShaMapper.get(cacheKey);
         if(sha == null) {
-            synchronized (luaShaMapper) {
+            synchronized (LuaUtil.class) {
                 sha = luaShaMapper.get(cacheKey);
                 if(sha == null) {
-
                     String luaCode = loadLuaCodeIfNeed(luaId);
                     sha = scriptLoader.load(luaCode, slotKey);
                     luaShaMapper.put(cacheKey, sha);
