@@ -3,10 +3,9 @@ package com.alibaba.csp.sentinel.cluster.redis.flow;
 import com.alibaba.csp.sentinel.cluster.redis.ClusterJedisTestProcessor;
 import com.alibaba.csp.sentinel.cluster.redis.RedisClusterTokenService;
 import com.alibaba.csp.sentinel.cluster.redis.RedisTestProcessor;
-import com.alibaba.csp.sentinel.cluster.redis.config.RedisFlowRuleManager;
+import com.alibaba.csp.sentinel.cluster.redis.config.RedisClusterFlowRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,13 +27,13 @@ public class ClusterJedisTokenServiceTest {
         testProcessor.initRedisConf();
 
         String namespace = "ClusterJedisTokenServiceTest";
-        RedisFlowRuleManager.registerNamespace(namespace);
+        RedisClusterFlowRuleManager.registerNamespace(namespace);
         List<FlowRule> rules = new ArrayList<>();
         rules.add(new FlowRule("hello")
                 .setCount(count)
                 .setClusterMode(true)
                 .setClusterConfig(new ClusterFlowConfig().setFlowId(flowId).setSampleCount(sampleCount).setWindowIntervalMs(windowIntervalMs)));
-        RedisFlowRuleManager.loadRules(namespace, rules);
+        RedisClusterFlowRuleManager.loadRules(namespace, rules);
 
         int bucketLength = windowIntervalMs / sampleCount;
 

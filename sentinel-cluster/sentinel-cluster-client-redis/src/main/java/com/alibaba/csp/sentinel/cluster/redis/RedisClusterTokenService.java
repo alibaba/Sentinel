@@ -4,9 +4,8 @@ import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
 import com.alibaba.csp.sentinel.cluster.TokenServerDescriptor;
 import com.alibaba.csp.sentinel.cluster.client.ClusterTokenClient;
+import com.alibaba.csp.sentinel.cluster.redis.config.RedisClusterFlowRuleManager;
 import com.alibaba.csp.sentinel.cluster.redis.config.RedisProcessorFactoryManager;
-import com.alibaba.csp.sentinel.cluster.redis.config.RedisFlowRuleManager;
-import com.alibaba.csp.sentinel.cluster.redis.lua.LuaUtil;
 import com.alibaba.csp.sentinel.cluster.redis.request.RequestData;
 import com.alibaba.csp.sentinel.cluster.redis.util.ClientConstants;
 import com.alibaba.csp.sentinel.log.RecordLog;
@@ -48,8 +47,8 @@ public class RedisClusterTokenService implements ClusterTokenClient {
         RequestData requestData = new RequestData();
         requestData.setFlowId(flowId);
         requestData.setAcquireCount(acquireCount);
-        requestData.setNamespace(RedisFlowRuleManager.getNamespace(flowId));
-        RedisFlowRuleManager.getNamespace(flowId);
+        requestData.setNamespace(RedisClusterFlowRuleManager.getNamespace(flowId));
+        RedisClusterFlowRuleManager.getNamespace(flowId);
         return requestData;
     }
 
@@ -59,7 +58,7 @@ public class RedisClusterTokenService implements ClusterTokenClient {
     }
 
     private FlowRule getFlowRule(Long flowId) {
-        return RedisFlowRuleManager.getFlowRule(flowId);
+        return RedisClusterFlowRuleManager.getFlowRule(flowId);
     }
 
     private boolean notValidRequest(Long id, int count) {

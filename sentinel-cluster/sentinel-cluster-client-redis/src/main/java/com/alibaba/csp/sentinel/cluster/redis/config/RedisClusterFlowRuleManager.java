@@ -12,15 +12,15 @@ import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleUtil;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import java.util.*;
 
-public class RedisFlowRuleManager {
+public class RedisClusterFlowRuleManager {
     public static volatile boolean publishRuleToRedis = true;
 
-    private static Map<String, List<FlowRule>> SOURCE_TO_FLOW_RULES = new HashMap<>();
-    private static Map<Long, FlowRule> FLOW_ID_TO_RULE = new HashMap();
-    private static Map<Long, String> FLOW_ID_TO_NAMESPACE = new HashMap<>();
+    private static Map<String, List<FlowRule>> sourceToFlowRules = new HashMap<>();
+    private static Map<Long, FlowRule> flowIdToRule = new HashMap();
+    private static Map<Long, String> flowIdToNamespace = new HashMap<>();
 
     private static final Map<String, SentinelProperty<List<FlowRule>>> NAMESPACE_TO_PROPERTY = new HashMap<>();
-    private static final Map<String, RedisFlowPropertyListener> NAMESPACE_TO_LISTENER = new HashMap<>();
+    private static final Map<String, RedisClusterFlowPropertyListener> NAMESPACE_TO_LISTENER = new HashMap<>();
 
     public static void registerNamespace(String namespace) {
         register2Property(namespace, new DynamicSentinelProperty<List<FlowRule>>());
@@ -28,24 +28,24 @@ public class RedisFlowRuleManager {
 
     public static void register2Property(String namespace, SentinelProperty<List<FlowRule>> property) {
         AssertUtil.notNull(property, "property cannot be null");
-        synchronized (RedisFlowRuleManager.class) {
-            RecordLog.info("[RedisFlowRuleManager] Registering new property to flow rule manager");
-            RedisFlowPropertyListener listener = RedisFlowRuleManager.NAMESPACE_TO_LISTENER.get(namespace);
+        synchronized (RedisClusterFlowRuleManager.class) {
+            RecordLog.info("[RedisClusterFlowRuleManager] Registering new property to flow rule manager");
+            RedisClusterFlowPropertyListener listener = RedisClusterFlowRuleManager.NAMESPACE_TO_LISTENER.get(namespace);
             if(listener == null) {
-                listener = new RedisFlowPropertyListener(namespace);
-                RedisFlowRuleManager.NAMESPACE_TO_LISTENER.put(namespace, listener);
+                listener = new RedisClusterFlowPropertyListener(namespace);
+                RedisClusterFlowRuleManager.NAMESPACE_TO_LISTENER.put(namespace, listener);
             }
             property.addListener(listener);
-            RedisFlowRuleManager.NAMESPACE_TO_PROPERTY.remove(namespace);
-            RedisFlowRuleManager.NAMESPACE_TO_PROPERTY.put(namespace, property);
+            RedisClusterFlowRuleManager.NAMESPACE_TO_PROPERTY.remove(namespace);
+            RedisClusterFlowRuleManager.NAMESPACE_TO_PROPERTY.put(namespace, property);
         }
     }
 
     public static void loadRules(String namespace, List<FlowRule> rules) {
-        SentinelProperty<List<FlowRule>> property = RedisFlowRuleManager.NAMESPACE_TO_PROPERTY.get(namespace);
+        SentinelProperty<List<FlowRule>> property = RedisClusterFlowRuleManager.NAMESPACE_TO_PROPERTY.get(namespace);
         if(property == null) {
             RecordLog.warn(
-                    "[RedisFlowRuleManager] namespace not register");
+                    "[RedisClusterFlowRuleManager] namespace not register");
             return;
         }
         property.updateValue(rules);
@@ -55,7 +55,7 @@ public class RedisFlowRuleManager {
         RedisProcessorFactory factory = RedisProcessorFactoryManager.getFactory();
         if (factory == null) {
             RecordLog.warn(
-                    "[RedisFlowRuleManager]  cannot get RedisProcessorFactory, please init redis config");
+                    "[RedisClusterFlowRuleManager]  cannot get RedisProcessorFactory, please init redis config");
             return;
         }
 
@@ -79,13 +79,13 @@ public class RedisFlowRuleManager {
             }
             if (!FlowRuleUtil.isValidRule(rule)) {
                 RecordLog.warn(
-                        "[RedisFlowRuleManager] Ignoring invalid flow rule when loading new flow rules: " + rule);
+                        "[RedisClusterFlowRuleManager] Ignoring invalid flow rule when loading new flow rules: " + rule);
                 continue;
             }
-            String existNamespace = FLOW_ID_TO_NAMESPACE.get(rule.getClusterConfig().getFlowId());
+            String existNamespace = flowIdToNamespace.get(rule.getClusterConfig().getFlowId());
             if(existNamespace != null && !namespace.equals(existNamespace)) {
                 RecordLog.warn(
-                        "[RedisFlowRuleManager] flowId exist in other namespace: " + rule);
+                        "[RedisClusterFlowRuleManager] Ignoring flowId exist in other namespace: " + rule);
                 continue;
             }
             validRules.add(rule);
@@ -94,14 +94,14 @@ public class RedisFlowRuleManager {
     }
 
     private static void resetRedisRuleAndMetrics(String namespace, List<FlowRule> newRules, RedisProcessor redisProcessor) {
-        if(!RedisFlowRuleManager.publishRuleToRedis) {
+        if(!RedisClusterFlowRuleManager.publishRuleToRedis) {
             return ;
         }
         for (FlowRule rule : newRules) {
-            FlowRule existRule = RedisFlowRuleManager.FLOW_ID_TO_RULE.get(rule.getClusterConfig().getFlowId());
+            FlowRule existRule = RedisClusterFlowRuleManager.flowIdToRule.get(rule.getClusterConfig().getFlowId());
             if (existRule != null && !isChangeRule(existRule, rule)) {
                 RecordLog.warn(
-                        "[RedisFlowRuleManager] would not publish to redis on same flow rule: " + rule);
+                        "[RedisClusterFlowRuleManager] would not publish to redis on same flow rule: " + rule);
                 continue;
             }
             redisProcessor.resetRedisRuleAndMetrics(namespace, rule);
@@ -110,7 +110,7 @@ public class RedisFlowRuleManager {
 
     private static Set<Long> getExpiredFlowIds(String namespace, List<FlowRule> newRules) {
         Set<Long> expiredFlowIds = new HashSet<>();
-        for (Map.Entry<Long, String> entry : RedisFlowRuleManager.FLOW_ID_TO_NAMESPACE.entrySet()) {
+        for (Map.Entry<Long, String> entry : RedisClusterFlowRuleManager.flowIdToNamespace.entrySet()) {
             if(namespace.equals(entry.getValue())) {
                 expiredFlowIds.add(entry.getKey());
             }
@@ -132,12 +132,12 @@ public class RedisFlowRuleManager {
     private static void updateLocaleRule(String namespace, List<FlowRule> newRules) {
         Set<Long> expiredFlowIds = getExpiredFlowIds(namespace, newRules);
 
-        Map<Long, FlowRule> newFlowIdToRule = new HashMap<>();
-        newFlowIdToRule.putAll(RedisFlowRuleManager.FLOW_ID_TO_RULE);
-        Map<Long, String> newFlowIdToNamespace = new HashMap<>();
-        newFlowIdToNamespace.putAll(RedisFlowRuleManager.FLOW_ID_TO_NAMESPACE);
-        Map<String, List<FlowRule>> newSourceToRules = new HashMap<>();
-        newSourceToRules.putAll(RedisFlowRuleManager.SOURCE_TO_FLOW_RULES);
+        Map<Long, FlowRule> newFlowIdToRule = new HashMap<>(RedisClusterFlowRuleManager.flowIdToRule.size());
+        newFlowIdToRule.putAll(RedisClusterFlowRuleManager.flowIdToRule);
+        Map<Long, String> newFlowIdToNamespace = new HashMap<>(RedisClusterFlowRuleManager.flowIdToNamespace.size());
+        newFlowIdToNamespace.putAll(RedisClusterFlowRuleManager.flowIdToNamespace);
+        Map<String, List<FlowRule>> newSourceToRules = new HashMap<>(RedisClusterFlowRuleManager.sourceToFlowRules.size());
+        newSourceToRules.putAll(RedisClusterFlowRuleManager.sourceToFlowRules);
         // clear expired rule
         for (Long oldFlowId : expiredFlowIds) {
             newFlowIdToNamespace.remove(oldFlowId);
@@ -169,9 +169,9 @@ public class RedisFlowRuleManager {
             }
         }
 
-        RedisFlowRuleManager.FLOW_ID_TO_RULE = newFlowIdToRule;
-        RedisFlowRuleManager.FLOW_ID_TO_NAMESPACE = newFlowIdToNamespace;
-        RedisFlowRuleManager.SOURCE_TO_FLOW_RULES = newSourceToRules;
+        RedisClusterFlowRuleManager.flowIdToRule = newFlowIdToRule;
+        RedisClusterFlowRuleManager.flowIdToNamespace = newFlowIdToNamespace;
+        RedisClusterFlowRuleManager.sourceToFlowRules = newSourceToRules;
     }
 
     private static boolean isChangeRule(FlowRule oldRule, FlowRule newRule) {
@@ -185,22 +185,22 @@ public class RedisFlowRuleManager {
     }
 
     public static FlowRule getFlowRule(long flowId) {
-        return FLOW_ID_TO_RULE.get(flowId);
+        return flowIdToRule.get(flowId);
     }
 
     public static String getNamespace(long flowId) {
-        return FLOW_ID_TO_NAMESPACE.get(flowId);
+        return flowIdToNamespace.get(flowId);
     }
 
     public static Map<String, List<FlowRule>> getFlowRuleMap() {
-        return SOURCE_TO_FLOW_RULES;
+        return sourceToFlowRules;
     }
 
-    private static final class RedisFlowPropertyListener implements PropertyListener<List<FlowRule>> {
+    private static final class RedisClusterFlowPropertyListener implements PropertyListener<List<FlowRule>> {
 
         private String namespace;
 
-        public RedisFlowPropertyListener(String namespace) {
+        public RedisClusterFlowPropertyListener(String namespace) {
             this.namespace = namespace;
         }
 
