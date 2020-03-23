@@ -3,41 +3,45 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>sentinel-demo</artifactId>
         <groupId>com.alibaba.csp</groupId>
+        <artifactId>sentinel-extension</artifactId>
         <version>1.7.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>sentinel-demo-log-logback</artifactId>
+    <artifactId>sentinel-logging-extension-logback</artifactId>
+    <packaging>jar</packaging>
+
+    <properties>
+        <java.source.version>1.7</java.source.version>
+        <java.target.version>1.7</java.target.version>
+        <logback.version>1.2.3</logback.version>
+    </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.alibaba.csp</groupId>
-            <artifactId>sentinel-logging-extension-logback</artifactId>
+            <artifactId>sentinel-transport-common</artifactId>
         </dependency>
-
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.2.3</version>
+            <version>${logback.version}</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
-            <version>1.2.3</version>
+            <version>${logback.version}</version>
         </dependency>
-
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>com.github.stefanbirkner</groupId>
             <artifactId>system-rules</artifactId>
-            <version>RELEASE</version>
+            <version>1.16.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

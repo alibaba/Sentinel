@@ -127,6 +127,11 @@
             </dependency>
             <dependency>
                 <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-logging-extension-logback</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
                 <artifactId>sentinel-transport-simple-http</artifactId>
                 <version>${project.version}</version>
             </dependency>

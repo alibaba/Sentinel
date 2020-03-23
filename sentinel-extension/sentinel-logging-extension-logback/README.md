@@ -1,3 +1,29 @@
+# Sentinel Logging Extension Logback
+
+To use Sentinel Logging Extension Logback, you should add the following dependency firstly:
+
+```xml
+<dependency>
+    <groupId>com.alibaba.csp</groupId>
+    <artifactId>sentinel-logging-extension-logback</artifactId>
+    <version>x.y.z</version>
+</dependency>
+<dependency>
+    <groupId>ch.qos.logback</groupId>
+    <artifactId>logback-classic</artifactId>
+    <version>${logback.version}</version>
+</dependency>
+<dependency>
+    <groupId>ch.qos.logback</groupId>
+    <artifactId>logback-core</artifactId>
+    <version>${logback.version}</version>
+</dependency>
+```
+If you want to use Logback, you can add dependencies of Logback.
+Then you should provide logging configuration as specification of the logging framework. 
+And you can add Sentinel's Loggers that it name is `sentinelRecordLogger` or `sentinelCommandCenterLogger` for your needs. For example: 
+
+```xml
 <?xml version="1.0" encoding="UTF-8" ?>
 <configuration scan="false" scanPeriod="60000" debug="false">
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
@@ -33,5 +59,6 @@
     </logger>
 
 </configuration>
+```
 
 
