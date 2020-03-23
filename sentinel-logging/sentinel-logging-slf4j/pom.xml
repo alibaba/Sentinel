@@ -16,7 +16,7 @@
         <java.source.version>1.7</java.source.version>
         <java.target.version>1.7</java.target.version>
         <slf4j.version>1.7.25</slf4j.version>
-        <log4j2.version>2.12.1</log4j2.version>
+        <slf4j-test.version>1.2.0</slf4j-test.version>
     </properties>
 
     <dependencies>
@@ -30,31 +30,22 @@
             <version>${slf4j.version}</version>
             <scope>provided</scope>
         </dependency>
+        <!-- for unit test -->
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j2.version}</version>
+            <groupId>uk.org.lidalia</groupId>
+            <artifactId>slf4j-test</artifactId>
+            <version>${slf4j-test.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-            <version>${log4j2.version}</version>
-            <scope>test</scope>
-        </dependency>
-
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
-            <groupId>com.github.stefanbirkner</groupId>
-            <artifactId>system-rules</artifactId>
-            <version>1.16.1</version>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 </project>
