@@ -41,11 +41,11 @@ public class FlowRuleApiProvider implements DynamicRuleProvider<List<FlowRuleEnt
     private AppManagement appManagement;
 
     @Override
-    public List<FlowRuleEntity> getRules(String appName) throws Exception {
-        if (StringUtil.isBlank(appName)) {
+    public List<FlowRuleEntity> getRules(String app) throws Exception {
+        if (StringUtil.isBlank(app)) {
             return new ArrayList<>();
         }
-        List<MachineInfo> list = appManagement.getDetailApp(appName).getMachines()
+        List<MachineInfo> list = appManagement.getDetailApp(app).getMachines()
             .stream()
             .filter(MachineInfo::isHealthy)
             .sorted((e1, e2) -> Long.compare(e2.getLastHeartbeat(), e1.getLastHeartbeat())).collect(Collectors.toList());

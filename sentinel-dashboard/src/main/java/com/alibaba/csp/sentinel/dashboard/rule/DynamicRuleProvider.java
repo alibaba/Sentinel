@@ -21,5 +21,7 @@ package com.alibaba.csp.sentinel.dashboard.rule;
  */
 public interface DynamicRuleProvider<T> {
 
-    T getRules(String appName) throws Exception;
+    T getRules(String app) throws Exception;
+
+//    T getRules(String app, String ip, Integer port) throws Exception;
 }
