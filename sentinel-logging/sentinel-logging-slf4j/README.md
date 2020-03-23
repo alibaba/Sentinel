@@ -1,6 +1,6 @@
 # Sentinel Logging Extension SLF4J
 
-To integrate logs of sentinel into your project which uses slf4j for bridge of logging you can 
+To integrate logs of sentinel into your project which uses slf4j for bridge of logging you can
 simply introduce following dependency to your project:
 
 ```xml
@@ -11,9 +11,9 @@ simply introduce following dependency to your project:
 </dependency>
 ```
 
-And if you want to control level of logging special for sentinel the loggers that sentinel uses 
-are called `sentinelRecordLogger` and `sentinelCommandCenterLogger`. For example in XML configration 
-coming with log4j2 implementation:  
+And if you want to control level of logging special for sentinel the loggers that sentinel uses
+are called `sentinelRecordLogger` and `sentinelCommandCenterLogger`. For example in XML configration
+coming with log4j2 implementation:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
