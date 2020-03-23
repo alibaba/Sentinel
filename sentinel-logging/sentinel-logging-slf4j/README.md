@@ -1,22 +1,19 @@
 # Sentinel Logging Extension SLF4J
 
-To use Sentinel Logging Extension SLF4J with Log4j2, you should add the following dependency firstly:
+To integrate logs of sentinel into your project which uses slf4j for bridge of logging you can 
+simply introduce following dependency to your project:
 
 ```xml
 <dependency>
     <groupId>com.alibaba.csp</groupId>
-    <artifactId>sentinel-logging-extension-slf4j</artifactId>
-    <version>x.y.z</version>
-</dependency>
-<dependency>
-    <groupId>org.slf4j</groupId>
-    <artifactId>slf4j-api</artifactId>
-    <version>${slf4j.version}</version>
+    <artifactId>sentinel-logging-slf4j</artifactId>
+    <version>${sentinel.version}</version>
 </dependency>
 ```
-If you want to use Slf4j with Log4j2, you can add dependencies of Log4j2 and the binding about Log4j2 and SLF4J.
-Then you should provide logging configuration as specification of the logging framework. 
-And you can add Sentinel's Loggers that it name is `sentinelRecordLogger` or `sentinelCommandCenterLogger` for your needs. For example: 
+
+And if you want to control level of logging special for sentinel the loggers that sentinel uses 
+are called `sentinelRecordLogger` and `sentinelCommandCenterLogger`. For example in XML configration 
+coming with log4j2 implementation:  
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -45,5 +42,3 @@ And you can add Sentinel's Loggers that it name is `sentinelRecordLogger` or `se
     </Loggers>
 </Configuration>
 ```
-
-
