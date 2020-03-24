@@ -15,15 +15,19 @@
  */
 package com.alibaba.csp.sentinel.dashboard.rule.nacos;
 
+import com.google.common.base.Joiner;
+
 /**
  * @author Eric Zhao
  * @since 1.4.0
  */
-public final class NacosConstants {
+public final class NacosConfigUtil {
 
     public static final String GROUP_ID = "SENTINEL_GROUP";
+
+    public static final String KEY_SEPARATOR = "-";
     
-    public static final String FLOW_DATA_ID_POSTFIX = "-flow-rules";
+    public static final String FLOW_DATA_ID_POSTFIX = "flow-rules";
     public static final String PARAM_FLOW_DATA_ID_POSTFIX = "-param-rules";
     public static final String CLUSTER_MAP_DATA_ID_POSTFIX = "-cluster-map";
 
@@ -38,5 +42,14 @@ public final class NacosConstants {
     public static final String SERVER_FLOW_CONFIG_DATA_ID_POSTFIX = "-cs-flow-config";
     public static final String SERVER_NAMESPACE_SET_DATA_ID_POSTFIX = "-cs-namespace-set";
 
-    private NacosConstants() {}
+
+    public static String buildAppKey(String app, String postfix) {
+        return Joiner.on(KEY_SEPARATOR).join(app, postfix);
+    }
+
+    public static String buildMachineKey(String app, String ip, Integer port, String postfix) {
+        return Joiner.on(KEY_SEPARATOR).join(app, ip, port, postfix);
+    }
+
+    private NacosConfigUtil() {}
 }

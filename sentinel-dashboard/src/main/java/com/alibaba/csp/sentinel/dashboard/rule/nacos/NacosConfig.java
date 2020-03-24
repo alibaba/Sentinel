@@ -27,7 +27,7 @@ import java.util.Properties;
  * @author cdfive
  */
 @Configuration
-//@ConditionalOnClass
+@ConditionalOnClass(ConfigService.class)
 @ConditionalOnProperty(name = "rule.repository.type", havingValue = "nacos")
 @EnableConfigurationProperties(NacosProperties.class)
 public class NacosConfig {

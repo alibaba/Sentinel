@@ -47,9 +47,19 @@ public class FlowRuleNacosPublisher implements DynamicRulePublisher<List<FlowRul
         if (rules == null) {
             return;
         }
-        boolean result = configService.publishConfig(app + NacosConstants.FLOW_DATA_ID_POSTFIX,
-                NacosConstants.GROUP_ID, converter.convert(rules));
+        boolean result = configService.publishConfig(NacosConfigUtil.buildAppKey(app, NacosConfigUtil.FLOW_DATA_ID_POSTFIX),
+                NacosConfigUtil.GROUP_ID, converter.convert(rules));
+        System.out.println(result);
+    }
 
+    @Override
+    public void publish(String app, String ip, Integer port, List<FlowRuleEntity> rules) throws Exception {
+        AssertUtil.notEmpty(app, "app name cannot be empty");
+        if (rules == null) {
+            return;
+        }
+        boolean result = configService.publishConfig(NacosConfigUtil.buildMachineKey(app, ip, port, NacosConfigUtil.FLOW_DATA_ID_POSTFIX),
+                NacosConfigUtil.GROUP_ID, converter.convert(rules));
         System.out.println(result);
     }
 }

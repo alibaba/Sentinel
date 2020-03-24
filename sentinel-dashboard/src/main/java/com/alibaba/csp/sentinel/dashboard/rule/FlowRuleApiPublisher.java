@@ -57,4 +57,9 @@ public class FlowRuleApiPublisher implements DynamicRulePublisher<List<FlowRuleE
             sentinelApiClient.setFlowRuleOfMachine(app, machine.getIp(), machine.getPort(), rules);
         }
     }
+
+    @Override
+    public void publish(String app, String ip, Integer port, List<FlowRuleEntity> rules) throws Exception {
+        sentinelApiClient.setFlowRuleOfMachine(app, ip, port, rules);
+    }
 }

@@ -47,4 +47,9 @@ public class FlowRuleZookeeperPublisher implements DynamicRulePublisher<List<Flo
         byte[] data = CollectionUtils.isEmpty(rules) ? "[]".getBytes() : converter.convert(rules).getBytes();
         zkClient.setData().forPath(path, data);
     }
+
+    @Override
+    public void publish(String app, String ip, Integer port, List<FlowRuleEntity> rules) throws Exception {
+
+    }
 }

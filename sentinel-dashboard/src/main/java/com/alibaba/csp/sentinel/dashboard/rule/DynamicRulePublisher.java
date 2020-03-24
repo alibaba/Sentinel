@@ -30,5 +30,5 @@ public interface DynamicRulePublisher<T> {
      */
     void publish(String app, T rules) throws Exception;
 
-//    void publish(String app, String ip, Integer port, T rules) throws Exception;
+    void publish(String app, String ip, Integer port, T rules) throws Exception;
 }

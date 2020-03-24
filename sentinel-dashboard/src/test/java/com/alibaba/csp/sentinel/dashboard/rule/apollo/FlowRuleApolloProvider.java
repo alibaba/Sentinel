@@ -60,4 +60,9 @@ public class FlowRuleApolloProvider implements DynamicRuleProvider<List<FlowRule
         }
         return converter.convert(rules);
     }
+
+    @Override
+    public List<FlowRuleEntity> getRules(String app, String ip, Integer port) throws Exception {
+        return null;
+    }
 }

@@ -49,4 +49,9 @@ public class FlowRuleZookeeperProvider implements DynamicRuleProvider<List<FlowR
 
         return converter.convert(s);
     }
+
+    @Override
+    public List<FlowRuleEntity> getRules(String app, String ip, Integer port) throws Exception {
+        return null;
+    }
 }

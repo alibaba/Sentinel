@@ -66,4 +66,9 @@ public class FlowRuleApolloPublisher implements DynamicRulePublisher<List<FlowRu
         namespaceReleaseDTO.setReleaseTitle("Modify or add configurations");
         apolloOpenApiClient.publishNamespace(appId, "DEV", "default", "application", namespaceReleaseDTO);
     }
+
+    @Override
+    public void publish(String app, String ip, Integer port, List<FlowRuleEntity> rules) throws Exception {
+
+    }
 }
