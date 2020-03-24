@@ -67,7 +67,11 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
             }
             return true;
         } catch (BlockException e) {
-            handleBlockException(request, response, e);
+            try {
+                handleBlockException(request, response, e);
+            } finally {
+                ContextUtil.exit();
+            }
             return false;
         }
     }
