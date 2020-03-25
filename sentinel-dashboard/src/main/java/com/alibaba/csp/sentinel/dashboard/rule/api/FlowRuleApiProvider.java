@@ -17,7 +17,9 @@ package com.alibaba.csp.sentinel.dashboard.rule.api;
 
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.rule.AbstractRuleProvider;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -27,6 +29,7 @@ import java.util.List;
  *
  * @author Eric Zhao
  */
+@ConditionalOnMissingBean(DynamicRuleProvider.class)
 @Component("flowRuleApiProvider")
 public class FlowRuleApiProvider<T> extends AbstractRuleProvider<T> {
 
@@ -39,7 +42,7 @@ public class FlowRuleApiProvider<T> extends AbstractRuleProvider<T> {
     }
 
     @Override
-    protected String fetchRules(String ruleKey) throws Exception {
+    protected String fetchRules(String app, String ip, Integer port) throws Exception {
         return null;
     }
 

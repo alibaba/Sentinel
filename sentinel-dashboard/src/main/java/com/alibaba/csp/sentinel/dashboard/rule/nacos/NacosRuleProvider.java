@@ -1,17 +1,18 @@
 package com.alibaba.csp.sentinel.dashboard.rule.nacos;
 
 import com.alibaba.csp.sentinel.dashboard.rule.AbstractRuleProvider;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
 import com.alibaba.nacos.api.config.ConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.context.annotation.Primary;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
 
 /**
  * @author cdfive
  */
-@Primary
 @ConditionalOnBean(NacosConfig.class)
+//@ConditionalOnMissingBean(DynamicRuleProvider.class)
 @Component("nacosRuleProvider")
 public class NacosRuleProvider<T> extends AbstractRuleProvider<T> {
 
@@ -23,7 +24,8 @@ public class NacosRuleProvider<T> extends AbstractRuleProvider<T> {
     private ConfigService configService;
 
     @Override
-    protected String fetchRules(String ruleKey) throws Exception {
+    protected String fetchRules(String app, String ip, Integer port) throws Exception {
+        String ruleKey = buildRuleKey(app, ip, port);
         return configService.getConfig(ruleKey, NacosConfigUtil.GROUP_ID, 3000);
     }
 

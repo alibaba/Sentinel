@@ -48,8 +48,8 @@ public abstract class AbstractRuleProvider<T> implements DynamicRuleProvider<T> 
 
     @Override
     public List<T> getRules(String app, String ip, Integer port) throws Exception {
-        String ruleKey = buildRuleKey(app, ip, port);
-        String ruleStr = fetchRules(ruleKey);
+//        String ruleKey = buildRuleKey(app, ip, port);
+        String ruleStr = fetchRules(app, ip, port);
         if (StringUtil.isEmpty(ruleStr)) {
             return new ArrayList<>();
         }
@@ -61,5 +61,5 @@ public abstract class AbstractRuleProvider<T> implements DynamicRuleProvider<T> 
         return Joiner.on("-").join(app, ip, port, "flow", "rules");
     }
 
-    protected abstract String fetchRules(String ruleKey) throws Exception;
+    protected abstract String fetchRules(String app, String ip, Integer port) throws Exception;
 }

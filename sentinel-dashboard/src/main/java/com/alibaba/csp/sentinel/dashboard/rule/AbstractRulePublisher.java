@@ -53,14 +53,14 @@ public abstract class AbstractRulePublisher<T> implements DynamicRulePublisher<T
 
     @Override
     public void publish(String app, String ip, Integer port, List<T> rules) throws Exception {
-        String ruleKey = buildRuleKey(app, ip, port);
         String rulesStr = converter.convert(rules);
-        publishRules(ruleKey, rulesStr);
+//        String ruleKey = buildRuleKey(app, ip, port);
+        publishRules(app, ip, port, rulesStr);
     }
 
     protected String buildRuleKey(String app, String ip, Integer port) {
         return Joiner.on("-").join(app, ip, port, "flow", "rules");
     }
 
-    protected abstract void publishRules(String ruleKey, String rules) throws Exception;
+    protected abstract void publishRules(String app, String ip, Integer port, String rules) throws Exception;
 }

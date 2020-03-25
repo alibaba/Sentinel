@@ -8,7 +8,7 @@ import org.springframework.context.annotation.PropertySource;
  * @author cdfive
  */
 @Configuration
-@PropertySource(value = "file:nacos.properties", ignoreResourceNotFound = true)
+@PropertySource(value = {"classpath:nacos.properties", "file:nacos.properties"}, ignoreResourceNotFound = true)
 @ConfigurationProperties(prefix = "nacos")
 public class NacosProperties {
 

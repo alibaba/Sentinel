@@ -1,23 +1,14 @@
 package com.alibaba.csp.sentinel.dashboard.rule.nacos;
 
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
 import com.alibaba.csp.sentinel.dashboard.rule.AbstractRulePublisher;
-import com.alibaba.csp.sentinel.datasource.Converter;
-import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.nacos.api.config.ConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-
-import java.util.List;
 
 /**
  * @author cdfive
  */
-@Primary
 @ConditionalOnBean(NacosConfig.class)
 @Component("nacosRulePublisher")
 public class NacosRulePublisher<T> extends AbstractRulePublisher<T> {
@@ -26,7 +17,8 @@ public class NacosRulePublisher<T> extends AbstractRulePublisher<T> {
     private ConfigService configService;
 
     @Override
-    protected void publishRules(String ruleKey, String rules) throws Exception {
+    protected void publishRules(String app, String ip, Integer port, String rules) throws Exception {
+        String ruleKey = buildRuleKey(app, ip, port);
         configService.publishConfig(ruleKey, NacosConfigUtil.GROUP_ID, rules);
     }
 
