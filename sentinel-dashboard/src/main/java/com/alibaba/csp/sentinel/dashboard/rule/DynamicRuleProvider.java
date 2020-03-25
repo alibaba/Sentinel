@@ -15,13 +15,15 @@
  */
 package com.alibaba.csp.sentinel.dashboard.rule;
 
+import java.util.List;
+
 /**
  * @author Eric Zhao
  * @since 1.4.0
  */
 public interface DynamicRuleProvider<T> {
 
-    T getRules(String app) throws Exception;
+    List<T> getRules(String app) throws Exception;
 
-    T getRules(String app, String ip, Integer port) throws Exception;
+    List<T> getRules(String app, String ip, Integer port) throws Exception;
 }

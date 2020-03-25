@@ -11,6 +11,7 @@ app.controller('FlowController', ['$scope', '$stateParams', 'FlowService', 'ngDi
 
     $scope.switchOperateType = function() {
       $scope.operateType = $scope.operateType == 'app' ? 'machine' : 'app';
+      getMachineRules();
     };
 
     $scope.showSwitchToOperateTypeText = function() {
@@ -81,6 +82,17 @@ app.controller('FlowController', ['$scope', '$stateParams', 'FlowService', 'ngDi
     var flowRuleDialog;
     $scope.editRule = function (rule) {
       $scope.currentRule = angular.copy(rule);
+
+      var ip = null;
+      var port = null;
+      if ($scope.operateType == 'machine') {
+        var mac = $scope.macInputModel.split(':');
+        ip = mac[0];
+        port = mac[1];
+      }
+      $scope.currentRule.ip = ip;
+      $scope.currentRule.port = port;
+
       $scope.flowRuleDialog = {
         title: '编辑流控规则',
         type: 'edit',
@@ -96,14 +108,21 @@ app.controller('FlowController', ['$scope', '$stateParams', 'FlowService', 'ngDi
     };
 
     $scope.addNewRule = function () {
-      var mac = $scope.macInputModel.split(':');
+      var ip = null;
+      var port = null;
+      if ($scope.operateType == 'machine') {
+        var mac = $scope.macInputModel.split(':');
+        ip = mac[0];
+        port = mac[1];
+      }
+
       $scope.currentRule = {
         grade: 1,
         strategy: 0,
         controlBehavior: 0,
         app: $scope.app,
-        ip: mac[0],
-        port: mac[1],
+        ip: ip,
+        port: port,
         limitApp: 'default',
         clusterMode: false,
         clusterConfig: {

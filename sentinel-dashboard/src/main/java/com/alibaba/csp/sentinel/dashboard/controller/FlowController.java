@@ -28,7 +28,6 @@ import com.alibaba.csp.sentinel.dashboard.vo.req.rule.flow.AddFlowRuleReqVo;
 import com.alibaba.csp.sentinel.dashboard.vo.req.rule.flow.UpdateFlowRuleReqVo;
 import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.sun.org.apache.regexp.internal.RE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,10 +53,10 @@ public class FlowController {
 
     @Autowired
 //    @Qualifier("flowRuleDefaultProvider")
-    private DynamicRuleProvider<List<FlowRuleEntity>> ruleProvider;
+    private DynamicRuleProvider<FlowRuleEntity> ruleProvider;
     @Autowired
 //    @Qualifier("flowRuleDefaultPublisher")
-    private DynamicRulePublisher<List<FlowRuleEntity>> rulePublisher;
+    private DynamicRulePublisher<FlowRuleEntity> rulePublisher;
 
     @GetMapping("/rules")
     @AuthAction(PrivilegeType.READ_RULE)
@@ -81,6 +80,13 @@ public class FlowController {
 
             if (rules != null && !rules.isEmpty()) {
                 for (FlowRuleEntity entity : rules) {
+                    if (operateApp) {
+                        entity.setIp(null);
+                        entity.setPort(null);
+                    } else {
+                        entity.setIp(ip);
+                        entity.setPort(port);
+                    }
                     entity.setApp(app);
                     if (entity.getClusterConfig() != null && entity.getClusterConfig().getFlowId() != null) {
                         entity.setId(entity.getClusterConfig().getFlowId());
@@ -186,6 +192,9 @@ public class FlowController {
 
         FlowRuleEntity entity = new FlowRuleEntity();
         Date date = new Date();
+        entity.setApp(reqVo.getApp());
+        entity.setIp(reqVo.getIp());
+        entity.setPort(reqVo.getPort());
         entity.setResource(reqVo.getResource());
         entity.setLimitApp(reqVo.getLimitApp());
         entity.setGrade(reqVo.getGrade());
@@ -230,9 +239,7 @@ public class FlowController {
 
     @PutMapping("/rule/{id}")
     @AuthAction(PrivilegeType.WRITE_RULE)
-
-    public Result<FlowRuleEntity> apiUpdateFlowRule(@PathVariable("id") Long id,
-                                                    @RequestBody UpdateFlowRuleReqVo reqVo) {
+    public Result<FlowRuleEntity> apiUpdateFlowRule(@PathVariable("id") Long id, @RequestBody UpdateFlowRuleReqVo reqVo) {
         if (id == null || id <= 0) {
             return Result.ofFail(-1, "Invalid id");
         }
@@ -325,8 +332,9 @@ public class FlowController {
     }
 
     @DeleteMapping("/rule/{id}")
+//    @PostMapping("/rule/delete/{id}")
     @AuthAction(PrivilegeType.DELETE_RULE)
-    public Result<Long> apiDeleteRule(@PathVariable("id") Long id, MachineReqVo reqVo) {
+    public Result<Long> apiDeleteRule(@PathVariable("id") Long id, @RequestBody MachineReqVo reqVo) {
         if (id == null || id <= 0) {
             return Result.ofFail(-1, "Invalid id");
         }

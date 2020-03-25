@@ -64,10 +64,10 @@ public class FlowControllerV1 {
 //    private SentinelApiClient sentinelApiClient;
 
     @Autowired
-    private DynamicRuleProvider<List<FlowRuleEntity>> ruleProvider;
+    private DynamicRuleProvider<FlowRuleEntity> ruleProvider;
 
     @Autowired
-    private DynamicRulePublisher<List<FlowRuleEntity>> rulePublisher;
+    private DynamicRulePublisher<FlowRuleEntity> rulePublisher;
 
     @GetMapping("/rules")
     @AuthAction(PrivilegeType.READ_RULE)

@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.dashboard.rule;
 
+import java.util.List;
+
 /**
  * @author Eric Zhao
  * @since 1.4.0
@@ -28,7 +30,7 @@ public interface DynamicRulePublisher<T> {
      * @param rules list of rules to push
      * @throws Exception if some error occurs
      */
-    void publish(String app, T rules) throws Exception;
+    void publish(String app, List<T> rules) throws Exception;
 
-    void publish(String app, String ip, Integer port, T rules) throws Exception;
+    void publish(String app, String ip, Integer port, List<T> rules) throws Exception;
 }

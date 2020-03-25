@@ -1,0 +1,48 @@
+package com.alibaba.csp.sentinel.dashboard.rule.nacos;
+
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
+import com.alibaba.csp.sentinel.dashboard.rule.AbstractRulePublisher;
+import com.alibaba.csp.sentinel.datasource.Converter;
+import com.alibaba.csp.sentinel.util.AssertUtil;
+import com.alibaba.nacos.api.config.ConfigService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+
+import java.util.List;
+
+/**
+ * @author cdfive
+ */
+@Primary
+@ConditionalOnBean(NacosConfig.class)
+@Component("nacosRulePublisher")
+public class NacosRulePublisher<T> extends AbstractRulePublisher<T> {
+
+    @Autowired
+    private ConfigService configService;
+
+    @Override
+    protected void publishRules(String ruleKey, String rules) throws Exception {
+        configService.publishConfig(ruleKey, NacosConfigUtil.GROUP_ID, rules);
+    }
+
+//    @Autowired
+//    private Converter<List<T>, String> converter;
+//
+//    @Override
+//    public void publish(String app, String ip, Integer port, List<T> rules) throws Exception {
+//        AssertUtil.notEmpty(app, "app name cannot be empty");
+//
+//        if (CollectionUtils.isEmpty(rules)) {
+//            return;
+//        }
+//
+//        boolean result = configService.publishConfig(NacosConfigUtil.buildMachineKey(app, ip, port, NacosConfigUtil.FLOW_DATA_ID_POSTFIX),
+//                NacosConfigUtil.GROUP_ID, converter.convert(rules));
+//        System.out.println(result);
+//    }
+}

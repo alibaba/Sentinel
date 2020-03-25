@@ -34,6 +34,7 @@ app.service('FlowService', ['$http', function ($http) {
         return $http({
             url: '/flow/rule/' + rule.id,
             data: rule,
+            headers: {'Content-Type': 'application/json'},
             method: 'DELETE'
         });
     };
