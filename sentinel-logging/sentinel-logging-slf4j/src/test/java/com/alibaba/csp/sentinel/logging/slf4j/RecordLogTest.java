@@ -17,102 +17,39 @@
 package com.alibaba.csp.sentinel.logging.slf4j;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.SystemOutRule;
 
 /**
- * @author xue8
+ * @author jason
  */
-@Ignore("https://github.com/stefanbirkner/system-rules/issues/45. You can only run one @Test at a time")
-public class RecordLogTest {
-    @Rule
-    public SystemOutRule log = new SystemOutRule().enableLog();
+public class RecordLogTest extends AbstraceSlf4jLogTest {
 
-    @Test
-    public void testLog() {
-        RecordLog.info("init");
-        log.clearLog();
-        int count = 0;
-
-        // info test
-        while (count++ < 1000) {
-            log.clearLog();
-            RecordLog.info("Count {}", count);
-            String str = String.format("INFO  sentinelRecordLogger - Count %d" + System.lineSeparator(), count);
-            Assert.assertEquals(str, log.getLog());
-        }
-
-        // warn test
-        while (count++ < 2000) {
-            log.clearLog();
-            RecordLog.warn("Count {}", count);
-            String str = String.format("WARN  sentinelRecordLogger - Count %d" + System.lineSeparator(), count);
-            Assert.assertEquals(str, log.getLog());
-        }
-
-        // trace test
-        while (count++ < 3000) {
-            log.clearLog();
-            RecordLog.trace("Count {}", count);
-            String str = String.format("TRACE sentinelRecordLogger - Count %d" + System.lineSeparator(), count);
-            Assert.assertEquals(str, log.getLog());
-        }
-
-        // debug test
-        while (count++ < 4000) {
-            log.clearLog();
-            RecordLog.debug("Count {}", count);
-            String str = String.format("DEBUG sentinelRecordLogger - Count %d" + System.lineSeparator(), count);
-            Assert.assertEquals(str, log.getLog());
-        }
-
-        // test error
-        while (count++ < 5000) {
-            log.clearLog();
-            RecordLog.error("Count {}", count);
-            String str = String.format("ERROR sentinelRecordLogger - Count %d" + System.lineSeparator(), count);
-            Assert.assertEquals(str, log.getLog());
-        }
+    @Override
+    protected String getLoggerName() {
+        return RecordLog.LOGGER_NAME;
     }
 
+    @Override
+    protected void debug(String msg, Object... args) {
+        RecordLog.debug(msg, args);
+    }
 
-    @Test
-    public void testLogException() {
-        RecordLog.info("init");
-        log.clearLog();
-        Exception e = new Exception("ex");
+    @Override
+    protected void trace(String msg, Object... args) {
+        RecordLog.trace(msg, args);
+    }
 
-        // info test
-        RecordLog.info("Error", e);
-        // split the log for test
-        String[] logSplit = log.getLog().split(System.lineSeparator());
-        Assert.assertEquals("INFO  sentinelRecordLogger - Error", logSplit[0]);
+    @Override
+    protected void info(String msg, Object... args) {
+        RecordLog.info(msg, args);
+    }
 
-        // warn test
-        log.clearLog();
-        RecordLog.warn("Error", e);
-        logSplit = log.getLog().split(System.lineSeparator());
-        Assert.assertEquals("WARN  sentinelRecordLogger - Error", logSplit[0]);
+    @Override
+    protected void warn(String msg, Object... args) {
+        RecordLog.warn(msg, args);
+    }
 
-        // trace test
-        log.clearLog();
-        RecordLog.trace("Error", e);
-        logSplit = log.getLog().split(System.lineSeparator());
-        Assert.assertEquals("TRACE sentinelRecordLogger - Error", logSplit[0]);
-
-        // debug test
-        log.clearLog();
-        RecordLog.debug("Error", e);
-        logSplit = log.getLog().split(System.lineSeparator());
-        Assert.assertEquals("DEBUG sentinelRecordLogger - Error", logSplit[0]);
-
-        // error test
-        log.clearLog();
-        RecordLog.error("Error", e);
-        logSplit = log.getLog().split(System.lineSeparator());
-        Assert.assertEquals("ERROR sentinelRecordLogger - Error", logSplit[0]);
+    @Override
+    protected void error(String msg, Object... args) {
+        RecordLog.error(msg, args);
     }
 }
