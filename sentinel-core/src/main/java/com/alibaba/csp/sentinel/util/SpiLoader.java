@@ -129,6 +129,7 @@ public final class SpiLoader {
     }
 
     /**
+     * Load and sorted SPI instance list.
      * Load the SPI instance list for provided SPI interface.
      *
      * @param clazz class of the SPI
@@ -161,6 +162,8 @@ public final class SpiLoader {
     /**
      * Load the sorted SPI instance list for provided SPI interface.
      *
+     * Note: each call return new instances.
+     *
      * @param clazz class of the SPI
      * @param <T>   SPI type
      * @return sorted SPI instance list
@@ -191,6 +194,41 @@ public final class SpiLoader {
             return list;
         } catch (Throwable t) {
             RecordLog.warn("[SpiLoader] ERROR: loadInstanceListSorted failed", t);
+            t.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Load the sorted and different SPI instance list for provided SPI interface.
+     *
+     * Note: each call return new instances.
+     *
+     * @param clazz class of the SPI
+     * @param <T>   SPI type
+     * @return sorted and different SPI instance list
+     * @since 1.7.2
+     */
+    public static <T> List<T> loadDifferentInstanceListSorted(Class<T> clazz) {
+        try {
+            // Not use SERVICE_LOADER_MAP, to make sure the instances loaded are different.
+            ServiceLoader<T> serviceLoader = ServiceLoaderUtil.getServiceLoader(clazz);
+
+            List<SpiOrderWrapper<T>> orderWrappers = new ArrayList<>();
+            for (T spi : serviceLoader) {
+                int order = SpiOrderResolver.resolveOrder(spi);
+                // Since SPI is lazy initialized in ServiceLoader, we use online sort algorithm here.
+                SpiOrderResolver.insertSorted(orderWrappers, spi, order);
+                RecordLog.info("[SpiLoader] Found {0} SPI: {1} with order " + order, clazz.getSimpleName(),
+                        spi.getClass().getCanonicalName());
+            }
+            List<T> list = new ArrayList<>();
+            for (int i = 0; i < orderWrappers.size(); i++) {
+                list.add(i, orderWrappers.get(i).spi);
+            }
+            return list;
+        } catch (Throwable t) {
+            RecordLog.warn("[SpiLoader] ERROR: loadDifferentInstanceListSorted failed", t);
             t.printStackTrace();
             return new ArrayList<>();
         }
