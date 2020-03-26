@@ -29,9 +29,9 @@ import java.util.List;
  * @author Eric Zhao
  * @since 1.4.0
  */
-@ConditionalOnMissingBean(DynamicRulePublisher.class)
-@Component("flowRuleDefaultPublisher")
-public class FlowRuleApiPublisher<T> extends AbstractRulePublisher<T> {
+//@ConditionalOnMissingBean(DynamicRulePublisher.class)
+//@Component("flowRuleDefaultPublisher")
+public class ApiRulePublisher<T> extends AbstractRulePublisher<T> {
 
     @Autowired
     private SentinelApiClient sentinelApiClient;
