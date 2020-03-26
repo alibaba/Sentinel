@@ -63,10 +63,10 @@ public class FlowControllerV1 {
 //    @Autowired
 //    private SentinelApiClient sentinelApiClient;
 
-    @Autowired
+//    @Autowired
     private DynamicRuleProvider<FlowRuleEntity> ruleProvider;
 
-    @Autowired
+//    @Autowired
     private DynamicRulePublisher<FlowRuleEntity> rulePublisher;
 
     @GetMapping("/rules")

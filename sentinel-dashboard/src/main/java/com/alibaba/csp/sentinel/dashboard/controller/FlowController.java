@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.dashboard.controller;
 
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
@@ -30,7 +31,10 @@ import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -53,10 +57,15 @@ public class FlowController {
 
     @Autowired
 //    @Qualifier("flowRuleDefaultProvider")
+//    private DynamicRuleProvider<FlowRuleEntity> ruleProvider;
     private DynamicRuleProvider<FlowRuleEntity> ruleProvider;
+
     @Autowired
 //    @Qualifier("flowRuleDefaultPublisher")
     private DynamicRulePublisher<FlowRuleEntity> rulePublisher;
+
+//    @Autowired
+//    private DynamicRuleProvider<DegradeRuleEntity> degradeRuleProvider;
 
     @GetMapping("/rules")
     @AuthAction(PrivilegeType.READ_RULE)
@@ -374,4 +383,10 @@ public class FlowController {
         Integer port = reqVo.getPort();
         return StringUtil.isEmpty(ip) || port == null;
     }
+
+//    @Override
+//    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+//        DynamicRuleProvider bean = applicationContext.getBean(DynamicRuleProvider.class);
+//        System.out.println(bean);
+//    }
 }

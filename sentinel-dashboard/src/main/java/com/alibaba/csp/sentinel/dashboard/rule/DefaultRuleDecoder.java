@@ -13,8 +13,13 @@ import java.util.List;
 /**
  * @author cdfive
  */
-@Component
+//@Component
 public class DefaultRuleDecoder<T> implements Converter<String, List<T>> {
+
+    public DefaultRuleDecoder() {
+        Class clazz = (Class) ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+        System.out.println(clazz.getSimpleName());
+    }
 
     @Override
     public List<T> convert(String source) {
@@ -23,7 +28,8 @@ public class DefaultRuleDecoder<T> implements Converter<String, List<T>> {
 //        return (List<T>) JSON.parseArray(source, List.class);
 
 //        Class clazz = (Class) ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-        Class clazz = ResolvableType.forClass(this.getClass()).getGeneric(0).resolve();
+//        Class clazz = ResolvableType.forClass(this.getClass()).getGeneric(0).resolve();
+        Class clazz = ResolvableType.forClass(this.getClass()).getSuperType().getGeneric(0).resolve();
         return JSON.parseArray(source, clazz);
     }
 }

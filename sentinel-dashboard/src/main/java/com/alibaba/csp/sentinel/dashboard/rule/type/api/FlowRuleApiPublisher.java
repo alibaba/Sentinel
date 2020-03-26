@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.rule.api;
+package com.alibaba.csp.sentinel.dashboard.rule.type.api;
 
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
-import com.alibaba.csp.sentinel.dashboard.rule.AbstractRuleProvider;
-import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
+import com.alibaba.csp.sentinel.dashboard.rule.AbstractRulePublisher;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
@@ -25,30 +25,29 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 /**
- * This is default rule provider
- *
+ * This is default rule publisher
  * @author Eric Zhao
+ * @since 1.4.0
  */
-@ConditionalOnMissingBean(DynamicRuleProvider.class)
-@Component("flowRuleApiProvider")
-public class FlowRuleApiProvider<T> extends AbstractRuleProvider<T> {
+@ConditionalOnMissingBean(DynamicRulePublisher.class)
+@Component("flowRuleDefaultPublisher")
+public class FlowRuleApiPublisher<T> extends AbstractRulePublisher<T> {
 
     @Autowired
     private SentinelApiClient sentinelApiClient;
 
     @Override
-    public List<T> getRules(String app, String ip, Integer port) throws Exception {
-        return super.getRules(app, ip, port);
+    public void publish(String app, String ip, Integer port, List<T> rules) throws Exception {
+//        sentinelApiClient.setFlowRuleOfMachine(app, ip, port, rules);
     }
 
     @Override
-    protected String fetchRules(String app, String ip, Integer port) throws Exception {
-        return null;
+    protected void publishRules(String app, String ip, Integer port, String rules) throws Exception {
+
     }
 
 //    @Override
-//    public List<T> getRules(String app, String ip, Integer port) throws Exception {
-////        return sentinelApiClient.fetchFlowRuleOfMachine(app, ip, port);
-//        return null;
+//    public void publish(String app, String ip, Integer port, List<T> rules) throws Exception {
+////        sentinelApiClient.setFlowRuleOfMachine(app, ip, port, rules);
 //    }
 }

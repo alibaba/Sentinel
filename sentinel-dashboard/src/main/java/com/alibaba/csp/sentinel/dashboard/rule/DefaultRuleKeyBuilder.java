@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  * @author cdfive
  */
-@Component("defaultRuleKeyBuilder")
+//@Component("defaultRuleKeyBuilder")
 public class DefaultRuleKeyBuilder<T> implements RuleKeyBuilder<T> {
 
     private final static Map<Class, String> ruleNameMap = ImmutableMap.of(
@@ -27,7 +27,8 @@ public class DefaultRuleKeyBuilder<T> implements RuleKeyBuilder<T> {
     @Override
     public String buildRuleKey(String app, String ip, Integer port) {
         ResolvableType resolvableType = ResolvableType.forClass(this.getClass());
-        Class<?> clazz = resolvableType.getGeneric(0).resolve();
+//        Class<?> clazz = resolvableType.getGeneric(0).resolve();
+        Class<?> clazz = resolvableType.getSuperType().getGeneric(0).resolve();
         String ruleName = ruleNameMap.get(clazz);
         return Joiner.on("-").join(app, ip, port, ruleName, RULES);
     }
