@@ -2,6 +2,8 @@
 //
 //import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
 //import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
+//import com.alibaba.csp.sentinel.dashboard.rule.DefaultRuleDecoder;
+//import com.alibaba.csp.sentinel.dashboard.rule.decoder.FlowRuleDecoder;
 //import com.alibaba.csp.sentinel.datasource.Converter;
 //import com.alibaba.fastjson.JSON;
 //import com.alibaba.fastjson.TypeReference;
@@ -16,26 +18,26 @@
 //@Configuration
 //public class RuleConverterConfig {
 //
-//    @Bean
-//    public <T> Converter<List<T>, String> ruleEntityEncoder() {
+////    @Bean
+////    public <T> Converter<List<T>, String> ruleEntityEncoder() {
+////        return JSON::toJSONString;
+////    }
+//
+////    @Bean
+////    public <T> Converter<String, List<T>> ruleEntityDecoder() {
+////        return s -> JSON.parseArray(s, T);
+////        return s -> JSON.parseObject(s, new TypeReference<List<T>>(){});
+////    }
+//
+//    @Bean("flowRuleEntityEncoder")
+//    public Converter<List<FlowRuleEntity>, String> flowRuleEntityEncoder() {
 //        return JSON::toJSONString;
 //    }
 //
-//    @Bean
-//    public <T> Converter<String, List<T>> ruleEntityDecoder() {
-////        return s -> JSON.parseArray(s, T);
-//        return s -> JSON.parseObject(s, new TypeReference<List<T>>(){});
+//    @Bean("flowRuleEntityDecoder")
+//    public Converter<String, List<FlowRuleEntity>> flowRuleEntityDecoder() {
+//        return s -> JSON.parseArray(s, FlowRuleEntity.class);
 //    }
-//
-////    @Bean("flowRuleEntityEncoder")
-////    public Converter<List<FlowRuleEntity>, String> flowRuleEntityEncoder() {
-////        return JSON::toJSONString;
-////    }
-////
-////    @Bean("flowRuleEntityDecoder")
-////    public Converter<String, List<FlowRuleEntity>> flowRuleEntityDecoder() {
-////        return s -> JSON.parseArray(s, FlowRuleEntity.class);
-////    }
 //
 ////    @Bean("degradeRuleEntityDecoder")
 ////    public Converter<String, List<DegradeRuleEntity>> degradeRuleEntityDecoder() {
@@ -46,13 +48,17 @@
 //        // ResolvableType.forClass(converter.getClass()).resolve().getSimpleName()
 //        String json = "[{\"app\":\"sentinel-dashboard\",\"clusterMode\":false,\"controlBehavior\":0,\"count\":20.0,\"gmtCreate\":1585199950870,\"gmtModified\":1585199950870,\"grade\":1,\"id\":1,\"limitApp\":\"default\",\"resource\":\"aa\",\"strategy\":0}]";
 //
-//        List<FlowRuleEntity> flowRuleEntities = JSON.parseObject(json, new TypeReference<List<FlowRuleEntity>>() {
-//        });
-//        System.out.println(flowRuleEntities);
+////        List<FlowRuleEntity> flowRuleEntities = JSON.parseObject(json, new TypeReference<List<FlowRuleEntity>>() {
+////        });
+////        System.out.println(flowRuleEntities);
+////
+////        List<?> objects = JSON.parseObject(json, new TypeReference<List<?>>() {
+////
+////        });
+////        System.out.println(objects);
 //
-//        List<?> objects = JSON.parseObject(json, new TypeReference<List<?>>() {
-//
-//        });
-//        System.out.println(objects);
+//        DefaultRuleDecoder<FlowRuleEntity> decoder = new FlowRuleDecoder();
+//        List<FlowRuleEntity> entities = decoder.convert(json);
+//        System.out.println(entities);
 //    }
 //}
