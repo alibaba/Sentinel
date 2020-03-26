@@ -15,7 +15,7 @@ public class MachineReqVo implements Serializable {
     /**应用所在机器ip*/
     private String ip;
 
-    /**应用所在机器端口,指应用端Sentinel Transport的端口*/
+    /**应用所在机器端口,指应用端Sentinel的Transport端口*/
     private Integer port;
 
     public String getApp() {

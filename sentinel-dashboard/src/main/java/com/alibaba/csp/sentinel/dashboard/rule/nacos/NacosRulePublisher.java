@@ -19,7 +19,10 @@ public class NacosRulePublisher<T> extends AbstractRulePublisher<T> {
     @Override
     protected void publishRules(String app, String ip, Integer port, String rules) throws Exception {
         String ruleKey = buildRuleKey(app, ip, port);
-        configService.publishConfig(ruleKey, NacosConfigUtil.GROUP_ID, rules);
+        boolean result = configService.publishConfig(ruleKey, NacosConfigUtil.GROUP_ID, rules);
+        if (!result) {
+            // TODO
+        }
     }
 
 //    @Autowired

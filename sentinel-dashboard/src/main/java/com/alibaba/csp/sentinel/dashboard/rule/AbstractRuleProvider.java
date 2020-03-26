@@ -27,6 +27,9 @@ public abstract class AbstractRuleProvider<T> implements DynamicRuleProvider<T> 
     @Autowired
     private Converter<String, List<T>> converter;
 
+    @Autowired
+    private RuleKeyBuilder ruleKeyBuilder;
+
     @Override
     public List<T> getRules(String app) throws Exception{
         if (StringUtil.isBlank(app)) {
