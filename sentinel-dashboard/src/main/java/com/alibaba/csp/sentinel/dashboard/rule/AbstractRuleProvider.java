@@ -28,7 +28,7 @@ public abstract class AbstractRuleProvider<T> implements DynamicRuleProvider<T> 
     private Converter<String, List<T>> converter;
 
     @Autowired
-    private RuleKeyBuilder ruleKeyBuilder;
+    private RuleKeyBuilder<T> ruleKeyBuilder;
 
     @Override
     public List<T> getRules(String app) throws Exception{
@@ -62,6 +62,7 @@ public abstract class AbstractRuleProvider<T> implements DynamicRuleProvider<T> 
 
     protected String buildRuleKey(String app, String ip, Integer port) {
         return Joiner.on("-").join(app, ip, port, "flow", "rules");
+//        return ruleKeyBuilder.buildRuleKey(app, ip, port);
     }
 
     protected abstract String fetchRules(String app, String ip, Integer port) throws Exception;

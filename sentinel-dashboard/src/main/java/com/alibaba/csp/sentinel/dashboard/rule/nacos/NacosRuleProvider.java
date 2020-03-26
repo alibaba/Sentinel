@@ -8,6 +8,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
 
+import java.lang.reflect.ParameterizedType;
+
 /**
  * @author cdfive
  */
@@ -17,6 +19,9 @@ import org.springframework.stereotype.Component;
 public class NacosRuleProvider<T> extends AbstractRuleProvider<T> {
 
     public NacosRuleProvider() {
+//        Class clazz = (Class) ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+//        System.out.println(clazz.getSimpleName());
+
         System.out.println("nacosRuleProvider init");
     }
 
