@@ -1,5 +1,6 @@
 package com.alibaba.csp.sentinel.dashboard.rule.type.nacos;
 
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigFactory;

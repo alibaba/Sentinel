@@ -14,11 +14,21 @@ public class NacosProperties {
 
     private String serverAddr;
 
+    private String sentinelGroup;
+
     public String getServerAddr() {
         return serverAddr;
     }
 
     public void setServerAddr(String serverAddr) {
         this.serverAddr = serverAddr;
+    }
+
+    public String getSentinelGroup() {
+        return sentinelGroup;
+    }
+
+    public void setSentinelGroup(String sentinelGroup) {
+        this.sentinelGroup = sentinelGroup;
     }
 }

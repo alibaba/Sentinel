@@ -14,12 +14,15 @@ import org.springframework.stereotype.Component;
 public class NacosRulePublisher<T> extends AbstractRulePublisher<T> {
 
     @Autowired
+    private NacosProperties nacosProperties;
+
+    @Autowired
     private ConfigService configService;
 
     @Override
     protected void publishRules(String app, String ip, Integer port, String rules) throws Exception {
         String ruleKey = buildRuleKey(app, ip, port);
-        boolean result = configService.publishConfig(ruleKey, NacosConfigUtil.GROUP_ID, rules);
+        boolean result = configService.publishConfig(ruleKey, nacosProperties.getSentinelGroup(), rules);
         if (!result) {
             // TODO
         }
