@@ -14,7 +14,7 @@
     <dependencies>
         <dependency>
             <groupId>com.alibaba.csp</groupId>
-            <artifactId>sentinel-logging-extension-logback</artifactId>
+            <artifactId>sentinel-logging-logback</artifactId>
         </dependency>
 
         <dependency>

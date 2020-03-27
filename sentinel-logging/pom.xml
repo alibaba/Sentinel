@@ -13,6 +13,7 @@
 
     <modules>
         <module>sentinel-logging-slf4j</module>
+        <module>sentinel-logging-logback</module>
     </modules>
 
 </project>
