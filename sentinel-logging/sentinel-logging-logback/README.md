@@ -6,7 +6,6 @@ To use Sentinel Logging Extension Logback, you should add the following dependen
 <dependency>
     <groupId>com.alibaba.csp</groupId>
     <artifactId>sentinel-logging-logback</artifactId>
-    <artifactId>sentinel-logging-extension-logback</artifactId>
     <version>x.y.z</version>
 </dependency>
 <dependency>
