@@ -23,7 +23,6 @@
         <module>sentinel-datasource-consul</module>
         <module>sentinel-datasource-etcd</module>
         <module>sentinel-logging-extension-logback</module>
-        <module>sentinel-logging-extension-slf4j</module>
     </modules>
 
 </project>
