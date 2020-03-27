@@ -167,7 +167,7 @@ public final class SpiLoader {
             }
             return list;
         } catch (Throwable t) {
-            RecordLog.warn("[SpiLoader] ERROR: loadInstanceListSorted failed", t);
+            RecordLog.warn("[SpiLoader] ERROR: loadInstanceList failed", t);
             t.printStackTrace();
             return new ArrayList<>();
         }
