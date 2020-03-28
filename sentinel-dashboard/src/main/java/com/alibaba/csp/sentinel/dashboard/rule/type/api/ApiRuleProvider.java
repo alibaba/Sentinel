@@ -38,10 +38,10 @@ public class ApiRuleProvider<T> extends AbstractRuleProvider<T> {
     @Autowired
     private SentinelApiClient sentinelApiClient;
 
-    @Override
-    public List<T> getRules(String app, String ip, Integer port) throws Exception {
-        return super.getRules(app, ip, port);
-    }
+//    @Override
+//    public List<T> getRules(String app, String ip, Integer port) throws Exception {
+//        return super.getRules(app, ip, port);
+//    }
 
     @Override
     protected String fetchRules(String app, String ip, Integer port) throws Exception {
