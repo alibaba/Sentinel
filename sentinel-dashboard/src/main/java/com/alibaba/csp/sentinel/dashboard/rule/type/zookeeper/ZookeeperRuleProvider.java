@@ -1,5 +1,6 @@
 package com.alibaba.csp.sentinel.dashboard.rule.type.zookeeper;
 
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
 import com.alibaba.csp.sentinel.dashboard.rule.AbstractRuleProvider;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.data.Stat;
@@ -13,7 +14,7 @@ import org.springframework.util.ObjectUtils;
  */
 @ConditionalOnBean(ZookeeperConfig.class)
 @Component("zookeeperRuleProvider")
-public class ZookeeperRuleProvider<T> extends AbstractRuleProvider<T> {
+public class ZookeeperRuleProvider<T extends RuleEntity> extends AbstractRuleProvider<T> {
 
     @Autowired
     private CuratorFramework zkClient;

@@ -15,13 +15,15 @@
  */
 package com.alibaba.csp.sentinel.dashboard.rule;
 
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
+
 import java.util.List;
 
 /**
  * @author Eric Zhao
  * @since 1.4.0
  */
-public interface DynamicRuleProvider<T> {
+public interface DynamicRuleProvider<T extends RuleEntity> {
 
     List<T> getRules(String app) throws Exception;
 

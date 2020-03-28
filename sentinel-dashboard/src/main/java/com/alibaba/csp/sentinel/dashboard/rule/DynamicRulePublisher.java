@@ -15,13 +15,15 @@
  */
 package com.alibaba.csp.sentinel.dashboard.rule;
 
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
+
 import java.util.List;
 
 /**
  * @author Eric Zhao
  * @since 1.4.0
  */
-public interface DynamicRulePublisher<T> {
+public interface DynamicRulePublisher<T extends RuleEntity> {
 
     /**
      * Publish rules to remote rule configuration center for given application name.

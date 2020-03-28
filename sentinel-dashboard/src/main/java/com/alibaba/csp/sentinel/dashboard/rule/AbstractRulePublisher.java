@@ -1,5 +1,6 @@
 package com.alibaba.csp.sentinel.dashboard.rule;
 
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.datasource.Converter;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 /**
  * @author cdfive
  */
-public abstract class AbstractRulePublisher<T> implements DynamicRulePublisher<T> {
+public abstract class AbstractRulePublisher<T extends RuleEntity> implements DynamicRulePublisher<T> {
 
     protected Logger logger = LoggerFactory.getLogger(getClass());
 

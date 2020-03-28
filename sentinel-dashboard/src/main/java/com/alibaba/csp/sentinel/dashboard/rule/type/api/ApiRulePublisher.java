@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.dashboard.rule.type.api;
 
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
 import com.alibaba.csp.sentinel.dashboard.rule.AbstractRulePublisher;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,7 @@ import java.util.List;
  */
 //@ConditionalOnMissingBean(DynamicRulePublisher.class)
 //@Component("flowRuleDefaultPublisher")
-public class ApiRulePublisher<T> extends AbstractRulePublisher<T> {
+public class ApiRulePublisher<T extends RuleEntity> extends AbstractRulePublisher<T> {
 
     @Autowired
     private SentinelApiClient sentinelApiClient;

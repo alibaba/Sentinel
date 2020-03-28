@@ -1,5 +1,6 @@
 package com.alibaba.csp.sentinel.dashboard.rule.type.nacos;
 
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
 import com.alibaba.csp.sentinel.dashboard.rule.AbstractRulePublisher;
 import com.alibaba.nacos.api.config.ConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Component;
  */
 @ConditionalOnBean(NacosConfig.class)
 @Component("nacosRulePublisher")
-public class NacosRulePublisher<T> extends AbstractRulePublisher<T> {
+public class NacosRulePublisher<T extends RuleEntity> extends AbstractRulePublisher<T> {
 
     @Autowired
     private NacosProperties nacosProperties;
