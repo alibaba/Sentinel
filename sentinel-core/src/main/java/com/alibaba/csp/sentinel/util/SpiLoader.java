@@ -60,7 +60,7 @@ public final class SpiLoader {
                 return null;
             }
         } catch (Throwable t) {
-            RecordLog.warn("[SpiLoader] ERROR: loadFirstInstance failed", t);
+            RecordLog.error("[SpiLoader] ERROR: loadFirstInstance failed", t);
             t.printStackTrace();
             return null;
         }
@@ -95,7 +95,7 @@ public final class SpiLoader {
             }
             return defaultClass.newInstance();
         } catch (Throwable t) {
-            RecordLog.warn("[SpiLoader] ERROR: loadFirstInstanceOrDefault failed", t);
+            RecordLog.error("[SpiLoader] ERROR: loadFirstInstanceOrDefault failed", t);
             t.printStackTrace();
             return null;
         }
@@ -124,15 +124,15 @@ public final class SpiLoader {
             SpiOrderWrapper<T> w = null;
             for (T spi : serviceLoader) {
                 int order = SpiOrderResolver.resolveOrder(spi);
-                RecordLog.info("[SpiLoader] Found {} SPI: {} with order " + order, clazz.getSimpleName(),
-                    spi.getClass().getCanonicalName());
+                RecordLog.info("[SpiLoader] Found {} SPI: {} with order {}", clazz.getSimpleName(),
+                    spi.getClass().getCanonicalName(), order);
                 if (w == null || order < w.order) {
                     w = new SpiOrderWrapper<>(order, spi);
                 }
             }
             return w == null ? null : w.spi;
         } catch (Throwable t) {
-            RecordLog.warn("[SpiLoader] ERROR: loadHighestPriorityInstance failed", t);
+            RecordLog.error("[SpiLoader] ERROR: loadHighestPriorityInstance failed", t);
             t.printStackTrace();
             return null;
         }
@@ -167,7 +167,7 @@ public final class SpiLoader {
             }
             return list;
         } catch (Throwable t) {
-            RecordLog.warn("[SpiLoader] ERROR: loadInstanceList failed", t);
+            RecordLog.error("[SpiLoader] ERROR: loadInstanceList failed", t);
             t.printStackTrace();
             return new ArrayList<>();
         }
@@ -201,13 +201,13 @@ public final class SpiLoader {
                 RecordLog.info("[SpiLoader] Found {} SPI: {} with order {}", clazz.getSimpleName(),
                     spi.getClass().getCanonicalName(), order);
             }
-            List<T> list = new ArrayList<>();
+            List<T> list = new ArrayList<>(orderWrappers.size());
             for (int i = 0; i < orderWrappers.size(); i++) {
-                list.add(i, orderWrappers.get(i).spi);
+                list.add(orderWrappers.get(i).spi);
             }
             return list;
         } catch (Throwable t) {
-            RecordLog.warn("[SpiLoader] ERROR: loadInstanceListSorted failed", t);
+            RecordLog.error("[SpiLoader] ERROR: loadInstanceListSorted failed", t);
             t.printStackTrace();
             return new ArrayList<>();
         }
@@ -236,13 +236,13 @@ public final class SpiLoader {
                 RecordLog.debug("[SpiLoader] Found {} SPI: {} with order {}", clazz.getSimpleName(),
                         spi.getClass().getCanonicalName(), order);
             }
-            List<T> list = new ArrayList<>();
+            List<T> list = new ArrayList<>(orderWrappers.size());
             for (int i = 0; i < orderWrappers.size(); i++) {
-                list.add(i, orderWrappers.get(i).spi);
+                list.add(orderWrappers.get(i).spi);
             }
             return list;
         } catch (Throwable t) {
-            RecordLog.warn("[SpiLoader] ERROR: loadPrototypeInstanceListSorted failed", t);
+            RecordLog.error("[SpiLoader] ERROR: loadPrototypeInstanceListSorted failed", t);
             t.printStackTrace();
             return new ArrayList<>();
         }
