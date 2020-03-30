@@ -35,7 +35,8 @@ import static com.alibaba.csp.sentinel.util.ConfigUtil.addSeparator;
  */
 public final class SentinelConfigLoader {
 
-    public static final String SENTINEL_CONFIG = "csp.sentinel.config.file";
+    public static final String SENTINEL_CONFIG_ENV_KEY = "CSP_SENTINEL_CONFIG_FILE";
+    public static final String SENTINEL_CONFIG_PROPERTY_KEY = "csp.sentinel.config.file";
 
     private static final String DIR_NAME = "logs" + File.separator + "csp";
     private static final String USER_HOME = "user.home";
@@ -45,13 +46,21 @@ public final class SentinelConfigLoader {
     private static Properties properties = new Properties();
 
     static {
-        load();
+        try {
+            load();
+        } catch (Throwable t) {
+            RecordLog.warn("[SentinelConfigLoader] Failed to initialize configuration items", t);
+        }
     }
 
     private static void load() {
-        String fileName = System.getProperty(SENTINEL_CONFIG);
+        // Order: system property -> system env -> default file (classpath:sentinel.properties) -> legacy path
+        String fileName = System.getProperty(SENTINEL_CONFIG_PROPERTY_KEY);
         if (StringUtil.isBlank(fileName)) {
-            fileName = DEFAULT_SENTINEL_CONFIG_FILE;
+            fileName = System.getenv(SENTINEL_CONFIG_ENV_KEY);
+            if (StringUtil.isBlank(fileName)) {
+                fileName = DEFAULT_SENTINEL_CONFIG_FILE;
+            }
         }
 
         Properties p = ConfigUtil.loadProperties(fileName);
@@ -77,7 +86,7 @@ public final class SentinelConfigLoader {
             String oldConfigValue = properties.getProperty(configKey);
             properties.put(configKey, newConfigValue);
             if (oldConfigValue != null) {
-                RecordLog.info("[SentinelConfigLoader] JVM parameter overrides {0}: {1} -> {2}",
+                RecordLog.info("[SentinelConfigLoader] JVM parameter overrides {}: {} -> {}",
                         configKey, oldConfigValue, newConfigValue);
             }
         }
@@ -87,6 +96,5 @@ public final class SentinelConfigLoader {
     public static Properties getProperties() {
         return properties;
     }
-
 
 }

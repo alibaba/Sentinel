@@ -15,19 +15,14 @@
  */
 package com.alibaba.csp.sentinel.log;
 
-import com.alibaba.csp.sentinel.util.PidUtil;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Properties;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static com.alibaba.csp.sentinel.util.ConfigUtil.addSeparator;
 
 /**
- * <p>The base class for logging.</p>
+ * <p>The base config class for logging.</p>
  *
  * <p>
  * The default log base directory is {@code ${user.home}/logs/csp/}. We can use the {@link #LOG_DIR}
@@ -36,7 +31,8 @@ import static com.alibaba.csp.sentinel.util.ConfigUtil.addSeparator;
  * In this case, {@link #LOG_NAME_USE_PID} property could be configured as "true" to turn on this switch.
  * </p>
  *
- * @author leyou
+ * @author Carpenter Lee
+ * @author Eric Zhao
  */
 public class LogBase {
 
@@ -66,15 +62,15 @@ public class LogBase {
 
     static {
         try {
-            initialize();
+            initializeDefault();
             loadProperties();
         } catch (Throwable t) {
-            System.err.println("[LogBase] FATAL ERROR when initializing log class");
+            System.err.println("[LogBase] FATAL ERROR when initializing logging config");
             t.printStackTrace();
         }
     }
 
-    private static void initialize() {
+    private static void initializeDefault() {
         logNameUsePid = false;
         logOutputType = LOG_OUTPUT_TYPE_FILE;
         logBaseDir = addSeparator(System.getProperty(USER_HOME)) + DIR_NAME + File.separator;
@@ -88,26 +84,25 @@ public class LogBase {
         if (!LOG_OUTPUT_TYPE_FILE.equalsIgnoreCase(logOutputType) && !LOG_OUTPUT_TYPE_CONSOLE.equalsIgnoreCase(logOutputType)) {
             logOutputType = LOG_OUTPUT_TYPE_FILE;
         }
-        System.out.println("INFO: log output type is: " + logOutputType);
+        System.out.println("INFO: Sentinel log output type is: " + logOutputType);
 
         logCharSet = properties.getProperty(LOG_CHARSET) == null ? logCharSet : properties.getProperty(LOG_CHARSET);
-        System.out.println("INFO: log charset is: " + logCharSet);
+        System.out.println("INFO: Sentinel log charset is: " + logCharSet);
 
 
         logBaseDir = properties.getProperty(LOG_DIR) == null ? logBaseDir : properties.getProperty(LOG_DIR);
-        addSeparator(logBaseDir);
+        logBaseDir = addSeparator(logBaseDir);
         File dir = new File(logBaseDir);
         if (!dir.exists()) {
             if (!dir.mkdirs()) {
-                System.err.println("ERROR: create log base dir error: " + logBaseDir);
+                System.err.println("ERROR: create Sentinel log base directory error: " + logBaseDir);
             }
         }
-        System.out.println("INFO: log base dir is: " + logBaseDir);
-
+        System.out.println("INFO: Sentinel log base directory is: " + logBaseDir);
 
         String usePid = properties.getProperty(LOG_NAME_USE_PID);
         logNameUsePid = "true".equalsIgnoreCase(usePid);
-        System.out.println("INFO: log name use pid is: " + logNameUsePid);
+        System.out.println("INFO: Sentinel log name use pid is: " + logNameUsePid);
     }
 
 
@@ -145,67 +140,6 @@ public class LogBase {
      */
     public static String getLogCharset() {
         return logCharSet;
-    }
-
-    protected static void log(Logger logger, Handler handler, Level level, String detail, Object... params) {
-        if (detail == null) {
-            return;
-        }
-        LoggerUtils.disableOtherHandlers(logger, handler);
-        if (params.length == 0) {
-            logger.log(level, detail);
-        } else {
-            logger.log(level, detail, params);
-        }
-    }
-
-    protected static void log(Logger logger, Handler handler, Level level, String detail, Throwable throwable) {
-        if (detail == null) {
-            return;
-        }
-        LoggerUtils.disableOtherHandlers(logger, handler);
-        logger.log(level, detail, throwable);
-    }
-
-
-    protected static Handler makeLogger(String logName, Logger heliumRecordLog) {
-        CspFormatter formatter = new CspFormatter();
-
-        Handler handler = null;
-
-        // Create handler according to logOutputType, set formatter to CspFormatter, set encoding to LOG_CHARSET
-        switch (logOutputType) {
-            case LOG_OUTPUT_TYPE_FILE:
-                String fileName = LogBase.getLogBaseDir() + logName;
-                if (isLogNameUsePid()) {
-                    fileName += ".pid" + PidUtil.getPid();
-                }
-                try {
-                    handler = new DateFileLogHandler(fileName + ".%d", 1024 * 1024 * 200, 4, true);
-                    handler.setFormatter(formatter);
-                    handler.setEncoding(logCharSet);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                break;
-            case LOG_OUTPUT_TYPE_CONSOLE:
-                try {
-                    handler = new ConsoleHandler();
-                    handler.setFormatter(formatter);
-                    handler.setEncoding(logCharSet);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                break;
-            default:
-                break;
-        }
-
-        if (handler != null) {
-            LoggerUtils.disableOtherHandlers(heliumRecordLog, handler);
-        }
-        heliumRecordLog.setLevel(Level.ALL);
-        return handler;
     }
 
 }

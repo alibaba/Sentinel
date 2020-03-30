@@ -280,7 +280,7 @@ public abstract class AbstractSentinelAspectSupport {
                 && returnType.isAssignableFrom(method.getReturnType())
                 && Arrays.equals(parameterTypes, method.getParameterTypes())) {
 
-                RecordLog.info("Resolved method [{0}] in class [{1}]", name, clazz.getCanonicalName());
+                RecordLog.info("Resolved method [{}] in class [{}]", name, clazz.getCanonicalName());
                 return method;
             }
         }
@@ -290,7 +290,7 @@ public abstract class AbstractSentinelAspectSupport {
             return findMethod(mustStatic, superClass, name, returnType, parameterTypes);
         } else {
             String methodType = mustStatic ? " static" : "";
-            RecordLog.warn("Cannot find{0} method [{1}] in class [{2}] with parameters {3}",
+            RecordLog.warn("Cannot find{} method [{}] in class [{}] with parameters {}",
                 methodType, name, clazz.getCanonicalName(), Arrays.toString(parameterTypes));
             return null;
         }

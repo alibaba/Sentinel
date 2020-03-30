@@ -23,6 +23,7 @@ import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.spi.ServiceLoaderUtil;
 import com.alibaba.csp.sentinel.spi.SpiOrder;
 
 /**
@@ -34,12 +35,13 @@ public final class SpiLoader {
     private static final Map<String, ServiceLoader> SERVICE_LOADER_MAP = new ConcurrentHashMap<String, ServiceLoader>();
 
     public static <T> T loadFirstInstance(Class<T> clazz) {
+        AssertUtil.notNull(clazz, "SPI class cannot be null");
         try {
             String key = clazz.getName();
             // Not thread-safe, as it's expected to be resolved in a thread-safe context.
             ServiceLoader<T> serviceLoader = SERVICE_LOADER_MAP.get(key);
             if (serviceLoader == null) {
-                serviceLoader = ServiceLoader.load(clazz);
+                serviceLoader = ServiceLoaderUtil.getServiceLoader(clazz);
                 SERVICE_LOADER_MAP.put(key, serviceLoader);
             }
 
@@ -51,6 +53,41 @@ public final class SpiLoader {
             }
         } catch (Throwable t) {
             RecordLog.warn("[SpiLoader] ERROR: loadFirstInstance failed", t);
+            t.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Load the first-found specific SPI instance (excluding provided default SPI class).
+     * If no other SPI implementation found, then create a default SPI instance.
+     *
+     * @param clazz        class of the SPI interface
+     * @param defaultClass class of the default SPI implementation (if no other implementation found)
+     * @param <T>          SPI type
+     * @return the first specific SPI instance if exists, or else the default SPI instance
+     * @since 1.7.0
+     */
+    public static <T> T loadFirstInstanceOrDefault(Class<T> clazz, Class<? extends T> defaultClass) {
+        AssertUtil.notNull(clazz, "SPI class cannot be null");
+        AssertUtil.notNull(defaultClass, "default SPI class cannot be null");
+        try {
+            String key = clazz.getName();
+            // Not thread-safe, as it's expected to be resolved in a thread-safe context.
+            ServiceLoader<T> serviceLoader = SERVICE_LOADER_MAP.get(key);
+            if (serviceLoader == null) {
+                serviceLoader = ServiceLoaderUtil.getServiceLoader(clazz);
+                SERVICE_LOADER_MAP.put(key, serviceLoader);
+            }
+
+            for (T instance : serviceLoader) {
+                if (instance.getClass() != defaultClass) {
+                    return instance;
+                }
+            }
+            return defaultClass.newInstance();
+        } catch (Throwable t) {
+            RecordLog.warn("[SpiLoader] ERROR: loadFirstInstanceOrDefault failed", t);
             t.printStackTrace();
             return null;
         }
@@ -70,14 +107,14 @@ public final class SpiLoader {
             // Not thread-safe, as it's expected to be resolved in a thread-safe context.
             ServiceLoader<T> serviceLoader = SERVICE_LOADER_MAP.get(key);
             if (serviceLoader == null) {
-                serviceLoader = ServiceLoader.load(clazz);
+                serviceLoader = ServiceLoaderUtil.getServiceLoader(clazz);
                 SERVICE_LOADER_MAP.put(key, serviceLoader);
             }
 
             SpiOrderWrapper<T> w = null;
             for (T spi : serviceLoader) {
                 int order = SpiOrderResolver.resolveOrder(spi);
-                RecordLog.info("[SpiLoader] Found {0} SPI: {1} with order " + order, clazz.getSimpleName(),
+                RecordLog.info("[SpiLoader] Found {} SPI: {} with order " + order, clazz.getSimpleName(),
                     spi.getClass().getCanonicalName());
                 if (w == null || order < w.order) {
                     w = new SpiOrderWrapper<>(order, spi);
@@ -92,6 +129,7 @@ public final class SpiLoader {
     }
 
     /**
+     * Load and sorted SPI instance list.
      * Load the SPI instance list for provided SPI interface.
      *
      * @param clazz class of the SPI
@@ -105,7 +143,7 @@ public final class SpiLoader {
             // Not thread-safe, as it's expected to be resolved in a thread-safe context.
             ServiceLoader<T> serviceLoader = SERVICE_LOADER_MAP.get(key);
             if (serviceLoader == null) {
-                serviceLoader = ServiceLoader.load(clazz);
+                serviceLoader = ServiceLoaderUtil.getServiceLoader(clazz);
                 SERVICE_LOADER_MAP.put(key, serviceLoader);
             }
 
@@ -124,6 +162,8 @@ public final class SpiLoader {
     /**
      * Load the sorted SPI instance list for provided SPI interface.
      *
+     * Note: each call return new instances.
+     *
      * @param clazz class of the SPI
      * @param <T>   SPI type
      * @return sorted SPI instance list
@@ -135,7 +175,7 @@ public final class SpiLoader {
             // Not thread-safe, as it's expected to be resolved in a thread-safe context.
             ServiceLoader<T> serviceLoader = SERVICE_LOADER_MAP.get(key);
             if (serviceLoader == null) {
-                serviceLoader = ServiceLoader.load(clazz);
+                serviceLoader = ServiceLoaderUtil.getServiceLoader(clazz);
                 SERVICE_LOADER_MAP.put(key, serviceLoader);
             }
 
@@ -144,7 +184,7 @@ public final class SpiLoader {
                 int order = SpiOrderResolver.resolveOrder(spi);
                 // Since SPI is lazy initialized in ServiceLoader, we use online sort algorithm here.
                 SpiOrderResolver.insertSorted(orderWrappers, spi, order);
-                RecordLog.info("[SpiLoader] Found {0} SPI: {1} with order " + order, clazz.getSimpleName(),
+                RecordLog.info("[SpiLoader] Found {} SPI: {} with order " + order, clazz.getSimpleName(),
                     spi.getClass().getCanonicalName());
             }
             List<T> list = new ArrayList<>();
@@ -154,6 +194,41 @@ public final class SpiLoader {
             return list;
         } catch (Throwable t) {
             RecordLog.warn("[SpiLoader] ERROR: loadInstanceListSorted failed", t);
+            t.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Load the sorted and different SPI instance list for provided SPI interface.
+     *
+     * Note: each call return new instances.
+     *
+     * @param clazz class of the SPI
+     * @param <T>   SPI type
+     * @return sorted and different SPI instance list
+     * @since 1.7.2
+     */
+    public static <T> List<T> loadDifferentInstanceListSorted(Class<T> clazz) {
+        try {
+            // Not use SERVICE_LOADER_MAP, to make sure the instances loaded are different.
+            ServiceLoader<T> serviceLoader = ServiceLoaderUtil.getServiceLoader(clazz);
+
+            List<SpiOrderWrapper<T>> orderWrappers = new ArrayList<>();
+            for (T spi : serviceLoader) {
+                int order = SpiOrderResolver.resolveOrder(spi);
+                // Since SPI is lazy initialized in ServiceLoader, we use online sort algorithm here.
+                SpiOrderResolver.insertSorted(orderWrappers, spi, order);
+                RecordLog.info("[SpiLoader] Found {0} SPI: {1} with order " + order, clazz.getSimpleName(),
+                        spi.getClass().getCanonicalName());
+            }
+            List<T> list = new ArrayList<>();
+            for (int i = 0; i < orderWrappers.size(); i++) {
+                list.add(i, orderWrappers.get(i).spi);
+            }
+            return list;
+        } catch (Throwable t) {
+            RecordLog.warn("[SpiLoader] ERROR: loadDifferentInstanceListSorted failed", t);
             t.printStackTrace();
             return new ArrayList<>();
         }

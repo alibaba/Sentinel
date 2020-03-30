@@ -30,8 +30,9 @@ See the [中文文档](https://github.com/alibaba/Sentinel/wiki/%E4%BB%8B%E7%BB%
 
 See the [Wiki](https://github.com/alibaba/Sentinel/wiki) for full documentation, examples, blog posts, operational details and other information.
 
-Sentinel provides integration module for various open-source frameworks and libraries
-(e.g. Spring Cloud, Apache Dubbo, gRPC, Spring WebFlux, Reactor). You can refer to [the document](https://github.com/alibaba/Sentinel/wiki/Adapters-to-Popular-Framework) for more information.
+Sentinel provides integration modules for various open-source frameworks
+(e.g. Spring Cloud, Apache Dubbo, gRPC, Spring WebFlux, Reactor) and service mesh.
+You can refer to [the document](https://github.com/alibaba/Sentinel/wiki/Adapters-to-Popular-Framework) for more information.
 
 If you are using Sentinel, please [**leave a comment here**](https://github.com/alibaba/Sentinel/issues/18) to tell us your scenario to make Sentinel better.
 It's also encouraged to add the link of your blog post, tutorial, demo or customized components to [**Awesome Sentinel**](./doc/awesome-sentinel.md).
@@ -46,7 +47,7 @@ Below is a simple demo that guides new users to use Sentinel in just 3 steps. It
 
 ### 1. Add Dependency
 
-**Note:** Sentinel requires Java 7 or later.
+**Note:** Sentinel requires Java 7 or later. Java 8 is required if building the whole project or the dashboard.
 
 If your application is build in Maven, just add the following dependency in `pom.xml`.
 
@@ -55,7 +56,7 @@ If your application is build in Maven, just add the following dependency in `pom
 <dependency>
     <groupId>com.alibaba.csp</groupId>
     <artifactId>sentinel-core</artifactId>
-    <version>1.6.3</version>
+    <version>1.7.1</version>
 </dependency>
 ```
 
@@ -74,6 +75,7 @@ try (Entry entry = SphU.entry("HelloWorld")) {
     // Handle rejected request.
     e.printStackTrace();
 }
+// try-with-resources auto exit
 ```
 
 So far the code modification is done. We also provide [annotation support module](https://github.com/alibaba/Sentinel/blob/master/sentinel-extension/sentinel-annotation-aspectj/README.md) to define resource easier.

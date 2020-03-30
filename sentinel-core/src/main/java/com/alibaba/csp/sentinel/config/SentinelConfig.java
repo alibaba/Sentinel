@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.config;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.AppNameUtil;
 import com.alibaba.csp.sentinel.util.AssertUtil;
+import com.alibaba.csp.sentinel.util.StringUtil;
 
 import java.util.Map;
 import java.util.Properties;
@@ -30,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author leyou
  * @author Eric Zhao
  */
-public class SentinelConfig {
+public final class SentinelConfig {
 
     /**
      * The default application type.
@@ -48,12 +49,14 @@ public class SentinelConfig {
     public static final String TOTAL_METRIC_FILE_COUNT = "csp.sentinel.metric.file.total.count";
     public static final String COLD_FACTOR = "csp.sentinel.flow.cold.factor";
     public static final String STATISTIC_MAX_RT = "csp.sentinel.statistic.max.rt";
+    public static final String SPI_CLASSLOADER = "csp.sentinel.spi.classloader";
 
     static final String DEFAULT_CHARSET = "UTF-8";
     static final long DEFAULT_SINGLE_METRIC_FILE_SIZE = 1024 * 1024 * 50;
     static final int DEFAULT_TOTAL_METRIC_FILE_COUNT = 6;
     static final int DEFAULT_COLD_FACTOR = 3;
-    static final int DEFAULT_STATISTIC_MAX_RT = 4900;
+
+    public static final int DEFAULT_STATISTIC_MAX_RT = 4900;
 
     static {
         try {
@@ -185,13 +188,28 @@ public class SentinelConfig {
         }
     }
 
+    /**
+     * <p>Get the max RT value that Sentinel could accept.</p>
+     * <p>Response time that exceeds {@code statisticMaxRt} will be recorded as this value.
+     * The default value is {@link #DEFAULT_STATISTIC_MAX_RT}.</p>
+     *
+     * @return the max allowed RT value
+     * @since 1.4.1
+     */
     public static int statisticMaxRt() {
+        String v = props.get(STATISTIC_MAX_RT);
         try {
-            return Integer.parseInt(props.get(STATISTIC_MAX_RT));
+            if (StringUtil.isEmpty(v)) {
+                return DEFAULT_STATISTIC_MAX_RT;
+            }
+            return Integer.parseInt(v);
         } catch (Throwable throwable) {
-            RecordLog.warn("[SentinelConfig] Parse statisticMaxRt fail, use default value: "
-                    + DEFAULT_STATISTIC_MAX_RT, throwable);
+            RecordLog.warn("[SentinelConfig] Invalid statisticMaxRt value: {}, using the default value instead: "
+                    + DEFAULT_STATISTIC_MAX_RT, v, throwable);
+            SentinelConfig.setConfig(STATISTIC_MAX_RT, String.valueOf(DEFAULT_STATISTIC_MAX_RT));
             return DEFAULT_STATISTIC_MAX_RT;
         }
     }
+
+    private SentinelConfig() {}
 }

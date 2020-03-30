@@ -129,7 +129,7 @@ public final class ClusterFlowRuleManager {
         }
         synchronized (UPDATE_LOCK) {
             RecordLog.info("[ClusterFlowRuleManager] Registering new property to cluster flow rule manager"
-                + " for namespace <{0}>", namespace);
+                + " for namespace <{}>", namespace);
             registerPropertyInternal(namespace, property);
         }
     }
@@ -180,7 +180,7 @@ public final class ClusterFlowRuleManager {
                 PROPERTY_MAP.remove(namespace);
             }
             RecordLog.info("[ClusterFlowRuleManager] Removing property from cluster flow rule manager"
-                + " for namespace <{0}>", namespace);
+                + " for namespace <{}>", namespace);
         }
     }
 
@@ -380,14 +380,14 @@ public final class ClusterFlowRuleManager {
         @Override
         public synchronized void configUpdate(List<FlowRule> conf) {
             applyClusterFlowRule(conf, namespace);
-            RecordLog.info("[ClusterFlowRuleManager] Cluster flow rules received for namespace <{0}>: {1}",
+            RecordLog.info("[ClusterFlowRuleManager] Cluster flow rules received for namespace <{}>: {}",
                 namespace, FLOW_RULES);
         }
 
         @Override
         public synchronized void configLoad(List<FlowRule> conf) {
             applyClusterFlowRule(conf, namespace);
-            RecordLog.info("[ClusterFlowRuleManager] Cluster flow rules loaded for namespace <{0}>: {1}",
+            RecordLog.info("[ClusterFlowRuleManager] Cluster flow rules loaded for namespace <{}>: {}",
                 namespace, FLOW_RULES);
         }
     }

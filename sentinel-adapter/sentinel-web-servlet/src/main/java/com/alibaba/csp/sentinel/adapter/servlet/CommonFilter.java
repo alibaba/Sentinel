@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.ResourceTypeConstants;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.adapter.servlet.callback.RequestOriginParser;
@@ -39,21 +40,39 @@ import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
-/***
+/**
  * Servlet filter that integrates with Sentinel.
  *
  * @author youji.zj
  * @author Eric Zhao
+ * @author zhaoyuguang
  */
 public class CommonFilter implements Filter {
 
-    private final static String HTTP_METHOD_SPECIFY = "HTTP_METHOD_SPECIFY";
+    /**
+     * Specify whether the URL resource name should contain the HTTP method prefix (e.g. {@code POST:}).
+     */
+    public static final String HTTP_METHOD_SPECIFY = "HTTP_METHOD_SPECIFY";
+    /**
+     * If enabled, use the default context name, or else use the URL path as the context name,
+     * {@link WebServletConfig#WEB_SERVLET_CONTEXT_NAME}. Please pay attention to the number of context (EntranceNode),
+     * which may affect the memory footprint.
+     *
+     * @since 1.7.0
+     */
+    public static final String WEB_CONTEXT_UNIFY = "WEB_CONTEXT_UNIFY";
+
     private final static String COLON = ":";
+
     private boolean httpMethodSpecify = false;
+    private boolean webContextUnify = true;
 
     @Override
     public void init(FilterConfig filterConfig) {
         httpMethodSpecify = Boolean.parseBoolean(filterConfig.getInitParameter(HTTP_METHOD_SPECIFY));
+        if (filterConfig.getInitParameter(WEB_CONTEXT_UNIFY) != null) {
+            webContextUnify = Boolean.parseBoolean(filterConfig.getInitParameter(WEB_CONTEXT_UNIFY));
+        }
     }
 
     @Override
@@ -61,7 +80,6 @@ public class CommonFilter implements Filter {
             throws IOException, ServletException {
         HttpServletRequest sRequest = (HttpServletRequest) request;
         Entry urlEntry = null;
-        Entry httpMethodUrlEntry = null;
 
         try {
             String target = FilterUtil.filterTarget(sRequest);
@@ -78,12 +96,15 @@ public class CommonFilter implements Filter {
             if (!StringUtil.isEmpty(target)) {
                 // Parse the request origin using registered origin parser.
                 String origin = parseOrigin(sRequest);
-                ContextUtil.enter(WebServletConfig.WEB_SERVLET_CONTEXT_NAME, origin);
-                urlEntry = SphU.entry(target, EntryType.IN);
-                // Add method specification if necessary
+                String contextName = webContextUnify ? WebServletConfig.WEB_SERVLET_CONTEXT_NAME : target;
+                ContextUtil.enter(contextName, origin);
+
                 if (httpMethodSpecify) {
-                    httpMethodUrlEntry = SphU.entry(sRequest.getMethod().toUpperCase() + COLON + target,
-                            EntryType.IN);
+                    // Add HTTP method prefix if necessary.
+                    String pathWithHttpMethod = sRequest.getMethod().toUpperCase() + COLON + target;
+                    urlEntry = SphU.entry(pathWithHttpMethod, ResourceTypeConstants.COMMON_WEB, EntryType.IN);
+                } else {
+                    urlEntry = SphU.entry(target, ResourceTypeConstants.COMMON_WEB, EntryType.IN);
                 }
             }
             chain.doFilter(request, response);
@@ -93,12 +114,8 @@ public class CommonFilter implements Filter {
             WebCallbackManager.getUrlBlockHandler().blocked(sRequest, sResponse, e);
         } catch (IOException | ServletException | RuntimeException e2) {
             Tracer.traceEntry(e2, urlEntry);
-            Tracer.traceEntry(e2, httpMethodUrlEntry);
             throw e2;
         } finally {
-            if (httpMethodUrlEntry != null) {
-                httpMethodUrlEntry.exit();
-            }
             if (urlEntry != null) {
                 urlEntry.exit();
             }

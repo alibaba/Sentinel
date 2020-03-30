@@ -1,6 +1,22 @@
+/*
+ * Copyright 1999-2019 Alibaba Group Holding Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.alibaba.csp.sentinel.datasource.spring.cloud.config;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
+
 import org.springframework.cloud.bootstrap.config.PropertySourceLocator;
 import org.springframework.cloud.config.client.ConfigClientProperties;
 import org.springframework.cloud.config.client.ConfigClientStateHolder;
@@ -38,10 +54,11 @@ import static org.springframework.cloud.config.client.ConfigClientProperties.*;
 
 /**
  * <p>
- * {@link SentinelRuleLocator}  which pull sentinel rules from remote server.
- * It retrieve configurations of spring-cloud-config client configurations from  {@link org.springframework.core.env.Environment}
- * Such as spring.cloud.config.uri=uri, spring.cloud.config.profile=profile .... and so on.
- * When pull rules successfully, save to {@link SentinelRuleStorage} for ${@link SpringCloudConfigDataSource} retrieve.
+ * {@link SentinelRuleLocator} which pulls Sentinel rules from remote server.
+ * It retrieves configurations of spring-cloud-config client configurations from
+ * {@link org.springframework.core.env.Environment}, such as {@code spring.cloud.config.uri=uri},
+ * {@code spring.cloud.config.profile=profile}, and so on.
+ * When rules are pulled successfully, it will be stored to {@link SentinelRuleStorage}.
  * </p>
  *
  * @author lianglin
@@ -50,16 +67,15 @@ import static org.springframework.cloud.config.client.ConfigClientProperties.*;
 @Order(0)
 public class SentinelRuleLocator implements PropertySourceLocator {
 
-
     private RestTemplate restTemplate;
     private ConfigClientProperties defaultProperties;
     private org.springframework.core.env.Environment environment;
 
-    public SentinelRuleLocator(ConfigClientProperties defaultProperties, org.springframework.core.env.Environment environment) {
+    public SentinelRuleLocator(ConfigClientProperties defaultProperties,
+                               org.springframework.core.env.Environment environment) {
         this.defaultProperties = defaultProperties;
         this.environment = environment;
     }
-
 
     /**
      * Responsible for pull data from remote server
@@ -70,35 +86,35 @@ public class SentinelRuleLocator implements PropertySourceLocator {
     @Override
     @Retryable(interceptor = "configServerRetryInterceptor")
     public org.springframework.core.env.PropertySource<?> locate(
-            org.springframework.core.env.Environment environment) {
+        org.springframework.core.env.Environment environment) {
         ConfigClientProperties properties = this.defaultProperties.override(environment);
         CompositePropertySource composite = new CompositePropertySource("configService");
         RestTemplate restTemplate = this.restTemplate == null
-                ? getSecureRestTemplate(properties)
-                : this.restTemplate;
+            ? getSecureRestTemplate(properties)
+            : this.restTemplate;
         Exception error = null;
         String errorBody = null;
         try {
-            String[] labels = new String[]{""};
+            String[] labels = new String[] {""};
             if (StringUtils.hasText(properties.getLabel())) {
                 labels = StringUtils
-                        .commaDelimitedListToStringArray(properties.getLabel());
+                    .commaDelimitedListToStringArray(properties.getLabel());
             }
             String state = ConfigClientStateHolder.getState();
             // Try all the labels until one works
             for (String label : labels) {
                 Environment result = getRemoteEnvironment(restTemplate, properties,
-                        label.trim(), state);
+                    label.trim(), state);
                 if (result != null) {
                     log(result);
                     // result.getPropertySources() can be null if using xml
                     if (result.getPropertySources() != null) {
                         for (PropertySource source : result.getPropertySources()) {
                             @SuppressWarnings("unchecked")
-                            Map<String, Object> map = (Map<String, Object>) source
-                                    .getSource();
+                            Map<String, Object> map = (Map<String, Object>)source
+                                .getSource();
                             composite.addPropertySource(
-                                    new MapPropertySource(source.getName(), map));
+                                new MapPropertySource(source.getName(), map));
                         }
                     }
                     SentinelRuleStorage.setRulesSource(composite);
@@ -107,8 +123,7 @@ public class SentinelRuleLocator implements PropertySourceLocator {
             }
         } catch (HttpServerErrorException e) {
             error = e;
-            if (MediaType.APPLICATION_JSON
-                    .includes(e.getResponseHeaders().getContentType())) {
+            if (MediaType.APPLICATION_JSON.includes(e.getResponseHeaders().getContentType())) {
                 errorBody = e.getResponseBodyAsString();
             }
         } catch (Exception e) {
@@ -116,12 +131,12 @@ public class SentinelRuleLocator implements PropertySourceLocator {
         }
         if (properties.isFailFast()) {
             throw new IllegalStateException(
-                    "Could not locate PropertySource and the fail fast property is set, failing",
-                    error);
+                "Could not locate PropertySource and the fail fast property is set, failing",
+                error);
         }
         RecordLog.warn("Could not locate PropertySource: " + (errorBody == null
-                ? error == null ? "label not found" : error.getMessage()
-                : errorBody));
+            ? error == null ? "label not found" : error.getMessage()
+            : errorBody));
         return null;
 
     }
@@ -133,11 +148,10 @@ public class SentinelRuleLocator implements PropertySourceLocator {
     private void log(Environment result) {
 
         RecordLog.info(String.format(
-                "Located environment: name=%s, profiles=%s, label=%s, version=%s, state=%s",
-                result.getName(),
-                result.getProfiles() == null ? ""
-                        : Arrays.asList(result.getProfiles()),
-                result.getLabel(), result.getVersion(), result.getState()));
+            "Located environment: name=%s, profiles=%s, label=%s, version=%s, state=%s",
+            result.getName(),
+            result.getProfiles() == null ? "" : Arrays.asList(result.getProfiles()),
+            result.getLabel(), result.getVersion(), result.getState()));
 
         List<PropertySource> propertySourceList = result.getPropertySources();
         if (propertySourceList != null) {
@@ -145,15 +159,10 @@ public class SentinelRuleLocator implements PropertySourceLocator {
             for (PropertySource propertySource : propertySourceList) {
                 propertyCount += propertySource.getSource().size();
             }
-            RecordLog.info(String.format(
-                    "Environment %s has %d property sources with %d properties.",
-                    result.getName(), result.getPropertySources().size(),
-                    propertyCount));
+            RecordLog.info("[SentinelRuleLocator] Environment {} has {} property sources with {} properties",
+                result.getName(), result.getPropertySources().size(), propertyCount);
         }
-
-
     }
-
 
     private Environment getRemoteEnvironment(RestTemplate restTemplate,
                                              ConfigClientProperties properties, String label, String state) {
@@ -163,17 +172,18 @@ public class SentinelRuleLocator implements PropertySourceLocator {
         String token = properties.getToken();
         int noOfUrls = properties.getUri().length;
         if (noOfUrls > 1) {
-            RecordLog.info("Multiple Config Server Urls found listed.");
+            RecordLog.debug("[SentinelRuleLocator] Multiple Config Server Urls found listed.");
         }
 
-        RecordLog.info("properties = {0},label={1}, state={2}", properties, label, state);
+        RecordLog.info("[SentinelRuleLocator] getRemoteEnvironment, properties={}, label={}, state={}",
+            properties, label, state);
 
-        Object[] args = new String[]{name, profile};
+        Object[] args = new String[] {name, profile};
         if (StringUtils.hasText(label)) {
             if (label.contains("/")) {
                 label = label.replace("/", "(_)");
             }
-            args = new String[]{name, profile, label};
+            args = new String[] {name, profile, label};
             path = path + "/{label}";
         }
         ResponseEntity<Environment> response = null;
@@ -184,7 +194,7 @@ public class SentinelRuleLocator implements PropertySourceLocator {
             String username = credentials.getUsername();
             String password = credentials.getPassword();
 
-            RecordLog.info("Fetching config from server at : " + uri);
+            RecordLog.info("[SentinelRuleLocator] Fetching config from server at: " + uri);
 
             try {
                 HttpHeaders headers = new HttpHeaders();
@@ -196,16 +206,16 @@ public class SentinelRuleLocator implements PropertySourceLocator {
                     headers.add(STATE_HEADER, state);
                 }
 
-                final HttpEntity<Void> entity = new HttpEntity<>((Void) null, headers);
+                final HttpEntity<Void> entity = new HttpEntity<>((Void)null, headers);
                 response = restTemplate.exchange(uri + path, HttpMethod.GET, entity,
-                        Environment.class, args);
+                    Environment.class, args);
             } catch (HttpClientErrorException e) {
                 if (e.getStatusCode() != HttpStatus.NOT_FOUND) {
                     throw e;
                 }
             } catch (ResourceAccessException e) {
-                RecordLog.info("Connect Timeout Exception on Url - " + uri
-                        + ". Will be trying the next url if available");
+                RecordLog.warn("[SentinelRuleLocator] ConnectTimeoutException on url <{}>."
+                    + " Will be trying the next url if available", uri);
                 if (i == noOfUrls - 1) {
                     throw e;
                 } else {
@@ -224,7 +234,6 @@ public class SentinelRuleLocator implements PropertySourceLocator {
         return null;
     }
 
-
     private RestTemplate getSecureRestTemplate(ConfigClientProperties client) {
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         if (client.getRequestReadTimeout() < 0) {
@@ -239,7 +248,7 @@ public class SentinelRuleLocator implements PropertySourceLocator {
         }
         if (!headers.isEmpty()) {
             template.setInterceptors(Arrays.<ClientHttpRequestInterceptor>asList(
-                    new GenericRequestHeaderInterceptor(headers)));
+                new GenericRequestHeaderInterceptor(headers)));
         }
 
         return template;
@@ -251,7 +260,7 @@ public class SentinelRuleLocator implements PropertySourceLocator {
 
         if (password != null && authorization != null) {
             throw new IllegalStateException(
-                    "You must set either 'password' or 'authorization'");
+                "You must set either 'password' or 'authorization'");
         }
 
         if (password != null) {
@@ -267,9 +276,8 @@ public class SentinelRuleLocator implements PropertySourceLocator {
         this.restTemplate = restTemplate;
     }
 
-
     public static class GenericRequestHeaderInterceptor
-            implements ClientHttpRequestInterceptor {
+        implements ClientHttpRequestInterceptor {
 
         private final Map<String, String> headers;
 
