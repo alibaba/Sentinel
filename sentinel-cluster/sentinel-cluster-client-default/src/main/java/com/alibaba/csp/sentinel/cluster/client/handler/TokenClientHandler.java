@@ -76,10 +76,10 @@ public class TokenClientHandler extends ChannelInboundHandlerAdapter {
     private void handlePingResponse(ChannelHandlerContext ctx, ClusterResponse response) {
         if (response.getStatus() == ClusterConstants.RESPONSE_STATUS_OK) {
             int count = (int) response.getData();
-            RecordLog.info("[TokenClientHandler] Client ping OK (target server: {0}, connected count: {1})",
+            RecordLog.info("[TokenClientHandler] Client ping OK (target server: {}, connected count: {})",
                 getRemoteAddress(ctx), count);
         } else {
-            RecordLog.warn("[TokenClientHandler] Client ping failed (target server: {0})", getRemoteAddress(ctx));
+            RecordLog.warn("[TokenClientHandler] Client ping failed (target server: {})", getRemoteAddress(ctx));
         }
     }
 

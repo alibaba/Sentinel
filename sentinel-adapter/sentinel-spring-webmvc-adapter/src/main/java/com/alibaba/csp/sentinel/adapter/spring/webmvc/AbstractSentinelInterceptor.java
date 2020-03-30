@@ -67,7 +67,11 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
             }
             return true;
         } catch (BlockException e) {
-            handleBlockException(request, response, e);
+            try {
+                handleBlockException(request, response, e);
+            } finally {
+                ContextUtil.exit();
+            }
             return false;
         }
     }
@@ -109,7 +113,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
     protected void setEntryInRequest(HttpServletRequest request, String name, Entry entry) {
         Object attrVal = request.getAttribute(name);
         if (attrVal != null) {
-            RecordLog.warn("[{}] The attribute key '{0}' already exists in request, please set `requestAttributeName`",
+            RecordLog.warn("[{}] The attribute key '{}' already exists in request, please set `requestAttributeName`",
                 getClass().getSimpleName(), name);
         } else {
             request.setAttribute(name, entry);
