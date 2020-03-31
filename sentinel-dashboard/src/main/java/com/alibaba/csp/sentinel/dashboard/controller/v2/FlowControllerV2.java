@@ -59,10 +59,10 @@ public class FlowControllerV2 {
     private InMemoryRuleRepositoryAdapter<FlowRuleEntity> repository;
 
     @Autowired
-    @Qualifier("flowRuleDefaultProvider")
+    @Qualifier("flowRuleNacosProvider")
     private DynamicRuleProvider<List<FlowRuleEntity>> ruleProvider;
     @Autowired
-    @Qualifier("flowRuleDefaultPublisher")
+    @Qualifier("flowRuleNacosPublisher")
     private DynamicRulePublisher<List<FlowRuleEntity>> rulePublisher;
 
     @GetMapping("/rules")
@@ -73,7 +73,7 @@ public class FlowControllerV2 {
             return Result.ofFail(-1, "app can't be null or empty");
         }
         try {
-            List<FlowRuleEntity> rules = ruleProvider.getRules(app);
+            List<FlowRuleEntity> rules = ruleProvider.getRules(app+"-flow-rules");
             if (rules != null && !rules.isEmpty()) {
                 for (FlowRuleEntity entity : rules) {
                     entity.setApp(app);

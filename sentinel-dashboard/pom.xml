@@ -102,7 +102,7 @@
         <dependency>
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-datasource-nacos</artifactId>
-            <scope>test</scope>
+            <!--<scope>test</scope>-->
         </dependency>
         <!-- for Apollo rule publisher sample -->
         <dependency>
@@ -135,6 +135,11 @@
         	<artifactId>system-rules</artifactId>
         	<version>1.16.1</version>
         	<scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-annotation-aspectj</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

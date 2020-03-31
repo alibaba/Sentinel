@@ -19,13 +19,24 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import com.alibaba.csp.sentinel.Entry;
+import com.alibaba.csp.sentinel.SphU;
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.alibaba.csp.sentinel.annotation.aspectj.SentinelResourceAspect;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import org.apache.http.HttpException;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.protocol.RequestContent;
 import org.junit.Test;
+import org.springframework.context.annotation.Bean;
 
 public class SentinelApiClientTest {
     @Test
@@ -52,4 +63,35 @@ public class SentinelApiClientTest {
         assertNotNull(request.getFirstHeader("Content-Type"));
         assertEquals("application/x-www-form-urlencoded; charset=UTF-8", request.getFirstHeader("Content-Type").getValue());
     }
+    @Bean
+    public SentinelResourceAspect sentinelResourceAspect() {
+        return new SentinelResourceAspect();
+    }
+    public static void main(String[] args) {
+        initFlowRules();
+        while (true) {
+            Entry entry = null;
+            try {
+                entry = SphU.entry("HelloWorld-resource");
+                System.out.println("hello world");
+            } catch (BlockException e1) {
+                System.out.println("block!");
+            } finally {
+                if (entry != null) {
+                    entry.exit();
+                }
+            }
+        }
+    }
+    private static void initFlowRules(){
+        List<FlowRule> rules = new ArrayList<>();
+        FlowRule rule = new FlowRule();
+        rule.setResource("HelloWorld-resource");
+        rule.setGrade(RuleConstant.FLOW_GRADE_QPS);
+        // Set limit QPS
+        rule.setCount(10);
+        rules.add(rule);
+        FlowRuleManager.loadRules(rules);
+    }
+
 }
