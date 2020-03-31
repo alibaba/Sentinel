@@ -17,6 +17,8 @@ package com.alibaba.csp.sentinel.adapter.gateway.common.rule;
 
 import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
 
+import java.util.List;
+
 /**
  * @author Eric Zhao
  * @since 1.6.0
@@ -44,6 +46,10 @@ public class GatewayParamFlowItem {
      * Matching strategy for item value.
      */
     private int matchStrategy = SentinelGatewayConstants.PARAM_MATCH_STRATEGY_EXACT;
+    /**
+     * only required for {@link SentinelGatewayConstants#PARAM_PARSE_COMPOSITE_PARAM}
+     */
+    private List<GatewayParamFlowItem> paramItems;
 
     public Integer getIndex() {
         return index;
@@ -99,5 +105,13 @@ public class GatewayParamFlowItem {
             ", pattern='" + pattern + '\'' +
             ", matchStrategy=" + matchStrategy +
             '}';
+    }
+
+    public List<GatewayParamFlowItem> getParamItems() {
+        return paramItems;
+    }
+
+    public void setParamItems(List<GatewayParamFlowItem> paramItems) {
+        this.paramItems = paramItems;
     }
 }

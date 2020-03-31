@@ -15,8 +15,7 @@
  */
 package com.alibaba.csp.sentinel.adapter.gateway.common.param;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
@@ -74,7 +73,7 @@ public class GatewayParamParser<T> {
         for (GatewayFlowRule rule : gatewayRules) {
             GatewayParamFlowItem paramItem = rule.getParamItem();
             int idx = paramItem.getIndex();
-            String param = parseInternal(paramItem, request);
+            Object param = parseInternal(paramItem, request);
             arr[idx] = param;
         }
         if (hasNonParamRule) {
@@ -83,7 +82,7 @@ public class GatewayParamParser<T> {
         return arr;
     }
 
-    private String parseInternal(GatewayParamFlowItem item, T request) {
+    private Object parseInternal(GatewayParamFlowItem item, T request) {
         switch (item.getParseStrategy()) {
             case SentinelGatewayConstants.PARAM_PARSE_STRATEGY_CLIENT_IP:
                 return parseClientIp(item, request);
@@ -95,6 +94,8 @@ public class GatewayParamParser<T> {
                 return parseUrlParameter(item, request);
             case SentinelGatewayConstants.PARAM_PARSE_STRATEGY_COOKIE:
                 return parseCookie(item, request);
+            case SentinelGatewayConstants.PARAM_PARSE_COMPOSITE_PARAM:
+                return parseCompositeParam(item, request);
             default:
                 return null;
         }
@@ -151,6 +152,24 @@ public class GatewayParamParser<T> {
         }
         // Match value according to regex pattern or exact mode.
         return parseWithMatchStrategyInternal(item.getMatchStrategy(), param, pattern);
+    }
+
+    private Object parseCompositeParam(GatewayParamFlowItem item, T request) {
+        List<GatewayParamFlowItem>  paramItems = item.getParamItems();
+        if (paramItems == null || paramItems.isEmpty()) {
+            // todo return null or GATEWAY_NOT_MATCH_PARAM?
+            return SentinelGatewayConstants.GATEWAY_NOT_MATCH_PARAM;
+        }
+        List<String> list = new ArrayList<>(paramItems.size());
+        for (GatewayParamFlowItem paramItem : paramItems) {
+            Object param = parseInternal(paramItem, request);
+            if (param == null || SentinelGatewayConstants.GATEWAY_NOT_MATCH_PARAM.equals(param)) {
+                // todo return null or GATEWAY_NOT_MATCH_PARAM?
+                return SentinelGatewayConstants.GATEWAY_NOT_MATCH_PARAM;
+            }
+
+        }
+        return null;
     }
 
     private String parseWithMatchStrategyInternal(int matchStrategy, String value, String pattern) {
