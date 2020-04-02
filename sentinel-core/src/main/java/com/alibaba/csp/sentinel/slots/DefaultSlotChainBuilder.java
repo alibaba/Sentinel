@@ -21,7 +21,6 @@ import com.alibaba.csp.sentinel.slotchain.DefaultProcessorSlotChain;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlotChain;
 import com.alibaba.csp.sentinel.slotchain.SlotChainBuilder;
-import com.alibaba.csp.sentinel.spi.SpiOrder;
 import com.alibaba.csp.sentinel.util.SpiLoader;
 
 import java.util.List;
@@ -33,21 +32,6 @@ import java.util.List;
  * @author leyou
  */
 public class DefaultSlotChainBuilder implements SlotChainBuilder {
-
-    static {
-        List<ProcessorSlot> sortedSlotList = SpiLoader.loadPrototypeInstanceListSorted(ProcessorSlot.class);
-        for (ProcessorSlot slot : sortedSlotList) {
-            String slotClassCanonicalName = slot.getClass().getCanonicalName();
-            int order;
-            if (slot.getClass().isAnnotationPresent(SpiOrder.class)) {
-                SpiOrder spiOrder = slot.getClass().getAnnotation(SpiOrder.class);
-                order = spiOrder.value();
-            } else {
-                order = SpiOrder.LOWEST_PRECEDENCE;
-            }
-            RecordLog.info("[DefaultSlotChainBuilder]Found ProcessorSlot {} with order {}", slotClassCanonicalName, order);
-        }
-    }
 
     @Override
     public ProcessorSlotChain build() {
