@@ -45,7 +45,7 @@ import static com.alibaba.csp.sentinel.transport.util.WritableDataSourceRegistry
  */
 @CommandMapping(name = "setRules", desc = "modify the rules, accept param: type={ruleType}&data={ruleJson}")
 public class ModifyRulesCommandHandler implements CommandHandler<String> {
-    private static final int FASTJSON_MINIMAL_VER = 0x01021200;
+    private static final int FASTJSON_MINIMAL_VER = 0x01020C00;
 
     @Override
     public CommandResponse<String> handle(CommandRequest request) {
