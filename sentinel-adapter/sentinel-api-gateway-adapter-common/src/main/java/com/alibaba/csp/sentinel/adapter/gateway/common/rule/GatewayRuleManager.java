@@ -255,6 +255,19 @@ public final class GatewayRuleManager {
         if (item.getParseStrategy() < 0) {
             return false;
         }
+
+        if (SentinelGatewayConstants.PARAM_PARSE_COMPOSITE_PARAM == item.getParseStrategy()) {
+            if (item instanceof GatewayCompositeParamFlowItem) {
+                List<GatewayParamFlowItem> paramItems = GatewayCompositeParamFlowItem.class.cast(item).getParamItems();
+                for (GatewayParamFlowItem paramItem : paramItems) {
+                    if (!isValidParamItem(paramItem)) {
+                        return false;
+                    }
+                }
+            } else {
+                return false;
+            }
+        }
         // Check required field name for item types.
         if (FIELD_REQUIRED_SET.contains(item.getParseStrategy()) && StringUtil.isBlank(item.getFieldName())) {
             return false;

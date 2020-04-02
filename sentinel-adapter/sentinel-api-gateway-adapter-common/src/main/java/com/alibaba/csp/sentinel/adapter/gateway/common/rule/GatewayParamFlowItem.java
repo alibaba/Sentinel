@@ -46,10 +46,6 @@ public class GatewayParamFlowItem {
      * Matching strategy for item value.
      */
     private int matchStrategy = SentinelGatewayConstants.PARAM_MATCH_STRATEGY_EXACT;
-    /**
-     * only required for {@link SentinelGatewayConstants#PARAM_PARSE_COMPOSITE_PARAM}
-     */
-    private List<GatewayParamFlowItem> paramItems;
 
     public Integer getIndex() {
         return index;
@@ -107,11 +103,5 @@ public class GatewayParamFlowItem {
             '}';
     }
 
-    public List<GatewayParamFlowItem> getParamItems() {
-        return paramItems;
-    }
 
-    public void setParamItems(List<GatewayParamFlowItem> paramItems) {
-        this.paramItems = paramItems;
-    }
 }

@@ -19,9 +19,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
-import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayFlowRule;
-import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayParamFlowItem;
-import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayRuleManager;
+import com.alibaba.csp.sentinel.adapter.gateway.common.rule.*;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.util.function.Predicate;
@@ -155,21 +153,23 @@ public class GatewayParamParser<T> {
     }
 
     private Object parseCompositeParam(GatewayParamFlowItem item, T request) {
-        List<GatewayParamFlowItem>  paramItems = item.getParamItems();
+        List<GatewayParamFlowItem> paramItems = ((GatewayCompositeParamFlowItem) item).getParamItems();
         if (paramItems == null || paramItems.isEmpty()) {
             // todo return null or GATEWAY_NOT_MATCH_PARAM?
             return SentinelGatewayConstants.GATEWAY_NOT_MATCH_PARAM;
         }
-        List<String> list = new ArrayList<>(paramItems.size());
+        if (paramItems.size() == 1) {
+            return parseInternal(paramItems.get(0), request);
+        }
+        CompositeParam result = new CompositeParam();
         for (GatewayParamFlowItem paramItem : paramItems) {
             Object param = parseInternal(paramItem, request);
             if (param == null || SentinelGatewayConstants.GATEWAY_NOT_MATCH_PARAM.equals(param)) {
-                // todo return null or GATEWAY_NOT_MATCH_PARAM?
                 return SentinelGatewayConstants.GATEWAY_NOT_MATCH_PARAM;
             }
-
+            result.add(paramItem.getParseStrategy(), paramItem.getFieldName(), param.toString());
         }
-        return null;
+        return result;
     }
 
     private String parseWithMatchStrategyInternal(int matchStrategy, String value, String pattern) {
