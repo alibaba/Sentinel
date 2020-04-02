@@ -62,7 +62,7 @@ public class SpiLoaderTest {
         ProcessorSlot processorSlot = SpiLoader.loadHighestPriorityInstance(ProcessorSlot.class);
         assertNotNull(processorSlot);
 
-        // NodeSelectorSlot is highest order with @SpiOrder(-9000), among all slots
+        // NodeSelectorSlot is highest order with @SpiOrder(-10000), among all slots
         assertTrue(processorSlot instanceof NodeSelectorSlot);
 
         ProcessorSlot processorSlot2 = SpiLoader.loadHighestPriorityInstance(ProcessorSlot.class);
