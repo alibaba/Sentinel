@@ -37,6 +37,20 @@ public final class VersionUtil {
 
     private VersionUtil() {}
     
+    private static int parseInt(String str) {
+        if (str == null || str.length() < 1) {
+            return 0;
+        }
+        int num = 0;
+        for (int i = 0; i < str.length(); i ++) {
+            char ch = str.charAt(i);
+            if (ch < '0' || ch > '9') {
+                break;
+            }
+            num = num * 10 + (ch - '0');
+        }
+        return num;
+    }
 
     /**
      * Convert version in string like x.y.z or x.y.z.b into number<br />
@@ -74,13 +88,9 @@ public final class VersionUtil {
                 // Illegal format
                 return 0;
             }
-            try {
-                versions[index] = new Integer(segment);
-                if (versions[index] < 0 || versions[index] > 255) {
-                    // Out of range [0, 255]
-                    return 0;
-                }
-            } catch (NumberFormatException e) {
+            versions[index] = parseInt(segment);
+            if (versions[index] < 0 || versions[index] > 255) {
+                // Out of range [0, 255]
                 return 0;
             }
             cur = pos + 1;

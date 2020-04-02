@@ -37,11 +37,13 @@ public class VersionUtilTest {
         assertEquals(0x0102ff04, VersionUtil.fromVersionString("1.2.255.4"));
         assertEquals(0xffffffff, VersionUtil.fromVersionString("255.255.255.255"));
         assertEquals(0, VersionUtil.fromVersionString("1.255.256.0"));
-        assertEquals(0, VersionUtil.fromVersionString("1.2."));
+        assertEquals(0x01020000, VersionUtil.fromVersionString("1.2."));
         assertEquals(0x01000000, VersionUtil.fromVersionString("1"));
         assertEquals(0x01020000, VersionUtil.fromVersionString("1.2"));
         assertEquals(0, VersionUtil.fromVersionString("test"));
-        assertEquals(0, VersionUtil.fromVersionString("1.2.3-"));
-        assertEquals(0, VersionUtil.fromVersionString("1.2.3b"));
+        assertEquals(0x01020300, VersionUtil.fromVersionString("1.2.3-"));
+        assertEquals(0x01020300, VersionUtil.fromVersionString("1.2.3b"));
+        assertEquals(0x01023c00, VersionUtil.fromVersionString("1.2.60.sec9"));
+        assertEquals(0x01023c00, VersionUtil.fromVersionString("1.2.60-internal"));
     }
 }
