@@ -27,11 +27,13 @@ import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowChecker;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowException;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParameterMetricStorage;
+import com.alibaba.csp.sentinel.spi.SpiOrder;
 
 /**
  * @author Eric Zhao
  * @since 1.6.1
  */
+@SpiOrder(-4000)
 public class GatewayFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override

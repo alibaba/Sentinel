@@ -16,6 +16,8 @@
 package com.alibaba.csp.sentinel.slots.system;
 
 import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.util.concurrent.TimeUnit;
 
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.log.RecordLog;
@@ -33,6 +35,9 @@ public class SystemStatusListener implements Runnable {
 
     volatile String reason = StringUtil.EMPTY;
 
+    volatile long processCpuTime = 0;
+    volatile long processUpTime = 0;
+
     public double getSystemAverageLoad() {
         return currentLoad;
     }
@@ -46,6 +51,7 @@ public class SystemStatusListener implements Runnable {
         try {
             OperatingSystemMXBean osBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
             currentLoad = osBean.getSystemLoadAverage();
+
             /*
              * Java Doc copied from {@link OperatingSystemMXBean#getSystemCpuLoad()}:</br>
              * Returns the "recent cpu usage" for the whole system. This value is a double in the [0.0,1.0] interval.
@@ -54,7 +60,21 @@ public class SystemStatusListener implements Runnable {
              * observed. All values between 0.0 and 1.0 are possible depending of the activities going on in the
              * system. If the system recent cpu usage is not available, the method returns a negative value.
              */
-            currentCpuUsage = osBean.getSystemCpuLoad();
+            double systemCpuUsage = osBean.getSystemCpuLoad();
+
+            // calculate process cpu usage to support application running in container environment
+            RuntimeMXBean runtimeBean = ManagementFactory.getPlatformMXBean(RuntimeMXBean.class);
+            long newProcessCpuTime = osBean.getProcessCpuTime();
+            long newProcessUpTime = runtimeBean.getUptime();
+            int cpuCores = osBean.getAvailableProcessors();
+            long processCpuTimeDiffInMs = TimeUnit.NANOSECONDS
+                    .toMillis(newProcessCpuTime - processCpuTime);
+            long processUpTimeDiffInMs = newProcessUpTime - processUpTime;
+            double processCpuUsage = (double) processCpuTimeDiffInMs / processUpTimeDiffInMs / cpuCores;
+            processCpuTime = newProcessCpuTime;
+            processUpTime = newProcessUpTime;
+
+            currentCpuUsage = Math.max(processCpuUsage, systemCpuUsage);
 
             if (currentLoad > SystemRuleManager.getSystemLoadThreshold()) {
                 writeSystemStatusLog();

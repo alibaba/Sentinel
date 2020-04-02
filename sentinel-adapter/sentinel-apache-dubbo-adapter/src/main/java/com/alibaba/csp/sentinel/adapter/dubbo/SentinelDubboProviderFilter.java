@@ -31,6 +31,8 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
+
 /**
  * <p>Apache Dubbo service provider filter that enables integration with Sentinel. Auto activated by default.</p>
  * <p>Note: this only works for Apache Dubbo 2.7.x or above version.</p>
@@ -43,7 +45,7 @@ import org.apache.dubbo.rpc.RpcException;
  * @author Carpenter Lee
  * @author Eric Zhao
  */
-@Activate(group = "provider")
+@Activate(group = PROVIDER)
 public class SentinelDubboProviderFilter extends BaseSentinelDubboFilter {
 
     public SentinelDubboProviderFilter() {
