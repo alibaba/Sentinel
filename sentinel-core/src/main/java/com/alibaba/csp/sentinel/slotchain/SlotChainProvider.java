@@ -17,7 +17,7 @@ package com.alibaba.csp.sentinel.slotchain;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.DefaultSlotChainBuilder;
-import com.alibaba.csp.sentinel.util.SpiLoader;
+import com.alibaba.csp.sentinel.spi.SpiLoader;
 
 /**
  * A provider for creating slot chains via resolved slot chain builder SPI.
@@ -40,18 +40,16 @@ public final class SlotChainProvider {
             return slotChainBuilder.build();
         }
 
-        // Resolve the slot chain builder SPI.
-        slotChainBuilder = SpiLoader.loadFirstInstanceOrDefault(SlotChainBuilder.class, DefaultSlotChainBuilder.class);
-
-        if (slotChainBuilder == null) {
+        SlotChainProvider.slotChainBuilder = SpiLoader.of(SlotChainBuilder.class).loadFirstInstanceOrDefault(DefaultSlotChainBuilder.class);
+        if (SlotChainProvider.slotChainBuilder == null) {
             // Should not go through here.
             RecordLog.warn("[SlotChainProvider] Wrong state when resolving slot chain builder, using default");
-            slotChainBuilder = new DefaultSlotChainBuilder();
+            SlotChainProvider.slotChainBuilder = new DefaultSlotChainBuilder();
         } else {
             RecordLog.info("[SlotChainProvider] Global slot chain builder resolved: "
-                + slotChainBuilder.getClass().getCanonicalName());
+                + SlotChainProvider.slotChainBuilder.getClass().getCanonicalName());
         }
-        return slotChainBuilder.build();
+        return SlotChainProvider.slotChainBuilder.build();
     }
 
     private SlotChainProvider() {}

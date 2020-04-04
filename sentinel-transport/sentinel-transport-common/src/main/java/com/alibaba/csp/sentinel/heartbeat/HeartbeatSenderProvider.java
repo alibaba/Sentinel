@@ -17,7 +17,7 @@ package com.alibaba.csp.sentinel.heartbeat;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.transport.HeartbeatSender;
-import com.alibaba.csp.sentinel.util.SpiLoader;
+import com.alibaba.csp.sentinel.spi.SpiLoader;
 
 /**
  * @author Eric Zhao
@@ -32,7 +32,7 @@ public final class HeartbeatSenderProvider {
     }
 
     private static void resolveInstance() {
-        HeartbeatSender resolved = SpiLoader.loadHighestPriorityInstance(HeartbeatSender.class);
+        HeartbeatSender resolved = SpiLoader.of(HeartbeatSender.class).loadHighestPriorityInstance();
         if (resolved == null) {
             RecordLog.warn("[HeartbeatSenderProvider] WARN: No existing HeartbeatSender found");
         } else {

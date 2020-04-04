@@ -13,21 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.slots;
+package com.alibaba.csp.sentinel.spi;
 
-import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowSlot;
+import java.lang.annotation.*;
 
 /**
- * @author Eric Zhao
- * @since 0.2.0
+ * Annotation for Provider class of SPI.
  *
- * @deprecated since 1.7.2, we can use @Spi(order = -3000) to adjust the order of {@link ParamFlowSlot},
- * this class is reserved for compatibility with older versions.
- *
- * @see ParamFlowSlot
- * @see DefaultSlotChainBuilder
+ * @see SpiLoader
+ * @author cdfive
  */
-@Deprecated
-public class HotParamSlotChainBuilder extends DefaultSlotChainBuilder {
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE})
+@Documented
+public @interface Spi {
 
+    /**
+     * Alias name of Provider class
+     */
+    String value() default "";
+
+    /**
+     * Whether create singleton instance
+     */
+    boolean singleton() default true;
+
+    /**
+     * Order priority of Provider class
+     */
+    int order() default 0;
+
+    int ORDER_HIGHEST = Integer.MIN_VALUE;
+
+    int ORDER_LOWEST = Integer.MAX_VALUE;
 }

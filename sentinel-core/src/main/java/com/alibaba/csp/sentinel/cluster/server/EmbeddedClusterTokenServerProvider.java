@@ -16,7 +16,7 @@
 package com.alibaba.csp.sentinel.cluster.server;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.util.SpiLoader;
+import com.alibaba.csp.sentinel.spi.SpiLoader;
 
 /**
  * @author Eric Zhao
@@ -31,7 +31,7 @@ public final class EmbeddedClusterTokenServerProvider {
     }
 
     private static void resolveInstance() {
-        EmbeddedClusterTokenServer s = SpiLoader.loadFirstInstance(EmbeddedClusterTokenServer.class);
+        EmbeddedClusterTokenServer s = SpiLoader.of(EmbeddedClusterTokenServer.class).loadFirstInstance();
         if (s == null) {
             RecordLog.warn("[EmbeddedClusterTokenServerProvider] No existing cluster token server, cluster server mode will not be activated");
         } else {

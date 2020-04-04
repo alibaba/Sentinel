@@ -1,0 +1,4 @@
+# One
+com.alibaba.csp.sentinel.spi.TestOneProvider
+com.alibaba.csp.sentinel.spi.TestTwoProvider # Two
+com.alibaba.csp.sentinel.spi.TestThreeProvider

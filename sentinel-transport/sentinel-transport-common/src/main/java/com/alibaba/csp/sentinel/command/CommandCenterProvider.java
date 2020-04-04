@@ -17,7 +17,7 @@ package com.alibaba.csp.sentinel.command;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.transport.CommandCenter;
-import com.alibaba.csp.sentinel.util.SpiLoader;
+import com.alibaba.csp.sentinel.spi.SpiLoader;
 
 /**
  * Provider for a universal {@link CommandCenter} instance.
@@ -34,7 +34,7 @@ public final class CommandCenterProvider {
     }
 
     private static void resolveInstance() {
-        CommandCenter resolveCommandCenter = SpiLoader.loadHighestPriorityInstance(CommandCenter.class);
+        CommandCenter resolveCommandCenter = SpiLoader.of(CommandCenter.class).loadHighestPriorityInstance();
 
         if (resolveCommandCenter == null) {
             RecordLog.warn("[CommandCenterProvider] WARN: No existing CommandCenter found");
