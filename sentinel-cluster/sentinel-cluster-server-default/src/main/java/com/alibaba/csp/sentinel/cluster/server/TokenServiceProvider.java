@@ -16,7 +16,6 @@
 package com.alibaba.csp.sentinel.cluster.server;
 
 import com.alibaba.csp.sentinel.cluster.TokenService;
-import com.alibaba.csp.sentinel.cluster.flow.DefaultTokenService;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.spi.SpiLoader;
 
@@ -37,7 +36,7 @@ public final class TokenServiceProvider {
     }
 
     private static void resolveTokenServiceSpi() {
-        service = SpiLoader.of(TokenService.class).loadFirstInstanceOrDefault(DefaultTokenService.class);
+        service = SpiLoader.of(TokenService.class).loadFirstInstanceOrDefault();
         if (service != null) {
             RecordLog.info("[TokenServiceProvider] Global token service resolved: "
                 + service.getClass().getCanonicalName());

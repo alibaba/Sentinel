@@ -40,7 +40,7 @@ public final class SlotChainProvider {
             return slotChainBuilder.build();
         }
 
-        SlotChainProvider.slotChainBuilder = SpiLoader.of(SlotChainBuilder.class).loadFirstInstanceOrDefault(DefaultSlotChainBuilder.class);
+        SlotChainProvider.slotChainBuilder = SpiLoader.of(SlotChainBuilder.class).loadFirstInstanceOrDefault();
         if (SlotChainProvider.slotChainBuilder == null) {
             // Should not go through here.
             RecordLog.warn("[SlotChainProvider] Wrong state when resolving slot chain builder, using default");

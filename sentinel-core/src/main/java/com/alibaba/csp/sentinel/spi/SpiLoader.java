@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.spi;
 
 import com.alibaba.csp.sentinel.config.SentinelConfig;
+import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
@@ -57,8 +58,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Provide common functions, such as:
  * Load all Provider instance unsorted/sorted list.
  * Load highest/lowest order priority instance.
- * Load first-found isntance.
- * Load instance by aliasname or Class.
+ * Load first-found or default instance.
+ * Load instance by aliasname or provider class.
  * </p>
  *
  * @author Eric Zhao
@@ -92,7 +93,10 @@ public final class SpiLoader<S> {
     private final ConcurrentHashMap<String, S> singletonMap = new ConcurrentHashMap<>();
 
     // Whether this SpiLoader has beend loaded, that is, loaded the Provider configuration file
-    private AtomicBoolean loaded = new AtomicBoolean(false);
+    private final AtomicBoolean loaded = new AtomicBoolean(false);
+
+    // Default provider class
+    private Class<? extends S> defaultClass = null;
 
     // The Service class, must be interface or abstract class
     private Class<S> service;
@@ -144,10 +148,12 @@ public final class SpiLoader<S> {
         SPI_LOADER_MAP.clear();
     }
 
+    // Private access
     private SpiLoader(Class<S> service) {
         this.service = service;
     }
 
+    // Private access
     private SpiLoader() {
 
     }
@@ -224,31 +230,36 @@ public final class SpiLoader<S> {
     }
 
     /**
-     * Load the first-found Provider instance, except defaultClass type
-     * If not found, return defaultClass type instance
+     * Load the first-found Provider instance,if not found, return default Provider instance
      *
-     * @param defaultClass default class
      * @return Provider instance
      */
-    public S loadFirstInstanceOrDefault(Class<? extends S> defaultClass) {
-        AssertUtil.notNull(defaultClass, "default SPI class cannot be null");
-
+    public S loadFirstInstanceOrDefault() {
         load();
 
         for (Class<? extends S> clazz : classList) {
-            if (clazz != defaultClass) {
+            if (defaultClass == null || clazz != defaultClass) {
                 return createInstance(clazz);
             }
         }
 
-        try {
-            return defaultClass.newInstance();
-        } catch (Throwable t) {
-            fail(defaultClass.getName() + " could not be instantiated", t);
+        return loadDefaultInstance();
+    }
+
+    /**
+     * Load default Provider instance
+     * Provider class with @Spi(isDefault = true)
+     *
+     * @return default Provider instance
+     */
+    public S loadDefaultInstance() {
+        load();
+
+        if (defaultClass == null) {
+            return null;
         }
 
-        // This should never happen
-        throw new Error();
+        return createInstance(defaultClass);
     }
 
     /**
@@ -301,6 +312,7 @@ public final class SpiLoader<S> {
         sortedClassList.clear();
         classMap.clear();
         singletonMap.clear();
+        defaultClass = null;
         loaded.set(false);
     }
 
@@ -360,7 +372,7 @@ public final class SpiLoader<S> {
 
                     Class<S> clazz = null;
                     try {
-                        clazz = (Class<S>) Class.forName(line);
+                        clazz = (Class<S>) Class.forName(line, false, classLoader != null ? classLoader : ClassLoader.getSystemClassLoader());
                     } catch (ClassNotFoundException e) {
                         fail("class " + line + " not found", e);
                     }
@@ -370,16 +382,27 @@ public final class SpiLoader<S> {
                     }
 
                     classList.add(clazz);
-
                     Spi spi = clazz.getAnnotation(Spi.class);
                     String aliasName = spi == null || "".equals(spi.value()) ? clazz.getName() : spi.value();
-
                     if (classMap.containsKey(aliasName)) {
                         Class<? extends S> existClass = classMap.get(aliasName);
                         fail("Found repeat aliasname for " + clazz.getName() + " and "
                                 + existClass.getName() + ",SPI file name=" + fullFileName);
                     }
                     classMap.put(aliasName, clazz);
+
+                    if (spi != null && spi.isDefault()) {
+                        if (defaultClass != null) {
+                            fail("Found more than one default Provider,SPI filename=" + fullFileName);
+                        }
+                        defaultClass = clazz;
+                    }
+
+                    RecordLog.info("[SpiLoader]Found SPI,Service={},Provider={},aliasname={},isSingleton={},isDefault={},order={}",
+                        service.getName(), line, aliasName
+                            , spi == null ? true : spi.isSingleton()
+                            , spi == null ? false : spi.isDefault()
+                            , spi == null ? 0 : spi.order());
                 }
 
                 sortedClassList.addAll(classList);
@@ -437,7 +460,7 @@ public final class SpiLoader<S> {
         Spi spi = clazz.getAnnotation(Spi.class);
         boolean singleton = true;
         if (spi != null) {
-            singleton = spi.singleton();
+            singleton = spi.isSingleton();
         }
         return createInstance(clazz, singleton);
     }
@@ -494,6 +517,7 @@ public final class SpiLoader<S> {
      * @param msg error message
      */
     private void fail(String msg) {
+        RecordLog.error(msg);
         throw new SpiLoaderException("[" + service.getName() + "]" + msg);
     }
 
@@ -503,6 +527,7 @@ public final class SpiLoader<S> {
      * @param msg error message
      */
     private void fail(String msg, Throwable e) {
+        RecordLog.error(msg, e);
         throw new SpiLoaderException("[" + service.getName() + "]" + msg, e);
     }
 }

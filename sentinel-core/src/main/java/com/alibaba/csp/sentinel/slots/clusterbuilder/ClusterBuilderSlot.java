@@ -46,7 +46,7 @@ import com.alibaba.csp.sentinel.spi.Spi;
  *
  * @author jialiang.linjl
  */
-@Spi(singleton = false, order = Constants.ORDER_CLUSTER_BUILDER_SLOT)
+@Spi(isSingleton = false, order = Constants.ORDER_CLUSTER_BUILDER_SLOT)
 public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     /**

@@ -36,7 +36,12 @@ public @interface Spi {
     /**
      * Whether create singleton instance
      */
-    boolean singleton() default true;
+    boolean isSingleton() default true;
+
+    /**
+     * Whether is the default Provider
+     */
+    boolean isDefault() default false;
 
     /**
      * Order priority of Provider class

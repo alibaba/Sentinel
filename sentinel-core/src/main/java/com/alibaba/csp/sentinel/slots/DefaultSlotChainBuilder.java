@@ -21,6 +21,7 @@ import com.alibaba.csp.sentinel.slotchain.DefaultProcessorSlotChain;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlotChain;
 import com.alibaba.csp.sentinel.slotchain.SlotChainBuilder;
+import com.alibaba.csp.sentinel.spi.Spi;
 import com.alibaba.csp.sentinel.spi.SpiLoader;
 
 import java.util.List;
@@ -31,6 +32,7 @@ import java.util.List;
  * @author qinan.qn
  * @author leyou
  */
+@Spi(isDefault = true)
 public class DefaultSlotChainBuilder implements SlotChainBuilder {
 
     @Override

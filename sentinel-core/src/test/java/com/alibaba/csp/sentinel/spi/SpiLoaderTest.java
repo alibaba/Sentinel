@@ -137,7 +137,7 @@ public class SpiLoaderTest {
             }
 
             if (!found) {
-                fail("Should found");
+                fail("Should found and not go through here");
             }
         }
     }
@@ -197,9 +197,16 @@ public class SpiLoaderTest {
 
     @Test
     public void testLoadFirstInstanceOrDefault() {
-        SlotChainBuilder chainBuilder = SpiLoader.of(SlotChainBuilder.class).loadFirstInstanceOrDefault(DefaultSlotChainBuilder.class);
-        assertNotNull(chainBuilder);
-        assertTrue(chainBuilder instanceof DefaultSlotChainBuilder);
+        SlotChainBuilder slotChainBuilder = SpiLoader.of(SlotChainBuilder.class).loadFirstInstanceOrDefault();
+        assertNotNull(slotChainBuilder);
+        assertTrue(slotChainBuilder instanceof DefaultSlotChainBuilder);
+    }
+
+    @Test
+    public void testLoadDefaultInstance() {
+        SlotChainBuilder slotChainBuilder = SpiLoader.of(SlotChainBuilder.class).loadDefaultInstance();
+        assertNotNull(slotChainBuilder);
+        assertTrue(slotChainBuilder instanceof DefaultSlotChainBuilder);
     }
 
     @Test
@@ -230,7 +237,7 @@ public class SpiLoaderTest {
     public void test_TestNoSpiFileInterface() {
         try {
             SpiLoader.of(TestNoSpiFileInterface.class).loadInstanceList();
-            fail("Should not go here");
+            fail("Should not go through here");
         } catch (Exception e) {
             assertTrue(e instanceof SpiLoaderException);
             assertThat(e.getMessage(), allOf(containsString("No SPI file")
@@ -249,20 +256,25 @@ public class SpiLoaderTest {
         SpiLoader<TestInterface> loader = SpiLoader.of(TestInterface.class);
 
         List<TestInterface> providers = loader.loadInstanceList();
-        assertTrue(providers.size() == 3);
+        assertTrue(providers.size() == 4);
         assertTrue(providers.get(0) instanceof TestOneProvider);
         assertTrue(providers.get(1) instanceof TestTwoProvider);
         assertTrue(providers.get(2) instanceof TestThreeProvider);
+        assertTrue(providers.get(3) instanceof TestFiveProvider);
 
         List<TestInterface> sortedProviders = loader.loadInstanceListSorted();
-        assertEquals(sortedProviders.size(), 3);
+        assertEquals(sortedProviders.size(), 4);
         assertTrue(sortedProviders.get(0) instanceof TestThreeProvider);
-        assertTrue(sortedProviders.get(1) instanceof TestTwoProvider);
-        assertTrue(sortedProviders.get(2) instanceof TestOneProvider);
+        assertTrue(sortedProviders.get(1) instanceof TestFiveProvider);
+        assertTrue(sortedProviders.get(2) instanceof TestTwoProvider);
+        assertTrue(sortedProviders.get(3) instanceof TestOneProvider);
 
-        assertSame(providers.get(0), sortedProviders.get(2));
-        assertSame(providers.get(1), sortedProviders.get(1));
-        assertNotSame(providers.get(2), sortedProviders.get(2));
+        assertSame(providers.get(0), sortedProviders.get(3));
+        assertSame(providers.get(1), sortedProviders.get(2));
+        assertNotSame(providers.get(2), sortedProviders.get(0));
+        assertSame(providers.get(3), sortedProviders.get(1));
+
+        assertTrue(loader.loadDefaultInstance() instanceof TestFiveProvider);
 
         assertTrue(loader.loadHighestPriorityInstance() instanceof TestThreeProvider);
         assertTrue(loader.loadLowestPriorityInstance() instanceof TestOneProvider);

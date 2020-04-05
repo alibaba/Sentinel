@@ -124,7 +124,7 @@ import java.util.Map;
  * @see EntranceNode
  * @see ContextUtil
  */
-@Spi(singleton = false, order = Constants.ORDER_NODE_SELECTOR_SLOT)
+@Spi(isSingleton = false, order = Constants.ORDER_NODE_SELECTOR_SLOT)
 public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
 
     /**

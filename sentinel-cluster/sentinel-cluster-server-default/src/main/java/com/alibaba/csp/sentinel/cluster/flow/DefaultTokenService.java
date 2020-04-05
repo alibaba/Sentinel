@@ -24,6 +24,7 @@ import com.alibaba.csp.sentinel.cluster.flow.rule.ClusterFlowRuleManager;
 import com.alibaba.csp.sentinel.cluster.flow.rule.ClusterParamFlowRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
+import com.alibaba.csp.sentinel.spi.Spi;
 
 /**
  * Default implementation for cluster {@link TokenService}.
@@ -31,6 +32,7 @@ import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
  * @author Eric Zhao
  * @since 1.4.0
  */
+@Spi(isDefault = true)
 public class DefaultTokenService implements TokenService {
 
     @Override
