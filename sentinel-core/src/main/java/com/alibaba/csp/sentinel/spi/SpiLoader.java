@@ -325,22 +325,25 @@ public final class SpiLoader<S> {
         }
 
         String fullFileName = SPI_FILE_PREFIX + service.getName();
-        Enumeration<URL> urls = null;
         ClassLoader classLoader;
         if (SentinelConfig.shouldUseContextClassloader()) {
             classLoader = Thread.currentThread().getContextClassLoader();
         } else {
             classLoader = service.getClassLoader();
         }
-
+        if (classLoader == null) {
+            classLoader = ClassLoader.getSystemClassLoader();
+        }
+        Enumeration<URL> urls = null;
         try {
-            urls = classLoader != null ? classLoader.getResources(fullFileName) : ClassLoader.getSystemResources(fullFileName);
+            urls = classLoader.getResources(fullFileName);
         } catch (IOException e) {
             fail("Error locating SPI file,fileName=" + fullFileName + ",classloader=" + classLoader, e);
         }
 
         if (urls == null || !urls.hasMoreElements()) {
-            fail("No SPI file,fileName=" + fullFileName + ",classloader=" + classLoader);
+            RecordLog.warn("No SPI file,fileName=" + fullFileName + ",classloader=" + classLoader);
+            return;
         }
 
         while (urls.hasMoreElements()) {
@@ -372,7 +375,7 @@ public final class SpiLoader<S> {
 
                     Class<S> clazz = null;
                     try {
-                        clazz = (Class<S>) Class.forName(line, false, classLoader != null ? classLoader : ClassLoader.getSystemClassLoader());
+                        clazz = (Class<S>) Class.forName(line, false, classLoader);
                     } catch (ClassNotFoundException e) {
                         fail("class " + line + " not found", e);
                     }

@@ -235,14 +235,19 @@ public class SpiLoaderTest {
      */
     @Test
     public void test_TestNoSpiFileInterface() {
-        try {
-            SpiLoader.of(TestNoSpiFileInterface.class).loadInstanceList();
-            fail("Should not go through here");
-        } catch (Exception e) {
-            assertTrue(e instanceof SpiLoaderException);
-            assertThat(e.getMessage(), allOf(containsString("No SPI file")
-                , containsString("META-INF/services/com.alibaba.csp.sentinel.spi.TestNoSpiFileInterface")));
-        }
+        SpiLoader<TestNoSpiFileInterface> loader = SpiLoader.of(TestNoSpiFileInterface.class);
+
+        List<TestNoSpiFileInterface> providers = loader.loadInstanceList();
+        assertTrue(providers.size() == 0);
+
+        List<TestNoSpiFileInterface> sortedProviders = loader.loadInstanceListSorted();
+        assertTrue(sortedProviders.size() == 0);
+
+        TestNoSpiFileInterface firstProvider = loader.loadFirstInstance();
+        assertNull(firstProvider);
+
+        TestNoSpiFileInterface defaultProvider = loader.loadDefaultInstance();
+        assertNull(defaultProvider);
     }
 
     @Test
