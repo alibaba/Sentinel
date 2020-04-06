@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <p>SPI is short for Service Provider Interface.</p>
  *
  * <p>
- * Service is represented by a single type, that is, a single interface or abstract class.
+ * Service is represented by a single type, that is, a single interface or an abstract class.
  * Provider is implementations of Service, that is, some classes which implement the interface or extends the abstract class.
  * </p>
  *
@@ -64,9 +64,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @author Eric Zhao
  * @author cdfive
- * @see Spi
- * @see java.util.ServiceLoader
  * @since 1.4.0
+ * @see com.alibaba.csp.sentinel.spi.Spi
+ * @see java.util.ServiceLoader
  */
 public final class SpiLoader<S> {
 
@@ -117,8 +117,13 @@ public final class SpiLoader<S> {
         String className = service.getName();
         SpiLoader<T> spiLoader = SPI_LOADER_MAP.get(className);
         if (spiLoader == null) {
-            SPI_LOADER_MAP.putIfAbsent(className, new SpiLoader<>(service));
-            spiLoader = SPI_LOADER_MAP.get(className);
+            synchronized (SpiLoader.class) {
+                spiLoader = SPI_LOADER_MAP.get(className);
+                if (spiLoader == null) {
+                    SPI_LOADER_MAP.putIfAbsent(className, new SpiLoader<>(service));
+                    spiLoader = SPI_LOADER_MAP.get(className);
+                }
+            }
         }
 
         return spiLoader;
@@ -338,11 +343,11 @@ public final class SpiLoader<S> {
         try {
             urls = classLoader.getResources(fullFileName);
         } catch (IOException e) {
-            fail("Error locating SPI file,fileName=" + fullFileName + ",classloader=" + classLoader, e);
+            fail("Error locating SPI file,filename=" + fullFileName + ",classloader=" + classLoader, e);
         }
 
         if (urls == null || !urls.hasMoreElements()) {
-            RecordLog.warn("No SPI file,fileName=" + fullFileName + ",classloader=" + classLoader);
+            RecordLog.warn("No SPI file,filename=" + fullFileName + ",classloader=" + classLoader);
             return;
         }
 
@@ -381,7 +386,7 @@ public final class SpiLoader<S> {
                     }
 
                     if (!service.isAssignableFrom(clazz)) {
-                        fail("class " + clazz.getName() + "is not subtype of " + service.getName() + ",SPI file name=" + fullFileName);
+                        fail("class " + clazz.getName() + "is not subtype of " + service.getName() + ",SPI filename=" + fullFileName);
                     }
 
                     classList.add(clazz);
@@ -390,7 +395,7 @@ public final class SpiLoader<S> {
                     if (classMap.containsKey(aliasName)) {
                         Class<? extends S> existClass = classMap.get(aliasName);
                         fail("Found repeat aliasname for " + clazz.getName() + " and "
-                                + existClass.getName() + ",SPI file name=" + fullFileName);
+                                + existClass.getName() + ",SPI filename=" + fullFileName);
                     }
                     classMap.put(aliasName, clazz);
 
