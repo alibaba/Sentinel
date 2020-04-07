@@ -16,10 +16,10 @@ mvn clean package -P prod
 
 ## Rule configuration
 
-Currently Sentinel RLS token server supports dynamic rule configuration via the yaml file.
+Sentinel RLS token server supports dynamic rule configuration via the yaml file.
 The file may provide rules for one *domain* (defined in Envoy's conf file).
 In Envoy, one rate limit request might carry multiple *rate limit descriptors*
-(which will be generated from [Envoy rate limit actions](https://www.envoyproxy.io/docs/envoy/latest/api-v2/api/v2/route/route.proto#envoy-api-msg-route-ratelimit)).
+(which will be generated from [Envoy rate limit actions](https://www.envoyproxy.io/docs/envoy/v1.12.1/api-v2/api/v2/route/route.proto#envoy-api-msg-route-ratelimit)).
 One rate limit descriptor may have multiple entries (key-value pair).
 We may set different threshold for each rate limit descriptors.
 
