@@ -44,9 +44,17 @@ public class SpiLoaderTest {
         ProcessorSlot processorSlot = SpiLoader.loadFirstInstance(ProcessorSlot.class);
         assertNotNull(processorSlot);
 
+        ProcessorSlot processorSlot2 = SpiLoader.loadFirstInstance(ProcessorSlot.class);
+        // As SERVICE_LOADER_MAP in SpiLoader cached the instance, so they're same instances
+        assertSame(processorSlot, processorSlot2);
+
         SlotChainBuilder slotChainBuilder = SpiLoader.loadFirstInstance(SlotChainBuilder.class);
         assertNotNull(slotChainBuilder);
         assertTrue(slotChainBuilder instanceof DefaultSlotChainBuilder);
+
+        SlotChainBuilder slotChainBuilder2 = SpiLoader.loadFirstInstance(SlotChainBuilder.class);
+        // As SERVICE_LOADER_MAP in SpiLoader cached the instance, so they're same instances
+        assertSame(slotChainBuilder, slotChainBuilder2);
     }
 
     @Test
@@ -54,8 +62,12 @@ public class SpiLoaderTest {
         ProcessorSlot processorSlot = SpiLoader.loadHighestPriorityInstance(ProcessorSlot.class);
         assertNotNull(processorSlot);
 
-        // NodeSelectorSlot is highest order with @SpiOrder(-9000), among all slots
+        // NodeSelectorSlot is highest order with @SpiOrder(-10000), among all slots
         assertTrue(processorSlot instanceof NodeSelectorSlot);
+
+        ProcessorSlot processorSlot2 = SpiLoader.loadHighestPriorityInstance(ProcessorSlot.class);
+        // As SERVICE_LOADER_MAP in SpiLoader cached the instance, so they're same instances
+        assertSame(processorSlot, processorSlot2);
     }
 
     @Test
@@ -66,14 +78,15 @@ public class SpiLoaderTest {
         // Total 8 default slot in sentinel-core
         assertEquals(8, slots.size());
 
-        // Store the first slot of slots
+        // Get the first slot of slots
         ProcessorSlot firstSlot = slots.get(0);
 
         // Call loadInstanceList again
         List<ProcessorSlot> slots2 = SpiLoader.loadInstanceList(ProcessorSlot.class);
+        // Note: the return list are different, and the item instances in list are same
         assertNotSame(slots, slots2);
 
-        // Store the first slot of slots
+        // Get the first slot of slots2
         ProcessorSlot firstSlot2 = slots2.get(0);
 
         // As SERVICE_LOADER_MAP in SpiLoader cached the instance, so they're same instances
@@ -100,6 +113,7 @@ public class SpiLoaderTest {
         assertTrue(sortedSlots.get(index++) instanceof DegradeSlot);
 
         // Verify each call return different instances
+        // Note: the return list are different, and the item instances in list are same
         List<ProcessorSlot> sortedSlots2 = SpiLoader.loadInstanceListSorted(ProcessorSlot.class);
         assertNotSame(sortedSlots, sortedSlots2);
         assertEquals(sortedSlots.size(), sortedSlots2.size());
@@ -107,11 +121,14 @@ public class SpiLoaderTest {
             ProcessorSlot slot = sortedSlots.get(i);
             ProcessorSlot slot2 = sortedSlots2.get(i);
             assertEquals(slot.getClass(), slot2.getClass());
+
+            // As SERVICE_LOADER_MAP in SpiLoader cached the instance, so they're same instances
+            assertSame(slot, slot2);
         }
     }
 
     @Test
-    public void testLoadDifferentInstanceListSorted() {
+    public void testLoadPrototypeInstanceListSorted() {
         List<ProcessorSlot> sortedSlots = SpiLoader.loadInstanceListSorted(ProcessorSlot.class);
         assertNotNull(sortedSlots);
 
@@ -129,8 +146,8 @@ public class SpiLoaderTest {
         assertTrue(sortedSlots.get(index++) instanceof FlowSlot);
         assertTrue(sortedSlots.get(index++) instanceof DegradeSlot);
 
-        // Verify each call return different instances
-        List<ProcessorSlot> sortedSlots2 = SpiLoader.loadDifferentInstanceListSorted(ProcessorSlot.class);
+        // Verify each call return new instances
+        List<ProcessorSlot> sortedSlots2 = SpiLoader.loadPrototypeInstanceListSorted(ProcessorSlot.class);
         assertNotSame(sortedSlots, sortedSlots2);
         assertEquals(sortedSlots.size(), sortedSlots2.size());
         for (int i = 0; i < sortedSlots.size(); i++) {
