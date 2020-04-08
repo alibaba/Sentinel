@@ -1,5 +1,6 @@
 package com.alibaba.csp.sentinel.dashboard.rule;
 
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
@@ -14,7 +15,7 @@ import java.util.List;
  * @author cdfive
  */
 //@Component
-public class DefaultRuleDecoder<T> implements Converter<String, List<T>> {
+public class DefaultRuleDecoder<T extends RuleEntity> implements Converter<String, List<T>> {
 
     public DefaultRuleDecoder() {
         Class clazz = (Class) ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments()[0];

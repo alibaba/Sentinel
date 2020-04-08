@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 /**
  * @author cdfive
  */
-@ConditionalOnBean(NacosConfig.class)
-@Component("nacosRulePublisher")
+//@ConditionalOnBean(NacosConfig.class)
+//@Component("nacosRulePublisher")
 public class NacosRulePublisher<T extends RuleEntity> extends AbstractRulePublisher<T> {
 
     @Autowired
