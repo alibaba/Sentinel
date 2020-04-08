@@ -42,15 +42,15 @@ import com.alibaba.csp.sentinel.log.RecordLog;
  * <li>every metric file is accompanied with an index file, which file name is {@code ${metricFileName}.idx}</li>
  * </ol>
  *
- * @author leyou
+ * @author Carpenter Lee
  */
 public class MetricWriter {
 
     private static final String CHARSET = SentinelConfig.charset();
-    public static final String METRIC_BASE_DIR = RecordLog.getLogBaseDir();
+    public static final String METRIC_BASE_DIR = LogBase.getLogBaseDir();
     /**
-     * Note: {@link MetricFileNameComparator}'s implementation relays on the metric file name,
-     * we should be careful when changing the metric file name.
+     * Note: {@link MetricFileNameComparator}'s implementation relies on the metric file name,
+     * so we should be careful when changing the metric file name.
      *
      * @see #formMetricFileName(String, int)
      */

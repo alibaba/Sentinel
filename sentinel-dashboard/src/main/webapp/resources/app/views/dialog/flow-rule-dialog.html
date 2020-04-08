@@ -78,7 +78,7 @@
             </div>
           </div>
 
-          <div ng-if="!flowRuleDialog.showAdvanceButton">
+          <div ng-if="!flowRuleDialog.showAdvanceButton && !currentRule.clusterMode">
             <div class="form-group">
               <label class="col-sm-2 control-label" title="调用关系流控模式">流控模式</label>
               <div class="col-sm-9">
@@ -103,7 +103,7 @@
               </div>
             </div>
           </div>
-          <div ng-if="currentRule.grade==1 && !flowRuleDialog.showAdvanceButton">
+          <div ng-if="currentRule.grade==1 && !flowRuleDialog.showAdvanceButton && !currentRule.clusterMode">
             <div class="form-group">
               <label class="col-sm-2 control-label">流控效果</label>
               <div class="col-sm-9">
@@ -130,7 +130,7 @@
               </div>
             </div>
           </div>
-          <div class="form-group text-center">
+          <div class="form-group text-center" ng-if="!currentRule.clusterMode">
             <a ng-click="onOpenAdvanceClick()" ng-if="flowRuleDialog.showAdvanceButton" style="cursor: pointer;">高级选项</a>
             <a ng-click="onCloseAdvanceClick()" ng-if="!flowRuleDialog.showAdvanceButton" style="cursor: pointer;">关闭高级选项</a>
           </div>

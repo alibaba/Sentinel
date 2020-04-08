@@ -25,7 +25,7 @@ import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
-import com.alibaba.csp.sentinel.log.CommandCenterLog;
+import com.alibaba.csp.sentinel.transport.log.CommandCenterLog;
 import com.alibaba.csp.sentinel.transport.command.codec.CodecRegistry;
 import com.alibaba.csp.sentinel.transport.command.codec.Encoder;
 import com.alibaba.csp.sentinel.transport.util.HttpCommandUtils;

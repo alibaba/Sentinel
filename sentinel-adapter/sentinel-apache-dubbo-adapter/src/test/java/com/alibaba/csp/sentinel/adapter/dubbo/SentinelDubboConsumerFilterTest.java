@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.BaseTest;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig;
+import com.alibaba.csp.sentinel.adapter.dubbo.fallback.DefaultDubboFallback;
 import com.alibaba.csp.sentinel.adapter.dubbo.fallback.DubboFallback;
 import com.alibaba.csp.sentinel.adapter.dubbo.fallback.DubboFallbackRegistry;
 import com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService;
@@ -82,6 +83,7 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
     @After
     public void cleanUp() {
         cleanUpAll();
+        DubboFallbackRegistry.setConsumerFallback(new DefaultDubboFallback());
     }
 
     public void initFlowRule(String resource) {
@@ -225,7 +227,7 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
     }
 
     public Result responseBack(Result result) {
-        filter.listener().onResponse(result, invoker, invocation);
+        filter.listener().onMessage(result, invoker, invocation);
         return result;
     }
 
@@ -263,7 +265,7 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
         filter.invoke(invoker, invocation);
         verify(invoker).invoke(invocation);
 
-        filter.listener().onResponse(result, invoker, invocation);
+        filter.listener().onMessage(result, invoker, invocation);
         Context context = ContextUtil.getContext();
         assertNull(context);
     }

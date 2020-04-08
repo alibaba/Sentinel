@@ -22,11 +22,7 @@ import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.ListenableFilter;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.*;
 
 /**
  * Base Class of the {@link SentinelDubboProviderFilter} and {@link SentinelDubboConsumerFilter}.
@@ -41,8 +37,16 @@ public abstract class BaseSentinelDubboFilter extends ListenableFilter {
 
     static class SentinelDubboListener implements Listener {
 
-        @Override
         public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+            onSuccess(appResponse, invoker);
+        }
+
+        //for compatible dubbo 2.7.5 rename onResponse to onMessage
+        public void onMessage(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+            onSuccess(appResponse, invoker);
+        }
+
+        private void onSuccess(Result appResponse, Invoker<?> invoker) {
             if (DubboConfig.getDubboBizExceptionTraceEnabled()) {
                 traceAndExit(appResponse.getException(), invoker.getUrl());
             } else {
