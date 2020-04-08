@@ -32,7 +32,7 @@ public abstract class AbstractRuleProvider<T extends RuleEntity> implements Dyna
     private RuleKeyBuilder<T> ruleKeyBuilder;
 
     @Override
-    public List<T> getRules(String app) throws Exception{
+    public List<T> getRules(String app) throws Exception {
         if (StringUtil.isBlank(app)) {
             return new ArrayList<>();
         }

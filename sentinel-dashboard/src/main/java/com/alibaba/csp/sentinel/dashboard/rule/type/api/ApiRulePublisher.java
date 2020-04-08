@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.dashboard.rule.type.api;
 
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
 import com.alibaba.csp.sentinel.dashboard.rule.AbstractRulePublisher;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
@@ -32,20 +33,26 @@ import java.util.List;
  */
 //@ConditionalOnMissingBean(DynamicRulePublisher.class)
 //@Component("flowRuleDefaultPublisher")
-public class ApiRulePublisher<T extends RuleEntity> extends AbstractRulePublisher<T> {
+//public class ApiRulePublisher<T extends RuleEntity> extends AbstractRulePublisher<T> {
+public class ApiRulePublisher extends AbstractRulePublisher<FlowRuleEntity> {
 
     @Autowired
     private SentinelApiClient sentinelApiClient;
 
     @Override
-    public void publish(String app, String ip, Integer port, List<T> rules) throws Exception {
-//        sentinelApiClient.setFlowRuleOfMachine(app, ip, port, rules);
+    public void publish(String app, String ip, Integer port, List<FlowRuleEntity> rules) throws Exception {
+        sentinelApiClient.setFlowRuleOfMachine(app, ip, port, rules);
     }
 
     @Override
     protected void publishRules(String app, String ip, Integer port, String rules) throws Exception {
-
+        // Empty
     }
+
+//    @Override
+//    protected void publishRules(String app, String ip, Integer port, String rules) throws Exception {
+//        sentinelApiClient.setFlowRuleOfMachine(app, ip, port, rules);
+//    }
 
 //    @Override
 //    public void publish(String app, String ip, Integer port, List<T> rules) throws Exception {

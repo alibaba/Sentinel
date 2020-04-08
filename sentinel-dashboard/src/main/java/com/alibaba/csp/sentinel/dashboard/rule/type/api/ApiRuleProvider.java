@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.dashboard.rule.type.api;
 
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
 import com.alibaba.csp.sentinel.dashboard.rule.AbstractRuleProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,8 @@ import java.util.List;
 //@ConditionalOnMissingBean(DynamicRuleProvider.class)
 //@ConditionalOnMissingBean
 //@Component("flowRuleApiProvider")
-public class ApiRuleProvider<T extends RuleEntity> extends AbstractRuleProvider<T> {
+//public class ApiRuleProvider<T extends RuleEntity> extends AbstractRuleProvider<T> {
+public class ApiRuleProvider extends AbstractRuleProvider<FlowRuleEntity> {
 
     public ApiRuleProvider() {
         System.out.println("ApiRuleProvider");
@@ -39,13 +41,18 @@ public class ApiRuleProvider<T extends RuleEntity> extends AbstractRuleProvider<
     @Autowired
     private SentinelApiClient sentinelApiClient;
 
-//    @Override
-//    public List<T> getRules(String app, String ip, Integer port) throws Exception {
+    @Override
+    public List<FlowRuleEntity> getRules(String app, String ip, Integer port) throws Exception {
 //        return super.getRules(app, ip, port);
-//    }
+
+        return sentinelApiClient.fetchFlowRuleOfMachine(app, ip, port);
+    }
 
     @Override
     protected String fetchRules(String app, String ip, Integer port) throws Exception {
+//        return null;
+//        return sentinelApiClient.fetchFlowRuleOfMachine(app, ip, port);
+
         return null;
     }
 

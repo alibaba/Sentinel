@@ -13,7 +13,8 @@ import org.springframework.stereotype.Component;
 //@ConditionalOnMissingBean
 @ConditionalOnBean(ApiConfig.class)
 @Component
-public class ApiFlowRuleProvider extends ApiRuleProvider<FlowRuleEntity> {
+//public class ApiFlowRuleProvider extends ApiRuleProvider<FlowRuleEntity> {
+public class ApiFlowRuleProvider extends ApiRuleProvider {
     public ApiFlowRuleProvider() {
         System.out.println("ApiFlowRuleProvider");
     }

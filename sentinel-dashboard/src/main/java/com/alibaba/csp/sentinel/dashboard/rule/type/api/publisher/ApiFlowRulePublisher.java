@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
  */
 @ConditionalOnBean(ApiConfig.class)
 @Component
-public class ApiFlowRulePublisher extends ApiRulePublisher<FlowRuleEntity> {
+//public class ApiFlowRulePublisher extends ApiRulePublisher<FlowRuleEntity> {
+public class ApiFlowRulePublisher extends ApiRulePublisher {
 
 }
