@@ -11,13 +11,15 @@
 ## Introduction
 
 As distributed systems become increasingly popular, the reliability between services is becoming more important than ever before.
-Sentinel takes "flow" as breakthrough point, and works on multiple fields including **flow control**, **circuit breaking** and **system adaptive protection**, to guarantee reliability of microservices.
+Sentinel takes "flow" as breakthrough point, and works on multiple fields including **flow control**,
+**traffic shaping**, **circuit breaking** and **system adaptive protection**, to guarantee reliability and resilience for microservices.
 
 Sentinel has the following features:
 
 - **Rich applicable scenarios**: Sentinel has been wildly used in Alibaba, and has covered almost all the core-scenarios in Double-11 (11.11) Shopping Festivals in the past 10 years, such as “Second Kill” which needs to limit burst flow traffic to meet the system capacity, message peak clipping and valley fills, circuit breaking for unreliable downstream services, cluster flow control, etc.
 - **Real-time monitoring**: Sentinel also provides real-time monitoring ability. You can see the runtime information of a single machine in real-time, and the aggregated runtime info of a cluster with less than 500 nodes.
 - **Widespread open-source ecosystem**: Sentinel provides out-of-box integrations with commonly-used frameworks and libraries such as Spring Cloud, Dubbo and gRPC. You can easily use Sentinel by simply add the adapter dependency to your services.
+- **Polyglot support**: Sentinel has provided native support for Java, [Go](https://github.com/alibaba/sentinel-golang) and [C++](https://github.com/alibaba/sentinel-cpp).
 - **Various SPI extensions**: Sentinel provides easy-to-use SPI extension interfaces that allow you to quickly customize your logic, for example, custom rule management, adapting data sources, and so on.
 
 Features overview:
@@ -47,16 +49,16 @@ Below is a simple demo that guides new users to use Sentinel in just 3 steps. It
 
 ### 1. Add Dependency
 
-**Note:** Sentinel requires Java 7 or later. Java 8 is required if building the whole project or the dashboard.
+**Note:** Sentinel Core requires Java 7 or later.
 
-If your application is build in Maven, just add the following dependency in `pom.xml`.
+If your're using Maven, just add the following dependency in `pom.xml`.
 
 ```xml
 <!-- replace here with the latest version -->
 <dependency>
     <groupId>com.alibaba.csp</groupId>
     <artifactId>sentinel-core</artifactId>
-    <version>1.7.1</version>
+    <version>1.7.2</version>
 </dependency>
 ```
 
@@ -78,7 +80,7 @@ try (Entry entry = SphU.entry("HelloWorld")) {
 // try-with-resources auto exit
 ```
 
-So far the code modification is done. We also provide [annotation support module](https://github.com/alibaba/Sentinel/blob/master/sentinel-extension/sentinel-annotation-aspectj/README.md) to define resource easier.
+So far the code modification is done. We've also provided [annotation support module](https://github.com/alibaba/Sentinel/blob/master/sentinel-extension/sentinel-annotation-aspectj/README.md) to define resource easier.
 
 ### 3. Define Rules
 
@@ -124,6 +126,8 @@ Samples can be found in the [sentinel-demo](https://github.com/alibaba/Sentinel/
 
 ### 5. Start Dashboard
 
+> Note: Java 8 is required for building or running the dashboard.
+
 Sentinel also provides a simple dashboard application, on which you can monitor the clients and configure the rules in real time.
 
 ![dashboard](https://user-images.githubusercontent.com/9434884/55449295-84866d80-55fd-11e9-94e5-d3441f4a2b63.png)
@@ -139,11 +143,11 @@ All the information can be found in [logs](https://github.com/alibaba/Sentinel/w
 
 For bug report, questions and discussions please submit [GitHub Issues](https://github.com/alibaba/sentinel/issues).
 
-Contact us: sentinel@linux.alibaba.com
+Contact us via [Gitter](https://gitter.im/alibaba/Sentinel) or [Email](mailto:sentinel@linux.alibaba.com).
 
 ## Contributing
 
-Contributions are always welcomed! Please see [CONTRIBUTING](./CONTRIBUTING.md) for detailed guidelines.
+Contributions are always welcomed! Please refer to [CONTRIBUTING](./CONTRIBUTING.md) for detailed guidelines.
 
 You can start with the issues labeled with [`good first issue`](https://github.com/alibaba/Sentinel/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
 
@@ -155,7 +159,8 @@ And thanks for all [contributors](https://github.com/alibaba/Sentinel/graphs/con
 
 ## Who is using
 
-These are only part of the companies using Sentinel, for reference only. If you are using Sentinel, please [add your company here](https://github.com/alibaba/Sentinel/issues/18) to tell us your scenario to make Sentinel better :)
+These are only part of the companies using Sentinel, for reference only.
+If you are using Sentinel, please [add your company here](https://github.com/alibaba/Sentinel/issues/18) to tell us your scenario to make Sentinel better :)
 
 ![Alibaba Group](https://docs.alibabagroup.com/assets2/images/en/global/logo_header.png)
 ![Taiping Renshou](http://www.cntaiping.com/tplresource/cms/www/taiping/img/home_new/tp_logo_img.png)
