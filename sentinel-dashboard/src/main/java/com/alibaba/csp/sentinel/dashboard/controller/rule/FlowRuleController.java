@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.controller;
+package com.alibaba.csp.sentinel.dashboard.controller.rule;
 
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
@@ -51,7 +51,7 @@ import java.util.Optional;
  */
 @RestController
 @RequestMapping(value = "/flow")
-public class FlowController extends BaseRuleController<FlowRuleEntity> {
+public class FlowRuleController extends BaseRuleController<FlowRuleEntity> {
 
 //    private final Logger logger = LoggerFactory.getLogger(FlowController.class);
 
@@ -168,7 +168,6 @@ public class FlowController extends BaseRuleController<FlowRuleEntity> {
         if (reqVo == null) {
             return Result.ofFail(-1, "invalid body");
         }
-
         if (StringUtil.isBlank(reqVo.getApp())) {
             return Result.ofFail(-1, "app can't be null or empty");
         }
@@ -332,23 +331,23 @@ public class FlowController extends BaseRuleController<FlowRuleEntity> {
 
 //        FlowRuleEntity entity = getRule(reqVo, id);
 
-        FlowRuleEntity updatedRuleEntity = updateRule(reqVo, id, toUpdateRuleEntity -> {
-            toUpdateRuleEntity.setLimitApp(reqVo.getLimitApp());
-            toUpdateRuleEntity.setGrade(reqVo.getGrade());
-            toUpdateRuleEntity.setCount(reqVo.getCount());
-            toUpdateRuleEntity.setStrategy(reqVo.getStrategy());
-            toUpdateRuleEntity.setControlBehavior(reqVo.getControlBehavior());
-            toUpdateRuleEntity.setRefResource(reqVo.getRefResource());
-            toUpdateRuleEntity.setWarmUpPeriodSec(reqVo.getWarmUpPeriodSec());
-            toUpdateRuleEntity.setMaxQueueingTimeMs(reqVo.getMaxQueueingTimeMs());
-            toUpdateRuleEntity.setClusterMode(reqVo.getClusterMode());
+        FlowRuleEntity updatedEntity = updateRule(reqVo, id, toUpdateEntity -> {
+            toUpdateEntity.setLimitApp(reqVo.getLimitApp());
+            toUpdateEntity.setGrade(reqVo.getGrade());
+            toUpdateEntity.setCount(reqVo.getCount());
+            toUpdateEntity.setStrategy(reqVo.getStrategy());
+            toUpdateEntity.setControlBehavior(reqVo.getControlBehavior());
+            toUpdateEntity.setRefResource(reqVo.getRefResource());
+            toUpdateEntity.setWarmUpPeriodSec(reqVo.getWarmUpPeriodSec());
+            toUpdateEntity.setMaxQueueingTimeMs(reqVo.getMaxQueueingTimeMs());
+            toUpdateEntity.setClusterMode(reqVo.getClusterMode());
             AddFlowRuleReqVo.ClusterConfigReqVo clusterConfigReqVo = reqVo.getClusterConfig();
             if (clusterConfigReqVo != null) {
                 ClusterFlowConfig clusterFlowConfig = new ClusterFlowConfig();
                 clusterFlowConfig.setThresholdType(clusterConfigReqVo.getThresholdType());
                 clusterFlowConfig.setFallbackToLocalWhenFail(clusterConfigReqVo.getFallbackToLocalWhenFail());
             }
-            toUpdateRuleEntity.setGmtModified(new Date());
+            toUpdateEntity.setGmtModified(new Date());
         });
 
 //        Date date = new Date();
@@ -403,7 +402,7 @@ public class FlowController extends BaseRuleController<FlowRuleEntity> {
 ////            logger.error("Failed to update flow rule", throwable);
 ////            return Result.ofThrowable(-1, throwable);
 ////        }
-        return Result.ofSuccess(updatedRuleEntity);
+        return Result.ofSuccess(updatedEntity);
     }
 //
     @DeleteMapping("/rule/{id}")

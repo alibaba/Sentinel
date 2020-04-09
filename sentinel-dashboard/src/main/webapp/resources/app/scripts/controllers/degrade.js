@@ -1,9 +1,22 @@
 var app = angular.module('sentinelDashboardApp');
 
-app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDialog', 'MachineService',
+app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDialog',
+  'MachineService',
   function ($scope, $stateParams, DegradeService, ngDialog, MachineService) {
-    //初始化
     $scope.app = $stateParams.app;
+
+    var operateTypes = {'app': '应用维度', 'machine': '单机维度'};
+    $scope.operateType = 'app';
+
+    $scope.switchOperateType = function() {
+      $scope.operateType = $scope.operateType == 'app' ? 'machine' : 'app';
+      getMachineRules();
+    };
+
+    $scope.showSwitchToOperateTypeText = function() {
+      return $scope.operateType == 'app' ? operateTypes['machine'] : operateTypes['app'];
+    };
+
     $scope.rulesPageConfig = {
       pageSize: 10,
       currentPageIndex: 1,
@@ -29,8 +42,16 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
       if (!$scope.macInputModel) {
         return;
       }
-      var mac = $scope.macInputModel.split(':');
-      DegradeService.queryMachineRules($scope.app, mac[0], mac[1]).success(
+
+      var ip = null;
+      var port = null;
+      if ($scope.operateType == 'machine') {
+        var mac = $scope.macInputModel.split(':');
+        ip = mac[0];
+        port = mac[1];
+      }
+
+      DegradeService.queryMachineRules($scope.app, ip, port).success(
         function (data) {
           if (data.code == 0 && data.data) {
             $scope.rules = data.data;
@@ -46,6 +67,17 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
     var degradeRuleDialog;
     $scope.editRule = function (rule) {
       $scope.currentRule = angular.copy(rule);
+
+      var ip = null;
+      var port = null;
+      if ($scope.operateType == 'machine') {
+        var mac = $scope.macInputModel.split(':');
+        ip = mac[0];
+        port = mac[1];
+      }
+      $scope.currentRule.ip = ip;
+      $scope.currentRule.port = port;
+
       $scope.degradeRuleDialog = {
         title: '编辑降级规则',
         type: 'edit',
@@ -60,12 +92,19 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
     };
 
     $scope.addNewRule = function () {
-      var mac = $scope.macInputModel.split(':');
+      var ip = null;
+      var port = null;
+      if ($scope.operateType == 'machine') {
+        var mac = $scope.macInputModel.split(':');
+        ip = mac[0];
+        port = mac[1];
+      }
+
       $scope.currentRule = {
         grade: 0,
         app: $scope.app,
-        ip: mac[0],
-        port: mac[1],
+        ip: ip,
+        port: port,
         limitApp: 'default'
       };
       $scope.degradeRuleDialog = {

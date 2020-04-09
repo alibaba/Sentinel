@@ -27,6 +27,9 @@ public abstract class AbstractRulePublisher<T extends RuleEntity> implements Dyn
     @Autowired
     private Converter<List<T>, String> converter;
 
+    @Autowired
+    private RuleKeyBuilder<T> ruleKeyBuilder;
+
     @Override
     public void publish(String app, List<T> rules) throws Exception {
         if (StringUtil.isBlank(app)) {
@@ -60,7 +63,8 @@ public abstract class AbstractRulePublisher<T extends RuleEntity> implements Dyn
     }
 
     protected String buildRuleKey(String app, String ip, Integer port) {
-        return Joiner.on("-").join(app, ip, port, "flow", "rules");
+//        return Joiner.on("-").join(app, ip, port, "flow", "rules");
+        return ruleKeyBuilder.buildRuleKey(app, ip, port);
     }
 
     protected abstract void publishRules(String app, String ip, Integer port, String rules) throws Exception;

@@ -3,6 +3,7 @@ package com.alibaba.csp.sentinel.dashboard.controller.rule;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
 import com.alibaba.csp.sentinel.dashboard.common.IdGenerator;
+import com.alibaba.csp.sentinel.dashboard.controller.BaseController;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
@@ -24,7 +25,7 @@ import java.util.Optional;
 /**
  * @author cdfive
  */
-public class BaseRuleController<T extends RuleEntity> {
+public class BaseRuleController<T extends RuleEntity> extends BaseController {
 
     @Autowired
     protected IdGenerator idGenerator;
@@ -68,7 +69,7 @@ public class BaseRuleController<T extends RuleEntity> {
 //        return Result.ofSuccess(rules);
     }
 
-    protected void addRule(MachineReqVo reqVo, T entity) throws Exception {
+    protected T addRule(MachineReqVo reqVo, T entity) throws Exception {
         List<T> rules;
         boolean operateApp = isOperateApp(reqVo);
         if (operateApp) {
@@ -83,6 +84,8 @@ public class BaseRuleController<T extends RuleEntity> {
         } else {
             rulePublisher.publish(reqVo.getApp(), reqVo.getIp(), reqVo.getPort(), rules);
         }
+
+        return entity;
     }
 
     protected T updateRule(MachineReqVo reqVo, Long id, UpdateCallback<T> updateCallback) throws Exception {
@@ -168,7 +171,7 @@ public class BaseRuleController<T extends RuleEntity> {
         return StringUtil.isEmpty(ip) || port == null;
     }
 
-    protected static interface UpdateCallback<T> {
+    protected interface UpdateCallback<T> {
         void doUpdate(T toUpdateRuleEntity);
     }
 }
