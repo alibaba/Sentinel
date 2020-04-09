@@ -9,8 +9,8 @@ app.service('DegradeService', ['$http', function ($http) {
     };
 
     return $http({
-      url: 'degrade/rules',
-      data: param,
+      url: '/degrade/rules',
+      params: param,
       method: 'GET'
     });
   };
