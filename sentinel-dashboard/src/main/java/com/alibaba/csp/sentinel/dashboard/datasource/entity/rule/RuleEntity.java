@@ -30,11 +30,17 @@ public interface RuleEntity {
 
     String getApp();
 
+    void setApp(String app);
+
     String getIp();
+
+    void setIp(String ip);
 
     Integer getPort();
 
+    void setPort(Integer port);
+
     Date getGmtCreate();
-    
+
     Rule toRule();
 }

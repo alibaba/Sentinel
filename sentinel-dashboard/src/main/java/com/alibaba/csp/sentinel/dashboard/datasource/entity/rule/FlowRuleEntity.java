@@ -87,6 +87,7 @@ public class FlowRuleEntity implements RuleEntity {
         return ip;
     }
 
+    @Override
     public void setIp(String ip) {
         this.ip = ip;
     }
@@ -96,6 +97,7 @@ public class FlowRuleEntity implements RuleEntity {
         return port;
     }
 
+    @Override
     public void setPort(Integer port) {
         this.port = port;
     }
@@ -105,6 +107,7 @@ public class FlowRuleEntity implements RuleEntity {
         return app;
     }
 
+    @Override
     public void setApp(String app) {
         this.app = app;
     }

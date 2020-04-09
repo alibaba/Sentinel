@@ -52,9 +52,10 @@ public abstract class AbstractRuleEntity<T extends AbstractRule> implements Rule
         return app;
     }
 
-    public AbstractRuleEntity<T> setApp(String app) {
+    @Override
+    public void setApp(String app) {
         this.app = app;
-        return this;
+//        return this;
     }
 
     @Override
@@ -62,9 +63,10 @@ public abstract class AbstractRuleEntity<T extends AbstractRule> implements Rule
         return ip;
     }
 
-    public AbstractRuleEntity<T> setIp(String ip) {
+    @Override
+    public void setIp(String ip) {
         this.ip = ip;
-        return this;
+//        return this;
     }
 
     @Override
@@ -72,9 +74,10 @@ public abstract class AbstractRuleEntity<T extends AbstractRule> implements Rule
         return port;
     }
 
-    public AbstractRuleEntity<T> setPort(Integer port) {
+    @Override
+    public void setPort(Integer port) {
         this.port = port;
-        return this;
+//        return this;
     }
 
     public T getRule() {
