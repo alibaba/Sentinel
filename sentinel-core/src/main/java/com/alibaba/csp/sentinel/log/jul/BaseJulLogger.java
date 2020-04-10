@@ -90,7 +90,9 @@ public class BaseJulLogger {
         if (handler != null) {
             disableOtherHandlers(heliumRecordLog, handler);
         }
-        heliumRecordLog.setLevel(Level.ALL);
+
+        // Set log level to INFO by default
+        heliumRecordLog.setLevel(Level.INFO);
         return handler;
     }
 
