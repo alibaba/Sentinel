@@ -46,7 +46,7 @@ app.service('DegradeService', ['$http', function ($http) {
     return $http({
       url: '/degrade/rule/' + rule.id,
       data: rule,
-      method: 'DELETE'
+      method: 'PUT'
     });
   };
 
@@ -56,8 +56,9 @@ app.service('DegradeService', ['$http', function ($http) {
     //   app: rule.app
     // };
     return $http({
-      url: '/degrade/delete/' + rule.id,
+      url: '/degrade/rule/' + rule.id,
       data: rule,
+      headers: {'Content-Type': 'application/json'},
       method: 'DELETE'
     });
   };

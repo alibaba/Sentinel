@@ -46,7 +46,7 @@ public class DegradeRuleController extends BaseRuleController<DegradeRuleEntity>
         if (reqVo.getGrade() == null) {
             return Result.ofFail(-1, "grade can't be null");
         }
-        if (reqVo.getGrade() != 0 && reqVo.getGrade() != 1) {
+        if (reqVo.getGrade() != 0 && reqVo.getGrade() != 1 && reqVo.getGrade() != 2) {
             return Result.ofFail(-1, "grade must be 0 or 1, but " + reqVo.getGrade() + " got");
         }
 
