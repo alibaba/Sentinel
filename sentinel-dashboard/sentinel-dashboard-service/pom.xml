@@ -28,12 +28,12 @@
 
         <dependency>
             <groupId>com.alibaba.csp</groupId>
-            <artifactId>sentinel-dashboard-entity</artifactId>
+            <artifactId>sentinel-dashboard-repository</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.alibaba.csp</groupId>
-            <artifactId>sentinel-dashboard-repository</artifactId>
+            <artifactId>sentinel-dashboard-repository-nacos</artifactId>
             <version>${project.version}</version>
         </dependency>
 

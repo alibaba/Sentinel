@@ -8,6 +8,7 @@ import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.flow.DeleteFlowRul
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.flow.UpdateFlowRuleReqVo;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.resp.flow.QueryFlowRuleListRespVo;
 import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
+import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 /**
  * @author cdfive
  */
+@Service
 public class FlowRuleServiceImpl extends BaseRuleService<FlowRuleEntity> implements FlowRuleService {
 
     @Override
@@ -42,7 +44,7 @@ public class FlowRuleServiceImpl extends BaseRuleService<FlowRuleEntity> impleme
         checkCondition(reqVo.getCount() >= 0, "count must be at lease zero");
 
         checkNotNull(reqVo.getStrategy(), "strategy");
-        if (reqVo.getStrategy() == 0) {
+        if (reqVo.getStrategy() != 0) {
             checkNotBlankMessage(reqVo.getRefResource(), "refResource can't be null or empty when strategy!=0");
         }
 //        checkCondition(reqVo.getStrategy() == 0 || !StringUtil.isBlank(reqVo.getRefResource()), "refResource can't be null or empty when strategy!=0");
@@ -105,7 +107,7 @@ public class FlowRuleServiceImpl extends BaseRuleService<FlowRuleEntity> impleme
         checkCondition(reqVo.getCount() >= 0, "count must be at lease zero");
 
         checkNotNull(reqVo.getStrategy(), "strategy");
-        if (reqVo.getStrategy() == 0) {
+        if (reqVo.getStrategy() != 0) {
             checkNotBlankMessage(reqVo.getRefResource(), "refResource can't be null or empty when strategy!=0");
         }
 

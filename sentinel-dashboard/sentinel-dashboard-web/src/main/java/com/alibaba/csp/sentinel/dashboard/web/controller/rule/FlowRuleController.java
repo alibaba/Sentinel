@@ -15,453 +15,60 @@
  */
 package com.alibaba.csp.sentinel.dashboard.web.controller.rule;
 
-import com.alibaba.csp.sentinel.dashboard.entity.rule.FlowRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.service.api.rule.FlowRuleService;
+import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.MachineReqVo;
+import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.flow.AddFlowRuleReqVo;
+import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.flow.DeleteFlowRuleReqVo;
+import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.flow.UpdateFlowRuleReqVo;
+import com.alibaba.csp.sentinel.dashboard.service.vo.rule.resp.flow.QueryFlowRuleListRespVo;
 import com.alibaba.csp.sentinel.dashboard.web.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.web.auth.AuthService;
 import com.alibaba.csp.sentinel.dashboard.web.domain.Result;
-import com.alibaba.csp.sentinel.dashboard.web.vo.req.MachineReqVo;
-import com.alibaba.csp.sentinel.dashboard.web.vo.req.rule.flow.AddFlowRuleReqVo;
-import com.alibaba.csp.sentinel.dashboard.web.vo.req.rule.flow.UpdateFlowRuleReqVo;
-import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
-import com.alibaba.csp.sentinel.util.StringUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
 
 /**
- * Flow rule controller (v2).
+ * Flow rule controller.
  *
  * @author Eric Zhao
  * @since 1.4.0
  */
 @RestController
 @RequestMapping(value = "/flow")
-public class FlowRuleController extends BaseRuleController<FlowRuleEntity> {
+public class FlowRuleController {
 
-//    private final Logger logger = LoggerFactory.getLogger(FlowController.class);
-
-//    @Autowired
-//    private InMemoryRuleRepositoryAdapter<FlowRuleEntity> repository;
-
-//    @Autowired
-//    private IdGenerator idGenerator;
-
-//    @Autowired
-//    @Qualifier("flowRuleDefaultProvider")
-//    private DynamicRuleProvider<FlowRuleEntity> ruleProvider;
-//    private DynamicRuleProvider<FlowRuleEntity> ruleProvider;
-
-//    @Autowired
-//    @Qualifier("flowRuleDefaultPublisher")
-//    private DynamicRulePublisher<FlowRuleEntity> rulePublisher;
-
-//    @Autowired
-//    private DynamicRuleProvider<DegradeRuleEntity> degradeRuleProvider;
+    @Autowired
+    private FlowRuleService flowRuleService;
 
     @GetMapping("/rules")
     @AuthAction(AuthService.PrivilegeType.READ_RULE)
-    public Result<List<FlowRuleEntity>> queryFlowRuleList(MachineReqVo reqVo) throws Exception{
-        List<FlowRuleEntity> rules = queryRuleList(reqVo);
-        return Result.ofSuccess(rules);
-//        String app = reqVo.getApp();
-//        if (StringUtil.isEmpty(app)) {
-//            return Result.ofFail(-1, "app can't be null or empty");
-//        }
-//
-//        String ip = reqVo.getIp();
-//        Integer port = reqVo.getPort();
-//        boolean operateApp = StringUtil.isEmpty(ip) || port == null;
-//
-//        try {
-//            List<FlowRuleEntity> rules;
-//            if (operateApp) {
-//                rules = ruleProvider.getRules(app);
-//            } else {
-//                rules = ruleProvider.getRules(app, ip, port);
-//            }
-//
-//            if (rules != null && !rules.isEmpty()) {
-//                for (FlowRuleEntity entity : rules) {
-//                    if (operateApp) {
-//                        entity.setIp(null);
-//                        entity.setPort(null);
-//                    } else {
-//                        entity.setIp(ip);
-//                        entity.setPort(port);
-//                    }
-//                    entity.setApp(app);
-//                    if (entity.getClusterConfig() != null && entity.getClusterConfig().getFlowId() != null) {
-//                        entity.setId(entity.getClusterConfig().getFlowId());
-//                    }
-//                }
-//            }
-////            rules = repository.saveAll(rules);
-//            return Result.ofSuccess(rules);
-//        } catch (Throwable throwable) {
-//            logger.error("Error when querying flow rules", throwable);
-//            return Result.ofThrowable(-1, throwable);
-//        }
+    public Result<List<QueryFlowRuleListRespVo>> queryFlowRuleList(MachineReqVo reqVo) throws Exception {
+        List<QueryFlowRuleListRespVo> list = flowRuleService.queryFlowRuleList(reqVo);
+        return Result.ofSuccess(list);
     }
 
-//    private <R> Result<R> checkEntityInternal(FlowRuleEntity entity) {
-//        if (entity == null) {
-//            return Result.ofFail(-1, "invalid body");
-//        }
-//        if (StringUtil.isBlank(entity.getApp())) {
-//            return Result.ofFail(-1, "app can't be null or empty");
-//        }
-//        if (StringUtil.isBlank(entity.getLimitApp())) {
-//            return Result.ofFail(-1, "limitApp can't be null or empty");
-//        }
-//        if (StringUtil.isBlank(entity.getResource())) {
-//            return Result.ofFail(-1, "resource can't be null or empty");
-//        }
-//        if (entity.getGrade() == null) {
-//            return Result.ofFail(-1, "grade can't be null");
-//        }
-//        if (entity.getGrade() != 0 && entity.getGrade() != 1) {
-//            return Result.ofFail(-1, "grade must be 0 or 1, but " + entity.getGrade() + " got");
-//        }
-//        if (entity.getCount() == null || entity.getCount() < 0) {
-//            return Result.ofFail(-1, "count should be at lease zero");
-//        }
-//        if (entity.getStrategy() == null) {
-//            return Result.ofFail(-1, "strategy can't be null");
-//        }
-//        if (entity.getStrategy() != 0 && StringUtil.isBlank(entity.getRefResource())) {
-//            return Result.ofFail(-1, "refResource can't be null or empty when strategy!=0");
-//        }
-//        if (entity.getControlBehavior() == null) {
-//            return Result.ofFail(-1, "controlBehavior can't be null");
-//        }
-//        int controlBehavior = entity.getControlBehavior();
-//        if (controlBehavior == 1 && entity.getWarmUpPeriodSec() == null) {
-//            return Result.ofFail(-1, "warmUpPeriodSec can't be null when controlBehavior==1");
-//        }
-//        if (controlBehavior == 2 && entity.getMaxQueueingTimeMs() == null) {
-//            return Result.ofFail(-1, "maxQueueingTimeMs can't be null when controlBehavior==2");
-//        }
-//        if (entity.isClusterMode() && entity.getClusterConfig() == null) {
-//            return Result.ofFail(-1, "cluster config should be valid");
-//        }
-//        return null;
-//    }
-//
     @PostMapping("/rule")
     @AuthAction(value = AuthService.PrivilegeType.WRITE_RULE)
-    public Result<FlowRuleEntity> addFlowRule(@RequestBody AddFlowRuleReqVo reqVo) throws Exception {
-        if (reqVo == null) {
-            return Result.ofFail(-1, "invalid body");
-        }
-        if (StringUtil.isBlank(reqVo.getApp())) {
-            return Result.ofFail(-1, "app can't be null or empty");
-        }
-        if (StringUtil.isBlank(reqVo.getResource())) {
-            return Result.ofFail(-1, "resource can't be null or empty");
-        }
-        if (StringUtil.isBlank(reqVo.getLimitApp())) {
-            return Result.ofFail(-1, "limitApp can't be null or empty");
-        }
-        if (reqVo.getGrade() == null) {
-            return Result.ofFail(-1, "grade can't be null");
-        }
-        if (reqVo.getGrade() != 0 && reqVo.getGrade() != 1) {
-            return Result.ofFail(-1, "grade must be 0 or 1, but " + reqVo.getGrade() + " got");
-        }
-        if (reqVo.getCount() == null || reqVo.getCount() < 0) {
-            return Result.ofFail(-1, "count should be at lease zero");
-        }
-        if (reqVo.getStrategy() == null) {
-            return Result.ofFail(-1, "strategy can't be null");
-        }
-        if (reqVo.getStrategy() != 0 && StringUtil.isBlank(reqVo.getRefResource())) {
-            return Result.ofFail(-1, "refResource can't be null or empty when strategy!=0");
-        }
-        if (reqVo.getControlBehavior() == null) {
-            return Result.ofFail(-1, "controlBehavior can't be null");
-        }
-        int controlBehavior = reqVo.getControlBehavior();
-        if (controlBehavior == 1 && reqVo.getWarmUpPeriodSec() == null) {
-            return Result.ofFail(-1, "warmUpPeriodSec can't be null when controlBehavior==1");
-        }
-        if (controlBehavior == 2 && reqVo.getMaxQueueingTimeMs() == null) {
-            return Result.ofFail(-1, "maxQueueingTimeMs can't be null when controlBehavior==2");
-        }
-        if (reqVo.getClusterMode() && reqVo.getClusterConfig() == null) {
-            return Result.ofFail(-1, "cluster config should be valid");
-        }
-
-        FlowRuleEntity entity = new FlowRuleEntity();
-        Date date = new Date();
-        entity.setId(idGenerator.nextLongId());
-        entity.setApp(reqVo.getApp());
-        entity.setIp(reqVo.getIp());
-        entity.setPort(reqVo.getPort());
-        entity.setResource(reqVo.getResource());
-        entity.setLimitApp(reqVo.getLimitApp());
-        entity.setGrade(reqVo.getGrade());
-        entity.setCount(reqVo.getCount());
-        entity.setStrategy(reqVo.getStrategy());
-        entity.setControlBehavior(reqVo.getControlBehavior());
-        entity.setRefResource(reqVo.getRefResource());
-        entity.setWarmUpPeriodSec(reqVo.getWarmUpPeriodSec());
-        entity.setMaxQueueingTimeMs(reqVo.getMaxQueueingTimeMs());
-        entity.setClusterMode(reqVo.getClusterMode());
-        AddFlowRuleReqVo.ClusterConfigReqVo clusterConfigReqVo = reqVo.getClusterConfig();
-        if (clusterConfigReqVo != null) {
-            ClusterFlowConfig clusterFlowConfig = new ClusterFlowConfig();
-            clusterFlowConfig.setThresholdType(clusterConfigReqVo.getThresholdType());
-            clusterFlowConfig.setFallbackToLocalWhenFail(clusterConfigReqVo.getFallbackToLocalWhenFail());
-        }
-        entity.setGmtCreate(date);
-        entity.setGmtModified(date);
-
-        addRule(reqVo, entity);
-//
-//        List<FlowRuleEntity> rules;
-//        boolean operateApp = isOperateApp(reqVo);
-//        if (operateApp) {
-//            rules = ruleProvider.getRules(reqVo.getApp());
-//        } else {
-//            rules = ruleProvider.getRules(reqVo.getApp(), reqVo.getIp(), reqVo.getPort());
-//        }
-//        rules.add(entity);
-//        if (operateApp) {
-//            rulePublisher.publish(reqVo.getApp(), rules);
-//        } else {
-//            rulePublisher.publish(reqVo.getApp(), reqVo.getIp(), reqVo.getPort(), rules);
-//        }
-//
-//
-////        Result<FlowRuleEntity> checkResult = checkEntityInternal(entity);
-////        if (checkResult != null) {
-////            return checkResult;
-////        }
-////        entity.setId(null);
-////        Date date = new Date();
-////        entity.setGmtCreate(date);
-////        entity.setGmtModified(date);
-////        entity.setLimitApp(entity.getLimitApp().trim());
-////        entity.setResource(entity.getResource().trim());
-////        try {
-////            entity = repository.save(entity);
-//////            publishRules(entity.getApp());
-////            publishRules(reqVo);
-////        } catch (Throwable throwable) {
-////            logger.error("Failed to add flow rule", throwable);
-////            return Result.ofThrowable(-1, throwable);
-////        }
-        return Result.ofSuccess(entity);
+    public Result<?> addFlowRule(@RequestBody AddFlowRuleReqVo reqVo) throws Exception {
+        flowRuleService.addFlowRule(reqVo);
+        return Result.ofSuccess(null);
     }
 
     @PutMapping("/rule/{id}")
     @AuthAction(AuthService.PrivilegeType.WRITE_RULE)
-    public Result<FlowRuleEntity> apiUpdateFlowRule(@PathVariable("id") Long id, @RequestBody UpdateFlowRuleReqVo reqVo) throws Exception {
-        if (id == null || id <= 0) {
-            return Result.ofFail(-1, "Invalid id");
-        }
-////        FlowRuleEntity entity = repository.findById(id);
-////        if (entity == null) {
-////            return Result.ofFail(-1, "id " + id + " does not exist");
-////        }
-        if (StringUtil.isBlank(reqVo.getApp())) {
-            return Result.ofFail(-1, "app can't be null or empty");
-        }
-        if (StringUtil.isBlank(reqVo.getLimitApp())) {
-            return Result.ofFail(-1, "limitApp can't be null or empty");
-        }
-        if (reqVo.getGrade() == null) {
-            return Result.ofFail(-1, "grade can't be null");
-        }
-        if (reqVo.getGrade() != 0 && reqVo.getGrade() != 1) {
-            return Result.ofFail(-1, "grade must be 0 or 1, but " + reqVo.getGrade() + " got");
-        }
-        if (reqVo.getCount() == null || reqVo.getCount() < 0) {
-            return Result.ofFail(-1, "count should be at lease zero");
-        }
-        if (reqVo.getStrategy() == null) {
-            return Result.ofFail(-1, "strategy can't be null");
-        }
-        if (reqVo.getStrategy() != 0 && StringUtil.isBlank(reqVo.getRefResource())) {
-            return Result.ofFail(-1, "refResource can't be null or empty when strategy!=0");
-        }
-        if (reqVo.getControlBehavior() == null) {
-            return Result.ofFail(-1, "controlBehavior can't be null");
-        }
-        int controlBehavior = reqVo.getControlBehavior();
-        if (controlBehavior == 1 && reqVo.getWarmUpPeriodSec() == null) {
-            return Result.ofFail(-1, "warmUpPeriodSec can't be null when controlBehavior==1");
-        }
-        if (controlBehavior == 2 && reqVo.getMaxQueueingTimeMs() == null) {
-            return Result.ofFail(-1, "maxQueueingTimeMs can't be null when controlBehavior==2");
-        }
-        if (reqVo.getClusterMode() && reqVo.getClusterConfig() == null) {
-            return Result.ofFail(-1, "cluster config should be valid");
-        }
-//
-//        List<FlowRuleEntity> rules;
-//        boolean operateApp = isOperateApp(reqVo);
-//        if (operateApp) {
-//            rules = ruleProvider.getRules(reqVo.getApp());
-//        } else {
-//            rules = ruleProvider.getRules(reqVo.getApp(), reqVo.getIp(), reqVo.getPort());
-//        }
-//
-//        Optional<FlowRuleEntity> optRule = rules.stream().filter(o -> id.equals(o.getId())).findFirst();
-//        if (!optRule.isPresent()) {
-//            return Result.ofFail(-1, "data not exist, id=" + id);
-//        }
-//
-//        FlowRuleEntity entity = optRule.get();
-
-//        FlowRuleEntity entity = getRule(reqVo, id);
-
-        FlowRuleEntity updatedEntity = updateRule(reqVo, id, toUpdateEntity -> {
-            toUpdateEntity.setLimitApp(reqVo.getLimitApp());
-            toUpdateEntity.setGrade(reqVo.getGrade());
-            toUpdateEntity.setCount(reqVo.getCount());
-            toUpdateEntity.setStrategy(reqVo.getStrategy());
-            toUpdateEntity.setControlBehavior(reqVo.getControlBehavior());
-            toUpdateEntity.setRefResource(reqVo.getRefResource());
-            toUpdateEntity.setWarmUpPeriodSec(reqVo.getWarmUpPeriodSec());
-            toUpdateEntity.setMaxQueueingTimeMs(reqVo.getMaxQueueingTimeMs());
-            toUpdateEntity.setClusterMode(reqVo.getClusterMode());
-            AddFlowRuleReqVo.ClusterConfigReqVo clusterConfigReqVo = reqVo.getClusterConfig();
-            if (clusterConfigReqVo != null) {
-                ClusterFlowConfig clusterFlowConfig = new ClusterFlowConfig();
-                clusterFlowConfig.setThresholdType(clusterConfigReqVo.getThresholdType());
-                clusterFlowConfig.setFallbackToLocalWhenFail(clusterConfigReqVo.getFallbackToLocalWhenFail());
-            }
-            toUpdateEntity.setGmtModified(new Date());
-        });
-
-//        Date date = new Date();
-//        entity.setLimitApp(reqVo.getLimitApp());
-//        entity.setGrade(reqVo.getGrade());
-//        entity.setCount(reqVo.getCount());
-//        entity.setStrategy(reqVo.getStrategy());
-//        entity.setControlBehavior(reqVo.getControlBehavior());
-//        entity.setRefResource(reqVo.getRefResource());
-//        entity.setWarmUpPeriodSec(reqVo.getWarmUpPeriodSec());
-//        entity.setMaxQueueingTimeMs(reqVo.getMaxQueueingTimeMs());
-//        entity.setClusterMode(reqVo.getClusterMode());
-//        AddFlowRuleReqVo.ClusterConfigReqVo clusterConfigReqVo = reqVo.getClusterConfig();
-//        if (clusterConfigReqVo != null) {
-//            ClusterFlowConfig clusterFlowConfig = new ClusterFlowConfig();
-//            clusterFlowConfig.setThresholdType(clusterConfigReqVo.getThresholdType());
-//            clusterFlowConfig.setFallbackToLocalWhenFail(clusterConfigReqVo.getFallbackToLocalWhenFail());
-//        }
-//        entity.setGmtModified(date);
-//
-//        if (operateApp) {
-//            rulePublisher.publish(reqVo.getApp(), rules);
-//        } else {
-//            rulePublisher.publish(reqVo.getApp(), reqVo.getIp(), reqVo.getPort(), rules);
-//        }
-//
-////        if (entity == null) {
-////            return Result.ofFail(-1, "invalid body");
-////        }
-////
-////        entity.setApp(oldEntity.getApp());
-////        entity.setIp(oldEntity.getIp());
-////        entity.setPort(oldEntity.getPort());
-////        Result<FlowRuleEntity> checkResult = checkEntityInternal(entity);
-////        if (checkResult != null) {
-////            return checkResult;
-////        }
-////
-////        entity.setId(id);
-////        Date date = new Date();
-////        entity.setGmtCreate(oldEntity.getGmtCreate());
-////        entity.setGmtModified(date);
-//
-////        try {
-////            entity = repository.save(entity);
-////            if (entity == null) {
-////                return Result.ofFail(-1, "save entity fail");
-////            }
-//////            publishRules(oldEntity.getApp());
-////            publishRules(reqVo);
-////        } catch (Throwable throwable) {
-////            logger.error("Failed to update flow rule", throwable);
-////            return Result.ofThrowable(-1, throwable);
-////        }
-        return Result.ofSuccess(updatedEntity);
+    public Result<?> updateFlowRule(@PathVariable("id") Long id, @RequestBody UpdateFlowRuleReqVo reqVo) throws Exception {
+        reqVo.setId(id);
+        flowRuleService.updateFlowRule(reqVo);
+        return Result.ofSuccess(null);
     }
-//
+
     @DeleteMapping("/rule/{id}")
-//    @PostMapping("/rule/delete/{id}")
     @AuthAction(AuthService.PrivilegeType.DELETE_RULE)
-    public Result<Long> apiDeleteRule(@PathVariable("id") Long id, @RequestBody MachineReqVo reqVo) throws Exception {
-//        if (id == null || id <= 0) {
-//            return Result.ofFail(-1, "Invalid id");
-//        }
-////        FlowRuleEntity oldEntity = repository.findById(id);
-////        if (oldEntity == null) {
-////            return Result.ofSuccess(null);
-////        }
-////
-////        try {
-////            repository.delete(id);
-//////            publishRules(oldEntity.getApp());
-////            publishRules(reqVo);
-////        } catch (Exception e) {
-////            return Result.ofFail(-1, e.getMessage());
-////        }
-//
-//        List<FlowRuleEntity> rules;
-//        boolean operateApp = isOperateApp(reqVo);
-//        if (operateApp) {
-//            rules = ruleProvider.getRules(reqVo.getApp());
-//        } else {
-//            rules = ruleProvider.getRules(reqVo.getApp(), reqVo.getIp(), reqVo.getPort());
-//        }
-//
-//        Optional<FlowRuleEntity> optRule = rules.stream().filter(o -> id.equals(o.getId())).findFirst();
-//        if (!optRule.isPresent()) {
-//            return Result.ofFail(-1, "data not exist, id=" + id);
-//        }
-//
-//        rules.remove(optRule.get());
-//
-//        if (operateApp) {
-//            rulePublisher.publish(reqVo.getApp(), rules);
-//        } else {
-//            rulePublisher.publish(reqVo.getApp(), reqVo.getIp(), reqVo.getPort(), rules);
-//        }
-//
-
-        deleteRule(reqVo, id);
-        return Result.ofSuccess(id);
+    public Result<?> apiDeleteRule(@PathVariable("id") Long id, @RequestBody DeleteFlowRuleReqVo reqVo) throws Exception {
+        reqVo.setId(id);
+        flowRuleService.deleteFlowRule(reqVo);
+        return Result.ofSuccess(null);
     }
-//
-////    private void publishRules(/*@NonNull*/ String app) throws Exception {
-////        List<FlowRuleEntity> rules = repository.findAllByApp(app);
-////        rulePublisher.publish(app, rules);
-////    }
-////
-////    private void publishRules(/*@NonNull*/ MachineReqVo reqVo) throws Exception {
-////        boolean operateApp = isOperateApp(reqVo);
-////        if (operateApp) {
-////            List<FlowRuleEntity> rules = repository.findAllByApp(reqVo.getApp());
-////            rulePublisher.publish(reqVo.getApp(), rules);
-////        } else {
-////            List<FlowRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(reqVo.getApp(), reqVo.getIp(), reqVo.getPort()));
-////            rulePublisher.publish(reqVo.getApp(), reqVo.getIp(), reqVo.getPort(), rules);
-////        }
-////    }
-//
-//    protected static boolean isOperateApp(MachineReqVo reqVo) {
-//        String ip = reqVo.getIp();
-//        Integer port = reqVo.getPort();
-//        return StringUtil.isEmpty(ip) || port == null;
-//    }
-//
-////    @Override
-////    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-////        DynamicRuleProvider bean = applicationContext.getBean(DynamicRuleProvider.class);
-////        System.out.println(bean);
-////    }
 }

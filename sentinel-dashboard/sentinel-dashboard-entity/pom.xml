@@ -18,6 +18,7 @@
             <artifactId>sentinel-dashboard-common</artifactId>
             <version>${project.version}</version>
         </dependency>
+
         <dependency>
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-core</artifactId>
