@@ -86,7 +86,7 @@ public final class SentinelConfigLoader {
             String oldConfigValue = properties.getProperty(configKey);
             properties.put(configKey, newConfigValue);
             if (oldConfigValue != null) {
-                RecordLog.info("[SentinelConfigLoader] JVM parameter overrides {0}: {1} -> {2}",
+                RecordLog.info("[SentinelConfigLoader] JVM parameter overrides {}: {} -> {}",
                         configKey, oldConfigValue, newConfigValue);
             }
         }

@@ -204,7 +204,7 @@ public final class SentinelConfig {
             }
             return Integer.parseInt(v);
         } catch (Throwable throwable) {
-            RecordLog.warn("[SentinelConfig] Invalid statisticMaxRt value: {0}, using the default value instead: "
+            RecordLog.warn("[SentinelConfig] Invalid statisticMaxRt value: {}, using the default value instead: "
                     + DEFAULT_STATISTIC_MAX_RT, v, throwable);
             SentinelConfig.setConfig(STATISTIC_MAX_RT, String.valueOf(DEFAULT_STATISTIC_MAX_RT));
             return DEFAULT_STATISTIC_MAX_RT;

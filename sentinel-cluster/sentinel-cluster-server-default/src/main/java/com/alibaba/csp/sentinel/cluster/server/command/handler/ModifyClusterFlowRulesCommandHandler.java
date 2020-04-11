@@ -47,7 +47,7 @@ public class ModifyClusterFlowRulesCommandHandler implements CommandHandler<Stri
         }
         try {
             data = URLDecoder.decode(data, "UTF-8");
-            RecordLog.info("[ModifyClusterFlowRulesCommandHandler] Receiving cluster flow rules for namespace <{0}>: {1}", namespace, data);
+            RecordLog.info("[ModifyClusterFlowRulesCommandHandler] Receiving cluster flow rules for namespace <{}>: {}", namespace, data);
 
             List<FlowRule> flowRules = JSONArray.parseArray(data, FlowRule.class);
             ClusterFlowRuleManager.loadRules(namespace, flowRules);
