@@ -26,131 +26,78 @@ public class BaseRuleService<T extends RuleEntity> extends BaseService {
     @Autowired
     protected DynamicRulePublisher<T> rulePublisher;
 
-    //    @RequestMapping("/rules")
     protected List<T> queryRuleList(MachineReqVo reqVo) throws Exception {
-//    protected Result<List<T>> queryRuleList(MachineReqVo reqVo) throws Exception {
-        boolean operateApp = isOperateApp(reqVo);
-        String app = reqVo.getApp();
-        String ip = reqVo.getIp();
-        Integer port = reqVo.getPort();
-        List<T> rules;
-        if (operateApp) {
-            rules = ruleProvider.getRules(app);
-        } else {
-            rules = ruleProvider.getRules(app, ip, port);
-        }
+        List<T> rules = fetchRules(reqVo);
 
-        if (rules != null && !rules.isEmpty()) {
-            for (T entity : rules) {
-                if (operateApp) {
-                    entity.setIp(null);
-                    entity.setPort(null);
-                } else {
-                    entity.setIp(ip);
-                    entity.setPort(port);
-                }
+        rules.forEach(rule -> {
+            if (isOperateApp(reqVo)) {
+                rule.setIp(null);
+                rule.setPort(null);
+            } else {
+                rule.setIp(reqVo.getIp());
+                rule.setPort(reqVo.getPort());
             }
-        }
+        });
 
         return rules;
-//        return Result.ofSuccess(rules);
     }
 
-    protected T addRule(MachineReqVo reqVo, T entity) throws Exception {
-        List<T> rules;
-        boolean operateApp = isOperateApp(reqVo);
-        if (operateApp) {
-            rules = ruleProvider.getRules(reqVo.getApp());
-        } else {
-            rules = ruleProvider.getRules(reqVo.getApp(), reqVo.getIp(), reqVo.getPort());
-        }
-        rules.add(entity);
+    protected T addRule(MachineReqVo reqVo, T rule) throws Exception {
+        List<T> rules = fetchRules(reqVo);
 
-        if (operateApp) {
-            rulePublisher.publish(reqVo.getApp(), rules);
-        } else {
-            rulePublisher.publish(reqVo.getApp(), reqVo.getIp(), reqVo.getPort(), rules);
-        }
+        rule.setId(idGenerator.nextLongId());
+        rules.add(rule);
 
-        return entity;
+        publishRules(reqVo, rules);
+        return rule;
     }
 
     protected T updateRule(MachineReqVo reqVo, Long id, UpdateRuleCallback<T> updateRuleCallback) throws Exception {
-        List<T> rules;
-        boolean operateApp = isOperateApp(reqVo);
-        if (operateApp) {
-            rules = ruleProvider.getRules(reqVo.getApp());
-        } else {
-            rules = ruleProvider.getRules(reqVo.getApp(), reqVo.getIp(), reqVo.getPort());
-        }
+        List<T> rules = fetchRules(reqVo);
 
         Optional<T> optRule = rules.stream().filter(o -> id.equals(o.getId())).findFirst();
         if (!optRule.isPresent()) {
-////            return Result.ofFail(-1, "data not exist, id=" + id);
-//            return null;
+            fail("data not exist, id=" + id);
         }
 
-        T entity = optRule.get();
-        updateRuleCallback.doUpdateRule(entity);
+        T rule = optRule.get();
+        updateRuleCallback.doUpdateRule(rule);
 
-        if (operateApp) {
-            rulePublisher.publish(reqVo.getApp(), rules);
-        } else {
-            rulePublisher.publish(reqVo.getApp(), reqVo.getIp(), reqVo.getPort(), rules);
-        }
-
-        return entity;
+        publishRules(reqVo, rules);
+        return rule;
     }
 
-//    protected T getRule(MachineReqVo reqVo, Long id) throws Exception {
-//        List<T> rules;
-//        boolean operateApp = isOperateApp(reqVo);
-//        if (operateApp) {
-//            rules = ruleProvider.getRules(reqVo.getApp());
-//        } else {
-//            rules = ruleProvider.getRules(reqVo.getApp(), reqVo.getIp(), reqVo.getPort());
-//        }
-//        Optional<T> optRule = rules.stream().filter(o -> id.equals(o.getId())).findFirst();
-//        if (!optRule.isPresent()) {
-////            return Result.ofFail(-1, "data not exist, id=" + id);
-//            return null;
-//        }
-//
-//        return optRule.get();
-//    }
-
     protected void deleteRule(MachineReqVo reqVo, Long id) throws Exception {
-        List<T> rules;
-        boolean operateApp = isOperateApp(reqVo);
-        if (operateApp) {
-            rules = ruleProvider.getRules(reqVo.getApp());
-        } else {
-            rules = ruleProvider.getRules(reqVo.getApp(), reqVo.getIp(), reqVo.getPort());
-        }
+        List<T> rules = fetchRules(reqVo);
+
         Optional<T> optRule = rules.stream().filter(o -> id.equals(o.getId())).findFirst();
         if (!optRule.isPresent()) {
+            fail("data not exist, id=" + id);
         }
 
         T rule = optRule.get();
         rules.remove(rule);
 
-        if (operateApp) {
+        publishRules(reqVo, rules);
+    }
+
+    protected List<T> fetchRules(MachineReqVo reqVo) throws Exception {
+        List<T> rules;
+        if (isOperateApp(reqVo)) {
+            rules = ruleProvider.getRules(reqVo.getApp());
+        } else {
+            rules = ruleProvider.getRules(reqVo.getApp(), reqVo.getIp(), reqVo.getPort());
+        }
+        return rules;
+    }
+
+    protected void publishRules(MachineReqVo reqVo, List<T> rules) throws Exception {
+        if (isOperateApp(reqVo)) {
             rulePublisher.publish(reqVo.getApp(), rules);
         } else {
             rulePublisher.publish(reqVo.getApp(), reqVo.getIp(), reqVo.getPort(), rules);
         }
     }
-
-//    private void publishRules(/*@NonNull*/ MachineReqVo reqVo) throws Exception {
-//        boolean operateApp = isOperateApp(reqVo);
-//        if (operateApp) {
-//            List<T> rules = repository.findAllByApp(reqVo.getApp());
-//            rulePublisher.publish(reqVo.getApp(), rules);
-//        } else {
-//            List<T> rules = repository.findAllByMachine(MachineInfo.of(reqVo.getApp(), reqVo.getIp(), reqVo.getPort()));
-//            rulePublisher.publish(reqVo.getApp(), reqVo.getIp(), reqVo.getPort(), rules);
-//        }
-//    }
 
     protected boolean isOperateApp(MachineReqVo reqVo) {
         String ip = reqVo.getIp();
@@ -159,7 +106,7 @@ public class BaseRuleService<T extends RuleEntity> extends BaseService {
     }
 
     protected interface UpdateRuleCallback<T> {
-        void doUpdateRule(T toUpdateRuleEntity);
+        void doUpdateRule(T toUpdateRule);
     }
 
 }
