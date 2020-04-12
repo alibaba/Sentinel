@@ -19,9 +19,6 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.DefaultSlotChainBuilder;
 import com.alibaba.csp.sentinel.util.SpiLoader;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * A provider for creating slot chains via resolved slot chain builder SPI.
  *
@@ -31,7 +28,6 @@ import java.util.List;
 public final class SlotChainProvider {
 
     private static volatile SlotChainBuilder slotChainBuilder = null;
-    private static volatile List<SlotChainExtender> slotChainExtenders = null;
 
     /**
      * The load and pick process is not thread-safe, but it's okay since the method should be only invoked
@@ -41,7 +37,7 @@ public final class SlotChainProvider {
      */
     public static ProcessorSlotChain newSlotChain() {
         if (slotChainBuilder != null) {
-            return extendSlotChain(slotChainBuilder.build());
+            return slotChainBuilder.build();
         }
 
         // Resolve the slot chain builder SPI.
@@ -55,30 +51,8 @@ public final class SlotChainProvider {
             RecordLog.info("[SlotChainProvider] Global slot chain builder resolved: "
                 + slotChainBuilder.getClass().getCanonicalName());
         }
-        ProcessorSlotChain slotChain =  slotChainBuilder.build();
-
-        extendSlotChain(slotChain);
-
-        return slotChain;
+        return slotChainBuilder.build();
     }
-
-    private static ProcessorSlotChain extendSlotChain(ProcessorSlotChain slotChain) {
-        // Resolve the slot chain extender SPI.
-        if(slotChainExtenders == null) {
-            List<SlotChainExtender> extenderList = SpiLoader.loadInstanceList(SlotChainExtender.class);
-            slotChainExtenders = extenderList != null ? extenderList : new ArrayList<SlotChainExtender>();
-        }
-
-        for (SlotChainExtender extender : slotChainExtenders) {
-            RecordLog.info("[SlotChainProvider] slot chain extender resolved: "
-                    + extender.getClass().getCanonicalName());
-            slotChain = extender.extend(slotChain);
-        }
-        return slotChain;
-    }
-
-
 
     private SlotChainProvider() {}
 }
-

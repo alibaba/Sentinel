@@ -196,6 +196,10 @@ public class RedisClusterFlowRuleManager {
         return sourceToFlowRules;
     }
 
+    public static boolean hasConfig(String resource) {
+        return sourceToFlowRules.containsKey(resource);
+    }
+
     private static final class RedisClusterFlowPropertyListener implements PropertyListener<List<FlowRule>> {
 
         private String namespace;

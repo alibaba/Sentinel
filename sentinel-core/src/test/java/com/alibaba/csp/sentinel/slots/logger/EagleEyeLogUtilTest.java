@@ -21,7 +21,7 @@ public class EagleEyeLogUtilTest {
     public void testWriteLog() throws Exception {
         EagleEyeLogUtil.log("resourceName", "BlockException", "app1", "origin", 1);
 
-        final File file = new File(RecordLog.getLogBaseDir() + EagleEyeLogUtil.FILE_NAME);
+        final File file = new File(LogBase.getLogBaseDir() + EagleEyeLogUtil.FILE_NAME);
         await().timeout(2, TimeUnit.SECONDS)
             .until(new Callable<File>() {
                 @Override
@@ -42,7 +42,7 @@ public class EagleEyeLogUtilTest {
         EagleEyeLogUtil.log("resourceName", "BlockException", "app1", "origin", 1);
 
 
-        final File file = new File(RecordLog.getLogBaseDir() + EagleEyeLogUtil.FILE_NAME);
+        final File file = new File(LogBase.getLogBaseDir() + EagleEyeLogUtil.FILE_NAME);
         await().timeout(2, TimeUnit.SECONDS)
                 .until(new Callable<File>() {
                     @Override
@@ -51,7 +51,7 @@ public class EagleEyeLogUtilTest {
                     }
                 }, FileMatchers.anExistingFile());
         Assert.assertTrue(file.getAbsolutePath().startsWith(newLogBase));
-        deleteLogDir(new File(RecordLog.getLogBaseDir()));
+        deleteLogDir(new File(LogBase.getLogBaseDir()));
     }
 
     private void deleteLogDir(File logDirFile) {

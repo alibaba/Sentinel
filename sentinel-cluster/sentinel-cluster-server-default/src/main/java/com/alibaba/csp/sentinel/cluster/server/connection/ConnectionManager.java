@@ -73,7 +73,7 @@ public final class ConnectionManager {
                 return;
             }
             group.removeConnection(address);
-            RecordLog.info("[ConnectionManager] Client <{0}> disconnected and removed from namespace <{1}>", address, namespace);
+            RecordLog.info("[ConnectionManager] Client <{}> disconnected and removed from namespace <{}>", address, namespace);
         }
         NAMESPACE_MAP.remove(address);
     }
@@ -87,7 +87,7 @@ public final class ConnectionManager {
         }
         group.removeConnection(address);
         NAMESPACE_MAP.remove(address);
-        RecordLog.info("[ConnectionManager] Client <{0}> disconnected and removed from namespace <{1}>", address, namespace);
+        RecordLog.info("[ConnectionManager] Client <{}> disconnected and removed from namespace <{}>", address, namespace);
     }
 
     public static ConnectionGroup addConnection(String namespace, String address) {
@@ -96,7 +96,7 @@ public final class ConnectionManager {
         ConnectionGroup group = getOrCreateGroup(namespace);
         group.addConnection(address);
         NAMESPACE_MAP.put(address, namespace);
-        RecordLog.info("[ConnectionManager] Client <{0}> registered with namespace <{1}>", address, namespace);
+        RecordLog.info("[ConnectionManager] Client <{}> registered with namespace <{}>", address, namespace);
         return group;
     }
 

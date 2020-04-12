@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel;
 
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.context.ContextUtil;
+import com.alibaba.csp.sentinel.context.NullContext;
 import com.alibaba.csp.sentinel.metric.extension.MetricExtensionProvider;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.DefaultNode;
@@ -53,17 +54,7 @@ public class Tracer {
      * @param count exception count to add
      */
     public static void trace(Throwable e, int count) {
-        if (!shouldTrace(e)) {
-            return;
-        }
-
-        Context context = ContextUtil.getContext();
-        if (context == null) {
-            return;
-        }
-
-        DefaultNode curNode = (DefaultNode)context.getCurNode();
-        traceExceptionToNode(e, count, context.getCurEntry(), curNode);
+        traceContext(e, count, ContextUtil.getContext());
     }
 
     /**
@@ -77,7 +68,8 @@ public class Tracer {
         if (!shouldTrace(e)) {
             return;
         }
-        if (context == null) {
+
+        if (context == null || context instanceof NullContext) {
             return;
         }
 

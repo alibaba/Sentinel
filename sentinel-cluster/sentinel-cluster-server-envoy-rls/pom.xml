@@ -5,7 +5,7 @@
     <parent>
         <artifactId>sentinel-cluster</artifactId>
         <groupId>com.alibaba.csp</groupId>
-        <version>1.7.2-SNAPSHOT</version>
+        <version>1.7.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -34,6 +34,11 @@
         <dependency>
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-transport-simple-http</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>${javax.annotation-api.version}</version>
         </dependency>
 
         <dependency>

@@ -157,11 +157,11 @@ public class ConsulDataSource<T> extends AbstractDataSource<String, T> {
                     String newValue = getValue.getDecodedValue();
                     try {
                         getProperty().updateValue(parser.convert(newValue));
-                        RecordLog.info("[ConsulDataSource] New property value received for ({0}, {1}): {2}",
+                        RecordLog.info("[ConsulDataSource] New property value received for ({}, {}): {}",
                             address, ruleKey, newValue);
                     } catch (Exception ex) {
                         // In case of parsing error.
-                        RecordLog.warn("[ConsulDataSource] Failed to update value for ({0}, {1}), raw value: {2}",
+                        RecordLog.warn("[ConsulDataSource] Failed to update value for ({}, {}), raw value: {}",
                             address, ruleKey, newValue);
                     }
                 }

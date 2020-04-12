@@ -38,7 +38,7 @@ public class DefaultResponseEntityWriter implements ResponseEntityWriter<Cluster
 
         if (responseDataWriter == null) {
             writeHead(response.setStatus(ClusterConstants.RESPONSE_STATUS_BAD), out);
-            RecordLog.warn("[NettyResponseEncoder] Cannot find matching writer for type <{0}>", response.getType());
+            RecordLog.warn("[NettyResponseEncoder] Cannot find matching writer for type <{}>", response.getType());
             return;
         }
         writeHead(response, out);

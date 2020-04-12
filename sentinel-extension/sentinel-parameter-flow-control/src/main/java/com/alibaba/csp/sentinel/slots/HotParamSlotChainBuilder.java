@@ -15,38 +15,18 @@
  */
 package com.alibaba.csp.sentinel.slots;
 
-import com.alibaba.csp.sentinel.slotchain.DefaultProcessorSlotChain;
-import com.alibaba.csp.sentinel.slotchain.ProcessorSlotChain;
-import com.alibaba.csp.sentinel.slotchain.SlotChainBuilder;
-import com.alibaba.csp.sentinel.slots.block.authority.AuthoritySlot;
-import com.alibaba.csp.sentinel.slots.block.degrade.DegradeSlot;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowSlot;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowSlot;
-import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
-import com.alibaba.csp.sentinel.slots.logger.LogSlot;
-import com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot;
-import com.alibaba.csp.sentinel.slots.statistic.StatisticSlot;
-import com.alibaba.csp.sentinel.slots.system.SystemSlot;
 
 /**
  * @author Eric Zhao
  * @since 0.2.0
+ *
+ * @deprecated since 1.7.2, we can use @SpiOrder(-3000) to adjust the order of {@link ParamFlowSlot},
+ * this class is reserved for compatibility with older versions.
+ * @see ParamFlowSlot
+ * @see DefaultSlotChainBuilder
  */
-public class HotParamSlotChainBuilder implements SlotChainBuilder {
+@Deprecated
+public class HotParamSlotChainBuilder extends DefaultSlotChainBuilder {
 
-    @Override
-    public ProcessorSlotChain build() {
-        ProcessorSlotChain chain = new DefaultProcessorSlotChain();
-        chain.addLast(new NodeSelectorSlot());
-        chain.addLast(new ClusterBuilderSlot());
-        chain.addLast(new LogSlot());
-        chain.addLast(new StatisticSlot());
-        chain.addLast(new ParamFlowSlot());
-        chain.addLast(new SystemSlot());
-        chain.addLast(new AuthoritySlot());
-        chain.addLast(new FlowSlot());
-        chain.addLast(new DegradeSlot());
-
-        return chain;
-    }
 }
