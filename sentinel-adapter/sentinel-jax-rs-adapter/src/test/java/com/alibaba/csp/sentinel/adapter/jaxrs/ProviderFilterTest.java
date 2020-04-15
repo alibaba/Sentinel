@@ -61,7 +61,7 @@ public class ProviderFilterTest {
         int port = SocketUtils.findAvailableTcpPort();
         RestAssured.port = port;
         SpringApplication springApplication = new SpringApplication(TestApplication.class);
-        ctx = springApplication.run("--jaxrs.provider.enabled=true", "--server.port=" + port);
+        ctx = springApplication.run("--spring.profiles.active=provider", "--server.port=" + port);
     }
 
     @AfterClass
@@ -213,6 +213,17 @@ public class ProviderFilterTest {
         assertNotNull(cn);
         assertEquals(1, cn.passQps(), 0.01);
         assertEquals(1, cn.blockQps(), 0.01);
+    }
+
+    @Test
+    public void testExceptionMapper() {
+        String url = "/test/ex";
+        String resourceName = "GET:" + url;
+        Response response = given().get(url);
+        response.then().statusCode(javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).body(equalTo("test exception mapper"));
+
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode(resourceName);
+        assertNotNull(cn);
     }
 
     private void configureRulesFor(String resource, int count) {

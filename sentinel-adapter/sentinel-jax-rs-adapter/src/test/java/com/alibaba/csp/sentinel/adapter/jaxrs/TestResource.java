@@ -24,7 +24,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.MediaType;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -69,4 +68,10 @@ public class TestResource {
         return "Hello " + name + " !";
     }
 
+    @Path("/ex")
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON })
+    public String exception() {
+        throw new RuntimeException("test exception mapper");
+    }
 }
