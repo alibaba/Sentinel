@@ -59,14 +59,19 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
             if (StringUtil.isNotEmpty(resourceName)) {
                 // Parse the request origin using registered origin parser.
                 String origin = parseOrigin(request);
-                ContextUtil.enter(SENTINEL_SPRING_WEB_CONTEXT_NAME, origin);
+                String contextName = getContextName(request);
+                ContextUtil.enter(contextName, origin);
                 Entry entry = SphU.entry(resourceName, ResourceTypeConstants.COMMON_WEB, EntryType.IN);
 
                 setEntryInRequest(request, baseWebMvcConfig.getRequestAttributeName(), entry);
             }
             return true;
         } catch (BlockException e) {
-            handleBlockException(request, response, e);
+            try {
+                handleBlockException(request, response, e);
+            } finally {
+                ContextUtil.exit();
+            }
             return false;
         }
     }
@@ -78,6 +83,16 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
      * @return the resource name of the target web resource.
      */
     protected abstract String getResourceName(HttpServletRequest request);
+
+    /**
+     * Return the context name of the target web resource.
+     *
+     * @param request web request
+     * @return the context name of the target web resource.
+     */
+    protected String getContextName(HttpServletRequest request) {
+        return SENTINEL_SPRING_WEB_CONTEXT_NAME;
+    }
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
@@ -98,7 +113,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
     protected void setEntryInRequest(HttpServletRequest request, String name, Entry entry) {
         Object attrVal = request.getAttribute(name);
         if (attrVal != null) {
-            RecordLog.warn("[{}] The attribute key '{0}' already exists in request, please set `requestAttributeName`",
+            RecordLog.warn("[{}] The attribute key '{}' already exists in request, please set `requestAttributeName`",
                 getClass().getSimpleName(), name);
         } else {
             request.setAttribute(name, entry);

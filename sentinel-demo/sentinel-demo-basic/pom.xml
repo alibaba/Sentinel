@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-demo</artifactId>
-        <version>1.7.2-SNAPSHOT</version>
+        <version>1.8.0-SNAPSHOT</version>
     </parent>
     <artifactId>sentinel-demo-basic</artifactId>
 

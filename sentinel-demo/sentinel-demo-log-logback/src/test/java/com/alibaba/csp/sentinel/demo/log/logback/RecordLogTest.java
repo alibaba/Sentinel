@@ -38,7 +38,7 @@ public class RecordLogTest {
         while (count++ < 1000) {
             log.clearLog();
             RecordLog.info("Count {}", count);
-            String str = String.format("INFO  recordLogLogger - Count %d" + System.lineSeparator(), count);
+            String str = String.format("INFO  sentinelRecordLogger - Count %d" + System.lineSeparator(), count);
             Assert.assertEquals(str, log.getLog());
         }
 
@@ -46,7 +46,7 @@ public class RecordLogTest {
         while (count++ < 2000) {
             log.clearLog();
             RecordLog.warn("Count {}", count);
-            String str = String.format("WARN  recordLogLogger - Count %d" + System.lineSeparator(), count);
+            String str = String.format("WARN  sentinelRecordLogger - Count %d" + System.lineSeparator(), count);
             Assert.assertEquals(str, log.getLog());
         }
 
@@ -54,7 +54,7 @@ public class RecordLogTest {
         while (count++ < 3000) {
             log.clearLog();
             RecordLog.trace("Count {}", count);
-            String str = String.format("TRACE recordLogLogger - Count %d" + System.lineSeparator(), count);
+            String str = String.format("TRACE sentinelRecordLogger - Count %d" + System.lineSeparator(), count);
             Assert.assertEquals(str, log.getLog());
         }
 
@@ -62,7 +62,7 @@ public class RecordLogTest {
         while (count++ < 4000) {
             log.clearLog();
             RecordLog.debug("Count {}", count);
-            String str = String.format("DEBUG recordLogLogger - Count %d" + System.lineSeparator(), count);
+            String str = String.format("DEBUG sentinelRecordLogger - Count %d" + System.lineSeparator(), count);
             Assert.assertEquals(str, log.getLog());
         }
 
@@ -70,7 +70,7 @@ public class RecordLogTest {
         while (count++ < 5000) {
             log.clearLog();
             RecordLog.error("Count {}", count);
-            String str = String.format("ERROR recordLogLogger - Count %d" + System.lineSeparator(), count);
+            String str = String.format("ERROR sentinelRecordLogger - Count %d" + System.lineSeparator(), count);
             Assert.assertEquals(str, log.getLog());
         }
     }
@@ -85,31 +85,31 @@ public class RecordLogTest {
         RecordLog.info("Error", e);
         // split the log for test
         String[] logSplit = log.getLog().split(System.lineSeparator());
-        Assert.assertEquals("INFO  recordLogLogger - Error", logSplit[0]);
+        Assert.assertEquals("INFO  sentinelRecordLogger - Error", logSplit[0]);
 
         // warn test
         log.clearLog();
         RecordLog.warn("Error", e);
         logSplit = log.getLog().split(System.lineSeparator());
-        Assert.assertEquals("WARN  recordLogLogger - Error", logSplit[0]);
+        Assert.assertEquals("WARN  sentinelRecordLogger - Error", logSplit[0]);
 
         // trace test
         log.clearLog();
         RecordLog.trace("Error", e);
         logSplit = log.getLog().split(System.lineSeparator());
-        Assert.assertEquals("TRACE recordLogLogger - Error", logSplit[0]);
+        Assert.assertEquals("TRACE sentinelRecordLogger - Error", logSplit[0]);
 
         // debug test
         log.clearLog();
         RecordLog.debug("Error", e);
         logSplit = log.getLog().split(System.lineSeparator());
-        Assert.assertEquals("DEBUG recordLogLogger - Error", logSplit[0]);
+        Assert.assertEquals("DEBUG sentinelRecordLogger - Error", logSplit[0]);
 
         // error test
         log.clearLog();
         RecordLog.error("Error", e);
         logSplit = log.getLog().split(System.lineSeparator());
-        Assert.assertEquals("ERROR recordLogLogger - Error", logSplit[0]);
+        Assert.assertEquals("ERROR sentinelRecordLogger - Error", logSplit[0]);
     }
 
 }

@@ -55,7 +55,7 @@ public class ServerWebExchangeItemParser implements RequestItemParser<ServerWebE
 
     @Override
     public String getCookieValue(ServerWebExchange exchange, String cookieName) {
-        return Optional.ofNullable(exchange.getResponse().getCookies().getFirst(cookieName))
+        return Optional.ofNullable(exchange.getRequest().getCookies().getFirst(cookieName))
             .map(HttpCookie::getValue)
             .orElse(null);
     }

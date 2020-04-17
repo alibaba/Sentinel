@@ -5,7 +5,7 @@
   <parent>
     <artifactId>sentinel-extension</artifactId>
     <groupId>com.alibaba.csp</groupId>
-    <version>1.7.2-SNAPSHOT</version>
+    <version>1.8.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 

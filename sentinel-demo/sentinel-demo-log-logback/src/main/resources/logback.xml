@@ -22,20 +22,15 @@
         </encoder>
     </appender>
 
-    <logger name="recordLogLogger" level="trace">
+    <logger name="sentinelRecordLogger" level="trace">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />
     </logger>
 
-    <logger name="commandCenterLogLogger" level="trace">
+    <logger name="sentinelCommandCenterLogger" level="trace">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE2" />
     </logger>
-
-    <!--<root level="info">-->
-        <!--<appender-ref ref="STDOUT" />-->
-        <!--<appender-ref ref="FILE" />-->
-    <!--</root>-->
 
 </configuration>
 

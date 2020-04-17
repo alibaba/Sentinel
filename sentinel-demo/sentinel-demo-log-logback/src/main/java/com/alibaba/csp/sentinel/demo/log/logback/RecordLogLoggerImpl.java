@@ -16,8 +16,9 @@
 package com.alibaba.csp.sentinel.demo.log.logback;
 
 import com.alibaba.csp.sentinel.log.LogTarget;
-import com.alibaba.csp.sentinel.log.LogType;
 import com.alibaba.csp.sentinel.log.Logger;
+import com.alibaba.csp.sentinel.log.RecordLog;
+
 import org.slf4j.LoggerFactory;
 
 /**
@@ -33,9 +34,10 @@ import org.slf4j.LoggerFactory;
  *
  * @author xue8
  */
-@LogTarget(value = LogType.RECORD_LOG)
+@LogTarget(value = RecordLog.LOGGER_NAME)
 public class RecordLogLoggerImpl implements Logger {
-    private final org.slf4j.Logger logger = LoggerFactory.getLogger("recordLogLogger");
+
+    private final org.slf4j.Logger logger = LoggerFactory.getLogger(RecordLog.LOGGER_NAME);
 
     @Override
     public void info(String format, Object... arguments) {
