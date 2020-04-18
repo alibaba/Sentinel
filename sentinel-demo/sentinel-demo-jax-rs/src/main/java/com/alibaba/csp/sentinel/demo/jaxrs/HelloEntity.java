@@ -51,4 +51,12 @@ public class HelloEntity {
     public void setMsg(String msg) {
         this.msg = msg;
     }
+
+    @Override
+    public String toString() {
+        return "HelloEntity{" +
+                "id=" + id +
+                ", msg='" + msg + '\'' +
+                '}';
+    }
 }

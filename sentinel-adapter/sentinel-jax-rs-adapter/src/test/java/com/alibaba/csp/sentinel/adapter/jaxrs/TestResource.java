@@ -17,13 +17,11 @@ package com.alibaba.csp.sentinel.adapter.jaxrs;
 
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -73,5 +71,22 @@ public class TestResource {
     @Produces({ MediaType.APPLICATION_JSON })
     public String exception() {
         throw new RuntimeException("test exception mapper");
+    }
+
+    @Path("/400")
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON })
+    public String badRequest() {
+        throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
+                .entity("test return 400")
+                .build());
+    }
+
+    @Path("/delay/{seconds}")
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON })
+    public String delay(@PathParam(value = "seconds") long seconds) throws InterruptedException {
+        TimeUnit.SECONDS.sleep(seconds);
+        return "finish";
     }
 }

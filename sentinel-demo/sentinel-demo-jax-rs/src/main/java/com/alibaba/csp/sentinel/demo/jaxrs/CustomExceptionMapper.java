@@ -13,15 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.adapter.jaxrs.request;
+package com.alibaba.csp.sentinel.demo.jaxrs;
 
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ResourceInfo;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Priority;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
 
 /**
  * @author sea
  */
-public interface ResourceNameParser {
-
-    String parse(ContainerRequestContext containerRequestContext, ResourceInfo resourceInfo);
+@Component
+@Provider
+@Priority(javax.ws.rs.Priorities.USER - 1)
+public class CustomExceptionMapper implements ExceptionMapper<Throwable> {
+    @Override
+    public Response toResponse(Throwable exception) {
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                .entity("Unknown Server Error")
+                .build();
+    }
 }

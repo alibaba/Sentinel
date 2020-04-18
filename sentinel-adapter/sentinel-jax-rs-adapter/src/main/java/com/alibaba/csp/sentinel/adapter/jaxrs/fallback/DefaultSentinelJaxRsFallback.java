@@ -17,6 +17,9 @@ package com.alibaba.csp.sentinel.adapter.jaxrs.fallback;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 /**
  * @author sea
@@ -28,5 +31,15 @@ public class DefaultSentinelJaxRsFallback implements SentinelJaxRsFallback {
                 .entity("Blocked by Sentinel (flow limiting)")
                 .type(MediaType.APPLICATION_JSON_TYPE)
                 .build();
+    }
+
+    @Override
+    public Future<Response> fallbackFutureResponse(final String route, final Throwable cause) {
+        return new FutureTask<>(new Callable<Response>() {
+            @Override
+            public Response call() throws Exception {
+                return fallbackResponse(route, cause);
+            }
+        });
     }
 }

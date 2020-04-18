@@ -16,6 +16,10 @@
 package com.alibaba.csp.sentinel.adapter.jaxrs;
 
 import java.util.Collections;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.adapter.jaxrs.config.SentinelJaxRsConfig;
 import com.alibaba.csp.sentinel.adapter.jaxrs.fallback.SentinelJaxRsFallback;
@@ -168,6 +172,16 @@ public class ProviderFilterTest {
                         .entity("Blocked by Sentinel (flow limiting)")
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .build();
+            }
+
+            @Override
+            public Future<javax.ws.rs.core.Response> fallbackFutureResponse(final String route, final Throwable cause) {
+                return new FutureTask<>(new Callable<javax.ws.rs.core.Response>() {
+                    @Override
+                    public javax.ws.rs.core.Response call() throws Exception {
+                        return fallbackResponse(route, cause);
+                    }
+                });
             }
         });
 

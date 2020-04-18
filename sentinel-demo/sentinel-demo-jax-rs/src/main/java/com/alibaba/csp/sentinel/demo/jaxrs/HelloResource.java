@@ -53,4 +53,11 @@ public class HelloResource {
                 .mapToObj(i -> new HelloEntity((long)i, "hello"))
                 .collect(Collectors.toList());
     }
+
+    @Path("/ex")
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON })
+    public String exception() {
+        throw new RuntimeException("test exception mapper");
+    }
 }

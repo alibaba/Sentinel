@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.adapter.jaxrs.fallback;
 
 import javax.ws.rs.core.Response;
+import java.util.concurrent.Future;
 
 /**
  * @author sea
@@ -30,4 +31,13 @@ public interface SentinelJaxRsFallback {
      * @return the fallback response
      */
     Response fallbackResponse(String route, Throwable cause);
+
+    /**
+     * Provides a fallback response future based on the cause of the failed execution.
+     *
+     * @param route The route the fallback is for
+     * @param cause cause of the main method failure, may be <code>null</code>
+     * @return the fallback response future
+     */
+    Future<Response> fallbackFutureResponse(String route, Throwable cause);
 }

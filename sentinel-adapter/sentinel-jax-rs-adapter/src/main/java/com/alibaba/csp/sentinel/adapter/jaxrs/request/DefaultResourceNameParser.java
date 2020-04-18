@@ -16,7 +16,6 @@
 package com.alibaba.csp.sentinel.adapter.jaxrs.request;
 
 import javax.ws.rs.Path;
-import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ResourceInfo;
 
@@ -31,8 +30,4 @@ public class DefaultResourceNameParser implements ResourceNameParser {
         return containerRequestContext.getRequest().getMethod() + ":" + (classPath != null ? classPath.value() : "") + (methodPath != null ? methodPath.value() : "");
     }
 
-    @Override
-    public String parse(ClientRequestContext clientRequestContext) {
-        return clientRequestContext.getMethod() + ":" + clientRequestContext.getUri().getPath();
-    }
 }
