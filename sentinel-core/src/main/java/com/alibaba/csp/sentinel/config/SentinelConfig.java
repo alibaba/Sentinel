@@ -16,10 +16,10 @@
 package com.alibaba.csp.sentinel.config;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.util.AppNameUtil;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
+import java.io.File;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author leyou
  * @author Eric Zhao
+ * @author Lin Liang
  */
 public final class SentinelConfig {
 
@@ -56,6 +57,12 @@ public final class SentinelConfig {
     static final int DEFAULT_TOTAL_METRIC_FILE_COUNT = 6;
     static final int DEFAULT_COLD_FACTOR = 3;
 
+    private static String appName = "";
+    public static final String APP_NAME = "project.name";
+    public static final String SUN_JAVA_COMMAND = "sun.java.command";
+    private static final String JAR_SUFFIX_LOWER = ".jar";
+    private static final String JAR_SUFFIX_UPPER = ".JAR";
+
     public static final int DEFAULT_STATISTIC_MAX_RT = 4900;
 
     static {
@@ -64,6 +71,8 @@ public final class SentinelConfig {
             loadProps();
             resolveAppType();
             RecordLog.info("[SentinelConfig] Application type resolved: " + appType);
+            resolveAppName();
+            RecordLog.info("[SentinelConfig] Application name resolved: " + appName);
         } catch (Throwable ex) {
             RecordLog.warn("[SentinelConfig] Failed to initialize", ex);
             ex.printStackTrace();
@@ -134,7 +143,7 @@ public final class SentinelConfig {
     }
 
     public static String getAppName() {
-        return AppNameUtil.getAppName();
+        return appName;
     }
 
     /**
@@ -209,6 +218,56 @@ public final class SentinelConfig {
             SentinelConfig.setConfig(STATISTIC_MAX_RT, String.valueOf(DEFAULT_STATISTIC_MAX_RT));
             return DEFAULT_STATISTIC_MAX_RT;
         }
+    }
+
+    /**
+     * method for getting application name. This class uses the flowing order to get app's name:
+     *
+     * <ol>
+     * <li>get {@code project.name} from System Properties, if not null, use the value as app name;</li>
+     * <li>get {@code project.name} from Properties file, if not null, use the value as app name;</li>
+     * <li>get {@code sun.java.command} from System properties, remove path, arguments and ".jar" or ".JAR"
+     * suffix, use the result as app name. Note that whitespace in file name or path is not allowed, or a
+     * wrong app name may be gotten, For example:
+     * <p>
+     * <code>
+     * "test.Main" -> test.Main<br/>
+     * "/target/test.Main" -> test.Main<br/>
+     * "/target/test.Main args1" -> test.Main<br/>
+     * "Main.jar" -> Main<br/>
+     * "/target/Main.JAR args1" -> Main<br/>
+     * "Mai n.jar" -> Mai // whitespace in file name is not allowed<br/>
+     * </code>
+     * </p>
+     * </li>
+     * </ol>
+     */
+    public static void resolveAppName() {
+
+        if (props.get(APP_NAME) != null) {
+            appName = props.get(APP_NAME);
+            return;
+        }
+        // parse sun.java.command property
+        String command = System.getProperty(SUN_JAVA_COMMAND);
+        if (StringUtil.isBlank(command)) {
+            return;
+        }
+        command = command.split("\\s")[0];
+        String separator = File.separator;
+        if (command.contains(separator)) {
+            String[] strs;
+            if ("\\".equals(separator)) {
+                strs = command.split("\\\\");
+            } else {
+                strs = command.split(separator);
+            }
+            command = strs[strs.length - 1];
+        }
+        if (command.endsWith(JAR_SUFFIX_LOWER) || command.endsWith(JAR_SUFFIX_UPPER)) {
+            command = command.substring(0, command.length() - 4);
+        }
+        appName = command;
     }
 
     private SentinelConfig() {}

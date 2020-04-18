@@ -38,9 +38,6 @@ public final class SentinelConfigLoader {
     public static final String SENTINEL_CONFIG_ENV_KEY = "CSP_SENTINEL_CONFIG_FILE";
     public static final String SENTINEL_CONFIG_PROPERTY_KEY = "csp.sentinel.config.file";
 
-    private static final String DIR_NAME = "logs" + File.separator + "csp";
-    private static final String USER_HOME = "user.home";
-
     private static final String DEFAULT_SENTINEL_CONFIG_FILE = "classpath:sentinel.properties";
 
     private static Properties properties = new Properties();
@@ -64,17 +61,6 @@ public final class SentinelConfigLoader {
         }
 
         Properties p = ConfigUtil.loadProperties(fileName);
-
-        // Compatible with legacy config file path.
-        if (p == null) {
-            String path = addSeparator(System.getProperty(USER_HOME)) + DIR_NAME + File.separator;
-            fileName = path + AppNameUtil.getAppName() + ".properties";
-            File file = new File(fileName);
-            if (file.exists()) {
-                p = ConfigUtil.loadProperties(fileName);
-            }
-        }
-
         if (p != null && !p.isEmpty()) {
             RecordLog.info("[SentinelConfigLoader] Loading Sentinel config from " + fileName);
             properties.putAll(p);
