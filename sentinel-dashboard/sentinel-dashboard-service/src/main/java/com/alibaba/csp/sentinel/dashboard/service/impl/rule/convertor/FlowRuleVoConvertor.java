@@ -37,7 +37,6 @@ public class FlowRuleVoConvertor {
 
     public static FlowRuleEntity convertAdd(AddFlowRuleReqVo reqVo) {
         FlowRuleEntity entity = new FlowRuleEntity();
-        Date date = new Date();
         entity.setApp(reqVo.getApp());
         entity.setIp(reqVo.getIp());
         entity.setPort(reqVo.getPort());
@@ -56,9 +55,10 @@ public class FlowRuleVoConvertor {
             ClusterFlowConfig clusterFlowConfig = new ClusterFlowConfig();
             clusterFlowConfig.setThresholdType(clusterConfigReqVo.getThresholdType());
             clusterFlowConfig.setFallbackToLocalWhenFail(clusterConfigReqVo.getFallbackToLocalWhenFail());
+            entity.setClusterConfig(clusterFlowConfig);
         }
-        entity.setGmtCreate(date);
-        entity.setGmtModified(date);
+        entity.setGmtCreate(new Date());
+        entity.setGmtModified(new Date());
         return entity;
     }
 
@@ -77,6 +77,7 @@ public class FlowRuleVoConvertor {
             ClusterFlowConfig clusterFlowConfig = new ClusterFlowConfig();
             clusterFlowConfig.setThresholdType(clusterConfigReqVo.getThresholdType());
             clusterFlowConfig.setFallbackToLocalWhenFail(clusterConfigReqVo.getFallbackToLocalWhenFail());
+            toUpdateRuleEntity.setClusterConfig(clusterFlowConfig);
         }
         toUpdateRuleEntity.setGmtModified(new Date());
     }

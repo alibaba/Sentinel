@@ -24,7 +24,7 @@ public class FlowRuleVoChecker {
         checkInValues(reqVo.getGrade(), "grade",0, 1);
 
         checkNotNull(reqVo.getCount(), "count");
-        checkCondition(reqVo.getCount() >= 0, "count must be at lease zero");
+        checkCondition(reqVo.getCount() >= 0, "count must be at lease 0");
 
         checkNotNull(reqVo.getStrategy(), "strategy");
         if (reqVo.getStrategy() != 0) {
