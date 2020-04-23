@@ -27,6 +27,7 @@
         <module>sentinel-spring-cloud-gateway-adapter</module>
         <module>sentinel-spring-webmvc-adapter</module>
         <module>sentinel-zuul2-adapter</module>
+        <module>sentinel-jax-rs-adapter</module>
     </modules>
 
     <dependencyManagement>
