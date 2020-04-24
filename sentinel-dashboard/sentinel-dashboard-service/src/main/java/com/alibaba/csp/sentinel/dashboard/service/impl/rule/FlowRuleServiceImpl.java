@@ -23,30 +23,25 @@ public class FlowRuleServiceImpl extends BaseRuleService<FlowRuleEntity> impleme
     @Override
     public List<QueryFlowRuleListRespVo> queryFlowRuleList(MachineReqVo reqVo) throws Exception {
         List<FlowRuleEntity> rules = queryRuleList(reqVo);
-
         return rules.stream().map(o -> FlowRuleVoConvertor.convertList(o)).collect(Collectors.toList());
     }
 
     @Override
     public void addFlowRule(AddFlowRuleReqVo reqVo) throws Exception {
         FlowRuleVoChecker.checkAdd(reqVo);
-
         FlowRuleEntity rule = FlowRuleVoConvertor.convertAdd(reqVo);
-
         addRule(reqVo, rule);
     }
 
     @Override
     public void updateFlowRule(UpdateFlowRuleReqVo reqVo) throws Exception {
         FlowRuleVoChecker.checkUpdate(reqVo);
-
         updateRule(reqVo, reqVo.getId(), toUpdateRule -> FlowRuleVoConvertor.convertUpdate(reqVo, toUpdateRule));
     }
 
     @Override
     public void deleteFlowRule(DeleteFlowRuleReqVo reqVo) throws Exception {
         FlowRuleVoChecker.checkDelete(reqVo);
-
         deleteRule(reqVo, reqVo.getId());
     }
 }

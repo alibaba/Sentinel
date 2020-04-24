@@ -26,9 +26,13 @@ public class DegradeRuleVoConvertor {
         DegradeRuleEntity entity = new DegradeRuleEntity();
         entity.setApp(reqVo.getApp());
         entity.setIp(reqVo.getIp());
-
-        // TODO
-
+        entity.setPort(reqVo.getPort());
+        entity.setResource(reqVo.getResource());
+        entity.setGrade(reqVo.getGrade());
+        entity.setCount(reqVo.getCount());
+        entity.setTimeWindow(reqVo.getTimeWindow());
+        entity.setGmtCreate(new Date());
+        entity.setGmtModified(new Date());
         return entity;
     }
 

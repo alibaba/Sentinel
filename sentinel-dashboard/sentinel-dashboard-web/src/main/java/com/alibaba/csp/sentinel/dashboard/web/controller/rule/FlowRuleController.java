@@ -33,10 +33,11 @@ import java.util.List;
  * Flow rule controller.
  *
  * @author Eric Zhao
+ * @author cdfive
  * @since 1.4.0
  */
 @RestController
-@RequestMapping(value = "/flow")
+@RequestMapping("/flow")
 public class FlowRuleController {
 
     @Autowired
