@@ -61,15 +61,13 @@ public class SentinelDubboProviderFilter extends BaseSentinelDubboFilter {
         Entry methodEntry = null;
         try {
             String methodResourceName = DubboUtils.getResourceName(invoker, invocation, DubboConfig.getDubboProviderPrefix());
-            String interfaceResourceName = DubboConfig.getDubboInterfaceGroupAndVersionEnabled() ? invoker.getUrl().getColonSeparatedKey()
-                    : invoker.getInterface().getName();
+            String interfaceResourceName = DubboUtils.getInterfaceName(invoker);
             // Only need to create entrance context at provider side, as context will take effect
             // at entrance of invocation chain only (for inbound traffic).
             ContextUtil.enter(methodResourceName, application);
             interfaceEntry = SphU.entry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN);
-            rpcContext.set(DubboUtils.DUBBO_INTERFACE_ENTRY_KEY, interfaceEntry);
             methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN, invocation.getArguments());
-            rpcContext.set(DubboUtils.DUBBO_METHOD_ENTRY_KEY, methodEntry);
+            rpcContext.set(methodResourceName, new Entry[]{interfaceEntry, methodEntry});
             return invoker.invoke(invocation);
         } catch (BlockException e) {
             return DubboFallbackRegistry.getProviderFallback().handle(invoker, invocation, e);
