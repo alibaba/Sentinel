@@ -81,7 +81,6 @@ public abstract class BaseSentinelDubboFilter extends ListenableFilter {
             }
             RpcContext.getContext().remove(methodResourceName);
         }
-        URL url = invoker.getUrl();
         if (CommonConstants.PROVIDER_SIDE.equals(invoker.getUrl().getParameter(CommonConstants.SIDE_KEY))) {
             ContextUtil.exit();
         }
