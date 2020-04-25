@@ -28,6 +28,7 @@
         <module>sentinel-spring-webmvc-adapter</module>
         <module>sentinel-zuul2-adapter</module>
         <module>sentinel-jax-rs-adapter</module>
+        <module>sentinel-quarkus-adapter</module>
     </modules>
 
     <dependencyManagement>
