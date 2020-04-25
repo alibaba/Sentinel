@@ -101,8 +101,8 @@ public class ClusterNode extends StatisticNode {
     public Node getOrCreateOriginNode(String origin) {
         StatisticNode statisticNode = originCountMap.get(origin);
         if (statisticNode == null) {
+            lock.lock();
             try {
-                lock.lock();
                 statisticNode = originCountMap.get(origin);
                 if (statisticNode == null) {
                     // The node is absent, create a new node for the origin.
