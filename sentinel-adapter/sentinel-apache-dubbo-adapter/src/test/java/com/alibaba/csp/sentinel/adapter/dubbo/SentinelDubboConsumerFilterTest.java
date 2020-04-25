@@ -264,10 +264,10 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
         // As SphU.entry(interfaceName, EntryType.OUT);
         Set<Node> childList = entranceNode.getChildList();
         assertEquals(1, childList.size());
-        DefaultNode interfaceNode = getNode(invoker.getUrl().getColonSeparatedKey(), entranceNode);
+        DefaultNode interfaceNode = getNode(DubboUtils.getInterfaceName(invoker), entranceNode);
         ResourceWrapper interfaceResource = interfaceNode.getId();
 
-        assertEquals(invoker.getUrl().getColonSeparatedKey(), interfaceResource.getName());
+        assertEquals(DubboUtils.getInterfaceName(invoker), interfaceResource.getName());
         assertSame(EntryType.OUT, interfaceResource.getEntryType());
 
         // As SphU.entry(resourceName, EntryType.OUT);
