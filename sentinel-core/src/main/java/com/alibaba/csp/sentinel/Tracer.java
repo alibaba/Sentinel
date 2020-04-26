@@ -114,12 +114,7 @@ public class Tracer {
             m.addException(entry.getResourceWrapper().getName(), count, t);
         }
 
-        // clusterNode can be null when Constants.ON is false.
-        ClusterNode clusterNode = curNode.getClusterNode();
-        if (clusterNode == null) {
-            return;
-        }
-        clusterNode.trace(t, count);
+        curNode.trace(t, count);
     }
 
     /**

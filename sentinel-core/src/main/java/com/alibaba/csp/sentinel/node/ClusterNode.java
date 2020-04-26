@@ -123,18 +123,4 @@ public class ClusterNode extends StatisticNode {
         return originCountMap;
     }
 
-    /**
-     * Add exception count only when given {@code throwable} is not a {@link BlockException}.
-     *
-     * @param throwable target exception
-     * @param count     count to add
-     */
-    public void trace(Throwable throwable, int count) {
-        if (count <= 0) {
-            return;
-        }
-        if (!BlockException.isBlockException(throwable)) {
-            this.increaseExceptionQps(count);
-        }
-    }
 }
