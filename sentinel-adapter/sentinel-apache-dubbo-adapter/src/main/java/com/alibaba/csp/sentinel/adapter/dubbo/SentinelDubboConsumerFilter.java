@@ -53,13 +53,23 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
     }
 
     @Override
+    String getMethodName(Invoker invoker, Invocation invocation) {
+        return DubboUtils.getResourceName(invoker, invocation, DubboConfig.getDubboConsumerPrefix());
+    }
+
+    @Override
+    String getInterfaceName(Invoker invoker) {
+        return DubboUtils.getInterfaceName(invoker);
+    }
+
+    @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         Entry interfaceEntry = null;
         Entry methodEntry = null;
         RpcContext rpcContext = RpcContext.getContext();
         try {
-            String methodResourceName = DubboUtils.getResourceName(invoker, invocation, DubboConfig.getDubboConsumerPrefix());
-            String interfaceResourceName = DubboUtils.getInterfaceName(invoker);
+            String methodResourceName = getMethodName(invoker, invocation);
+            String interfaceResourceName = getInterfaceName(invoker);
             InvokeMode invokeMode = RpcUtils.getInvokeMode(invoker.getUrl(), invocation);
 
             if (InvokeMode.SYNC == invokeMode) {

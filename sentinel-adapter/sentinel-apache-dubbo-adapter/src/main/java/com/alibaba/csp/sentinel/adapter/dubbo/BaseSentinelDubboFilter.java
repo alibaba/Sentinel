@@ -20,7 +20,6 @@ import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig;
 import com.alibaba.csp.sentinel.context.ContextUtil;
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -39,7 +38,47 @@ public abstract class BaseSentinelDubboFilter extends ListenableFilter {
         this.listener = new SentinelDubboListener();
     }
 
-    static class SentinelDubboListener implements Listener {
+
+    private void traceAndExit(Throwable throwable, Invoker invoker, Invocation invocation) {
+        String methodResourceName = getMethodName(invoker, invocation);
+        Entry[] entries = (Entry[]) RpcContext.getContext().get(methodResourceName);
+        if (entries != null) {
+            Entry interfaceEntry = entries[0];
+            Entry methodEntry = entries[1];
+            if (methodEntry != null) {
+                Tracer.traceEntry(throwable, methodEntry);
+                methodEntry.exit();
+            }
+            if (interfaceEntry != null) {
+                Tracer.traceEntry(throwable, interfaceEntry);
+                interfaceEntry.exit();
+            }
+            RpcContext.getContext().remove(methodResourceName);
+        }
+        if (CommonConstants.PROVIDER_SIDE.equals(invoker.getUrl().getParameter(CommonConstants.SIDE_KEY))) {
+            ContextUtil.exit();
+        }
+    }
+
+    /**
+     * Get method name of dubbo rpc
+     *
+     * @param invoker
+     * @param invocation
+     * @return
+     */
+    abstract String getMethodName(Invoker invoker, Invocation invocation);
+
+    /**
+     * Get interface name of dubbo rpc
+     *
+     * @param invoker
+     * @return
+     */
+    abstract String getInterfaceName(Invoker invoker);
+
+
+    private class SentinelDubboListener implements Listener {
 
         public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
             onSuccess(appResponse, invoker, invocation);
@@ -63,26 +102,5 @@ public abstract class BaseSentinelDubboFilter extends ListenableFilter {
             traceAndExit(t, invoker, invocation);
         }
 
-    }
-
-    static void traceAndExit(Throwable throwable, Invoker invoker, Invocation invocation) {
-        String methodResourceName = DubboUtils.getResourceName(invoker, invocation, DubboConfig.getDubboConsumerPrefix());
-        Entry[] entries = (Entry[]) RpcContext.getContext().get(methodResourceName);
-        if (entries != null) {
-            Entry interfaceEntry = entries[0];
-            Entry methodEntry = entries[1];
-            if (methodEntry != null) {
-                Tracer.traceEntry(throwable, methodEntry);
-                methodEntry.exit();
-            }
-            if (interfaceEntry != null) {
-                Tracer.traceEntry(throwable, interfaceEntry);
-                interfaceEntry.exit();
-            }
-            RpcContext.getContext().remove(methodResourceName);
-        }
-        if (CommonConstants.PROVIDER_SIDE.equals(invoker.getUrl().getParameter(CommonConstants.SIDE_KEY))) {
-            ContextUtil.exit();
-        }
     }
 }
