@@ -15,10 +15,6 @@
  */
 package com.alibaba.csp.sentinel.node;
 
-import com.alibaba.csp.sentinel.EntryType;
-import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
-
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -128,30 +124,5 @@ public class ClusterNodeTest {
                 assertTrue(clusterNode.getOriginCountMap().containsKey(origin));
             }
         }
-    }
-
-    @Test
-    public void testTraceException() {
-        ClusterNode clusterNode = new ClusterNode("test");
-        DefaultNode defaultNode = new DefaultNode(new StringResourceWrapper("test", EntryType.IN), clusterNode);
-
-        Exception exception = new RuntimeException("test");
-
-        // test count<=0, no exceptionQps added
-        defaultNode.trace(exception, 0);
-        defaultNode.trace(exception, -1);
-        assertEquals(0, defaultNode.exceptionQps(), 0.01);
-        assertEquals(0, defaultNode.totalException());
-
-        // test count=1, not BlockException, 1 exceptionQps added
-        defaultNode.trace(exception, 1);
-        assertEquals(1, defaultNode.exceptionQps(), 0.01);
-        assertEquals(1, defaultNode.totalException());
-
-        // test count=1, BlockException, no exceptionQps added
-        FlowException flowException = new FlowException("flow");
-        defaultNode.trace(flowException, 1);
-        assertEquals(1, defaultNode.exceptionQps(), 0.01);
-        assertEquals(1, defaultNode.totalException());
     }
 }
