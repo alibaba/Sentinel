@@ -93,7 +93,7 @@ public class SentinelConfigTest {
             out.write("\n");
             out.write(buildPropertyStr(STATISTIC_MAX_RT, "6000"));
             out.write("\n");
-            out.write(buildPropertyStr(APP_NAME, "sentinel_test"));
+            out.write(buildPropertyStr(PROJECT_NAME_PROP_KEY, "sentinel_test"));
             out.flush();
             out.close();
 
