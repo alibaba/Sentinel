@@ -16,10 +16,10 @@
 package com.alibaba.csp.sentinel.config;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.util.AppNameUtil;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
+import java.io.File;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author leyou
  * @author Eric Zhao
+ * @author Lin Liang
  */
 public final class SentinelConfig {
 
@@ -41,9 +42,13 @@ public final class SentinelConfig {
     public static final int APP_TYPE_COMMON = 0;
 
     private static final Map<String, String> props = new ConcurrentHashMap<>();
-    private static int appType = APP_TYPE_COMMON;
 
-    public static final String APP_TYPE = "csp.sentinel.app.type";
+    private static int appType = APP_TYPE_COMMON;
+    private static String appName = "";
+
+    public static final String PROJECT_NAME_PROP_KEY = "project.name";
+    public static final String APP_NAME_PROP_KEY = "csp.sentinel.app.name";
+    public static final String APP_TYPE_PROP_KEY = "csp.sentinel.app.type";
     public static final String CHARSET = "csp.sentinel.charset";
     public static final String SINGLE_METRIC_FILE_SIZE = "csp.sentinel.metric.file.single.size";
     public static final String TOTAL_METRIC_FILE_COUNT = "csp.sentinel.metric.file.total.count";
@@ -51,17 +56,17 @@ public final class SentinelConfig {
     public static final String STATISTIC_MAX_RT = "csp.sentinel.statistic.max.rt";
     public static final String SPI_CLASSLOADER = "csp.sentinel.spi.classloader";
 
-    static final String DEFAULT_CHARSET = "UTF-8";
-    static final long DEFAULT_SINGLE_METRIC_FILE_SIZE = 1024 * 1024 * 50;
-    static final int DEFAULT_TOTAL_METRIC_FILE_COUNT = 6;
-    static final int DEFAULT_COLD_FACTOR = 3;
-
-    public static final int DEFAULT_STATISTIC_MAX_RT = 4900;
+    public static final String DEFAULT_CHARSET = "UTF-8";
+    public static final long DEFAULT_SINGLE_METRIC_FILE_SIZE = 1024 * 1024 * 50;
+    public static final int DEFAULT_TOTAL_METRIC_FILE_COUNT = 6;
+    public static final int DEFAULT_COLD_FACTOR = 3;
+    public static final int DEFAULT_STATISTIC_MAX_RT = 5000;
 
     static {
         try {
             initialize();
             loadProps();
+            resolveAppName();
             resolveAppType();
             RecordLog.info("[SentinelConfig] Application type resolved: " + appType);
         } catch (Throwable ex) {
@@ -72,7 +77,7 @@ public final class SentinelConfig {
 
     private static void resolveAppType() {
         try {
-            String type = getConfig(APP_TYPE);
+            String type = getConfig(APP_TYPE_PROP_KEY);
             if (type == null) {
                 appType = APP_TYPE_COMMON;
                 return;
@@ -134,7 +139,7 @@ public final class SentinelConfig {
     }
 
     public static String getAppName() {
-        return AppNameUtil.getAppName();
+        return appName;
     }
 
     /**
@@ -189,9 +194,7 @@ public final class SentinelConfig {
     }
 
     /**
-     * <p>Get the max RT value that Sentinel could accept.</p>
-     * <p>Response time that exceeds {@code statisticMaxRt} will be recorded as this value.
-     * The default value is {@link #DEFAULT_STATISTIC_MAX_RT}.</p>
+     * <p>Get the max RT value that Sentinel could accept for system BBR strategy.</p>
      *
      * @return the max allowed RT value
      * @since 1.4.1
@@ -209,6 +212,79 @@ public final class SentinelConfig {
             SentinelConfig.setConfig(STATISTIC_MAX_RT, String.valueOf(DEFAULT_STATISTIC_MAX_RT));
             return DEFAULT_STATISTIC_MAX_RT;
         }
+    }
+
+    /**
+     * Function for resolving project name. The order is elaborated below:
+     *
+     * <ol>
+     * <li>Resolve the value from {@code CSP_SENTINEL_APP_NAME} system environment;</li>
+     * <li>Resolve the value from {@code csp.sentinel.app.name} system property;</li>
+     * <li>Resolve the value from {@code project.name} system property (for compatibility);</li>
+     * <li>Resolve the value from {@code sun.java.command} system property, then remove path, arguments and ".jar" or ".JAR"
+     * suffix, use the result as app name. Note that whitespace in file name or path is not allowed, or a
+     * wrong app name may be gotten, For example:
+     * <p>
+     * <code>
+     * "test.Main" -> test.Main<br/>
+     * "/target/test.Main" -> test.Main<br/>
+     * "/target/test.Main args1" -> test.Main<br/>
+     * "Main.jar" -> Main<br/>
+     * "/target/Main.JAR args1" -> Main<br/>
+     * "Mai n.jar" -> Mai // whitespace in file name is not allowed<br/>
+     * </code>
+     * </p>
+     * </li>
+     * </ol>
+     */
+    private static void resolveAppName() {
+        // Priority: system env -> csp.sentinel.app.name -> project.name -> main class (or jar) name
+        String envKey = toEnvKey(APP_NAME_PROP_KEY);
+        String n = System.getenv(envKey);
+        if (!StringUtil.isBlank(n)) {
+            appName = n;
+            RecordLog.info("App name resolved from system env {}: {}", envKey, appName);
+            return;
+        }
+        n = props.get(APP_NAME_PROP_KEY);
+        if (!StringUtil.isBlank(n)) {
+            appName = n;
+            RecordLog.info("App name resolved from property {}: {}", APP_NAME_PROP_KEY, appName);
+            return;
+        }
+        n = props.get(PROJECT_NAME_PROP_KEY);
+        if (!StringUtil.isBlank(n)) {
+            appName = n;
+            RecordLog.info("App name resolved from property {}: {}", PROJECT_NAME_PROP_KEY, appName);
+            return;
+        }
+        // Parse sun.java.command property by default.
+        String command = System.getProperty("sun.java.command");
+        if (StringUtil.isBlank(command)) {
+            RecordLog.warn("Cannot resolve default appName from property sun.java.command");
+            return;
+        }
+        command = command.split("\\s")[0];
+        String separator = File.separator;
+        if (command.contains(separator)) {
+            String[] strs;
+            if ("\\".equals(separator)) {
+                // Handle separator in Windows.
+                strs = command.split("\\\\");
+            } else {
+                strs = command.split(separator);
+            }
+            command = strs[strs.length - 1];
+        }
+        if (command.toLowerCase().endsWith(".jar")) {
+            command = command.substring(0, command.length() - 4);
+        }
+        appName = command;
+        RecordLog.info("App name resolved from default: {}", appName);
+    }
+
+    private static String toEnvKey(/*@NotBlank*/ String propKey) {
+        return propKey.toUpperCase().replace('.', '_');
     }
 
     private SentinelConfig() {}
