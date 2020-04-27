@@ -32,11 +32,11 @@ import com.alibaba.csp.sentinel.util.AppNameUtil;
 public final class ConfigPropertyHelper {
 
     public static void setAppNameProperty(String appName) {
-        System.setProperty(SentinelConfig.APP_NAME, appName);
+        System.setProperty(SentinelConfig.APP_NAME_PROP_KEY, appName);
     }
 
     public static void clearAppNameProperty() {
-        System.clearProperty(SentinelConfig.APP_NAME);
+        System.clearProperty(SentinelConfig.APP_NAME_PROP_KEY);
     }
 
     public static void runWithConfig(Properties prop, String appName, Task task) throws Exception {
