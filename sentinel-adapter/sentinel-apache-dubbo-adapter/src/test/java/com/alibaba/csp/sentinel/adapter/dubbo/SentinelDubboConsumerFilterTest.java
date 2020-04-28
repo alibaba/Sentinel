@@ -34,8 +34,10 @@ import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
@@ -110,9 +112,7 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
         when(invocation.getAttachment(ASYNC_KEY)).thenReturn(Boolean.TRUE.toString());
         initDegradeRule(DubboUtils.getInterfaceName(invoker));
 
-        Result result = requestGo(false, invoker, invocation);
-        verifyInvocationStructureForAsyncCall(invoker, invocation);
-        responseBack(result, invoker, invocation);
+        Result result = invokeDubboRpc(false, invoker, invocation);
         verifyInvocationStructureForCallFinish(invoker, invocation);
         assertEquals("normal", result.getValue());
 
@@ -142,9 +142,7 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
         Invoker invoker = DubboTestUtil.getDefaultMockInvoker();
         initDegradeRule(DubboUtils.getInterfaceName(invoker));
 
-        Result result = requestGo(false, invoker, invocation);
-        verifyInvocationStructure(invoker, invocation);
-        responseBack(result, invoker, invocation);
+        Result result = invokeDubboRpc(false, invoker, invocation);
         verifyInvocationStructureForCallFinish(invoker, invocation);
         assertEquals("normal", result.getValue());
 
@@ -193,7 +191,7 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
 
 
     @Test
-    public void testInvokeAsync() throws InterruptedException {
+    public void testInvokeAsync() {
 
         Invocation invocation = DubboTestUtil.getDefaultMockInvocationOne();
         Invoker invoker = DubboTestUtil.getDefaultMockInvoker();
@@ -203,9 +201,8 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
         when(result.hasException()).thenReturn(false);
         when(invoker.invoke(invocation)).thenAnswer(invocationOnMock -> {
             verifyInvocationStructureForAsyncCall(invoker, invocation);
-            return result;
+             return result;
         });
-
         consumerFilter.invoke(invoker, invocation);
         verify(invoker).invoke(invocation);
 
@@ -230,7 +227,6 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
         consumerFilter.invoke(invoker, invocation);
         verify(invoker).invoke(invocation);
 
-        consumerFilter.listener().onMessage(result, invoker, invocation);
         Context context = ContextUtil.getContext();
         assertNull(context);
     }
@@ -403,26 +399,19 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
         });
     }
 
-    private Result invokeDubboRpc(boolean isException, Invoker invoker, Invocation invocation) {
-        return responseBack(requestGo(isException, invoker, invocation), invoker, invocation);
-    }
-
-    private Result requestGo(boolean exception, Invoker invoker, Invocation currentInvocation) {
-        AsyncRpcResult result = null;
-
-        if (exception) {
-            result = AsyncRpcResult.newDefaultAsyncResult(new Exception("error"), currentInvocation);
+    private Result invokeDubboRpc(boolean exception, Invoker invoker, Invocation invocation) {
+        Result result = null;
+        InvokeMode invokeMode = RpcUtils.getInvokeMode(invoker.getUrl(), invocation);
+        if (InvokeMode.SYNC == invokeMode) {
+            result = exception ? new AppResponse(new Exception("error")) : new AppResponse("normal");
         } else {
-            result = AsyncRpcResult.newDefaultAsyncResult("normal", currentInvocation);
+            result = exception ? AsyncRpcResult.newDefaultAsyncResult(new Exception("error"), invocation) : AsyncRpcResult.newDefaultAsyncResult("normal", invocation);
         }
-        when(invoker.invoke(currentInvocation)).thenReturn(result);
-        return consumerFilter.invoke(invoker, currentInvocation);
+        when(invoker.invoke(invocation)).thenReturn(result);
+        return consumerFilter.invoke(invoker, invocation);
     }
 
-    private Result responseBack(Result result, Invoker invoker, Invocation invocation) {
-        consumerFilter.listener().onMessage(result, invoker, invocation);
-        return result;
-    }
+
 
 
 }

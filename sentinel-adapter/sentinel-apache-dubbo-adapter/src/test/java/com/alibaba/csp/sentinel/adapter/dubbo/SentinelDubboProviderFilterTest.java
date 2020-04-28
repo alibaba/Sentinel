@@ -19,7 +19,6 @@ import com.alibaba.csp.sentinel.BaseTest;
 import com.alibaba.csp.sentinel.DubboTestUtil;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
-import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig;
 import com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.context.ContextUtil;
@@ -88,7 +87,6 @@ public class SentinelDubboProviderFilterTest extends BaseTest {
         filter.invoke(invoker, invocation);
         verify(invoker).invoke(invocation);
 
-        filter.listener().onMessage(result, invoker, invocation);
         Context context = ContextUtil.getContext();
         assertNull(context);
     }
@@ -119,11 +117,7 @@ public class SentinelDubboProviderFilterTest extends BaseTest {
         DefaultNode interfaceNode = (DefaultNode) childList.iterator().next();
         ResourceWrapper interfaceResource = interfaceNode.getId();
 
-        if (DubboConfig.getDubboInterfaceGroupAndVersionEnabled()) {
-            assertEquals(invoker.getUrl().getColonSeparatedKey(), interfaceResource.getName());
-        } else {
-            assertEquals(invoker.getInterface().getName(), interfaceResource.getName());
-        }
+        assertEquals(filter.getInterfaceName(invoker), interfaceResource.getName());
         assertSame(EntryType.IN, interfaceResource.getEntryType());
 
         // As SphU.entry(resourceName, EntryType.IN, 1, invocation.getArguments());

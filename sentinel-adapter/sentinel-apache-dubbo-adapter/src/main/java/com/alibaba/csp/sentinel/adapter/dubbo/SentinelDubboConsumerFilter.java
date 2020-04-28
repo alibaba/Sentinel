@@ -118,12 +118,10 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
             result.whenCompleteWithContext(new BiConsumer<Result, Throwable>() {
                 @Override
                 public void accept(Result result, Throwable throwable) {
-                    if (result.hasException()) {
                         while (entryStack.size() > 0) {
                             Entry entry = entryStack.pop();
                             Tracer.traceEntry(result.getException(), entry);
                             entry.exit();
-                        }
                     }
                 }
             });
