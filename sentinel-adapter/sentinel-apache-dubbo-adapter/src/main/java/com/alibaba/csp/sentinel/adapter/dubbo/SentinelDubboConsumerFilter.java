@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.ResourceTypeConstants;
 import com.alibaba.csp.sentinel.SphU;
+import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig;
 import com.alibaba.csp.sentinel.adapter.dubbo.fallback.DubboFallbackRegistry;
 import com.alibaba.csp.sentinel.log.RecordLog;
@@ -28,9 +29,11 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.support.RpcUtils;
+
+import java.util.Stack;
+import java.util.function.BiConsumer;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 
@@ -64,28 +67,77 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+        InvokeMode invokeMode = RpcUtils.getInvokeMode(invoker.getUrl(), invocation);
+        if (InvokeMode.SYNC == invokeMode) {
+            return syncInvoke(invoker, invocation);
+        } else {
+            return asyncInvoke(invoker, invocation);
+        }
+
+    }
+
+    private Result syncInvoke(Invoker<?> invoker, Invocation invocation) {
         Entry interfaceEntry = null;
         Entry methodEntry = null;
-        RpcContext rpcContext = RpcContext.getContext();
+        String methodResourceName = getMethodName(invoker, invocation);
+        String interfaceResourceName = getInterfaceName(invoker);
         try {
-            String methodResourceName = getMethodName(invoker, invocation);
-            String interfaceResourceName = getInterfaceName(invoker);
-            InvokeMode invokeMode = RpcUtils.getInvokeMode(invoker.getUrl(), invocation);
-
-            if (InvokeMode.SYNC == invokeMode) {
-                interfaceEntry = SphU.entry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT);
-                methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT, invocation.getArguments());
-            } else {
-                // should generate the AsyncEntry when the invoke model in future or async
-                interfaceEntry = SphU.asyncEntry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT);
-                methodEntry = SphU.asyncEntry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT, 1, invocation.getArguments());
+            interfaceEntry = SphU.entry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT);
+            methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT, invocation.getArguments());
+            Result result = invoker.invoke(invocation);
+            if (result.hasException()) {
+                Tracer.traceEntry(result.getException(), interfaceEntry);
+                Tracer.traceEntry(result.getException(), methodEntry);
             }
-            rpcContext.set(methodResourceName, new Entry[]{interfaceEntry, methodEntry});
-            return invoker.invoke(invocation);
+            return result;
         } catch (BlockException e) {
             return DubboFallbackRegistry.getConsumerFallback().handle(invoker, invocation, e);
+        } catch (RpcException e) {
+            Tracer.traceEntry(e, interfaceEntry);
+            Tracer.traceEntry(e, methodEntry);
+            throw e;
+        } finally {
+            if (methodEntry != null) {
+                methodEntry.exit();
+            }
+            if (interfaceEntry != null) {
+                interfaceEntry.exit();
+            }
         }
     }
+
+
+    private Result asyncInvoke(Invoker<?> invoker, Invocation invocation) {
+        Stack<Entry> entryStack = new Stack<>();
+        String methodResourceName = getMethodName(invoker, invocation);
+        String interfaceResourceName = getInterfaceName(invoker);
+        try {
+            entryStack.push(SphU.asyncEntry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT));
+            entryStack.push(SphU.asyncEntry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT, 1, invocation.getArguments()));
+            Result result = invoker.invoke(invocation);
+            result.whenCompleteWithContext(new BiConsumer<Result, Throwable>() {
+                @Override
+                public void accept(Result result, Throwable throwable) {
+                    if (result.hasException()) {
+                        while (entryStack.size() > 0) {
+                            Entry entry = entryStack.pop();
+                            Tracer.traceEntry(result.getException(), entry);
+                            entry.exit();
+                        }
+                    }
+                }
+            });
+            return result;
+        } catch (BlockException e) {
+            while (entryStack.size() > 0) {
+                entryStack.pop().exit();
+            }
+            return DubboFallbackRegistry.getConsumerFallback().handle(invoker, invocation, e);
+        }
+
+
+    }
+
 }
 
 
