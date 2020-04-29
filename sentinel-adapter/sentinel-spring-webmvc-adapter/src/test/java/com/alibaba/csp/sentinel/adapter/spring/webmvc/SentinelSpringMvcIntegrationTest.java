@@ -71,18 +71,21 @@ public class SentinelSpringMvcIntegrationTest {
         final String headerName = "S-User";
         configureRulesFor(springMvcPathVariableUrl, 0, limitOrigin);
 
+        // This will be passed since the caller is different: userB
         this.mvc.perform(get("/foo/1").accept(MediaType.TEXT_PLAIN).header(headerName, "userB"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("foo 1"));
 
-        // This will be blocked and reponse json.
+        // This will be blocked since the caller is same: userA
         this.mvc.perform(
                 get("/foo/2").accept(MediaType.APPLICATION_JSON).header(headerName, limitOrigin))
                 .andExpect(status().isOk())
                 .andExpect(content().json(ResultWrapper.blocked().toJsonString()));
+
+        // This will be passed since the caller is different: ""
         this.mvc.perform(get("/foo/3").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().string(ResultWrapper.blocked().toJsonString()));
+                .andExpect(content().string("foo 3"));
 
         FlowRuleManager.loadRules(null);
     }
@@ -115,7 +118,7 @@ public class SentinelSpringMvcIntegrationTest {
             assertEquals(i + 1, cn.passQps(), 0.01);
         }
 
-        // This will be blocked and reponse json.
+        // This will be blocked and response json.
         this.mvc.perform(get(url))
                 .andExpect(status().isOk())
                 .andExpect(content().string(ResultWrapper.blocked().toJsonString()));

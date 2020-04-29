@@ -54,7 +54,7 @@ public class RecordLogTest {
         System.setProperty(LogBase.LOG_DIR, newLogBase);
 
         RecordLog.info("testChangeLogBase");
-        String logFileName = RecordLog.getLogBaseDir();
+        String logFileName = LogBase.getLogBaseDir();
         Assert.assertTrue(newLogBase.equals(logFileName));
         File[] files = new File(logFileName).listFiles();
         assertTrue(files != null && files.length > 0);
@@ -65,7 +65,7 @@ public class RecordLogTest {
 
     @Test
     public void testLogBaseDir() {
-        assertTrue(RecordLog.getLogBaseDir().startsWith(System.getProperty("user.home")));
+        assertTrue(LogBase.getLogBaseDir().startsWith(System.getProperty("user.home")));
     }
 
     public void testLogNameNotUsePid() {
@@ -107,4 +107,14 @@ public class RecordLogTest {
 
 
 
+    // Because log only writes into the file,
+    // can't read the log(file conflict), so no assertion in this unit test.
+    @Test
+    public void testMessageFormatter() {
+        RecordLog.info("1 2 {} 4 {} 6", "3", "5");
+        RecordLog.info("1 2 {} 4 {} 6", "3");
+        RecordLog.info("1 2 {} 4 {} 6");
+
+        RecordLog.info("1 2 \\{} 4 {} 6", "5");
+    }
 }

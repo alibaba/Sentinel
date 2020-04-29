@@ -20,6 +20,7 @@ import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
+import com.alibaba.csp.sentinel.spi.SpiOrder;
 
 /**
  * A {@link ProcessorSlot} that dedicates to {@link SystemRule} checking.
@@ -27,6 +28,7 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
  * @author jialiang.linjl
  * @author leyou
  */
+@SpiOrder(-5000)
 public class SystemSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override

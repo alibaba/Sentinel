@@ -15,6 +15,10 @@
  */
 package com.alibaba.csp.sentinel.dashboard.config;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.alibaba.csp.sentinel.adapter.servlet.CommonFilter;
 import com.alibaba.csp.sentinel.adapter.servlet.callback.WebCallbackManager;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthorizationInterceptor;
@@ -75,6 +79,9 @@ public class WebConfig implements WebMvcConfigurer {
         registration.addUrlPatterns("/*");
         registration.setName("sentinelFilter");
         registration.setOrder(1);
+        // If this is enabled, the entrance of all Web URL resources will be unified as a single context name.
+        // In most scenarios that's enough, and it could reduce the memory footprint.
+        registration.addInitParameter(CommonFilter.WEB_CONTEXT_UNIFY, "true");
 
         logger.info("Sentinel servlet CommonFilter registered");
 
@@ -83,12 +90,14 @@ public class WebConfig implements WebMvcConfigurer {
 
     @PostConstruct
     public void doInit() {
+        Set<String> suffixSet = new HashSet<>(Arrays.asList(".js", ".css", ".html", ".ico", ".txt",
+            ".woff", ".woff2"));
         // Example: register a UrlCleaner to exclude URLs of common static resources.
         WebCallbackManager.setUrlCleaner(url -> {
             if (StringUtil.isEmpty(url)) {
                 return url;
             }
-            if (url.endsWith(".js") || url.endsWith(".css") || url.endsWith("html")) {
+            if (suffixSet.stream().anyMatch(url::endsWith)) {
                 return null;
             }
             return url;

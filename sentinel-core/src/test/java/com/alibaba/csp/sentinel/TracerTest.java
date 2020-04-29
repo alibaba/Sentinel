@@ -1,12 +1,46 @@
 package com.alibaba.csp.sentinel;
 
+import com.alibaba.csp.sentinel.context.ContextTestUtil;
+import com.alibaba.csp.sentinel.context.ContextUtil;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
  * @author Carpenter Lee
  */
 public class TracerTest extends Tracer {
+
+    @Before
+    public void setUp() {
+        ContextTestUtil.cleanUpContext();
+        ContextTestUtil.resetContextMap();
+    }
+
+    @After
+    public void tearDown() {
+        ContextTestUtil.cleanUpContext();
+        ContextTestUtil.resetContextMap();
+    }
+
+    @Test
+    public void testTraceWhenContextSizeExceedsThreshold() {
+        int i = 0;
+        for (; i < Constants.MAX_CONTEXT_NAME_SIZE; i++) {
+            ContextUtil.enter("test-context-" + i);
+            ContextUtil.exit();
+        }
+
+        try {
+            ContextUtil.enter("test-context-" + i);
+            throw new RuntimeException("test");
+        } catch (Exception e) {
+            Tracer.trace(e);
+        } finally {
+            ContextUtil.exit();
+        }
+    }
 
     @Test
     public void setExceptionsToTrace() {
