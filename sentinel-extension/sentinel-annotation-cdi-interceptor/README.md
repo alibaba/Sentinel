@@ -5,6 +5,7 @@ This extension is an implementation using cdi interceptor for Sentinel annotatio
 [CDI](http://www.cdi-spec.org/) is an abbreviation for  Contexts and Dependency Injection, the related JSRs are : [JSR 365: Contexts and Dependency Injection for JavaTM 2.0](https://jcp.org/en/jsr/detail?id=365), [JSR 346: Contexts and Dependency Injection for JavaTM EE 1.1](https://jcp.org/en/jsr/detail?id=346), [JSR 299: Contexts and Dependency Injection for the JavaTM EE platform](https://jcp.org/en/jsr/detail?id=299)
 
 ## Annotation
+
 The `@SentinelResourceBinding` is modified from `@SentinelResource` by adding `@InterceptorBinding` for CDI specification, and in order to interceptor all kinds of `@SentinelResourceBinding` with different attributes in one interceptor, `@SentinelResourceBinding`'s all attribute is annotated by `@Nonbinding`
 
 The `@SentinelResource` annotation indicates a resource definition, including:
@@ -40,7 +41,9 @@ public String defaultFallback(Throwable t) {
 ```
 
 ## Configuration
+
 according to [9.4. Interceptor enablement and ordering](https://docs.jboss.org/cdi/spec/2.0/cdi-spec.html#enabled_interceptors) to enable interceptor, it should be configured in resources/META-INF/beans.xml :
+
 ```
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://xmlns.jcp.org/xml/ns/javaee"
@@ -51,6 +54,7 @@ according to [9.4. Interceptor enablement and ordering](https://docs.jboss.org/c
     </interceptors>
 </beans>
 ```
+
 
 
 
