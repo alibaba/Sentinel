@@ -52,14 +52,18 @@
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-transport-simple-http</artifactId>
         </dependency>
+
         <dependency>
             <groupId>com.alibaba.csp</groupId>
-            <artifactId>sentinel-quarkus-adapter-runtime</artifactId>
-            <version>1.8.0-SNAPSHOT</version>
-<!--            <version>${project.version}</version>-->
+            <artifactId>sentinel-jax-rs-quarkus-adapter</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
-
+        <dependency>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-annotation-quarkus-adapter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>io.quarkus</groupId>

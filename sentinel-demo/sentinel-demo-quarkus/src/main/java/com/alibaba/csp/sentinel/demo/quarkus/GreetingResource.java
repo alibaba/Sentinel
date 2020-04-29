@@ -15,24 +15,43 @@
  */
 package com.alibaba.csp.sentinel.demo.quarkus;
 
+import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 @Path("/hello")
 public class GreetingResource {
 
-    ExecutorService executor = Executors.newFixedThreadPool(5);
+    @Inject
+    GreetingService greetingService;
+
+    ExecutorService executor = new ThreadPoolExecutor(5, 5,
+            0L, TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<Runnable>());
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    public String hello() {
+    public String hello() throws InterruptedException {
+        TimeUnit.MILLISECONDS.sleep(500);
         return "hello";
+    }
+
+    @GET
+    @Path("/fallback/{name}")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String fallback(@PathParam(value = "name") String name) {
+        return greetingService.greeting(name);
+    }
+
+    @GET
+    @Path("/fallback2/{name}")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String fallback2(@PathParam(value = "name") String name) {
+        return greetingService.greetingWithFallbackName(name);
     }
 
     @Path("/async")

@@ -11,19 +11,20 @@
 #
 # Then run the container using:
 #
-# docker run -i --rm -p 8080:8080 quarkus/sentinel-demo-quarkus-jvm
+# docker run -i --rm -p 8080:8182 quarkus/sentinel-demo-quarkus-jvm
 #
 # If you want to include the debug port into your docker image
 # you will have to expose the debug port (default 5005) like this :  EXPOSE 8080 5050
 #
 # Then run the container using :
 #
-# docker run -i --rm -p 8080:8080 -p 5005:5005 -e JAVA_ENABLE_DEBUG="true" quarkus/sentinel-demo-quarkus-jvm
+# docker run -i --rm -p 8080:8182 -p 5005:5005 -e JAVA_ENABLE_DEBUG="true" quarkus/sentinel-demo-quarkus-jvm
 #
 ###
 FROM registry.access.redhat.com/ubi8/ubi-minimal:8.1
 
 ARG JAVA_PACKAGE=java-1.8.0-openjdk-headless
+#ARG JAVA_PACKAGE=java-11-openjdk-headless
 ARG RUN_JAVA_VERSION=1.3.5
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en'
@@ -48,7 +49,7 @@ ENV JAVA_OPTIONS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jb
 COPY target/lib/* /deployments/lib/
 COPY target/*-runner.jar /deployments/app.jar
 
-EXPOSE 8080
+EXPOSE 8182
 USER 1001
 
 ENTRYPOINT [ "/deployments/run-java.sh" ]

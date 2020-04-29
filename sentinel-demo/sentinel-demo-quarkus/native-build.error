@@ -1,0 +1,644 @@
+Error: Unsupported features in 11 methods
+Detailed message:
+Error: Class initialization of com.alibaba.fastjson.serializer.JodaCodec failed. Use the option --initialize-at-run-time=com.alibaba.fastjson.serializer.JodaCodec to explicitly request delayed initialization of this class.
+Original exception that caused the problem: java.lang.NoClassDefFoundError: org/joda/time/ReadablePartial
+	at sun.misc.Unsafe.ensureClassInitialized(Native Method)
+	at com.oracle.svm.hosted.classinitialization.ConfigurableClassInitialization.ensureClassInitialized(ConfigurableClassInitialization.java:167)
+	at com.oracle.svm.hosted.classinitialization.ConfigurableClassInitialization.computeInitKindAndMaybeInitializeClass(ConfigurableClassInitialization.java:560)
+	at com.oracle.svm.hosted.classinitialization.ConfigurableClassInitialization.computeInitKindAndMaybeInitializeClass(ConfigurableClassInitialization.java:130)
+	at com.oracle.svm.hosted.classinitialization.ConfigurableClassInitialization.maybeInitializeHosted(ConfigurableClassInitialization.java:158)
+	at com.oracle.svm.hosted.SVMHost.registerType(SVMHost.java:198)
+	at com.oracle.graal.pointsto.meta.AnalysisUniverse.createType(AnalysisUniverse.java:264)
+	at com.oracle.graal.pointsto.meta.AnalysisUniverse.lookupAllowUnresolved(AnalysisUniverse.java:205)
+	at com.oracle.graal.pointsto.meta.AnalysisUniverse.lookup(AnalysisUniverse.java:182)
+	at com.oracle.graal.pointsto.meta.AnalysisUniverse.lookupAllowUnresolved(AnalysisUniverse.java:352)
+	at com.oracle.graal.pointsto.infrastructure.WrappedConstantPool.lookupField(WrappedConstantPool.java:111)
+	at org.graalvm.compiler.java.BytecodeParser.lookupField(BytecodeParser.java:4290)
+	at org.graalvm.compiler.java.BytecodeParser.genGetStatic(BytecodeParser.java:4796)
+	at org.graalvm.compiler.java.BytecodeParser.processBytecode(BytecodeParser.java:5282)
+	at org.graalvm.compiler.java.BytecodeParser.iterateBytecodesForBlock(BytecodeParser.java:3397)
+	at org.graalvm.compiler.java.BytecodeParser.processBlock(BytecodeParser.java:3204)
+	at org.graalvm.compiler.java.BytecodeParser.build(BytecodeParser.java:1085)
+	at org.graalvm.compiler.java.BytecodeParser.buildRootMethod(BytecodeParser.java:979)
+	at org.graalvm.compiler.java.GraphBuilderPhase$Instance.run(GraphBuilderPhase.java:84)
+	at org.graalvm.compiler.phases.Phase.run(Phase.java:49)
+	at org.graalvm.compiler.phases.BasePhase.apply(BasePhase.java:197)
+	at org.graalvm.compiler.phases.Phase.apply(Phase.java:42)
+	at org.graalvm.compiler.phases.Phase.apply(Phase.java:38)
+	at com.oracle.graal.pointsto.flow.MethodTypeFlowBuilder.parse(MethodTypeFlowBuilder.java:221)
+	at com.oracle.graal.pointsto.flow.MethodTypeFlowBuilder.apply(MethodTypeFlowBuilder.java:340)
+	at com.oracle.graal.pointsto.flow.MethodTypeFlow.doParse(MethodTypeFlow.java:310)
+	at com.oracle.graal.pointsto.flow.MethodTypeFlow.ensureParsed(MethodTypeFlow.java:300)
+	at com.oracle.graal.pointsto.flow.MethodTypeFlow.addContext(MethodTypeFlow.java:107)
+	at com.oracle.graal.pointsto.DefaultAnalysisPolicy$DefaultVirtualInvokeTypeFlow.onObservedUpdate(DefaultAnalysisPolicy.java:191)
+	at com.oracle.graal.pointsto.flow.TypeFlow.notifyObservers(TypeFlow.java:344)
+	at com.oracle.graal.pointsto.flow.TypeFlow.update(TypeFlow.java:386)
+	at com.oracle.graal.pointsto.BigBang$2.run(BigBang.java:511)
+	at com.oracle.graal.pointsto.util.CompletionExecutor.lambda$execute$0(CompletionExecutor.java:171)
+	at java.util.concurrent.ForkJoinTask$RunnableExecuteAction.exec(ForkJoinTask.java:1402)
+	at java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:289)
+	at java.util.concurrent.ForkJoinPool$WorkQueue.runTask(ForkJoinPool.java:1056)
+	at java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1692)
+	at java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:157)
+Caused by: java.lang.ClassNotFoundException: org.joda.time.ReadablePartial
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:382)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:419)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:352)
+	... 38 more
+Error: Detected a FileDescriptor in the image heap. File descriptors opened during image generation are no longer open at image run time, and the files might not even be present anymore at image run time.  To see how this object got instantiated use -H:+TraceClassInitialization. The object was probably created by a class initializer and is reachable from a static field. You can request class initialization at image run time by using the option --initialize-at-run-time=<class-name>. Or you can write your own initialization methods and call them explicitly from your main entry point.
+Trace: Object was reached by 
+	reading field java.io.FileOutputStream.fd of
+		constant java.io.FileOutputStream@54cfd395 reached by 
+	reading field java.io.FilterOutputStream.out of
+		constant java.io.BufferedOutputStream@37676c26 reached by 
+	reading field java.util.logging.FileHandler$MeteredStream.out of
+		constant java.util.logging.FileHandler$MeteredStream@12cf733a reached by 
+	reading field java.util.logging.StreamHandler.output of
+		constant java.util.logging.FileHandler@5e040ab0 reached by 
+	reading field com.alibaba.csp.sentinel.log.jul.DateFileLogHandler.handler of
+		constant com.alibaba.csp.sentinel.log.jul.DateFileLogHandler@b9735e7 reached by 
+	reading field com.alibaba.csp.sentinel.log.jul.JavaLoggingAdapter.logHandler of
+		constant com.alibaba.csp.sentinel.log.jul.JavaLoggingAdapter@2c0c251 reached by 
+	reading field com.alibaba.csp.sentinel.log.RecordLog.logger
+Error: No instances of sun.nio.ch.FileChannelImpl are allowed in the image heap as this class should be initialized at image runtime. To see how this object got instantiated use -H:+TraceClassInitialization.
+Trace: Object was reached by 
+	reading field java.nio.channels.FileLock.channel of
+		constant sun.nio.ch.FileLockImpl@2e50d98d reached by 
+	reading field java.lang.ref.Reference.bootImageStrongValue of
+		constant sun.nio.ch.SharedFileLockTable$FileLockReference@61d5ffd5 reached by 
+	indexing into array
+		constant java.lang.Object[]@6e635c8d reached by 
+	reading field java.util.ArrayList.elementData of
+		constant java.util.ArrayList@61d5fff4 reached by 
+	reading field java.util.concurrent.ConcurrentHashMap$Node.val of
+		constant java.util.concurrent.ConcurrentHashMap$Node@6125ab00 reached by 
+	indexing into array
+		constant java.util.concurrent.ConcurrentHashMap$Node[]@7933f33c reached by 
+	reading field java.util.concurrent.ConcurrentHashMap.table of
+		constant java.util.concurrent.ConcurrentHashMap@6125ab00 reached by 
+	reading field sun.nio.ch.SharedFileLockTable.lockMap
+Error: No instances of sun.nio.ch.FileChannelImpl are allowed in the image heap as this class should be initialized at image runtime. To see how this object got instantiated use -H:+TraceClassInitialization.
+Trace: Object was reached by 
+	reading field java.util.logging.FileHandler.lockFileChannel of
+		constant java.util.logging.FileHandler@5e040ab0 reached by 
+	reading field com.alibaba.csp.sentinel.log.jul.DateFileLogHandler.handler of
+		constant com.alibaba.csp.sentinel.log.jul.DateFileLogHandler@b9735e7 reached by 
+	reading field com.alibaba.csp.sentinel.log.jul.JavaLoggingAdapter.logHandler of
+		constant com.alibaba.csp.sentinel.log.jul.JavaLoggingAdapter@2c0c251 reached by 
+	reading field com.alibaba.csp.sentinel.log.RecordLog.logger
+Error: No instances of sun.nio.ch.FileKey are allowed in the image heap as this class should be initialized at image runtime. To see how this object got instantiated use -H:+TraceClassInitialization.
+Trace: Object was reached by 
+	reading field java.util.concurrent.ConcurrentHashMap$Node.key of
+		constant java.util.concurrent.ConcurrentHashMap$Node@6125ab00 reached by 
+	indexing into array
+		constant java.util.concurrent.ConcurrentHashMap$Node[]@7933f33c reached by 
+	reading field java.util.concurrent.ConcurrentHashMap.table of
+		constant java.util.concurrent.ConcurrentHashMap@6125ab00 reached by 
+	reading field sun.nio.ch.SharedFileLockTable.lockMap
+Error: No instances of sun.nio.ch.FileKey are allowed in the image heap as this class should be initialized at image runtime. To see how this object got instantiated use -H:+TraceClassInitialization.
+Trace: Object was reached by 
+	reading field sun.nio.ch.SharedFileLockTable$FileLockReference.fileKey of
+		constant sun.nio.ch.SharedFileLockTable$FileLockReference@61d5ffd5 reached by 
+	indexing into array
+		constant java.lang.Object[]@6e635c8d reached by 
+	reading field java.util.ArrayList.elementData of
+		constant java.util.ArrayList@61d5fff4 reached by 
+	reading field java.util.concurrent.ConcurrentHashMap$Node.val of
+		constant java.util.concurrent.ConcurrentHashMap$Node@6125ab00 reached by 
+	indexing into array
+		constant java.util.concurrent.ConcurrentHashMap$Node[]@7933f33c reached by 
+	reading field java.util.concurrent.ConcurrentHashMap.table of
+		constant java.util.concurrent.ConcurrentHashMap@6125ab00 reached by 
+	reading field sun.nio.ch.SharedFileLockTable.lockMap
+Error: com.oracle.graal.pointsto.constraints.UnresolvedElementException: Discovered unresolved type during parsing: com.google.common.collect.ArrayListMultimap. To diagnose the issue you can use the --allow-incomplete-classpath option. The missing type is then reported at run time when it is accessed the first time.
+Trace: 
+	at parsing com.alibaba.fastjson.serializer.GuavaCodec.deserialze(GuavaCodec.java:36)
+Call path from entry point to com.alibaba.fastjson.serializer.GuavaCodec.deserialze(DefaultJSONParser, Type, Object): 
+	at com.alibaba.fastjson.serializer.GuavaCodec.deserialze(GuavaCodec.java:31)
+	at com.alibaba.fastjson.parser.DefaultJSONParser.parseObject(DefaultJSONParser.java:395)
+	at com.alibaba.fastjson.parser.DefaultJSONParser.parse(DefaultJSONParser.java:1401)
+	at com.alibaba.fastjson.parser.DefaultJSONParser.parse(DefaultJSONParser.java:1367)
+	at com.alibaba.fastjson.JSON.parse(JSON.java:183)
+	at com.alibaba.fastjson.JSON.parse(JSON.java:193)
+	at com.alibaba.fastjson.JSON.parse(JSON.java:149)
+	at com.alibaba.fastjson.serializer.SerializeFilterable.processValue(SerializeFilterable.java:229)
+	at com.alibaba.fastjson.serializer.JavaBeanSerializer.write(JavaBeanSerializer.java:307)
+	at com.alibaba.fastjson.serializer.JavaBeanSerializer.write(JavaBeanSerializer.java:149)
+	at com.alibaba.fastjson.serializer.JSONSerializer.write(JSONSerializer.java:285)
+	at com.alibaba.fastjson.JSON.toJSONString(JSON.java:973)
+	at com.alibaba.fastjson.JSON.toString(JSON.java:967)
+	at java.lang.String.valueOf(String.java:2994)
+	at java.lang.StringBuilder.append(StringBuilder.java:131)
+	at com.oracle.svm.core.amd64.AMD64CPUFeatureAccess.verifyHostSupportsArchitecture(AMD64CPUFeatureAccess.java:179)
+	at com.oracle.svm.core.JavaMainWrapper.runCore(JavaMainWrapper.java:129)
+	at com.oracle.svm.core.JavaMainWrapper.run(JavaMainWrapper.java:186)
+	at com.oracle.svm.core.code.IsolateEnterStub.JavaMainWrapper_run_5087f5482cc9a6abc971913ece43acb471d2631b(generated:0)
+Error: com.oracle.graal.pointsto.constraints.UnresolvedElementException: Discovered unresolved type during parsing: com.google.common.collect.Multimap. To diagnose the issue you can use the --allow-incomplete-classpath option. The missing type is then reported at run time when it is accessed the first time.
+Trace: 
+	at parsing com.alibaba.fastjson.serializer.GuavaCodec.write(GuavaCodec.java:24)
+Call path from entry point to com.alibaba.fastjson.serializer.GuavaCodec.write(JSONSerializer, Object, Object, Type, int): 
+	at com.alibaba.fastjson.serializer.GuavaCodec.write(GuavaCodec.java:23)
+	at com.alibaba.fastjson.serializer.JSONSerializer.write(JSONSerializer.java:285)
+	at com.alibaba.fastjson.JSON.toJSONString(JSON.java:973)
+	at com.alibaba.fastjson.JSON.toString(JSON.java:967)
+	at java.lang.String.valueOf(String.java:2994)
+	at java.lang.StringBuilder.append(StringBuilder.java:131)
+	at com.oracle.svm.core.amd64.AMD64CPUFeatureAccess.verifyHostSupportsArchitecture(AMD64CPUFeatureAccess.java:179)
+	at com.oracle.svm.core.JavaMainWrapper.runCore(JavaMainWrapper.java:129)
+	at com.oracle.svm.core.JavaMainWrapper.run(JavaMainWrapper.java:186)
+	at com.oracle.svm.core.code.IsolateEnterStub.JavaMainWrapper_run_5087f5482cc9a6abc971913ece43acb471d2631b(generated:0)
+Error: com.oracle.graal.pointsto.constraints.UnresolvedElementException: Discovered unresolved type during parsing: javax.money.Monetary. To diagnose the issue you can use the --allow-incomplete-classpath option. The missing type is then reported at run time when it is accessed the first time.
+Trace: 
+	at parsing com.alibaba.fastjson.support.moneta.MonetaCodec.deserialze(MonetaCodec.java:48)
+Call path from entry point to com.alibaba.fastjson.support.moneta.MonetaCodec.deserialze(DefaultJSONParser, Type, Object): 
+	at com.alibaba.fastjson.support.moneta.MonetaCodec.deserialze(MonetaCodec.java:35)
+	at com.alibaba.fastjson.parser.DefaultJSONParser.parseObject(DefaultJSONParser.java:395)
+	at com.alibaba.fastjson.parser.DefaultJSONParser.parse(DefaultJSONParser.java:1401)
+	at com.alibaba.fastjson.parser.DefaultJSONParser.parse(DefaultJSONParser.java:1367)
+	at com.alibaba.fastjson.JSON.parse(JSON.java:183)
+	at com.alibaba.fastjson.JSON.parse(JSON.java:193)
+	at com.alibaba.fastjson.JSON.parse(JSON.java:149)
+	at com.alibaba.fastjson.serializer.SerializeFilterable.processValue(SerializeFilterable.java:229)
+	at com.alibaba.fastjson.serializer.JavaBeanSerializer.write(JavaBeanSerializer.java:307)
+	at com.alibaba.fastjson.serializer.JavaBeanSerializer.write(JavaBeanSerializer.java:149)
+	at com.alibaba.fastjson.serializer.JSONSerializer.write(JSONSerializer.java:285)
+	at com.alibaba.fastjson.JSON.toJSONString(JSON.java:973)
+	at com.alibaba.fastjson.JSON.toString(JSON.java:967)
+	at java.lang.String.valueOf(String.java:2994)
+	at java.lang.StringBuilder.append(StringBuilder.java:131)
+	at com.oracle.svm.core.amd64.AMD64CPUFeatureAccess.verifyHostSupportsArchitecture(AMD64CPUFeatureAccess.java:179)
+	at com.oracle.svm.core.JavaMainWrapper.runCore(JavaMainWrapper.java:129)
+	at com.oracle.svm.core.JavaMainWrapper.run(JavaMainWrapper.java:186)
+	at com.oracle.svm.core.code.IsolateEnterStub.JavaMainWrapper_run_5087f5482cc9a6abc971913ece43acb471d2631b(generated:0)
+Error: com.oracle.graal.pointsto.constraints.UnresolvedElementException: Discovered unresolved type during parsing: org.javamoney.moneta.Money. To diagnose the issue you can use the --allow-incomplete-classpath option. The missing type is then reported at run time when it is accessed the first time.
+Trace: 
+	at parsing com.alibaba.fastjson.support.moneta.MonetaCodec.write(MonetaCodec.java:21)
+Call path from entry point to com.alibaba.fastjson.support.moneta.MonetaCodec.write(JSONSerializer, Object, Object, Type, int): 
+	at com.alibaba.fastjson.support.moneta.MonetaCodec.write(MonetaCodec.java:21)
+	at com.alibaba.fastjson.serializer.JSONSerializer.write(JSONSerializer.java:285)
+	at com.alibaba.fastjson.JSON.toJSONString(JSON.java:973)
+	at com.alibaba.fastjson.JSON.toString(JSON.java:967)
+	at java.lang.String.valueOf(String.java:2994)
+	at java.lang.StringBuilder.append(StringBuilder.java:131)
+	at com.oracle.svm.core.amd64.AMD64CPUFeatureAccess.verifyHostSupportsArchitecture(AMD64CPUFeatureAccess.java:179)
+	at com.oracle.svm.core.JavaMainWrapper.runCore(JavaMainWrapper.java:129)
+	at com.oracle.svm.core.JavaMainWrapper.run(JavaMainWrapper.java:186)
+	at com.oracle.svm.core.code.IsolateEnterStub.JavaMainWrapper_run_5087f5482cc9a6abc971913ece43acb471d2631b(generated:0)
+Error: com.oracle.svm.hosted.substitute.DeletedElementException: Unsupported method java.lang.ClassLoader.defineClass1(String, byte[], int, int, ProtectionDomain, String) is reachable
+To diagnose the issue, you can add the option --report-unsupported-elements-at-runtime. The unsupported element is then reported at run time when it is accessed the first time.
+Trace: 
+	at parsing java.lang.ClassLoader.defineClass(ClassLoader.java:757)
+Call path from entry point to java.lang.ClassLoader.defineClass(String, byte[], int, int, ProtectionDomain): 
+	at java.lang.ClassLoader.defineClass(ClassLoader.java:755)
+	at com.alibaba.fastjson.util.ASMClassLoader.defineClassPublic(ASMClassLoader.java:174)
+	at com.alibaba.fastjson.serializer.ASMSerializerFactory.createJavaBeanSerializer(ASMSerializerFactory.java:412)
+	at com.alibaba.fastjson.serializer.SerializeConfig.createASMSerializer(SerializeConfig.java:92)
+	at com.alibaba.fastjson.serializer.SerializeConfig.createJavaBeanSerializer(SerializeConfig.java:248)
+	at com.alibaba.fastjson.serializer.SerializeConfig.createJavaBeanSerializer(SerializeConfig.java:120)
+	at com.alibaba.fastjson.serializer.SerializeConfig.getObjectWriter(SerializeConfig.java:514)
+	at com.alibaba.fastjson.serializer.SerializeConfig.getObjectWriter(SerializeConfig.java:436)
+	at com.alibaba.fastjson.serializer.JSONSerializer.getObjectWriter(JSONSerializer.java:416)
+	at com.alibaba.fastjson.serializer.JSONSerializer.write(JSONSerializer.java:282)
+	at com.alibaba.fastjson.JSON.toJSONString(JSON.java:973)
+	at com.alibaba.fastjson.JSON.toString(JSON.java:967)
+	at java.lang.String.valueOf(String.java:2994)
+	at java.lang.StringBuilder.append(StringBuilder.java:131)
+	at com.oracle.svm.core.amd64.AMD64CPUFeatureAccess.verifyHostSupportsArchitecture(AMD64CPUFeatureAccess.java:179)
+	at com.oracle.svm.core.JavaMainWrapper.runCore(JavaMainWrapper.java:129)
+	at com.oracle.svm.core.JavaMainWrapper.run(JavaMainWrapper.java:186)
+	at com.oracle.svm.core.code.IsolateEnterStub.JavaMainWrapper_run_5087f5482cc9a6abc971913ece43acb471d2631b(generated:0)
+
+com.oracle.svm.core.util.UserError$UserException: Unsupported features in 11 methods
+Detailed message:
+Error: Class initialization of com.alibaba.fastjson.serializer.JodaCodec failed. Use the option --initialize-at-run-time=com.alibaba.fastjson.serializer.JodaCodec to explicitly request delayed initialization of this class.
+Original exception that caused the problem: java.lang.NoClassDefFoundError: org/joda/time/ReadablePartial
+	at sun.misc.Unsafe.ensureClassInitialized(Native Method)
+	at com.oracle.svm.hosted.classinitialization.ConfigurableClassInitialization.ensureClassInitialized(ConfigurableClassInitialization.java:167)
+	at com.oracle.svm.hosted.classinitialization.ConfigurableClassInitialization.computeInitKindAndMaybeInitializeClass(ConfigurableClassInitialization.java:560)
+	at com.oracle.svm.hosted.classinitialization.ConfigurableClassInitialization.computeInitKindAndMaybeInitializeClass(ConfigurableClassInitialization.java:130)
+	at com.oracle.svm.hosted.classinitialization.ConfigurableClassInitialization.maybeInitializeHosted(ConfigurableClassInitialization.java:158)
+	at com.oracle.svm.hosted.SVMHost.registerType(SVMHost.java:198)
+	at com.oracle.graal.pointsto.meta.AnalysisUniverse.createType(AnalysisUniverse.java:264)
+	at com.oracle.graal.pointsto.meta.AnalysisUniverse.lookupAllowUnresolved(AnalysisUniverse.java:205)
+	at com.oracle.graal.pointsto.meta.AnalysisUniverse.lookup(AnalysisUniverse.java:182)
+	at com.oracle.graal.pointsto.meta.AnalysisUniverse.lookupAllowUnresolved(AnalysisUniverse.java:352)
+	at com.oracle.graal.pointsto.infrastructure.WrappedConstantPool.lookupField(WrappedConstantPool.java:111)
+	at org.graalvm.compiler.java.BytecodeParser.lookupField(BytecodeParser.java:4290)
+	at org.graalvm.compiler.java.BytecodeParser.genGetStatic(BytecodeParser.java:4796)
+	at org.graalvm.compiler.java.BytecodeParser.processBytecode(BytecodeParser.java:5282)
+	at org.graalvm.compiler.java.BytecodeParser.iterateBytecodesForBlock(BytecodeParser.java:3397)
+	at org.graalvm.compiler.java.BytecodeParser.processBlock(BytecodeParser.java:3204)
+	at org.graalvm.compiler.java.BytecodeParser.build(BytecodeParser.java:1085)
+	at org.graalvm.compiler.java.BytecodeParser.buildRootMethod(BytecodeParser.java:979)
+	at org.graalvm.compiler.java.GraphBuilderPhase$Instance.run(GraphBuilderPhase.java:84)
+	at org.graalvm.compiler.phases.Phase.run(Phase.java:49)
+	at org.graalvm.compiler.phases.BasePhase.apply(BasePhase.java:197)
+	at org.graalvm.compiler.phases.Phase.apply(Phase.java:42)
+	at org.graalvm.compiler.phases.Phase.apply(Phase.java:38)
+	at com.oracle.graal.pointsto.flow.MethodTypeFlowBuilder.parse(MethodTypeFlowBuilder.java:221)
+	at com.oracle.graal.pointsto.flow.MethodTypeFlowBuilder.apply(MethodTypeFlowBuilder.java:340)
+	at com.oracle.graal.pointsto.flow.MethodTypeFlow.doParse(MethodTypeFlow.java:310)
+	at com.oracle.graal.pointsto.flow.MethodTypeFlow.ensureParsed(MethodTypeFlow.java:300)
+	at com.oracle.graal.pointsto.flow.MethodTypeFlow.addContext(MethodTypeFlow.java:107)
+	at com.oracle.graal.pointsto.DefaultAnalysisPolicy$DefaultVirtualInvokeTypeFlow.onObservedUpdate(DefaultAnalysisPolicy.java:191)
+	at com.oracle.graal.pointsto.flow.TypeFlow.notifyObservers(TypeFlow.java:344)
+	at com.oracle.graal.pointsto.flow.TypeFlow.update(TypeFlow.java:386)
+	at com.oracle.graal.pointsto.BigBang$2.run(BigBang.java:511)
+	at com.oracle.graal.pointsto.util.CompletionExecutor.lambda$execute$0(CompletionExecutor.java:171)
+	at java.util.concurrent.ForkJoinTask$RunnableExecuteAction.exec(ForkJoinTask.java:1402)
+	at java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:289)
+	at java.util.concurrent.ForkJoinPool$WorkQueue.runTask(ForkJoinPool.java:1056)
+	at java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1692)
+	at java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:157)
+Caused by: java.lang.ClassNotFoundException: org.joda.time.ReadablePartial
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:382)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:419)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:352)
+	... 38 more
+Error: Detected a FileDescriptor in the image heap. File descriptors opened during image generation are no longer open at image run time, and the files might not even be present anymore at image run time.  To see how this object got instantiated use -H:+TraceClassInitialization. The object was probably created by a class initializer and is reachable from a static field. You can request class initialization at image run time by using the option --initialize-at-run-time=<class-name>. Or you can write your own initialization methods and call them explicitly from your main entry point.
+Trace: Object was reached by 
+	reading field java.io.FileOutputStream.fd of
+		constant java.io.FileOutputStream@54cfd395 reached by 
+	reading field java.io.FilterOutputStream.out of
+		constant java.io.BufferedOutputStream@37676c26 reached by 
+	reading field java.util.logging.FileHandler$MeteredStream.out of
+		constant java.util.logging.FileHandler$MeteredStream@12cf733a reached by 
+	reading field java.util.logging.StreamHandler.output of
+		constant java.util.logging.FileHandler@5e040ab0 reached by 
+	reading field com.alibaba.csp.sentinel.log.jul.DateFileLogHandler.handler of
+		constant com.alibaba.csp.sentinel.log.jul.DateFileLogHandler@b9735e7 reached by 
+	reading field com.alibaba.csp.sentinel.log.jul.JavaLoggingAdapter.logHandler of
+		constant com.alibaba.csp.sentinel.log.jul.JavaLoggingAdapter@2c0c251 reached by 
+	reading field com.alibaba.csp.sentinel.log.RecordLog.logger
+Error: No instances of sun.nio.ch.FileChannelImpl are allowed in the image heap as this class should be initialized at image runtime. To see how this object got instantiated use -H:+TraceClassInitialization.
+Trace: Object was reached by 
+	reading field java.nio.channels.FileLock.channel of
+		constant sun.nio.ch.FileLockImpl@2e50d98d reached by 
+	reading field java.lang.ref.Reference.bootImageStrongValue of
+		constant sun.nio.ch.SharedFileLockTable$FileLockReference@61d5ffd5 reached by 
+	indexing into array
+		constant java.lang.Object[]@6e635c8d reached by 
+	reading field java.util.ArrayList.elementData of
+		constant java.util.ArrayList@61d5fff4 reached by 
+	reading field java.util.concurrent.ConcurrentHashMap$Node.val of
+		constant java.util.concurrent.ConcurrentHashMap$Node@6125ab00 reached by 
+	indexing into array
+		constant java.util.concurrent.ConcurrentHashMap$Node[]@7933f33c reached by 
+	reading field java.util.concurrent.ConcurrentHashMap.table of
+		constant java.util.concurrent.ConcurrentHashMap@6125ab00 reached by 
+	reading field sun.nio.ch.SharedFileLockTable.lockMap
+Error: No instances of sun.nio.ch.FileChannelImpl are allowed in the image heap as this class should be initialized at image runtime. To see how this object got instantiated use -H:+TraceClassInitialization.
+Trace: Object was reached by 
+	reading field java.util.logging.FileHandler.lockFileChannel of
+		constant java.util.logging.FileHandler@5e040ab0 reached by 
+	reading field com.alibaba.csp.sentinel.log.jul.DateFileLogHandler.handler of
+		constant com.alibaba.csp.sentinel.log.jul.DateFileLogHandler@b9735e7 reached by 
+	reading field com.alibaba.csp.sentinel.log.jul.JavaLoggingAdapter.logHandler of
+		constant com.alibaba.csp.sentinel.log.jul.JavaLoggingAdapter@2c0c251 reached by 
+	reading field com.alibaba.csp.sentinel.log.RecordLog.logger
+Error: No instances of sun.nio.ch.FileKey are allowed in the image heap as this class should be initialized at image runtime. To see how this object got instantiated use -H:+TraceClassInitialization.
+Trace: Object was reached by 
+	reading field java.util.concurrent.ConcurrentHashMap$Node.key of
+		constant java.util.concurrent.ConcurrentHashMap$Node@6125ab00 reached by 
+	indexing into array
+		constant java.util.concurrent.ConcurrentHashMap$Node[]@7933f33c reached by 
+	reading field java.util.concurrent.ConcurrentHashMap.table of
+		constant java.util.concurrent.ConcurrentHashMap@6125ab00 reached by 
+	reading field sun.nio.ch.SharedFileLockTable.lockMap
+Error: No instances of sun.nio.ch.FileKey are allowed in the image heap as this class should be initialized at image runtime. To see how this object got instantiated use -H:+TraceClassInitialization.
+Trace: Object was reached by 
+	reading field sun.nio.ch.SharedFileLockTable$FileLockReference.fileKey of
+		constant sun.nio.ch.SharedFileLockTable$FileLockReference@61d5ffd5 reached by 
+	indexing into array
+		constant java.lang.Object[]@6e635c8d reached by 
+	reading field java.util.ArrayList.elementData of
+		constant java.util.ArrayList@61d5fff4 reached by 
+	reading field java.util.concurrent.ConcurrentHashMap$Node.val of
+		constant java.util.concurrent.ConcurrentHashMap$Node@6125ab00 reached by 
+	indexing into array
+		constant java.util.concurrent.ConcurrentHashMap$Node[]@7933f33c reached by 
+	reading field java.util.concurrent.ConcurrentHashMap.table of
+		constant java.util.concurrent.ConcurrentHashMap@6125ab00 reached by 
+	reading field sun.nio.ch.SharedFileLockTable.lockMap
+Error: com.oracle.graal.pointsto.constraints.UnresolvedElementException: Discovered unresolved type during parsing: com.google.common.collect.ArrayListMultimap. To diagnose the issue you can use the --allow-incomplete-classpath option. The missing type is then reported at run time when it is accessed the first time.
+Trace: 
+	at parsing com.alibaba.fastjson.serializer.GuavaCodec.deserialze(GuavaCodec.java:36)
+Call path from entry point to com.alibaba.fastjson.serializer.GuavaCodec.deserialze(DefaultJSONParser, Type, Object): 
+	at com.alibaba.fastjson.serializer.GuavaCodec.deserialze(GuavaCodec.java:31)
+	at com.alibaba.fastjson.parser.DefaultJSONParser.parseObject(DefaultJSONParser.java:395)
+	at com.alibaba.fastjson.parser.DefaultJSONParser.parse(DefaultJSONParser.java:1401)
+	at com.alibaba.fastjson.parser.DefaultJSONParser.parse(DefaultJSONParser.java:1367)
+	at com.alibaba.fastjson.JSON.parse(JSON.java:183)
+	at com.alibaba.fastjson.JSON.parse(JSON.java:193)
+	at com.alibaba.fastjson.JSON.parse(JSON.java:149)
+	at com.alibaba.fastjson.serializer.SerializeFilterable.processValue(SerializeFilterable.java:229)
+	at com.alibaba.fastjson.serializer.JavaBeanSerializer.write(JavaBeanSerializer.java:307)
+	at com.alibaba.fastjson.serializer.JavaBeanSerializer.write(JavaBeanSerializer.java:149)
+	at com.alibaba.fastjson.serializer.JSONSerializer.write(JSONSerializer.java:285)
+	at com.alibaba.fastjson.JSON.toJSONString(JSON.java:973)
+	at com.alibaba.fastjson.JSON.toString(JSON.java:967)
+	at java.lang.String.valueOf(String.java:2994)
+	at java.lang.StringBuilder.append(StringBuilder.java:131)
+	at com.oracle.svm.core.amd64.AMD64CPUFeatureAccess.verifyHostSupportsArchitecture(AMD64CPUFeatureAccess.java:179)
+	at com.oracle.svm.core.JavaMainWrapper.runCore(JavaMainWrapper.java:129)
+	at com.oracle.svm.core.JavaMainWrapper.run(JavaMainWrapper.java:186)
+	at com.oracle.svm.core.code.IsolateEnterStub.JavaMainWrapper_run_5087f5482cc9a6abc971913ece43acb471d2631b(generated:0)
+Error: com.oracle.graal.pointsto.constraints.UnresolvedElementException: Discovered unresolved type during parsing: com.google.common.collect.Multimap. To diagnose the issue you can use the --allow-incomplete-classpath option. The missing type is then reported at run time when it is accessed the first time.
+Trace: 
+	at parsing com.alibaba.fastjson.serializer.GuavaCodec.write(GuavaCodec.java:24)
+Call path from entry point to com.alibaba.fastjson.serializer.GuavaCodec.write(JSONSerializer, Object, Object, Type, int): 
+	at com.alibaba.fastjson.serializer.GuavaCodec.write(GuavaCodec.java:23)
+	at com.alibaba.fastjson.serializer.JSONSerializer.write(JSONSerializer.java:285)
+	at com.alibaba.fastjson.JSON.toJSONString(JSON.java:973)
+	at com.alibaba.fastjson.JSON.toString(JSON.java:967)
+	at java.lang.String.valueOf(String.java:2994)
+	at java.lang.StringBuilder.append(StringBuilder.java:131)
+	at com.oracle.svm.core.amd64.AMD64CPUFeatureAccess.verifyHostSupportsArchitecture(AMD64CPUFeatureAccess.java:179)
+	at com.oracle.svm.core.JavaMainWrapper.runCore(JavaMainWrapper.java:129)
+	at com.oracle.svm.core.JavaMainWrapper.run(JavaMainWrapper.java:186)
+	at com.oracle.svm.core.code.IsolateEnterStub.JavaMainWrapper_run_5087f5482cc9a6abc971913ece43acb471d2631b(generated:0)
+Error: com.oracle.graal.pointsto.constraints.UnresolvedElementException: Discovered unresolved type during parsing: javax.money.Monetary. To diagnose the issue you can use the --allow-incomplete-classpath option. The missing type is then reported at run time when it is accessed the first time.
+Trace: 
+	at parsing com.alibaba.fastjson.support.moneta.MonetaCodec.deserialze(MonetaCodec.java:48)
+Call path from entry point to com.alibaba.fastjson.support.moneta.MonetaCodec.deserialze(DefaultJSONParser, Type, Object): 
+	at com.alibaba.fastjson.support.moneta.MonetaCodec.deserialze(MonetaCodec.java:35)
+	at com.alibaba.fastjson.parser.DefaultJSONParser.parseObject(DefaultJSONParser.java:395)
+	at com.alibaba.fastjson.parser.DefaultJSONParser.parse(DefaultJSONParser.java:1401)
+	at com.alibaba.fastjson.parser.DefaultJSONParser.parse(DefaultJSONParser.java:1367)
+	at com.alibaba.fastjson.JSON.parse(JSON.java:183)
+	at com.alibaba.fastjson.JSON.parse(JSON.java:193)
+	at com.alibaba.fastjson.JSON.parse(JSON.java:149)
+	at com.alibaba.fastjson.serializer.SerializeFilterable.processValue(SerializeFilterable.java:229)
+	at com.alibaba.fastjson.serializer.JavaBeanSerializer.write(JavaBeanSerializer.java:307)
+	at com.alibaba.fastjson.serializer.JavaBeanSerializer.write(JavaBeanSerializer.java:149)
+	at com.alibaba.fastjson.serializer.JSONSerializer.write(JSONSerializer.java:285)
+	at com.alibaba.fastjson.JSON.toJSONString(JSON.java:973)
+	at com.alibaba.fastjson.JSON.toString(JSON.java:967)
+	at java.lang.String.valueOf(String.java:2994)
+	at java.lang.StringBuilder.append(StringBuilder.java:131)
+	at com.oracle.svm.core.amd64.AMD64CPUFeatureAccess.verifyHostSupportsArchitecture(AMD64CPUFeatureAccess.java:179)
+	at com.oracle.svm.core.JavaMainWrapper.runCore(JavaMainWrapper.java:129)
+	at com.oracle.svm.core.JavaMainWrapper.run(JavaMainWrapper.java:186)
+	at com.oracle.svm.core.code.IsolateEnterStub.JavaMainWrapper_run_5087f5482cc9a6abc971913ece43acb471d2631b(generated:0)
+Error: com.oracle.graal.pointsto.constraints.UnresolvedElementException: Discovered unresolved type during parsing: org.javamoney.moneta.Money. To diagnose the issue you can use the --allow-incomplete-classpath option. The missing type is then reported at run time when it is accessed the first time.
+Trace: 
+	at parsing com.alibaba.fastjson.support.moneta.MonetaCodec.write(MonetaCodec.java:21)
+Call path from entry point to com.alibaba.fastjson.support.moneta.MonetaCodec.write(JSONSerializer, Object, Object, Type, int): 
+	at com.alibaba.fastjson.support.moneta.MonetaCodec.write(MonetaCodec.java:21)
+	at com.alibaba.fastjson.serializer.JSONSerializer.write(JSONSerializer.java:285)
+	at com.alibaba.fastjson.JSON.toJSONString(JSON.java:973)
+	at com.alibaba.fastjson.JSON.toString(JSON.java:967)
+	at java.lang.String.valueOf(String.java:2994)
+	at java.lang.StringBuilder.append(StringBuilder.java:131)
+	at com.oracle.svm.core.amd64.AMD64CPUFeatureAccess.verifyHostSupportsArchitecture(AMD64CPUFeatureAccess.java:179)
+	at com.oracle.svm.core.JavaMainWrapper.runCore(JavaMainWrapper.java:129)
+	at com.oracle.svm.core.JavaMainWrapper.run(JavaMainWrapper.java:186)
+	at com.oracle.svm.core.code.IsolateEnterStub.JavaMainWrapper_run_5087f5482cc9a6abc971913ece43acb471d2631b(generated:0)
+Error: com.oracle.svm.hosted.substitute.DeletedElementException: Unsupported method java.lang.ClassLoader.defineClass1(String, byte[], int, int, ProtectionDomain, String) is reachable
+To diagnose the issue, you can add the option --report-unsupported-elements-at-runtime. The unsupported element is then reported at run time when it is accessed the first time.
+Trace: 
+	at parsing java.lang.ClassLoader.defineClass(ClassLoader.java:757)
+Call path from entry point to java.lang.ClassLoader.defineClass(String, byte[], int, int, ProtectionDomain): 
+	at java.lang.ClassLoader.defineClass(ClassLoader.java:755)
+	at com.alibaba.fastjson.util.ASMClassLoader.defineClassPublic(ASMClassLoader.java:174)
+	at com.alibaba.fastjson.serializer.ASMSerializerFactory.createJavaBeanSerializer(ASMSerializerFactory.java:412)
+	at com.alibaba.fastjson.serializer.SerializeConfig.createASMSerializer(SerializeConfig.java:92)
+	at com.alibaba.fastjson.serializer.SerializeConfig.createJavaBeanSerializer(SerializeConfig.java:248)
+	at com.alibaba.fastjson.serializer.SerializeConfig.createJavaBeanSerializer(SerializeConfig.java:120)
+	at com.alibaba.fastjson.serializer.SerializeConfig.getObjectWriter(SerializeConfig.java:514)
+	at com.alibaba.fastjson.serializer.SerializeConfig.getObjectWriter(SerializeConfig.java:436)
+	at com.alibaba.fastjson.serializer.JSONSerializer.getObjectWriter(JSONSerializer.java:416)
+	at com.alibaba.fastjson.serializer.JSONSerializer.write(JSONSerializer.java:282)
+	at com.alibaba.fastjson.JSON.toJSONString(JSON.java:973)
+	at com.alibaba.fastjson.JSON.toString(JSON.java:967)
+	at java.lang.String.valueOf(String.java:2994)
+	at java.lang.StringBuilder.append(StringBuilder.java:131)
+	at com.oracle.svm.core.amd64.AMD64CPUFeatureAccess.verifyHostSupportsArchitecture(AMD64CPUFeatureAccess.java:179)
+	at com.oracle.svm.core.JavaMainWrapper.runCore(JavaMainWrapper.java:129)
+	at com.oracle.svm.core.JavaMainWrapper.run(JavaMainWrapper.java:186)
+	at com.oracle.svm.core.code.IsolateEnterStub.JavaMainWrapper_run_5087f5482cc9a6abc971913ece43acb471d2631b(generated:0)
+
+	at com.oracle.svm.core.util.UserError.abort(UserError.java:79)
+	at com.oracle.svm.hosted.FallbackFeature.reportAsFallback(FallbackFeature.java:221)
+	at com.oracle.svm.hosted.NativeImageGenerator.runPointsToAnalysis(NativeImageGenerator.java:741)
+	at com.oracle.svm.hosted.NativeImageGenerator.doRun(NativeImageGenerator.java:530)
+	at com.oracle.svm.hosted.NativeImageGenerator.lambda$run$0(NativeImageGenerator.java:445)
+	at java.util.concurrent.ForkJoinTask$AdaptedRunnableAction.exec(ForkJoinTask.java:1386)
+	at java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:289)
+	at java.util.concurrent.ForkJoinPool$WorkQueue.runTask(ForkJoinPool.java:1056)
+	at java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1692)
+	at java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:157)
+Caused by: com.oracle.graal.pointsto.constraints.UnsupportedFeatureException: Unsupported features in 11 methods
+Detailed message:
+Error: Class initialization of com.alibaba.fastjson.serializer.JodaCodec failed. Use the option --initialize-at-run-time=com.alibaba.fastjson.serializer.JodaCodec to explicitly request delayed initialization of this class.
+Original exception that caused the problem: java.lang.NoClassDefFoundError: org/joda/time/ReadablePartial
+	at sun.misc.Unsafe.ensureClassInitialized(Native Method)
+	at com.oracle.svm.hosted.classinitialization.ConfigurableClassInitialization.ensureClassInitialized(ConfigurableClassInitialization.java:167)
+	at com.oracle.svm.hosted.classinitialization.ConfigurableClassInitialization.computeInitKindAndMaybeInitializeClass(ConfigurableClassInitialization.java:560)
+	at com.oracle.svm.hosted.classinitialization.ConfigurableClassInitialization.computeInitKindAndMaybeInitializeClass(ConfigurableClassInitialization.java:130)
+	at com.oracle.svm.hosted.classinitialization.ConfigurableClassInitialization.maybeInitializeHosted(ConfigurableClassInitialization.java:158)
+	at com.oracle.svm.hosted.SVMHost.registerType(SVMHost.java:198)
+	at com.oracle.graal.pointsto.meta.AnalysisUniverse.createType(AnalysisUniverse.java:264)
+	at com.oracle.graal.pointsto.meta.AnalysisUniverse.lookupAllowUnresolved(AnalysisUniverse.java:205)
+	at com.oracle.graal.pointsto.meta.AnalysisUniverse.lookup(AnalysisUniverse.java:182)
+	at com.oracle.graal.pointsto.meta.AnalysisUniverse.lookupAllowUnresolved(AnalysisUniverse.java:352)
+	at com.oracle.graal.pointsto.infrastructure.WrappedConstantPool.lookupField(WrappedConstantPool.java:111)
+	at org.graalvm.compiler.java.BytecodeParser.lookupField(BytecodeParser.java:4290)
+	at org.graalvm.compiler.java.BytecodeParser.genGetStatic(BytecodeParser.java:4796)
+	at org.graalvm.compiler.java.BytecodeParser.processBytecode(BytecodeParser.java:5282)
+	at org.graalvm.compiler.java.BytecodeParser.iterateBytecodesForBlock(BytecodeParser.java:3397)
+	at org.graalvm.compiler.java.BytecodeParser.processBlock(BytecodeParser.java:3204)
+	at org.graalvm.compiler.java.BytecodeParser.build(BytecodeParser.java:1085)
+	at org.graalvm.compiler.java.BytecodeParser.buildRootMethod(BytecodeParser.java:979)
+	at org.graalvm.compiler.java.GraphBuilderPhase$Instance.run(GraphBuilderPhase.java:84)
+	at org.graalvm.compiler.phases.Phase.run(Phase.java:49)
+	at org.graalvm.compiler.phases.BasePhase.apply(BasePhase.java:197)
+	at org.graalvm.compiler.phases.Phase.apply(Phase.java:42)
+	at org.graalvm.compiler.phases.Phase.apply(Phase.java:38)
+	at com.oracle.graal.pointsto.flow.MethodTypeFlowBuilder.parse(MethodTypeFlowBuilder.java:221)
+	at com.oracle.graal.pointsto.flow.MethodTypeFlowBuilder.apply(MethodTypeFlowBuilder.java:340)
+	at com.oracle.graal.pointsto.flow.MethodTypeFlow.doParse(MethodTypeFlow.java:310)
+	at com.oracle.graal.pointsto.flow.MethodTypeFlow.ensureParsed(MethodTypeFlow.java:300)
+	at com.oracle.graal.pointsto.flow.MethodTypeFlow.addContext(MethodTypeFlow.java:107)
+	at com.oracle.graal.pointsto.DefaultAnalysisPolicy$DefaultVirtualInvokeTypeFlow.onObservedUpdate(DefaultAnalysisPolicy.java:191)
+	at com.oracle.graal.pointsto.flow.TypeFlow.notifyObservers(TypeFlow.java:344)
+	at com.oracle.graal.pointsto.flow.TypeFlow.update(TypeFlow.java:386)
+	at com.oracle.graal.pointsto.BigBang$2.run(BigBang.java:511)
+	at com.oracle.graal.pointsto.util.CompletionExecutor.lambda$execute$0(CompletionExecutor.java:171)
+	at java.util.concurrent.ForkJoinTask$RunnableExecuteAction.exec(ForkJoinTask.java:1402)
+	at java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:289)
+	at java.util.concurrent.ForkJoinPool$WorkQueue.runTask(ForkJoinPool.java:1056)
+	at java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1692)
+	at java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:157)
+Caused by: java.lang.ClassNotFoundException: org.joda.time.ReadablePartial
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:382)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:419)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:352)
+	... 38 more
+Error: Detected a FileDescriptor in the image heap. File descriptors opened during image generation are no longer open at image run time, and the files might not even be present anymore at image run time.  To see how this object got instantiated use -H:+TraceClassInitialization. The object was probably created by a class initializer and is reachable from a static field. You can request class initialization at image run time by using the option --initialize-at-run-time=<class-name>. Or you can write your own initialization methods and call them explicitly from your main entry point.
+Trace: Object was reached by 
+	reading field java.io.FileOutputStream.fd of
+		constant java.io.FileOutputStream@54cfd395 reached by 
+	reading field java.io.FilterOutputStream.out of
+		constant java.io.BufferedOutputStream@37676c26 reached by 
+	reading field java.util.logging.FileHandler$MeteredStream.out of
+		constant java.util.logging.FileHandler$MeteredStream@12cf733a reached by 
+	reading field java.util.logging.StreamHandler.output of
+		constant java.util.logging.FileHandler@5e040ab0 reached by 
+	reading field com.alibaba.csp.sentinel.log.jul.DateFileLogHandler.handler of
+		constant com.alibaba.csp.sentinel.log.jul.DateFileLogHandler@b9735e7 reached by 
+	reading field com.alibaba.csp.sentinel.log.jul.JavaLoggingAdapter.logHandler of
+		constant com.alibaba.csp.sentinel.log.jul.JavaLoggingAdapter@2c0c251 reached by 
+	reading field com.alibaba.csp.sentinel.log.RecordLog.logger
+Error: No instances of sun.nio.ch.FileChannelImpl are allowed in the image heap as this class should be initialized at image runtime. To see how this object got instantiated use -H:+TraceClassInitialization.
+Trace: Object was reached by 
+	reading field java.nio.channels.FileLock.channel of
+		constant sun.nio.ch.FileLockImpl@2e50d98d reached by 
+	reading field java.lang.ref.Reference.bootImageStrongValue of
+		constant sun.nio.ch.SharedFileLockTable$FileLockReference@61d5ffd5 reached by 
+	indexing into array
+		constant java.lang.Object[]@6e635c8d reached by 
+	reading field java.util.ArrayList.elementData of
+		constant java.util.ArrayList@61d5fff4 reached by 
+	reading field java.util.concurrent.ConcurrentHashMap$Node.val of
+		constant java.util.concurrent.ConcurrentHashMap$Node@6125ab00 reached by 
+	indexing into array
+		constant java.util.concurrent.ConcurrentHashMap$Node[]@7933f33c reached by 
+	reading field java.util.concurrent.ConcurrentHashMap.table of
+		constant java.util.concurrent.ConcurrentHashMap@6125ab00 reached by 
+	reading field sun.nio.ch.SharedFileLockTable.lockMap
+Error: No instances of sun.nio.ch.FileChannelImpl are allowed in the image heap as this class should be initialized at image runtime. To see how this object got instantiated use -H:+TraceClassInitialization.
+Trace: Object was reached by 
+	reading field java.util.logging.FileHandler.lockFileChannel of
+		constant java.util.logging.FileHandler@5e040ab0 reached by 
+	reading field com.alibaba.csp.sentinel.log.jul.DateFileLogHandler.handler of
+		constant com.alibaba.csp.sentinel.log.jul.DateFileLogHandler@b9735e7 reached by 
+	reading field com.alibaba.csp.sentinel.log.jul.JavaLoggingAdapter.logHandler of
+		constant com.alibaba.csp.sentinel.log.jul.JavaLoggingAdapter@2c0c251 reached by 
+	reading field com.alibaba.csp.sentinel.log.RecordLog.logger
+Error: No instances of sun.nio.ch.FileKey are allowed in the image heap as this class should be initialized at image runtime. To see how this object got instantiated use -H:+TraceClassInitialization.
+Trace: Object was reached by 
+	reading field java.util.concurrent.ConcurrentHashMap$Node.key of
+		constant java.util.concurrent.ConcurrentHashMap$Node@6125ab00 reached by 
+	indexing into array
+		constant java.util.concurrent.ConcurrentHashMap$Node[]@7933f33c reached by 
+	reading field java.util.concurrent.ConcurrentHashMap.table of
+		constant java.util.concurrent.ConcurrentHashMap@6125ab00 reached by 
+	reading field sun.nio.ch.SharedFileLockTable.lockMap
+Error: No instances of sun.nio.ch.FileKey are allowed in the image heap as this class should be initialized at image runtime. To see how this object got instantiated use -H:+TraceClassInitialization.
+Trace: Object was reached by 
+	reading field sun.nio.ch.SharedFileLockTable$FileLockReference.fileKey of
+		constant sun.nio.ch.SharedFileLockTable$FileLockReference@61d5ffd5 reached by 
+	indexing into array
+		constant java.lang.Object[]@6e635c8d reached by 
+	reading field java.util.ArrayList.elementData of
+		constant java.util.ArrayList@61d5fff4 reached by 
+	reading field java.util.concurrent.ConcurrentHashMap$Node.val of
+		constant java.util.concurrent.ConcurrentHashMap$Node@6125ab00 reached by 
+	indexing into array
+		constant java.util.concurrent.ConcurrentHashMap$Node[]@7933f33c reached by 
+	reading field java.util.concurrent.ConcurrentHashMap.table of
+		constant java.util.concurrent.ConcurrentHashMap@6125ab00 reached by 
+	reading field sun.nio.ch.SharedFileLockTable.lockMap
+Error: com.oracle.graal.pointsto.constraints.UnresolvedElementException: Discovered unresolved type during parsing: com.google.common.collect.ArrayListMultimap. To diagnose the issue you can use the --allow-incomplete-classpath option. The missing type is then reported at run time when it is accessed the first time.
+Trace: 
+	at parsing com.alibaba.fastjson.serializer.GuavaCodec.deserialze(GuavaCodec.java:36)
+Call path from entry point to com.alibaba.fastjson.serializer.GuavaCodec.deserialze(DefaultJSONParser, Type, Object): 
+	at com.alibaba.fastjson.serializer.GuavaCodec.deserialze(GuavaCodec.java:31)
+	at com.alibaba.fastjson.parser.DefaultJSONParser.parseObject(DefaultJSONParser.java:395)
+	at com.alibaba.fastjson.parser.DefaultJSONParser.parse(DefaultJSONParser.java:1401)
+	at com.alibaba.fastjson.parser.DefaultJSONParser.parse(DefaultJSONParser.java:1367)
+	at com.alibaba.fastjson.JSON.parse(JSON.java:183)
+	at com.alibaba.fastjson.JSON.parse(JSON.java:193)
+	at com.alibaba.fastjson.JSON.parse(JSON.java:149)
+	at com.alibaba.fastjson.serializer.SerializeFilterable.processValue(SerializeFilterable.java:229)
+	at com.alibaba.fastjson.serializer.JavaBeanSerializer.write(JavaBeanSerializer.java:307)
+	at com.alibaba.fastjson.serializer.JavaBeanSerializer.write(JavaBeanSerializer.java:149)
+	at com.alibaba.fastjson.serializer.JSONSerializer.write(JSONSerializer.java:285)
+	at com.alibaba.fastjson.JSON.toJSONString(JSON.java:973)
+	at com.alibaba.fastjson.JSON.toString(JSON.java:967)
+	at java.lang.String.valueOf(String.java:2994)
+	at java.lang.StringBuilder.append(StringBuilder.java:131)
+	at com.oracle.svm.core.amd64.AMD64CPUFeatureAccess.verifyHostSupportsArchitecture(AMD64CPUFeatureAccess.java:179)
+	at com.oracle.svm.core.JavaMainWrapper.runCore(JavaMainWrapper.java:129)
+	at com.oracle.svm.core.JavaMainWrapper.run(JavaMainWrapper.java:186)
+	at com.oracle.svm.core.code.IsolateEnterStub.JavaMainWrapper_run_5087f5482cc9a6abc971913ece43acb471d2631b(generated:0)
+Error: com.oracle.graal.pointsto.constraints.UnresolvedElementException: Discovered unresolved type during parsing: com.google.common.collect.Multimap. To diagnose the issue you can use the --allow-incomplete-classpath option. The missing type is then reported at run time when it is accessed the first time.
+Trace: 
+	at parsing com.alibaba.fastjson.serializer.GuavaCodec.write(GuavaCodec.java:24)
+Call path from entry point to com.alibaba.fastjson.serializer.GuavaCodec.write(JSONSerializer, Object, Object, Type, int): 
+	at com.alibaba.fastjson.serializer.GuavaCodec.write(GuavaCodec.java:23)
+	at com.alibaba.fastjson.serializer.JSONSerializer.write(JSONSerializer.java:285)
+	at com.alibaba.fastjson.JSON.toJSONString(JSON.java:973)
+	at com.alibaba.fastjson.JSON.toString(JSON.java:967)
+	at java.lang.String.valueOf(String.java:2994)
+	at java.lang.StringBuilder.append(StringBuilder.java:131)
+	at com.oracle.svm.core.amd64.AMD64CPUFeatureAccess.verifyHostSupportsArchitecture(AMD64CPUFeatureAccess.java:179)
+	at com.oracle.svm.core.JavaMainWrapper.runCore(JavaMainWrapper.java:129)
+	at com.oracle.svm.core.JavaMainWrapper.run(JavaMainWrapper.java:186)
+	at com.oracle.svm.core.code.IsolateEnterStub.JavaMainWrapper_run_5087f5482cc9a6abc971913ece43acb471d2631b(generated:0)
+Error: com.oracle.graal.pointsto.constraints.UnresolvedElementException: Discovered unresolved type during parsing: javax.money.Monetary. To diagnose the issue you can use the --allow-incomplete-classpath option. The missing type is then reported at run time when it is accessed the first time.
+Trace: 
+	at parsing com.alibaba.fastjson.support.moneta.MonetaCodec.deserialze(MonetaCodec.java:48)
+Call path from entry point to com.alibaba.fastjson.support.moneta.MonetaCodec.deserialze(DefaultJSONParser, Type, Object): 
+	at com.alibaba.fastjson.support.moneta.MonetaCodec.deserialze(MonetaCodec.java:35)
+	at com.alibaba.fastjson.parser.DefaultJSONParser.parseObject(DefaultJSONParser.java:395)
+	at com.alibaba.fastjson.parser.DefaultJSONParser.parse(DefaultJSONParser.java:1401)
+	at com.alibaba.fastjson.parser.DefaultJSONParser.parse(DefaultJSONParser.java:1367)
+	at com.alibaba.fastjson.JSON.parse(JSON.java:183)
+	at com.alibaba.fastjson.JSON.parse(JSON.java:193)
+	at com.alibaba.fastjson.JSON.parse(JSON.java:149)
+	at com.alibaba.fastjson.serializer.SerializeFilterable.processValue(SerializeFilterable.java:229)
+	at com.alibaba.fastjson.serializer.JavaBeanSerializer.write(JavaBeanSerializer.java:307)
+	at com.alibaba.fastjson.serializer.JavaBeanSerializer.write(JavaBeanSerializer.java:149)
+	at com.alibaba.fastjson.serializer.JSONSerializer.write(JSONSerializer.java:285)
+	at com.alibaba.fastjson.JSON.toJSONString(JSON.java:973)
+	at com.alibaba.fastjson.JSON.toString(JSON.java:967)
+	at java.lang.String.valueOf(String.java:2994)
+	at java.lang.StringBuilder.append(StringBuilder.java:131)
+	at com.oracle.svm.core.amd64.AMD64CPUFeatureAccess.verifyHostSupportsArchitecture(AMD64CPUFeatureAccess.java:179)
+	at com.oracle.svm.core.JavaMainWrapper.runCore(JavaMainWrapper.java:129)
+	at com.oracle.svm.core.JavaMainWrapper.run(JavaMainWrapper.java:186)
+	at com.oracle.svm.core.code.IsolateEnterStub.JavaMainWrapper_run_5087f5482cc9a6abc971913ece43acb471d2631b(generated:0)
+Error: com.oracle.graal.pointsto.constraints.UnresolvedElementException: Discovered unresolved type during parsing: org.javamoney.moneta.Money. To diagnose the issue you can use the --allow-incomplete-classpath option. The missing type is then reported at run time when it is accessed the first time.
+Trace: 
+	at parsing com.alibaba.fastjson.support.moneta.MonetaCodec.write(MonetaCodec.java:21)
+Call path from entry point to com.alibaba.fastjson.support.moneta.MonetaCodec.write(JSONSerializer, Object, Object, Type, int): 
+	at com.alibaba.fastjson.support.moneta.MonetaCodec.write(MonetaCodec.java:21)
+	at com.alibaba.fastjson.serializer.JSONSerializer.write(JSONSerializer.java:285)
+	at com.alibaba.fastjson.JSON.toJSONString(JSON.java:973)
+	at com.alibaba.fastjson.JSON.toString(JSON.java:967)
+	at java.lang.String.valueOf(String.java:2994)
+	at java.lang.StringBuilder.append(StringBuilder.java:131)
+	at com.oracle.svm.core.amd64.AMD64CPUFeatureAccess.verifyHostSupportsArchitecture(AMD64CPUFeatureAccess.java:179)
+	at com.oracle.svm.core.JavaMainWrapper.runCore(JavaMainWrapper.java:129)
+	at com.oracle.svm.core.JavaMainWrapper.run(JavaMainWrapper.java:186)
+	at com.oracle.svm.core.code.IsolateEnterStub.JavaMainWrapper_run_5087f5482cc9a6abc971913ece43acb471d2631b(generated:0)
+Error: com.oracle.svm.hosted.substitute.DeletedElementException: Unsupported method java.lang.ClassLoader.defineClass1(String, byte[], int, int, ProtectionDomain, String) is reachable
+To diagnose the issue, you can add the option --report-unsupported-elements-at-runtime. The unsupported element is then reported at run time when it is accessed the first time.
+Trace: 
+	at parsing java.lang.ClassLoader.defineClass(ClassLoader.java:757)
+Call path from entry point to java.lang.ClassLoader.defineClass(String, byte[], int, int, ProtectionDomain): 
+	at java.lang.ClassLoader.defineClass(ClassLoader.java:755)
+	at com.alibaba.fastjson.util.ASMClassLoader.defineClassPublic(ASMClassLoader.java:174)
+	at com.alibaba.fastjson.serializer.ASMSerializerFactory.createJavaBeanSerializer(ASMSerializerFactory.java:412)
+	at com.alibaba.fastjson.serializer.SerializeConfig.createASMSerializer(SerializeConfig.java:92)
+	at com.alibaba.fastjson.serializer.SerializeConfig.createJavaBeanSerializer(SerializeConfig.java:248)
+	at com.alibaba.fastjson.serializer.SerializeConfig.createJavaBeanSerializer(SerializeConfig.java:120)
+	at com.alibaba.fastjson.serializer.SerializeConfig.getObjectWriter(SerializeConfig.java:514)
+	at com.alibaba.fastjson.serializer.SerializeConfig.getObjectWriter(SerializeConfig.java:436)
+	at com.alibaba.fastjson.serializer.JSONSerializer.getObjectWriter(JSONSerializer.java:416)
+	at com.alibaba.fastjson.serializer.JSONSerializer.write(JSONSerializer.java:282)
+	at com.alibaba.fastjson.JSON.toJSONString(JSON.java:973)
+	at com.alibaba.fastjson.JSON.toString(JSON.java:967)
+	at java.lang.String.valueOf(String.java:2994)
+	at java.lang.StringBuilder.append(StringBuilder.java:131)
+	at com.oracle.svm.core.amd64.AMD64CPUFeatureAccess.verifyHostSupportsArchitecture(AMD64CPUFeatureAccess.java:179)
+	at com.oracle.svm.core.JavaMainWrapper.runCore(JavaMainWrapper.java:129)
+	at com.oracle.svm.core.JavaMainWrapper.run(JavaMainWrapper.java:186)
+	at com.oracle.svm.core.code.IsolateEnterStub.JavaMainWrapper_run_5087f5482cc9a6abc971913ece43acb471d2631b(generated:0)
+
+	at com.oracle.graal.pointsto.constraints.UnsupportedFeatures.report(UnsupportedFeatures.java:129)
+	at com.oracle.svm.hosted.NativeImageGenerator.runPointsToAnalysis(NativeImageGenerator.java:738)
+	... 7 more
+Error: Image build request failed with exit status 1

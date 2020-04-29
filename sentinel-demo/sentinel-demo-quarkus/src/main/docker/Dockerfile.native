@@ -11,7 +11,7 @@
 #
 # Then run the container using:
 #
-# docker run -i --rm -p 8080:8080 quarkus/sentinel-demo-quarkus
+# docker run -i --rm -p 8080:8182 quarkus/sentinel-demo-quarkus
 #
 ###
 FROM registry.access.redhat.com/ubi8/ubi-minimal:8.1
@@ -24,7 +24,7 @@ RUN chmod 775 /work /work/application \
   && chmod -R "g+rwX" /work \
   && chown -R 1001:root /work
 
-EXPOSE 8080
+EXPOSE 8182
 USER 1001
 
 CMD ["./application", "-Dquarkus.http.host=0.0.0.0"]
