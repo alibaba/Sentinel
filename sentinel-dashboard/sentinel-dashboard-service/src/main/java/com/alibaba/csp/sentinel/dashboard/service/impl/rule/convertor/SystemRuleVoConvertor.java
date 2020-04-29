@@ -1,6 +1,5 @@
 package com.alibaba.csp.sentinel.dashboard.service.impl.rule.convertor;
 
-import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.dashboard.entity.rule.SystemRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.system.AddSystemRuleReqVo;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.system.UpdateSystemRuleReqVo;
