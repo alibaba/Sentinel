@@ -23,7 +23,6 @@ import com.alibaba.csp.sentinel.SphO;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
-import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot;
 
 /**
@@ -145,28 +144,6 @@ public class DefaultNode extends StatisticNode {
 
     public void printDefaultNode() {
         visitTree(0, this);
-    }
-
-
-    /**
-     * Add exception count only when given {@code throwable} is not a {@link BlockException}.
-     *
-     * @param throwable target exception
-     * @param count     count to add
-     */
-    public void trace(Throwable throwable, int count) {
-        if (count <= 0) {
-            return;
-        }
-        if (BlockException.isBlockException(throwable)) {
-            return;
-        }
-        super.increaseExceptionQps(count);
-
-        // clusterNode can be null when Constants.ON is false.
-        if (clusterNode != null) {
-            clusterNode.increaseExceptionQps(count);
-        }
     }
 
     private void visitTree(int level, DefaultNode node) {
