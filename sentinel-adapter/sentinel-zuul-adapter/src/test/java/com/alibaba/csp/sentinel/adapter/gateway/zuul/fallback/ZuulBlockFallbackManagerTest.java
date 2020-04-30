@@ -26,11 +26,11 @@ import org.junit.Test;
  */
 public class ZuulBlockFallbackManagerTest {
 
-    private String ROUTE = "/test";
+    private static final String  ROUTE = "/test";
 
-    private String DEFAULT_ROUTE = "*";
+    private static  final String DEFAULT_ROUTE = "*";
 
-    class MyNullResponseFallBackProvider implements ZuulBlockFallbackProvider {
+    static class MyNullResponseFallBackProvider implements ZuulBlockFallbackProvider<BlockResponse> {
         @Override
         public String getRoute() {
             return ROUTE;
@@ -41,6 +41,27 @@ public class ZuulBlockFallbackManagerTest {
             return null;
         }
     }
+
+    static class MyNullResponseFallBackProviderCustomize implements ZuulBlockFallbackProvider<BlockResponseCustomize> {
+        @Override
+        public String getRoute() {
+            return ROUTE;
+        }
+
+        @Override
+        public BlockResponseCustomize fallbackResponse(String route, Throwable cause) {
+            return null;
+        }
+    }
+
+
+   static class BlockResponseCustomize extends BlockResponse {
+
+        public BlockResponseCustomize(int code, String message, String route) {
+            super(code, message, route);
+        }
+    }
+
 
     @Test
     public void testRegisterProvider() throws Exception {
@@ -58,5 +79,23 @@ public class ZuulBlockFallbackManagerTest {
         ZuulBlockFallbackManager.clear();
         Assert.assertEquals(ZuulBlockFallbackManager.getFallbackProvider(ROUTE).getRoute(), DEFAULT_ROUTE);
     }
+
+    @Test
+    public void testRegisterProviderCustomize() throws Exception {
+        ZuulBlockFallbackProvider<BlockResponseCustomize> myNullResponseFallBackProvider = new MyNullResponseFallBackProviderCustomize();
+        ZuulBlockFallbackManager.registerProvider(myNullResponseFallBackProvider);
+        Assert.assertEquals(myNullResponseFallBackProvider.getRoute(), ROUTE);
+        Assert.assertNull(myNullResponseFallBackProvider.fallbackResponse(ROUTE, new FlowException("flow ex")));
+    }
+
+    @Test
+    public void clearCustomize() {
+        MyNullResponseFallBackProvider myNullResponseFallBackProvider = new MyNullResponseFallBackProvider();
+        ZuulBlockFallbackManager.registerProvider(myNullResponseFallBackProvider);
+        Assert.assertEquals(myNullResponseFallBackProvider.getRoute(), ROUTE);
+        ZuulBlockFallbackManager.clear();
+        Assert.assertEquals(ZuulBlockFallbackManager.getFallbackProvider(ROUTE).getRoute(), DEFAULT_ROUTE);
+    }
+
 
 }

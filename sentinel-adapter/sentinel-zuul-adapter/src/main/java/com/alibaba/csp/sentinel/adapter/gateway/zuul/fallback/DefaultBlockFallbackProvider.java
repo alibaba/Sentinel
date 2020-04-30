@@ -23,7 +23,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  *
  * @author tiger
  */
-public class DefaultBlockFallbackProvider implements ZuulBlockFallbackProvider {
+public class DefaultBlockFallbackProvider implements ZuulBlockFallbackProvider<BlockResponse> {
 
     @Override
     public String getRoute() {
