@@ -45,20 +45,20 @@ public class DegradeRuleController {
     @GetMapping("/rules")
     @AuthAction(AuthService.PrivilegeType.READ_RULE)
     public Result<List<QueryDegradeRuleListRespVo>> queryDegradeRuleList(MachineReqVo reqVo) throws Exception {
-        List<QueryDegradeRuleListRespVo> list = degradeRuleService.queryDegradeRuleList(reqVo);
-        return Result.ofSuccess(list);
+        List<QueryDegradeRuleListRespVo> rules = degradeRuleService.queryDegradeRuleList(reqVo);
+        return Result.ofSuccess(rules);
     }
 
     @PostMapping("/rule")
     @AuthAction(value = AuthService.PrivilegeType.WRITE_RULE)
-    public Result<?> addFlowRule(@RequestBody AddDegradeRuleReqVo reqVo) throws Exception {
+    public Result<?> addDegradeRule(@RequestBody AddDegradeRuleReqVo reqVo) throws Exception {
         degradeRuleService.addDegradeRule(reqVo);
         return Result.ofSuccess(null);
     }
 
     @PutMapping("/rule/{id}")
     @AuthAction(AuthService.PrivilegeType.WRITE_RULE)
-    public Result<?> updateFlowRule(@PathVariable("id") Long id, @RequestBody UpdateDegradeRuleReqVo reqVo) throws Exception {
+    public Result<?> updateDetradeRule(@PathVariable("id") Long id, @RequestBody UpdateDegradeRuleReqVo reqVo) throws Exception {
         reqVo.setId(id);
         degradeRuleService.updateDegradeRule(reqVo);
         return Result.ofSuccess(null);
@@ -66,7 +66,7 @@ public class DegradeRuleController {
 
     @DeleteMapping("/rule/{id}")
     @AuthAction(AuthService.PrivilegeType.DELETE_RULE)
-    public Result<?> apiDeleteRule(@PathVariable("id") Long id, @RequestBody DeleteDegradeRuleReqVo reqVo) throws Exception {
+    public Result<?> deleteDegradeRule(@PathVariable("id") Long id, @RequestBody DeleteDegradeRuleReqVo reqVo) throws Exception {
         reqVo.setId(id);
         degradeRuleService.deleteDegradeRule(reqVo);
         return Result.ofSuccess(null);

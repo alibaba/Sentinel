@@ -15,12 +15,12 @@
  */
 package com.alibaba.csp.sentinel.dashboard.web.controller.rule;
 
-import com.alibaba.csp.sentinel.dashboard.service.api.rule.FlowRuleService;
+import com.alibaba.csp.sentinel.dashboard.service.api.rule.SystemRuleService;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.MachineReqVo;
-import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.flow.AddFlowRuleReqVo;
-import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.flow.DeleteFlowRuleReqVo;
-import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.flow.UpdateFlowRuleReqVo;
-import com.alibaba.csp.sentinel.dashboard.service.vo.rule.resp.flow.QueryFlowRuleListRespVo;
+import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.system.AddSystemRuleReqVo;
+import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.system.DeleteSystemRuleReqVo;
+import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.system.UpdateSystemRuleReqVo;
+import com.alibaba.csp.sentinel.dashboard.service.vo.rule.resp.system.QuerySystemRuleListRespVo;
 import com.alibaba.csp.sentinel.dashboard.web.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.web.auth.AuthService;
 import com.alibaba.csp.sentinel.dashboard.web.domain.Result;
@@ -30,46 +30,44 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Flow rule controller.
+ * System rule controller.
  *
- * @author Eric Zhao
  * @author cdfive
- * @since 1.4.0
  */
 @RestController
-@RequestMapping("/flow")
-public class FlowRuleController {
+@RequestMapping("/system")
+public class SystemRuleController {
 
     @Autowired
-    private FlowRuleService flowRuleService;
+    private SystemRuleService systemRuleService;
 
     @GetMapping("/rules")
     @AuthAction(AuthService.PrivilegeType.READ_RULE)
-    public Result<List<QueryFlowRuleListRespVo>> queryFlowRuleList(MachineReqVo reqVo) throws Exception {
-        List<QueryFlowRuleListRespVo> rules = flowRuleService.queryFlowRuleList(reqVo);
+    public Result<List<QuerySystemRuleListRespVo>> querySyetemRuleList(MachineReqVo reqVo) throws Exception {
+        List<QuerySystemRuleListRespVo> rules = systemRuleService.querySystemRuleList(reqVo);
         return Result.ofSuccess(rules);
     }
 
     @PostMapping("/rule")
     @AuthAction(value = AuthService.PrivilegeType.WRITE_RULE)
-    public Result<?> addFlowRule(@RequestBody AddFlowRuleReqVo reqVo) throws Exception {
-        flowRuleService.addFlowRule(reqVo);
+    public Result<?> addSystemRule(@RequestBody AddSystemRuleReqVo reqVo) throws Exception {
+        systemRuleService.addSystemRule(reqVo);
         return Result.ofSuccess(null);
     }
 
     @PutMapping("/rule/{id}")
     @AuthAction(AuthService.PrivilegeType.WRITE_RULE)
-    public Result<?> updateFlowRule(@PathVariable("id") Long id, @RequestBody UpdateFlowRuleReqVo reqVo) throws Exception {
+    public Result<?> updateSytemRule(@PathVariable("id") Long id, @RequestBody UpdateSystemRuleReqVo reqVo) throws Exception {
         reqVo.setId(id);
-        flowRuleService.updateFlowRule(reqVo);
+        systemRuleService.updateSystemRule(reqVo);
         return Result.ofSuccess(null);
     }
 
     @DeleteMapping("/rule/{id}")
     @AuthAction(AuthService.PrivilegeType.DELETE_RULE)
-    public Result<?> deleteFlowRule(@PathVariable("id") Long id, @RequestBody DeleteFlowRuleReqVo reqVo) throws Exception {
+    public Result<?> deleteSystemRule(@PathVariable("id") Long id, @RequestBody DeleteSystemRuleReqVo reqVo) throws Exception {
         reqVo.setId(id);
-        flowRuleService.deleteFlowRule(reqVo);
+        systemRuleService.deleteSystemRule(reqVo);
         return Result.ofSuccess(null);
     }
 }
