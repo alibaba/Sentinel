@@ -32,9 +32,9 @@ import java.util.concurrent.ExecutionException;
 /**
  * @author cdfive
  */
-public class SentinelApiClient {
+public class SentinelTransportClient {
 
-    private static Logger logger = LoggerFactory.getLogger(SentinelApiClient.class);
+    private static Logger logger = LoggerFactory.getLogger(SentinelTransportClient.class);
 
     private static final Charset DEFAULT_CHARSET = Charset.forName(SentinelConfig.charset());
 
@@ -46,7 +46,7 @@ public class SentinelApiClient {
 
     private CloseableHttpAsyncClient httpClient;
 
-    public SentinelApiClient() {
+    public SentinelTransportClient() {
         IOReactorConfig ioConfig = IOReactorConfig.custom().setConnectTimeout(3000).setSoTimeout(10000)
                 .setIoThreadCount(Runtime.getRuntime().availableProcessors() * 2).build();
         httpClient = HttpAsyncClients.custom().setRedirectStrategy(new DefaultRedirectStrategy() {
