@@ -8,7 +8,7 @@ import org.springframework.context.annotation.PropertySource;
  * @author cdfive
  */
 @Configuration
-@PropertySource(value = {"classpath:zookeeper.properties", "file:zookeeper.properties"}, ignoreResourceNotFound = true)
+@PropertySource(value = {"classpath:repository/zookeeper.properties", "file:zookeeper.properties"}, ignoreResourceNotFound = true)
 @ConfigurationProperties(prefix = "zookeeper")
 public class ZookeeperProperties {
 

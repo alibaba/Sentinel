@@ -58,15 +58,15 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
           if (data.code === 0 && data.data) {
             $scope.rules = data.data;
             $.each($scope.rules, function (idx, rule) {
-              if (rule.highestSystemLoad >= 0) {
+              if (rule.highestSystemLoad != null && rule.highestSystemLoad >= 0) {
                 rule.grade = 0;
-              } else if (rule.avgRt >= 0) {
+              } else if (rule.avgRt != null && rule.avgRt >= 0) {
                 rule.grade = 1;
-              } else if (rule.maxThread >= 0) {
+              } else if (rule.maxThread != null && rule.maxThread >= 0) {
                 rule.grade = 2;
-              } else if (rule.qps >= 0) {
+              } else if (rule.qps != null && rule.qps >= 0) {
                 rule.grade = 3;
-              } else if (rule.highestCpuUsage >= 0) {
+              } else if (rule.highestCpuUsage != null && rule.highestCpuUsage >= 0) {
                   rule.grade = 4;
               }
             });

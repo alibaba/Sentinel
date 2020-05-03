@@ -8,7 +8,7 @@ import org.springframework.context.annotation.PropertySource;
  * @author cdfive
  */
 @Configuration
-@PropertySource(value = {"classpath:apollo.properties", "file:apollo.properties"}, ignoreResourceNotFound = true)
+@PropertySource(value = {"classpath:repository/apollo.properties", "file:apollo.properties"}, ignoreResourceNotFound = true)
 @ConfigurationProperties(prefix = "apollo")
 public class ApolloProperties {
 

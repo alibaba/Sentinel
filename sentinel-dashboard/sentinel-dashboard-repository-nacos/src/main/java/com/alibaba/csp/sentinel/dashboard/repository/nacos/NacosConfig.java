@@ -48,19 +48,4 @@ public class NacosConfig {
             throw e;
         }
     }
-
-//    @Bean
-//    public Converter<List<FlowRuleEntity>, String> flowRuleEntityEncoder() {
-//        return JSON::toJSONString;
-//    }
-//
-//    @Bean
-//    public Converter<String, List<FlowRuleEntity>> flowRuleEntityDecoder() {
-//        return s -> JSON.parseArray(s, FlowRuleEntity.class);
-//    }
-
-//    @Bean
-//    public FlowRuleNacosProvider flowRuleNacosProvider() {
-//        return new FlowRuleNacosProvider();
-//    }
 }
