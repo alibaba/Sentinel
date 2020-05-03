@@ -16,33 +16,29 @@
 package com.alibaba.csp.sentinel.dashboard.repository.apollo;
 
 import com.alibaba.csp.sentinel.dashboard.entity.rule.RuleEntity;
-import com.alibaba.csp.sentinel.dashboard.repository.AbstractRuleProvider;
+import com.alibaba.csp.sentinel.dashboard.repository.AbstractRulePublisher;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
-import com.ctrip.framework.apollo.openapi.dto.OpenNamespaceDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author cdfive
  */
-public class ApolloRuleProvider<T extends RuleEntity> extends AbstractRuleProvider<T> {
+public class ApolloRulePublisher<T extends RuleEntity> extends AbstractRulePublisher<T> {
 
     @Autowired
     private ApolloOpenApiClient apolloOpenApiClient;
 
     @Override
-    protected String fetchRules(String app, String ip, Integer port) throws Exception {
+    protected void publishRules(String app, String ip, Integer port, String rules) throws Exception {
         String ruleKey = buildRuleKey(app, ip, port);
 
         String appId = "appId";
-        OpenNamespaceDTO openNamespaceDTO = apolloOpenApiClient.getNamespace(appId, "DEV", "default", "application");
-        String rules = openNamespaceDTO
-            .getItems()
-            .stream()
-            .filter(p -> p.getKey().equals(ruleKey))
-            .map(OpenItemDTO::getValue)
-            .findFirst()
-            .orElse("");
-        return rules;
+        OpenItemDTO openItemDTO = new OpenItemDTO();
+        openItemDTO.setKey(ruleKey);
+        openItemDTO.setValue(rules);
+        openItemDTO.setComment("Add sentinel sule");
+        openItemDTO.setDataChangeCreatedBy("sentinel-dashboard");
+        apolloOpenApiClient.createOrUpdateItem(appId, "DEV", "default", "application", openItemDTO);
     }
 }
