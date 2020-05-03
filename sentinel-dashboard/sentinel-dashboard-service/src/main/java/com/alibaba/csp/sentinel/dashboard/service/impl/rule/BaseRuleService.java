@@ -18,7 +18,6 @@ package com.alibaba.csp.sentinel.dashboard.service.impl.rule;
 import com.alibaba.csp.sentinel.dashboard.entity.rule.RuleEntity;
 import com.alibaba.csp.sentinel.dashboard.repository.DynamicRuleProvider;
 import com.alibaba.csp.sentinel.dashboard.repository.DynamicRulePublisher;
-import com.alibaba.csp.sentinel.dashboard.service.impl.BaseService;
 import com.alibaba.csp.sentinel.dashboard.service.impl.common.id.IdGenerator;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.MachineReqVo;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -27,10 +26,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import java.util.Optional;
 
+import static com.alibaba.csp.sentinel.dashboard.service.impl.common.ParamChecker.fail;
+
 /**
  * @author cdfive
  */
-public class BaseRuleService<T extends RuleEntity> extends BaseService {
+public class BaseRuleService<T extends RuleEntity> {
 
     @Autowired
     protected IdGenerator idGenerator;
