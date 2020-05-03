@@ -37,6 +37,11 @@
             <artifactId>sentinel-dashboard-repository-nacos</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-dashboard-repository-redis</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.hibernate.validator</groupId>

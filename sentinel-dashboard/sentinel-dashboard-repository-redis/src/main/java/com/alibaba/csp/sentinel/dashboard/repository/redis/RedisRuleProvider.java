@@ -13,27 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.repository.nacos;
+package com.alibaba.csp.sentinel.dashboard.repository.redis;
 
 import com.alibaba.csp.sentinel.dashboard.entity.rule.RuleEntity;
 import com.alibaba.csp.sentinel.dashboard.repository.AbstractRuleProvider;
-import com.alibaba.nacos.api.config.ConfigService;
+import io.lettuce.core.RedisClient;
+import io.lettuce.core.api.StatefulRedisConnection;
+import io.lettuce.core.api.sync.RedisCommands;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author cdfive
  */
-public class NacosRuleProvider<T extends RuleEntity> extends AbstractRuleProvider<T> {
+public class RedisRuleProvider<T extends RuleEntity> extends AbstractRuleProvider<T> {
 
     @Autowired
-    private NacosProperties nacosProperties;
-
-    @Autowired
-    private ConfigService configService;
+    private RedisConfig redisConfig;
 
     @Override
     protected String fetchRules(String app, String ip, Integer port) throws Exception {
+        RedisClient redisClient = redisConfig.createRedisClient();
+        StatefulRedisConnection<String, String> connection = redisClient.connect();
+        RedisCommands<String, String> syncCommands = connection.sync();
         String ruleKey = buildRuleKey(app, ip, port);
-        return configService.getConfig(ruleKey, nacosProperties.getSentinelGroup(), 3000);
+        String rules = syncCommands.get(ruleKey);
+        connection.close();
+        redisClient.shutdown();
+        return rules;
     }
 }

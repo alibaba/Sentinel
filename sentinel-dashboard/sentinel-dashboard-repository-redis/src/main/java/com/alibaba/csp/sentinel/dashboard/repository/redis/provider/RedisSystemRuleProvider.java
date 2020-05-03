@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.repository.nacos.provider;
+package com.alibaba.csp.sentinel.dashboard.repository.redis.provider;
 
-import com.alibaba.csp.sentinel.dashboard.entity.rule.FlowRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.repository.nacos.NacosConfig;
-import com.alibaba.csp.sentinel.dashboard.repository.nacos.NacosRuleProvider;
+import com.alibaba.csp.sentinel.dashboard.entity.rule.SystemRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.repository.redis.RedisConfig;
+import com.alibaba.csp.sentinel.dashboard.repository.redis.RedisRuleProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
 /**
  * @author cdfive
  */
-@ConditionalOnBean(NacosConfig.class)
+@ConditionalOnBean(RedisConfig.class)
 @Component
-public class NacosFlowRuleProvider extends NacosRuleProvider<FlowRuleEntity> {
+public class RedisSystemRuleProvider extends RedisRuleProvider<SystemRuleEntity> {
 
 }
