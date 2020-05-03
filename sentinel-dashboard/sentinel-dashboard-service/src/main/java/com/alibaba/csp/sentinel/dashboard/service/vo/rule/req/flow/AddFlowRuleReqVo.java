@@ -1,49 +1,45 @@
+/*
+ * Copyright 1999-2020 Alibaba Group Holding Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.flow;
 
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.MachineReqVo;
 
-import javax.validation.constraints.*;
-
 /**
  * @author cdfive
  */
-
-//{"grade":1,"strategy":0,"controlBehavior":0,"app":"sentinel-dashboard","ip":"10.3.34.164","port":"8719",
-//        "limitApp":"default","clusterMode":false,"clusterConfig":{"thresholdType":0,
-//        "fallbackToLocalWhenFail":true},"resource":"aa","count":111}
 public class AddFlowRuleReqVo extends MachineReqVo {
 
     private static final long serialVersionUID = 7843538810403392825L;
 
     /**资源名称*/
-    @NotBlank
     private String resource;
 
     /**针对来源*/
-    @NotBlank
     private String limitApp;
 
     /**阈值类型 0-线程数 1-QPS*/
-    @NotNull
-    @Min(0)
-    @Max(1)
     private Integer grade;
 
     /**阈值*/
-    @NotNull
-    @Positive
     private Double count;
 
     /**流控模式 0-直接 1-关联 2-链路*/
-    @NotNull
-    @Min(0)
-    @Max(2)
     private Integer strategy;
 
     /**流控效果 0-快速失败 1-Warm Up 2-排队等待*/
-    @NotNull
-    @Min(0)
-    @Max(2)
     private Integer controlBehavior;
 
     /**关联资源名称,当strategy为1-关联*/
