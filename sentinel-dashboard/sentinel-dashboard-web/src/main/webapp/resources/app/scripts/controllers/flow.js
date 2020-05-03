@@ -4,9 +4,8 @@ app.controller('FlowController', ['$scope', '$stateParams', 'FlowService', 'ngDi
   'MachineService',
   function ($scope, $stateParams, FlowService, ngDialog,
     MachineService) {
-    $scope.app = $stateParams.app;
 
-    var operateTypes = {'app': '应用维度', 'machine': '单机维度'};
+    let operateTypes = {'app': '应用维度', 'machine': '单机维度'};
     $scope.operateType = 'app';
 
     $scope.switchOperateType = function() {
@@ -17,6 +16,8 @@ app.controller('FlowController', ['$scope', '$stateParams', 'FlowService', 'ngDi
     $scope.showSwitchToOperateTypeText = function() {
       return $scope.operateType == 'app' ? operateTypes['machine'] : operateTypes['app'];
     };
+
+    $scope.app = $stateParams.app;
 
     $scope.rulesPageConfig = {
       pageSize: 10,

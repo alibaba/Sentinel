@@ -10,6 +10,9 @@
     <button class="btn btn-main" style="height: 30px;font-size: 12px;">树状视图</button>
     <button class="btn btn-default-inverse" style="height: 30px;font-size: 12px;">列表视图</button>
   </div>
+  <a class="btn btn-default-inverse" style="float: right; margin-right: 10px;" ng-click="switchOperateType()">
+    {{showSwitchToOperateTypeText()}}
+  </a>
 </div>
 
 <div class="separator"></div>
@@ -26,7 +29,7 @@
           <button class="btn btn-danger" style="float: right;margin-right: 10px;height: 30px;font-size: 12px;" ng-click="collapseAll()"
             ng-if="isExpand && isTreeView">折叠</button> -->
           <input class="form-control witdh-200" placeholder="关键字" ng-model="searchKey" ng-change="searchChange(searchKey)">
-          <div class="control-group" style="float:right;margin-right: 10px;margin-bottom: -10px;">
+          <div class="control-group" style="float:right;margin-right: 10px;margin-bottom: -10px;" ng-if="operateType=='machine'">
             <selectize id="gsInput" class="selectize-input-200" config="macsInputConfig" options="macsInputOptions" ng-model="macInputModel"
               placeholder="机器"></selectize>
           </div>

@@ -1,10 +1,22 @@
 var app = angular.module('sentinelDashboardApp');
 
 app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
-  'ngDialog', 'FlowServiceV1', 'DegradeService', 'AuthorityRuleService', 'ParamFlowService', 'MachineService',
+  'ngDialog', 'FlowService', 'DegradeService', 'AuthorityRuleService', 'ParamFlowService', 'MachineService',
   '$interval', '$location', '$timeout',
   function ($scope, $stateParams, IdentityService, ngDialog,
     FlowService, DegradeService, AuthorityRuleService, ParamFlowService, MachineService, $interval, $location, $timeout) {
+
+    let operateTypes = {'app': '应用维度', 'machine': '单机维度'};
+    $scope.operateType = 'app';
+
+    $scope.switchOperateType = function() {
+      $scope.operateType = $scope.operateType == 'app' ? 'machine' : 'app';
+      getMachineRules();
+    };
+
+    $scope.showSwitchToOperateTypeText = function() {
+      return $scope.operateType == 'app' ? operateTypes['machine'] : operateTypes['app'];
+    };
 
     $scope.app = $stateParams.app;
 
@@ -54,7 +66,8 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
         limitApp: 'default',
         clusterMode: false,
         clusterConfig: {
-            thresholdType: 0
+          thresholdType: 0,
+          fallbackToLocalWhenFail: true
         },
         app: $scope.app,
         ip: mac[0],

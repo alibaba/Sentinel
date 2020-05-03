@@ -3,9 +3,8 @@ var app = angular.module('sentinelDashboardApp');
 app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDialog',
   'MachineService',
   function ($scope, $stateParams, DegradeService, ngDialog, MachineService) {
-    $scope.app = $stateParams.app;
 
-    var operateTypes = {'app': '应用维度', 'machine': '单机维度'};
+    let operateTypes = {'app': '应用维度', 'machine': '单机维度'};
     $scope.operateType = 'app';
 
     $scope.switchOperateType = function() {
@@ -16,6 +15,8 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
     $scope.showSwitchToOperateTypeText = function() {
       return $scope.operateType == 'app' ? operateTypes['machine'] : operateTypes['app'];
     };
+
+    $scope.app = $stateParams.app;
 
     $scope.rulesPageConfig = {
       pageSize: 10,
