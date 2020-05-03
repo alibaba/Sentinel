@@ -8,70 +8,74 @@ app.service('SystemService', ['$http', function ($http) {
       port: port
     };
     return $http({
-      url: 'system/rules.json',
+      url: 'system/rules',
       params: param,
       method: 'GET'
     });
   };
 
   this.newRule = function (rule) {
-    var param = {
+    var data = {
       app: rule.app,
       ip: rule.ip,
       port: rule.port
     };
     if (rule.grade == 0) {// avgLoad
-      param.highestSystemLoad = rule.highestSystemLoad;
+      data.highestSystemLoad = rule.highestSystemLoad;
     } else if (rule.grade == 1) {// avgRt
-      param.avgRt = rule.avgRt;
+      data.avgRt = rule.avgRt;
     } else if (rule.grade == 2) {// maxThread
-      param.maxThread = rule.maxThread;
+      data.maxThread = rule.maxThread;
     } else if (rule.grade == 3) {// qps
-      param.qps = rule.qps;
+      data.qps = rule.qps;
     } else if (rule.grade == 4) {// cpu
-      param.highestCpuUsage = rule.highestCpuUsage;
+      data.highestCpuUsage = rule.highestCpuUsage;
     }
 
     return $http({
-      url: '/system/new.json',
-      params: param,
-      method: 'GET'
+      url: '/system/rule',
+      data: data,
+      method: 'POST'
     });
   };
 
   this.saveRule = function (rule) {
-    var param = {
+    var data = {
       id: rule.id,
+      app: rule.app,
+      ip: rule.ip,
+      port: rule.port
     };
     if (rule.grade == 0) {// avgLoad
-      param.highestSystemLoad = rule.highestSystemLoad;
+      data.highestSystemLoad = rule.highestSystemLoad;
     } else if (rule.grade == 1) {// avgRt
-      param.avgRt = rule.avgRt;
+      data.avgRt = rule.avgRt;
     } else if (rule.grade == 2) {// maxThread
-      param.maxThread = rule.maxThread;
+      data.maxThread = rule.maxThread;
     } else if (rule.grade == 3) {// qps
-      param.qps = rule.qps;
+      data.qps = rule.qps;
     } else if (rule.grade == 4) {// cpu
-        param.highestCpuUsage = rule.highestCpuUsage;
+      data.highestCpuUsage = rule.highestCpuUsage;
     }
 
     return $http({
-      url: '/system/save.json',
-      params: param,
-      method: 'GET'
+      url: '/system/rule/' + rule.id,
+      data: data,
+      method: 'PUT'
     });
   };
 
   this.deleteRule = function (rule) {
-    var param = {
+    var data = {
       id: rule.id,
       app: rule.app
     };
 
     return $http({
-      url: '/system/delete.json',
-      params: param,
-      method: 'GET'
+      url: '/system/rule/' + rule.id,
+      data: data,
+      method: 'DELETE',
+      headers: {'Content-Type': 'application/json'}
     });
   };
 }]);

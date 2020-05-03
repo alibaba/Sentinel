@@ -5,6 +5,19 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
     ngDialog, MachineService) {
     //初始化
     $scope.app = $stateParams.app;
+
+    var operateTypes = {'app': '应用维度', 'machine': '单机维度'};
+    $scope.operateType = 'app';
+
+    $scope.switchOperateType = function() {
+      $scope.operateType = $scope.operateType == 'app' ? 'machine' : 'app';
+      getMachineRules();
+    };
+
+    $scope.showSwitchToOperateTypeText = function() {
+      return $scope.operateType == 'app' ? operateTypes['machine'] : operateTypes['app'];
+    };
+
     $scope.rulesPageConfig = {
       pageSize: 10,
       currentPageIndex: 1,
@@ -31,8 +44,16 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
       if (!$scope.macInputModel) {
         return;
       }
-      let mac = $scope.macInputModel.split(':');
-      SystemService.queryMachineRules($scope.app, mac[0], mac[1]).success(
+
+      var ip = null;
+      var port = null;
+      if ($scope.operateType == 'machine') {
+        var mac = $scope.macInputModel.split(':');
+        ip = mac[0];
+        port = mac[1];
+      }
+
+      SystemService.queryMachineRules($scope.app, ip, port).success(
         function (data) {
           if (data.code === 0 && data.data) {
             $scope.rules = data.data;
@@ -56,11 +77,22 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
           }
         });
     }
-
     $scope.getMachineRules = getMachineRules;
+
     var systemRuleDialog;
     $scope.editRule = function (rule) {
       $scope.currentRule = angular.copy(rule);
+
+      var ip = null;
+      var port = null;
+      if ($scope.operateType == 'machine') {
+        var mac = $scope.macInputModel.split(':');
+        ip = mac[0];
+        port = mac[1];
+      }
+      $scope.currentRule.ip = ip;
+      $scope.currentRule.port = port;
+
       $scope.systemRuleDialog = {
         title: '编辑系统保护规则',
         type: 'edit',
@@ -75,12 +107,19 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
     };
 
     $scope.addNewRule = function () {
-      var mac = $scope.macInputModel.split(':');
+      var ip = null;
+      var port = null;
+      if ($scope.operateType == 'machine') {
+        var mac = $scope.macInputModel.split(':');
+        ip = mac[0];
+        port = mac[1];
+      }
+
       $scope.currentRule = {
         grade: 0,
         app: $scope.app,
-        ip: mac[0],
-        port: mac[1],
+        ip: ip,
+        port: port,
       };
       $scope.systemRuleDialog = {
         title: '新增系统保护规则',
@@ -204,6 +243,7 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
         }
       });
     }
+
     queryAppMachines();
     function queryAppMachines() {
       MachineService.getAppMachines($scope.app).success(
@@ -231,6 +271,7 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
         }
       );
     };
+
     $scope.$watch('macInputModel', function () {
       if ($scope.macInputModel) {
         getMachineRules();
