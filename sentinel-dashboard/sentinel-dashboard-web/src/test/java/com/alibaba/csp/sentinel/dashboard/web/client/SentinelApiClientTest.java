@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright 1999-2020 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.apache.http.protocol.RequestContent;
 import org.junit.Test;
 
 public class SentinelApiClientTest {
+
     @Test
     public void postRequest() throws HttpException, IOException {
         // Processor is required because it will determine the final request body including
