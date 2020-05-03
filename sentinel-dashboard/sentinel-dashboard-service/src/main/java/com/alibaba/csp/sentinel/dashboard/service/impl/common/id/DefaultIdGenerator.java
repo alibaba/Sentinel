@@ -16,24 +16,6 @@ public class DefaultIdGenerator implements IdGenerator {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultIdGenerator.class);
 
-    private static final long twepoch = 1409030641843L;
-
-    private static final long workerIdBits = 9L;
-
-    private static final long dataCenterIdBits = 1L;
-
-    private static final long maxWorkerId = 511L;
-
-    private static final long sequenceBits = 12L;
-
-    private static final long workerIdShift = 12L;
-
-    private static final long dataCenterIdShift = 21L;
-
-    private static final long timestampLeftShift = 22L;
-
-    private static final long sequenceMask = 4095L;
-
     private static long lastTimestamp = -1L;
 
     private long sequence = 0L;
@@ -49,10 +31,11 @@ public class DefaultIdGenerator implements IdGenerator {
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
+
         String[] ipArray = ipAddress.split("\\.");
         this.dataCenterId = 1L;
         this.workerId = Long.valueOf(ipArray[3]).longValue();
-        log.warn("Init IdService by dataCenterId:{} and workerId:{}, it maybe duplicate.", Long.valueOf(this.dataCenterId), Long.valueOf(this.workerId));
+        log.info("Init IdService by dataCenterId:{} and workerId:{}", this.dataCenterId, this.workerId);
     }
 
     @Override
@@ -88,7 +71,6 @@ public class DefaultIdGenerator implements IdGenerator {
         lastTimestamp = timestamp;
 
         long nextId = timestamp - 1409030641843L << 22 | this.dataCenterId << 21 | this.workerId << 12 | this.sequence;
-
         return nextId;
     }
 

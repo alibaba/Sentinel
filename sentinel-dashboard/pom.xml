@@ -8,11 +8,11 @@
         <module>sentinel-dashboard-entity</module>
         <module>sentinel-dashboard-repository</module>
         <module>sentinel-dashboard-service</module>
+        <module>sentinel-dashboard-repository-memory</module>
+        <module>sentinel-dashboard-repository-redis</module>
         <module>sentinel-dashboard-repository-nacos</module>
         <module>sentinel-dashboard-repository-zookeeper</module>
         <module>sentinel-dashboard-repository-apollo</module>
-        <module>sentinel-dashboard-repository-memory</module>
-        <module>sentinel-dashboard-repository-redis</module>
     </modules>
 
     <parent>

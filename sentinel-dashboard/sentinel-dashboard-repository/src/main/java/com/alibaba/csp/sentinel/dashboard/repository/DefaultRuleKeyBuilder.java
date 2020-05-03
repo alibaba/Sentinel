@@ -12,7 +12,6 @@ import java.util.Map;
 /**
  * @author cdfive
  */
-//@Component("defaultRuleKeyBuilder")
 public class DefaultRuleKeyBuilder<T> implements RuleKeyBuilder<T> {
 
     private final static String RULES = "rules";

@@ -51,7 +51,6 @@ public abstract class AbstractRuleProvider<T extends RuleEntity> implements Dyna
 
     @Override
     public List<T> getRules(String app, String ip, Integer port) throws Exception {
-//        String ruleKey = buildRuleKey(app, ip, port);
         String ruleStr = fetchRules(app, ip, port);
         if (StringUtil.isEmpty(ruleStr)) {
             return new ArrayList<>();
@@ -61,7 +60,6 @@ public abstract class AbstractRuleProvider<T extends RuleEntity> implements Dyna
     }
 
     protected String buildRuleKey(String app, String ip, Integer port) {
-//        return Joiner.on("-").join(app, ip, port, "flow", "rules");
         return ruleKeyBuilder.buildRuleKey(app, ip, port);
     }
 
