@@ -3,7 +3,7 @@
     <span style="font-size: 30px;font-weight: bold;">{{app}}</span>
   </div>
   <div class="col-md-6">
-    <button class="btn btn-default-inverse" style="float: right; margin-right: 10px;" ng-click="addNewRule()">
+    <button class="btn btn-default-inverse" style="float: right; margin-right: 10px;" ng-disabled="!macInputModel" ng-click="addNewRule()">
       <i class="fa fa-plus"></i>&nbsp;&nbsp;新增流控规则
     </button>
     <a class="btn btn-default-inverse" style="float: right; margin-right: 10px;" ng-click="switchOperateType()">
