@@ -129,7 +129,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
         request.removeAttribute(baseWebMvcConfig.getRequestAttributeName());
     }
 
-    protected void traceExceptionAndExit(Entry entry, Exception ex) {
+    protected void traceEntryAndExit(Entry entry, Exception ex) {
         if (entry != null) {
             if (ex != null) {
                 Tracer.traceEntry(ex, entry);
