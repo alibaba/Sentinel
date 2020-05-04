@@ -27,7 +27,7 @@ import org.springframework.context.annotation.Configuration;
  * @author cdfive
  */
 @Configuration
-@ConditionalOnClass((ApolloOpenApiClient.class))
+@ConditionalOnClass(ApolloOpenApiClient.class)
 @ConditionalOnProperty(name = "rule.repository.type", havingValue = "apollo")
 @EnableConfigurationProperties(ApolloProperties.class)
 public class ApolloConfig {
