@@ -44,6 +44,11 @@
         </dependency>
         <dependency>
             <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-dashboard-repository-apollo</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-dashboard-repository-zookeeper</artifactId>
             <version>${project.version}</version>
         </dependency>
