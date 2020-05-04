@@ -16,23 +16,23 @@
 package com.alibaba.csp.sentinel.dashboard.service.api.rule;
 
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.MachineReqVo;
-import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.flow.AddFlowRuleReqVo;
-import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.flow.DeleteFlowRuleReqVo;
-import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.flow.UpdateFlowRuleReqVo;
-import com.alibaba.csp.sentinel.dashboard.service.vo.rule.resp.flow.QueryFlowRuleListRespVo;
+import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.authority.AddAuthorityReqVo;
+import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.authority.DeleteAuthorityReqVo;
+import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.authority.UpdateAuthorityReqVo;
+import com.alibaba.csp.sentinel.dashboard.service.vo.rule.resp.authority.QueryAuthorityRuleListRespVo;
 
 import java.util.List;
 
 /**
  * @author cdfive
  */
-public interface FlowRuleService {
+public interface AuthorityRuleService {
 
-    List<QueryFlowRuleListRespVo> queryFlowRuleList(MachineReqVo reqVo) throws Exception;
+    List<QueryAuthorityRuleListRespVo> queryAuthorityRuleList(MachineReqVo reqVo) throws Exception;
 
-    void addFlowRule(AddFlowRuleReqVo reqVo) throws Exception;
+    void addAuthorityRule(AddAuthorityReqVo reqVo) throws Exception;
 
-    void updateFlowRule(UpdateFlowRuleReqVo reqVo) throws Exception;
+    void updateAuthorityRule(UpdateAuthorityReqVo reqVo) throws Exception;
 
-    void deleteFlowRule(DeleteFlowRuleReqVo reqVo) throws Exception;
+    void deleteAuthorityRule(DeleteAuthorityReqVo reqVo) throws Exception;
 }

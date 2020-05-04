@@ -2,8 +2,7 @@ var app = angular.module('sentinelDashboardApp');
 
 app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialog', 'MachineService',
   function ($scope, $stateParams, SystemService, ngDialog, MachineService) {
-
-    let operateTypes = {'app': '应用维度', 'machine': '单机维度'};
+    var operateTypes = {'app': '应用维度', 'machine': '单机维度'};
     $scope.operateType = 'app';
 
     $scope.switchOperateType = function() {
@@ -144,6 +143,17 @@ app.controller('SystemCtl', ['$scope', '$stateParams', 'SystemService', 'ngDialo
     var confirmDialog;
     $scope.deleteRule = function (rule) {
       $scope.currentRule = rule;
+
+      var ip = null;
+      var port = null;
+      if ($scope.operateType == 'machine') {
+        var mac = $scope.macInputModel.split(':');
+        ip = mac[0];
+        port = mac[1];
+      }
+      $scope.currentRule.ip = ip;
+      $scope.currentRule.port = port;
+
       var ruleTypeDesc = '';
       var ruleTypeCount = null;
       if (rule.highestSystemLoad != -1) {

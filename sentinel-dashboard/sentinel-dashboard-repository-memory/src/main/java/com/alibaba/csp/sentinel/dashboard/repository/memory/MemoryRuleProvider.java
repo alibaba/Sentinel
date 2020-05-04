@@ -15,10 +15,7 @@
  */
 package com.alibaba.csp.sentinel.dashboard.repository.memory;
 
-import com.alibaba.csp.sentinel.dashboard.entity.rule.DegradeRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.entity.rule.FlowRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.entity.rule.RuleEntity;
-import com.alibaba.csp.sentinel.dashboard.entity.rule.SystemRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.entity.rule.*;
 import com.alibaba.csp.sentinel.dashboard.repository.AbstractRuleProvider;
 import com.alibaba.csp.sentinel.transport.client.SentinelTransportClient;
 import com.google.common.collect.ImmutableMap;
@@ -38,7 +35,9 @@ public class MemoryRuleProvider<T extends RuleEntity> extends AbstractRuleProvid
     private final static Map<Class, String> RULE_NAME_MAP = ImmutableMap.of(
         FlowRuleEntity.class, "flow",
         DegradeRuleEntity.class, "degrade",
-        SystemRuleEntity.class, "system"
+        SystemRuleEntity.class, "system",
+        AuthorityRuleEntity.class, "authority",
+        ParamFlowRuleEntity.class, "paramflow"
     );
 
     @Override

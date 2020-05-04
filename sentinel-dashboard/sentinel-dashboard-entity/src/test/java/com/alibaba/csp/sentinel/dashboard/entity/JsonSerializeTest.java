@@ -38,7 +38,7 @@ public class JsonSerializeTest {
         AuthorityRuleEntity authorityRule = new AuthorityRuleEntity();
         AuthorityRule rule = new AuthorityRule();
         rule.setStrategy(0).setLimitApp("default").setResource("rs");
-        authorityRule.setRule(rule);
+//        authorityRule.setRule(rule);
         Assert.assertTrue("{\"rule\":{\"limitApp\":\"default\",\"resource\":\"rs\",\"strategy\":0}}".equals(JSON.toJSONString(authorityRule)));
     }
 

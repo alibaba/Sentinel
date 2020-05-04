@@ -18,7 +18,7 @@ package com.alibaba.csp.sentinel.dashboard.service.impl.rule;
 import com.alibaba.csp.sentinel.dashboard.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.service.api.rule.FlowRuleService;
 import com.alibaba.csp.sentinel.dashboard.service.impl.rule.checker.FlowRuleVoChecker;
-import com.alibaba.csp.sentinel.dashboard.service.impl.rule.convertor.FlowRuleVoConvertor;
+import com.alibaba.csp.sentinel.dashboard.service.impl.rule.converter.FlowRuleVoConverter;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.MachineReqVo;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.flow.AddFlowRuleReqVo;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.flow.DeleteFlowRuleReqVo;
@@ -33,25 +33,25 @@ import java.util.stream.Collectors;
  * @author cdfive
  */
 @Service
-public class FlowRuleServiceImpl extends BaseRuleService<FlowRuleEntity> implements FlowRuleService {
+public class FlowRuleServiceImpl extends AbstractRuleService<FlowRuleEntity> implements FlowRuleService {
 
     @Override
     public List<QueryFlowRuleListRespVo> queryFlowRuleList(MachineReqVo reqVo) throws Exception {
         List<FlowRuleEntity> rules = queryRuleList(reqVo);
-        return rules.stream().map(o -> FlowRuleVoConvertor.convertList(o)).collect(Collectors.toList());
+        return rules.stream().map(o -> FlowRuleVoConverter.convertList(o)).collect(Collectors.toList());
     }
 
     @Override
     public void addFlowRule(AddFlowRuleReqVo reqVo) throws Exception {
         FlowRuleVoChecker.checkAdd(reqVo);
-        FlowRuleEntity rule = FlowRuleVoConvertor.convertAdd(reqVo);
+        FlowRuleEntity rule = FlowRuleVoConverter.convertAdd(reqVo);
         addRule(reqVo, rule);
     }
 
     @Override
     public void updateFlowRule(UpdateFlowRuleReqVo reqVo) throws Exception {
         FlowRuleVoChecker.checkUpdate(reqVo);
-        updateRule(reqVo, reqVo.getId(), toUpdateRule -> FlowRuleVoConvertor.convertUpdate(reqVo, toUpdateRule));
+        updateRule(reqVo, reqVo.getId(), toUpdateRule -> FlowRuleVoConverter.convertUpdate(reqVo, toUpdateRule));
     }
 
     @Override

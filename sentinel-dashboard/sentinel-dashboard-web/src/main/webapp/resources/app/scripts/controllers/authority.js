@@ -3,8 +3,19 @@
  */
 angular.module('sentinelDashboardApp').controller('AuthorityRuleController', ['$scope', '$stateParams', 'AuthorityRuleService', 'ngDialog',
     'MachineService',
-    function ($scope, $stateParams, AuthorityRuleService, ngDialog,
-              MachineService) {
+    function ($scope, $stateParams, AuthorityRuleService, ngDialog, MachineService) {
+        var operateTypes = {'app': '应用维度', 'machine': '单机维度'};
+        $scope.operateType = 'app';
+
+        $scope.switchOperateType = function() {
+            $scope.operateType = $scope.operateType == 'app' ? 'machine' : 'app';
+            getMachineRules();
+        };
+
+        $scope.showSwitchToOperateTypeText = function() {
+            return $scope.operateType == 'app' ? operateTypes['machine'] : operateTypes['app'];
+        };
+
         $scope.app = $stateParams.app;
 
         $scope.rulesPageConfig = {
@@ -32,8 +43,16 @@ angular.module('sentinelDashboardApp').controller('AuthorityRuleController', ['$
             if (!$scope.macInputModel) {
                 return;
             }
-            let mac = $scope.macInputModel.split(':');
-            AuthorityRuleService.queryMachineRules($scope.app, mac[0], mac[1])
+
+            var ip = null;
+            var port = null;
+            if ($scope.operateType == 'machine') {
+                var mac = $scope.macInputModel.split(':');
+                ip = mac[0];
+                port = mac[1];
+            }
+
+            AuthorityRuleService.queryMachineRules($scope.app, ip, port)
                 .success(function (data) {
                     if (data.code === 0 && data.data) {
                         $scope.loadError = undefined;
@@ -56,6 +75,17 @@ angular.module('sentinelDashboardApp').controller('AuthorityRuleController', ['$
 
         $scope.editRule = function (rule) {
             $scope.currentRule = angular.copy(rule);
+
+            var ip = null;
+            var port = null;
+            if ($scope.operateType == 'machine') {
+                var mac = $scope.macInputModel.split(':');
+                ip = mac[0];
+                port = mac[1];
+            }
+            $scope.currentRule.ip = ip;
+            $scope.currentRule.port = port;
+
             $scope.authorityRuleDialog = {
                 title: '编辑授权规则',
                 type: 'edit',
@@ -70,15 +100,20 @@ angular.module('sentinelDashboardApp').controller('AuthorityRuleController', ['$
         };
 
         $scope.addNewRule = function () {
-            var mac = $scope.macInputModel.split(':');
+            var ip = null;
+            var port = null;
+            if ($scope.operateType == 'machine') {
+                var mac = $scope.macInputModel.split(':');
+                ip = mac[0];
+                port = mac[1];
+            }
+
             $scope.currentRule = {
                 app: $scope.app,
-                ip: mac[0],
-                port: mac[1],
-                rule: {
-                    strategy: 0,
-                    limitApp: '',
-                }
+                ip: ip,
+                port: port,
+                strategy: 0,
+                limitApp: ''
             };
             $scope.authorityRuleDialog = {
                 title: '新增授权规则',
@@ -95,7 +130,7 @@ angular.module('sentinelDashboardApp').controller('AuthorityRuleController', ['$
         };
 
         $scope.saveRule = function () {
-            if (!AuthorityRuleService.checkRuleValid($scope.currentRule.rule)) {
+            if (!AuthorityRuleService.checkRuleValid($scope.currentRule)) {
                 return;
             }
             if ($scope.authorityRuleDialog.type === 'add') {
@@ -168,12 +203,23 @@ angular.module('sentinelDashboardApp').controller('AuthorityRuleController', ['$
         var confirmDialog;
         $scope.deleteRule = function (ruleEntity) {
             $scope.currentRule = ruleEntity;
+
+            var ip = null;
+            var port = null;
+            if ($scope.operateType == 'machine') {
+                var mac = $scope.macInputModel.split(':');
+                ip = mac[0];
+                port = mac[1];
+            }
+            $scope.currentRule.ip = ip;
+            $scope.currentRule.port = port;
+
             $scope.confirmDialog = {
                 title: '删除授权规则',
                 type: 'delete_rule',
                 attentionTitle: '请确认是否删除如下授权限流规则',
-                attention: '资源名: ' + ruleEntity.rule.resource + ', 流控应用: ' + ruleEntity.rule.limitApp +
-                    ', 类型: ' + (ruleEntity.rule.strategy === 0 ? '白名单' : '黑名单'),
+                attention: '资源名: ' + ruleEntity.resource + ', 流控应用: ' + ruleEntity.limitApp +
+                    ', 类型: ' + (ruleEntity.strategy === 0 ? '白名单' : '黑名单'),
                 confirmBtnText: '删除',
             };
             confirmDialog = ngDialog.open({

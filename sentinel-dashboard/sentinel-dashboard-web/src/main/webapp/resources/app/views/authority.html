@@ -4,7 +4,11 @@
     </div>
     <div class="col-md-6">
         <button class="btn btn-default-inverse" style="float: right; margin-right: 10px;" ng-disabled="!macInputModel" ng-click="addNewRule()">
-            <i class="fa fa-plus"></i>&nbsp;&nbsp;新增授权规则</button>
+            <i class="fa fa-plus"></i>&nbsp;&nbsp;新增授权规则
+        </button>
+        <a class="btn btn-default-inverse" style="float: right; margin-right: 10px;" ng-click="switchOperateType()">
+            {{showSwitchToOperateTypeText()}}
+        </a>
     </div>
 </div>
 
@@ -18,7 +22,7 @@
                     <span class="brand" style="font-size: 13px;">授权规则</span>
                     <button class="btn btn-primary" style="float: right; margin-right: 10px; height: 30px;font-size: 12px;" ng-click="getMachineRules()">刷新</button>
                     <input class="form-control witdh-200" placeholder="关键字" ng-model="searchKey">
-                    <div class="control-group" style="float:right;margin-right: 10px;margin-bottom: -10px;">
+                    <div class="control-group" style="float:right;margin-right: 10px;margin-bottom: -10px;" ng-if="operateType=='machine'">
                         <selectize id="gsInput" class="selectize-input-200" config="macsInputConfig" options="macsInputOptions" ng-model="macInputModel"
                                    placeholder="机器"></selectize>
                     </div>
@@ -46,11 +50,11 @@
                         <tbody>
                         <tr dir-paginate="ruleEntity in rules | filter: searchKey | itemsPerPage: rulesPageConfig.pageSize " current-page="rulesPageConfig.currentPageIndex"
                             pagination-id="entriesPagination">
-                            <td style="word-wrap:break-word;word-break:break-all;">{{ruleEntity.rule.resource}}</td>
-                            <td style="word-wrap:break-word;word-break:break-all;">{{ruleEntity.rule.limitApp }}</td>
+                            <td style="word-wrap:break-word;word-break:break-all;">{{ruleEntity.resource}}</td>
+                            <td style="word-wrap:break-word;word-break:break-all;">{{ruleEntity.limitApp }}</td>
                             <td>
-                                <span ng-if="ruleEntity.rule.strategy == 0">白名单</span>
-                                <span ng-if="ruleEntity.rule.strategy == 1">黑名单</span>
+                                <span ng-if="ruleEntity.strategy == 0">白名单</span>
+                                <span ng-if="ruleEntity.strategy == 1">黑名单</span>
                             </td>
                             <td>
                                 <button class="btn btn-xs btn-default" type="button" ng-click="editRule(ruleEntity)" style="font-size: 12px; height:25px;">编辑</button>

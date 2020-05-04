@@ -2,7 +2,7 @@ var app = angular.module('sentinelDashboardApp');
 
 app.service('DegradeService', ['$http', function ($http) {
   this.queryMachineRules = function (app, ip, port) {
-    var param = {
+    var data = {
       app: app,
       ip: ip,
       port: port
@@ -10,7 +10,7 @@ app.service('DegradeService', ['$http', function ($http) {
 
     return $http({
       url: '/degrade/rules',
-      params: param,
+      params: data,
       method: 'GET'
     });
   };

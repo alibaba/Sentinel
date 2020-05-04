@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.service.impl.rule.convertor;
+package com.alibaba.csp.sentinel.dashboard.service.impl.rule.converter;
 
 import com.alibaba.csp.sentinel.dashboard.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.flow.AddFlowRuleReqVo;
@@ -26,7 +26,7 @@ import java.util.Date;
 /**
  * @author cdfive
  */
-public class FlowRuleVoConvertor {
+public class FlowRuleVoConverter {
 
     public static QueryFlowRuleListRespVo convertList(FlowRuleEntity entity) {
         QueryFlowRuleListRespVo vo = new QueryFlowRuleListRespVo();

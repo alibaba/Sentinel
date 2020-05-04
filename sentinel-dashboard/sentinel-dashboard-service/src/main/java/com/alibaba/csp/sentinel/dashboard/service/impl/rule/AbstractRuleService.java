@@ -31,7 +31,7 @@ import static com.alibaba.csp.sentinel.dashboard.service.impl.common.ParamChecke
 /**
  * @author cdfive
  */
-public class BaseRuleService<T extends RuleEntity> {
+public class AbstractRuleService<T extends RuleEntity> {
 
     @Autowired
     protected IdGenerator idGenerator;

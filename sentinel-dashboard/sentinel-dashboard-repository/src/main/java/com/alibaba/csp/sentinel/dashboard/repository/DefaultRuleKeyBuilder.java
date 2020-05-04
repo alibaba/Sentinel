@@ -15,10 +15,7 @@
  */
 package com.alibaba.csp.sentinel.dashboard.repository;
 
-import com.alibaba.csp.sentinel.dashboard.entity.rule.DegradeRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.entity.rule.FlowRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.entity.rule.RuleEntity;
-import com.alibaba.csp.sentinel.dashboard.entity.rule.SystemRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.entity.rule.*;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import org.springframework.core.ResolvableType;
@@ -37,7 +34,9 @@ public class DefaultRuleKeyBuilder<T extends RuleEntity> implements RuleKeyBuild
     private final static Map<Class, String> RULE_NAME_MAP = ImmutableMap.of(
         FlowRuleEntity.class, "flow",
         DegradeRuleEntity.class, "degrade",
-        SystemRuleEntity.class, "system"
+        SystemRuleEntity.class, "system",
+        AuthorityRuleEntity.class, "authority",
+        ParamFlowRuleEntity.class, "paramflow"
     );
 
     @Override

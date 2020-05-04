@@ -2,14 +2,14 @@ var app = angular.module('sentinelDashboardApp');
 
 app.service('SystemService', ['$http', function ($http) {
   this.queryMachineRules = function (app, ip, port) {
-    var param = {
+    var data = {
       app: app,
       ip: ip,
       port: port
     };
     return $http({
       url: 'system/rules',
-      params: param,
+      params: data,
       method: 'GET'
     });
   };

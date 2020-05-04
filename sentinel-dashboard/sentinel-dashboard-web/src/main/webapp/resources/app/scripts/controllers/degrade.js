@@ -3,8 +3,7 @@ var app = angular.module('sentinelDashboardApp');
 app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDialog',
   'MachineService',
   function ($scope, $stateParams, DegradeService, ngDialog, MachineService) {
-
-    let operateTypes = {'app': '应用维度', 'machine': '单机维度'};
+    var operateTypes = {'app': '应用维度', 'machine': '单机维度'};
     $scope.operateType = 'app';
 
     $scope.switchOperateType = function() {
@@ -148,6 +147,17 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
     var confirmDialog;
     $scope.deleteRule = function (rule) {
       $scope.currentRule = rule;
+
+      var ip = null;
+      var port = null;
+      if ($scope.operateType == 'machine') {
+        var mac = $scope.macInputModel.split(':');
+        ip = mac[0];
+        port = mac[1];
+      }
+      $scope.currentRule.ip = ip;
+      $scope.currentRule.port = port;
+
       $scope.confirmDialog = {
         title: '删除降级规则',
         type: 'delete_rule',

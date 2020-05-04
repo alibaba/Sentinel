@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.service.impl.rule.convertor;
+package com.alibaba.csp.sentinel.dashboard.service.impl.rule.converter;
 
 import com.alibaba.csp.sentinel.dashboard.entity.rule.DegradeRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.degrade.AddDegradeRuleReqVo;
@@ -22,7 +22,7 @@ import com.alibaba.csp.sentinel.dashboard.service.vo.rule.resp.degrade.QueryDegr
 
 import java.util.Date;
 
-public class DegradeRuleVoConvertor {
+public class DegradeRuleVoConverter {
 
     public static QueryDegradeRuleListRespVo convertList(DegradeRuleEntity entity) {
         QueryDegradeRuleListRespVo vo = new QueryDegradeRuleListRespVo();

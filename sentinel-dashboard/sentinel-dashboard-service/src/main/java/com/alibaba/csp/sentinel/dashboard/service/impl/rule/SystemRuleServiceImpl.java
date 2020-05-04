@@ -18,7 +18,7 @@ package com.alibaba.csp.sentinel.dashboard.service.impl.rule;
 import com.alibaba.csp.sentinel.dashboard.entity.rule.SystemRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.service.api.rule.SystemRuleService;
 import com.alibaba.csp.sentinel.dashboard.service.impl.rule.checker.SystemRuleVoChecker;
-import com.alibaba.csp.sentinel.dashboard.service.impl.rule.convertor.SystemRuleVoConvertor;
+import com.alibaba.csp.sentinel.dashboard.service.impl.rule.converter.SystemRuleVoConverter;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.MachineReqVo;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.system.AddSystemRuleReqVo;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.system.DeleteSystemRuleReqVo;
@@ -33,25 +33,25 @@ import java.util.stream.Collectors;
  * @author cdfive
  */
 @Service
-public class SystemRuleServiceImpl extends BaseRuleService<SystemRuleEntity> implements SystemRuleService {
+public class SystemRuleServiceImpl extends AbstractRuleService<SystemRuleEntity> implements SystemRuleService {
 
     @Override
     public List<QuerySystemRuleListRespVo> querySystemRuleList(MachineReqVo reqVo) throws Exception {
         List<SystemRuleEntity> rules = queryRuleList(reqVo);
-        return rules.stream().map(o -> SystemRuleVoConvertor.convertList(o)).collect(Collectors.toList());
+        return rules.stream().map(o -> SystemRuleVoConverter.convertList(o)).collect(Collectors.toList());
     }
 
     @Override
     public void addSystemRule(AddSystemRuleReqVo reqVo) throws Exception {
         SystemRuleVoChecker.checkAdd(reqVo);
-        SystemRuleEntity rule = SystemRuleVoConvertor.convertAdd(reqVo);
+        SystemRuleEntity rule = SystemRuleVoConverter.convertAdd(reqVo);
         addRule(reqVo, rule);
     }
 
     @Override
     public void updateSystemRule(UpdateSystemRuleReqVo reqVo) throws Exception {
         SystemRuleVoChecker.checkUpdate(reqVo);
-        updateRule(reqVo,reqVo.getId(), toUpdateRule -> SystemRuleVoConvertor.convertUpdate(reqVo, toUpdateRule));
+        updateRule(reqVo,reqVo.getId(), toUpdateRule -> SystemRuleVoConverter.convertUpdate(reqVo, toUpdateRule));
     }
 
     @Override

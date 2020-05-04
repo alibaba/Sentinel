@@ -13,45 +13,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.service.vo.rule.req;
+package com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.authority;
 
-import java.io.Serializable;
+import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.MachineReqVo;
 
 /**
  * @author cdfive
  */
-public class MachineReqVo implements Serializable {
+public class UpdateAuthorityReqVo extends MachineReqVo {
 
-    /**应用名*/
-    private String app;
+    private Long id;
 
-    /**应用所在机器ip*/
-    private String ip;
+    private String limitApp;
 
-    /**应用所在机器端口,指应用端Sentinel的Transport端口*/
-    private Integer port;
+    private Integer strategy;
 
-    public String getApp() {
-        return app;
+    public Long getId() {
+        return id;
     }
 
-    public void setApp(String app) {
-        this.app = app;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public String getIp() {
-        return ip;
+    public String getLimitApp() {
+        return limitApp;
     }
 
-    public void setIp(String ip) {
-        this.ip = ip;
+    public void setLimitApp(String limitApp) {
+        this.limitApp = limitApp;
     }
 
-    public Integer getPort() {
-        return port;
+    public Integer getStrategy() {
+        return strategy;
     }
 
-    public void setPort(Integer port) {
-        this.port = port;
+    public void setStrategy(Integer strategy) {
+        this.strategy = strategy;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright 1999-2020 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,12 @@
  */
 package com.alibaba.csp.sentinel.dashboard.web.controller.rule;
 
-import com.alibaba.csp.sentinel.dashboard.service.api.rule.FlowRuleService;
+import com.alibaba.csp.sentinel.dashboard.service.api.rule.AuthorityRuleService;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.MachineReqVo;
-import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.flow.AddFlowRuleReqVo;
-import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.flow.DeleteFlowRuleReqVo;
-import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.flow.UpdateFlowRuleReqVo;
-import com.alibaba.csp.sentinel.dashboard.service.vo.rule.resp.flow.QueryFlowRuleListRespVo;
+import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.authority.AddAuthorityReqVo;
+import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.authority.DeleteAuthorityReqVo;
+import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.authority.UpdateAuthorityReqVo;
+import com.alibaba.csp.sentinel.dashboard.service.vo.rule.resp.authority.QueryAuthorityRuleListRespVo;
 import com.alibaba.csp.sentinel.dashboard.web.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.web.auth.AuthService;
 import com.alibaba.csp.sentinel.dashboard.web.domain.Result;
@@ -30,45 +30,44 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Flow rule controller.
+ * Authority rule controller.
  *
- * @author Eric Zhao
  * @author cdfive
  */
 @RestController
-@RequestMapping("/flow")
-public class FlowRuleController {
+@RequestMapping("/authority")
+public class AuthorityRuleController {
 
     @Autowired
-    private FlowRuleService flowRuleService;
+    private AuthorityRuleService authorityRuleService;
 
     @GetMapping("/rules")
     @AuthAction(AuthService.PrivilegeType.READ_RULE)
-    public Result<List<QueryFlowRuleListRespVo>> queryFlowRuleList(MachineReqVo reqVo) throws Exception {
-        List<QueryFlowRuleListRespVo> rules = flowRuleService.queryFlowRuleList(reqVo);
+    public Result<List<QueryAuthorityRuleListRespVo>> queryFlowRuleList(MachineReqVo reqVo) throws Exception {
+        List<QueryAuthorityRuleListRespVo> rules = authorityRuleService.queryAuthorityRuleList(reqVo);
         return Result.ofSuccess(rules);
     }
 
     @PostMapping("/rule")
     @AuthAction(value = AuthService.PrivilegeType.WRITE_RULE)
-    public Result<?> addFlowRule(@RequestBody AddFlowRuleReqVo reqVo) throws Exception {
-        flowRuleService.addFlowRule(reqVo);
+    public Result<?> addFlowRule(@RequestBody AddAuthorityReqVo reqVo) throws Exception {
+        authorityRuleService.addAuthorityRule(reqVo);
         return Result.ofSuccess(null);
     }
 
     @PutMapping("/rule/{id}")
     @AuthAction(AuthService.PrivilegeType.WRITE_RULE)
-    public Result<?> updateFlowRule(@PathVariable("id") Long id, @RequestBody UpdateFlowRuleReqVo reqVo) throws Exception {
+    public Result<?> updateFlowRule(@PathVariable("id") Long id, @RequestBody UpdateAuthorityReqVo reqVo) throws Exception {
         reqVo.setId(id);
-        flowRuleService.updateFlowRule(reqVo);
-        return Result.ofSuccess(null);
+        authorityRuleService.updateAuthorityRule(reqVo);
+        return Result.ofSuccess();
     }
 
     @DeleteMapping("/rule/{id}")
     @AuthAction(AuthService.PrivilegeType.DELETE_RULE)
-    public Result<?> deleteFlowRule(@PathVariable("id") Long id, @RequestBody DeleteFlowRuleReqVo reqVo) throws Exception {
+    public Result<?> deleteFlowRule(@PathVariable("id") Long id, @RequestBody DeleteAuthorityReqVo reqVo) throws Exception {
         reqVo.setId(id);
-        flowRuleService.deleteFlowRule(reqVo);
+        authorityRuleService.deleteAuthorityRule(reqVo);
         return Result.ofSuccess(null);
     }
 }

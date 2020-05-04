@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.dashboard.service.impl.rule.checker;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.degrade.AddDegradeRuleReqVo;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.degrade.DeleteDegradeRuleReqVo;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.degrade.UpdateDegradeRuleReqVo;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
 import static com.alibaba.csp.sentinel.dashboard.service.impl.common.ParamChecker.*;
 
@@ -29,13 +30,13 @@ public class DegradeRuleVoChecker {
         checkNotBlank(reqVo.getResource(), "resource");
 
         checkNotNull(reqVo.getGrade(), "grade");
-        checkInValues(reqVo.getGrade(), "grade",0, 1, 2);
+        checkInValues(reqVo.getGrade(), "grade", RuleConstant.DEGRADE_GRADE_RT, RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO, RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT);
 
         checkNotNull(reqVo.getCount(), "count");
         checkCondition(reqVo.getCount() >= 0, "count must be at lease 0");
 
         checkNotNull(reqVo.getTimeWindow(), "timeWindow");
-        checkCondition(reqVo.getTimeWindow() > 0, "timeWindow must be greater than zero");
+        checkCondition(reqVo.getTimeWindow() > 0, "timeWindow must be greater than 0");
     }
 
     public static void checkUpdate(UpdateDegradeRuleReqVo reqVo) {
@@ -45,10 +46,10 @@ public class DegradeRuleVoChecker {
         checkInValues(reqVo.getGrade(), "grade",0, 1, 2);
 
         checkNotNull(reqVo.getCount(), "count");
-        checkCondition(reqVo.getCount() >= 0, "count must be at lease zero");
+        checkCondition(reqVo.getCount() >= 0, "count must be at lease 0");
 
         checkNotNull(reqVo.getTimeWindow(), "timeWindow");
-        checkCondition(reqVo.getTimeWindow() > 0, "timeWindow must be greater than zero");
+        checkCondition(reqVo.getTimeWindow() > 0, "timeWindow must be greater than 0");
     }
 
     public static void checkDelete(DeleteDegradeRuleReqVo reqVo) {

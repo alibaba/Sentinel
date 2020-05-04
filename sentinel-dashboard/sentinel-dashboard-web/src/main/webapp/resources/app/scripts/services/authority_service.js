@@ -3,14 +3,14 @@
  */
 angular.module('sentinelDashboardApp').service('AuthorityRuleService', ['$http', function ($http) {
     this.queryMachineRules = function(app, ip, port) {
-        var param = {
+        var data = {
             app: app,
             ip: ip,
             port: port
         };
         return $http({
             url: '/authority/rules',
-            params: param,
+            params: data,
             method: 'GET'
         });
     };
@@ -23,18 +23,20 @@ angular.module('sentinelDashboardApp').service('AuthorityRuleService', ['$http',
         });
     };
 
-    this.saveRule = function (entity) {
+    this.saveRule = function (rule) {
         return $http({
-            url: '/authority/rule/' + entity.id,
-            data: entity,
+            url: '/authority/rule/' + rule.id,
+            data: rule,
             method: 'PUT'
         });
     };
 
-    this.deleteRule = function (entity) {
+    this.deleteRule = function (rule) {
         return $http({
-            url: '/authority/rule/' + entity.id,
-            method: 'DELETE'
+            url: '/authority/rule/' + rule.id,
+            data: rule,
+            method: 'DELETE',
+            headers: {'Content-Type': 'application/json'}
         });
     };
 

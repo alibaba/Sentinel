@@ -26,6 +26,12 @@ public class Result<R> {
     private String msg;
     private R data;
 
+    public static <R> Result<R> ofSuccess() {
+        return new Result<R>()
+            .setSuccess(true)
+            .setMsg("success");
+    }
+
     public static <R> Result<R> ofSuccess(R data) {
         return new Result<R>()
             .setSuccess(true)
