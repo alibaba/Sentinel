@@ -37,14 +37,20 @@ public class MemoryRuleProvider<T extends RuleEntity> extends AbstractRuleProvid
         DegradeRuleEntity.class, "degrade",
         SystemRuleEntity.class, "system",
         AuthorityRuleEntity.class, "authority",
-        ParamFlowRuleEntity.class, "paramflow"
+        ParamFlowRuleEntity.class, "paramFlow"
     );
 
     @Override
     protected String fetchRules(String app, String ip, Integer port) throws Exception {
         Class<?> clazz = ResolvableType.forClass(getClass()).getSuperType().getGeneric(0).resolve();
-        String type = RULE_NAME_MAP.get(clazz);
-        String rules = sentinelTransportClient.fetchRules(ip, port, type);
+
+        String rules;
+        if (!ParamFlowRuleEntity.class.equals(clazz)) {
+            String type = RULE_NAME_MAP.get(clazz);
+            rules = sentinelTransportClient.fetchRules(ip, port, type);
+        } else {
+            rules = sentinelTransportClient.fetchParamFlowRules(ip, port);
+        }
         return rules;
     }
 }

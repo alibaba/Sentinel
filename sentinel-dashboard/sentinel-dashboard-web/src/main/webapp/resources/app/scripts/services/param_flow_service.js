@@ -5,14 +5,14 @@
  */
 angular.module('sentinelDashboardApp').service('ParamFlowService', ['$http', function ($http) {
   this.queryMachineRules = function(app, ip, port) {
-    var param = {
+    var data = {
       app: app,
       ip: ip,
       port: port
     };
     return $http({
       url: '/paramFlow/rules',
-      params: param,
+      params: data,
       method: 'GET'
     });
   };
@@ -25,18 +25,20 @@ angular.module('sentinelDashboardApp').service('ParamFlowService', ['$http', fun
     });
   };
 
-  this.saveRule = function (entity) {
+  this.saveRule = function (rule) {
     return $http({
-      url: '/paramFlow/rule/' + entity.id,
-      data: entity,
+      url: '/paramFlow/rule/' + rule.id,
+      data: rule,
       method: 'PUT'
     });
   };
 
-  this.deleteRule = function (entity) {
+  this.deleteRule = function (rule) {
     return $http({
-      url: '/paramFlow/rule/' + entity.id,
-      method: 'DELETE'
+      url: '/paramFlow/rule/' + rule.id,
+      data: rule,
+      method: 'DELETE',
+      headers: {'Content-Type': 'application/json'}
     });
   };
 

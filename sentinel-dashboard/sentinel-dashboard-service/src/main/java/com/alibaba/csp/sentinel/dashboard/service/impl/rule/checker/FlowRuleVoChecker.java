@@ -101,6 +101,8 @@ public class FlowRuleVoChecker {
     public static void checkDelete(DeleteFlowRuleReqVo reqVo) {
         checkNotNull(reqVo, "body");
 
+        checkNotBlank(reqVo.getApp(), "app");
+
         checkNotNull(reqVo.getId(), "id");
         checkCondition(reqVo.getId() > 0, "id must be greater than 0");
     }

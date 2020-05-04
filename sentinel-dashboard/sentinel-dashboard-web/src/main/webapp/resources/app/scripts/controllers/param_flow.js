@@ -5,8 +5,19 @@
  */
 angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scope', '$stateParams', 'ParamFlowService', 'ngDialog',
   'MachineService',
-  function ($scope, $stateParams, ParamFlowService, ngDialog,
-    MachineService) {
+  function ($scope, $stateParams, ParamFlowService, ngDialog, MachineService) {
+    var operateTypes = {'app': '应用维度', 'machine': '单机维度'};
+    $scope.operateType = 'app';
+
+    $scope.switchOperateType = function() {
+      $scope.operateType = $scope.operateType == 'app' ? 'machine' : 'app';
+      getMachineRules();
+    };
+
+    $scope.showSwitchToOperateTypeText = function() {
+      return $scope.operateType == 'app' ? operateTypes['machine'] : operateTypes['app'];
+    };
+
     const UNSUPPORTED_CODE = 4041;
     $scope.app = $stateParams.app;
     $scope.curExItem = {};
@@ -36,74 +47,82 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
       }
     };
 
-      function updateSingleParamItem(arr, v, t, c) {
-          for (let i = 0; i < arr.length; i++) {
-              if (arr[i].object === v && arr[i].classType === t) {
-                  arr[i].count = c;
-                  return;
-              }
-          }
-          arr.push({object: v, classType: t, count: c});
-      }
-
-      function removeSingleParamItem(arr, v, t) {
-          for (let i = 0; i < arr.length; i++) {
-              if (arr[i].object === v && arr[i].classType === t) {
-                  arr.splice(i, 1);
-                  break;
-              }
-          }
-      }
-
-      function isNumberClass(classType) {
-        return classType === 'int' || classType === 'double' ||
-            classType === 'float' || classType === 'long' || classType === 'short';
-      }
-
-      function isByteClass(classType) {
-          return classType === 'byte';
-      }
-
-      function notNumberAtLeastZero(num) {
-        return num === undefined || num === '' || isNaN(num) || num < 0;
-      }
-
-      function notGoodNumber(num) {
-          return num === undefined || num === '' || isNaN(num);
-      }
-
-      function notGoodNumberBetweenExclusive(num, l ,r) {
-          return num === undefined || num === '' || isNaN(num) || num < l || num > r;
-      }
-
-      $scope.notValidParamItem = (curExItem) => {
-        if (isNumberClass(curExItem.classType) && notGoodNumber(curExItem.object)) {
-          return true;
+    function updateSingleParamItem(arr, v, t, c) {
+        for (let i = 0; i < arr.length; i++) {
+            if (arr[i].object === v && arr[i].classType === t) {
+                arr[i].count = c;
+                return;
+            }
         }
-        if (isByteClass(curExItem.classType) && notGoodNumberBetweenExclusive(curExItem.object, -128, 127)) {
-          return true;
+        arr.push({object: v, classType: t, count: c});
+    }
+
+    function removeSingleParamItem(arr, v, t) {
+        for (let i = 0; i < arr.length; i++) {
+            if (arr[i].object === v && arr[i].classType === t) {
+                arr.splice(i, 1);
+                break;
+            }
         }
-        return curExItem.object === undefined || curExItem.classType === undefined ||
-            notNumberAtLeastZero(curExItem.count);
-      };
+    }
 
-      $scope.addParamItem = () => {
-          updateSingleParamItem($scope.currentRule.rule.paramFlowItemList,
-              $scope.curExItem.object, $scope.curExItem.classType, $scope.curExItem.count);
-          let oldItem = $scope.curExItem;
-          $scope.curExItem = {classType: oldItem.classType};
-      };
+    function isNumberClass(classType) {
+      return classType === 'int' || classType === 'double' ||
+          classType === 'float' || classType === 'long' || classType === 'short';
+    }
 
-      $scope.removeParamItem = (v, t) => {
-          removeSingleParamItem($scope.currentRule.rule.paramFlowItemList, v, t);
-      };
+    function isByteClass(classType) {
+        return classType === 'byte';
+    }
+
+    function notNumberAtLeastZero(num) {
+      return num === undefined || num === '' || isNaN(num) || num < 0;
+    }
+
+    function notGoodNumber(num) {
+        return num === undefined || num === '' || isNaN(num);
+    }
+
+    function notGoodNumberBetweenExclusive(num, l ,r) {
+        return num === undefined || num === '' || isNaN(num) || num < l || num > r;
+    }
+
+    $scope.notValidParamItem = (curExItem) => {
+      if (isNumberClass(curExItem.classType) && notGoodNumber(curExItem.object)) {
+        return true;
+      }
+      if (isByteClass(curExItem.classType) && notGoodNumberBetweenExclusive(curExItem.object, -128, 127)) {
+        return true;
+      }
+      return curExItem.object === undefined || curExItem.classType === undefined ||
+          notNumberAtLeastZero(curExItem.count);
+    };
+
+    $scope.addParamItem = () => {
+        updateSingleParamItem($scope.currentRule.paramFlowItemList,
+            $scope.curExItem.object, $scope.curExItem.classType, $scope.curExItem.count);
+        let oldItem = $scope.curExItem;
+        $scope.curExItem = {classType: oldItem.classType};
+    };
+
+    $scope.removeParamItem = (v, t) => {
+        removeSingleParamItem($scope.currentRule.paramFlowItemList, v, t);
+    };
 
     function getMachineRules() {
       if (!$scope.macInputModel) {
         return;
       }
-      let mac = $scope.macInputModel.split(':');
-      ParamFlowService.queryMachineRules($scope.app, mac[0], mac[1])
+
+      var ip = null;
+      var port = null;
+      if ($scope.operateType == 'machine') {
+        var mac = $scope.macInputModel.split(':');
+        ip = mac[0];
+        port = mac[1];
+      }
+
+      ParamFlowService.queryMachineRules($scope.app, ip, port)
         .success(function (data) {
           if (data.code === 0 && data.data) {
             $scope.loadError = undefined;
@@ -130,15 +149,26 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
 
     $scope.editRule = function (rule) {
       $scope.currentRule = angular.copy(rule);
-      if ($scope.currentRule.rule && $scope.currentRule.rule.durationInSec === undefined) {
-        $scope.currentRule.rule.durationInSec = 1;
+
+      var ip = null;
+      var port = null;
+      if ($scope.operateType == 'machine') {
+        var mac = $scope.macInputModel.split(':');
+        ip = mac[0];
+        port = mac[1];
+      }
+      $scope.currentRule.ip = ip;
+      $scope.currentRule.port = port;
+
+      if ($scope.currentRule && $scope.currentRule.durationInSec === undefined) {
+        $scope.currentRule.durationInSec = 1;
       }
       $scope.paramFlowRuleDialog = {
         title: '编辑热点规则',
         type: 'edit',
         confirmBtnText: '保存',
         supportAdvanced: true,
-        showAdvanceButton: rule.rule.paramFlowItemList === undefined || rule.rule.paramFlowItemList.length <= 0
+        showAdvanceButton: rule.paramFlowItemList === undefined || rule.paramFlowItemList.length <= 0
       };
       paramFlowRuleDialog = ngDialog.open({
         template: '/app/views/dialog/param-flow-rule-dialog.html',
@@ -150,25 +180,30 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
     };
 
     $scope.addNewRule = function () {
-      var mac = $scope.macInputModel.split(':');
+      var ip = null;
+      var port = null;
+      if ($scope.operateType == 'machine') {
+        var mac = $scope.macInputModel.split(':');
+        ip = mac[0];
+        port = mac[1];
+      }
+
       $scope.currentRule = {
         app: $scope.app,
-        ip: mac[0],
-        port: mac[1],
-        rule: {
-          grade: 1,
-          paramFlowItemList: [],
-          count: 0,
-          limitApp: 'default',
-          controlBehavior: 0,
-          durationInSec: 1,
-          burstCount: 0,
-          maxQueueingTimeMs: 0,
-          clusterMode: false,
-          clusterConfig: {
-            thresholdType: 0,
-            fallbackToLocalWhenFail: true,
-          }
+        ip: ip,
+        port: port,
+        grade: 1,
+        paramFlowItemList: [],
+        count: 0,
+        limitApp: 'default',
+        controlBehavior: 0,
+        durationInSec: 1,
+        burstCount: 0,
+        maxQueueingTimeMs: 0,
+        clusterMode: false,
+        clusterConfig: {
+          thresholdType: 0,
+          fallbackToLocalWhenFail: true,
         }
       };
       $scope.paramFlowRuleDialog = {
@@ -195,7 +230,7 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
       };
 
     $scope.saveRule = function () {
-      if (!ParamFlowService.checkRuleValid($scope.currentRule.rule)) {
+      if (!ParamFlowService.checkRuleValid($scope.currentRule)) {
         return;
       }
       if ($scope.paramFlowRuleDialog.type === 'add') {
@@ -266,15 +301,25 @@ angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scop
     };
 
     var confirmDialog;
-    $scope.deleteRule = function (ruleEntity) {
-      $scope.currentRule = ruleEntity;
-      console.log('deleting: ' + ruleEntity);
+    $scope.deleteRule = function (rule) {
+      $scope.currentRule = rule;
+
+      var ip = null;
+      var port = null;
+      if ($scope.operateType == 'machine') {
+        var mac = $scope.macInputModel.split(':');
+        ip = mac[0];
+        port = mac[1];
+      }
+      $scope.currentRule.ip = ip;
+      $scope.currentRule.port = port;
+
       $scope.confirmDialog = {
         title: '删除热点规则',
         type: 'delete_rule',
         attentionTitle: '请确认是否删除如下热点参数限流规则',
-        attention: '资源名: ' + ruleEntity.rule.resource + ', 热点参数索引: ' + ruleEntity.rule.paramIdx +
-            ', 限流模式: ' + (ruleEntity.rule.grade === 1 ? 'QPS' : '未知') + ', 限流阈值: ' + ruleEntity.rule.count,
+        attention: '资源名: ' + rule.resource + ', 热点参数索引: ' + rule.paramIdx +
+            ', 限流模式: ' + (rule.grade === 1 ? 'QPS' : '未知') + ', 限流阈值: ' + rule.count,
         confirmBtnText: '删除',
       };
       confirmDialog = ngDialog.open({

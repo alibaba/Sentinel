@@ -64,6 +64,7 @@ public class FlowRuleVoConverter {
         entity.setRefResource(reqVo.getRefResource());
         entity.setWarmUpPeriodSec(reqVo.getWarmUpPeriodSec());
         entity.setMaxQueueingTimeMs(reqVo.getMaxQueueingTimeMs());
+
         entity.setClusterMode(reqVo.getClusterMode());
         AddFlowRuleReqVo.ClusterConfigReqVo clusterConfigReqVo = reqVo.getClusterConfig();
         if (clusterConfigReqVo != null) {
@@ -72,6 +73,7 @@ public class FlowRuleVoConverter {
             clusterFlowConfig.setFallbackToLocalWhenFail(clusterConfigReqVo.getFallbackToLocalWhenFail());
             entity.setClusterConfig(clusterFlowConfig);
         }
+
         entity.setGmtCreate(new Date());
         entity.setGmtModified(new Date());
         return entity;
@@ -86,6 +88,7 @@ public class FlowRuleVoConverter {
         toUpdateRuleEntity.setRefResource(reqVo.getRefResource());
         toUpdateRuleEntity.setWarmUpPeriodSec(reqVo.getWarmUpPeriodSec());
         toUpdateRuleEntity.setMaxQueueingTimeMs(reqVo.getMaxQueueingTimeMs());
+
         toUpdateRuleEntity.setClusterMode(reqVo.getClusterMode());
         AddFlowRuleReqVo.ClusterConfigReqVo clusterConfigReqVo = reqVo.getClusterConfig();
         if (clusterConfigReqVo != null) {
@@ -94,6 +97,7 @@ public class FlowRuleVoConverter {
             clusterFlowConfig.setFallbackToLocalWhenFail(clusterConfigReqVo.getFallbackToLocalWhenFail());
             toUpdateRuleEntity.setClusterConfig(clusterFlowConfig);
         }
+
         toUpdateRuleEntity.setGmtModified(new Date());
     }
 }

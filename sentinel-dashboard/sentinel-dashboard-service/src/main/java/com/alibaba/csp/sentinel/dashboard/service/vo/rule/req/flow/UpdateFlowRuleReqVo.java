@@ -56,30 +56,6 @@ public class UpdateFlowRuleReqVo extends MachineReqVo {
 
     private AddFlowRuleReqVo.ClusterConfigReqVo clusterConfig;
 
-    public static class ClusterConfigReqVo {
-        /**集群阈值模式 0-单机均摊 1-总体阈值*/
-        private Integer thresholdType;
-
-        /**失败退化,如果Token Server不可用是否退化到单机限流*/
-        private Boolean fallbackToLocalWhenFail;
-
-        public Integer getThresholdType() {
-            return thresholdType;
-        }
-
-        public void setThresholdType(Integer thresholdType) {
-            this.thresholdType = thresholdType;
-        }
-
-        public Boolean getFallbackToLocalWhenFail() {
-            return fallbackToLocalWhenFail;
-        }
-
-        public void setFallbackToLocalWhenFail(Boolean fallbackToLocalWhenFail) {
-            this.fallbackToLocalWhenFail = fallbackToLocalWhenFail;
-        }
-    }
-
     public Long getId() {
         return id;
     }

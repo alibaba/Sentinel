@@ -31,6 +31,8 @@ public class AuthorityRuleVoChecker {
     public static void checkAdd(AddAuthorityReqVo reqVo) {
         checkNotNull(reqVo, "body");
 
+        checkNotBlank(reqVo.getApp(), "app");
+
         checkNotBlank(reqVo.getResource(), "resource");
 
         checkNotBlank(reqVo.getLimitApp(), "limitApp");
@@ -42,6 +44,8 @@ public class AuthorityRuleVoChecker {
     public static void checkUpdate(UpdateAuthorityReqVo reqVo) {
         checkNotNull(reqVo, "body");
 
+        checkNotBlank(reqVo.getApp(), "app");
+
         checkNotBlank(reqVo.getLimitApp(), "limitApp");
 
         checkNotNull(reqVo.getStrategy(), "strategy");
@@ -50,6 +54,8 @@ public class AuthorityRuleVoChecker {
 
     public static void checkDelete(DeleteAuthorityReqVo reqVo) {
         checkNotNull(reqVo, "body");
+
+        checkNotBlank(reqVo.getApp(), "app");
 
         checkNotNull(reqVo.getId(), "id");
         checkCondition(reqVo.getId() > 0, "id must be greater than 0");

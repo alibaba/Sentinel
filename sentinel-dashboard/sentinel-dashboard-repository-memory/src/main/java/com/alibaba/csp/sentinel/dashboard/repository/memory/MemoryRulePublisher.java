@@ -37,13 +37,18 @@ public class MemoryRulePublisher<T extends RuleEntity> extends AbstractRulePubli
         DegradeRuleEntity.class, "degrade",
         SystemRuleEntity.class, "system",
         AuthorityRuleEntity.class, "authority",
-        ParamFlowRuleEntity.class, "paramflow"
+        ParamFlowRuleEntity.class, "paramFlow"
     );
 
     @Override
     protected void publishRules(String app, String ip, Integer port, String rules) throws Exception {
         Class<?> clazz = ResolvableType.forClass(getClass()).getSuperType().getGeneric(0).resolve();
-        String type = RULE_NAME_MAP.get(clazz);
-        sentinelTransportClient.setRules(ip, port, type, rules);
+
+        if (!ParamFlowRuleEntity.class.equals(clazz)) {
+            String type = RULE_NAME_MAP.get(clazz);
+            sentinelTransportClient.setRules(ip, port, type, rules);
+        } else {
+            sentinelTransportClient.setParamFlowRules(ip, port, rules);
+        }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright 1999-2020 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.entity.rule;
+package com.alibaba.csp.sentinel.dashboard.service.vo.rule.resp.paramflow;
 
-import com.alibaba.csp.sentinel.slots.block.Rule;
-import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
 /**
- * @author Eric Zhao
- * @since 0.2.1
+ * @author cdfive
  */
-public class ParamFlowRuleEntity implements RuleEntity {
+public class QueryParamFlowRuleListRespVo implements Serializable {
 
     @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
@@ -50,15 +48,15 @@ public class ParamFlowRuleEntity implements RuleEntity {
 
     private Boolean clusterMode;
 
-    private ParamFlowClusterConfigEntity clusterConfig;
+    private ParamFlowClusterConfigRespVo clusterConfig;
 
-    private List<ParamFlowItemEntity> paramFlowItemList;
+    private List<ParamFlowItemRespVo> paramFlowItemList;
 
     private Date gmtCreate;
 
     private Date gmtModified;
 
-    public static class ParamFlowClusterConfigEntity {
+    public static class ParamFlowClusterConfigRespVo {
         private Integer thresholdType;
 
         private Boolean fallbackToLocalWhenFail;
@@ -80,7 +78,7 @@ public class ParamFlowRuleEntity implements RuleEntity {
         }
     }
 
-    public static class ParamFlowItemEntity {
+    public static class ParamFlowItemRespVo {
         private String object;
 
         private Integer count;
@@ -112,42 +110,34 @@ public class ParamFlowRuleEntity implements RuleEntity {
         }
     }
 
-    @Override
     public Long getId() {
         return id;
     }
 
-    @Override
     public void setId(Long id) {
         this.id = id;
     }
 
-    @Override
     public String getApp() {
         return app;
     }
 
-    @Override
     public void setApp(String app) {
         this.app = app;
     }
 
-    @Override
     public String getIp() {
         return ip;
     }
 
-    @Override
     public void setIp(String ip) {
         this.ip = ip;
     }
 
-    @Override
     public Integer getPort() {
         return port;
     }
 
-    @Override
     public void setPort(Integer port) {
         this.port = port;
     }
@@ -200,23 +190,22 @@ public class ParamFlowRuleEntity implements RuleEntity {
         this.clusterMode = clusterMode;
     }
 
-    public ParamFlowClusterConfigEntity getClusterConfig() {
+    public ParamFlowClusterConfigRespVo getClusterConfig() {
         return clusterConfig;
     }
 
-    public void setClusterConfig(ParamFlowClusterConfigEntity clusterConfig) {
+    public void setClusterConfig(ParamFlowClusterConfigRespVo clusterConfig) {
         this.clusterConfig = clusterConfig;
     }
 
-    public List<ParamFlowItemEntity> getParamFlowItemList() {
+    public List<ParamFlowItemRespVo> getParamFlowItemList() {
         return paramFlowItemList;
     }
 
-    public void setParamFlowItemList(List<ParamFlowItemEntity> paramFlowItemList) {
+    public void setParamFlowItemList(List<ParamFlowItemRespVo> paramFlowItemList) {
         this.paramFlowItemList = paramFlowItemList;
     }
 
-    @Override
     public Date getGmtCreate() {
         return gmtCreate;
     }
@@ -232,107 +221,4 @@ public class ParamFlowRuleEntity implements RuleEntity {
     public void setGmtModified(Date gmtModified) {
         this.gmtModified = gmtModified;
     }
-
-    @Override
-    public Rule toRule() {
-        return null;
-    }
-
-    public static ParamFlowRuleEntity fromAuthorityRule(String app, String ip, Integer port, ParamFlowRule rule) {
-        ParamFlowRuleEntity entity = new ParamFlowRuleEntity();
-        entity.setApp(app);
-        entity.setIp(ip);
-        entity.setPort(port);
-        return entity;
-    }
-
-    //
-//
-//    public ParamFlowRuleEntity() {
-//    }
-//
-//    public ParamFlowRuleEntity(ParamFlowRule rule) {
-//        AssertUtil.notNull(rule, "Authority rule should not be null");
-//        this.rule = rule;
-//    }
-//
-//    public static ParamFlowRuleEntity fromAuthorityRule(String app, String ip, Integer port, ParamFlowRule rule) {
-//        ParamFlowRuleEntity entity = new ParamFlowRuleEntity(rule);
-//        entity.setApp(app);
-//        entity.setIp(ip);
-//        entity.setPort(port);
-//        return entity;
-//    }
-//
-//    @JsonIgnore
-//    @JSONField(serialize = false)
-//    public String getLimitApp() {
-//        return rule.getLimitApp();
-//    }
-//
-//    @JsonIgnore
-//    @JSONField(serialize = false)
-//    public String getResource() {
-//        return rule.getResource();
-//    }
-//
-//    @JsonIgnore
-//    @JSONField(serialize = false)
-//    public int getGrade() {
-//        return rule.getGrade();
-//    }
-//
-//    @JsonIgnore
-//    @JSONField(serialize = false)
-//    public Integer getParamIdx() {
-//        return rule.getParamIdx();
-//    }
-//
-//    @JsonIgnore
-//    @JSONField(serialize = false)
-//    public double getCount() {
-//        return rule.getCount();
-//    }
-//
-//    @JsonIgnore
-//    @JSONField(serialize = false)
-//    public List<ParamFlowItem> getParamFlowItemList() {
-//        return rule.getParamFlowItemList();
-//    }
-//
-//    @JsonIgnore
-//    @JSONField(serialize = false)
-//    public int getControlBehavior() {
-//        return rule.getControlBehavior();
-//    }
-//
-//    @JsonIgnore
-//    @JSONField(serialize = false)
-//    public int getMaxQueueingTimeMs() {
-//        return rule.getMaxQueueingTimeMs();
-//    }
-//
-//    @JsonIgnore
-//    @JSONField(serialize = false)
-//    public int getBurstCount() {
-//        return rule.getBurstCount();
-//    }
-//
-//    @JsonIgnore
-//    @JSONField(serialize = false)
-//    public long getDurationInSec() {
-//        return rule.getDurationInSec();
-//    }
-//
-//    @JsonIgnore
-//    @JSONField(serialize = false)
-//    public boolean isClusterMode() {
-//        return rule.isClusterMode();
-//    }
-//
-//    @JsonIgnore
-//    @JSONField(serialize = false)
-//    public ParamFlowClusterConfig getClusterConfig() {
-//        return rule.getClusterConfig();
-//    }
 }

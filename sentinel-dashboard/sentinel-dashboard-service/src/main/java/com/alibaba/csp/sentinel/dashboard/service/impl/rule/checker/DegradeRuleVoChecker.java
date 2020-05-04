@@ -27,6 +27,8 @@ public class DegradeRuleVoChecker {
     public static void checkAdd(AddDegradeRuleReqVo reqVo) {
         checkNotNull(reqVo, "body");
 
+        checkNotBlank(reqVo.getApp(), "app");
+
         checkNotBlank(reqVo.getResource(), "resource");
 
         checkNotNull(reqVo.getGrade(), "grade");
@@ -42,6 +44,8 @@ public class DegradeRuleVoChecker {
     public static void checkUpdate(UpdateDegradeRuleReqVo reqVo) {
         checkNotNull(reqVo, "body");
 
+        checkNotBlank(reqVo.getApp(), "app");
+
         checkNotNull(reqVo.getGrade(), "grade");
         checkInValues(reqVo.getGrade(), "grade",0, 1, 2);
 
@@ -54,6 +58,8 @@ public class DegradeRuleVoChecker {
 
     public static void checkDelete(DeleteDegradeRuleReqVo reqVo) {
         checkNotNull(reqVo, "body");
+
+        checkNotBlank(reqVo.getApp(), "app");
 
         checkNotNull(reqVo.getId(), "id");
         checkCondition(reqVo.getId() > 0, "id must be greater than 0");

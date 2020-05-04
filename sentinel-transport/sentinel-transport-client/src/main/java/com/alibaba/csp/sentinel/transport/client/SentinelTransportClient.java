@@ -44,6 +44,9 @@ public class SentinelTransportClient {
     private static final String GET_RULES_PATH = "getRules";
     private static final String SET_RULES_PATH = "setRules";
 
+    private static final String GET_PARAM_FLOW_RULE_PATH = "getParamFlowRules";
+    private static final String SET_PARAM_FLOW_RULE_PATH = "setParamFlowRules";
+
     private CloseableHttpAsyncClient httpClient;
 
     public SentinelTransportClient() {
@@ -77,11 +80,37 @@ public class SentinelTransportClient {
         return rules;
     }
 
+    public String fetchParamFlowRules(String ip, int port) {
+        CompletableFuture<String> completableFuture = executeCommand(null, ip, port, GET_PARAM_FLOW_RULE_PATH, null, false);
+        String rules = null;
+        try {
+            rules = completableFuture.get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        return rules;
+    }
+
     public void setRules(String ip, int port, String type, String rules) {
         Map<String, String> params = new HashMap<>(2);
         params.put("type", type);
         params.put("data", rules);
         CompletableFuture<String> completableFuture = executeCommand(null, ip, port, SET_RULES_PATH, params, true);
+        try {
+            completableFuture.get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setParamFlowRules(String ip, int port, String rules) {
+        Map<String, String> params = new HashMap<>(2);
+        params.put("data", rules);
+        CompletableFuture<String> completableFuture = executeCommand(null, ip, port, SET_PARAM_FLOW_RULE_PATH, params, true);
         try {
             completableFuture.get();
         } catch (InterruptedException e) {

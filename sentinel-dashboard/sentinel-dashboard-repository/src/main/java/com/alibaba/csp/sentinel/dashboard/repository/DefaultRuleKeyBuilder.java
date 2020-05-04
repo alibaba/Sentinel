@@ -36,7 +36,7 @@ public class DefaultRuleKeyBuilder<T extends RuleEntity> implements RuleKeyBuild
         DegradeRuleEntity.class, "degrade",
         SystemRuleEntity.class, "system",
         AuthorityRuleEntity.class, "authority",
-        ParamFlowRuleEntity.class, "paramflow"
+        ParamFlowRuleEntity.class, "paramFlow"
     );
 
     @Override

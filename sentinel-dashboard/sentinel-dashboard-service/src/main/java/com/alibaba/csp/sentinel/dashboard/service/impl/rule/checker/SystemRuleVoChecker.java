@@ -30,16 +30,22 @@ public class SystemRuleVoChecker {
         checkNotNull(reqVo, "body");
 
         checkNotBlank(reqVo.getApp(), "app");
+
+        checkNotBlank(reqVo.getApp(), "app");
     }
 
     public static void checkUpdate(UpdateSystemRuleReqVo reqVo) {
         checkNotNull(reqVo, "body");
 
         checkNotBlank(reqVo.getApp(), "app");
+
+        checkNotBlank(reqVo.getApp(), "app");
     }
 
     public static void checkDelete(DeleteSystemRuleReqVo reqVo) {
         checkNotNull(reqVo, "body");
+
+        checkNotBlank(reqVo.getApp(), "app");
 
         checkNotNull(reqVo.getId(), "id");
         checkCondition(reqVo.getId() > 0, "id must be greater than 0");

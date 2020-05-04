@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.dashboard.repository.zookeeper;
 
+import com.alibaba.csp.sentinel.util.AssertUtil;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
@@ -38,20 +39,19 @@ public class ZookeeperConfig {
 
     private static Logger LOGGER = LoggerFactory.getLogger(ZookeeperConfig.class);
 
-    public ZookeeperConfig() {
-        System.out.println("ZookeeperConfig");
-    }
-
     @Autowired
     private ZookeeperProperties zookeeperProperties;
 
     @Bean
     public CuratorFramework zkClient() {
         String connectString = zookeeperProperties.getConnectString();
+        AssertUtil.assertNotBlank(connectString, "Zookeeper Client init failed, connectString can't be blank");
 
         Integer baseSleepTimeMs = zookeeperProperties.getBaseSleepTimeMs();
+        AssertUtil.notNull(connectString, "Zookeeper Client init failed, baseSleepTimeMs can't be null");
 
         Integer maxRetries = zookeeperProperties.getMaxRetries();
+        AssertUtil.notNull(connectString, "Zookeeper Client init failed, maxRetries can't be null");
 
         CuratorFramework zkClient = CuratorFrameworkFactory.newClient(connectString, new ExponentialBackoffRetry(baseSleepTimeMs, maxRetries));
         zkClient.start();
