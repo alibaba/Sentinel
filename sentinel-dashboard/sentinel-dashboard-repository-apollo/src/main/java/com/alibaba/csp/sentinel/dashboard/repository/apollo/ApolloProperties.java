@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.dashboard.repository.apollo;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -23,6 +24,7 @@ import org.springframework.context.annotation.PropertySource;
  * @author cdfive
  */
 @Configuration
+@ConditionalOnProperty(name = "rule.repository.type", havingValue = "apollo")
 @PropertySource(value = {"classpath:repository/apollo.properties", "file:apollo.properties"}, ignoreResourceNotFound = true)
 @ConfigurationProperties(prefix = "apollo")
 public class ApolloProperties {
