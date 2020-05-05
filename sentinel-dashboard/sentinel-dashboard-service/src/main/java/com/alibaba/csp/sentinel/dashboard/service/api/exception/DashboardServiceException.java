@@ -16,6 +16,8 @@
 package com.alibaba.csp.sentinel.dashboard.service.api.exception;
 
 /**
+ * Service Exception of sentinel-dashboard-service module.
+ *
  * @author cdfive
  */
 public class DashboardServiceException extends RuntimeException {

@@ -34,6 +34,6 @@ public class NacosRuleProvider<T extends RuleEntity> extends AbstractRuleProvide
     @Override
     protected String fetchRules(String app, String ip, Integer port) throws Exception {
         String ruleKey = buildRuleKey(app, ip, port);
-        return configService.getConfig(ruleKey, nacosProperties.getSentinelGroup(), 3000);
+        return configService.getConfig(ruleKey, nacosProperties.getSentinelGroup(), nacosProperties.getReadTimeoutMs());
     }
 }

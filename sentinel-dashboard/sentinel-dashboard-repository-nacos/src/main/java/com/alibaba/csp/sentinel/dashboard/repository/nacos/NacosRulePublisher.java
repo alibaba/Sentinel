@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.dashboard.repository.nacos;
 
+import com.alibaba.csp.sentinel.dashboard.common.exception.DashboardException;
 import com.alibaba.csp.sentinel.dashboard.entity.rule.RuleEntity;
 import com.alibaba.csp.sentinel.dashboard.repository.AbstractRulePublisher;
 import com.alibaba.nacos.api.config.ConfigService;
@@ -36,7 +37,7 @@ public class NacosRulePublisher<T extends RuleEntity> extends AbstractRulePublis
         String ruleKey = buildRuleKey(app, ip, port);
         boolean result = configService.publishConfig(ruleKey, nacosProperties.getSentinelGroup(), rules);
         if (!result) {
-            // TODO
+            throw new DashboardException("Nacos publish config error");
         }
     }
 }
