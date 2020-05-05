@@ -45,8 +45,8 @@ public class NacosProperties {
 
     private Long readTimeoutMs;
 
-    public void info() {
-        LOGGER.info("Nacos setting info: ");
+    public void logInfo() {
+        LOGGER.info("Nacos info: ");
         LOGGER.info("serverAddr={}", serverAddr != null ? serverAddr : DEFAULT_SERVER_ADDR + "(default)");
         LOGGER.info("sentinelGroup={}", sentinelGroup != null ? sentinelGroup : DEFAULT_SENTINEL_GROUP + "(default)");
         LOGGER.info("readTimeoutMs={}", readTimeoutMs != null ? readTimeoutMs : DEFAULT_READ_TIMEOUT_MS + "(default)");

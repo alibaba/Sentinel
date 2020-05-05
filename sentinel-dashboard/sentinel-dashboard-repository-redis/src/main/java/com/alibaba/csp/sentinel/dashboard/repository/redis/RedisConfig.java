@@ -19,12 +19,15 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import javax.annotation.PostConstruct;
 import java.time.Duration;
 
 /**
@@ -36,8 +39,15 @@ import java.time.Duration;
 @EnableConfigurationProperties(RedisProperties.class)
 public class RedisConfig {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(RedisConfig.class);
+
     @Autowired
     private RedisProperties redisProperties;
+
+    @PostConstruct
+    public void init() {
+        redisProperties.logInfo();
+    }
 
     public RedisClient createRedisClient() {
         String host = redisProperties.getHost();
@@ -66,6 +76,7 @@ public class RedisConfig {
         }
 
         RedisClient redisClient = RedisClient.create(redisURIBuilder.build());
+        LOGGER.info("Redis client init success");
         return redisClient;
     }
 }

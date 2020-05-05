@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.dashboard.repository.redis;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +31,16 @@ import org.springframework.context.annotation.PropertySource;
 @ConfigurationProperties(prefix = "redis")
 public class RedisProperties {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(RedisProperties.class);
+
+    private static final String DEFAULT_HOST = "localhost";
+
+    private static final Integer DEFAULT_PORT = 6379;
+
+    private static final Long DEFAULT_TIMEOUT_MS = 60000L;
+
+    private static final String DEFAULT_CHANNEL_SUFFIX = "";
+
     private String host;
 
     private Integer port;
@@ -39,8 +51,20 @@ public class RedisProperties {
 
     private Long timeoutMs;
 
+    private String channelSuffix;
+
+    public void logInfo() {
+        LOGGER.info("Redis info: ");
+        LOGGER.info("host={}", host != null ? host : DEFAULT_HOST + "(default)");
+        LOGGER.info("port={}", port != null ? port : DEFAULT_PORT + "(default)");
+        LOGGER.info("password={}", password);
+        LOGGER.info("database={}", database);
+        LOGGER.info("timeoutMs={}", timeoutMs != null ? timeoutMs : DEFAULT_TIMEOUT_MS + "(default)");
+        LOGGER.info("channelSuffix={}", channelSuffix != null ? channelSuffix : DEFAULT_CHANNEL_SUFFIX + "(default)");
+    }
+
     public String getHost() {
-        return host;
+        return host != null ? host : DEFAULT_HOST;
     }
 
     public void setHost(String host) {
@@ -48,7 +72,7 @@ public class RedisProperties {
     }
 
     public Integer getPort() {
-        return port;
+        return port != null ? port : DEFAULT_PORT;
     }
 
     public void setPort(Integer port) {
@@ -72,10 +96,18 @@ public class RedisProperties {
     }
 
     public Long getTimeoutMs() {
-        return timeoutMs;
+        return timeoutMs != null ? timeoutMs : DEFAULT_TIMEOUT_MS;
     }
 
     public void setTimeoutMs(Long timeoutMs) {
         this.timeoutMs = timeoutMs;
+    }
+
+    public String getChannelSuffix() {
+        return channelSuffix != null ? channelSuffix : DEFAULT_CHANNEL_SUFFIX;
+    }
+
+    public void setChannelSuffix(String channelSuffix) {
+        this.channelSuffix = channelSuffix;
     }
 }

@@ -48,7 +48,7 @@ public class NacosConfig {
 
     @PostConstruct
     public void init() {
-        nacosProperties.info();
+        nacosProperties.logInfo();
     }
 
     @Bean

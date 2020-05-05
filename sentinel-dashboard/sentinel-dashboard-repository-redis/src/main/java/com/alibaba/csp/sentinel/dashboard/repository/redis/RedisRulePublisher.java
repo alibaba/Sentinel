@@ -18,8 +18,8 @@ package com.alibaba.csp.sentinel.dashboard.repository.redis;
 import com.alibaba.csp.sentinel.dashboard.entity.rule.RuleEntity;
 import com.alibaba.csp.sentinel.dashboard.repository.AbstractRulePublisher;
 import io.lettuce.core.RedisClient;
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.api.sync.RedisCommands;
+import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
+import io.lettuce.core.pubsub.api.sync.RedisPubSubCommands;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -30,13 +30,30 @@ public class RedisRulePublisher<T extends RuleEntity> extends AbstractRulePublis
     @Autowired
     private RedisConfig redisConfig;
 
+    @Autowired
+    private RedisProperties redisProperties;
+
     @Override
     protected void publishRules(String app, String ip, Integer port, String rules) throws Exception {
-        RedisClient redisClient = redisConfig.createRedisClient();
-        StatefulRedisConnection<String, String> connection = redisClient.connect();
-        RedisCommands<String, String> syncCommands = connection.sync();
         String ruleKey = buildRuleKey(app, ip, port);
-        syncCommands.set(ruleKey, rules);
+        /**
+         * Note:
+         * By default channelSuffix is "", channel is same as ruleKey.
+         * Pay attention to the constructor parameter of {@link com.alibaba.csp.sentinel.datasource.redis.RedisDataSource},
+         * ruleKey and channel should be same.
+         */
+        String channel = ruleKey + redisProperties.getChannelSuffix();
+
+        RedisClient redisClient = redisConfig.createRedisClient();
+
+        StatefulRedisPubSubConnection<String, String> connection = redisClient.connectPubSub();
+        RedisPubSubCommands<String, String> subCommands = connection.sync();
+
+        subCommands.multi();
+        subCommands.set(ruleKey, rules);
+        subCommands.publish(channel, rules);
+        subCommands.exec();
+
         connection.close();
         redisClient.shutdown();
     }
