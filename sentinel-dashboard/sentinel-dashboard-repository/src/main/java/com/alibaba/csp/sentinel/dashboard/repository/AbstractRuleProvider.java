@@ -40,7 +40,7 @@ public abstract class AbstractRuleProvider<T extends RuleEntity> implements Dyna
     private AppManagement appManagement;
 
     @Autowired
-    private Converter<String, List<T>> converter;
+    private Converter<String, List<T>> ruleDecoder;
 
     @Autowired
     private RuleKeyBuilder<T> ruleKeyBuilder;
@@ -71,7 +71,7 @@ public abstract class AbstractRuleProvider<T extends RuleEntity> implements Dyna
             return new ArrayList<>();
         }
 
-        return converter.convert(ruleStr);
+        return ruleDecoder.convert(ruleStr);
     }
 
     protected String buildRuleKey(String app, String ip, Integer port) {

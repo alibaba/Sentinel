@@ -39,7 +39,7 @@ public abstract class AbstractRulePublisher<T extends RuleEntity> implements Dyn
     private AppManagement appManagement;
 
     @Autowired
-    private Converter<List<T>, String> converter;
+    private Converter<List<T>, String> ruleEncoder;
 
     @Autowired
     private RuleKeyBuilder<T> ruleKeyBuilder;
@@ -63,7 +63,6 @@ public abstract class AbstractRulePublisher<T extends RuleEntity> implements Dyn
             return;
         }
 
-
         for (MachineInfo machineInfo : machineInfos) {
             this.publish(machineInfo.getApp(), machineInfo.getIp(), machineInfo.getPort(), rules);
         }
@@ -71,7 +70,7 @@ public abstract class AbstractRulePublisher<T extends RuleEntity> implements Dyn
 
     @Override
     public void publish(String app, String ip, Integer port, List<T> rules) throws Exception {
-        String rulesStr = converter.convert(rules);
+        String rulesStr = ruleEncoder.convert(rules);
         publishRules(app, ip, port, rulesStr);
     }
 
