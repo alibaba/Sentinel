@@ -28,6 +28,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.annotation.PostConstruct;
+
 /**
  * @author cdfive
  */
@@ -42,6 +44,11 @@ public class ZookeeperConfig {
     @Autowired
     private ZookeeperProperties zookeeperProperties;
 
+    @PostConstruct
+    public void init() {
+        zookeeperProperties.logInfo();
+    }
+
     @Bean
     public CuratorFramework zkClient() {
         String connectString = zookeeperProperties.getConnectString();
@@ -53,8 +60,14 @@ public class ZookeeperConfig {
         Integer maxRetries = zookeeperProperties.getMaxRetries();
         AssertUtil.notNull(connectString, "Zookeeper Client init failed, maxRetries can't be null");
 
-        CuratorFramework zkClient = CuratorFrameworkFactory.newClient(connectString, new ExponentialBackoffRetry(baseSleepTimeMs, maxRetries));
-        zkClient.start();
-        return zkClient;
+        try {
+            CuratorFramework zkClient = CuratorFrameworkFactory.newClient(connectString, new ExponentialBackoffRetry(baseSleepTimeMs, maxRetries));
+            zkClient.start();
+            LOGGER.info("Zookeeper client init success");
+            return zkClient;
+        } catch (Throwable e) {
+            LOGGER.info("Zookeeper client init error", e);
+            throw e;
+        }
     }
 }

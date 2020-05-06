@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.dashboard.repository.zookeeper;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -29,14 +31,29 @@ import org.springframework.context.annotation.PropertySource;
 @ConfigurationProperties(prefix = "zookeeper")
 public class ZookeeperProperties {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ZookeeperProperties.class);
+
+    private static final String DEFAULT_CONNECT_STRING = "localhost:2181";
+
+    private static final Integer DEFAULT_BASE_SLEEP_TIME_MS = 1000;
+
+    private static final Integer DEFAULT_MAX_RETRIES = 3;
+
     private String connectString;
 
     private Integer baseSleepTimeMs;
 
     private Integer maxRetries;
 
+    public void logInfo() {
+        LOGGER.info("Zookeeper info: ");
+        LOGGER.info("connectString={}", connectString != null ? connectString : DEFAULT_CONNECT_STRING + "(default)");
+        LOGGER.info("baseSleepTimeMs={}", baseSleepTimeMs != null ? baseSleepTimeMs : DEFAULT_BASE_SLEEP_TIME_MS + "(default)");
+        LOGGER.info("maxRetries={}", maxRetries != null ? maxRetries : DEFAULT_MAX_RETRIES + "(default)");
+    }
+
     public String getConnectString() {
-        return connectString;
+        return connectString != null ? connectString : DEFAULT_CONNECT_STRING;
     }
 
     public void setConnectString(String connectString) {
@@ -44,7 +61,7 @@ public class ZookeeperProperties {
     }
 
     public Integer getBaseSleepTimeMs() {
-        return baseSleepTimeMs;
+        return baseSleepTimeMs != null ? baseSleepTimeMs : DEFAULT_BASE_SLEEP_TIME_MS;
     }
 
     public void setBaseSleepTimeMs(Integer baseSleepTimeMs) {
@@ -52,7 +69,7 @@ public class ZookeeperProperties {
     }
 
     public Integer getMaxRetries() {
-        return maxRetries;
+        return maxRetries != null ? maxRetries : DEFAULT_MAX_RETRIES;
     }
 
     public void setMaxRetries(Integer maxRetries) {

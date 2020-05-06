@@ -16,12 +16,16 @@
 package com.alibaba.csp.sentinel.dashboard.repository.apollo;
 
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import javax.annotation.PostConstruct;
 
 /**
  * @author cdfive
@@ -32,8 +36,15 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(ApolloProperties.class)
 public class ApolloConfig {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApolloConfig.class);
+
     @Autowired
     private ApolloProperties apolloProperties;
+
+    @PostConstruct
+    public void init() {
+        apolloProperties.logInfo();
+    }
 
     @Bean
     public ApolloOpenApiClient apolloOpenApiClient() {
@@ -41,10 +52,16 @@ public class ApolloConfig {
 
         String token = apolloProperties.getToken();
 
-        ApolloOpenApiClient client = ApolloOpenApiClient.newBuilder()
-            .withPortalUrl(portalUrl)
-            .withToken(token)
-            .build();
-        return client;
+        try {
+            ApolloOpenApiClient client = ApolloOpenApiClient.newBuilder()
+                .withPortalUrl(portalUrl)
+                .withToken(token)
+                .build();
+            LOGGER.info("Apollo client init success");
+            return client;
+        } catch (Throwable e) {
+            LOGGER.error("Apollo client init error", e);
+            throw e;
+        }
     }
 }

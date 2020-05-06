@@ -75,8 +75,13 @@ public class RedisConfig {
             redisURIBuilder.withTimeout(Duration.ofMillis(timeoutMs));
         }
 
-        RedisClient redisClient = RedisClient.create(redisURIBuilder.build());
-        LOGGER.info("Redis client init success");
-        return redisClient;
+        try {
+            RedisClient redisClient = RedisClient.create(redisURIBuilder.build());
+            LOGGER.info("Redis client init success");
+            return redisClient;
+        } catch (Throwable e) {
+            LOGGER.info("Redis client init error");
+            throw e;
+        }
     }
 }

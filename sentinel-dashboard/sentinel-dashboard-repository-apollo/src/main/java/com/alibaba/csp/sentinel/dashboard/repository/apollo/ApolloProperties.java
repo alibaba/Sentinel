@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.dashboard.repository.apollo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -29,12 +31,22 @@ import org.springframework.context.annotation.PropertySource;
 @ConfigurationProperties(prefix = "apollo")
 public class ApolloProperties {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApolloProperties.class);
+
+    private static final String DEFAULT_PORTAL_URL = "http://localhost:10034";
+
     private String portalUrl;
 
     private String token;
 
+    public void logInfo() {
+        LOGGER.info("Apollo info: ");
+        LOGGER.info("portalUrl={}", portalUrl != null ? portalUrl : DEFAULT_PORTAL_URL + "(default)");
+        LOGGER.info("token={}", token);
+    }
+
     public String getPortalUrl() {
-        return portalUrl;
+        return portalUrl != null ? portalUrl : DEFAULT_PORTAL_URL;
     }
 
     public void setPortalUrl(String portalUrl) {

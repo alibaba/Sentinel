@@ -57,7 +57,6 @@ public class NacosConfig {
         String serverAddr = nacosProperties.getServerAddr();
         AssertUtil.notEmpty(serverAddr, "Nacos ConfigService init failed, serverAddr can't be empty");
 
-        LOGGER.info("Nacos ConfigService init start, serverAddr={}", serverAddr);
         Properties properties = new Properties();
         properties.setProperty(PropertyKeyConst.SERVER_ADDR, serverAddr);
         try {

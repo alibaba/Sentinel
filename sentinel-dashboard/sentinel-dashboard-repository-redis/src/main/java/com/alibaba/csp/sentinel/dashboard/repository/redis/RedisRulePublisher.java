@@ -40,7 +40,7 @@ public class RedisRulePublisher<T extends RuleEntity> extends AbstractRulePublis
          * Note:
          * By default channelSuffix is "", channel is same as ruleKey.
          * Pay attention to the constructor parameter of {@link com.alibaba.csp.sentinel.datasource.redis.RedisDataSource},
-         * ruleKey and channel should be same.
+         * ruleKey and channel should be same in this case.
          */
         String channel = ruleKey + redisProperties.getChannelSuffix();
 
