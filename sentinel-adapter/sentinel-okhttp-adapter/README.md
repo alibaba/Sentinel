@@ -24,7 +24,6 @@ OkHttpClient client = new OkHttpClient.Builder()
 
 ## Configuration
 
-
 - `SentinelOkHttpConfig` configuration:
 
 | name | description | type | default value |
