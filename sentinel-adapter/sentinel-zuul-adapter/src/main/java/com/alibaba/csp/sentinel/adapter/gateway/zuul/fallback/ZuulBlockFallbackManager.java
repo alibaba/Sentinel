@@ -35,7 +35,7 @@ public class ZuulBlockFallbackManager {
     /**
      * Register special provider for different route.
      */
-    public static synchronized void registerProvider(ZuulBlockFallbackProvider<?extends BlockResponse> provider) {
+    public static synchronized <T> void registerProvider(ZuulBlockFallbackProvider<? super T> provider) {
         AssertUtil.notNull(provider, "fallback provider cannot be null");
         String route = provider.getRoute();
         String defaultRoute = "*";
@@ -46,7 +46,7 @@ public class ZuulBlockFallbackManager {
         }
     }
 
-    public static ZuulBlockFallbackProvider<?extends BlockResponse> getFallbackProvider(String route) {
+    public static ZuulBlockFallbackProvider<? extends BlockResponse> getFallbackProvider(String route) {
         ZuulBlockFallbackProvider<?extends BlockResponse> provider = FALLBACK_PROVIDER_CACHE.get(route);
         if (provider == null) {
             provider = defaultFallbackProvider;
