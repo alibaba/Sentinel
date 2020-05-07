@@ -50,6 +50,7 @@ public class SentinelOkHttpInterceptorTest {
     public void testSentinelOkHttpInterceptor0() throws Exception {
 
         String url0 = "http://localhost:" + port + "/okhttp/back";
+        SentinelOkHttpConfig.setPrefix("okhttp:");
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(new SentinelOkHttpInterceptor())
                 .build();

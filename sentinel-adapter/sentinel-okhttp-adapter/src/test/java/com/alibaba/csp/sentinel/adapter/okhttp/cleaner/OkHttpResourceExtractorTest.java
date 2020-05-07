@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.adapter.okhttp.cleaner;
 
+import com.alibaba.csp.sentinel.adapter.okhttp.config.SentinelOkHttpConfig;
 import okhttp3.Connection;
 import okhttp3.Request;
 import org.junit.Test;
@@ -27,15 +28,16 @@ import static org.junit.Assert.assertEquals;
 public class OkHttpResourceExtractorTest {
 
     @Test
-    public void testDefaultOkHttpUrlCleaner() {
-        OkHttpResourceExtractor cleaner = new DefaultOkHttpResourceExtractor();
+    public void testDefaultOkHttpResourceExtractor() {
+        SentinelOkHttpConfig.setPrefix("okhttp:");
+        OkHttpResourceExtractor extractor = new DefaultOkHttpResourceExtractor();
         String url = "http://localhost:8083/okhttp/back";
         Request request = new Request.Builder()
                 .url(url)
                 .build();
-        cleaner.extract(request, null);
-        System.out.println(cleaner.extract(request, null));
-        assertEquals("okhttp:GET:" + url, cleaner.extract(request, null));
+        extractor.extract(request, null);
+        System.out.println(extractor.extract(request, null));
+        assertEquals("okhttp:GET:" + url, extractor.extract(request, null));
     }
 
     @Test

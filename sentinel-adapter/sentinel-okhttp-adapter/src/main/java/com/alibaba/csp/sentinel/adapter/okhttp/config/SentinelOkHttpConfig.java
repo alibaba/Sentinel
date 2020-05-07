@@ -26,7 +26,7 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
  */
 public final class SentinelOkHttpConfig {
 
-    private static volatile String prefix = "okhttp:";
+    private static volatile String prefix = "";
     private static volatile OkHttpResourceExtractor extractor = new DefaultOkHttpResourceExtractor();
     private static volatile OkHttpFallback fallback = new DefaultOkHttpFallback();
 
@@ -35,6 +35,7 @@ public final class SentinelOkHttpConfig {
     }
 
     public static void setPrefix(String prefix) {
+        AssertUtil.notNull(extractor, "prefix cannot be null");
         SentinelOkHttpConfig.prefix = prefix;
     }
 
