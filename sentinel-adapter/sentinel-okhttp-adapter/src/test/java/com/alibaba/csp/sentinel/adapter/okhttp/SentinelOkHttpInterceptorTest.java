@@ -87,7 +87,7 @@ public class SentinelOkHttpInterceptorTest {
                 .build();
         System.out.println(client.newCall(request).execute().body().string());
 
-        String url1 = "okhttp:GET:http://localhost:" + port + "/okhttp/back/{id}";
+        String url1 = "http://localhost:" + port + "/okhttp/back/{id}";
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(url1);
         assertNotNull(cn);
 
