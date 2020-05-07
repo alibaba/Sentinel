@@ -17,9 +17,11 @@ package com.alibaba.csp.sentinel.adapter.okhttp;
 
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.adapter.okhttp.app.TestApplication;
+import com.alibaba.csp.sentinel.adapter.okhttp.cleaner.OkHttpResourceExtractor;
 import com.alibaba.csp.sentinel.adapter.okhttp.config.SentinelOkHttpConfig;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
+import okhttp3.Connection;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.junit.Test;
@@ -66,13 +68,16 @@ public class SentinelOkHttpInterceptorTest {
     public void testSentinelOkHttpInterceptor1() throws Exception {
 
         String url0 = "http://localhost:" + port + "/okhttp/back/1";
-        SentinelOkHttpConfig.setExtractor((request, connection) -> {
-            String url = request.url().toString();
-            String regex = "/okhttp/back/";
-            if (url.contains(regex)) {
-                url = url.substring(0, url.indexOf(regex) + regex.length()) + "{id}";
+        SentinelOkHttpConfig.setExtractor(new OkHttpResourceExtractor() {
+            @Override
+            public String extract(Request request, Connection connection) {
+                String url = request.url().toString();
+                String regex = "/okhttp/back/";
+                if (url.contains(regex)) {
+                    url = url.substring(0, url.indexOf(regex) + regex.length()) + "{id}";
+                }
+                return url;
             }
-            return url;
         });
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(new SentinelOkHttpInterceptor())
