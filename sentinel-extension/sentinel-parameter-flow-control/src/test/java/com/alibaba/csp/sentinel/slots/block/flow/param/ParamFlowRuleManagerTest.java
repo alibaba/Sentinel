@@ -67,6 +67,36 @@ public class ParamFlowRuleManagerTest {
     }
 
     @Test
+    public void testLoadParamRulesClearingUnusedMetricsForRule() {
+        final String resA = "resA";
+        ParamFlowRule ruleA1 = new ParamFlowRule(resA)
+                .setCount(1)
+                .setParamIdx(0);
+        ParamFlowRule ruleA2 = new ParamFlowRule(resA)
+                .setCount(2)
+                .setParamIdx(1);
+
+        ParamFlowRuleManager.loadRules(Arrays.asList(ruleA1, ruleA2));
+        ParameterMetric metric = new ParameterMetric();
+        metric.initialize(ruleA1);
+        metric.initialize(ruleA2);
+        ParameterMetricStorage.getMetricsMap().put(resA, metric);
+
+        ParameterMetric metric1 = ParameterMetricStorage.getParamMetricForResource(resA);
+        assertNotNull(metric1);
+        assertNotNull(metric1.getRuleTimeCounter(ruleA1));
+        assertNotNull(metric1.getRuleTimeCounter(ruleA2));
+
+        ParamFlowRuleManager.loadRules(Arrays.asList(ruleA1));
+
+        ParameterMetric metric2 = ParameterMetricStorage.getParamMetricForResource(resA);
+        assertNotNull(metric2);
+        assertNotNull(metric2.getRuleTimeCounter(ruleA1));
+        assertNull(metric2.getRuleTimeCounter(ruleA2));
+    }
+
+
+    @Test
     public void testLoadParamRulesAndGet() {
         final String resA = "abc";
         final String resB = "foo";
