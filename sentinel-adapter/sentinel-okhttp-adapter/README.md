@@ -1,4 +1,4 @@
-# Sentinel Spring OkHttp Adapter
+# Sentinel OkHttp Adapter
 
 ## Introduction
 
