@@ -22,7 +22,7 @@ import org.junit.Test;
  */
 public class SentinelOkHttpConfigTest {
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testConfigSetPrefix() {
         SentinelOkHttpConfig.setPrefix(null);
     }
