@@ -35,7 +35,7 @@ public final class SentinelOkHttpConfig {
     }
 
     public static void setPrefix(String prefix) {
-        AssertUtil.notNull(extractor, "prefix cannot be null");
+        AssertUtil.notNull(prefix, "prefix cannot be null");
         SentinelOkHttpConfig.prefix = prefix;
     }
 
@@ -44,7 +44,7 @@ public final class SentinelOkHttpConfig {
     }
 
     public static void setExtractor(OkHttpResourceExtractor extractor) {
-        AssertUtil.notNull(extractor, "cleaner cannot be null");
+        AssertUtil.notNull(extractor, "extractor cannot be null");
         SentinelOkHttpConfig.extractor = extractor;
     }
 
