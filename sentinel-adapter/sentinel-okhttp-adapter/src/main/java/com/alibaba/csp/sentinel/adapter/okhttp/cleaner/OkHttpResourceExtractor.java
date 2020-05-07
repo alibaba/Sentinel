@@ -21,8 +21,7 @@ import okhttp3.Request;
 /**
  * @author zhaoyuguang
  */
+public interface OkHttpResourceExtractor {
 
-public interface OkHttpUrlCleaner {
-
-    String clean(Request request, Connection connection);
+    String extract(Request request, Connection connection);
 }

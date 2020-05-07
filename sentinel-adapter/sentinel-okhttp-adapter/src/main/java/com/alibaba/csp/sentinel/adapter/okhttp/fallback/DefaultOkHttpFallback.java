@@ -24,7 +24,6 @@ import okhttp3.Response;
 /**
  * @author zhaoyuguang
  */
-
 public class DefaultOkHttpFallback implements OkHttpFallback {
 
     @Override

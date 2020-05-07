@@ -26,14 +26,13 @@ import java.io.IOException;
 /**
  * @author zhaoyuguang
  */
-
 public class SentinelOkHttpInterceptor implements Interceptor {
 
     @Override
     public Response intercept(Chain chain) throws IOException {
         Entry entry = null;
         try {
-            String name = SentinelOkHttpConfig.getCleaner().clean(chain.request(), chain.connection());
+            String name = SentinelOkHttpConfig.getExtractor().extract(chain.request(), chain.connection());
             entry = SphU.entry(name, ResourceTypeConstants.COMMON_WEB, EntryType.OUT);
             return chain.proceed(chain.request());
         } catch (BlockException e) {

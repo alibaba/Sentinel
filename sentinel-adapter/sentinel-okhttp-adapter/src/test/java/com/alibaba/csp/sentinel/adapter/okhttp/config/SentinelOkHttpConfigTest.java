@@ -20,12 +20,16 @@ import org.junit.Test;
 /**
  * @author zhaoyuguang
  */
-
 public class SentinelOkHttpConfigTest {
+
+    @Test
+    public void testConfigSetPrefix() {
+        SentinelOkHttpConfig.setPrefix(null);
+    }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConfigSetCleaner() {
-        SentinelOkHttpConfig.setCleaner(null);
+        SentinelOkHttpConfig.setExtractor(null);
     }
 
     @Test(expected = IllegalArgumentException.class)

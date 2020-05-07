@@ -23,7 +23,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
  * @author zhaoyuguang
  */
-
 @SpringBootApplication
 public class OkHttpDemoApplication implements CommandLineRunner {
 
@@ -33,7 +32,7 @@ public class OkHttpDemoApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        SentinelOkHttpConfig.setCleaner((request, connection) -> {
+        SentinelOkHttpConfig.setExtractor((request, connection) -> {
             String url = request.url().toString();
             String regex = "/okhttp/back/";
             if (url.contains(regex)) {

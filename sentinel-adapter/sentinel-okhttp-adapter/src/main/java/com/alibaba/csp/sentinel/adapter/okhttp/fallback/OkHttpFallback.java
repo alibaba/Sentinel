@@ -23,7 +23,6 @@ import okhttp3.Response;
 /**
  * @author zhaoyuguang
  */
-
 public interface OkHttpFallback {
 
     Response handle(Request request, Connection connection, BlockException e);

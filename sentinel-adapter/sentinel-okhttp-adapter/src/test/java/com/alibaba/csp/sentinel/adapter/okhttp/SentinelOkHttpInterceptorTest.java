@@ -17,11 +17,9 @@ package com.alibaba.csp.sentinel.adapter.okhttp;
 
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.adapter.okhttp.app.TestApplication;
-import com.alibaba.csp.sentinel.adapter.okhttp.cleaner.OkHttpUrlCleaner;
 import com.alibaba.csp.sentinel.adapter.okhttp.config.SentinelOkHttpConfig;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
-import okhttp3.Connection;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.junit.Test;
@@ -35,7 +33,6 @@ import static org.junit.Assert.assertNotNull;
 /**
  * @author zhaoyuguang
  */
-
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TestApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
@@ -58,7 +55,7 @@ public class SentinelOkHttpInterceptorTest {
                 .url(url0)
                 .build();
         System.out.println(client.newCall(request).execute().body().string());
-        ClusterNode cn = ClusterBuilderSlot.getClusterNode(url0);
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode("okhttp:GET:" + url0);
         assertNotNull(cn);
 
         Constants.ROOT.removeChildList();
@@ -69,7 +66,7 @@ public class SentinelOkHttpInterceptorTest {
     public void testSentinelOkHttpInterceptor1() throws Exception {
 
         String url0 = "http://localhost:" + port + "/okhttp/back/1";
-        SentinelOkHttpConfig.setCleaner((request, connection) -> {
+        SentinelOkHttpConfig.setExtractor((request, connection) -> {
             String url = request.url().toString();
             String regex = "/okhttp/back/";
             if (url.contains(regex)) {
@@ -85,7 +82,7 @@ public class SentinelOkHttpInterceptorTest {
                 .build();
         System.out.println(client.newCall(request).execute().body().string());
 
-        String url1 = "http://localhost:" + port + "/okhttp/back/{id}";
+        String url1 = "okhttp:GET:http://localhost:" + port + "/okhttp/back/{id}";
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(url1);
         assertNotNull(cn);
 

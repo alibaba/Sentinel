@@ -15,17 +15,23 @@
  */
 package com.alibaba.csp.sentinel.adapter.okhttp.cleaner;
 
+import com.alibaba.csp.sentinel.adapter.okhttp.config.SentinelOkHttpConfig;
+import com.alibaba.csp.sentinel.util.StringUtil;
 import okhttp3.Connection;
 import okhttp3.Request;
 
 /**
  * @author zhaoyuguang
  */
-
-public class DefaultOkHttpUrlCleaner implements OkHttpUrlCleaner {
+public class DefaultOkHttpResourceExtractor implements OkHttpResourceExtractor {
 
     @Override
-    public String clean(Request request, Connection connection) {
-        return request.url().toString();
+    public String extract(Request request, Connection connection) {
+        StringBuilder buf = new StringBuilder(64);
+        if (!StringUtil.isEmpty(SentinelOkHttpConfig.getPrefix())) {
+            buf.append(SentinelOkHttpConfig.getPrefix());
+        }
+        buf.append(request.method()).append(":").append(request.url().toString());
+        return buf.toString();
     }
 }

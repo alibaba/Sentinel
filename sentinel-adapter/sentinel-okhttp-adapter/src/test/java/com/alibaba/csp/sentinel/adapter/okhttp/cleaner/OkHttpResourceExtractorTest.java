@@ -23,23 +23,23 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author zhaoyuguang
  */
-
-public class OkHttpUrlCleanerTest {
+public class OkHttpResourceExtractorTest {
 
     @Test
     public void testDefaultOkHttpUrlCleaner() {
-        OkHttpUrlCleaner cleaner = new DefaultOkHttpUrlCleaner();
+        OkHttpResourceExtractor cleaner = new DefaultOkHttpResourceExtractor();
         String url = "http://localhost:8083/okhttp/back";
         Request request = new Request.Builder()
                 .url(url)
                 .build();
-        cleaner.clean(request, null);
-        assertEquals(url, cleaner.clean(request, null));
+        cleaner.extract(request, null);
+        System.out.println(cleaner.extract(request, null));
+        assertEquals("okhttp:GET:" + url, cleaner.extract(request, null));
     }
 
     @Test
     public void testCustomizeOkHttpUrlCleaner() {
-        OkHttpUrlCleaner cleaner = (request, connection) -> {
+        OkHttpResourceExtractor cleaner = (request, connection) -> {
             String url = request.url().toString();
             String regex = "/okhttp/back/";
             if (url.contains(regex)) {
@@ -51,7 +51,7 @@ public class OkHttpUrlCleanerTest {
         Request request = new Request.Builder()
                 .url(url)
                 .build();
-        cleaner.clean(request, null);
-        assertEquals("http://localhost:8083/okhttp/back/{id}", cleaner.clean(request, null));
+        cleaner.extract(request, null);
+        assertEquals("http://localhost:8083/okhttp/back/{id}", cleaner.extract(request, null));
     }
 }

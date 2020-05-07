@@ -23,7 +23,6 @@ import org.junit.Test;
 /**
  * @author zhaoyuguang
  */
-
 public class OkHttpFallbackTest {
 
     @Test(expected = SentinelRpcException.class)

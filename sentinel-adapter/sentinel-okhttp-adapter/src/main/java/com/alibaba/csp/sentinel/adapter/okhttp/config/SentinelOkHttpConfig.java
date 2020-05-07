@@ -15,8 +15,8 @@
  */
 package com.alibaba.csp.sentinel.adapter.okhttp.config;
 
-import com.alibaba.csp.sentinel.adapter.okhttp.cleaner.DefaultOkHttpUrlCleaner;
-import com.alibaba.csp.sentinel.adapter.okhttp.cleaner.OkHttpUrlCleaner;
+import com.alibaba.csp.sentinel.adapter.okhttp.cleaner.DefaultOkHttpResourceExtractor;
+import com.alibaba.csp.sentinel.adapter.okhttp.cleaner.OkHttpResourceExtractor;
 import com.alibaba.csp.sentinel.adapter.okhttp.fallback.DefaultOkHttpFallback;
 import com.alibaba.csp.sentinel.adapter.okhttp.fallback.OkHttpFallback;
 import com.alibaba.csp.sentinel.util.AssertUtil;
@@ -24,19 +24,27 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
 /**
  * @author zhaoyuguang
  */
-
 public final class SentinelOkHttpConfig {
 
-    private static volatile OkHttpUrlCleaner cleaner = new DefaultOkHttpUrlCleaner();
+    private static volatile String prefix = "okhttp:";
+    private static volatile OkHttpResourceExtractor extractor = new DefaultOkHttpResourceExtractor();
     private static volatile OkHttpFallback fallback = new DefaultOkHttpFallback();
 
-    public static OkHttpUrlCleaner getCleaner() {
-        return cleaner;
+    public static String getPrefix() {
+        return prefix;
     }
 
-    public static void setCleaner(OkHttpUrlCleaner cleaner) {
-        AssertUtil.notNull(cleaner, "cleaner cannot be null");
-        SentinelOkHttpConfig.cleaner = cleaner;
+    public static void setPrefix(String prefix) {
+        SentinelOkHttpConfig.prefix = prefix;
+    }
+
+    public static OkHttpResourceExtractor getExtractor() {
+        return extractor;
+    }
+
+    public static void setExtractor(OkHttpResourceExtractor extractor) {
+        AssertUtil.notNull(extractor, "cleaner cannot be null");
+        SentinelOkHttpConfig.extractor = extractor;
     }
 
     public static OkHttpFallback getFallback() {
