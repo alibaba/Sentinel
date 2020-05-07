@@ -28,23 +28,23 @@ OkHttpClient client = new OkHttpClient.Builder()
 
 | name | description | type | default value |
 |------|------------|------|-------|
-| cleaner | aggregate URLs according to actual scenarios | `OkHttpUrlCleaner` | `DefaultOkHttpUrlCleaner` |
+| extractor | custom resource extractor | `OkHttpResourceExtractor` | `DefaultOkHttpResourceExtractor` |
 | fallback | handle request when it is blocked | `OkHttpFallback` | `DefaultOkHttpFallback` |
 
-### cleaner (URL cleaner)
+### extractor (resource extractor)
 
-We can define `OkHttpUrlCleaner` to aggregate URLs according to actual scenarios, for example: /okhttp/back/1 ==> /okhttp/back/{id}
+We can define `OkHttpResourceExtractor` to custom resource extractor replace `DefaultOkHttpResourceExtractor`, for example: okhttp:GET:ip:port/okhttp/back/1 ==> /okhttp/back/{id}
 
 ```java
-OkHttpUrlCleaner cleaner = (request, connection) -> {
-    String url = request.url().toString();
+OkHttpResourceExtractor extractor = (request, connection) -> {
+    String resource = request.url().toString();
     String regex = "/okhttp/back/";
-    if (url.contains(regex)) {
-        url = url.substring(0, url.indexOf(regex) + regex.length()) + "{id}";
+    if (resource.contains(regex)) {
+        resource = resource.substring(0, resource.indexOf(regex) + regex.length()) + "{id}";
     }
-    return url;
+    return resource;
 };
-SentinelOkHttpConfig.setCleaner(cleaner);
+SentinelOkHttpConfig.setExtractor(extractor);
 ```
 
 ### fallback (Block handling)
