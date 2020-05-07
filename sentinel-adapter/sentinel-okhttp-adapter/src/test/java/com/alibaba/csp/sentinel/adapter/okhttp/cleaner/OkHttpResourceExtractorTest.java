@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.adapter.okhttp.cleaner;
 
+import okhttp3.Connection;
 import okhttp3.Request;
 import org.junit.Test;
 
@@ -39,19 +40,22 @@ public class OkHttpResourceExtractorTest {
 
     @Test
     public void testCustomizeOkHttpUrlCleaner() {
-        OkHttpResourceExtractor cleaner = (request, connection) -> {
-            String url = request.url().toString();
-            String regex = "/okhttp/back/";
-            if (url.contains(regex)) {
-                url = url.substring(0, url.indexOf(regex) + regex.length()) + "{id}";
+        OkHttpResourceExtractor extractor = new OkHttpResourceExtractor() {
+            @Override
+            public String extract(Request request, Connection connection) {
+                String url = request.url().toString();
+                String regex = "/okhttp/back/";
+                if (url.contains(regex)) {
+                    url = url.substring(0, url.indexOf(regex) + regex.length()) + "{id}";
+                }
+                return url;
             }
-            return url;
         };
         String url = "http://localhost:8083/okhttp/back/abc";
         Request request = new Request.Builder()
                 .url(url)
                 .build();
-        cleaner.extract(request, null);
-        assertEquals("http://localhost:8083/okhttp/back/{id}", cleaner.extract(request, null));
+        extractor.extract(request, null);
+        assertEquals("http://localhost:8083/okhttp/back/{id}", extractor.extract(request, null));
     }
 }
