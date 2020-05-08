@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
 import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
+import com.alibaba.csp.sentinel.slots.statistic.cache.CopyOnWriteMap;
 
 /**
  * Metrics for frequent ("hot spot") parameters.
@@ -45,14 +46,14 @@ public class ParameterMetric {
      *
      * @since 1.6.0
      */
-    private final Map<ParamFlowRule, CacheMap<Object, AtomicLong>> ruleTimeCounters = new HashMap<>();
+    private final CopyOnWriteMap<ParamFlowRule, CacheMap<Object, AtomicLong>> ruleTimeCounters = new CopyOnWriteMap<>();
     /**
      * Format: (rule, (value, tokenCounter))
      *
      * @since 1.6.0
      */
-    private final Map<ParamFlowRule, CacheMap<Object, AtomicLong>> ruleTokenCounter = new HashMap<>();
-    private final Map<Integer, CacheMap<Object, AtomicInteger>> threadCountMap = new HashMap<>();
+    private final CopyOnWriteMap<ParamFlowRule, CacheMap<Object, AtomicLong>> ruleTokenCounter = new CopyOnWriteMap<>();
+    private final CopyOnWriteMap<Integer, CacheMap<Object, AtomicInteger>> threadCountMap = new CopyOnWriteMap<>();
 
     /**
      * Get the token counter for given parameter rule.
@@ -77,19 +78,15 @@ public class ParameterMetric {
     }
 
     public void clear() {
-        synchronized (lock) {
-            threadCountMap.clear();
-            ruleTimeCounters.clear();
-            ruleTokenCounter.clear();
-        }
+        ruleTimeCounters.clear();
+        ruleTokenCounter.clear();
+        threadCountMap.clear();
     }
 
     public void clearForRule(ParamFlowRule rule) {
-        synchronized (lock) {
-            ruleTimeCounters.remove(rule);
-            ruleTokenCounter.remove(rule);
-            threadCountMap.remove(rule.getParamIdx());
-        }
+        ruleTimeCounters.remove(rule);
+        ruleTokenCounter.remove(rule);
+        threadCountMap.remove(rule.getParamIdx());
     }
 
     public void initialize(ParamFlowRule rule) {
@@ -253,15 +250,15 @@ public class ParameterMetric {
      *
      * @return the token counter map
      */
-    Map<ParamFlowRule, CacheMap<Object, AtomicLong>> getRuleTokenCounterMap() {
+    CopyOnWriteMap<ParamFlowRule, CacheMap<Object, AtomicLong>> getRuleTokenCounterMap() {
         return ruleTokenCounter;
     }
 
-    Map<Integer, CacheMap<Object, AtomicInteger>> getThreadCountMap() {
+    CopyOnWriteMap<Integer, CacheMap<Object, AtomicInteger>> getThreadCountMap() {
         return threadCountMap;
     }
 
-    Map<ParamFlowRule, CacheMap<Object, AtomicLong>> getRuleTimeCounterMap() {
+    CopyOnWriteMap<ParamFlowRule, CacheMap<Object, AtomicLong>> getRuleTimeCounterMap() {
         return ruleTimeCounters;
     }
 }
