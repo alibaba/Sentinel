@@ -20,10 +20,12 @@ import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.util.StringUtil;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.core.annotation.AnnotationUtils;
 
 import java.lang.reflect.Method;
 
@@ -48,6 +50,10 @@ public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
             // Should not go through here.
             throw new IllegalStateException("Wrong state for SentinelResource annotation");
         }
+        SentinelResource classAnnotation = null;
+        if (StringUtil.isEmpty(annotation.defaultFallback())) {
+            classAnnotation = AnnotationUtils.findAnnotation(pjp.getClass(), SentinelResource.class);
+        }
         String resourceName = getResourceName(annotation.value(), originMethod);
         EntryType entryType = annotation.entryType();
         int resourceType = annotation.resourceType();
@@ -57,7 +63,7 @@ public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
             Object result = pjp.proceed();
             return result;
         } catch (BlockException ex) {
-            return handleBlockException(pjp, annotation, ex);
+            return handleBlockException(pjp, annotation, classAnnotation, ex);
         } catch (Throwable ex) {
             Class<? extends Throwable>[] exceptionsToIgnore = annotation.exceptionsToIgnore();
             // The ignore list will be checked first.
@@ -66,7 +72,7 @@ public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
             }
             if (exceptionBelongsTo(ex, annotation.exceptionsToTrace())) {
                 traceException(ex);
-                return handleFallback(pjp, annotation, ex);
+                return handleFallback(pjp, annotation, classAnnotation, ex);
             }
 
             // No fallback function can handle the exception, so throw it out.

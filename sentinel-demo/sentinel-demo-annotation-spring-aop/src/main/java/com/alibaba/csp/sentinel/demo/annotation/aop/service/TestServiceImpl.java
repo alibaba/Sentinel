@@ -16,14 +16,13 @@
 package com.alibaba.csp.sentinel.demo.annotation.aop.service;
 
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
-import com.alibaba.csp.sentinel.slots.block.BlockException;
-
 import org.springframework.stereotype.Service;
 
 /**
  * @author Eric Zhao
  */
 @Service
+@SentinelResource(defaultFallback = "defaultGlobalFallback", fallbackClass = {TestServiceImpl.class})
 public class TestServiceImpl implements TestService {
 
     @Override
@@ -54,6 +53,15 @@ public class TestServiceImpl implements TestService {
         return "Hello, " + name;
     }
 
+    @Override
+    @SentinelResource
+    public String helloAnother2(String name) {
+        if ("foo".equals(name)) {
+            throw new IllegalStateException("oops");
+        }
+        return "Hello2";
+    }
+
     public String helloFallback(long s, Throwable ex) {
         // Do some log here.
         ex.printStackTrace();
@@ -63,5 +71,10 @@ public class TestServiceImpl implements TestService {
     public String defaultFallback() {
         System.out.println("Go to default fallback");
         return "default_fallback";
+    }
+
+    public String defaultGlobalFallback() {
+        System.out.println("Go to default fallback");
+        return "default_global_fallback";
     }
 }

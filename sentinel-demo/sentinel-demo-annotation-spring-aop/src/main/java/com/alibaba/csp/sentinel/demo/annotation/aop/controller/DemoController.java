@@ -45,4 +45,9 @@ public class DemoController {
     public String apiBaz(@PathVariable("name") String name) {
         return service.helloAnother(name);
     }
+
+    @GetMapping("/baz2/{name}")
+    public String apiBaz2(@PathVariable("name") String name) {
+        return service.helloAnother2(name);
+    }
 }

@@ -25,7 +25,7 @@ import java.lang.annotation.*;
  * @author Eric Zhao
  * @since 0.1.1
  */
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface SentinelResource {

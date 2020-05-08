@@ -79,9 +79,18 @@ public abstract class AbstractSentinelAspectSupport {
         return MethodUtil.resolveMethodName(method);
     }
 
-    protected Object handleFallback(ProceedingJoinPoint pjp, SentinelResource annotation, Throwable ex)
-        throws Throwable {
-        return handleFallback(pjp, annotation.fallback(), annotation.defaultFallback(), annotation.fallbackClass(), ex);
+    protected Object handleFallback(ProceedingJoinPoint pjp, SentinelResource annotation,
+                                    SentinelResource classAnnotation, Throwable ex) throws Throwable {
+        String defaultFallback;
+        Class<?>[] fallbackClass;
+        if (StringUtil.isEmpty(annotation.defaultFallback()) && classAnnotation != null) {
+            defaultFallback = classAnnotation.defaultFallback();
+            fallbackClass = classAnnotation.fallbackClass();
+        } else {
+            defaultFallback = annotation.defaultFallback();
+            fallbackClass = annotation.fallbackClass();
+        }
+        return handleFallback(pjp, annotation.fallback(), defaultFallback, fallbackClass, ex);
     }
 
     protected Object handleFallback(ProceedingJoinPoint pjp, String fallback, String defaultFallback,
@@ -137,8 +146,8 @@ public abstract class AbstractSentinelAspectSupport {
         throw ex;
     }
 
-    protected Object handleBlockException(ProceedingJoinPoint pjp, SentinelResource annotation, BlockException ex)
-        throws Throwable {
+    protected Object handleBlockException(ProceedingJoinPoint pjp, SentinelResource annotation,
+                                          SentinelResource classAnnotation, BlockException ex) throws Throwable {
 
         // Execute block handler if configured.
         Method blockHandlerMethod = extractBlockHandlerMethod(pjp, annotation.blockHandler(),
@@ -158,9 +167,8 @@ public abstract class AbstractSentinelAspectSupport {
                 throw e.getTargetException();
             }
         }
-
         // If no block handler is present, then go to fallback.
-        return handleFallback(pjp, annotation, ex);
+        return handleFallback(pjp, annotation, classAnnotation, ex);
     }
 
     private Method extractFallbackMethod(ProceedingJoinPoint pjp, String fallbackName, Class<?>[] locationClass) {

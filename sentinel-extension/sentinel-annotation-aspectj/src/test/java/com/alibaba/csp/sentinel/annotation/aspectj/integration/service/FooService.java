@@ -27,6 +27,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * @author Eric Zhao
  */
 @Service
+@SentinelResource(defaultFallback = "globalDefaultFallback", fallbackClass = FooUtil.class)
 public class FooService {
 
     @SentinelResource(value = "apiFoo", blockHandler = "fooBlockHandler",
