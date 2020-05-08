@@ -16,12 +16,16 @@
 
 package com.alibaba.csp.sentinel.adapter.gateway.zuul2.fallback;
 
+import com.alibaba.fastjson.JSON;
+
+import java.util.HashMap;
+
 /**
  * Fall back response for {@link com.alibaba.csp.sentinel.slots.block.BlockException}
  *
  * @author tiger
  */
-public class BlockResponse {
+public class BlockResponse extends HashMap<String,Object> {
 
     /**
      * HTTP status code.
@@ -35,6 +39,9 @@ public class BlockResponse {
         this.code = code;
         this.message = message;
         this.route = route;
+        put("code",code);
+        put("message",message);
+        put("route",route);
     }
 
     public int getCode() {
@@ -62,11 +69,13 @@ public class BlockResponse {
     }
 
     @Override
+    public BlockResponse put(String key, Object value) {
+        super.put(key, value);
+        return this;
+    }
+
+    @Override
     public String toString() {
-        return "{" +
-                "\"code\":" + code +
-                ", \"message\":" + "\"" + message + "\"" +
-                ", \"route\":" + "\"" + route + "\"" +
-                '}';
+        return  JSON.toJSONString(this);
     }
 }
