@@ -22,7 +22,7 @@ To use sentinel-annotation-quarkus-adapter, you can simply add the following dep
 </dependency>
 ```
 
-if your quarkus appilcation want to use both `sentinel-annotation-quarkus-adapter` and `sentinel-jax-rs-quarkus-adapter` , then add these two dependency together to your `pom.xml`:
+if your quarkus application want to use both `sentinel-annotation-quarkus-adapter` and `sentinel-jax-rs-quarkus-adapter` , then add these two dependency together to your `pom.xml`:
 
 ```xml
 <dependency>
