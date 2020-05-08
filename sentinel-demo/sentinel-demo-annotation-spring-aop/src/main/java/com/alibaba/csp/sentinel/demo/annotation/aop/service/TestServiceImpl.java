@@ -73,7 +73,7 @@ public class TestServiceImpl implements TestService {
         return "default_fallback";
     }
 
-    public String defaultGlobalFallback() {
+    public static String defaultGlobalFallback() {
         System.out.println("Go to default fallback");
         return "default_global_fallback";
     }

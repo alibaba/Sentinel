@@ -13,8 +13,11 @@ The `@SentinelResource` annotation indicates a resource definition, including:
   - The return type should match the origin method;
   - The parameter list should match the origin method, and an additional `Throwable` parameter can be provided to get the actual exception.
 - `defaultFallback` (since 1.6.0): The default fallback method when exceptions caught (including `BlockException`, but except the exceptions defined in `exceptionsToIgnore`). Its intended to be a universal common fallback method. The method should be located in the same class with original method by default. If you want to use method in other classes, you can set the `fallbackClass` with corresponding `Class` (Note the method in other classes must be *static*). The default fallback method signature requirement:
+  - supported class-level annotation (since 1.8.0);
   - The return type should match the origin method;
   - parameter list should be empty, and an additional `Throwable` parameter can be provided to get the actual exception.
+- `fallbackClass` The default fallback method in which class.
+  - supported class-level annotation (since 1.8.0), Effective when the class annotation `defaultFallback` is not empty;
 - `blockHandler`: Handler method that handles `BlockException` when blocked. The parameter list of the method should match original method, with the last additional parameter type `BlockException`. The return type should be same as the original method. The `blockHandler` method should be located in the same class with original method by default. If you want to use method in other classes, you can set the `blockHandlerClass` with corresponding `Class` (Note the method in other classes must be *static*).
 - `exceptionsToIgnore` (since 1.6.0): List of business exception classes that should not be traced and caught in fallback.
 - `exceptionsToTrace` (since 1.5.1): List of business exception classes to trace and record. In most cases, using `exceptionsToIgnore` is better. If both `exceptionsToTrace` and `exceptionsToIgnore` are present, only `exceptionsToIgnore` will be activated.

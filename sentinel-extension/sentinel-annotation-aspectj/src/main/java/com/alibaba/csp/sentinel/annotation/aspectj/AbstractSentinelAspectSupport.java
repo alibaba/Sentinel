@@ -80,12 +80,12 @@ public abstract class AbstractSentinelAspectSupport {
     }
 
     protected Object handleFallback(ProceedingJoinPoint pjp, SentinelResource annotation,
-                                    SentinelResource classAnnotation, Throwable ex) throws Throwable {
+                                    SentinelResource annotationClass, Throwable ex) throws Throwable {
         String defaultFallback;
         Class<?>[] fallbackClass;
-        if (StringUtil.isEmpty(annotation.defaultFallback()) && classAnnotation != null) {
-            defaultFallback = classAnnotation.defaultFallback();
-            fallbackClass = classAnnotation.fallbackClass();
+        if (StringUtil.isEmpty(annotation.defaultFallback()) && annotationClass != null) {
+            defaultFallback = annotationClass.defaultFallback();
+            fallbackClass = annotationClass.fallbackClass();
         } else {
             defaultFallback = annotation.defaultFallback();
             fallbackClass = annotation.fallbackClass();
@@ -147,7 +147,7 @@ public abstract class AbstractSentinelAspectSupport {
     }
 
     protected Object handleBlockException(ProceedingJoinPoint pjp, SentinelResource annotation,
-                                          SentinelResource classAnnotation, BlockException ex) throws Throwable {
+                                          SentinelResource annotationClass, BlockException ex) throws Throwable {
 
         // Execute block handler if configured.
         Method blockHandlerMethod = extractBlockHandlerMethod(pjp, annotation.blockHandler(),
@@ -168,7 +168,7 @@ public abstract class AbstractSentinelAspectSupport {
             }
         }
         // If no block handler is present, then go to fallback.
-        return handleFallback(pjp, annotation, classAnnotation, ex);
+        return handleFallback(pjp, annotation, annotationClass, ex);
     }
 
     private Method extractFallbackMethod(ProceedingJoinPoint pjp, String fallbackName, Class<?>[] locationClass) {
