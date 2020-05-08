@@ -43,12 +43,11 @@ when quarkus application started, you can see the enabled feature like:
 INFO  [io.quarkus] (Quarkus Main Thread) Installed features: [cdi, resteasy, sentinel-annotation, sentinel-jax-rs]
 ```
 
-# for quarkus native image
+## for quarkus native image
 
 sentinel quarkus adapter's support for quarkus native image build is under development. It will coming soon.
 
-
-# references for build native image or AOT
+## references for build native image or AOT
 
 - [Quarkus - Tips for writing native applications](https://quarkus.io/guides/writing-native-applications-tips)
 
