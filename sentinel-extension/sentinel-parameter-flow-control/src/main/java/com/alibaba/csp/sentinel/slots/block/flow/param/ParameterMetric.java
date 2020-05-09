@@ -17,8 +17,6 @@ package com.alibaba.csp.sentinel.slots.block.flow.param;
 
 import java.lang.reflect.Array;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -26,6 +24,7 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
 import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
 import com.alibaba.csp.sentinel.slots.statistic.cache.CopyOnWriteMap;
+import com.alibaba.csp.sentinel.util.function.Function;
 
 /**
  * Metrics for frequent ("hot spot") parameters.
@@ -39,14 +38,13 @@ public class ParameterMetric {
     private static final int BASE_PARAM_MAX_CAPACITY = 4000;
     private static final int TOTAL_MAX_CAPACITY = 20_0000;
 
-    private final Object lock = new Object();
-
     /**
      * Format: (rule, (value, timeRecorder))
      *
      * @since 1.6.0
      */
     private final CopyOnWriteMap<ParamFlowRule, CacheMap<Object, AtomicLong>> ruleTimeCounters = new CopyOnWriteMap<>();
+
     /**
      * Format: (rule, (value, tokenCounter))
      *
@@ -77,6 +75,8 @@ public class ParameterMetric {
         return ruleTimeCounters.get(rule);
     }
 
+
+
     public void clear() {
         ruleTimeCounters.clear();
         ruleTokenCounter.clear();
@@ -89,33 +89,29 @@ public class ParameterMetric {
         threadCountMap.remove(rule.getParamIdx());
     }
 
-    public void initialize(ParamFlowRule rule) {
-        if (!ruleTimeCounters.containsKey(rule)) {
-            synchronized (lock) {
-                if (ruleTimeCounters.get(rule) == null) {
-                    long size = Math.min(BASE_PARAM_MAX_CAPACITY * rule.getDurationInSec(), TOTAL_MAX_CAPACITY);
-                    ruleTimeCounters.put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(size));
-                }
+    public void initialize(final ParamFlowRule rule) {
+        ruleTimeCounters.computeIfAbsent(rule, new Function<ParamFlowRule, CacheMap<Object, AtomicLong>>() {
+            @Override
+            public CacheMap<Object, AtomicLong> apply(ParamFlowRule paramFlowRule) {
+                long size = Math.min(BASE_PARAM_MAX_CAPACITY * rule.getDurationInSec(), TOTAL_MAX_CAPACITY);
+                return new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(size);
             }
-        }
+        });
 
-        if (!ruleTokenCounter.containsKey(rule)) {
-            synchronized (lock) {
-                if (ruleTokenCounter.get(rule) == null) {
-                    long size = Math.min(BASE_PARAM_MAX_CAPACITY * rule.getDurationInSec(), TOTAL_MAX_CAPACITY);
-                    ruleTokenCounter.put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(size));
-                }
+        ruleTokenCounter.computeIfAbsent(rule, new Function<ParamFlowRule, CacheMap<Object, AtomicLong>>() {
+            @Override
+            public CacheMap<Object, AtomicLong> apply(ParamFlowRule paramFlowRule) {
+                long size = Math.min(BASE_PARAM_MAX_CAPACITY * rule.getDurationInSec(), TOTAL_MAX_CAPACITY);
+                return ruleTokenCounter.put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(size));
             }
-        }
+        });
 
-        if (!threadCountMap.containsKey(rule.getParamIdx())) {
-            synchronized (lock) {
-                if (threadCountMap.get(rule.getParamIdx()) == null) {
-                    threadCountMap.put(rule.getParamIdx(),
-                        new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(THREAD_COUNT_MAX_CAPACITY));
-                }
+        threadCountMap.computeIfAbsent(rule.getParamIdx(), new Function<Integer, CacheMap<Object, AtomicInteger>>() {
+            @Override
+            public CacheMap<Object, AtomicInteger> apply(Integer integer) {
+                return new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(THREAD_COUNT_MAX_CAPACITY);
             }
-        }
+        });
     }
 
     @SuppressWarnings("rawtypes")

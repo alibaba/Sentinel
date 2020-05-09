@@ -1,12 +1,16 @@
 package com.alibaba.csp.sentinel.slots.statistic.cache;
 
 
+import com.alibaba.csp.sentinel.util.function.Function;
+
 import java.util.*;
 
 /**
+ * COW Map
+ *
  * @author wavesZh
  */
-public class CopyOnWriteMap<K, V> implements CacheMap<K, V> {
+public class CopyOnWriteMap<K, V> implements Map<K, V> {
 
     private volatile Map<K, V> delegate = Collections.emptyMap();
 
@@ -23,24 +27,6 @@ public class CopyOnWriteMap<K, V> implements CacheMap<K, V> {
     }
 
     @Override
-    public boolean containsKey(K key) {
-        return this.delegate.containsKey(key);
-    }
-
-    @Override
-    public V get(K key) {
-        return this.delegate.get(key);
-    }
-
-    @Override
-    public synchronized V remove(K key) {
-        Map<K, V> delegate = new HashMap(this.delegate);
-        V existing = delegate.remove(key);
-        this.delegate = delegate;
-        return existing;
-    }
-
-    @Override
     public synchronized V put(K key, V value) {
         Map<K, V> delegate = new HashMap(this.delegate);
         V existing = delegate.put(key, value);
@@ -49,20 +35,64 @@ public class CopyOnWriteMap<K, V> implements CacheMap<K, V> {
     }
 
     @Override
-    public synchronized V putIfAbsent(K key, V value) {
-        Map<K, V> delegate = this.delegate;
-        V existing = delegate.get(key);
-        if (existing != null) {
-            return existing;
-        } else {
-            this.put(key, value);
-            return null;
-        }
+    public synchronized V remove(Object key) {
+        Map<K, V> delegate = new HashMap(this.delegate);
+        V existing = delegate.remove(key);
+        this.delegate = delegate;
+        return existing;
     }
 
     @Override
-    public long size() {
-        return this.delegate.size();
+    public synchronized void putAll(Map<? extends K, ? extends V> m) {
+        Map<K, V> delegate = new HashMap(this.delegate);
+        delegate.putAll(m);
+        this.delegate = delegate;
+    }
+
+    public synchronized V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
+        Objects.requireNonNull(mappingFunction);
+        V v, newValue;
+        return ((v = get(key)) == null &&
+                (newValue = mappingFunction.apply(key)) != null &&
+                (v = putIfAbsent(key, newValue)) == null) ? newValue : v;
+    }
+
+
+    public synchronized V putIfAbsent(K key, V value) {
+        final Map<K, V> delegate = this.delegate;
+        V existing = delegate.get(key);
+        if(existing != null) {
+            return existing;
+        }
+        put(key, value);
+        return null;
+    }
+
+
+
+    @Override
+    public int size() {
+        return delegate.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return delegate.isEmpty();
+    }
+
+    @Override
+    public boolean containsKey(Object key) {
+        return delegate.containsKey(key);
+    }
+
+    @Override
+    public boolean containsValue(Object value) {
+        return delegate.containsValue(value);
+    }
+
+    @Override
+    public V get(Object key) {
+        return this.delegate.get(key);
     }
 
     @Override
@@ -71,7 +101,17 @@ public class CopyOnWriteMap<K, V> implements CacheMap<K, V> {
     }
 
     @Override
-    public Set<K> keySet(boolean ascending) {
-        return this.delegate.keySet();
+    public Set<K> keySet() {
+        return Collections.unmodifiableSet(delegate.keySet());
+    }
+
+    @Override
+    public Collection<V> values() {
+        return Collections.unmodifiableCollection(delegate.values());
+    }
+
+    @Override
+    public Set<Entry<K, V>> entrySet() {
+        return Collections.unmodifiableSet(delegate.entrySet());
     }
 }
