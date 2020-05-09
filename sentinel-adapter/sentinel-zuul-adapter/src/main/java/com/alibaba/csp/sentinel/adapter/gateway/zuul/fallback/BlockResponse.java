@@ -34,7 +34,9 @@ public class BlockResponse extends HashMap<String, Object> {
     private String message;
     private String route;
 
-    public BlockResponse() {}
+    public BlockResponse() {
+        super();
+    }
 
     public BlockResponse(int code, String message, String route) {
         this.code = code;
