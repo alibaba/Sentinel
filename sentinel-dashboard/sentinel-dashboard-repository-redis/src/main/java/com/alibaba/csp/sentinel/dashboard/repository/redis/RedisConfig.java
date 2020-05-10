@@ -77,10 +77,9 @@ public class RedisConfig {
 
         try {
             RedisClient redisClient = RedisClient.create(redisURIBuilder.build());
-            LOGGER.info("Redis client init success");
             return redisClient;
         } catch (Throwable e) {
-            LOGGER.info("Redis client init error");
+            LOGGER.info("CreateRedisClient error", e);
             throw e;
         }
     }
