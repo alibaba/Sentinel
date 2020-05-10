@@ -31,7 +31,7 @@ angular.module('sentinelDashboardApp')
             var id = JSON.parse($window.localStorage.getItem("session_sentinel_admin")).id;
             handleLogout($scope, id);
           } catch (e) {
-            // Historical version compatibility processing.
+            // Historical version compatibility processing, fixes issue-1449
             // If error happens while parsing, remove item in localStorage and redirect to login page.
             $window.localStorage.removeItem("session_sentinel_admin");
             $state.go('login');
