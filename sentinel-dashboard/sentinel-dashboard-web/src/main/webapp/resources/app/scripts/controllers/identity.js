@@ -11,7 +11,7 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
 
     $scope.switchOperateType = function() {
       $scope.operateType = $scope.operateType == 'app' ? 'machine' : 'app';
-      getMachineRules();
+      queryIdentities();
     };
 
     $scope.showSwitchToOperateTypeText = function() {
@@ -55,6 +55,15 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
       if (!$scope.macInputModel) {
         return;
       }
+
+      let ip = null;
+      let port = null;
+      if ($scope.operateType == 'machine') {
+        let mac = $scope.macInputModel.split(':');
+        ip = mac[0];
+        port = mac[1];
+      }
+
       var mac = $scope.macInputModel.split(':');
       flowRuleDialogScope = $scope.$new(true);
       flowRuleDialogScope.currentRule = {
@@ -70,8 +79,8 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
           fallbackToLocalWhenFail: true
         },
         app: $scope.app,
-        ip: mac[0],
-        port: mac[1]
+        ip: ip,
+        port: port
       };
 
       flowRuleDialogScope.flowRuleDialog = {
@@ -137,7 +146,15 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
       if (!$scope.macInputModel) {
         return;
       }
-      var mac = $scope.macInputModel.split(':');
+
+      let ip = null;
+      let port = null;
+      if ($scope.operateType == 'machine') {
+        let mac = $scope.macInputModel.split(':');
+        ip = mac[0];
+        port = mac[1];
+      }
+
       degradeRuleDialogScope = $scope.$new(true);
       degradeRuleDialogScope.currentRule = {
         enable: false,
@@ -146,8 +163,8 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
         resource: resource,
         limitApp: 'default',
         app: $scope.app,
-        ip: mac[0],
-        port: mac[1]
+        ip: ip,
+        port: port
       };
 
       degradeRuleDialogScope.degradeRuleDialog = {
@@ -244,12 +261,20 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
           if (!$scope.macInputModel) {
               return;
           }
-          let mac = $scope.macInputModel.split(':');
+
+          let ip = null;
+          let port = null;
+          if ($scope.operateType == 'machine') {
+            let mac = $scope.macInputModel.split(':');
+            ip = mac[0];
+            port = mac[1];
+          }
+
           authorityRuleDialogScope = $scope.$new(true);
           authorityRuleDialogScope.currentRule = {
               app: $scope.app,
-              ip: mac[0],
-              port: mac[1],
+              ip: ip,
+              port: port,
               rule: {
                   resource: resource,
                   strategy: 0,
@@ -323,12 +348,20 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
           if (!$scope.macInputModel) {
               return;
           }
-          let mac = $scope.macInputModel.split(':');
+
+          let ip = null;
+          let port = null;
+          if ($scope.operateType == 'machine') {
+            let mac = $scope.macInputModel.split(':');
+            ip = mac[0];
+            port = mac[1];
+          }
+
           paramFlowRuleDialogScope = $scope.$new(true);
           paramFlowRuleDialogScope.currentRule = {
               app: $scope.app,
-              ip: mac[0],
-              port: mac[1],
+              ip: ip,
+              port: port,
               rule: {
                   resource: resource,
                   grade: 1,
