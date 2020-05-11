@@ -16,25 +16,21 @@
 package com.alibaba.csp.sentinel;
 
 import java.lang.reflect.Method;
-import java.util.List;
 
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.Rule;
-import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.system.SystemRule;
-import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 
 /**
+ * <p>The fundamental Sentinel API for recording statistics and performing rule checking for resources.</p>
+ * <p>
  * Conceptually, physical or logical resource that need protection should be
  * surrounded by an entry. The requests to this resource will be blocked if any
  * criteria is met, eg. when any {@link Rule}'s threshold is exceeded. Once blocked,
  * a {@link BlockException} will be thrown.
- *
+ * </p>
  * <p>
- * To configure the criteria, we can use <code>XXXRuleManager.loadRules()</code> to add rules, eg.
- * {@link FlowRuleManager#loadRules(List)}, {@link DegradeRuleManager#loadRules(List)},
- * {@link SystemRuleManager#loadRules(List)}.
+ * To configure the criteria, we can use <code>XxxRuleManager.loadRules()</code> to load rules.
  * </p>
  *
  * <p>
@@ -79,10 +75,11 @@ public class SphU {
     private SphU() {}
 
     /**
-     * Checking all {@link Rule}s about the resource.
+     * Record statistics and perform rule checking for the given resource.
      *
      * @param name the unique name of the protected resource
-     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded.
+     * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
+     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
      */
     public static Entry entry(String name) throws BlockException {
         return Env.sph.entry(name, EntryType.OUT, 1, OBJECTS0);
@@ -92,7 +89,8 @@ public class SphU {
      * Checking all {@link Rule}s about the protected method.
      *
      * @param method the protected method
-     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded.
+     * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
+     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
      */
     public static Entry entry(Method method) throws BlockException {
         return Env.sph.entry(method, EntryType.OUT, 1, OBJECTS0);
@@ -101,114 +99,120 @@ public class SphU {
     /**
      * Checking all {@link Rule}s about the protected method.
      *
-     * @param method the protected method
-     * @param count  tokens required
-     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded.
+     * @param method     the protected method
+     * @param batchCount the amount of calls within the invocation (e.g. batchCount=2 means request for 2 tokens)
+     * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
+     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
      */
-    public static Entry entry(Method method, int count) throws BlockException {
-        return Env.sph.entry(method, EntryType.OUT, count, OBJECTS0);
+    public static Entry entry(Method method, int batchCount) throws BlockException {
+        return Env.sph.entry(method, EntryType.OUT, batchCount, OBJECTS0);
     }
 
     /**
-     * Checking all {@link Rule}s about the resource.
+     * Record statistics and perform rule checking for the given resource.
      *
-     * @param name  the unique string for the resource
-     * @param count tokens required
-     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded.
+     * @param name       the unique string for the resource
+     * @param batchCount the amount of calls within the invocation (e.g. batchCount=2 means request for 2 tokens)
+     * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
+     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
      */
-    public static Entry entry(String name, int count) throws BlockException {
-        return Env.sph.entry(name, EntryType.OUT, count, OBJECTS0);
+    public static Entry entry(String name, int batchCount) throws BlockException {
+        return Env.sph.entry(name, EntryType.OUT, batchCount, OBJECTS0);
     }
 
     /**
      * Checking all {@link Rule}s about the protected method.
      *
-     * @param method the protected method
-     * @param type   the resource is an inbound or an outbound method. This is used
-     *               to mark whether it can be blocked when the system is unstable,
-     *               only inbound traffic could be blocked by {@link SystemRule}
-     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded.
+     * @param method      the protected method
+     * @param trafficType the traffic type (inbound, outbound or internal). This is used
+     *                    to mark whether it can be blocked when the system is unstable,
+     *                    only inbound traffic could be blocked by {@link SystemRule}
+     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
      */
-    public static Entry entry(Method method, EntryType type) throws BlockException {
-        return Env.sph.entry(method, type, 1, OBJECTS0);
+    public static Entry entry(Method method, EntryType trafficType) throws BlockException {
+        return Env.sph.entry(method, trafficType, 1, OBJECTS0);
     }
 
     /**
-     * Checking all {@link Rule}s about the resource.
+     * Record statistics and perform rule checking for the given resource.
      *
-     * @param name the unique name for the protected resource
-     * @param type the resource is an inbound or an outbound method. This is used
-     *             to mark whether it can be blocked when the system is unstable,
-     *             only inbound traffic could be blocked by {@link SystemRule}
-     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded.
+     * @param name        the unique name for the protected resource
+     * @param trafficType the traffic type (inbound, outbound or internal). This is used
+     *                    to mark whether it can be blocked when the system is unstable,
+     *                    only inbound traffic could be blocked by {@link SystemRule}
+     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
      */
-    public static Entry entry(String name, EntryType type) throws BlockException {
-        return Env.sph.entry(name, type, 1, OBJECTS0);
+    public static Entry entry(String name, EntryType trafficType) throws BlockException {
+        return Env.sph.entry(name, trafficType, 1, OBJECTS0);
     }
 
     /**
      * Checking all {@link Rule}s about the protected method.
      *
-     * @param method the protected method
-     * @param type   the resource is an inbound or an outbound method. This is used
-     *               to mark whether it can be blocked when the system is unstable,
-     *               only inbound traffic could be blocked by {@link SystemRule}
-     * @param count  tokens required
-     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded.
+     * @param method      the protected method
+     * @param trafficType the traffic type (inbound, outbound or internal). This is used
+     *                    to mark whether it can be blocked when the system is unstable,
+     *                    only inbound traffic could be blocked by {@link SystemRule}
+     * @param batchCount  the amount of calls within the invocation (e.g. batchCount=2 means request for 2 tokens)
+     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
      */
-    public static Entry entry(Method method, EntryType type, int count) throws BlockException {
-        return Env.sph.entry(method, type, count, OBJECTS0);
+    public static Entry entry(Method method, EntryType trafficType, int batchCount) throws BlockException {
+        return Env.sph.entry(method, trafficType, batchCount, OBJECTS0);
     }
 
     /**
-     * Checking all {@link Rule}s about the resource.
+     * Record statistics and perform rule checking for the given resource.
      *
-     * @param name  the unique name for the protected resource
-     * @param type  the resource is an inbound or an outbound method. This is used
-     *              to mark whether it can be blocked when the system is unstable,
-     *              only inbound traffic could be blocked by {@link SystemRule}
-     * @param count tokens required
-     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded.
+     * @param name        the unique name for the protected resource
+     * @param trafficType the traffic type (inbound, outbound or internal). This is used
+     *                    to mark whether it can be blocked when the system is unstable,
+     *                    only inbound traffic could be blocked by {@link SystemRule}
+     * @param batchCount  the amount of calls within the invocation (e.g. batchCount=2 means request for 2 tokens)
+     * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
+     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
      */
-    public static Entry entry(String name, EntryType type, int count) throws BlockException {
-        return Env.sph.entry(name, type, count, OBJECTS0);
+    public static Entry entry(String name, EntryType trafficType, int batchCount) throws BlockException {
+        return Env.sph.entry(name, trafficType, batchCount, OBJECTS0);
     }
 
     /**
      * Checking all {@link Rule}s about the protected method.
      *
-     * @param method the protected method
-     * @param type   the resource is an inbound or an outbound method. This is used
-     *               to mark whether it can be blocked when the system is unstable,
-     *               only inbound traffic could be blocked by {@link SystemRule}
-     * @param count  tokens required
-     * @param args   the parameters of the method.
-     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded.
+     * @param method      the protected method
+     * @param trafficType the traffic type (inbound, outbound or internal). This is used
+     *                    to mark whether it can be blocked when the system is unstable,
+     *                    only inbound traffic could be blocked by {@link SystemRule}
+     * @param batchCount  the amount of calls within the invocation (e.g. batchCount=2 means request for 2 tokens)
+     * @param args        args for parameter flow control or customized slots
+     * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
+     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
      */
-    public static Entry entry(Method method, EntryType type, int count, Object... args) throws BlockException {
-        return Env.sph.entry(method, type, count, args);
+    public static Entry entry(Method method, EntryType trafficType, int batchCount, Object... args)
+        throws BlockException {
+        return Env.sph.entry(method, trafficType, batchCount, args);
     }
 
     /**
-     * Checking all {@link Rule}s about the resource.
+     * Record statistics and perform rule checking for the given resource.
      *
-     * @param name  the unique name for the protected resource
-     * @param type  the resource is an inbound or an outbound method. This is used
-     *              to mark whether it can be blocked when the system is unstable,
-     *              only inbound traffic could be blocked by {@link SystemRule}
-     * @param count tokens required
-     * @param args  extra parameters.
-     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded.
+     * @param name        the unique name for the protected resource
+     * @param trafficType the traffic type (inbound, outbound or internal). This is used
+     *                    to mark whether it can be blocked when the system is unstable,
+     *                    only inbound traffic could be blocked by {@link SystemRule}
+     * @param batchCount  the amount of calls within the invocation (e.g. batchCount=2 means request for 2 tokens)
+     * @param args        args for parameter flow control
+     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
      */
-    public static Entry entry(String name, EntryType type, int count, Object... args) throws BlockException {
-        return Env.sph.entry(name, type, count, args);
+    public static Entry entry(String name, EntryType trafficType, int batchCount, Object... args)
+        throws BlockException {
+        return Env.sph.entry(name, trafficType, batchCount, args);
     }
 
     /**
-     * Checking all rules about the asynchronous resource.
+     * Record statistics and check all rules of the resource that indicates an async invocation.
      *
      * @param name the unique name of the protected resource
-     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded
+     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
      * @since 0.2.0
      */
     public static AsyncEntry asyncEntry(String name) throws BlockException {
@@ -216,40 +220,43 @@ public class SphU {
     }
 
     /**
-     * Checking all {@link Rule}s about the asynchronous resource.
+     * Record statistics and check all rules of the resource that indicates an async invocation.
      *
-     * @param name the unique name for the protected resource
-     * @param type the resource is an inbound or an outbound method. This is used
-     *             to mark whether it can be blocked when the system is unstable,
-     *             only inbound traffic could be blocked by {@link SystemRule}
-     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded
+     * @param name        the unique name for the protected resource
+     * @param trafficType the traffic type (inbound, outbound or internal). This is used
+     *                    to mark whether it can be blocked when the system is unstable,
+     *                    only inbound traffic could be blocked by {@link SystemRule}
+     * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
+     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
      * @since 0.2.0
      */
-    public static AsyncEntry asyncEntry(String name, EntryType type) throws BlockException {
-        return Env.sph.asyncEntry(name, type, 1, OBJECTS0);
+    public static AsyncEntry asyncEntry(String name, EntryType trafficType) throws BlockException {
+        return Env.sph.asyncEntry(name, trafficType, 1, OBJECTS0);
     }
 
     /**
-     * Checking all {@link Rule}s about the asynchronous resource.
+     * Record statistics and check all rules of the resource that indicates an async invocation.
      *
-     * @param name  the unique name for the protected resource
-     * @param type  the resource is an inbound or an outbound method. This is used
-     *              to mark whether it can be blocked when the system is unstable,
-     *              only inbound traffic could be blocked by {@link SystemRule}
-     * @param count tokens required
-     * @param args  extra parameters
-     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded
+     * @param name        the unique name for the protected resource
+     * @param trafficType the traffic type (inbound, outbound or internal). This is used
+     *                    to mark whether it can be blocked when the system is unstable,
+     *                    only inbound traffic could be blocked by {@link SystemRule}
+     * @param batchCount  the amount of calls within the invocation (e.g. batchCount=2 means request for 2 tokens)
+     * @param args        args for parameter flow control
+     * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
+     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
      * @since 0.2.0
      */
-    public static AsyncEntry asyncEntry(String name, EntryType type, int count, Object... args) throws BlockException {
-        return Env.sph.asyncEntry(name, type, count, args);
+    public static AsyncEntry asyncEntry(String name, EntryType trafficType, int batchCount, Object... args)
+        throws BlockException {
+        return Env.sph.asyncEntry(name, trafficType, batchCount, args);
     }
 
     /**
-     * Checking all {@link Rule}s related the resource. The entry is prioritized.
+     * Record statistics and perform rule checking for the given resource. The entry is prioritized.
      *
      * @param name the unique name for the protected resource
-     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded.
+     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
      * @since 1.4.0
      */
     public static Entry entryWithPriority(String name) throws BlockException {
@@ -257,99 +264,105 @@ public class SphU {
     }
 
     /**
-     * Checking all {@link Rule}s related the resource. The entry is prioritized.
+     * Record statistics and perform rule checking for the given resource. The entry is prioritized.
      *
-     * @param name the unique name for the protected resource
-     * @param type the resource is an inbound or an outbound method. This is used
-     *             to mark whether it can be blocked when the system is unstable,
-     *             only inbound traffic could be blocked by {@link SystemRule}
-     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded.
+     * @param name        the unique name for the protected resource
+     * @param trafficType the traffic type (inbound, outbound or internal). This is used
+     *                    to mark whether it can be blocked when the system is unstable,
+     *                    only inbound traffic could be blocked by {@link SystemRule}
+     * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
+     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
      * @since 1.4.0
      */
-    public static Entry entryWithPriority(String name, EntryType type) throws BlockException {
-        return Env.sph.entryWithPriority(name, type, 1, true);
+    public static Entry entryWithPriority(String name, EntryType trafficType) throws BlockException {
+        return Env.sph.entryWithPriority(name, trafficType, 1, true);
     }
 
     /**
-     * Record statistics and check all rules of the resource.
+     * Record statistics and perform rule checking for the given resource.
      *
      * @param name         the unique name for the protected resource
      * @param resourceType classification of the resource (e.g. Web or RPC)
-     * @param type         the resource is an inbound or an outbound method. This is used
+     * @param trafficType  the traffic type (inbound, outbound or internal). This is used
      *                     to mark whether it can be blocked when the system is unstable,
      *                     only inbound traffic could be blocked by {@link SystemRule}
-     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded
+     * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
+     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
      * @since 1.7.0
      */
-    public static Entry entry(String name, int resourceType, EntryType type) throws BlockException {
-        return Env.sph.entryWithType(name, resourceType, type, 1, OBJECTS0);
+    public static Entry entry(String name, int resourceType, EntryType trafficType) throws BlockException {
+        return Env.sph.entryWithType(name, resourceType, trafficType, 1, OBJECTS0);
     }
 
     /**
-     * Record statistics and check all rules of the resource.
+     * Record statistics and perform rule checking for the given resource.
      *
      * @param name         the unique name for the protected resource
-     * @param type         the resource is an inbound or an outbound method. This is used
+     * @param trafficType  the traffic type (inbound, outbound or internal). This is used
      *                     to mark whether it can be blocked when the system is unstable,
      *                     only inbound traffic could be blocked by {@link SystemRule}
      * @param resourceType classification of the resource (e.g. Web or RPC)
-     * @param args         extra parameters.
-     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded
+     * @param args         args for parameter flow control or customized slots
+     * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
+     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
      * @since 1.7.0
      */
-    public static Entry entry(String name, int resourceType, EntryType type, Object[] args)
+    public static Entry entry(String name, int resourceType, EntryType trafficType, Object[] args)
         throws BlockException {
-        return Env.sph.entryWithType(name, resourceType, type, 1, args);
+        return Env.sph.entryWithType(name, resourceType, trafficType, 1, args);
     }
 
     /**
-     * Record statistics and check all rules of the resource.
+     * Record statistics and perform rule checking for the given resource that indicates an async invocation.
      *
      * @param name         the unique name for the protected resource
-     * @param type         the resource is an inbound or an outbound method. This is used
+     * @param trafficType  the traffic type (inbound, outbound or internal). This is used
      *                     to mark whether it can be blocked when the system is unstable,
      *                     only inbound traffic could be blocked by {@link SystemRule}
      * @param resourceType classification of the resource (e.g. Web or RPC)
-     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded
+     * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
+     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
      * @since 1.7.0
      */
-    public static AsyncEntry asyncEntry(String name, int resourceType, EntryType type)
+    public static AsyncEntry asyncEntry(String name, int resourceType, EntryType trafficType)
         throws BlockException {
-        return Env.sph.asyncEntryWithType(name, resourceType, type, 1, false, OBJECTS0);
+        return Env.sph.asyncEntryWithType(name, resourceType, trafficType, 1, false, OBJECTS0);
     }
 
     /**
-     * Record statistics and check all rules of the resource.
+     * Record statistics and perform rule checking for the given resource that indicates an async invocation.
      *
      * @param name         the unique name for the protected resource
-     * @param type         the resource is an inbound or an outbound method. This is used
+     * @param trafficType  the traffic type (inbound, outbound or internal). This is used
      *                     to mark whether it can be blocked when the system is unstable,
      *                     only inbound traffic could be blocked by {@link SystemRule}
      * @param resourceType classification of the resource (e.g. Web or RPC)
-     * @param args         extra parameters
-     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded
+     * @param args         args for parameter flow control or customized slots
+     * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
+     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
      * @since 1.7.0
      */
-    public static AsyncEntry asyncEntry(String name, int resourceType, EntryType type, Object[] args)
+    public static AsyncEntry asyncEntry(String name, int resourceType, EntryType trafficType, Object[] args)
         throws BlockException {
-        return Env.sph.asyncEntryWithType(name, resourceType, type, 1, false, args);
+        return Env.sph.asyncEntryWithType(name, resourceType, trafficType, 1, false, args);
     }
 
     /**
-     * Record statistics and check all rules of the resource.
+     * Record statistics and perform rule checking for the given resource that indicates an async invocation.
      *
      * @param name         the unique name for the protected resource
-     * @param type         the resource is an inbound or an outbound method. This is used
+     * @param trafficType  the traffic type (inbound, outbound or internal). This is used
      *                     to mark whether it can be blocked when the system is unstable,
      *                     only inbound traffic could be blocked by {@link SystemRule}
      * @param resourceType classification of the resource (e.g. Web or RPC)
-     * @param acquireCount tokens required
-     * @param args         extra parameters
-     * @throws BlockException if the block criteria is met, eg. when any rule's threshold is exceeded
+     * @param batchCount   the amount of calls within the invocation (e.g. batchCount=2 means request for 2 tokens)
+     * @param args         args for parameter flow control or customized slots
+     * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
+     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
      * @since 1.7.0
      */
-    public static AsyncEntry asyncEntry(String name, int resourceType, EntryType type, int acquireCount,
+    public static AsyncEntry asyncEntry(String name, int resourceType, EntryType trafficType, int batchCount,
                                         Object[] args) throws BlockException {
-        return Env.sph.asyncEntryWithType(name, resourceType, type, acquireCount, false, args);
+        return Env.sph.asyncEntryWithType(name, resourceType, trafficType, batchCount, false, args);
     }
 }

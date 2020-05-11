@@ -18,8 +18,8 @@ package com.alibaba.csp.sentinel;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.context.ContextUtil;
+import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.Rule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
@@ -63,6 +63,7 @@ import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
  *
  * @author jialiang.linjl
  * @author leyou
+ * @author Eric Zhao
  * @see SphU
  */
 public class SphO {
@@ -70,7 +71,7 @@ public class SphO {
     private static final Object[] OBJECTS0 = new Object[0];
 
     /**
-     * Checking all {@link Rule}s about the resource.
+     * Record statistics and perform rule checking for the given resource.
      *
      * @param name the unique name of the protected resource
      * @return true if no rule's threshold is exceeded, otherwise return false.
@@ -92,23 +93,23 @@ public class SphO {
     /**
      * Checking all {@link Rule}s about the protected method.
      *
-     * @param method the protected method
-     * @param count  tokens required
+     * @param method     the protected method
+     * @param batchCount the amount of calls within the invocation (e.g. batchCount=2 means request for 2 tokens)
      * @return true if no rule's threshold is exceeded, otherwise return false.
      */
-    public static boolean entry(Method method, int count) {
-        return entry(method, EntryType.OUT, count, OBJECTS0);
+    public static boolean entry(Method method, int batchCount) {
+        return entry(method, EntryType.OUT, batchCount, OBJECTS0);
     }
 
     /**
-     * Checking all {@link Rule}s about the resource.
+     * Record statistics and perform rule checking for the given resource.
      *
-     * @param name  the unique string for the resource
-     * @param count tokens required
+     * @param name       the unique string for the resource
+     * @param batchCount the amount of calls within the invocation (e.g. batchCount=2 means request for 2 tokens)
      * @return true if no rule's threshold is exceeded, otherwise return false.
      */
-    public static boolean entry(String name, int count) {
-        return entry(name, EntryType.OUT, count, OBJECTS0);
+    public static boolean entry(String name, int batchCount) {
+        return entry(name, EntryType.OUT, batchCount, OBJECTS0);
     }
 
     /**
@@ -125,7 +126,7 @@ public class SphO {
     }
 
     /**
-     * Checking all {@link Rule}s about the resource.
+     * Record statistics and perform rule checking for the given resource.
      *
      * @param name the unique name for the protected resource
      * @param type the resource is an inbound or an outbound method. This is used
@@ -144,7 +145,7 @@ public class SphO {
      * @param type   the resource is an inbound or an outbound method. This is used
      *               to mark whether it can be blocked when the system is unstable,
      *               only inbound traffic could be blocked by {@link SystemRule}
-     * @param count  tokens required
+     * @param count  the amount of calls within the invocation (e.g. batchCount=2 means request for 2 tokens)
      * @return true if no rule's threshold is exceeded, otherwise return false.
      */
     public static boolean entry(Method method, EntryType type, int count) {
@@ -152,13 +153,13 @@ public class SphO {
     }
 
     /**
-     * Checking all {@link Rule}s about the resource.
+     * Record statistics and perform rule checking for the given resource.
      *
      * @param name  the unique name for the protected resource
      * @param type  the resource is an inbound or an outbound method. This is used
      *              to mark whether it can be blocked when the system is unstable,
      *              only inbound traffic could be blocked by {@link SystemRule}
-     * @param count tokens required
+     * @param count the amount of calls within the invocation (e.g. batchCount=2 means request for 2 tokens)
      * @return true if no rule's threshold is exceeded, otherwise return false.
      */
     public static boolean entry(String name, EntryType type, int count) {
@@ -166,46 +167,46 @@ public class SphO {
     }
 
     /**
-     * Checking all {@link Rule}s about the resource.
+     * Record statistics and perform rule checking for the given resource.
      *
-     * @param name  the unique name for the protected resource
-     * @param type  the resource is an inbound or an outbound method. This is used
-     *              to mark whether it can be blocked when the system is unstable,
-     *              only inbound traffic could be blocked by {@link SystemRule}
-     * @param count tokens required
-     * @param args  extra parameters.
+     * @param name        the unique name for the protected resource
+     * @param trafficType the traffic type (inbound, outbound or internal). This is used
+     *                    to mark whether it can be blocked when the system is unstable,
+     *                    only inbound traffic could be blocked by {@link SystemRule}
+     * @param batchCount  the amount of calls within the invocation (e.g. batchCount=2 means request for 2 tokens)
+     * @param args        args for parameter flow control or customized slots
      * @return true if no rule's threshold is exceeded, otherwise return false.
      */
-    public static boolean entry(String name, EntryType type, int count, Object... args) {
+    public static boolean entry(String name, EntryType trafficType, int batchCount, Object... args) {
         try {
-            Env.sph.entry(name, type, count, args);
+            Env.sph.entry(name, trafficType, batchCount, args);
         } catch (BlockException e) {
             return false;
         } catch (Throwable e) {
-            RecordLog.info("[Sentinel] Fatal error", e);
+            RecordLog.warn("SphO fatal error", e);
             return true;
         }
         return true;
     }
 
     /**
-     * Checking all {@link Rule}s about the protected method.
+     * Record statistics and perform rule checking for the given method resource.
      *
-     * @param method the protected method
-     * @param type   the resource is an inbound or an outbound method. This is used
-     *               to mark whether it can be blocked when the system is unstable,
-     *               only inbound traffic could be blocked by {@link SystemRule}
-     * @param count  tokens required
-     * @param args   the parameters of the method.
+     * @param method      the protected method
+     * @param trafficType the traffic type (inbound, outbound or internal). This is used
+     *                    to mark whether it can be blocked when the system is unstable,
+     *                    only inbound traffic could be blocked by {@link SystemRule}
+     * @param batchCount  the amount of calls within the invocation (e.g. batchCount=2 means request for 2 tokens)
+     * @param args        args for parameter flow control or customized slots
      * @return true if no rule's threshold is exceeded, otherwise return false.
      */
-    public static boolean entry(Method method, EntryType type, int count, Object... args) {
+    public static boolean entry(Method method, EntryType trafficType, int batchCount, Object... args) {
         try {
-            Env.sph.entry(method, type, count, args);
+            Env.sph.entry(method, trafficType, batchCount, args);
         } catch (BlockException e) {
             return false;
         } catch (Throwable e) {
-            RecordLog.info("[Sentinel] Fatal error", e);
+            RecordLog.warn("SphO fatal error", e);
             return true;
         }
         return true;
