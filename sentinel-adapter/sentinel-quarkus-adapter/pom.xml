@@ -27,6 +27,8 @@
         <module>sentinel-annotation-quarkus-adapter-runtime</module>
         <module>sentinel-jax-rs-quarkus-adapter-deployment</module>
         <module>sentinel-jax-rs-quarkus-adapter-runtime</module>
+        <module>sentinel-native-image-quarkus-adapter-deployment</module>
+        <module>sentinel-native-image-quarkus-adapter-runtime</module>
     </modules>
     <dependencyManagement>
         <dependencies>

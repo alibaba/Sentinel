@@ -10,8 +10,8 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>sentinel-annotation-quarkus-adapter-deployment</artifactId>
-    <name>sentinel-annotation-quarkus-adapter-deployment</name>
+    <artifactId>sentinel-native-image-quarkus-adapter-deployment</artifactId>
+    <name>sentinel-native-image-quarkus-adapter-deployment</name>
 
     <properties>
         <java.source.version>1.8</java.source.version>
@@ -28,25 +28,13 @@
             <artifactId>quarkus-arc-deployment</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.graalvm.nativeimage</groupId>
+            <artifactId>svm</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.alibaba.csp</groupId>
-            <artifactId>sentinel-annotation-quarkus-adapter</artifactId>
+            <artifactId>sentinel-native-image-quarkus-adapter</artifactId>
             <version>${project.version}</version>
-        </dependency>
-
-        <!-- Test dependencies -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-junit5-internal</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-arc-deployment</artifactId>
         </dependency>
 
     </dependencies>

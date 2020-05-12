@@ -20,6 +20,8 @@ import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
+import com.alibaba.csp.sentinel.slots.system.SystemRule;
+import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 import io.quarkus.runtime.StartupEvent;
 import org.jboss.logging.Logger;
 
@@ -40,17 +42,23 @@ public class AppLifecycleBean {
         FlowRule rule = new FlowRule()
                 .setCount(1)
                 .setGrade(RuleConstant.FLOW_GRADE_QPS)
-                .setResource("GET:/hello")
+                .setResource("GET:/hello/txt")
                 .setLimitApp("default")
                 .as(FlowRule.class);
         FlowRuleManager.loadRules(Arrays.asList(rule));
+
+        SystemRule systemRule = new SystemRule();
+        systemRule.setLimitApp("default");
+        systemRule.setAvgRt(3000);
+        SystemRuleManager.loadRules(Arrays.asList(systemRule));
 
         DegradeRule degradeRule1 = new DegradeRule("greeting1")
                 .setCount(1)
                 .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT)
                 .setTimeWindow(10)
                 .setMinRequestAmount(1);
-        DegradeRule degradeRule2 = new DegradeRule("greeting1")
+
+        DegradeRule degradeRule2 = new DegradeRule("greeting2")
                 .setCount(1)
                 .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT)
                 .setTimeWindow(10)

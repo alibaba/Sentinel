@@ -45,12 +45,29 @@
         </dependency>
 
         <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jackson</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-core</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-logging-slf4j</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-transport-simple-http</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-parameter-flow-control</artifactId>
         </dependency>
 
         <dependency>
@@ -62,6 +79,12 @@
         <dependency>
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-annotation-quarkus-adapter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-native-image-quarkus-adapter</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -153,6 +176,8 @@
             </build>
             <properties>
                 <quarkus.package.type>native</quarkus.package.type>
+                <quarkus.native.auto-service-loader-registration>true</quarkus.native.auto-service-loader-registration>
+                <quarkus.native.additional-build-args>-J-Dcsp.sentinel.log.dir=/tmp,-J-Dcsp.sentinel.api.port=8722,-J-Dcsp.sentinel.heartbeat.client.ip=127.0.0.1,-J-Dcsp.sentinel.dashboard.server=127.0.0.1:8080,-J-Dproject.name=sentinel-demo-quarkus,-H:+TraceClassInitialization,--report-unsupported-elements-at-runtime,--allow-incomplete-classpath</quarkus.native.additional-build-args>
             </properties>
         </profile>
     </profiles>

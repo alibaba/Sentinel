@@ -15,7 +15,10 @@
  */
 package com.alibaba.csp.sentinel.demo.quarkus;
 
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
+import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
@@ -24,13 +27,79 @@ import static org.hamcrest.CoreMatchers.is;
 @QuarkusTest
 public class GreetingResourceTest {
 
+    @AfterEach
+    public void cleanUp() {
+        ClusterBuilderSlot.resetClusterNodes();
+    }
+
     @Test
-    public void testHelloEndpoint() {
+    public void testSentinelJaxRsQuarkusAdapter() {
         given()
-          .when().get("/hello")
+          .when().get("/hello/txt")
           .then()
              .statusCode(200)
              .body(is("hello"));
+        given()
+                .when().get("/hello/txt")
+                .then()
+                .statusCode(javax.ws.rs.core.Response.Status.TOO_MANY_REQUESTS.getStatusCode())
+                .body(is("Blocked by Sentinel (flow limiting)"));
+    }
+
+    @Test
+    public void testSentinelAnnotationQuarkusAdapter() {
+        given()
+                .when().get("/hello/fallback/a")
+                .then()
+                .statusCode(200)
+                .body(is("hello a"));
+        given()
+                .when().get("/hello/fallback/b")
+                .then()
+                .statusCode(200)
+                .body(is("hello b"));
+        given()
+                .when().get("/hello/fallback/degrade")
+                .then()
+                .statusCode(200)
+                .body(is("globalDefaultFallback, ex:test sentinel fallback"));
+        given()
+                .when().get("/hello/fallback/degrade")
+                .then()
+                .statusCode(200)
+                .body(is("globalBlockHandler, ex:null"));
+        given()
+                .when().get("/hello/fallback/a")
+                .then()
+                .statusCode(200)
+                .body(is("globalBlockHandler, ex:null"));
+
+        given()
+                .when().get("/hello/fallback2/a")
+                .then()
+                .statusCode(200)
+                .body(is("hello a"));
+        given()
+                .when().get("/hello/fallback2/b")
+                .then()
+                .statusCode(200)
+                .body(is("hello b"));
+        given()
+                .when().get("/hello/fallback2/degrade")
+                .then()
+                .statusCode(200)
+                .body(is("greetingFallback:degrade"));
+        given()
+                .when().get("/hello/fallback2/degrade")
+                .then()
+                .statusCode(200)
+                .body(is("greetingFallback:degrade"));
+        given()
+                .when().get("/hello/fallback2/a")
+                .then()
+                .statusCode(200)
+                .body(is("greetingFallback:a"));
+
     }
 
 }

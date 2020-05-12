@@ -34,6 +34,7 @@ public class GreetingResource {
             new LinkedBlockingQueue<Runnable>());
 
     @GET
+    @Path("/txt")
     @Produces(MediaType.TEXT_PLAIN)
     public String hello() throws InterruptedException {
         TimeUnit.MILLISECONDS.sleep(500);
