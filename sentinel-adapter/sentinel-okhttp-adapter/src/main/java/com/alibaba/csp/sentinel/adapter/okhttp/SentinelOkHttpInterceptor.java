@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.*;
 import com.alibaba.csp.sentinel.adapter.okhttp.config.SentinelOkHttpConfig;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import okhttp3.Interceptor;
+import okhttp3.Request;
 import okhttp3.Response;
 
 import java.io.IOException;
@@ -32,9 +33,11 @@ public class SentinelOkHttpInterceptor implements Interceptor {
     public Response intercept(Chain chain) throws IOException {
         Entry entry = null;
         try {
-            String name = SentinelOkHttpConfig.getExtractor().extract(chain.request(), chain.connection());
+            Request request = chain.request();
+            String url = request.method() + ":" + request.url().toString();
+            String name = SentinelOkHttpConfig.getExtractor().extract(url, request, chain.connection());
             entry = SphU.entry(name, ResourceTypeConstants.COMMON_WEB, EntryType.OUT);
-            return chain.proceed(chain.request());
+            return chain.proceed(request);
         } catch (BlockException e) {
             return SentinelOkHttpConfig.getFallback().handle(chain.request(), chain.connection(), e);
         } catch (Throwable t) {

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.adapter.okhttp.cleaner;
+package com.alibaba.csp.sentinel.adapter.okhttp.extractor;
 
 import com.alibaba.csp.sentinel.adapter.okhttp.config.SentinelOkHttpConfig;
 import okhttp3.Connection;
@@ -29,35 +29,33 @@ public class OkHttpResourceExtractorTest {
 
     @Test
     public void testDefaultOkHttpResourceExtractor() {
-        SentinelOkHttpConfig.setPrefix("okhttp:");
         OkHttpResourceExtractor extractor = new DefaultOkHttpResourceExtractor();
         String url = "http://localhost:8083/okhttp/back";
         Request request = new Request.Builder()
                 .url(url)
                 .build();
-        extractor.extract(request, null);
-        System.out.println(extractor.extract(request, null));
-        assertEquals("okhttp:GET:" + url, extractor.extract(request, null));
+        extractor.extract(url, request, null);
+        System.out.println(extractor.extract(url, request, null));
+        assertEquals(url, extractor.extract(url, request, null));
     }
 
     @Test
     public void testCustomizeOkHttpUrlCleaner() {
         OkHttpResourceExtractor extractor = new OkHttpResourceExtractor() {
             @Override
-            public String extract(Request request, Connection connection) {
-                String url = request.url().toString();
+            public String extract(String url, Request request, Connection connection) {
                 String regex = "/okhttp/back/";
                 if (url.contains(regex)) {
                     url = url.substring(0, url.indexOf(regex) + regex.length()) + "{id}";
                 }
-                return url;
+                return SentinelOkHttpConfig.getPrefix() + url;
             }
         };
         String url = "http://localhost:8083/okhttp/back/abc";
         Request request = new Request.Builder()
                 .url(url)
                 .build();
-        extractor.extract(request, null);
-        assertEquals("http://localhost:8083/okhttp/back/{id}", extractor.extract(request, null));
+        extractor.extract(url, request, null);
+        assertEquals(SentinelOkHttpConfig.getPrefix() + "http://localhost:8083/okhttp/back/{id}", extractor.extract(url, request, null));
     }
 }

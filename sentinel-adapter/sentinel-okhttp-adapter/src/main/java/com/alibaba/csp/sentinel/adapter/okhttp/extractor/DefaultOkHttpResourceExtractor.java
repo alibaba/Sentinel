@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.adapter.okhttp.cleaner;
+package com.alibaba.csp.sentinel.adapter.okhttp.extractor;
 
 import okhttp3.Connection;
 import okhttp3.Request;
@@ -21,7 +21,10 @@ import okhttp3.Request;
 /**
  * @author zhaoyuguang
  */
-public interface OkHttpResourceExtractor {
+public class DefaultOkHttpResourceExtractor implements OkHttpResourceExtractor {
 
-    String extract(Request request, Connection connection);
+    @Override
+    public String extract(String url, Request request, Connection connection) {
+        return url;
+    }
 }

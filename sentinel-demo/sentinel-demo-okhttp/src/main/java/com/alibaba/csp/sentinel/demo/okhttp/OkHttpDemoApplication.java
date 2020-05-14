@@ -15,8 +15,8 @@
  */
 package com.alibaba.csp.sentinel.demo.okhttp;
 
-import com.alibaba.csp.sentinel.adapter.okhttp.cleaner.OkHttpResourceExtractor;
 import com.alibaba.csp.sentinel.adapter.okhttp.config.SentinelOkHttpConfig;
+import com.alibaba.csp.sentinel.adapter.okhttp.extractor.OkHttpResourceExtractor;
 import okhttp3.Connection;
 import okhttp3.Request;
 import org.springframework.boot.CommandLineRunner;
@@ -37,13 +37,12 @@ public class OkHttpDemoApplication implements CommandLineRunner {
     public void run(String... args) {
         SentinelOkHttpConfig.setExtractor(new OkHttpResourceExtractor() {
             @Override
-            public String extract(Request request, Connection connection) {
-                String url = request.url().toString();
+            public String extract(String url, Request request, Connection connection) {
                 String regex = "/okhttp/back/";
                 if (url.contains(regex)) {
                     url = url.substring(0, url.indexOf(regex) + regex.length()) + "{id}";
                 }
-                return url;
+                return SentinelOkHttpConfig.getPrefix() + url;
             }
         });
     }

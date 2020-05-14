@@ -15,8 +15,8 @@
  */
 package com.alibaba.csp.sentinel.adapter.okhttp.config;
 
-import com.alibaba.csp.sentinel.adapter.okhttp.cleaner.DefaultOkHttpResourceExtractor;
-import com.alibaba.csp.sentinel.adapter.okhttp.cleaner.OkHttpResourceExtractor;
+import com.alibaba.csp.sentinel.adapter.okhttp.extractor.DefaultOkHttpResourceExtractor;
+import com.alibaba.csp.sentinel.adapter.okhttp.extractor.OkHttpResourceExtractor;
 import com.alibaba.csp.sentinel.adapter.okhttp.fallback.DefaultOkHttpFallback;
 import com.alibaba.csp.sentinel.adapter.okhttp.fallback.OkHttpFallback;
 import com.alibaba.csp.sentinel.util.AssertUtil;
@@ -26,7 +26,7 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
  */
 public final class SentinelOkHttpConfig {
 
-    private static volatile String prefix = "";
+    private static volatile String prefix = "okhttp:";
     private static volatile OkHttpResourceExtractor extractor = new DefaultOkHttpResourceExtractor();
     private static volatile OkHttpFallback fallback = new DefaultOkHttpFallback();
 

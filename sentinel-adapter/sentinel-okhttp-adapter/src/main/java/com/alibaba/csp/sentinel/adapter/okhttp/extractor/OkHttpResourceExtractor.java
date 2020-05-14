@@ -13,25 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.adapter.okhttp.cleaner;
+package com.alibaba.csp.sentinel.adapter.okhttp.extractor;
 
-import com.alibaba.csp.sentinel.adapter.okhttp.config.SentinelOkHttpConfig;
-import com.alibaba.csp.sentinel.util.StringUtil;
 import okhttp3.Connection;
 import okhttp3.Request;
 
 /**
  * @author zhaoyuguang
  */
-public class DefaultOkHttpResourceExtractor implements OkHttpResourceExtractor {
+public interface OkHttpResourceExtractor {
 
-    @Override
-    public String extract(Request request, Connection connection) {
-        StringBuilder buf = new StringBuilder(64);
-        if (!StringUtil.isEmpty(SentinelOkHttpConfig.getPrefix())) {
-            buf.append(SentinelOkHttpConfig.getPrefix());
-        }
-        buf.append(request.method()).append(":").append(request.url().toString());
-        return buf.toString();
-    }
+    String extract(String url, Request request, Connection connection);
 }
