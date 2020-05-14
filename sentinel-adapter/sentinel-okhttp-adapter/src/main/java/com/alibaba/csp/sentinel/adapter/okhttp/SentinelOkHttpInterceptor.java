@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.adapter.okhttp;
 import com.alibaba.csp.sentinel.*;
 import com.alibaba.csp.sentinel.adapter.okhttp.config.SentinelOkHttpConfig;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.util.StringUtil;
 import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -34,8 +35,10 @@ public class SentinelOkHttpInterceptor implements Interceptor {
         Entry entry = null;
         try {
             Request request = chain.request();
-            String url = request.method() + ":" + request.url().toString();
-            String name = SentinelOkHttpConfig.getExtractor().extract(url, request, chain.connection());
+            String name = SentinelOkHttpConfig.getExtractor().extract(request.url().toString(), request, chain.connection());
+            if (!StringUtil.isEmpty(SentinelOkHttpConfig.getPrefix())) {
+                name = SentinelOkHttpConfig.getPrefix() + name;
+            }
             entry = SphU.entry(name, ResourceTypeConstants.COMMON_WEB, EntryType.OUT);
             return chain.proceed(request);
         } catch (BlockException e) {

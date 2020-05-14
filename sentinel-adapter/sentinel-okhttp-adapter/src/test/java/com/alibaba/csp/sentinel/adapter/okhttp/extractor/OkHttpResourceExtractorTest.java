@@ -36,7 +36,7 @@ public class OkHttpResourceExtractorTest {
                 .build();
         extractor.extract(url, request, null);
         System.out.println(extractor.extract(url, request, null));
-        assertEquals(url, extractor.extract(url, request, null));
+        assertEquals("GET:"+url, extractor.extract(url, request, null));
     }
 
     @Test
@@ -48,7 +48,7 @@ public class OkHttpResourceExtractorTest {
                 if (url.contains(regex)) {
                     url = url.substring(0, url.indexOf(regex) + regex.length()) + "{id}";
                 }
-                return SentinelOkHttpConfig.getPrefix() + url;
+                return request.method() + ":" + url;
             }
         };
         String url = "http://localhost:8083/okhttp/back/abc";
@@ -56,6 +56,6 @@ public class OkHttpResourceExtractorTest {
                 .url(url)
                 .build();
         extractor.extract(url, request, null);
-        assertEquals(SentinelOkHttpConfig.getPrefix() + "http://localhost:8083/okhttp/back/{id}", extractor.extract(url, request, null));
+        assertEquals("GET:http://localhost:8083/okhttp/back/{id}", extractor.extract(url, request, null));
     }
 }

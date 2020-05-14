@@ -42,7 +42,7 @@ public class OkHttpDemoApplication implements CommandLineRunner {
                 if (url.contains(regex)) {
                     url = url.substring(0, url.indexOf(regex) + regex.length()) + "{id}";
                 }
-                return SentinelOkHttpConfig.getPrefix() + url;
+                return request.method() + ":" + url;
             }
         });
     }

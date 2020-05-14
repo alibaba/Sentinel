@@ -17,8 +17,8 @@ package com.alibaba.csp.sentinel.adapter.okhttp;
 
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.adapter.okhttp.app.TestApplication;
-import com.alibaba.csp.sentinel.adapter.okhttp.extractor.OkHttpResourceExtractor;
 import com.alibaba.csp.sentinel.adapter.okhttp.config.SentinelOkHttpConfig;
+import com.alibaba.csp.sentinel.adapter.okhttp.extractor.OkHttpResourceExtractor;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 import okhttp3.Connection;
@@ -58,7 +58,7 @@ public class SentinelOkHttpInterceptorTest {
                 .url(url0)
                 .build();
         System.out.println(client.newCall(request).execute().body().string());
-        ClusterNode cn = ClusterBuilderSlot.getClusterNode("GET:" + url0);
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode(SentinelOkHttpConfig.getPrefix() + "GET:" + url0);
         assertNotNull(cn);
 
         Constants.ROOT.removeChildList();
@@ -76,7 +76,7 @@ public class SentinelOkHttpInterceptorTest {
                 if (url.contains(regex)) {
                     url = url.substring(0, url.indexOf(regex) + regex.length()) + "{id}";
                 }
-                return SentinelOkHttpConfig.getPrefix() + url;
+                return request.method() + ":" + url;
             }
         });
         OkHttpClient client = new OkHttpClient.Builder()

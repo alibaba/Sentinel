@@ -25,6 +25,6 @@ public class DefaultOkHttpResourceExtractor implements OkHttpResourceExtractor {
 
     @Override
     public String extract(String url, Request request, Connection connection) {
-        return url;
+        return request.method() + ":" + request.url().toString();
     }
 }
