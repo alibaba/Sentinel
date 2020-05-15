@@ -33,7 +33,7 @@ public class RedisDataSourceDemoUtil {
 
     public static final String dashboardServer = "localhost:8080";
 
-    public static void initRedisDataSourec(String appName, Integer port) {
+    public static void initRedisDataSource(String appName, Integer port) {
         // Set app name
         System.setProperty(SentinelConfig.APP_NAME_PROP_KEY, appName);
         // Set dashboard server address
@@ -48,13 +48,13 @@ public class RedisDataSourceDemoUtil {
 
         // Init RedisDataSource for flow rules
         String flowRuleKey = RedisDataSourceDemoUtil.join("-", appName, ip, String.valueOf(port), "flow", "rules");
-        RedisDataSource<List<FlowRule>> flowRuleedisDataSource = new RedisDataSource<>(redisConnectionConfig, flowRuleKey, flowRuleKey, new Converter<String, List<FlowRule>>() {
+        RedisDataSource<List<FlowRule>> flowRuleRedisDataSource = new RedisDataSource<>(redisConnectionConfig, flowRuleKey, flowRuleKey, new Converter<String, List<FlowRule>>() {
             @Override
             public List<FlowRule> convert(String source) {
                 return JSON.parseObject(source, new TypeReference<List<FlowRule>>() {});
             }
         });
-        FlowRuleManager.register2Property(flowRuleedisDataSource.getProperty());
+        FlowRuleManager.register2Property(flowRuleRedisDataSource.getProperty());
 
         // Init RedisDataSource for degrade rules
         String degradeRuleKey = RedisDataSourceDemoUtil.join("-", appName, ip, String.valueOf(port), "degrade", "rules");
