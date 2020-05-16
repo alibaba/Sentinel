@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright 1999-2020 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.demo.datasource.redis;
 
 import com.alibaba.csp.sentinel.Entry;
+import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.TimeUtil;
@@ -69,7 +70,7 @@ class FlowQpsRunner {
                 Entry entry = null;
 
                 try {
-                    entry = SphU.entry(resourceName);
+                    entry = SphU.entry(resourceName, EntryType.IN);
                     // token acquired, means pass
                     pass.addAndGet(1);
                 } catch (BlockException e1) {

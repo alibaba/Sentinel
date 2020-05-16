@@ -1,3 +1,18 @@
+/*
+ * Copyright 1999-2020 Alibaba Group Holding Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.alibaba.csp.sentinel.demo.datasource.redis;
 
 import com.alibaba.csp.sentinel.config.SentinelConfig;
@@ -47,57 +62,66 @@ public class RedisDataSourceDemoUtil {
         RedisConnectionConfig redisConnectionConfig = RedisConnectionConfig.builder().withHost(redisHost).withPort(redisPort).build();
 
         // Init RedisDataSource for flow rules
-        String flowRuleKey = RedisDataSourceDemoUtil.join("-", appName, ip, String.valueOf(port), "flow", "rules");
+        String flowRuleKey = buildRuleKey(appName, ip, port, "flow");
         RedisDataSource<List<FlowRule>> flowRuleRedisDataSource = new RedisDataSource<>(redisConnectionConfig, flowRuleKey, flowRuleKey, new Converter<String, List<FlowRule>>() {
             @Override
             public List<FlowRule> convert(String source) {
-                return JSON.parseObject(source, new TypeReference<List<FlowRule>>() {});
+                return JSON.parseObject(source, new TypeReference<List<FlowRule>>() {
+                });
             }
         });
         FlowRuleManager.register2Property(flowRuleRedisDataSource.getProperty());
 
         // Init RedisDataSource for degrade rules
-        String degradeRuleKey = RedisDataSourceDemoUtil.join("-", appName, ip, String.valueOf(port), "degrade", "rules");
+        String degradeRuleKey = buildRuleKey(appName, ip, port, "degrade");
         RedisDataSource<List<DegradeRule>> degradeRuleRedisDataSource = new RedisDataSource<>(redisConnectionConfig, degradeRuleKey, degradeRuleKey, new Converter<String, List<DegradeRule>>() {
             @Override
             public List<DegradeRule> convert(String source) {
-                return JSON.parseObject(source, new TypeReference<List<DegradeRule>>() {});
+                return JSON.parseObject(source, new TypeReference<List<DegradeRule>>() {
+                });
             }
         });
         DegradeRuleManager.register2Property(degradeRuleRedisDataSource.getProperty());
 
         // Init RedisDataSource for system rules
-        String systemRuleKey = RedisDataSourceDemoUtil.join("-", appName, ip, String.valueOf(port), "system", "rules");
+        String systemRuleKey = buildRuleKey(appName, ip, port, "system");
         RedisDataSource<List<SystemRule>> systemRuleRedisDataSource = new RedisDataSource<>(redisConnectionConfig, systemRuleKey, systemRuleKey, new Converter<String, List<SystemRule>>() {
             @Override
             public List<SystemRule> convert(String source) {
-                return JSON.parseObject(source, new TypeReference<List<SystemRule>>() {});
+                return JSON.parseObject(source, new TypeReference<List<SystemRule>>() {
+                });
             }
         });
         SystemRuleManager.register2Property(systemRuleRedisDataSource.getProperty());
 
         // Init RedisDataSource for authority rules
-        String authorityRuleKey = RedisDataSourceDemoUtil.join("-", appName, ip, String.valueOf(port), "authority", "rules");
+        String authorityRuleKey = buildRuleKey(appName, ip, port, "authority");
         RedisDataSource<List<AuthorityRule>> authorityRuleRedisDataSource = new RedisDataSource<>(redisConnectionConfig, authorityRuleKey, authorityRuleKey, new Converter<String, List<AuthorityRule>>() {
             @Override
             public List<AuthorityRule> convert(String source) {
-                return JSON.parseObject(source, new TypeReference<List<AuthorityRule>>() {});
+                return JSON.parseObject(source, new TypeReference<List<AuthorityRule>>() {
+                });
             }
         });
         AuthorityRuleManager.register2Property(authorityRuleRedisDataSource.getProperty());
 
         // Init RedisDataSource for paramFlow rules
-        String paramFlowRuleKey = RedisDataSourceDemoUtil.join("-", appName, ip, String.valueOf(port), "paramFlow", "rules");
+        String paramFlowRuleKey = buildRuleKey(appName, ip, port, "paramFlow");
         RedisDataSource<List<ParamFlowRule>> paramFlowRuleRedisDataSource = new RedisDataSource<>(redisConnectionConfig, paramFlowRuleKey, paramFlowRuleKey, new Converter<String, List<ParamFlowRule>>() {
             @Override
             public List<ParamFlowRule> convert(String source) {
-                return JSON.parseObject(source, new TypeReference<List<ParamFlowRule>>() {});
+                return JSON.parseObject(source, new TypeReference<List<ParamFlowRule>>() {
+                });
             }
         });
         ParamFlowRuleManager.register2Property(paramFlowRuleRedisDataSource.getProperty());
     }
 
-    public static String join(String separator, String ... values) {
+    public static String buildRuleKey(String appName, String ip, Integer port, String ruleType) {
+        return join("-", appName, ip, String.valueOf(port), ruleType, "rules");
+    }
+
+    public static String join(String separator, String... values) {
         StringBuilder sb = new StringBuilder();
         boolean first = true;
         for (String value : values) {
