@@ -31,7 +31,9 @@ public class SystemRuleVoChecker {
 
         checkNotBlank(reqVo.getApp(), "app");
 
-        checkNotBlank(reqVo.getApp(), "app");
+        checkNotAllNull("highestSystemLoad,avgRt,maxThread,qps,highestCpuUsage can't be all null"
+                , reqVo.getHighestSystemLoad(), reqVo.getAvgRt(), reqVo.getMaxThread()
+                , reqVo.getQps(), reqVo.getHighestCpuUsage());
     }
 
     public static void checkUpdate(UpdateSystemRuleReqVo reqVo) {
@@ -39,7 +41,12 @@ public class SystemRuleVoChecker {
 
         checkNotBlank(reqVo.getApp(), "app");
 
-        checkNotBlank(reqVo.getApp(), "app");
+        checkNotNull(reqVo.getId(), "id");
+        checkCondition(reqVo.getId() > 0, "id must be greater than 0");
+
+        checkNotAllNull("highestSystemLoad,avgRt,maxThread,qps,highestCpuUsage can't be all null"
+                , reqVo.getHighestSystemLoad(), reqVo.getAvgRt(), reqVo.getMaxThread()
+                , reqVo.getQps(), reqVo.getHighestCpuUsage());
     }
 
     public static void checkDelete(DeleteSystemRuleReqVo reqVo) {

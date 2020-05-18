@@ -18,8 +18,8 @@ package com.alibaba.csp.sentinel.dashboard.service.impl.rule.checker;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.degrade.AddDegradeRuleReqVo;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.degrade.DeleteDegradeRuleReqVo;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.degrade.UpdateDegradeRuleReqVo;
-import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
+import static com.alibaba.csp.sentinel.slots.block.RuleConstant.*;
 import static com.alibaba.csp.sentinel.dashboard.service.impl.common.ParamChecker.*;
 
 public class DegradeRuleVoChecker {
@@ -32,10 +32,13 @@ public class DegradeRuleVoChecker {
         checkNotBlank(reqVo.getResource(), "resource");
 
         checkNotNull(reqVo.getGrade(), "grade");
-        checkInValues(reqVo.getGrade(), "grade", RuleConstant.DEGRADE_GRADE_RT, RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO, RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT);
+        checkInValues(reqVo.getGrade(), "grade", DEGRADE_GRADE_RT, DEGRADE_GRADE_EXCEPTION_RATIO, DEGRADE_GRADE_EXCEPTION_COUNT);
 
         checkNotNull(reqVo.getCount(), "count");
-        checkCondition(reqVo.getCount() >= 0, "count must be at lease 0");
+        checkCondition(reqVo.getCount() >= 0, "count must be greater than or equal to 0");
+        if (reqVo.getGrade() == DEGRADE_GRADE_EXCEPTION_RATIO) {
+            checkCondition(reqVo.getCount() <= 1, "count must be less than 1 when grade is " + DEGRADE_GRADE_EXCEPTION_RATIO);
+        }
 
         checkNotNull(reqVo.getTimeWindow(), "timeWindow");
         checkCondition(reqVo.getTimeWindow() > 0, "timeWindow must be greater than 0");
@@ -46,11 +49,17 @@ public class DegradeRuleVoChecker {
 
         checkNotBlank(reqVo.getApp(), "app");
 
+        checkNotNull(reqVo.getId(), "id");
+        checkCondition(reqVo.getId() > 0, "id must be greater than 0");
+
         checkNotNull(reqVo.getGrade(), "grade");
         checkInValues(reqVo.getGrade(), "grade",0, 1, 2);
 
         checkNotNull(reqVo.getCount(), "count");
-        checkCondition(reqVo.getCount() >= 0, "count must be at lease 0");
+        checkCondition(reqVo.getCount() >= 0, "count must be greater than or equal to 0");
+        if (reqVo.getGrade() == DEGRADE_GRADE_EXCEPTION_RATIO) {
+            checkCondition(reqVo.getCount() <= 1, "count must be less than 1 when grade is " + DEGRADE_GRADE_EXCEPTION_RATIO);
+        }
 
         checkNotNull(reqVo.getTimeWindow(), "timeWindow");
         checkCondition(reqVo.getTimeWindow() > 0, "timeWindow must be greater than 0");

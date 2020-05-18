@@ -35,10 +35,10 @@ public class ParamFlowRuleVoChecker {
         checkNotBlank(reqVo.getResource(), "resource");
 
         checkNotNull(reqVo.getGrade(), "grade");
-        checkCondition(reqVo.getGrade() == RuleConstant.FLOW_GRADE_QPS, "grade in parameter flow control must be " + RuleConstant.FLOW_GRADE_QPS);
+        checkCondition(reqVo.getGrade() == RuleConstant.FLOW_GRADE_QPS, "grade in parameter flow control must be qps" + RuleConstant.FLOW_GRADE_QPS);
 
         checkNotNull(reqVo.getParamIdx(), "paramIdx");
-        checkCondition(reqVo.getParamIdx() >= 0, "paramIdx should be valid");
+        checkCondition(reqVo.getParamIdx() >= 0, "paramIdx must be greater than or equal to 0");
 
         checkNotNull(reqVo.getCount(), "count");
         checkCondition(reqVo.getCount() >= 0, "count must be greater than or equal to 0");
@@ -59,7 +59,7 @@ public class ParamFlowRuleVoChecker {
         checkCondition(reqVo.getGrade() == RuleConstant.FLOW_GRADE_QPS, "grade in parameter flow control must be " + RuleConstant.FLOW_GRADE_QPS);
 
         checkNotNull(reqVo.getParamIdx(), "paramIdx");
-        checkCondition(reqVo.getParamIdx() >= 0, "paramIdx should be valid");
+        checkCondition(reqVo.getParamIdx() >= 0, "paramIdx must be greater than or equal to 0");
 
         checkNotNull(reqVo.getCount(), "count");
         checkCondition(reqVo.getCount() >= 0, "count must be greater than or equal to 0");

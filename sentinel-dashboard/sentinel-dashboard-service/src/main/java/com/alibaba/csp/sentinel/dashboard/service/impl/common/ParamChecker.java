@@ -51,6 +51,8 @@ public class ParamChecker {
                 } else {
                     sb.append(" or ");
                 }
+            } else {
+                first = false;
             }
             sb.append(values[i]);
         }
@@ -79,6 +81,16 @@ public class ParamChecker {
         if (StringUtil.isBlank(fieldValue)) {
             fail(message);
         }
+    }
+
+    public static void checkNotAllNull(String message, Object... fieldValues) {
+        for (Object fieldValue : fieldValues) {
+            if (fieldValue != null) {
+                return;
+            }
+        }
+
+        fail(message);
     }
 
     public static void fail(String message) {

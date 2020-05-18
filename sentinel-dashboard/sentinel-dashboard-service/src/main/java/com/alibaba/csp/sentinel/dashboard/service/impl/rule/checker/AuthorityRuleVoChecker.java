@@ -19,9 +19,10 @@ package com.alibaba.csp.sentinel.dashboard.service.impl.rule.checker;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.authority.AddAuthorityReqVo;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.authority.DeleteAuthorityReqVo;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.authority.UpdateAuthorityReqVo;
-import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
 import static com.alibaba.csp.sentinel.dashboard.service.impl.common.ParamChecker.*;
+import static com.alibaba.csp.sentinel.slots.block.RuleConstant.AUTHORITY_BLACK;
+import static com.alibaba.csp.sentinel.slots.block.RuleConstant.AUTHORITY_WHITE;
 
 /**
  * @author cdfive
@@ -38,7 +39,7 @@ public class AuthorityRuleVoChecker {
         checkNotBlank(reqVo.getLimitApp(), "limitApp");
 
         checkNotNull(reqVo.getStrategy(), "strategy");
-        checkInValues(reqVo.getStrategy(), "strategy", RuleConstant.AUTHORITY_WHITE, RuleConstant.AUTHORITY_BLACK);
+        checkInValues(reqVo.getStrategy(), "strategy", AUTHORITY_WHITE, AUTHORITY_BLACK);
     }
 
     public static void checkUpdate(UpdateAuthorityReqVo reqVo) {
@@ -49,7 +50,7 @@ public class AuthorityRuleVoChecker {
         checkNotBlank(reqVo.getLimitApp(), "limitApp");
 
         checkNotNull(reqVo.getStrategy(), "strategy");
-        checkInValues(reqVo.getStrategy(), "strategy", RuleConstant.AUTHORITY_WHITE, RuleConstant.AUTHORITY_BLACK);
+        checkInValues(reqVo.getStrategy(), "strategy", AUTHORITY_WHITE, AUTHORITY_BLACK);
     }
 
     public static void checkDelete(DeleteAuthorityReqVo reqVo) {

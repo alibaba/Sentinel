@@ -18,8 +18,9 @@ package com.alibaba.csp.sentinel.dashboard.service.impl.rule.checker;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.flow.AddFlowRuleReqVo;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.flow.DeleteFlowRuleReqVo;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.flow.UpdateFlowRuleReqVo;
-import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
+import static com.alibaba.csp.sentinel.slots.block.RuleConstant.*;
+import static com.alibaba.csp.sentinel.slots.block.ClusterRuleConstant.*;
 import static com.alibaba.csp.sentinel.dashboard.service.impl.common.ParamChecker.*;
 
 /**
@@ -37,28 +38,37 @@ public class FlowRuleVoChecker {
         checkNotBlank(reqVo.getLimitApp(), "limitApp");
 
         checkNotNull(reqVo.getGrade(), "grade");
-        checkInValues(reqVo.getGrade(), "grade",RuleConstant.FLOW_GRADE_THREAD, RuleConstant.FLOW_GRADE_QPS);
+        checkInValues(reqVo.getGrade(), "grade", FLOW_GRADE_THREAD, FLOW_GRADE_QPS);
 
         checkNotNull(reqVo.getCount(), "count");
-        checkCondition(reqVo.getCount() >= 0, "count must be at lease 0");
+        checkCondition(reqVo.getCount() >= 0, "count must be greater than or equal to 0");
 
         checkNotNull(reqVo.getStrategy(), "strategy");
-        checkInValues(reqVo.getStrategy(), "strategy", RuleConstant.STRATEGY_DIRECT, RuleConstant.STRATEGY_RELATE, RuleConstant.STRATEGY_CHAIN);
-        if (reqVo.getStrategy() != RuleConstant.STRATEGY_DIRECT) {
-            checkNotBlankMessage(reqVo.getRefResource(), "refResource can't be null or empty when strategy!=" + RuleConstant.STRATEGY_DIRECT);
+        checkInValues(reqVo.getStrategy(), "strategy", STRATEGY_DIRECT, STRATEGY_RELATE, STRATEGY_CHAIN);
+        if (reqVo.getStrategy() != STRATEGY_DIRECT) {
+            checkNotBlankMessage(reqVo.getRefResource(), "refResource can't be null or empty when strategy is " + STRATEGY_RELATE + " or " + STRATEGY_CHAIN);
         }
 
         checkNotNull(reqVo.getControlBehavior(), "controlBehavior");
-        checkInValues(reqVo.getControlBehavior(), "controlBehavior", RuleConstant.CONTROL_BEHAVIOR_DEFAULT, RuleConstant.CONTROL_BEHAVIOR_WARM_UP, RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER);
-        if (reqVo.getControlBehavior() == RuleConstant.CONTROL_BEHAVIOR_WARM_UP) {
-            checkNotNullMessage(reqVo.getWarmUpPeriodSec(), "warmUpPeriodSec can't be null when controlBehavior==" + RuleConstant.CONTROL_BEHAVIOR_WARM_UP);
+        checkInValues(reqVo.getControlBehavior(), "controlBehavior", CONTROL_BEHAVIOR_DEFAULT, CONTROL_BEHAVIOR_WARM_UP, CONTROL_BEHAVIOR_RATE_LIMITER);
+        if (reqVo.getControlBehavior() == CONTROL_BEHAVIOR_WARM_UP) {
+            checkNotNullMessage(reqVo.getWarmUpPeriodSec(), "warmUpPeriodSec can't be null when controlBehavior is " + CONTROL_BEHAVIOR_WARM_UP);
+            checkCondition(reqVo.getWarmUpPeriodSec() > 0, "warmUpPeriodSec must be greater than 0 when controlBehavior is " + CONTROL_BEHAVIOR_WARM_UP);
         }
-        if (reqVo.getControlBehavior() == RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER) {
-            checkNotNullMessage(reqVo.getMaxQueueingTimeMs(), "maxQueueingTimeMs can't be null when controlBehavior==" + RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER);
+        if (reqVo.getControlBehavior() == CONTROL_BEHAVIOR_RATE_LIMITER) {
+            checkNotNullMessage(reqVo.getMaxQueueingTimeMs(), "maxQueueingTimeMs can't be null when controlBehavior is " + CONTROL_BEHAVIOR_RATE_LIMITER);
+            checkCondition(reqVo.getMaxQueueingTimeMs() > 0, "maxQueueingTimeMs must be greater than 0 when controlBehavior is " + CONTROL_BEHAVIOR_RATE_LIMITER);
         }
 
+        checkNotNull(reqVo.getClusterMode(), "clusterMode");
         if (reqVo.getClusterMode()) {
-            checkNotNull(reqVo.getClusterConfig(), "clusterConfig");
+            AddFlowRuleReqVo.ClusterConfigReqVo clusterConfigReqVo = reqVo.getClusterConfig();
+            checkNotNull(clusterConfigReqVo, "clusterConfig");
+
+            checkNotNull(clusterConfigReqVo.getThresholdType(), "thresholdType");
+            checkInValues(clusterConfigReqVo.getThresholdType(), "thresholdType", FLOW_THRESHOLD_AVG_LOCAL, FLOW_THRESHOLD_GLOBAL);
+
+            checkNotNull(clusterConfigReqVo.getFallbackToLocalWhenFail(), "fallbackToLocalWhenFail");
         }
     }
 
@@ -73,28 +83,37 @@ public class FlowRuleVoChecker {
         checkNotBlank(reqVo.getLimitApp(), "limitApp");
 
         checkNotNull(reqVo.getGrade(), "grade");
-        checkInValues(reqVo.getGrade(), "grade", RuleConstant.FLOW_GRADE_THREAD, RuleConstant.FLOW_GRADE_QPS);
+        checkInValues(reqVo.getGrade(), "grade", FLOW_GRADE_THREAD, FLOW_GRADE_QPS);
 
         checkNotNull(reqVo.getCount(), "count");
         checkCondition(reqVo.getCount() >= 0, "count must be greater than or equal to 0");
 
         checkNotNull(reqVo.getStrategy(), "strategy");
-        checkInValues(reqVo.getStrategy(), "strategy", RuleConstant.STRATEGY_DIRECT, RuleConstant.STRATEGY_RELATE, RuleConstant.STRATEGY_CHAIN);
-        if (reqVo.getStrategy() != RuleConstant.STRATEGY_DIRECT) {
-            checkNotBlankMessage(reqVo.getRefResource(), "refResource can't be null or empty when strategy!=" + RuleConstant.STRATEGY_DIRECT);
+        checkInValues(reqVo.getStrategy(), "strategy", STRATEGY_DIRECT, STRATEGY_RELATE, STRATEGY_CHAIN);
+        if (reqVo.getStrategy() != STRATEGY_DIRECT) {
+            checkNotBlankMessage(reqVo.getRefResource(), "refResource can't be null or empty when strategy is " + STRATEGY_RELATE + " or " + STRATEGY_CHAIN);
         }
 
         checkNotNull(reqVo.getControlBehavior(), "controlBehavior");
-        checkInValues(reqVo.getControlBehavior(), "controlBehavior", RuleConstant.CONTROL_BEHAVIOR_DEFAULT, RuleConstant.CONTROL_BEHAVIOR_WARM_UP, RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER);
-        if (reqVo.getControlBehavior() == RuleConstant.CONTROL_BEHAVIOR_WARM_UP) {
-            checkNotNullMessage(reqVo.getWarmUpPeriodSec(), "warmUpPeriodSec can't be null when controlBehavior==" + RuleConstant.CONTROL_BEHAVIOR_WARM_UP);
+        checkInValues(reqVo.getControlBehavior(), "controlBehavior", CONTROL_BEHAVIOR_DEFAULT, CONTROL_BEHAVIOR_WARM_UP, CONTROL_BEHAVIOR_RATE_LIMITER);
+        if (reqVo.getControlBehavior() == CONTROL_BEHAVIOR_WARM_UP) {
+            checkNotNullMessage(reqVo.getWarmUpPeriodSec(), "warmUpPeriodSec can't be null when controlBehavior is " + CONTROL_BEHAVIOR_WARM_UP);
+            checkCondition(reqVo.getWarmUpPeriodSec() > 0, "warmUpPeriodSec must be greater than 0 when controlBehavior is " +CONTROL_BEHAVIOR_WARM_UP);
         }
-        if (reqVo.getControlBehavior() == RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER) {
-            checkNotNullMessage(reqVo.getMaxQueueingTimeMs(), "maxQueueingTimeMs can't be null when controlBehavior==" + RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER);
+        if (reqVo.getControlBehavior() == CONTROL_BEHAVIOR_RATE_LIMITER) {
+            checkNotNullMessage(reqVo.getMaxQueueingTimeMs(), "maxQueueingTimeMs can't be null when controlBehavior is " + CONTROL_BEHAVIOR_RATE_LIMITER);
+            checkCondition(reqVo.getMaxQueueingTimeMs() > 0, "maxQueueingTimeMs must be greater than 0 when controlBehavior is " + CONTROL_BEHAVIOR_RATE_LIMITER);
         }
 
+        checkNotNull(reqVo.getClusterMode(), "clusterMode");
         if (reqVo.getClusterMode()) {
-            checkNotNull(reqVo.getClusterConfig(), "clusterConfig");
+            AddFlowRuleReqVo.ClusterConfigReqVo clusterConfigReqVo = reqVo.getClusterConfig();
+            checkNotNull(clusterConfigReqVo, "clusterConfig");
+
+            checkNotNull(clusterConfigReqVo.getThresholdType(), "thresholdType");
+            checkInValues(clusterConfigReqVo.getThresholdType(), "thresholdType", FLOW_THRESHOLD_AVG_LOCAL, FLOW_THRESHOLD_GLOBAL);
+
+            checkNotNull(clusterConfigReqVo.getFallbackToLocalWhenFail(), "fallbackToLocalWhenFail");
         }
     }
 
