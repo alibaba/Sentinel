@@ -6,7 +6,7 @@ package com.alibaba.csp.sentinel.annotation.aspectj.integration.service;
 
 public class GlobalFallback {
 
-    public static String doFallback(int i) {
-        return "GlobalFallback:doFallback:" + i;
+    public static String doFallback(Throwable t) {
+        return "GlobalFallback:doFallback";
     }
 }

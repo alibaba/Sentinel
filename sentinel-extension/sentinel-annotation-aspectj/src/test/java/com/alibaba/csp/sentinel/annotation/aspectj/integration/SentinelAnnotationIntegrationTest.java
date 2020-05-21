@@ -202,7 +202,7 @@ public class SentinelAnnotationIntegrationTest extends AbstractJUnit4SpringConte
         assertThat(cn.exceptionQps()).isPositive();
         assertThat(cn.blockQps()).isZero();
 
-        assertThat(barService.doSomething(5758)).isEqualTo("GlobalFallback:doFallback:1");
+        assertThat(barService.doSomething(5758)).isEqualTo("GlobalFallback:doFallback");
         assertThat(cn1.exceptionQps()).isPositive();
         assertThat(cn1.blockQps()).isZero();
     }
