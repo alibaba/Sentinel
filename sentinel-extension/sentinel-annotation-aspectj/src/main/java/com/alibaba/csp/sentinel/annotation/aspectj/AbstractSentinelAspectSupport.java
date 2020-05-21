@@ -33,6 +33,7 @@ import java.util.Arrays;
  * Some common functions for Sentinel annotation aspect.
  *
  * @author Eric Zhao
+ * @author zhaoyuguang
  */
 public abstract class AbstractSentinelAspectSupport {
 
@@ -186,7 +187,13 @@ public abstract class AbstractSentinelAspectSupport {
     private Method extractDefaultFallbackMethod(ProceedingJoinPoint pjp, String defaultFallback,
                                                 Class<?>[] locationClass) {
         if (StringUtil.isBlank(defaultFallback)) {
-            return null;
+            SentinelResource annotationClass = pjp.getTarget().getClass().getAnnotation(SentinelResource.class);
+            if (annotationClass != null && StringUtil.isBlank(annotationClass.defaultFallback())) {
+                defaultFallback = annotationClass.defaultFallback();
+                locationClass = annotationClass.fallbackClass();
+            } else {
+                return null;
+            }
         }
         boolean mustStatic = locationClass != null && locationClass.length >= 1;
         Class<?> clazz = mustStatic ? locationClass[0] : pjp.getTarget().getClass();

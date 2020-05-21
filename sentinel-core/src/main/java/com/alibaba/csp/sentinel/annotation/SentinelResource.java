@@ -23,9 +23,10 @@ import java.lang.annotation.*;
  * The annotation indicates a definition of Sentinel resource.
  *
  * @author Eric Zhao
+ * @author zhaoyuguang
  * @since 0.1.1
  */
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface SentinelResource {
