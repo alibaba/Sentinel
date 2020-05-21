@@ -202,7 +202,7 @@ public class Tracer {
         if (t == null || t instanceof BlockException) {
             return false;
         }
-        if(exceptionPredicate != null) {
+        if (exceptionPredicate != null) {
             return exceptionPredicate.test(t);
         }
 

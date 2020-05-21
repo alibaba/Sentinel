@@ -59,7 +59,7 @@ public class TracerTest extends Tracer {
         Predicate<Throwable> throwablePredicate = new Predicate<Throwable>() {
             @Override
             public boolean test(Throwable throwable) {
-                if(throwable instanceof TraceException) {
+                if (throwable instanceof TraceException) {
                     return true;
                 } else if (throwable instanceof IgnoreException) {
                     return false;
