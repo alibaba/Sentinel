@@ -20,6 +20,7 @@ import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.context.NullContext;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.AssertUtil;
+import com.alibaba.csp.sentinel.util.function.Predicate;
 
 /**
  * This class is used to record other exceptions except block exception.
@@ -31,6 +32,8 @@ public class Tracer {
 
     protected static Class<? extends Throwable>[] traceClasses;
     protected static Class<? extends Throwable>[] ignoreClasses;
+
+    protected static Predicate<Throwable> exceptionPredicate;
 
     protected Tracer() {}
 
@@ -164,6 +167,24 @@ public class Tracer {
         return ignoreClasses;
     }
 
+    /**
+     * Get exception predicate
+     * @return the exception predicate.
+     */
+    public static Predicate<? extends Throwable> getExceptionPredicate() {
+        return exceptionPredicate;
+    }
+
+    /**
+     * set an exception predicate which indicates the exception should be traced(return true) or ignored(return false)
+     * except for {@link BlockException}
+     * @param exceptionPredicate the exception predicate
+     */
+    public static void setExceptionPredicate(Predicate<Throwable> exceptionPredicate) {
+        AssertUtil.notNull(exceptionPredicate, "exception predicate must not be null");
+        Tracer.exceptionPredicate = exceptionPredicate;
+    }
+
     private static void checkNotNull(Class<? extends Throwable>[] classes) {
         AssertUtil.notNull(classes, "trace or ignore classes must not be null");
         for (Class<? extends Throwable> clazz : classes) {
@@ -181,6 +202,10 @@ public class Tracer {
         if (t == null || t instanceof BlockException) {
             return false;
         }
+        if (exceptionPredicate != null) {
+            return exceptionPredicate.test(t);
+        }
+
         if (ignoreClasses != null) {
             for (Class<? extends Throwable> clazz : ignoreClasses) {
                 if (clazz != null && clazz.isAssignableFrom(t.getClass())) {
