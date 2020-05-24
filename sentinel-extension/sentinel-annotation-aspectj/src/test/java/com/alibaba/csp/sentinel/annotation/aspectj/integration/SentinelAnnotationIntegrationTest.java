@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright 1999-2020 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import static org.assertj.core.api.Assertions.*;
  * Integration test for Sentinel annotation AspectJ extension.
  *
  * @author Eric Zhao
+ * @author zhaoyuguang
  */
 @ContextConfiguration(classes = {SentinelAnnotationIntegrationTest.class, AopTestConfig.class})
 public class SentinelAnnotationIntegrationTest extends AbstractJUnit4SpringContextTests {
