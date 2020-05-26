@@ -190,7 +190,9 @@ public abstract class AbstractSentinelAspectSupport {
             SentinelResource annotationClass = pjp.getTarget().getClass().getAnnotation(SentinelResource.class);
             if (annotationClass != null && StringUtil.isNotBlank(annotationClass.defaultFallback())) {
                 defaultFallback = annotationClass.defaultFallback();
-                locationClass = annotationClass.fallbackClass();
+                if (locationClass == null || locationClass.length < 1) {
+                    locationClass = annotationClass.fallbackClass();
+                }
             } else {
                 return null;
             }
