@@ -32,7 +32,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
-import java.util.Stack;
+import java.util.LinkedList;
 import java.util.function.BiConsumer;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
@@ -108,32 +108,30 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
 
 
     private Result asyncInvoke(Invoker<?> invoker, Invocation invocation) {
-        Stack<Entry> entryStack = new Stack<>();
+        LinkedList<Entry> queue = new LinkedList<>();
         String methodResourceName = getMethodName(invoker, invocation);
         String interfaceResourceName = getInterfaceName(invoker);
         try {
-            entryStack.push(SphU.asyncEntry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT));
-            entryStack.push(SphU.asyncEntry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT, 1, invocation.getArguments()));
+            queue.push(SphU.asyncEntry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT));
+            queue.push(SphU.asyncEntry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT, 1, invocation.getArguments()));
             Result result = invoker.invoke(invocation);
             result.whenCompleteWithContext(new BiConsumer<Result, Throwable>() {
                 @Override
                 public void accept(Result result, Throwable throwable) {
-                        while (entryStack.size() > 0) {
-                            Entry entry = entryStack.pop();
-                            Tracer.traceEntry(result.getException(), entry);
-                            entry.exit();
+                    while (!queue.isEmpty()) {
+                        Entry entry = queue.pop();
+                        Tracer.traceEntry(result.getException(), entry);
+                        entry.exit();
                     }
                 }
             });
             return result;
         } catch (BlockException e) {
-            while (entryStack.size() > 0) {
-                entryStack.pop().exit();
+            while (!queue.isEmpty()) {
+                queue.pop().exit();
             }
             return DubboFallbackRegistry.getConsumerFallback().handle(invoker, invocation, e);
         }
-
-
     }
 
 }
