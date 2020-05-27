@@ -17,7 +17,6 @@
         <java.target.version>1.8</java.target.version>
         <zuul.version>2.1.5</zuul.version>
     </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.alibaba.csp</groupId>
@@ -27,7 +26,10 @@
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-api-gateway-adapter-common</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-transport-common</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.netflix.zuul</groupId>
             <artifactId>zuul-core</artifactId>
@@ -46,11 +48,6 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
             <version>5.1.9.RELEASE</version>
-        </dependency>
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
