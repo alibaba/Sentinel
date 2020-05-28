@@ -14,14 +14,22 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
  * @since 1.6.1
  */
 public class MetricExitCallback implements ProcessorSlotExitCallback {
+
     @Override
     public void onExit(Context context, ResourceWrapper resourceWrapper, int count, Object... args) {
         for (MetricExtension m : MetricExtensionProvider.getMetricExtensions()) {
-            if (context.getCurEntry().getError() == null) {
-                long realRt = TimeUtil.currentTimeMillis() - context.getCurEntry().getCreateTime();
-                m.addRt(resourceWrapper.getName(), realRt, args);
-                m.addSuccess(resourceWrapper.getName(), count, args);
-                m.decreaseThreadNum(resourceWrapper.getName(), args);
+            if (context.getCurEntry().getBlockError() != null) {
+                continue;
+            }
+            String resource = resourceWrapper.getName();
+            long realRt = TimeUtil.currentTimeMillis() - context.getCurEntry().getCreateTimestamp();
+            m.addRt(resource, realRt, args);
+            m.addSuccess(resource, count, args);
+            m.decreaseThreadNum(resource, args);
+
+            Throwable ex = context.getCurEntry().getError();
+            if (ex != null) {
+                m.addException(resource, count, ex);
             }
         }
     }

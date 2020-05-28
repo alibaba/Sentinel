@@ -217,10 +217,17 @@ public final class GatewayRuleManager {
             }
 
             // Clear unused parameter metrics.
-            Set<String> previousResources = CONVERTED_PARAM_RULE_MAP.keySet();
-            for (String resource : previousResources) {
+            for (Map.Entry<String, List<ParamFlowRule>> entry : CONVERTED_PARAM_RULE_MAP.entrySet()) {
+                String resource = entry.getKey();
                 if (!newRuleMap.containsKey(resource)) {
                     ParameterMetricStorage.clearParamMetricForResource(resource);
+                    continue;
+                }
+                List<ParamFlowRule> newRuleList = newRuleMap.get(resource);
+                List<ParamFlowRule> oldRuleList = new ArrayList<>(entry.getValue());
+                oldRuleList.removeAll(newRuleList);
+                for (ParamFlowRule rule : oldRuleList) {
+                    ParameterMetricStorage.getParamMetricForResource(resource).clearForRule(rule);
                 }
             }
 

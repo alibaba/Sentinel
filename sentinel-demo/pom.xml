@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-parent</artifactId>
-        <version>1.7.2</version>
+        <version>1.8.0-SNAPSHOT</version>
     </parent>
     <artifactId>sentinel-demo</artifactId>
     <packaging>pom</packaging>
@@ -39,6 +39,8 @@
         <module>sentinel-demo-spring-webmvc</module>
         <module>sentinel-demo-zuul2-gateway</module>
         <module>sentinel-demo-log-logback</module>
+        <module>sentinel-demo-okhttp</module>
+        <module>sentinel-demo-jax-rs</module>
     </modules>
 
     <dependencies>

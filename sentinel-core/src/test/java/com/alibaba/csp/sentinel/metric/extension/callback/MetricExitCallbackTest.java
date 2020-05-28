@@ -55,7 +55,7 @@ public class MetricExitCallbackTest extends AbstractTimeBasedTest {
 
         int deltaMs = 100;
         when(entry.getError()).thenReturn(null);
-        when(entry.getCreateTime()).thenReturn(curMillis - deltaMs);
+        when(entry.getCreateTimestamp()).thenReturn(curMillis - deltaMs);
         when(context.getCurEntry()).thenReturn(entry);
         exitCallback.onExit(context, resourceWrapper, count, args);
         Assert.assertEquals(prevRt + deltaMs, extension.rt);
