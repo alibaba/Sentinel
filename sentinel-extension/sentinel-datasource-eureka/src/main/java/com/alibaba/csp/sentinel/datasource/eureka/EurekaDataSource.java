@@ -96,20 +96,18 @@ public class EurekaDataSource<T> extends AutoRefreshDataSource<String, T> {
         super(configParser, refreshMs);
         AssertUtil.notNull(appId, "appId can't be null");
         AssertUtil.notNull(instanceId, "instanceId can't be null");
+        AssertUtil.assertNotEmpty(serviceUrls, "serviceUrls can't be empty");
         AssertUtil.notNull(ruleKey, "ruleKey can't be null");
-        AssertUtil.notNull(configParser, "configParser can't be null");
-        AssertUtil.assertState(refreshMs > 0, "refreshMs must be greater than 0");
         AssertUtil.assertState(connectTimeoutMills > 0, "connectTimeoutMills must be greater than 0");
         AssertUtil.assertState(readTimeoutMills > 0, "readTimeoutMills must be greater than 0");
-        AssertUtil.assertNotEmpty(serviceUrls, "serviceUrls can't be empty");
 
         this.appId = appId;
         this.instanceId = instanceId;
+        this.serviceUrls = ensureEndWithSlash(serviceUrls);
+        AssertUtil.assertNotEmpty(this.serviceUrls, "No available service url");
         this.ruleKey = ruleKey;
         this.connectTimeoutMills = connectTimeoutMills;
         this.readTimeoutMills = readTimeoutMills;
-        serviceUrls = ensureEndWithSlash(serviceUrls);
-        this.serviceUrls = serviceUrls;
     }
 
 
