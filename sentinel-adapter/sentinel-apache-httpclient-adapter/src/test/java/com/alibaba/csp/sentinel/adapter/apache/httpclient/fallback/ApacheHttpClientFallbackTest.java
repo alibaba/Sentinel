@@ -17,22 +17,18 @@ package com.alibaba.csp.sentinel.adapter.apache.httpclient.fallback;
 
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.SentinelRpcException;
-import org.apache.http.HttpException;
-import org.apache.http.HttpRequest;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpRequestWrapper;
-import org.apache.http.protocol.HttpContext;
-
-import java.io.IOException;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
+import org.junit.Test;
 
 /**
  * @author zhaoyuguang
  */
-public class DefaultApacheHttpClientFallback implements ApacheHttpClientFallback {
+public class ApacheHttpClientFallbackTest {
 
-    @Override
-    public CloseableHttpResponse handle(HttpRequestWrapper request, BlockException e) {
-        // Just wrap and throw the exception.
-        throw new SentinelRpcException(e);
+    @Test(expected = SentinelRpcException.class)
+    public void testDefaultOkHttpFallback() {
+        BlockException e = new FlowException("xxx");
+        ApacheHttpClientFallback fallback = new DefaultApacheHttpClientFallback();
+        fallback.handle(null, e);
     }
 }

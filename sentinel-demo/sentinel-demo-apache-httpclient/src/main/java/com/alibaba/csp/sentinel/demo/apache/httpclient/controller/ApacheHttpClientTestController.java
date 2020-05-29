@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2019 Alibaba Group Holding Ltd.
+ * Copyright 1999-2020 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,10 @@
 package com.alibaba.csp.sentinel.demo.apache.httpclient.controller;
 
 import com.alibaba.csp.sentinel.adapter.apache.httpclient.SentinelApacheHttpClientBuilder;
-import com.alibaba.csp.sentinel.adapter.apache.httpclient.config.SentinelApacheHttpClientConfig;
-import com.alibaba.csp.sentinel.adapter.apache.httpclient.exception.SentinelApacheHttpClientHandleException;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
@@ -33,9 +29,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
+/**
+ * @author zhaoyuguang
+ */
 @RestController
 public class ApacheHttpClientTestController {
 
@@ -56,7 +53,7 @@ public class ApacheHttpClientTestController {
 
     @RequestMapping("/httpclient/sync")
     public String sync() throws Exception {
-        CloseableHttpClient httpclient = SentinelApacheHttpClientBuilder.httpClientBuilder().build();
+        CloseableHttpClient httpclient = new SentinelApacheHttpClientBuilder().build();
 
         HttpGet httpGet = new HttpGet("http://localhost:" + port + "/httpclient/back");
         return getRemoteString(httpclient, httpGet);
@@ -64,7 +61,7 @@ public class ApacheHttpClientTestController {
 
     @RequestMapping("/httpclient/sync/{id}")
     public String sync(@PathVariable String id) throws Exception {
-        CloseableHttpClient httpclient = SentinelApacheHttpClientBuilder.httpClientBuilder().build();
+        CloseableHttpClient httpclient = new SentinelApacheHttpClientBuilder().build();
 
         HttpGet httpGet = new HttpGet("http://localhost:" + port + "/httpclient/back/" + id);
         return getRemoteString(httpclient, httpGet);
@@ -74,12 +71,7 @@ public class ApacheHttpClientTestController {
         String result;
         HttpContext context = new BasicHttpContext();
         CloseableHttpResponse response;
-        try {
-            response = httpclient.execute(httpGet, context);
-        } catch (Exception e){
-            SentinelApacheHttpClientHandleException.handle(context, e);
-            throw e;
-        }
+        response = httpclient.execute(httpGet, context);
         try {
             HttpEntity entity = response.getEntity();
             result = EntityUtils.toString(entity, "utf-8");
@@ -90,17 +82,4 @@ public class ApacheHttpClientTestController {
         httpclient.close();
         return result;
     }
-
-    @RequestMapping("/httpclient/async")
-    public String async() throws Exception {
-        CloseableHttpAsyncClient httpclient = SentinelApacheHttpClientBuilder.httpAsyncClientBuilder().build();
-        httpclient.start();
-
-        HttpGet httpGet = new HttpGet("http://localhost:" + port + "/httpclient/back");
-        Future<HttpResponse> future = httpclient.execute(httpGet, null);
-        HttpResponse response = future.get(100L, TimeUnit.MILLISECONDS);
-        httpclient.close();
-        return EntityUtils.toString(response.getEntity(), "utf-8");
-    }
-
 }

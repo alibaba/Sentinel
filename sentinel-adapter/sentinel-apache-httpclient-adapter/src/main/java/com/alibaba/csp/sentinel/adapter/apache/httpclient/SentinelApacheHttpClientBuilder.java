@@ -1,11 +1,11 @@
 /*
- * Copyright 1999-2019 Alibaba Group Holding Ltd.
+ * Copyright 1999-2020 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,25 +15,53 @@
  */
 package com.alibaba.csp.sentinel.adapter.apache.httpclient;
 
+import com.alibaba.csp.sentinel.*;
+import com.alibaba.csp.sentinel.adapter.apache.httpclient.config.SentinelApacheHttpClientConfig;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.util.StringUtil;
+import org.apache.http.HttpException;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpExecutionAware;
+import org.apache.http.client.methods.HttpRequestWrapper;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
-import org.apache.http.impl.nio.client.HttpAsyncClients;
+import org.apache.http.impl.execchain.ClientExecChain;
+
+import java.io.IOException;
 
 /**
  * @author zhaoyuguang
  */
-public class SentinelApacheHttpClientBuilder {
+public class SentinelApacheHttpClientBuilder extends HttpClientBuilder {
 
-    public static HttpClientBuilder httpClientBuilder() {
-        return HttpClients.custom()
-                .addInterceptorFirst(new SentinelApacheHttpRequestInterceptor())
-                .addInterceptorFirst(new SentinelApacheHttpResponseInterceptor());
-    }
-
-    public static HttpAsyncClientBuilder httpAsyncClientBuilder() {
-        return HttpAsyncClients.custom()
-                .addInterceptorFirst(new SentinelApacheHttpRequestInterceptor())
-                .addInterceptorFirst(new SentinelApacheHttpResponseInterceptor());
+    @Override
+    protected ClientExecChain decorateMainExec(final ClientExecChain mainExec) {
+        return new ClientExecChain() {
+            @Override
+            public CloseableHttpResponse execute(HttpRoute route, HttpRequestWrapper request,
+                                                 HttpClientContext clientContext, HttpExecutionAware execAware)
+                    throws IOException, HttpException {
+                Entry entry = null;
+                try {
+                    String name = SentinelApacheHttpClientConfig.getExtractor().extractor(request.getMethod(),
+                            request.getRequestLine().getUri(), request);
+                    if (!StringUtil.isEmpty(SentinelApacheHttpClientConfig.getPrefix())) {
+                        name = SentinelApacheHttpClientConfig.getPrefix() + name;
+                    }
+                    entry = SphU.entry(name, ResourceTypeConstants.COMMON_WEB, EntryType.OUT);
+                    return mainExec.execute(route, request, clientContext, execAware);
+                } catch (BlockException e) {
+                    return SentinelApacheHttpClientConfig.getFallback().handle(request, e);
+                } catch (Throwable t) {
+                    Tracer.traceEntry(t, entry);
+                    throw t;
+                } finally {
+                    if (entry != null) {
+                        entry.exit();
+                    }
+                }
+            }
+        };
     }
 }

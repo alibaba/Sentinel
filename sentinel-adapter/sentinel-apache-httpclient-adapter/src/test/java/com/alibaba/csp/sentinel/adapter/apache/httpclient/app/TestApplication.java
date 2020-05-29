@@ -13,21 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.adapter.apache.httpclient.fallback;
+package com.alibaba.csp.sentinel.adapter.apache.httpclient.app;
 
-import com.alibaba.csp.sentinel.slots.block.BlockException;
-import org.apache.http.HttpException;
-import org.apache.http.HttpRequest;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpRequestWrapper;
-import org.apache.http.protocol.HttpContext;
-
-import java.io.IOException;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * @author zhaoyuguang
  */
-public interface ApacheHttpClientFallback {
+@SpringBootApplication
+public class TestApplication {
 
-    CloseableHttpResponse handle(HttpRequestWrapper request, BlockException e);
+    public static void main(String[] args) {
+        SpringApplication.run(TestApplication.class);
+    }
 }

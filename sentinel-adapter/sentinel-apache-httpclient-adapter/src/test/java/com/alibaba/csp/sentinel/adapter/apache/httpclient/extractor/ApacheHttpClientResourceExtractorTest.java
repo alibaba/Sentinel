@@ -13,29 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.demo.apache.httpclient;
+package com.alibaba.csp.sentinel.adapter.apache.httpclient.extractor;
 
-import com.alibaba.csp.sentinel.adapter.apache.httpclient.config.SentinelApacheHttpClientConfig;
-import com.alibaba.csp.sentinel.adapter.apache.httpclient.extractor.ApacheHttpClientResourceExtractor;
 import org.apache.http.client.methods.HttpRequestWrapper;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author zhaoyuguang
  */
-@SpringBootApplication
-public class ApacheHttpClientDemoApplication implements CommandLineRunner {
+public class ApacheHttpClientResourceExtractorTest {
 
-    public static void main(String[] args) {
-        SpringApplication.run(ApacheHttpClientDemoApplication.class);
-    }
-
-    @Override
-    public void run(String... args) {
-        SentinelApacheHttpClientConfig.setExtractor(new ApacheHttpClientResourceExtractor() {
-
+    @Test
+    public void testDefaultOkHttpResourceExtractor() {
+        ApacheHttpClientResourceExtractor extractor = new ApacheHttpClientResourceExtractor() {
             @Override
             public String extractor(String method, String uri, HttpRequestWrapper request) {
                 String regex = "/httpclient/back/";
@@ -44,6 +36,8 @@ public class ApacheHttpClientDemoApplication implements CommandLineRunner {
                 }
                 return method + ":" + uri;
             }
-        });
+        };
+        System.out.println(extractor.extractor("GET", "/httpclient/back/1", null));
+        assertEquals("GET:/httpclient/back/{id}", extractor.extractor("GET", "/httpclient/back/1", null));
     }
 }

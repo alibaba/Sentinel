@@ -13,21 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.adapter.apache.httpclient.fallback;
+package com.alibaba.csp.sentinel.adapter.apache.httpclient.config;
 
-import com.alibaba.csp.sentinel.slots.block.BlockException;
-import org.apache.http.HttpException;
-import org.apache.http.HttpRequest;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpRequestWrapper;
-import org.apache.http.protocol.HttpContext;
-
-import java.io.IOException;
+import org.junit.Test;
 
 /**
  * @author zhaoyuguang
  */
-public interface ApacheHttpClientFallback {
+public class SentinelApacheHttpClientConfigTest {
 
-    CloseableHttpResponse handle(HttpRequestWrapper request, BlockException e);
+    @Test(expected = IllegalArgumentException.class)
+    public void testConfigSetPrefix() {
+        SentinelApacheHttpClientConfig.setPrefix(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConfigSetCleaner() {
+        SentinelApacheHttpClientConfig.setExtractor(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConfigSetFallback() {
+        SentinelApacheHttpClientConfig.setFallback(null);
+    }
 }

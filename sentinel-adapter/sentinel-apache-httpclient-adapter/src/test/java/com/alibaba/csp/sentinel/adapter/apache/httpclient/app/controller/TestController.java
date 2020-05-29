@@ -13,21 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.adapter.apache.httpclient.fallback;
+package com.alibaba.csp.sentinel.adapter.apache.httpclient.app.controller;
 
-import com.alibaba.csp.sentinel.slots.block.BlockException;
-import org.apache.http.HttpException;
-import org.apache.http.HttpRequest;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpRequestWrapper;
-import org.apache.http.protocol.HttpContext;
-
-import java.io.IOException;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author zhaoyuguang
  */
-public interface ApacheHttpClientFallback {
+@RestController
+public class TestController {
 
-    CloseableHttpResponse handle(HttpRequestWrapper request, BlockException e);
+    @RequestMapping("/httpclient/back")
+    public String back() {
+        return "Welcome Back!";
+    }
+
+    @RequestMapping("/httpclient/back/{id}")
+    public String back(@PathVariable String id) {
+        return "Welcome Back! " + id;
+    }
 }
