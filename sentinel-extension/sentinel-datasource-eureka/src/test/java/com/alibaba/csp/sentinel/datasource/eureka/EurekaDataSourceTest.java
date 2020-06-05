@@ -55,7 +55,7 @@ public class EurekaDataSourceTest {
 
     @Test
     public void testEurekaDataSource() throws Exception {
-        String url = "http://localhost:" + port + "/eureka";
+        String url = "http://127.0.0.1:" + port + "/eureka";
 
         EurekaDataSource<List<FlowRule>> eurekaDataSource = new EurekaDataSource(appname, instanceId, Arrays.asList(url)
                 , SENTINEL_KEY, new Converter<String, List<FlowRule>>() {
