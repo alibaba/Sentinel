@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.adapter.dubbo;
 
 import com.alibaba.csp.sentinel.BaseTest;
+import com.alibaba.csp.sentinel.DubboTestUtil;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService;
@@ -35,52 +36,49 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 /**
  * @author cdfive
+ * @author lianglin
  */
 public class SentinelDubboProviderFilterTest extends BaseTest {
 
+
     private SentinelDubboProviderFilter filter = new SentinelDubboProviderFilter();
+
 
     @Before
     public void setUp() {
-        constructInvokerAndInvocation();
         cleanUpAll();
     }
 
     @After
-    public void cleanUp() {
+    public void destroy() {
         cleanUpAll();
     }
 
     @Test
     public void testInvoke() {
+
         final String originApplication = "consumerA";
 
-        URL url = invoker.getUrl()
-                .addParameter(CommonConstants.SIDE_KEY, CommonConstants.PROVIDER_SIDE);
-        when(invoker.getUrl()).thenReturn(url);
+        URL url = DubboTestUtil.getDefaultTestURL();
+        url = url.addParameter(CommonConstants.SIDE_KEY, CommonConstants.PROVIDER_SIDE);
+        Invoker invoker = DubboTestUtil.getMockInvoker(url, DemoService.class);
 
+        Invocation invocation = DubboTestUtil.getMockInvocation(DemoService.class.getMethods()[0]);
         when(invocation.getAttachment(DubboUtils.SENTINEL_DUBBO_APPLICATION_KEY, ""))
                 .thenReturn(originApplication);
 
         final Result result = mock(Result.class);
         when(result.hasException()).thenReturn(false);
         when(result.getException()).thenReturn(new Exception());
+
         when(invoker.invoke(invocation)).thenAnswer(invocationOnMock -> {
             verifyInvocationStructure(originApplication, invoker, invocation);
             return result;
@@ -89,29 +87,28 @@ public class SentinelDubboProviderFilterTest extends BaseTest {
         filter.invoke(invoker, invocation);
         verify(invoker).invoke(invocation);
 
-        filter.listener().onMessage(result, invoker, invocation);
         Context context = ContextUtil.getContext();
         assertNull(context);
     }
 
     /**
      * Simply verify invocation structure in memory:
-     * EntranceNode(resourceName)
+     * EntranceNode(methodResourceName)
      * --InterfaceNode(interfaceName)
-     * ----MethodNode(resourceName)
+     * ----MethodNode(methodResourceName)
      */
     private void verifyInvocationStructure(String originApplication, Invoker invoker, Invocation invocation) {
         Context context = ContextUtil.getContext();
         assertNotNull(context);
 
         // As ContextUtil.enter(resourceName, application) in SentinelDubboProviderFilter
-        String resourceName = DubboUtils.getResourceName(invoker, invocation, true);
-        assertEquals(resourceName, context.getName());
+        String methodResourceName = filter.getMethodName(invoker, invocation);
+        assertEquals(methodResourceName, context.getName());
         assertEquals(originApplication, context.getOrigin());
 
         DefaultNode entranceNode = context.getEntranceNode();
         ResourceWrapper entranceResource = entranceNode.getId();
-        assertEquals(resourceName, entranceResource.getName());
+        assertEquals(methodResourceName, entranceResource.getName());
         assertSame(EntryType.IN, entranceResource.getEntryType());
 
         // As SphU.entry(interfaceName, EntryType.IN);
@@ -120,7 +117,7 @@ public class SentinelDubboProviderFilterTest extends BaseTest {
         DefaultNode interfaceNode = (DefaultNode) childList.iterator().next();
         ResourceWrapper interfaceResource = interfaceNode.getId();
 
-        assertEquals(invoker.getUrl().getColonSeparatedKey(), interfaceResource.getName());
+        assertEquals(filter.getInterfaceName(invoker), interfaceResource.getName());
         assertSame(EntryType.IN, interfaceResource.getEntryType());
 
         // As SphU.entry(resourceName, EntryType.IN, 1, invocation.getArguments());
@@ -128,7 +125,7 @@ public class SentinelDubboProviderFilterTest extends BaseTest {
         assertEquals(1, childList.size());
         DefaultNode methodNode = (DefaultNode) childList.iterator().next();
         ResourceWrapper methodResource = methodNode.getId();
-        assertEquals(resourceName, methodResource.getName());
+        assertEquals(methodResourceName, methodResource.getName());
         assertSame(EntryType.IN, methodResource.getEntryType());
 
         // Verify curEntry
@@ -151,4 +148,6 @@ public class SentinelDubboProviderFilterTest extends BaseTest {
         assertEquals(1, interfaceOriginCountMap.size());
         assertTrue(interfaceOriginCountMap.containsKey(originApplication));
     }
+
+
 }
