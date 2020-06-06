@@ -43,29 +43,29 @@ public class AuthorityRuleVoCheckerTest {
     }
 
     @Test
-    public void testCheckAdd_app_null() {
+    public void testCheckAdd_app_blank() {
         AddAuthorityReqVo reqVo = new AddAuthorityReqVo();
         exception.expect(DashboardServiceException.class);
-        exception.expectMessage("app can't be null or empty");
+        exception.expectMessage("app can't be blank");
         AuthorityRuleVoChecker.checkAdd(reqVo);
     }
 
     @Test
-    public void testCheckAdd_resource_null() {
+    public void testCheckAdd_resource_blank() {
         AddAuthorityReqVo reqVo = new AddAuthorityReqVo();
         reqVo.setApp("order");
         exception.expect(DashboardServiceException.class);
-        exception.expectMessage("resource can't be null or empty");
+        exception.expectMessage("resource can't be blank");
         AuthorityRuleVoChecker.checkAdd(reqVo);
     }
 
     @Test
-    public void testCheckAdd_limitApp_null() {
+    public void testCheckAdd_limitApp_blank() {
         AddAuthorityReqVo reqVo = new AddAuthorityReqVo();
         reqVo.setApp("order");
         reqVo.setResource("/order/confirm");
         exception.expect(DashboardServiceException.class);
-        exception.expectMessage("limitApp can't be null or empty");
+        exception.expectMessage("limitApp can't be blank");
         AuthorityRuleVoChecker.checkAdd(reqVo);
     }
 
@@ -113,19 +113,19 @@ public class AuthorityRuleVoCheckerTest {
     }
 
     @Test
-    public void testCheckUpdate_app_null() {
+    public void testCheckUpdate_app_blank() {
         UpdateAuthorityReqVo reqVo = new UpdateAuthorityReqVo();
         exception.expect(DashboardServiceException.class);
-        exception.expectMessage("app can't be null or empty");
+        exception.expectMessage("app can't be blank");
         AuthorityRuleVoChecker.checkUpdate(reqVo);
     }
 
     @Test
-    public void testCheckUpdate_limitApp_null() {
+    public void testCheckUpdate_limitApp_blank() {
         UpdateAuthorityReqVo reqVo = new UpdateAuthorityReqVo();
         reqVo.setApp("order");
         exception.expect(DashboardServiceException.class);
-        exception.expectMessage("limitApp can't be null or empty");
+        exception.expectMessage("limitApp can't be blank");
         AuthorityRuleVoChecker.checkUpdate(reqVo);
     }
 
@@ -170,10 +170,10 @@ public class AuthorityRuleVoCheckerTest {
     }
 
     @Test
-    public void testCheckDelete_app_null() {
+    public void testCheckDelete_app_blank() {
         DeleteAuthorityReqVo reqVo = new DeleteAuthorityReqVo();
         exception.expect(DashboardServiceException.class);
-        exception.expectMessage("app can't be null or empty");
+        exception.expectMessage("app can't be blank");
         AuthorityRuleVoChecker.checkDelete(reqVo);
     }
 

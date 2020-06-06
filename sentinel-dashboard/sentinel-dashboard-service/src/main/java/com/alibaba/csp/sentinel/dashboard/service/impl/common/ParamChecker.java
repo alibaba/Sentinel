@@ -73,7 +73,7 @@ public class ParamChecker {
 
     public static void checkNotBlank(String fieldValue, String fieldName) {
         if (StringUtil.isBlank(fieldValue)) {
-            fail(fieldName + " can't be null or empty");
+            fail(fieldName + " can't be blank");
         }
     }
 

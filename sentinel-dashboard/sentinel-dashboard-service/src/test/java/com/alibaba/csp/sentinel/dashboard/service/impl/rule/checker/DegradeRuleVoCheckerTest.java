@@ -43,19 +43,19 @@ public class DegradeRuleVoCheckerTest {
     }
 
     @Test
-    public void testCheckAdd_app_null() {
+    public void testCheckAdd_app_blank() {
         AddDegradeRuleReqVo reqVo = new AddDegradeRuleReqVo();
         exception.expect(DashboardServiceException.class);
-        exception.expectMessage("app can't be null or empty");
+        exception.expectMessage("app can't be blank");
         DegradeRuleVoChecker.checkAdd(reqVo);
     }
 
     @Test
-    public void testCheckAdd_resource_null() {
+    public void testCheckAdd_resource_blank() {
         AddDegradeRuleReqVo reqVo = new AddDegradeRuleReqVo();
         reqVo.setApp("product");
         exception.expect(DashboardServiceException.class);
-        exception.expectMessage("resource can't be null or empty");
+        exception.expectMessage("resource can't be blank");
         DegradeRuleVoChecker.checkAdd(reqVo);
     }
 
@@ -184,10 +184,10 @@ public class DegradeRuleVoCheckerTest {
     }
 
     @Test
-    public void testCheckUpdate_app_null() {
+    public void testCheckUpdate_app_blank() {
         UpdateDegradeRuleReqVo reqVo = new UpdateDegradeRuleReqVo();
         exception.expect(DashboardServiceException.class);
-        exception.expectMessage("app can't be null or empty");
+        exception.expectMessage("app can't be blank");
         DegradeRuleVoChecker.checkUpdate(reqVo);
     }
 
@@ -335,10 +335,10 @@ public class DegradeRuleVoCheckerTest {
     }
 
     @Test
-    public void testCheckDelete_app_null() {
+    public void testCheckDelete_app_blank() {
         DeleteDegradeRuleReqVo reqVo = new DeleteDegradeRuleReqVo();
         exception.expect(DashboardServiceException.class);
-        exception.expectMessage("app can't be null");
+        exception.expectMessage("app can't be blank");
         DegradeRuleVoChecker.checkDelete(reqVo);
     }
 

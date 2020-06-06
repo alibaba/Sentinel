@@ -18,8 +18,11 @@ package com.alibaba.csp.sentinel.dashboard.service.impl.rule.checker;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.paramflow.AddParamFlowRuleReqVo;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.paramflow.DeleteParamFlowRuleReqVo;
 import com.alibaba.csp.sentinel.dashboard.service.vo.rule.req.paramflow.UpdateParamFlowRuleReqVo;
-import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
+import java.util.List;
+
+import static com.alibaba.csp.sentinel.slots.block.RuleConstant.*;
+import static com.alibaba.csp.sentinel.slots.block.ClusterRuleConstant.*;
 import static com.alibaba.csp.sentinel.dashboard.service.impl.common.ParamChecker.*;
 
 /**
@@ -35,7 +38,7 @@ public class ParamFlowRuleVoChecker {
         checkNotBlank(reqVo.getResource(), "resource");
 
         checkNotNull(reqVo.getGrade(), "grade");
-        checkCondition(reqVo.getGrade() == RuleConstant.FLOW_GRADE_QPS, "grade in parameter flow control must be qps" + RuleConstant.FLOW_GRADE_QPS);
+        checkCondition(reqVo.getGrade() == FLOW_GRADE_QPS, "grade in parameter flow control must be " + FLOW_GRADE_QPS);
 
         checkNotNull(reqVo.getParamIdx(), "paramIdx");
         checkCondition(reqVo.getParamIdx() >= 0, "paramIdx must be greater than or equal to 0");
@@ -45,6 +48,32 @@ public class ParamFlowRuleVoChecker {
 
         checkNotNull(reqVo.getDurationInSec(), "durationInSec");
         checkCondition(reqVo.getDurationInSec() >= 0, "durationInSec must be greater than or equal to 0");
+
+        checkNotNull(reqVo.getClusterMode(), "clusterMode");
+        if (reqVo.getClusterMode()) {
+            AddParamFlowRuleReqVo.ParamFlowClusterConfigReqVo clusterConfigReqVo = reqVo.getClusterConfig();
+            checkNotNull(clusterConfigReqVo, "clusterConfig");
+
+            checkNotNull(clusterConfigReqVo.getThresholdType(), "thresholdType");
+            checkInValues(clusterConfigReqVo.getThresholdType(), "thresholdType", FLOW_THRESHOLD_AVG_LOCAL, FLOW_THRESHOLD_GLOBAL);
+
+            checkNotNull(clusterConfigReqVo.getFallbackToLocalWhenFail(), "fallbackToLocalWhenFail");
+        }
+
+        List<AddParamFlowRuleReqVo.ParamFlowItemReqVo> paramFlowItemList = reqVo.getParamFlowItemList();
+        if (paramFlowItemList != null) {
+            for (AddParamFlowRuleReqVo.ParamFlowItemReqVo itemReqVo : paramFlowItemList) {
+                String classType = itemReqVo.getClassType();
+                checkNotNull(classType, "classType");
+
+                String object = itemReqVo.getObject();
+                checkNotNull(object, "object");
+
+                Integer count = itemReqVo.getCount();
+                checkNotNull(count, "count");
+                checkCondition(count >= 0, "item count must be greater than or equal to 0");
+            }
+        }
     }
 
     public static void checkUpdate(UpdateParamFlowRuleReqVo reqVo) {
@@ -56,7 +85,7 @@ public class ParamFlowRuleVoChecker {
         checkCondition(reqVo.getId() > 0, "id must be greater than 0");
 
         checkNotNull(reqVo.getGrade(), "grade");
-        checkCondition(reqVo.getGrade() == RuleConstant.FLOW_GRADE_QPS, "grade in parameter flow control must be " + RuleConstant.FLOW_GRADE_QPS);
+        checkCondition(reqVo.getGrade() == FLOW_GRADE_QPS, "grade in parameter flow control must be 1");
 
         checkNotNull(reqVo.getParamIdx(), "paramIdx");
         checkCondition(reqVo.getParamIdx() >= 0, "paramIdx must be greater than or equal to 0");
@@ -66,6 +95,32 @@ public class ParamFlowRuleVoChecker {
 
         checkNotNull(reqVo.getDurationInSec(), "durationInSec");
         checkCondition(reqVo.getDurationInSec() >= 0, "durationInSec must be greater than or equal to 0");
+
+        checkNotNull(reqVo.getClusterMode(), "clusterMode");
+        if (reqVo.getClusterMode()) {
+            AddParamFlowRuleReqVo.ParamFlowClusterConfigReqVo clusterConfigReqVo = reqVo.getClusterConfig();
+            checkNotNull(clusterConfigReqVo, "clusterConfig");
+
+            checkNotNull(clusterConfigReqVo.getThresholdType(), "thresholdType");
+            checkInValues(clusterConfigReqVo.getThresholdType(), "thresholdType", FLOW_THRESHOLD_AVG_LOCAL, FLOW_THRESHOLD_GLOBAL);
+
+            checkNotNull(clusterConfigReqVo.getFallbackToLocalWhenFail(), "fallbackToLocalWhenFail");
+        }
+
+        List<AddParamFlowRuleReqVo.ParamFlowItemReqVo> paramFlowItemList = reqVo.getParamFlowItemList();
+        if (paramFlowItemList != null) {
+            for (AddParamFlowRuleReqVo.ParamFlowItemReqVo itemReqVo : paramFlowItemList) {
+                String classType = itemReqVo.getClassType();
+                checkNotNull(classType, "classType");
+
+                String object = itemReqVo.getObject();
+                checkNotNull(object, "object");
+
+                Integer count = itemReqVo.getCount();
+                checkNotNull(count, "count");
+                checkCondition(count >= 0, "item count must be greater than or equal to 0");
+            }
+        }
     }
 
     public static void checkDelete(DeleteParamFlowRuleReqVo reqVo) {

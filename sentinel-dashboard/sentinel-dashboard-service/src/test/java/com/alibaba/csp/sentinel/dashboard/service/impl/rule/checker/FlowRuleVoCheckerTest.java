@@ -43,29 +43,29 @@ public class FlowRuleVoCheckerTest {
     }
 
     @Test
-    public void testCheckAdd_app_null() {
+    public void testCheckAdd_app_blank() {
         AddFlowRuleReqVo reqVo = new AddFlowRuleReqVo();
         exception.expect(DashboardServiceException.class);
-        exception.expectMessage("app can't be null or empty");
+        exception.expectMessage("app can't be blank");
         FlowRuleVoChecker.checkAdd(reqVo);
     }
 
     @Test
-    public void testCheckAdd_resource_null() {
+    public void testCheckAdd_resource_blank() {
         AddFlowRuleReqVo reqVo = new AddFlowRuleReqVo();
         reqVo.setApp("product");
         exception.expect(DashboardServiceException.class);
-        exception.expectMessage("resource can't be null or empty");
+        exception.expectMessage("resource can't be blank");
         FlowRuleVoChecker.checkAdd(reqVo);
     }
 
     @Test
-    public void testCheckAdd_limitApp_null() {
+    public void testCheckAdd_limitApp_blank() {
         AddFlowRuleReqVo reqVo = new AddFlowRuleReqVo();
         reqVo.setApp("product");
         reqVo.setResource("/product/list");
         exception.expect(DashboardServiceException.class);
-        exception.expectMessage("limitApp can't be null or empty");
+        exception.expectMessage("limitApp can't be blank");
         FlowRuleVoChecker.checkAdd(reqVo);
     }
 
@@ -407,10 +407,10 @@ public class FlowRuleVoCheckerTest {
     }
 
     @Test
-    public void testCheckUpdate_app_null() {
+    public void testCheckUpdate_app_blank() {
         UpdateFlowRuleReqVo reqVo = new UpdateFlowRuleReqVo();
         exception.expect(DashboardServiceException.class);
-        exception.expectMessage("app can't be null or empty");
+        exception.expectMessage("app can't be blank");
         FlowRuleVoChecker.checkUpdate(reqVo);
     }
 
@@ -434,12 +434,12 @@ public class FlowRuleVoCheckerTest {
     }
 
     @Test
-    public void testCheckUpdate_limitApp_null() {
+    public void testCheckUpdate_limitApp_blank() {
         UpdateFlowRuleReqVo reqVo = new UpdateFlowRuleReqVo();
         reqVo.setApp("product");
         reqVo.setId(10001L);
         exception.expect(DashboardServiceException.class);
-        exception.expectMessage("limitApp can't be null or empty");
+        exception.expectMessage("limitApp can't be blank");
         FlowRuleVoChecker.checkUpdate(reqVo);
     }
 
@@ -781,10 +781,10 @@ public class FlowRuleVoCheckerTest {
     }
 
     @Test
-    public void testCheckDelete_app_null() {
+    public void testCheckDelete_app_blank() {
         DeleteFlowRuleReqVo reqVo = new DeleteFlowRuleReqVo();
         exception.expect(DashboardServiceException.class);
-        exception.expectMessage("app can't be null or empty");
+        exception.expectMessage("app can't be blank");
         FlowRuleVoChecker.checkDelete(reqVo);
     }
 

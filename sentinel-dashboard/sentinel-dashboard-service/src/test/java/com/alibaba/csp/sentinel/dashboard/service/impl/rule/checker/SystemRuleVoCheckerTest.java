@@ -43,10 +43,10 @@ public class SystemRuleVoCheckerTest {
     }
 
     @Test
-    public void testCheckAdd_app_null() {
+    public void testCheckAdd_app_blank() {
         AddSystemRuleReqVo reqVo = new AddSystemRuleReqVo();
         exception.expect(DashboardServiceException.class);
-        exception.expectMessage("app can't be null or empty");
+        exception.expectMessage("app can't be blank");
         SystemRuleVoChecker.checkAdd(reqVo);
     }
 
@@ -78,10 +78,10 @@ public class SystemRuleVoCheckerTest {
     }
 
     @Test
-    public void testCheckUpdate_app_null() {
+    public void testCheckUpdate_app_blank() {
         UpdateSystemRuleReqVo reqVo = new UpdateSystemRuleReqVo();
         exception.expect(DashboardServiceException.class);
-        exception.expectMessage("app can't be null or empty");
+        exception.expectMessage("app can't be blank");
         SystemRuleVoChecker.checkUpdate(reqVo);
     }
 
@@ -134,10 +134,10 @@ public class SystemRuleVoCheckerTest {
     }
 
     @Test
-    public void testCheckDelete_app_null() {
+    public void testCheckDelete_app_blank() {
         DeleteSystemRuleReqVo reqVo = new DeleteSystemRuleReqVo();
         exception.expect(DashboardServiceException.class);
-        exception.expectMessage("app can't be null or empty");
+        exception.expectMessage("app can't be blank");
         SystemRuleVoChecker.checkDelete(reqVo);
     }
 
