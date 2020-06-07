@@ -19,6 +19,7 @@ package com.alibaba.csp.sentinel.datasource.eureka;
 
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import org.junit.Assert;
@@ -32,6 +33,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+
+import static org.awaitility.Awaitility.await;
 
 /**
  * @author liyang
@@ -65,11 +70,16 @@ public class EurekaDataSourceTest {
                 });
             }
         });
+        FlowRuleManager.register2Property(eurekaDataSource.getProperty());
 
-        //waiting for instance registry to eureka
-        Thread.sleep(5 * 1000);
-        Assert.assertTrue(eurekaDataSource.readSource() != null);
-
+        await().timeout(15, TimeUnit.SECONDS)
+                .until(new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        return FlowRuleManager.getRules().size() > 0;
+                    }
+                });
+        Assert.assertTrue(FlowRuleManager.getRules().size() > 0);
     }
 
 
