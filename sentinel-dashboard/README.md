@@ -33,7 +33,7 @@ java -Dserver.port=8080 \
 
 | 参数 | 作用 |
 |--------|--------|
-|`Dcsp.sentinel.dashboard.server=localhost:8080`|向 Sentinel 接入端指定控制台的地址|
+|`-Dcsp.sentinel.dashboard.server=localhost:8080`|向 Sentinel 接入端指定控制台的地址|
 |`-Dproject.name=sentinel-dashboard`|向 Sentinel 指定应用名称，比如上面对应的应用名称就为 `sentinel-dashboard`|
 
 全部的配置项可以参考 [启动配置项文档](https://github.com/alibaba/Sentinel/wiki/%E5%90%AF%E5%8A%A8%E9%85%8D%E7%BD%AE%E9%A1%B9)。
@@ -45,6 +45,50 @@ java -Dserver.port=8080 \
 - `-Dsentinel.dashboard.auth.username=sentinel` 用于指定控制台的登录用户名为 `sentinel`；
 - `-Dsentinel.dashboard.auth.password=123456` 用于指定控制台的登录密码为 `123456`；如果省略这两个参数，默认用户和密码均为 `sentinel`；
 - `-Dserver.servlet.session.timeout=7200` 用于指定 Spring Boot 服务端 session 的过期时间，如 `7200` 表示 7200 秒；`60m` 表示 60 分钟，默认为 30 分钟；
+
+从 Sentinel 1.8.0 开始，Sentinel 控制台支持规则持久化配置，用户可以通过如下参数进行配置：
+
+- `-Drule.repository.type=xxx` xxx用于指定规则存储的类型，目前支持的类型有：memory、redis、naocs、zookeeper、apollo，不指定默认为memory。
+
+除了memory，另外四种存储可通过 xxx.properties 配置文件对存储的相关参数进行配置，配置文件与 sentinel-dashboard.jar 在同级目录。
+
+注：如果存储跟 sentinel-dashboard.jar 在同一台机器且全部使用默认配置，可省略 xxx.properties 文件。
+
+- redis.properties
+
+  redis.host=localhost
+
+  redis.port=6379
+
+  redis.password=
+
+  redis.database=
+
+  redis.timeoutMs=60000
+  
+  redis.channelSuffix=
+
+- nacos.properties
+
+  nacos.serverAddr=localhost
+
+  nacos.sentinelGroup=SENTINEL_GROUP
+
+  nacos.readTimeoutMs=3000
+
+- zookeeper.properties
+
+  zookeeper.connectString=localhost:2181
+
+  zookeeper.baseSleepTimeMs=1000
+
+  zookeeper.maxRetries=3
+
+- apollo.properties
+
+  apollo.portalUrl=http://localhost:10034
+
+  apollo.token=
 
 ## 2. 客户端接入
 
