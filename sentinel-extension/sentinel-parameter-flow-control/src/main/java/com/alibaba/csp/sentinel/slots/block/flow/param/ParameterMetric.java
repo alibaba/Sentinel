@@ -17,14 +17,15 @@ package com.alibaba.csp.sentinel.slots.block.flow.param;
 
 import java.lang.reflect.Array;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
 import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
-import com.alibaba.csp.sentinel.slots.statistic.cache.CopyOnWriteMap;
-import com.alibaba.csp.sentinel.util.function.Function;
+import com.alibaba.csp.sentinel.util.function.Consumer;
 
 /**
  * Metrics for frequent ("hot spot") parameters.
@@ -38,20 +39,21 @@ public class ParameterMetric {
     private static final int BASE_PARAM_MAX_CAPACITY = 4000;
     private static final int TOTAL_MAX_CAPACITY = 20_0000;
 
+    private final Object lock = new Object();
     /**
      * Format: (rule, (value, timeRecorder))
      *
      * @since 1.6.0
      */
-    private final CopyOnWriteMap<ParamFlowRule, CacheMap<Object, AtomicLong>> ruleTimeCounters = new CopyOnWriteMap<>();
+    private volatile Map<ParamFlowRule, CacheMap<Object, AtomicLong>> ruleTimeCounters = new HashMap<>();
 
     /**
      * Format: (rule, (value, tokenCounter))
      *
      * @since 1.6.0
      */
-    private final CopyOnWriteMap<ParamFlowRule, CacheMap<Object, AtomicLong>> ruleTokenCounter = new CopyOnWriteMap<>();
-    private final CopyOnWriteMap<Integer, CacheMap<Object, AtomicInteger>> threadCountMap = new CopyOnWriteMap<>();
+    private volatile Map<ParamFlowRule, CacheMap<Object, AtomicLong>> ruleTokenCounters = new HashMap<>();
+    private volatile Map<Integer, CacheMap<Object, AtomicInteger>> threadCountMap = new HashMap<>();
 
     /**
      * Get the token counter for given parameter rule.
@@ -61,7 +63,7 @@ public class ParameterMetric {
      * @since 1.6.0
      */
     public CacheMap<Object, AtomicLong> getRuleTokenCounter(ParamFlowRule rule) {
-        return ruleTokenCounter.get(rule);
+        return ruleTokenCounters.get(rule);
     }
 
     /**
@@ -75,43 +77,48 @@ public class ParameterMetric {
         return ruleTimeCounters.get(rule);
     }
 
-
-
     public void clear() {
-        ruleTimeCounters.clear();
-        ruleTokenCounter.clear();
-        threadCountMap.clear();
+        synchronized (lock) {
+            ruleTimeCounters = new HashMap<>(ruleTimeCounters.size());
+            ruleTokenCounters = new HashMap<>(ruleTokenCounters.size());
+            threadCountMap = new HashMap<>(threadCountMap.size());
+        }
     }
 
-    public void clearForRule(ParamFlowRule rule) {
-        ruleTimeCounters.remove(rule);
-        ruleTokenCounter.remove(rule);
-        threadCountMap.remove(rule.getParamIdx());
+    public void clearForRule(final ParamFlowRule rule) {
+        synchronized (lock) {
+            ruleTimeCounters = copyOnRemove(ruleTokenCounters, rule);
+            ruleTokenCounters = copyOnRemove(ruleTokenCounters, rule);
+            threadCountMap = copyOnRemove(threadCountMap, rule.getParamIdx());
+        }
     }
 
     public void initialize(final ParamFlowRule rule) {
-        ruleTimeCounters.computeIfAbsent(rule, new Function<ParamFlowRule, CacheMap<Object, AtomicLong>>() {
-            @Override
-            public CacheMap<Object, AtomicLong> apply(ParamFlowRule paramFlowRule) {
-                long size = Math.min(BASE_PARAM_MAX_CAPACITY * rule.getDurationInSec(), TOTAL_MAX_CAPACITY);
-                return new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(size);
+        if (!ruleTimeCounters.containsKey(rule)) {
+            synchronized (lock) {
+                if (ruleTimeCounters.get(rule) == null) {
+                    long size = Math.min(BASE_PARAM_MAX_CAPACITY * rule.getDurationInSec(), TOTAL_MAX_CAPACITY);
+                    ruleTimeCounters = copyOnPut(ruleTimeCounters, rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(size));
+                }
             }
-        });
+        }
 
-        ruleTokenCounter.computeIfAbsent(rule, new Function<ParamFlowRule, CacheMap<Object, AtomicLong>>() {
-            @Override
-            public CacheMap<Object, AtomicLong> apply(ParamFlowRule paramFlowRule) {
-                long size = Math.min(BASE_PARAM_MAX_CAPACITY * rule.getDurationInSec(), TOTAL_MAX_CAPACITY);
-                return ruleTokenCounter.put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(size));
+        if (!ruleTokenCounters.containsKey(rule)) {
+            synchronized (lock) {
+                if (ruleTokenCounters.get(rule) == null) {
+                    long size = Math.min(BASE_PARAM_MAX_CAPACITY * rule.getDurationInSec(), TOTAL_MAX_CAPACITY);
+                    ruleTokenCounters = copyOnPut(ruleTokenCounters, rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(size));
+                }
             }
-        });
+        }
 
-        threadCountMap.computeIfAbsent(rule.getParamIdx(), new Function<Integer, CacheMap<Object, AtomicInteger>>() {
-            @Override
-            public CacheMap<Object, AtomicInteger> apply(Integer integer) {
-                return new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(THREAD_COUNT_MAX_CAPACITY);
+        if (!threadCountMap.containsKey(rule.getParamIdx())) {
+            synchronized (lock) {
+                if (threadCountMap.get(rule.getParamIdx()) == null) {
+                    threadCountMap = copyOnPut(threadCountMap, rule.getParamIdx(), new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(THREAD_COUNT_MAX_CAPACITY));
+                }
             }
-        });
+        }
     }
 
     @SuppressWarnings("rawtypes")
@@ -246,15 +253,39 @@ public class ParameterMetric {
      *
      * @return the token counter map
      */
-    CopyOnWriteMap<ParamFlowRule, CacheMap<Object, AtomicLong>> getRuleTokenCounterMap() {
-        return ruleTokenCounter;
+    Map<ParamFlowRule, CacheMap<Object, AtomicLong>> getRuleTokenCounterMap() {
+        return ruleTokenCounters;
     }
 
-    CopyOnWriteMap<Integer, CacheMap<Object, AtomicInteger>> getThreadCountMap() {
+    Map<Integer, CacheMap<Object, AtomicInteger>> getThreadCountMap() {
         return threadCountMap;
     }
 
-    CopyOnWriteMap<ParamFlowRule, CacheMap<Object, AtomicLong>> getRuleTimeCounterMap() {
+    Map<ParamFlowRule, CacheMap<Object, AtomicLong>> getRuleTimeCounterMap() {
         return ruleTimeCounters;
+    }
+
+    Map cow(Map old, Consumer<Map> write) {
+        Map copy = new HashMap<>(old);
+        write.accept(copy);
+        return copy;
+    }
+
+    Map copyOnRemove(Map old, final Object key) {
+        return cow(old, new Consumer<Map>() {
+            @Override
+            public void accept(Map map) {
+                map.remove(key);
+            }
+        });
+    }
+
+    Map copyOnPut(Map old, final Object key, final Object value) {
+        return cow(old, new Consumer<Map>() {
+            @Override
+            public void accept(Map map) {
+                map.put(key, value);
+            }
+        });
     }
 }
