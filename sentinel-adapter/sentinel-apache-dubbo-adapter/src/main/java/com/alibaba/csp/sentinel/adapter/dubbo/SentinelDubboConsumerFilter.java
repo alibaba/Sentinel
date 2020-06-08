@@ -98,7 +98,7 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
             throw e;
         } finally {
             if (methodEntry != null) {
-                methodEntry.exit();
+                methodEntry.exit(1, invocation.getArguments());
             }
             if (interfaceEntry != null) {
                 interfaceEntry.exit();
