@@ -29,6 +29,7 @@ import com.alibaba.csp.sentinel.dashboard.repository.metric.MetricsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,6 +52,7 @@ public class MetricController {
     private static final long maxQueryIntervalMs = 1000 * 60 * 60;
 
     @Autowired
+    @Qualifier("lowMemoryMetricsRepository")
     private MetricsRepository<MetricEntity> metricStore;
 
     @ResponseBody
@@ -115,7 +117,8 @@ public class MetricController {
             List<MetricEntity> entities = metricStore.queryByAppAndResourceBetween(
                 app, resource, startTime, endTime);
             logger.debug("resource={}, entities.size()={}", resource, entities == null ? "null" : entities.size());
-            List<MetricVo> vos = MetricVo.fromMetricEntities(entities, resource);
+//            List<MetricVo> vos = MetricVo.fromMetricEntities(entities, resource);
+            List<MetricVo> vos = MetricVo.fromMetricEntities(entities);
             Iterable<MetricVo> vosSorted = sortMetricVoAndDistinct(vos);
             map.put(resource, vosSorted);
         }
@@ -155,7 +158,8 @@ public class MetricController {
         }
         List<MetricEntity> entities = metricStore.queryByAppAndResourceBetween(
             app, identity, startTime, endTime);
-        List<MetricVo> vos = MetricVo.fromMetricEntities(entities, identity);
+//        List<MetricVo> vos = MetricVo.fromMetricEntities(entities, identity);
+        List<MetricVo> vos = MetricVo.fromMetricEntities(entities);
         return Result.ofSuccess(sortMetricVoAndDistinct(vos));
     }
 
