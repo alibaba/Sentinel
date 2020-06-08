@@ -154,5 +154,3 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
         }
     }
 }
-
-
