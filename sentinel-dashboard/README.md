@@ -50,45 +50,9 @@ java -Dserver.port=8080 \
 
 - `-Drule.repository.type=xxx` xxx用于指定规则存储的类型，目前支持的类型有：memory、redis、naocs、zookeeper、apollo，不指定默认为memory。
 
-除了memory，另外四种存储可通过 xxx.properties 配置文件对存储的相关参数进行配置，配置文件与 sentinel-dashboard.jar 在同级目录。
+除了memory，另外四种存储可通过`xxx.properties`配置文件对存储的相关参数进行配置，配置文件与 sentinel-dashboard.jar 在同级目录。
 
-注：如果存储跟 sentinel-dashboard.jar 在同一台机器且全部使用默认配置，可省略 xxx.properties 文件。
-
-- redis.properties
-
-  redis.host=localhost
-
-  redis.port=6379
-
-  redis.password=
-
-  redis.database=
-
-  redis.timeoutMs=60000
-  
-  redis.channelSuffix=
-
-- nacos.properties
-
-  nacos.serverAddr=localhost
-
-  nacos.sentinelGroup=SENTINEL_GROUP
-
-  nacos.readTimeoutMs=3000
-
-- zookeeper.properties
-
-  zookeeper.connectString=localhost:2181
-
-  zookeeper.baseSleepTimeMs=1000
-
-  zookeeper.maxRetries=3
-
-- apollo.properties
-
-  apollo.portalUrl=http://localhost:10034
-
-  apollo.token=
+注：如果存储跟 sentinel-dashboard.jar 在同一台机器且全部使用默认配置，可省略`xxx.properties`文件。
 
 ## 2. 客户端接入
 
