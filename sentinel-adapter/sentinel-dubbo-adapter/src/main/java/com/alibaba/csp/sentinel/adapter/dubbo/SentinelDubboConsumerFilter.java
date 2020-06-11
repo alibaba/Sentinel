@@ -59,7 +59,7 @@ public class SentinelDubboConsumerFilter extends AbstractDubboFilter implements 
             String resourceName = getResourceName(invoker, invocation, DubboConfig.getDubboConsumerPrefix());
             interfaceEntry = SphU.entry(invoker.getInterface().getName(), ResourceTypeConstants.COMMON_RPC,
                 EntryType.OUT);
-            methodEntry = SphU.entry(resourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT);
+            methodEntry = SphU.entry(resourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT, invocation.getArguments());
 
             Result result = invoker.invoke(invocation);
             if (result.hasException()) {
@@ -77,7 +77,7 @@ public class SentinelDubboConsumerFilter extends AbstractDubboFilter implements 
             throw e;
         } finally {
             if (methodEntry != null) {
-                methodEntry.exit();
+                methodEntry.exit(1, invocation.getArguments());
             }
             if (interfaceEntry != null) {
                 interfaceEntry.exit();
