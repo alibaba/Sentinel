@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import java.util.Objects;
 
 /**
  * <p>
@@ -206,8 +207,9 @@ public class FlowRule extends AbstractRule {
         if (warmUpPeriodSec != rule.warmUpPeriodSec) { return false; }
         if (maxQueueingTimeMs != rule.maxQueueingTimeMs) { return false; }
         if (clusterMode != rule.clusterMode) { return false; }
-        if (refResource != null ? !refResource.equals(rule.refResource) : rule.refResource != null) { return false; }
-        return clusterConfig != null ? clusterConfig.equals(rule.clusterConfig) : rule.clusterConfig == null;
+        if (!Objects.equals(refResource, rule.refResource)) { return false; }
+        if(!Objects.equals(controller,rule.controller)){ return false; }
+        return Objects.equals(clusterConfig, rule.clusterConfig);
     }
 
     @Override
@@ -224,6 +226,7 @@ public class FlowRule extends AbstractRule {
         result = 31 * result + maxQueueingTimeMs;
         result = 31 * result + (clusterMode ? 1 : 0);
         result = 31 * result + (clusterConfig != null ? clusterConfig.hashCode() : 0);
+        result = 31 * result + (controller != null ? controller.hashCode() : 0);
         return result;
     }
 
