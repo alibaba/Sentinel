@@ -1,0 +1,11 @@
+---
+name: "sentinel jax rs extension"
+metadata:
+  keywords:
+    - "resteasy"
+    - "jaxrs"
+    - "sentinel"
+  categories:
+    - "web"
+    - "circuit breaker"
+  status: "preview"
