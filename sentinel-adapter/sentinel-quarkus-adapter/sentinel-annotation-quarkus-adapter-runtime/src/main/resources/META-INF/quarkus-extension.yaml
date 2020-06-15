@@ -1,0 +1,11 @@
+---
+name: "sentinel annotation extension"
+metadata:
+  keywords:
+    - "sentinel"
+    - "rate limit"
+    - "circuit breaker"
+  categories:
+    - "rate limit"
+    - "circuit breaker"
+  status: "preview"
