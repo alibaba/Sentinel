@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
  * @author Carpenter Lee
  * @author Eric Zhao
  */
-@Component
+@Component("inMemory")
 public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity> {
 
     private static final long MAX_METRIC_LIVE_TIME_MS = 1000 * 60 * 5;

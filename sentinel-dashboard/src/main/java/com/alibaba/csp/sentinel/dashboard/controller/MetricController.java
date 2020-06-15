@@ -15,30 +15,21 @@
  */
 package com.alibaba.csp.sentinel.dashboard.controller;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
-
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.MetricEntity;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
-import com.alibaba.csp.sentinel.dashboard.repository.metric.MetricsRepository;
+import com.alibaba.csp.sentinel.dashboard.domain.vo.MetricVo;
+import com.alibaba.csp.sentinel.dashboard.repository.metric.MetricsRepositoryHolder;
+import com.alibaba.csp.sentinel.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.alibaba.csp.sentinel.util.StringUtil;
-
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.MetricEntity;
-import com.alibaba.csp.sentinel.dashboard.domain.vo.MetricVo;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author leyou
@@ -52,8 +43,7 @@ public class MetricController {
     private static final long maxQueryIntervalMs = 1000 * 60 * 60;
 
     @Autowired
-    @Qualifier("lowMemoryMetricsRepository")
-    private MetricsRepository<MetricEntity> metricStore;
+    MetricsRepositoryHolder metricsRepositoryHolder;
 
     @ResponseBody
     @RequestMapping("/queryTopResourceMetric.json")
@@ -86,7 +76,7 @@ public class MetricController {
         if (endTime - startTime > maxQueryIntervalMs) {
             return Result.ofFail(-1, "time intervalMs is too big, must <= 1h");
         }
-        List<String> resources = metricStore.listResourcesOfApp(app);
+        List<String> resources = metricsRepositoryHolder.get().listResourcesOfApp(app);
         logger.debug("queryTopResourceMetric(), resources.size()={}", resources.size());
 
         if (resources == null || resources.isEmpty()) {
@@ -108,14 +98,14 @@ public class MetricController {
         List<String> topResource = new ArrayList<>();
         if (pageIndex <= totalPage) {
             topResource = resources.subList((pageIndex - 1) * pageSize,
-                Math.min(pageIndex * pageSize, resources.size()));
+                    Math.min(pageIndex * pageSize, resources.size()));
         }
         final Map<String, Iterable<MetricVo>> map = new ConcurrentHashMap<>();
         logger.debug("topResource={}", topResource);
         long time = System.currentTimeMillis();
         for (final String resource : topResource) {
-            List<MetricEntity> entities = metricStore.queryByAppAndResourceBetween(
-                app, resource, startTime, endTime);
+            List<MetricEntity> entities = metricsRepositoryHolder.get().queryByAppAndResourceBetween(
+                    app, resource, startTime, endTime);
             logger.debug("resource={}, entities.size()={}", resource, entities == null ? "null" : entities.size());
 //            List<MetricVo> vos = MetricVo.fromMetricEntities(entities, resource);
             List<MetricVo> vos = MetricVo.fromMetricEntities(entities);
@@ -156,8 +146,8 @@ public class MetricController {
         if (endTime - startTime > maxQueryIntervalMs) {
             return Result.ofFail(-1, "time intervalMs is too big, must <= 1h");
         }
-        List<MetricEntity> entities = metricStore.queryByAppAndResourceBetween(
-            app, identity, startTime, endTime);
+        List<MetricEntity> entities = metricsRepositoryHolder.get().queryByAppAndResourceBetween(
+                app, identity, startTime, endTime);
 //        List<MetricVo> vos = MetricVo.fromMetricEntities(entities, identity);
         List<MetricVo> vos = MetricVo.fromMetricEntities(entities);
         return Result.ofSuccess(sortMetricVoAndDistinct(vos));

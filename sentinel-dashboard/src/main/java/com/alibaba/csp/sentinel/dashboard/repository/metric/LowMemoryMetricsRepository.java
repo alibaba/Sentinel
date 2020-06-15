@@ -20,6 +20,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
+import javax.management.relation.RoleUnresolved;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,7 +33,7 @@ import java.util.stream.Collectors;
  * @author luoxy
  * @since 2020-06-08 114:48/1.0
  */
-@Component
+@Component("lowMemory")
 public class LowMemoryMetricsRepository implements MetricsRepository<MetricEntity> {
 
     private static final long MAX_METRIC_LIVE_TIME_MS = 1000 * 60 * 5;
@@ -179,7 +180,7 @@ class LowMetricEntity {
     private double rt;
 
     /**
-     * 本次聚合的总条数
+     * The total number of aggregations
      */
     private int count;
 
@@ -206,6 +207,9 @@ class LowMetricEntity {
     }
 
     public static LowMetricEntity copyOf(LowMetricEntity oldEntity) {
+        if(oldEntity == null){
+            throw new RuntimeException("the param of oldEntity can not be null");
+        }
         LowMetricEntity entity = new LowMetricEntity();
         entity.setGmtCreate(oldEntity.getGmtCreate());
         entity.setTimestamp(oldEntity.getTimestamp());
@@ -220,6 +224,9 @@ class LowMetricEntity {
 
 
     public static LowMetricEntity toLowMetricEntity(MetricEntity metricEntity) {
+        if(metricEntity == null){
+            throw new RuntimeException("the param of metricEntity can not be null");
+        }
         LowMetricEntity entity = new LowMetricEntity();
         Optional.ofNullable(metricEntity.getGmtCreate()).ifPresent(v -> entity.setGmtCreate(v.getTime()));
         Optional.ofNullable(metricEntity.getTimestamp()).ifPresent(v -> entity.setTimestamp(v.getTime()));
@@ -234,6 +241,9 @@ class LowMetricEntity {
 
 
     public static MetricEntity toMetricEntity(LowMetricEntity lowMetricEntity) {
+        if(lowMetricEntity == null){
+            throw new RuntimeException("the param of lowMetricEntity can not be null");
+        }
         MetricEntity entity = new MetricEntity();
         entity.setGmtCreate(new Date(lowMetricEntity.getGmtCreate()));
         entity.setTimestamp(new Date(lowMetricEntity.getTimestamp()));
