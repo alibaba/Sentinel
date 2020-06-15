@@ -16,21 +16,24 @@
 package com.alibaba.csp.sentinel.annotation.cdi.interceptor;
 
 import com.alibaba.csp.sentinel.Tracer;
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.MethodUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import javax.interceptor.InvocationContext;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
 /**
- * Some common functions for Sentinel annotation aspect.
+ * Some common functions for Sentinel annotation CDI extension.
  *
  * @author Eric Zhao
+ * @author seasidesky
  */
 public abstract class AbstractSentinelInterceptorSupport {
 
@@ -184,7 +187,15 @@ public abstract class AbstractSentinelInterceptorSupport {
     private Method extractDefaultFallbackMethod(InvocationContext ctx, String defaultFallback,
                                                 Class<?>[] locationClass) {
         if (StringUtil.isBlank(defaultFallback)) {
-            return null;
+            SentinelResource annotationClass = ctx.getTarget().getClass().getAnnotation(SentinelResource.class);
+            if (annotationClass != null && StringUtil.isNotBlank(annotationClass.defaultFallback())) {
+                defaultFallback = annotationClass.defaultFallback();
+                if (locationClass == null || locationClass.length < 1) {
+                    locationClass = annotationClass.fallbackClass();
+                }
+            } else {
+                return null;
+            }
         }
         boolean mustStatic = locationClass != null && locationClass.length >= 1;
         Class<?> clazz = mustStatic ? locationClass[0] : ctx.getTarget().getClass();
@@ -302,7 +313,7 @@ public abstract class AbstractSentinelInterceptorSupport {
         Class<?> targetClass = ctx.getTarget().getClass();
 
         Method method = getDeclaredMethodFor(targetClass, ctx.getMethod().getName(),
-                ctx.getMethod().getParameterTypes());
+            ctx.getMethod().getParameterTypes());
         if (method == null) {
             throw new IllegalStateException("Cannot resolve target method: " + ctx.getMethod().getName());
         }
