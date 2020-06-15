@@ -19,15 +19,18 @@ import com.alibaba.csp.sentinel.EntryType;
 
 import javax.enterprise.util.Nonbinding;
 import javax.interceptor.InterceptorBinding;
+
 import java.lang.annotation.*;
 
 /**
  * The annotation indicates a definition of Sentinel resource.
  *
  * @author Eric Zhao
+ * @author seasidesky
+ * @since 1.8.0
  */
 @InterceptorBinding
-@Target({ ElementType.METHOD, ElementType.TYPE })
+@Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface SentinelResourceBinding {
@@ -46,7 +49,6 @@ public @interface SentinelResourceBinding {
 
     /**
      * @return the classification (type) of the resource
-     * @since 1.7.0
      */
     @Nonbinding
     int resourceType() default 0;
@@ -80,7 +82,6 @@ public @interface SentinelResourceBinding {
      * with the original method.
      *
      * @return name of the default fallback method, empty by default
-     * @since 1.6.0
      */
     @Nonbinding
     String defaultFallback() default "";
@@ -92,14 +93,12 @@ public @interface SentinelResourceBinding {
      * must be static.
      *
      * @return the class where the fallback method is located (only single class)
-     * @since 1.6.0
      */
     @Nonbinding
     Class<?>[] fallbackClass() default {};
 
     /**
      * @return the list of exception classes to trace, {@link Throwable} by default
-     * @since 1.5.1
      */
     @Nonbinding
     Class<? extends Throwable>[] exceptionsToTrace() default {Throwable.class};
@@ -110,7 +109,6 @@ public @interface SentinelResourceBinding {
      * will be of higher precedence.
      *
      * @return the list of exception classes to ignore, empty by default
-     * @since 1.6.0
      */
     @Nonbinding
     Class<? extends Throwable>[] exceptionsToIgnore() default {};
