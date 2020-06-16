@@ -19,16 +19,17 @@ import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.ResourceTypeConstants;
 import com.alibaba.csp.sentinel.SphU;
+import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig;
 import com.alibaba.csp.sentinel.adapter.dubbo.fallback.DubboFallbackRegistry;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
@@ -53,26 +54,49 @@ public class SentinelDubboProviderFilter extends BaseSentinelDubboFilter {
     }
 
     @Override
+    String getMethodName(Invoker invoker, Invocation invocation) {
+        return DubboUtils.getResourceName(invoker, invocation, DubboConfig.getDubboProviderPrefix());
+    }
+
+    @Override
+    String getInterfaceName(Invoker invoker) {
+        return DubboUtils.getInterfaceName(invoker);
+    }
+
+    @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         // Get origin caller.
         String application = DubboUtils.getApplication(invocation, "");
-        RpcContext rpcContext = RpcContext.getContext();
         Entry interfaceEntry = null;
         Entry methodEntry = null;
+        String methodResourceName = getMethodName(invoker, invocation);
+        String interfaceResourceName = getInterfaceName(invoker);
         try {
-            String methodResourceName = DubboUtils.getResourceName(invoker, invocation, DubboConfig.getDubboProviderPrefix());
-            String interfaceResourceName = DubboConfig.getDubboInterfaceGroupAndVersionEnabled() ? invoker.getUrl().getColonSeparatedKey()
-                    : invoker.getInterface().getName();
             // Only need to create entrance context at provider side, as context will take effect
             // at entrance of invocation chain only (for inbound traffic).
             ContextUtil.enter(methodResourceName, application);
             interfaceEntry = SphU.entry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN);
-            rpcContext.set(DubboUtils.DUBBO_INTERFACE_ENTRY_KEY, interfaceEntry);
             methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN, invocation.getArguments());
-            rpcContext.set(DubboUtils.DUBBO_METHOD_ENTRY_KEY, methodEntry);
-            return invoker.invoke(invocation);
+            Result result = invoker.invoke(invocation);
+            if (result.hasException()) {
+                Tracer.traceEntry(result.getException(), interfaceEntry);
+                Tracer.traceEntry(result.getException(), methodEntry);
+            }
+            return result;
         } catch (BlockException e) {
             return DubboFallbackRegistry.getProviderFallback().handle(invoker, invocation, e);
+        } catch (RpcException e) {
+            Tracer.traceEntry(e, interfaceEntry);
+            Tracer.traceEntry(e, methodEntry);
+            throw e;
+        } finally {
+            if (methodEntry != null) {
+                methodEntry.exit(1, invocation.getArguments());
+            }
+            if (interfaceEntry != null) {
+                interfaceEntry.exit();
+            }
+            ContextUtil.exit();
         }
     }
 

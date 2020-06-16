@@ -16,13 +16,9 @@
 package com.alibaba.csp.sentinel.adapter.dubbo;
 
 
-import com.alibaba.csp.sentinel.Entry;
-import com.alibaba.csp.sentinel.Tracer;
-import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig;
-import com.alibaba.csp.sentinel.context.ContextUtil;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.rpc.*;
+import org.apache.dubbo.rpc.Filter;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
 
 /**
  * Base Class of the {@link SentinelDubboProviderFilter} and {@link SentinelDubboConsumerFilter}.
@@ -30,52 +26,25 @@ import org.apache.dubbo.rpc.*;
  * @author Zechao Zheng
  */
 
-public abstract class BaseSentinelDubboFilter extends ListenableFilter {
-    public BaseSentinelDubboFilter() {
-        this.listener = new SentinelDubboListener();
-    }
+public abstract class BaseSentinelDubboFilter implements Filter {
 
-    static class SentinelDubboListener implements Listener {
 
-        public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
-            onSuccess(appResponse, invoker);
-        }
+    /**
+     * Get method name of dubbo rpc
+     *
+     * @param invoker
+     * @param invocation
+     * @return
+     */
+    abstract String getMethodName(Invoker invoker, Invocation invocation);
 
-        //for compatible dubbo 2.7.5 rename onResponse to onMessage
-        public void onMessage(Result appResponse, Invoker<?> invoker, Invocation invocation) {
-            onSuccess(appResponse, invoker);
-        }
+    /**
+     * Get interface name of dubbo rpc
+     *
+     * @param invoker
+     * @return
+     */
+    abstract String getInterfaceName(Invoker invoker);
 
-        private void onSuccess(Result appResponse, Invoker<?> invoker) {
-            if (DubboConfig.getDubboBizExceptionTraceEnabled()) {
-                traceAndExit(appResponse.getException(), invoker.getUrl());
-            } else {
-                traceAndExit(null, invoker.getUrl());
-            }
-        }
 
-        @Override
-        public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-            traceAndExit(t, invoker.getUrl());
-        }
-
-    }
-
-    static void traceAndExit(Throwable throwable, URL url) {
-        Entry interfaceEntry = (Entry) RpcContext.getContext().get(DubboUtils.DUBBO_INTERFACE_ENTRY_KEY);
-        Entry methodEntry = (Entry) RpcContext.getContext().get(DubboUtils.DUBBO_METHOD_ENTRY_KEY);
-        if (methodEntry != null) {
-            Tracer.traceEntry(throwable, methodEntry);
-            methodEntry.exit();
-            RpcContext.getContext().remove(DubboUtils.DUBBO_METHOD_ENTRY_KEY);
-        }
-        if (interfaceEntry != null) {
-            Tracer.traceEntry(throwable, interfaceEntry);
-            interfaceEntry.exit();
-            RpcContext.getContext().remove(DubboUtils.DUBBO_INTERFACE_ENTRY_KEY);
-        }
-        if (CommonConstants.PROVIDER_SIDE.equals(url.getParameter(CommonConstants.SIDE_KEY))) {
-            ContextUtil.exit();
-        }
-    }
 }

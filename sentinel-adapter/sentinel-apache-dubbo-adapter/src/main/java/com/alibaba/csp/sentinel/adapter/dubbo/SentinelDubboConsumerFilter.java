@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.ResourceTypeConstants;
 import com.alibaba.csp.sentinel.SphU;
+import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig;
 import com.alibaba.csp.sentinel.adapter.dubbo.fallback.DubboFallbackRegistry;
 import com.alibaba.csp.sentinel.log.RecordLog;
@@ -28,9 +29,11 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.support.RpcUtils;
+
+import java.util.LinkedList;
+import java.util.function.BiConsumer;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 
@@ -53,32 +56,101 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
     }
 
     @Override
+    String getMethodName(Invoker invoker, Invocation invocation) {
+        return DubboUtils.getResourceName(invoker, invocation, DubboConfig.getDubboConsumerPrefix());
+    }
+
+    @Override
+    String getInterfaceName(Invoker invoker) {
+        return DubboUtils.getInterfaceName(invoker);
+    }
+
+    @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+        InvokeMode invokeMode = RpcUtils.getInvokeMode(invoker.getUrl(), invocation);
+        if (InvokeMode.SYNC == invokeMode) {
+            return syncInvoke(invoker, invocation);
+        } else {
+            return asyncInvoke(invoker, invocation);
+        }
+
+    }
+
+    private Result syncInvoke(Invoker<?> invoker, Invocation invocation) {
         Entry interfaceEntry = null;
         Entry methodEntry = null;
-        RpcContext rpcContext = RpcContext.getContext();
+        String methodResourceName = getMethodName(invoker, invocation);
+        String interfaceResourceName = getInterfaceName(invoker);
         try {
-            String methodResourceName = DubboUtils.getResourceName(invoker, invocation, DubboConfig.getDubboConsumerPrefix());
-            String interfaceResourceName = DubboConfig.getDubboInterfaceGroupAndVersionEnabled() ? invoker.getUrl().getColonSeparatedKey()
-                    : invoker.getInterface().getName();
-            InvokeMode invokeMode = RpcUtils.getInvokeMode(invoker.getUrl(), invocation);
-
-            if (InvokeMode.SYNC == invokeMode) {
-                interfaceEntry = SphU.entry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT);
-                rpcContext.set(DubboUtils.DUBBO_INTERFACE_ENTRY_KEY, interfaceEntry);
-                methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT, invocation.getArguments());
-            } else {
-                // should generate the AsyncEntry when the invoke model in future or async
-                interfaceEntry = SphU.asyncEntry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT);
-                rpcContext.set(DubboUtils.DUBBO_INTERFACE_ENTRY_KEY, interfaceEntry);
-                methodEntry = SphU.asyncEntry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT, 1, invocation.getArguments());
+            interfaceEntry = SphU.entry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT);
+            methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT, invocation.getArguments());
+            Result result = invoker.invoke(invocation);
+            if (result.hasException()) {
+                Tracer.traceEntry(result.getException(), interfaceEntry);
+                Tracer.traceEntry(result.getException(), methodEntry);
             }
-            rpcContext.set(DubboUtils.DUBBO_METHOD_ENTRY_KEY, methodEntry);
-            return invoker.invoke(invocation);
+            return result;
         } catch (BlockException e) {
+            return DubboFallbackRegistry.getConsumerFallback().handle(invoker, invocation, e);
+        } catch (RpcException e) {
+            Tracer.traceEntry(e, interfaceEntry);
+            Tracer.traceEntry(e, methodEntry);
+            throw e;
+        } finally {
+            if (methodEntry != null) {
+                methodEntry.exit(1, invocation.getArguments());
+            }
+            if (interfaceEntry != null) {
+                interfaceEntry.exit();
+            }
+        }
+    }
+
+
+    private Result asyncInvoke(Invoker<?> invoker, Invocation invocation) {
+        LinkedList<EntryHolder> queue = new LinkedList<>();
+        String methodResourceName = getMethodName(invoker, invocation);
+        String interfaceResourceName = getInterfaceName(invoker);
+        try {
+            queue.push(new EntryHolder(SphU.asyncEntry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT), null));
+            queue.push(new EntryHolder(SphU.asyncEntry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT, 1, invocation.getArguments()), invocation.getArguments()));
+            Result result = invoker.invoke(invocation);
+            result.whenCompleteWithContext(new BiConsumer<Result, Throwable>() {
+                @Override
+                public void accept(Result result, Throwable throwable) {
+                    while (!queue.isEmpty()) {
+                        EntryHolder holder = queue.pop();
+                        Tracer.traceEntry(result.getException(), holder.entry);
+                        exitEntry(holder);
+                    }
+                }
+            });
+            return result;
+        } catch (BlockException e) {
+            while (!queue.isEmpty()) {
+                exitEntry(queue.pop());
+            }
             return DubboFallbackRegistry.getConsumerFallback().handle(invoker, invocation, e);
         }
     }
+
+    class EntryHolder {
+
+        final private Entry entry;
+
+        final private Object[] params;
+
+        public EntryHolder(Entry entry, Object[] params) {
+            this.entry = entry;
+            this.params = params;
+        }
+    }
+
+    private void exitEntry(EntryHolder holder) {
+        if (holder.params != null) {
+            holder.entry.exit(1, holder.params);
+        } else {
+            holder.entry.exit();
+        }
+    }
 }
-
-

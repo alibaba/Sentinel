@@ -29,11 +29,10 @@ import org.junit.Test;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
+import static com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig.DUBBO_INTERFACE_GROUP_VERSION_ENABLED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * @author cdfive
@@ -45,7 +44,7 @@ public class DubboUtilsTest {
         SentinelConfig.setConfig("csp.sentinel.dubbo.resource.use.prefix", "true");
         SentinelConfig.setConfig(DubboConfig.DUBBO_PROVIDER_PREFIX, "");
         SentinelConfig.setConfig(DubboConfig.DUBBO_CONSUMER_PREFIX, "");
-        SentinelConfig.setConfig(DubboConfig.DUBBO_INTERFACE_GROUP_VERSION_ENABLED, "false");
+        SentinelConfig.setConfig(DUBBO_INTERFACE_GROUP_VERSION_ENABLED, "false");
     }
 
 
@@ -54,7 +53,7 @@ public class DubboUtilsTest {
         SentinelConfig.setConfig("csp.sentinel.dubbo.resource.use.prefix", "false");
         SentinelConfig.setConfig(DubboConfig.DUBBO_PROVIDER_PREFIX, "");
         SentinelConfig.setConfig(DubboConfig.DUBBO_CONSUMER_PREFIX, "");
-        SentinelConfig.setConfig(DubboConfig.DUBBO_INTERFACE_GROUP_VERSION_ENABLED, "false");
+        SentinelConfig.setConfig(DUBBO_INTERFACE_GROUP_VERSION_ENABLED, "false");
     }
 
 
@@ -144,6 +143,25 @@ public class DubboUtilsTest {
         assertEquals("my:dubbo:provider:com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService:sayHello(java.lang.String,int)", resourceName);
         resourceName = DubboUtils.getResourceName(invoker, invocation, DubboConfig.getDubboConsumerPrefix());
         assertEquals("my:dubbo:consumer:com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService:sayHello(java.lang.String,int)", resourceName);
+
+    }
+
+    @Test
+    public void testGetInterfaceName() {
+
+        URL url = URL.valueOf("dubbo://127.0.0.1:2181")
+                .addParameter(CommonConstants.VERSION_KEY, "1.0.0")
+                .addParameter(CommonConstants.GROUP_KEY, "grp1")
+                .addParameter(CommonConstants.INTERFACE_KEY, DemoService.class.getName());
+        Invoker invoker = mock(Invoker.class);
+        when(invoker.getUrl()).thenReturn(url);
+        when(invoker.getInterface()).thenReturn(DemoService.class);
+
+        SentinelConfig.setConfig(DUBBO_INTERFACE_GROUP_VERSION_ENABLED, "false");
+        assertEquals("com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService", DubboUtils.getInterfaceName(invoker));
+
+        SentinelConfig.setConfig(DUBBO_INTERFACE_GROUP_VERSION_ENABLED, "true");
+        assertEquals("com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService:1.0.0:grp1", DubboUtils.getInterfaceName(invoker));
 
     }
 }

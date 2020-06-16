@@ -23,6 +23,7 @@
         <module>sentinel-datasource-consul</module>
         <module>sentinel-datasource-etcd</module>
         <module>sentinel-datasource-eureka</module>
+        <module>sentinel-annotation-cdi-interceptor</module>
     </modules>
 
 </project>
