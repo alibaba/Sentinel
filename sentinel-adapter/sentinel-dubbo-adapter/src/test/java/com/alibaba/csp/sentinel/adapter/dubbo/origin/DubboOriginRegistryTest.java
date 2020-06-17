@@ -15,7 +15,7 @@ public class DubboOriginRegistryTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testDefaultOriginFail() {
-        DubboOriginRegistry.getDubboOrigin().handler(null, null);
+        DubboOriginParserRegistry.getDubboOriginParser().parse(null, null);
     }
 
     @Test
@@ -23,31 +23,31 @@ public class DubboOriginRegistryTest {
         RpcInvocation invocation = new RpcInvocation();
         String dubboName = "sentinel";
         invocation.setAttachment(DubboUtils.DUBBO_APPLICATION_KEY, dubboName);
-        String origin = DubboOriginRegistry.getDubboOrigin().handler(null, invocation);
+        String origin = DubboOriginParserRegistry.getDubboOriginParser().parse(null, invocation);
         Assert.assertEquals(dubboName, origin);
     }
 
     @Test
     public void testCustomOrigin() {
-        DubboOriginRegistry.setDubboOrigin(new DubboOrigin() {
+        DubboOriginParserRegistry.setDubboOriginParser(new DubboOriginParser() {
             @Override
-            public String handler(Invoker<?> invoker, Invocation invocation) {
+            public String parse(Invoker<?> invoker, Invocation invocation) {
                 return invocation.getAttachment(DubboUtils.DUBBO_APPLICATION_KEY, "default") + "_" + invocation
                     .getMethodName();
             }
         });
 
         RpcInvocation invocation = new RpcInvocation();
-        String origin = DubboOriginRegistry.getDubboOrigin().handler(null, invocation);
+        String origin = DubboOriginParserRegistry.getDubboOriginParser().parse(null, invocation);
         Assert.assertEquals("default_null", origin);
 
         String dubboName = "sentinel";
         invocation.setAttachment(DubboUtils.DUBBO_APPLICATION_KEY, dubboName);
-        origin = DubboOriginRegistry.getDubboOrigin().handler(null, invocation);
+        origin = DubboOriginParserRegistry.getDubboOriginParser().parse(null, invocation);
         Assert.assertEquals(dubboName + "_null", origin);
 
         invocation.setMethodName("hello");
-        origin = DubboOriginRegistry.getDubboOrigin().handler(null, invocation);
+        origin = DubboOriginParserRegistry.getDubboOriginParser().parse(null, invocation);
         Assert.assertEquals(dubboName + "_hello", origin);
     }
 
