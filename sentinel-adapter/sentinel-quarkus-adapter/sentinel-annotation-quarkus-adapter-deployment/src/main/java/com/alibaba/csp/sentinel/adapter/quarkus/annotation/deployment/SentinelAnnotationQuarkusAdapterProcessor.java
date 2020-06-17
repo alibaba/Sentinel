@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.annotation.quarkus.adapter.deployment;
+package com.alibaba.csp.sentinel.adapter.quarkus.annotation.deployment;
 
 import com.alibaba.csp.sentinel.annotation.cdi.interceptor.SentinelResourceInterceptor;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;

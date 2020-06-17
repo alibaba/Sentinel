@@ -1,12 +1,13 @@
 ---
-name: "sentinel native image extension"
+name: "Sentinel native image extension"
 metadata:
   keywords:
     - "sentinel"
-    - "rate limit"
-    - "circuit breaker"
-    - "native image"
+    - "rate-limiting"
+    - "circuit-breaker"
+    - "native-image"
+    - "fault-tolerance"
   categories:
-    - "rate limit"
-    - "circuit breaker"
+    - "cloud"
+    - "fault-tolerance"
   status: "preview"
