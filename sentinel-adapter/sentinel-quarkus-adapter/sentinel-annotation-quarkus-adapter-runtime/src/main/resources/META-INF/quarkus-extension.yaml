@@ -1,11 +1,13 @@
 ---
-name: "sentinel annotation extension"
+name: "Sentinel annotation CDI extension"
 metadata:
   keywords:
     - "sentinel"
-    - "rate limit"
-    - "circuit breaker"
+    - "rate-limiting"
+    - "resiliency"
+    - "circuit-breaker"
+    - "fault-tolerance"
   categories:
-    - "rate limit"
-    - "circuit breaker"
+    - "fault-tolerance"
+    - "cloud"
   status: "preview"
