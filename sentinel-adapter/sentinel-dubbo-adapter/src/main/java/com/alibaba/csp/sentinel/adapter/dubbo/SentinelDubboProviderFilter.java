@@ -22,7 +22,7 @@ import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig;
 import com.alibaba.csp.sentinel.adapter.dubbo.fallback.DubboFallbackRegistry;
-import com.alibaba.csp.sentinel.adapter.dubbo.origin.DubboOriginRegistry;
+import com.alibaba.csp.sentinel.adapter.dubbo.origin.DubboOriginParserRegistry;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
@@ -56,7 +56,10 @@ public class SentinelDubboProviderFilter extends AbstractDubboFilter implements 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         // Get origin caller.
-        String origin = DubboOriginRegistry.getDubboOrigin().handler(invoker, invocation);
+        String origin = DubboOriginParserRegistry.getDubboOriginParser().parse(invoker, invocation);
+        if (null == origin) {
+            origin = "";
+        }
 
         Entry interfaceEntry = null;
         Entry methodEntry = null;

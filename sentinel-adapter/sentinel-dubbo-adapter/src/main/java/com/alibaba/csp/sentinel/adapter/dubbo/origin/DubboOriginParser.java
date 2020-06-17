@@ -5,20 +5,20 @@ import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 
 /**
- * Customized handler parser in Dubbo provider filter. {@link Context#getOrigin()}
+ * Customized origin parse in Dubbo provider filter. {@link Context#getOrigin()}
  *
  * @author tc
  * @date 2020/6/10
  */
-public interface DubboOrigin {
+public interface DubboOriginParser {
 
     /**
-     * Handle the handler parser.
+     * Handle the origin parse.
      *
      * @param invoker    Dubbo invoker
      * @param invocation Dubbo invocation
-     * @return handler result
+     * @return parse result
      */
-    String handler(Invoker<?> invoker, Invocation invocation);
+    String parse(Invoker<?> invoker, Invocation invocation);
 
 }
