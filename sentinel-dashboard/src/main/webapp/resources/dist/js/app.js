@@ -162,6 +162,20 @@ angular.module("sentinelDashboardApp", ["oc.lazyLoad", "ui.router", "ui.bootstra
                 return e.load({name: "sentinelDashboardApp", files: ["app/scripts/controllers/degrade.js"]})
             }]
         }
+    }).state('dashboard.degrade_v2', {
+        templateUrl: 'app/views/degrade_v2.html',
+        url: '/v2/degrade/:app',
+        controller: 'DegradeCtl_v2',
+        resolve: {
+            loadMyFiles: ['$ocLazyLoad', function ($ocLazyLoad) {
+                return $ocLazyLoad.load({
+                    name: 'sentinelDashboardApp',
+                    files: [
+                        'app/scripts/controllers/degrade_v2.js',
+                    ]
+                });
+            }]
+        }
     }).state("dashboard.system", {
         templateUrl: "app/views/system.html",
         url: "/system/:app",
@@ -333,6 +347,38 @@ angular.module("sentinelDashboardApp", ["oc.lazyLoad", "ui.router", "ui.bootstra
     }, this.deleteRule = function (e) {
         var t = {id: e.id, app: e.app};
         return a({url: "/degrade/delete.json", params: t, method: "GET"})
+    }, this.checkRuleValid = function (e) {
+        return void 0 === e.resource || "" === e.resource ? (alert("资源名称不能为空"), !1) : void 0 === e.grade || e.grade < 0 ? (alert("未知的降级策略"), !1) : void 0 === e.count || "" === e.count || e.count < 0 ? (alert("降级阈值不能为空或小于 0"), !1) : void 0 === e.timeWindow || "" === e.timeWindow || e.timeWindow <= 0 ? (alert("降级时间窗口必须大于 0"), !1) : !(1 == e.grade && 1 < e.count) || (alert("异常比率超出范围：[0.0 - 1.0]"), !1)
+    }
+}]), (app = angular.module("sentinelDashboardApp")).service("DegradeService_v2", ["$http", function (a) {
+    this.queryMachineRules = function (e, t, r) {
+        return a({url: "/v2/degrade/rules.json", params: {app: e, ip: t, port: r}, method: "GET"})
+    }, this.newRule = function (e) {
+        var t = {
+            id: e.id,
+            resource: e.resource,
+            limitApp: e.limitApp,
+            count: e.count,
+            timeWindow: e.timeWindow,
+            grade: e.grade,
+            app: e.app,
+            ip: e.ip,
+            port: e.port
+        };
+        return a({url: "/v2/degrade/new.json", params: t, method: "GET"})
+    }, this.saveRule = function (e) {
+        var t = {
+            id: e.id,
+            resource: e.resource,
+            limitApp: e.limitApp,
+            grade: e.grade,
+            count: e.count,
+            timeWindow: e.timeWindow
+        };
+        return a({url: "/v2/degrade/save.json", params: t, method: "GET"})
+    }, this.deleteRule = function (e) {
+        var t = {id: e.id, app: e.app};
+        return a({url: "/v2/degrade/delete.json", params: t, method: "GET"})
     }, this.checkRuleValid = function (e) {
         return void 0 === e.resource || "" === e.resource ? (alert("资源名称不能为空"), !1) : void 0 === e.grade || e.grade < 0 ? (alert("未知的降级策略"), !1) : void 0 === e.count || "" === e.count || e.count < 0 ? (alert("降级阈值不能为空或小于 0"), !1) : void 0 === e.timeWindow || "" === e.timeWindow || e.timeWindow <= 0 ? (alert("降级时间窗口必须大于 0"), !1) : !(1 == e.grade && 1 < e.count) || (alert("异常比率超出范围：[0.0 - 1.0]"), !1)
     }
