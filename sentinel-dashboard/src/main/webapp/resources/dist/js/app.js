@@ -125,6 +125,20 @@ angular.module("sentinelDashboardApp", ["oc.lazyLoad", "ui.router", "ui.bootstra
                 return e.load({name: "sentinelDashboardApp", files: ["app/scripts/controllers/authority.js"]})
             }]
         }
+    }).state('dashboard.authority_v2', {
+        templateUrl: 'app/views/authority_v2.html',
+        url: '/v2/authority/:app',
+        controller: 'AuthorityRuleController_v2',
+        resolve: {
+            loadMyFiles: ['$ocLazyLoad', function ($ocLazyLoad) {
+                return $ocLazyLoad.load({
+                    name: 'sentinelDashboardApp',
+                    files: [
+                        'app/scripts/controllers/authority_v2.js',
+                    ]
+                });
+            }]
+        }
     }).state("dashboard.degrade", {
         templateUrl: "app/views/degrade.html",
         url: "/degrade/:app",
@@ -414,6 +428,18 @@ angular.module("sentinelDashboardApp", ["oc.lazyLoad", "ui.router", "ui.bootstra
         return a({url: "/authority/rule/" + e.id, data: e, method: "PUT"})
     }, this.deleteRule = function (e) {
         return a({url: "/authority/rule/" + e.id, method: "DELETE"})
+    }, this.checkRuleValid = function (e) {
+        return void 0 === e.resource || "" === e.resource ? (alert("资源名称不能为空"), !1) : void 0 === e.limitApp || "" === e.limitApp ? (alert("流控针对应用不能为空"), !1) : void 0 !== e.strategy || (alert("必须选择黑白名单模式"), !1)
+    }
+}]), angular.module("sentinelDashboardApp").service("AuthorityRuleService_v2", ["$http", function (a) {
+    this.queryMachineRules = function (e, t, r) {
+        return a({url: "/v2/authority/rules", params: {app: e, ip: t, port: r}, method: "GET"})
+    }, this.addNewRule = function (e) {
+        return a({url: "/v2/authority/rule", data: e, method: "POST"})
+    }, this.saveRule = function (e) {
+        return a({url: "/v2/authority/rule/" + e.id, data: e, method: "PUT"})
+    }, this.deleteRule = function (e) {
+        return a({url: "/v2/authority/rule/" + e.id, method: "DELETE"})
     }, this.checkRuleValid = function (e) {
         return void 0 === e.resource || "" === e.resource ? (alert("资源名称不能为空"), !1) : void 0 === e.limitApp || "" === e.limitApp ? (alert("流控针对应用不能为空"), !1) : void 0 !== e.strategy || (alert("必须选择黑白名单模式"), !1)
     }
