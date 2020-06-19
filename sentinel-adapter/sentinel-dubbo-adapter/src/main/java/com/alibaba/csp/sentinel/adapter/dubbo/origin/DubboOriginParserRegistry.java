@@ -28,8 +28,8 @@ public final class DubboOriginParserRegistry {
         return dubboOriginParser;
     }
 
-    public static void setDubboOriginParser(DubboOriginParser dubboOrigin) {
-        DubboOriginParserRegistry.dubboOriginParser = dubboOrigin;
+    public static void setDubboOriginParser(DubboOriginParser dubboOriginParser) {
+        DubboOriginParserRegistry.dubboOriginParser = dubboOriginParser;
     }
 
     private DubboOriginParserRegistry() {}

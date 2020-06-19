@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.adapter.dubbo.DubboUtils;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcInvocation;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -26,6 +27,11 @@ import org.junit.Test;
  * @author tiecheng
  */
 public class DubboOriginRegistryTest {
+
+    @After
+    public void cleanUp() {
+        DubboOriginParserRegistry.setDubboOriginParser(new DefaultDubboOriginParser());
+    }
 
     @Test(expected = IllegalArgumentException.class)
     public void testDefaultOriginParserFail() {
@@ -63,9 +69,6 @@ public class DubboOriginRegistryTest {
         invocation.setMethodName("hello");
         origin = DubboOriginParserRegistry.getDubboOriginParser().parse(null, invocation);
         Assert.assertEquals(dubboName + "_hello", origin);
-
-        // if not set default, effect on SentinelDubboProviderFilterTest when mvn integration-test
-        DubboOriginParserRegistry.setDubboOriginParser(new DefaultDubboOriginParser());
     }
 
 }
