@@ -28,12 +28,12 @@ import org.junit.Test;
 public class DubboOriginRegistryTest {
 
     @Test(expected = IllegalArgumentException.class)
-    public void testDefaultOriginFail() {
+    public void testDefaultOriginParserFail() {
         DubboOriginParserRegistry.getDubboOriginParser().parse(null, null);
     }
 
     @Test
-    public void testDefaultOriginSuccess() {
+    public void testDefaultOriginParserSuccess() {
         RpcInvocation invocation = new RpcInvocation();
         String dubboName = "sentinel";
         invocation.setAttachment(DubboUtils.DUBBO_APPLICATION_KEY, dubboName);
@@ -42,7 +42,7 @@ public class DubboOriginRegistryTest {
     }
 
     @Test
-    public void testCustomOrigin() {
+    public void testCustomOriginParser() {
         DubboOriginParserRegistry.setDubboOriginParser(new DubboOriginParser() {
             @Override
             public String parse(Invoker<?> invoker, Invocation invocation) {
@@ -63,6 +63,9 @@ public class DubboOriginRegistryTest {
         invocation.setMethodName("hello");
         origin = DubboOriginParserRegistry.getDubboOriginParser().parse(null, invocation);
         Assert.assertEquals(dubboName + "_hello", origin);
+
+        // if not set default, effect on SentinelDubboProviderFilterTest when mvn integration-test
+        DubboOriginParserRegistry.setDubboOriginParser(new DefaultDubboOriginParser());
     }
 
 }
