@@ -154,6 +154,21 @@ angular
           }]
         }
       })
+      .state('dashboard.paramFlow_v2', {
+        templateUrl: 'app/views/param_flow_v2.html',
+        url: '/v2/paramFlow/:app',
+        controller: 'ParamFlowController_v2',
+        resolve: {
+          loadMyFiles: ['$ocLazyLoad', function ($ocLazyLoad) {
+            return $ocLazyLoad.load({
+              name: 'sentinelDashboardApp',
+              files: [
+                'app/scripts/controllers/param_flow_v2.js',
+              ]
+            });
+          }]
+        }
+      })
 
       .state('dashboard.clusterAppAssignManage', {
           templateUrl: 'app/views/cluster_app_assign_manage.html',

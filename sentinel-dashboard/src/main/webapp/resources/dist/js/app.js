@@ -71,6 +71,20 @@ angular.module("sentinelDashboardApp", ["oc.lazyLoad", "ui.router", "ui.bootstra
                 return e.load({name: "sentinelDashboardApp", files: ["app/scripts/controllers/param_flow.js"]})
             }]
         }
+    }).state('dashboard.paramFlow_v2', {
+        templateUrl: 'app/views/param_flow_v2.html',
+        url: '/v2/paramFlow/:app',
+        controller: 'ParamFlowController_v2',
+        resolve: {
+            loadMyFiles: ['$ocLazyLoad', function ($ocLazyLoad) {
+                return $ocLazyLoad.load({
+                    name: 'sentinelDashboardApp',
+                    files: [
+                        'app/scripts/controllers/param_flow_v2.js',
+                    ]
+                });
+            }]
+        }
     }).state("dashboard.clusterAppAssignManage", {
         templateUrl: "app/views/cluster_app_assign_manage.html",
         url: "/cluster/assign_manage/:app",
@@ -408,6 +422,31 @@ angular.module("sentinelDashboardApp", ["oc.lazyLoad", "ui.router", "ui.bootstra
         return a({url: "/paramFlow/rule/" + e.id, data: e, method: "PUT"})
     }, this.deleteRule = function (e) {
         return a({url: "/paramFlow/rule/" + e.id, method: "DELETE"})
+    }, this.checkRuleValid = function (e) {
+        if (!e.resource || "" === e.resource) return alert("资源名称不能为空"), !1;
+        if (1 != e.grade) return alert("未知的限流模式"), !1;
+        if (e.count < 0) return alert("限流阈值必须大于等于 0"), !1;
+        if (void 0 === e.paramIdx || "" === e.paramIdx || isNaN(e.paramIdx) || e.paramIdx < 0) return alert("热点参数索引必须大于等于 0"), !1;
+        if (void 0 !== e.paramFlowItemList) for (var t = 0; t < e.paramFlowItemList.length; t++) {
+            var r = e.paramFlowItemList[t];
+            if (o(r)) return alert("热点参数例外项不合法，请检查值和类型是否正确：参数为 " + r.object + ", 类型为 " + r.classType + ", 限流阈值为 " + r.count), !1
+        }
+        return !0
+    }
+}]), angular.module("sentinelDashboardApp").service("ParamFlowService_v2", ["$http", function (a) {
+    function o(e) {
+        return !("int" !== (r = e.classType) && "double" !== r && "float" !== r && "long" !== r && "short" !== r || void 0 !== (t = e.object) && "" !== t && !isNaN(t)) || (!!("byte" === e.classType && (a = e.object, o = -128, i = 127, void 0 === a || "" === a || isNaN(a) || a < o || i < a)) || (void 0 === e.object || void 0 === e.classType || (void 0 === (l = e.count) || "" === l || isNaN(l) || l < 0)));
+        var t, r, a, o, i, l
+    }
+
+    this.queryMachineRules = function (e, t, r) {
+        return a({url: "/v2/paramFlow/rules", params: {app: e, ip: t, port: r}, method: "GET"})
+    }, this.addNewRule = function (e) {
+        return a({url: "/v2/paramFlow/rule", data: e, method: "POST"})
+    }, this.saveRule = function (e) {
+        return a({url: "/v2/paramFlow/rule/" + e.id, data: e, method: "PUT"})
+    }, this.deleteRule = function (e) {
+        return a({url: "/v2/paramFlow/rule/" + e.id, method: "DELETE"})
     }, this.checkRuleValid = function (e) {
         if (!e.resource || "" === e.resource) return alert("资源名称不能为空"), !1;
         if (1 != e.grade) return alert("未知的限流模式"), !1;
