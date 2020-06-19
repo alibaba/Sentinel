@@ -234,6 +234,21 @@ angular
                 }]
             }
        })
+      .state('dashboard.authority_v2', {
+            templateUrl: 'app/views/authority_v2.html',
+            url: '/v2/authority/:app',
+            controller: 'AuthorityRuleController_v2',
+            resolve: {
+                loadMyFiles: ['$ocLazyLoad', function ($ocLazyLoad) {
+                    return $ocLazyLoad.load({
+                        name: 'sentinelDashboardApp',
+                        files: [
+                            'app/scripts/controllers/authority_v2.js',
+                        ]
+                    });
+                }]
+            }
+       })
 
       .state('dashboard.degrade', {
         templateUrl: 'app/views/degrade.html',
