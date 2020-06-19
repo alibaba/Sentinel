@@ -146,8 +146,10 @@ app.controller('FlowControllerV2', ['$scope', '$stateParams', 'FlowServiceV2', '
     function deleteRule(rule) {
       FlowService.deleteRule(rule).success(function (data) {
         if (data.code == 0) {
-          getMachineRules();
           confirmDialog.close();
+          setTimeout(function(){
+            getMachineRules();
+          },500);
         } else {
           alert('失败!');
         }
@@ -157,8 +159,10 @@ app.controller('FlowControllerV2', ['$scope', '$stateParams', 'FlowServiceV2', '
     function addNewRule(rule) {
       FlowService.newRule(rule).success(function (data) {
         if (data.code == 0) {
-          getMachineRules();
           flowRuleDialog.close();
+          setTimeout(function(){
+            getMachineRules();
+          },500);
         } else {
           alert('失败!');
         }
@@ -175,12 +179,14 @@ app.controller('FlowControllerV2', ['$scope', '$stateParams', 'FlowServiceV2', '
     function saveRule(rule, edit) {
       FlowService.saveRule(rule).success(function (data) {
         if (data.code == 0) {
-          getMachineRules();
           if (edit) {
             flowRuleDialog.close();
           } else {
             confirmDialog.close();
           }
+          setTimeout(function(){
+            getMachineRules();
+          },500);
         } else {
           alert('失败!');
         }
