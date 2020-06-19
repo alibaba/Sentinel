@@ -143,6 +143,15 @@ angular.module("sentinelDashboardApp", ["oc.lazyLoad", "ui.router", "ui.bootstra
                 return e.load({name: "sentinelDashboardApp", files: ["app/scripts/controllers/system.js"]})
             }]
         }
+    }).state("dashboard.system_v2", {
+        templateUrl: "app/views/system_v2.html",
+        url: "/v2/system/:app",
+        controller: "SystemCtl_v2",
+        resolve: {
+            loadMyFiles: ["$ocLazyLoad", function (e) {
+                return e.load({name: "sentinelDashboardApp", files: ["app/scripts/controllers/system_v2.js"]})
+            }]
+        }
     }).state("dashboard.machine", {
         templateUrl: "app/views/machine.html",
         url: "/app/:app",
@@ -319,6 +328,27 @@ angular.module("sentinelDashboardApp", ["oc.lazyLoad", "ui.router", "ui.bootstra
     }, this.deleteRule = function (e) {
         var t = {id: e.id, app: e.app};
         return a({url: "/system/delete.json", params: t, method: "GET"})
+    }
+}]),(app = angular.module("sentinelDashboardApp")).service("SystemService_v2", ["$http", function (a) {
+    this.queryMachineRules = function (e, t, r) {
+        return a({url: "/v2/system/rules.json", params: {app: e, ip: t, port: r}, method: "GET"})
+    }, this.newRule = function (e) {
+        var t = {app: e.app, ip: e.ip, port: e.port};
+        return 0 == e.grade ? t.highestSystemLoad = e.highestSystemLoad : 1 == e.grade ? t.avgRt = e.avgRt : 2 == e.grade ? t.maxThread = e.maxThread : 3 == e.grade ? t.qps = e.qps : 4 == e.grade && (t.highestCpuUsage = e.highestCpuUsage), a({
+            url: "/v2/system/new.json",
+            params: t,
+            method: "GET"
+        })
+    }, this.saveRule = function (e) {
+        var t = {id: e.id};
+        return 0 == e.grade ? t.highestSystemLoad = e.highestSystemLoad : 1 == e.grade ? t.avgRt = e.avgRt : 2 == e.grade ? t.maxThread = e.maxThread : 3 == e.grade ? t.qps = e.qps : 4 == e.grade && (t.highestCpuUsage = e.highestCpuUsage), a({
+            url: "/v2/system/save.json",
+            params: t,
+            method: "GET"
+        })
+    }, this.deleteRule = function (e) {
+        var t = {id: e.id, app: e.app};
+        return a({url: "/v2/system/delete.json", params: t, method: "GET"})
     }
 }]), (app = angular.module("sentinelDashboardApp")).service("MachineService", ["$http", "$httpParamSerializerJQLike", function (a, o) {
     this.getAppMachines = function (e) {
