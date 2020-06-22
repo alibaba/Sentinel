@@ -89,7 +89,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class StatisticNode implements Node {
 
-    private transient volatile double utilityIncrease = 100.00;
+    private transient volatile double utilityIncrease;
     /**
      * Holds statistics of the recent {@code INTERVAL} seconds. The {@code INTERVAL} is divided into time spans
      * by given {@code sampleCount}.

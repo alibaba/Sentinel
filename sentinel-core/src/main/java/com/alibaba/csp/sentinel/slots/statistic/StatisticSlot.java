@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.slots.statistic;
 import java.util.Collection;
 
 import com.alibaba.csp.sentinel.node.Node;
+import com.alibaba.csp.sentinel.node.QLearningMetrix;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlotEntryCallback;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlotExitCallback;
 import com.alibaba.csp.sentinel.slots.block.flow.PriorityWaitException;
@@ -61,8 +62,17 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
                       boolean prioritized, Object... args) throws Throwable {
         try {
+            QLearningMetrix testS = QLearningMetrix.getInstance();
+
+            final long l = System.currentTimeMillis();
+            final int i = (int)( l % 100 );
+            if (i > 90) {
+                testS.setTest(200.00);
+            }
+//            System.out.println(node.getUtilityIncrease());
+//            System.out.println(Constants.ENTRY_NODE.getUtilityIncrease());
+            System.out.println(testS.getTest());
             System.out.println("**************************************************************");
-            System.out.println(Constants.ENTRY_NODE.getUtilityIncrease());
             // Do some checking.
             // 统计Ut = log(QPS) - log(RT)
             successQPS = Constants.ENTRY_NODE.successQps();
