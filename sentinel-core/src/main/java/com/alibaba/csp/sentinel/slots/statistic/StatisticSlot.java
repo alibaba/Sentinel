@@ -51,10 +51,24 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 @SpiOrder(-7000)
 public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
+    public static double successQPS;
+    public static double avg_RT;
+    public static double currentUtility;
+    public static double nextUtility;
+    public static double UtilityIncrease;
+
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
                       boolean prioritized, Object... args) throws Throwable {
         try {
+            System.out.println("**************************************************************");
+            System.out.println(Constants.ENTRY_NODE.getUtilityIncrease());
+            // Do some checking.
+            // 统计Ut = log(QPS) - log(RT)
+            successQPS = Constants.ENTRY_NODE.successQps();
+            avg_RT = Constants.ENTRY_NODE.avgRt();
+            currentUtility = Math.log(successQPS) - Math.log(avg_RT);
+
             // Do some checking.
             fireEntry(context, resourceWrapper, node, count, prioritized, args);
 
@@ -78,6 +92,17 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             for (ProcessorSlotEntryCallback<DefaultNode> handler : StatisticSlotCallbackRegistry.getEntryCallbacks()) {
                 handler.onPass(context, resourceWrapper, node, count, args);
             }
+
+            //统计Ut_interval
+            // Request passed, add thread count and pass count.
+
+            successQPS = Constants.ENTRY_NODE.successQps();
+            avg_RT = Constants.ENTRY_NODE.avgRt();
+            nextUtility = Math.log(successQPS) - Math.log(avg_RT);
+
+            //计算效用的增量
+            UtilityIncrease = nextUtility - currentUtility;
+
         } catch (PriorityWaitException ex) {
             node.increaseThreadNum();
             if (context.getCurEntry().getOriginNode() != null) {
@@ -94,6 +119,7 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 handler.onPass(context, resourceWrapper, node, count, args);
             }
         } catch (BlockException e) {
+
             // Blocked, set block exception to current entry.
             context.getCurEntry().setBlockError(e);
 
@@ -112,8 +138,17 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             for (ProcessorSlotEntryCallback<DefaultNode> handler : StatisticSlotCallbackRegistry.getEntryCallbacks()) {
                 handler.onBlocked(e, context, resourceWrapper, node, count, args);
             }
+            //计算效用增量
+            successQPS = Constants.ENTRY_NODE.successQps();
+            avg_RT = Constants.ENTRY_NODE.avgRt();
+            nextUtility = Math.log(successQPS) - Math.log(avg_RT);
+
+            UtilityIncrease = nextUtility - currentUtility;
+
+            node.setUtilityIncrease(UtilityIncrease);
 
             throw e;
+
         } catch (Throwable e) {
             // Unexpected internal error, set error to current entry.
             context.getCurEntry().setError(e);

@@ -180,6 +180,18 @@ public interface Node extends OccupySupport, DebugSupport {
     void increaseBlockQps(int count);
 
     /**
+     * Set UtilityIncrease.
+     */
+    void setUtilityIncrease(double utilityIncrease);
+
+
+    /**
+     * Get utility increase
+     * @return utility increase
+     */
+    double getUtilityIncrease();
+
+    /**
      * Add the biz exception count.
      *
      * @param count count to add
