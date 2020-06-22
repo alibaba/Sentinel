@@ -18,7 +18,7 @@ package com.alibaba.csp.sentinel.slots.statistic;
 import java.util.Collection;
 
 import com.alibaba.csp.sentinel.node.Node;
-import com.alibaba.csp.sentinel.node.QLearningMetrix;
+import com.alibaba.csp.sentinel.qlearning.QLearningMetric;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlotEntryCallback;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlotExitCallback;
 import com.alibaba.csp.sentinel.slots.block.flow.PriorityWaitException;
@@ -52,32 +52,47 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 @SpiOrder(-7000)
 public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
+    public static int currentState;
+
     public static double successQPS;
     public static double avg_RT;
+
     public static double currentUtility;
     public static double nextUtility;
-    public static double UtilityIncrease;
+    public static double utilityIncrease;
+
+
+
+    public static double alpha = 10;
+    public static double beta = 1;
+
+    public static double delta = 1;
+    public static double gamma = 1;
+
+    public static int rewardValue = 10;
+    public static int punishValue = -1;
+
+    QLearningMetric qLearningMetric = QLearningMetric.getInstance();
 
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
                       boolean prioritized, Object... args) throws Throwable {
         try {
-            QLearningMetrix testS = QLearningMetrix.getInstance();
+//
+//            final long l = System.currentTimeMillis();
+//            final int i = (int)( l % 100 );
+//            if (i > 90) {
+//                testS.setTest(200.00);
+//            }
+////            System.out.println(node.getUtilityIncrease());
+////            System.out.println(Constants.ENTRY_NODE.getUtilityIncrease());
+//            System.out.println(testS.getTest());
+//            System.out.println("**************************************************************");
+//            System.out.println("avgRT " + Constants.ENTRY_NODE.avgRt());
+//            System.out.println("avg_RT " + Constants.ENTRY_NODE.avgRt());
 
-            final long l = System.currentTimeMillis();
-            final int i = (int)( l % 100 );
-            if (i > 90) {
-                testS.setTest(200.00);
-            }
-//            System.out.println(node.getUtilityIncrease());
-//            System.out.println(Constants.ENTRY_NODE.getUtilityIncrease());
-            System.out.println(testS.getTest());
-            System.out.println("**************************************************************");
             // Do some checking.
-            // 统计Ut = log(QPS) - log(RT)
-            successQPS = Constants.ENTRY_NODE.successQps();
-            avg_RT = Constants.ENTRY_NODE.avgRt();
-            currentUtility = Math.log(successQPS) - Math.log(avg_RT);
+
 
             // Do some checking.
             fireEntry(context, resourceWrapper, node, count, prioritized, args);
@@ -111,7 +126,12 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             nextUtility = Math.log(successQPS) - Math.log(avg_RT);
 
             //计算效用的增量
-            UtilityIncrease = nextUtility - currentUtility;
+            utilityIncrease = nextUtility - currentUtility;
+
+            qLearningMetric.setUtilityIncrease(utilityIncrease);
+//            System.out.println("_______Accept________");
+//            System.out.println("Accept________________ successQps " + Constants.ENTRY_NODE.successQps());
+//            System.out.println(testS.getTest());
 
         } catch (PriorityWaitException ex) {
             node.increaseThreadNum();
@@ -148,14 +168,10 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             for (ProcessorSlotEntryCallback<DefaultNode> handler : StatisticSlotCallbackRegistry.getEntryCallbacks()) {
                 handler.onBlocked(e, context, resourceWrapper, node, count, args);
             }
-            //计算效用增量
-            successQPS = Constants.ENTRY_NODE.successQps();
-            avg_RT = Constants.ENTRY_NODE.avgRt();
-            nextUtility = Math.log(successQPS) - Math.log(avg_RT);
 
-            UtilityIncrease = nextUtility - currentUtility;
-
-            node.setUtilityIncrease(UtilityIncrease);
+//            System.out.println("_______Block________");
+//            System.out.println("Block___________ SuccessQps " + Constants.ENTRY_NODE.successQps());
+//            System.out.println(testS.getTest());
 
             throw e;
 
@@ -171,6 +187,17 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     public void exit(Context context, ResourceWrapper resourceWrapper, int count, Object... args) {
         Node node = context.getCurNode();
 
+        //写入表之前，还要获取一下currentState哦！
+
+        // 统计Ut = log(QPS) - log(RT)
+        successQPS = Constants.ENTRY_NODE.successQps();
+        avg_RT = Constants.ENTRY_NODE.avgRt();
+        currentUtility = alpha * successQPS - beta * avg_RT;
+//        System.out.println("  ");
+//        System.out.println("*******************************************************" + currentUtility );
+//        System.out.println("CU = " + currentUtility );
+//        System.out.println("avgRT " + Constants.ENTRY_NODE.avgRt());
+
         if (context.getCurEntry().getBlockError() == null) {
             // Calculate response time (use completeStatTime as the time of completion).
             long completeStatTime = TimeUtil.currentTimeMillis();
@@ -185,6 +212,28 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             if (resourceWrapper.getEntryType() == EntryType.IN) {
                 recordCompleteFor(Constants.ENTRY_NODE, count, rt, error);
             }
+
+            // 记录当前的增量。
+            recordUtilityIncrease();
+            int reward = getReward();
+            int state = this.qLearningMetric.getState();
+            int action = this.qLearningMetric.getAction();
+            double q = this.qLearningMetric.getQValue(state,action);
+            //执行action之后的下一个state属于哪个state。
+//            locateNextState();
+            double maxQ = this.qLearningMetric.getmaxQ(2);
+
+            double value = q + delta * (reward + gamma * maxQ - q);
+
+
+//            System.out.println( "_____Accept____ " + nextUtility + "               CU = " + currentUtility);
+//            System.out.println(this.testS.getTest());
+        } else {
+            //计算效用增量
+            recordUtilityIncrease();
+//            System.out.println("_____Block_____ " + nextUtility + "                CU = " + currentUtility);
+//            System.out.println(this.testS.getTest());
+//            System.out.println("Block___________ avgRT " + Constants.ENTRY_NODE.avgRt());
         }
 
         // Handle exit event with registered exit callback handlers.
@@ -207,4 +256,27 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             node.increaseExceptionQps(batchCount);
         }
     }
+
+    private void recordUtilityIncrease() {
+        //计算效用增量
+        successQPS = Constants.ENTRY_NODE.successQps();
+        avg_RT = Constants.ENTRY_NODE.avgRt();
+        nextUtility = alpha * successQPS - beta * avg_RT;
+
+        utilityIncrease = nextUtility - currentUtility;
+
+//        System.out.println( "_____Accept____ " + nextUtility + "               CU = " + currentUtility);
+
+        this.qLearningMetric.setUtilityIncrease(utilityIncrease);
+    }
+
+    private int getReward() {
+        if (this.qLearningMetric.getUtilityIncrease() >= 0) {
+            return rewardValue;
+        } else {
+            return punishValue;
+        }
+    }
+
+
 }

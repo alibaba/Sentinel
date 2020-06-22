@@ -1,19 +1,5 @@
-/*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package com.alibaba.csp.sentinel.demo.system;
+package com.alibaba.csp.sentinel.qlearning;
+
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,14 +18,14 @@ import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 /**
  * @author jialiang.linjl
  */
-public class SystemGuardDemo {
+public class QLearningTrain {
 
     private static AtomicInteger pass = new AtomicInteger();
     private static AtomicInteger block = new AtomicInteger();
     private static AtomicInteger total = new AtomicInteger();
 
     private static volatile boolean stop = false;
-    private static final int threadCount = 1;
+    private static final int threadCount = 10;
 
     private static int seconds = 60 + 40;
 
@@ -135,8 +121,8 @@ public class SystemGuardDemo {
                 oldBlock = globalBlock;
 
                 System.out.println(seconds + ", " + TimeUtil.currentTimeMillis() + ", total:"
-                    + oneSecondTotal + ", pass:"
-                    + oneSecondPass + ", block:" + oneSecondBlock);
+                        + oneSecondTotal + ", pass:"
+                        + oneSecondPass + ", block:" + oneSecondBlock);
                 if (seconds-- <= 0) {
                     stop = true;
                 }

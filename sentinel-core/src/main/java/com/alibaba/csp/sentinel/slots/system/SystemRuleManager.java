@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.slots.system;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -29,6 +30,7 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.property.SimplePropertyListener;
+import com.alibaba.csp.sentinel.qlearning.QLearningMetric;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 
@@ -65,6 +67,9 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  */
 public final class SystemRuleManager {
 
+    private static volatile int currentState;
+    static QLearningMetric qLearningMetric = QLearningMetric.getInstance();
+
     private static volatile double highestSystemLoad = Double.MAX_VALUE;
     /**
      * cpu usage, between [0, 1]
@@ -90,7 +95,7 @@ public final class SystemRuleManager {
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private final static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1,
-        new NamedThreadFactory("sentinel-system-status-record-task", true));
+            new NamedThreadFactory("sentinel-system-status-record-task", true));
 
     static {
         checkSystemStatus.set(false);
@@ -195,17 +200,17 @@ public final class SystemRuleManager {
             }
 
             RecordLog.info(String.format("[SystemRuleManager] Current system check status: %s, "
-                    + "highestSystemLoad: %e, "
-                    + "highestCpuUsage: %e, "
-                    + "maxRt: %d, "
-                    + "maxThread: %d, "
-                    + "maxQps: %e",
-                checkSystemStatus.get(),
-                highestSystemLoad,
-                highestCpuUsage,
-                maxRt,
-                maxThread,
-                qps));
+                            + "highestSystemLoad: %e, "
+                            + "highestCpuUsage: %e, "
+                            + "maxRt: %d, "
+                            + "maxThread: %d, "
+                            + "maxQps: %e",
+                    checkSystemStatus.get(),
+                    highestSystemLoad,
+                    highestCpuUsage,
+                    maxRt,
+                    maxThread,
+                    qps));
         }
 
         protected void restoreSetting() {
@@ -252,7 +257,7 @@ public final class SystemRuleManager {
         if (rule.getHighestCpuUsage() >= 0) {
             if (rule.getHighestCpuUsage() > 1) {
                 RecordLog.warn(String.format("[SystemRuleManager] Ignoring invalid SystemRule: "
-                    + "highestCpuUsage %.3f > 1", rule.getHighestCpuUsage()));
+                        + "highestCpuUsage %.3f > 1", rule.getHighestCpuUsage()));
             } else {
                 highestCpuUsage = Math.min(highestCpuUsage, rule.getHighestCpuUsage());
                 highestCpuUsageIsSet = true;
@@ -288,6 +293,8 @@ public final class SystemRuleManager {
      * @throws BlockException when any system rule's threshold is exceeded.
      */
     public static void checkSystem(ResourceWrapper resourceWrapper) throws BlockException {
+        System.out.println("cpu usage: " + statusListener.getCpuUsage());
+
         if (resourceWrapper == null) {
             return;
         }
@@ -318,11 +325,19 @@ public final class SystemRuleManager {
             throw new SystemBlockException(resourceWrapper.getName(), "rt");
         }
 
-        // load. BBR algorithm.
-        if (highestSystemLoadIsSet && getCurrentSystemAvgLoad() > highestSystemLoad) {
-            if (!checkBbr(currentThread)) {
-                throw new SystemBlockException(resourceWrapper.getName(), "load");
-            }
+//        // load. BBR algorithm.
+//        if (highestSystemLoadIsSet && getCurrentSystemAvgLoad() > highestSystemLoad) {
+//            if (!checkBbr(currentThread)) {
+//                throw new SystemBlockException(resourceWrapper.getName(), "load");
+//            }
+//        }
+
+        /**
+         *
+         */
+        currentState = locateState();
+        if (!chooseAction(currentState)) {
+            throw new SystemBlockException(resourceWrapper.getName(), "q-learning");
         }
 
         // cpu usage
@@ -333,11 +348,61 @@ public final class SystemRuleManager {
 
     private static boolean checkBbr(int currentThread) {
         if (currentThread > 1 &&
-            currentThread > Constants.ENTRY_NODE.maxSuccessQps() * Constants.ENTRY_NODE.minRt() / 1000) {
+                currentThread > Constants.ENTRY_NODE.maxSuccessQps() * Constants.ENTRY_NODE.minRt() / 1000) {
             return false;
         }
         return true;
     }
+
+    /**
+     * @return
+     */
+    public static synchronized int locateState() {
+        double currentCpuUsage = statusListener.getCpuUsage();
+
+        if (0 <= currentCpuUsage && currentCpuUsage < 0.25) {
+            qLearningMetric.setState(1);
+            return qLearningMetric.getState();
+        }
+        if (0.25 <= currentCpuUsage && currentCpuUsage < 0.5) {
+            qLearningMetric.setState(2);
+            return qLearningMetric.getState();
+        }
+        if (0.5 <= currentCpuUsage && currentCpuUsage < 0.75) {
+            qLearningMetric.setState(3);
+            return qLearningMetric.getState();
+        }
+        if (0.75 <= currentCpuUsage && currentCpuUsage <= 1) {
+            qLearningMetric.setState(4);
+            return qLearningMetric.getState();
+        }
+
+        qLearningMetric.setState(0);
+        return qLearningMetric.getState();
+
+//        if(0 <= currentCpuUsage && currentCpuUsage < 0.25){
+//            state = 4;}
+//        if(currentCpuUsage<0){
+//            //无法获取cpuusage，容错
+    }
+
+    /**
+     * @param currentState
+     * @return
+     */
+    public static boolean chooseAction(int currentState) {
+
+        boolean randAction = new Random().nextBoolean();
+        if (randAction) {
+            qLearningMetric.setAction(1);
+        } else {
+            qLearningMetric.setAction(0);
+        }
+
+        return randAction;
+
+    }
+
 
     public static double getCurrentSystemAvgLoad() {
         return statusListener.getSystemAverageLoad();
