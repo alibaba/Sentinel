@@ -19,18 +19,18 @@ public class QLearningMetric {
     String[] stateNames = new String[]{"CPU Usage: (0%, 25%)", "CPU Usage: (25%, 50%)", "CPU Usage: (50%, 75%)", "CPU Usage: (75%, 100%)", "CPU Usage: UnGet"};
     String[] actionNames = new String[]{"Block", "Accept"};
 
-    private volatile double utilityIncrease;
-    private volatile int state;
-    private volatile int action;
+    private static volatile double utilityIncrease;
+    private static volatile int state;
+    private static volatile int action;
 
-    private volatile int statesCount = 5;
-    private volatile int actionsCount = 2;
-    private volatile double[][] Q = new double[statesCount][actionsCount];
+    private static volatile int statesCount = 5;
+    private static volatile int actionsCount = 2;
+    private static volatile double[][] Q = new double[statesCount][actionsCount];
 
-    private volatile int maxTrainNum = 100000;
-    public volatile boolean isTrain = true;
+    private static volatile int maxTrainNum = 100000;
+    private static volatile boolean isTrain = true;
 
-    private volatile int trainNum = 0;
+    private static volatile int trainNum = 0;
 
 
 //    /**
@@ -136,16 +136,16 @@ public class QLearningMetric {
         this.trainNum++;
     }
 
-    public int getMaxTrainNum() {
+    public static int getMaxTrainNum() {
         return maxTrainNum;
     }
 
-    public boolean isTrain() {
+    public static boolean isTrain() {
         return isTrain;
     }
 
     public synchronized void setTrain(boolean train) {
-        isTrain = train;
+        this.isTrain = train;
     }
 
     public void showPolicy() {

@@ -210,11 +210,14 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                     recordUtilityIncrease();
                     updateQ();
                 } else {
+                    this.qLearningMetric.setTrain(false);
                     System.out.println("-------------------TRAINING END--------------------");
                     this.qLearningMetric.showPolicy();
+                    System.out.println(" ");
                 }
             }
             else{
+
             }
 
 

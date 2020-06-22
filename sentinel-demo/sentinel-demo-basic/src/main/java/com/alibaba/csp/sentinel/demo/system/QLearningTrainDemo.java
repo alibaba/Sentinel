@@ -25,10 +25,12 @@ public class QLearningTrainDemo {
     private static AtomicInteger block = new AtomicInteger();
     private static AtomicInteger total = new AtomicInteger();
 
+//    private static ArrayList<Double> avgRTArray = new ArrayList<Double>();
+
     private static volatile boolean stop = false;
     private static final int threadCount = 100;
 
-    private static int seconds = 60 + 40;
+    private static int seconds = 300;
 
     public static void main(String[] args) throws Exception {
 
@@ -115,7 +117,8 @@ public class QLearningTrainDemo {
                 } catch (InterruptedException e) {
                 }
                 double avgRt = Constants.ENTRY_NODE.avgRt();
-//                System.out.print(avgRt + ", ");
+
+                System.out.print(avgRt + ", ");
 
                 long globalTotal = total.get();
                 long oneSecondTotal = globalTotal - oldTotal;
