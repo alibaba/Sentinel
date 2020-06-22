@@ -64,7 +64,7 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
 
 
-    public static double alpha = 10;
+    public static double alpha = 100;
     public static double beta = 1;
 
     public static double delta = 1;
@@ -92,7 +92,6 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 //            System.out.println("avgRT " + Constants.ENTRY_NODE.avgRt());
 //            System.out.println("avg_RT " + Constants.ENTRY_NODE.avgRt());
 
-            // Do some checking.
 
 
             // Do some checking.
@@ -119,17 +118,6 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 handler.onPass(context, resourceWrapper, node, count, args);
             }
 
-            //统计Ut_interval
-            // Request passed, add thread count and pass count.
-
-            successQPS = Constants.ENTRY_NODE.successQps();
-            avg_RT = Constants.ENTRY_NODE.avgRt();
-            nextUtility = Math.log(successQPS) - Math.log(avg_RT);
-
-            //计算效用的增量
-            utilityIncrease = nextUtility - currentUtility;
-
-            qLearningMetric.setUtilityIncrease(utilityIncrease);
 //            System.out.println("_______Accept________");
 //            System.out.println("Accept________________ successQps " + Constants.ENTRY_NODE.successQps());
 //            System.out.println(testS.getTest());
@@ -214,24 +202,35 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 recordCompleteFor(Constants.ENTRY_NODE, count, rt, error);
             }
 
-            // 记录当前的增量。
-            recordUtilityIncrease();
-            int reward = getReward();
-            int state = this.qLearningMetric.getState();
-            int action = this.qLearningMetric.getAction();
-            double q = this.qLearningMetric.getQValue(state,action);
-            //执行action之后的下一个state属于哪个state。
-//            locateNextState();
-            double maxQ = this.qLearningMetric.getmaxQ(2);
-            double cpuUsage = SystemRuleManager.getCurrentCpuUsage();
-            double value = q + delta * (reward + gamma * maxQ - q);
+
+            if(this.qLearningMetric.isTrain()) {
+                // 记录当前的增量。
+                this.qLearningMetric.addTrainNum();
+                if (this.qLearningMetric.getTrainNum() <= this.qLearningMetric.getMaxTrainNum()) {
+                    recordUtilityIncrease();
+                    updateQ();
+                } else {
+                    System.out.println("-------------------TRAINING END--------------------");
+                    this.qLearningMetric.showPolicy();
+                }
+            }
+            else{
+            }
 
 
 //            System.out.println( "_____Accept____ " + nextUtility + "               CU = " + currentUtility);
 //            System.out.println(this.testS.getTest());
         } else {
-            //计算效用增量
-            recordUtilityIncrease();
+            // 记录当前的增量。
+            this.qLearningMetric.addTrainNum();
+            if(this.qLearningMetric.getTrainNum() < this.qLearningMetric.getMaxTrainNum()){
+                recordUtilityIncrease();
+                updateQ();
+            }
+            else{
+                System.out.println("-------------------TRAINING END--------------------");
+                this.qLearningMetric.showPolicy();
+            }
 //            System.out.println("_____Block_____ " + nextUtility + "                CU = " + currentUtility);
 //            System.out.println(this.testS.getTest());
 //            System.out.println("Block___________ avgRT " + Constants.ENTRY_NODE.avgRt());
@@ -271,6 +270,23 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         this.qLearningMetric.setUtilityIncrease(utilityIncrease);
     }
 
+    private void updateQ(){
+        int reward = getReward();
+        int state = this.qLearningMetric.getState();
+        int action = this.qLearningMetric.getAction();
+        double q = this.qLearningMetric.getQValue(state,action);
+        //执行action之后的下一个state属于哪个state。
+//            locateNextState();
+
+        double cpuUsage = SystemRuleManager.getCurrentCpuUsage();
+        int nextState = SystemRuleManager.locateState(cpuUsage);
+
+        double maxQ = this.qLearningMetric.getmaxQ(nextState);
+
+        double qValue = q + delta * (reward + gamma * maxQ - q);
+        this.qLearningMetric.setQ(state, action, qValue);
+    }
+
     private int getReward() {
         if (this.qLearningMetric.getUtilityIncrease() >= 0) {
             return rewardValue;
@@ -278,6 +294,7 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             return punishValue;
         }
     }
+
 
 
 }

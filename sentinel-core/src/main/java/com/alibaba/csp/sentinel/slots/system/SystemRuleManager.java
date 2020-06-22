@@ -293,15 +293,24 @@ public final class SystemRuleManager {
      * @throws BlockException when any system rule's threshold is exceeded.
      */
     public static void checkSystem(ResourceWrapper resourceWrapper) throws BlockException {
-        System.out.println("cpu usage: " + statusListener.getCpuUsage());
 
         if (resourceWrapper == null) {
             return;
         }
+        /**
+         *
+         */
+        currentState = locateState(statusListener.getCpuUsage());
+        if (!chooseAction(currentState)) {
+            throw new SystemBlockException(resourceWrapper.getName(), "q-learning");
+        }
+
         // Ensure the checking switch is on.
         if (!checkSystemStatus.get()) {
             return;
         }
+
+
 
         // for inbound traffic only
         if (resourceWrapper.getEntryType() != EntryType.IN) {
@@ -332,13 +341,7 @@ public final class SystemRuleManager {
 //            }
 //        }
 
-        /**
-         *
-         */
-        currentState = locateState();
-        if (!chooseAction(currentState)) {
-            throw new SystemBlockException(resourceWrapper.getName(), "q-learning");
-        }
+
 
         // cpu usage
         if (highestCpuUsageIsSet && getCurrentCpuUsage() > highestCpuUsage) {
@@ -357,8 +360,7 @@ public final class SystemRuleManager {
     /**
      * @return
      */
-    public static synchronized int locateState() {
-        double currentCpuUsage = statusListener.getCpuUsage();
+    public static synchronized int locateState(double currentCpuUsage) {
 
         if (0 <= currentCpuUsage && currentCpuUsage < 0.25) {
             qLearningMetric.setState(1);
@@ -391,16 +393,24 @@ public final class SystemRuleManager {
      * @return
      */
     public static boolean chooseAction(int currentState) {
-
-        boolean randAction = new Random().nextBoolean();
-        if (randAction) {
-            qLearningMetric.setAction(1);
-        } else {
+        if(qLearningMetric.isTrain()) {
+            boolean randAction = new Random().nextBoolean();
+//        System.out.println("**************************" + randAction);
+            if (randAction) {
+                qLearningMetric.setAction(1);
+                return true;
+            }
             qLearningMetric.setAction(0);
+            return false;
         }
-
-        return randAction;
-
+        else{
+            if(qLearningMetric.policy(currentState) == 1){
+                qLearningMetric.setAction(1);
+                return true;
+            }
+            qLearningMetric.setAction(0);
+            return false;
+        }
     }
 
 

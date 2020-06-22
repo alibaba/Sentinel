@@ -1,18 +1,3 @@
-/*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.alibaba.csp.sentinel.demo.system;
 
 import java.util.ArrayList;
@@ -22,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.alibaba.csp.sentinel.Constants;
+import com.alibaba.csp.sentinel.qlearning.QLearningMetric;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
@@ -30,10 +16,9 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.system.SystemRule;
 import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 
-/**
- * @author jialiang.linjl
- */
-public class SystemGuardDemo {
+
+public class QLearningTestDemo {
+
 
     private static AtomicInteger pass = new AtomicInteger();
     private static AtomicInteger block = new AtomicInteger();
@@ -45,6 +30,9 @@ public class SystemGuardDemo {
     private static int seconds = 60 + 40;
 
     public static void main(String[] args) throws Exception {
+
+        QLearningMetric qLearningMetric = QLearningMetric.getInstance();
+        qLearningMetric.setTrain(false);
 
         tick();
         initSystemRule();
@@ -126,7 +114,7 @@ public class SystemGuardDemo {
                 } catch (InterruptedException e) {
                 }
                 double avgRt = Constants.ENTRY_NODE.avgRt();
-//                System.out.print(avgRt + ", ");
+                System.out.print(avgRt + ", ");
 
                 long globalTotal = total.get();
                 long oneSecondTotal = globalTotal - oldTotal;
@@ -153,3 +141,4 @@ public class SystemGuardDemo {
 
 
 }
+
