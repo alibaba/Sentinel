@@ -297,19 +297,11 @@ public final class SystemRuleManager {
         if (resourceWrapper == null) {
             return;
         }
-        /**
-         *
-         */
-        currentState = locateState(statusListener.getCpuUsage());
-        if (!chooseAction(currentState)) {
-            throw new SystemBlockException(resourceWrapper.getName(), "q-learning");
-        }
 
         // Ensure the checking switch is on.
         if (!checkSystemStatus.get()) {
             return;
         }
-
 
 
         // for inbound traffic only
@@ -334,19 +326,28 @@ public final class SystemRuleManager {
             throw new SystemBlockException(resourceWrapper.getName(), "rt");
         }
 
-//        // load. BBR algorithm.
-//        if (highestSystemLoadIsSet && getCurrentSystemAvgLoad() > highestSystemLoad) {
-//            if (!checkBbr(currentThread)) {
-//                throw new SystemBlockException(resourceWrapper.getName(), "load");
-//            }
-//        }
 
+        // load. BBR algorithm.
+        if (highestSystemLoadIsSet && getCurrentSystemAvgLoad() > highestSystemLoad) {
+            if (!checkBbr(currentThread)) {
+                throw new SystemBlockException(resourceWrapper.getName(), "load");
+            }
+        }
 
 
         // cpu usage
         if (highestCpuUsageIsSet && getCurrentCpuUsage() > highestCpuUsage) {
             throw new SystemBlockException(resourceWrapper.getName(), "cpu");
         }
+
+        /**
+         *Q-learning
+         */
+        currentState = locateState(statusListener.getCpuUsage());
+        if (!chooseAction(currentState)) {
+            throw new SystemBlockException(resourceWrapper.getName(), "q-learning");
+        }
+
     }
 
     private static boolean checkBbr(int currentThread) {

@@ -63,9 +63,8 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     public static double utilityIncrease;
 
 
-
-    public static double alpha = 100;
-    public static double beta = 1;
+    public static double alpha = 1;
+    public static double beta = 0.02;
 
     public static double delta = 1;
     public static double gamma = 1;
@@ -91,7 +90,6 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 //            System.out.println("**************************************************************");
 //            System.out.println("avgRT " + Constants.ENTRY_NODE.avgRt());
 //            System.out.println("avg_RT " + Constants.ENTRY_NODE.avgRt());
-
 
 
             // Do some checking.
@@ -203,7 +201,7 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             }
 
 
-            if(this.qLearningMetric.isTrain()) {
+            if (this.qLearningMetric.isTrain()) {
                 // 记录当前的增量。
                 this.qLearningMetric.addTrainNum();
                 if (this.qLearningMetric.getTrainNum() <= this.qLearningMetric.getMaxTrainNum()) {
@@ -215,28 +213,30 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                     this.qLearningMetric.showPolicy();
                     System.out.println(" ");
                 }
-            }
-            else{
+            } else {
 
             }
-
 
 //            System.out.println( "_____Accept____ " + nextUtility + "               CU = " + currentUtility);
 //            System.out.println(this.testS.getTest());
         } else {
-            // 记录当前的增量。
-            this.qLearningMetric.addTrainNum();
-            if(this.qLearningMetric.getTrainNum() < this.qLearningMetric.getMaxTrainNum()){
-                recordUtilityIncrease();
-                updateQ();
+
+            if (this.qLearningMetric.isTrain()) {
+                // 记录当前的增量。
+                this.qLearningMetric.addTrainNum();
+                if (this.qLearningMetric.getTrainNum() <= this.qLearningMetric.getMaxTrainNum()) {
+                    recordUtilityIncrease();
+                    updateQ();
+                } else {
+                    this.qLearningMetric.setTrain(false);
+                    System.out.println("-------------------TRAINING END--------------------");
+                    this.qLearningMetric.showPolicy();
+                    System.out.println(" ");
+                }
+            } else {
+
             }
-            else{
-                System.out.println("-------------------TRAINING END--------------------");
-                this.qLearningMetric.showPolicy();
-            }
-//            System.out.println("_____Block_____ " + nextUtility + "                CU = " + currentUtility);
-//            System.out.println(this.testS.getTest());
-//            System.out.println("Block___________ avgRT " + Constants.ENTRY_NODE.avgRt());
+
         }
 
         // Handle exit event with registered exit callback handlers.
@@ -273,11 +273,11 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         this.qLearningMetric.setUtilityIncrease(utilityIncrease);
     }
 
-    private void updateQ(){
+    private void updateQ() {
         int reward = getReward();
         int state = this.qLearningMetric.getState();
         int action = this.qLearningMetric.getAction();
-        double q = this.qLearningMetric.getQValue(state,action);
+        double q = this.qLearningMetric.getQValue(state, action);
         //执行action之后的下一个state属于哪个state。
 //            locateNextState();
 
@@ -297,7 +297,6 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             return punishValue;
         }
     }
-
 
 
 }
