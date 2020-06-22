@@ -22,6 +22,7 @@ import com.alibaba.csp.sentinel.qlearning.QLearningMetric;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlotEntryCallback;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlotExitCallback;
 import com.alibaba.csp.sentinel.slots.block.flow.PriorityWaitException;
+import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 import com.alibaba.csp.sentinel.spi.SpiOrder;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.Constants;
@@ -222,7 +223,7 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             //执行action之后的下一个state属于哪个state。
 //            locateNextState();
             double maxQ = this.qLearningMetric.getmaxQ(2);
-
+            double cpuUsage = SystemRuleManager.getCurrentCpuUsage();
             double value = q + delta * (reward + gamma * maxQ - q);
 
 
