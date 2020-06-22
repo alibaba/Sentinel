@@ -43,8 +43,6 @@ public class SystemGuardDemo {
 
     private static int seconds = 60 + 40;
 
-    //test
-
     public static void main(String[] args) throws Exception {
 
         tick();
