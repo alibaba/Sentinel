@@ -200,17 +200,17 @@ public final class SystemRuleManager {
             }
 
             RecordLog.info(String.format("[SystemRuleManager] Current system check status: %s, "
-                            + "highestSystemLoad: %e, "
-                            + "highestCpuUsage: %e, "
-                            + "maxRt: %d, "
-                            + "maxThread: %d, "
-                            + "maxQps: %e",
-                    checkSystemStatus.get(),
-                    highestSystemLoad,
-                    highestCpuUsage,
-                    maxRt,
-                    maxThread,
-                    qps));
+                    + "highestSystemLoad: %e, "
+                    + "highestCpuUsage: %e, "
+                    + "maxRt: %d, "
+                    + "maxThread: %d, "
+                    + "maxQps: %e",
+                checkSystemStatus.get(),
+                highestSystemLoad,
+                highestCpuUsage,
+                maxRt,
+                maxThread,
+                qps));
         }
 
         protected void restoreSetting() {
@@ -257,7 +257,7 @@ public final class SystemRuleManager {
         if (rule.getHighestCpuUsage() >= 0) {
             if (rule.getHighestCpuUsage() > 1) {
                 RecordLog.warn(String.format("[SystemRuleManager] Ignoring invalid SystemRule: "
-                        + "highestCpuUsage %.3f > 1", rule.getHighestCpuUsage()));
+                    + "highestCpuUsage %.3f > 1", rule.getHighestCpuUsage()));
             } else {
                 highestCpuUsage = Math.min(highestCpuUsage, rule.getHighestCpuUsage());
                 highestCpuUsageIsSet = true;
@@ -293,16 +293,13 @@ public final class SystemRuleManager {
      * @throws BlockException when any system rule's threshold is exceeded.
      */
     public static void checkSystem(ResourceWrapper resourceWrapper) throws BlockException {
-
         if (resourceWrapper == null) {
             return;
         }
-
         // Ensure the checking switch is on.
         if (!checkSystemStatus.get()) {
             return;
         }
-
 
         // for inbound traffic only
         if (resourceWrapper.getEntryType() != EntryType.IN) {
@@ -326,14 +323,12 @@ public final class SystemRuleManager {
             throw new SystemBlockException(resourceWrapper.getName(), "rt");
         }
 
-
         // load. BBR algorithm.
         if (highestSystemLoadIsSet && getCurrentSystemAvgLoad() > highestSystemLoad) {
             if (!checkBbr(currentThread)) {
                 throw new SystemBlockException(resourceWrapper.getName(), "load");
             }
         }
-
 
         // cpu usage
         if (highestCpuUsageIsSet && getCurrentCpuUsage() > highestCpuUsage) {
@@ -354,7 +349,7 @@ public final class SystemRuleManager {
 
     private static boolean checkBbr(int currentThread) {
         if (currentThread > 1 &&
-                currentThread > Constants.ENTRY_NODE.maxSuccessQps() * Constants.ENTRY_NODE.minRt() / 1000) {
+            currentThread > Constants.ENTRY_NODE.maxSuccessQps() * Constants.ENTRY_NODE.minRt() / 1000) {
             return false;
         }
         return true;
