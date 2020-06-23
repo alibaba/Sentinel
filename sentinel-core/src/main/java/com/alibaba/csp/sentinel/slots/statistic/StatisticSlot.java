@@ -186,7 +186,6 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         if (node == null) {
             return;
         }
-        //test
         node.addRtAndSuccess(rt, batchCount);
         node.decreaseThreadNum();
 
