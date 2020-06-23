@@ -51,8 +51,6 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  * @author Eric Zhao
  */
 
-// add some code
-
 @SpiOrder(-7000)
 public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
