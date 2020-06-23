@@ -5,6 +5,8 @@ package com.alibaba.csp.sentinel.qlearning;
  * @Description:Read and load information form json file
  * @Date:Created in 11:44 AM 2020/6/22
  */
+
+// synchronized? static? final ?
 public class QLearningMetric {
 
 
@@ -34,6 +36,15 @@ public class QLearningMetric {
     private static volatile boolean isTrain = true;
 
     private static volatile int trainNum = 0;
+
+    private static double alpha = 1;
+    private static double beta = 0.02;
+
+    private static double delta = 1;
+    private static double gamma = 1;
+
+    private static int rewardValue = 10;
+    private static int punishValue = -1;
 
 
     private QLearningMetric() {
@@ -137,11 +148,35 @@ public class QLearningMetric {
         return policyGotoAction;
     }
 
+    public static double getAlpha() {
+        return alpha;
+    }
+
+    public static double getBeta() {
+        return beta;
+    }
+
+    public static double getDelta() {
+        return delta;
+    }
+
+    public static double getGamma() {
+        return gamma;
+    }
+
+    public static int getRewardValue() {
+        return rewardValue;
+    }
+
+    public static int getPunishValue() {
+        return punishValue;
+    }
+
     public boolean isQLearning() {
         return isQLearning;
     }
 
-    public void setQLearning(boolean QLearning) {
+    public synchronized void setQLearning(boolean QLearning) {
         isQLearning = QLearning;
     }
 
@@ -152,4 +187,6 @@ public class QLearningMetric {
     public static QLearningMetric getInstance() {
         return QLearningMetricContainer.instance;
     }
+
+
 }

@@ -1,4 +1,4 @@
-package com.alibaba.csp.sentinel.demo.system;
+package com.alibaba.csp.sentinel.qlearning;
 
 import java.util.ArrayList;
 import java.util.Collections;
