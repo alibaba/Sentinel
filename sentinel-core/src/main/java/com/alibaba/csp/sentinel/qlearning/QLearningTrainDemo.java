@@ -25,12 +25,13 @@ public class QLearningTrainDemo {
     private static AtomicInteger block = new AtomicInteger();
     private static AtomicInteger total = new AtomicInteger();
 
-//    private static ArrayList<Double> avgRTArray = new ArrayList<Double>();
+    private static ArrayList<Double> avgRTArray = new ArrayList<Double>();
+    private static ArrayList<Double> qpsArray = new ArrayList<Double>();
 
     private static volatile boolean stop = false;
     private static final int threadCount = 100;
 
-    private static int seconds = 300;
+    private static int seconds = 10;
 
     private static boolean isQLearning = true;
 
@@ -121,8 +122,8 @@ public class QLearningTrainDemo {
                 double avgRt = Constants.ENTRY_NODE.avgRt();
                 double successQps = Constants.ENTRY_NODE.successQps();
 
-//                System.out.print(avgRt + ", ");
-                System.out.print(successQps + ", ");
+                avgRTArray.add(avgRt);
+                qpsArray.add(successQps);
 
                 long globalTotal = total.get();
                 long oneSecondTotal = globalTotal - oldTotal;
@@ -136,15 +137,27 @@ public class QLearningTrainDemo {
                 long oneSecondBlock = globalBlock - oldBlock;
                 oldBlock = globalBlock;
 
-//                System.out.println(seconds + ", " + TimeUtil.currentTimeMillis() + ", total:"
-//                    + oneSecondTotal + ", pass:"
-//                    + oneSecondPass + ", block:" + oneSecondBlock);
+                System.out.println(seconds + ", " + TimeUtil.currentTimeMillis() + ", total:"
+                    + oneSecondTotal + ", pass:"
+                    + oneSecondPass + ", block:" + oneSecondBlock);
                 if (seconds-- <= 0) {
                     stop = true;
                 }
             }
+            printArray(avgRTArray, "Average RT");
+            printArray(qpsArray, "Success QPS");
             System.exit(0);
         }
+    }
+
+    private static void printArray(List<Double> array, String name) {
+        System.out.println(name + " result:");
+        System.out.print("[");
+        for (double val : array) {
+            System.out.print(val + ", ");
+        }
+        System.out.print("]");
+        System.out.println();
     }
 
 
