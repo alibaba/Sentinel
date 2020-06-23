@@ -343,9 +343,11 @@ public final class SystemRuleManager {
         /**
          *Q-learning
          */
-        currentState = locateState(statusListener.getCpuUsage());
-        if (!chooseAction(currentState)) {
-            throw new SystemBlockException(resourceWrapper.getName(), "q-learning");
+        if (qLearningMetric.isQLearning()) {
+            currentState = locateState(statusListener.getCpuUsage());
+            if (!chooseAction(currentState)) {
+                throw new SystemBlockException(resourceWrapper.getName(), "q-learning");
+            }
         }
 
     }
@@ -382,19 +384,15 @@ public final class SystemRuleManager {
 
         qLearningMetric.setState(0);
         return qLearningMetric.getState();
-
-//        if(0 <= currentCpuUsage && currentCpuUsage < 0.25){
-//            state = 4;}
-//        if(currentCpuUsage<0){
-//            //无法获取cpuusage，容错
     }
+
 
     /**
      * @param currentState
      * @return
      */
     public static boolean chooseAction(int currentState) {
-        if(qLearningMetric.isTrain()) {
+        if (qLearningMetric.isTrain()) {
             boolean randAction = new Random().nextBoolean();
 //        System.out.println("**************************" + randAction);
             if (randAction) {
@@ -403,9 +401,8 @@ public final class SystemRuleManager {
             }
             qLearningMetric.setAction(0);
             return false;
-        }
-        else{
-            if(qLearningMetric.policy(currentState) == 1){
+        } else {
+            if (qLearningMetric.policy(currentState) == 1) {
                 qLearningMetric.setAction(1);
                 return true;
             }

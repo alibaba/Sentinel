@@ -32,10 +32,12 @@ public class QLearningTrainDemo {
 
     private static int seconds = 300;
 
+    private static boolean isQLearning = true;
+
     public static void main(String[] args) throws Exception {
 
         QLearningMetric qLearningMetric = QLearningMetric.getInstance();
-        qLearningMetric.setTrain(true);
+        qLearningMetric.setQLearning(isQLearning);
 
         tick();
         initSystemRule();
