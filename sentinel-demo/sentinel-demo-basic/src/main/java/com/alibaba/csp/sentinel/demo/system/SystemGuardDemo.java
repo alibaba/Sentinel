@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
@@ -35,17 +34,14 @@ import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
  */
 public class SystemGuardDemo {
 
-    private static ArrayList<Double> avgRTArray = new ArrayList<Double>();
-    private static ArrayList<Double> qpsArray = new ArrayList<Double>();
-
     private static AtomicInteger pass = new AtomicInteger();
     private static AtomicInteger block = new AtomicInteger();
     private static AtomicInteger total = new AtomicInteger();
 
     private static volatile boolean stop = false;
-    private static final int threadCount = 10;
+    private static final int threadCount = 100;
 
-    private static int seconds = 120;
+    private static int seconds = 60 + 40;
 
     public static void main(String[] args) throws Exception {
 
@@ -95,14 +91,14 @@ public class SystemGuardDemo {
         SystemRule rule = new SystemRule();
         // max load is 3
         rule.setHighestSystemLoad(3.0);
-//         max cpu usage is 60%
-        rule.setHighestCpuUsage(0.9);
-//         max avg rt of all request is 10 ms
-        rule.setAvgRt(20);
-//         max total qps is 20
-        rule.setQps(500);
-//         max parallel working thread is 10
-        rule.setMaxThread(100);
+        // max cpu usage is 60%
+        rule.setHighestCpuUsage(0.6);
+        // max avg rt of all request is 10 ms
+        rule.setAvgRt(10);
+        // max total qps is 20
+        rule.setQps(20);
+        // max parallel working thread is 10
+        rule.setMaxThread(10);
 
         rules.add(rule);
         SystemRuleManager.loadRules(Collections.singletonList(rule));
@@ -126,11 +122,6 @@ public class SystemGuardDemo {
                     TimeUnit.SECONDS.sleep(1);
                 } catch (InterruptedException e) {
                 }
-                double avgRt = Constants.ENTRY_NODE.avgRt();
-                double successQps = Constants.ENTRY_NODE.successQps();
-
-                avgRTArray.add(avgRt);
-                qpsArray.add(successQps);
                 long globalTotal = total.get();
                 long oneSecondTotal = globalTotal - oldTotal;
                 oldTotal = globalTotal;
@@ -150,19 +141,7 @@ public class SystemGuardDemo {
                     stop = true;
                 }
             }
-            printArray(avgRTArray, "Average RT");
-            printArray(qpsArray, "Success QPS");
             System.exit(0);
-        }
-
-        private static void printArray(List<Double> array, String name) {
-            System.out.println(name + " result:");
-            System.out.print("[");
-            for (double val : array) {
-                System.out.print(val + ", ");
-            }
-            System.out.print("]");
-            System.out.println();
         }
     }
 }
