@@ -323,8 +323,13 @@ public final class SystemRuleManager {
             throw new SystemBlockException(resourceWrapper.getName(), "rt");
         }
 
-        // load. BBR algorithm.
-        if (highestSystemLoadIsSet && getCurrentSystemAvgLoad() > highestSystemLoad) {
+        //
+        if (qLearningMetric.isQLearning()) {
+            currentState = locateState(statusListener.getCpuUsage());
+            if (!chooseAction(currentState)) {
+                throw new SystemBlockException(resourceWrapper.getName(), "q-learning");
+            }
+        } else if (highestSystemLoadIsSet && getCurrentSystemAvgLoad() > highestSystemLoad) {   // load. BBR algorithm.
             if (!checkBbr(currentThread)) {
                 throw new SystemBlockException(resourceWrapper.getName(), "load");
             }
@@ -333,16 +338,6 @@ public final class SystemRuleManager {
         // cpu usage
         if (highestCpuUsageIsSet && getCurrentCpuUsage() > highestCpuUsage) {
             throw new SystemBlockException(resourceWrapper.getName(), "cpu");
-        }
-
-        /**
-         *Q-learning
-         */
-        if (qLearningMetric.isQLearning()) {
-            currentState = locateState(statusListener.getCpuUsage());
-            if (!chooseAction(currentState)) {
-                throw new SystemBlockException(resourceWrapper.getName(), "q-learning");
-            }
         }
 
     }
@@ -356,6 +351,7 @@ public final class SystemRuleManager {
     }
 
     /**
+     *
      * @return
      */
     public static synchronized int locateState(double currentCpuUsage) {
@@ -383,11 +379,13 @@ public final class SystemRuleManager {
 
 
     /**
+     *
      * @param currentState
      * @return
      */
     public static boolean chooseAction(int currentState) {
         if (qLearningMetric.isTrain()) {
+            //
             boolean randAction = new Random().nextBoolean();
 //        System.out.println("**************************" + randAction);
             if (randAction) {
@@ -397,6 +395,7 @@ public final class SystemRuleManager {
             qLearningMetric.setAction(0);
             return false;
         } else {
+            //
             if (qLearningMetric.policy(currentState) == 1) {
                 qLearningMetric.setAction(1);
                 return true;

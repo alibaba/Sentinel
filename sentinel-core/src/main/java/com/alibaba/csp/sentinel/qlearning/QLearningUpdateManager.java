@@ -3,6 +3,9 @@ package com.alibaba.csp.sentinel.qlearning;
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 
+/**
+ *
+ */
 public class QLearningUpdateManager {
     QLearningMetric qLearningMetric = QLearningMetric.getInstance();
 
@@ -23,21 +26,19 @@ public class QLearningUpdateManager {
 
 
     public  void qLearningProcess(double successQPS, double avgRt){
-        if(qLearningMetric.isQLearning()) {
-            if (qLearningMetric.isTrain()) {
+        //
+        if(qLearningMetric.isQLearning() && qLearningMetric.isTrain()) {
+
+            qLearningMetric.addTrainNum();
+            if (qLearningMetric.getTrainNum() <= qLearningMetric.getMaxTrainNum()) {
                 // 记录当前的增量。
-                qLearningMetric.addTrainNum();
-                if (qLearningMetric.getTrainNum() <= qLearningMetric.getMaxTrainNum()) {
-                    recordUtilityIncrease(successQPS, avgRt);
-                    updateQ();
-                } else {
-                    qLearningMetric.setTrain(false);
+                recordUtilityIncrease(successQPS, avgRt);
+                updateQ();
+            } else {
+                qLearningMetric.setTrain(false);
 //                System.out.println("-------------------TRAINING END--------------------");
 //                qLearningMetric.showPolicy();
 //                System.out.println(" ");
-                }
-            } else {
-
             }
         }
     }
@@ -84,11 +85,7 @@ public class QLearningUpdateManager {
         return currentUtility;
     }
 
-    /**
-     //     * ???this.current / QLearningUtility ????
-     * @param successQPS
-     * @param avgRt
-     */
+
     public void setCurrentUtility(double successQPS,double avgRt) {
         currentUtility = alpha * successQPS - beta * avgRt;
     }

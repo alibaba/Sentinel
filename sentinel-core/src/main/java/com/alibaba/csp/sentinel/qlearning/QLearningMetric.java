@@ -1,12 +1,8 @@
 package com.alibaba.csp.sentinel.qlearning;
 
 /**
- * @Author: Go Bear
- * @Description:Read and load information form json file
- * @Date:Created in 11:44 AM 2020/6/22
+ *
  */
-
-// synchronized? ? final ?
 public class QLearningMetric {
 
 
@@ -35,9 +31,9 @@ public class QLearningMetric {
     private  volatile int maxTrainNum = 100000;
     private  volatile boolean isTrain = true;
 
-    private  volatile int trainNum = 0;
+    private  volatile int trainNum = 0; //
 
-    private  double alpha = 1;
+    private  double alpha = 1;//
     private  double beta = 0.02;
 
     private  double delta = 1;
