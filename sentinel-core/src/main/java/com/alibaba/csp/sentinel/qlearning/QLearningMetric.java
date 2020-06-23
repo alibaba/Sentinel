@@ -6,7 +6,7 @@ package com.alibaba.csp.sentinel.qlearning;
  * @Date:Created in 11:44 AM 2020/6/22
  */
 
-// synchronized? static? final ?
+// synchronized? ? final ?
 public class QLearningMetric {
 
 
@@ -24,27 +24,27 @@ public class QLearningMetric {
     String[] stateNames = new String[]{"CPU Usage: (0%, 25%)", "CPU Usage: (25%, 50%)", "CPU Usage: (50%, 75%)", "CPU Usage: (75%, 100%)", "CPU Usage: UnGet"};
     String[] actionNames = new String[]{"Block", "Accept"};
 
-    private static volatile double utilityIncrease;
-    private static volatile int state;
-    private static volatile int action;
+    private  volatile double utilityIncrease;
+    private  volatile int state;
+    private  volatile int action;
 
-    private static volatile int statesCount = 5;
-    private static volatile int actionsCount = 2;
-    private static volatile double[][] Q = new double[statesCount][actionsCount];
+    private  volatile int statesCount = 5;
+    private  volatile int actionsCount = 2;
+    private  volatile double[][] Q = new double[statesCount][actionsCount];
 
-    private static volatile int maxTrainNum = 100000;
-    private static volatile boolean isTrain = true;
+    private  volatile int maxTrainNum = 100000;
+    private  volatile boolean isTrain = true;
 
-    private static volatile int trainNum = 0;
+    private  volatile int trainNum = 0;
 
-    private static double alpha = 1;
-    private static double beta = 0.02;
+    private  double alpha = 1;
+    private  double beta = 0.02;
 
-    private static double delta = 1;
-    private static double gamma = 1;
+    private  double delta = 1;
+    private  double gamma = 1;
 
-    private static int rewardValue = 10;
-    private static int punishValue = -1;
+    private  int rewardValue = 10;
+    private  int punishValue = -1;
 
 
     private QLearningMetric() {
@@ -109,11 +109,11 @@ public class QLearningMetric {
         this.trainNum++;
     }
 
-    public static int getMaxTrainNum() {
+    public  int getMaxTrainNum() {
         return maxTrainNum;
     }
 
-    public static boolean isTrain() {
+    public  boolean isTrain() {
         return isTrain;
     }
 
@@ -122,11 +122,11 @@ public class QLearningMetric {
     }
 
     public void showPolicy() {
-        System.out.println("\nshowPolicy");
+        System.out.println("\n ======= Show Policy =======");
         for (int i = 0; i < statesCount; i++) {
             int from = states[i];
             int to = policy(from);
-            System.out.println("Current State: " + stateNames[from] + " Action: " + actionNames[to] + " Q: " + this.Q[from][to]);
+            System.out.println("Current State: " + stateNames[from] + "       Action: " + actionNames[to] + "        Q: " + this.Q[from][to]);
         }
     }
 
@@ -148,27 +148,27 @@ public class QLearningMetric {
         return policyGotoAction;
     }
 
-    public static double getAlpha() {
+    public  double getAlpha() {
         return alpha;
     }
 
-    public static double getBeta() {
+    public  double getBeta() {
         return beta;
     }
 
-    public static double getDelta() {
+    public  double getDelta() {
         return delta;
     }
 
-    public static double getGamma() {
+    public  double getGamma() {
         return gamma;
     }
 
-    public static int getRewardValue() {
+    public  int getRewardValue() {
         return rewardValue;
     }
 
-    public static int getPunishValue() {
+    public  int getPunishValue() {
         return punishValue;
     }
 
@@ -176,8 +176,8 @@ public class QLearningMetric {
         return isQLearning;
     }
 
-    public synchronized void setQLearning(boolean QLearning) {
-        isQLearning = QLearning;
+    public synchronized void setQLearning(boolean isQLearning) {
+        this.isQLearning = isQLearning;
     }
 
     private static class QLearningMetricContainer {

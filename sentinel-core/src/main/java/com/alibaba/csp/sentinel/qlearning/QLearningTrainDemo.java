@@ -19,7 +19,7 @@ import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 
 public class QLearningTrainDemo {
 
-    QLearningMetric qLearningMetric = QLearningMetric.getInstance();
+    static QLearningMetric qLearningMetric = QLearningMetric.getInstance();
 
     private static AtomicInteger pass = new AtomicInteger();
     private static AtomicInteger block = new AtomicInteger();
@@ -31,9 +31,9 @@ public class QLearningTrainDemo {
     private static volatile boolean stop = false;
     private static final int threadCount = 100;
 
-    private static int seconds = 10;
+    private static int seconds = 30;
 
-    private static boolean isQLearning = true;
+    private static boolean isQLearning = false;
 
     public static void main(String[] args) throws Exception {
 
@@ -137,15 +137,25 @@ public class QLearningTrainDemo {
                 long oneSecondBlock = globalBlock - oldBlock;
                 oldBlock = globalBlock;
 
-                System.out.println(seconds + ", " + TimeUtil.currentTimeMillis() + ", total:"
+                System.out.print(seconds + ", " + TimeUtil.currentTimeMillis() + ", total:"
                     + oneSecondTotal + ", pass:"
                     + oneSecondPass + ", block:" + oneSecondBlock);
+                if (qLearningMetric.isQLearning() && qLearningMetric.isTrain()){
+                    System.out.println(" ------now is training------ ");
+                }
+                else{
+                    System.out.println();
+                }
                 if (seconds-- <= 0) {
                     stop = true;
                 }
             }
+
             printArray(avgRTArray, "Average RT");
             printArray(qpsArray, "Success QPS");
+//            if (qLearningMetric.isQLearning()){
+            qLearningMetric.showPolicy();
+//            }
             System.exit(0);
         }
     }

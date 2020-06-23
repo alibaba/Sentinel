@@ -18,12 +18,10 @@ package com.alibaba.csp.sentinel.slots.statistic;
 import java.util.Collection;
 
 import com.alibaba.csp.sentinel.node.Node;
-import com.alibaba.csp.sentinel.qlearning.QLearningMetric;
-import com.alibaba.csp.sentinel.qlearning.QLearningUpdate;
+import com.alibaba.csp.sentinel.qlearning.QLearningUpdateManager;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlotEntryCallback;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlotExitCallback;
 import com.alibaba.csp.sentinel.slots.block.flow.PriorityWaitException;
-import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 import com.alibaba.csp.sentinel.spi.SpiOrder;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.Constants;
@@ -55,7 +53,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 @SpiOrder(-7000)
 public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
-    QLearningUpdate qLearningUpdate = new QLearningUpdate();
+    QLearningUpdateManager qLearningUpdateManager = new QLearningUpdateManager();
 
 //    QLearningMetric qLearningMetric = QLearningMetric.getInstance();
 
@@ -137,7 +135,7 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     public void exit(Context context, ResourceWrapper resourceWrapper, int count, Object... args) {
         Node node = context.getCurNode();
 
-        qLearningUpdate.setCurrentUtility(Constants.ENTRY_NODE.successQps(),Constants.ENTRY_NODE.avgRt());
+        qLearningUpdateManager.setCurrentUtility(Constants.ENTRY_NODE.successQps(),Constants.ENTRY_NODE.avgRt());
 
 //        // 统计Ut = log(QPS) - log(RT)
 //        successQPS = Constants.ENTRY_NODE.successQps();
@@ -163,13 +161,15 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 recordCompleteFor(Constants.ENTRY_NODE, count, rt, error);
             }
 
-            qLearningUpdate.qLearningProcess(Constants.ENTRY_NODE.successQps(),Constants.ENTRY_NODE.avgRt());
+            qLearningUpdateManager.qLearningProcess(Constants.ENTRY_NODE.successQps(),Constants.ENTRY_NODE.avgRt());
+//            System.out.println("---Accept--- " + qLearningUpdate.getCurrentUtility() + " next Utility = " + qLearningUpdate.getNextUtility());
 
 //            System.out.println( "_____Accept____ " + nextUtility + "               CU = " + currentUtility);
 //            System.out.println(this.testS.getTest());
         } else {
 
-            qLearningUpdate.qLearningProcess(Constants.ENTRY_NODE.successQps(),Constants.ENTRY_NODE.avgRt());
+            qLearningUpdateManager.qLearningProcess(Constants.ENTRY_NODE.successQps(),Constants.ENTRY_NODE.avgRt());
+//            System.out.println("---block---" + qLearningUpdate.getCurrentUtility() + " next Utility = " + qLearningUpdate.getNextUtility());
 
         }
 
