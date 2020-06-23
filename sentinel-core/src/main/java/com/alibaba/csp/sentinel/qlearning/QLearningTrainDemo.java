@@ -29,9 +29,9 @@ public class QLearningTrainDemo {
     private static ArrayList<Double> qpsArray = new ArrayList<Double>();
 
     private static volatile boolean stop = false;
-    private static final int threadCount = 100;
+    private static final int threadCount = 10;
 
-    private static int seconds = 30;
+    private static int seconds = 120;
 
     private static boolean isQLearning = false;
 
