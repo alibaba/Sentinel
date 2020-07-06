@@ -44,8 +44,7 @@ public class FlowRuleServiceImpl extends AbstractRuleService<FlowRuleEntity> imp
     @Override
     public void addFlowRule(AddFlowRuleReqVo reqVo) throws Exception {
         FlowRuleVoChecker.checkAdd(reqVo);
-        FlowRuleEntity rule = FlowRuleVoConverter.convertAdd(reqVo);
-        addRule(reqVo, rule);
+        addRule(reqVo, FlowRuleVoConverter.convertAdd(reqVo));
     }
 
     @Override

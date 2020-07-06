@@ -44,8 +44,7 @@ public class DegradeRuleServiceImpl extends AbstractRuleService<DegradeRuleEntit
     @Override
     public void addDegradeRule(AddDegradeRuleReqVo reqVo) throws Exception {
         DegradeRuleVoChecker.checkAdd(reqVo);
-        DegradeRuleEntity rule = DegradeRuleVoConverter.convertAdd(reqVo);
-        addRule(reqVo, rule);
+        addRule(reqVo, DegradeRuleVoConverter.convertAdd(reqVo));
     }
 
     @Override

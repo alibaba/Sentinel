@@ -44,8 +44,7 @@ public class SystemRuleServiceImpl extends AbstractRuleService<SystemRuleEntity>
     @Override
     public void addSystemRule(AddSystemRuleReqVo reqVo) throws Exception {
         SystemRuleVoChecker.checkAdd(reqVo);
-        SystemRuleEntity rule = SystemRuleVoConverter.convertAdd(reqVo);
-        addRule(reqVo, rule);
+        addRule(reqVo, SystemRuleVoConverter.convertAdd(reqVo));
     }
 
     @Override

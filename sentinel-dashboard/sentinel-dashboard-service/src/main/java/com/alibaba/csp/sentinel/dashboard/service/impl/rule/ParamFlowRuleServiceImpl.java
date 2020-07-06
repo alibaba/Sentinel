@@ -44,8 +44,7 @@ public class ParamFlowRuleServiceImpl extends AbstractRuleService<ParamFlowRuleE
     @Override
     public void addParamFlowRule(AddParamFlowRuleReqVo reqVo) throws Exception {
         ParamFlowRuleVoChecker.checkAdd(reqVo);
-        ParamFlowRuleEntity rules = ParamFlowRuleVoConverter.convertAdd(reqVo);
-        addRule(reqVo, rules);
+        addRule(reqVo, ParamFlowRuleVoConverter.convertAdd(reqVo));
     }
 
     @Override

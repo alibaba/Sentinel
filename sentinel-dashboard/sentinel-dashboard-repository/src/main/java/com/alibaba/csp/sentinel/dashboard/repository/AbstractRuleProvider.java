@@ -54,7 +54,8 @@ public abstract class AbstractRuleProvider<T extends RuleEntity> implements Dyna
         List<MachineInfo> machineInfos = appManagement.getDetailApp(app).getMachines()
                 .stream()
                 .filter(MachineInfo::isHealthy)
-                .sorted((e1, e2) -> Long.compare(e2.getLastHeartbeat(), e1.getLastHeartbeat())).collect(Collectors.toList());
+                .sorted(MachineInfo::compareTo)
+                .collect(Collectors.toList());
 
         if (CollectionUtils.isEmpty(machineInfos)) {
             return new ArrayList<>();

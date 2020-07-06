@@ -44,8 +44,7 @@ public class AuthorityRuleServiceImpl extends AbstractRuleService<AuthorityRuleE
     @Override
     public void addAuthorityRule(AddAuthorityReqVo reqVo) throws Exception {
         AuthorityRuleVoChecker.checkAdd(reqVo);
-        AuthorityRuleEntity rule = AuthorityRuleVoConverter.convertAdd(reqVo);
-        addRule(reqVo, rule);
+        addRule(reqVo, AuthorityRuleVoConverter.convertAdd(reqVo));
     }
 
     @Override
