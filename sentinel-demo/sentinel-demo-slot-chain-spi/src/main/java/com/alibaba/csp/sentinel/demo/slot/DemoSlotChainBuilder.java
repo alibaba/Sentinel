@@ -20,17 +20,11 @@ import com.alibaba.csp.sentinel.slotchain.SlotChainBuilder;
 import com.alibaba.csp.sentinel.slots.DefaultSlotChainBuilder;
 
 /**
- * An example slot chain builder. To activate this slot chain builder,
- * add the class name to corresponding SPI file in `resource/META-INF/services` directory.
- *
  * @author Eric Zhao
+ *
+ * @deprecated since 1.7.2, we can use @SpiOrder(-3500) to adjust the order of {@link DemoSlot},
+ * this class is reserved for compatibility with older versions.
  */
-public class DemoSlotChainBuilder implements SlotChainBuilder {
-
-    @Override
-    public ProcessorSlotChain build() {
-        ProcessorSlotChain chain = new DefaultSlotChainBuilder().build();
-        chain.addLast(new DemoSlot());
-        return chain;
-    }
+@Deprecated
+public class DemoSlotChainBuilder extends DefaultSlotChainBuilder {
 }
