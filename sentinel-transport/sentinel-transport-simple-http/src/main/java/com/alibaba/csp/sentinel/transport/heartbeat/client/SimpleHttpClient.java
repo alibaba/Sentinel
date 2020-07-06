@@ -26,6 +26,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.transport.command.exception.RequestException;
+import com.alibaba.csp.sentinel.transport.command.http.StatusCode;
+import com.alibaba.csp.sentinel.transport.log.CommandCenterLog;
 
 /**
  * <p>
@@ -57,7 +60,7 @@ public class SimpleHttpClient {
      * @return the response if the request is successful
      * @throws IOException when connection cannot be established or the connection is interrupted
      */
-    public SimpleHttpResponse get(SimpleHttpRequest request) throws IOException {
+    public SimpleHttpResponse get(SimpleHttpRequest request) throws IOException ,RequestException{
         if (request == null) {
             return null;
         }
@@ -73,7 +76,7 @@ public class SimpleHttpClient {
      * @return the response if the request is successful
      * @throws IOException when connection cannot be established or the connection is interrupted
      */
-    public SimpleHttpResponse post(SimpleHttpRequest request) throws IOException {
+    public SimpleHttpResponse post(SimpleHttpRequest request) throws IOException ,RequestException {
         if (request == null) {
             return null;
         }
@@ -86,7 +89,7 @@ public class SimpleHttpClient {
     private SimpleHttpResponse request(InetSocketAddress socketAddress,
                                        RequestMethod type, String requestPath,
                                        Map<String, String> paramsMap, Charset charset, int soTimeout)
-        throws IOException {
+            throws IOException,RequestException {
         Socket socket = null;
         BufferedWriter writer;
         try {
@@ -131,7 +134,7 @@ public class SimpleHttpClient {
     }
 
     private String getRequestPath(RequestMethod type, String requestPath,
-                                  Map<String, String> paramsMap, Charset charset) {
+                                  Map<String, String> paramsMap, Charset charset) throws RequestException{
         if (type == RequestMethod.GET) {
             if (requestPath.contains("?")) {
                 return requestPath + "&" + encodeRequestParams(paramsMap, charset);
@@ -152,10 +155,14 @@ public class SimpleHttpClient {
      * Encode and get the URL request parameters.
      *
      * @param paramsMap pair of parameters
-     * @param charset   charset
+     * @param charset   charset is not allowed to be null
      * @return encoded request parameters, or empty string ("") if no parameters are provided
      */
-    private String encodeRequestParams(Map<String, String> paramsMap, Charset charset) {
+    private String encodeRequestParams(Map<String, String> paramsMap, Charset charset) throws RequestException{
+        if (charset == null){
+            CommandCenterLog.warn("Illegal request: null charset");
+            throw new RequestException(StatusCode.BAD_REQUEST, "charset is not allowed to be null");
+        }
         if (paramsMap == null || paramsMap.isEmpty()) {
             return "";
         }
