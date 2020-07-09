@@ -28,8 +28,6 @@ HttpClientBuilder builder = new SentinelApacheHttpClientBuilder();
 CloseableHttpClient httpclient = builder.build();
 ```
 
-If we 
-
 ## Configuration
 
 - `SentinelApacheHttpClientConfig` configuration:
