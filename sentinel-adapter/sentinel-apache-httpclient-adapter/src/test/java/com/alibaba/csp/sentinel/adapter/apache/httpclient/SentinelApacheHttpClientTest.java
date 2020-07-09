@@ -60,7 +60,7 @@ public class SentinelApacheHttpClientTest {
 
         HttpGet httpGet = new HttpGet("http://localhost:" + port + "/httpclient/back");
         System.out.println(getRemoteString(httpclient, httpGet));
-        ClusterNode cn = ClusterBuilderSlot.getClusterNode("httpclient:GET:/httpclient/back");
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode("httpclient:/httpclient/back");
         assertNotNull(cn);
         Constants.ROOT.removeChildList();
         ClusterBuilderSlot.getClusterNodeMap().clear();
@@ -68,18 +68,20 @@ public class SentinelApacheHttpClientTest {
 
     @Test
     public void testSentinelOkHttpInterceptor1() throws Exception {
-        SentinelApacheHttpClientConfig.setExtractor(new ApacheHttpClientResourceExtractor() {
+        SentinelApacheHttpClientConfig config = new SentinelApacheHttpClientConfig();
+        config.setExtractor(new ApacheHttpClientResourceExtractor() {
 
             @Override
-            public String extractor(String method, String uri, HttpRequestWrapper request) {
-                String regex = "/httpclient/back/";
-                if (uri.contains(regex)) {
-                    uri = uri.substring(0, uri.indexOf(regex) + regex.length()) + "{id}";
+            public String extractor(HttpRequestWrapper request) {
+                String contains = "/httpclient/back/";
+                String uri = request.getRequestLine().getUri();
+                if (uri.startsWith(contains)) {
+                    uri = uri.substring(0, uri.indexOf(contains) + contains.length()) + "{id}";
                 }
-                return method + ":" + uri;
+                return request.getMethod() + ":" + uri;
             }
         });
-        CloseableHttpClient httpclient = new SentinelApacheHttpClientBuilder().build();
+        CloseableHttpClient httpclient = new SentinelApacheHttpClientBuilder(config).build();
 
         HttpGet httpGet = new HttpGet("http://localhost:" + port + "/httpclient/back/1");
         System.out.println(getRemoteString(httpclient, httpGet));

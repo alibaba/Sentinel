@@ -16,9 +16,12 @@
 package com.alibaba.csp.sentinel.demo.apache.httpclient.controller;
 
 import com.alibaba.csp.sentinel.adapter.apache.httpclient.SentinelApacheHttpClientBuilder;
+import com.alibaba.csp.sentinel.adapter.apache.httpclient.config.SentinelApacheHttpClientConfig;
+import com.alibaba.csp.sentinel.adapter.apache.httpclient.extractor.ApacheHttpClientResourceExtractor;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpRequestWrapper;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
@@ -53,7 +56,20 @@ public class ApacheHttpClientTestController {
 
     @RequestMapping("/httpclient/sync")
     public String sync() throws Exception {
-        CloseableHttpClient httpclient = new SentinelApacheHttpClientBuilder().build();
+        SentinelApacheHttpClientConfig config = new SentinelApacheHttpClientConfig();
+        config.setExtractor(new ApacheHttpClientResourceExtractor() {
+
+            @Override
+            public String extractor(HttpRequestWrapper request) {
+                String contains = "/httpclient/back/";
+                String uri = request.getRequestLine().getUri();
+                if (uri.startsWith(contains)) {
+                    uri = uri.substring(0, uri.indexOf(contains) + contains.length()) + "{id}";
+                }
+                return request.getMethod() + ":" + uri;
+            }
+        });
+        CloseableHttpClient httpclient = new SentinelApacheHttpClientBuilder(config).build();
 
         HttpGet httpGet = new HttpGet("http://localhost:" + port + "/httpclient/back");
         return getRemoteString(httpclient, httpGet);
@@ -61,7 +77,20 @@ public class ApacheHttpClientTestController {
 
     @RequestMapping("/httpclient/sync/{id}")
     public String sync(@PathVariable String id) throws Exception {
-        CloseableHttpClient httpclient = new SentinelApacheHttpClientBuilder().build();
+        SentinelApacheHttpClientConfig config = new SentinelApacheHttpClientConfig();
+        config.setExtractor(new ApacheHttpClientResourceExtractor() {
+
+            @Override
+            public String extractor(HttpRequestWrapper request) {
+                String contains = "/httpclient/back/";
+                String uri = request.getRequestLine().getUri();
+                if (uri.startsWith(contains)) {
+                    uri = uri.substring(0, uri.indexOf(contains) + contains.length()) + "{id}";
+                }
+                return request.getMethod() + ":" + uri;
+            }
+        });
+        CloseableHttpClient httpclient = new SentinelApacheHttpClientBuilder(config).build();
 
         HttpGet httpGet = new HttpGet("http://localhost:" + port + "/httpclient/back/" + id);
         return getRemoteString(httpclient, httpGet);

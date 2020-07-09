@@ -35,6 +35,16 @@ import java.io.IOException;
  */
 public class SentinelApacheHttpClientBuilder extends HttpClientBuilder {
 
+    private final SentinelApacheHttpClientConfig config;
+
+    public SentinelApacheHttpClientBuilder(){
+        this.config = new SentinelApacheHttpClientConfig();
+    }
+
+    public SentinelApacheHttpClientBuilder(SentinelApacheHttpClientConfig config){
+        this.config = config;
+    }
+
     @Override
     protected ClientExecChain decorateMainExec(final ClientExecChain mainExec) {
         return new ClientExecChain() {
@@ -44,15 +54,14 @@ public class SentinelApacheHttpClientBuilder extends HttpClientBuilder {
                     throws IOException, HttpException {
                 Entry entry = null;
                 try {
-                    String name = SentinelApacheHttpClientConfig.getExtractor().extractor(request.getMethod(),
-                            request.getRequestLine().getUri(), request);
-                    if (!StringUtil.isEmpty(SentinelApacheHttpClientConfig.getPrefix())) {
-                        name = SentinelApacheHttpClientConfig.getPrefix() + name;
+                    String name = config.getExtractor().extractor(request);
+                    if (!StringUtil.isEmpty(config.getPrefix())) {
+                        name = config.getPrefix() + name;
                     }
                     entry = SphU.entry(name, ResourceTypeConstants.COMMON_WEB, EntryType.OUT);
                     return mainExec.execute(route, request, clientContext, execAware);
                 } catch (BlockException e) {
-                    return SentinelApacheHttpClientConfig.getFallback().handle(request, e);
+                    return config.getFallback().handle(request, e);
                 } catch (Throwable t) {
                     Tracer.traceEntry(t, entry);
                     throw t;

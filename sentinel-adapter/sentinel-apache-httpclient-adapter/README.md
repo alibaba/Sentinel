@@ -20,37 +20,50 @@ We can use the `SentinelApacheHttpClientBuilder` when `CloseableHttpClient` at i
 CloseableHttpClient httpclient = new SentinelApacheHttpClientBuilder().build();
 ```
 
+If we want to add some additional configurations, we can refer to the following code
+
+```java
+HttpClientBuilder builder = new SentinelApacheHttpClientBuilder();
+//builder Other Definitions
+CloseableHttpClient httpclient = builder.build();
+```
+
+If we 
+
 ## Configuration
 
 - `SentinelApacheHttpClientConfig` configuration:
 
 | name | description | type | default value |
 |------|------------|------|-------|
-| prefix | custom resource prefix | `String` | `httpclient:` |
-| extractor | custom resource extractor | `ApacheHttpClientResourceExtractor` | `DefaultApacheHttpClientResourceExtractor` |
+| prefix | customize resource prefix | `String` | `httpclient:` |
+| extractor | customize resource extractor | `ApacheHttpClientResourceExtractor` | `DefaultApacheHttpClientResourceExtractor` |
 | fallback | handle request when it is blocked | `ApacheHttpClientFallback` | `DefaultApacheHttpClientFallback` |
 
 ### extractor (resource extractor)
 
-We can define `ApacheHttpClientResourceExtractor` to custom resource extractor replace `DefaultApacheHttpClientResourceExtractor`, for example: httpclient:GET:/httpclient/back/1 ==> httpclient:GET:/httpclient/back/{id}
+We can define `ApacheHttpClientResourceExtractor` to customize resource extractor replace `DefaultApacheHttpClientResourceExtractor` at `SentinelApacheHttpClientBuilder` default config, for example: httpclient:GET:/httpclient/back/1 ==> httpclient:GET:/httpclient/back/{id}
 
 ```java
-SentinelApacheHttpClientConfig.setExtractor(new ApacheHttpClientResourceExtractor() {
+SentinelApacheHttpClientConfig config = new SentinelApacheHttpClientConfig();
+config.setExtractor(new ApacheHttpClientResourceExtractor() {
 
     @Override
-    public String extractor(String method, String uri, HttpRequestWrapper request) {
-        String regex = "/httpclient/back/";
-        if (uri.contains(regex)) {
-            uri = uri.substring(0, uri.indexOf(regex) + regex.length()) + "{id}";
+    public String extractor(HttpRequestWrapper request) {
+        String contains = "/httpclient/back/";
+        String uri = request.getRequestLine().getUri();
+        if (uri.startsWith(contains)) {
+            uri = uri.substring(0, uri.indexOf(contains) + contains.length()) + "{id}";
         }
-        return method + ":" + uri;
+        return request.getMethod() + ":" + uri;
     }
 });
+CloseableHttpClient httpclient = new SentinelApacheHttpClientBuilder(config).build();
 ```
 
 ### fallback (Block handling)
 
-We can define `ApacheHttpClientFallback` to handle request is blocked according to the actual scenario, for example:
+We can define `ApacheHttpClientFallback` at `SentinelApacheHttpClientBuilder` default config, to handle request is blocked according to the actual scenario, for example:
 
 ```java
 public class DefaultApacheHttpClientFallback implements ApacheHttpClientFallback {

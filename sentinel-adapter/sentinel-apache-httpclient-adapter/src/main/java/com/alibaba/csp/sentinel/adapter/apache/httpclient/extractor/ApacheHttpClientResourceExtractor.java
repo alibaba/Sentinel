@@ -22,5 +22,5 @@ import org.apache.http.client.methods.HttpRequestWrapper;
  */
 public interface ApacheHttpClientResourceExtractor {
 
-    String extractor(String method, String uri, HttpRequestWrapper request);
+    String extractor(HttpRequestWrapper request);
 }

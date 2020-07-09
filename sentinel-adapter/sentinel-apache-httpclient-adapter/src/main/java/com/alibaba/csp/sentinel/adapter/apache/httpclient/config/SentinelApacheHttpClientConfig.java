@@ -24,36 +24,36 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
 /**
  * @author zhaoyuguang
  */
-public final class SentinelApacheHttpClientConfig {
+public class SentinelApacheHttpClientConfig {
 
-    private static volatile String prefix = "httpclient:";
-    private static volatile ApacheHttpClientResourceExtractor extractor = new DefaultApacheHttpClientResourceExtractor();
-    private static volatile ApacheHttpClientFallback fallback = new DefaultApacheHttpClientFallback();
+    private String prefix = "httpclient:";
+    private ApacheHttpClientResourceExtractor extractor = new DefaultApacheHttpClientResourceExtractor();
+    private ApacheHttpClientFallback fallback = new DefaultApacheHttpClientFallback();
 
-    public static String getPrefix() {
+    public String getPrefix() {
         return prefix;
     }
 
-    public static void setPrefix(String prefix) {
+    public void setPrefix(String prefix) {
         AssertUtil.notNull(prefix, "prefix cannot be null");
-        SentinelApacheHttpClientConfig.prefix = prefix;
+        this.prefix = prefix;
     }
 
-    public static ApacheHttpClientResourceExtractor getExtractor() {
+    public ApacheHttpClientResourceExtractor getExtractor() {
         return extractor;
     }
 
-    public static void setExtractor(ApacheHttpClientResourceExtractor extractor) {
+    public void setExtractor(ApacheHttpClientResourceExtractor extractor) {
         AssertUtil.notNull(extractor, "extractor cannot be null");
-        SentinelApacheHttpClientConfig.extractor = extractor;
+        this.extractor = extractor;
     }
 
-    public static ApacheHttpClientFallback getFallback() {
+    public ApacheHttpClientFallback getFallback() {
         return fallback;
     }
 
-    public static void setFallback(ApacheHttpClientFallback fallback) {
+    public void setFallback(ApacheHttpClientFallback fallback) {
         AssertUtil.notNull(fallback, "fallback cannot be null");
-        SentinelApacheHttpClientConfig.fallback = fallback;
+        this.fallback = fallback;
     }
 }

@@ -15,9 +15,6 @@
  */
 package com.alibaba.csp.sentinel.demo.apache.httpclient;
 
-import com.alibaba.csp.sentinel.adapter.apache.httpclient.config.SentinelApacheHttpClientConfig;
-import com.alibaba.csp.sentinel.adapter.apache.httpclient.extractor.ApacheHttpClientResourceExtractor;
-import org.apache.http.client.methods.HttpRequestWrapper;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -34,16 +31,5 @@ public class ApacheHttpClientDemoApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        SentinelApacheHttpClientConfig.setExtractor(new ApacheHttpClientResourceExtractor() {
-
-            @Override
-            public String extractor(String method, String uri, HttpRequestWrapper request) {
-                String regex = "/httpclient/back/";
-                if (uri.contains(regex)) {
-                    uri = uri.substring(0, uri.indexOf(regex) + regex.length()) + "{id}";
-                }
-                return method + ":" + uri;
-            }
-        });
     }
 }

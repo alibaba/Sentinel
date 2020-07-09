@@ -24,16 +24,19 @@ public class SentinelApacheHttpClientConfigTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testConfigSetPrefix() {
-        SentinelApacheHttpClientConfig.setPrefix(null);
+        SentinelApacheHttpClientConfig config = new SentinelApacheHttpClientConfig();
+        config.setPrefix(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConfigSetCleaner() {
-        SentinelApacheHttpClientConfig.setExtractor(null);
+        SentinelApacheHttpClientConfig config = new SentinelApacheHttpClientConfig();
+        config.setExtractor(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConfigSetFallback() {
-        SentinelApacheHttpClientConfig.setFallback(null);
+        SentinelApacheHttpClientConfig config = new SentinelApacheHttpClientConfig();
+        config.setFallback(null);
     }
 }

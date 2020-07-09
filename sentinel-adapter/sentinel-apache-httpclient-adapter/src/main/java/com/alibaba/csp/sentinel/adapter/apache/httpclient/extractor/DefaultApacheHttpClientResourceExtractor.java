@@ -23,7 +23,7 @@ import org.apache.http.client.methods.HttpRequestWrapper;
 public class DefaultApacheHttpClientResourceExtractor implements ApacheHttpClientResourceExtractor {
 
     @Override
-    public String extractor(String method, String uri, HttpRequestWrapper request) {
-        return method + ":" + uri;
+    public String extractor(HttpRequestWrapper request) {
+        return request.getRequestLine().getUri();
     }
 }
