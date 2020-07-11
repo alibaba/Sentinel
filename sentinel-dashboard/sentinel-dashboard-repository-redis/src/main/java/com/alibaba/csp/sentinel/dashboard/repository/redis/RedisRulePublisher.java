@@ -49,10 +49,8 @@ public class RedisRulePublisher<T extends RuleEntity> extends AbstractRulePublis
         StatefulRedisPubSubConnection<String, String> connection = redisClient.connectPubSub();
         RedisPubSubCommands<String, String> subCommands = connection.sync();
 
-        subCommands.multi();
         subCommands.set(ruleKey, rules);
         subCommands.publish(channel, rules);
-        subCommands.exec();
 
         connection.close();
         redisClient.shutdown();
