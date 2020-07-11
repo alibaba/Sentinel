@@ -1,7 +1,7 @@
 var app = angular.module('sentinelDashboardApp');
 
 app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
-  'ngDialog', 'FlowServiceV2', 'DegradeService', 'AuthorityRuleService', 'ParamFlowService', 'MachineService',
+  'ngDialog', 'FlowServiceV2', 'DegradeService_v2', 'AuthorityRuleService_v2', 'ParamFlowService_v2', 'MachineService',
   '$interval', '$location', '$timeout',
   function ($scope, $stateParams, IdentityService, ngDialog,
     FlowService, DegradeService, AuthorityRuleService, ParamFlowService, MachineService, $interval, $location, $timeout) {
@@ -161,12 +161,13 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
       DegradeService.newRule(degradeRuleDialogScope.currentRule).success(function (data) {
         if (data.code === 0) {
           degradeRuleDialog.close();
-          var url = '/dashboard/degrade/' + $scope.app;
+          var url = '/dashboard/v2/degrade/' + $scope.app;
           $location.path(url);
         } else {
           alert('失败：' + data.msg);
         }
       });
+
     }
 
     function saveDegradeRuleAndContinue() {
@@ -193,7 +194,7 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
           AuthorityRuleService.addNewRule(ruleEntity).success((data) => {
               if (data.success) {
                   authorityRuleDialog.close();
-                  let url = '/dashboard/authority/' + $scope.app;
+                  let url = '/dashboard/v2/authority/' + $scope.app;
                   $location.path(url);
               } else {
                   alert('添加规则失败：' + data.msg);
@@ -272,7 +273,7 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
           ParamFlowService.addNewRule(ruleEntity).success((data) => {
               if (data.success) {
                   paramFlowRuleDialog.close();
-                  let url = '/dashboard/paramFlow/' + $scope.app;
+                  let url = '/dashboard/v2/paramFlow/' + $scope.app;
                   $location.path(url);
               } else {
                   alert('添加热点规则失败：' + data.msg);
