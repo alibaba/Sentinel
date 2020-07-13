@@ -18,6 +18,7 @@
         <module>sentinel-web-servlet</module>
         <module>sentinel-dubbo-adapter</module>
         <module>sentinel-apache-dubbo-adapter</module>
+        <module>sentinel-apache-httpclient-adapter</module>
         <module>sentinel-sofa-rpc-adapter</module>
         <module>sentinel-grpc-adapter</module>
         <module>sentinel-zuul-adapter</module>

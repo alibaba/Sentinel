@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright 1999-2020 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.demo.slot;
+package com.alibaba.csp.sentinel.adapter.apache.httpclient.extractor;
 
-import com.alibaba.csp.sentinel.slotchain.ProcessorSlotChain;
-import com.alibaba.csp.sentinel.slotchain.SlotChainBuilder;
-import com.alibaba.csp.sentinel.slots.DefaultSlotChainBuilder;
+import org.apache.http.client.methods.HttpRequestWrapper;
 
 /**
- * @author Eric Zhao
- *
- * @deprecated since 1.7.2, we can use @SpiOrder(-3500) to adjust the order of {@link DemoSlot},
- * this class is reserved for compatibility with older versions.
+ * @author zhaoyuguang
  */
-@Deprecated
-public class DemoSlotChainBuilder extends DefaultSlotChainBuilder {
+public interface ApacheHttpClientResourceExtractor {
+
+    String extractor(HttpRequestWrapper request);
 }
