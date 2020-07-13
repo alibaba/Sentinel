@@ -17,6 +17,13 @@
 package com.alibaba.csp.sentinel.adapter.gateway.zuul.fallback;
 
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Default Fallback provider for sentinel {@link BlockException}, {@literal *} meant for all routes.
@@ -32,10 +39,46 @@ public class DefaultBlockFallbackProvider implements ZuulBlockFallbackProvider {
 
     @Override
     public BlockResponse fallbackResponse(String route, Throwable cause) {
-        if (cause instanceof BlockException) {
-            return new BlockResponse(429, "Sentinel block exception", route);
-        } else {
-            return new BlockResponse(500, "System Error", route);
+        if (cause != null && cause.getCause() != null) {
+            String reason = cause.getCause().getMessage();
         }
+        return fallbackResponse();
+    }
+
+
+    public BlockResponse fallbackResponse() {
+        return new BlockResponse() {
+            @Override
+            public HttpStatus getStatusCode() throws IOException {
+                return HttpStatus.OK;
+            }
+
+            @Override
+            public int getRawStatusCode() throws IOException {
+                return 200;
+            }
+
+            @Override
+            public String getStatusText() throws IOException {
+                return "OK";
+            }
+
+            @Override
+            public void close() {
+
+            }
+
+            @Override
+            public InputStream getBody() throws IOException {
+                return new ByteArrayInputStream("The service is unavailable.".getBytes());
+            }
+
+            @Override
+            public HttpHeaders getHeaders() {
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                return headers;
+            }
+        };
     }
 }

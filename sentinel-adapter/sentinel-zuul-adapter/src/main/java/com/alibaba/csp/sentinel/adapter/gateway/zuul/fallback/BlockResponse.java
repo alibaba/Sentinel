@@ -16,57 +16,49 @@
 
 package com.alibaba.csp.sentinel.adapter.gateway.zuul.fallback;
 
+import org.springframework.http.HttpInputMessage;
+import org.springframework.http.HttpStatus;
+
+import java.io.Closeable;
+import java.io.IOException;
+
 /**
  * Fall back response for {@link com.alibaba.csp.sentinel.slots.block.BlockException}
  *
  * @author tiger
  */
-public class BlockResponse {
+public interface BlockResponse extends HttpInputMessage, Closeable {
+
 
     /**
-     * HTTP status code.
+     * Return the HTTP status code of the response.
+     *
+     * @return the HTTP status as an HttpStatus enum value
+     * @throws IOException              in case of I/O errors
+     * @throws IllegalArgumentException in case of an unknown HTTP status code
      */
-    private int code;
+    HttpStatus getStatusCode() throws IOException;
 
-    private String message;
-    private String route;
+    /**
+     * Return the HTTP status code (potentially non-standard and not
+     * resolvable through the {@link HttpStatus} enum) as an integer.
+     *
+     * @return the HTTP status as an integer
+     * @throws IOException in case of I/O errors
+     */
+    int getRawStatusCode() throws IOException;
 
-    public BlockResponse(int code, String message, String route) {
-        this.code = code;
-        this.message = message;
-        this.route = route;
-    }
+    /**
+     * Return the HTTP status text of the response.
+     * @return the HTTP status text
+     * @throws IOException in case of I/O errors
+     */
+    String getStatusText() throws IOException;
 
-    public int getCode() {
-        return code;
-    }
-
-    public void setCode(int code) {
-        this.code = code;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public String getRoute() {
-        return route;
-    }
-
-    public void setRoute(String route) {
-        this.route = route;
-    }
-
+    /**
+     * Close this response, freeing any resources created.
+     */
     @Override
-    public String toString() {
-        return "{" +
-                "\"code\":" + code +
-                ", \"message\":" + "\"" + message + "\"" +
-                ", \"route\":" + "\"" + route + "\"" +
-                '}';
-    }
+    void close();
+
 }

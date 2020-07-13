@@ -16,11 +16,6 @@
 
 package com.alibaba.csp.sentinel.adapter.gateway.zuul.filters;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.HashSet;
-import java.util.Set;
-
 import com.alibaba.csp.sentinel.AsyncEntry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.ResourceTypeConstants;
@@ -39,12 +34,13 @@ import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.util.function.Predicate;
-
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.util.*;
 
 import static com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants.*;
 
@@ -133,11 +129,21 @@ public class SentinelZuulPreFilter extends ZuulFilter {
             ctx.setRouteHost(null);
             ctx.set(ZuulConstant.SERVICE_ID_KEY, null);
 
-            // Set fallback response.
-            ctx.setResponseBody(blockResponse.toString());
-            ctx.setResponseStatusCode(blockResponse.getCode());
+
+            try {
+                // Set fallback response.
+                ctx.setResponseBody(new Scanner(blockResponse.getBody()).useDelimiter("\\Z").next());
+                ctx.setResponseStatusCode(blockResponse.getStatusCode().value());
+                ctx.getResponse().setContentType(blockResponse.getHeaders().getFirst("Content-Type"));
+            } catch (IOException e) {
+                // We don't exit the entry here. We need to exit the entries in post filter to record Rt correctly.
+                // So here the entries will be carried in the request context.
+                if (!holders.isEmpty()) {
+                    ctx.put(ZuulConstant.ZUUL_CTX_SENTINEL_ENTRIES_KEY, holders);
+                }
+            }
             // Set Response ContentType
-            ctx.getResponse().setContentType("application/json; charset=utf-8");
+            ctx.getResponse().setContentType(blockResponse.getHeaders().getContentType().toString());
         } finally {
             // We don't exit the entry here. We need to exit the entries in post filter to record Rt correctly.
             // So here the entries will be carried in the request context.
