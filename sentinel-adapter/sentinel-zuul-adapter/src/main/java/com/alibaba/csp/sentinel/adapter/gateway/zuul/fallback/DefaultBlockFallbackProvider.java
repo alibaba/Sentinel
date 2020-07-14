@@ -16,6 +16,7 @@
 
 package com.alibaba.csp.sentinel.adapter.gateway.zuul.fallback;
 
+import com.alibaba.csp.sentinel.adapter.gateway.zuul.enums.BlockResponseEntryEnum;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -39,28 +40,29 @@ public class DefaultBlockFallbackProvider implements ZuulBlockFallbackProvider {
 
     @Override
     public BlockResponse fallbackResponse(String route, Throwable cause) {
-        if (cause != null && cause.getCause() != null) {
-            String reason = cause.getCause().getMessage();
+        String reason = "OK";
+        if (cause != null && cause.getClass() != null) {
+            reason = cause.getClass().getCanonicalName();
         }
-        return fallbackResponse();
+        return fallbackResponse(BlockResponseEntryEnum.getEnumMap().get(reason));
     }
 
-
-    public BlockResponse fallbackResponse() {
+    public BlockResponse fallbackResponse(BlockResponseEntryEnum reason) {
+        final BlockResponseEntryEnum re = reason;
         return new BlockResponse() {
             @Override
             public HttpStatus getStatusCode() throws IOException {
-                return HttpStatus.OK;
+                return re.getHttpStatus();
             }
 
             @Override
             public int getRawStatusCode() throws IOException {
-                return 200;
+                return re.getHttpStatus().value();
             }
 
             @Override
             public String getStatusText() throws IOException {
-                return "OK";
+                return re.getHttpStatus().getReasonPhrase();
             }
 
             @Override
@@ -70,7 +72,7 @@ public class DefaultBlockFallbackProvider implements ZuulBlockFallbackProvider {
 
             @Override
             public InputStream getBody() throws IOException {
-                return new ByteArrayInputStream("The service is unavailable.".getBytes());
+                return new ByteArrayInputStream(re.getHttpStatus().getReasonPhrase().getBytes());
             }
 
             @Override

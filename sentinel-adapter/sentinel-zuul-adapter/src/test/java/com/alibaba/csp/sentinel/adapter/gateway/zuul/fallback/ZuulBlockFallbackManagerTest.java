@@ -16,6 +16,7 @@
 
 package com.alibaba.csp.sentinel.adapter.gateway.zuul.fallback;
 
+import com.alibaba.csp.sentinel.adapter.gateway.zuul.enums.BlockResponseEntryEnum;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -36,6 +37,14 @@ public class ZuulBlockFallbackManagerTest {
 
     private String DEFAULT_ROUTE = "*";
 
+    @Test
+    public void testRegisterProvider() throws Exception {
+        MyNullResponseFallBackProvider myNullResponseFallBackProvider = new MyNullResponseFallBackProvider();
+        ZuulBlockFallbackManager.registerProvider(myNullResponseFallBackProvider);
+        Assert.assertEquals(myNullResponseFallBackProvider.getRoute(), ROUTE);
+        Assert.assertNotNull(myNullResponseFallBackProvider.fallbackResponse(ROUTE, new FlowException("flow ex")));
+    }
+
     class MyNullResponseFallBackProvider implements ZuulBlockFallbackProvider {
         @Override
         public String getRoute() {
@@ -44,28 +53,29 @@ public class ZuulBlockFallbackManagerTest {
 
         @Override
         public BlockResponse fallbackResponse(String route, Throwable cause) {
-            if (cause != null && cause.getCause() != null) {
-                String reason = cause.getCause().getMessage();
+            String reason = "OK";
+            if (cause != null && cause.getClass() != null) {
+                reason = cause.getClass().getCanonicalName();
             }
-            return fallbackResponse();
+            return fallbackResponse(BlockResponseEntryEnum.getEnumMap().get(reason));
         }
 
-
-        public BlockResponse fallbackResponse() {
+        public BlockResponse fallbackResponse(BlockResponseEntryEnum reason) {
+            final BlockResponseEntryEnum re = reason;
             return new BlockResponse() {
                 @Override
                 public HttpStatus getStatusCode() throws IOException {
-                    return HttpStatus.OK;
+                    return re.getHttpStatus();
                 }
 
                 @Override
                 public int getRawStatusCode() throws IOException {
-                    return 200;
+                    return re.getHttpStatus().value();
                 }
 
                 @Override
                 public String getStatusText() throws IOException {
-                    return "OK";
+                    return re.getHttpStatus().getReasonPhrase();
                 }
 
                 @Override
@@ -75,7 +85,7 @@ public class ZuulBlockFallbackManagerTest {
 
                 @Override
                 public InputStream getBody() throws IOException {
-                    return new ByteArrayInputStream("The service is unavailable.".getBytes());
+                    return new ByteArrayInputStream(re.getHttpStatus().getReasonPhrase().getBytes());
                 }
 
                 @Override
@@ -86,14 +96,6 @@ public class ZuulBlockFallbackManagerTest {
                 }
             };
         }
-    }
-
-    @Test
-    public void testRegisterProvider() throws Exception {
-        MyNullResponseFallBackProvider myNullResponseFallBackProvider = new MyNullResponseFallBackProvider();
-        ZuulBlockFallbackManager.registerProvider(myNullResponseFallBackProvider);
-        Assert.assertEquals(myNullResponseFallBackProvider.getRoute(), ROUTE);
-//        Assert.assertNull(myNullResponseFallBackProvider.fallbackResponse(ROUTE, new FlowException("flow ex")));
     }
 
     @Test

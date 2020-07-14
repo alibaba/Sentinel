@@ -50,13 +50,13 @@ public class ZuulBlockFallbackProviderTest {
         ZuulBlockFallbackProvider fallbackProvider = ZuulBlockFallbackManager.getFallbackProvider(ALL_ROUTE);
         BlockResponse clientHttpResponse = fallbackProvider.fallbackResponse(ALL_ROUTE,
             new FlowException("flow exception"));
-        Assert.assertEquals(clientHttpResponse.getStatusCode(), 429);
+        Assert.assertEquals(clientHttpResponse.getStatusCode().value(), 429);
     }
 
     @Test
     public void testRuntimeExceptionFallbackResponse() throws Exception {
         ZuulBlockFallbackProvider fallbackProvider = ZuulBlockFallbackManager.getFallbackProvider(ALL_ROUTE);
         BlockResponse clientHttpResponse = fallbackProvider.fallbackResponse(ALL_ROUTE, new RuntimeException());
-        Assert.assertEquals(clientHttpResponse.getStatusCode(), 500);
+        Assert.assertEquals(clientHttpResponse.getStatusCode().value(), 500);
     }
 }
