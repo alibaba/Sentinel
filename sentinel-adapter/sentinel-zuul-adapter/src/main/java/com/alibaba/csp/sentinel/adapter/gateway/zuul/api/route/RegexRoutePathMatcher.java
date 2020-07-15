@@ -15,12 +15,13 @@
  */
 package com.alibaba.csp.sentinel.adapter.gateway.zuul.api.route;
 
-import java.util.regex.Pattern;
-
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.function.Predicate;
-
 import com.netflix.zuul.context.RequestContext;
+import org.apache.commons.lang.StringUtils;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.regex.Pattern;
 
 /**
  * @author Eric Zhao
@@ -39,7 +40,13 @@ public class RegexRoutePathMatcher implements Predicate<RequestContext> {
 
     @Override
     public boolean test(RequestContext context) {
-        String path = context.getRequest().getServletPath();
+        //Solve the problem of prefix and suffix matching
+        HttpServletRequest request = context.getRequest();
+        String path = request.getServletPath();
+        String pathInfo = request.getPathInfo();
+        if (StringUtils.length(pathInfo) > 0) {
+            path = path + pathInfo;
+        }
         return regex.matcher(path).matches();
     }
 
