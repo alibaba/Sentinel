@@ -17,7 +17,6 @@
 package com.alibaba.csp.sentinel.adapter.gateway.zuul.fallback;
 
 import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -26,25 +25,13 @@ import org.junit.Test;
  */
 public class ZuulBlockFallbackManagerTest {
 
-    private String ROUTE = "/test";
+    private static final String ROUTE = "/test";
 
-    private String DEFAULT_ROUTE = "*";
-
-    class MyNullResponseFallBackProvider implements ZuulBlockFallbackProvider {
-        @Override
-        public String getRoute() {
-            return ROUTE;
-        }
-
-        @Override
-        public BlockResponse fallbackResponse(String route, Throwable cause) {
-            return null;
-        }
-    }
+    private static final String DEFAULT_ROUTE = "*";
 
     @Test
     public void testRegisterProvider() throws Exception {
-        MyNullResponseFallBackProvider myNullResponseFallBackProvider = new MyNullResponseFallBackProvider();
+        DefaultBlockFallbackProvider myNullResponseFallBackProvider = new DefaultBlockFallbackProvider();
         ZuulBlockFallbackManager.registerProvider(myNullResponseFallBackProvider);
         Assert.assertEquals(myNullResponseFallBackProvider.getRoute(), ROUTE);
         Assert.assertNull(myNullResponseFallBackProvider.fallbackResponse(ROUTE, new FlowException("flow ex")));
@@ -52,7 +39,7 @@ public class ZuulBlockFallbackManagerTest {
 
     @Test
     public void clear() {
-        MyNullResponseFallBackProvider myNullResponseFallBackProvider = new MyNullResponseFallBackProvider();
+        DefaultBlockFallbackProvider myNullResponseFallBackProvider = new DefaultBlockFallbackProvider();
         ZuulBlockFallbackManager.registerProvider(myNullResponseFallBackProvider);
         Assert.assertEquals(myNullResponseFallBackProvider.getRoute(), ROUTE);
         ZuulBlockFallbackManager.clear();
