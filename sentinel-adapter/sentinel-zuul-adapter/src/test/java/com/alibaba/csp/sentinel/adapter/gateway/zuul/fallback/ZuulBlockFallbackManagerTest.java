@@ -25,7 +25,7 @@ import org.junit.Test;
  */
 public class ZuulBlockFallbackManagerTest {
 
-    private static final String ROUTE = "/test";
+    private static final String ROUTE = "*";
 
     private static final String DEFAULT_ROUTE = "*";
 
@@ -34,7 +34,7 @@ public class ZuulBlockFallbackManagerTest {
         DefaultBlockFallbackProvider myNullResponseFallBackProvider = new DefaultBlockFallbackProvider();
         ZuulBlockFallbackManager.registerProvider(myNullResponseFallBackProvider);
         Assert.assertEquals(myNullResponseFallBackProvider.getRoute(), ROUTE);
-        Assert.assertNull(myNullResponseFallBackProvider.fallbackResponse(ROUTE, new FlowException("flow ex")));
+        Assert.assertEquals(myNullResponseFallBackProvider.fallbackResponse(ROUTE, new FlowException("flow ex")).getCode(), 429);
     }
 
     @Test
