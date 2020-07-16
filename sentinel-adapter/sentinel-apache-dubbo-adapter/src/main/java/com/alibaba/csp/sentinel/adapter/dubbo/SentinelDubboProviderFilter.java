@@ -15,18 +15,14 @@
  */
 package com.alibaba.csp.sentinel.adapter.dubbo;
 
-import com.alibaba.csp.sentinel.Entry;
-import com.alibaba.csp.sentinel.EntryType;
-import com.alibaba.csp.sentinel.ResourceTypeConstants;
-import com.alibaba.csp.sentinel.SphU;
-import com.alibaba.csp.sentinel.Tracer;
+import com.alibaba.csp.sentinel.*;
 import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig;
 import com.alibaba.csp.sentinel.adapter.dubbo.fallback.DubboFallbackRegistry;
+import com.alibaba.csp.sentinel.adapter.dubbo.origin.DubboOriginParserRegistry;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -66,7 +62,10 @@ public class SentinelDubboProviderFilter extends BaseSentinelDubboFilter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         // Get origin caller.
-        String application = DubboUtils.getApplication(invocation, "");
+        String origin = DubboOriginParserRegistry.getDubboOriginParser().parse(invoker, invocation);
+        if (null == origin) {
+            origin = "";
+        }
         Entry interfaceEntry = null;
         Entry methodEntry = null;
         String methodResourceName = getMethodName(invoker, invocation);
@@ -74,7 +73,7 @@ public class SentinelDubboProviderFilter extends BaseSentinelDubboFilter {
         try {
             // Only need to create entrance context at provider side, as context will take effect
             // at entrance of invocation chain only (for inbound traffic).
-            ContextUtil.enter(methodResourceName, application);
+            ContextUtil.enter(methodResourceName, origin);
             interfaceEntry = SphU.entry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN);
             methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN, invocation.getArguments());
             Result result = invoker.invoke(invocation);
