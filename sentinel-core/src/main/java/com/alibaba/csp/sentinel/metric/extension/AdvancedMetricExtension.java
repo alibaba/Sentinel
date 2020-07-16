@@ -8,7 +8,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  * collection method with the name of {@link EntryType}.
  * 
  * @author bill_yip
- * @since 1.8.1
+ * @since 1.8.0
  */
 public interface AdvancedMetricExtension extends MetricExtension {
 	/**
