@@ -20,7 +20,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
 /**
- * Default Dubbo origin parse.
+ * Default Dubbo origin parser.
  *
  * @author jingzian
  */

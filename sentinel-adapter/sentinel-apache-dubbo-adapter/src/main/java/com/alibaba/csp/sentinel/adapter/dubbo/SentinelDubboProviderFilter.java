@@ -16,9 +16,7 @@
 package com.alibaba.csp.sentinel.adapter.dubbo;
 
 import com.alibaba.csp.sentinel.*;
-import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig;
-import com.alibaba.csp.sentinel.adapter.dubbo.fallback.DubboFallbackRegistry;
-import com.alibaba.csp.sentinel.adapter.dubbo.origin.DubboOriginParserRegistry;
+import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboAdapterGlobalConfig;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
@@ -51,7 +49,7 @@ public class SentinelDubboProviderFilter extends BaseSentinelDubboFilter {
 
     @Override
     String getMethodName(Invoker invoker, Invocation invocation) {
-        return DubboUtils.getResourceName(invoker, invocation, DubboConfig.getDubboProviderPrefix());
+        return DubboUtils.getMethodResourceName(invoker, invocation, DubboAdapterGlobalConfig.getDubboProviderResNamePrefixKey());
     }
 
     @Override
@@ -62,7 +60,7 @@ public class SentinelDubboProviderFilter extends BaseSentinelDubboFilter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         // Get origin caller.
-        String origin = DubboOriginParserRegistry.getDubboOriginParser().parse(invoker, invocation);
+        String origin = DubboAdapterGlobalConfig.getOriginParser().parse(invoker, invocation);
         if (null == origin) {
             origin = "";
         }
@@ -83,7 +81,7 @@ public class SentinelDubboProviderFilter extends BaseSentinelDubboFilter {
             }
             return result;
         } catch (BlockException e) {
-            return DubboFallbackRegistry.getProviderFallback().handle(invoker, invocation, e);
+            return DubboAdapterGlobalConfig.getProviderFallback().handle(invoker, invocation, e);
         } catch (RpcException e) {
             Tracer.traceEntry(e, interfaceEntry);
             Tracer.traceEntry(e, methodEntry);

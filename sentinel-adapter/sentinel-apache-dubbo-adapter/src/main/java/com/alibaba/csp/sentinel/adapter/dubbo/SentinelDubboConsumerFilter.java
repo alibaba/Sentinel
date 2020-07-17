@@ -20,8 +20,7 @@ import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.ResourceTypeConstants;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
-import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig;
-import com.alibaba.csp.sentinel.adapter.dubbo.fallback.DubboFallbackRegistry;
+import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboAdapterGlobalConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import org.apache.dubbo.common.extension.Activate;
@@ -57,7 +56,7 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
 
     @Override
     String getMethodName(Invoker invoker, Invocation invocation) {
-        return DubboUtils.getResourceName(invoker, invocation, DubboConfig.getDubboConsumerPrefix());
+        return DubboUtils.getMethodResourceName(invoker, invocation, DubboAdapterGlobalConfig.getDubboConsumerResNamePrefixKey());
     }
 
     @Override
@@ -91,7 +90,7 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
             }
             return result;
         } catch (BlockException e) {
-            return DubboFallbackRegistry.getConsumerFallback().handle(invoker, invocation, e);
+            return DubboAdapterGlobalConfig.getConsumerFallback().handle(invoker, invocation, e);
         } catch (RpcException e) {
             Tracer.traceEntry(e, interfaceEntry);
             Tracer.traceEntry(e, methodEntry);
@@ -130,7 +129,7 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
             while (!queue.isEmpty()) {
                 exitEntry(queue.pop());
             }
-            return DubboFallbackRegistry.getConsumerFallback().handle(invoker, invocation, e);
+            return DubboAdapterGlobalConfig.getConsumerFallback().handle(invoker, invocation, e);
         }
     }
 

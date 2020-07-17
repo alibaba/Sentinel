@@ -15,9 +15,8 @@
  */
 package com.alibaba.csp.sentinel;
 
-import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig;
+import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboAdapterGlobalConfig;
 import com.alibaba.csp.sentinel.adapter.dubbo.fallback.DefaultDubboFallback;
-import com.alibaba.csp.sentinel.adapter.dubbo.fallback.DubboFallbackRegistry;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
@@ -66,10 +65,10 @@ public class BaseTest {
 
     private void clearDubboContext() {
         SentinelConfig.setConfig("csp.sentinel.dubbo.resource.use.prefix", "false");
-        SentinelConfig.setConfig(DubboConfig.DUBBO_PROVIDER_PREFIX, "");
-        SentinelConfig.setConfig(DubboConfig.DUBBO_CONSUMER_PREFIX, "");
-        SentinelConfig.setConfig(DubboConfig.DUBBO_INTERFACE_GROUP_VERSION_ENABLED, "false");
-        DubboFallbackRegistry.setConsumerFallback(new DefaultDubboFallback());
+        SentinelConfig.setConfig(DubboAdapterGlobalConfig.DUBBO_PROVIDER_RES_NAME_PREFIX_KEY, "");
+        SentinelConfig.setConfig(DubboAdapterGlobalConfig.DUBBO_CONSUMER_RES_NAME_PREFIX_KEY, "");
+        SentinelConfig.setConfig(DubboAdapterGlobalConfig.DUBBO_INTERFACE_GROUP_VERSION_ENABLED, "false");
+        DubboAdapterGlobalConfig.setConsumerFallback(new DefaultDubboFallback());
         RpcContext.removeContext();
 
     }

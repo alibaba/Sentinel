@@ -71,4 +71,4 @@ Besides, we can also leverage [Dubbo mock mechanism](http://dubbo.apache.org/en-
 
 Sentinel Dubbo Adapter supports global origin parse for provider.
 You can implement your own `DubboOriginParser` interface
-and then register to `DubboOriginParserRegistry`. If no originParse is configured, Sentinel will user dubbo url property application.
+and then register to `DubboAdapterGlobalConfig`. If no originParse is configured, Sentinel will user dubbo url property application.

@@ -20,18 +20,18 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
 /**
- * Customized origin parse in Dubbo provider filter. {@link Context#getOrigin()}
+ * Customized origin parser for Dubbo provider filter.
  *
  * @author jingzian
  */
 public interface DubboOriginParser {
 
     /**
-     * Handle the origin parse.
+     * Parses the origin (caller) from Dubbo invocation.
      *
      * @param invoker    Dubbo invoker
      * @param invocation Dubbo invocation
-     * @return parse result
+     * @return the parsed origin
      */
     String parse(Invoker<?> invoker, Invocation invocation);
 
