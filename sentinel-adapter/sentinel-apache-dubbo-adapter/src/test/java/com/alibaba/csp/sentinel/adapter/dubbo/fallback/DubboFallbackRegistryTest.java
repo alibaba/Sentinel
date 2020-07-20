@@ -41,12 +41,12 @@ public class DubboFallbackRegistryTest {
         DubboFallbackRegistry.setConsumerFallback(new DefaultDubboFallback());
     }
 
-    @Test(expected = SentinelRpcException.class)
+    @Test
     public void testDefaultFallback() {
         // Test for default fallback.
         BlockException ex = new FlowException("xxx");
         Result result = new DefaultDubboFallback().handle(null, null, ex);
-        Assert.assertTrue(result.hasException());
+        Assert.assertTrue("The invocation should not fail",result.hasException());
         Assert.assertEquals(SentinelRpcException.class, result.getException().getClass());
     }
 
