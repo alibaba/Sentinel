@@ -48,7 +48,7 @@ public class PrefixRoutePathMatcher implements Predicate<RequestContext> {
         HttpServletRequest request = context.getRequest();
         String path = request.getServletPath();
         String pathInfo = request.getPathInfo();
-        if (StringUtils.length(pathInfo) > 0) {
+        if (StringUtils.isNotBlank(pathInfo)) {
             path = path + pathInfo;
         }
         if (canMatch) {
