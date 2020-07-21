@@ -16,8 +16,6 @@
 package com.alibaba.csp.sentinel.slots.block.flow;
 
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
-import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import org.junit.Test;
 
 import java.util.List;
