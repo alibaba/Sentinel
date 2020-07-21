@@ -19,6 +19,8 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
 import org.junit.Test;
 
+import java.util.List;
+
 import static org.junit.Assert.*;
 
 /**
@@ -61,5 +63,31 @@ public class DegradeRuleManagerTest {
         assertFalse(DegradeRuleManager.isValidRule(rule4));
         assertFalse(DegradeRuleManager.isValidRule(rule5));
         assertFalse(DegradeRuleManager.isValidRule(rule6));
+    }
+
+    @Test
+    public void testAddRule() {
+        DegradeRule rule1 = new DegradeRule("newRule")
+                .setCount(0.93d)
+                .setGrade(RuleConstant.DEGRADE_GRADE_RT)
+                .setTimeWindow(20)
+                .setMinRequestAmount(0);
+        DegradeRuleManager.addRule(rule1);
+        assertTrue(DegradeRuleManager.hasConfig("newRule"));
+
+        DegradeRule rule2 = new DegradeRule("abc");
+        DegradeRuleManager.addRule(rule2);
+        assertFalse(DegradeRuleManager.hasConfig("abc"));
+
+        DegradeRule rule3 = new DegradeRule("newRule")
+                .setCount(0.93d)
+                .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT)
+                .setTimeWindow(10)
+                .setMinRequestAmount(0);
+        DegradeRuleManager.addRule(rule3);
+        List<DegradeRule> rules = DegradeRuleManager.getRules();
+        for (DegradeRule r : rules){
+            assertTrue(r == rule1 || r == rule3);
+        }
     }
 }

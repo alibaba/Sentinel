@@ -60,4 +60,30 @@ public class AuthorityRuleManagerTest {
     public void tearDown() {
         AuthorityRuleManager.loadRules(null);
     }
+
+
+    @Test
+    public void testAddRule() {
+        AuthorityRule rule1 = new AuthorityRule();
+        rule1.setResource("newRule");
+        rule1.setLimitApp("a,b");
+        rule1.setStrategy(RuleConstant.AUTHORITY_WHITE);
+        AuthorityRuleManager.addRule(rule1);
+        assertTrue(AuthorityRuleManager.hasConfig("newRule"));
+
+        AuthorityRule rule2 = new AuthorityRule();
+        rule2.setResource("abc");
+        AuthorityRuleManager.addRule(rule2);
+        assertFalse(AuthorityRuleManager.hasConfig("abc"));
+
+        AuthorityRule rule3 = new AuthorityRule();
+        rule3.setResource("newRule");
+        rule3.setLimitApp("a,c");
+        rule3.setStrategy(RuleConstant.AUTHORITY_BLACK);
+        AuthorityRuleManager.addRule(rule3);
+        List<AuthorityRule> rules = AuthorityRuleManager.getRules();
+        for (AuthorityRule r : rules){
+            assertTrue(r == rule1 || r == rule3);
+        }
+    }
 }

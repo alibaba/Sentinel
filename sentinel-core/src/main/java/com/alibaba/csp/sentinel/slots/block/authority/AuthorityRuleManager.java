@@ -89,6 +89,27 @@ public final class AuthorityRuleManager {
         return rules;
     }
 
+    /**
+     * add a single AuthorityRule
+     *
+     * @param rule
+     * @return void
+     */
+    public static void addRule(AuthorityRule rule){
+        if (isValidRule(rule)) {
+            String resource = rule.getResource();
+            Set<AuthorityRule> oldSet = authorityRules.get(resource);
+            if (null != oldSet) {
+                oldSet.add(rule);
+                authorityRules.put(resource, oldSet);
+                return;
+            }
+            Set<AuthorityRule> newSet = new HashSet<>();
+            newSet.add(rule);
+            authorityRules.put(resource, newSet);
+        }
+    }
+
     private static class RulePropertyListener implements PropertyListener<List<AuthorityRule>> {
 
         @Override

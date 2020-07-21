@@ -118,6 +118,27 @@ public final class DegradeRuleManager {
     }
 
     /**
+     * add a single DegradeRule
+     *
+     * @param rule
+     * @return void
+     */
+    public static void addRule(DegradeRule rule){
+        if (isValidRule(rule)) {
+            String resource = rule.getResource();
+            Set<DegradeRule> oldSet = degradeRules.get(resource);
+            if (null != oldSet) {
+                oldSet.add(rule);
+                degradeRules.put(resource, oldSet);
+                return;
+            }
+            Set<DegradeRule> newSet = new HashSet<>();
+            newSet.add(rule);
+            degradeRules.put(resource, newSet);
+        }
+    }
+
+    /**
      * Set degrade rules for provided resource. Former rules of the resource will be replaced.
      *
      * @param resourceName valid resource name

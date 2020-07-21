@@ -15,9 +15,7 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -90,6 +88,27 @@ public class FlowRuleManager {
     }
 
     /**
+     * add a single FlowRule
+     *
+     * @param rule
+     * @return void
+     */
+    public static void addRule(FlowRule rule){
+        if (isValidRule(rule)) {
+            String resource = rule.getResource();
+            List<FlowRule> oldSet = flowRules.get(resource);
+            if (null != oldSet) {
+                oldSet.add(rule);
+                flowRules.put(resource, oldSet);
+                return;
+            }
+            List<FlowRule> newSet = new ArrayList<>();
+            newSet.add(rule);
+            flowRules.put(resource, newSet);
+        }
+    }
+
+    /**
      * Load {@link FlowRule}s, former rules will be replaced.
      *
      * @param rules new rules to load.
@@ -147,4 +166,8 @@ public class FlowRuleManager {
         }
     }
 
+    public static boolean isValidRule(FlowRule rule) {
+        return rule != null && StringUtil.isNotBlank(rule.getResource())
+                && rule.getCount() >= 0 && StringUtil.isNotBlank(rule.getLimitApp());
+    }
 }
