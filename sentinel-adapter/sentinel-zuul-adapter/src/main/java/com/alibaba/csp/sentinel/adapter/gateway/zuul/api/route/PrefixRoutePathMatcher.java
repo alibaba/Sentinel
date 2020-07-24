@@ -16,9 +16,9 @@
 package com.alibaba.csp.sentinel.adapter.gateway.zuul.api.route;
 
 import com.alibaba.csp.sentinel.util.AssertUtil;
+import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.util.function.Predicate;
 import com.netflix.zuul.context.RequestContext;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.PathMatcher;
 
@@ -48,8 +48,12 @@ public class PrefixRoutePathMatcher implements Predicate<RequestContext> {
         HttpServletRequest request = context.getRequest();
         String path = request.getServletPath();
         String pathInfo = request.getPathInfo();
-        if (StringUtils.isNotBlank(pathInfo)) {
-            path = path + pathInfo;
+        if (StringUtil.isNotBlank(pathInfo)) {
+            if (StringUtil.isBlank(path)) {
+                path = pathInfo;
+            } else {
+                path = path + pathInfo;
+            }
         }
         if (canMatch) {
             return pathMatcher.match(pattern, path);

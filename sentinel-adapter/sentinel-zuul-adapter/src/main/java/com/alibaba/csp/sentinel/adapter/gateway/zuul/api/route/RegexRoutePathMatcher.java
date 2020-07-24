@@ -18,7 +18,7 @@ package com.alibaba.csp.sentinel.adapter.gateway.zuul.api.route;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.function.Predicate;
 import com.netflix.zuul.context.RequestContext;
-import org.apache.commons.lang.StringUtils;
+import com.alibaba.csp.sentinel.util.StringUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.regex.Pattern;
@@ -44,8 +44,12 @@ public class RegexRoutePathMatcher implements Predicate<RequestContext> {
         HttpServletRequest request = context.getRequest();
         String path = request.getServletPath();
         String pathInfo = request.getPathInfo();
-        if (StringUtils.isNotBlank(pathInfo)) {
-            path = path + pathInfo;
+        if (StringUtil.isNotBlank(pathInfo)) {
+            if (StringUtil.isBlank(path)) {
+                path = pathInfo;
+            } else {
+                path = path + pathInfo;
+            }
         }
         return regex.matcher(path).matches();
     }
