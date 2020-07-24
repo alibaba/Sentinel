@@ -16,9 +16,9 @@
 package com.alibaba.csp.sentinel.adapter.gateway.zuul.api.route;
 
 import com.alibaba.csp.sentinel.util.AssertUtil;
+import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.util.function.Predicate;
 import com.netflix.zuul.context.RequestContext;
-import com.alibaba.csp.sentinel.util.StringUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.regex.Pattern;
