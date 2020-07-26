@@ -92,23 +92,25 @@ public class StatisticNode implements Node {
     /**
      * Holds statistics of the recent {@code INTERVAL} seconds. The {@code INTERVAL} is divided into time spans
      * by given {@code sampleCount}.
+     * 保留最近 INTERVAL 秒的统计信息。INTERVAL}通过给定的 sampleCount 划分时间跨度。
      */
     private transient volatile Metric rollingCounterInSecond = new ArrayMetric(SampleCountProperty.SAMPLE_COUNT,
         IntervalProperty.INTERVAL);
 
     /**
-     * Holds statistics of the recent 60 seconds. The windowLengthInMs is deliberately set to 1000 milliseconds,
-     * meaning each bucket per second, in this way we can get accurate statistics of each second.
+     * 保存最近60秒的统计信息。 windowLengthInMs 故意设置为1000毫秒，表示每秒每个桶 each bucket per second
+     * 这样我们就可以获得每秒的准确统计信息。
      */
-    private transient Metric rollingCounterInMinute = new ArrayMetric(60, 60 * 1000, false);
+    private transient Metric rollingCounterInMinute = new ArrayMetric(60,
+            60 * 1000, false);
 
     /**
-     * The counter for thread count.
+     * 线程数量的计数器，即统计并发量.
      */
     private LongAdder curThreadNum = new LongAdder();
 
     /**
-     * The last timestamp when metrics were fetched.
+     * 上一次获取指标时的时间戳。
      */
     private long lastFetchTime = -1;
 
