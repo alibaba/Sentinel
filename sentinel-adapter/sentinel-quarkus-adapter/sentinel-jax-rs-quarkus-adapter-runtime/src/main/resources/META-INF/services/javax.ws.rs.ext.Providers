@@ -1,0 +1,2 @@
+com.alibaba.csp.sentinel.adapter.jaxrs.SentinelJaxRsProviderFilter
+com.alibaba.csp.sentinel.adapter.jaxrs.exception.DefaultExceptionMapper

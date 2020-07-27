@@ -15,6 +15,10 @@
  */
 package com.alibaba.csp.sentinel.adapter.okhttp.config;
 
+import com.alibaba.csp.sentinel.adapter.okhttp.SentinelOkHttpConfig;
+import com.alibaba.csp.sentinel.adapter.okhttp.extractor.DefaultOkHttpResourceExtractor;
+import com.alibaba.csp.sentinel.adapter.okhttp.fallback.DefaultOkHttpFallback;
+
 import org.junit.Test;
 
 /**
@@ -23,17 +27,12 @@ import org.junit.Test;
 public class SentinelOkHttpConfigTest {
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConfigSetPrefix() {
-        SentinelOkHttpConfig.setPrefix(null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
     public void testConfigSetCleaner() {
-        SentinelOkHttpConfig.setExtractor(null);
+        SentinelOkHttpConfig config = new SentinelOkHttpConfig(null, new DefaultOkHttpFallback());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConfigSetFallback() {
-        SentinelOkHttpConfig.setFallback(null);
+        SentinelOkHttpConfig config = new SentinelOkHttpConfig(new DefaultOkHttpResourceExtractor(), null);
     }
 }
