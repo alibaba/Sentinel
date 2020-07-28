@@ -52,4 +52,15 @@ abstract class AbstractDubboFilter implements Filter {
             .append(getMethodResourceName(invoker, invocation))
             .toString();
     }
+
+    protected String getInterfaceName(Invoker<?> invoker) {
+        return invoker.getInterface().getName();
+    }
+
+    protected String getInterfaceName(Invoker<?> invoker, String prefix) {
+        if (StringUtil.isBlank(prefix)) {
+            return getInterfaceName(invoker);
+        }
+        return prefix + getInterfaceName(invoker);
+    }
 }

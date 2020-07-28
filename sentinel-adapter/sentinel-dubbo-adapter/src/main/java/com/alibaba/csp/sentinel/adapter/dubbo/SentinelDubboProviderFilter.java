@@ -61,9 +61,9 @@ public class SentinelDubboProviderFilter extends AbstractDubboFilter implements 
         Entry interfaceEntry = null;
         Entry methodEntry = null;
         try {
-            String methodResourceName = getMethodResourceName(invoker, invocation,
-                DubboAdapterGlobalConfig.getDubboProviderPrefix());
-            String interfaceName = invoker.getInterface().getName();
+            String prefix = DubboAdapterGlobalConfig.getDubboProviderPrefix();
+            String methodResourceName = getMethodResourceName(invoker, invocation, prefix);
+            String interfaceName = getInterfaceName(invoker, prefix);
             ContextUtil.enter(methodResourceName, origin);
             interfaceEntry = SphU.entry(interfaceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN);
             methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC,
