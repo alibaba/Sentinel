@@ -32,6 +32,7 @@
         <module>sentinel-demo-command-handler</module>
         <module>sentinel-demo-spring-webflux</module>
         <module>sentinel-demo-apache-dubbo</module>
+        <module>sentinel-demo-apache-httpclient</module>
         <module>sentinel-demo-sofa-rpc</module>
         <module>sentinel-demo-spring-cloud-gateway</module>
         <module>sentinel-demo-zuul-gateway</module>
@@ -41,6 +42,8 @@
         <module>sentinel-demo-log-logback</module>
         <module>sentinel-demo-okhttp</module>
         <module>sentinel-demo-jax-rs</module>
+        <module>sentinel-demo-quarkus</module>
+        <module>sentinel-demo-annotation-cdi-interceptor</module>
     </modules>
 
     <dependencies>

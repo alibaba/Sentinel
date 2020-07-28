@@ -24,7 +24,7 @@ import okhttp3.Request;
 public class DefaultOkHttpResourceExtractor implements OkHttpResourceExtractor {
 
     @Override
-    public String extract(String url, Request request, Connection connection) {
+    public String extract(Request request, Connection connection) {
         return request.method() + ":" + request.url().toString();
     }
 }
