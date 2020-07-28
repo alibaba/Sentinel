@@ -17,8 +17,8 @@ package com.alibaba.csp.sentinel.adapter.okhttp;
 
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.adapter.okhttp.app.TestApplication;
-import com.alibaba.csp.sentinel.adapter.okhttp.config.SentinelOkHttpConfig;
 import com.alibaba.csp.sentinel.adapter.okhttp.extractor.OkHttpResourceExtractor;
+import com.alibaba.csp.sentinel.adapter.okhttp.fallback.DefaultOkHttpFallback;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 import okhttp3.Connection;
@@ -48,17 +48,17 @@ public class SentinelOkHttpInterceptorTest {
 
     @Test
     public void testSentinelOkHttpInterceptor0() throws Exception {
-
+        // With prefix
+        SentinelOkHttpConfig config = new SentinelOkHttpConfig("okhttp:");
         String url0 = "http://localhost:" + port + "/okhttp/back";
-        SentinelOkHttpConfig.setPrefix("okhttp:");
         OkHttpClient client = new OkHttpClient.Builder()
-                .addInterceptor(new SentinelOkHttpInterceptor())
+                .addInterceptor(new SentinelOkHttpInterceptor(config))
                 .build();
         Request request = new Request.Builder()
                 .url(url0)
                 .build();
         System.out.println(client.newCall(request).execute().body().string());
-        ClusterNode cn = ClusterBuilderSlot.getClusterNode(SentinelOkHttpConfig.getPrefix() + "GET:" + url0);
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode(config.getResourcePrefix() + "GET:" + url0);
         assertNotNull(cn);
 
         Constants.ROOT.removeChildList();
@@ -69,25 +69,26 @@ public class SentinelOkHttpInterceptorTest {
     public void testSentinelOkHttpInterceptor1() throws Exception {
 
         String url0 = "http://localhost:" + port + "/okhttp/back/1";
-        SentinelOkHttpConfig.setExtractor(new OkHttpResourceExtractor() {
+        SentinelOkHttpConfig config = new SentinelOkHttpConfig(new OkHttpResourceExtractor() {
             @Override
-            public String extract(String url, Request request, Connection connection) {
+            public String extract(Request request, Connection connection) {
                 String regex = "/okhttp/back/";
+                String url = request.url().toString();
                 if (url.contains(regex)) {
                     url = url.substring(0, url.indexOf(regex) + regex.length()) + "{id}";
                 }
                 return request.method() + ":" + url;
             }
-        });
+        }, new DefaultOkHttpFallback());
         OkHttpClient client = new OkHttpClient.Builder()
-                .addInterceptor(new SentinelOkHttpInterceptor())
+                .addInterceptor(new SentinelOkHttpInterceptor(config))
                 .build();
         Request request = new Request.Builder()
                 .url(url0)
                 .build();
         System.out.println(client.newCall(request).execute().body().string());
 
-        String url1 = SentinelOkHttpConfig.getPrefix() + "GET:http://localhost:" + port + "/okhttp/back/{id}";
+        String url1 = config.getResourcePrefix() + "GET:http://localhost:" + port + "/okhttp/back/{id}";
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(url1);
         assertNotNull(cn);
 

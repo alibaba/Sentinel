@@ -15,7 +15,10 @@
  */
 package com.alibaba.csp.sentinel.demo.okhttp.controller;
 
+import com.alibaba.csp.sentinel.adapter.okhttp.SentinelOkHttpConfig;
 import com.alibaba.csp.sentinel.adapter.okhttp.SentinelOkHttpInterceptor;
+import com.alibaba.csp.sentinel.adapter.okhttp.fallback.DefaultOkHttpFallback;
+
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -34,6 +37,17 @@ public class OkHttpTestController {
 
     @Value("${server.port}")
     private Integer port;
+
+    private final OkHttpClient client = new OkHttpClient.Builder()
+        .addInterceptor(new SentinelOkHttpInterceptor(new SentinelOkHttpConfig((request, connection) -> {
+            String regex = "/okhttp/back/";
+            String url = request.url().toString();
+            if (url.contains(regex)) {
+                url = url.substring(0, url.indexOf(regex) + regex.length()) + "{id}";
+            }
+            return request.method() + ":" + url;
+        }, new DefaultOkHttpFallback())))
+        .build();
 
     @RequestMapping("/okhttp/back")
     public String back() {
@@ -56,12 +70,9 @@ public class OkHttpTestController {
     }
 
     private String getRemoteString(String id) throws IOException {
-        OkHttpClient client = new OkHttpClient.Builder()
-                .addInterceptor(new SentinelOkHttpInterceptor())
-                .build();
         Request request = new Request.Builder()
-                .url("http://localhost:" + port + "/okhttp/back" + (id == null ? "" : "/" + id))
-                .build();
+            .url("http://localhost:" + port + "/okhttp/back" + (id == null ? "" : "/" + id))
+            .build();
         Response response = client.newCall(request).execute();
         return response.body().string();
     }
