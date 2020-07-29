@@ -41,7 +41,7 @@ public class AppLifecycleBean {
         LOGGER.info("The application is starting...");
         FlowRule rule = new FlowRule()
                 .setCount(1)
-                .setGrade(RuleConstant.FLOW_GRADE_QPS)
+                .setGrade(RuleConstant.FLOW_GRADE_THREAD)
                 .setResource("GET:/hello/txt")
                 .setLimitApp("default")
                 .as(FlowRule.class);

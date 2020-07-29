@@ -15,7 +15,6 @@
  */
 package com.alibaba.csp.sentinel.demo.quarkus;
 
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.AfterEach;
@@ -24,8 +23,16 @@ import org.junit.jupiter.api.Test;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 @QuarkusTest
 public class GreetingResourceTest {
+    ExecutorService executor = new ThreadPoolExecutor(5, 5,
+            0L, TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<Runnable>());
 
     @AfterEach
     public void cleanUp() {
@@ -35,10 +42,15 @@ public class GreetingResourceTest {
     @Test
     public void testSentinelJaxRsQuarkusAdapter() {
         given()
-          .when().get("/hello/txt")
-          .then()
-             .statusCode(200)
-             .body(is("hello"));
+        .when().get("/hello/txt")
+        .then()
+           .statusCode(200)
+           .body(is("hello"));	
+    	
+    	executor.submit(() -> {
+	        given()
+	          .when().get("/hello/txt").then();
+    	});
         given()
                 .when().get("/hello/txt")
                 .then()
