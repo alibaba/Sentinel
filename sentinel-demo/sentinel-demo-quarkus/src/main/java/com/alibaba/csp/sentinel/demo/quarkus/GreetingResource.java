@@ -37,7 +37,7 @@ public class GreetingResource {
     @Path("/txt")
     @Produces(MediaType.TEXT_PLAIN)
     public String hello() throws InterruptedException {
-        TimeUnit.MILLISECONDS.sleep(500);
+        TimeUnit.MILLISECONDS.sleep(3000);
         return "hello";
     }
 
