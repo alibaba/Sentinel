@@ -46,11 +46,12 @@ public class GreetingResourceTest {
         .then()
            .statusCode(200)
            .body(is("hello"));	
-    	
-    	executor.submit(() -> {
-	        given()
-	          .when().get("/hello/txt").then();
-    	});
+        for (int i = 0; i < 5; i++){
+	    	executor.submit(() -> {
+		        given()
+		          .when().get("/hello/txt").then();
+	    	});
+        }
         given()
                 .when().get("/hello/txt")
                 .then()
