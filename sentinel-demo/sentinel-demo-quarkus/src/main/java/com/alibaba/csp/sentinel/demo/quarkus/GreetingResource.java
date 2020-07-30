@@ -34,11 +34,19 @@ public class GreetingResource {
             new LinkedBlockingQueue<Runnable>());
 
     @GET
-    @Path("/txt")
+    @Path("/qps")
     @Produces(MediaType.TEXT_PLAIN)
-    public String hello() throws InterruptedException {
-        TimeUnit.MILLISECONDS.sleep(500);
-        return "hello";
+    public String qps() throws InterruptedException {
+        TimeUnit.MILLISECONDS.sleep(1000);
+        return "Hello,this is QPS rule.";
+    }
+    
+    @GET
+    @Path("/thread")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String thread() throws InterruptedException {
+        TimeUnit.MILLISECONDS.sleep(1000);
+        return "Hello,this is THREAD rule.";
     }
 
     @GET

@@ -39,13 +39,20 @@ public class AppLifecycleBean {
 
     void onStart(@Observes StartupEvent ev) {
         LOGGER.info("The application is starting...");
-        FlowRule rule = new FlowRule()
+        FlowRule ruleQPS = new FlowRule()
                 .setCount(1)
                 .setGrade(RuleConstant.FLOW_GRADE_QPS)
-                .setResource("GET:/hello/txt")
+                .setResource("GET:/hello/qps")
                 .setLimitApp("default")
                 .as(FlowRule.class);
-        FlowRuleManager.loadRules(Arrays.asList(rule));
+        
+        FlowRule ruleThread = new FlowRule()
+                .setCount(1)
+                .setGrade(RuleConstant.FLOW_GRADE_THREAD)
+                .setResource("GET:/hello/thread")
+                .setLimitApp("default")
+                .as(FlowRule.class);
+        FlowRuleManager.loadRules(Arrays.asList(ruleQPS, ruleThread));
 
         SystemRule systemRule = new SystemRule();
         systemRule.setLimitApp("default");
