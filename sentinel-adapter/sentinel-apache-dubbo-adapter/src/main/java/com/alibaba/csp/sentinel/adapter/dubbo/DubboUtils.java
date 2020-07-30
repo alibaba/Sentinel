@@ -70,9 +70,25 @@ public final class DubboUtils {
 
 
     public static String getInterfaceName(Invoker invoker) {
-        return DubboAdapterGlobalConfig.getDubboInterfaceGroupAndVersionEnabled() ? invoker.getUrl().getColonSeparatedKey()
-                : invoker.getInterface().getName();
+        return getInterfaceName(invoker, false);
     }
+
+    public static String getInterfaceName(Invoker<?> invoker, Boolean useGroupAndVersion) {
+        StringBuilder buf = new StringBuilder(64);
+        return useGroupAndVersion ? invoker.getUrl().getColonSeparatedKey() : invoker.getInterface().getName();
+    }
+
+    public static String getInterfaceName(Invoker<?> invoker, String prefix) {
+        if (StringUtil.isNotBlank(prefix)) {
+            return new StringBuilder(64)
+                    .append(prefix)
+                    .append(getInterfaceName(invoker, DubboAdapterGlobalConfig.getDubboInterfaceGroupAndVersionEnabled()))
+                    .toString();
+        } else {
+            return getInterfaceName(invoker, DubboAdapterGlobalConfig.getDubboInterfaceGroupAndVersionEnabled());
+        }
+    }
+
 
     private DubboUtils() {
     }

@@ -48,13 +48,13 @@ public class SentinelDubboProviderFilter extends BaseSentinelDubboFilter {
     }
 
     @Override
-    String getMethodName(Invoker invoker, Invocation invocation) {
-        return DubboUtils.getMethodResourceName(invoker, invocation, DubboAdapterGlobalConfig.getDubboProviderResNamePrefixKey());
+    String getMethodName(Invoker invoker, Invocation invocation, String prefix) {
+        return DubboUtils.getMethodResourceName(invoker, invocation, prefix);
     }
 
     @Override
-    String getInterfaceName(Invoker invoker) {
-        return DubboUtils.getInterfaceName(invoker);
+    String getInterfaceName(Invoker invoker, String prefix) {
+        return DubboUtils.getInterfaceName(invoker, prefix);
     }
 
     @Override
@@ -66,8 +66,9 @@ public class SentinelDubboProviderFilter extends BaseSentinelDubboFilter {
         }
         Entry interfaceEntry = null;
         Entry methodEntry = null;
-        String methodResourceName = getMethodName(invoker, invocation);
-        String interfaceResourceName = getInterfaceName(invoker);
+        String prefix = DubboAdapterGlobalConfig.getDubboProviderResNamePrefixKey();
+        String interfaceResourceName = getInterfaceName(invoker, prefix);
+        String methodResourceName = getMethodName(invoker, invocation, prefix);
         try {
             // Only need to create entrance context at provider side, as context will take effect
             // at entrance of invocation chain only (for inbound traffic).
