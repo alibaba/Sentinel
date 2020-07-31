@@ -15,17 +15,26 @@
  */
 package com.alibaba.csp.sentinel.demo.quarkus;
 
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
-import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
-import io.quarkus.test.junit.QuarkusTest;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+
+import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
+
+import io.quarkus.test.junit.QuarkusTest;
+
 @QuarkusTest
 public class GreetingResourceTest {
+    ExecutorService executor = new ThreadPoolExecutor(10, 10,
+            0L, TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<Runnable>());
 
     @AfterEach
     public void cleanUp() {
@@ -33,14 +42,42 @@ public class GreetingResourceTest {
     }
 
     @Test
-    public void testSentinelJaxRsQuarkusAdapter() {
+    public void testSentinelJaxRsQuarkusAdapterGradeQPS() {
         given()
-          .when().get("/hello/txt")
+          .when().get("/hello/qps")
           .then()
              .statusCode(200)
-             .body(is("hello"));
+             .body(is("Hello,this is QPS rule."));
+        for (int i = 0; i < 10; i++){
+	    	executor.submit(() -> {
+		        given()
+		        .when().get("/hello/qps")
+		        .then();
+	    	});
+        }
         given()
-                .when().get("/hello/txt")
+                .when().get("/hello/qps")
+                .then()
+                .statusCode(javax.ws.rs.core.Response.Status.TOO_MANY_REQUESTS.getStatusCode())
+                .body(is("Blocked by Sentinel (flow limiting)"));
+    }
+    
+    @Test
+    public void testSentinelJaxRsQuarkusAdapterGradeThread() {
+        given()
+        .when().get("/hello/thread")
+        .then()
+           .statusCode(200)
+           .body(is("Hello,this is THREAD rule."));
+        for (int i = 0; i < 10; i++){
+	    	executor.submit(() -> {
+		        given()
+		        .when().get("/hello/thread")
+		        .then();
+	    	});
+        }
+        given()
+                .when().get("/hello/thread")
                 .then()
                 .statusCode(javax.ws.rs.core.Response.Status.TOO_MANY_REQUESTS.getStatusCode())
                 .body(is("Blocked by Sentinel (flow limiting)"));
