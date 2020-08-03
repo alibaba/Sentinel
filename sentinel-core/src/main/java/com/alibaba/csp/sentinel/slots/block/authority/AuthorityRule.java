@@ -15,8 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.block.authority;
 
-import com.alibaba.csp.sentinel.context.Context;
-import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
@@ -57,11 +55,6 @@ public class AuthorityRule extends AbstractRule {
         int result = super.hashCode();
         result = 31 * result + strategy;
         return result;
-    }
-
-    @Override
-    public boolean passCheck(Context context, DefaultNode node, int count, Object... args) {
-        return true;
     }
 
     @Override
