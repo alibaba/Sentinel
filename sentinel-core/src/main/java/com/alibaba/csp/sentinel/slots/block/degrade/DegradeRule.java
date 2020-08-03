@@ -15,8 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.block.degrade;
 
-import com.alibaba.csp.sentinel.context.Context;
-import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
@@ -171,11 +169,5 @@ public class DegradeRule extends AbstractRule {
             ", slowRatioThreshold=" + slowRatioThreshold +
             ", statIntervalMs=" + statIntervalMs +
             '}';
-    }
-
-    @Override
-    @Deprecated
-    public boolean passCheck(Context context, DefaultNode node, int count, Object... args) {
-        return false;
     }
 }
