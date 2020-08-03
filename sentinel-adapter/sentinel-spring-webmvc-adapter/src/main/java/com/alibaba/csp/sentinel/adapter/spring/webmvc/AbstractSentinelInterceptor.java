@@ -108,6 +108,15 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
                            ModelAndView modelAndView) throws Exception {
     }
 
+    /**
+     * Note:
+     * If the attribute key already exists in request, don't create new {@link Entry},
+     * to guarantee the order of {@link Entry} in pair and avoid {@link com.alibaba.csp.sentinel.ErrorEntryFreeException}.
+     *
+     * Refer to:
+     * https://github.com/alibaba/Sentinel/issues/1531
+     * https://github.com/alibaba/Sentinel/issues/1482
+     */
     protected void setEntryInRequest(HttpServletRequest request, String name, String resourceName) throws BlockException {
         Object attrVal = request.getAttribute(name);
         if (attrVal != null) {
