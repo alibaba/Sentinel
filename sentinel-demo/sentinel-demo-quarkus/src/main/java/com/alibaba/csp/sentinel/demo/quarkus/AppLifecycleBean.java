@@ -18,15 +18,16 @@ package com.alibaba.csp.sentinel.demo.quarkus;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
+import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreakerStrategy;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
-import com.alibaba.csp.sentinel.slots.system.SystemRule;
-import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
+
 import io.quarkus.runtime.StartupEvent;
 import org.jboss.logging.Logger;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
+
 import java.util.Arrays;
 
 /**
@@ -39,31 +40,28 @@ public class AppLifecycleBean {
 
     void onStart(@Observes StartupEvent ev) {
         LOGGER.info("The application is starting...");
-        FlowRule rule = new FlowRule()
-                .setCount(1)
-                .setGrade(RuleConstant.FLOW_GRADE_QPS)
-                .setResource("GET:/hello/txt")
-                .setLimitApp("default")
-                .as(FlowRule.class);
-        FlowRuleManager.loadRules(Arrays.asList(rule));
 
-        SystemRule systemRule = new SystemRule();
-        systemRule.setLimitApp("default");
-        systemRule.setAvgRt(3000);
-        SystemRuleManager.loadRules(Arrays.asList(systemRule));
+        // Only for test here. Actually it's recommended to configure rules via data-source.
+        FlowRule rule1 = new FlowRule()
+            .setCount(1)
+            .setGrade(RuleConstant.FLOW_GRADE_QPS)
+            .setResource("GET:/hello/txt")
+            .setLimitApp("default")
+            .as(FlowRule.class);
+        FlowRule rule2 = new FlowRule("greeting2")
+            .setCount(1)
+            .setGrade(RuleConstant.FLOW_GRADE_QPS)
+            .as(FlowRule.class);
+        FlowRuleManager.loadRules(Arrays.asList(rule1, rule2));
 
         DegradeRule degradeRule1 = new DegradeRule("greeting1")
-                .setCount(1)
-                .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT)
-                .setTimeWindow(10)
-                .setMinRequestAmount(1);
+            .setCount(1)
+            .setGrade(CircuitBreakerStrategy.ERROR_COUNT.getType())
+            .setTimeWindow(5)
+            .setStatIntervalMs(10000)
+            .setMinRequestAmount(1);
 
-        DegradeRule degradeRule2 = new DegradeRule("greeting2")
-                .setCount(1)
-                .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT)
-                .setTimeWindow(10)
-                .setMinRequestAmount(1);
-        DegradeRuleManager.loadRules(Arrays.asList(degradeRule1, degradeRule2));
+        DegradeRuleManager.loadRules(Arrays.asList(degradeRule1));
     }
 
 }
