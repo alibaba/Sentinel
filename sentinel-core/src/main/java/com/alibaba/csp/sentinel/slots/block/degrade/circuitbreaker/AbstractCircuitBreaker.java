@@ -22,11 +22,9 @@ import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
-import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreaker.State;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.util.function.BiConsumer;
-import com.alibaba.csp.sentinel.util.function.Consumer;
 
 /**
  * @author Eric Zhao

@@ -15,10 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.block.degrade;
 
-import com.alibaba.csp.sentinel.Entry;
-import com.alibaba.csp.sentinel.SphU;
-import com.alibaba.csp.sentinel.Tracer;
-import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreaker;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreaker.State;
@@ -54,41 +50,6 @@ public class CircuitBreakingIntegrationTest extends AbstractTimeBasedTest {
     @After
     public void tearDown() throws Exception {
         DegradeRuleManager.loadRules(new ArrayList<DegradeRule>());
-    }
-
-    private boolean entryAndSleepFor(String res, int sleepMs) {
-        Entry entry = null;
-        try {
-            entry = SphU.entry(res);
-            sleep(sleepMs);
-        } catch (BlockException ex) {
-            return false;
-        } catch (Exception ex) {
-            Tracer.traceEntry(ex, entry);
-        } finally {
-            if (entry != null) {
-                entry.exit();
-            }
-        }
-        return true;
-    }
-
-    private boolean entryWithErrorIfPresent(String res, Exception ex) {
-        Entry entry = null;
-        try {
-            entry = SphU.entry(res);
-            if (ex != null) {
-                Tracer.traceEntry(ex, entry);
-            }
-            sleep(ThreadLocalRandom.current().nextInt(5, 10));
-        } catch (BlockException b) {
-            return false;
-        } finally {
-            if (entry != null) {
-                entry.exit();
-            }
-        }
-        return true;
     }
 
     @Test
