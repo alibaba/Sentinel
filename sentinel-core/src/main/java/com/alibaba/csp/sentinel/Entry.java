@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel;
 
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.TimeUtil;
+import com.alibaba.csp.sentinel.util.function.BiConsumer;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
@@ -178,4 +179,13 @@ public abstract class Entry implements AutoCloseable {
         this.originNode = originNode;
     }
 
+    /**
+     * Like `CompletableFuture` since JDK8 it guarantees specified consumer
+     * is invoked when this entry exited.
+     * Use it when you did some STATEFUL operations on entries.
+     * 
+     * @param consumer
+     */
+    public abstract void whenComplete(BiConsumer<Context, Entry> consumer);
+    
 }

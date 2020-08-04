@@ -17,10 +17,16 @@ package com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.alibaba.csp.sentinel.Entry;
+import com.alibaba.csp.sentinel.context.Context;
+import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
+import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreaker.State;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.TimeUtil;
+import com.alibaba.csp.sentinel.util.function.BiConsumer;
+import com.alibaba.csp.sentinel.util.function.Consumer;
 
 /**
  * @author Eric Zhao
@@ -61,14 +67,14 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
     }
 
     @Override
-    public boolean tryPass() {
+    public boolean tryPass(Context context, ResourceWrapper r) {
         // Template implementation.
         if (currentState.get() == State.CLOSED) {
             return true;
         }
         if (currentState.get() == State.OPEN) {
             // For half-open state we allow a request for trial.
-            return retryTimeoutArrived() && fromOpenToHalfOpen();
+            return retryTimeoutArrived() && fromOpenToHalfOpen(context);
         }
         return false;
     }
@@ -99,11 +105,24 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
         return false;
     }
 
-    protected boolean fromOpenToHalfOpen() {
+    protected boolean fromOpenToHalfOpen(Context context) {
         if (currentState.compareAndSet(State.OPEN, State.HALF_OPEN)) {
             for (CircuitBreakerStateChangeObserver observer : observerRegistry.getStateChangeObservers()) {
                 observer.onStateChange(State.OPEN, State.HALF_OPEN, rule, null);
             }
+            Entry entry = context.getCurEntry();
+            entry.whenComplete(new BiConsumer<Context, Entry>() {
+                
+                @Override
+                public void accept(Context context, Entry entry) {
+                    if (entry.getBlockError() != null) {
+                        // blocked
+                        currentState.compareAndSet(State.HALF_OPEN, State.OPEN);
+                        return;
+                    }
+                    
+                }
+            });
             return true;
         }
         return false;
