@@ -15,15 +15,15 @@
  */
 package com.alibaba.csp.sentinel.cluster.flow;
 
-import java.util.Collection;
-
-import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
 import com.alibaba.csp.sentinel.cluster.TokenResult;
+import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
 import com.alibaba.csp.sentinel.cluster.TokenService;
 import com.alibaba.csp.sentinel.cluster.flow.rule.ClusterFlowRuleManager;
 import com.alibaba.csp.sentinel.cluster.flow.rule.ClusterParamFlowRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
+
+import java.util.Collection;
 
 /**
  * Default implementation for cluster {@link TokenService}.
@@ -61,8 +61,33 @@ public class DefaultTokenService implements TokenService {
         return ClusterParamFlowChecker.acquireClusterToken(rule, acquireCount, params);
     }
 
+    @Override
+    public TokenResult requestConcurrentToken(String clientAddress, Long ruleId, int acquireCount) {
+        if (notValidRequest(clientAddress, ruleId, acquireCount)) {
+            return badRequest();
+        }
+        // The rule should be valid.
+        FlowRule rule = ClusterFlowRuleManager.getFlowRuleById(ruleId);
+        if (rule == null) {
+            return new TokenResult(TokenResultStatus.NO_RULE_EXISTS);
+        }
+        return ConcurrentClusterFlowChecker.acquireConcurrentToken(clientAddress, rule, acquireCount);
+    }
+
+    @Override
+    public void releaseConcurrentToken(Long tokenId) {
+        if (tokenId == null) {
+            return;
+        }
+        ConcurrentClusterFlowChecker.releaseConcurrentToken(tokenId);
+    }
+
     private boolean notValidRequest(Long id, int count) {
         return id == null || id <= 0 || count <= 0;
+    }
+
+    private boolean notValidRequest(String address, Long id, int count) {
+        return address == null || "".equals(address) || id == null || id <= 0 || count <= 0;
     }
 
     private TokenResult badRequest() {
