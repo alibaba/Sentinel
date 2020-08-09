@@ -130,9 +130,10 @@ public final class SpiLoader<S> {
     }
 
     /**
-     * Reset and clear all SpiLoader instances
+     * Reset and clear all SpiLoader instances.
+     * Package privilege, used only in test cases.
      */
-    public synchronized static void resetAndClearAll() {
+    synchronized static void resetAndClearAll() {
         Set<Map.Entry<String, SpiLoader>> entries = SPI_LOADER_MAP.entrySet();
         for (Map.Entry<String, SpiLoader> entry : entries) {
             SpiLoader spiLoader = entry.getValue();
@@ -294,7 +295,7 @@ public final class SpiLoader<S> {
     /**
      * Reset and clear all fields of current SpiLoader instance and remove instance in SPI_LOADER_MAP
      */
-    public synchronized void resetAndClear() {
+    synchronized void resetAndClear() {
         SPI_LOADER_MAP.remove(service.getName());
         classList.clear();
         sortedClassList.clear();
