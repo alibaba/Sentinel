@@ -47,12 +47,12 @@ public class SpiLoaderTest {
 
     @Before
     public void setUp() {
-        SpiLoader.resetAll();
+        SpiLoader.resetAndClearAll();
     }
 
     @Before
     public void tearDown() {
-        SpiLoader.resetAll();
+        SpiLoader.resetAndClearAll();
     }
 
     @Test
@@ -65,12 +65,12 @@ public class SpiLoaderTest {
 
         assertSame(slotLoader1, slotLoader2);
 
-        SpiLoader initFuncLoader1 = SpiLoader.getSpiLoader(InitFunc.class);
+        SpiLoader initFuncLoader1 = SpiLoader.of(InitFunc.class);
         assertNotNull(initFuncLoader1);
         assertNotSame(slotLoader1, initFuncLoader1);
         assertNotEquals(slotLoader1, initFuncLoader1);
 
-        SpiLoader<InitFunc> initFuncLoader2 = SpiLoader.getSpiLoader(InitFunc.class);
+        SpiLoader<InitFunc> initFuncLoader2 = SpiLoader.of(InitFunc.class);
         assertNotNull(initFuncLoader2);
 
         assertSame(initFuncLoader1, initFuncLoader2);
@@ -315,7 +315,7 @@ public class SpiLoaderTest {
         } catch (Exception e) {
             assertTrue(e instanceof SpiLoaderException);
             assertThat(e.getMessage(), allOf(containsString("is not Provider class of")
-                , containsString("check if it is in the SPI file?")));
+                , containsString("check if it is in the SPI configuration file?")));
         }
     }
 }

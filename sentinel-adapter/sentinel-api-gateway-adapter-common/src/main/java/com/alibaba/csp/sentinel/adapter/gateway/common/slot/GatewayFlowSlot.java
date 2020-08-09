@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.adapter.gateway.common.slot;
 
 import java.util.List;
 
+import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayRuleManager;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.DefaultNode;
@@ -33,7 +34,7 @@ import com.alibaba.csp.sentinel.spi.Spi;
  * @author Eric Zhao
  * @since 1.6.1
  */
-@Spi(order = -4000)
+@Spi(order = Constants.ORDER_GATEWAY_FLOW_SLOT)
 public class GatewayFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override

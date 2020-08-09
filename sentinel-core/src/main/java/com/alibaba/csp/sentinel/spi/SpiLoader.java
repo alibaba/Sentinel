@@ -130,25 +130,13 @@ public final class SpiLoader<S> {
     }
 
     /**
-     * Create SpiLoader instance via Service class
-     * Same as {@link SpiLoader#of} method
-     *
-     * @param service Service class
-     * @param <T>     Service type
-     * @return SpiLoader instance
+     * Reset and clear all SpiLoader instances
      */
-    public static <T> SpiLoader<T> getSpiLoader(Class<T> service) {
-        return SpiLoader.of(service);
-    }
-
-    /**
-     * Reset all SpiLoader instances
-     */
-    public static void resetAll() {
+    public synchronized static void resetAndClearAll() {
         Set<Map.Entry<String, SpiLoader>> entries = SPI_LOADER_MAP.entrySet();
         for (Map.Entry<String, SpiLoader> entry : entries) {
             SpiLoader spiLoader = entry.getValue();
-            spiLoader.reset();
+            spiLoader.resetAndClear();
         }
         SPI_LOADER_MAP.clear();
     }
@@ -156,11 +144,6 @@ public final class SpiLoader<S> {
     // Private access
     private SpiLoader(Class<S> service) {
         this.service = service;
-    }
-
-    // Private access
-    private SpiLoader() {
-
     }
 
     /**
@@ -283,7 +266,7 @@ public final class SpiLoader<S> {
         load();
 
         if (!classMap.containsValue(clazz)) {
-            fail(clazz.getName() + " is not Provider class of " + service.getName() + ",check if it is in the SPI file?");
+            fail(clazz.getName() + " is not Provider class of " + service.getName() + ",check if it is in the SPI configuration file?");
         }
 
         return createInstance(clazz);
@@ -309,9 +292,9 @@ public final class SpiLoader<S> {
     }
 
     /**
-     * Reset all fields of current SpiLoader instance
+     * Reset and clear all fields of current SpiLoader instance and remove instance in SPI_LOADER_MAP
      */
-    public synchronized void reset() {
+    public synchronized void resetAndClear() {
         SPI_LOADER_MAP.remove(service.getName());
         classList.clear();
         sortedClassList.clear();
@@ -343,11 +326,11 @@ public final class SpiLoader<S> {
         try {
             urls = classLoader.getResources(fullFileName);
         } catch (IOException e) {
-            fail("Error locating SPI file,filename=" + fullFileName + ",classloader=" + classLoader, e);
+            fail("Error locating SPI configuration file,filename=" + fullFileName + ",classloader=" + classLoader, e);
         }
 
         if (urls == null || !urls.hasMoreElements()) {
-            RecordLog.warn("No SPI file,filename=" + fullFileName + ",classloader=" + classLoader);
+            RecordLog.warn("No SPI configuration file,filename=" + fullFileName + ",classloader=" + classLoader);
             return;
         }
 
@@ -386,7 +369,7 @@ public final class SpiLoader<S> {
                     }
 
                     if (!service.isAssignableFrom(clazz)) {
-                        fail("class " + clazz.getName() + "is not subtype of " + service.getName() + ",SPI filename=" + fullFileName);
+                        fail("class " + clazz.getName() + "is not subtype of " + service.getName() + ",SPI configuration file=" + fullFileName);
                     }
 
                     classList.add(clazz);
@@ -395,13 +378,13 @@ public final class SpiLoader<S> {
                     if (classMap.containsKey(aliasName)) {
                         Class<? extends S> existClass = classMap.get(aliasName);
                         fail("Found repeat aliasname for " + clazz.getName() + " and "
-                                + existClass.getName() + ",SPI filename=" + fullFileName);
+                                + existClass.getName() + ",SPI configuration file=" + fullFileName);
                     }
                     classMap.put(aliasName, clazz);
 
                     if (spi != null && spi.isDefault()) {
                         if (defaultClass != null) {
-                            fail("Found more than one default Provider,SPI filename=" + fullFileName);
+                            fail("Found more than one default Provider,SPI configuration file=" + fullFileName);
                         }
                         defaultClass = clazz;
                     }
@@ -427,7 +410,7 @@ public final class SpiLoader<S> {
                     }
                 });
             } catch (IOException e) {
-                fail("error reading SPI file", e);
+                fail("error reading SPI configuration file", e);
             } finally {
                 closeResources(in, br);
             }
@@ -514,7 +497,7 @@ public final class SpiLoader<S> {
             try {
                 closeable.close();
             } catch (Exception e) {
-                fail("error closing SPI file", e);
+                fail("error closing SPI configuration file", e);
             }
         }
     }
