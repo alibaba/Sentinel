@@ -41,6 +41,7 @@ app.service('DegradeService', ['$http', function ($http) {
       grade: rule.grade,
       count: rule.count,
       timeWindow: rule.timeWindow,
+      app:rule.app,
     };
     return $http({
       url: '/degrade/save.json',

@@ -53,7 +53,11 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
                     return false;
                 }
                 String target = request.getParameter(authAction.targetName());
-
+                if(null == target) {
+                    //post or put method get params through http request body
+                    RequestWrapper requestWrapper = new RequestWrapper(request);
+                    target = (String) JSON.parseObject(requestWrapper.getBody()).get(authAction.targetName());
+                }
                 if (!authUser.authTarget(target, authAction.value())) {
                     responseNoPrivilegeMsg(response, authAction.message());
                     return false;
