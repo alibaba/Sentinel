@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.demo.quarkus;
 
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.AfterEach;
@@ -34,10 +35,10 @@ public class GreetingResourceTest {
     @Test
     public void testSentinelJaxRsQuarkusAdapter() {
         given()
-                .when().get("/hello/txt")
-                .then()
-                .statusCode(200)
-                .body(is("hello"));
+          .when().get("/hello/txt")
+          .then()
+             .statusCode(200)
+             .body(is("hello"));
         given()
                 .when().get("/hello/txt")
                 .then()
