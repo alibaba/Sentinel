@@ -13,48 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.rule.apollo;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+package com.alibaba.csp.sentinel.dashboard.rule.nacos;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.util.StringUtil;
+import com.alibaba.nacos.api.config.ConfigService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
 
-import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
-import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
-import com.ctrip.framework.apollo.openapi.dto.OpenNamespaceDTO;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * @author hantianwei@gmail.com
- * @since 1.5.0
+ * @author Eric Zhao
+ * @since 1.4.0
  */
-@Component("flowRuleApolloProvider")
-public class FlowRuleApolloProvider implements DynamicRuleProvider<List<FlowRuleEntity>> {
+public class FlowRuleNacosProvider implements DynamicRuleProvider<List<FlowRuleEntity>> {
 
     @Autowired
-    private ApolloOpenApiClient apolloOpenApiClient;
+    private ConfigService configService;
     @Autowired
     private Converter<String, List<FlowRuleEntity>> converter;
 
     @Override
     public List<FlowRuleEntity> getRules(String appName) throws Exception {
-        String appId = "appId";
-        String flowDataId = ApolloConfigUtil.getFlowDataId(appName);
-        OpenNamespaceDTO openNamespaceDTO = apolloOpenApiClient.getNamespace(appId, "DEV", "default", "application");
-        String rules = openNamespaceDTO
-            .getItems()
-            .stream()
-            .filter(p -> p.getKey().equals(flowDataId))
-            .map(OpenItemDTO::getValue)
-            .findFirst()
-            .orElse("");
-
+        String rules = configService.getConfig(appName,NacosConfigUtil.GROUP_ID, 3000);
         if (StringUtil.isEmpty(rules)) {
             return new ArrayList<>();
         }

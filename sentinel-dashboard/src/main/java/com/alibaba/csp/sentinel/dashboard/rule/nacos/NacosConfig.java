@@ -15,23 +15,31 @@
  */
 package com.alibaba.csp.sentinel.dashboard.rule.nacos;
 
-import java.util.List;
-
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigFactory;
 import com.alibaba.nacos.api.config.ConfigService;
-
+import org.apache.commons.lang.StringUtils;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
+import java.util.Properties;
 
 /**
  * @author Eric Zhao
  * @since 1.4.0
  */
 @Configuration
+@ConditionalOnProperty(prefix = "rule",name = "provider",havingValue = "nacos",matchIfMissing = false)
+@ConfigurationProperties(prefix = "rule.configserver.nacos")
 public class NacosConfig {
+    private String serverAddr;
+    private String namespace;
 
     @Bean
     public Converter<List<FlowRuleEntity>, String> flowRuleEntityEncoder() {
@@ -44,7 +52,29 @@ public class NacosConfig {
     }
 
     @Bean
+    public FlowRuleNacosProvider ruleProvider(){
+        return new FlowRuleNacosProvider();
+    }
+    @Bean
+    public FlowRuleNacosPublisher rulePublisher(){
+        return new FlowRuleNacosPublisher();
+    }
+
+    @Bean
     public ConfigService nacosConfigService() throws Exception {
-        return ConfigFactory.createConfigService("localhost");
+        Properties properties = new Properties();
+        properties.put(PropertyKeyConst.SERVER_ADDR, serverAddr);
+        if(StringUtils.isNotBlank(namespace)){
+            properties.put(PropertyKeyConst.NAMESPACE,namespace);
+        }
+        return ConfigFactory.createConfigService(properties);
+    }
+
+    public void setServerAddr(String serverAddr) {
+        this.serverAddr = serverAddr;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
     }
 }

@@ -16,18 +16,23 @@
 package com.alibaba.csp.sentinel.dashboard.rule.zookeeper;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.rule.nacos.FlowRuleNacosProvider;
+import com.alibaba.csp.sentinel.dashboard.rule.nacos.FlowRuleNacosPublisher;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.fastjson.JSON;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
 @Configuration
+@ConditionalOnProperty(prefix = "rule",name = "provider",havingValue = "zookeeper",matchIfMissing = false)
 public class ZookeeperConfig {
+    public String serverAddr;
 
     @Bean
     public Converter<List<FlowRuleEntity>, String> flowRuleEntityEncoder() {
@@ -40,12 +45,24 @@ public class ZookeeperConfig {
     }
 
     @Bean
+    public FlowRuleZookeeperProvider ruleProvider(){
+        return new FlowRuleZookeeperProvider();
+    }
+    @Bean
+    public FlowRuleZookeeperPublisher rulePublisher(){
+        return new FlowRuleZookeeperPublisher();
+    }
+
+    @Bean
     public CuratorFramework zkClient() {
         CuratorFramework zkClient =
-                CuratorFrameworkFactory.newClient("127.0.0.1:2181",
+                CuratorFrameworkFactory.newClient(serverAddr,
                         new ExponentialBackoffRetry(ZookeeperConfigUtil.SLEEP_TIME, ZookeeperConfigUtil.RETRY_TIMES));
         zkClient.start();
-
         return zkClient;
+    }
+
+    public void setServerAddr(String serverAddr) {
+        this.serverAddr = serverAddr;
     }
 }

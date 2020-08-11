@@ -1,0 +1,13 @@
+rule:
+  configserver:
+    appollo:
+      env: ${configserver.env:}
+      token: ${configserver.token:}
+      cluster: ${configserver.cluster:}
+      namespace: ${configserver.namespace:}
+      server-addr: ${configserver.address:}
+    nacos:
+      server-addr: ${configserver.address:}
+      namespace: ${configserver.namespace:}
+    zookeeper:
+      server-addr: ${configserver.address:}

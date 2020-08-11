@@ -15,26 +15,39 @@
  */
 package com.alibaba.csp.sentinel.dashboard.rule.apollo;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.util.AssertUtil;
-
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import com.ctrip.framework.apollo.openapi.dto.NamespaceReleaseDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @author hantianwei@gmail.com
  * @since 1.5.0
  */
-@Component("flowRuleApolloPublisher")
 public class FlowRuleApolloPublisher implements DynamicRulePublisher<List<FlowRuleEntity>> {
+    String appId;
+    private String env;
+    private String cluster;
+    private String namespace;
+
+    public FlowRuleApolloPublisher(){
+
+    }
+
+    public FlowRuleApolloPublisher(String appId, String env, String cluster, String namespace) {
+        this.appId = appId;
+        this.env = env;
+        this.cluster = cluster;
+        this.namespace = namespace;
+    }
 
     @Autowired
     private ApolloOpenApiClient apolloOpenApiClient;
@@ -48,22 +61,20 @@ public class FlowRuleApolloPublisher implements DynamicRulePublisher<List<FlowRu
             return;
         }
 
-        // Increase the configuration
-        String appId = "appId";
         String flowDataId = ApolloConfigUtil.getFlowDataId(app);
         OpenItemDTO openItemDTO = new OpenItemDTO();
         openItemDTO.setKey(flowDataId);
         openItemDTO.setValue(converter.convert(rules));
-        openItemDTO.setComment("Program auto-join");
-        openItemDTO.setDataChangeCreatedBy("some-operator");
-        apolloOpenApiClient.createOrUpdateItem(appId, "DEV", "default", "application", openItemDTO);
+        openItemDTO.setComment("config flowRule");
+        openItemDTO.setDataChangeCreatedBy("sentineldashboard");
+        apolloOpenApiClient.createOrUpdateItem(appId, env, cluster, namespace, openItemDTO);
 
         // Release configuration
         NamespaceReleaseDTO namespaceReleaseDTO = new NamespaceReleaseDTO();
         namespaceReleaseDTO.setEmergencyPublish(true);
-        namespaceReleaseDTO.setReleaseComment("Modify or add configurations");
-        namespaceReleaseDTO.setReleasedBy("some-operator");
-        namespaceReleaseDTO.setReleaseTitle("Modify or add configurations");
-        apolloOpenApiClient.publishNamespace(appId, "DEV", "default", "application", namespaceReleaseDTO);
+        namespaceReleaseDTO.setReleaseComment("Modify or add flowRule");
+        namespaceReleaseDTO.setReleasedBy("sentineldashboard");
+        namespaceReleaseDTO.setReleaseTitle("config flowRule");
+        apolloOpenApiClient.publishNamespace(appId, env, cluster, namespace, namespaceReleaseDTO);
     }
 }
