@@ -15,16 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.ClusterRuleConstant;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
@@ -35,6 +25,10 @@ import com.alibaba.csp.sentinel.slots.block.flow.controller.WarmUpRateLimiterCon
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.util.function.Function;
 import com.alibaba.csp.sentinel.util.function.Predicate;
+
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Eric Zhao
@@ -55,8 +49,8 @@ public final class FlowRuleUtil {
     /**
      * Build the flow rule map from raw list of flow rules, grouping by resource name.
      *
-     * @param list          raw list of flow rules
-     * @param filter        rule filter
+     * @param list   raw list of flow rules
+     * @param filter rule filter
      * @return constructed new flow rule map; empty map if list is null or empty, or no wanted rules
      */
     public static Map<String, List<FlowRule>> buildFlowRuleMap(List<FlowRule> list, Predicate<FlowRule> filter) {
@@ -66,9 +60,9 @@ public final class FlowRuleUtil {
     /**
      * Build the flow rule map from raw list of flow rules, grouping by resource name.
      *
-     * @param list          raw list of flow rules
-     * @param filter        rule filter
-     * @param shouldSort    whether the rules should be sorted
+     * @param list       raw list of flow rules
+     * @param filter     rule filter
+     * @param shouldSort whether the rules should be sorted
      * @return constructed new flow rule map; empty map if list is null or empty, or no wanted rules
      */
     public static Map<String, List<FlowRule>> buildFlowRuleMap(List<FlowRule> list, Predicate<FlowRule> filter,
@@ -141,12 +135,12 @@ public final class FlowRuleUtil {
             switch (rule.getControlBehavior()) {
                 case RuleConstant.CONTROL_BEHAVIOR_WARM_UP:
                     return new WarmUpController(rule.getCount(), rule.getWarmUpPeriodSec(),
-                        ColdFactorProperty.coldFactor);
+                            ColdFactorProperty.coldFactor);
                 case RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER:
                     return new RateLimiterController(rule.getMaxQueueingTimeMs(), rule.getCount());
                 case RuleConstant.CONTROL_BEHAVIOR_WARM_UP_RATE_LIMITER:
                     return new WarmUpRateLimiterController(rule.getCount(), rule.getWarmUpPeriodSec(),
-                        rule.getMaxQueueingTimeMs(), ColdFactorProperty.coldFactor);
+                            rule.getMaxQueueingTimeMs(), ColdFactorProperty.coldFactor);
                 case RuleConstant.CONTROL_BEHAVIOR_DEFAULT:
                 default:
                     // Default mode or unknown mode: default traffic shaping controller (fast-reject).
@@ -173,7 +167,7 @@ public final class FlowRuleUtil {
      */
     public static boolean isValidRule(FlowRule rule) {
         boolean baseValid = rule != null && !StringUtil.isBlank(rule.getResource()) && rule.getCount() >= 0
-            && rule.getGrade() >= 0 && rule.getStrategy() >= 0 && rule.getControlBehavior() >= 0;
+                && rule.getGrade() >= 0 && rule.getStrategy() >= 0 && rule.getControlBehavior() >= 0;
         if (!baseValid) {
             return false;
         }
@@ -217,11 +211,11 @@ public final class FlowRuleUtil {
     private static boolean checkControlBehaviorField(/*@NonNull*/ FlowRule rule) {
         switch (rule.getControlBehavior()) {
             case RuleConstant.CONTROL_BEHAVIOR_WARM_UP:
-                return rule.getWarmUpPeriodSec() > 0;
+                return rule.getWarmUpPeriodSec() > 0 && rule.getGrade() == RuleConstant.FLOW_GRADE_QPS;
             case RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER:
-                return rule.getMaxQueueingTimeMs() > 0;
+                return rule.getMaxQueueingTimeMs() > 0 && rule.getGrade() == RuleConstant.FLOW_GRADE_QPS;
             case RuleConstant.CONTROL_BEHAVIOR_WARM_UP_RATE_LIMITER:
-                return rule.getWarmUpPeriodSec() > 0 && rule.getMaxQueueingTimeMs() > 0;
+                return rule.getWarmUpPeriodSec() > 0 && rule.getMaxQueueingTimeMs() > 0 && rule.getGrade() == RuleConstant.FLOW_GRADE_QPS;
             default:
                 return true;
         }
@@ -234,5 +228,6 @@ public final class FlowRuleUtil {
         }
     };
 
-    private FlowRuleUtil() {}
+    private FlowRuleUtil() {
+    }
 }
