@@ -60,5 +60,10 @@ public final class TokenResultStatus {
      */
     public static final int NOT_AVAILABLE = 5;
 
-    private TokenResultStatus() {}
+    public static final int RELEASE_OK = 6;
+
+    public static final int ALREADY_RELEASE=7;
+
+    private TokenResultStatus() {
+    }
 }

@@ -16,11 +16,7 @@
 package com.alibaba.csp.sentinel.cluster.client.init;
 
 import com.alibaba.csp.sentinel.cluster.client.ClientConstants;
-import com.alibaba.csp.sentinel.cluster.client.codec.data.FlowRequestDataWriter;
-import com.alibaba.csp.sentinel.cluster.client.codec.data.FlowResponseDataDecoder;
-import com.alibaba.csp.sentinel.cluster.client.codec.data.ParamFlowRequestDataWriter;
-import com.alibaba.csp.sentinel.cluster.client.codec.data.PingRequestDataWriter;
-import com.alibaba.csp.sentinel.cluster.client.codec.data.PingResponseDataDecoder;
+import com.alibaba.csp.sentinel.cluster.client.codec.data.*;
 import com.alibaba.csp.sentinel.cluster.client.codec.registry.RequestDataWriterRegistry;
 import com.alibaba.csp.sentinel.cluster.client.codec.registry.ResponseDataDecodeRegistry;
 import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientStartUpConfig;
@@ -43,6 +39,9 @@ public class DefaultClusterClientInitFunc implements InitFunc {
     private void initDefaultEntityWriters() {
         RequestDataWriterRegistry.addWriter(ClientConstants.TYPE_PING, new PingRequestDataWriter());
         RequestDataWriterRegistry.addWriter(ClientConstants.TYPE_FLOW, new FlowRequestDataWriter());
+        RequestDataWriterRegistry.addWriter(ClientConstants.TYPE_CONCURRENT_FLOW_ACQUIRE, new ConcurrentFlowAcquireRequestDataWriter());
+        RequestDataWriterRegistry.addWriter(ClientConstants.TYPE_CONCURRENT_FLOW_RELEASE, new ConcurrentFlowReleaseRequestDataWriter());
+
         Integer maxParamByteSize = ClusterClientStartUpConfig.getMaxParamByteSize();
         if (maxParamByteSize == null) {
             RequestDataWriterRegistry.addWriter(ClientConstants.TYPE_PARAM_FLOW, new ParamFlowRequestDataWriter());
@@ -55,5 +54,8 @@ public class DefaultClusterClientInitFunc implements InitFunc {
         ResponseDataDecodeRegistry.addDecoder(ClientConstants.TYPE_PING, new PingResponseDataDecoder());
         ResponseDataDecodeRegistry.addDecoder(ClientConstants.TYPE_FLOW, new FlowResponseDataDecoder());
         ResponseDataDecodeRegistry.addDecoder(ClientConstants.TYPE_PARAM_FLOW, new FlowResponseDataDecoder());
+        ResponseDataDecodeRegistry.addDecoder(ClientConstants.TYPE_CONCURRENT_FLOW_ACQUIRE, new ConcurrentFlowAcquireResponseDataDecoder());
+        ResponseDataDecodeRegistry.addDecoder(ClientConstants.TYPE_CONCURRENT_FLOW_RELEASE, new ConcurrentFlowReleaseResponseDataDecoder());
+
     }
 }

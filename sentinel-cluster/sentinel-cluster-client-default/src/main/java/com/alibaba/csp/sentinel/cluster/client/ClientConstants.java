@@ -24,6 +24,8 @@ public final class ClientConstants {
     public static final int TYPE_PING = 0;
     public static final int TYPE_FLOW = 1;
     public static final int TYPE_PARAM_FLOW = 2;
+    public static final int TYPE_CONCURRENT_FLOW_ACQUIRE = 3;
+    public static final int TYPE_CONCURRENT_FLOW_RELEASE = 4;
 
     public static final int CLIENT_STATUS_OFF = 0;
     public static final int CLIENT_STATUS_PENDING = 1;

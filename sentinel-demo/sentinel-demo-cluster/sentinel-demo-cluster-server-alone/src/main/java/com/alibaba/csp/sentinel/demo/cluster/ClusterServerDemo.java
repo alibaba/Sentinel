@@ -15,12 +15,14 @@
  */
 package com.alibaba.csp.sentinel.demo.cluster;
 
-import java.util.Collections;
-
+import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
+import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.CurrentConcurrencyManager;
+import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.TokenCacheNodeManager;
 import com.alibaba.csp.sentinel.cluster.server.ClusterTokenServer;
 import com.alibaba.csp.sentinel.cluster.server.SentinelDefaultTokenServer;
-import com.alibaba.csp.sentinel.cluster.server.config.ClusterServerConfigManager;
-import com.alibaba.csp.sentinel.cluster.server.config.ServerTransportConfig;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * <p>Cluster server demo (alone mode).</p>
@@ -32,19 +34,42 @@ import com.alibaba.csp.sentinel.cluster.server.config.ServerTransportConfig;
  */
 public class ClusterServerDemo {
 
+    @SuppressWarnings("PMD.ThreadPoolCreationRule")
+    private static ExecutorService pool = Executors.newFixedThreadPool(1);
+
     public static void main(String[] args) throws Exception {
         // Not embedded mode by default (alone mode).
         ClusterTokenServer tokenServer = new SentinelDefaultTokenServer();
+        ClusterStateManager.setToServer();
+        while (true) {
+            Thread.sleep(1000);
+            try{
+                System.out.println("资源:resource1当前并发量" + CurrentConcurrencyManager.get(111L).get() + "|资源:resource2当前并发量" + CurrentConcurrencyManager.get(222L).get() + "|存储token数" + TokenCacheNodeManager.getSize());
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
 
-        // A sample for manually load config for cluster server.
-        // It's recommended to use dynamic data source to cluster manage config and rules.
-        // See the sample in DemoClusterServerInitFunc for detail.
-        ClusterServerConfigManager.loadGlobalTransportConfig(new ServerTransportConfig()
-            .setIdleSeconds(600)
-            .setPort(11111));
-        ClusterServerConfigManager.loadServerNamespaceSet(Collections.singleton(DemoConstants.APP_NAME));
 
-        // Start the server.
-        tokenServer.start();
     }
 }
+
+//java -Dserver.port=8080 -Dcsp.sentinel.dashboard.server=localhost:8080 -Dproject.name=sentinel-dashboard -jar sentinel-dashboard-1.7.2.jar
+//curl http://localhost:8719/cluster/server/flowRules
+//   1.功能演示
+//   2.关于pr(希望尽快review)
+//   3.一些问题
+//   4.未来规划
+//     下一个pr是通信部分
+//     最后一个pr是slot部分接入并发集群流控
+//resourceTimeoutStrategy 失败
+//        blockStrategy 有问题
+//
+
+//server     ---------------
+//改进：
+//阻塞队列 ，，出方案
+//异步释放 ，，，
+//本地流控 ，，出方案
+//并发流控controller规则校验
+//client     ---------------

@@ -18,6 +18,8 @@ package com.alibaba.csp.sentinel.slots.block.flow;
 import com.alibaba.csp.sentinel.slots.block.ClusterRuleConstant;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * Flow rule config in cluster mode.
  *
@@ -47,6 +49,74 @@ public class ClusterFlowConfig {
      * The time interval length of the statistic sliding window (in milliseconds)
      */
     private int windowIntervalMs = RuleConstant.DEFAULT_WINDOW_INTERVAL_MS;
+
+    private long resourceTimeout;
+
+    private int resourceTimeoutStrategy = RuleConstant.DEFAULT_RESOURCE_TIMEOUT_STRATEGY;
+
+    private int acquireRefuseStrategy = RuleConstant.DEFAULT_BLOCK_STRATEGY;
+
+    private long clientOfflineTime;
+
+    private int expireCount = 0;
+
+    private AtomicInteger releasedCount = new AtomicInteger(0);
+
+    public int getAcquireRefuseStrategy() {
+        return acquireRefuseStrategy;
+    }
+
+    public void setAcquireRefuseStrategy(int acquireRefuseStrategy) {
+        this.acquireRefuseStrategy = acquireRefuseStrategy;
+    }
+
+    public void addExpireCount(int acquireCount) {
+        expireCount += expireCount;
+    }
+
+    public void addReleaseCount(int acquireCount) {
+        releasedCount.getAndAdd(acquireCount);
+    }
+
+    public int getResourceTimeoutStrategy() {
+        return resourceTimeoutStrategy;
+    }
+
+    public void setResourceTimeoutStrategy(int resourceTimeoutStrategy) {
+        this.resourceTimeoutStrategy = resourceTimeoutStrategy;
+    }
+
+    public long getResourceTimeout() {
+        return resourceTimeout;
+    }
+
+    public void setResourceTimeout(long resourceTimeout) {
+        this.resourceTimeout = resourceTimeout;
+    }
+
+    public long getClientOfflineTime() {
+        return clientOfflineTime;
+    }
+
+    public void setClientOfflineTime(long clientOfflineTime) {
+        this.clientOfflineTime = clientOfflineTime;
+    }
+
+    public int getExpireCount() {
+        return expireCount;
+    }
+
+    public void setExpireCount(int expireCount) {
+        this.expireCount = expireCount;
+    }
+
+    public AtomicInteger getReleasedCount() {
+        return releasedCount;
+    }
+
+    public void setReleasedCount(AtomicInteger releasedCount) {
+        this.releasedCount = releasedCount;
+    }
 
     public Long getFlowId() {
         return flowId;
@@ -104,16 +174,30 @@ public class ClusterFlowConfig {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) { return true; }
-        if (o == null || getClass() != o.getClass()) { return false; }
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
-        ClusterFlowConfig that = (ClusterFlowConfig)o;
+        ClusterFlowConfig that = (ClusterFlowConfig) o;
 
-        if (thresholdType != that.thresholdType) { return false; }
-        if (fallbackToLocalWhenFail != that.fallbackToLocalWhenFail) { return false; }
-        if (strategy != that.strategy) { return false; }
-        if (sampleCount != that.sampleCount) { return false; }
-        if (windowIntervalMs != that.windowIntervalMs) { return false; }
+        if (thresholdType != that.thresholdType) {
+            return false;
+        }
+        if (fallbackToLocalWhenFail != that.fallbackToLocalWhenFail) {
+            return false;
+        }
+        if (strategy != that.strategy) {
+            return false;
+        }
+        if (sampleCount != that.sampleCount) {
+            return false;
+        }
+        if (windowIntervalMs != that.windowIntervalMs) {
+            return false;
+        }
         return flowId != null ? flowId.equals(that.flowId) : that.flowId == null;
     }
 
@@ -131,12 +215,17 @@ public class ClusterFlowConfig {
     @Override
     public String toString() {
         return "ClusterFlowConfig{" +
-            "flowId=" + flowId +
-            ", thresholdType=" + thresholdType +
-            ", fallbackToLocalWhenFail=" + fallbackToLocalWhenFail +
-            ", strategy=" + strategy +
-            ", sampleCount=" + sampleCount +
-            ", windowIntervalMs=" + windowIntervalMs +
-            '}';
+                "flowId=" + flowId +
+                ", thresholdType=" + thresholdType +
+                ", fallbackToLocalWhenFail=" + fallbackToLocalWhenFail +
+                ", strategy=" + strategy +
+                ", sampleCount=" + sampleCount +
+                ", windowIntervalMs=" + windowIntervalMs +
+                ", resourceTimeout=" + resourceTimeout +
+                ", resourceTimeoutStrategy=" + resourceTimeoutStrategy +
+                ", clientOfflineTime=" + clientOfflineTime +
+                ", expireCount=" + expireCount +
+                ", releasedCount=" + releasedCount +
+                '}';
     }
 }

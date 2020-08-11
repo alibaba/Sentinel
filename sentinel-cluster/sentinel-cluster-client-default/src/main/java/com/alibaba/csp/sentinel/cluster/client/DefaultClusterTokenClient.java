@@ -15,26 +15,25 @@
  */
 package com.alibaba.csp.sentinel.cluster.client;
 
-import java.util.Collection;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import com.alibaba.csp.sentinel.cluster.ClusterConstants;
-import com.alibaba.csp.sentinel.cluster.ClusterErrorMessages;
-import com.alibaba.csp.sentinel.cluster.ClusterTransportClient;
-import com.alibaba.csp.sentinel.cluster.TokenResult;
-import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
-import com.alibaba.csp.sentinel.cluster.TokenServerDescriptor;
+import com.alibaba.csp.sentinel.cluster.*;
 import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientAssignConfig;
 import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfigManager;
 import com.alibaba.csp.sentinel.cluster.client.config.ServerChangeObserver;
 import com.alibaba.csp.sentinel.cluster.log.ClusterClientStatLogUtil;
 import com.alibaba.csp.sentinel.cluster.request.ClusterRequest;
+import com.alibaba.csp.sentinel.cluster.request.data.ConcurrentFlowAcquireRequestData;
+import com.alibaba.csp.sentinel.cluster.request.data.ConcurrentFlowReleaseRequestData;
 import com.alibaba.csp.sentinel.cluster.request.data.FlowRequestData;
 import com.alibaba.csp.sentinel.cluster.request.data.ParamFlowRequestData;
 import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
+import com.alibaba.csp.sentinel.cluster.response.data.ConcurrentFlowAcquireResponseData;
 import com.alibaba.csp.sentinel.cluster.response.data.FlowTokenResponseData;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
+
+import java.util.Collection;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Default implementation of {@link ClusterTokenClient}.
@@ -152,7 +151,7 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
             return badRequest();
         }
         FlowRequestData data = new FlowRequestData().setCount(acquireCount)
-            .setFlowId(flowId).setPriority(prioritized);
+                .setFlowId(flowId).setPriority(prioritized);
         ClusterRequest<FlowRequestData> request = new ClusterRequest<>(ClusterConstants.MSG_TYPE_FLOW, data);
         try {
             TokenResult result = sendTokenRequest(request);
@@ -170,8 +169,42 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
             return badRequest();
         }
         ParamFlowRequestData data = new ParamFlowRequestData().setCount(acquireCount)
-            .setFlowId(flowId).setParams(params);
+                .setFlowId(flowId).setParams(params);
         ClusterRequest<ParamFlowRequestData> request = new ClusterRequest<>(ClusterConstants.MSG_TYPE_PARAM_FLOW, data);
+        try {
+            TokenResult result = sendTokenRequest(request);
+            logForResult(result);
+            return result;
+        } catch (Exception ex) {
+            ClusterClientStatLogUtil.log(ex.getMessage());
+            return new TokenResult(TokenResultStatus.FAIL);
+        }
+    }
+
+    @Override
+    public TokenResult requestConcurrentToken(String clientAddress, Long ruleId, int acquireCount) {
+        if (notValidRequest(ruleId, acquireCount)) {
+            return badRequest();
+        }
+        ConcurrentFlowAcquireRequestData data = new ConcurrentFlowAcquireRequestData().setFlowId(ruleId).setCount(acquireCount);
+        ClusterRequest<ConcurrentFlowAcquireRequestData> request = new ClusterRequest<>(ClusterConstants.MSG_TYPE_CONCURRENT_FLOW_ACQUIRE, data);
+        try {
+            TokenResult result = sendTokenRequest(request);
+            logForResult(result);
+            return result;
+        } catch (Exception ex) {
+            ClusterClientStatLogUtil.log(ex.getMessage());
+            return new TokenResult(TokenResultStatus.FAIL);
+        }
+    }
+
+    @Override
+    public TokenResult releaseConcurrentToken(Long tokenId) {
+        if (tokenId == null) {
+            return badRequest();
+        }
+        ConcurrentFlowReleaseRequestData data = new ConcurrentFlowReleaseRequestData().setTokenId(tokenId);
+        ClusterRequest<ConcurrentFlowReleaseRequestData> request = new ClusterRequest<>(ClusterConstants.MSG_TYPE_CONCURRENT_FLOW_RELEASE, data);
         try {
             TokenResult result = sendTokenRequest(request);
             logForResult(result);
@@ -197,15 +230,29 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
     private TokenResult sendTokenRequest(ClusterRequest request) throws Exception {
         if (transportClient == null) {
             RecordLog.warn(
-                "[DefaultClusterTokenClient] Client not created, please check your config for cluster client");
+                    "[DefaultClusterTokenClient] Client not created, please check your config for cluster client");
             return clientFail();
         }
         ClusterResponse response = transportClient.sendRequest(request);
         TokenResult result = new TokenResult(response.getStatus());
         if (response.getData() != null) {
-            FlowTokenResponseData responseData = (FlowTokenResponseData)response.getData();
-            result.setRemaining(responseData.getRemainingCount())
-                .setWaitInMs(responseData.getWaitInMs());
+            switch (request.getType()) {
+                case ClusterConstants.MSG_TYPE_CONCURRENT_FLOW_RELEASE:
+                    break;
+                case ClusterConstants.MSG_TYPE_CONCURRENT_FLOW_ACQUIRE:
+                    ConcurrentFlowAcquireResponseData concurrentAcquireResponseData = (ConcurrentFlowAcquireResponseData) response.getData();
+                    result.setTokenId(concurrentAcquireResponseData.getTokenId());
+                    break;
+                case ClusterConstants.MSG_TYPE_PARAM_FLOW:
+                case ClusterConstants.MSG_TYPE_FLOW:
+                    FlowTokenResponseData responseData = (FlowTokenResponseData) response.getData();
+                    result.setRemaining(responseData.getRemainingCount())
+                            .setWaitInMs(responseData.getWaitInMs());
+                    break;
+                default:
+                    RecordLog.warn(
+                            "[DefaultClusterTokenClient] Unknown request type: {}", request.getType());
+            }
         }
         return result;
     }

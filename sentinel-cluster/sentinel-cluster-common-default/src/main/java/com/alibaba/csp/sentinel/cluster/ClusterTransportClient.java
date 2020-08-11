@@ -18,6 +18,8 @@ package com.alibaba.csp.sentinel.cluster;
 import com.alibaba.csp.sentinel.cluster.request.ClusterRequest;
 import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * Synchronous transport client for distributed flow control.
  *
@@ -48,7 +50,6 @@ public interface ClusterTransportClient {
      * @throws Exception some error occurs
      */
     ClusterResponse sendRequest(ClusterRequest request) throws Exception;
-
     /**
      * Check whether the client has been started and ready for sending requests.
      *

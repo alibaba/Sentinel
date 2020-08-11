@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.cluster.client;
 
 import java.util.AbstractMap.SimpleEntry;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -244,27 +245,28 @@ public class NettyTransportClient implements ClusterTransportClient {
         return idGenerator.incrementAndGet();
     }
 
-    /*public CompletableFuture<ClusterResponse> sendRequestAsync(ClusterRequest request) {
-        // Uncomment this when min target JDK is 1.8.
-        if (!validRequest(request)) {
-            return CompletableFuture.failedFuture(new IllegalArgumentException("Bad request"));
-        }
-        int xid = getCurrentId();
-        request.setId(xid);
 
-        CompletableFuture<ClusterResponse> future = new CompletableFuture<>();
-        channel.writeAndFlush(request)
-            .addListener(f -> {
-                if (f.isSuccess()) {
-                    future.complete(someResult);
-                } else if (f.cause() != null) {
-                    future.completeExceptionally(f.cause());
-                } else {
-                    future.cancel(false);
-                }
-            });
-        return future;
-    }*/
+//    public CompletableFuture<ClusterResponse> sendRequestAsync(ClusterRequest request) throws Exception{
+//        // Uncomment this when min target JDK is 1.8.
+//        if (!validRequest(request)) {
+//            throw new SentinelClusterException(ClusterErrorMessages.BAD_REQUEST);
+//        }
+//        int xid = getCurrentId();
+//        request.setId(xid);
+//
+//        CompletableFuture<ClusterResponse> future = new CompletableFuture<>();
+//        channel.writeAndFlush(request)
+//            .addListener(f -> {
+//                if (f.isSuccess()) {
+//                    future.complete(new ClusterResponse().setStatus(1));
+//                } else if (f.cause() != null) {
+//                    future.completeExceptionally(f.cause());
+//                } else {
+//                    future.cancel(false);
+//                }
+//            });
+//        return future;
+//    }
 
     private static final int MAX_ID = 999_999_999;
 }

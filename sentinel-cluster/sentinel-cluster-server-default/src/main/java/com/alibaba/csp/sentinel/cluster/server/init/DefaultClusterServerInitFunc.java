@@ -17,11 +17,7 @@ package com.alibaba.csp.sentinel.cluster.server.init;
 
 import com.alibaba.csp.sentinel.cluster.ClusterConstants;
 import com.alibaba.csp.sentinel.cluster.server.TokenServiceProvider;
-import com.alibaba.csp.sentinel.cluster.server.codec.data.FlowRequestDataDecoder;
-import com.alibaba.csp.sentinel.cluster.server.codec.data.FlowResponseDataWriter;
-import com.alibaba.csp.sentinel.cluster.server.codec.data.ParamFlowRequestDataDecoder;
-import com.alibaba.csp.sentinel.cluster.server.codec.data.PingRequestDataDecoder;
-import com.alibaba.csp.sentinel.cluster.server.codec.data.PingResponseDataWriter;
+import com.alibaba.csp.sentinel.cluster.server.codec.data.*;
 import com.alibaba.csp.sentinel.cluster.server.codec.registry.RequestDataDecodeRegistry;
 import com.alibaba.csp.sentinel.cluster.server.codec.registry.ResponseDataWriterRegistry;
 import com.alibaba.csp.sentinel.cluster.server.processor.RequestProcessorProvider;
@@ -51,12 +47,16 @@ public class DefaultClusterServerInitFunc implements InitFunc {
         ResponseDataWriterRegistry.addWriter(ClusterConstants.MSG_TYPE_PING, new PingResponseDataWriter());
         ResponseDataWriterRegistry.addWriter(ClusterConstants.MSG_TYPE_FLOW, new FlowResponseDataWriter());
         ResponseDataWriterRegistry.addWriter(ClusterConstants.MSG_TYPE_PARAM_FLOW, new FlowResponseDataWriter());
+        ResponseDataWriterRegistry.addWriter(ClusterConstants.MSG_TYPE_CONCURRENT_FLOW_ACQUIRE, new ConcurrentFlowAcquireResponseDataWriter());
+        ResponseDataWriterRegistry.addWriter(ClusterConstants.MSG_TYPE_CONCURRENT_FLOW_RELEASE, new ConcurrentFlowReleaseResponseDataWriter());
     }
 
     private void initDefaultEntityDecoders() {
         RequestDataDecodeRegistry.addDecoder(ClusterConstants.MSG_TYPE_PING, new PingRequestDataDecoder());
         RequestDataDecodeRegistry.addDecoder(ClusterConstants.MSG_TYPE_FLOW, new FlowRequestDataDecoder());
         RequestDataDecodeRegistry.addDecoder(ClusterConstants.MSG_TYPE_PARAM_FLOW, new ParamFlowRequestDataDecoder());
+        RequestDataDecodeRegistry.addDecoder(ClusterConstants.MSG_TYPE_CONCURRENT_FLOW_ACQUIRE, new ConcurrentFlowAcquireRequestDataDecoder());
+        RequestDataDecodeRegistry.addDecoder(ClusterConstants.MSG_TYPE_CONCURRENT_FLOW_RELEASE, new ConcurrentFlowReleaseRequestDataDecoder());
     }
 
     private void initDefaultProcessors() {

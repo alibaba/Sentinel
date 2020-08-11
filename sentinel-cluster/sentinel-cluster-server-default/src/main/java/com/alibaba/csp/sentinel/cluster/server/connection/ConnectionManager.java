@@ -111,6 +111,9 @@ public final class ConnectionManager {
         ConnectionGroup group = CONN_MAP.get(namespace);
         return group;
     }
+    public static boolean isClientOnline(String clientAddress){
+        return NAMESPACE_MAP.containsKey(clientAddress);
+    }
 
     static void clear() {
         CONN_MAP.clear();

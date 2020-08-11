@@ -230,18 +230,16 @@ public class FlowRule extends AbstractRule {
     @Override
     public String toString() {
         return "FlowRule{" +
-            "resource=" + getResource() +
-            ", limitApp=" + getLimitApp() +
-            ", grade=" + grade +
-            ", count=" + count +
-            ", strategy=" + strategy +
-            ", refResource=" + refResource +
-            ", controlBehavior=" + controlBehavior +
-            ", warmUpPeriodSec=" + warmUpPeriodSec +
-            ", maxQueueingTimeMs=" + maxQueueingTimeMs +
-            ", clusterMode=" + clusterMode +
-            ", clusterConfig=" + clusterConfig +
-            ", controller=" + controller +
-            '}';
+                "grade=" + grade +
+                ", count=" + count +
+                ", strategy=" + strategy +
+                ", refResource='" + refResource + '\'' +
+                ", controlBehavior=" + controlBehavior +
+                ", warmUpPeriodSec=" + warmUpPeriodSec +
+                ", maxQueueingTimeMs=" + maxQueueingTimeMs +
+                ", clusterMode=" + clusterMode +
+                ", clusterConfig=" + clusterConfig +
+                ", controller=" + controller +
+                '}';
     }
 }

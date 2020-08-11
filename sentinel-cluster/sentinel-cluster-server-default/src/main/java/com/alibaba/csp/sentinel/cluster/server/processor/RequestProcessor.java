@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.cluster.server.processor;
 
 import com.alibaba.csp.sentinel.cluster.request.ClusterRequest;
 import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
+import io.netty.channel.ChannelHandlerContext;
 
 /**
  * Interface of cluster request processor.
@@ -31,8 +32,9 @@ public interface RequestProcessor<T, R> {
     /**
      * Process the cluster request.
      *
+     * @param ctx The ChannelHandlerContext of the request.
      * @param request Sentinel cluster request
      * @return the response after processed
      */
-    ClusterResponse<R> processRequest(ClusterRequest<T> request);
+    ClusterResponse<R> processRequest(ChannelHandlerContext ctx, ClusterRequest<T> request);
 }

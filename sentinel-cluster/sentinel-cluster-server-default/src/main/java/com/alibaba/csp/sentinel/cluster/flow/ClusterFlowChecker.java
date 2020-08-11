@@ -35,7 +35,7 @@ import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
  */
 final class ClusterFlowChecker {
 
-    private static double calcGlobalThreshold(FlowRule rule) {
+    public static double calcGlobalThreshold(FlowRule rule) {
         double count = rule.getCount();
         switch (rule.getClusterConfig().getThresholdType()) {
             case ClusterRuleConstant.FLOW_THRESHOLD_GLOBAL:
