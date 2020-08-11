@@ -15,14 +15,6 @@
  */
 package com.alibaba.csp.sentinel.cluster.client;
 
-import java.util.AbstractMap.SimpleEntry;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.alibaba.csp.sentinel.cluster.ClusterErrorMessages;
 import com.alibaba.csp.sentinel.cluster.ClusterTransportClient;
 import com.alibaba.csp.sentinel.cluster.client.codec.netty.NettyRequestEncoder;
@@ -37,21 +29,22 @@ import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.AssertUtil;
-
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.ChannelPromise;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.util.concurrent.GenericFutureListener;
+
+import java.util.AbstractMap.SimpleEntry;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Netty transport client implementation for Sentinel cluster transport.
@@ -63,7 +56,7 @@ public class NettyTransportClient implements ClusterTransportClient {
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1,
-        new NamedThreadFactory("sentinel-cluster-transport-client-scheduler"));
+            new NamedThreadFactory("sentinel-cluster-transport-client-scheduler"));
 
     public static final int RECONNECT_DELAY_MS = 2000;
 
@@ -91,23 +84,23 @@ public class NettyTransportClient implements ClusterTransportClient {
         Bootstrap b = new Bootstrap();
         eventLoopGroup = new NioEventLoopGroup();
         b.group(eventLoopGroup)
-            .channel(NioSocketChannel.class)
-            .option(ChannelOption.TCP_NODELAY, true)
-            .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, ClusterClientConfigManager.getConnectTimeout())
-            .handler(new ChannelInitializer<SocketChannel>() {
-                @Override
-                public void initChannel(SocketChannel ch) throws Exception {
-                    clientHandler = new TokenClientHandler(currentState, disconnectCallback);
+                .channel(NioSocketChannel.class)
+                .option(ChannelOption.TCP_NODELAY, true)
+                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, ClusterClientConfigManager.getConnectTimeout())
+                .handler(new ChannelInitializer<SocketChannel>() {
+                    @Override
+                    public void initChannel(SocketChannel ch) throws Exception {
+                        clientHandler = new TokenClientHandler(currentState, disconnectCallback);
 
-                    ChannelPipeline pipeline = ch.pipeline();
-                    pipeline.addLast(new LengthFieldBasedFrameDecoder(1024, 0, 2, 0, 2));
-                    pipeline.addLast(new NettyResponseDecoder());
-                    pipeline.addLast(new LengthFieldPrepender(2));
-                    pipeline.addLast(new NettyRequestEncoder());
-                    pipeline.addLast(clientHandler);
-                }
-            });
+                        ChannelPipeline pipeline = ch.pipeline();
+                        pipeline.addLast(new LengthFieldBasedFrameDecoder(1024, 0, 2, 0, 2));
+                        pipeline.addLast(new NettyResponseDecoder());
+                        pipeline.addLast(new LengthFieldPrepender(2));
+                        pipeline.addLast(new NettyRequestEncoder());
+                        pipeline.addLast(clientHandler);
+                    }
+                });
 
         return b;
     }
@@ -115,23 +108,23 @@ public class NettyTransportClient implements ClusterTransportClient {
     private void connect(Bootstrap b) {
         if (currentState.compareAndSet(ClientConstants.CLIENT_STATUS_OFF, ClientConstants.CLIENT_STATUS_PENDING)) {
             b.connect(host, port)
-                .addListener(new GenericFutureListener<ChannelFuture>() {
-                @Override
-                public void operationComplete(ChannelFuture future) {
-                    if (future.cause() != null) {
-                        RecordLog.warn(
-                            String.format("[NettyTransportClient] Could not connect to <%s:%d> after %d times",
-                                host, port, failConnectedTime.get()), future.cause());
-                        failConnectedTime.incrementAndGet();
-                        channel = null;
-                    } else {
-                        failConnectedTime.set(0);
-                        channel = future.channel();
-                        RecordLog.info(
-                            "[NettyTransportClient] Successfully connect to server <" + host + ":" + port + ">");
-                    }
-                }
-            });
+                    .addListener(new GenericFutureListener<ChannelFuture>() {
+                        @Override
+                        public void operationComplete(ChannelFuture future) {
+                            if (future.cause() != null) {
+                                RecordLog.warn(
+                                        String.format("[NettyTransportClient] Could not connect to <%s:%d> after %d times",
+                                                host, port, failConnectedTime.get()), future.cause());
+                                failConnectedTime.incrementAndGet();
+                                channel = null;
+                            } else {
+                                failConnectedTime.set(0);
+                                channel = future.channel();
+                                RecordLog.info(
+                                        "[NettyTransportClient] Successfully connect to server <" + host + ":" + port + ">");
+                            }
+                        }
+                    });
         }
     }
 
@@ -245,6 +238,28 @@ public class NettyTransportClient implements ClusterTransportClient {
         return idGenerator.incrementAndGet();
     }
 
+
+    @Override
+    public void sendRequestIgnoreResponse(ClusterRequest request) {
+        try {
+            channel.writeAndFlush(request).addListener(new ChannelFutureListener() {
+
+                @Override
+                public void operationComplete(ChannelFuture f) throws Exception {
+                    if (!f.isSuccess()) {
+                        RecordLog.error("[NettyTransportClient] send failed.", f.cause());
+                    }
+                }
+
+            });
+        } catch (Exception e) {
+            if (null == channel) {
+                RecordLog.error("[NettyTransportClient] Channel is null.");
+            } else {
+                RecordLog.error("[NettyTransportClient] Exception caught when sending request{}, The address is {}.", request, channel.localAddress());
+            }
+        }
+    }
 
 //    public CompletableFuture<ClusterResponse> sendRequestAsync(ClusterRequest request) throws Exception{
 //        // Uncomment this when min target JDK is 1.8.

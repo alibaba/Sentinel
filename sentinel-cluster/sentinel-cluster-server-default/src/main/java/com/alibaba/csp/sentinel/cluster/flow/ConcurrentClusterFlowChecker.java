@@ -81,6 +81,11 @@ final public class ConcurrentClusterFlowChecker {
     }
 
     public static TokenResult releaseConcurrentToken(/*@Valid*/ long tokenId) {
+//        try{
+//            Thread.sleep(5000);
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
         TokenCacheNode node = TokenCacheNodeManager.getTokenCacheNode(tokenId);
         if (node == null) {
             RecordLog.info("[ConcurrentClusterFlowChecker] Token<{}> is already released", tokenId);

@@ -42,10 +42,10 @@ public class ClusterClientDemo {
     public static void main(String[] args) throws Exception {
         ClusterTokenServer tokenServer = new SentinelDefaultTokenServer();
         AtomicInteger success = new AtomicInteger(0);
-        final CountDownLatch countDownLatch = new CountDownLatch(1000000);
+        final CountDownLatch countDownLatch = new CountDownLatch(10000000);
         ClusterStateManager.setToClient();
         long start = System.currentTimeMillis();
-        for (int i = 0; i < 1000000; i++) {
+        for (int i = 0; i < 10000000; i++) {
             Runnable task = new Runnable() {
                 @Override
                 public void run() {

@@ -65,7 +65,9 @@ public class FlowRuleChecker {
     }
 
     public void release(Context context) {
+//        System.out.println("开始释放");
         releaseFlowToken(context);
+//        System.out.println("释放结束");
     }
 
     private static void releaseFlowToken(Context context) {

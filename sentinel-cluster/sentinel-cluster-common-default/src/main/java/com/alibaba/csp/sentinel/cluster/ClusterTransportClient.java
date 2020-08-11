@@ -50,6 +50,8 @@ public interface ClusterTransportClient {
      * @throws Exception some error occurs
      */
     ClusterResponse sendRequest(ClusterRequest request) throws Exception;
+
+    public void sendRequestIgnoreResponse(ClusterRequest request);
     /**
      * Check whether the client has been started and ready for sending requests.
      *
