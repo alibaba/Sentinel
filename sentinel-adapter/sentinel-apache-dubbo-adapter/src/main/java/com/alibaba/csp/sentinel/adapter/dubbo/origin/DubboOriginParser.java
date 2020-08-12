@@ -20,7 +20,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
 /**
- * Customized origin parser for Dubbo provider filter.
+ * Customized origin parser for Dubbo provider filter.{@link Context#getOrigin()}
  *
  * @author jingzian
  */
