@@ -21,29 +21,29 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
-import com.alibaba.csp.sentinel.config.SentinelConfig;
-import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
-import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
-import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreaker;
+import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.ExceptionCircuitBreaker;
+import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.ResponseTimeCircuitBreaker;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
+ * The rule manager for circuit breaking rules ({@link DegradeRule}).
+ *
  * @author youji.zj
  * @author jialiang.linjl
  * @author Eric Zhao
  */
 public final class DegradeRuleManager {
 
-    private static final Map<String, Set<DegradeRule>> degradeRules = new ConcurrentHashMap<>();
+    private static volatile Map<String, List<CircuitBreaker>> circuitBreakers = new HashMap<>();
+    private static volatile Map<String, Set<DegradeRule>> ruleMap = new HashMap<>();
 
     private static final RulePropertyListener LISTENER = new RulePropertyListener();
     private static SentinelProperty<List<DegradeRule>> currentProperty
@@ -69,39 +69,35 @@ public final class DegradeRuleManager {
         }
     }
 
-    public static void checkDegrade(ResourceWrapper resource, Context context, DefaultNode node, int count)
-        throws BlockException {
-
-        Set<DegradeRule> rules = degradeRules.get(resource.getName());
-        if (rules == null) {
-            return;
-        }
-
-        for (DegradeRule rule : rules) {
-            if (!rule.passCheck(context, node, count)) {
-                throw new DegradeException(rule.getLimitApp(), rule);
-            }
-        }
+    static List<CircuitBreaker> getCircuitBreakers(String resourceName) {
+        return circuitBreakers.get(resourceName);
     }
 
     public static boolean hasConfig(String resource) {
         if (resource == null) {
             return false;
         }
-        return degradeRules.containsKey(resource);
+        return circuitBreakers.containsKey(resource);
     }
 
     /**
-     * Get a copy of the rules.
+     * <p>Get existing circuit breaking rules.</p>
+     * <p>Note: DO NOT modify the rules from the returned list directly.
+     * The behavior is <strong>undefined</strong>.</p>
      *
-     * @return a new copy of the rules.
+     * @return list of existing circuit breaking rules, or empty list if no rules were loaded
      */
     public static List<DegradeRule> getRules() {
         List<DegradeRule> rules = new ArrayList<>();
-        for (Map.Entry<String, Set<DegradeRule>> entry : degradeRules.entrySet()) {
+        for (Map.Entry<String, Set<DegradeRule>> entry : ruleMap.entrySet()) {
             rules.addAll(entry.getValue());
         }
         return rules;
+    }
+
+    public static Set<DegradeRule> getRulesOfResource(String resource) {
+        AssertUtil.assertNotBlank(resource, "resource name cannot be blank");
+        return ruleMap.get(resource);
     }
 
     /**
@@ -113,7 +109,7 @@ public final class DegradeRuleManager {
         try {
             currentProperty.updateValue(rules);
         } catch (Throwable e) {
-            RecordLog.warn("[DegradeRuleManager] Unexpected error when loading degrade rules", e);
+            RecordLog.error("[DegradeRuleManager] Unexpected error when loading degrade rules", e);
         }
     }
 
@@ -128,7 +124,7 @@ public final class DegradeRuleManager {
     public static boolean setRulesForResource(String resourceName, Set<DegradeRule> rules) {
         AssertUtil.notEmpty(resourceName, "resourceName cannot be empty");
         try {
-            Map<String, Set<DegradeRule>> newRuleMap = new HashMap<>(degradeRules);
+            Map<String, Set<DegradeRule>> newRuleMap = new HashMap<>(ruleMap);
             if (rules == null) {
                 newRuleMap.remove(resourceName);
             } else {
@@ -146,62 +142,41 @@ public final class DegradeRuleManager {
             }
             return currentProperty.updateValue(allRules);
         } catch (Throwable e) {
-            RecordLog.warn(
-                "[DegradeRuleManager] Unexpected error when setting degrade rules for resource: " + resourceName, e);
+            RecordLog.error("[DegradeRuleManager] Unexpected error when setting circuit breaking"
+                + " rules for resource: " + resourceName, e);
             return false;
         }
     }
 
-    private static class RulePropertyListener implements PropertyListener<List<DegradeRule>> {
-
-        @Override
-        public void configUpdate(List<DegradeRule> conf) {
-            Map<String, Set<DegradeRule>> rules = loadDegradeConf(conf);
-            if (rules != null) {
-                degradeRules.clear();
-                degradeRules.putAll(rules);
-            }
-            RecordLog.info("[DegradeRuleManager] Degrade rules received: " + degradeRules);
+    private static CircuitBreaker getExistingSameCbOrNew(/*@Valid*/ DegradeRule rule) {
+        List<CircuitBreaker> cbs = getCircuitBreakers(rule.getResource());
+        if (cbs == null || cbs.isEmpty()) {
+            return newCircuitBreakerFrom(rule);
         }
-
-        @Override
-        public void configLoad(List<DegradeRule> conf) {
-            Map<String, Set<DegradeRule>> rules = loadDegradeConf(conf);
-            if (rules != null) {
-                degradeRules.clear();
-                degradeRules.putAll(rules);
+        for (CircuitBreaker cb : cbs) {
+            if (rule.equals(cb.getRule())) {
+                // Reuse the circuit breaker if the rule remains unchanged.
+                return cb;
             }
-            RecordLog.info("[DegradeRuleManager] Degrade rules loaded: " + degradeRules);
         }
+        return newCircuitBreakerFrom(rule);
+    }
 
-        private Map<String, Set<DegradeRule>> loadDegradeConf(List<DegradeRule> list) {
-            Map<String, Set<DegradeRule>> newRuleMap = new ConcurrentHashMap<>();
-
-            if (list == null || list.isEmpty()) {
-                return newRuleMap;
-            }
-
-            for (DegradeRule rule : list) {
-                if (!isValidRule(rule)) {
-                    RecordLog.warn(
-                        "[DegradeRuleManager] Ignoring invalid degrade rule when loading new rules: " + rule);
-                    continue;
-                }
-
-                if (StringUtil.isBlank(rule.getLimitApp())) {
-                    rule.setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
-                }
-
-                String identity = rule.getResource();
-                Set<DegradeRule> ruleSet = newRuleMap.get(identity);
-                if (ruleSet == null) {
-                    ruleSet = new HashSet<>();
-                    newRuleMap.put(identity, ruleSet);
-                }
-                ruleSet.add(rule);
-            }
-
-            return newRuleMap;
+    /**
+     * Create a circuit breaker instance from provided circuit breaking rule.
+     *
+     * @param rule a valid circuit breaking rule
+     * @return new circuit breaker based on provided rule; null if rule is invalid or unsupported type
+     */
+    private static CircuitBreaker newCircuitBreakerFrom(/*@Valid*/ DegradeRule rule) {
+        switch (rule.getGrade()) {
+            case RuleConstant.DEGRADE_GRADE_RT:
+                return new ResponseTimeCircuitBreaker(rule);
+            case RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO:
+            case RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT:
+                return new ExceptionCircuitBreaker(rule);
+            default:
+                return null;
         }
     }
 
@@ -211,23 +186,83 @@ public final class DegradeRuleManager {
         if (!baseValid) {
             return false;
         }
-        int maxAllowedRt = SentinelConfig.statisticMaxRt();
-        if (rule.getGrade() == RuleConstant.DEGRADE_GRADE_RT) {
-            if (rule.getRtSlowRequestAmount() <= 0) {
+        if (rule.getMinRequestAmount() <= 0 || rule.getStatIntervalMs() <= 0) {
+            return false;
+        }
+        switch (rule.getGrade()) {
+            case RuleConstant.DEGRADE_GRADE_RT:
+                return rule.getSlowRatioThreshold() >= 0 && rule.getSlowRatioThreshold() <= 1;
+            case RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO:
+                return rule.getCount() <= 1;
+            case RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT:
+                return true;
+            default:
                 return false;
+        }
+    }
+
+    private static class RulePropertyListener implements PropertyListener<List<DegradeRule>> {
+
+        private synchronized void reloadFrom(List<DegradeRule> list) {
+            Map<String, List<CircuitBreaker>> cbs = buildCircuitBreakers(list);
+            Map<String, Set<DegradeRule>> rm = new HashMap<>(cbs.size());
+
+            for (Map.Entry<String, List<CircuitBreaker>> e : cbs.entrySet()) {
+                assert e.getValue() != null && !e.getValue().isEmpty();
+
+                Set<DegradeRule> rules = new HashSet<>(e.getValue().size());
+                for (CircuitBreaker cb : e.getValue()) {
+                    rules.add(cb.getRule());
+                }
+                rm.put(e.getKey(), rules);
             }
-            // Warn for RT mode that exceeds the {@code TIME_DROP_VALVE}.
-            if (rule.getCount() > maxAllowedRt) {
-                RecordLog.warn(String.format("[DegradeRuleManager] WARN: setting large RT threshold (%.1f ms)"
-                        + " in RT mode will not take effect since it exceeds the max allowed value (%d ms)",
-                    rule.getCount(), maxAllowedRt));
-            }
+
+            DegradeRuleManager.circuitBreakers = cbs;
+            DegradeRuleManager.ruleMap = rm;
         }
 
-        // Check exception ratio mode.
-        if (rule.getGrade() == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
-            return rule.getCount() <= 1 && rule.getMinRequestAmount() > 0;
+        @Override
+        public void configUpdate(List<DegradeRule> conf) {
+            reloadFrom(conf);
+            RecordLog.info("[DegradeRuleManager] Degrade rules has been updated to: " + ruleMap);
         }
-        return true;
+
+        @Override
+        public void configLoad(List<DegradeRule> conf) {
+            reloadFrom(conf);
+            RecordLog.info("[DegradeRuleManager] Degrade rules loaded: " + ruleMap);
+        }
+
+        private Map<String, List<CircuitBreaker>> buildCircuitBreakers(List<DegradeRule> list) {
+            Map<String, List<CircuitBreaker>> cbMap = new HashMap<>(8);
+            if (list == null || list.isEmpty()) {
+                return cbMap;
+            }
+            for (DegradeRule rule : list) {
+                if (!isValidRule(rule)) {
+                    RecordLog.warn("[DegradeRuleManager] Ignoring invalid rule when loading new rules: " + rule);
+                    continue;
+                }
+
+                if (StringUtil.isBlank(rule.getLimitApp())) {
+                    rule.setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
+                }
+                CircuitBreaker cb = getExistingSameCbOrNew(rule);
+                if (cb == null) {
+                    RecordLog.warn("[DegradeRuleManager] Unknown circuit breaking strategy, ignoring: " + rule);
+                    continue;
+                }
+
+                String resourceName = rule.getResource();
+
+                List<CircuitBreaker> cbList = cbMap.get(resourceName);
+                if (cbList == null) {
+                    cbList = new ArrayList<>();
+                    cbMap.put(resourceName, cbList);
+                }
+                cbList.add(cb);
+            }
+            return cbMap;
+        }
     }
 }
