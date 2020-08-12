@@ -69,7 +69,7 @@ public class ClusterServerDemo {
 //server     ---------------
 //改进：
 //阻塞队列 ，，出方案
-//异步释放 ，，，
+//异步释放 ，，，√
 //本地流控 ，，出方案
-//并发流控controller规则校验
+//并发流控controller规则校验√
 //client     ---------------

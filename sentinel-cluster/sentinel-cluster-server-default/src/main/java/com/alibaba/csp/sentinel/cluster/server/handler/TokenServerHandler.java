@@ -77,6 +77,9 @@ public class TokenServerHandler extends ChannelInboundHandlerAdapter {
                 writeBadResponse(ctx, request);
             } else {
                 ClusterResponse<?> response = processor.processRequest(ctx,request);
+                if(response==null){
+                    return;
+                }
                 writeResponse(ctx, response);
             }
         }

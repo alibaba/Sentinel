@@ -119,7 +119,7 @@ public class RegularExpireStrategy implements ExpireStrategy {
 
             // If we find that token's save time is much longer than the client's call resource timeout time, token will be determined to timeout and the client go wrong
             long resourceTimeout = ClusterFlowRuleManager.getFlowRuleById(node.getFlowId()).getClusterConfig().getResourceTimeout();
-            if (System.currentTimeMillis() - node.getResourceTimeout() > 2 * resourceTimeout) {
+            if (System.currentTimeMillis() - node.getResourceTimeout() > 0.5 * resourceTimeout) {
                 System.out.println("保存超时删除"+node.getClientAddress());
                 removeToken(key, node);
                 RecordLog.info("[RegularExpireStrategy] Delete the expired token<{}> because of resource timeout", node.getTokenId());

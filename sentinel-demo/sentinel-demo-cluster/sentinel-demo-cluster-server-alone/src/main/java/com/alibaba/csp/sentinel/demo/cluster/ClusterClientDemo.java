@@ -37,15 +37,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ClusterClientDemo {
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
-    private static ExecutorService pool = Executors.newFixedThreadPool(1000);
+    private static ExecutorService pool = Executors.newFixedThreadPool(100);
 
     public static void main(String[] args) throws Exception {
         ClusterTokenServer tokenServer = new SentinelDefaultTokenServer();
         AtomicInteger success = new AtomicInteger(0);
-        final CountDownLatch countDownLatch = new CountDownLatch(10000000);
+        final CountDownLatch countDownLatch = new CountDownLatch(100);
         ClusterStateManager.setToClient();
         long start = System.currentTimeMillis();
-        for (int i = 0; i < 10000000; i++) {
+        for (int i = 0; i < 100; i++) {
             Runnable task = new Runnable() {
                 @Override
                 public void run() {

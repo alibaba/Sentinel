@@ -26,6 +26,8 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.ClusterRuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -76,16 +78,11 @@ final public class ConcurrentClusterFlowChecker {
         TokenCacheNodeManager.putTokenCacheNode(node.getTokenId(), node);
         TokenResult tokenResult = new TokenResult(TokenResultStatus.OK);
         tokenResult.setTokenId(node.getTokenId());
-//        System.out.println("成功获取token" + tokenResult.getTokenId());
+        System.out.println("成功获取token" + tokenResult.getTokenId());
         return tokenResult;
     }
 
     public static TokenResult releaseConcurrentToken(/*@Valid*/ long tokenId) {
-//        try{
-//            Thread.sleep(5000);
-//        }catch (Exception e){
-//            e.printStackTrace();
-//        }
         TokenCacheNode node = TokenCacheNodeManager.getTokenCacheNode(tokenId);
         if (node == null) {
             RecordLog.info("[ConcurrentClusterFlowChecker] Token<{}> is already released", tokenId);
@@ -105,7 +102,7 @@ final public class ConcurrentClusterFlowChecker {
         nowCalls.getAndAdd(-1 * acquireCount);
         rule.getClusterConfig().addReleaseCount(acquireCount);
         ClusterServerStatLogUtil.log("concurrent|release|" + rule.getClusterConfig().getFlowId(), acquireCount);
-//        System.out.println("成功释放token" + node.getTokenId());
+        System.out.println("成功释放token" + node.getTokenId());
         return new TokenResult(TokenResultStatus.RELEASE_OK);
     }
 }

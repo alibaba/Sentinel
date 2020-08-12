@@ -17,13 +17,17 @@ package com.alibaba.csp.sentinel.cluster.server.processor;
 
 import com.alibaba.csp.sentinel.cluster.ClusterConstants;
 import com.alibaba.csp.sentinel.cluster.TokenResult;
+import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
 import com.alibaba.csp.sentinel.cluster.TokenService;
 import com.alibaba.csp.sentinel.cluster.annotation.RequestType;
+import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.Queue;
+import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.RequestObject;
 import com.alibaba.csp.sentinel.cluster.request.ClusterRequest;
 import com.alibaba.csp.sentinel.cluster.request.data.ConcurrentFlowAcquireRequestData;
 import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
 import com.alibaba.csp.sentinel.cluster.response.data.ConcurrentFlowAcquireResponseData;
 import com.alibaba.csp.sentinel.cluster.server.TokenServiceProvider;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.net.InetSocketAddress;
@@ -35,11 +39,17 @@ import java.net.InetSocketAddress;
 public class ConcurrentFlowRequestAcquireProcessor implements RequestProcessor<ConcurrentFlowAcquireRequestData, ConcurrentFlowAcquireResponseData> {
     @Override
     public ClusterResponse processRequest(ChannelHandlerContext ctx, ClusterRequest<ConcurrentFlowAcquireRequestData> request) {
+
         TokenService tokenService = TokenServiceProvider.getService();
         long flowId = request.getData().getFlowId();
         int count = request.getData().getCount();
+        boolean prioritized=false;
         String clientAddress = getRemoteAddress(ctx);
         TokenResult result = tokenService.requestConcurrentToken(clientAddress, flowId, count);
+        if(result.getStatus()== TokenResultStatus.BLOCKED&&prioritized){
+           Queue.addRequestToWaitQueue(new RequestObject(ctx,clientAddress,request));
+           return null;
+        }
         return toResponse(result, request);
     }
 
