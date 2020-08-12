@@ -44,18 +44,16 @@ public abstract class AbstractRule implements Rule {
         return resource;
     }
 
-    public AbstractRule setResource(String resource) {
+    public void setResource(String resource) {
         this.resource = resource;
-        return this;
     }
 
     public String getLimitApp() {
         return limitApp;
     }
 
-    public AbstractRule setLimitApp(String limitApp) {
+    public void setLimitApp(String limitApp) {
         this.limitApp = limitApp;
-        return this;
     }
 
     @Override
