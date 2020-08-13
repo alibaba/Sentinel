@@ -32,6 +32,8 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import java.util.Collection;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -181,11 +183,11 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
     }
 
     @Override
-    public TokenResult requestConcurrentToken(String clientAddress, Long ruleId, int acquireCount) {
+    public TokenResult requestConcurrentToken(String clientAddress, Long ruleId, int acquireCount, boolean prioritized) {
         if (notValidRequest(ruleId, acquireCount)) {
             return badRequest();
         }
-        ConcurrentFlowAcquireRequestData data = new ConcurrentFlowAcquireRequestData().setFlowId(ruleId).setCount(acquireCount);
+        ConcurrentFlowAcquireRequestData data = new ConcurrentFlowAcquireRequestData().setFlowId(ruleId).setCount(acquireCount).setPrioritized(prioritized);
         ClusterRequest<ConcurrentFlowAcquireRequestData> request = new ClusterRequest<>(ClusterConstants.MSG_TYPE_CONCURRENT_FLOW_ACQUIRE, data);
         try {
             TokenResult result = sendTokenRequest(request);
@@ -198,18 +200,16 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
     }
 
     @Override
-    public TokenResult releaseConcurrentToken(Long tokenId) {
+    public void releaseConcurrentToken(Long tokenId) {
         if (tokenId == null) {
-            return badRequest();
+            return;
         }
         ConcurrentFlowReleaseRequestData data = new ConcurrentFlowReleaseRequestData().setTokenId(tokenId);
         ClusterRequest<ConcurrentFlowReleaseRequestData> request = new ClusterRequest<>(ClusterConstants.MSG_TYPE_CONCURRENT_FLOW_RELEASE, data);
         try {
             sendRequestIgnoreResponse(request);
-            return new TokenResult().setStatus(6);
         } catch (Exception ex) {
             ClusterClientStatLogUtil.log(ex.getMessage());
-            return new TokenResult(TokenResultStatus.FAIL);
         }
     }
 
@@ -259,9 +259,22 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
         if (transportClient == null) {
             RecordLog.warn(
                     "[DefaultClusterTokenClient] Client not created, please check your config for cluster client");
-           return;
+            return;
         }
         transportClient.sendRequestIgnoreResponse(request);
+    }
+
+    private TokenResult sendRequestAsync(ClusterRequest request) throws Exception {
+        if (transportClient == null) {
+            RecordLog.warn(
+                    "[DefaultClusterTokenClient] Client not created, please check your config for cluster client");
+            return new TokenResult(TokenResultStatus.FAIL);
+        }
+        CompletableFuture<ClusterResponse> future = transportClient.sendRequestAsync(request);
+        ConcurrentFlowAcquireResponseData data = (ConcurrentFlowAcquireResponseData) future.get(2000, TimeUnit.MILLISECONDS).getData();
+        TokenResult tokenResult = new TokenResult(future.get().getStatus());
+        tokenResult.setTokenId(data.getTokenId());
+        return tokenResult;
     }
 
     private boolean notValidRequest(Long id, int count) {

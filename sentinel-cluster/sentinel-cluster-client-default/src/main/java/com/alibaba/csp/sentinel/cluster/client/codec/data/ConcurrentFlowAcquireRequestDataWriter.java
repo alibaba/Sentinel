@@ -32,5 +32,6 @@ public class ConcurrentFlowAcquireRequestDataWriter implements EntityWriter<Conc
     public void writeTo(ConcurrentFlowAcquireRequestData entity, ByteBuf target) {
         target.writeLong(entity.getFlowId());
         target.writeInt(entity.getCount());
+        target.writeBoolean(entity.isPrioritized());
     }
 }

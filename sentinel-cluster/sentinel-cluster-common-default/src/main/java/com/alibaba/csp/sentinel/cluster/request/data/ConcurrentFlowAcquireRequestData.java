@@ -23,6 +23,8 @@ public class ConcurrentFlowAcquireRequestData {
 
     private int count;
 
+    private boolean prioritized;
+
     public long getFlowId() {
         return flowId;
     }
@@ -38,6 +40,15 @@ public class ConcurrentFlowAcquireRequestData {
 
     public ConcurrentFlowAcquireRequestData setCount(int count) {
         this.count = count;
+        return this;
+    }
+
+    public boolean isPrioritized() {
+        return prioritized;
+    }
+
+    public ConcurrentFlowAcquireRequestData setPrioritized(boolean prioritized) {
+        this.prioritized = prioritized;
         return this;
     }
 }

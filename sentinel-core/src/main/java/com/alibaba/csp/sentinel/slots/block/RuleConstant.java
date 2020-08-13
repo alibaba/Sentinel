@@ -54,6 +54,7 @@ public final class RuleConstant {
     public static final int DEFAULT_BLOCK_STRATEGY = 0;
     public static final int TRY_AGAIN_BLOCK_STRATEGY = 1;
     public static final int TRY_UNTIL_SUCCESS_BLOCK_STRATEGY = 2;
+    public static final int QUEUE_BLOCK_STRATEGY = 3;
 
     public static final int DEFAULT_RESOURCE_TIMEOUT_STRATEGY = 0;
     public static final int RELEASE_RESOURCE_TIMEOUT_STRATEGY = 1;

@@ -26,10 +26,11 @@ public class ConcurrentFlowAcquireRequestDataDecoder implements EntityDecoder<By
 
     @Override
     public ConcurrentFlowAcquireRequestData decode(ByteBuf source) {
-        if (source.readableBytes() == 12) {
+        if (source.readableBytes() == 13) {
             ConcurrentFlowAcquireRequestData requestData = new ConcurrentFlowAcquireRequestData()
                     .setFlowId(source.readLong())
-                    .setCount(source.readInt());
+                    .setCount(source.readInt())
+                    .setPrioritized(source.readBoolean());
             return requestData;
         }
         return null;

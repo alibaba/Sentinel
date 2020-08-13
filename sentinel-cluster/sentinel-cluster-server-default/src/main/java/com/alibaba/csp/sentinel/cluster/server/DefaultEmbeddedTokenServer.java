@@ -60,18 +60,17 @@ public class DefaultEmbeddedTokenServer implements EmbeddedClusterTokenServer {
     }
 
     @Override
-    public TokenResult requestConcurrentToken(String clientAddress, Long ruleId, int acquireCount) {
+    public TokenResult requestConcurrentToken(String clientAddress, Long ruleId, int acquireCount, boolean prioritized) {
         if (tokenService != null) {
-            return tokenService.requestConcurrentToken(clientAddress, ruleId, acquireCount);
+            return tokenService.requestConcurrentToken(clientAddress, ruleId, acquireCount,prioritized);
         }
         return new TokenResult(TokenResultStatus.FAIL);
     }
 
     @Override
-    public TokenResult releaseConcurrentToken(Long tokenId) {
+    public void releaseConcurrentToken(Long tokenId) {
         if (tokenService != null) {
-            return tokenService.releaseConcurrentToken(tokenId);
+             tokenService.releaseConcurrentToken(tokenId);
         }
-        return new TokenResult(TokenResultStatus.FAIL);
     }
 }

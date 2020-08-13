@@ -32,11 +32,6 @@ public class ReleaseTokenStrategy implements ReSourceTimeoutStrategy {
         if (service == null) {
             return;
         }
-        TokenResult result = service.releaseConcurrentToken(tokenId);
-        if (result == null && (result.getStatus() != TokenResultStatus.RELEASE_OK && result.getStatus() != TokenResultStatus.ALREADY_RELEASE)) {
-            RecordLog.warn("[ReleaseTokenStrategy] release cluster source timeout token unexpected failed", result);
-
-        }
-        System.out.println("超时自动释放成功" + tokenId + "|" + ReSourceTimeoutStrategyUtil.getTimeoutSize());
+        service.releaseConcurrentToken(tokenId);
     }
 }

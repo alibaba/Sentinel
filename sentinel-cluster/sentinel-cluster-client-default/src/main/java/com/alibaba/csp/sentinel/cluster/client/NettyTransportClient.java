@@ -28,6 +28,7 @@ import com.alibaba.csp.sentinel.cluster.request.Request;
 import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.slots.block.flow.timeout.TimerHolder;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -37,9 +38,12 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.util.Timeout;
+import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 
 import java.util.AbstractMap.SimpleEntry;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -216,7 +220,8 @@ public class NettyTransportClient implements ClusterTransportClient {
             ChannelPromise promise = channel.newPromise();
             TokenClientPromiseHolder.putPromise(xid, promise);
 
-            if (!promise.await(ClusterClientConfigManager.getRequestTimeout())) {
+            if (!promise.await(3000)) {
+                System.out.println("超时");
                 throw new SentinelClusterException(ClusterErrorMessages.REQUEST_TIME_OUT);
             }
 
@@ -261,27 +266,84 @@ public class NettyTransportClient implements ClusterTransportClient {
         }
     }
 
-//    public CompletableFuture<ClusterResponse> sendRequestAsync(ClusterRequest request) throws Exception{
-//        // Uncomment this when min target JDK is 1.8.
-//        if (!validRequest(request)) {
-//            throw new SentinelClusterException(ClusterErrorMessages.BAD_REQUEST);
-//        }
-//        int xid = getCurrentId();
-//        request.setId(xid);
 //
-//        CompletableFuture<ClusterResponse> future = new CompletableFuture<>();
-//        channel.writeAndFlush(request)
-//            .addListener(f -> {
-//                if (f.isSuccess()) {
-//                    future.complete(new ClusterResponse().setStatus(1));
-//                } else if (f.cause() != null) {
-//                    future.completeExceptionally(f.cause());
-//                } else {
-//                    future.cancel(false);
+//    protected InvokeFuture invokeWithFuture(final Connection conn, final RemotingCommand request,
+//                                            final int timeoutMillis) {
+//
+//        final InvokeFuture future = createInvokeFuture(request, request.getInvokeContext());
+//        conn.addInvokeFuture(future);
+//        final int requestId = request.getId();
+//        try {
+//            Timeout timeout = TimerHolder.getTimer().newTimeout(new TimerTask() {
+//                @Override
+//                public void run(Timeout timeout) throws Exception {
+//                    InvokeFuture future = conn.removeInvokeFuture(requestId);
+//                    if (future != null) {
+//                        future.putResponse(commandFactory.createTimeoutResponse(conn
+//                                .getRemoteAddress()));
+//                    }
 //                }
+//
+//            }, timeoutMillis, TimeUnit.MILLISECONDS);
+//            future.addTimeout(timeout);
+//
+//            conn.getChannel().writeAndFlush(request).addListener(new ChannelFutureListener() {
+//
+//                @Override
+//                public void operationComplete(ChannelFuture cf) throws Exception {
+//                    if (!cf.isSuccess()) {
+//                        InvokeFuture f = conn.removeInvokeFuture(requestId);
+//
+//                        if (f != null) {
+//                            f.cancelTimeout();
+//                            f.putResponse(commandFactory.createSendFailedResponse(
+//                                    conn.getRemoteAddress(), cf.cause()));
+//                        }
+//                        logger.error("Invoke send failed. The address is {}",
+//                                RemotingUtil.parseRemoteAddress(conn.getChannel()), cf.cause());
+//                    }
+//                }
+//
 //            });
+//        } catch (Exception e) {
+//            InvokeFuture f = conn.removeInvokeFuture(requestId);
+//            if (f != null) {
+//                f.cancelTimeout();
+//                f.putResponse(commandFactory.createSendFailedResponse(conn.getRemoteAddress(), e));
+//            }
+//            logger.error("Exception caught when sending invocation. The address is {}",
+//                    RemotingUtil.parseRemoteAddress(conn.getChannel()), e);
+//        }
 //        return future;
 //    }
+
+
+
+    @Override
+    public CompletableFuture<ClusterResponse> sendRequestAsync(ClusterRequest request) throws Exception{
+        // Uncomment this when min target JDK is 1.8.
+        if (!validRequest(request)) {
+            throw new SentinelClusterException(ClusterErrorMessages.BAD_REQUEST);
+        }
+        int xid = getCurrentId();
+        request.setId(xid);
+        CompletableFuture<ClusterResponse> future = new CompletableFuture<>();
+        channel.writeAndFlush(request)
+            .addListener(f -> {
+                f.await(3000);
+                if (f.isSuccess()) {
+                    System.out.println("成功"+f.toString()+f.get());
+                    future.complete(new ClusterResponse());
+                } else if (f.cause() != null) {
+                    System.out.println("失败1");
+                    future.completeExceptionally(f.cause());
+                } else {
+                    System.out.println("失败2");
+                    future.cancel(false);
+                }
+            });
+        return future;
+    }
 
     private static final int MAX_ID = 999_999_999;
 }

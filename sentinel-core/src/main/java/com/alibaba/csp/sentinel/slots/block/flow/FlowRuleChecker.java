@@ -65,9 +65,7 @@ public class FlowRuleChecker {
     }
 
     public void release(Context context) {
-//        System.out.println("开始释放");
         releaseFlowToken(context);
-//        System.out.println("释放结束");
     }
 
     private static void releaseFlowToken(Context context) {
@@ -128,13 +126,7 @@ public class FlowRuleChecker {
         if (clusterService == null) {
             return;
         }
-
-        TokenResult result = clusterService.releaseConcurrentToken(tokenId);
-        if (result.getStatus() != TokenResultStatus.RELEASE_OK) {
-            RecordLog.warn("[FlowRuleChecker] release cluster token unexpected failed", result.getStatus());
-            return;
-        }
-
+        clusterService.releaseConcurrentToken(tokenId);
     }
 
     static Node selectReferenceNode(FlowRule rule, Context context, DefaultNode node) {
@@ -222,7 +214,7 @@ public class FlowRuleChecker {
             if (ClusterStateManager.isServer()) {
                 address = HostNameUtil.getIp();
             }
-            return clusterService.requestConcurrentToken(address, flowId, acquireCount);
+            return clusterService.requestConcurrentToken(address, flowId, acquireCount,prioritized);
         } else if (grade == RuleConstant.FLOW_GRADE_QPS) {
             return clusterService.requestToken(flowId, acquireCount, prioritized);
         } else {

@@ -7,13 +7,13 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * @author yunfeiyanggzq
  */
-public class RequestObject {
-    long creatTime;
-    ChannelHandlerContext ctx;
-    String address;
-    ClusterRequest<ConcurrentFlowAcquireRequestData> request;
+public class RequestInfoEntity {
+    private long creatTime;
+    private ChannelHandlerContext ctx;
+    private String address;
+    private ClusterRequest<ConcurrentFlowAcquireRequestData> request;
 
-    public RequestObject(ChannelHandlerContext ctx, String address, ClusterRequest<ConcurrentFlowAcquireRequestData> request) {
+    public RequestInfoEntity(ChannelHandlerContext ctx, String address, ClusterRequest<ConcurrentFlowAcquireRequestData> request) {
         this.ctx = ctx;
         this.address = address;
         this.request = request;

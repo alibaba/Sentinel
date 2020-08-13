@@ -46,7 +46,7 @@ public interface TokenService {
     TokenResult requestParamToken(Long ruleId, int acquireCount, Collection<Object> params);
 
 
-    TokenResult requestConcurrentToken(String clientAddress,Long ruleId,int acquireCount);
+    TokenResult requestConcurrentToken(String clientAddress, Long ruleId, int acquireCount, boolean prioritized);
 
-    TokenResult releaseConcurrentToken(Long tokenId);
+    void releaseConcurrentToken(Long tokenId);
 }

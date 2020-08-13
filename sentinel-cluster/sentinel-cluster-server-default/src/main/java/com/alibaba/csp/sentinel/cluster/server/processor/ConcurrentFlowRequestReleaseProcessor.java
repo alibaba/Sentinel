@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.cluster.server.processor;
 
 import com.alibaba.csp.sentinel.cluster.ClusterConstants;
 import com.alibaba.csp.sentinel.cluster.TokenResult;
+import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
 import com.alibaba.csp.sentinel.cluster.TokenService;
 import com.alibaba.csp.sentinel.cluster.annotation.RequestType;
 import com.alibaba.csp.sentinel.cluster.request.ClusterRequest;
@@ -36,12 +37,12 @@ public class ConcurrentFlowRequestReleaseProcessor implements RequestProcessor<C
     public ClusterResponse<ConcurrentFlowReleaseResponseData> processRequest(ChannelHandlerContext ctx, ClusterRequest<ConcurrentFlowReleaseRequestData> request) {
         TokenService tokenService = TokenServiceProvider.getService();
         long tokenId = request.getData().getTokenId();
-        TokenResult result = tokenService.releaseConcurrentToken(tokenId);
-        return toResponse(result, request);
+        tokenService.releaseConcurrentToken(tokenId);
+        return null;
     }
 
-    private ClusterResponse<ConcurrentFlowReleaseResponseData> toResponse(TokenResult result, ClusterRequest request) {
-        return new ClusterResponse<>(request.getId(), request.getType(), result.getStatus(), null);
+    private ClusterResponse<ConcurrentFlowReleaseResponseData> toResponse(ClusterRequest request) {
+        return new ClusterResponse<>(request.getId(), request.getType(), TokenResultStatus.OK, null);
     }
 }
 

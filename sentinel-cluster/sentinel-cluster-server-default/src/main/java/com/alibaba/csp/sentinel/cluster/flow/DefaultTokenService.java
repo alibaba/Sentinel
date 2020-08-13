@@ -62,7 +62,7 @@ public class DefaultTokenService implements TokenService {
     }
 
     @Override
-    public TokenResult requestConcurrentToken(String clientAddress, Long ruleId, int acquireCount) {
+    public TokenResult requestConcurrentToken(String clientAddress, Long ruleId, int acquireCount,boolean prioritized) {
         if (notValidRequest(clientAddress, ruleId, acquireCount)) {
             return badRequest();
         }
@@ -75,11 +75,11 @@ public class DefaultTokenService implements TokenService {
     }
 
     @Override
-    public TokenResult releaseConcurrentToken(Long tokenId) {
+    public void releaseConcurrentToken(Long tokenId) {
         if (tokenId == null) {
-            return badRequest();
+            return;
         }
-        return ConcurrentClusterFlowChecker.releaseConcurrentToken(tokenId);
+        ConcurrentClusterFlowChecker.releaseConcurrentToken(tokenId);
     }
 
     private boolean notValidRequest(Long id, int count) {

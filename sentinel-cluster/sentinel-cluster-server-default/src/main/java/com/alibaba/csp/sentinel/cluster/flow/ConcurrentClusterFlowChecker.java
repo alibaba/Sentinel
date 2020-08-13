@@ -78,7 +78,7 @@ final public class ConcurrentClusterFlowChecker {
         TokenCacheNodeManager.putTokenCacheNode(node.getTokenId(), node);
         TokenResult tokenResult = new TokenResult(TokenResultStatus.OK);
         tokenResult.setTokenId(node.getTokenId());
-        System.out.println("成功获取token" + tokenResult.getTokenId());
+//        System.out.println("成功获取token" + tokenResult.getTokenId());
         return tokenResult;
     }
 
@@ -102,7 +102,7 @@ final public class ConcurrentClusterFlowChecker {
         nowCalls.getAndAdd(-1 * acquireCount);
         rule.getClusterConfig().addReleaseCount(acquireCount);
         ClusterServerStatLogUtil.log("concurrent|release|" + rule.getClusterConfig().getFlowId(), acquireCount);
-        System.out.println("成功释放token" + node.getTokenId());
+//        System.out.println("成功释放token" + node.getTokenId());
         return new TokenResult(TokenResultStatus.RELEASE_OK);
     }
 }

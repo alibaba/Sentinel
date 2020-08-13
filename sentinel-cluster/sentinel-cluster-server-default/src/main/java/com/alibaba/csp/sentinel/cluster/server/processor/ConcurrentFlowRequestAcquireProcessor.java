@@ -20,14 +20,16 @@ import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
 import com.alibaba.csp.sentinel.cluster.TokenService;
 import com.alibaba.csp.sentinel.cluster.annotation.RequestType;
-import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.Queue;
-import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.RequestObject;
+import com.alibaba.csp.sentinel.cluster.flow.rule.ClusterFlowRuleManager;
+import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.BlockRequestWaitQueue;
+import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.RequestInfoEntity;
 import com.alibaba.csp.sentinel.cluster.request.ClusterRequest;
 import com.alibaba.csp.sentinel.cluster.request.data.ConcurrentFlowAcquireRequestData;
 import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
 import com.alibaba.csp.sentinel.cluster.response.data.ConcurrentFlowAcquireResponseData;
 import com.alibaba.csp.sentinel.cluster.server.TokenServiceProvider;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.net.InetSocketAddress;
@@ -43,12 +45,16 @@ public class ConcurrentFlowRequestAcquireProcessor implements RequestProcessor<C
         TokenService tokenService = TokenServiceProvider.getService();
         long flowId = request.getData().getFlowId();
         int count = request.getData().getCount();
-        boolean prioritized=false;
+        boolean prioritized = request.getData().isPrioritized();
         String clientAddress = getRemoteAddress(ctx);
-        TokenResult result = tokenService.requestConcurrentToken(clientAddress, flowId, count);
-        if(result.getStatus()== TokenResultStatus.BLOCKED&&prioritized){
-           Queue.addRequestToWaitQueue(new RequestObject(ctx,clientAddress,request));
-           return null;
+        TokenResult result = tokenService.requestConcurrentToken(clientAddress, flowId, count, prioritized);
+        if (result.getStatus() == TokenResultStatus.BLOCKED && prioritized) {
+            FlowRule rule = ClusterFlowRuleManager.getFlowRuleById(flowId);
+            if (rule.getClusterConfig().getAcquireRefuseStrategy() == RuleConstant.QUEUE_BLOCK_STRATEGY) {
+                if(BlockRequestWaitQueue.addRequestToWaitQueue(new RequestInfoEntity(ctx, clientAddress, request))){
+                    return null;
+                }
+            }
         }
         return toResponse(result, request);
     }

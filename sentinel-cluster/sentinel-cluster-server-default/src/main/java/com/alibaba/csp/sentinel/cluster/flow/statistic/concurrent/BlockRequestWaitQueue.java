@@ -17,54 +17,61 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author yunfeiyanggzq
  */
-public class Queue {
-    private static BlockingQueue<RequestObject> blockingQueue = new ArrayBlockingQueue<>(100);
+public class BlockRequestWaitQueue {
 
-    private static volatile int FLAG = 0;
+    private static BlockingQueue<RequestInfoEntity> blockingQueue = new ArrayBlockingQueue<>(1000);
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static ExecutorService consumerPool = Executors.newFixedThreadPool(1);
+
+    private static double rate = 0.7;
 
     static {
         tryToConsumeRequestInQueue();
     }
 
-    public static void addRequestToWaitQueue(final RequestObject requestObject) {
-        try {
-            blockingQueue.offer(requestObject, 2L, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
+    public static boolean addRequestToWaitQueue(final RequestInfoEntity requestObject) {
+        return blockingQueue.offer(requestObject);
 
+    }
 
     public static void tryToConsumeRequestInQueue() {
         Runnable task = new Runnable() {
             @Override
             public void run() {
-                while (FLAG == 0) {
-                    TokenResult tokenResult = null;
-                    RequestObject res = null;
+                TokenResult tokenResult = null;
+                RequestInfoEntity res = null;
+                boolean timeout = false;
+                while (true) {
                     try {
                         res = blockingQueue.poll(2L, TimeUnit.SECONDS);
                         if (res == null) {
                             continue;
                         }
-                        if(System.currentTimeMillis()-res.getCreatTime()>1000){
-                            sendResponse(res.getCtx(),new TokenResult(TokenResultStatus.BLOCKED),res.getRequest());
-                            continue;
-                        }
                         long flowId = res.getRequest().getData().getFlowId();
                         FlowRule rule = ClusterFlowRuleManager.getFlowRuleById(flowId);
+                        long maxWaitTime = (long) (rule.getMaxQueueingTimeMs() * rate);
+                        if (System.currentTimeMillis() - res.getCreatTime() > maxWaitTime) {
+                            sendResponse(res.getCtx(), new TokenResult(TokenResultStatus.BLOCKED), res.getRequest());
+                            continue;
+                        }
                         int acquire = res.getRequest().getData().getCount();
                         AtomicInteger nowCalls = CurrentConcurrencyManager.get(flowId);
                         if (nowCalls == null) {
-                            sendResponse(res.getCtx(),new TokenResult(TokenResultStatus.FAIL),res.getRequest());
+                            sendResponse(res.getCtx(), new TokenResult(TokenResultStatus.FAIL), res.getRequest());
                             continue;
                         }
                         synchronized (nowCalls) {
                             while (nowCalls.get() + acquire > ConcurrentClusterFlowChecker.calcGlobalThreshold(rule)) {
-                                Thread.sleep(2);
+                                if (System.currentTimeMillis() - res.getCreatTime() > maxWaitTime) {
+                                    sendResponse(res.getCtx(), new TokenResult(TokenResultStatus.BLOCKED), res.getRequest());
+                                    timeout = true;
+                                    break;
+                                }
+                                Thread.sleep(1);
+                            }
+                            if (timeout) {
+                                continue;
                             }
                             nowCalls.getAndAdd(acquire);
                         }
@@ -72,7 +79,7 @@ public class Queue {
                         TokenCacheNodeManager.putTokenCacheNode(node.getTokenId(), node);
                         tokenResult = new TokenResult(TokenResultStatus.OK);
                         tokenResult.setTokenId(node.getTokenId());
-                        sendResponse(res.getCtx(),tokenResult,res.getRequest());
+                        sendResponse(res.getCtx(), tokenResult, res.getRequest());
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -88,8 +95,7 @@ public class Queue {
         );
     }
 
-    private static  void sendResponse(ChannelHandlerContext ctx, TokenResult result, ClusterRequest<ConcurrentFlowAcquireRequestData> request){
-        ClusterResponse<ConcurrentFlowAcquireResponseData> response = toResponse(result,request);
-        ctx.writeAndFlush(response);
+    private static void sendResponse(ChannelHandlerContext ctx, TokenResult result, ClusterRequest<ConcurrentFlowAcquireRequestData> request) {
+        ClusterResponse<ConcurrentFlowAcquireResponseData> response = toResponse(result, request);
     }
 }
