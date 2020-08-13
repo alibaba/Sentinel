@@ -47,7 +47,6 @@ public class TokenServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         globalConnectionPool.createConnection(ctx.channel());
-        String remoteAddress = getRemoteAddress(ctx);
     }
 
     @Override
