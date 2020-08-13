@@ -95,9 +95,7 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
         if (currentState.compareAndSet(prev, State.OPEN)) {
             updateNextRetryTimestamp();
 
-            for (CircuitBreakerStateChangeObserver observer : observerRegistry.getStateChangeObservers()) {
-                observer.onStateChange(prev, State.OPEN, rule, snapshotValue);
-            }
+            notifyObservers(prev, State.OPEN, snapshotValue);
             return true;
         }
         return false;
@@ -105,17 +103,16 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
 
     protected boolean fromOpenToHalfOpen(Context context) {
         if (currentState.compareAndSet(State.OPEN, State.HALF_OPEN)) {
-            for (CircuitBreakerStateChangeObserver observer : observerRegistry.getStateChangeObservers()) {
-                observer.onStateChange(State.OPEN, State.HALF_OPEN, rule, null);
-            }
+            notifyObservers(State.OPEN, State.HALF_OPEN, null);
             Entry entry = context.getCurEntry();
             entry.whenComplete(new BiConsumer<Context, Entry>() {
                 
                 @Override
                 public void accept(Context context, Entry entry) {
                     if (entry.getBlockError() != null) {
-                        // blocked
+                        // Fallback to OPEN due to detecting request is blocked
                         currentState.compareAndSet(State.HALF_OPEN, State.OPEN);
+                        notifyObservers(State.HALF_OPEN, State.OPEN, 1.0d);
                         return;
                     }
                     
@@ -125,13 +122,17 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
         }
         return false;
     }
+    
+    private void notifyObservers(CircuitBreaker.State prevState, CircuitBreaker.State newState, Double snapshotValue) {
+        for (CircuitBreakerStateChangeObserver observer : observerRegistry.getStateChangeObservers()) {
+            observer.onStateChange(prevState, newState, rule, snapshotValue);
+        }
+    }
 
     protected boolean fromHalfOpenToOpen(double snapshotValue) {
         if (currentState.compareAndSet(State.HALF_OPEN, State.OPEN)) {
             updateNextRetryTimestamp();
-            for (CircuitBreakerStateChangeObserver observer : observerRegistry.getStateChangeObservers()) {
-                observer.onStateChange(State.HALF_OPEN, State.OPEN, rule, snapshotValue);
-            }
+            notifyObservers(State.HALF_OPEN, State.OPEN, snapshotValue);
             return true;
         }
         return false;
@@ -140,9 +141,7 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
     protected boolean fromHalfOpenToClose() {
         if (currentState.compareAndSet(State.HALF_OPEN, State.CLOSED)) {
             resetStat();
-            for (CircuitBreakerStateChangeObserver observer : observerRegistry.getStateChangeObservers()) {
-                observer.onStateChange(State.HALF_OPEN, State.CLOSED, rule, null);
-            }
+            notifyObservers(State.HALF_OPEN, State.CLOSED, null);
             return true;
         }
         return false;
