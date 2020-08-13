@@ -21,11 +21,11 @@ package com.alibaba.csp.sentinel.dashboard.rule.nacos;
  */
 public final class NacosConfigUtil {
 
-    public static final String GROUP_ID = "SENTINEL_GROUP";
-    
-    public static final String FLOW_DATA_ID_POSTFIX = "-flow-rules";
-    public static final String PARAM_FLOW_DATA_ID_POSTFIX = "-param-rules";
-    public static final String CLUSTER_MAP_DATA_ID_POSTFIX = "-cluster-map";
+    public static final String GROUP_RULE = "SENTINEL_GROUP_RULE";
+    public static final String DEGRADE_RULE = "SENTINEL_GROUP_DEGRADE";
+    public static final String SYSTEM_RULE = "SENTINEL_GROUP_SYSTEM";
+    public static final String PARAM_RULE = "SENTINEL_GROUP_PARAM";
+    public static final String AUTHORITY_RULE = "SENTINEL_GROUP_AUTHORITY";
 
     /**
      * cc for `cluster-client`

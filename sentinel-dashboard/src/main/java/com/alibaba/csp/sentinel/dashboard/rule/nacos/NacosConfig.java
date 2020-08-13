@@ -15,7 +15,7 @@
  */
 package com.alibaba.csp.sentinel.dashboard.rule.nacos;
 
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.*;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.nacos.api.PropertyKeyConst;
@@ -45,19 +45,85 @@ public class NacosConfig {
     public Converter<List<FlowRuleEntity>, String> flowRuleEntityEncoder() {
         return JSON::toJSONString;
     }
-
     @Bean
     public Converter<String, List<FlowRuleEntity>> flowRuleEntityDecoder() {
         return s -> JSON.parseArray(s, FlowRuleEntity.class);
     }
-
     @Bean
-    public FlowRuleNacosProvider ruleProvider(){
+    public FlowRuleNacosProvider flowRuleProvider(){
         return new FlowRuleNacosProvider();
     }
     @Bean
-    public FlowRuleNacosPublisher rulePublisher(){
+    public FlowRuleNacosPublisher flowRulePublisher(){
         return new FlowRuleNacosPublisher();
+    }
+
+    @Bean
+    public Converter<List<DegradeRuleEntity>, String> degradeRuleEntityEncoder() {
+        return JSON::toJSONString;
+    }
+    @Bean
+    public Converter<String, List<DegradeRuleEntity>> degradeRuleEntityDecoder() {
+        return s -> JSON.parseArray(s, DegradeRuleEntity.class);
+    }
+    @Bean
+    public FlowRuleNacosProvider degradeRuleProvider(){
+        return new FlowRuleNacosProvider();
+    }
+    @Bean
+    public FlowRuleNacosPublisher degradeRulePublisher(){
+        return new FlowRuleNacosPublisher();
+    }
+
+    @Bean
+    public Converter<List<ParamFlowRuleEntity>, String> paramFlowRuleEntityEncoder() {
+        return JSON::toJSONString;
+    }
+    @Bean
+    public Converter<String, List<ParamFlowRuleEntity>> paramFlowRuleEntityDecoder() {
+        return s -> JSON.parseArray(s, ParamFlowRuleEntity.class);
+    }
+    @Bean
+    public ParamFlowRuleNacosProvider paramFlowRuleProvider(){
+        return new ParamFlowRuleNacosProvider();
+    }
+    @Bean
+    public ParamFlowRuleNacosPublisher paramFlowRulePublisher(){
+        return new ParamFlowRuleNacosPublisher();
+    }
+
+    @Bean
+    public Converter<List<SystemRuleEntity>, String> systemRuleEntityEncoder() {
+        return JSON::toJSONString;
+    }
+    @Bean
+    public Converter<String, List<SystemRuleEntity>> systemRuleEntityDecoder() {
+        return s -> JSON.parseArray(s, SystemRuleEntity.class);
+    }
+    @Bean
+    public SystemRuleNacosProvider systemRuleProvider(){
+        return new SystemRuleNacosProvider();
+    }
+    @Bean
+    public SystemRuleNacosPublisher systemRulePublisher(){
+        return new SystemRuleNacosPublisher();
+    }
+
+    @Bean
+    public Converter<List<AuthorityRuleEntity>, String> authorityRuleEntityEncoder() {
+        return JSON::toJSONString;
+    }
+    @Bean
+    public Converter<String, List<AuthorityRuleEntity>> authorityRuleEntityDecoder() {
+        return s -> JSON.parseArray(s, AuthorityRuleEntity.class);
+    }
+    @Bean
+    public AuthorityRuleNacosProvider authorityRuleProvider(){
+        return new AuthorityRuleNacosProvider();
+    }
+    @Bean
+    public AuthorityRuleNacosPublisher authorityRulePublisher(){
+        return new AuthorityRuleNacosPublisher();
     }
 
     @Bean
