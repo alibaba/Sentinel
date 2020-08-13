@@ -72,7 +72,7 @@ public class DegradeSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         if (curEntry.getBlockError() == null) {
             // passed request
             for (CircuitBreaker circuitBreaker : circuitBreakers) {
-                circuitBreaker.afterRequestPassed(context, r);
+                circuitBreaker.onRequestComplete(context, r);
             }
         }
 

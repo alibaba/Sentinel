@@ -50,12 +50,12 @@ public interface CircuitBreaker {
     State currentState();
 
     /**
-     * Called when a passed invocation finished.
+     * Called when a `passed` invocation finished.
      *
      * @param context context of current invocation
      * @param wrapper current resource
      */
-    void afterRequestPassed(Context context, ResourceWrapper wrapper);
+    void onRequestComplete(Context context, ResourceWrapper wrapper);
 
     /**
      * Circuit breaker state.
