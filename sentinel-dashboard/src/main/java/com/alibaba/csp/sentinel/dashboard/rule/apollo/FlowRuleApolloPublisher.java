@@ -36,17 +36,15 @@ public class FlowRuleApolloPublisher implements DynamicRulePublisher<List<FlowRu
     String appId;
     private String env;
     private String cluster;
+    private String username;
     private String namespace;
 
-    public FlowRuleApolloPublisher(){
-
-    }
-
-    public FlowRuleApolloPublisher(String appId, String env, String cluster, String namespace) {
+    public FlowRuleApolloPublisher(String appId, String env, String cluster, String namespace, String username) {
         this.appId = appId;
         this.env = env;
         this.cluster = cluster;
         this.namespace = namespace;
+        this.username = username;
     }
 
     @Autowired
@@ -66,14 +64,14 @@ public class FlowRuleApolloPublisher implements DynamicRulePublisher<List<FlowRu
         openItemDTO.setKey(flowDataId);
         openItemDTO.setValue(converter.convert(rules));
         openItemDTO.setComment("config flowRule");
-        openItemDTO.setDataChangeCreatedBy("sentineldashboard");
+        openItemDTO.setDataChangeCreatedBy(username);
         apolloOpenApiClient.createOrUpdateItem(appId, env, cluster, namespace, openItemDTO);
 
         // Release configuration
         NamespaceReleaseDTO namespaceReleaseDTO = new NamespaceReleaseDTO();
         namespaceReleaseDTO.setEmergencyPublish(true);
         namespaceReleaseDTO.setReleaseComment("Modify or add flowRule");
-        namespaceReleaseDTO.setReleasedBy("sentineldashboard");
+        namespaceReleaseDTO.setReleasedBy(username);
         namespaceReleaseDTO.setReleaseTitle("config flowRule");
         apolloOpenApiClient.publishNamespace(appId, env, cluster, namespace, namespaceReleaseDTO);
     }

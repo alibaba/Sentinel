@@ -41,6 +41,7 @@ public class ApolloConfig {
 
     private String appId;
     private String token;
+    private String username;
     private String env;
     private String cluster;
     private String namespace;
@@ -63,7 +64,7 @@ public class ApolloConfig {
 
     @Bean
     public FlowRuleApolloPublisher rulePublisher(){
-        return new FlowRuleApolloPublisher(appId,env,cluster,namespace);
+        return new FlowRuleApolloPublisher(appId,env,cluster,namespace,username);
     }
 
     @Bean
@@ -82,6 +83,10 @@ public class ApolloConfig {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public void setEnv(String env) {

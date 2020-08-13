@@ -2,7 +2,9 @@ rule:
   configserver:
     appollo:
       env: ${configserver.env:}
+      appId: ${configserver.appId:}
       token: ${configserver.token:}
+      username: ${configserver.username:apollo}
       cluster: ${configserver.cluster:}
       namespace: ${configserver.namespace:}
       server-addr: ${configserver.address:}
