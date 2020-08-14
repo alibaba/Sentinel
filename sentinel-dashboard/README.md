@@ -28,7 +28,7 @@ java -Dserver.port=8080 \
 
 上述命令中我们指定几个 JVM 参数，其中 `-Dserver.port=8080` 是 Spring Boot 的参数，
 用于指定 Spring Boot 服务端启动端口为 `8080`。其余几个是 Sentinel 客户端的参数。
-rule.provider 用于指定规则存储方式(不设置默认为 mem ),取值如下表所示:  
+参数 `rule.provider` 用于指定规则存储方式(不设置默认为 mem ),取值如下表所示:  
 
 | 值 | 说明 |
 |--------|--------|
@@ -36,7 +36,6 @@ rule.provider 用于指定规则存储方式(不设置默认为 mem ),取值如�
 |appollo | 规则保存在 appollo 中, 需配置 configserver.env,configserver.token, configserver.namespace,configserver.cluster,configserver.address  |
 |nacos | 规则保存在 nacos 中, 需配置 configserver.address ,可配置 configserver.namespace |
 |zookeeper | 规则保存在 zookeeper 中, 需配置 configserver.address  |
-
 
 为便于演示，我们对控制台本身加入了流量控制功能，具体做法是引入 Sentinel 提供的 `CommonFilter` 这个 Servlet Filter。
 上述 JVM 参数的含义是：
