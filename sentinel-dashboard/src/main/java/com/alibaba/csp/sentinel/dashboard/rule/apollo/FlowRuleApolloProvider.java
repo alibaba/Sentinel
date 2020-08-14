@@ -19,12 +19,8 @@ import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
-import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
-import com.ctrip.framework.apollo.openapi.dto.OpenNamespaceDTO;
+import com.alibaba.nacos.api.config.ConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,39 +31,15 @@ import java.util.List;
  */
 
 public class FlowRuleApolloProvider implements DynamicRuleProvider<List<FlowRuleEntity>> {
-    private String appId;
-    private String env;
-    private String cluster;
-    private String namespace;
-
-    public FlowRuleApolloProvider(){
-
-    }
-
-    public FlowRuleApolloProvider(String appId, String env, String cluster, String namespace) {
-        this.appId = appId;
-        this.env = env;
-        this.cluster = cluster;
-        this.namespace = namespace;
-    }
 
     @Autowired
-    private ApolloOpenApiClient apolloOpenApiClient;
+    private ConfigService configService;
     @Autowired
     private Converter<String, List<FlowRuleEntity>> converter;
 
     @Override
     public List<FlowRuleEntity> getRules(String appName) throws Exception {
-        String flowDataId = ApolloConfigUtil.getFlowDataId(appName);
-        OpenNamespaceDTO openNamespaceDTO = apolloOpenApiClient.getNamespace(appId, env, cluster, namespace);
-        String rules = openNamespaceDTO
-            .getItems()
-            .stream()
-            .filter(p -> p.getKey().equals(flowDataId))
-            .map(OpenItemDTO::getValue)
-            .findFirst()
-            .orElse("");
-
+        String rules = configService.getConfig(appName, ApolloConfigUtil.FLOW_RULE, 3000);
         if (StringUtil.isEmpty(rules)) {
             return new ArrayList<>();
         }

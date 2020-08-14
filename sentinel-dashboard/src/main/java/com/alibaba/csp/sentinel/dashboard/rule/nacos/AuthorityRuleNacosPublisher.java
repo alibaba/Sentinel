@@ -9,18 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
-public class AuthorityRuleNacosPublisher implements DynamicRulePublisher<List<AuthorityRuleEntity>> {
-    @Autowired
-    private ConfigService configService;
-    @Autowired
-    private Converter<List<AuthorityRuleEntity>, String> converter;
-
-    @Override
-    public void publish(String appId, List<AuthorityRuleEntity> rules) throws Exception {
-        AssertUtil.notEmpty(appId, "app name cannot be empty");
-        if (rules == null) {
-            return;
-        }
-        configService.publishConfig(appId,NacosConfigUtil.AUTHORITY_RULE, converter.convert(rules));
+/**
+ * @author xiejj
+ */
+public class AuthorityRuleNacosPublisher extends AbstractDynamicRulePublisher<List<AuthorityRuleEntity>> {
+    public AuthorityRuleNacosPublisher(Converter<List<AuthorityRuleEntity>,String> converter){
+        super(NacosConfigUtil.AUTHORITY_RULE,converter);
     }
 }

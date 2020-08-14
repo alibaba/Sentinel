@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.dashboard.rule.zookeeper;
 
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.rule.nacos.FlowRuleNacosProvider;
 import com.alibaba.csp.sentinel.dashboard.rule.nacos.FlowRuleNacosPublisher;
@@ -38,20 +39,36 @@ public class ZookeeperConfig {
     public Converter<List<FlowRuleEntity>, String> flowRuleEntityEncoder() {
         return JSON::toJSONString;
     }
-
     @Bean
     public Converter<String, List<FlowRuleEntity>> flowRuleEntityDecoder() {
         return s -> JSON.parseArray(s, FlowRuleEntity.class);
     }
-
     @Bean
-    public FlowRuleZookeeperProvider ruleProvider(){
+    public FlowRuleZookeeperProvider flowRuleProvider(){
         return new FlowRuleZookeeperProvider();
     }
     @Bean
-    public FlowRuleZookeeperPublisher rulePublisher(){
-        return new FlowRuleZookeeperPublisher();
+    public FlowRuleZookeeperPublisher flowRulePublisher(Converter<List<FlowRuleEntity>, String> converter){
+        return new FlowRuleZookeeperPublisher(converter);
     }
+
+    @Bean
+    public Converter<List<DegradeRuleEntity>, String> degradeRuleEntityEncoder() {
+        return JSON::toJSONString;
+    }
+    @Bean
+    public Converter<String, List<DegradeRuleEntity>> degradeRuleEntityDecoder() {
+        return s -> JSON.parseArray(s, DegradeRuleEntity.class);
+    }
+    @Bean
+    public DegradeRuleZookeeperProvider degradeRuleProvider(){
+        return new DegradeRuleZookeeperProvider();
+    }
+    @Bean
+    public DegradeRuleZookeeperPublisher degradeRulePublisher(Converter<List<DegradeRuleEntity>, String> converter){
+        return new DegradeRuleZookeeperPublisher(converter);
+    }
+
 
     @Bean
     public CuratorFramework zkClient() {

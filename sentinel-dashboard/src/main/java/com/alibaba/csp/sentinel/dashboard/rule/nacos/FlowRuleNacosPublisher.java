@@ -16,32 +16,15 @@
 package com.alibaba.csp.sentinel.dashboard.rule.nacos;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
 import com.alibaba.csp.sentinel.datasource.Converter;
-import com.alibaba.csp.sentinel.util.AssertUtil;
-import com.alibaba.nacos.api.config.ConfigService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 /**
- * @author Eric Zhao
- * @since 1.4.0
+ * @author xiejj
  */
-public class FlowRuleNacosPublisher implements DynamicRulePublisher<List<FlowRuleEntity>> {
-
-    @Autowired
-    private ConfigService configService;
-    @Autowired
-    private Converter<List<FlowRuleEntity>, String> converter;
-
-    @Override
-    public void publish(String appId, List<FlowRuleEntity> rules) throws Exception {
-        AssertUtil.notEmpty(appId, "app name cannot be empty");
-        if (rules == null) {
-            return;
-        }
-        configService.publishConfig(appId,NacosConfigUtil.GROUP_RULE, converter.convert(rules));
+public class FlowRuleNacosPublisher  extends AbstractDynamicRulePublisher<List<FlowRuleEntity>> {
+    public FlowRuleNacosPublisher(Converter<List<FlowRuleEntity>,String> converter){
+        super(NacosConfigUtil.FLOW_RULE,converter);
     }
 }

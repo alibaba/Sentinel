@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.rule.nacos;
+package com.alibaba.csp.sentinel.dashboard.rule.apollo;
 
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
 import com.alibaba.csp.sentinel.datasource.Converter;
@@ -26,19 +27,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Eric Zhao
- * @since 1.4.0
+ * @author hantianwei@gmail.com
+ * @since 1.5.0
  */
-public class FlowRuleNacosProvider implements DynamicRuleProvider<List<FlowRuleEntity>> {
+
+public class DegradeRuleApolloProvider implements DynamicRuleProvider<List<DegradeRuleEntity>> {
 
     @Autowired
     private ConfigService configService;
     @Autowired
-    private Converter<String, List<FlowRuleEntity>> converter;
+    private Converter<String, List<DegradeRuleEntity>> converter;
 
     @Override
-    public List<FlowRuleEntity> getRules(String appName) throws Exception {
-        String rules = configService.getConfig(appName,NacosConfigUtil.FLOW_RULE, 3000);
+    public List<DegradeRuleEntity> getRules(String appName) throws Exception {
+        String rules = configService.getConfig(appName, ApolloConfigUtil.FLOW_RULE, 3000);
         if (StringUtil.isEmpty(rules)) {
             return new ArrayList<>();
         }

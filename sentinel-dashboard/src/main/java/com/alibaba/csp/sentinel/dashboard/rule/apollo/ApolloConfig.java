@@ -15,7 +15,7 @@
  */
 package com.alibaba.csp.sentinel.dashboard.rule.apollo;
 
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.*;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.fastjson.JSON;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
@@ -38,8 +38,6 @@ import java.util.List;
 @ConfigurationProperties(prefix = "rule.configserver.appollo")
 @EnableApolloConfig
 public class ApolloConfig {
-
-    private String appId;
     private String token;
     private String username;
     private String env;
@@ -51,34 +49,90 @@ public class ApolloConfig {
     public Converter<List<FlowRuleEntity>, String> flowRuleEntityEncoder() {
         return JSON::toJSONString;
     }
-
     @Bean
     public Converter<String, List<FlowRuleEntity>> flowRuleEntityDecoder() {
         return s -> JSON.parseArray(s, FlowRuleEntity.class);
     }
-
     @Bean
-    public FlowRuleApolloProvider ruleProvider(){
-        return new FlowRuleApolloProvider(appId,env,cluster,namespace);
+    public FlowRuleApolloProvider flowRuleProvider(){
+        return new FlowRuleApolloProvider();
+    }
+    @Bean
+    public FlowRuleApolloPublisher flowRulePublisher(Converter<List<FlowRuleEntity>,String> converter){
+        return new FlowRuleApolloPublisher(converter);
     }
 
     @Bean
-    public FlowRuleApolloPublisher rulePublisher(){
-        return new FlowRuleApolloPublisher(appId,env,cluster,namespace,username);
+    public Converter<List<DegradeRuleEntity>, String> degradeRuleEntityEncoder() {
+        return JSON::toJSONString;
+    }
+    @Bean
+    public Converter<String, List<DegradeRuleEntity>> degradeRuleEntityDecoder() {
+        return s -> JSON.parseArray(s, DegradeRuleEntity.class);
+    }
+    @Bean
+    public DegradeRuleApolloProvider degradeRuleProvider(){
+        return new DegradeRuleApolloProvider();
+    }
+    @Bean
+    public DegradeRuleApolloPublisher degradeRulePublisher(Converter<List<DegradeRuleEntity>,String> converter){
+        return new DegradeRuleApolloPublisher(converter);
     }
 
     @Bean
-    public ApolloOpenApiClient apolloOpenApiClient() {
-        ApolloOpenApiClient client = ApolloOpenApiClient.newBuilder()
-            .withPortalUrl(serverAddr)
-            .withToken(token)
-            .build();
-        return client;
-
+    public Converter<List<AuthorityRuleEntity>, String> authorityRuleEntityEncoder() {
+        return JSON::toJSONString;
+    }
+    @Bean
+    public Converter<String, List<AuthorityRuleEntity>> authorityRuleEntityDecoder() {
+        return s -> JSON.parseArray(s, AuthorityRuleEntity.class);
+    }
+    @Bean
+    public AuthorityRuleApolloProvider authorityRuleProvider(){
+        return new AuthorityRuleApolloProvider();
+    }
+    @Bean
+    public AuthorityRuleApolloPublisher authorityRulePublisher(Converter<List<AuthorityRuleEntity>,String> converter){
+        return new AuthorityRuleApolloPublisher(converter);
     }
 
-    public void setAppId(String appId) {
-        this.appId = appId;
+    @Bean
+    public Converter<List<ParamFlowRuleEntity>, String> paramFlowRuleEntityEncoder() {
+        return JSON::toJSONString;
+    }
+    @Bean
+    public Converter<String, List<ParamFlowRuleEntity>> paramFlowRuleEntityDecoder() {
+        return s -> JSON.parseArray(s, ParamFlowRuleEntity.class);
+    }
+    @Bean
+    public ParamFlowRuleApolloProvider paramFlowRuleProvider(){
+        return new ParamFlowRuleApolloProvider();
+    }
+    @Bean
+    public ParamFlowRuleApolloPublisher paramFlowRulePublisher(Converter<List<ParamFlowRuleEntity>,String> converter){
+        return new ParamFlowRuleApolloPublisher(converter);
+    }
+
+    @Bean
+    public Converter<List<SystemRuleEntity>, String> systemRuleEntityEncoder() {
+        return JSON::toJSONString;
+    }
+    @Bean
+    public Converter<String, List<SystemRuleEntity>> systemRuleEntityDecoder() {
+        return s -> JSON.parseArray(s, SystemRuleEntity.class);
+    }
+    @Bean
+    public SystemRuleApolloProvider systemRuleProvider(){
+        return new SystemRuleApolloProvider();
+    }
+    @Bean
+    public SystemRuleApolloPublisher systemRulePublisher(Converter<List<SystemRuleEntity>,String> converter){
+        return new SystemRuleApolloPublisher(converter);
+    }
+
+    @Bean
+    public ApolloConfigService configService() {
+        return new ApolloConfigService(token,username,env,cluster,namespace,serverAddr);
     }
 
     public void setToken(String token) {

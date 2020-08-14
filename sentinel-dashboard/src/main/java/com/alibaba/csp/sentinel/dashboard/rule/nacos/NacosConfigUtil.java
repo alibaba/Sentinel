@@ -21,7 +21,7 @@ package com.alibaba.csp.sentinel.dashboard.rule.nacos;
  */
 public final class NacosConfigUtil {
 
-    public static final String GROUP_RULE = "SENTINEL_GROUP_RULE";
+    public static final String FLOW_RULE = "SENTINEL_GROUP_FLOW";
     public static final String DEGRADE_RULE = "SENTINEL_GROUP_DEGRADE";
     public static final String SYSTEM_RULE = "SENTINEL_GROUP_SYSTEM";
     public static final String PARAM_RULE = "SENTINEL_GROUP_PARAM";

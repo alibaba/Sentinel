@@ -13,35 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.rule.nacos;
+package com.alibaba.csp.sentinel.dashboard.rule.zookeeper;
 
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
 import com.alibaba.csp.sentinel.datasource.Converter;
-import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.nacos.api.config.ConfigService;
+import com.alibaba.csp.sentinel.util.AssertUtil;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.data.Stat;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @author Eric Zhao
- * @since 1.4.0
- */
-public class FlowRuleNacosProvider implements DynamicRuleProvider<List<FlowRuleEntity>> {
-
-    @Autowired
-    private ConfigService configService;
-    @Autowired
-    private Converter<String, List<FlowRuleEntity>> converter;
-
-    @Override
-    public List<FlowRuleEntity> getRules(String appName) throws Exception {
-        String rules = configService.getConfig(appName,NacosConfigUtil.FLOW_RULE, 3000);
-        if (StringUtil.isEmpty(rules)) {
-            return new ArrayList<>();
-        }
-        return converter.convert(rules);
+public class DegradeRuleZookeeperPublisher extends AbstractDynamicRulePublisher<List<DegradeRuleEntity>> {
+    public DegradeRuleZookeeperPublisher(Converter<List<DegradeRuleEntity>, String> converter){
+        super(ZookeeperConfigUtil.RULE_DEGRADE_PATH,converter);
     }
 }

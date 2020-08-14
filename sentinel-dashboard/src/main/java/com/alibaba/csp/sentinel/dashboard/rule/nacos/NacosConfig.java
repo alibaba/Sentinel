@@ -54,8 +54,8 @@ public class NacosConfig {
         return new FlowRuleNacosProvider();
     }
     @Bean
-    public FlowRuleNacosPublisher flowRulePublisher(){
-        return new FlowRuleNacosPublisher();
+    public FlowRuleNacosPublisher flowRulePublisher(Converter<List<FlowRuleEntity>,String> converter){
+        return new FlowRuleNacosPublisher(converter);
     }
 
     @Bean
@@ -67,12 +67,12 @@ public class NacosConfig {
         return s -> JSON.parseArray(s, DegradeRuleEntity.class);
     }
     @Bean
-    public FlowRuleNacosProvider degradeRuleProvider(){
-        return new FlowRuleNacosProvider();
+    public DegradeRuleNacosProvider degradeRuleProvider(){
+        return new DegradeRuleNacosProvider();
     }
     @Bean
-    public FlowRuleNacosPublisher degradeRulePublisher(){
-        return new FlowRuleNacosPublisher();
+    public DegradeRuleNacosPublisher degradeRulePublisher(Converter<List<DegradeRuleEntity>,String> converter){
+        return new DegradeRuleNacosPublisher(converter);
     }
 
     @Bean
@@ -88,8 +88,8 @@ public class NacosConfig {
         return new ParamFlowRuleNacosProvider();
     }
     @Bean
-    public ParamFlowRuleNacosPublisher paramFlowRulePublisher(){
-        return new ParamFlowRuleNacosPublisher();
+    public ParamFlowRuleNacosPublisher paramFlowRulePublisher(Converter<List<ParamFlowRuleEntity>,String> converter){
+        return new ParamFlowRuleNacosPublisher(converter);
     }
 
     @Bean
@@ -105,8 +105,8 @@ public class NacosConfig {
         return new SystemRuleNacosProvider();
     }
     @Bean
-    public SystemRuleNacosPublisher systemRulePublisher(){
-        return new SystemRuleNacosPublisher();
+    public SystemRuleNacosPublisher systemRulePublisher(Converter<List<SystemRuleEntity>,String> converter){
+        return new SystemRuleNacosPublisher(converter);
     }
 
     @Bean
@@ -121,9 +121,10 @@ public class NacosConfig {
     public AuthorityRuleNacosProvider authorityRuleProvider(){
         return new AuthorityRuleNacosProvider();
     }
+
     @Bean
-    public AuthorityRuleNacosPublisher authorityRulePublisher(){
-        return new AuthorityRuleNacosPublisher();
+    public AuthorityRuleNacosPublisher authorityRulePublisher(Converter<List<AuthorityRuleEntity>,String> converter){
+        return new AuthorityRuleNacosPublisher(converter);
     }
 
     @Bean
