@@ -31,7 +31,6 @@ import org.springframework.stereotype.Component;
  * @author Eric Zhao
  * @since 1.4.0
  */
-@Component("flowRuleDefaultPublisher")
 public class FlowRuleApiPublisher implements DynamicRulePublisher<List<FlowRuleEntity>> {
 
     @Autowired

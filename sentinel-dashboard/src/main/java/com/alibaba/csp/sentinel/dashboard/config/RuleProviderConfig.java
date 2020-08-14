@@ -11,12 +11,12 @@ import org.springframework.context.annotation.Configuration;
 public class RuleProviderConfig {
 
     @Bean
-    public FlowRuleApiProvider ruleProvider(){
+    public FlowRuleApiProvider flowRuleProvider(){
        return new  FlowRuleApiProvider();
     }
 
     @Bean
-    public FlowRuleApiPublisher rulePublisher(){
+    public FlowRuleApiPublisher flowRulePublisher(){
         return new FlowRuleApiPublisher();
     }
 }
