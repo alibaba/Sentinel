@@ -28,7 +28,7 @@ java -Dserver.port=8080 \
 
 上述命令中我们指定几个 JVM 参数，其中 `-Dserver.port=8080` 是 Spring Boot 的参数，
 用于指定 Spring Boot 服务端启动端口为 `8080`。其余几个是 Sentinel 客户端的参数。
-`rule.provider` 用于指定规则存储方式(不设置默认为 mem ),取值如下表所示:  
+rule.provider 用于指定规则存储方式(不设置默认为 mem ),取值如下表所示:  
 
 | 值 | 说明 |
 |--------|--------|
