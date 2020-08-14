@@ -92,13 +92,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.google.guava</groupId>
-                        <artifactId>guava</artifactId>
-                        <version>20.0</version>
-                    </dependency>
-                </dependencies>
             </plugin>
         </plugins>
     </build>
