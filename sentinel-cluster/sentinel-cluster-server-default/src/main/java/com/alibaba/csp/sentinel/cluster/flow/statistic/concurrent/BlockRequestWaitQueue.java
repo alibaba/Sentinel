@@ -8,6 +8,7 @@ import com.alibaba.csp.sentinel.cluster.request.ClusterRequest;
 import com.alibaba.csp.sentinel.cluster.request.data.ConcurrentFlowAcquireRequestData;
 import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
 import com.alibaba.csp.sentinel.cluster.response.data.ConcurrentFlowAcquireResponseData;
+import com.alibaba.csp.sentinel.cluster.server.log.ClusterServerStatLogUtil;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -60,7 +61,6 @@ public class BlockRequestWaitQueue {
             public void run() {
                 TokenResult tokenResult = null;
                 RequestInfoEntity res = null;
-                RequestFuture future=null;
                 while (true) {
                     try {
                         boolean timeout = false;
@@ -70,23 +70,27 @@ public class BlockRequestWaitQueue {
                         }
                         long flowId = res.getRequest().getData().getFlowId();
                         FlowRule rule = ClusterFlowRuleManager.getFlowRuleById(flowId);
+                        int  acquireCount= res.getRequest().getData().getCount();
                         long maxWaitTime = (long) (rule.getMaxQueueingTimeMs() * rate);
-                        future=res.getFuture();
                         if (System.currentTimeMillis() - res.getCreatTime() > maxWaitTime) {
-                            applyResult(res,new TokenResult(TokenResultStatus.BLOCKED));
+                            ClusterServerStatLogUtil.log("concurrent|queue|block|" + flowId, acquireCount);
+                            applyResult(res, new TokenResult(TokenResultStatus.BLOCKED));
                             continue;
                         }
 
                         int acquire = res.getRequest().getData().getCount();
                         AtomicInteger nowCalls = CurrentConcurrencyManager.get(flowId);
                         if (nowCalls == null) {
-                            applyResult(res,new TokenResult(TokenResultStatus.BLOCKED));
+                            ClusterServerStatLogUtil.log("concurrent|queue|block|" + flowId, acquireCount);
+                            applyResult(res, new TokenResult(TokenResultStatus.BLOCKED));
                             continue;
                         }
+
                         synchronized (nowCalls) {
                             while (nowCalls.get() + acquire > ConcurrentClusterFlowChecker.calcGlobalThreshold(rule)) {
                                 if (System.currentTimeMillis() - res.getCreatTime() > maxWaitTime) {
-                                    applyResult(res,new TokenResult(TokenResultStatus.BLOCKED));
+                                    ClusterServerStatLogUtil.log("concurrent|queue|block|" + flowId, acquireCount);
+                                    applyResult(res, new TokenResult(TokenResultStatus.BLOCKED));
                                     timeout = true;
                                     break;
                                 }
@@ -100,9 +104,10 @@ public class BlockRequestWaitQueue {
                         TokenCacheNodeManager.putTokenCacheNode(node.getTokenId(), node);
                         tokenResult = new TokenResult(TokenResultStatus.OK);
                         tokenResult.setTokenId(node.getTokenId());
-                        applyResult(res,tokenResult);
+                        applyResult(res, tokenResult);
                     } catch (InterruptedException e) {
-                        applyResult(res,new TokenResult(TokenResultStatus.BLOCKED));
+                        ClusterServerStatLogUtil.log("concurrent|queue|block|" + res.getRequest().getData().getFlowId(), res.getRequest().getData().getCount());
+                        applyResult(res, new TokenResult(TokenResultStatus.BLOCKED));
                         e.printStackTrace();
                     }
                 }
@@ -116,8 +121,9 @@ public class BlockRequestWaitQueue {
                 new ConcurrentFlowAcquireResponseData().setTokenId(result.getTokenId())
         );
     }
-    private static void applyResult(RequestInfoEntity entity,TokenResult result){
-        if(entity==null){
+
+    private static void applyResult(RequestInfoEntity entity, TokenResult result) {
+        if (entity == null) {
             return;
         }
         if (!entity.isServerRequest()) {
@@ -125,8 +131,8 @@ public class BlockRequestWaitQueue {
         } else {
             entity.getFuture().setSuccess(result);
         }
-
     }
+
     private static void sendResponse(ChannelHandlerContext ctx, TokenResult result, ClusterRequest<ConcurrentFlowAcquireRequestData> request) {
         ClusterResponse<ConcurrentFlowAcquireResponseData> response = toResponse(result, request);
         ctx.writeAndFlush(response);

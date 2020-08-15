@@ -25,6 +25,7 @@ import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.TokenCacheNode
 import com.alibaba.csp.sentinel.cluster.server.log.ClusterServerStatLogUtil;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.ClusterRuleConstant;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.util.HostNameUtil;
 
@@ -72,7 +73,6 @@ final public class ConcurrentClusterFlowChecker {
         TokenCacheNodeManager.putTokenCacheNode(node.getTokenId(), node);
         TokenResult tokenResult = new TokenResult(TokenResultStatus.OK);
         tokenResult.setTokenId(node.getTokenId());
-//        System.out.println(Thread.currentThread() + "成功获取token" + tokenResult.getTokenId());
         return tokenResult;
     }
 
@@ -96,13 +96,11 @@ final public class ConcurrentClusterFlowChecker {
         nowCalls.getAndAdd(-1 * acquireCount);
         rule.getClusterConfig().addReleaseCount(acquireCount);
         ClusterServerStatLogUtil.log("concurrent|release|" + rule.getClusterConfig().getFlowId(), acquireCount);
-//        System.out.println("成功释放token" + node.getTokenId());
         return new TokenResult(TokenResultStatus.RELEASE_OK);
     }
 
     private static TokenResult applyResult(String clientAddress,/*@Valid*/ FlowRule rule, int acquireCount, boolean prioritized) {
-//        if (prioritized && clientAddress.equals(HostNameUtil.getIp()) && rule.getClusterConfig().getAcquireRefuseStrategy() == RuleConstant.QUEUE_BLOCK_STRATEGY) {
-        if (prioritized && clientAddress.equals(HostNameUtil.getIp())) {
+        if (prioritized && clientAddress.equals(HostNameUtil.getIp()) && rule.getClusterConfig().getAcquireRefuseStrategy() == RuleConstant.QUEUE_BLOCK_STRATEGY) {
             long flowId = rule.getClusterConfig().getFlowId();
             try {
                 return BlockRequestWaitQueue.tryToConsumeServerRequestInQueue(clientAddress, acquireCount, flowId, true);

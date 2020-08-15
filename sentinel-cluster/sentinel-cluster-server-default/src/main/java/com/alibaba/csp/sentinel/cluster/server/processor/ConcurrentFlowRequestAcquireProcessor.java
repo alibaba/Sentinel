@@ -48,14 +48,14 @@ public class ConcurrentFlowRequestAcquireProcessor implements RequestProcessor<C
         boolean prioritized = request.getData().isPrioritized();
         String clientAddress = getRemoteAddress(ctx);
         TokenResult result = tokenService.requestConcurrentToken(clientAddress, flowId, count, prioritized);
-//        if (result.getStatus() == TokenResultStatus.BLOCKED && prioritized) {
-//            FlowRule rule = ClusterFlowRuleManager.getFlowRuleById(flowId);
-//            if (rule.getClusterConfig().getAcquireRefuseStrategy() == RuleConstant.QUEUE_BLOCK_STRATEGY) {
-//                if(BlockRequestWaitQueue.addRequestToWaitQueue(new RequestInfoEntity(ctx, clientAddress, request))){
-//                    return null;
-//                }
-//            }
-//        }
+        if (result.getStatus() == TokenResultStatus.BLOCKED && prioritized) {
+            FlowRule rule = ClusterFlowRuleManager.getFlowRuleById(flowId);
+            if (rule.getClusterConfig().getAcquireRefuseStrategy() == RuleConstant.QUEUE_BLOCK_STRATEGY) {
+                if(BlockRequestWaitQueue.addRequestToWaitQueue(new RequestInfoEntity(ctx, clientAddress, request))){
+                    return null;
+                }
+            }
+        }
         return toResponse(result, request);
     }
 
