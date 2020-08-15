@@ -51,6 +51,8 @@ public interface ClusterTransportClient {
      */
     ClusterResponse sendRequest(ClusterRequest request) throws Exception;
 
+    ClusterResponse sendRequest(ClusterRequest request,long timeout) throws Exception;
+
     void sendRequestIgnoreResponse(ClusterRequest request);
 
     CompletableFuture<ClusterResponse> sendRequestAsync(ClusterRequest request) throws Exception;

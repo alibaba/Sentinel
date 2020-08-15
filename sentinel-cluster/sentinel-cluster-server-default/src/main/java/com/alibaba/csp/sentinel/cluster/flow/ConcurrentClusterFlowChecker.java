@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.cluster.flow;
 import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
 import com.alibaba.csp.sentinel.cluster.flow.rule.ClusterFlowRuleManager;
+import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.BlockRequestWaitQueue;
 import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.CurrentConcurrencyManager;
 import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.TokenCacheNode;
 import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.TokenCacheNodeManager;
@@ -25,9 +26,8 @@ import com.alibaba.csp.sentinel.cluster.server.log.ClusterServerStatLogUtil;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.ClusterRuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
+import com.alibaba.csp.sentinel.util.HostNameUtil;
 
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -35,20 +35,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 final public class ConcurrentClusterFlowChecker {
 
-    public static double calcGlobalThreshold(FlowRule rule) {
-        double count = rule.getCount();
-        switch (rule.getClusterConfig().getThresholdType()) {
-            case ClusterRuleConstant.FLOW_THRESHOLD_GLOBAL:
-                return count;
-            case ClusterRuleConstant.FLOW_THRESHOLD_AVG_LOCAL:
-            default:
-                int connectedCount = ClusterFlowRuleManager.getConnectedCount(rule.getClusterConfig().getFlowId());
-                return count * connectedCount;
-        }
-    }
-
-    public static TokenResult acquireConcurrentToken(String clientAddress,/*@Valid*/ FlowRule rule, int acquireCount) {
+    public static TokenResult acquireConcurrentToken(String clientAddress,/*@Valid*/ FlowRule rule,
+                                                     int acquireCount, boolean prioritized) {
         long flowId = rule.getClusterConfig().getFlowId();
+        boolean block = false;
         AtomicInteger nowCalls = CurrentConcurrencyManager.get(flowId);
         if (nowCalls == null) {
             RecordLog.warn("[ConcurrentClusterFlowChecker] Fail to get nowCalls by flowId<{}>", flowId);
@@ -58,7 +48,7 @@ final public class ConcurrentClusterFlowChecker {
         // check before enter the lock to improve the efficiency
         if (nowCalls.get() + acquireCount > calcGlobalThreshold(rule)) {
             ClusterServerStatLogUtil.log("concurrent|block|" + flowId, acquireCount);
-            return new TokenResult(TokenResultStatus.BLOCKED);
+            return applyResult(clientAddress, rule, acquireCount, prioritized);
         }
 
         // ensure the atomicity of operations
@@ -67,10 +57,14 @@ final public class ConcurrentClusterFlowChecker {
             // check again whether the request can pass.
             if (nowCalls.get() + acquireCount > calcGlobalThreshold(rule)) {
                 ClusterServerStatLogUtil.log("concurrent|block|" + flowId, acquireCount);
-                return new TokenResult(TokenResultStatus.BLOCKED);
+                block = true;
             } else {
                 nowCalls.getAndAdd(acquireCount);
             }
+        }
+
+        if (block) {
+            return applyResult(clientAddress, rule, acquireCount, prioritized);
         }
 
         ClusterServerStatLogUtil.log("concurrent|pass|" + flowId, acquireCount);
@@ -78,7 +72,7 @@ final public class ConcurrentClusterFlowChecker {
         TokenCacheNodeManager.putTokenCacheNode(node.getTokenId(), node);
         TokenResult tokenResult = new TokenResult(TokenResultStatus.OK);
         tokenResult.setTokenId(node.getTokenId());
-//        System.out.println("成功获取token" + tokenResult.getTokenId());
+//        System.out.println(Thread.currentThread() + "成功获取token" + tokenResult.getTokenId());
         return tokenResult;
     }
 
@@ -105,4 +99,31 @@ final public class ConcurrentClusterFlowChecker {
 //        System.out.println("成功释放token" + node.getTokenId());
         return new TokenResult(TokenResultStatus.RELEASE_OK);
     }
+
+    private static TokenResult applyResult(String clientAddress,/*@Valid*/ FlowRule rule, int acquireCount, boolean prioritized) {
+//        if (prioritized && clientAddress.equals(HostNameUtil.getIp()) && rule.getClusterConfig().getAcquireRefuseStrategy() == RuleConstant.QUEUE_BLOCK_STRATEGY) {
+        if (prioritized && clientAddress.equals(HostNameUtil.getIp())) {
+            long flowId = rule.getClusterConfig().getFlowId();
+            try {
+                return BlockRequestWaitQueue.tryToConsumeServerRequestInQueue(clientAddress, acquireCount, flowId, true);
+            } catch (Exception e) {
+                return new TokenResult(TokenResultStatus.BLOCKED);
+            }
+        } else {
+            return new TokenResult(TokenResultStatus.BLOCKED);
+        }
+    }
+
+    public static double calcGlobalThreshold(FlowRule rule) {
+        double count = rule.getCount();
+        switch (rule.getClusterConfig().getThresholdType()) {
+            case ClusterRuleConstant.FLOW_THRESHOLD_GLOBAL:
+                return count;
+            case ClusterRuleConstant.FLOW_THRESHOLD_AVG_LOCAL:
+            default:
+                int connectedCount = ClusterFlowRuleManager.getConnectedCount(rule.getClusterConfig().getFlowId());
+                return count * connectedCount;
+        }
+    }
+
 }

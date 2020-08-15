@@ -28,7 +28,6 @@ import com.alibaba.csp.sentinel.cluster.request.Request;
 import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.slots.block.flow.timeout.TimerHolder;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -38,8 +37,6 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
-import io.netty.util.Timeout;
-import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 
 import java.util.AbstractMap.SimpleEntry;
@@ -205,6 +202,11 @@ public class NettyTransportClient implements ClusterTransportClient {
 
     @Override
     public ClusterResponse sendRequest(ClusterRequest request) throws Exception {
+        return sendRequest(request, ClusterClientConfigManager.getRequestTimeout());
+    }
+
+    @Override
+    public ClusterResponse sendRequest(ClusterRequest request, long timeout) throws Exception {
         if (!isReady()) {
             throw new SentinelClusterException(ClusterErrorMessages.CLIENT_NOT_READY);
         }
@@ -220,8 +222,8 @@ public class NettyTransportClient implements ClusterTransportClient {
             ChannelPromise promise = channel.newPromise();
             TokenClientPromiseHolder.putPromise(xid, promise);
 
-            if (!promise.await(3000)) {
-                System.out.println("超时");
+            if (!promise.await(timeout)) {
+                System.out.println("超时："+timeout);
                 throw new SentinelClusterException(ClusterErrorMessages.REQUEST_TIME_OUT);
             }
 
@@ -318,9 +320,8 @@ public class NettyTransportClient implements ClusterTransportClient {
 //    }
 
 
-
     @Override
-    public CompletableFuture<ClusterResponse> sendRequestAsync(ClusterRequest request) throws Exception{
+    public CompletableFuture<ClusterResponse> sendRequestAsync(ClusterRequest request) throws Exception {
         // Uncomment this when min target JDK is 1.8.
         if (!validRequest(request)) {
             throw new SentinelClusterException(ClusterErrorMessages.BAD_REQUEST);
@@ -329,19 +330,19 @@ public class NettyTransportClient implements ClusterTransportClient {
         request.setId(xid);
         CompletableFuture<ClusterResponse> future = new CompletableFuture<>();
         channel.writeAndFlush(request)
-            .addListener(f -> {
-                f.await(3000);
-                if (f.isSuccess()) {
-                    System.out.println("成功"+f.toString()+f.get());
-                    future.complete(new ClusterResponse());
-                } else if (f.cause() != null) {
-                    System.out.println("失败1");
-                    future.completeExceptionally(f.cause());
-                } else {
-                    System.out.println("失败2");
-                    future.cancel(false);
-                }
-            });
+                .addListener(f -> {
+                    f.await(3000);
+                    if (f.isSuccess()) {
+                        System.out.println("成功" + f.toString() + f.get());
+                        future.complete(new ClusterResponse());
+                    } else if (f.cause() != null) {
+                        System.out.println("失败1");
+                        future.completeExceptionally(f.cause());
+                    } else {
+                        System.out.println("失败2");
+                        future.cancel(false);
+                    }
+                });
         return future;
     }
 

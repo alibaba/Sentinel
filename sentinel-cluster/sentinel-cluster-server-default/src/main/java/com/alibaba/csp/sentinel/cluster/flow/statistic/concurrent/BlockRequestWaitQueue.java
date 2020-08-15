@@ -27,23 +27,43 @@ public class BlockRequestWaitQueue {
     private static double rate = 0.7;
 
     static {
-        tryToConsumeRequestInQueue();
+        tryToConsumeClientRequestInQueue();
     }
 
     public static boolean addRequestToWaitQueue(final RequestInfoEntity requestObject) {
         return blockingQueue.offer(requestObject);
-
     }
 
-    public static void tryToConsumeRequestInQueue() {
+    public static TokenResult tryToConsumeServerRequestInQueue(String address, int count, long flowId, boolean prioritized) throws ExecutionException, InterruptedException {
+        RequestFuture future = new RequestFuture();
+        ClusterRequest<ConcurrentFlowAcquireRequestData> request = new ClusterRequest<>();
+        ConcurrentFlowAcquireRequestData data = new ConcurrentFlowAcquireRequestData();
+        data.setCount(count);
+        data.setFlowId(flowId);
+        data.setPrioritized(prioritized);
+        request.setData(data);
+        RequestInfoEntity entity = new RequestInfoEntity(address, request, future);
+        if (!blockingQueue.offer(entity)) {
+            return new TokenResult(TokenResultStatus.BLOCKED);
+        }
+        Object res = future.get();
+        if (res instanceof TokenResult) {
+            return (TokenResult) res;
+        } else {
+            return new TokenResult(TokenResultStatus.BLOCKED);
+        }
+    }
+
+    public static void tryToConsumeClientRequestInQueue() {
         Runnable task = new Runnable() {
             @Override
             public void run() {
                 TokenResult tokenResult = null;
                 RequestInfoEntity res = null;
-                boolean timeout = false;
+                RequestFuture future=null;
                 while (true) {
                     try {
+                        boolean timeout = false;
                         res = blockingQueue.poll(2L, TimeUnit.SECONDS);
                         if (res == null) {
                             continue;
@@ -51,24 +71,25 @@ public class BlockRequestWaitQueue {
                         long flowId = res.getRequest().getData().getFlowId();
                         FlowRule rule = ClusterFlowRuleManager.getFlowRuleById(flowId);
                         long maxWaitTime = (long) (rule.getMaxQueueingTimeMs() * rate);
+                        future=res.getFuture();
                         if (System.currentTimeMillis() - res.getCreatTime() > maxWaitTime) {
-                            sendResponse(res.getCtx(), new TokenResult(TokenResultStatus.BLOCKED), res.getRequest());
+                            applyResult(res,new TokenResult(TokenResultStatus.BLOCKED));
                             continue;
                         }
+
                         int acquire = res.getRequest().getData().getCount();
                         AtomicInteger nowCalls = CurrentConcurrencyManager.get(flowId);
                         if (nowCalls == null) {
-                            sendResponse(res.getCtx(), new TokenResult(TokenResultStatus.FAIL), res.getRequest());
+                            applyResult(res,new TokenResult(TokenResultStatus.BLOCKED));
                             continue;
                         }
                         synchronized (nowCalls) {
                             while (nowCalls.get() + acquire > ConcurrentClusterFlowChecker.calcGlobalThreshold(rule)) {
                                 if (System.currentTimeMillis() - res.getCreatTime() > maxWaitTime) {
-                                    sendResponse(res.getCtx(), new TokenResult(TokenResultStatus.BLOCKED), res.getRequest());
+                                    applyResult(res,new TokenResult(TokenResultStatus.BLOCKED));
                                     timeout = true;
                                     break;
                                 }
-                                Thread.sleep(1);
                             }
                             if (timeout) {
                                 continue;
@@ -79,8 +100,9 @@ public class BlockRequestWaitQueue {
                         TokenCacheNodeManager.putTokenCacheNode(node.getTokenId(), node);
                         tokenResult = new TokenResult(TokenResultStatus.OK);
                         tokenResult.setTokenId(node.getTokenId());
-                        sendResponse(res.getCtx(), tokenResult, res.getRequest());
+                        applyResult(res,tokenResult);
                     } catch (InterruptedException e) {
+                        applyResult(res,new TokenResult(TokenResultStatus.BLOCKED));
                         e.printStackTrace();
                     }
                 }
@@ -94,8 +116,19 @@ public class BlockRequestWaitQueue {
                 new ConcurrentFlowAcquireResponseData().setTokenId(result.getTokenId())
         );
     }
+    private static void applyResult(RequestInfoEntity entity,TokenResult result){
+        if(entity==null){
+            return;
+        }
+        if (!entity.isServerRequest()) {
+            sendResponse(entity.getCtx(), result, entity.getRequest());
+        } else {
+            entity.getFuture().setSuccess(result);
+        }
 
+    }
     private static void sendResponse(ChannelHandlerContext ctx, TokenResult result, ClusterRequest<ConcurrentFlowAcquireRequestData> request) {
         ClusterResponse<ConcurrentFlowAcquireResponseData> response = toResponse(result, request);
+        ctx.writeAndFlush(response);
     }
 }

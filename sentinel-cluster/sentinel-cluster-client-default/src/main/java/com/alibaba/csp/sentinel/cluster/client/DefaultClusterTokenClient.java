@@ -29,11 +29,11 @@ import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
 import com.alibaba.csp.sentinel.cluster.response.data.ConcurrentFlowAcquireResponseData;
 import com.alibaba.csp.sentinel.cluster.response.data.FlowTokenResponseData;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import java.util.Collection;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -190,7 +190,12 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
         ConcurrentFlowAcquireRequestData data = new ConcurrentFlowAcquireRequestData().setFlowId(ruleId).setCount(acquireCount).setPrioritized(prioritized);
         ClusterRequest<ConcurrentFlowAcquireRequestData> request = new ClusterRequest<>(ClusterConstants.MSG_TYPE_CONCURRENT_FLOW_ACQUIRE, data);
         try {
-            TokenResult result = sendTokenRequest(request);
+            TokenResult result =null;
+            if(!prioritized){
+                result = sendTokenRequest(request);
+            }else{
+                result = sendTokenRequestTimeout(request,4000L);
+            }
             logForResult(result);
             return result;
         } catch (Exception ex) {
@@ -264,17 +269,19 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
         transportClient.sendRequestIgnoreResponse(request);
     }
 
-    private TokenResult sendRequestAsync(ClusterRequest request) throws Exception {
+    private TokenResult sendTokenRequestTimeout(ClusterRequest request, long timeout) throws Exception {
         if (transportClient == null) {
             RecordLog.warn(
                     "[DefaultClusterTokenClient] Client not created, please check your config for cluster client");
-            return new TokenResult(TokenResultStatus.FAIL);
+            return clientFail();
         }
-        CompletableFuture<ClusterResponse> future = transportClient.sendRequestAsync(request);
-        ConcurrentFlowAcquireResponseData data = (ConcurrentFlowAcquireResponseData) future.get(2000, TimeUnit.MILLISECONDS).getData();
-        TokenResult tokenResult = new TokenResult(future.get().getStatus());
-        tokenResult.setTokenId(data.getTokenId());
-        return tokenResult;
+        ClusterResponse response = transportClient.sendRequest(request,timeout);
+        TokenResult result = new TokenResult(response.getStatus());
+        if (response.getData() != null) {
+            ConcurrentFlowAcquireResponseData concurrentAcquireResponseData = (ConcurrentFlowAcquireResponseData) response.getData();
+            result.setTokenId(concurrentAcquireResponseData.getTokenId());
+        }
+        return result;
     }
 
     private boolean notValidRequest(Long id, int count) {
