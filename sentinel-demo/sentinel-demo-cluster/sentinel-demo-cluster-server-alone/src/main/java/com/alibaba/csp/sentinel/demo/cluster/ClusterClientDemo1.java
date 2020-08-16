@@ -43,7 +43,7 @@ public class ClusterClientDemo1 {
         ClusterTokenServer tokenServer = new SentinelDefaultTokenServer();
         AtomicInteger success = new AtomicInteger(0);
         final CountDownLatch countDownLatch = new CountDownLatch(10000);
-        ClusterStateManager.setToServer();
+        ClusterStateManager.setToClient();
         long start = System.currentTimeMillis();
         for (int i = 0; i < 10000; i++) {
             Runnable task = new Runnable() {

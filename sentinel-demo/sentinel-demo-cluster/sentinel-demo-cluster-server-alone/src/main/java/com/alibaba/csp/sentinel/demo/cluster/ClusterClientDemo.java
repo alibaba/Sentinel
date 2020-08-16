@@ -54,7 +54,7 @@ public class ClusterClientDemo {
                         entry = SphU.entry("cluster-resource2");
                         System.out.println("pass");
                         success.incrementAndGet();
-                        Thread.sleep(20000);
+//                        Thread.sleep(20000);
                     } catch (Exception ex) {
 //                        System.out.println("block");
                     } finally {
