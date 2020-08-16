@@ -388,6 +388,7 @@ public final class ClusterFlowRuleManager {
 
         @Override
         public synchronized void configUpdate(List<FlowRule> conf) {
+            System.out.println("加载"+conf);
             applyClusterFlowRule(conf, namespace);
             RecordLog.info("[ClusterFlowRuleManager] Cluster flow rules received for namespace <{}>: {}",
                 namespace, FLOW_RULES);

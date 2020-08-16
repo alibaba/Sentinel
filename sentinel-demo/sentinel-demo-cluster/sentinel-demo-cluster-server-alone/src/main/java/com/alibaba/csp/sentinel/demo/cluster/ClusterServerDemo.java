@@ -44,7 +44,7 @@ public class ClusterServerDemo {
         while (true) {
             Thread.sleep(1000);
             try{
-                System.out.println("资源:resource1当前并发量" + CurrentConcurrencyManager.get(111L).get() + "|资源:resource2当前并发量" + CurrentConcurrencyManager.get(222L).get() + "|存储token数" + TokenCacheNodeManager.getSize());
+                System.out.println("|资源:resource2当前并发量" + CurrentConcurrencyManager.get(222L).get() + "|存储token数" + TokenCacheNodeManager.getSize());
             }catch (Exception e){
                 e.printStackTrace();
             }

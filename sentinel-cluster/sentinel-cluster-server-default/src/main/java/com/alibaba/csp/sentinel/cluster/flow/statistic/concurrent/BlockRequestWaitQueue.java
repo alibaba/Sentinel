@@ -123,6 +123,7 @@ public class BlockRequestWaitQueue {
     }
 
     private static void applyResult(RequestInfoEntity entity, TokenResult result) {
+        System.out.println("通过队列发放"+result.getStatus());
         if (entity == null) {
             return;
         }

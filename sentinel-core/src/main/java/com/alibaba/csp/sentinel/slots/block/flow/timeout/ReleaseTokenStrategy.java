@@ -32,6 +32,7 @@ public class ReleaseTokenStrategy implements ReSourceTimeoutStrategy {
         if (service == null) {
             return;
         }
+        System.out.println("客户端超时删除"+tokenId);
         service.releaseConcurrentToken(tokenId);
     }
 }

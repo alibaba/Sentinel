@@ -42,19 +42,19 @@ public class ClusterClientDemo {
     public static void main(String[] args) throws Exception {
         ClusterTokenServer tokenServer = new SentinelDefaultTokenServer();
         AtomicInteger success = new AtomicInteger(0);
-        final CountDownLatch countDownLatch = new CountDownLatch(100000);
+        final CountDownLatch countDownLatch = new CountDownLatch(1000);
         ClusterStateManager.setToClient();
         long start = System.currentTimeMillis();
-        for (int i = 0; i < 100000; i++) {
+        for (int i = 0; i < 1000; i++) {
             Runnable task = new Runnable() {
                 @Override
                 public void run() {
                     Entry entry = null;
                     try {
-                        entry = SphU.entryWithPriority("cluster-resource2");
-//                        System.out.println("pass");
+                        entry = SphU.entry("cluster-resource1");
+                        System.out.println("pass");
                         success.incrementAndGet();
-//                        Thread.sleep(100000);
+                        Thread.sleep(20000);
                     } catch (Exception ex) {
 //                        System.out.println("block");
                     } finally {

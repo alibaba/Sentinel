@@ -202,11 +202,6 @@ public class NettyTransportClient implements ClusterTransportClient {
 
     @Override
     public ClusterResponse sendRequest(ClusterRequest request) throws Exception {
-        return sendRequest(request, ClusterClientConfigManager.getRequestTimeout());
-    }
-
-    @Override
-    public ClusterResponse sendRequest(ClusterRequest request, long timeout) throws Exception {
         if (!isReady()) {
             throw new SentinelClusterException(ClusterErrorMessages.CLIENT_NOT_READY);
         }
@@ -222,8 +217,7 @@ public class NettyTransportClient implements ClusterTransportClient {
             ChannelPromise promise = channel.newPromise();
             TokenClientPromiseHolder.putPromise(xid, promise);
 
-            if (!promise.await(timeout)) {
-                System.out.println("超时："+timeout);
+            if (!promise.await(ClusterClientConfigManager.getRequestTimeout())) {
                 throw new SentinelClusterException(ClusterErrorMessages.REQUEST_TIME_OUT);
             }
 
@@ -320,31 +314,31 @@ public class NettyTransportClient implements ClusterTransportClient {
 //    }
 
 
-    @Override
-    public CompletableFuture<ClusterResponse> sendRequestAsync(ClusterRequest request) throws Exception {
-        // Uncomment this when min target JDK is 1.8.
-        if (!validRequest(request)) {
-            throw new SentinelClusterException(ClusterErrorMessages.BAD_REQUEST);
-        }
-        int xid = getCurrentId();
-        request.setId(xid);
-        CompletableFuture<ClusterResponse> future = new CompletableFuture<>();
-        channel.writeAndFlush(request)
-                .addListener(f -> {
-                    f.await(3000);
-                    if (f.isSuccess()) {
-                        System.out.println("成功" + f.toString() + f.get());
-                        future.complete(new ClusterResponse());
-                    } else if (f.cause() != null) {
-                        System.out.println("失败1");
-                        future.completeExceptionally(f.cause());
-                    } else {
-                        System.out.println("失败2");
-                        future.cancel(false);
-                    }
-                });
-        return future;
-    }
+//    @Override
+//    public CompletableFuture<ClusterResponse> sendRequestAsync(ClusterRequest request) throws Exception {
+//        // Uncomment this when min target JDK is 1.8.
+//        if (!validRequest(request)) {
+//            throw new SentinelClusterException(ClusterErrorMessages.BAD_REQUEST);
+//        }
+//        int xid = getCurrentId();
+//        request.setId(xid);
+//        CompletableFuture<ClusterResponse> future = new CompletableFuture<>();
+//        channel.writeAndFlush(request)
+//                .addListener(f -> {
+//                    f.await(3000);
+//                    if (f.isSuccess()) {
+//                        System.out.println("成功" + f.toString() + f.get());
+//                        future.complete(new ClusterResponse());
+//                    } else if (f.cause() != null) {
+//                        System.out.println("失败1");
+//                        future.completeExceptionally(f.cause());
+//                    } else {
+//                        System.out.println("失败2");
+//                        future.cancel(false);
+//                    }
+//                });
+//        return future;
+//    }
 
     private static final int MAX_ID = 999_999_999;
 }
