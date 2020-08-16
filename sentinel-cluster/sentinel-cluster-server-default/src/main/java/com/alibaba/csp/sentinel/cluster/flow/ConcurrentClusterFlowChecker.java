@@ -94,7 +94,6 @@ final public class ConcurrentClusterFlowChecker {
         int acquireCount = node.getAcquireCount();
         AtomicInteger nowCalls = CurrentConcurrencyManager.get(node.getFlowId());
         nowCalls.getAndAdd(-1 * acquireCount);
-        rule.getClusterConfig().addReleaseCount(acquireCount);
         ClusterServerStatLogUtil.log("concurrent|release|" + rule.getClusterConfig().getFlowId(), acquireCount);
         return new TokenResult(TokenResultStatus.RELEASE_OK);
     }

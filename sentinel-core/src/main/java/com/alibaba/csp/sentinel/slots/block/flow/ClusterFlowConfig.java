@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.slots.block.flow;
 import com.alibaba.csp.sentinel.slots.block.ClusterRuleConstant;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -58,9 +59,7 @@ public class ClusterFlowConfig {
 
     private long clientOfflineTime;
 
-    private int expireCount = 0;
 
-    private AtomicInteger releasedCount = new AtomicInteger(0);
 
     public int getAcquireRefuseStrategy() {
         return acquireRefuseStrategy;
@@ -68,14 +67,6 @@ public class ClusterFlowConfig {
 
     public void setAcquireRefuseStrategy(int acquireRefuseStrategy) {
         this.acquireRefuseStrategy = acquireRefuseStrategy;
-    }
-
-    public void addExpireCount(int acquireCount) {
-        expireCount += expireCount;
-    }
-
-    public void addReleaseCount(int acquireCount) {
-        releasedCount.getAndAdd(acquireCount);
     }
 
     public int getResourceTimeoutStrategy() {
@@ -100,22 +91,6 @@ public class ClusterFlowConfig {
 
     public void setClientOfflineTime(long clientOfflineTime) {
         this.clientOfflineTime = clientOfflineTime;
-    }
-
-    public int getExpireCount() {
-        return expireCount;
-    }
-
-    public void setExpireCount(int expireCount) {
-        this.expireCount = expireCount;
-    }
-
-    public AtomicInteger getReleasedCount() {
-        return releasedCount;
-    }
-
-    public void setReleasedCount(AtomicInteger releasedCount) {
-        this.releasedCount = releasedCount;
     }
 
     public Long getFlowId() {
@@ -174,42 +149,24 @@ public class ClusterFlowConfig {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        ClusterFlowConfig that = (ClusterFlowConfig) o;
-
-        if (thresholdType != that.thresholdType) {
-            return false;
-        }
-        if (fallbackToLocalWhenFail != that.fallbackToLocalWhenFail) {
-            return false;
-        }
-        if (strategy != that.strategy) {
-            return false;
-        }
-        if (sampleCount != that.sampleCount) {
-            return false;
-        }
-        if (windowIntervalMs != that.windowIntervalMs) {
-            return false;
-        }
-        return flowId != null ? flowId.equals(that.flowId) : that.flowId == null;
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ClusterFlowConfig config = (ClusterFlowConfig) o;
+        return thresholdType == config.thresholdType &&
+                fallbackToLocalWhenFail == config.fallbackToLocalWhenFail &&
+                strategy == config.strategy &&
+                sampleCount == config.sampleCount &&
+                windowIntervalMs == config.windowIntervalMs &&
+                resourceTimeout == config.resourceTimeout &&
+                resourceTimeoutStrategy == config.resourceTimeoutStrategy &&
+                acquireRefuseStrategy == config.acquireRefuseStrategy &&
+                clientOfflineTime == config.clientOfflineTime &&
+                flowId.equals(config.flowId);
     }
 
     @Override
     public int hashCode() {
-        int result = flowId != null ? flowId.hashCode() : 0;
-        result = 31 * result + thresholdType;
-        result = 31 * result + (fallbackToLocalWhenFail ? 1 : 0);
-        result = 31 * result + strategy;
-        result = 31 * result + sampleCount;
-        result = 31 * result + windowIntervalMs;
-        return result;
+        return Objects.hash(flowId, thresholdType, fallbackToLocalWhenFail, strategy, sampleCount, windowIntervalMs, resourceTimeout, resourceTimeoutStrategy, acquireRefuseStrategy, clientOfflineTime);
     }
 
     @Override
@@ -224,8 +181,6 @@ public class ClusterFlowConfig {
                 ", resourceTimeout=" + resourceTimeout +
                 ", resourceTimeoutStrategy=" + resourceTimeoutStrategy +
                 ", clientOfflineTime=" + clientOfflineTime +
-                ", expireCount=" + expireCount +
-                ", releasedCount=" + releasedCount +
                 '}';
     }
 }
