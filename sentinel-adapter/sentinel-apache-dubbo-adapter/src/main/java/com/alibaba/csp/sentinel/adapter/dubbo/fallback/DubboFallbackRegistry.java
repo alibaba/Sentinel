@@ -30,9 +30,6 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
  */
 public final class DubboFallbackRegistry {
 
-    private static volatile DubboFallback consumerFallback = new DefaultDubboFallback();
-    private static volatile DubboFallback providerFallback = new DefaultDubboFallback();
-
     public static DubboFallback getConsumerFallback() {
         return DubboAdapterGlobalConfig.getConsumerFallback();
     }
