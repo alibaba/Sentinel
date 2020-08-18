@@ -23,18 +23,22 @@ import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
  * @author leyou
  */
 public class DegradeRuleEntity implements RuleEntity {
+
     private Long id;
     private String app;
+
     private String ip;
     private Integer port;
+
     private String resource;
     private String limitApp;
     private Double count;
     private Integer timeWindow;
-    /**
-     * 0 rt 限流; 1为异常;
-     */
     private Integer grade;
+    private Integer minRequestAmount;
+    private Double slowRatioThreshold;
+    private Integer statIntervalMs;
+
     private Date gmtCreate;
     private Date gmtModified;
 
@@ -48,6 +52,9 @@ public class DegradeRuleEntity implements RuleEntity {
         entity.setCount(rule.getCount());
         entity.setTimeWindow(rule.getTimeWindow());
         entity.setGrade(rule.getGrade());
+        entity.setMinRequestAmount(rule.getMinRequestAmount());
+        entity.setSlowRatioThreshold(rule.getSlowRatioThreshold());
+        entity.setStatIntervalMs(rule.getStatIntervalMs());
         return entity;
     }
 
@@ -128,6 +135,33 @@ public class DegradeRuleEntity implements RuleEntity {
         this.grade = grade;
     }
 
+    public Integer getMinRequestAmount() {
+        return minRequestAmount;
+    }
+
+    public DegradeRuleEntity setMinRequestAmount(Integer minRequestAmount) {
+        this.minRequestAmount = minRequestAmount;
+        return this;
+    }
+
+    public Double getSlowRatioThreshold() {
+        return slowRatioThreshold;
+    }
+
+    public DegradeRuleEntity setSlowRatioThreshold(Double slowRatioThreshold) {
+        this.slowRatioThreshold = slowRatioThreshold;
+        return this;
+    }
+
+    public Integer getStatIntervalMs() {
+        return statIntervalMs;
+    }
+
+    public DegradeRuleEntity setStatIntervalMs(Integer statIntervalMs) {
+        this.statIntervalMs = statIntervalMs;
+        return this;
+    }
+
     @Override
     public Date getGmtCreate() {
         return gmtCreate;
@@ -153,6 +187,16 @@ public class DegradeRuleEntity implements RuleEntity {
         rule.setCount(count);
         rule.setTimeWindow(timeWindow);
         rule.setGrade(grade);
+        if (minRequestAmount != null) {
+            rule.setMinRequestAmount(minRequestAmount);
+        }
+        if (slowRatioThreshold != null) {
+            rule.setSlowRatioThreshold(slowRatioThreshold);
+        }
+        if (statIntervalMs != null) {
+            rule.setStatIntervalMs(statIntervalMs);
+        }
+
         return rule;
     }
 }
