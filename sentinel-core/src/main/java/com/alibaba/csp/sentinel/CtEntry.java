@@ -15,12 +15,17 @@
  */
 package com.alibaba.csp.sentinel;
 
+import java.util.Iterator;
+import java.util.LinkedList;
+
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.context.NullContext;
+import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
+import com.alibaba.csp.sentinel.util.function.BiConsumer;
 
 /**
  * Linked entry within current context.
@@ -35,6 +40,8 @@ class CtEntry extends Entry {
 
     protected ProcessorSlot<Object> chain;
     protected Context context;
+    protected LinkedList<BiConsumer<Context, Entry>> exitHandlers;
+    
 
     CtEntry(ResourceWrapper resourceWrapper, ProcessorSlot<Object> chain, Context context) {
         super(resourceWrapper);
@@ -102,10 +109,32 @@ class CtEntry extends Entry {
     protected void clearEntryContext() {
         this.context = null;
     }
+    
+    @Override
+    public void whenComplete(BiConsumer<Context, Entry> consumer) {
+        if (this.exitHandlers == null) {
+            this.exitHandlers = new LinkedList<>();
+        }
+        this.exitHandlers.add(consumer);
+    }
 
     @Override
     protected Entry trueExit(int count, Object... args) throws ErrorEntryFreeException {
         exitForContext(context, count, args);
+        
+        if (this.exitHandlers != null) {
+            Iterator<BiConsumer<Context, Entry>> it = this.exitHandlers.iterator();
+            BiConsumer<Context, Entry> cur;
+            while (it.hasNext()) {
+                cur = it.next();
+                try {
+                    cur.accept(this.context, this);
+                } catch (Exception e) {
+                    RecordLog.warn("Error invoking exit handler", e);
+                }
+            }
+            this.exitHandlers = null;
+        }
 
         return parent;
     }

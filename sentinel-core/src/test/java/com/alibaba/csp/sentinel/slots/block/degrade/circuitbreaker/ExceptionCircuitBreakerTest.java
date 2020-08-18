@@ -15,97 +15,71 @@
  */
 package com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker;
 
-import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
-import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreaker.State;
-import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.ExceptionCircuitBreaker.SimpleErrorCounter;
-import com.alibaba.csp.sentinel.slots.statistic.base.LeapArray;
-import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
-import com.alibaba.csp.sentinel.test.AbstractTimeBasedTest;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
+import com.alibaba.csp.sentinel.test.AbstractTimeBasedTest;
 
 /**
  * @author Eric Zhao
  */
 public class ExceptionCircuitBreakerTest extends AbstractTimeBasedTest {
+    
+    @Before
+    public void setUp() {
+        DegradeRuleManager.loadRules(new ArrayList<DegradeRule>());
+    }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    public void testStateChangeAndTryAcquire() {
-        int retryTimeout = 10;
-        DegradeRule rule = new DegradeRule("abc")
-            .setCount(0.5d)
-            .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO)
-            .setStatIntervalMs(20 * 1000)
-            .setTimeWindow(retryTimeout)
-            .setMinRequestAmount(10);
-        LeapArray<SimpleErrorCounter> stat = mock(LeapArray.class);
-        SimpleErrorCounter counter = new SimpleErrorCounter();
-        WindowWrap<SimpleErrorCounter> bucket = new WindowWrap<>(20000, 0, counter);
-        when(stat.currentWindow()).thenReturn(bucket);
-
-        ExceptionCircuitBreaker cb = new ExceptionCircuitBreaker(rule, stat);
-
-        assertTrue(cb.tryPass());
-        assertTrue(cb.tryPass());
-
-        setCurrentMillis(System.currentTimeMillis());
-        cb.fromCloseToOpen(0.52d);
-        assertEquals(State.OPEN, cb.currentState());
-
-        assertFalse(cb.tryPass());
-        assertFalse(cb.tryPass());
-
-        // Wait for next retry checkpoint.
-        sleepSecond(retryTimeout);
-        sleep(100);
-        // Try a request to trigger state transformation.
-        assertTrue(cb.tryPass());
-        assertEquals(State.HALF_OPEN, cb.currentState());
-
-        // Mark this request as error
-        cb.onRequestComplete(20, new IllegalArgumentException());
-        assertEquals(State.OPEN, cb.currentState());
-
-        // Wait for next retry checkpoint.
-        sleepSecond(retryTimeout);
-        sleep(100);
-        assertTrue(cb.tryPass());
-        assertEquals(State.HALF_OPEN, cb.currentState());
-
-        setCurrentMillis(System.currentTimeMillis());
-        // Mark this request as success.
-        cb.onRequestComplete(20, null);
-        assertEquals(State.CLOSED, cb.currentState());
+    @After
+    public void tearDown() throws Exception {
+        DegradeRuleManager.loadRules(new ArrayList<DegradeRule>());
     }
 
     @Test
-    @SuppressWarnings("unchecked")
-    public void testRecordErrorOrSuccess() {
+    public void testRecordErrorOrSuccess() throws BlockException {
+        String resource = "testRecordErrorOrSuccess";
+        int retryTimeoutMillis = 10 * 1000;
+        int retryTimeout = retryTimeoutMillis / 1000;
         DegradeRule rule = new DegradeRule("abc")
-            .setCount(0.5d)
+            .setCount(0.2d)
             .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO)
             .setStatIntervalMs(20 * 1000)
-            .setTimeWindow(10)
-            .setMinRequestAmount(10);
-        LeapArray<SimpleErrorCounter> stat = mock(LeapArray.class);
-        SimpleErrorCounter counter = new SimpleErrorCounter();
-        WindowWrap<SimpleErrorCounter> bucket = new WindowWrap<>(20000, 0, counter);
-        when(stat.currentWindow()).thenReturn(bucket);
+            .setTimeWindow(retryTimeout)
+            .setMinRequestAmount(1);
+        rule.setResource(resource);
+        DegradeRuleManager.loadRules(Arrays.asList(rule));
 
-        CircuitBreaker cb = new ExceptionCircuitBreaker(rule, stat);
-        cb.onRequestComplete(15, null);
-
-        assertEquals(1L, counter.getTotalCount().longValue());
-        assertEquals(0L, counter.getErrorCount().longValue());
-
-        cb.onRequestComplete(15, new IllegalArgumentException());
-        assertEquals(2L, counter.getTotalCount().longValue());
-        assertEquals(1L, counter.getErrorCount().longValue());
+        assertTrue(entryAndSleepFor(resource, 10));
+        
+        assertTrue(entryWithErrorIfPresent(resource, new IllegalArgumentException())); // -> open
+        assertFalse(entryWithErrorIfPresent(resource, new IllegalArgumentException()));
+        assertFalse(entryAndSleepFor(resource, 100));
+        sleep(retryTimeoutMillis / 2);
+        assertFalse(entryAndSleepFor(resource, 100));
+        sleep(retryTimeoutMillis / 2);
+        assertTrue(entryWithErrorIfPresent(resource, new IllegalArgumentException())); // -> half -> open
+        assertFalse(entryAndSleepFor(resource, 100));
+        assertFalse(entryAndSleepFor(resource, 100));
+        sleep(retryTimeoutMillis);
+        assertTrue(entryAndSleepFor(resource, 100)); // -> half -> closed
+        assertTrue(entryAndSleepFor(resource, 100));
+        assertTrue(entryAndSleepFor(resource, 100));
+        assertTrue(entryAndSleepFor(resource, 100));
+        assertTrue(entryAndSleepFor(resource, 100));
+        assertTrue(entryAndSleepFor(resource, 100));
+        assertTrue(entryAndSleepFor(resource, 100));
+        assertTrue(entryWithErrorIfPresent(resource, new IllegalArgumentException()));
+        assertTrue(entryAndSleepFor(resource, 100));
     }
 }
