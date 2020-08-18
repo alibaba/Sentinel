@@ -36,11 +36,10 @@ public interface CircuitBreaker {
     /**
      * Acquires permission of an invocation only if it is available at the time of invoking.
      *
-     * @param context
-     * @param r
+     * @param context context of current invocation
      * @return {@code true} if permission was acquired and {@code false} otherwise
      */
-    boolean tryPass(Context context, ResourceWrapper r);
+    boolean tryPass(Context context);
 
     /**
      * Get current state of the circuit breaker.
@@ -50,12 +49,12 @@ public interface CircuitBreaker {
     State currentState();
 
     /**
-     * Called when a `passed` invocation finished.
+     * <p>Record a completed request with the context and handle state transformation of the circuit breaker.</p>
+     * <p>Called when a <strong>passed</strong> invocation finished.</p>
      *
      * @param context context of current invocation
-     * @param wrapper current resource
      */
-    void onRequestComplete(Context context, ResourceWrapper wrapper);
+    void onRequestComplete(Context context);
 
     /**
      * Circuit breaker state.
