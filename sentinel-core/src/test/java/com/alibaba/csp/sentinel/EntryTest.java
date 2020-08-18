@@ -68,7 +68,7 @@ public class EntryTest {
         }
 
         @Override
-        public void whenComplete(BiConsumer<Context, Entry> consumer) {
+        public void whenTerminate(BiConsumer<Context, Entry> consumer) {
             // do nothing
         }
     }

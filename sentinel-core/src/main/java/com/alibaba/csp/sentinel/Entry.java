@@ -180,12 +180,13 @@ public abstract class Entry implements AutoCloseable {
     }
 
     /**
-     * Like `CompletableFuture` since JDK8 it guarantees specified consumer
-     * is invoked when this entry exited.
+     * Like {@code CompletableFuture} since JDK 8, it guarantees specified handler
+     * is invoked when this entry terminated (exited), no matter it's blocked or permitted.
      * Use it when you did some STATEFUL operations on entries.
      * 
-     * @param consumer
+     * @param handler handler function on the invocation terminates
+     * @since 1.8.0
      */
-    public abstract void whenComplete(BiConsumer<Context, Entry> consumer);
+    public abstract void whenTerminate(BiConsumer<Context, Entry> handler);
     
 }
