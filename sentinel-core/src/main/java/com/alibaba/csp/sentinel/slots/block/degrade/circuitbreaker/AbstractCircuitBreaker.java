@@ -65,13 +65,13 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
     }
 
     @Override
-    public boolean tryPass(Context context, ResourceWrapper r) {
+    public boolean tryPass(Context context) {
         // Template implementation.
         if (currentState.get() == State.CLOSED) {
             return true;
         }
         if (currentState.get() == State.OPEN) {
-            // For half-open state we allow a request for trial.
+            // For half-open state we allow a request for probing.
             return retryTimeoutArrived() && fromOpenToHalfOpen(context);
         }
         return false;
@@ -106,16 +106,16 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
             notifyObservers(State.OPEN, State.HALF_OPEN, null);
             Entry entry = context.getCurEntry();
             entry.whenComplete(new BiConsumer<Context, Entry>() {
-                
                 @Override
                 public void accept(Context context, Entry entry) {
+                    // Note: This works as a temporary workaround for https://github.com/alibaba/Sentinel/issues/1638
+                    // Without the hook, the circuit breaker won't recover from half-open state in some circumstances
+                    // when the request is actually blocked by upcoming rules (not only degrade rules).
                     if (entry.getBlockError() != null) {
                         // Fallback to OPEN due to detecting request is blocked
                         currentState.compareAndSet(State.HALF_OPEN, State.OPEN);
                         notifyObservers(State.HALF_OPEN, State.OPEN, 1.0d);
-                        return;
                     }
-                    
                 }
             });
             return true;

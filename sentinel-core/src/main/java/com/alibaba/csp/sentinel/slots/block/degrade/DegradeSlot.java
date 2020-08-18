@@ -50,7 +50,7 @@ public class DegradeSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             return;
         }
         for (CircuitBreaker cb : circuitBreakers) {
-            if (!cb.tryPass(context, r)) {
+            if (!cb.tryPass(context)) {
                 throw new DegradeException(cb.getRule().getLimitApp(), cb.getRule());
             }
         }
@@ -72,7 +72,7 @@ public class DegradeSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         if (curEntry.getBlockError() == null) {
             // passed request
             for (CircuitBreaker circuitBreaker : circuitBreakers) {
-                circuitBreaker.onRequestComplete(context, r);
+                circuitBreaker.onRequestComplete(context);
             }
         }
 
