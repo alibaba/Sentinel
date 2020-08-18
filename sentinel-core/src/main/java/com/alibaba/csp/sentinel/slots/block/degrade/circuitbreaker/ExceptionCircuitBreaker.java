@@ -63,7 +63,7 @@ public class ExceptionCircuitBreaker extends AbstractCircuitBreaker {
     }
 
     @Override
-    public void onRequestComplete(Context context, ResourceWrapper r) {
+    public void onRequestComplete(Context context) {
         Entry entry = context.getCurEntry();
         if (entry == null) {
             return;
