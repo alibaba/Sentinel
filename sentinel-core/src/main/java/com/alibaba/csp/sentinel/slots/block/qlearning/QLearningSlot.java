@@ -15,16 +15,12 @@
  */
 package com.alibaba.csp.sentinel.slots.block.qlearning;
 
-import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.DefaultNode;
-import com.alibaba.csp.sentinel.qlearning.QInfo;
 import com.alibaba.csp.sentinel.qlearning.QLearningLearner;
 import com.alibaba.csp.sentinel.qlearning.QLearningMetric;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
-import com.alibaba.csp.sentinel.slots.system.SystemBlockException;
-import sun.plugin.dom.html.HTMLFormElement;
 
 /**
  * @author ZhouYanjun
