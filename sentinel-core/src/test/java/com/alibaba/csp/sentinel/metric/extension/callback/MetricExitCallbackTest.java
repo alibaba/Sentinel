@@ -77,8 +77,8 @@ public class MetricExitCallbackTest extends AbstractTimeBasedTest {
         Object[] args = {"args1", "args2"};
         long prevRt = 20;
         extension.rt = prevRt;
-        extension.success = 6;
-        extension.thread = 10;
+        extension.complete = 6;
+        extension.concurrency = 10;
         Context context = mock(Context.class);
         Entry entry = mock(Entry.class);
 
@@ -92,7 +92,7 @@ public class MetricExitCallbackTest extends AbstractTimeBasedTest {
         when(context.getCurEntry()).thenReturn(entry);
         exitCallback.onExit(context, resourceWrapper, count, args);
         Assert.assertEquals(prevRt + deltaMs, extension.rt);
-        Assert.assertEquals(extension.success, 6 + count);
-        Assert.assertEquals(extension.thread, 10 - 1);
+        Assert.assertEquals(extension.complete, 6 + count);
+        Assert.assertEquals(extension.concurrency, 10 - 1);
     }
 }
