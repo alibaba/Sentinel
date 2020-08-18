@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.dashboard.auth;
 
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
+import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.fastjson.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -53,7 +54,13 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
                     return false;
                 }
                 String target = request.getParameter(authAction.targetName());
-
+                if(null == target) {
+                    //post or put method get params through http request body
+                    RequestWrapper requestWrapper = new RequestWrapper(request);
+                    if(StringUtil.isNotBlank(requestWrapper.getBody())){
+                        target = (String) JSON.parseObject(requestWrapper.getBody()).get(authAction.targetName());
+                    }
+                }
                 if (!authUser.authTarget(target, authAction.value())) {
                     responseNoPrivilegeMsg(response, authAction.message());
                     return false;

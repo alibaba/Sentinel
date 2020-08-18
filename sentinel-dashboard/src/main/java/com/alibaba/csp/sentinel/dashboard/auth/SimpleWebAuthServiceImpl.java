@@ -54,6 +54,9 @@ public class SimpleWebAuthServiceImpl implements AuthService<HttpServletRequest>
 
         @Override
         public boolean authTarget(String target, PrivilegeType privilegeType) {
+            if( null == target){
+                return  false;
+            }
             return true;
         }
 
