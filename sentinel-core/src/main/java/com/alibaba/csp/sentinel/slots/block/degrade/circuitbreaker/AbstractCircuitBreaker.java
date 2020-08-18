@@ -105,7 +105,7 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
         if (currentState.compareAndSet(State.OPEN, State.HALF_OPEN)) {
             notifyObservers(State.OPEN, State.HALF_OPEN, null);
             Entry entry = context.getCurEntry();
-            entry.whenComplete(new BiConsumer<Context, Entry>() {
+            entry.whenTerminate(new BiConsumer<Context, Entry>() {
                 @Override
                 public void accept(Context context, Entry entry) {
                     // Note: This works as a temporary workaround for https://github.com/alibaba/Sentinel/issues/1638
