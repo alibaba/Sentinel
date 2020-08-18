@@ -15,21 +15,10 @@ app.service('DegradeService', ['$http', function ($http) {
   };
 
   this.newRule = function (rule) {
-    var param = {
-      id: rule.id,
-      resource: rule.resource,
-      limitApp: rule.limitApp,
-      count: rule.count,
-      timeWindow: rule.timeWindow,
-      grade: rule.grade,
-      app: rule.app,
-      ip: rule.ip,
-      port: rule.port
-    };
     return $http({
-      url: '/degrade/new.json',
-      params: param,
-      method: 'GET'
+        url: '/degrade/rule',
+        data: rule,
+        method: 'POST'
     });
   };
 
@@ -41,24 +30,22 @@ app.service('DegradeService', ['$http', function ($http) {
       grade: rule.grade,
       count: rule.count,
       timeWindow: rule.timeWindow,
+        statIntervalMs: rule.statIntervalMs,
+        minRequestAmount: rule.minRequestAmount,
+        slowRatioThreshold: rule.slowRatioThreshold,
     };
     return $http({
-      url: '/degrade/save.json',
-      params: param,
-      method: 'GET'
+        url: '/degrade/rule/' + rule.id,
+        data: param,
+        method: 'PUT'
     });
   };
 
   this.deleteRule = function (rule) {
-    var param = {
-      id: rule.id,
-      app: rule.app
-    };
-    return $http({
-      url: '/degrade/delete.json',
-      params: param,
-      method: 'GET'
-    });
+      return $http({
+          url: '/degrade/rule/' + rule.id,
+          method: 'DELETE'
+      });
   };
 
   this.checkRuleValid = function (rule) {
@@ -74,14 +61,36 @@ app.service('DegradeService', ['$http', function ($http) {
           alert('降级阈值不能为空或小于 0');
           return false;
       }
-      if (rule.timeWindow === undefined || rule.timeWindow === '' || rule.timeWindow <= 0) {
-          alert('降级时间窗口必须大于 0');
+      if (rule.timeWindow == undefined || rule.timeWindow === '' || rule.timeWindow <= 0) {
+          alert('熔断时长必须大于 0s');
+          return false;
+      }
+      if (rule.minRequestAmount == undefined || rule.minRequestAmount <= 0) {
+          alert('最小请求数目需大于 0');
+          return false;
+      }
+      if (rule.statIntervalMs == undefined || rule.statIntervalMs <= 0) {
+          alert('统计窗口时长需大于 0s');
+          return false;
+      }
+      if (rule.statIntervalMs !== undefined && rule.statIntervalMs > 60 * 1000 * 2) {
+          alert('统计窗口时长不能超过 120 分钟');
           return false;
       }
       // 异常比率类型.
       if (rule.grade == 1 && rule.count > 1) {
           alert('异常比率超出范围：[0.0 - 1.0]');
           return false;
+      }
+      if (rule.grade == 0) {
+          if (rule.slowRatioThreshold == undefined) {
+              alert('慢调用比率不能为空');
+              return false;
+          }
+          if (rule.slowRatioThreshold < 0 || rule.slowRatioThreshold > 1) {
+              alert('慢调用比率超出范围：[0.0 - 1.0]');
+              return false;
+          }
       }
       return true;
   };
