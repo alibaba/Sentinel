@@ -20,21 +20,30 @@ public class MetricEntryCallbackTest {
     @Test
     public void onPass() throws Exception {
         FakeMetricExtension extension = new FakeMetricExtension();
+        FakeAdvancedMetricExtension advancedExtension = new FakeAdvancedMetricExtension();
         MetricExtensionProvider.addMetricExtension(extension);
+        MetricExtensionProvider.addMetricExtension(advancedExtension);
 
         MetricEntryCallback entryCallback = new MetricEntryCallback();
         StringResourceWrapper resourceWrapper = new StringResourceWrapper("resource", EntryType.OUT);
         int count = 2;
         Object[] args = {"args1", "args2"};
         entryCallback.onPass(null, resourceWrapper, null, count, args);
+        // assert extension
         Assert.assertEquals(extension.pass, count);
         Assert.assertEquals(extension.thread, 1);
+        
+        // assert advancedExtension
+        Assert.assertEquals(advancedExtension.pass, count);
+        Assert.assertEquals(advancedExtension.thread, 1);
     }
 
     @Test
     public void onBlocked() throws Exception {
         FakeMetricExtension extension = new FakeMetricExtension();
+        FakeAdvancedMetricExtension advancedExtension = new FakeAdvancedMetricExtension();
         MetricExtensionProvider.addMetricExtension(extension);
+        MetricExtensionProvider.addMetricExtension(advancedExtension);
 
         MetricEntryCallback entryCallback = new MetricEntryCallback();
         StringResourceWrapper resourceWrapper = new StringResourceWrapper("resource", EntryType.OUT);
@@ -43,6 +52,9 @@ public class MetricEntryCallbackTest {
         int count = 2;
         Object[] args = {"args1", "args2"};
         entryCallback.onBlocked(new FlowException("xx"), context, resourceWrapper, null, count, args);
+        // assert extension
         Assert.assertEquals(extension.block, count);
+        // assert advancedExtension
+        Assert.assertEquals(advancedExtension.block, count);
     }
 }
