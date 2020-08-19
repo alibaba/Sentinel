@@ -72,7 +72,7 @@ public class DemoClusterServerInitFunc implements InitFunc {
 
     private static void initClusterClient() {
         ClusterClientConfig clusterClientConfig = new ClusterClientConfig();
-        clusterClientConfig.setRequestTimeout(1000);
+        clusterClientConfig.setRequestTimeout(1500);
         ClusterClientConfigManager.applyNewConfig(clusterClientConfig);
         ClusterClientAssignConfig clusterClientAssignConfig = new ClusterClientAssignConfig("127.0.0.1", 18730);
         ClusterClientConfigManager.applyNewAssignConfig(clusterClientAssignConfig);

@@ -218,6 +218,7 @@ public class NettyTransportClient implements ClusterTransportClient {
             TokenClientPromiseHolder.putPromise(xid, promise);
 
             if (!promise.await(ClusterClientConfigManager.getRequestTimeout())) {
+                System.out.println("超时");
                 throw new SentinelClusterException(ClusterErrorMessages.REQUEST_TIME_OUT);
             }
 

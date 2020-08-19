@@ -26,7 +26,6 @@ public interface ExpireStrategy<K, V> {
      * clean expireKey-Value
      *
      * @param map the map needs to detect expired tokens.
-     * @return the number of the key cleaned
      */
     void removeExpireKey(ConcurrentLinkedHashMap<Long, TokenCacheNode> map);
 }

@@ -1,3 +1,18 @@
+/*
+ * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent;
 
 import com.alibaba.csp.sentinel.cluster.TokenResult;
@@ -25,8 +40,6 @@ public class BlockRequestWaitQueue {
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static ExecutorService consumerPool = Executors.newFixedThreadPool(1);
 
-    private static double rate = 0.7;
-
     static {
         tryToConsumeClientRequestInQueue();
     }
@@ -35,8 +48,8 @@ public class BlockRequestWaitQueue {
         return blockingQueue.offer(requestObject);
     }
 
-    public static TokenResult tryToConsumeServerRequestInQueue(String address, int count, long flowId, boolean prioritized) throws ExecutionException, InterruptedException {
-        RequestFuture future = new RequestFuture();
+    public static TokenResult tryToConsumeServerRequestInQueue(String address, int count, long flowId, boolean prioritized) {
+        RequestFuture<TokenResult> future = new RequestFuture<TokenResult>();
         ClusterRequest<ConcurrentFlowAcquireRequestData> request = new ClusterRequest<>();
         ConcurrentFlowAcquireRequestData data = new ConcurrentFlowAcquireRequestData();
         data.setCount(count);
@@ -47,10 +60,16 @@ public class BlockRequestWaitQueue {
         if (!blockingQueue.offer(entity)) {
             return new TokenResult(TokenResultStatus.BLOCKED);
         }
-        Object res = future.get();
-        if (res instanceof TokenResult) {
-            return (TokenResult) res;
-        } else {
+
+        TokenResult res = null;
+        try {
+            res = future.get();
+            if (res != null) {
+                return res;
+            } else {
+                return new TokenResult(TokenResultStatus.BLOCKED);
+            }
+        } catch (Exception e) {
             return new TokenResult(TokenResultStatus.BLOCKED);
         }
     }
@@ -70,8 +89,12 @@ public class BlockRequestWaitQueue {
                         }
                         long flowId = res.getRequest().getData().getFlowId();
                         FlowRule rule = ClusterFlowRuleManager.getFlowRuleById(flowId);
-                        int  acquireCount= res.getRequest().getData().getCount();
-                        long maxWaitTime = (long) (rule.getMaxQueueingTimeMs() * rate);
+                        if (rule == null) {
+                            applyResult(res, new TokenResult(TokenResultStatus.BLOCKED));
+                            continue;
+                        }
+                        int acquireCount = res.getRequest().getData().getCount();
+                        long maxWaitTime = rule.getMaxQueueingTimeMs();
                         if (System.currentTimeMillis() - res.getCreatTime() > maxWaitTime) {
                             ClusterServerStatLogUtil.log("concurrent|queue|block|" + flowId, acquireCount);
                             applyResult(res, new TokenResult(TokenResultStatus.BLOCKED));
@@ -123,7 +146,7 @@ public class BlockRequestWaitQueue {
     }
 
     private static void applyResult(RequestInfoEntity entity, TokenResult result) {
-        System.out.println("通过队列发放"+result.getStatus());
+        System.out.println("通过队列发放" + result.getStatus());
         if (entity == null) {
             return;
         }

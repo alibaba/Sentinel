@@ -1,7 +1,25 @@
+/*
+ * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent;
 
 import java.util.concurrent.*;
 
+/**
+ * @author yunfeiyanggzq
+ */
 public class RequestFuture<V> implements Future<V> {
 
     protected volatile Object result;
@@ -64,10 +82,6 @@ public class RequestFuture<V> implements Future<V> {
     }
 
 
-    public boolean isSuccess() {
-        return result == null ? false : !(result instanceof CauseHolder);
-    }
-
     public V getNow() {
         return (V) (result == SUCCESS_SIGNAL ? null : result);
     }
@@ -95,7 +109,7 @@ public class RequestFuture<V> implements Future<V> {
             synchronized (this) {
                 while (!isDone()) {
                     try {
-                        wait(); // 释放锁进入waiting状态，等待其它线程调用本对象的notify()/notifyAll()方法
+                        wait();
                     } catch (InterruptedException e) {
                         if (interruptable) {
                             throw e;
@@ -112,15 +126,12 @@ public class RequestFuture<V> implements Future<V> {
         return this;
     }
 
-    public boolean await(long timeoutMillis) throws InterruptedException {
-        return await0(TimeUnit.MILLISECONDS.toNanos(timeoutMillis), true);
-    }
 
     public boolean await(long timeout, TimeUnit unit) throws InterruptedException {
-        return await0(unit.toNanos(timeout), true);
+        return await0(unit.toNanos(timeout));
     }
 
-    private boolean await0(long timeoutNanos, boolean interruptable) throws InterruptedException {
+    private boolean await0(long timeoutNanos) throws InterruptedException {
         if (isDone()) {
             return true;
         }
@@ -129,7 +140,7 @@ public class RequestFuture<V> implements Future<V> {
             return isDone();
         }
 
-        if (interruptable && Thread.interrupted()) {
+        if (true && Thread.interrupted()) {
             throw new InterruptedException(toString());
         }
 
@@ -151,7 +162,7 @@ public class RequestFuture<V> implements Future<V> {
                     try {
                         wait(waitTime / 1000000, (int) (waitTime % 1000000));
                     } catch (InterruptedException e) {
-                        if (interruptable) {
+                        if (true) {
                             throw e;
                         } else {
                             interrupted = true;
@@ -175,56 +186,9 @@ public class RequestFuture<V> implements Future<V> {
         }
     }
 
-    public RequestFuture<V> awaitUninterruptibly() {
-        try {
-            return await0(false);
-        } catch (InterruptedException e) { // 这里若抛异常了就无法处理了
-            throw new java.lang.InternalError();
-        }
-    }
-
-    public boolean awaitUninterruptibly(long timeoutMillis) {
-        try {
-            return await0(TimeUnit.MILLISECONDS.toNanos(timeoutMillis), false);
-        } catch (InterruptedException e) {
-            throw new java.lang.InternalError();
-        }
-    }
-
-    public boolean awaitUninterruptibly(long timeout, TimeUnit unit) {
-        try {
-            return await0(unit.toNanos(timeout), false);
-        } catch (InterruptedException e) {
-            throw new java.lang.InternalError();
-        }
-    }
-
-    protected RequestFuture<V> setFailure(Throwable cause) {
-        if (setFailure0(cause)) {
-            return this;
-        }
-        throw new IllegalStateException("complete already: " + this);
-    }
-
-    private boolean setFailure0(Throwable cause) {
-        if (isDone()) {
-            return false;
-        }
-
-        synchronized (this) {
-            if (isDone()) {
-                return false;
-            }
-            result = new CauseHolder(cause);
-            notifyAll();
-        }
-
-        return true;
-    }
-
-    protected RequestFuture<V> setSuccess(Object result) {
-        if (setSuccess0(result)) { // 设置成功后通知监听器
-            return this;
+    protected void setSuccess(Object result) {
+        if (setSuccess0(result)) {
+            return;
         }
         throw new IllegalStateException("complete already: " + this);
     }

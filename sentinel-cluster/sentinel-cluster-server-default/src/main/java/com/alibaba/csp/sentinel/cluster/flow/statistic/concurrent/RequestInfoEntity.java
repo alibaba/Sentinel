@@ -1,5 +1,21 @@
+/*
+ * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent;
 
+import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.request.ClusterRequest;
 import com.alibaba.csp.sentinel.cluster.request.Request;
 import com.alibaba.csp.sentinel.cluster.request.data.ConcurrentFlowAcquireRequestData;
@@ -14,7 +30,7 @@ public class RequestInfoEntity {
     private String address;
     private ClusterRequest<ConcurrentFlowAcquireRequestData> request;
     private boolean isServerRequest;
-    private RequestFuture future;
+    private RequestFuture<TokenResult> future;
 
     public RequestInfoEntity(ChannelHandlerContext ctx, String address, ClusterRequest<ConcurrentFlowAcquireRequestData> request) {
         this.ctx = ctx;
@@ -23,7 +39,7 @@ public class RequestInfoEntity {
         this.creatTime = System.currentTimeMillis();
     }
 
-    public RequestInfoEntity( String address, ClusterRequest<ConcurrentFlowAcquireRequestData> request,RequestFuture future) {
+    public RequestInfoEntity( String address, ClusterRequest<ConcurrentFlowAcquireRequestData> request,RequestFuture<TokenResult> future) {
         this.address = address;
         this.request = request;
         this.future=future;

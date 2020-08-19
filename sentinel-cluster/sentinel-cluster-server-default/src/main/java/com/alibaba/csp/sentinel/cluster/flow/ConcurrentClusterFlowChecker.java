@@ -58,6 +58,7 @@ final public class ConcurrentClusterFlowChecker {
             // check again whether the request can pass.
             if (nowCalls.get() + acquireCount > calcGlobalThreshold(rule)) {
                 ClusterServerStatLogUtil.log("concurrent|block|" + flowId, acquireCount);
+                // 目的是让之后的操作放弃锁避免死锁
                 block = true;
             } else {
                 nowCalls.getAndAdd(acquireCount);
@@ -101,11 +102,7 @@ final public class ConcurrentClusterFlowChecker {
     private static TokenResult applyResult(String clientAddress,/*@Valid*/ FlowRule rule, int acquireCount, boolean prioritized) {
         if (prioritized && clientAddress.equals(HostNameUtil.getIp()) && rule.getClusterConfig().getAcquireRefuseStrategy() == RuleConstant.QUEUE_BLOCK_STRATEGY) {
             long flowId = rule.getClusterConfig().getFlowId();
-            try {
-                return BlockRequestWaitQueue.tryToConsumeServerRequestInQueue(clientAddress, acquireCount, flowId, true);
-            } catch (Exception e) {
-                return new TokenResult(TokenResultStatus.BLOCKED);
-            }
+            return BlockRequestWaitQueue.tryToConsumeServerRequestInQueue(clientAddress, acquireCount, flowId, true);
         } else {
             return new TokenResult(TokenResultStatus.BLOCKED);
         }
