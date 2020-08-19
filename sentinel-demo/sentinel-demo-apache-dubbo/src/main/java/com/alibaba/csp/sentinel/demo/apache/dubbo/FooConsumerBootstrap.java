@@ -15,20 +15,17 @@
  */
 package com.alibaba.csp.sentinel.demo.apache.dubbo;
 
-import com.alibaba.csp.sentinel.adapter.dubbo.fallback.DubboFallbackRegistry;
+import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboAdapterGlobalConfig;
 import com.alibaba.csp.sentinel.demo.apache.dubbo.consumer.ConsumerConfiguration;
 import com.alibaba.csp.sentinel.demo.apache.dubbo.consumer.FooServiceConsumer;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.SentinelRpcException;
-import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
-import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -125,18 +122,18 @@ public class FooConsumerBootstrap {
     }
 
     public static void registryCustomFallback() {
-        DubboFallbackRegistry.setConsumerFallback(
+        DubboAdapterGlobalConfig.setConsumerFallback(
                 (invoker, invocation, ex) -> AsyncRpcResult.newDefaultAsyncResult("fallback", invocation));
 
     }
 
     public static void registryCustomFallbackForCustomException() {
-        DubboFallbackRegistry.setConsumerFallback(
+        DubboAdapterGlobalConfig.setConsumerFallback(
                 (invoker, invocation, ex) -> AsyncRpcResult.newDefaultAsyncResult(new RuntimeException("fallback"), invocation));
     }
 
     public static void registryCustomFallbackWhenFallbackError() {
-        DubboFallbackRegistry.setConsumerFallback(
+        DubboAdapterGlobalConfig.setConsumerFallback(
                 (invoker, invocation, ex) -> {
                     throw new RuntimeException("fallback");
                 });
