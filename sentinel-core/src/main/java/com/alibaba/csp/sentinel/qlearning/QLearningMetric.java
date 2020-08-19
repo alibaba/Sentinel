@@ -140,6 +140,9 @@ public class QLearningMetric {
         double maxValue = Double.MIN_VALUE;
         double value;
         int policyGotoAction = 0;
+        if(!Qtable.containsKey(state)){
+            return policyGotoAction;
+        }
         for (int a = 0; a < actionsCount; a++) {
             value = Qtable.get(state)[a];
             if (value >= maxValue) {

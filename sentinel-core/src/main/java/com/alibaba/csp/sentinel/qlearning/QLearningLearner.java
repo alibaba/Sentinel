@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.qlearning;
 
+import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.system.SystemBlockException;
@@ -92,11 +93,11 @@ public class QLearningLearner {
         int a = qInfo.getAction();
         double u = qInfo.getUtility();
 
-        double nextUtility = qLearningMetric.calculateUtility(node.successQps(), node.avgRt());
+        double nextUtility = qLearningMetric.calculateUtility(Constants.ENTRY_NODE.successQps(), Constants.ENTRY_NODE.avgRt());
 
         int r = qLearningMetric.getReward(a,u, nextUtility);
         double q = qLearningMetric.getQValue(s, a);
-        double maxQ = qLearningMetric.getMaxQ(SystemRuleManager.getCurrentCpuUsage(), node.passQps(), node.avgRt(), 0);
+        double maxQ = qLearningMetric.getMaxQ(SystemRuleManager.getCurrentCpuUsage(), Constants.ENTRY_NODE.passQps(), Constants.ENTRY_NODE.avgRt(), 0);
         double qUpdated = qLearningMetric.updateQ(q, r, maxQ);
 
         qLearningMetric.setQValue(s, a, qUpdated);
@@ -104,7 +105,7 @@ public class QLearningLearner {
 
     private synchronized QInfo takeAction(DefaultNode node) {
 
-        String state = qLearningMetric.locateState(SystemRuleManager.getCurrentCpuUsage(), node.passQps(), node.avgRt(), 0);
+        String state = qLearningMetric.locateState(SystemRuleManager.getCurrentCpuUsage(), Constants.ENTRY_NODE.passQps(), Constants.ENTRY_NODE.avgRt(), 0);
         int action;
         if (qLearningMetric.isTrain()) {
             //随机选择
@@ -115,7 +116,7 @@ public class QLearningLearner {
         }
         qLearningMetric.setAction(action);
 
-        double utility = qLearningMetric.calculateUtility(node.successQps(), node.avgRt());
+        double utility = qLearningMetric.calculateUtility(Constants.ENTRY_NODE.successQps(), Constants.ENTRY_NODE.avgRt());
         QInfo qInfo = new QInfo();
         qInfo.setQInfo(state, action, utility);
 
