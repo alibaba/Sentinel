@@ -15,10 +15,25 @@
  */
 package com.alibaba.csp.sentinel.dashboard;
 
+import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayFlowRule;
+import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayRuleManager;
+import com.alibaba.csp.sentinel.dashboard.rule.nacos.NacosConfig;
+import com.alibaba.csp.sentinel.dashboard.rule.nacos.NacosConfigUtil;
+import com.alibaba.csp.sentinel.datasource.Converter;
+import com.alibaba.csp.sentinel.datasource.FileRefreshableDataSource;
+import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
+import com.alibaba.csp.sentinel.datasource.nacos.NacosDataSource;
 import com.alibaba.csp.sentinel.init.InitExecutor;
 
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * Sentinel dashboard application.
@@ -30,10 +45,22 @@ public class DashboardApplication {
 
     public static void main(String[] args) {
         triggerSentinelInit();
+//        init();
         SpringApplication.run(DashboardApplication.class, args);
     }
 
     private static void triggerSentinelInit() {
         new Thread(() -> InitExecutor.doInit()).start();
     }
+//
+//    private static void init() {
+//        String remoteAddress = "10.39.51.6:8848";
+//        String  dataId = "gateway-sentinel-gateway-flow-rules-dashboard";
+//        String  groupId= "DEFAULT_GROUP";
+//        Converter<String, Set<GatewayFlowRule>> parser = source -> JSON.parseObject(source, new TypeReference<Set<GatewayFlowRule>>() {
+//        });
+//        ReadableDataSource<String, Set<GatewayFlowRule>> nacosDataSource = new NacosDataSource<>(remoteAddress, groupId, dataId, parser);
+////        FlowRuleManager.register2Property(nacosDataSource.getProperty());
+//        GatewayRuleManager.register2Property(nacosDataSource.getProperty());
+//    }
 }

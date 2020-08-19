@@ -37,11 +37,11 @@ public class NacosDataSourceDemo {
 
     private static final String KEY = "TestResource";
     // nacos server ip
-    private static final String remoteAddress = "localhost";
+    private static final String remoteAddress = "10.39.51.6:8848";
     // nacos group
-    private static final String groupId = "Sentinel:Demo";
+    private static final String groupId = "DEFAULT_GROUP";
     // nacos dataId
-    private static final String dataId = "com.alibaba.csp.sentinel.demo.flow.rule";
+    private static final String dataId = "gateway-sentinel-gateway-flow-rules";
     // if change to true, should be config NACOS_NAMESPACE_ID
     private static boolean isDemoNamespace = false;
     // fill your namespace id,if you want to use namespace. for example: 0f5c7314-4983-4022-ad5a-347de1d1057d,you can get it on nacos's console
@@ -65,6 +65,7 @@ public class NacosDataSourceDemo {
                 source -> JSON.parseObject(source, new TypeReference<List<FlowRule>>() {
                 }));
         FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
+
     }
 
     private static void loadMyNamespaceRules() {
