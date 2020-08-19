@@ -15,7 +15,7 @@
  */
 package com.alibaba.csp.sentinel.demo.apache.dubbo;
 
-import com.alibaba.csp.sentinel.adapter.dubbo.fallback.DubboFallbackRegistry;
+import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboAdapterGlobalConfig;
 import com.alibaba.csp.sentinel.demo.apache.dubbo.consumer.ConsumerConfiguration;
 import com.alibaba.csp.sentinel.demo.apache.dubbo.consumer.FooServiceConsumer;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
@@ -102,7 +102,7 @@ public class FooConsumerExceptionDegradeBootstrap {
     }
 
     public static void registryCustomFallback() {
-        DubboFallbackRegistry.setConsumerFallback(
+        DubboAdapterGlobalConfig.setConsumerFallback(
                 (invoker, invocation, ex) -> AsyncRpcResult.newDefaultAsyncResult("fallback", invocation));
 
     }

@@ -36,7 +36,7 @@ public abstract class BaseSentinelDubboFilter implements Filter {
      * @param invocation
      * @return
      */
-    abstract String getMethodName(Invoker invoker, Invocation invocation);
+    abstract String getMethodName(Invoker invoker, Invocation invocation, String prefix);
 
     /**
      * Get interface name of dubbo rpc
@@ -44,7 +44,7 @@ public abstract class BaseSentinelDubboFilter implements Filter {
      * @param invoker
      * @return
      */
-    abstract String getInterfaceName(Invoker invoker);
+    abstract String getInterfaceName(Invoker invoker, String prefix);
 
 
 }
