@@ -34,24 +34,13 @@ import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
-import org.apache.dubbo.rpc.AppResponse;
-import org.apache.dubbo.rpc.AsyncRpcResult;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.InvokeMode;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.support.RpcUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 import static com.alibaba.csp.sentinel.slots.block.RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
@@ -172,7 +161,7 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
         Invoker invoker = DubboTestUtil.getDefaultMockInvoker();
 
         when(invocation.getAttachment(ASYNC_KEY)).thenReturn(Boolean.TRUE.toString());
-        initFlowRule(consumerFilter.getMethodName(invoker, invocation));
+        initFlowRule(consumerFilter.getMethodName(invoker, invocation, null));
         invokeDubboRpc(false, invoker, invocation);
         invokeDubboRpc(false, invoker, invocation);
 
@@ -244,7 +233,7 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
         // As not call ContextUtil.enter(resourceName, application) in SentinelDubboConsumerFilter, use default context
         // In actual project, a consumer is usually also a provider, the context will be created by SentinelDubboProviderFilter
         // If consumer is on the top of Dubbo RPC invocation chain, use default context
-        String resourceName = consumerFilter.getMethodName(invoker, invocation);
+        String resourceName = consumerFilter.getMethodName(invoker, invocation, null);
         assertEquals(com.alibaba.csp.sentinel.Constants.CONTEXT_DEFAULT_NAME, context.getName());
         assertEquals("", context.getOrigin());
 
@@ -297,7 +286,7 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
         // As not call ContextUtil.enter(resourceName, application) in SentinelDubboConsumerFilter, use default context
         // In actual project, a consumer is usually also a provider, the context will be created by SentinelDubboProviderFilter
         // If consumer is on the top of Dubbo RPC invocation chain, use default context
-        String resourceName = consumerFilter.getMethodName(invoker, invocation);
+        String resourceName = consumerFilter.getMethodName(invoker, invocation, null);
         assertEquals(com.alibaba.csp.sentinel.Constants.CONTEXT_DEFAULT_NAME, context.getName());
         assertEquals("", context.getOrigin());
 
@@ -344,7 +333,7 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
     private void verifyInvocationStructureForCallFinish(Invoker invoker, Invocation invocation) {
         Context context = ContextUtil.getContext();
         assertNull(context);
-        String methodResourceName = consumerFilter.getMethodName(invoker, invocation);
+        String methodResourceName = consumerFilter.getMethodName(invoker, invocation, null);
         Entry[] entries = (Entry[]) RpcContext.getContext().get(methodResourceName);
         assertNull(entries);
     }
