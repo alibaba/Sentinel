@@ -20,6 +20,7 @@ import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboAdapterGlobalConfig;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -74,7 +75,8 @@ public class SentinelDubboProviderFilter extends BaseSentinelDubboFilter {
             // at entrance of invocation chain only (for inbound traffic).
             ContextUtil.enter(methodResourceName, origin);
             interfaceEntry = SphU.entry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN);
-            methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN, invocation.getArguments());
+            methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN,
+                invocation.getArguments());
             Result result = invoker.invoke(invocation);
             if (result.hasException()) {
                 Tracer.traceEntry(result.getException(), interfaceEntry);
@@ -97,7 +99,6 @@ public class SentinelDubboProviderFilter extends BaseSentinelDubboFilter {
             ContextUtil.exit();
         }
     }
-
 
 }
 
