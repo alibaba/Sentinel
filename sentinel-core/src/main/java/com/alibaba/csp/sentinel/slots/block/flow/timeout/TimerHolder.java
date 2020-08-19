@@ -15,12 +15,9 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow.timeout;
 
-import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import io.netty.util.HashedWheelTimer;
-import io.netty.util.Timeout;
 
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -36,7 +33,8 @@ public class TimerHolder {
             "DefaultTimer" + DEFAULT_TICK_DURATION, true),
             DEFAULT_TICK_DURATION, TimeUnit.MILLISECONDS);
 
-    private TimerHolder() {}
+    private TimerHolder() {
+    }
 
     /**
      * Get a singleton instance of {@link HashedWheelTimer}. <br>

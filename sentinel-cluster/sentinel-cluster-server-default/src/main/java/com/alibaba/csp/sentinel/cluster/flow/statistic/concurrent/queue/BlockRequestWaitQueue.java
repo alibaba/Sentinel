@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class BlockRequestWaitQueue {
 
-    private static BlockingQueue<RequestInfoEntity> blockingQueue = new ArrayBlockingQueue<>(1000);
+    private static BlockingQueue<RequestInfoEntity> blockingQueue = new LinkedBlockingQueue<>(1000);
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static ExecutorService consumerPool = Executors.newFixedThreadPool(1);
@@ -149,7 +149,7 @@ public class BlockRequestWaitQueue {
     }
 
     private static void applyResult(RequestInfoEntity entity, TokenResult result) {
-        System.out.println("通过队列发放" + result.getStatus());
+        System.out.println("通过队列发放tokken|" + result.getStatus()+"|等待时间"+(System.currentTimeMillis()-entity.getCreatTime()));
         if (entity == null) {
             return;
         }
