@@ -72,6 +72,9 @@ public class DefaultSlotChainBuilderTest {
         assertTrue(next instanceof FlowSlot);
 
         next = next.getNext();
+        assertTrue(next instanceof QLearningSlot);
+
+        next = next.getNext();
         assertTrue(next instanceof DegradeSlot);
 
         next = next.getNext();
