@@ -20,9 +20,6 @@ import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.ResourceTypeConstants;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
-import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig;
-import com.alibaba.csp.sentinel.adapter.dubbo.fallback.DubboFallbackRegistry;
-import com.alibaba.csp.sentinel.adapter.dubbo.origin.DubboOriginParserRegistry;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
@@ -56,7 +53,7 @@ public class SentinelDubboProviderFilter extends AbstractDubboFilter implements 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         // Get origin caller.
-        String origin = DubboOriginParserRegistry.getDubboOriginParser().parse(invoker, invocation);
+        String origin = DubboAdapterGlobalConfig.getOriginParser().parse(invoker, invocation);
         if (null == origin) {
             origin = "";
         }
@@ -64,11 +61,12 @@ public class SentinelDubboProviderFilter extends AbstractDubboFilter implements 
         Entry interfaceEntry = null;
         Entry methodEntry = null;
         try {
-            String resourceName = getResourceName(invoker, invocation, DubboConfig.getDubboProviderPrefix());
-            String interfaceName = invoker.getInterface().getName();
-            ContextUtil.enter(resourceName, origin);
+            String prefix = DubboAdapterGlobalConfig.getDubboProviderPrefix();
+            String methodResourceName = getMethodResourceName(invoker, invocation, prefix);
+            String interfaceName = getInterfaceName(invoker, prefix);
+            ContextUtil.enter(methodResourceName, origin);
             interfaceEntry = SphU.entry(interfaceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN);
-            methodEntry = SphU.entry(resourceName, ResourceTypeConstants.COMMON_RPC,
+            methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC,
                 EntryType.IN, invocation.getArguments());
 
             Result result = invoker.invoke(invocation);
@@ -80,7 +78,7 @@ public class SentinelDubboProviderFilter extends AbstractDubboFilter implements 
             }
             return result;
         } catch (BlockException e) {
-            return DubboFallbackRegistry.getProviderFallback().handle(invoker, invocation, e);
+            return DubboAdapterGlobalConfig.getProviderFallback().handle(invoker, invocation, e);
         } catch (RpcException e) {
             Tracer.traceEntry(e, interfaceEntry);
             Tracer.traceEntry(e, methodEntry);
