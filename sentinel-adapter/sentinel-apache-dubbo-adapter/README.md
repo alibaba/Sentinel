@@ -1,4 +1,4 @@
-# Sentinel Apache Dubbo Adapter
+# Sentinel Apache Dubbo Adapter (for 2.7.x+)
 
 > Note: 中文文档请见[此处](https://github.com/alibaba/Sentinel/wiki/主流框架的适配#dubbo)。
 
@@ -21,7 +21,7 @@ To use Sentinel Dubbo Adapter, you can simply add the following dependency to yo
 The Sentinel filters are **enabled by default**. Once you add the dependency,
 the Dubbo services and methods will become protected resources in Sentinel,
 which can leverage Sentinel's flow control and guard ability when rules are configured.
-Demos can be found in [sentinel-demo-dubbo](https://github.com/alibaba/Sentinel/tree/master/sentinel-demo/sentinel-demo-dubbo).
+Demos can be found in [sentinel-demo-apache-dubbo](https://github.com/alibaba/Sentinel/tree/master/sentinel-demo/sentinel-demo-apache-dubbo).
 
 If you don't want the filters enabled, you can manually disable them. For example:
 
@@ -37,8 +37,8 @@ For more details of Dubbo filter, see [here](http://dubbo.apache.org/en-us/docs/
 
 The resource for Dubbo services has two granularities: service interface and service method.
 
-- Service interface：resourceName format is `interfaceName`，e.g. `com.alibaba.csp.sentinel.demo.dubbo.FooService`
-- Service method：resourceName format is `interfaceName:methodSignature`，e.g. `com.alibaba.csp.sentinel.demo.dubbo.FooService:sayHello(java.lang.String)`
+- Service interface: resourceName format is `interfaceName`, e.g. `com.alibaba.csp.sentinel.demo.dubbo.FooService`
+- Service method: resourceName format is `interfaceName:methodSignature`, e.g. `com.alibaba.csp.sentinel.demo.dubbo.FooService:sayHello(java.lang.String)`
 
 ## Flow control based on caller
 
