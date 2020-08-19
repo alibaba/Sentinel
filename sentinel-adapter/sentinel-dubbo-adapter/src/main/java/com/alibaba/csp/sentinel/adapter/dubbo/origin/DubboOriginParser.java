@@ -15,23 +15,23 @@
  */
 package com.alibaba.csp.sentinel.adapter.dubbo.origin;
 
-import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 
 /**
- * Customized origin parse in Dubbo provider filter. {@link Context#getOrigin()}
+ * Customized origin parser for Dubbo provider filter.
  *
  * @author tiecheng
+ * @since 1.8.0
  */
 public interface DubboOriginParser {
 
     /**
-     * Handle the origin parse.
+     * Parses the origin (caller) from Dubbo invocation.
      *
      * @param invoker    Dubbo invoker
      * @param invocation Dubbo invocation
-     * @return parse result
+     * @return the parsed origin
      */
     String parse(Invoker<?> invoker, Invocation invocation);
 
