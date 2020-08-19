@@ -21,6 +21,7 @@ import com.alibaba.csp.sentinel.qlearning.QLearningLearner;
 import com.alibaba.csp.sentinel.qlearning.QLearningMetric;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
+import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 
 /**
  * @author ZhouYanjun
@@ -31,8 +32,9 @@ public class QLearningSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, boolean prioritized, Object... args)
             throws Throwable {
-        qLearningLearner.learn(resourceWrapper, node);
-
+        if(SystemRuleManager.getCurrentCpuUsage() >= 0.6) {
+            qLearningLearner.learn(resourceWrapper, node);
+        }
         fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }
 

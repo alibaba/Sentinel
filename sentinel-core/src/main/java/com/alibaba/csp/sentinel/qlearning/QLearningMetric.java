@@ -25,39 +25,39 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class QLearningMetric {
 
+    public boolean isLearning = false;
+    public boolean isTraining = false;
     public boolean ifCheckCPU = true;
     public final int maxTrainNum = 50000000;
 
-    public boolean isLearning;
-
     private final int[] actionValues = new int[]{0, 1};
     private String[] actionNames = new String[]{"Block", "Accept"};
-    private volatile int actionsCount = actionValues.length;
+    private int actionsCount = actionValues.length;
 
     private volatile ConcurrentHashMap<String, double[]> Qtable = new ConcurrentHashMap<>();
 
-    private final double alpha = 0.1;//alpha控制了效用方程的qps的参数
-    private final double beta = 0.01;//控制了效用方程的RT的参数
+    private final double alpha = 0.5;//alpha控制了效用方程的qps的参数
+    private final double beta = 2.5;//控制了效用方程的RT的参数
 
     private final double delta = 0.8;
     private final double gamma = 0.05;
 
     private final double tolerance = 0.1;
+    private final int product = 100;
 
     private int rewardValue = 10;
     private int punishValue = -1;
-    private final double CpuInterval = 0.1;
-    private final int QpsInterval = 200;
-    private final int RtInterval = 10;
+    private final double CpuInterval = 0.05;
+    private final int QpsInterval = 50;
+    private final int RtInterval = 5;
     private final int ThreadInterval = 2;
-    private int statesCount;
 
-    private AtomicLong ct = new AtomicLong(0);
-    private AtomicInteger cn = new AtomicInteger(0);
+    private AtomicLong lastTime = new AtomicLong(0);
+    private AtomicInteger countNum = new AtomicInteger(0);
 
-    private AtomicInteger bi = new AtomicInteger(0);
+    private AtomicInteger batchInterval = new AtomicInteger(0);
 
-    private ConcurrentHashMap<Integer, QInfo> hm = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Integer, QInfo> qInfoConcurrentHashMap = new ConcurrentHashMap<>();
 
     private AtomicInteger action = new AtomicInteger(1);
 
@@ -88,15 +88,16 @@ public class QLearningMetric {
         return alpha * successQPS - beta * avgRt;
     }
 
-    public int getReward(double u, double nextU) {
-        double UtilityIncrease = nextU - u;
-        if (UtilityIncrease >= tolerance) {
+    public int getReward(int a,double u,double nextU) {
+        if( u == 0 && a == 1){
             return rewardValue;
-        } else if (UtilityIncrease <= -1 * tolerance) {
-            return punishValue;
-        } else {
-            return 0;
         }
+        else if( u == 0 && a == 0){
+            return punishValue;
+        }
+        double utilityIncrease = nextU - u;
+        double addPercentage = utilityIncrease / Math.abs(u);
+        return (int) (addPercentage * product);
     }
 
     public double getQValue(String state, int action) {
@@ -154,7 +155,7 @@ public class QLearningMetric {
     }
 
     public synchronized boolean isTrain() {
-        if (this.isLearning && this.getBi() <= this.maxTrainNum) {
+        if (this.isTraining && this.getBatchInterval() <= this.maxTrainNum) {
             return true;
         }
         return false;
@@ -164,12 +165,24 @@ public class QLearningMetric {
         return q + delta * (r + gamma * maxQ - q);
     }
 
+    public boolean isLearning() {
+        return isLearning;
+    }
+
+    public void setLearning(boolean ifLearning) {
+        this.isLearning = ifLearning;
+    }
+
     public void setIfCheckCPU(boolean ifCheckCPU) {
         this.ifCheckCPU = ifCheckCPU;
     }
 
-    public void setLearning(boolean learning) {
-        this.isLearning = learning;
+    public void setTraining(boolean training) {
+        this.isTraining = training;
+    }
+
+    public String[] getActionNames() {
+        return actionNames;
     }
 
     public void setQtable(ConcurrentHashMap<String, double[]> qtable) {
@@ -180,48 +193,48 @@ public class QLearningMetric {
         return Qtable;
     }
 
-    public long getCt() {
-        return ct.get();
+    public long getLastTime() {
+        return lastTime.get();
     }
 
-    public void setCt(long t) {
-        ct.set(t);
+    public void setLastTime(long t) {
+        lastTime.set(t);
     }
 
-    public int getCn() {
-        return cn.get();
+    public int getCountNum() {
+        return countNum.get();
     }
 
     public void addCn() {
-        cn.incrementAndGet();
+        countNum.incrementAndGet();
     }
 
-    public void resetCn() {
-        cn.set(0);
+    public void resetCountNum() {
+        countNum.set(0);
     }
 
-    public int getBi() {
-        return bi.get();
+    public int getBatchInterval() {
+        return batchInterval.get();
     }
 
     public int addBi() {
-        return bi.incrementAndGet();
+        return batchInterval.incrementAndGet();
     }
 
-    public void setBi(int i) {
-        bi.set(i);
+    public void setBatchInterval(int i) {
+        batchInterval.set(i);
     }
 
-    public ConcurrentHashMap<Integer, QInfo> getHm() {
-        return hm;
+    public ConcurrentHashMap<Integer, QInfo> getqInfoConcurrentHashMap() {
+        return qInfoConcurrentHashMap;
     }
 
     public void putHm(int i, QInfo qInfo) {
-        this.hm.put(i, qInfo);
+        this.qInfoConcurrentHashMap.put(i, qInfo);
     }
 
     public QInfo pushQInfo() {
-        QInfo qInfo = getHm().get(getBi());
+        QInfo qInfo = getqInfoConcurrentHashMap().get(getBatchInterval());
         return qInfo;
     }
 

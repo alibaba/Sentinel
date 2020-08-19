@@ -30,13 +30,20 @@ public class QLearningLearner {
     private long batchTime = 20;
 
     public synchronized void learn(ResourceWrapper resourceWrapper, DefaultNode node) throws SystemBlockException {
-        if (qLearningMetric.isTrain() && checkUpdate()) {
-            if (containsQInfo()) {
-                UpdateQ(node);
+        if(!qLearningMetric.isLearning()){
+            return;
+        }
+        try {
+            if (checkUpdate()) {
+                if (containsQInfo() && qLearningMetric.isTrain()) {
+                    UpdateQ(node);
+                }
+                int bi = qLearningMetric.addBi();
+                QInfo qInfo = takeAction(node);
+                qLearningMetric.putHm(bi, qInfo);
             }
-            int bi = qLearningMetric.addBi();
-            QInfo qInfo = takeAction(node);
-            qLearningMetric.putHm(bi, qInfo);
+        }catch (Exception e) {
+            e.printStackTrace();
         }
         if (qLearningMetric.getAction() == 0) {
             throw new SystemBlockException(resourceWrapper.getName(), "q-learning");
@@ -44,19 +51,19 @@ public class QLearningLearner {
     }
 
     private boolean checkUpdate() {
-        long ct = qLearningMetric.getCt();
-        long t = TimeUtil.currentTimeMillis();
+        long lastTime = qLearningMetric.getLastTime();
+        long currentTime = TimeUtil.currentTimeMillis();
 
         qLearningMetric.addCn();
 
-        if (ct <= 0) {
-            qLearningMetric.setCt(TimeUtil.currentTimeMillis());
+        if (lastTime <= 0) {
+            qLearningMetric.setLastTime(TimeUtil.currentTimeMillis());
 
             return true;
         }
-        if (t - ct >= batchTime || qLearningMetric.getCn() >= bacthNum) {
-            qLearningMetric.setCt(TimeUtil.currentTimeMillis());
-            qLearningMetric.resetCn();
+        if (currentTime - lastTime >= batchTime || qLearningMetric.getCountNum() >= bacthNum) {
+            qLearningMetric.setLastTime(TimeUtil.currentTimeMillis());
+            qLearningMetric.resetCountNum();
 
             return true;
         }
@@ -65,13 +72,13 @@ public class QLearningLearner {
     }
 
     private boolean containsQInfo() {
-        int bi = qLearningMetric.getBi();
+        int bi = qLearningMetric.getBatchInterval();
 
         if (bi == 0) {
             return false;
         }
 
-        if (qLearningMetric.getHm().containsKey(bi)) {
+        if (qLearningMetric.getqInfoConcurrentHashMap().containsKey(bi)) {
             return true;
         }
 
@@ -87,7 +94,7 @@ public class QLearningLearner {
 
         double nextUtility = qLearningMetric.calculateUtility(node.successQps(), node.avgRt());
 
-        int r = qLearningMetric.getReward(u, nextUtility);
+        int r = qLearningMetric.getReward(a,u, nextUtility);
         double q = qLearningMetric.getQValue(s, a);
         double maxQ = qLearningMetric.getMaxQ(SystemRuleManager.getCurrentCpuUsage(), node.passQps(), node.avgRt(), 0);
         double qUpdated = qLearningMetric.updateQ(q, r, maxQ);
