@@ -30,14 +30,13 @@ public class QLearningLearner {
     private long batchTime = 20;
 
     public synchronized void learn(ResourceWrapper resourceWrapper, DefaultNode node) throws SystemBlockException {
-        if (checkUpdate()) {
-            if (containsQInfo() && qLearningMetric.isTrain()) {
+        if (qLearningMetric.isTrain() && checkUpdate()) {
+            if (containsQInfo()) {
                 UpdateQ(node);
             }
             int bi = qLearningMetric.addBi();
             QInfo qInfo = takeAction(node);
             qLearningMetric.putHm(bi, qInfo);
-
         }
         if (qLearningMetric.getAction() == 0) {
             throw new SystemBlockException(resourceWrapper.getName(), "q-learning");
