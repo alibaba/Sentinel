@@ -76,7 +76,7 @@ public class SpiLoaderTest {
         assertNotNull(slots);
 
         // Total 8 default slot in sentinel-core
-        assertEquals(8, slots.size());
+        assertEquals(9, slots.size());
 
         // Get the first slot of slots
         ProcessorSlot firstSlot = slots.get(0);
@@ -99,7 +99,7 @@ public class SpiLoaderTest {
         assertNotNull(sortedSlots);
 
         // Total 8 default slot in sentinel-core
-        assertEquals(8, sortedSlots.size());
+        assertEquals(9, sortedSlots.size());
 
         // Verify the order of slot
         int index = 0;
@@ -133,7 +133,7 @@ public class SpiLoaderTest {
         assertNotNull(sortedSlots);
 
         // Total 8 default slot in sentinel-core
-        assertEquals(8, sortedSlots.size());
+        assertEquals(9, sortedSlots.size());
 
         // Verify the order of slot
         int index = 0;

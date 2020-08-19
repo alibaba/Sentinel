@@ -22,10 +22,12 @@ import com.alibaba.csp.sentinel.qlearning.QLearningMetric;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
+import com.alibaba.csp.sentinel.spi.SpiOrder;
 
 /**
  * @author ZhouYanjun
  */
+@SpiOrder(-11000)
 public class QLearningSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     private QLearningLearner qLearningLearner = new QLearningLearner();
 
