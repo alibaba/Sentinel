@@ -21,11 +21,10 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
 /**
- * Base Class of the {@link SentinelDubboProviderFilter} and {@link SentinelDubboConsumerFilter}.
+ * Base class of the {@link SentinelDubboProviderFilter} and {@link SentinelDubboConsumerFilter}.
  *
  * @author Zechao Zheng
  */
-
 public abstract class BaseSentinelDubboFilter implements Filter {
 
 
