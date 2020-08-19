@@ -20,13 +20,7 @@ SDK usage:
 ```java
 EurekaDataSource<List<FlowRule>> eurekaDataSource = new EurekaDataSource("app-id", "instance-id",
         Arrays.asList("http://localhost:8761/eureka", "http://localhost:8762/eureka", "http://localhost:8763/eureka"),
-        "rule-key", new Converter<String, List<FlowRule>>() {
-    @Override
-    public List<FlowRule> convert(String o) {
-        return JSON.parseObject(o, new TypeReference<List<FlowRule>>() {
-        });
-    }
-});
+        "rule-key", flowRuleParser);
 FlowRuleManager.register2Property(eurekaDataSource.getProperty());
 ```
 
@@ -54,11 +48,11 @@ public EurekaDataSource<List<FlowRule>> eurekaDataSource(EurekaInstanceConfig eu
 
 ```
 
-To refresh the rule dynamically,you need to call [Eureka-REST-operations](https://github.com/Netflix/eureka/wiki/Eureka-REST-operations)
+To refresh the rule dynamically, you need to call [Eureka-REST-operations](https://github.com/Netflix/eureka/wiki/Eureka-REST-operations)
 to update instance metadata:
 
 ```
 PUT /eureka/apps/{appID}/{instanceID}/metadata?{ruleKey}={json of the rules}
 ```
 
-Note: don't forget to encode your json string in the url.
+Note: don't forget to encode your JSON string in the url.

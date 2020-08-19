@@ -1,11 +1,11 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright 1999-2020 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -41,54 +41,50 @@ import java.util.List;
  * it may take longer to take effect.
  * </p>
  *
- * @author: liyang
- * @create: 2020-05-23 12:01
+ * @author liyang
+ * @since 1.8.0
  */
 public class EurekaDataSource<T> extends AutoRefreshDataSource<String, T> {
 
     private static final long DEFAULT_REFRESH_MS = 10000;
 
     /**
-     * connect timeout: 3s
+     * Default connect timeout: 3s
      */
     private static final int DEFAULT_CONNECT_TIMEOUT_MS = 3000;
 
     /**
-     * read timeout: 30s
+     * Default read timeout: 30s
      */
     private static final int DEFAULT_READ_TIMEOUT_MS = 30000;
 
-
-    private int connectTimeoutMills;
-
-
-    private int readTimeoutMills;
+    private final int connectTimeoutMills;
+    private final int readTimeoutMills;
 
     /**
-     * eureka instance appid
+     * Eureka instance app ID.
      */
-    private String appId;
+    private final String appId;
     /**
-     * eureka instance id
+     * Eureka instance id.
      */
-    private String instanceId;
+    private final String instanceId;
 
     /**
-     * collect of eureka server urls
+     * Eureka server URL list.
      */
-    private List<String> serviceUrls;
+    private final List<String> serviceUrls;
 
     /**
-     * metadata key of the rule source
+     * Metadata key of the rule source.
      */
-    private String ruleKey;
-
+    private final String ruleKey;
 
     public EurekaDataSource(String appId, String instanceId, List<String> serviceUrls, String ruleKey,
                             Converter<String, T> configParser) {
-        this(appId, instanceId, serviceUrls, ruleKey, configParser, DEFAULT_REFRESH_MS, DEFAULT_CONNECT_TIMEOUT_MS, DEFAULT_READ_TIMEOUT_MS);
+        this(appId, instanceId, serviceUrls, ruleKey, configParser, DEFAULT_REFRESH_MS, DEFAULT_CONNECT_TIMEOUT_MS,
+            DEFAULT_READ_TIMEOUT_MS);
     }
-
 
     public EurekaDataSource(String appId, String instanceId, List<String> serviceUrls, String ruleKey,
                             Converter<String, T> configParser, long refreshMs, int connectTimeoutMills,
@@ -110,7 +106,6 @@ public class EurekaDataSource<T> extends AutoRefreshDataSource<String, T> {
         this.readTimeoutMills = readTimeoutMills;
     }
 
-
     private List<String> ensureEndWithSlash(List<String> serviceUrls) {
         List<String> newServiceUrls = new ArrayList<>();
         for (String serviceUrl : serviceUrls) {
@@ -129,7 +124,6 @@ public class EurekaDataSource<T> extends AutoRefreshDataSource<String, T> {
     public String readSource() throws Exception {
         return fetchStringSourceFromEurekaMetadata(this.appId, this.instanceId, this.serviceUrls, ruleKey);
     }
-
 
     private String fetchStringSourceFromEurekaMetadata(String appId, String instanceId, List<String> serviceUrls,
                                                        String ruleKey) throws Exception {
@@ -152,18 +146,19 @@ public class EurekaDataSource<T> extends AutoRefreshDataSource<String, T> {
                 if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
                     String s = toString(conn.getInputStream());
                     String ruleString = JSON.parseObject(s)
-                            .getJSONObject("instance")
-                            .getJSONObject("metadata")
-                            .getString(ruleKey);
+                        .getJSONObject("instance")
+                        .getJSONObject("metadata")
+                        .getString(ruleKey);
                     return ruleString;
                 }
                 RecordLog.warn("[EurekaDataSource] Warn: retrying on another server if available " +
-                        "due to response code: {}, response message: {}", conn.getResponseCode(), toString(conn.getErrorStream()));
+                        "due to response code: {}, response message: {}", conn.getResponseCode(),
+                    toString(conn.getErrorStream()));
             } catch (Exception e) {
                 try {
                     if (conn != null) {
                         RecordLog.warn("[EurekaDataSource] Warn: failed to request " + conn.getURL() + " from "
-                                + InetAddress.getByName(conn.getURL().getHost()).getHostAddress(), e);
+                            + InetAddress.getByName(conn.getURL().getHost()).getHostAddress(), e);
                     }
                 } catch (Exception e1) {
                     RecordLog.warn("[EurekaDataSource] Warn: failed to request ", e1);
@@ -180,14 +175,12 @@ public class EurekaDataSource<T> extends AutoRefreshDataSource<String, T> {
         throw new EurekaMetadataFetchException("Can't get any data");
     }
 
-
     public static class EurekaMetadataFetchException extends Exception {
 
         public EurekaMetadataFetchException(String message) {
             super(message);
         }
     }
-
 
     private String toString(InputStream input) throws IOException {
         if (input == null) {
@@ -208,6 +201,5 @@ public class EurekaDataSource<T> extends AutoRefreshDataSource<String, T> {
         }
         return count;
     }
-
 
 }
