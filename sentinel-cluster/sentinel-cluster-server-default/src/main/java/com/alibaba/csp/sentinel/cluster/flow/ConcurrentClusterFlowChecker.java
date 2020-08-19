@@ -18,7 +18,7 @@ package com.alibaba.csp.sentinel.cluster.flow;
 import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
 import com.alibaba.csp.sentinel.cluster.flow.rule.ClusterFlowRuleManager;
-import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.BlockRequestWaitQueue;
+import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.queue.BlockRequestWaitQueue;
 import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.CurrentConcurrencyManager;
 import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.TokenCacheNode;
 import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.TokenCacheNodeManager;
@@ -49,7 +49,7 @@ final public class ConcurrentClusterFlowChecker {
         // check before enter the lock to improve the efficiency
         if (nowCalls.get() + acquireCount > calcGlobalThreshold(rule)) {
             ClusterServerStatLogUtil.log("concurrent|block|" + flowId, acquireCount);
-            return applyResult(clientAddress, rule, acquireCount, prioritized);
+            return applyBlockResult(clientAddress, rule, acquireCount, prioritized);
         }
 
         // ensure the atomicity of operations
@@ -57,7 +57,6 @@ final public class ConcurrentClusterFlowChecker {
         synchronized (nowCalls) {
             // check again whether the request can pass.
             if (nowCalls.get() + acquireCount > calcGlobalThreshold(rule)) {
-                ClusterServerStatLogUtil.log("concurrent|block|" + flowId, acquireCount);
                 // 目的是让之后的操作放弃锁避免死锁
                 block = true;
             } else {
@@ -66,7 +65,8 @@ final public class ConcurrentClusterFlowChecker {
         }
 
         if (block) {
-            return applyResult(clientAddress, rule, acquireCount, prioritized);
+            ClusterServerStatLogUtil.log("concurrent|block|" + flowId, acquireCount);
+            return applyBlockResult(clientAddress, rule, acquireCount, prioritized);
         }
 
         ClusterServerStatLogUtil.log("concurrent|pass|" + flowId, acquireCount);
@@ -99,7 +99,7 @@ final public class ConcurrentClusterFlowChecker {
         return new TokenResult(TokenResultStatus.RELEASE_OK);
     }
 
-    private static TokenResult applyResult(String clientAddress,/*@Valid*/ FlowRule rule, int acquireCount, boolean prioritized) {
+    private static TokenResult applyBlockResult(String clientAddress,/*@Valid*/ FlowRule rule, int acquireCount, boolean prioritized) {
         if (prioritized && clientAddress.equals(HostNameUtil.getIp()) && rule.getClusterConfig().getAcquireRefuseStrategy() == RuleConstant.QUEUE_BLOCK_STRATEGY) {
             long flowId = rule.getClusterConfig().getFlowId();
             return BlockRequestWaitQueue.tryToConsumeServerRequestInQueue(clientAddress, acquireCount, flowId, true);
@@ -119,5 +119,4 @@ final public class ConcurrentClusterFlowChecker {
                 return count * connectedCount;
         }
     }
-
 }

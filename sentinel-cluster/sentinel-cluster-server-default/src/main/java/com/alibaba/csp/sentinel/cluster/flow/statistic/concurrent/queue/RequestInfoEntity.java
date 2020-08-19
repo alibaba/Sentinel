@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent;
+package com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.queue;
 
 import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.request.ClusterRequest;
-import com.alibaba.csp.sentinel.cluster.request.Request;
 import com.alibaba.csp.sentinel.cluster.request.data.ConcurrentFlowAcquireRequestData;
 import io.netty.channel.ChannelHandlerContext;
 
