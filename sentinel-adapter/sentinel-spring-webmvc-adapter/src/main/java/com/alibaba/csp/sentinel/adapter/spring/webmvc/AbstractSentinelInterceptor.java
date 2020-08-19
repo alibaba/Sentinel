@@ -61,9 +61,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
                 String origin = parseOrigin(request);
                 String contextName = getContextName(request);
                 ContextUtil.enter(contextName, origin);
-                Entry entry = SphU.entry(resourceName, ResourceTypeConstants.COMMON_WEB, EntryType.IN);
-
-                setEntryInRequest(request, baseWebMvcConfig.getRequestAttributeName(), entry);
+                setEntryInRequest(request, baseWebMvcConfig.getRequestAttributeName(), resourceName);
             }
             return true;
         } catch (BlockException e) {
@@ -110,12 +108,22 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
                            ModelAndView modelAndView) throws Exception {
     }
 
-    protected void setEntryInRequest(HttpServletRequest request, String name, Entry entry) {
+    /**
+     * Note:
+     * If the attribute key already exists in request, don't create new {@link Entry},
+     * to guarantee the order of {@link Entry} in pair and avoid {@link com.alibaba.csp.sentinel.ErrorEntryFreeException}.
+     *
+     * Refer to:
+     * https://github.com/alibaba/Sentinel/issues/1531
+     * https://github.com/alibaba/Sentinel/issues/1482
+     */
+    protected void setEntryInRequest(HttpServletRequest request, String name, String resourceName) throws BlockException {
         Object attrVal = request.getAttribute(name);
         if (attrVal != null) {
             RecordLog.warn("[{}] The attribute key '{}' already exists in request, please set `requestAttributeName`",
                 getClass().getSimpleName(), name);
         } else {
+            Entry entry = SphU.entry(resourceName, ResourceTypeConstants.COMMON_WEB, EntryType.IN);
             request.setAttribute(name, entry);
         }
     }
