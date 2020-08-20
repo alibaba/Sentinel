@@ -66,10 +66,10 @@ public class DefaultSlotChainBuilderTest {
         assertTrue(next instanceof SystemSlot);
 
         next = next.getNext();
-        assertTrue(next instanceof FlowSlot);
+        assertTrue(next instanceof QLearningSlot);
 
         next = next.getNext();
-        assertTrue(next instanceof QLearningSlot);
+        assertTrue(next instanceof FlowSlot);
 
         next = next.getNext();
         assertTrue(next instanceof DegradeSlot);

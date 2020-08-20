@@ -27,7 +27,7 @@ import com.alibaba.csp.sentinel.spi.SpiOrder;
 /**
  * @author ZhouYanjun
  */
-@SpiOrder(-11000)
+@SpiOrder(-4000)
 public class QLearningSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     private QLearningLearner qLearningLearner = new QLearningLearner();
 

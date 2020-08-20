@@ -21,6 +21,7 @@ import com.alibaba.csp.sentinel.slots.DefaultSlotChainBuilder;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthoritySlot;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeSlot;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowSlot;
+import com.alibaba.csp.sentinel.slots.block.qlearning.QLearningSlot;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 import com.alibaba.csp.sentinel.slots.logger.LogSlot;
 import com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot;
@@ -109,6 +110,7 @@ public class SpiLoaderTest {
         assertTrue(sortedSlots.get(index++) instanceof StatisticSlot);
         assertTrue(sortedSlots.get(index++) instanceof AuthoritySlot);
         assertTrue(sortedSlots.get(index++) instanceof SystemSlot);
+        assertTrue(sortedSlots.get(index++) instanceof QLearningSlot);
         assertTrue(sortedSlots.get(index++) instanceof FlowSlot);
         assertTrue(sortedSlots.get(index++) instanceof DegradeSlot);
 
@@ -143,6 +145,7 @@ public class SpiLoaderTest {
         assertTrue(sortedSlots.get(index++) instanceof StatisticSlot);
         assertTrue(sortedSlots.get(index++) instanceof AuthoritySlot);
         assertTrue(sortedSlots.get(index++) instanceof SystemSlot);
+        assertTrue(sortedSlots.get(index++) instanceof QLearningSlot);
         assertTrue(sortedSlots.get(index++) instanceof FlowSlot);
         assertTrue(sortedSlots.get(index++) instanceof DegradeSlot);
 
