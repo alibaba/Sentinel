@@ -20,6 +20,7 @@ import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
 import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
 import com.alibaba.csp.sentinel.cluster.TokenService;
+import com.alibaba.csp.sentinel.cluster.client.PrioritizedRequestBlockStrategyProvider;
 import com.alibaba.csp.sentinel.cluster.client.ReleaseTokenStrategyProvider;
 import com.alibaba.csp.sentinel.cluster.client.TokenClientProvider;
 import com.alibaba.csp.sentinel.cluster.server.EmbeddedClusterTokenServerProvider;
@@ -151,8 +152,8 @@ public class FlowRuleChecker {
         return null;
     }
 
-    private static boolean passClusterCheck(FlowRule rule, Context context, DefaultNode node, int acquireCount,
-                                            boolean prioritized) {
+    public static boolean passClusterCheck(FlowRule rule, Context context, DefaultNode node, int acquireCount,
+                                           boolean prioritized) {
         try {
             TokenService clusterService = pickClusterService();
             if (clusterService == null) {
@@ -232,6 +233,9 @@ public class FlowRuleChecker {
             case TokenResultStatus.TOO_MANY_REQUEST:
                 return fallbackToLocalOrPass(rule, context, node, acquireCount, prioritized);
             case TokenResultStatus.BLOCKED:
+                if (rule.getGrade() == RuleConstant.FLOW_GRADE_THREAD && prioritized) {
+                    return doWithBlockTokenResult(rule, context, node, acquireCount, true);
+                }
             default:
                 return false;
         }
@@ -267,6 +271,19 @@ public class FlowRuleChecker {
             }
         } else {
             getReleaseTokenStrategy().releaseTokenWhenExitSlot(context);
+        }
+    }
+
+    private static PrioritizedRequestBlockStrategy getBlockStrategy() {
+        return PrioritizedRequestBlockStrategyProvider.getStrategy();
+    }
+
+    private static boolean doWithBlockTokenResult(FlowRule rule, Context context, DefaultNode node,
+                                                  int acquireCount, boolean prioritized) {
+        if (getBlockStrategy() == null) {
+            return false;
+        } else {
+            return getBlockStrategy().doWithBlockStrategy(rule, context, node, acquireCount, prioritized);
         }
     }
 }

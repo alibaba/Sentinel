@@ -21,10 +21,13 @@ import com.alibaba.csp.sentinel.cluster.flow.rule.ClusterFlowRuleManager;
 import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.CurrentConcurrencyManager;
 import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.TokenCacheNode;
 import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.TokenCacheNodeManager;
+import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.queue.BlockRequestWaitQueue;
 import com.alibaba.csp.sentinel.cluster.server.log.ClusterServerStatLogUtil;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.ClusterRuleConstant;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
+import com.alibaba.csp.sentinel.util.HostNameUtil;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -47,6 +50,7 @@ final public class ConcurrentClusterFlowChecker {
 
     public static TokenResult acquireConcurrentToken(/*@Valid*/ String clientAddress, FlowRule rule, int acquireCount, boolean prioritized) {
         long flowId = rule.getClusterConfig().getFlowId();
+        boolean block = false;
         AtomicInteger nowCalls = CurrentConcurrencyManager.get(flowId);
         if (nowCalls == null) {
             RecordLog.warn("[ConcurrentClusterFlowChecker] Fail to get nowCalls by flowId<{}>", flowId);
@@ -56,7 +60,7 @@ final public class ConcurrentClusterFlowChecker {
         // check before enter the lock to improve the efficiency
         if (nowCalls.get() + acquireCount > calcGlobalThreshold(rule)) {
             ClusterServerStatLogUtil.log("concurrent|block|" + flowId, acquireCount);
-            return new TokenResult(TokenResultStatus.BLOCKED);
+            return applyBlockResult(clientAddress, rule, acquireCount, prioritized);
         }
 
         // ensure the atomicity of operations
@@ -65,11 +69,18 @@ final public class ConcurrentClusterFlowChecker {
             // check again whether the request can pass.
             if (nowCalls.get() + acquireCount > calcGlobalThreshold(rule)) {
                 ClusterServerStatLogUtil.log("concurrent|block|" + flowId, acquireCount);
-                return new TokenResult(TokenResultStatus.BLOCKED);
+                // The purpose is to let the operations give up the lock to avoid deadlock.
+                block = true;
             } else {
                 nowCalls.getAndAdd(acquireCount);
             }
         }
+
+        if (block) {
+            ClusterServerStatLogUtil.log("concurrent|block|" + flowId, acquireCount);
+            return applyBlockResult(clientAddress, rule, acquireCount, prioritized);
+        }
+
         ClusterServerStatLogUtil.log("concurrent|pass|" + flowId, acquireCount);
         TokenCacheNode node = TokenCacheNode.generateTokenCacheNode(rule, acquireCount, clientAddress);
         TokenCacheNodeManager.putTokenCacheNode(node.getTokenId(), node);
@@ -97,5 +108,15 @@ final public class ConcurrentClusterFlowChecker {
         AtomicInteger nowCalls = CurrentConcurrencyManager.get(node.getFlowId());
         nowCalls.getAndAdd(-1 * acquireCount);
         ClusterServerStatLogUtil.log("concurrent|release|" + rule.getClusterConfig().getFlowId(), acquireCount);
+    }
+
+    private static TokenResult applyBlockResult(String clientAddress,/*@Valid*/ FlowRule rule, int acquireCount, boolean prioritized) {
+        if (prioritized && clientAddress.equals(HostNameUtil.getIp())
+                && rule.getClusterConfig().getAcquireRefuseStrategy() == RuleConstant.QUEUE_BLOCK_STRATEGY) {
+            long flowId = rule.getClusterConfig().getFlowId();
+            return BlockRequestWaitQueue.addServerRequestToWaitQueue(clientAddress, acquireCount, flowId, true);
+        } else {
+            return new TokenResult(TokenResultStatus.BLOCKED);
+        }
     }
 }
