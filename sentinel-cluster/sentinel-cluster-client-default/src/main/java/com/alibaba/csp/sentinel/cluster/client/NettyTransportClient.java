@@ -39,12 +39,7 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.ChannelPromise;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -234,6 +229,28 @@ public class NettyTransportClient implements ClusterTransportClient {
             return entry.getValue();
         } finally {
             TokenClientPromiseHolder.remove(xid);
+        }
+    }
+
+    @Override
+    public void sendRequestIgnoreResponse(ClusterRequest request) {
+        try {
+            channel.writeAndFlush(request).addListener(new ChannelFutureListener() {
+
+                @Override
+                public void operationComplete(ChannelFuture f) throws Exception {
+                    if (!f.isSuccess()) {
+                        RecordLog.error("[NettyTransportClient] send request failed.", f.cause());
+                    }
+                }
+
+            });
+        } catch (Exception e) {
+            if (null == channel) {
+                RecordLog.error("[NettyTransportClient] Channel is null.");
+            } else {
+                RecordLog.error("[NettyTransportClient] Exception caught when sending request{}, The address is {}.", request, channel.localAddress());
+            }
         }
     }
 

@@ -63,8 +63,9 @@ public class ClusterFlowConfig {
     /**
      * if the request(prioritized=true) is block,acquireRefuseStrategy will work..
      * 0:ignore and block.
-     * 1:try again .
-     * 2:try until success.
+     * 1: server wait in queue.
+     * 2:client try again .
+     * 3:client try until success.
      */
     private int acquireRefuseStrategy = RuleConstant.DEFAULT_BLOCK_STRATEGY;
 

@@ -15,14 +15,14 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow;
 
-import java.util.Collection;
-
+import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
-import com.alibaba.csp.sentinel.cluster.server.EmbeddedClusterTokenServerProvider;
-import com.alibaba.csp.sentinel.cluster.client.TokenClientProvider;
-import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
 import com.alibaba.csp.sentinel.cluster.TokenResult;
+import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
 import com.alibaba.csp.sentinel.cluster.TokenService;
+import com.alibaba.csp.sentinel.cluster.client.ReleaseTokenStrategyProvider;
+import com.alibaba.csp.sentinel.cluster.client.TokenClientProvider;
+import com.alibaba.csp.sentinel.cluster.server.EmbeddedClusterTokenServerProvider;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.DefaultNode;
@@ -31,8 +31,11 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
+import com.alibaba.csp.sentinel.util.HostNameUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.util.function.Function;
+
+import java.util.Collection;
 
 /**
  * Rule checker for flow control rules.
@@ -56,13 +59,17 @@ public class FlowRuleChecker {
         }
     }
 
+    public void release(Context context) {
+        exitSlot(context);
+    }
+
     public boolean canPassCheck(/*@NonNull*/ FlowRule rule, Context context, DefaultNode node,
-                                                    int acquireCount) {
+                                             int acquireCount) {
         return canPassCheck(rule, context, node, acquireCount, false);
     }
 
     public boolean canPassCheck(/*@NonNull*/ FlowRule rule, Context context, DefaultNode node, int acquireCount,
-                                                    boolean prioritized) {
+                                             boolean prioritized) {
         String limitApp = rule.getLimitApp();
         if (limitApp == null) {
             return true;
@@ -133,7 +140,7 @@ public class FlowRuleChecker {
 
             return selectReferenceNode(rule, context, node);
         } else if (RuleConstant.LIMIT_APP_OTHER.equals(limitApp)
-            && FlowRuleManager.isOtherOrigin(origin, rule.getResource())) {
+                && FlowRuleManager.isOtherOrigin(origin, rule.getResource())) {
             if (strategy == RuleConstant.STRATEGY_DIRECT) {
                 return context.getOriginNode();
             }
@@ -152,7 +159,7 @@ public class FlowRuleChecker {
                 return fallbackToLocalOrPass(rule, context, node, acquireCount, prioritized);
             }
             long flowId = rule.getClusterConfig().getFlowId();
-            TokenResult result = clusterService.requestToken(flowId, acquireCount, prioritized);
+            TokenResult result = requestToken(clusterService, rule, context, node, acquireCount, prioritized);
             return applyTokenResult(result, rule, context, node, acquireCount, prioritized);
             // If client is absent, then fallback to local mode.
         } catch (Throwable ex) {
@@ -161,6 +168,24 @@ public class FlowRuleChecker {
         // Fallback to local flow control when token client or server for this rule is not available.
         // If fallback is not enabled, then directly pass.
         return fallbackToLocalOrPass(rule, context, node, acquireCount, prioritized);
+    }
+
+
+    private static TokenResult requestToken(TokenService clusterService, FlowRule rule, Context context, DefaultNode node, int acquireCount, boolean prioritized) {
+        int grade = rule.getGrade();
+        long flowId = rule.getClusterConfig().getFlowId();
+        if (grade == RuleConstant.FLOW_GRADE_THREAD) {
+            String address = null;
+            if (ClusterStateManager.isServer()) {
+                address = HostNameUtil.getIp();
+            }
+            return clusterService.requestConcurrentToken(address, flowId, acquireCount, prioritized);
+        } else if (grade == RuleConstant.FLOW_GRADE_QPS) {
+            return clusterService.requestToken(flowId, acquireCount, prioritized);
+        } else {
+            RecordLog.warn("[FlowRuleChecker] Request cluster token unexpected grade,just pass", grade);
+            return new TokenResult(TokenResultStatus.OK);
+        }
     }
 
     private static boolean fallbackToLocalOrPass(FlowRule rule, Context context, DefaultNode node, int acquireCount,
@@ -188,6 +213,10 @@ public class FlowRuleChecker {
                                                          int acquireCount, boolean prioritized) {
         switch (result.getStatus()) {
             case TokenResultStatus.OK:
+                // Store the tokenId and start a resource timeout timer to release the timeout token if necessary.
+                if (rule.getGrade() == RuleConstant.FLOW_GRADE_THREAD) {
+                    setEntry(result, rule, context, node, acquireCount, prioritized);
+                }
                 return true;
             case TokenResultStatus.SHOULD_WAIT:
                 // Wait for next tick.
@@ -205,6 +234,39 @@ public class FlowRuleChecker {
             case TokenResultStatus.BLOCKED:
             default:
                 return false;
+        }
+    }
+
+    private static ReleaseTokenStrategy getReleaseTokenStrategy() {
+        return ReleaseTokenStrategyProvider.getStrategy();
+    }
+
+    private static void setEntry(TokenResult result, FlowRule rule, Context context, DefaultNode node,
+                                 int acquireCount, boolean prioritized) {
+        if (getReleaseTokenStrategy() == null) {
+            // if spi fail
+            Entry entry = context.getCurEntry();
+            if (entry != null) {
+                entry.setTokenId(result.getTokenId());
+            }
+        } else {
+            getReleaseTokenStrategy().doWithResourceTimeoutToken(result, rule, context, node, acquireCount, prioritized);
+        }
+    }
+
+    private static void exitSlot(Context context) {
+        if (getReleaseTokenStrategy() == null) {
+            // if spi fail
+            Entry entry = context.getCurEntry();
+            if (entry != null) {
+                long tokenId = entry.getTokenId();
+                TokenService server = pickClusterService();
+                if (server != null) {
+                    server.releaseConcurrentToken(tokenId);
+                }
+            }
+        } else {
+            getReleaseTokenStrategy().releaseTokenWhenExitSlot(context);
         }
     }
 }
