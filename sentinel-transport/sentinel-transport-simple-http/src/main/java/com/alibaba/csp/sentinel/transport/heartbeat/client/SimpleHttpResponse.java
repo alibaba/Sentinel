@@ -53,9 +53,6 @@ public class SimpleHttpResponse {
                 charset = Charset.forName(str.split("=")[1]);
             }
         }
-        if (charset == null) {
-            throw new IllegalArgumentException("charset is not allowed to be null");
-        }
     }
 
     private void parseCode() {
@@ -108,6 +105,9 @@ public class SimpleHttpResponse {
     }
 
     public String getBodyAsString() {
+        if (body == null || body.length == 0) {
+            return null;
+        }
         parseCharset();
         return new String(body, charset);
     }
