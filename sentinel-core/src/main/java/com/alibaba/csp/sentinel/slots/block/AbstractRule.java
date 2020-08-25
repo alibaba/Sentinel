@@ -79,6 +79,7 @@ public abstract class AbstractRule implements Rule {
         this.port = port;
     }
 
+    @Override
     public String getResource() {
         return resource;
     }

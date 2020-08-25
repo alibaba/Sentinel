@@ -76,14 +76,11 @@ public class PullConsumerDemo {
                     putMessageQueueOffset(mq, nextOffset);
                     consumer.updateConsumeOffset(mq, nextOffset);
                     switch (pullResult.getPullStatus()) {
-                        case FOUND:
-                            break;
-                        case NO_MATCHED_MSG:
-                            break;
                         case NO_NEW_MSG:
                             break SINGLE_MQ;
+                        case FOUND:
+                        case NO_MATCHED_MSG:
                         case OFFSET_ILLEGAL:
-                            break;
                         default:
                             break;
                     }

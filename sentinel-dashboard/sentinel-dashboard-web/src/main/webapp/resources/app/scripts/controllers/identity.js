@@ -162,6 +162,8 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
         strategy: 0,
         resource: resource,
         limitApp: 'default',
+        minRequestAmount: 5,
+        statIntervalMs: 1000,
         app: $scope.app,
         ip: ip,
         port: port
