@@ -85,7 +85,7 @@ public class SentinelDubboProviderFilterTest extends BaseTest {
         assertNotNull(context);
 
         // As ContextUtil.enter(resourceName, application) in SentinelDubboProviderFilter
-        String resourceName = filter.getResourceName(invoker, invocation);
+        String resourceName = filter.getMethodResourceName(invoker, invocation);
         assertEquals(resourceName, context.getName());
         assertEquals(originApplication, context.getOrigin());
 

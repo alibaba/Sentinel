@@ -15,9 +15,10 @@
  */
 package com.alibaba.csp.sentinel.adapter.dubbo.fallback;
 
+import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboAdapterGlobalConfig;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.csp.sentinel.slots.block.SentinelRpcException;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
+
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Result;
 import org.junit.After;
@@ -32,28 +33,31 @@ public class DubboFallbackRegistryTest {
 
     @Before
     public void setUp() {
-        DubboFallbackRegistry.setConsumerFallback(new DefaultDubboFallback());
+        DubboAdapterGlobalConfig.setConsumerFallback(new DefaultDubboFallback());
     }
 
     @After
     public void tearDown() {
-        DubboFallbackRegistry.setConsumerFallback(new DefaultDubboFallback());
+        DubboAdapterGlobalConfig.setConsumerFallback(new DefaultDubboFallback());
     }
 
-    @Test(expected = SentinelRpcException.class)
+    @Test
     public void testDefaultFallback() {
-        // Test for default.
+        // Test for default fallback.
         BlockException ex = new FlowException("xxx");
-        DubboFallbackRegistry.getConsumerFallback()
-            .handle(null, null, ex);
+        Result result = new DefaultDubboFallback().handle(null, null, ex);
+        Assert.assertTrue("The result should carry exception", result.hasException());
+        Assert.assertTrue(BlockException.isBlockException(result.getException()));
+        Assert.assertTrue(result.getException().getMessage().contains(ex.getClass().getSimpleName()));
     }
 
     @Test
     public void testCustomFallback() {
         BlockException ex = new FlowException("xxx");
-        DubboFallbackRegistry.setConsumerFallback(
-                (invoker, invocation, e) -> AsyncRpcResult.newDefaultAsyncResult("Error: " + e.getClass().getName(), invocation));
-        Result result = DubboFallbackRegistry.getConsumerFallback()
+        DubboAdapterGlobalConfig.setConsumerFallback(
+            (invoker, invocation, e) -> AsyncRpcResult
+                .newDefaultAsyncResult("Error: " + e.getClass().getName(), invocation));
+        Result result = DubboAdapterGlobalConfig.getConsumerFallback()
             .handle(null, null, ex);
         Assert.assertFalse("The invocation should not fail", result.hasException());
         Assert.assertEquals("Error: " + ex.getClass().getName(), result.getValue());

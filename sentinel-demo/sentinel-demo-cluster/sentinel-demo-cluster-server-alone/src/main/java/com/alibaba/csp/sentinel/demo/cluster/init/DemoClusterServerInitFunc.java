@@ -36,7 +36,7 @@ import com.alibaba.fastjson.TypeReference;
  */
 public class DemoClusterServerInitFunc implements InitFunc {
 
-    private final String remoteAddress = "localhost";
+    private final String remoteAddress = "localhost:8848";
     private final String groupId = "SENTINEL_GROUP";
     private final String namespaceSetDataId = "cluster-server-namespace-set";
     private final String serverTransportDataId = "cluster-server-transport-config";

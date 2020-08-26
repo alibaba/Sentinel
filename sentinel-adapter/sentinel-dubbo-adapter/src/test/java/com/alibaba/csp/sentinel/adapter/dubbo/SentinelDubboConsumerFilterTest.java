@@ -85,7 +85,7 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
         // As not call ContextUtil.enter(resourceName, application) in SentinelDubboConsumerFilter, use default context
         // In actual project, a consumer is usually also a provider, the context will be created by SentinelDubboProviderFilter
         // If consumer is on the top of Dubbo RPC invocation chain, use default context
-        String resourceName = filter.getResourceName(invoker, invocation);
+        String resourceName = filter.getMethodResourceName(invoker, invocation);
         assertEquals(Constants.CONTEXT_DEFAULT_NAME, context.getName());
         assertEquals("", context.getOrigin());
 

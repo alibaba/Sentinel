@@ -20,9 +20,10 @@ import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 
 /**
- * Default Dubbo origin parse.
+ * Default Dubbo origin parser.
  *
  * @author tiecheng
+ * @since 1.8.0
  */
 public class DefaultDubboOriginParser implements DubboOriginParser {
 
