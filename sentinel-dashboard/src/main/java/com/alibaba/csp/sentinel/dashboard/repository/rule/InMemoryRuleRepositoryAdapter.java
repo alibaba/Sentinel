@@ -37,8 +37,6 @@ public abstract class InMemoryRuleRepositoryAdapter<T extends RuleEntity> implem
 
     private Map<String, Map<Long, T>> appRules = new ConcurrentHashMap<>(16);
 
-    private static final int MAX_RULES_SIZE = 10000;
-
     @Override
     public T save(T entity) {
         if (entity.getId() == null) {
@@ -60,9 +58,6 @@ public abstract class InMemoryRuleRepositoryAdapter<T extends RuleEntity> implem
     @Override
     public List<T> saveAll(List<T> rules) {
         // TODO: check here.
-        allRules.clear();
-        machineRules.clear();
-        appRules.clear();
 
         if (rules == null) {
             return null;
