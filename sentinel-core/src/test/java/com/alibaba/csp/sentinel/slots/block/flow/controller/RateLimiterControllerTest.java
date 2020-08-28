@@ -33,44 +33,70 @@ import com.alibaba.csp.sentinel.node.Node;
 public class RateLimiterControllerTest {
 
     @Test
-    public void testPaceController_normal() throws InterruptedException {
+    public void testPaceController_normal1() throws InterruptedException {
         RateLimiterController paceController = new RateLimiterController(500, 10d);
         Node node = mock(Node.class);
 
         long start = TimeUtil.currentTimeMillis();
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 100; i++) {
             assertTrue(paceController.canPass(node, 1));
         }
         long end = TimeUtil.currentTimeMillis();
-        assertTrue((end - start) > 400);
+        assertTrue((end - start) > 9000);
+        assertTrue((end - start) <= 11000);
+    }
+    
+    @Test
+    public void testPaceController_normal2() throws InterruptedException {
+        RateLimiterController paceController = new RateLimiterController(500, 200d);
+        Node node = mock(Node.class);
+
+        long start = TimeUtil.currentTimeMillis();
+        for (int i = 0; i < 5000; i++) {
+            assertTrue(paceController.canPass(node, 1));
+        }
+        long end = TimeUtil.currentTimeMillis();
+        assertTrue((end - start) > 24000);
+        assertTrue((end - start) <= 26000);
     }
 
     @Test
-    public void testPaceController_timeout() throws InterruptedException {
-        final RateLimiterController paceController = new RateLimiterController(500, 10d);
+    public void testPaceController_timeout1() throws InterruptedException {
+        testPaceController_timeout0(15);
+    }
+    
+    @Test
+    public void testPaceController_timeout2() throws InterruptedException {
+        
+        testPaceController_timeout0(150);
+    }
+    
+    private void testPaceController_timeout0(int ratio) throws InterruptedException {
+        final RateLimiterController paceController = new RateLimiterController(500, ratio);
         final Node node = mock(Node.class);
 
         final AtomicInteger passcount = new AtomicInteger();
         final AtomicInteger blockcount = new AtomicInteger();
-        final CountDownLatch countDown = new CountDownLatch(1);
-
+        final CountDownLatch countDown = new CountDownLatch(10);
+        final int count = ratio * 2;
         final AtomicInteger done = new AtomicInteger();
+        long time = System.currentTimeMillis();
         for (int i = 0; i < 10; i++) {
             Thread thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    boolean pass = paceController.canPass(node, 1);
+                    for (int k = 0; k < count; k++) {
+                        
+                        boolean pass = paceController.canPass(node, 1);
 
-                    if (pass) {
-                        passcount.incrementAndGet();
-                    } else {
-                        blockcount.incrementAndGet();
+                        if (pass == true) {
+                            passcount.incrementAndGet();
+                        } else {
+                            blockcount.incrementAndGet();
+                        }
+                        done.incrementAndGet();
                     }
-                    done.incrementAndGet();
-
-                    if (done.get() >= 10) {
-                        countDown.countDown();
-                    }
+                    countDown.countDown();
                 }
 
             }, "Thread " + i);
@@ -78,11 +104,14 @@ public class RateLimiterControllerTest {
         }
 
         countDown.await();
-        System.out.println("pass:" + passcount.get());
-        System.out.println("block" + blockcount.get());
-        System.out.println("done" + done.get());
-        assertTrue(blockcount.get() > 0);
-
+        float ratio0 = (1000.f * passcount.get() / (System.currentTimeMillis() - time));
+        
+        System.out.println("pass: " + passcount.get());
+        System.out.println("block: " + blockcount.get());
+        System.out.println("done: " + done.get());
+        System.out.println("ratio: " + ratio0);
+        
+        assertTrue(Math.abs(ratio0 - ratio) <= ratio / 10);
     }
 
     @Test
