@@ -238,9 +238,7 @@ public class NettyTransportClient implements ClusterTransportClient {
     }
 
     private int getCurrentId() {
-        if (idGenerator.get() > MAX_ID) {
-            idGenerator.set(0);
-        }
+        idGenerator.compareAndSet(MAX_ID, 0);
         return idGenerator.incrementAndGet();
     }
 
