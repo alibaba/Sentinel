@@ -238,8 +238,12 @@ public class NettyTransportClient implements ClusterTransportClient {
     }
 
     private int getCurrentId() {
-        idGenerator.compareAndSet(MAX_ID, 0);
-        return idGenerator.incrementAndGet();
+        int pre, next;
+        do {
+            pre = idGenerator.get();
+            next = pre >= MAX_ID ? MIN_ID : pre + 1;
+        } while (!idGenerator.compareAndSet(pre, next));
+        return next;
     }
 
     /*public CompletableFuture<ClusterResponse> sendRequestAsync(ClusterRequest request) {
@@ -264,5 +268,6 @@ public class NettyTransportClient implements ClusterTransportClient {
         return future;
     }*/
 
+    private static final int MIN_ID = 1;
     private static final int MAX_ID = 999_999_999;
 }
