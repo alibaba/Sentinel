@@ -33,7 +33,10 @@ public class DegradeRuleVoConverter {
         vo.setResource(entity.getResource());
         vo.setGrade(entity.getGrade());
         vo.setCount(entity.getCount());
+        vo.setSlowRatioThreshold(entity.getSlowRatioThreshold());
         vo.setTimeWindow(entity.getTimeWindow());
+        vo.setMinRequestAmount(entity.getMinRequestAmount());
+        vo.setStatIntervalMs(entity.getStatIntervalMs());
         return vo;
     }
 
@@ -45,7 +48,10 @@ public class DegradeRuleVoConverter {
         entity.setResource(reqVo.getResource());
         entity.setGrade(reqVo.getGrade());
         entity.setCount(reqVo.getCount());
+        entity.setSlowRatioThreshold(reqVo.getSlowRatioThreshold());
         entity.setTimeWindow(reqVo.getTimeWindow());
+        entity.setMinRequestAmount(reqVo.getMinRequestAmount());
+        entity.setStatIntervalMs(reqVo.getStatIntervalMs());
         entity.setGmtCreate(new Date());
         entity.setGmtModified(new Date());
         return entity;
@@ -54,7 +60,10 @@ public class DegradeRuleVoConverter {
     public static void convertUpdate(UpdateDegradeRuleReqVo reqVo, DegradeRuleEntity toUpdateRuleEntity) {
         toUpdateRuleEntity.setGrade(reqVo.getGrade());
         toUpdateRuleEntity.setCount(reqVo.getCount());
+        toUpdateRuleEntity.setSlowRatioThreshold(reqVo.getSlowRatioThreshold());
         toUpdateRuleEntity.setTimeWindow(reqVo.getTimeWindow());
+        toUpdateRuleEntity.setMinRequestAmount(reqVo.getMinRequestAmount());
+        toUpdateRuleEntity.setStatIntervalMs(reqVo.getStatIntervalMs());
         toUpdateRuleEntity.setGmtModified(new Date());
     }
 }

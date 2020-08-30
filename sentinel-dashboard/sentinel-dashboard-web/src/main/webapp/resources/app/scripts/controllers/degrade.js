@@ -105,7 +105,9 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
         app: $scope.app,
         ip: ip,
         port: port,
-        limitApp: 'default'
+        limitApp: 'default',
+        statIntervalMs: 1000,
+        minRequestAmount: 5
       };
       $scope.degradeRuleDialog = {
         title: '新增降级规则',

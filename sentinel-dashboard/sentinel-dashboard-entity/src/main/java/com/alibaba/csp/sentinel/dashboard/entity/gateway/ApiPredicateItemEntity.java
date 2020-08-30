@@ -15,12 +15,10 @@
  */
 package com.alibaba.csp.sentinel.dashboard.entity.gateway;
 
-import com.alibaba.csp.sentinel.adapter.gateway.common.api.ApiPredicateItem;
-
 import java.util.Objects;
 
 /**
- * Entity for {@link ApiPredicateItem}.
+ * Entity for {@link com.alibaba.csp.sentinel.adapter.gateway.common.api.ApiPredicateItem}.
  *
  * @author cdfive
  * @since 1.7.0

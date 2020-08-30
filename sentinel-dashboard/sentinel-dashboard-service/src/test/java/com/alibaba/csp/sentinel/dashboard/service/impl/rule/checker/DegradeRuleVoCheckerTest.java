@@ -104,6 +104,31 @@ public class DegradeRuleVoCheckerTest {
     }
 
     @Test
+    public void testCheckAdd_slowRatioThreshold_null() {
+        AddDegradeRuleReqVo reqVo = new AddDegradeRuleReqVo();
+        reqVo.setApp("product");
+        reqVo.setResource("/product/list");
+        reqVo.setGrade(0);
+        reqVo.setCount(2D);
+        exception.expect(DashboardServiceException.class);
+        exception.expectMessage("slowRatioThreshold can't be null when grade is 0");
+        DegradeRuleVoChecker.checkAdd(reqVo);
+    }
+
+    @Test
+    public void testCheckAdd_slowRatioThreshold_invalid() {
+        AddDegradeRuleReqVo reqVo = new AddDegradeRuleReqVo();
+        reqVo.setApp("product");
+        reqVo.setResource("/product/list");
+        reqVo.setGrade(0);
+        reqVo.setCount(2D);
+        reqVo.setSlowRatioThreshold(1.1D);
+        exception.expect(DashboardServiceException.class);
+        exception.expectMessage("slowRatioThreshold must be between 0 and 1 when grade is 0");
+        DegradeRuleVoChecker.checkAdd(reqVo);
+    }
+
+    @Test
     public void testCheckAdd_count_invalid_grade_exception_radio() {
         AddDegradeRuleReqVo reqVo = new AddDegradeRuleReqVo();
         reqVo.setApp("product");
@@ -122,6 +147,7 @@ public class DegradeRuleVoCheckerTest {
         reqVo.setResource("/product/list");
         reqVo.setGrade(0);
         reqVo.setCount(100D);
+        reqVo.setSlowRatioThreshold(0.7D);
         exception.expect(DashboardServiceException.class);
         exception.expectMessage("timeWindow can't be null");
         DegradeRuleVoChecker.checkAdd(reqVo);
@@ -134,9 +160,39 @@ public class DegradeRuleVoCheckerTest {
         reqVo.setResource("/product/list");
         reqVo.setGrade(0);
         reqVo.setCount(100D);
+        reqVo.setSlowRatioThreshold(0.7D);
         reqVo.setTimeWindow(0);
         exception.expect(DashboardServiceException.class);
         exception.expectMessage("timeWindow must be greater than 0");
+        DegradeRuleVoChecker.checkAdd(reqVo);
+    }
+
+    @Test
+    public void testCheckAdd_minRequestAmount_null() {
+        AddDegradeRuleReqVo reqVo = new AddDegradeRuleReqVo();
+        reqVo.setApp("product");
+        reqVo.setResource("/product/list");
+        reqVo.setGrade(0);
+        reqVo.setCount(100D);
+        reqVo.setSlowRatioThreshold(0.7D);
+        reqVo.setTimeWindow(30);
+        exception.expect(DashboardServiceException.class);
+        exception.expectMessage("minRequestAmount can't be null");
+        DegradeRuleVoChecker.checkAdd(reqVo);
+    }
+
+    @Test
+    public void testCheckAdd_minRequestAmount_invalid() {
+        AddDegradeRuleReqVo reqVo = new AddDegradeRuleReqVo();
+        reqVo.setApp("product");
+        reqVo.setResource("/product/list");
+        reqVo.setGrade(0);
+        reqVo.setCount(100D);
+        reqVo.setSlowRatioThreshold(0.7D);
+        reqVo.setTimeWindow(30);
+        reqVo.setMinRequestAmount(0);
+        exception.expect(DashboardServiceException.class);
+        exception.expectMessage("minRequestAmount must be greater than 0");
         DegradeRuleVoChecker.checkAdd(reqVo);
     }
 
@@ -147,7 +203,9 @@ public class DegradeRuleVoCheckerTest {
         reqVo.setResource("/product/list");
         reqVo.setGrade(0);
         reqVo.setCount(100D);
+        reqVo.setSlowRatioThreshold(0.7D);
         reqVo.setTimeWindow(30);
+        reqVo.setMinRequestAmount(5);
         DegradeRuleVoChecker.checkAdd(reqVo);
     }
 
@@ -159,6 +217,7 @@ public class DegradeRuleVoCheckerTest {
         reqVo.setGrade(1);
         reqVo.setCount(0.5D);
         reqVo.setTimeWindow(60);
+        reqVo.setMinRequestAmount(5);
         DegradeRuleVoChecker.checkAdd(reqVo);
     }
 
@@ -170,6 +229,7 @@ public class DegradeRuleVoCheckerTest {
         reqVo.setGrade(2);
         reqVo.setCount(50D);
         reqVo.setTimeWindow(10);
+        reqVo.setMinRequestAmount(5);
         DegradeRuleVoChecker.checkAdd(reqVo);
     }
     // endregion Test cases for DegradeRuleVoChecker#checkAdd
@@ -255,6 +315,31 @@ public class DegradeRuleVoCheckerTest {
     }
 
     @Test
+    public void testCheckUpdate_slowRatioThreshold_null() {
+        UpdateDegradeRuleReqVo reqVo = new UpdateDegradeRuleReqVo();
+        reqVo.setApp("product");
+        reqVo.setId(10001L);
+        reqVo.setGrade(0);
+        reqVo.setCount(2D);
+        exception.expect(DashboardServiceException.class);
+        exception.expectMessage("slowRatioThreshold can't be null when grade is 0");
+        DegradeRuleVoChecker.checkUpdate(reqVo);
+    }
+
+    @Test
+    public void testCheckUpdate_slowRatioThreshold_invalid() {
+        UpdateDegradeRuleReqVo reqVo = new UpdateDegradeRuleReqVo();
+        reqVo.setApp("product");
+        reqVo.setId(10001L);
+        reqVo.setGrade(0);
+        reqVo.setCount(2D);
+        reqVo.setSlowRatioThreshold(1.1D);
+        exception.expect(DashboardServiceException.class);
+        exception.expectMessage("slowRatioThreshold must be between 0 and 1 when grade is 0");
+        DegradeRuleVoChecker.checkUpdate(reqVo);
+    }
+
+    @Test
     public void testCheckUpdate_count_invalid_grade_exception_radio() {
         UpdateDegradeRuleReqVo reqVo = new UpdateDegradeRuleReqVo();
         reqVo.setApp("product");
@@ -273,6 +358,7 @@ public class DegradeRuleVoCheckerTest {
         reqVo.setId(10001L);
         reqVo.setGrade(0);
         reqVo.setCount(100D);
+        reqVo.setSlowRatioThreshold(0.7D);
         exception.expect(DashboardServiceException.class);
         exception.expectMessage("timeWindow can't be null");
         DegradeRuleVoChecker.checkUpdate(reqVo);
@@ -285,6 +371,7 @@ public class DegradeRuleVoCheckerTest {
         reqVo.setId(10001L);
         reqVo.setGrade(0);
         reqVo.setCount(100D);
+        reqVo.setSlowRatioThreshold(0.7D);
         reqVo.setTimeWindow(0);
         exception.expect(DashboardServiceException.class);
         exception.expectMessage("timeWindow must be greater than 0");
@@ -298,7 +385,9 @@ public class DegradeRuleVoCheckerTest {
         reqVo.setId(10001L);
         reqVo.setGrade(0);
         reqVo.setCount(100D);
+        reqVo.setSlowRatioThreshold(0.7D);
         reqVo.setTimeWindow(30);
+        reqVo.setMinRequestAmount(5);
         DegradeRuleVoChecker.checkUpdate(reqVo);
     }
 
@@ -310,6 +399,7 @@ public class DegradeRuleVoCheckerTest {
         reqVo.setGrade(1);
         reqVo.setCount(0.5D);
         reqVo.setTimeWindow(60);
+        reqVo.setMinRequestAmount(5);
         DegradeRuleVoChecker.checkUpdate(reqVo);
     }
 
@@ -321,6 +411,7 @@ public class DegradeRuleVoCheckerTest {
         reqVo.setGrade(2);
         reqVo.setCount(50D);
         reqVo.setTimeWindow(10);
+        reqVo.setMinRequestAmount(5);
         DegradeRuleVoChecker.checkUpdate(reqVo);
     }
     // endregion Test cases for DegradeRuleVoChecker#checkUpdate

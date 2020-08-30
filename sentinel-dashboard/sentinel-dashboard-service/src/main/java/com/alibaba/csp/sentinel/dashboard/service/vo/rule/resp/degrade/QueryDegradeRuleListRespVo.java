@@ -40,7 +40,13 @@ public class QueryDegradeRuleListRespVo implements Serializable {
 
     private Double count;
 
+    private Double slowRatioThreshold;
+
     private Integer timeWindow;
+
+    private Integer minRequestAmount;
+
+    private Integer statIntervalMs;
 
     public Long getId() {
         return id;
@@ -98,11 +104,35 @@ public class QueryDegradeRuleListRespVo implements Serializable {
         this.count = count;
     }
 
+    public Double getSlowRatioThreshold() {
+        return slowRatioThreshold;
+    }
+
+    public void setSlowRatioThreshold(Double slowRatioThreshold) {
+        this.slowRatioThreshold = slowRatioThreshold;
+    }
+
     public Integer getTimeWindow() {
         return timeWindow;
     }
 
     public void setTimeWindow(Integer timeWindow) {
         this.timeWindow = timeWindow;
+    }
+
+    public Integer getMinRequestAmount() {
+        return minRequestAmount;
+    }
+
+    public void setMinRequestAmount(Integer minRequestAmount) {
+        this.minRequestAmount = minRequestAmount;
+    }
+
+    public Integer getStatIntervalMs() {
+        return statIntervalMs;
+    }
+
+    public void setStatIntervalMs(Integer statIntervalMs) {
+        this.statIntervalMs = statIntervalMs;
     }
 }

@@ -25,14 +25,23 @@ public class AddDegradeRuleReqVo extends MachineReqVo {
     /**资源名称*/
     private String resource;
 
-    /**降级策略 0-RT 1-异常比例 2-异常数*/
+    /**熔断策略 0-慢调用比例 1-异常比例 2-异常数*/
     private Integer grade;
 
     /**阈值*/
     private Double count;
 
-    /**降级时间窗口,单位:秒*/
+    /**慢调用比例阈值*/
+    private Double slowRatioThreshold;
+
+    /**熔断时长,单位:秒*/
     private Integer timeWindow;
+
+    /**最小请求数目*/
+    private Integer minRequestAmount;
+
+    /**统计窗口时长,单位:秒*/
+    private Integer statIntervalMs;
 
     public String getResource() {
         return resource;
@@ -58,11 +67,35 @@ public class AddDegradeRuleReqVo extends MachineReqVo {
         this.count = count;
     }
 
+    public Double getSlowRatioThreshold() {
+        return slowRatioThreshold;
+    }
+
+    public void setSlowRatioThreshold(Double slowRatioThreshold) {
+        this.slowRatioThreshold = slowRatioThreshold;
+    }
+
     public Integer getTimeWindow() {
         return timeWindow;
     }
 
     public void setTimeWindow(Integer timeWindow) {
         this.timeWindow = timeWindow;
+    }
+
+    public Integer getMinRequestAmount() {
+        return minRequestAmount;
+    }
+
+    public void setMinRequestAmount(Integer minRequestAmount) {
+        this.minRequestAmount = minRequestAmount;
+    }
+
+    public Integer getStatIntervalMs() {
+        return statIntervalMs;
+    }
+
+    public void setStatIntervalMs(Integer statIntervalMs) {
+        this.statIntervalMs = statIntervalMs;
     }
 }

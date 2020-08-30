@@ -40,8 +40,16 @@ public class DegradeRuleVoChecker {
             checkCondition(reqVo.getCount() <= 1, "count must be less than 1 when grade is " + DEGRADE_GRADE_EXCEPTION_RATIO);
         }
 
+        if (reqVo.getGrade() == DEGRADE_GRADE_RT) {
+            checkNotNullMessage(reqVo.getSlowRatioThreshold(), "slowRatioThreshold can't be null when grade is " + DEGRADE_GRADE_RT);
+            checkCondition(reqVo.getSlowRatioThreshold() >= 0D && reqVo.getSlowRatioThreshold() <= 1D, "slowRatioThreshold must be between 0 and 1 when grade is " + DEGRADE_GRADE_RT);
+        }
+
         checkNotNull(reqVo.getTimeWindow(), "timeWindow");
         checkCondition(reqVo.getTimeWindow() > 0, "timeWindow must be greater than 0");
+
+        checkNotNull(reqVo.getMinRequestAmount(), "minRequestAmount");
+        checkCondition(reqVo.getMinRequestAmount() > 0, "minRequestAmount must be greater than 0");
     }
 
     public static void checkUpdate(UpdateDegradeRuleReqVo reqVo) {
@@ -61,8 +69,16 @@ public class DegradeRuleVoChecker {
             checkCondition(reqVo.getCount() <= 1, "count must be less than 1 when grade is " + DEGRADE_GRADE_EXCEPTION_RATIO);
         }
 
+        if (reqVo.getGrade() == DEGRADE_GRADE_RT) {
+            checkNotNullMessage(reqVo.getSlowRatioThreshold(), "slowRatioThreshold can't be null when grade is " + DEGRADE_GRADE_RT);
+            checkCondition(reqVo.getSlowRatioThreshold() >= 0D && reqVo.getSlowRatioThreshold() <= 1D, "slowRatioThreshold must be between 0 and 1 when grade is " + DEGRADE_GRADE_RT);
+        }
+
         checkNotNull(reqVo.getTimeWindow(), "timeWindow");
         checkCondition(reqVo.getTimeWindow() > 0, "timeWindow must be greater than 0");
+
+        checkNotNull(reqVo.getMinRequestAmount(), "minRequestAmount");
+        checkCondition(reqVo.getMinRequestAmount() > 0, "minRequestAmount must be greater than 0");
     }
 
     public static void checkDelete(DeleteDegradeRuleReqVo reqVo) {
