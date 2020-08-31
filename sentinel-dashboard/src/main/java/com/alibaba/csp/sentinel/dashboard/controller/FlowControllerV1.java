@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.dashboard.controller;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -23,6 +24,9 @@ import java.util.concurrent.TimeUnit;
 
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
+import com.alibaba.csp.sentinel.dashboard.datasource.RuleConfigTypeEnum;
+import com.alibaba.csp.sentinel.dashboard.rule.PersistentRuleApiClient;
+import com.alibaba.csp.sentinel.dashboard.rule.memory.MemoryApiClient;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
@@ -61,6 +65,9 @@ public class FlowControllerV1 {
     @Autowired
     private SentinelApiClient sentinelApiClient;
 
+    @Autowired
+    private PersistentRuleApiClient<FlowRuleEntity> persistentApiClient;
+
     @GetMapping("/rules")
     @AuthAction(PrivilegeType.READ_RULE)
     public Result<List<FlowRuleEntity>> apiQueryMachineRules(@RequestParam String app,
@@ -77,7 +84,13 @@ public class FlowControllerV1 {
             return Result.ofFail(-1, "port can't be null");
         }
         try {
-            List<FlowRuleEntity> rules = sentinelApiClient.fetchFlowRuleOfMachine(app, ip, port);
+
+            List<FlowRuleEntity> rules = new ArrayList<FlowRuleEntity>();
+            if(persistentApiClient instanceof MemoryApiClient){
+                rules = sentinelApiClient.fetchFlowRuleOfMachine(app, ip, port);
+            } else {
+                rules = persistentApiClient.fetch(app, RuleConfigTypeEnum.FLOW);
+            }
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
@@ -149,7 +162,13 @@ public class FlowControllerV1 {
         try {
             entity = repository.save(entity);
 
-            publishRules(entity.getApp(), entity.getIp(), entity.getPort()).get(5000, TimeUnit.MILLISECONDS);
+            if(persistentApiClient instanceof MemoryApiClient){
+                publishRules(entity.getApp(), entity.getIp(), entity.getPort()).get(5000, TimeUnit.MILLISECONDS);
+            } else {
+                this.publishRules_persistence(entity.getApp());
+                Void dd = publishRules(entity.getApp(), entity.getIp(), entity.getPort()).get(5000, TimeUnit.MILLISECONDS);
+                System.out.println(dd);
+            }
             return Result.ofSuccess(entity);
         } catch (Throwable t) {
             Throwable e = t instanceof ExecutionException ? t.getCause() : t;
@@ -228,7 +247,11 @@ public class FlowControllerV1 {
                 return Result.ofFail(-1, "save entity fail: null");
             }
 
-            publishRules(entity.getApp(), entity.getIp(), entity.getPort()).get(5000, TimeUnit.MILLISECONDS);
+            if(persistentApiClient instanceof MemoryApiClient){
+                publishRules(entity.getApp(), entity.getIp(), entity.getPort()).get(5000, TimeUnit.MILLISECONDS);
+            } else {
+                this.publishRules_persistence(entity.getApp());
+            }
             return Result.ofSuccess(entity);
         } catch (Throwable t) {
             Throwable e = t instanceof ExecutionException ? t.getCause() : t;
@@ -256,7 +279,12 @@ public class FlowControllerV1 {
             return Result.ofFail(-1, e.getMessage());
         }
         try {
-            publishRules(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort()).get(5000, TimeUnit.MILLISECONDS);
+
+            if(persistentApiClient instanceof MemoryApiClient){
+                publishRules(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort()).get(5000, TimeUnit.MILLISECONDS);
+            } else {
+                this.publishRules_persistence(oldEntity.getApp());
+            }
             return Result.ofSuccess(id);
         } catch (Throwable t) {
             Throwable e = t instanceof ExecutionException ? t.getCause() : t;
@@ -270,4 +298,10 @@ public class FlowControllerV1 {
         List<FlowRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
         return sentinelApiClient.setFlowRuleOfMachineAsync(app, ip, port, rules);
     }
+
+    private void publishRules_persistence(/*@NonNull*/ String app) throws Exception {
+        List<FlowRuleEntity> rules = repository.findAllByApp(app);
+        persistentApiClient.publish(app, RuleConfigTypeEnum.FLOW, rules);
+    }
+
 }
