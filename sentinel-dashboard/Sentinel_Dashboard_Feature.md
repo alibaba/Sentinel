@@ -76,9 +76,6 @@ datasource.provider.zookeeper.retry.max-retries | Integer | 3 | 0 | zookeeper �
 datasource.provider.zookeeper.retry.base-sleep-time | Integer | 1000 | 1000 | zookeeper 重试间隔最小时长，默认 `1000`
 datasource.provider.zookeeper.retry.max-sleep-time | Integer | 2147483647 | 0 | zookeeper 重试间隔最大时长，默认 `2147483647`
 
-
-
-
 配置示例：
 
 - 命令行方式：
