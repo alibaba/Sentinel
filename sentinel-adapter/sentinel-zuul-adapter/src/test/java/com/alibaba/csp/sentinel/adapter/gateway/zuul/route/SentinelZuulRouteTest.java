@@ -6,13 +6,9 @@ import com.netflix.zuul.context.RequestContext;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import javax.servlet.http.HttpServletRequest;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 import static com.alibaba.csp.sentinel.adapter.gateway.zuul.constants.ZuulConstant.SERVICE_ID_KEY;
-import static org.mockito.Mockito.when;
 
 /**
  * @author: jiangzian
@@ -21,32 +17,36 @@ public class SentinelZuulRouteTest {
 
     private final String SERVICE_ID = "servicea";
 
-    private final String URI = "/servicea/test";
-
-    @Mock
-    private HttpServletRequest httpServletRequest;
+    private final String SERVER_NAME = "www.example.com";
+    private final String REQUEST_URI = "/servicea/test.jsp";
+    private final String QUERY_STRING = "param1=value1&param";
 
     private RequestContext requestContext = new RequestContext();
 
+
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
-        when(httpServletRequest.getContextPath()).thenReturn("");
-        when(httpServletRequest.getPathInfo()).thenReturn(URI);
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setServerName(SERVER_NAME);
+        request.setRequestURI(REQUEST_URI);
+        request.setQueryString(QUERY_STRING);
         requestContext.set(SERVICE_ID_KEY, SERVICE_ID);
-        requestContext.setRequest(httpServletRequest);
+        requestContext.setRequest(request);
         RequestContext.testSetCurrentContext(requestContext);
     }
 
     @Test
     public void testPrefixRoutePathMatche() {
-        PrefixRoutePathMatcher prefixRoutePathMatcher = new PrefixRoutePathMatcher("/**");
+        PrefixRoutePathMatcher prefixRoutePathMatcher = new PrefixRoutePathMatcher("/servicea/????.jsp");
         Assert.assertTrue(prefixRoutePathMatcher.test(requestContext));
     }
 
     @Test
     public void testRegexRoutePathMatcher() {
-        RegexRoutePathMatcher prefixRoutePathMatcher = new RegexRoutePathMatcher(URI);
-        Assert.assertTrue(prefixRoutePathMatcher.test(requestContext));
+        RegexRoutePathMatcher regexRoutePathMatcher = new RegexRoutePathMatcher("/servicea[^\\s]+.jsp");
+        Assert.assertTrue(regexRoutePathMatcher.test(requestContext));
+
+
     }
+
 }
