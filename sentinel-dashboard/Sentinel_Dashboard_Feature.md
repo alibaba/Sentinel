@@ -61,6 +61,20 @@ sentinel.dashboard.app.hideAppNoMachineMillis | Integer | 0 | 60000 | 是否隐�
 sentinel.dashboard.removeAppNoMachineMillis | Integer | 0 | 120000 | 是否自动删除无健康节点的应用，距离最近一次其下节点的心跳时间毫秒数，默认关闭
 sentinel.dashboard.unhealthyMachineMillis | Integer | 60000 | 30000 | 主机失联判定，不可关闭
 sentinel.dashboard.autoRemoveMachineMillis | Integer | 0 | 300000 | 距离最近心跳时间超过指定时间是否自动删除失联节点，默认关闭
+datasource.provider | String | memory | 无 | 默认为 `memory`, 可选持久化配置 `nacos`、`apollo`、`zookeeper`
+datasource.provider.nacos.server-addr | String | localhost:8848 | 无 | nacos 注册中心地址
+datasource.provider.nacos.username | String |  | 无 | nacos 用户名，默认为空
+datasource.provider.nacos.password | String |  | 无 | nacos 密码，默认为空
+datasource.provider.nacos.namespace | String |  | 无 | nacos 名臣空间，默认为空
+datasource.provider.nacos.group-id | String | SENTINEL_GROUP | 无 | nacos 分组，默认为 `SENTINEL_GROUP`
+datasource.provider.apollo.server-addr | String | http://localhost:10034 | 无 | apollo 注册中心地址，必须有前缀 `http://` 或 `https://`
+datasource.provider.apollo.token | String | token | 无 | apollo 登录 token，默认为 `token`
+datasource.provider.zookeeper.server-addr | String | localhost:2181 | 无 | zookeeper 注册中心地址
+datasource.provider.zookeeper.session-timeout | Integer | 60000 | 0 | zookeeper session超时时间，默认 `60000`
+datasource.provider.zookeeper.connection-timeout |  Integer | 15000 | 0 | zookeeper connection超时时间，默认 `15000`
+datasource.provider.zookeeper.retry.max-retries | Integer | 3 | 0 | zookeeper 最大重试次数， 默认 `3`
+datasource.provider.zookeeper.retry.base-sleep-time | Integer | 1000 | 1000 | zookeeper 重试间隔最小时长，默认 `1000`
+datasource.provider.zookeeper.retry.max-sleep-time | Integer | 2147483647 | 0 | zookeeper 重试间隔最大时长，默认 `2147483647`
 
 配置示例：
 

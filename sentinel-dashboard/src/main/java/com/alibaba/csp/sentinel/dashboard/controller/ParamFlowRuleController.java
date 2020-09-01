@@ -24,10 +24,14 @@ import java.util.concurrent.ExecutionException;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.client.CommandNotFoundException;
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
+import com.alibaba.csp.sentinel.dashboard.datasource.RuleConfigTypeEnum;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
+import com.alibaba.csp.sentinel.dashboard.rule.PersistentRuleApiClient;
+import com.alibaba.csp.sentinel.dashboard.rule.memory.MemoryApiClient;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.SentinelVersion;
@@ -65,6 +69,8 @@ public class ParamFlowRuleController {
     private AppManagement appManagement;
     @Autowired
     private RuleRepository<ParamFlowRuleEntity, Long> repository;
+    @Autowired
+    private PersistentRuleApiClient<ParamFlowRuleEntity> persistentApiClient;
 
     private boolean checkIfSupported(String app, String ip, int port) {
         try {
@@ -97,10 +103,16 @@ public class ParamFlowRuleController {
             return unsupportedVersion();
         }
         try {
-            return sentinelApiClient.fetchParamFlowRulesOfMachine(app, ip, port)
-                .thenApply(repository::saveAll)
-                .thenApply(Result::ofSuccess)
-                .get();
+            if(persistentApiClient instanceof MemoryApiClient){
+                return sentinelApiClient.fetchParamFlowRulesOfMachine(app, ip, port)
+                    .thenApply(repository::saveAll)
+                    .thenApply(Result::ofSuccess)
+                    .get();
+            } else {
+                List<ParamFlowRuleEntity> rules = persistentApiClient.fetch(app, RuleConfigTypeEnum.PARAM_FLOW);
+                repository.saveAll(rules);
+                return Result.ofSuccess(rules);
+            }
         } catch (ExecutionException ex) {
             logger.error("Error when querying parameter flow rules", ex.getCause());
             if (isNotSupported(ex.getCause())) {
@@ -135,7 +147,12 @@ public class ParamFlowRuleController {
         entity.setGmtModified(date);
         try {
             entity = repository.save(entity);
-            publishRules(entity.getApp(), entity.getIp(), entity.getPort()).get();
+
+            if(persistentApiClient instanceof MemoryApiClient){
+                publishRules(entity.getApp(), entity.getIp(), entity.getPort()).get();
+            } else {
+                publishRules_persistence(entity.getApp());
+            }
             return Result.ofSuccess(entity);
         } catch (ExecutionException ex) {
             logger.error("Error when adding new parameter flow rules", ex.getCause());
@@ -212,7 +229,11 @@ public class ParamFlowRuleController {
         entity.setGmtModified(date);
         try {
             entity = repository.save(entity);
-            publishRules(entity.getApp(), entity.getIp(), entity.getPort()).get();
+            if(persistentApiClient instanceof MemoryApiClient) {
+                publishRules(entity.getApp(), entity.getIp(), entity.getPort()).get();
+            } else {
+                publishRules_persistence(entity.getApp());
+            }
             return Result.ofSuccess(entity);
         } catch (ExecutionException ex) {
             logger.error("Error when updating parameter flow rules, id=" + id, ex.getCause());
@@ -240,7 +261,11 @@ public class ParamFlowRuleController {
 
         try {
             repository.delete(id);
-            publishRules(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort()).get();
+            if(persistentApiClient instanceof MemoryApiClient) {
+                publishRules(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort()).get();
+            } else {
+                publishRules_persistence(oldEntity.getApp());
+            }
             return Result.ofSuccess(id);
         } catch (ExecutionException ex) {
             logger.error("Error when deleting parameter flow rules", ex.getCause());
@@ -258,6 +283,11 @@ public class ParamFlowRuleController {
     private CompletableFuture<Void> publishRules(String app, String ip, Integer port) {
         List<ParamFlowRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
         return sentinelApiClient.setParamFlowRuleOfMachine(app, ip, port, rules);
+    }
+
+    private void publishRules_persistence(/*@NonNull*/ String app) throws Exception {
+        List<ParamFlowRuleEntity> rules = repository.findAllByApp(app);
+        persistentApiClient.publish(app, RuleConfigTypeEnum.PARAM_FLOW, rules);
     }
 
     private <R> Result<R> unsupportedVersion() {
