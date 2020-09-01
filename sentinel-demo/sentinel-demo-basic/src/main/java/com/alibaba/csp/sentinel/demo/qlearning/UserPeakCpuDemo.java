@@ -40,11 +40,11 @@ public class UserPeakCpuDemo {
     public static void main(String[] args) throws Exception {
 
         QLearningMetric qLearningMetric = QLearningMetric.getInstance();
-        qLearningMetric.setLearning(isQLearning);
-        qLearningMetric.setTraining(isTraining);
-        qLearningMetric.setIfCheckCPU(ifCheckCPU);
+        qLearningMetric.setLearningIsSet(isQLearning);
+        qLearningMetric.setTrainingIsSet(isTraining);
+        qLearningMetric.setCpuUsageIsChecked(ifCheckCPU);
 
-        qLearningMetric.setQtable(qTableStorage.read(qTablePath));
+        qLearningMetric.setqTable(qTableStorage.read(qTablePath));
 
         Entry entry = null;
         try {
@@ -239,7 +239,7 @@ public class UserPeakCpuDemo {
             System.out.println("total:" + total.get() + ", pass:" + pass.get()
                     + ", block:" + block.get());
 
-            ConcurrentHashMap<String, double[]> qtable = qLearningMetric.getQtable();
+            ConcurrentHashMap<String, double[]> qtable = qLearningMetric.getqTable();
             showPolicy(qtable);
             qTableStorage.save(qtable,qTablePath);
 
@@ -255,7 +255,7 @@ public class UserPeakCpuDemo {
 
         for (Map.Entry entry : Qtable.entrySet()) {
             fromState = (String) entry.getKey();
-            toAction = qLearningMetric.policy(fromState);
+            toAction = qLearningMetric.getOptimalPolicy(fromState);
             System.out.println("Current State: " + fromState + "       Action: " + qLearningMetric.getActionNames()[toAction] + "        Q Value: " + Qtable.get(fromState)[toAction]);
         }
     }

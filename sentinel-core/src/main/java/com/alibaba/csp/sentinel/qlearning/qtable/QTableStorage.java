@@ -4,10 +4,13 @@ import java.io.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * 提供了Q-Table读取与存储的方法
+ * @author ZhouYanjun
+ */
 public class QTableStorage {
 
     public synchronized static void save(ConcurrentHashMap<String, double[]> qTable, String filePath) {
-
         try (
                 PrintStream output = new PrintStream(new File(filePath));) {
 
@@ -25,7 +28,6 @@ public class QTableStorage {
 
     public static ConcurrentHashMap<String, double[]> read(String pathname) throws IOException {
         ConcurrentHashMap<String, double[]> qTable = new ConcurrentHashMap<>();
-
         File file = new File(pathname);
         if (!file.exists()) {
             try {
@@ -45,12 +47,10 @@ public class QTableStorage {
                     double[] temp = new double[]{Double.valueOf(lineList[1]), Double.valueOf(lineList[2])};
                     qTable.put(lineList[0], temp);
                 }
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-
         return qTable;
     }
 }

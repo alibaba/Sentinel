@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.qlearning;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * 存储了当前批次在执行action前的state,action,utility的信息
  * @author ZhouYanjun
  */
 public class QInfo {
