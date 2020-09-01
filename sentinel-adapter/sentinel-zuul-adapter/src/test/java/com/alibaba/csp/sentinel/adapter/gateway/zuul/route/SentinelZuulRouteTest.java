@@ -39,14 +39,18 @@ public class SentinelZuulRouteTest {
     public void testPrefixRoutePathMatche() {
         PrefixRoutePathMatcher prefixRoutePathMatcher = new PrefixRoutePathMatcher("/servicea/????.jsp");
         Assert.assertTrue(prefixRoutePathMatcher.test(requestContext));
+
+        prefixRoutePathMatcher = new PrefixRoutePathMatcher("/servicea/????.do");
+        Assert.assertTrue(!prefixRoutePathMatcher.test(requestContext));
     }
 
     @Test
     public void testRegexRoutePathMatcher() {
-        RegexRoutePathMatcher regexRoutePathMatcher = new RegexRoutePathMatcher("/servicea[^\\s]+.jsp");
+        RegexRoutePathMatcher regexRoutePathMatcher = new RegexRoutePathMatcher("/servicea/[a-zA-z]+(\\.jsp)");
         Assert.assertTrue(regexRoutePathMatcher.test(requestContext));
 
-
+        regexRoutePathMatcher = new RegexRoutePathMatcher("/serviceb/[a-zA-z]+(\\.jsp)");
+        Assert.assertTrue(!regexRoutePathMatcher.test(requestContext));
     }
 
 }
