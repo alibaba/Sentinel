@@ -166,8 +166,6 @@ public class FlowControllerV1 {
                 publishRules(entity.getApp(), entity.getIp(), entity.getPort()).get(5000, TimeUnit.MILLISECONDS);
             } else {
                 this.publishRules_persistence(entity.getApp());
-                Void dd = publishRules(entity.getApp(), entity.getIp(), entity.getPort()).get(5000, TimeUnit.MILLISECONDS);
-                System.out.println(dd);
             }
             return Result.ofSuccess(entity);
         } catch (Throwable t) {
