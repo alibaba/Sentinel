@@ -21,13 +21,13 @@ public class DataSourceProperties {
     public static final String VALUE_PROVIDER_ZOOKEEPER = "zookeeper";
 
     @Value("${datasource.provider:memory}")
-    private String instance;
+    private String provider;
 
-    public String getInstance() {
-        return instance;
-    }
-    public void setInstance(String instance) {
-        this.instance = instance;
+    public String getProvider() {
+        return provider;
     }
 
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
 }
