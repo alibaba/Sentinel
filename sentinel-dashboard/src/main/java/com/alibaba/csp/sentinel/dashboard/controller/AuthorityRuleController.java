@@ -207,11 +207,11 @@ public class AuthorityRuleController {
 
         if(persistentApiClient instanceof MemoryApiClient) {
             if (!publishRules(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort())) {
-                logger.warn("Publish degrade rules failed, app={}", oldEntity.getApp());
+                logger.warn("Publish authority rules failed, app={}", oldEntity.getApp());
             }
         } else {
             if (!publishRules_persistence(oldEntity.getApp())) {
-                logger.warn("Publish degrade rules failed, app={}", oldEntity.getApp());
+                logger.warn("Publish authority rules failed, app={}", oldEntity.getApp());
             }
         }
         return Result.ofSuccess(id);
