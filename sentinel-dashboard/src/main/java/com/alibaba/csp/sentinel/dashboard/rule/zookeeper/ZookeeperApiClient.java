@@ -37,7 +37,7 @@ public class ZookeeperApiClient<T> extends AbstractpersistentRuleApiClient<T> {
 
     @Override
     public List<T> fetch(String app, RuleConfigTypeEnum configType) throws Exception {
-        String zkPath = this.getRuleConfigId(app, RuleConfigTypeEnum.FLOW);
+        String zkPath = this.getRuleConfigId(app, configType);
         Stat stat = zkClient.checkExists().forPath(zkPath);
         if(stat == null){
             return (List<T>) new ArrayList(0);
@@ -56,7 +56,7 @@ public class ZookeeperApiClient<T> extends AbstractpersistentRuleApiClient<T> {
     public void publish(String app, RuleConfigTypeEnum configType, List<T> rules) throws Exception {
         AssertUtil.notEmpty(app, "app name cannot be empty");
 
-        String path = this.getRuleConfigId(app, RuleConfigTypeEnum.FLOW);
+        String path = this.getRuleConfigId(app, configType);
         Stat stat = zkClient.checkExists().forPath(path);
         if (stat == null) {
             zkClient.create().creatingParentContainersIfNeeded().withMode(CreateMode.PERSISTENT).forPath(path, null);

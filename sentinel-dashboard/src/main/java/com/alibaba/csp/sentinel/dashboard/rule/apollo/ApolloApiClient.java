@@ -38,7 +38,7 @@ public class ApolloApiClient<T> extends AbstractpersistentRuleApiClient<T> {
     @Override
     public List<T> fetch(String app, RuleConfigTypeEnum configType) throws Exception {
         String appId = "appId";
-        String flowDataId = this.getRuleConfigId(app, RuleConfigTypeEnum.FLOW);
+        String flowDataId = this.getRuleConfigId(app, configType);
         OpenNamespaceDTO openNamespaceDTO = apolloOpenApiClient.getNamespace(appId, "DEV", "default", "application");
         String rulesJson = openNamespaceDTO
                 .getItems()
@@ -63,7 +63,7 @@ public class ApolloApiClient<T> extends AbstractpersistentRuleApiClient<T> {
 
         // Increase the configuration
         String appId = "appId";
-        String flowDataId = this.getRuleConfigId(app, RuleConfigTypeEnum.FLOW);
+        String flowDataId = this.getRuleConfigId(app, configType);
         String rulesJson = JSON.toJSONString(rules,true);
         OpenItemDTO openItemDTO = new OpenItemDTO();
         openItemDTO.setKey(flowDataId);
