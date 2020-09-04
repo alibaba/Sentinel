@@ -50,6 +50,13 @@ public interface ClusterTransportClient {
     ClusterResponse sendRequest(ClusterRequest request) throws Exception;
 
     /**
+     * Send request to remote server ignore response.
+     *
+     * @param request Sentinel cluster request
+     */
+    void sendRequestIgnoreResponse(ClusterRequest request);
+
+    /**
      * Check whether the client has been started and ready for sending requests.
      *
      * @return true if the client is ready to send requests, otherwise false
