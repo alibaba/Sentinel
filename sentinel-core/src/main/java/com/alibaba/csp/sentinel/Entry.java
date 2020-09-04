@@ -15,13 +15,13 @@
  */
 package com.alibaba.csp.sentinel;
 
-import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.csp.sentinel.util.TimeUtil;
-import com.alibaba.csp.sentinel.util.function.BiConsumer;
+import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
-import com.alibaba.csp.sentinel.context.Context;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.util.TimeUtil;
+import com.alibaba.csp.sentinel.util.function.BiConsumer;
 
 /**
  * Each {@link SphU}#entry() will return an {@link Entry}. This class holds information of current invocation:<br/>
@@ -66,6 +66,10 @@ public abstract class Entry implements AutoCloseable {
 
     private Throwable error;
     private BlockException blockError;
+    /**
+     * the Id of concurrent flow control token, if the tokenId is 0,there is no token in this entry.
+     */
+    private long tokenId = 0;
 
     protected final ResourceWrapper resourceWrapper;
 
@@ -105,7 +109,7 @@ public abstract class Entry implements AutoCloseable {
      * Exit this entry. This method should invoke if and only if once at the end of the resource protection.
      *
      * @param count tokens to release.
-     * @param args extra parameters
+     * @param args  extra parameters
      * @throws ErrorEntryFreeException, if {@link Context#getCurEntry()} is not this entry.
      */
     public abstract void exit(int count, Object... args) throws ErrorEntryFreeException;
@@ -114,7 +118,7 @@ public abstract class Entry implements AutoCloseable {
      * Exit this entry.
      *
      * @param count tokens to release.
-     * @param args extra parameters
+     * @param args  extra parameters
      * @return next available entry after exit, that is the parent entry.
      * @throws ErrorEntryFreeException, if {@link Context#getCurEntry()} is not this entry.
      */
@@ -183,10 +187,17 @@ public abstract class Entry implements AutoCloseable {
      * Like {@code CompletableFuture} since JDK 8, it guarantees specified handler
      * is invoked when this entry terminated (exited), no matter it's blocked or permitted.
      * Use it when you did some STATEFUL operations on entries.
-     * 
+     *
      * @param handler handler function on the invocation terminates
      * @since 1.8.0
      */
     public abstract void whenTerminate(BiConsumer<Context, Entry> handler);
-    
+
+    public long getTokenId() {
+        return tokenId;
+    }
+
+    public void setTokenId(long tokenId) {
+        this.tokenId = tokenId;
+    }
 }
