@@ -15,19 +15,12 @@
  */
 package com.alibaba.csp.sentinel.cluster.flow.statistic.metric;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import com.alibaba.csp.sentinel.cluster.flow.statistic.data.ClusterFlowEvent;
 import com.alibaba.csp.sentinel.slots.statistic.base.LongAdder;
 import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
 import com.alibaba.csp.sentinel.util.AssertUtil;
+
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * @author Eric Zhao
@@ -89,6 +82,7 @@ public class ClusterParamMetric {
     }
 
     public Map<Object, Double> getTopValues(int number) {
+        AssertUtil.isTrue(number > 0, "number must be positive");
         metric.currentWindow();
         List<CacheMap<Object, LongAdder>> buckets = metric.values();
 
@@ -114,7 +108,7 @@ public class ClusterParamMetric {
             @Override
             public int compare(Entry<Object, Long> a,
                                Entry<Object, Long> b) {
-                return (int)(b.getValue() == null ? 0 : b.getValue()) - (int)(a.getValue() == null ? 0 : a.getValue());
+                return (int) (b.getValue() == null ? 0 : b.getValue()) - (int) (a.getValue() == null ? 0 : a.getValue());
             }
         });
 
@@ -126,7 +120,7 @@ public class ClusterParamMetric {
             if (x.getValue() == 0) {
                 break;
             }
-            doubleResult.put(x.getKey(), ((double)x.getValue()) / metric.getIntervalInSecond());
+            doubleResult.put(x.getKey(), ((double) x.getValue()) / metric.getIntervalInSecond());
         }
 
         return doubleResult;

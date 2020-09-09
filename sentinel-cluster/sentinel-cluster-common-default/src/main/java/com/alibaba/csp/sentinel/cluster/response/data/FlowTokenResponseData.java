@@ -43,10 +43,29 @@ public class FlowTokenResponseData {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof FlowTokenResponseData)) {
+            return false;
+        }
+        FlowTokenResponseData that = (FlowTokenResponseData) o;
+        return this.remainingCount == that.remainingCount && this.waitInMs == that.waitInMs;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = remainingCount;
+        result = 31 * result + waitInMs;
+        return result;
+    }
+
+    @Override
     public String toString() {
         return "FlowTokenResponseData{" +
-            "remainingCount=" + remainingCount +
-            ", waitInMs=" + waitInMs +
-            '}';
+                "remainingCount=" + remainingCount +
+                ", waitInMs=" + waitInMs +
+                '}';
     }
 }
