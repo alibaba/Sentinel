@@ -5,7 +5,7 @@
 
     <groupId>com.alibaba.csp</groupId>
     <artifactId>sentinel-parent</artifactId>
-    <version>1.8.1-SNAPSHOT</version>
+    <version>1.8.0</version>
     <packaging>pom</packaging>
 
     <name>${project.artifactId}</name>
@@ -68,18 +68,8 @@
     </properties>
 
     <modules>
-        <module>sentinel-core</module>
-        <module>sentinel-extension</module>
         <module>sentinel-transport</module>
-        <module>sentinel-adapter</module>
-        <module>sentinel-cluster</module>
-        <module>sentinel-logging</module>
-
         <module>sentinel-dashboard</module>
-
-        <module>sentinel-demo</module>
-        <module>sentinel-benchmark</module>
-
     </modules>
 
     <dependencyManagement>
@@ -208,6 +198,7 @@
                 <version>${powermock.version}</version>
                 <scope>test</scope>
             </dependency>
+
         </dependencies>
     </dependencyManagement>
 

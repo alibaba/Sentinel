@@ -1,2 +1,0 @@
-com.alibaba.csp.sentinel.command.handler.GetParamFlowRulesCommandHandler
-com.alibaba.csp.sentinel.command.handler.ModifyParamFlowRulesCommandHandler

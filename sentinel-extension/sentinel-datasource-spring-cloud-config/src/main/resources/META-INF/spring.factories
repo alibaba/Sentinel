@@ -1,2 +1,0 @@
-org.springframework.cloud.bootstrap.BootstrapConfiguration=\
-com.alibaba.csp.sentinel.datasource.spring.cloud.config.config.DataSourceBootstrapConfiguration

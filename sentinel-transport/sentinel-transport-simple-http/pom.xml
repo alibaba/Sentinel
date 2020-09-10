@@ -5,7 +5,7 @@
     <parent>
         <artifactId>sentinel-transport</artifactId>
         <groupId>com.alibaba.csp</groupId>
-        <version>1.8.1-SNAPSHOT</version>
+        <version>1.8.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -21,6 +21,10 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-core</artifactId>
         </dependency>
     </dependencies>
 </project>

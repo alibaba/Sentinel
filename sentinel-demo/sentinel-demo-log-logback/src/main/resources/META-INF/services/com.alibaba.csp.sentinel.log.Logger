@@ -1,2 +1,0 @@
-com.alibaba.csp.sentinel.demo.log.logback.RecordLogLoggerImpl
-com.alibaba.csp.sentinel.demo.log.logback.CommandCenterLogLoggerImpl

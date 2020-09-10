@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-transport</artifactId>
-        <version>1.8.1-SNAPSHOT</version>
+        <version>1.8.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>sentinel-transport-netty-http</artifactId>
@@ -19,7 +19,6 @@
         <dependency>
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-transport-common</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
@@ -50,6 +49,10 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-core</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -1,6 +1,0 @@
-{
-  "rpc.config.order": 999,
-  "logger.impl": "com.alipay.sofa.rpc.log.SLF4JLoggerImpl",
-  // 是否启用Sentinel,不设置默认为true
-  "sofa.rpc.sentinel.enabled": true
-}
