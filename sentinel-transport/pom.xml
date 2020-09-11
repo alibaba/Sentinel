@@ -16,5 +16,6 @@
 
         <module>sentinel-transport-simple-http</module>
         <module>sentinel-transport-netty-http</module>
+        <module>sentinel-transport-kie-http</module>
     </modules>
 </project>
