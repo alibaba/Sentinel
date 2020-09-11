@@ -25,6 +25,7 @@ import com.alibaba.csp.sentinel.adapter.gateway.common.api.ApiDefinition;
 import com.alibaba.csp.sentinel.adapter.gateway.common.api.ApiPathPredicateItem;
 import com.alibaba.csp.sentinel.adapter.gateway.common.api.ApiPredicateItem;
 import com.alibaba.csp.sentinel.adapter.gateway.common.api.GatewayApiDefinitionManager;
+import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayCompositeParamFlowItem;
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayFlowRule;
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayParamFlowItem;
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayRuleManager;
@@ -77,6 +78,24 @@ public class GatewayRuleConfig {
             .setParamItem(new GatewayParamFlowItem()
                 .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_CLIENT_IP)
             )
+        );
+
+        rules.add(new GatewayFlowRule("aliyun-product-route")
+                .setCount(2)
+                .setIntervalSec(2)
+                .setBurst(2)
+                .setParamItem(new GatewayCompositeParamFlowItem()
+                    .addParamItem(new GatewayParamFlowItem()
+                        .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER)
+                        .setFieldName("userName")
+                        .setPattern("sentinel"))
+                    .addParamItem(new GatewayParamFlowItem()
+                            .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER)
+                            .setFieldName("channel")
+                            .setPattern("web"))
+                    .addParamItem(new GatewayParamFlowItem()
+                            .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_URL_PARAM)
+                            .setFieldName("pa")))
         );
         rules.add(new GatewayFlowRule("another-route-httpbin")
             .setCount(10)

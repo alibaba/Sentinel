@@ -17,6 +17,8 @@ package com.alibaba.csp.sentinel.adapter.gateway.common.rule;
 
 import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
 
+import java.util.List;
+
 /**
  * @author Eric Zhao
  * @since 1.6.0
@@ -100,4 +102,6 @@ public class GatewayParamFlowItem {
             ", matchStrategy=" + matchStrategy +
             '}';
     }
+
+
 }

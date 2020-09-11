@@ -15,17 +15,12 @@
  */
 package com.alibaba.csp.sentinel.adapter.gateway.common.param;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
 import com.alibaba.csp.sentinel.adapter.gateway.common.api.ApiDefinition;
 import com.alibaba.csp.sentinel.adapter.gateway.common.api.GatewayApiDefinitionManager;
-import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayFlowRule;
-import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayParamFlowItem;
-import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayRuleManager;
+import com.alibaba.csp.sentinel.adapter.gateway.common.rule.*;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.util.function.Predicate;
 
@@ -303,6 +298,55 @@ public class GatewayParamParserTest {
         assertThat(params.length).isEqualTo(1);
         assertThat(params[apiRule1.getParamItem().getIndex()])
             .isEqualTo(SentinelGatewayConstants.GATEWAY_NOT_MATCH_PARAM);
+    }
+
+    @Test
+    public void testParseCompositeParameters() {
+        RequestItemParser<Object> itemParser = mock(RequestItemParser.class);
+        GatewayParamParser<Object> paramParser = new GatewayParamParser<>(itemParser);
+        final String routeId = "my_test_route_A";
+
+        GatewayParamFlowItem ipItem = new GatewayParamFlowItem()
+                .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_CLIENT_IP)
+                .setPattern("1.2.3.4")
+                .setMatchStrategy(SentinelGatewayConstants.PARAM_MATCH_STRATEGY_EXACT);
+
+        GatewayParamFlowItem header1Item = new GatewayParamFlowItem()
+                .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER)
+                .setFieldName("header1")
+                .setPattern("h1")
+                .setMatchStrategy(SentinelGatewayConstants.PARAM_MATCH_STRATEGY_EXACT);
+        GatewayParamFlowItem header2Item = new GatewayParamFlowItem()
+                .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER)
+                .setFieldName("header2")
+                .setPattern("h2")
+                .setMatchStrategy(SentinelGatewayConstants.PARAM_MATCH_STRATEGY_EXACT);
+
+        GatewayFlowRule routeRule = new GatewayFlowRule(routeId)
+                .setCount(2)
+                .setIntervalSec(2)
+                .setBurst(2)
+                .setParamItem(new GatewayCompositeParamFlowItem()
+                            .addParamItem(ipItem)
+                            .addParamItem(header1Item)
+                            .addParamItem(header2Item));
+        HashSet<GatewayFlowRule> rules = new HashSet<>();
+        rules.add(routeRule);
+        GatewayRuleManager.loadRules(rules);
+
+        // Create a fake request.
+        Object request = new Object();
+        mockSingleHeader(itemParser, "header1", "h1");
+        mockSingleHeader(itemParser, "header2", "h2");
+        mockClientHostAddress(itemParser, "1.2.3.4");
+
+        Object[] params = paramParser.parseParameterFor(routeId, request, routeIdPredicate);
+        assertThat(params.length).isEqualTo(1);
+        assertThat(params[routeRule.getParamItem().getIndex()]).isInstanceOf(CompositeParam.class);
+        CompositeParam param = (CompositeParam) params[routeRule.getParamItem().getIndex()];
+        assertThat(param.getHeaders().get("header1")).isEqualTo("h1");
+        assertThat(param.getHeaders().get("header2")).isEqualTo("h2");
+        assertThat(param.getIp()).isEqualTo("1.2.3.4");
     }
 
     private void mockClientHostAddress(/*@Mock*/ RequestItemParser parser, String address) {

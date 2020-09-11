@@ -31,6 +31,7 @@ public final class SentinelGatewayConstants {
     public static final int PARAM_PARSE_STRATEGY_HEADER = 2;
     public static final int PARAM_PARSE_STRATEGY_URL_PARAM = 3;
     public static final int PARAM_PARSE_STRATEGY_COOKIE = 4;
+    public static final int PARAM_PARSE_COMPOSITE_PARAM = 5;
 
     public static final int URL_MATCH_STRATEGY_EXACT = 0;
     public static final int URL_MATCH_STRATEGY_PREFIX = 1;

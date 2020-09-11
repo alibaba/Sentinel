@@ -103,6 +103,24 @@ public class GatewayRuleManagerTest {
         assertTrue(GatewayRuleManager.isValidRule(good3));
     }
 
+    @Test
+    public void testIsValidParamItem() {
+        GatewayParamFlowItem headerBadItem = new GatewayParamFlowItem().setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER);
+        GatewayParamFlowItem headerGoodItem = new GatewayParamFlowItem().setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER).setFieldName("header1");
+
+        GatewayCompositeParamFlowItem good1 = new GatewayCompositeParamFlowItem();
+        good1.addParamItem(headerGoodItem);
+
+        GatewayCompositeParamFlowItem bad1 = new GatewayCompositeParamFlowItem();
+        bad1.addParamItem(headerBadItem);
+
+        GatewayParamFlowItem bad2 = new GatewayParamFlowItem().setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_COMPOSITE_PARAM);
+
+        assertTrue(GatewayRuleManager.isValidParamItem(good1));
+        assertFalse(GatewayRuleManager.isValidParamItem(bad1));
+        assertFalse(GatewayRuleManager.isValidParamItem(bad2));
+    }
+
     @Before
     public void setUp() {
         GatewayRuleManager.loadRules(new HashSet<GatewayFlowRule>());
