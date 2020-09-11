@@ -33,6 +33,7 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRuleUtil;
+import com.alibaba.csp.sentinel.slots.block.flow.param.ParameterMetric;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParameterMetricStorage;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -227,7 +228,8 @@ public final class GatewayRuleManager {
                 List<ParamFlowRule> oldRuleList = new ArrayList<>(entry.getValue());
                 oldRuleList.removeAll(newRuleList);
                 for (ParamFlowRule rule : oldRuleList) {
-                    ParameterMetricStorage.getParamMetricForResource(resource).clearForRule(rule);
+                    ParameterMetric metric = ParameterMetricStorage.getParamMetricForResource(resource);
+                    if(null != metric) metric.clearForRule(rule);
                 }
             }
 
