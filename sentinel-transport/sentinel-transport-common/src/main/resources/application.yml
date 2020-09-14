@@ -1,0 +1,9 @@
+sentinel:
+  source:
+      type : KieDataSource
+      address : 192.168.0.1:8080
+      project : default
+      app : appA
+      service : serviceA
+      environment : test
+      version : 1.0.0
