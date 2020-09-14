@@ -28,9 +28,9 @@ public interface TokenService {
     /**
      * Request tokens from remote token server.
      *
-     * @param ruleId the unique rule ID
+     * @param ruleId       the unique rule ID
      * @param acquireCount token count to acquire
-     * @param prioritized whether the request is prioritized
+     * @param prioritized  whether the request is prioritized
      * @return result of the token request
      */
     TokenResult requestToken(Long ruleId, int acquireCount, boolean prioritized);
@@ -38,10 +38,28 @@ public interface TokenService {
     /**
      * Request tokens for a specific parameter from remote token server.
      *
-     * @param ruleId the unique rule ID
+     * @param ruleId       the unique rule ID
      * @param acquireCount token count to acquire
-     * @param params parameter list
+     * @param params       parameter list
      * @return result of the token request
      */
     TokenResult requestParamToken(Long ruleId, int acquireCount, Collection<Object> params);
+
+    /**
+     * Request acquire concurrent tokens from remote token server.
+     *
+     * @param clientAddress the address of the request belong.
+     * @param ruleId        ruleId the unique rule ID.
+     * @param acquireCount  token count to acquire.
+     * @param prioritized   the priority of this request.
+     * @return result of the token request.
+     */
+    TokenResult requestConcurrentToken(String clientAddress, Long ruleId, int acquireCount, boolean prioritized);
+
+    /**
+     * Request release concurrent tokens from remote token server asynchronously.
+     *
+     * @param tokenId the unique token ID.
+     */
+    void releaseConcurrentToken(Long tokenId);
 }

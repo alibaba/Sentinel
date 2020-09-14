@@ -1,2 +1,4 @@
 com.alibaba.csp.sentinel.cluster.server.processor.FlowRequestProcessor
 com.alibaba.csp.sentinel.cluster.server.processor.ParamFlowRequestProcessor
+com.alibaba.csp.sentinel.cluster.server.processor.ConcurrentFlowRequestAcquireProcessor
+com.alibaba.csp.sentinel.cluster.server.processor.ConcurrentFlowRequestReleaseProcessor

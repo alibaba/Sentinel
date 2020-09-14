@@ -15,11 +15,11 @@
  */
 package com.alibaba.csp.sentinel.cluster.server;
 
-import java.util.Collection;
-
 import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
 import com.alibaba.csp.sentinel.cluster.TokenService;
+
+import java.util.Collection;
 
 /**
  * Default embedded token server in Sentinel which wraps the {@link SentinelDefaultTokenServer}
@@ -57,5 +57,20 @@ public class DefaultEmbeddedTokenServer implements EmbeddedClusterTokenServer {
             return tokenService.requestParamToken(ruleId, acquireCount, params);
         }
         return new TokenResult(TokenResultStatus.FAIL);
+    }
+
+    @Override
+    public TokenResult requestConcurrentToken(String clientAddress, Long ruleId, int acquireCount, boolean prioritized) {
+        if (tokenService != null) {
+            return tokenService.requestConcurrentToken(clientAddress, ruleId, acquireCount, prioritized);
+        }
+        return new TokenResult(TokenResultStatus.FAIL);
+    }
+
+    @Override
+    public void releaseConcurrentToken(Long tokenId) {
+        if (tokenService != null) {
+            tokenService.releaseConcurrentToken(tokenId);
+        }
     }
 }

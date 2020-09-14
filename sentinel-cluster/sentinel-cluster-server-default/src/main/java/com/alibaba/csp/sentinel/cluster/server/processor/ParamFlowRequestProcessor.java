@@ -15,8 +15,6 @@
  */
 package com.alibaba.csp.sentinel.cluster.server.processor;
 
-import java.util.Collection;
-
 import com.alibaba.csp.sentinel.cluster.ClusterConstants;
 import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.TokenService;
@@ -26,6 +24,9 @@ import com.alibaba.csp.sentinel.cluster.request.data.ParamFlowRequestData;
 import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
 import com.alibaba.csp.sentinel.cluster.response.data.FlowTokenResponseData;
 import com.alibaba.csp.sentinel.cluster.server.TokenServiceProvider;
+import io.netty.channel.ChannelHandlerContext;
+
+import java.util.Collection;
 
 /**
  * @author Eric Zhao
@@ -35,7 +36,7 @@ import com.alibaba.csp.sentinel.cluster.server.TokenServiceProvider;
 public class ParamFlowRequestProcessor implements RequestProcessor<ParamFlowRequestData, FlowTokenResponseData> {
 
     @Override
-    public ClusterResponse<FlowTokenResponseData> processRequest(ClusterRequest<ParamFlowRequestData> request) {
+    public ClusterResponse<FlowTokenResponseData> processRequest(ChannelHandlerContext ctx, ClusterRequest<ParamFlowRequestData> request) {
         TokenService tokenService = TokenServiceProvider.getService();
 
         long flowId = request.getData().getFlowId();
@@ -48,9 +49,9 @@ public class ParamFlowRequestProcessor implements RequestProcessor<ParamFlowRequ
 
     private ClusterResponse<FlowTokenResponseData> toResponse(TokenResult result, ClusterRequest request) {
         return new ClusterResponse<>(request.getId(), request.getType(), result.getStatus(),
-            new FlowTokenResponseData()
-                .setRemainingCount(result.getRemaining())
-                .setWaitInMs(0)
+                new FlowTokenResponseData()
+                        .setRemainingCount(result.getRemaining())
+                        .setWaitInMs(0)
         );
     }
 }

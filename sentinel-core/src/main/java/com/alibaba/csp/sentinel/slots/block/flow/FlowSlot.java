@@ -172,6 +172,7 @@ public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
     public void exit(Context context, ResourceWrapper resourceWrapper, int count, Object... args) {
+        checker.release(context);
         fireExit(context, resourceWrapper, count, args);
     }
 
