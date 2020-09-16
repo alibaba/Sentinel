@@ -149,13 +149,13 @@ public final class GatewayRuleManager {
         @Override
         public void configUpdate(Set<GatewayFlowRule> conf) {
             applyGatewayRuleInternal(conf);
-            RecordLog.info("[GatewayRuleManager] Gateway flow rules received: " + GATEWAY_RULE_MAP);
+            RecordLog.info("[GatewayRuleManager] Gateway flow rules received: {}", GATEWAY_RULE_MAP);
         }
 
         @Override
         public void configLoad(Set<GatewayFlowRule> conf) {
             applyGatewayRuleInternal(conf);
-            RecordLog.info("[GatewayRuleManager] Gateway flow rules loaded: " + GATEWAY_RULE_MAP);
+            RecordLog.info("[GatewayRuleManager] Gateway flow rules loaded: {}", GATEWAY_RULE_MAP);
         }
 
         private int getIdxInternal(Map<String, Integer> idxMap, String resourceName) {
@@ -271,7 +271,7 @@ public final class GatewayRuleManager {
             CONVERTED_PARAM_RULE_MAP.clear();
             CONVERTED_PARAM_RULE_MAP.putAll(newRuleMap);
 
-            RecordLog.info("[GatewayRuleManager] Converted internal param rules: " + CONVERTED_PARAM_RULE_MAP);
+            RecordLog.info("[GatewayRuleManager] Converted internal param rules: {}", CONVERTED_PARAM_RULE_MAP);
         }
     }
 }

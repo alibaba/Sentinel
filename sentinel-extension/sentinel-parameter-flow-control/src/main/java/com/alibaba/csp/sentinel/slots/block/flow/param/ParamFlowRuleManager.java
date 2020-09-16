@@ -105,7 +105,7 @@ public final class ParamFlowRuleManager {
                 PARAM_FLOW_RULES.clear();
                 PARAM_FLOW_RULES.putAll(rules);
             }
-            RecordLog.info("[ParamFlowRuleManager] Parameter flow rules received: " + PARAM_FLOW_RULES);
+            RecordLog.info("[ParamFlowRuleManager] Parameter flow rules received: {}", PARAM_FLOW_RULES);
         }
 
         @Override
@@ -115,7 +115,7 @@ public final class ParamFlowRuleManager {
                 PARAM_FLOW_RULES.clear();
                 PARAM_FLOW_RULES.putAll(rules);
             }
-            RecordLog.info("[ParamFlowRuleManager] Parameter flow rules received: " + PARAM_FLOW_RULES);
+            RecordLog.info("[ParamFlowRuleManager] Parameter flow rules received: {}", PARAM_FLOW_RULES);
         }
 
         private Map<String, List<ParamFlowRule>> aggregateAndPrepareParamRules(List<ParamFlowRule> list) {
