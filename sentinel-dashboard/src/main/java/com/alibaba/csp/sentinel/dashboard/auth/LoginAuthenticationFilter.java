@@ -21,15 +21,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.util.List;
 
@@ -77,6 +71,32 @@ public class LoginAuthenticationFilter implements Filter {
 
     }
 
+    private boolean isMatchAuthRule(String matchRule, String targetUrl){
+        String[] matchRuleArray = matchRule.split("/");
+        String[] targetUrlArray = targetUrl.split("/");
+
+        if(targetUrlArray.length != matchRuleArray.length){
+            return false;
+        }
+
+        for(int i=0; i< matchRuleArray.length; i++){
+            if(matchRuleArray[i].equals("*") || matchRuleArray[i].equals(targetUrlArray[i])){
+                continue;
+            }
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isAuthExcludeUrl(String targetUrl){
+        for(String rule : authFilterExcludeUrls){
+            if(isMatchAuthRule(rule, targetUrl)){
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
         throws IOException, ServletException {
@@ -85,7 +105,7 @@ public class LoginAuthenticationFilter implements Filter {
         String servletPath = httpRequest.getServletPath();
 
         // Exclude the urls which needn't auth
-        if (authFilterExcludeUrls.contains(servletPath)) {
+        if (isAuthExcludeUrl(servletPath)) {
             chain.doFilter(request, response);
             return;
         }

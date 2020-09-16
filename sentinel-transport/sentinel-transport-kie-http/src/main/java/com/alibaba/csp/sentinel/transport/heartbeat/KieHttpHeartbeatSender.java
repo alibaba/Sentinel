@@ -18,12 +18,9 @@ package com.alibaba.csp.sentinel.transport.heartbeat;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.transport.HeartbeatSender;
 import com.alibaba.csp.sentinel.transport.config.TransportConfig;
-import com.alibaba.csp.sentinel.transport.heartbeat.client.SimpleHttpClient;
-import com.alibaba.csp.sentinel.transport.heartbeat.client.SimpleHttpRequest;
-import com.alibaba.csp.sentinel.transport.heartbeat.client.SimpleHttpResponse;
+import com.alibaba.csp.sentinel.transport.heartbeat.client.HttpClient;
 import com.alibaba.csp.sentinel.util.function.Tuple2;
 
-import java.net.InetSocketAddress;
 import java.util.List;
 
 /**
@@ -35,12 +32,13 @@ import java.util.List;
  */
 public class KieHttpHeartbeatSender implements HeartbeatSender {
 
+    public static final String HEARTBEAT_DEFAULT_PATH = "/registry/kieServer";
+
     private static final int OK_STATUS = 200;
 
     private static final long DEFAULT_INTERVAL = 1000 * 10;
 
     private final KieHeartbeatMessage heartBeat = new KieHeartbeatMessage();
-    private final SimpleHttpClient httpClient = new SimpleHttpClient();
 
     private final List<Tuple2<String, Integer>> addressList;
 
@@ -57,31 +55,19 @@ public class KieHttpHeartbeatSender implements HeartbeatSender {
         this.addressList = newAddrs;
     }
 
-    @Override
-    public boolean sendHeartbeat() throws Exception {
-        if (TransportConfig.getRuntimePort() <= 0) {
-            RecordLog.info("[KieHttpHeartbeatSender] Command server port not initialized, won't send heartbeat");
-            return false;
-        }
-        Tuple2<String, Integer> addrInfo = getAvailableAddress();
-        if (addrInfo == null) {
-            return false;
-        }
+    private String getHeartbeatUrl(){
+        String address = getAvailableAddress();
 
-        InetSocketAddress addr = new InetSocketAddress(addrInfo.r1, addrInfo.r2);
-        SimpleHttpRequest request = new SimpleHttpRequest(addr, TransportConfig.getHeartbeatApiPath());
-        request.setParams(heartBeat.generateCurrentMessage());
-        try {
-            SimpleHttpResponse response = httpClient.post(request);
-            if (response.getStatusCode() == OK_STATUS) {
-                return true;
-            } else if (clientErrorCode(response.getStatusCode()) || serverErrorCode(response.getStatusCode())) {
-                RecordLog.warn("[KieHttpHeartbeatSender] Failed to send heartbeat to " + addr
-                    + ", http status code: " + response.getStatusCode());
-            }
-        } catch (Exception e) {
-            RecordLog.warn("[KieHttpHeartbeatSender] Failed to send heartbeat to " + addr, e);
-        }
+        return "http://" + address + "/" + HEARTBEAT_DEFAULT_PATH;
+    }
+
+    @Override
+    public boolean sendHeartbeat(){
+        String heartbeatUrl = getHeartbeatUrl();
+        String heartbeatMsg = heartBeat.generateCurrentMessage();
+
+        RecordLog.info(String.format("Send heartbeat %s to %s.", heartbeatMsg, heartbeatUrl));
+        HttpClient.post(heartbeatUrl, heartbeatMsg);
         return false;
     }
 
@@ -90,7 +76,7 @@ public class KieHttpHeartbeatSender implements HeartbeatSender {
         return DEFAULT_INTERVAL;
     }
 
-    private Tuple2<String, Integer> getAvailableAddress() {
+    private String getAvailableAddress() {
         if (addressList == null || addressList.isEmpty()) {
             return null;
         }
@@ -98,7 +84,7 @@ public class KieHttpHeartbeatSender implements HeartbeatSender {
             currentAddressIdx = 0;
         }
         int index = currentAddressIdx % addressList.size();
-        return addressList.get(index);
+        return addressList.get(index).r1 + ":" + addressList.get(index).r2;
     }
 
     private boolean clientErrorCode(int code) {

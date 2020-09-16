@@ -16,16 +16,19 @@
 package com.alibaba.csp.sentinel.dashboard.controller;
 
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
-import com.alibaba.csp.sentinel.util.StringUtil;
-
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineDiscovery;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
+import com.alibaba.csp.sentinel.dashboard.discovery.kie.KieServerInfo;
+import com.alibaba.csp.sentinel.dashboard.discovery.kie.KieServerManagement;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
+import com.alibaba.csp.sentinel.dashboard.domain.vo.kie.KieServerInfoVo;
+import com.alibaba.csp.sentinel.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -38,6 +41,9 @@ public class MachineRegistryController {
 
     @Autowired
     private AppManagement appManagement;
+
+    @Autowired
+    private KieServerManagement kieManagement;
 
     @ResponseBody
     @RequestMapping("/machine")
@@ -70,6 +76,44 @@ public class MachineRegistryController {
             appManagement.addMachine(machineInfo);
             return Result.ofSuccessMsg("success");
         } catch (Exception e) {
+            logger.error("Receive heartbeat error", e);
+            return Result.ofFail(-1, e.getMessage());
+        }
+    }
+
+    @ResponseBody
+    @RequestMapping("/kieServer")
+    public Result<?> receiveServerHeartBeat(@RequestBody KieServerInfoVo kieServerInfoVo){
+        if (kieServerInfoVo.getIp() == null) {
+            return Result.ofFail(-1, "ip can't be null");
+        }
+        if (kieServerInfoVo.getPort() == -1) {
+            logger.info("Receive heartbeat from " + kieServerInfoVo.getIp() + " but port not set yet");
+            return Result.ofFail(-1, "your port not set yet");
+        }
+        String sentinelVersion = StringUtil.isEmpty(kieServerInfoVo.getSentinelVersion()) ?
+                "unknown" : kieServerInfoVo.getSentinelVersion();
+        long heartbeatVersion = kieServerInfoVo.getHeartbeatVersion() == null ?
+                System.currentTimeMillis() : kieServerInfoVo.getHeartbeatVersion();
+
+        try{
+            KieServerInfo kieServerInfo = KieServerInfo.builder()
+                    .app(kieServerInfoVo.getApp())
+                    .environment(kieServerInfoVo.getEnvironment())
+                    .project(kieServerInfoVo.getProject())
+                    .serverVersion(kieServerInfoVo.getServerVersion())
+                    .service(kieServerInfoVo.getService())
+                    .environment(kieServerInfoVo.getEnvironment())
+                    .sentinelVersion(sentinelVersion)
+                    .heartbeatVersion(heartbeatVersion)
+                    .lastHeartbeat(System.currentTimeMillis())
+                    .build();
+
+            kieManagement.addServerInfo(kieServerInfo);
+
+            logger.info(String.format("Register to dashboard, %s.", kieServerInfo));
+            return Result.ofSuccessMsg("success");
+        }catch (Exception e){
             logger.error("Receive heartbeat error", e);
             return Result.ofFail(-1, e.getMessage());
         }

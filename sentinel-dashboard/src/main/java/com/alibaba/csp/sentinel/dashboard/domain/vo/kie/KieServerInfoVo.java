@@ -29,7 +29,7 @@ public class KieServerInfoVo{
 
     private String project;
     private String app;
-    private String server;
+    private String service;
     private String environment;
     private String serverVersion;
 }

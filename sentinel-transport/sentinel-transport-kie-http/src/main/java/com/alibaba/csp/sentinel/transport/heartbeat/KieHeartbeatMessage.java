@@ -15,16 +15,15 @@
  */
 package com.alibaba.csp.sentinel.transport.heartbeat;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.alibaba.csp.sentinel.Constants;
-import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.transport.config.KieConfig;
 import com.alibaba.csp.sentinel.transport.config.TransportConfig;
-import com.alibaba.csp.sentinel.util.AppNameUtil;
 import com.alibaba.csp.sentinel.util.HostNameUtil;
 import com.alibaba.csp.sentinel.util.TimeUtil;
+import com.alibaba.fastjson.JSON;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Heart beat message entity.
@@ -38,9 +37,6 @@ public class KieHeartbeatMessage {
     public KieHeartbeatMessage() {
         message.put("hostname", HostNameUtil.getHostName());
         message.put("ip", TransportConfig.getHeartbeatClientIp());
-//        message.put("app", AppNameUtil.getAppName());
-        // Put application type (since 1.6.0).
-        message.put("app_type", String.valueOf(SentinelConfig.getAppType()));
         message.put("port", String.valueOf(TransportConfig.getPort()));
 
         // Kie Config
@@ -48,7 +44,7 @@ public class KieHeartbeatMessage {
         message.put("environment", KieConfig.getInstance().getEnvironment());
         message.put("project", KieConfig.getInstance().getProject());
         message.put("service", KieConfig.getInstance().getService());
-        message.put("version", KieConfig.getInstance().getVersion());
+        message.put("serverVersion", KieConfig.getInstance().getVersion());
     }
 
     public KieHeartbeatMessage registerInformation(String key, String value) {
@@ -56,12 +52,13 @@ public class KieHeartbeatMessage {
         return this;
     }
 
-    public Map<String, String> generateCurrentMessage() {
+    public String generateCurrentMessage() {
         // Version of Sentinel.
-        message.put("v", Constants.SENTINEL_VERSION);
+        message.put("sentinelVersion", Constants.SENTINEL_VERSION);
         // Actually timestamp.
-        message.put("version", String.valueOf(TimeUtil.currentTimeMillis()));
+        message.put("heartbeatVersion", String.valueOf(TimeUtil.currentTimeMillis()));
         message.put("port", String.valueOf(TransportConfig.getPort()));
-        return message;
+
+        return JSON.toJSONString(message);
     }
 }

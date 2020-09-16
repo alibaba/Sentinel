@@ -33,13 +33,13 @@ public class KieServerInfo{
 
     private String project;
     private String app;
-    private String server;
+    private String service;
     private String environment;
     private String serverVersion;
 
     @Override
     public int hashCode(){
-        return Objects.hash(project, app, server, environment, serverVersion);
+        return Objects.hash(project, app, service, environment, serverVersion);
     }
 
     @Override
@@ -49,8 +49,25 @@ public class KieServerInfo{
         KieServerInfo that = (KieServerInfo)o;
         return Objects.equals(project, that.project) &&
                 Objects.equals(app, that.app) &&
-                Objects.equals(server, that.server)&&
+                Objects.equals(service, that.service)&&
                 Objects.equals(environment, that.environment)&&
                 Objects.equals(serverVersion, that.serverVersion);
+    }
+
+    @Override
+    public String toString() {
+        return new StringBuilder("KieServerInfo {")
+                .append("project='").append(project).append('\'')
+                .append(", app='").append(app).append('\'')
+                .append(", service='").append(service).append('\'')
+                .append(", environment='").append(environment).append('\'')
+                .append(", serverVersion='").append(serverVersion).append('\'')
+                .append(", hostname='").append(hostname).append('\'')
+                .append(", ip='").append(ip).append('\'')
+                .append(", port=").append(port)
+                .append(", heartbeatVersion=").append(heartbeatVersion)
+                .append(", lastHeartbeat=").append(lastHeartbeat)
+                .append(", healthy=").append(isHealthy())
+                .append('}').toString();
     }
 }
