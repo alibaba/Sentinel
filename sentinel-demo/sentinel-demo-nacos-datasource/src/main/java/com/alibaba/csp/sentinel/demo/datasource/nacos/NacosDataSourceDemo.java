@@ -20,10 +20,10 @@ import java.util.Properties;
 
 import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
 import com.alibaba.csp.sentinel.datasource.nacos.NacosDataSource;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
+import com.alibaba.csp.sentinel.serialization.common.TypeReference;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
 import com.alibaba.nacos.api.PropertyKeyConst;
 
 /**
@@ -62,8 +62,8 @@ public class NacosDataSourceDemo {
 
     private static void loadRules() {
         ReadableDataSource<String, List<FlowRule>> flowRuleDataSource = new NacosDataSource<>(remoteAddress, groupId, dataId,
-                source -> JSON.parseObject(source, new TypeReference<List<FlowRule>>() {
-                }));
+                source -> JsonTransformerLoader.deserializer().deserialize(source, new TypeReference<List<FlowRule>>() {
+                }.getType()));
         FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
     }
 
@@ -73,8 +73,8 @@ public class NacosDataSourceDemo {
         properties.put(PropertyKeyConst.NAMESPACE, NACOS_NAMESPACE_ID);
 
         ReadableDataSource<String, List<FlowRule>> flowRuleDataSource = new NacosDataSource<>(properties, groupId, dataId,
-                source -> JSON.parseObject(source, new TypeReference<List<FlowRule>>() {
-                }));
+                source -> JsonTransformerLoader.deserializer().deserialize(source, new TypeReference<List<FlowRule>>() {
+                }.getType()));
         FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
     }
 

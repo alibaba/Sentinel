@@ -19,9 +19,10 @@ import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
 import com.alibaba.csp.sentinel.datasource.etcd.EtcdConfig;
 import com.alibaba.csp.sentinel.datasource.etcd.EtcdDataSource;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
+import com.alibaba.csp.sentinel.serialization.common.TypeReference;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
-import com.alibaba.fastjson.JSON;
 
 import java.util.List;
 
@@ -43,7 +44,7 @@ public class EtcdDataSourceDemo {
         SentinelConfig.setConfig(EtcdConfig.CHARSET, "utf-8");
         SentinelConfig.setConfig(EtcdConfig.AUTH_ENABLE, "true");
 
-        ReadableDataSource<String, List<FlowRule>> flowRuleEtcdDataSource = new EtcdDataSource<>(rule_key, (rule) -> JSON.parseArray(rule, FlowRule.class));
+        ReadableDataSource<String, List<FlowRule>> flowRuleEtcdDataSource = new EtcdDataSource<>(rule_key, (rule) -> JsonTransformerLoader.deserializer().deserialize(rule, new TypeReference<List<FlowRule>>() {}.getType()));
         FlowRuleManager.register2Property(flowRuleEtcdDataSource.getProperty());
         List<FlowRule> rules = FlowRuleManager.getRules();
         System.out.println(rules);

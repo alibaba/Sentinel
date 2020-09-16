@@ -2,12 +2,12 @@ package com.alibaba.csp.sentinel.datasource.zookeeper;
 
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
+import com.alibaba.csp.sentinel.serialization.common.TypeReference;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
 import org.apache.curator.framework.AuthInfo;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -48,8 +48,8 @@ public class ZookeeperDataSourceTest {
                 new Converter<String, List<FlowRule>>() {
                     @Override
                     public List<FlowRule> convert(String source) {
-                        return JSON.parseObject(source, new TypeReference<List<FlowRule>>() {
-                        });
+                        return JsonTransformerLoader.deserializer().deserialize(source, new TypeReference<List<FlowRule>>() {
+                        }.getType());
                     }
                 });
         FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
@@ -105,8 +105,8 @@ public class ZookeeperDataSourceTest {
                 new Converter<String, List<FlowRule>>() {
                     @Override
                     public List<FlowRule> convert(String source) {
-                        return JSON.parseObject(source, new TypeReference<List<FlowRule>>() {
-                        });
+                        return JsonTransformerLoader.deserializer().deserialize(source, new TypeReference<List<FlowRule>>() {
+                        }.getType());
                     }
                 });
         FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
@@ -126,7 +126,7 @@ public class ZookeeperDataSourceTest {
                 .as(FlowRule.class)
                 .setCount(count)
                 .setGrade(RuleConstant.FLOW_GRADE_QPS);
-        String ruleString = JSON.toJSONString(Collections.singletonList(rule));
+        String ruleString = JsonTransformerLoader.serializer().serialize(Collections.singletonList(rule));
         zkClient.setData().forPath(path, ruleString.getBytes());
 
         await().timeout(5, TimeUnit.SECONDS)
@@ -168,16 +168,16 @@ public class ZookeeperDataSourceTest {
                 new Converter<String, List<FlowRule>>() {
                     @Override
                     public List<FlowRule> convert(String source) {
-                        return JSON.parseObject(source, new TypeReference<List<FlowRule>>() {
-                        });
+                        return JsonTransformerLoader.deserializer().deserialize(source, new TypeReference<List<FlowRule>>() {
+                        }.getType());
                     }
                 });
         ZookeeperDataSource<List<DegradeRule>> degradeRuleZkDataSource = new ZookeeperDataSource<>(remoteAddress, degradePath,
                 new Converter<String, List<DegradeRule>>() {
                     @Override
                     public List<DegradeRule> convert(String source) {
-                        return JSON.parseObject(source, new TypeReference<List<DegradeRule>>() {
-                        });
+                        return JsonTransformerLoader.deserializer().deserialize(source, new TypeReference<List<DegradeRule>>() {
+                        }.getType());
                     }
                 });
 
@@ -199,8 +199,8 @@ public class ZookeeperDataSourceTest {
                 new Converter<String, List<FlowRule>>() {
                     @Override
                     public List<FlowRule> convert(String source) {
-                        return JSON.parseObject(source, new TypeReference<List<FlowRule>>() {
-                        });
+                        return JsonTransformerLoader.deserializer().deserialize(source, new TypeReference<List<FlowRule>>() {
+                        }.getType());
                     }
                 });
 
@@ -209,8 +209,8 @@ public class ZookeeperDataSourceTest {
                 new Converter<String, List<DegradeRule>>() {
                     @Override
                     public List<DegradeRule> convert(String source) {
-                        return JSON.parseObject(source, new TypeReference<List<DegradeRule>>() {
-                        });
+                        return JsonTransformerLoader.deserializer().deserialize(source, new TypeReference<List<DegradeRule>>() {
+                        }.getType());
                     }
                 });
 

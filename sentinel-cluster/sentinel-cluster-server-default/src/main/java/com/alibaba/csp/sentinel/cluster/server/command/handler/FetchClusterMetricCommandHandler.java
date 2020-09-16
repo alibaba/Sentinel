@@ -20,8 +20,8 @@ import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.fastjson.JSON;
 
 /**
  * @author Eric Zhao
@@ -37,7 +37,7 @@ public class FetchClusterMetricCommandHandler implements CommandHandler<String> 
             return CommandResponse.ofFailure(new IllegalArgumentException("failed: namespace cannot be empty"));
         }
         return CommandResponse.ofSuccess(
-            JSON.toJSONString(ClusterMetricNodeGenerator.generateCurrentNodeMap(namespace))
+            JsonTransformerLoader.serializer().serialize(ClusterMetricNodeGenerator.generateCurrentNodeMap(namespace))
         );
     }
 }

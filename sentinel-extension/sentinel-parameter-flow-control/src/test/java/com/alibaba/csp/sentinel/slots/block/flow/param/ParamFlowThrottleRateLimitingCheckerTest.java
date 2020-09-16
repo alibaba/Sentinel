@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.slots.block.flow.param;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -89,6 +90,7 @@ public class ParamFlowThrottleRateLimitingCheckerTest {
     public void testSingleValueThrottleCheckQpsMultipleThreads() throws Exception {
         final String resourceName = "testSingleValueThrottleCheckQpsMultipleThreads";
         final ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
+        final AtomicBoolean shouldBegin = new AtomicBoolean();
         int paramIdx = 0;
 
         long threshold = 5L;
@@ -112,6 +114,7 @@ public class ParamFlowThrottleRateLimitingCheckerTest {
             Thread t = new Thread(new Runnable() {
                 @Override
                 public void run() {
+                    while(!shouldBegin.get());
                     if (ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA)) {
                         successCount.incrementAndGet();
                     }
@@ -122,6 +125,7 @@ public class ParamFlowThrottleRateLimitingCheckerTest {
             t.setName("sentinel-simulate-traffic-task-" + i);
             t.start();
         }
+        shouldBegin.set(true);
         waitLatch.await();
 
         assertEquals(successCount.get(), 1);
@@ -132,6 +136,7 @@ public class ParamFlowThrottleRateLimitingCheckerTest {
         TimeUnit.SECONDS.sleep(3);
 
         successCount.set(0);
+        shouldBegin.set(false);
         final CountDownLatch waitLatch1 = new CountDownLatch(threadCount);
         final long currentTime = TimeUtil.currentTimeMillis();
         final long endTime = currentTime + rule.getDurationInSec() * 1000 - 1;
@@ -139,6 +144,7 @@ public class ParamFlowThrottleRateLimitingCheckerTest {
             Thread t = new Thread(new Runnable() {
                 @Override
                 public void run() {
+                    while (!shouldBegin.get());
                     long currentTime1 = currentTime;
                     while (currentTime1 <= endTime) {
                         if (ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA)) {
@@ -162,9 +168,10 @@ public class ParamFlowThrottleRateLimitingCheckerTest {
             t.setName("sentinel-simulate-traffic-task-" + i);
             t.start();
         }
+        shouldBegin.set(true);
         waitLatch1.await();
 
-        assertEquals(successCount.get(), threshold);
+        assertEquals(threshold, successCount.get());
     }
 
     @Before

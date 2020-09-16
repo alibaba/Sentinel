@@ -25,9 +25,8 @@ import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.node.Node;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
 import com.alibaba.csp.sentinel.command.vo.NodeVo;
-
-import com.alibaba.fastjson.JSON;
 
 /**
  * @author leyou
@@ -39,7 +38,7 @@ public class FetchJsonTreeCommandHandler implements CommandHandler<String> {
     public CommandResponse<String> handle(CommandRequest request) {
         List<NodeVo> results = new ArrayList<NodeVo>();
         visit(Constants.ROOT, results, null);
-        return CommandResponse.ofSuccess(JSON.toJSONString(results));
+        return CommandResponse.ofSuccess(JsonTransformerLoader.serializer().serialize(results));
     }
 
     /**

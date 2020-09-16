@@ -23,7 +23,7 @@ import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
 
 /**
  * @author jialiang.linjl
@@ -42,6 +42,6 @@ public class FetchSystemStatusCommandHandler implements CommandHandler<String> {
         systemStatus.put("r", Constants.ENTRY_NODE.avgRt());
         systemStatus.put("t", Constants.ENTRY_NODE.curThreadNum());
 
-        return CommandResponse.ofSuccess(JSONObject.toJSONString(systemStatus));
+        return CommandResponse.ofSuccess(JsonTransformerLoader.serializer().serialize(systemStatus));
     }
 }

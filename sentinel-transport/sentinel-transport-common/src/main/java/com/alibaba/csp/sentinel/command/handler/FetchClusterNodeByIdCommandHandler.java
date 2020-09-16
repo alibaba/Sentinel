@@ -20,10 +20,10 @@ import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
 import com.alibaba.csp.sentinel.node.ClusterNode;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
 import com.alibaba.csp.sentinel.command.vo.NodeVo;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.fastjson.JSON;
 
 /**
  * @author qinan.qn
@@ -39,7 +39,7 @@ public class FetchClusterNodeByIdCommandHandler implements CommandHandler<String
         }
         ClusterNode node = ClusterBuilderSlot.getClusterNode(id);
         if (node != null) {
-            return CommandResponse.ofSuccess(JSON.toJSONString(NodeVo.fromClusterNode(id, node)));
+            return CommandResponse.ofSuccess(JsonTransformerLoader.serializer().serialize(NodeVo.fromClusterNode(id, node)));
         } else {
             return CommandResponse.ofSuccess("{}");
         }

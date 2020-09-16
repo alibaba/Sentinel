@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.demo.file.rule;
 
 import java.io.File;
+import java.lang.reflect.Type;
 import java.util.List;
 
 import com.alibaba.csp.sentinel.datasource.FileRefreshableDataSource;
@@ -23,11 +24,11 @@ import com.alibaba.csp.sentinel.datasource.FileWritableDataSource;
 import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
 import com.alibaba.csp.sentinel.datasource.WritableDataSource;
 import com.alibaba.csp.sentinel.init.InitFunc;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
+import com.alibaba.csp.sentinel.serialization.common.TypeReference;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.transport.util.WritableDataSourceRegistry;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
 
 /**
  * <p>
@@ -42,6 +43,7 @@ import com.alibaba.fastjson.TypeReference;
  * @author Eric Zhao
  */
 public class FileDataSourceInit implements InitFunc {
+    private static final Type TYPE_LIST_FLOW = new TypeReference<List<FlowRule>>() {}.getType();
 
     @Override
     public void init() throws Exception {
@@ -51,7 +53,7 @@ public class FileDataSourceInit implements InitFunc {
         String flowRulePath = flowRuleDir + File.separator + flowRuleFile;
 
         ReadableDataSource<String, List<FlowRule>> ds = new FileRefreshableDataSource<>(
-            flowRulePath, source -> JSON.parseObject(source, new TypeReference<List<FlowRule>>() {})
+            flowRulePath, source -> JsonTransformerLoader.deserializer().deserialize(source, TYPE_LIST_FLOW)
         );
         // Register to flow rule manager.
         FlowRuleManager.register2Property(ds.getProperty());
@@ -63,6 +65,6 @@ public class FileDataSourceInit implements InitFunc {
     }
 
     private <T> String encodeJson(T t) {
-        return JSON.toJSONString(t);
+        return JsonTransformerLoader.serializer().serialize(t);
     }
 }

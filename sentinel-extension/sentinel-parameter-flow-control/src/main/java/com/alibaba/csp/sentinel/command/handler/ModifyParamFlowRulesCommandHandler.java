@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.command.handler;
 
+import java.lang.reflect.Type;
 import java.net.URLDecoder;
 import java.util.List;
 
@@ -24,10 +25,11 @@ import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
 import com.alibaba.csp.sentinel.datasource.WritableDataSource;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
+import com.alibaba.csp.sentinel.serialization.common.TypeReference;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRuleManager;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.fastjson.JSONArray;
 
 /**
  * @author Eric Zhao
@@ -35,7 +37,7 @@ import com.alibaba.fastjson.JSONArray;
  */
 @CommandMapping(name = "setParamFlowRules", desc = "Set parameter flow rules, while previous rules will be replaced.")
 public class ModifyParamFlowRulesCommandHandler implements CommandHandler<String> {
-
+    private static final Type TYPE_LIST_PARAM_FLOW = new TypeReference<List<ParamFlowRule>>() {}.getType();
     private static WritableDataSource<List<ParamFlowRule>> paramFlowWds = null;
 
     @Override
@@ -54,7 +56,7 @@ public class ModifyParamFlowRulesCommandHandler implements CommandHandler<String
         RecordLog.info("[API Server] Receiving rule change (type:parameter flow rule): {}", data);
 
         String result = SUCCESS_MSG;
-        List<ParamFlowRule> flowRules = JSONArray.parseArray(data, ParamFlowRule.class);
+        List<ParamFlowRule> flowRules = JsonTransformerLoader.deserializer().deserialize(data, TYPE_LIST_PARAM_FLOW);
         ParamFlowRuleManager.loadRules(flowRules);
         if (!writeToDataSource(paramFlowWds, flowRules)) {
             result = WRITE_DS_FAILURE_MSG;

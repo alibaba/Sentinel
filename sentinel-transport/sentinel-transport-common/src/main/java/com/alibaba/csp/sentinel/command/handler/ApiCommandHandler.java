@@ -20,9 +20,10 @@ import com.alibaba.csp.sentinel.command.CommandHandlerProvider;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -36,13 +37,35 @@ import java.util.Map;
  */
 @CommandMapping(name = "api", desc = "get all available command handlers")
 public class ApiCommandHandler implements CommandHandler<String> {
+    @SuppressWarnings("unused")
+    private static class Handler {
+        private String url;
+        private String desc;
+        public Handler(String url, String desc) {
+            this.url = url;
+            this.desc = desc;
+        }
+        public String getUrl() {
+            return url;
+        }
+        public void setUrl(String url) {
+            this.url = url;
+        }
+        public String getDesc() {
+            return desc;
+        }
+        public void setDesc(String desc) {
+            this.desc = desc;
+        }
+    }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public CommandResponse<String> handle(CommandRequest request) {
         Map<String, CommandHandler> handlers = CommandHandlerProvider.getInstance().namedHandlers();
-        JSONArray array = new JSONArray();
+        List<Handler> array = new ArrayList<>();
         if (handlers.isEmpty()) {
-            return CommandResponse.ofSuccess(array.toJSONString());
+            return CommandResponse.ofSuccess(JsonTransformerLoader.serializer().serialize(array));
         }
         for (CommandHandler handler : handlers.values()) {
             CommandMapping commandMapping = handler.getClass().getAnnotation(CommandMapping.class);
@@ -51,12 +74,9 @@ public class ApiCommandHandler implements CommandHandler<String> {
             }
             String api = commandMapping.name();
             String desc = commandMapping.desc();
-            JSONObject obj = new JSONObject();
-            obj.put("url", "/" + api);
-            obj.put("desc", desc);
-            array.add(obj);
+            array.add(new Handler("/" + api, desc));
         }
-        return CommandResponse.ofSuccess(array.toJSONString());
+        return CommandResponse.ofSuccess(JsonTransformerLoader.serializer().serialize(array));
     }
 
 }

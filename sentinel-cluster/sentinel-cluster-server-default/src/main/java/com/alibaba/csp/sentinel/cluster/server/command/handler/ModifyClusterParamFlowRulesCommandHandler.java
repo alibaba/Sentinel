@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.cluster.server.command.handler;
 
+import java.lang.reflect.Type;
 import java.net.URLDecoder;
 import java.util.List;
 
@@ -24,9 +25,10 @@ import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
+import com.alibaba.csp.sentinel.serialization.common.TypeReference;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.fastjson.JSONArray;
 
 /**
  * @author Eric Zhao
@@ -34,6 +36,7 @@ import com.alibaba.fastjson.JSONArray;
  */
 @CommandMapping(name = "cluster/server/modifyParamRules", desc = "modify cluster param flow rules")
 public class ModifyClusterParamFlowRulesCommandHandler implements CommandHandler<String> {
+    private static final Type TYPE_LIST_PARAM_FLOW = new TypeReference<List<ParamFlowRule>>() {}.getType();
 
     @Override
     public CommandResponse<String> handle(CommandRequest request) {
@@ -49,7 +52,7 @@ public class ModifyClusterParamFlowRulesCommandHandler implements CommandHandler
             data = URLDecoder.decode(data, "UTF-8");
             RecordLog.info("Receiving cluster param rules for namespace <{}> from command handler: {}", namespace, data);
 
-            List<ParamFlowRule> flowRules = JSONArray.parseArray(data, ParamFlowRule.class);
+            List<ParamFlowRule> flowRules = JsonTransformerLoader.deserializer().deserialize(data, TYPE_LIST_PARAM_FLOW);
             ClusterParamFlowRuleManager.loadRules(namespace, flowRules);
 
             return CommandResponse.ofSuccess(SUCCESS);

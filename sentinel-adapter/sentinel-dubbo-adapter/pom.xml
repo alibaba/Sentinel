@@ -39,10 +39,5 @@
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 </project>

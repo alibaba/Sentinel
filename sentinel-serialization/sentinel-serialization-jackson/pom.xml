@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.alibaba.csp</groupId>
+        <artifactId>sentinel-serialization</artifactId>
+        <version>1.8.1-SNAPSHOT</version>
+    </parent>
+    <artifactId>sentinel-serialization-jackson</artifactId>
+    <packaging>jar</packaging>
+    <name>sentinel-serialization-jackson</name>
+    <description>The serializing support of jackson.</description>
+    <properties>
+        <jackson.version>2.11.2</jackson.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-serialization-common</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <!-- test -->
+        <dependency>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-serialization-test</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

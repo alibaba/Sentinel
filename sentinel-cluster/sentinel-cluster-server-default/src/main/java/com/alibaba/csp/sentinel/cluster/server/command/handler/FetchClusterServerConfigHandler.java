@@ -15,6 +15,9 @@
  */
 package com.alibaba.csp.sentinel.cluster.server.command.handler;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.alibaba.csp.sentinel.cluster.server.config.ClusterServerConfigManager;
 import com.alibaba.csp.sentinel.cluster.server.config.ServerFlowConfig;
 import com.alibaba.csp.sentinel.cluster.server.config.ServerTransportConfig;
@@ -22,8 +25,8 @@ import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.fastjson.JSONObject;
 
 /**
  * @author Eric Zhao
@@ -47,9 +50,9 @@ public class FetchClusterServerConfigHandler implements CommandHandler<String> {
             .setMaxOccupyRatio(ClusterServerConfigManager.getMaxOccupyRatio(namespace))
             .setIntervalMs(ClusterServerConfigManager.getIntervalMs(namespace))
             .setSampleCount(ClusterServerConfigManager.getSampleCount(namespace));
-        JSONObject config = new JSONObject()
-            .fluentPut("flow", flowConfig);
-        return CommandResponse.ofSuccess(config.toJSONString());
+        Map<String, Object> config = new HashMap<>();
+        config.put("flow", flowConfig);
+        return CommandResponse.ofSuccess(JsonTransformerLoader.serializer().serialize(config));
     }
 
     private CommandResponse<String> globalConfigResult() {
@@ -61,11 +64,11 @@ public class FetchClusterServerConfigHandler implements CommandHandler<String> {
             .setMaxOccupyRatio(ClusterServerConfigManager.getMaxOccupyRatio())
             .setIntervalMs(ClusterServerConfigManager.getIntervalMs())
             .setSampleCount(ClusterServerConfigManager.getSampleCount());
-        JSONObject config = new JSONObject()
-            .fluentPut("transport", transportConfig)
-            .fluentPut("flow", flowConfig)
-            .fluentPut("namespaceSet", ClusterServerConfigManager.getNamespaceSet());
-        return CommandResponse.ofSuccess(config.toJSONString());
+        Map<String, Object> config = new HashMap<>();
+        config.put("transport", transportConfig);
+        config.put("flow", flowConfig);
+        config.put("namespaceSet", ClusterServerConfigManager.getNamespaceSet());
+        return CommandResponse.ofSuccess(JsonTransformerLoader.serializer().serialize(config));
     }
 }
 

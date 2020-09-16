@@ -23,10 +23,11 @@ import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
 import com.alibaba.csp.sentinel.datasource.WritableDataSource;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
+import com.alibaba.csp.sentinel.serialization.common.TypeReference;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
 
+import java.lang.reflect.Type;
 import java.net.URLDecoder;
 import java.util.Set;
 
@@ -36,6 +37,7 @@ import java.util.Set;
  */
 @CommandMapping(name = "gateway/updateRules", desc = "Update gateway rules")
 public class UpdateGatewayRuleCommandHandler implements CommandHandler<String> {
+    private static final Type TYPE_SET_GATEWAY_RULE = new TypeReference<Set<GatewayFlowRule>>() {}.getType();
     private static WritableDataSource<Set<GatewayFlowRule>> gatewayFlowWds = null;
 
     @Override
@@ -54,8 +56,7 @@ public class UpdateGatewayRuleCommandHandler implements CommandHandler<String> {
         RecordLog.info("[API Server] Receiving rule change (type: gateway rule): {}", data);
 
         String result = SUCCESS_MSG;
-	    Set<GatewayFlowRule> flowRules = JSON.parseObject(data, new TypeReference<Set<GatewayFlowRule>>() {
-	    });
+	    Set<GatewayFlowRule> flowRules = JsonTransformerLoader.deserializer().deserialize(data, TYPE_SET_GATEWAY_RULE);
         GatewayRuleManager.loadRules(flowRules);
         if (!writeToDataSource(gatewayFlowWds, flowRules)) {
             result = WRITE_DS_FAILURE_MSG;

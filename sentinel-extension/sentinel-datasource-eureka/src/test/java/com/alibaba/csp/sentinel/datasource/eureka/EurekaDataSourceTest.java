@@ -23,7 +23,6 @@ import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,7 +61,7 @@ public class EurekaDataSourceTest {
     public void testEurekaDataSource() throws Exception {
         String url = "http://localhost:" + port + "/eureka";
 
-        EurekaDataSource<List<FlowRule>> eurekaDataSource = new EurekaDataSource(appname, instanceId, Arrays.asList(url)
+        EurekaDataSource<List<FlowRule>> eurekaDataSource = new EurekaDataSource<>(appname, instanceId, Arrays.asList(url)
                 , SENTINEL_KEY, new Converter<String, List<FlowRule>>() {
             @Override
             public List<FlowRule> convert(String source) {

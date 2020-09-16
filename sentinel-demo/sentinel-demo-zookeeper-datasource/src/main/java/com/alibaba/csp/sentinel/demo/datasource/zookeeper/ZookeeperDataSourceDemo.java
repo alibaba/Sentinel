@@ -4,10 +4,10 @@ import java.util.List;
 
 import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
 import com.alibaba.csp.sentinel.datasource.zookeeper.ZookeeperDataSource;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
+import com.alibaba.csp.sentinel.serialization.common.TypeReference;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
 
 /**
  * Zookeeper ReadableDataSource Demo
@@ -30,7 +30,7 @@ public class ZookeeperDataSourceDemo {
         final String path = "/Sentinel-Demo/SYSTEM-CODE-DEMO-FLOW";
 
         ReadableDataSource<String, List<FlowRule>> flowRuleDataSource = new ZookeeperDataSource<>(remoteAddress, path,
-                source -> JSON.parseObject(source, new TypeReference<List<FlowRule>>() {}));
+                source -> JsonTransformerLoader.deserializer().deserialize(source, new TypeReference<List<FlowRule>>() {}.getType()));
         FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
 
 
@@ -50,7 +50,7 @@ public class ZookeeperDataSourceDemo {
         // groupId和和flowDataId可以用/开头也可以不用
         // 建议不用以/开头，目的是为了如果从Zookeeper切换到Nacos的话，只需要改数据源类名就可以
         ReadableDataSource<String, List<FlowRule>> flowRuleDataSource = new ZookeeperDataSource<>(remoteAddress, groupId, flowDataId,
-                source -> JSON.parseObject(source, new TypeReference<List<FlowRule>>() {}));
+                source -> JsonTransformerLoader.deserializer().deserialize(source, new TypeReference<List<FlowRule>>() {}.getType()));
         FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
 
         // ReadableDataSource<String, List<DegradeRule>> degradeRuleDataSource = new ZookeeperDataSource<>(remoteAddress, groupId, degradeDataId,
