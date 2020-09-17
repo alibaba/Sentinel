@@ -1,6 +1,7 @@
 # sentinel-serialization
 
 Sentinel serialization module.
+
 The purpose of abstracting serialization functions is to keep the space using different JSON (and others in future) libraries for users. 
 
 ## Why you may care about it
@@ -8,6 +9,7 @@ The purpose of abstracting serialization functions is to keep the space using di
 ### Security Reason
 
 As we know serialization libraries are usually vulnerable because they often stands on the edge in an architecture and maybe can be accessed directly from outside.
+
 So if some security events happened you may want to do whether an updating of affected library or replace it using another.
 
 ### Reuse Existing Library
