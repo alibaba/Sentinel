@@ -44,8 +44,8 @@ public final class TokenClientProvider {
                 "[TokenClientProvider] No existing cluster token client, cluster client mode will not be activated");
         } else {
             client = resolvedClient;
-            RecordLog.info(
-                "[TokenClientProvider] Cluster token client resolved: " + client.getClass().getCanonicalName());
+            RecordLog.info("[TokenClientProvider] Cluster token client resolved: {}",
+                client.getClass().getCanonicalName());
         }
     }
 

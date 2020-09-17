@@ -126,8 +126,7 @@ public class NettyTransportClient implements ClusterTransportClient {
                     } else {
                         failConnectedTime.set(0);
                         channel = future.channel();
-                        RecordLog.info(
-                            "[NettyTransportClient] Successfully connect to server <" + host + ":" + port + ">");
+                        RecordLog.info("[NettyTransportClient] Successfully connect to server <{}:{}>", host, port);
                     }
                 }
             });
@@ -144,7 +143,7 @@ public class NettyTransportClient implements ClusterTransportClient {
                 @Override
                 public void run() {
                     if (shouldRetry.get()) {
-                        RecordLog.info("[NettyTransportClient] Reconnecting to server <" + host + ":" + port + ">");
+                        RecordLog.info("[NettyTransportClient] Reconnecting to server <{}:{}>", host, port);
                         try {
                             startInternal();
                         } catch (Exception e) {

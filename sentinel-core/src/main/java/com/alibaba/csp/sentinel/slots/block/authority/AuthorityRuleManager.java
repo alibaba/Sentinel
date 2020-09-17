@@ -99,7 +99,7 @@ public final class AuthorityRuleManager {
             if (rules != null) {
                 authorityRules.putAll(rules);
             }
-            RecordLog.info("[AuthorityRuleManager] Authority rules received: " + authorityRules);
+            RecordLog.info("[AuthorityRuleManager] Authority rules received: {}", authorityRules);
         }
 
         private Map<String, Set<AuthorityRule>> loadAuthorityConf(List<AuthorityRule> list) {
@@ -111,7 +111,7 @@ public final class AuthorityRuleManager {
 
             for (AuthorityRule rule : list) {
                 if (!isValidRule(rule)) {
-                    RecordLog.warn("[AuthorityRuleManager] Ignoring invalid authority rule when loading new rules: " + rule);
+                    RecordLog.warn("[AuthorityRuleManager] Ignoring invalid authority rule when loading new rules: {}", rule);
                     continue;
                 }
 
@@ -128,7 +128,7 @@ public final class AuthorityRuleManager {
                     newRuleMap.put(identity, ruleSet);
                 } else {
                     // One resource should only have at most one authority rule, so just ignore redundant rules.
-                    RecordLog.warn("[AuthorityRuleManager] Ignoring redundant rule: " + rule.toString());
+                    RecordLog.warn("[AuthorityRuleManager] Ignoring redundant rule: {}", rule.toString());
                 }
             }
 
@@ -143,7 +143,7 @@ public final class AuthorityRuleManager {
             if (rules != null) {
                 authorityRules.putAll(rules);
             }
-            RecordLog.info("[AuthorityRuleManager] Load authority rules: " + authorityRules);
+            RecordLog.info("[AuthorityRuleManager] Load authority rules: {}", authorityRules);
         }
     }
 

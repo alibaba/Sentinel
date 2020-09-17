@@ -41,7 +41,7 @@ public class MetricExtensionProvider {
             RecordLog.info("[MetricExtensionProvider] No existing MetricExtension found");
         } else {
             metricExtensions.addAll(extensions);
-            RecordLog.info("[MetricExtensionProvider] MetricExtension resolved, size=" + extensions.size());
+            RecordLog.info("[MetricExtensionProvider] MetricExtension resolved, size={}", extensions.size());
         }
     }
 
