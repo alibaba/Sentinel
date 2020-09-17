@@ -25,12 +25,12 @@ import com.alibaba.dubbo.rpc.Invoker;
  */
 abstract class AbstractDubboFilter implements Filter {
 
-    protected String getResourceName(Invoker<?> invoker, Invocation invocation) {
+    protected String getMethodResourceName(Invoker<?> invoker, Invocation invocation) {
         StringBuilder buf = new StringBuilder(64);
         buf.append(invoker.getInterface().getName())
-                .append(":")
-                .append(invocation.getMethodName())
-                .append("(");
+            .append(":")
+            .append(invocation.getMethodName())
+            .append("(");
         boolean isFirst = true;
         for (Class<?> clazz : invocation.getParameterTypes()) {
             if (!isFirst) {
@@ -43,15 +43,24 @@ abstract class AbstractDubboFilter implements Filter {
         return buf.toString();
     }
 
-    protected String getResourceName(Invoker<?> invoker, Invocation invocation, String prefix) {
+    protected String getMethodResourceName(Invoker<?> invoker, Invocation invocation, String prefix) {
         if (StringUtil.isBlank(prefix)) {
-            return getResourceName(invoker, invocation);
+            return getMethodResourceName(invoker, invocation);
         }
         StringBuilder buf = new StringBuilder(64);
         return buf.append(prefix)
-                .append(getResourceName(invoker, invocation))
-                .toString();
+            .append(getMethodResourceName(invoker, invocation))
+            .toString();
+    }
 
+    protected String getInterfaceName(Invoker<?> invoker) {
+        return invoker.getInterface().getName();
+    }
 
+    protected String getInterfaceName(Invoker<?> invoker, String prefix) {
+        if (StringUtil.isBlank(prefix)) {
+            return getInterfaceName(invoker);
+        }
+        return prefix + getInterfaceName(invoker);
     }
 }

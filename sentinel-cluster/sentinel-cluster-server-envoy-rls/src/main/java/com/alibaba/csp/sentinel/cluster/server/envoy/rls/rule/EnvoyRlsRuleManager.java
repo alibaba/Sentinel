@@ -91,7 +91,7 @@ public final class EnvoyRlsRuleManager {
 
             RULE_MAP.clear();
             RULE_MAP.putAll(ruleMap);
-            RecordLog.info("[EnvoyRlsRuleManager] Envoy RLS rules loaded: " + flowRules);
+            RecordLog.info("[EnvoyRlsRuleManager] Envoy RLS rules loaded: {}", flowRules);
 
             // Use the "default" namespace.
             ClusterFlowRuleManager.loadRules(ServerConstants.DEFAULT_NAMESPACE, flowRules);

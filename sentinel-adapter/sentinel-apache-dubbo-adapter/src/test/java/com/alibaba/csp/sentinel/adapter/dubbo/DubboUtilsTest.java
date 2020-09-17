@@ -15,7 +15,7 @@
  */
 package com.alibaba.csp.sentinel.adapter.dubbo;
 
-import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig;
+import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboAdapterGlobalConfig;
 import com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import org.apache.dubbo.common.URL;
@@ -29,7 +29,7 @@ import org.junit.Test;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
-import static com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig.DUBBO_INTERFACE_GROUP_VERSION_ENABLED;
+import static com.alibaba.csp.sentinel.adapter.dubbo.config.DubboAdapterGlobalConfig.DUBBO_INTERFACE_GROUP_VERSION_ENABLED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
@@ -42,8 +42,8 @@ public class DubboUtilsTest {
     @Before
     public void setUp() {
         SentinelConfig.setConfig("csp.sentinel.dubbo.resource.use.prefix", "true");
-        SentinelConfig.setConfig(DubboConfig.DUBBO_PROVIDER_PREFIX, "");
-        SentinelConfig.setConfig(DubboConfig.DUBBO_CONSUMER_PREFIX, "");
+        SentinelConfig.setConfig(DubboAdapterGlobalConfig.DUBBO_PROVIDER_RES_NAME_PREFIX_KEY, "");
+        SentinelConfig.setConfig(DubboAdapterGlobalConfig.DUBBO_CONSUMER_RES_NAME_PREFIX_KEY, "");
         SentinelConfig.setConfig(DUBBO_INTERFACE_GROUP_VERSION_ENABLED, "false");
     }
 
@@ -51,8 +51,8 @@ public class DubboUtilsTest {
     @After
     public void tearDown() {
         SentinelConfig.setConfig("csp.sentinel.dubbo.resource.use.prefix", "false");
-        SentinelConfig.setConfig(DubboConfig.DUBBO_PROVIDER_PREFIX, "");
-        SentinelConfig.setConfig(DubboConfig.DUBBO_CONSUMER_PREFIX, "");
+        SentinelConfig.setConfig(DubboAdapterGlobalConfig.DUBBO_PROVIDER_RES_NAME_PREFIX_KEY, "");
+        SentinelConfig.setConfig(DubboAdapterGlobalConfig.DUBBO_CONSUMER_RES_NAME_PREFIX_KEY, "");
         SentinelConfig.setConfig(DUBBO_INTERFACE_GROUP_VERSION_ENABLED, "false");
     }
 
@@ -92,7 +92,7 @@ public class DubboUtilsTest {
         when(invocation.getMethodName()).thenReturn(method.getName());
         when(invocation.getParameterTypes()).thenReturn(method.getParameterTypes());
 
-        String resourceName = DubboUtils.getResourceName(invoker, invocation);
+        String resourceName = DubboUtils.getMethodResourceName(invoker, invocation);
 
         assertEquals("com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService:sayHello(java.lang.String,int)", resourceName);
 
@@ -113,7 +113,7 @@ public class DubboUtilsTest {
         when(invocation.getMethodName()).thenReturn(method.getName());
         when(invocation.getParameterTypes()).thenReturn(method.getParameterTypes());
 
-        String resourceNameUseGroupAndVersion = DubboUtils.getResourceName(invoker, invocation, true);
+        String resourceNameUseGroupAndVersion = DubboUtils.getMethodResourceName(invoker, invocation, true);
 
         assertEquals("com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService:1.0.0:grp1:sayHello(java.lang.String,int)", resourceNameUseGroupAndVersion);
     }
@@ -130,18 +130,18 @@ public class DubboUtilsTest {
         when(invocation.getParameterTypes()).thenReturn(method.getParameterTypes());
 
         //test with default prefix
-        String resourceName = DubboUtils.getResourceName(invoker, invocation, DubboConfig.getDubboProviderPrefix());
+        String resourceName = DubboUtils.getMethodResourceName(invoker, invocation, DubboAdapterGlobalConfig.getDubboProviderResNamePrefixKey());
         assertEquals("dubbo:provider:com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService:sayHello(java.lang.String,int)", resourceName);
-        resourceName = DubboUtils.getResourceName(invoker, invocation, DubboConfig.getDubboConsumerPrefix());
+        resourceName = DubboUtils.getMethodResourceName(invoker, invocation, DubboAdapterGlobalConfig.getDubboConsumerResNamePrefixKey());
         assertEquals("dubbo:consumer:com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService:sayHello(java.lang.String,int)", resourceName);
 
 
         //test with custom prefix
-        SentinelConfig.setConfig(DubboConfig.DUBBO_PROVIDER_PREFIX, "my:dubbo:provider:");
-        SentinelConfig.setConfig(DubboConfig.DUBBO_CONSUMER_PREFIX, "my:dubbo:consumer:");
-        resourceName = DubboUtils.getResourceName(invoker, invocation, DubboConfig.getDubboProviderPrefix());
+        SentinelConfig.setConfig(DubboAdapterGlobalConfig.DUBBO_PROVIDER_RES_NAME_PREFIX_KEY, "my:dubbo:provider:");
+        SentinelConfig.setConfig(DubboAdapterGlobalConfig.DUBBO_CONSUMER_RES_NAME_PREFIX_KEY, "my:dubbo:consumer:");
+        resourceName = DubboUtils.getMethodResourceName(invoker, invocation, DubboAdapterGlobalConfig.getDubboProviderResNamePrefixKey());
         assertEquals("my:dubbo:provider:com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService:sayHello(java.lang.String,int)", resourceName);
-        resourceName = DubboUtils.getResourceName(invoker, invocation, DubboConfig.getDubboConsumerPrefix());
+        resourceName = DubboUtils.getMethodResourceName(invoker, invocation, DubboAdapterGlobalConfig.getDubboConsumerResNamePrefixKey());
         assertEquals("my:dubbo:consumer:com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService:sayHello(java.lang.String,int)", resourceName);
 
     }
@@ -160,8 +160,48 @@ public class DubboUtilsTest {
         SentinelConfig.setConfig(DUBBO_INTERFACE_GROUP_VERSION_ENABLED, "false");
         assertEquals("com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService", DubboUtils.getInterfaceName(invoker));
 
+    }
+
+    @Test
+    public void testGetInterfaceNameWithGroupAndVersion() throws NoSuchMethodException {
+
+        URL url = URL.valueOf("dubbo://127.0.0.1:2181")
+                .addParameter(CommonConstants.VERSION_KEY, "1.0.0")
+                .addParameter(CommonConstants.GROUP_KEY, "grp1")
+                .addParameter(CommonConstants.INTERFACE_KEY, DemoService.class.getName());
+        Invoker invoker = mock(Invoker.class);
+        when(invoker.getUrl()).thenReturn(url);
+        when(invoker.getInterface()).thenReturn(DemoService.class);
+
         SentinelConfig.setConfig(DUBBO_INTERFACE_GROUP_VERSION_ENABLED, "true");
-        assertEquals("com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService:1.0.0:grp1", DubboUtils.getInterfaceName(invoker));
+        assertEquals("com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService:1.0.0:grp1", DubboUtils.getInterfaceName(invoker, true));
+    }
+
+    @Test
+    public void testGetInterfaceNameWithPrefix() throws NoSuchMethodException {
+        URL url = URL.valueOf("dubbo://127.0.0.1:2181")
+                .addParameter(CommonConstants.VERSION_KEY, "1.0.0")
+                .addParameter(CommonConstants.GROUP_KEY, "grp1")
+                .addParameter(CommonConstants.INTERFACE_KEY, DemoService.class.getName());
+        Invoker invoker = mock(Invoker.class);
+        when(invoker.getUrl()).thenReturn(url);
+        when(invoker.getInterface()).thenReturn(DemoService.class);
+
+
+        //test with default prefix
+        String resourceName = DubboUtils.getInterfaceName(invoker, DubboAdapterGlobalConfig.getDubboProviderResNamePrefixKey());
+        assertEquals("dubbo:provider:com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService", resourceName);
+        resourceName = DubboUtils.getInterfaceName(invoker, DubboAdapterGlobalConfig.getDubboConsumerResNamePrefixKey());
+        assertEquals("dubbo:consumer:com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService", resourceName);
+
+
+        //test with custom prefix
+        SentinelConfig.setConfig(DubboAdapterGlobalConfig.DUBBO_PROVIDER_RES_NAME_PREFIX_KEY, "my:dubbo:provider:");
+        SentinelConfig.setConfig(DubboAdapterGlobalConfig.DUBBO_CONSUMER_RES_NAME_PREFIX_KEY, "my:dubbo:consumer:");
+        resourceName = DubboUtils.getInterfaceName(invoker, DubboAdapterGlobalConfig.getDubboProviderResNamePrefixKey());
+        assertEquals("my:dubbo:provider:com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService", resourceName);
+        resourceName = DubboUtils.getInterfaceName(invoker, DubboAdapterGlobalConfig.getDubboConsumerResNamePrefixKey());
+        assertEquals("my:dubbo:consumer:com.alibaba.csp.sentinel.adapter.dubbo.provider.DemoService", resourceName);
 
     }
 }

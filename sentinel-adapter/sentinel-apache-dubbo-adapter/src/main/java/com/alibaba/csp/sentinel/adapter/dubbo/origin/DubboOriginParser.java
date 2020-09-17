@@ -15,23 +15,24 @@
  */
 package com.alibaba.csp.sentinel.adapter.dubbo.origin;
 
+import com.alibaba.csp.sentinel.context.Context;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
+
 /**
- * Global origin parser registry for Dubbo.
+ * Customized origin parser for Dubbo provider filter.{@link Context#getOrigin()}
  *
- * @author tiecheng
+ * @author jingzian
  */
-public final class DubboOriginParserRegistry {
+public interface DubboOriginParser {
 
-    private static volatile DubboOriginParser dubboOriginParser = new DefaultDubboOriginParser();
-
-    public static DubboOriginParser getDubboOriginParser() {
-        return dubboOriginParser;
-    }
-
-    public static void setDubboOriginParser(DubboOriginParser dubboOriginParser) {
-        DubboOriginParserRegistry.dubboOriginParser = dubboOriginParser;
-    }
-
-    private DubboOriginParserRegistry() {}
+    /**
+     * Parses the origin (caller) from Dubbo invocation.
+     *
+     * @param invoker    Dubbo invoker
+     * @param invocation Dubbo invocation
+     * @return the parsed origin
+     */
+    String parse(Invoker<?> invoker, Invocation invocation);
 
 }

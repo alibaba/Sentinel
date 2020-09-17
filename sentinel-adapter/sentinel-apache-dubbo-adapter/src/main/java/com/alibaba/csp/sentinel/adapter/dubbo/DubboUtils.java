@@ -15,7 +15,7 @@
  */
 package com.alibaba.csp.sentinel.adapter.dubbo;
 
-import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig;
+import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboAdapterGlobalConfig;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -34,11 +34,11 @@ public final class DubboUtils {
         return invocation.getAttachment(SENTINEL_DUBBO_APPLICATION_KEY, defaultValue);
     }
 
-    public static String getResourceName(Invoker<?> invoker, Invocation invocation){
-        return getResourceName(invoker, invocation, false);
+    public static String getMethodResourceName(Invoker<?> invoker, Invocation invocation){
+        return getMethodResourceName(invoker, invocation, false);
     }
 
-    public static String getResourceName(Invoker<?> invoker, Invocation invocation, Boolean useGroupAndVersion) {
+    public static String getMethodResourceName(Invoker<?> invoker, Invocation invocation, Boolean useGroupAndVersion) {
         StringBuilder buf = new StringBuilder(64);
         String interfaceResource = useGroupAndVersion ? invoker.getUrl().getColonSeparatedKey() : invoker.getInterface().getName();
         buf.append(interfaceResource)
@@ -57,22 +57,38 @@ public final class DubboUtils {
         return buf.toString();
     }
 
-    public static String getResourceName(Invoker<?> invoker, Invocation invocation, String prefix) {
+    public static String getMethodResourceName(Invoker<?> invoker, Invocation invocation, String prefix) {
         if (StringUtil.isNotBlank(prefix)) {
             return new StringBuilder(64)
                     .append(prefix)
-                    .append(getResourceName(invoker, invocation, DubboConfig.getDubboInterfaceGroupAndVersionEnabled()))
+                    .append(getMethodResourceName(invoker, invocation, DubboAdapterGlobalConfig.getDubboInterfaceGroupAndVersionEnabled()))
                     .toString();
         } else {
-            return getResourceName(invoker, invocation, DubboConfig.getDubboInterfaceGroupAndVersionEnabled());
+            return getMethodResourceName(invoker, invocation, DubboAdapterGlobalConfig.getDubboInterfaceGroupAndVersionEnabled());
         }
     }
 
 
     public static String getInterfaceName(Invoker invoker) {
-        return DubboConfig.getDubboInterfaceGroupAndVersionEnabled() ? invoker.getUrl().getColonSeparatedKey()
-                : invoker.getInterface().getName();
+        return getInterfaceName(invoker, false);
     }
+
+    public static String getInterfaceName(Invoker<?> invoker, Boolean useGroupAndVersion) {
+        StringBuilder buf = new StringBuilder(64);
+        return useGroupAndVersion ? invoker.getUrl().getColonSeparatedKey() : invoker.getInterface().getName();
+    }
+
+    public static String getInterfaceName(Invoker<?> invoker, String prefix) {
+        if (StringUtil.isNotBlank(prefix)) {
+            return new StringBuilder(64)
+                    .append(prefix)
+                    .append(getInterfaceName(invoker, DubboAdapterGlobalConfig.getDubboInterfaceGroupAndVersionEnabled()))
+                    .toString();
+        } else {
+            return getInterfaceName(invoker, DubboAdapterGlobalConfig.getDubboInterfaceGroupAndVersionEnabled());
+        }
+    }
+
 
     private DubboUtils() {
     }

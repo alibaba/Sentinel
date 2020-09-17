@@ -46,13 +46,13 @@ public final class InitExecutor {
             ServiceLoader<InitFunc> loader = ServiceLoaderUtil.getServiceLoader(InitFunc.class);
             List<OrderWrapper> initList = new ArrayList<OrderWrapper>();
             for (InitFunc initFunc : loader) {
-                RecordLog.info("[InitExecutor] Found init func: " + initFunc.getClass().getCanonicalName());
+                RecordLog.info("[InitExecutor] Found init func: {}", initFunc.getClass().getCanonicalName());
                 insertSorted(initList, initFunc);
             }
             for (OrderWrapper w : initList) {
                 w.func.init();
-                RecordLog.info(String.format("[InitExecutor] Executing %s with order %d",
-                    w.func.getClass().getCanonicalName(), w.order));
+                RecordLog.info("[InitExecutor] Executing {} with order {}",
+                    w.func.getClass().getCanonicalName(), w.order);
             }
         } catch (Exception ex) {
             RecordLog.warn("[InitExecutor] WARN: Initialization failed", ex);

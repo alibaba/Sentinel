@@ -147,11 +147,10 @@ public class SentinelRuleLocator implements PropertySourceLocator {
 
     private void log(Environment result) {
 
-        RecordLog.info(String.format(
-            "Located environment: name=%s, profiles=%s, label=%s, version=%s, state=%s",
+        RecordLog.info("Located environment: name={}, profiles={}, label={}, version={}, state={}",
             result.getName(),
             result.getProfiles() == null ? "" : Arrays.asList(result.getProfiles()),
-            result.getLabel(), result.getVersion(), result.getState()));
+            result.getLabel(), result.getVersion(), result.getState());
 
         List<PropertySource> propertySourceList = result.getPropertySources();
         if (propertySourceList != null) {
@@ -194,7 +193,7 @@ public class SentinelRuleLocator implements PropertySourceLocator {
             String username = credentials.getUsername();
             String password = credentials.getPassword();
 
-            RecordLog.info("[SentinelRuleLocator] Fetching config from server at: " + uri);
+            RecordLog.info("[SentinelRuleLocator] Fetching config from server at: {}", uri);
 
             try {
                 HttpHeaders headers = new HttpHeaders();
