@@ -31,9 +31,8 @@ public class ScanIdleConnectionTask implements Runnable {
             List<Connection> connections = connectionPool.listAllConnection();
             for (Connection conn : connections) {
                 if ((now - conn.getLastReadTime()) > idleTimeMillis) {
-                    RecordLog.info(
-                        "[ScanIdleConnectionTask] The connection <{}:{}> has been idle for <{}>s. "
-                            + "It will be closed now.", conn.getRemoteIP(), conn.getRemotePort(), idleSeconds);
+                    RecordLog.info("[ScanIdleConnectionTask] The connection <{}:{}> has been idle for <{}>s. It will be closed now.",
+                        conn.getRemoteIP(), conn.getRemotePort(), idleSeconds);
                     conn.close();
                 }
             }
