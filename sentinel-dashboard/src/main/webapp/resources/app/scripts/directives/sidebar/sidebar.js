@@ -7,37 +7,33 @@ angular.module('sentinelDashboardApp')
       scope: {
       },
       controller: function ($scope, $stateParams, $location, AppService) {
-        $scope.app = $stateParams.app;
-        $scope.collapseVar = 0;
+        // 当前project下所有app
+        $scope.apps = [];
+        // 用来控制app的下拉框是否显示
+        $scope.appActives = [];
+        // 当前project下所有service的信息
+        $scope.services = [];
 
-        // app
-        AppService.getApps().success(
-          function (data) {
-            if (data.code === 0) {
-              let path = $location.path().split('/');
-              let initHashApp = path[path.length - 1];
-              $scope.apps = data.data;
-              $scope.apps = $scope.apps.map(function (item) {
-                if (item.app === initHashApp) {
-                  item.active = true;
-                }
-                let healthyCount = 0;
-                for (let i in item.machines) {
-                  if (item.machines[i].healthy) {
-                      healthyCount++;
-                  }
-                }
-                item.healthyCount = healthyCount;
-                // Handle appType
-                item.isGateway = item.appType === 1 || item.appType === 11 || item.appType === 12;
-
-                if (item.shown) {
-                  return item;
-                }
-              });
-            }
-          }
-        );
+        sidebarInit = async () => {
+          $scope.$on("rootToSidebar_kieInfos", (e,msg) => {
+            console.log("sidebar init......");
+            // got init kieInfos in msg
+            console.log("msg", msg);
+            $scope.services = msg;
+            msg.forEach(val => {
+              if (!$scope.apps.includes(val.app)) {
+                $scope.apps.push(val.app);
+                let tmp = {
+                  'app': val.app,
+                  'active': false
+                };
+                $scope.appActives.push(tmp);
+              }
+            })
+          })
+        }
+        
+        sidebarInit();
 
         // toggle side bar
         $scope.click = function ($event) {
@@ -66,6 +62,18 @@ angular.module('sentinelDashboardApp')
             $scope.apps.push({ app: $scope.searchApp });
           }
         };
+        
+        $scope.appClick = function ($event) {
+          console.log("appClick");
+          let appActive = angular.element($event.target).scope().appActive;
+          appActive.active = !appActive.active;
+          $scope.appActives.forEach(val => {
+            if (val !== appActive) {
+              val.active = false;
+            }
+          })
+        }
+        
       }
     };
   }]);

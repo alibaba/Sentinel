@@ -1,7 +1,12 @@
 <div class="header">
-  <nav class="navbar navbar-fixed-top navbar-inverse" style="" role="navigation">
+  <nav class="navbar navbar-fixed-top navbar-inverse" role="navigation">
     <div class="navbar-brand">
       <span style="color: #fff;font-size: 26px;" ng-model="dashboardVersion">Sentinel 控制台 {{dashboardVersion}}</span>
+    </div>
+    <div class="navbar-brand" style="font-size: 18px; color: #fff;">Project:</div>
+    <div class="col-md-4" style="width: 150px; padding: 10px 10px;">
+      <select ng-model="currentProject" class="form-control" ng-options="project for project in projects"
+              ng-change="projectChange()" ng-selected="currentProject"></select>
     </div>
     <ul class="nav navbar-nav navbar-right">
       <li ng-show="showLogout">

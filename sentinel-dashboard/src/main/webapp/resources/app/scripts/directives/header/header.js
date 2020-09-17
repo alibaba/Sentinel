@@ -5,12 +5,14 @@
  * # adminPosHeader
  */
 angular.module('sentinelDashboardApp')
-  .directive('header', ['VersionService', 'AuthService', function () {
+  .directive('header', ['VersionService', 'AuthService', 'KieService', function () {
     return {
       templateUrl: 'app/scripts/directives/header/header.html',
       restrict: 'E',
       replace: true,
-      controller: function ($scope, $state, $window, VersionService, AuthService) {
+      controller: function ($scope, $rootScope, $state, $window, VersionService, AuthService, KieService) {
+        $scope.projects = [];
+        $scope.currentProject = "";
         VersionService.version().success(function (data) {
           if (data.code == 0) {
             $scope.dashboardVersion = data.data;
@@ -55,6 +57,40 @@ angular.module('sentinelDashboardApp')
               alert('logout error');
             }
           });
+        }
+        
+        headerInit = async () => {
+          console.log("header init......");
+          await $rootScope.$on("headerToRoot_kieInfos", (e,msg) => {
+            console.log("headerToRoot_kieInfos");
+            console.log("msg", msg);
+            $rootScope.$broadcast("rootToSidebar_kieInfos", msg);
+          });
+          await KieService.getProjects().success(data => {
+            if (data.success) {
+              console.log("headerInit Projects:");
+              console.log(data.data);
+
+              $scope.projects = data.data;
+              $scope.currentProject = $scope.projects[0];
+            }
+          });
+          await KieService.getKieInfos($scope.currentProject).success(data => {
+            if (data.success) {
+              console.log("headerInit KieInfo:");
+              console.log(data.data);
+              $scope.$emit('headerToRoot_kieInfos', data.data);
+            }
+          });
+          console.log('header init complete!');
+        }
+        
+        headerInit();
+
+        $scope.projectChange = () => {
+          // project复选框change事件
+          console.log("projectChange");
+          console.log("$scope.currentProject", $scope.currentProject);
         }
       }
     }
