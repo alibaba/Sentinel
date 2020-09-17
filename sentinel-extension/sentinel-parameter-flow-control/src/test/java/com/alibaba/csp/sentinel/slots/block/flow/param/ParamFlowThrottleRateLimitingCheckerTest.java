@@ -114,7 +114,12 @@ public class ParamFlowThrottleRateLimitingCheckerTest {
             Thread t = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    while(!shouldBegin.get());
+                    while(!shouldBegin.get()) {
+                        try {
+                            Thread.sleep(1);
+                        } catch (InterruptedException e) {
+                        }
+                    }
                     if (ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA)) {
                         successCount.incrementAndGet();
                     }
@@ -130,7 +135,6 @@ public class ParamFlowThrottleRateLimitingCheckerTest {
 
         assertEquals(successCount.get(), 1);
         System.out.println(threadCount);
-        successCount.set(0);
 
         System.out.println("testSingleValueThrottleCheckQpsMultipleThreads: sleep for 3 seconds");
         TimeUnit.SECONDS.sleep(3);
@@ -144,7 +148,12 @@ public class ParamFlowThrottleRateLimitingCheckerTest {
             Thread t = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    while (!shouldBegin.get());
+                    while(!shouldBegin.get()) {
+                        try {
+                            Thread.sleep(1);
+                        } catch (InterruptedException e) {
+                        }
+                    }
                     long currentTime1 = currentTime;
                     while (currentTime1 <= endTime) {
                         if (ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA)) {
