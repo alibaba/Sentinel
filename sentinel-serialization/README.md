@@ -2,7 +2,7 @@
 
 Sentinel serialization module.
 
-The purpose of abstracting serialization functions is to keep the space using different JSON (and others in future) libraries for users. 
+The purpose of abstracting serialization functions is to keep the space using different JSON (and others in future) libraries for users.
 
 ## Why you may care about it
 
