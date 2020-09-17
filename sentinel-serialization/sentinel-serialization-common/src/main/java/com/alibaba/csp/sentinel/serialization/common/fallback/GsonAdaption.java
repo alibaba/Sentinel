@@ -44,7 +44,7 @@ class GsonAdaption implements Adaption {
                 actualVersionStr = String.valueOf(versionField.get(mainClass));
             } catch (Exception e) {
             }
-            INSTANCE = mainClass.newInstance();
+            INSTANCE = GsonFactory.create();
             METHOD_TO_JSON_STRING = mainClass.getDeclaredMethod("toJson", Object.class);
             METHOD_PARSE_OBJECT_BY_TYPE = mainClass.getDeclaredMethod("fromJson", String.class, Type.class);
             METHOD_PARSE_OBJECT_BY_CLASS = mainClass.getDeclaredMethod("fromJson", String.class, Object.class.getClass());
