@@ -48,8 +48,8 @@ public final class SlotChainProvider {
             RecordLog.warn("[SlotChainProvider] Wrong state when resolving slot chain builder, using default");
             slotChainBuilder = new DefaultSlotChainBuilder();
         } else {
-            RecordLog.info("[SlotChainProvider] Global slot chain builder resolved: "
-                + slotChainBuilder.getClass().getCanonicalName());
+            RecordLog.info("[SlotChainProvider] Global slot chain builder resolved: {}",
+                slotChainBuilder.getClass().getCanonicalName());
         }
         return slotChainBuilder.build();
     }

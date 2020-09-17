@@ -97,7 +97,7 @@ public class RegularExpireStrategy implements ExpireStrategy {
         for (int i = 0; i < executeCount && i < keyList.size(); i++) {
             // time out execution exit
             if (System.currentTimeMillis() - start > executeDuration) {
-                RecordLog.info("[RegularExpireStrategy] End the process of expired token detection because of execute time is more than executeDuration:", executeDuration);
+                RecordLog.info("[RegularExpireStrategy] End the process of expired token detection because of execute time is more than executeDuration: {}", executeDuration);
                 break;
             }
             Long key = keyList.get(i);
