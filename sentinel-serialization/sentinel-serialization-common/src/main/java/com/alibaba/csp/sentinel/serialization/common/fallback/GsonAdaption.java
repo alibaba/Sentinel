@@ -37,9 +37,13 @@ class GsonAdaption implements Adaption {
     private static boolean check() {
         try {
             Class<?> mainClass = Class.forName(MAIN_CLASS_NAME);
-            Class<?> configClass = Class.forName(CONFIG_CLASS_NAME);
-            Field versionField = configClass.getDeclaredField("VERSION");
-            String actualVersionStr = String.valueOf(versionField.get(mainClass));
+            String actualVersionStr = "unknow";
+            try {
+                Class<?> configClass = Class.forName(CONFIG_CLASS_NAME);
+                Field versionField = configClass.getDeclaredField("VERSION");
+                actualVersionStr = String.valueOf(versionField.get(mainClass));
+            } catch (Exception e) {
+            }
             INSTANCE = mainClass.newInstance();
             METHOD_TO_JSON_STRING = mainClass.getDeclaredMethod("toJson", Object.class);
             METHOD_PARSE_OBJECT_BY_TYPE = mainClass.getDeclaredMethod("fromJson", String.class, Type.class);
