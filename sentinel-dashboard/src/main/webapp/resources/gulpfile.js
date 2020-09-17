@@ -58,6 +58,7 @@ const JS_APP = [
   'app/scripts/services/cluster_state_service.js',
   'app/scripts/services/gateway/api_service.js',
   'app/scripts/services/gateway/flow_service.js',
+  'app/scripts/services/kie_service.js',
 ];
 
 gulp.task('lib', function () {
