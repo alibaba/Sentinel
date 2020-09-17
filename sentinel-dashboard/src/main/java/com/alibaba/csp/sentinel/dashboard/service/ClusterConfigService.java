@@ -25,6 +25,7 @@ import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
+import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.request.ClusterServerModifyRequest;
 import com.alibaba.csp.sentinel.dashboard.util.AsyncUtils;
 import com.alibaba.csp.sentinel.dashboard.util.ClusterEntityUtils;
@@ -110,7 +111,7 @@ public class ClusterConfigService {
         }
 
         List<CompletableFuture<ClusterUniversalStatePairVO>> futures = appInfo.getMachines().stream()
-            .filter(e -> e.isHealthy())
+            .filter(MachineInfo::isHealthy)
             .map(machine -> getClusterUniversalState(app, machine.getIp(), machine.getPort())
                 .thenApply(e -> new ClusterUniversalStatePairVO(machine.getIp(), machine.getPort(), e)))
             .collect(Collectors.toList());
@@ -128,7 +129,7 @@ public class ClusterConfigService {
         }
 
         boolean machineOk = appInfo.getMachines().stream()
-            .filter(e -> e.isHealthy())
+            .filter(MachineInfo::isHealthy)
             .map(e -> e.getIp() + '@' + e.getPort())
             .anyMatch(e -> e.equals(machineId));
         if (!machineOk) {
