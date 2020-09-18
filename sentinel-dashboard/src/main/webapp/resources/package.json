@@ -48,6 +48,7 @@
     "gulp-load-plugins": "^1.6.0",
     "gulp-serv": "0.0.1",
     "gulp-uglify": "^3.0.0",
+    "gulp-util": "^3.0.8",
     "jshint": "^2.10.2",
     "open": "^6.3.0",
     "source-map": "^0.7.3"

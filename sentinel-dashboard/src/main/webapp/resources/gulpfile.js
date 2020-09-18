@@ -1,4 +1,5 @@
 const gulp = require('gulp');
+const gutil = require('gulp-util');
 const plugins = require('gulp-load-plugins')();
 const open = require('open');
 const app = {
@@ -59,6 +60,7 @@ const JS_APP = [
   'app/scripts/services/gateway/api_service.js',
   'app/scripts/services/gateway/flow_service.js',
   'app/scripts/services/kie_service.js',
+  'app/scripts/services/kie_flow_service.js',
 ];
 
 gulp.task('lib', function () {
@@ -66,6 +68,9 @@ gulp.task('lib', function () {
     .pipe(plugins.concat('app.vendor.js'))
     .pipe(gulp.dest(app.devPath + 'js'))
     .pipe(plugins.uglify())
+    .on('error', function(err) {
+      gutil.log(gutil.colors.red('[Error]'), err.toString())
+    })
     .pipe(gulp.dest(app.prdPath + 'js'))
     .pipe(plugins.connect.reload());
 });
@@ -92,6 +97,9 @@ gulp.task('js', function () {
     .pipe(plugins.concat('app.js'))
     .pipe(gulp.dest(app.devPath + 'js'))
     .pipe(plugins.uglify())
+    .on('error', function(err) {
+      gutil.log(gutil.colors.red('[Error]'), err.toString())
+    })
     .pipe(gulp.dest(app.prdPath + 'js'))
     .pipe(plugins.connect.reload());
 });
