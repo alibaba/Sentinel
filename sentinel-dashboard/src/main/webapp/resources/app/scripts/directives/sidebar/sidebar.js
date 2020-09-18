@@ -12,17 +12,19 @@ angular.module('sentinelDashboardApp')
         sidebarInit();
 
         // toggle side bar
-        $scope.click = function ($event) {
+        $scope.serviceClick = function ($event) {
+          console.log("serviceClick");
           let entry = angular.element($event.target).scope().entry;
           entry.active = !entry.active;// toggle this clicked app bar
 
-          $scope.apps.forEach(function (item) { // collapse other app bars
+          $scope.services.forEach(function (item) { // collapse other app bars
             if (item !== entry) {
               item.active = false;
             }
           });
         };
 
+        // FIX ME 更改了维度，app->service
         /**
          * @deprecated
          */
