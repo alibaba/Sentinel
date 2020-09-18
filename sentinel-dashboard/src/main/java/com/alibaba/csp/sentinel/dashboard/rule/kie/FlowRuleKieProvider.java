@@ -1,6 +1,7 @@
 package com.alibaba.csp.sentinel.dashboard.rule.kie;
 
 import com.alibaba.csp.sentinel.dashboard.client.servicecombkie.KieConfigClient;
+import com.alibaba.csp.sentinel.dashboard.client.servicecombkie.response.KieConfigItem;
 import com.alibaba.csp.sentinel.dashboard.client.servicecombkie.response.KieConfigResponse;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.kie.KieServerInfo;
@@ -11,10 +12,11 @@ import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component("flowRuleKieProvider")
 public class FlowRuleKieProvider implements DynamicRuleProvider<List<FlowRuleEntity>> {
@@ -31,28 +33,31 @@ public class FlowRuleKieProvider implements DynamicRuleProvider<List<FlowRuleEnt
         if(!kieServerInfo.isPresent()){
             return Collections.emptyList();
         }
-
         Optional<KieConfigResponse> response = kieConfigClient.getConfig(kieServerInfo.get().getKieConfigUrl());
 
-        if(!response.isPresent()){
-            return Collections.emptyList();
-        }
-
-        List<FlowRule> flowRules = KieConfigUtil.parseKieConfig(FlowRule.class, kieServerInfo.get(), response.get());
-
-        if(flowRules.isEmpty()){
-            return Collections.emptyList();
-        }
-
-        return transToEntity(flowRules);
+        return response.map(configResponse -> parseResponseToEntity(kieServerInfo.get(), configResponse))
+                .orElse(Collections.emptyList());
     }
 
-    private List<FlowRuleEntity> transToEntity(List<FlowRule> flowRules){
-        List<FlowRuleEntity> entities = new ArrayList<>();
-        for(FlowRule rule: flowRules){
-            FlowRuleEntity flowRuleEntity = FlowRuleEntity.fromFlowRule(rule);
-            entities.add(flowRuleEntity);
+    private List<FlowRuleEntity> parseResponseToEntity(KieServerInfo kieServerInfo, KieConfigResponse config){
+        if (Objects.isNull(config) || Objects.isNull(kieServerInfo)){
+            return Collections.emptyList();
         }
-        return entities;
+
+        for(KieConfigItem item : config.getData()){
+            if (!KieConfigUtil.isTargetItem("FlowRule", kieServerInfo, item)){
+                continue;
+            }
+
+            List<FlowRule> flowRule = KieConfigUtil.parseKieConfig(FlowRule.class, kieServerInfo, item);
+
+            return flowRule.stream().map(rule -> {
+                FlowRuleEntity entity = FlowRuleEntity.fromFlowRule(rule);
+                entity.setRuleId(item.getId());
+                return entity;
+            }).collect(Collectors.toList());
+        }
+
+        return Collections.emptyList();
     }
 }
