@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.Optional;
 import java.util.Set;
 
 @Component
@@ -50,5 +51,10 @@ public class KieServerManagement implements KieServerDiscovery {
     @Override
     public boolean removeServerInfo(String project, String app, String server, String environment, String version) {
         return false;
+    }
+
+    @Override
+    public Optional<KieServerInfo> queryKieInfo(String id) {
+        return discovery.queryKieInfo(id);
     }
 }

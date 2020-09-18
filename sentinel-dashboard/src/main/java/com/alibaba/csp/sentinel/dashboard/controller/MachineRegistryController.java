@@ -98,12 +98,14 @@ public class MachineRegistryController {
 
         try{
             KieServerInfo kieServerInfo = KieServerInfo.builder()
+                    .id(kieServerInfoVo.getId())
                     .app(kieServerInfoVo.getApp())
                     .environment(kieServerInfoVo.getEnvironment())
                     .project(kieServerInfoVo.getProject())
                     .serverVersion(kieServerInfoVo.getServerVersion())
                     .service(kieServerInfoVo.getService())
                     .environment(kieServerInfoVo.getEnvironment())
+                    .kieAddress(kieServerInfoVo.getKieAddress())
                     .sentinelVersion(sentinelVersion)
                     .heartbeatVersion(heartbeatVersion)
                     .lastHeartbeat(System.currentTimeMillis())

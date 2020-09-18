@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.transport.HeartbeatSender;
 import com.alibaba.csp.sentinel.transport.config.TransportConfig;
 import com.alibaba.csp.sentinel.transport.heartbeat.client.HttpClient;
+import com.alibaba.csp.sentinel.transport.heartbeat.client.HttpResponse;
 import com.alibaba.csp.sentinel.util.function.Tuple2;
 
 import java.util.List;
@@ -57,7 +58,6 @@ public class KieHttpHeartbeatSender implements HeartbeatSender {
 
     private String getHeartbeatUrl(){
         String address = getAvailableAddress();
-
         return "http://" + address + "/" + HEARTBEAT_DEFAULT_PATH;
     }
 
@@ -67,7 +67,18 @@ public class KieHttpHeartbeatSender implements HeartbeatSender {
         String heartbeatMsg = heartBeat.generateCurrentMessage();
 
         RecordLog.info(String.format("Send heartbeat %s to %s.", heartbeatMsg, heartbeatUrl));
-        HttpClient.post(heartbeatUrl, heartbeatMsg);
+        try {
+            HttpResponse response = HttpClient.post(heartbeatUrl, heartbeatMsg);
+
+            if (response.getStatusCode() == OK_STATUS) {
+                return true;
+            } else if (clientErrorCode(response.getStatusCode()) || serverErrorCode(response.getStatusCode())) {
+                RecordLog.warn("[KieHttpHeartbeatSender] Failed to send heartbeat to " + heartbeatUrl
+                        + ", http status code: " + response.getStatusCode());
+            }
+        }catch (RuntimeException e){
+            RecordLog.error("[KieHttpHeartbeatSender] Failed to send heartbeat to " + heartbeatUrl, e);
+        }
         return false;
     }
 

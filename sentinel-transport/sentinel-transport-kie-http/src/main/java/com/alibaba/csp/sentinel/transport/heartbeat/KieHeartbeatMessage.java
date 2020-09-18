@@ -24,6 +24,7 @@ import com.alibaba.fastjson.JSON;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Heart beat message entity.
@@ -40,11 +41,13 @@ public class KieHeartbeatMessage {
         message.put("port", String.valueOf(TransportConfig.getPort()));
 
         // Kie Config
+        message.put("id", UUID.randomUUID().toString());
         message.put("app", KieConfig.getInstance().getApp());
         message.put("environment", KieConfig.getInstance().getEnvironment());
         message.put("project", KieConfig.getInstance().getProject());
         message.put("service", KieConfig.getInstance().getService());
         message.put("serverVersion", KieConfig.getInstance().getVersion());
+        message.put("kieAddress", KieConfig.getInstance().getKieAddress());
     }
 
     public KieHeartbeatMessage registerInformation(String key, String value) {

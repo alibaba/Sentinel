@@ -18,11 +18,11 @@ public class HttpClient {
 
     private final static Integer DEFAULT_TIMEOUT = 3000;
 
-    public static String post(String url, String body){
+    public static HttpResponse post(String url, String body){
         return post(url, body, DEFAULT_TIMEOUT);
     }
 
-    public static String post(String url, String body, int timeout){
+    public static HttpResponse post(String url, String body, int timeout){
         HttpPost httpPost = new HttpPost(url);
 
         RequestConfig requestConfig = RequestConfig.custom()
@@ -41,14 +41,12 @@ public class HttpClient {
             }
         }
 
-        String result = null;
-        try (CloseableHttpResponse httpResponse = client.execute(httpPost)){
-            HttpEntity entity = httpResponse.getEntity();
-            result = EntityUtils.toString(entity);
+        try (CloseableHttpResponse response = client.execute(httpPost)){
+            HttpEntity entity = response.getEntity();
+            return new HttpResponse(response.getStatusLine().toString(), EntityUtils.toByteArray(entity));
         }catch (IOException e){
             RecordLog.error(e.getMessage());
+            throw new RuntimeException("Post failed.");
         }
-
-        return result;
     }
 }

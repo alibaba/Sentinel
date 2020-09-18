@@ -4,6 +4,7 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -34,5 +35,14 @@ public class SimpleKieDiscovery implements KieServerDiscovery {
     @Override
     public boolean removeServerInfo(String project, String app, String server, String environment, String version) {
         return false;
+    }
+
+    @Override
+    public Optional<KieServerInfo> queryKieInfo(String id) {
+       return serverMap.values().stream()
+                .flatMap(kieServerInfos
+                        -> kieServerInfos.stream()
+                        .filter(y -> id.equals(y.getId())))
+                .findAny();
     }
 }

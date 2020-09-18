@@ -19,17 +19,20 @@ import lombok.Data;
 
 @Data
 public class KieServerInfoVo{
-    protected String hostname;
-    protected String ip;
-    protected int port;
-    protected Long heartbeatVersion;
-    protected Long lastHeartbeat;
-    protected boolean healthy;
-    protected String sentinelVersion;
+    private String id;
+
+    private String hostname;
+    private String ip;
+    private int port;
+    private Long heartbeatVersion;
+    private Long lastHeartbeat;
+    private boolean healthy;
+    private String sentinelVersion;
 
     private String project;
     private String app;
     private String service;
     private String environment;
     private String serverVersion;
+    private String kieAddress;
 }

@@ -15,10 +15,10 @@
  */
 package com.alibaba.csp.sentinel.dashboard.datasource.entity.rule;
 
-import java.util.Date;
-
 import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
+
+import java.util.Date;
 
 /**
  * @author leyou
@@ -61,10 +61,15 @@ public class FlowRuleEntity implements RuleEntity {
     private Date gmtModified;
 
     public static FlowRuleEntity fromFlowRule(String app, String ip, Integer port, FlowRule rule) {
-        FlowRuleEntity entity = new FlowRuleEntity();
+        FlowRuleEntity entity = fromFlowRule(rule);
         entity.setApp(app);
         entity.setIp(ip);
         entity.setPort(port);
+        return entity;
+    }
+
+    public static FlowRuleEntity fromFlowRule(FlowRule rule) {
+        FlowRuleEntity entity = new FlowRuleEntity();
         entity.setLimitApp(rule.getLimitApp());
         entity.setResource(rule.getResource());
         entity.setGrade(rule.getGrade());

@@ -23,19 +23,22 @@ import java.util.Objects;
 @Data
 @Builder
 public class KieServerInfo{
-    protected String hostname;
-    protected String ip;
-    protected int port;
-    protected long heartbeatVersion;
-    protected long lastHeartbeat;
-    protected boolean healthy;
-    protected String sentinelVersion;
+    private String id;
+
+    private String hostname;
+    private String ip;
+    private int port;
+    private long heartbeatVersion;
+    private long lastHeartbeat;
+    private boolean healthy;
+    private String sentinelVersion;
 
     private String project;
     private String app;
     private String service;
     private String environment;
     private String serverVersion;
+    private String kieAddress;
 
     @Override
     public int hashCode(){
@@ -58,10 +61,12 @@ public class KieServerInfo{
     public String toString() {
         return new StringBuilder("KieServerInfo {")
                 .append("project='").append(project).append('\'')
+                .append(", id='").append(id).append('\'')
                 .append(", app='").append(app).append('\'')
                 .append(", service='").append(service).append('\'')
                 .append(", environment='").append(environment).append('\'')
                 .append(", serverVersion='").append(serverVersion).append('\'')
+                .append(", kieAddress='").append(kieAddress).append('\'')
                 .append(", hostname='").append(hostname).append('\'')
                 .append(", ip='").append(ip).append('\'')
                 .append(", port=").append(port)
@@ -69,5 +74,9 @@ public class KieServerInfo{
                 .append(", lastHeartbeat=").append(lastHeartbeat)
                 .append(", healthy=").append(isHealthy())
                 .append('}').toString();
+    }
+
+    public String getKieConfigUrl(){
+        return "http://" + kieAddress + "/v1/" + project + "/kie/kv";
     }
 }
