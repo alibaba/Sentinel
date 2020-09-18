@@ -66,43 +66,12 @@ angular.module('sentinelDashboardApp')
           // 当前project下所有service的信息
           $scope.services = [];
           await KieService.getProjects().success(data => {
-            // 打桩
-            data = {
-              "success": true,
-              "code": 0,
-              "msg": "success",
-              "data": [
-                  "default"
-              ]
-            }
             if (data.success) {
               $scope.projects = data.data;
               $scope.currentProject = $scope.projects[0];
             }
           });
           await KieService.getKieInfos($scope.currentProject).success(data => {
-            // 打桩
-            data = {
-              "success": true,
-              "code": 0,
-              "msg": "success",
-              "data": [
-                  {
-                      "hostname": null,
-                      "ip": null,
-                      "port": 0,
-                      "heartbeatVersion": 1600324971186,
-                      "lastHeartbeat": 1600324971438,
-                      "healthy": false,
-                      "sentinelVersion": "1.8.0",
-                      "project": "default",
-                      "app": "appA",
-                      "service": "serviceA",
-                      "environment": "test",
-                      "serverVersion": "1.0.0"
-                  }
-              ]
-            }
             if (data.success) {
               $scope.services = data.data;
               // 用来控制app的下拉框是否显示
