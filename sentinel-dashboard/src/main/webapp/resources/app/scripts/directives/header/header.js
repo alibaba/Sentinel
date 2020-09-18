@@ -11,8 +11,6 @@ angular.module('sentinelDashboardApp')
       restrict: 'E',
       replace: true,
       controller: function ($scope, $rootScope, $state, $window, VersionService, AuthService, KieService) {
-        $scope.projects = [];
-        $scope.currentProject = "";
         VersionService.version().success(function (data) {
           if (data.code == 0) {
             $scope.dashboardVersion = data.data;
@@ -61,28 +59,66 @@ angular.module('sentinelDashboardApp')
         
         headerInit = async () => {
           console.log("header init......");
-          await $rootScope.$on("headerToRoot_kieInfos", (e,msg) => {
-            console.log("headerToRoot_kieInfos");
-            console.log("msg", msg);
-            $rootScope.$broadcast("rootToSidebar_kieInfos", msg);
-          });
+          $scope.projects = [];
+          $scope.currentProject = "";
+          // 当前project下所有app
+          $scope.apps = [];
+          // 当前project下所有service的信息
+          $scope.services = [];
           await KieService.getProjects().success(data => {
+            // 打桩
+            data = {
+              "success": true,
+              "code": 0,
+              "msg": "success",
+              "data": [
+                  "default"
+              ]
+            }
             if (data.success) {
-              console.log("headerInit Projects:");
-              console.log(data.data);
-
               $scope.projects = data.data;
               $scope.currentProject = $scope.projects[0];
             }
           });
           await KieService.getKieInfos($scope.currentProject).success(data => {
+            // 打桩
+            data = {
+              "success": true,
+              "code": 0,
+              "msg": "success",
+              "data": [
+                  {
+                      "hostname": null,
+                      "ip": null,
+                      "port": 0,
+                      "heartbeatVersion": 1600324971186,
+                      "lastHeartbeat": 1600324971438,
+                      "healthy": false,
+                      "sentinelVersion": "1.8.0",
+                      "project": "default",
+                      "app": "appA",
+                      "service": "serviceA",
+                      "environment": "test",
+                      "serverVersion": "1.0.0"
+                  }
+              ]
+            }
             if (data.success) {
-              console.log("headerInit KieInfo:");
-              console.log(data.data);
-              $scope.$emit('headerToRoot_kieInfos', data.data);
+              $scope.services = data.data;
+              // 用来控制app的下拉框是否显示
+              $scope.appActives = [];
+              $scope.services.forEach(val => {
+                if (!$scope.apps.includes(val.app)) {
+                  $scope.apps.push(val.app);
+                  let tmp = {
+                    'app': val.app,
+                    'active': false
+                  };
+                  $scope.appActives.push(tmp);
+                }
+              });
             }
           });
-          console.log('header init complete!');
         }
         
         headerInit();

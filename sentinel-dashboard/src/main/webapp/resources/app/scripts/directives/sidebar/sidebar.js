@@ -4,33 +4,9 @@ angular.module('sentinelDashboardApp')
       templateUrl: 'app/scripts/directives/sidebar/sidebar.html',
       restrict: 'E',
       replace: true,
-      scope: {
-      },
+      scope: false,
       controller: function ($scope, $stateParams, $location, AppService) {
-        // 当前project下所有app
-        $scope.apps = [];
-        // 用来控制app的下拉框是否显示
-        $scope.appActives = [];
-        // 当前project下所有service的信息
-        $scope.services = [];
-
         sidebarInit = async () => {
-          $scope.$on("rootToSidebar_kieInfos", (e,msg) => {
-            console.log("sidebar init......");
-            // got init kieInfos in msg
-            console.log("msg", msg);
-            $scope.services = msg;
-            msg.forEach(val => {
-              if (!$scope.apps.includes(val.app)) {
-                $scope.apps.push(val.app);
-                let tmp = {
-                  'app': val.app,
-                  'active': false
-                };
-                $scope.appActives.push(tmp);
-              }
-            })
-          })
         }
         
         sidebarInit();
