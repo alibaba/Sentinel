@@ -51,7 +51,7 @@ public class KieFlowController {
     private DynamicRulePublisher<List<FlowRuleEntity>> rulePublisher;
 
     @GetMapping("/rules")
-    public Result<List<FlowRuleEntity>> apiQueryMachineRules(@RequestParam String id) {
+    public Result<List<FlowRuleEntity>> apiQueryRules(@RequestParam String id) {
         if (StringUtil.isEmpty(id)) {
             return Result.ofFail(-1, "app can't be null or empty");
         }

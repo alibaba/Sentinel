@@ -26,6 +26,8 @@ import java.util.Date;
 public class FlowRuleEntity implements RuleEntity {
 
     private Long id;
+
+    private String ruleId;
     private String app;
     private String ip;
     private Integer port;
@@ -119,6 +121,14 @@ public class FlowRuleEntity implements RuleEntity {
     @Override
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getRuleId() {
+        return ruleId;
+    }
+
+    public void setRuleId(String ruleId) {
+        this.ruleId = ruleId;
     }
 
     public String getLimitApp() {
