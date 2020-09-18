@@ -28,10 +28,9 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelPipeline;
+import io.netty.channel.*;
+import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -50,15 +49,17 @@ import static com.alibaba.csp.sentinel.cluster.server.ServerConstants.*;
  */
 public class NettyTransportServer implements ClusterTokenServer {
 
+    private static final int DEFAULT_BOSS_EVENT_LOOP_THREADS = 1;
     private static final int DEFAULT_EVENT_LOOP_THREADS = Math.max(1,
         SystemPropertyUtil.getInt("io.netty.eventLoopThreads", Runtime.getRuntime().availableProcessors() * 2));
+    private static final boolean useEpoll = SystemPropertyUtil.getBoolean("io.netty.epoll", false);
     private static final int MAX_RETRY_TIMES = 3;
     private static final int RETRY_SLEEP_MS = 2000;
 
     private final int port;
 
-    private NioEventLoopGroup bossGroup;
-    private NioEventLoopGroup workerGroup;
+    private EventLoopGroup bossGroup;
+    private EventLoopGroup workerGroup;
 
     private final ConnectionPool connectionPool = new ConnectionPool();
 
@@ -74,12 +75,12 @@ public class NettyTransportServer implements ClusterTokenServer {
         if (!currentState.compareAndSet(SERVER_STATUS_OFF, SERVER_STATUS_STARTING)) {
             return;
         }
-
         ServerBootstrap b = new ServerBootstrap();
-        this.bossGroup = new NioEventLoopGroup(1);
-        this.workerGroup = new NioEventLoopGroup(DEFAULT_EVENT_LOOP_THREADS);
+        this.bossGroup = useEpoll ? new EpollEventLoopGroup(DEFAULT_BOSS_EVENT_LOOP_THREADS) : new NioEventLoopGroup(DEFAULT_BOSS_EVENT_LOOP_THREADS);
+        this.workerGroup = useEpoll ? new EpollEventLoopGroup(DEFAULT_EVENT_LOOP_THREADS) : new NioEventLoopGroup(DEFAULT_EVENT_LOOP_THREADS);
+        Class channelClass = useEpoll ? EpollServerSocketChannel.class : NioServerSocketChannel.class;
         b.group(bossGroup, workerGroup)
-            .channel(NioServerSocketChannel.class)
+            .channel(channelClass)
             .option(ChannelOption.SO_BACKLOG, 128)
             .handler(new LoggingHandler(LogLevel.INFO))
             .childHandler(new ChannelInitializer<SocketChannel>() {
