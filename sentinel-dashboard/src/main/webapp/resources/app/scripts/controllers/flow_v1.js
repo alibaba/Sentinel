@@ -1,30 +1,13 @@
 var app = angular.module('sentinelDashboardApp');
 
-app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', 'ngDialog',
-  'MachineService',
-  function ($scope, $stateParams, FlowService, ngDialog,
-    MachineService) {
-    $scope.app = $stateParams.app;
-
+app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', 'ngDialog', 'KieFlowService',
+  function ($scope, $stateParams, FlowService, ngDialog, KieFlowService) {
+    $scope.id = $stateParams.id;
     $scope.rulesPageConfig = {
       pageSize: 10,
       currentPageIndex: 1,
       totalPage: 1,
       totalCount: 0,
-    };
-    $scope.macsInputConfig = {
-      searchField: ['text', 'value'],
-      persist: true,
-      create: false,
-      maxItems: 1,
-      render: {
-        item: function (data, escape) {
-          return '<div>' + escape(data.text) + '</div>';
-        }
-      },
-      onChange: function (value, oldValue) {
-        $scope.macInputModel = value;
-      }
     };
 
     $scope.generateThresholdTypeShow = (rule) => {
@@ -40,26 +23,32 @@ app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', '
       }
     };
 
-    getMachineRules();
-    function getMachineRules() {
-      if (!$scope.macInputModel) {
-        return;
-      }
-      var mac = $scope.macInputModel.split(':');
-      FlowService.queryMachineRules($scope.app, mac[0], mac[1]).success(
-        function (data) {
-          if (data.code == 0 && data.data) {
-            $scope.rules = data.data;
-            $scope.rulesPageConfig.totalCount = $scope.rules.length;
-          } else {
-            $scope.rules = [];
-            $scope.rulesPageConfig.totalCount = 0;
-          }
-        });
-    };
-    $scope.getMachineRules = getMachineRules;
+    flowRulesInit = async () => {
+      await $scope.$on('rootToRules_id', (e, msg) => {
+        console.log('$scope.$on');
+        console.log('msg', msg);
+        $scope.currentId = msg;
+        getKieFlowRules();
+      });
+    }
+    flowRulesInit();
+
+    function getKieFlowRules() {
+      console.log("$scope.currentId", $scope.currentId);
+      KieFlowService.getKieFlowRules($scope.currentId).success(data => {
+        if (data.success && data.data) {
+          $scope.rules = data.data;
+          $scope.rulesPageConfig.totalCount = $scope.rules.length;
+        } else {
+          $scope.rules = [];
+          $scope.rulesPageConfig.totalCount = 0;
+        }
+      });
+    }
+    $scope.getKieFlowRules = getKieFlowRules;
 
     var flowRuleDialog;
+    // TODOS
     $scope.editRule = function (rule) {
       $scope.currentRule = angular.copy(rule);
       $scope.flowRuleDialog = {
@@ -145,7 +134,7 @@ app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', '
     function deleteRule(rule) {
       FlowService.deleteRule(rule).success(function (data) {
         if (data.code == 0) {
-          getMachineRules();
+          // getMachineRules();
           confirmDialog.close();
         } else {
           alert('失败：' + data.msg);
@@ -156,7 +145,7 @@ app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', '
     function addNewRule(rule) {
       FlowService.newRule(rule).success(function (data) {
         if (data.code === 0) {
-          getMachineRules();
+          // getMachineRules();
           flowRuleDialog.close();
         } else {
           alert('失败：' + data.msg);
@@ -174,7 +163,7 @@ app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', '
     function saveRule(rule, edit) {
       FlowService.saveRule(rule).success(function (data) {
         if (data.code === 0) {
-          getMachineRules();
+          // getMachineRules();
           if (edit) {
             flowRuleDialog.close();
           } else {
@@ -185,36 +174,5 @@ app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', '
         }
       });
     }
-    queryAppMachines();
-    function queryAppMachines() {
-      MachineService.getAppMachines($scope.app).success(
-        function (data) {
-          if (data.code == 0) {
-            // $scope.machines = data.data;
-            if (data.data) {
-              $scope.machines = [];
-              $scope.macsInputOptions = [];
-              data.data.forEach(function (item) {
-                if (item.healthy) {
-                  $scope.macsInputOptions.push({
-                    text: item.ip + ':' + item.port,
-                    value: item.ip + ':' + item.port
-                  });
-                }
-              });
-            }
-            if ($scope.macsInputOptions.length > 0) {
-              $scope.macInputModel = $scope.macsInputOptions[0].value;
-            }
-          } else {
-            $scope.macsInputOptions = [];
-          }
-        }
-      );
-    };
-    $scope.$watch('macInputModel', function () {
-      if ($scope.macInputModel) {
-        getMachineRules();
-      }
-    });
+   
   }]);
