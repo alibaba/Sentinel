@@ -58,7 +58,6 @@ angular.module('sentinelDashboardApp')
         }
         
         headerInit = async () => {
-          console.log("header init......");
           $scope.projects = [];
           $scope.currentProject = "";
           // 当前project下所有app
@@ -94,8 +93,23 @@ angular.module('sentinelDashboardApp')
 
         $scope.projectChange = () => {
           // project复选框change事件
-          console.log("projectChange");
-          console.log("$scope.currentProject", $scope.currentProject);
+          KieService.getKieInfos($scope.currentProject).success(data => {
+            if (data.success) {
+              $scope.services = data.data;
+              $scope.apps.splice(0, $scope.apps.length);
+              $scope.appActives.splice(0, $scope.appActives.length);
+              $scope.services.forEach(val => {
+                if (!$scope.apps.includes(val.app)) {
+                  $scope.apps.push(val.app);
+                  let tmp = {
+                    'app': val.app,
+                    'active': false
+                  }
+                  $scope.appActives.push(tmp);
+                }
+              })
+            }
+          });
         }
       }
     }
