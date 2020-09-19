@@ -6,20 +6,11 @@ angular.module('sentinelDashboardApp')
       replace: true,
       scope: false,
       controller: function ($scope, $rootScope,$stateParams, $location, AppService) {
-        sidebarInit = async () => {
-          await $rootScope.$on('sidebarToRoot_id', (e, msg) => {
-            $rootScope.$broadcast('rootToRules_id', msg);
-          });
-        }
-        
-        sidebarInit();
-
         // toggle side bar
         $scope.serviceClick = function ($event) {
           console.log("serviceClick");
           let entry = angular.element($event.target).scope().entry;
           entry.active = !entry.active;// toggle this clicked app bar
-          $scope.service_id = entry.id;
           $scope.services.forEach(function (item) { // collapse other app bars
             if (item !== entry) {
               item.active = false;
@@ -55,10 +46,6 @@ angular.module('sentinelDashboardApp')
           })
         }
         
-        $scope.rulesClick = function ($event) {
-          console.log("rulesClick");
-          $scope.$emit('sidebarToRoot_id', $scope.service_id);
-        }
       }
     };
   }]);

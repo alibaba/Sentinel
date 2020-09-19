@@ -3,6 +3,7 @@ var app = angular.module('sentinelDashboardApp');
 app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', 'ngDialog', 'KieFlowService', 'FixtureService',
   function ($scope, $stateParams, FlowService, ngDialog, KieFlowService, FixtureService) {
     $scope.service = $stateParams.service;
+    $scope.currentId = $stateParams.id
     $scope.rulesPageConfig = {
       pageSize: 10,
       currentPageIndex: 1,
@@ -24,12 +25,7 @@ app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', '
     };
 
     flowRulesInit = async () => {
-      await $scope.$on('rootToRules_id', (e, msg) => {
-        console.log('$scope.$on');
-        console.log('msg', msg);
-        $scope.currentId = msg;
-        getKieFlowRules();
-      });
+      getKieFlowRules();
     }
     flowRulesInit();
 
