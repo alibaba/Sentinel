@@ -5,12 +5,12 @@
  * # adminPosHeader
  */
 angular.module('sentinelDashboardApp')
-  .directive('header', ['VersionService', 'AuthService', 'KieService', function () {
+  .directive('header', ['VersionService', 'AuthService', 'KieService', 'FixtureService', function () {
     return {
       templateUrl: 'app/scripts/directives/header/header.html',
       restrict: 'E',
       replace: true,
-      controller: function ($scope, $rootScope, $state, $window, VersionService, AuthService, KieService) {
+      controller: function ($scope, $rootScope, $state, $window, VersionService, AuthService, KieService, FixtureService) {
         VersionService.version().success(function (data) {
           if (data.code == 0) {
             $scope.dashboardVersion = data.data;
@@ -65,12 +65,16 @@ angular.module('sentinelDashboardApp')
           // 当前project下所有service的信息
           $scope.services = [];
           await KieService.getProjects().success(data => {
+            // fix
+            // data = FixtureService.getProjects();
             if (data.success) {
               $scope.projects = data.data;
               $scope.currentProject = $scope.projects[0];
             }
           });
           await KieService.getKieInfos($scope.currentProject).success(data => {
+            // fix
+            // data = FixtureService.getKieInfos();
             if (data.success) {
               $scope.services = data.data;
               // 用来控制app的下拉框是否显示

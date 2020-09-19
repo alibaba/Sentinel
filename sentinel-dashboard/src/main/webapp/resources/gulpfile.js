@@ -61,6 +61,7 @@ const JS_APP = [
   'app/scripts/services/gateway/flow_service.js',
   'app/scripts/services/kie_service.js',
   'app/scripts/services/kie_flow_service.js',
+  'app/scripts/services/fixture_service.js',
 ];
 
 gulp.task('lib', function () {

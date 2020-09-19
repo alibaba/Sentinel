@@ -1,8 +1,8 @@
 var app = angular.module('sentinelDashboardApp');
 
-app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', 'ngDialog', 'KieFlowService',
-  function ($scope, $stateParams, FlowService, ngDialog, KieFlowService) {
-    $scope.id = $stateParams.id;
+app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', 'ngDialog', 'KieFlowService', 'FixtureService',
+  function ($scope, $stateParams, FlowService, ngDialog, KieFlowService, FixtureService) {
+    $scope.service = $stateParams.service;
     $scope.rulesPageConfig = {
       pageSize: 10,
       currentPageIndex: 1,
@@ -36,6 +36,9 @@ app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', '
     function getKieFlowRules() {
       console.log("$scope.currentId", $scope.currentId);
       KieFlowService.getKieFlowRules($scope.currentId).success(data => {
+        // fix
+        // data = FixtureService.getKieFlowRules($scope.currentId);
+        // console.log("FixtureService.getKieFlowRules", data);
         if (data.success && data.data) {
           $scope.rules = data.data;
           $scope.rulesPageConfig.totalCount = $scope.rules.length;
