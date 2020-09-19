@@ -15,24 +15,17 @@
  */
 package com.alibaba.csp.sentinel.adapter.dubbo;
 
-import com.alibaba.csp.sentinel.Entry;
-import com.alibaba.csp.sentinel.EntryType;
-import com.alibaba.csp.sentinel.ResourceTypeConstants;
-import com.alibaba.csp.sentinel.SphU;
-import com.alibaba.csp.sentinel.Tracer;
-import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboConfig;
-import com.alibaba.csp.sentinel.adapter.dubbo.fallback.DubboFallbackRegistry;
+import com.alibaba.csp.sentinel.*;
+import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboAdapterGlobalConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.InvokeMode;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.LinkedList;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
@@ -47,6 +40,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
  *
  * @author Carpenter Lee
  * @author Eric Zhao
+ * @author Lin Liang
  */
 @Activate(group = CONSUMER)
 public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
@@ -56,13 +50,13 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
     }
 
     @Override
-    String getMethodName(Invoker invoker, Invocation invocation) {
-        return DubboUtils.getResourceName(invoker, invocation, DubboConfig.getDubboConsumerPrefix());
+    String getMethodName(Invoker invoker, Invocation invocation, String prefix) {
+        return DubboUtils.getMethodResourceName(invoker, invocation, prefix);
     }
 
     @Override
-    String getInterfaceName(Invoker invoker) {
-        return DubboUtils.getInterfaceName(invoker);
+    String getInterfaceName(Invoker invoker, String prefix) {
+        return DubboUtils.getInterfaceName(invoker, prefix);
     }
 
     @Override
@@ -73,17 +67,18 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
         } else {
             return asyncInvoke(invoker, invocation);
         }
-
     }
 
     private Result syncInvoke(Invoker<?> invoker, Invocation invocation) {
         Entry interfaceEntry = null;
         Entry methodEntry = null;
-        String methodResourceName = getMethodName(invoker, invocation);
-        String interfaceResourceName = getInterfaceName(invoker);
+        String prefix = DubboAdapterGlobalConfig.getDubboConsumerResNamePrefixKey();
+        String interfaceResourceName = getInterfaceName(invoker, prefix);
+        String methodResourceName = getMethodName(invoker, invocation, prefix);
         try {
             interfaceEntry = SphU.entry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT);
-            methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT, invocation.getArguments());
+            methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT,
+                invocation.getArguments());
             Result result = invoker.invoke(invocation);
             if (result.hasException()) {
                 Tracer.traceEntry(result.getException(), interfaceEntry);
@@ -91,7 +86,7 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
             }
             return result;
         } catch (BlockException e) {
-            return DubboFallbackRegistry.getConsumerFallback().handle(invoker, invocation, e);
+            return DubboAdapterGlobalConfig.getConsumerFallback().handle(invoker, invocation, e);
         } catch (RpcException e) {
             Tracer.traceEntry(e, interfaceEntry);
             Tracer.traceEntry(e, methodEntry);
@@ -106,23 +101,27 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
         }
     }
 
-
     private Result asyncInvoke(Invoker<?> invoker, Invocation invocation) {
         LinkedList<EntryHolder> queue = new LinkedList<>();
-        String methodResourceName = getMethodName(invoker, invocation);
-        String interfaceResourceName = getInterfaceName(invoker);
+        String prefix = DubboAdapterGlobalConfig.getDubboConsumerResNamePrefixKey();
+        String interfaceResourceName = getInterfaceName(invoker, prefix);
+        String methodResourceName = getMethodName(invoker, invocation, prefix);
         try {
-            queue.push(new EntryHolder(SphU.asyncEntry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT), null));
-            queue.push(new EntryHolder(SphU.asyncEntry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT, 1, invocation.getArguments()), invocation.getArguments()));
+            queue.push(new EntryHolder(
+                SphU.asyncEntry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT), null));
+            queue.push(new EntryHolder(
+                SphU.asyncEntry(methodResourceName, ResourceTypeConstants.COMMON_RPC,
+                    EntryType.OUT, 1, invocation.getArguments()), invocation.getArguments()));
             Result result = invoker.invoke(invocation);
-            result.whenCompleteWithContext(new BiConsumer<Result, Throwable>() {
-                @Override
-                public void accept(Result result, Throwable throwable) {
-                    while (!queue.isEmpty()) {
-                        EntryHolder holder = queue.pop();
-                        Tracer.traceEntry(result.getException(), holder.entry);
-                        exitEntry(holder);
-                    }
+            result.whenCompleteWithContext((r, throwable) -> {
+                Throwable error = throwable;
+                if (error == null) {
+                    error = Optional.ofNullable(r).map(Result::getException).orElse(null);
+                }
+                while (!queue.isEmpty()) {
+                    EntryHolder holder = queue.pop();
+                    Tracer.traceEntry(error, holder.entry);
+                    exitEntry(holder);
                 }
             });
             return result;
@@ -130,14 +129,13 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
             while (!queue.isEmpty()) {
                 exitEntry(queue.pop());
             }
-            return DubboFallbackRegistry.getConsumerFallback().handle(invoker, invocation, e);
+            return DubboAdapterGlobalConfig.getConsumerFallback().handle(invoker, invocation, e);
         }
     }
 
-    class EntryHolder {
+    static class EntryHolder {
 
         final private Entry entry;
-
         final private Object[] params;
 
         public EntryHolder(Entry entry, Object[] params) {

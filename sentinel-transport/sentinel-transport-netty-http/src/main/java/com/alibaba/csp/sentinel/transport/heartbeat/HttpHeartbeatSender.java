@@ -67,8 +67,7 @@ public class HttpHeartbeatSender implements HeartbeatSender {
         } else {
             consoleHost = dashboardList.get(0).r1;
             consolePort = dashboardList.get(0).r2;
-            RecordLog.info(
-                "[NettyHttpHeartbeatSender] Dashboard address parsed: <" + consoleHost + ':' + consolePort + ">");
+            RecordLog.info("[NettyHttpHeartbeatSender] Dashboard address parsed: <{}:{}>", consoleHost, consolePort);
         }
     }
 

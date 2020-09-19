@@ -43,7 +43,7 @@ public class GreetingService {
         return "hello " + name;
     }
 
-    public String greetingFallback(String name) {
-        return "greetingFallback:" + name;
+    public String greetingFallback(String name, Throwable t) {
+        return "greetingFallback: " + t.getClass().getSimpleName();
     }
 }

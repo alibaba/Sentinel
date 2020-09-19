@@ -68,7 +68,7 @@
         <maven.flatten.version>1.1.0</maven.flatten.version>
 
         <!-- Sentinel version -->
-        <revision>1.8.0-SNAPSHOT</revision>
+        <revision>1.8.1-SNAPSHOT</revision>
     </properties>
 
     <modules>

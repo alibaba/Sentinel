@@ -39,6 +39,7 @@ public abstract class AbstractRule implements Rule {
      */
     private String limitApp;
 
+    @Override
     public String getResource() {
         return resource;
     }

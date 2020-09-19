@@ -15,10 +15,12 @@
  */
 package com.alibaba.csp.sentinel.adapter.dubbo.origin;
 
+import com.alibaba.csp.sentinel.adapter.dubbo.DubboAdapterGlobalConfig;
 import com.alibaba.csp.sentinel.adapter.dubbo.DubboUtils;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcInvocation;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -30,12 +32,12 @@ public class DubboOriginRegistryTest {
 
     @After
     public void cleanUp() {
-        DubboOriginParserRegistry.setDubboOriginParser(new DefaultDubboOriginParser());
+        DubboAdapterGlobalConfig.setOriginParser(new DefaultDubboOriginParser());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testDefaultOriginParserFail() {
-        DubboOriginParserRegistry.getDubboOriginParser().parse(null, null);
+        DubboAdapterGlobalConfig.getOriginParser().parse(null, null);
     }
 
     @Test
@@ -43,13 +45,13 @@ public class DubboOriginRegistryTest {
         RpcInvocation invocation = new RpcInvocation();
         String dubboName = "sentinel";
         invocation.setAttachment(DubboUtils.DUBBO_APPLICATION_KEY, dubboName);
-        String origin = DubboOriginParserRegistry.getDubboOriginParser().parse(null, invocation);
+        String origin = DubboAdapterGlobalConfig.getOriginParser().parse(null, invocation);
         Assert.assertEquals(dubboName, origin);
     }
 
     @Test
     public void testCustomOriginParser() {
-        DubboOriginParserRegistry.setDubboOriginParser(new DubboOriginParser() {
+        DubboAdapterGlobalConfig.setOriginParser(new DubboOriginParser() {
             @Override
             public String parse(Invoker<?> invoker, Invocation invocation) {
                 return invocation.getAttachment(DubboUtils.DUBBO_APPLICATION_KEY, "default") + "_" + invocation
@@ -58,16 +60,16 @@ public class DubboOriginRegistryTest {
         });
 
         RpcInvocation invocation = new RpcInvocation();
-        String origin = DubboOriginParserRegistry.getDubboOriginParser().parse(null, invocation);
+        String origin = DubboAdapterGlobalConfig.getOriginParser().parse(null, invocation);
         Assert.assertEquals("default_null", origin);
 
         String dubboName = "sentinel";
         invocation.setAttachment(DubboUtils.DUBBO_APPLICATION_KEY, dubboName);
-        origin = DubboOriginParserRegistry.getDubboOriginParser().parse(null, invocation);
+        origin = DubboAdapterGlobalConfig.getOriginParser().parse(null, invocation);
         Assert.assertEquals(dubboName + "_null", origin);
 
         invocation.setMethodName("hello");
-        origin = DubboOriginParserRegistry.getDubboOriginParser().parse(null, invocation);
+        origin = DubboAdapterGlobalConfig.getOriginParser().parse(null, invocation);
         Assert.assertEquals(dubboName + "_hello", origin);
     }
 

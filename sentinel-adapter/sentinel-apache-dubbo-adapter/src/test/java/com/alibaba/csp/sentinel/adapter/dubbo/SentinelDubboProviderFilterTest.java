@@ -102,7 +102,7 @@ public class SentinelDubboProviderFilterTest extends BaseTest {
         assertNotNull(context);
 
         // As ContextUtil.enter(resourceName, application) in SentinelDubboProviderFilter
-        String methodResourceName = filter.getMethodName(invoker, invocation);
+        String methodResourceName = filter.getMethodName(invoker, invocation, null);
         assertEquals(methodResourceName, context.getName());
         assertEquals(originApplication, context.getOrigin());
 
@@ -117,7 +117,7 @@ public class SentinelDubboProviderFilterTest extends BaseTest {
         DefaultNode interfaceNode = (DefaultNode) childList.iterator().next();
         ResourceWrapper interfaceResource = interfaceNode.getId();
 
-        assertEquals(filter.getInterfaceName(invoker), interfaceResource.getName());
+        assertEquals(filter.getInterfaceName(invoker, null), interfaceResource.getName());
         assertSame(EntryType.IN, interfaceResource.getEntryType());
 
         // As SphU.entry(resourceName, EntryType.IN, 1, invocation.getArguments());

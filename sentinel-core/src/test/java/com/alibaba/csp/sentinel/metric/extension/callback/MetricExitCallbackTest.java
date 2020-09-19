@@ -62,4 +62,37 @@ public class MetricExitCallbackTest extends AbstractTimeBasedTest {
         Assert.assertEquals(extension.success, 6 + count);
         Assert.assertEquals(extension.thread, 10 - 1);
     }
+    
+    /**
+     * @author bill_yip
+     */
+    @Test
+    public void advancedExtensionOnExit() {
+        FakeAdvancedMetricExtension extension = new FakeAdvancedMetricExtension();
+        MetricExtensionProvider.addMetricExtension(extension);
+
+        MetricExitCallback exitCallback = new MetricExitCallback();
+        StringResourceWrapper resourceWrapper = new StringResourceWrapper("resource", EntryType.OUT);
+        int count = 2;
+        Object[] args = {"args1", "args2"};
+        long prevRt = 20;
+        extension.rt = prevRt;
+        extension.complete = 6;
+        extension.concurrency = 10;
+        Context context = mock(Context.class);
+        Entry entry = mock(Entry.class);
+
+        // Mock current time
+        long curMillis = System.currentTimeMillis();
+        setCurrentMillis(curMillis);
+
+        int deltaMs = 100;
+        when(entry.getError()).thenReturn(null);
+        when(entry.getCreateTimestamp()).thenReturn(curMillis - deltaMs);
+        when(context.getCurEntry()).thenReturn(entry);
+        exitCallback.onExit(context, resourceWrapper, count, args);
+        Assert.assertEquals(prevRt + deltaMs, extension.rt);
+        Assert.assertEquals(extension.complete, 6 + count);
+        Assert.assertEquals(extension.concurrency, 10 - 1);
+    }
 }

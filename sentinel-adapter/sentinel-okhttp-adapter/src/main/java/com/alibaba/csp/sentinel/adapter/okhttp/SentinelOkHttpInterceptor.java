@@ -16,9 +16,10 @@
 package com.alibaba.csp.sentinel.adapter.okhttp;
 
 import com.alibaba.csp.sentinel.*;
-import com.alibaba.csp.sentinel.adapter.okhttp.config.SentinelOkHttpConfig;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
+
 import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -30,22 +31,33 @@ import java.io.IOException;
  */
 public class SentinelOkHttpInterceptor implements Interceptor {
 
+    private final SentinelOkHttpConfig config;
+
+    public SentinelOkHttpInterceptor() {
+        this.config = new SentinelOkHttpConfig();
+    }
+
+    public SentinelOkHttpInterceptor(SentinelOkHttpConfig config) {
+        AssertUtil.notNull(config, "config cannot be null");
+        this.config = config;
+    }
+
     @Override
     public Response intercept(Chain chain) throws IOException {
         Entry entry = null;
         try {
             Request request = chain.request();
-            String name = SentinelOkHttpConfig.getExtractor().extract(request.url().toString(), request, chain.connection());
-            if (!StringUtil.isEmpty(SentinelOkHttpConfig.getPrefix())) {
-                name = SentinelOkHttpConfig.getPrefix() + name;
+            String name = config.getResourceExtractor().extract(request, chain.connection());
+            if (StringUtil.isNotBlank(config.getResourcePrefix())) {
+                name = config.getResourcePrefix() + name;
             }
             entry = SphU.entry(name, ResourceTypeConstants.COMMON_WEB, EntryType.OUT);
             return chain.proceed(request);
         } catch (BlockException e) {
-            return SentinelOkHttpConfig.getFallback().handle(chain.request(), chain.connection(), e);
-        } catch (Throwable t) {
-            Tracer.traceEntry(t, entry);
-            throw t;
+            return config.getFallback().handle(chain.request(), chain.connection(), e);
+        } catch (IOException ex) {
+            Tracer.traceEntry(ex, entry);
+            throw ex;
         } finally {
             if (entry != null) {
                 entry.exit();
