@@ -24,10 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -61,6 +58,18 @@ public class KieFlowController {
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
             logger.error("Error when querying flow rules", throwable);
+            return Result.ofThrowable(-1, throwable);
+        }
+    }
+
+    @PutMapping("/rules/{app_id}")
+    public Result<List<FlowRuleEntity>> updateRules(@PathVariable("app_id") String appId,
+                                                    @RequestBody List<FlowRuleEntity> entities){
+        try {
+            rulePublisher.publish(appId, entities);
+            return Result.ofSuccess(entities);
+        } catch (Throwable throwable) {
+            logger.error("Error when update flow rules", throwable);
             return Result.ofThrowable(-1, throwable);
         }
     }
