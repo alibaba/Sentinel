@@ -109,7 +109,7 @@ angular
 
       .state('dashboard.flowV1', {
         templateUrl: 'app/views/flow_v1.html',
-        url: '/flow/:app',
+        url: '/flow/:app/:service',
         controller: 'FlowControllerV1',
         resolve: {
           loadMyFiles: ['$ocLazyLoad', function ($ocLazyLoad) {
