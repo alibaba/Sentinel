@@ -66,7 +66,9 @@ angular.module('sentinelDashboardApp')
           $scope.services = [];
           await KieService.getProjects().success(data => {
             // fix
-            // data = FixtureService.getProjects();
+            if (window.fixtureFlag) {
+              data = FixtureService.getProjects();
+            }
             if (data.success) {
               $scope.projects = data.data;
               $scope.currentProject = $scope.projects[0];
@@ -74,7 +76,9 @@ angular.module('sentinelDashboardApp')
           });
           await KieService.getKieInfos($scope.currentProject).success(data => {
             // fix
-            // data = FixtureService.getKieInfos();
+            if (window.fixtureFlag) {
+              data = FixtureService.getKieInfos();
+            }
             if (data.success) {
               $scope.services = data.data;
               // 用来控制app的下拉框是否显示

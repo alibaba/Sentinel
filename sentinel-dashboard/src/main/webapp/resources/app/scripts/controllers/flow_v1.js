@@ -33,8 +33,9 @@ app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', '
       console.log("$scope.currentId", $scope.currentId);
       KieFlowService.getKieFlowRules($scope.currentId).success(data => {
         // fix
-        // data = FixtureService.getKieFlowRules($scope.currentId);
-        // console.log("FixtureService.getKieFlowRules", data);
+        if (window.fixtureFlag) {
+          data = FixtureService.getKieFlowRules($scope.currentId);
+        }
         if (data.success && data.data) {
           $scope.rules = data.data;
           $scope.rulesPageConfig.totalCount = $scope.rules.length;
@@ -48,8 +49,9 @@ app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', '
 
     var flowRuleDialog;
     // TODOS
-    $scope.editRule = function (rule) {
+    $scope.editRule = function (rule, $index) {
       $scope.currentRule = angular.copy(rule);
+      $scope.editIndex = $index;
       $scope.flowRuleDialog = {
         title: '编辑流控规则',
         type: 'edit',
@@ -94,9 +96,6 @@ app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', '
     };
 
     $scope.saveRule = function () {
-      if (!FlowService.checkRuleValid($scope.currentRule)) {
-        return;
-      }
       if ($scope.flowRuleDialog.type === 'add') {
         addNewRule($scope.currentRule);
       } else if ($scope.flowRuleDialog.type === 'edit') {
@@ -160,18 +159,19 @@ app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', '
     };
 
     function saveRule(rule, edit) {
-      FlowService.saveRule(rule).success(function (data) {
-        if (data.code === 0) {
-          // getMachineRules();
-          if (edit) {
+      if (edit) {
+        $scope.rules[$scope.editIndex] = rule;
+        KieFlowService.updateKieFlowRules($scope.currentId, $scope.rules).success(data => {
+          if (data.success) {
             flowRuleDialog.close();
+            getKieFlowRules();
           } else {
-            confirmDialog.close();
+            flowRuleDialog.close();
+            alert('失败：' + data.msg);
+            getKieFlowRules();
           }
-        } else {
-          alert('失败：' + data.msg);
-        }
-      });
+          
+        })
+      }
     }
-   
   }]);

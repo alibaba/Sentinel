@@ -12,4 +12,12 @@ app.service('KieFlowService', ['$http', function ($http) {
             method: 'GET'
         })
     }
+
+    this.updateKieFlowRules = function (id, param) {
+        return $http({
+            url: '/kie/flow/rules/' + id,
+            method: 'PUT',
+            data: param
+        })
+    }
 }]);
