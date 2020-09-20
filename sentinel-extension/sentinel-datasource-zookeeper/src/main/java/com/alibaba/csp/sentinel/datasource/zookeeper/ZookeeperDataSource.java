@@ -110,8 +110,8 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
 
                     try {
                         T newValue = loadConfig();
-                        RecordLog.info(String.format("[ZookeeperDataSource] New property value received for (%s, %s): %s",
-                                serverAddr, path, newValue));
+                        RecordLog.info("[ZookeeperDataSource] New property value received for ({}, {}): {}",
+                            serverAddr, path, newValue);
                         // Update the new value to the property.
                         getProperty().updateValue(newValue);
                     } catch (Exception ex) {

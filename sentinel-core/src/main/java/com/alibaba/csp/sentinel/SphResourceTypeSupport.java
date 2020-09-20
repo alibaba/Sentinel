@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel;
 
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.system.SystemRule;
 
 /**
  * @author Eric Zhao
@@ -24,46 +25,53 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 public interface SphResourceTypeSupport {
 
     /**
-     * Create a protected resource with provided classification.
+     * Record statistics and perform rule checking for the given resource with provided classification.
      *
-     * @param name the unique name of the protected resource
+     * @param name         the unique name of the protected resource
      * @param resourceType the classification of the resource
-     * @param entryType the traffic entry type (IN/OUT) of the resource
-     * @param count tokens required
-     * @param args  extra parameters
-     * @return new entry of the resource
+     * @param trafficType  the traffic type (inbound, outbound or internal). This is used
+     *                     to mark whether it can be blocked when the system is unstable,
+     *                     only inbound traffic could be blocked by {@link SystemRule}
+     * @param batchCount   the amount of calls within the invocation (e.g. batchCount=2 means request for 2 tokens)
+     * @param args         args for parameter flow control or customized slots
+     * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
      * @throws BlockException if the block criteria is met
      */
-    Entry entryWithType(String name, int resourceType, EntryType entryType, int count, Object[] args)
+    Entry entryWithType(String name, int resourceType, EntryType trafficType, int batchCount, Object[] args)
         throws BlockException;
 
     /**
-     * Create a protected resource with provided classification.
+     * Record statistics and perform rule checking for the given resource with the provided classification.
      *
-     * @param name the unique name of the protected resource
-     * @param resourceType the classification of the resource
-     * @param entryType the traffic entry type (IN/OUT) of the resource
-     * @param count tokens required
-     * @param prioritized whether the entry is prioritized
-     * @param args  extra parameters
-     * @return new entry of the resource
+     * @param name         the unique name of the protected resource
+     * @param resourceType classification of the resource (e.g. Web or RPC)
+     * @param trafficType  the traffic type (inbound, outbound or internal). This is used
+     *                     to mark whether it can be blocked when the system is unstable,
+     *                     only inbound traffic could be blocked by {@link SystemRule}
+     * @param batchCount   the amount of calls within the invocation (e.g. batchCount=2 means request for 2 tokens)
+     * @param prioritized  whether the entry is prioritized
+     * @param args         args for parameter flow control or customized slots
+     * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
      * @throws BlockException if the block criteria is met
      */
-    Entry entryWithType(String name, int resourceType, EntryType entryType, int count, boolean prioritized,
+    Entry entryWithType(String name, int resourceType, EntryType trafficType, int batchCount, boolean prioritized,
                         Object[] args) throws BlockException;
 
     /**
-     * Create an asynchronous resource with provided classification.
+     * Record statistics and perform rule checking for the given resource that indicates an async invocation.
      *
-     * @param name the unique name of the protected resource
-     * @param resourceType the classification of the resource
-     * @param entryType the traffic entry type (IN/OUT) of the resource
-     * @param count tokens required
-     * @param prioritized whether the entry is prioritized
-     * @param args  extra parameters
-     * @return new entry of the resource
+     * @param name         the unique name for the protected resource
+     * @param resourceType classification of the resource (e.g. Web or RPC)
+     * @param trafficType  the traffic type (inbound, outbound or internal). This is used
+     *                     to mark whether it can be blocked when the system is unstable,
+     *                     only inbound traffic could be blocked by {@link SystemRule}
+     * @param batchCount   the amount of calls within the invocation (e.g. batchCount=2 means request for 2 tokens)
+     * @param prioritized  whether the entry is prioritized
+     * @param args         args for parameter flow control or customized slots
+     * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
      * @throws BlockException if the block criteria is met
      */
-    AsyncEntry asyncEntryWithType(String name, int resourceType, EntryType entryType, int count, boolean prioritized,
+    AsyncEntry asyncEntryWithType(String name, int resourceType, EntryType trafficType, int batchCount,
+                                  boolean prioritized,
                                   Object[] args) throws BlockException;
 }

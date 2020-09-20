@@ -61,7 +61,7 @@ public class RateLimiterControllerTest {
                 public void run() {
                     boolean pass = paceController.canPass(node, 1);
 
-                    if (pass == true) {
+                    if (pass) {
                         passcount.incrementAndGet();
                     } else {
                         blockcount.incrementAndGet();

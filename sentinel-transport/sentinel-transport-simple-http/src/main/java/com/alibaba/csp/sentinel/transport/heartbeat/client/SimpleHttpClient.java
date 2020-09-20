@@ -156,6 +156,9 @@ public class SimpleHttpClient {
      * @return encoded request parameters, or empty string ("") if no parameters are provided
      */
     private String encodeRequestParams(Map<String, String> paramsMap, Charset charset) {
+        if (charset == null) {
+            throw new IllegalArgumentException("charset is not allowed to be null");
+        }
         if (paramsMap == null || paramsMap.isEmpty()) {
             return "";
         }

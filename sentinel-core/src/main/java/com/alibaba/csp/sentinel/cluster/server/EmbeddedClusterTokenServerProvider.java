@@ -36,7 +36,8 @@ public final class EmbeddedClusterTokenServerProvider {
             RecordLog.warn("[EmbeddedClusterTokenServerProvider] No existing cluster token server, cluster server mode will not be activated");
         } else {
             server = s;
-            RecordLog.info("[EmbeddedClusterTokenServerProvider] Cluster token server resolved: " + server.getClass().getCanonicalName());
+            RecordLog.info("[EmbeddedClusterTokenServerProvider] Cluster token server resolved: {}",
+                server.getClass().getCanonicalName());
         }
     }
 

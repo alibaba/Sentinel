@@ -133,7 +133,7 @@ public class FlowRuleManager {
                 flowRules.clear();
                 flowRules.putAll(rules);
             }
-            RecordLog.info("[FlowRuleManager] Flow rules received: " + flowRules);
+            RecordLog.info("[FlowRuleManager] Flow rules received: {}", flowRules);
         }
 
         @Override
@@ -143,7 +143,7 @@ public class FlowRuleManager {
                 flowRules.clear();
                 flowRules.putAll(rules);
             }
-            RecordLog.info("[FlowRuleManager] Flow rules loaded: " + flowRules);
+            RecordLog.info("[FlowRuleManager] Flow rules loaded: {}", flowRules);
         }
     }
 

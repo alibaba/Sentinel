@@ -1,0 +1,14 @@
+---
+name: "Sentinel extension for JAX-RS"
+metadata:
+  keywords:
+    - "sentinel"
+    - "rate-limiting"
+    - "resiliency"
+    - "circuit-breaker"
+    - "fault-tolerance"
+    - "jax-rs"
+  categories:
+    - "fault-tolerance"
+    - "cloud"
+  status: "preview"

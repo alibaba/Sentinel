@@ -5,7 +5,7 @@
     <parent>
         <artifactId>sentinel-adapter</artifactId>
         <groupId>com.alibaba.csp</groupId>
-        <version>1.8.0-SNAPSHOT</version>
+        <version>1.8.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>sentinel-zuul-adapter</artifactId>
@@ -67,6 +67,12 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>4.3.20.RELEASE</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
