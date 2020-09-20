@@ -15,7 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow.param;
 
-import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
@@ -32,7 +31,7 @@ import java.util.List;
  * @author Eric Zhao
  * @since 0.2.0
  */
-@Spi(order = Constants.ORDER_PARAM_FLOW_SLOT)
+@Spi(order = -3000)
 public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override

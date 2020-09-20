@@ -21,7 +21,7 @@ import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.spi.ServiceLoaderUtil;
+import com.alibaba.csp.sentinel.spi.SpiLoader;
 
 /**
  * Load registered init functions and execute in order.
@@ -43,9 +43,9 @@ public final class InitExecutor {
             return;
         }
         try {
-            ServiceLoader<InitFunc> loader = ServiceLoaderUtil.getServiceLoader(InitFunc.class);
+            List<InitFunc> initFuncs = SpiLoader.of(InitFunc.class).loadInstanceListSorted();
             List<OrderWrapper> initList = new ArrayList<OrderWrapper>();
-            for (InitFunc initFunc : loader) {
+            for (InitFunc initFunc : initFuncs) {
                 RecordLog.info("[InitExecutor] Found init func: {}", initFunc.getClass().getCanonicalName());
                 insertSorted(initList, initFunc);
             }

@@ -490,7 +490,7 @@ public final class SpiLoader<S> {
      * @param closeables {@link Closeable} resources
      */
     private void closeResources(Closeable... closeables) {
-        if (closeables == null) {
+        if (closeables == null || closeables.length == 0) {
             return;
         }
 
