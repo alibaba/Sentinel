@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -46,16 +45,16 @@ public class KieConfigClient {
         return Optional.ofNullable(kieResponse);
     }
 
-    private <T> String toPutMessage(List<T> rules) {
+    private <T> String toPutMessage(T rules) {
         JSONObject object = new JSONObject();
         object.put("value", JSON.toJSONString(rules));
         return object.toJSONString();
     }
 
-    public <T> Optional<KieConfigResponse> updateConfig(String url, List<T> rules) {
+    public <T> Optional<KieConfigResponse> updateConfig(String url, T rule) {
         HttpPut httpPut = new HttpPut(url);
         httpPut.setHeader("Content-type", "application/json");
-        String bodyStr = toPutMessage(rules);
+        String bodyStr = toPutMessage(rule);
 
         try {
             httpPut.setEntity(new StringEntity(bodyStr));

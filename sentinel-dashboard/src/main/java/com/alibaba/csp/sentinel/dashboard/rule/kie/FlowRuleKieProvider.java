@@ -12,11 +12,7 @@ import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Component("flowRuleKieProvider")
 public class FlowRuleKieProvider implements DynamicRuleProvider<List<FlowRuleEntity>> {
@@ -44,20 +40,18 @@ public class FlowRuleKieProvider implements DynamicRuleProvider<List<FlowRuleEnt
             return Collections.emptyList();
         }
 
+        List<FlowRuleEntity> entityList = new ArrayList<>();
         for(KieConfigItem item : config.getData()){
-            if (!KieConfigUtil.isTargetItem("FlowRule", kieServerInfo, item)){
+            if(!KieConfigUtil.isTargetItem("FlowRule", kieServerInfo, item)){
                 continue;
             }
 
-            List<FlowRule> flowRule = KieConfigUtil.parseKieConfig(FlowRule.class, kieServerInfo, item);
-
-            return flowRule.stream().map(rule -> {
-                FlowRuleEntity entity = FlowRuleEntity.fromFlowRule(rule);
-                entity.setRuleId(item.getId());
-                return entity;
-            }).collect(Collectors.toList());
+            FlowRule flowRule = KieConfigUtil.parseKieConfig(FlowRule.class, item);
+            FlowRuleEntity entity = FlowRuleEntity.fromFlowRule(flowRule);
+            entity.setRuleId(item.getId());
+            entityList.add(entity);
         }
 
-        return Collections.emptyList();
+        return entityList;
     }
 }

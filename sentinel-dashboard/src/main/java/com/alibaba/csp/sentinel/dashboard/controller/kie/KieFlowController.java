@@ -50,7 +50,7 @@ public class KieFlowController {
     @GetMapping("/rules")
     public Result<List<FlowRuleEntity>> apiQueryRules(@RequestParam String id) {
         if (StringUtil.isEmpty(id)) {
-            return Result.ofFail(-1, "app can't be null or empty");
+            return Result.ofFail(-1, "Id can't be null or empty");
         }
 
         try {
@@ -62,11 +62,11 @@ public class KieFlowController {
         }
     }
 
-    @PutMapping("/rules/{app_id}")
-    public Result<List<FlowRuleEntity>> updateRules(@PathVariable("app_id") String appId,
+    @PutMapping("/rules/{id}")
+    public Result<List<FlowRuleEntity>> updateRules(@PathVariable("id") String id,
                                                     @RequestBody List<FlowRuleEntity> entities){
         try {
-            rulePublisher.publish(appId, entities);
+            rulePublisher.publish(id, entities);
             return Result.ofSuccess(entities);
         } catch (Throwable throwable) {
             logger.error("Error when update flow rules", throwable);

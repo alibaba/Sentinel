@@ -15,9 +15,9 @@
  */
 package com.alibaba.csp.sentinel.dashboard.datasource.entity.rule;
 
-import java.util.Date;
-
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
+
+import java.util.Date;
 
 /**
  * @author leyou
@@ -25,6 +25,8 @@ import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 public class DegradeRuleEntity implements RuleEntity {
 
     private Long id;
+
+    private String ruleId;
     private String app;
 
     private String ip;
@@ -43,10 +45,15 @@ public class DegradeRuleEntity implements RuleEntity {
     private Date gmtModified;
 
     public static DegradeRuleEntity fromDegradeRule(String app, String ip, Integer port, DegradeRule rule) {
-        DegradeRuleEntity entity = new DegradeRuleEntity();
+        DegradeRuleEntity entity = fromDegradeRule(rule);
         entity.setApp(app);
         entity.setIp(ip);
         entity.setPort(port);
+        return entity;
+    }
+
+    public static DegradeRuleEntity fromDegradeRule(DegradeRule rule) {
+        DegradeRuleEntity entity = new DegradeRuleEntity();
         entity.setResource(rule.getResource());
         entity.setLimitApp(rule.getLimitApp());
         entity.setCount(rule.getCount());
@@ -84,6 +91,14 @@ public class DegradeRuleEntity implements RuleEntity {
     @Override
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getRuleId() {
+        return ruleId;
+    }
+
+    public void setRuleId(String ruleId) {
+        this.ruleId = ruleId;
     }
 
     @Override

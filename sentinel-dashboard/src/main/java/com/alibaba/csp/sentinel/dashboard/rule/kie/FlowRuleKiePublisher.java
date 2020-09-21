@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Component("flowRuleKiePublisher")
 public class FlowRuleKiePublisher implements DynamicRulePublisher<List<FlowRuleEntity>> {
@@ -37,17 +36,16 @@ public class FlowRuleKiePublisher implements DynamicRulePublisher<List<FlowRuleE
             RecordLog.error(String.format("Cannot find kie server by id: %s.", id));
             throw new IllegalArgumentException();
         }
-        String ruleId = entities.get(0).getRuleId();
-        String url = kieServerInfo.get().getKieConfigUrl() + "/" + ruleId;
 
-        List<FlowRule> rules = entities.stream().map(FlowRuleEntity::toRule)
-                .collect(Collectors.toList());
+        entities.forEach(ruleEntity -> {
+            String url = kieServerInfo.get().getKieConfigUrl() + "/" + ruleEntity.getRuleId();
+            FlowRule flowRule = ruleEntity.toRule();
 
-        Optional<KieConfigResponse> response = kieConfigClient.updateConfig(url, rules);
-
-        if(!response.isPresent()){
-            RecordLog.error("Update rules failed");
-            throw new RuntimeException();
-        }
+            Optional<KieConfigResponse> response = kieConfigClient.updateConfig(url, flowRule);
+            if(!response.isPresent()){
+                RecordLog.error("Update rules failed");
+                throw new RuntimeException();
+            }
+        });
     }
 }

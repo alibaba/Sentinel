@@ -4,12 +4,6 @@ import com.alibaba.csp.sentinel.dashboard.client.servicecombkie.response.KieConf
 import com.alibaba.csp.sentinel.dashboard.client.servicecombkie.response.KieConfigLabels;
 import com.alibaba.csp.sentinel.dashboard.discovery.kie.KieServerInfo;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
-import org.apache.commons.lang.StringUtils;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
 
 public class KieConfigUtil {
 
@@ -29,12 +23,7 @@ public class KieConfigUtil {
                 && serverInfo.getEnvironment().equals(labels.getEnvironment());
     }
 
-    public static <T> List<T> parseKieConfig(Class<T> ruleClass, KieServerInfo kieServerInfo,
-                                             KieConfigItem item){
-        if (Objects.isNull(item) || StringUtils.isEmpty(item.getValue()) || Objects.isNull(kieServerInfo)){
-            return Collections.emptyList();
-        }
-
-        return JSON.parseObject(item.getValue(), new TypeReference<List<T>>(ruleClass) {});
+    public static <T> T parseKieConfig(Class<T> ruleClass, KieConfigItem item){
+        return JSON.parseObject(item.getValue(), ruleClass);
     }
 }

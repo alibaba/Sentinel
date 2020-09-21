@@ -26,6 +26,7 @@ public class SystemRuleEntity implements RuleEntity {
 
     private Long id;
 
+    private String ruleId;
     private String app;
     private String ip;
     private Integer port;
@@ -39,10 +40,15 @@ public class SystemRuleEntity implements RuleEntity {
     private Date gmtModified;
 
     public static SystemRuleEntity fromSystemRule(String app, String ip, Integer port, SystemRule rule) {
-        SystemRuleEntity entity = new SystemRuleEntity();
+        SystemRuleEntity entity = fromSystemRule(rule);
         entity.setApp(app);
         entity.setIp(ip);
         entity.setPort(port);
+        return entity;
+    }
+
+    public static SystemRuleEntity fromSystemRule(SystemRule rule) {
+        SystemRuleEntity entity = new SystemRuleEntity();
         entity.setHighestSystemLoad(rule.getHighestSystemLoad());
         entity.setHighestCpuUsage(rule.getHighestCpuUsage());
         entity.setAvgRt(rule.getAvgRt());
@@ -77,6 +83,14 @@ public class SystemRuleEntity implements RuleEntity {
     @Override
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getRuleId() {
+        return ruleId;
+    }
+
+    public void setRuleId(String ruleId) {
+        this.ruleId = ruleId;
     }
 
     @Override
