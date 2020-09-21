@@ -57,7 +57,7 @@ public <T> void pushRules(List<T> rules, Converter<List<T>, String> encoder) {
 }
 ```
 
-Transaction can be handled in Redis Cluster when Multiple keys operations, transactions, or Lua scripts involving multiple keys are used but only with keys having the same key or the same hash tag.
+Transaction can be handled in Redis Cluster when Multiple keys operations, transactions, or Lua scripts involving multiple keys are used but only with keys having the same key or the same hash tag.  
 An example using Lettuce Redis Cluster client:
 
 ```java
