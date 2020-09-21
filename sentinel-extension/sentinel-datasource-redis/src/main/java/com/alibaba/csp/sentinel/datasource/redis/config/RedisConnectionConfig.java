@@ -299,7 +299,7 @@ public class RedisConnectionConfig {
             return false;
         }
         if (redisClusters != null ? !redisClusters.equals(redisURI.redisClusters)
-            : redisURI.redisClusters != null){
+            : redisURI.redisClusters != null) {
             return false;
         }
         return !(redisSentinels != null ? !redisSentinels.equals(redisURI.redisSentinels)
