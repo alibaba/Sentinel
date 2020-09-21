@@ -57,6 +57,23 @@ public <T> void pushRules(List<T> rules, Converter<List<T>, String> encoder) {
 }
 ```
 
+Transaction can be handled in Redis Cluster when Multiple keys operations, transactions, or Lua scripts involving multiple keys are used but only with keys having the same key or the same hash tag.
+An example using Lettuce Redis Cluster client:
+
+```java
+public <T> void pushRules(List<T> rules, Converter<List<T>, String> encoder) {
+    RedisAdvancedClusterCommands<String, String> subCommands = client.connect().sync();
+    int slot = SlotHash.getSlot(ruleKey);
+    NodeSelection<String, String> nodes = subCommands.nodes((n)->n.hasSlot(slot));
+    RedisCommands<String, String> commands = nodes.commands(0);
+    String value = encoder.convert(rules);
+    commands.multi();
+    commands.set(ruleKey, value);
+    commands.publish(channel, value);
+    commands.exec();
+}
+```
+
 ## How to build RedisConnectionConfig
 
 ### Build with Redis standalone mode
@@ -78,4 +95,12 @@ RedisConnectionConfig config = RedisConnectionConfig.builder()
                 .withRedisSentinel("redisSentinelServer1",5000)
                 .withRedisSentinel("redisSentinelServer2",5001)
                 .withRedisSentinelMasterId("redisSentinelMasterId").build();
+```
+
+### Build with Redis Cluster mode
+
+```java
+RedisConnectionConfig config = RedisConnectionConfig.builder()
+                .withRedisCluster("redisSentinelServer1",5000)
+                .withRedisCluster("redisSentinelServer2",5001).build();
 ```
