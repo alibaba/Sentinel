@@ -4,7 +4,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface KieServerDiscovery {
-    Set<KieServerInfo> queryKieInfos(String project);
+    Set<KieServerInfo> queryKieInfos(String project, String environment);
 
     Set<String> queryProjects();
 

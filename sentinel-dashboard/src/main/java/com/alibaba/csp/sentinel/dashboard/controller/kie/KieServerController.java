@@ -9,8 +9,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,9 +31,10 @@ public class KieServerController {
         return Result.ofSuccess(management.queryProjects());
     }
 
-    @GetMapping("/{project}/kieInfos")
-    public Result<Set<KieServerInfoVo>> queryKieInfos(@PathVariable("project") String project){
-        Set<KieServerInfo> kieServerInfos = management.queryKieInfos(project);
+    @GetMapping("/kieInfos")
+    public Result<Set<KieServerInfoVo>> queryKieInfos(@RequestParam String project,
+                                                      @RequestParam String environment){
+        Set<KieServerInfo> kieServerInfos = management.queryKieInfos(project, environment);
         Set<KieServerInfoVo> kieServerInfoVos = kieServerInfos.stream().map(x -> {
             KieServerInfoVo vo = new KieServerInfoVo();
             try {

@@ -7,14 +7,16 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Component(value = "SimpleKieDiscovery")
 public class SimpleKieDiscovery implements KieServerDiscovery {
     ConcurrentHashMap<String, Set<KieServerInfo>> serverMap = new ConcurrentHashMap<>();
 
     @Override
-    public Set<KieServerInfo> queryKieInfos(String project) {
-        return serverMap.get(project);
+    public Set<KieServerInfo> queryKieInfos(String project, String environment) {
+        return serverMap.get(project).stream().filter(x-> x.getEnvironment().equals(environment))
+                .collect(Collectors.toSet());
     }
 
     @Override

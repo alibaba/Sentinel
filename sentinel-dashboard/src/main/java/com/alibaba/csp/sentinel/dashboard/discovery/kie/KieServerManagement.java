@@ -33,8 +33,8 @@ public class KieServerManagement implements KieServerDiscovery {
     public void init() {}
 
     @Override
-    public Set<KieServerInfo> queryKieInfos(String project) {
-        return discovery.queryKieInfos(project);
+    public Set<KieServerInfo> queryKieInfos(String project, String environment) {
+        return discovery.queryKieInfos(project, environment);
     }
 
     @Override
