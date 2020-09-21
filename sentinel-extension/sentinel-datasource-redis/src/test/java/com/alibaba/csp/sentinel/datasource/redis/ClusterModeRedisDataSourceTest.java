@@ -76,7 +76,7 @@ public class ClusterModeRedisDataSourceTest {
                 + ", \"controller\":null}]";
         RedisAdvancedClusterCommands<String, String> subCommands = client.connect().sync();
         int slot = SlotHash.getSlot(ruleKey);
-        NodeSelection<String, String> nodes = subCommands.nodes((n)->n.hasSlot(slot));
+        NodeSelection<String, String> nodes = subCommands.nodes((n) -> n.hasSlot(slot));
         RedisCommands<String, String> commands = nodes.commands(0);
         commands.multi();
         commands.set(ruleKey, flowRulesJson);
@@ -107,7 +107,8 @@ public class ClusterModeRedisDataSourceTest {
     }
 
     private Converter<String, List<FlowRule>> buildFlowConfigParser() {
-        return source -> JSON.parseObject(source, new TypeReference<List<FlowRule>>() {});
+        return source -> JSON.parseObject(source, new TypeReference<List<FlowRule>>() {
+        });
     }
 
     private void initRedisRuleData() {

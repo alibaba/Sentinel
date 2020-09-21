@@ -650,7 +650,7 @@ public class RedisConnectionConfig {
 
             for (RedisHostAndPort sentinel : redisClusters) {
                 redisURI.getRedisClusters().add(
-                        new RedisConnectionConfig(sentinel.getHost(), sentinel.getPort(), timeout));
+                    new RedisConnectionConfig(sentinel.getHost(), sentinel.getPort(), timeout));
             }
 
             redisURI.setTimeout(timeout);

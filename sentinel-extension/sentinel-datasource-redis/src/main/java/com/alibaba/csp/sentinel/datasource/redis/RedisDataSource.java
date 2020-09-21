@@ -82,10 +82,10 @@ public class RedisDataSource<T> extends AbstractDataSource<String, T> {
         AssertUtil.notNull(connectionConfig, "Redis connection config can not be null");
         AssertUtil.notEmpty(ruleKey, "Redis ruleKey can not be empty");
         AssertUtil.notEmpty(channel, "Redis subscribe channel can not be empty");
-        if(connectionConfig.getRedisClusters().size() == 0){
+        if (connectionConfig.getRedisClusters().size() == 0) {
             this.redisClient = getRedisClient(connectionConfig);
             this.redisClusterClient = null;
-        }else {
+        } else {
             this.redisClusterClient = getRedisClusterClient(connectionConfig);
             this.redisClient = null;
         }
@@ -118,8 +118,8 @@ public class RedisDataSource<T> extends AbstractDataSource<String, T> {
         for (RedisConnectionConfig config : connectionConfig.getRedisClusters()) {
             RedisURI.Builder clusterRedisUriBuilder = RedisURI.builder();
             clusterRedisUriBuilder.withHost(config.getHost())
-                    .withPort(config.getPort())
-                    .withTimeout(Duration.ofMillis(connectionConfig.getTimeout()));
+                .withPort(config.getPort())
+                .withTimeout(Duration.ofMillis(connectionConfig.getTimeout()));
             //All redis nodes must have same password
             if (password != null) {
                 clusterRedisUriBuilder.withPassword(connectionConfig.getPassword());
@@ -166,12 +166,12 @@ public class RedisDataSource<T> extends AbstractDataSource<String, T> {
 
     private void subscribeFromChannel(String channel) {
         RedisPubSubAdapter<String, String> adapterListener = new DelegatingRedisPubSubListener();
-        if(redisClient != null) {
+        if (redisClient != null) {
             StatefulRedisPubSubConnection<String, String> pubSubConnection = redisClient.connectPubSub();
             pubSubConnection.addListener(adapterListener);
             RedisPubSubCommands<String, String> sync = pubSubConnection.sync();
             sync.subscribe(channel);
-        }else {
+        } else {
             StatefulRedisClusterPubSubConnection<String, String> pubSubConnection = redisClusterClient.connectPubSub();
             pubSubConnection.addListener(adapterListener);
             RedisPubSubCommands<String, String> sync = pubSubConnection.sync();
@@ -197,10 +197,10 @@ public class RedisDataSource<T> extends AbstractDataSource<String, T> {
             throw new IllegalStateException("Redis client or Redis Cluster client has not been initialized or error occurred");
         }
 
-        if(redisClient != null){
+        if (redisClient != null) {
             RedisCommands<String, String> stringRedisCommands = redisClient.connect().sync();
             return stringRedisCommands.get(ruleKey);
-        }else {
+        } else {
             RedisAdvancedClusterCommands<String, String> stringRedisCommands = redisClusterClient.connect().sync();
             return stringRedisCommands.get(ruleKey);
         }
@@ -208,9 +208,9 @@ public class RedisDataSource<T> extends AbstractDataSource<String, T> {
 
     @Override
     public void close() {
-        if(redisClient != null){
+        if (redisClient != null) {
             redisClient.shutdown();
-        }else {
+        } else {
             redisClusterClient.shutdown();
         }
 
