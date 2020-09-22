@@ -39,18 +39,16 @@ public final class ServerEntityCodecProvider {
             RecordLog.warn("[ServerEntityCodecProvider] No existing response entity writer, resolve failed");
         } else {
             responseEntityWriter = writer;
-            RecordLog.info(
-                "[ServerEntityCodecProvider] Response entity writer resolved: " + responseEntityWriter.getClass()
-                    .getCanonicalName());
+            RecordLog.info("[ServerEntityCodecProvider] Response entity writer resolved: {}",
+                responseEntityWriter.getClass().getCanonicalName());
         }
         RequestEntityDecoder decoder = SpiLoader.loadFirstInstance(RequestEntityDecoder.class);
         if (decoder == null) {
             RecordLog.warn("[ServerEntityCodecProvider] No existing request entity decoder, resolve failed");
         } else {
             requestEntityDecoder = decoder;
-            RecordLog.info(
-                "[ServerEntityCodecProvider] Request entity decoder resolved: " + requestEntityDecoder.getClass()
-                    .getCanonicalName());
+            RecordLog.info("[ServerEntityCodecProvider] Request entity decoder resolved: {}",
+                requestEntityDecoder.getClass().getCanonicalName());
         }
     }
 

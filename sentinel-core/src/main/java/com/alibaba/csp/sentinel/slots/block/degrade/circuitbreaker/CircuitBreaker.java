@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker;
 
+import com.alibaba.csp.sentinel.context.Context;
+import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 
 /**
@@ -32,11 +34,12 @@ public interface CircuitBreaker {
     DegradeRule getRule();
 
     /**
-     * Acquires permission of an invocation only if it is available at the time of invocation.
+     * Acquires permission of an invocation only if it is available at the time of invoking.
      *
+     * @param context context of current invocation
      * @return {@code true} if permission was acquired and {@code false} otherwise
      */
-    boolean tryPass();
+    boolean tryPass(Context context);
 
     /**
      * Get current state of the circuit breaker.
@@ -46,13 +49,12 @@ public interface CircuitBreaker {
     State currentState();
 
     /**
-     * Record a completed request with the given response time and error (if present) and
-     * handle state transformation of the circuit breaker.
+     * <p>Record a completed request with the context and handle state transformation of the circuit breaker.</p>
+     * <p>Called when a <strong>passed</strong> invocation finished.</p>
      *
-     * @param rt the response time of this entry
-     * @param error the error of this entry (if present)
+     * @param context context of current invocation
      */
-    void onRequestComplete(long rt, Throwable error);
+    void onRequestComplete(Context context);
 
     /**
      * Circuit breaker state.

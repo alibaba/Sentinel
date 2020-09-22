@@ -21,11 +21,10 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
 /**
- * Base Class of the {@link SentinelDubboProviderFilter} and {@link SentinelDubboConsumerFilter}.
+ * Base class of the {@link SentinelDubboProviderFilter} and {@link SentinelDubboConsumerFilter}.
  *
  * @author Zechao Zheng
  */
-
 public abstract class BaseSentinelDubboFilter implements Filter {
 
 
@@ -36,7 +35,7 @@ public abstract class BaseSentinelDubboFilter implements Filter {
      * @param invocation
      * @return
      */
-    abstract String getMethodName(Invoker invoker, Invocation invocation);
+    abstract String getMethodName(Invoker invoker, Invocation invocation, String prefix);
 
     /**
      * Get interface name of dubbo rpc
@@ -44,7 +43,7 @@ public abstract class BaseSentinelDubboFilter implements Filter {
      * @param invoker
      * @return
      */
-    abstract String getInterfaceName(Invoker invoker);
+    abstract String getInterfaceName(Invoker invoker, String prefix);
 
 
 }

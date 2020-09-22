@@ -15,11 +15,8 @@
  */
 package com.alibaba.csp.sentinel.slots.block.degrade;
 
-import com.alibaba.csp.sentinel.Entry;
-import com.alibaba.csp.sentinel.SphU;
-import com.alibaba.csp.sentinel.Tracer;
-import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreaker;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreaker.State;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreakerStateChangeObserver;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.EventObserverRegistry;
@@ -31,6 +28,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.junit.Assert.assertEquals;
@@ -52,41 +50,6 @@ public class CircuitBreakingIntegrationTest extends AbstractTimeBasedTest {
     @After
     public void tearDown() throws Exception {
         DegradeRuleManager.loadRules(new ArrayList<DegradeRule>());
-    }
-
-    private boolean entryAndSleepFor(String res, int sleepMs) {
-        Entry entry = null;
-        try {
-            entry = SphU.entry(res);
-            sleep(sleepMs);
-        } catch (BlockException ex) {
-            return false;
-        } catch (Exception ex) {
-            Tracer.traceEntry(ex, entry);
-        } finally {
-            if (entry != null) {
-                entry.exit();
-            }
-        }
-        return true;
-    }
-
-    private boolean entryWithErrorIfPresent(String res, Exception ex) {
-        Entry entry = null;
-        try {
-            entry = SphU.entry(res);
-            if (ex != null) {
-                Tracer.traceEntry(ex, entry);
-            }
-            sleep(ThreadLocalRandom.current().nextInt(5, 10));
-        } catch (BlockException b) {
-            return false;
-        } finally {
-            if (entry != null) {
-                entry.exit();
-            }
-        }
-        return true;
     }
 
     @Test
@@ -209,5 +172,62 @@ public class CircuitBreakingIntegrationTest extends AbstractTimeBasedTest {
     public void testExceptionCountMode() throws Throwable {
         // TODO
     }
-
+    
+    private void verifyState(List<CircuitBreaker> breakers, int target) {
+        int state = 0;
+        for (CircuitBreaker breaker : breakers) {
+            if (breaker.currentState() == State.OPEN) {
+                state ++;
+            } else if (breaker.currentState() == State.HALF_OPEN) {
+                state --;
+            } else {
+                state -= 2;
+            }
+        }
+        assertEquals(target, state);
+    }
+    
+    @Test
+    public void testMultipleHalfOpenedBreakers() throws Exception {
+        CircuitBreakerStateChangeObserver observer = mock(CircuitBreakerStateChangeObserver.class);
+        setCurrentMillis(System.currentTimeMillis() / 1000 * 1000);
+        int retryTimeoutSec = 2;
+        int maxRt = 50;
+        int statIntervalMs = 20000;
+        int minRequestAmount = 1;
+        String res = "CircuitBreakingIntegrationTest_testMultipleHalfOpenedBreakers";
+        EventObserverRegistry.getInstance().addStateChangeObserver(res, observer);
+        // initial two rules
+        DegradeRuleManager.loadRules(Arrays.asList(
+            new DegradeRule(res).setTimeWindow(retryTimeoutSec).setCount(maxRt)
+                .setStatIntervalMs(statIntervalMs).setMinRequestAmount(minRequestAmount)
+                .setSlowRatioThreshold(0.8d).setGrade(0),
+            new DegradeRule(res).setTimeWindow(retryTimeoutSec * 2).setCount(maxRt)
+                .setStatIntervalMs(statIntervalMs).setMinRequestAmount(minRequestAmount)
+                .setSlowRatioThreshold(0.8d).setGrade(0)
+        ));
+        assertTrue(entryAndSleepFor(res, 100));
+        // they are open now
+        for (CircuitBreaker breaker : DegradeRuleManager.getCircuitBreakers(res)) {
+            assertEquals(CircuitBreaker.State.OPEN, breaker.currentState());
+        }
+        
+        sleepSecond(3);
+        
+        for (int i = 0; i < 10; i ++) {
+            assertFalse(entryAndSleepFor(res, 100));
+        }
+        // Now one is in open state while the other experiences open -> half-open -> open
+        verifyState(DegradeRuleManager.getCircuitBreakers(res), 2);
+        
+        sleepSecond(3);
+        
+        // They will all recover
+        for (int i = 0; i < 10; i ++) {
+            assertTrue(entryAndSleepFor(res, 1));
+        }
+        
+        verifyState(DegradeRuleManager.getCircuitBreakers(res), -4);
+    }
+    
 }

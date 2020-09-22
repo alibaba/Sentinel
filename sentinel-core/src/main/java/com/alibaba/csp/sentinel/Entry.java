@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel;
 
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.TimeUtil;
+import com.alibaba.csp.sentinel.util.function.BiConsumer;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
@@ -178,4 +179,14 @@ public abstract class Entry implements AutoCloseable {
         this.originNode = originNode;
     }
 
+    /**
+     * Like {@code CompletableFuture} since JDK 8, it guarantees specified handler
+     * is invoked when this entry terminated (exited), no matter it's blocked or permitted.
+     * Use it when you did some STATEFUL operations on entries.
+     * 
+     * @param handler handler function on the invocation terminates
+     * @since 1.8.0
+     */
+    public abstract void whenTerminate(BiConsumer<Context, Entry> handler);
+    
 }

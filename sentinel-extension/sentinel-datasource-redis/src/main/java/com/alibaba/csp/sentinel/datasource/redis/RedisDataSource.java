@@ -172,7 +172,7 @@ public class RedisDataSource<T> extends AbstractDataSource<String, T> {
 
         @Override
         public void message(String channel, String message) {
-            RecordLog.info(String.format("[RedisDataSource] New property value received for channel %s: %s", channel, message));
+            RecordLog.info("[RedisDataSource] New property value received for channel {}: {}", channel, message);
             getProperty().updateValue(parser.convert(message));
         }
     }

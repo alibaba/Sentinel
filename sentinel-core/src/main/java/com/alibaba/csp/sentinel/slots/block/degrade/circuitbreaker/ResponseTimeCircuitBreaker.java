@@ -17,12 +17,16 @@ package com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker;
 
 import java.util.List;
 
+import com.alibaba.csp.sentinel.Entry;
+import com.alibaba.csp.sentinel.context.Context;
+import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.statistic.base.LeapArray;
 import com.alibaba.csp.sentinel.slots.statistic.base.LongAdder;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 import com.alibaba.csp.sentinel.util.AssertUtil;
+import com.alibaba.csp.sentinel.util.TimeUtil;
 
 /**
  * @author Eric Zhao
@@ -57,8 +61,17 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
     }
 
     @Override
-    public void onRequestComplete(long rt, Throwable error) {
+    public void onRequestComplete(Context context) {
         SlowRequestCounter counter = slidingCounter.currentWindow().value();
+        Entry entry = context.getCurEntry();
+        if (entry == null) {
+            return;
+        }
+        long completeTime = entry.getCompleteTimestamp();
+        if (completeTime <= 0) {
+            completeTime = TimeUtil.currentTimeMillis();
+        }
+        long rt = completeTime - entry.getCreateTimestamp();
         if (rt > maxAllowedRt) {
             counter.slowCount.add(1);
         }
@@ -71,7 +84,9 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
         if (currentState.get() == State.OPEN) {
             return;
         }
+        
         if (currentState.get() == State.HALF_OPEN) {
+            // In detecting request
             // TODO: improve logic for half-open recovery
             if (rt > maxAllowedRt) {
                 fromHalfOpenToOpen(1.0d);

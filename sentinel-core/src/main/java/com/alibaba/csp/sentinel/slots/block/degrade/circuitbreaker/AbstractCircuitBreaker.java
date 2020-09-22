@@ -17,10 +17,14 @@ package com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.alibaba.csp.sentinel.Entry;
+import com.alibaba.csp.sentinel.context.Context;
+import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.TimeUtil;
+import com.alibaba.csp.sentinel.util.function.BiConsumer;
 
 /**
  * @author Eric Zhao
@@ -61,14 +65,14 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
     }
 
     @Override
-    public boolean tryPass() {
+    public boolean tryPass(Context context) {
         // Template implementation.
         if (currentState.get() == State.CLOSED) {
             return true;
         }
         if (currentState.get() == State.OPEN) {
-            // For half-open state we allow a request for trial.
-            return retryTimeoutArrived() && fromOpenToHalfOpen();
+            // For half-open state we allow a request for probing.
+            return retryTimeoutArrived() && fromOpenToHalfOpen(context);
         }
         return false;
     }
@@ -91,30 +95,44 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
         if (currentState.compareAndSet(prev, State.OPEN)) {
             updateNextRetryTimestamp();
 
-            for (CircuitBreakerStateChangeObserver observer : observerRegistry.getStateChangeObservers()) {
-                observer.onStateChange(prev, State.OPEN, rule, snapshotValue);
-            }
+            notifyObservers(prev, State.OPEN, snapshotValue);
             return true;
         }
         return false;
     }
 
-    protected boolean fromOpenToHalfOpen() {
+    protected boolean fromOpenToHalfOpen(Context context) {
         if (currentState.compareAndSet(State.OPEN, State.HALF_OPEN)) {
-            for (CircuitBreakerStateChangeObserver observer : observerRegistry.getStateChangeObservers()) {
-                observer.onStateChange(State.OPEN, State.HALF_OPEN, rule, null);
-            }
+            notifyObservers(State.OPEN, State.HALF_OPEN, null);
+            Entry entry = context.getCurEntry();
+            entry.whenTerminate(new BiConsumer<Context, Entry>() {
+                @Override
+                public void accept(Context context, Entry entry) {
+                    // Note: This works as a temporary workaround for https://github.com/alibaba/Sentinel/issues/1638
+                    // Without the hook, the circuit breaker won't recover from half-open state in some circumstances
+                    // when the request is actually blocked by upcoming rules (not only degrade rules).
+                    if (entry.getBlockError() != null) {
+                        // Fallback to OPEN due to detecting request is blocked
+                        currentState.compareAndSet(State.HALF_OPEN, State.OPEN);
+                        notifyObservers(State.HALF_OPEN, State.OPEN, 1.0d);
+                    }
+                }
+            });
             return true;
         }
         return false;
+    }
+    
+    private void notifyObservers(CircuitBreaker.State prevState, CircuitBreaker.State newState, Double snapshotValue) {
+        for (CircuitBreakerStateChangeObserver observer : observerRegistry.getStateChangeObservers()) {
+            observer.onStateChange(prevState, newState, rule, snapshotValue);
+        }
     }
 
     protected boolean fromHalfOpenToOpen(double snapshotValue) {
         if (currentState.compareAndSet(State.HALF_OPEN, State.OPEN)) {
             updateNextRetryTimestamp();
-            for (CircuitBreakerStateChangeObserver observer : observerRegistry.getStateChangeObservers()) {
-                observer.onStateChange(State.HALF_OPEN, State.OPEN, rule, snapshotValue);
-            }
+            notifyObservers(State.HALF_OPEN, State.OPEN, snapshotValue);
             return true;
         }
         return false;
@@ -123,9 +141,7 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
     protected boolean fromHalfOpenToClose() {
         if (currentState.compareAndSet(State.HALF_OPEN, State.CLOSED)) {
             resetStat();
-            for (CircuitBreakerStateChangeObserver observer : observerRegistry.getStateChangeObservers()) {
-                observer.onStateChange(State.HALF_OPEN, State.CLOSED, rule, null);
-            }
+            notifyObservers(State.HALF_OPEN, State.CLOSED, null);
             return true;
         }
         return false;

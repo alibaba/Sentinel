@@ -52,7 +52,7 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
         if (newAddrs.isEmpty()) {
             RecordLog.warn("[SimpleHttpHeartbeatSender] Dashboard server address not configured or not available");
         } else {
-            RecordLog.info("[SimpleHttpHeartbeatSender] Default console address list retrieved: " + newAddrs);
+            RecordLog.info("[SimpleHttpHeartbeatSender] Default console address list retrieved: {}", newAddrs);
         }
         this.addressList = newAddrs;
     }

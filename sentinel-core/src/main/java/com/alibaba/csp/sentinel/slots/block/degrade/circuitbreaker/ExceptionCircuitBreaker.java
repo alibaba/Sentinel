@@ -17,6 +17,9 @@ package com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker;
 
 import java.util.List;
 
+import com.alibaba.csp.sentinel.Entry;
+import com.alibaba.csp.sentinel.context.Context;
+import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.statistic.base.LeapArray;
 import com.alibaba.csp.sentinel.slots.statistic.base.LongAdder;
@@ -60,7 +63,12 @@ public class ExceptionCircuitBreaker extends AbstractCircuitBreaker {
     }
 
     @Override
-    public void onRequestComplete(long rt, Throwable error) {
+    public void onRequestComplete(Context context) {
+        Entry entry = context.getCurEntry();
+        if (entry == null) {
+            return;
+        }
+        Throwable error = entry.getError();
         SimpleErrorCounter counter = stat.currentWindow().value();
         if (error != null) {
             counter.getErrorCount().add(1);
@@ -74,7 +82,9 @@ public class ExceptionCircuitBreaker extends AbstractCircuitBreaker {
         if (currentState.get() == State.OPEN) {
             return;
         }
+        
         if (currentState.get() == State.HALF_OPEN) {
+            // In detecting request
             if (error == null) {
                 fromHalfOpenToClose();
             } else {
@@ -82,6 +92,7 @@ public class ExceptionCircuitBreaker extends AbstractCircuitBreaker {
             }
             return;
         }
+        
         List<SimpleErrorCounter> counters = stat.values();
         long errCount = 0;
         long totalCount = 0;

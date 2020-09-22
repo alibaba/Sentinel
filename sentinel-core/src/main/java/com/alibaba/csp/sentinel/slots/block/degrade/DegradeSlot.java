@@ -26,7 +26,6 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreaker;
 import com.alibaba.csp.sentinel.spi.SpiOrder;
-import com.alibaba.csp.sentinel.util.TimeUtil;
 
 /**
  * A {@link ProcessorSlot} dedicates to circuit breaking.
@@ -40,18 +39,18 @@ public class DegradeSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
                       boolean prioritized, Object... args) throws Throwable {
-        performChecking(resourceWrapper);
+        performChecking(context, resourceWrapper);
 
         fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }
 
-    void performChecking(ResourceWrapper r) throws BlockException {
+    void performChecking(Context context, ResourceWrapper r) throws BlockException {
         List<CircuitBreaker> circuitBreakers = DegradeRuleManager.getCircuitBreakers(r.getName());
         if (circuitBreakers == null || circuitBreakers.isEmpty()) {
             return;
         }
         for (CircuitBreaker cb : circuitBreakers) {
-            if (!cb.tryPass()) {
+            if (!cb.tryPass(context)) {
                 throw new DegradeException(cb.getRule().getLimitApp(), cb.getRule());
             }
         }
@@ -71,14 +70,9 @@ public class DegradeSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         }
 
         if (curEntry.getBlockError() == null) {
-            long completeTime = curEntry.getCompleteTimestamp();
-            if (completeTime <= 0) {
-                completeTime = TimeUtil.currentTimeMillis();
-            }
-            long rt = completeTime - curEntry.getCreateTimestamp();
-            Throwable error = curEntry.getError();
+            // passed request
             for (CircuitBreaker circuitBreaker : circuitBreakers) {
-                circuitBreaker.onRequestComplete(rt, error);
+                circuitBreaker.onRequestComplete(context);
             }
         }
 

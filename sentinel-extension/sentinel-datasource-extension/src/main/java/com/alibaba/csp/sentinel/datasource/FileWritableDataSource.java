@@ -73,7 +73,7 @@ public class FileWritableDataSource<T> implements WritableDataSource<T> {
                 outputStream = new FileOutputStream(file);
                 byte[] bytesArray = convertResult.getBytes(charset);
 
-                RecordLog.info(String.format("[FileWritableDataSource] Writing to file %s: %s", file.toString(), convertResult));
+                RecordLog.info("[FileWritableDataSource] Writing to file {}: {}", file, convertResult);
                 outputStream.write(bytesArray);
                 outputStream.flush();
             } finally {

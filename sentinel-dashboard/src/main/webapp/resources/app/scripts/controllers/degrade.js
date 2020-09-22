@@ -66,7 +66,9 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
         app: $scope.app,
         ip: mac[0],
         port: mac[1],
-        limitApp: 'default'
+        limitApp: 'default',
+        minRequestAmount: 5,
+        statIntervalMs: 1000,
       };
       $scope.degradeRuleDialog = {
         title: '新增降级规则',
@@ -95,7 +97,7 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
     function parseDegradeMode(grade) {
         switch (grade) {
             case 0:
-              return 'RT';
+              return '慢调用比例';
             case 1:
               return '异常比例';
             case 2:
@@ -137,7 +139,7 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
           getMachineRules();
           confirmDialog.close();
         } else {
-          alert('失败!');
+          alert('失败：' + data.msg);
         }
       });
     };
@@ -148,7 +150,7 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
           getMachineRules();
           degradeRuleDialog.close();
         } else {
-          alert('失败!');
+          alert('失败：' + data.msg);
         }
       });
     };
@@ -163,7 +165,7 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
             confirmDialog.close();
           }
         } else {
-          alert('失败!');
+          alert('失败：' + data.msg);
         }
       });
     }
