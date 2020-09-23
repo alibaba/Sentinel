@@ -29,39 +29,39 @@ final class AuthorityRuleChecker {
 
     static boolean passCheck(AuthorityRule rule, Context context) {
         String requester = context.getOrigin();
+        boolean contain = false;
 
-        // Empty origin or empty limitApp will pass.
-        if (StringUtil.isEmpty(requester) || StringUtil.isEmpty(rule.getLimitApp())) {
-            return true;
+        {
+            // Empty origin or empty limitApp will pass.
+            if (StringUtil.isEmpty(requester) || StringUtil.isEmpty(rule.getLimitApp())) {
+                return true;
+            }
         }
 
-        // Do exact match with origin name.
-        int pos = rule.getLimitApp().indexOf(requester);
-        boolean contain = pos > -1;
-
-        if (contain) {
-            boolean exactlyMatch = false;
+        {
+            // Do exact match with origin name.
             String[] appArray = rule.getLimitApp().split(",");
             for (String app : appArray) {
                 if (requester.equals(app)) {
-                    exactlyMatch = true;
+                    contain = true;
                     break;
                 }
             }
-
-            contain = exactlyMatch;
         }
 
-        int strategy = rule.getStrategy();
-        if (strategy == RuleConstant.AUTHORITY_BLACK && contain) {
-            return false;
+        {
+            //The matching result is judged according to the Strategy
+            switch (rule.getStrategy()) {
+                case RuleConstant.AUTHORITY_BLACK:
+                    return !contain;
+                case RuleConstant.AUTHORITY_WHITE:
+                    return contain;
+                default:
+                    return true;
+
+            }
         }
 
-        if (strategy == RuleConstant.AUTHORITY_WHITE && !contain) {
-            return false;
-        }
-
-        return true;
     }
 
     private AuthorityRuleChecker() {}
