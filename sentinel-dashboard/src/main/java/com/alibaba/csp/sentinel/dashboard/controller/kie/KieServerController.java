@@ -1,7 +1,8 @@
 package com.alibaba.csp.sentinel.dashboard.controller.kie;
 
-import com.alibaba.csp.sentinel.dashboard.discovery.kie.KieServerInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.kie.KieServerManagement;
+import com.alibaba.csp.sentinel.dashboard.discovery.kie.common.KieServerInfo;
+import com.alibaba.csp.sentinel.dashboard.discovery.kie.common.KieServerLabel;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.dashboard.domain.vo.kie.KieServerInfoVo;
 import com.alibaba.csp.sentinel.log.RecordLog;
@@ -42,6 +43,13 @@ public class KieServerController {
             }catch (BeansException e){
                 RecordLog.error("Query kie infos error.", e);
             }
+
+            KieServerLabel label = x.getLabel();
+            vo.setApp(label.getApp());
+            vo.setEnvironment(label.getEnvironment());
+            vo.setProject(label.getProject());
+            vo.setService(label.getService());
+            vo.setServerVersion(label.getServerVersion());
             return vo;
         }).collect(Collectors.toSet());
 

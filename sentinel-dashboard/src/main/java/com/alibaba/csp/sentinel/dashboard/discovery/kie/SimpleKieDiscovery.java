@@ -1,5 +1,6 @@
 package com.alibaba.csp.sentinel.dashboard.discovery.kie;
 
+import com.alibaba.csp.sentinel.dashboard.discovery.kie.common.KieServerInfo;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +16,7 @@ public class SimpleKieDiscovery implements KieServerDiscovery {
 
     @Override
     public Set<KieServerInfo> queryKieInfos(String project, String environment) {
-        return serverMap.get(project).stream().filter(x-> x.getEnvironment().equals(environment))
+        return serverMap.get(project).stream().filter(x-> x.getLabel().getEnvironment().equals(environment))
                 .collect(Collectors.toSet());
     }
 
@@ -27,9 +28,9 @@ public class SimpleKieDiscovery implements KieServerDiscovery {
     @Override
     public long addServerInfo(KieServerInfo serverInfo) {
         AssertUtil.notNull(serverInfo, "serverInfo cannot be null");
-        AssertUtil.notNull(serverInfo.getProject(), "project cannot be null");
+        AssertUtil.notNull(serverInfo.getLabel().getProject(), "project cannot be null");
 
-        Set<KieServerInfo> set = serverMap.computeIfAbsent(serverInfo.getProject(), x -> new HashSet<>());
+        Set<KieServerInfo> set = serverMap.computeIfAbsent(serverInfo.getLabel().getProject(), x -> new HashSet<>());
         set.add(serverInfo);
         return 1;
     }

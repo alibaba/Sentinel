@@ -1,9 +1,13 @@
 package com.alibaba.csp.sentinel.dashboard.rule.kie.util;
 
 import com.alibaba.csp.sentinel.dashboard.client.servicecombkie.response.KieConfigItem;
-import com.alibaba.csp.sentinel.dashboard.client.servicecombkie.response.KieConfigLabels;
-import com.alibaba.csp.sentinel.dashboard.discovery.kie.KieServerInfo;
+import com.alibaba.csp.sentinel.dashboard.client.servicecombkie.response.KieConfigLabel;
+import com.alibaba.csp.sentinel.dashboard.discovery.kie.common.KieServerInfo;
+import com.alibaba.csp.sentinel.dashboard.discovery.kie.common.KieServerLabel;
 import com.alibaba.fastjson.JSON;
+import org.apache.commons.lang.StringUtils;
+
+import java.util.Objects;
 
 public class KieConfigUtil {
 
@@ -14,13 +18,19 @@ public class KieConfigUtil {
      * @return judge result
      */
     public static boolean isTargetItem(String key, KieServerInfo serverInfo, KieConfigItem item){
-        KieConfigLabels labels = item.getLabels();
+        if(Objects.isNull(item) || Objects.isNull(item.getLabels()) || StringUtils.isEmpty(key) ||
+                Objects.isNull(serverInfo)){
+            return false;
+        }
+
+        KieConfigLabel configLabel = item.getLabels();
+        KieServerLabel serverLabel = serverInfo.getLabel();
 
         return key.equals(item.getKey())
-                && serverInfo.getApp().equals(labels.getApp())
-                && serverInfo.getService().equals(labels.getService())
-                && serverInfo.getServerVersion().equals(labels.getVersion())
-                && serverInfo.getEnvironment().equals(labels.getEnvironment());
+                && serverLabel.getApp().equals(configLabel.getApp())
+                && serverLabel.getService().equals(configLabel.getService())
+                && serverLabel.getServerVersion().equals(configLabel.getVersion())
+                && serverLabel.getEnvironment().equals(configLabel.getEnvironment());
     }
 
     public static <T> T parseKieConfig(Class<T> ruleClass, KieConfigItem item){

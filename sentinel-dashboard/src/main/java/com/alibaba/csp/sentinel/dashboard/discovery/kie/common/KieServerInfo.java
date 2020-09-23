@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.discovery.kie;
+package com.alibaba.csp.sentinel.dashboard.discovery.kie.common;
 
 import lombok.Builder;
 import lombok.Data;
-
-import java.util.Objects;
 
 @Data
 @Builder
@@ -33,16 +31,11 @@ public class KieServerInfo{
     private boolean healthy;
     private String sentinelVersion;
 
-    private String project;
-    private String app;
-    private String service;
-    private String environment;
-    private String serverVersion;
-    private String kieAddress;
+    private KieServerLabel label;
 
     @Override
     public int hashCode(){
-        return Objects.hash(project, app, service, environment, serverVersion);
+        return label.hashCode();
     }
 
     @Override
@@ -50,23 +43,14 @@ public class KieServerInfo{
         if (this == o) { return true; }
         if (!(o instanceof KieServerInfo)) { return false; }
         KieServerInfo that = (KieServerInfo)o;
-        return Objects.equals(project, that.project) &&
-                Objects.equals(app, that.app) &&
-                Objects.equals(service, that.service)&&
-                Objects.equals(environment, that.environment)&&
-                Objects.equals(serverVersion, that.serverVersion);
+        return label.equals(that.label);
     }
 
     @Override
     public String toString() {
         return new StringBuilder("KieServerInfo {")
-                .append("project='").append(project).append('\'')
+                .append("label='").append(label).append('\'')
                 .append(", id='").append(id).append('\'')
-                .append(", app='").append(app).append('\'')
-                .append(", service='").append(service).append('\'')
-                .append(", environment='").append(environment).append('\'')
-                .append(", serverVersion='").append(serverVersion).append('\'')
-                .append(", kieAddress='").append(kieAddress).append('\'')
                 .append(", hostname='").append(hostname).append('\'')
                 .append(", ip='").append(ip).append('\'')
                 .append(", port=").append(port)
@@ -74,9 +58,5 @@ public class KieServerInfo{
                 .append(", lastHeartbeat=").append(lastHeartbeat)
                 .append(", healthy=").append(isHealthy())
                 .append('}').toString();
-    }
-
-    public String getKieConfigUrl(){
-        return "http://" + kieAddress + "/v1/" + project + "/kie/kv";
     }
 }

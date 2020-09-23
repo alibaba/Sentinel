@@ -13,25 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.domain.vo.kie;
+package com.alibaba.csp.sentinel.dashboard.rule.kie;
 
-import lombok.Data;
+/**
+ * @author Eric Zhao
+ * @since 1.4.0
+ */
+public interface RuleKieProvider<E> {
 
-@Data
-public class KieServerInfoVo{
-    private String id;
-
-    private String hostname;
-    private String ip;
-    private int port;
-    private Long heartbeatVersion;
-    private Long lastHeartbeat;
-    private boolean healthy;
-    private String sentinelVersion;
-
-    private String project;
-    private String app;
-    private String service;
-    private String environment;
-    private String serverVersion;
+    E getRules(String id) throws Exception;
 }

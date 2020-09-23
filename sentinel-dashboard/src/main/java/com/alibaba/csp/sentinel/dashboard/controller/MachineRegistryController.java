@@ -18,8 +18,9 @@ package com.alibaba.csp.sentinel.dashboard.controller;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineDiscovery;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
-import com.alibaba.csp.sentinel.dashboard.discovery.kie.KieServerInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.kie.KieServerManagement;
+import com.alibaba.csp.sentinel.dashboard.discovery.kie.common.KieServerInfo;
+import com.alibaba.csp.sentinel.dashboard.discovery.kie.common.KieServerLabel;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.dashboard.domain.vo.kie.KieServerInfoVo;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -97,15 +98,17 @@ public class MachineRegistryController {
                 System.currentTimeMillis() : kieServerInfoVo.getHeartbeatVersion();
 
         try{
-            KieServerInfo kieServerInfo = KieServerInfo.builder()
-                    .id(kieServerInfoVo.getId())
+            KieServerLabel kieServerLabel = KieServerLabel.builder()
                     .app(kieServerInfoVo.getApp())
-                    .environment(kieServerInfoVo.getEnvironment())
                     .project(kieServerInfoVo.getProject())
-                    .serverVersion(kieServerInfoVo.getServerVersion())
                     .service(kieServerInfoVo.getService())
+                    .serverVersion(kieServerInfoVo.getServerVersion())
                     .environment(kieServerInfoVo.getEnvironment())
-                    .kieAddress(kieServerInfoVo.getKieAddress())
+                    .build();
+
+            KieServerInfo kieServerInfo = KieServerInfo.builder()
+                    .label(kieServerLabel)
+                    .id(kieServerInfoVo.getId())
                     .sentinelVersion(sentinelVersion)
                     .heartbeatVersion(heartbeatVersion)
                     .lastHeartbeat(System.currentTimeMillis())

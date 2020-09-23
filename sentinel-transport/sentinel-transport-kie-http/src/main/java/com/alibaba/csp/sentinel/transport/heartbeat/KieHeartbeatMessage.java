@@ -47,7 +47,6 @@ public class KieHeartbeatMessage {
         message.put("project", KieConfig.getInstance().getProject());
         message.put("service", KieConfig.getInstance().getService());
         message.put("serverVersion", KieConfig.getInstance().getVersion());
-        message.put("kieAddress", KieConfig.getInstance().getKieAddress());
     }
 
     public KieHeartbeatMessage registerInformation(String key, String value) {

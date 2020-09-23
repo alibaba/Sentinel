@@ -26,8 +26,6 @@ public class KieConfig {
 
     private String environment;
 
-    private String kieAddress;
-
     private Optional<String> getConfigPath(){
         URL url = getClass().getClassLoader().getResource(CONFIG_FILE_NAME);
         if (url == null){
@@ -56,7 +54,6 @@ public class KieConfig {
         this.project = (String) sourceMap.get("project");
         this.environment = (String) sourceMap.get("environment");
         this.version = (String) sourceMap.get("version");
-        this.kieAddress = (String) sourceMap.get("address");
     }
 
     private KieConfig(){

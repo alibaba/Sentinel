@@ -1,10 +1,16 @@
 package com.alibaba.csp.sentinel.dashboard.client.servicecombkie.response;
 
 import com.alibaba.fastjson.annotation.JSONField;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-public class KieConfigLabels {
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class KieConfigLabel {
     @JSONField(name = "app")
     private String app;
 

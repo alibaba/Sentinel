@@ -36,5 +36,5 @@ public class KieConfigItem {
     private String updateTime;
 
     @JSONField(name = "labels")
-    private KieConfigLabels labels;
+    private KieConfigLabel labels;
 }

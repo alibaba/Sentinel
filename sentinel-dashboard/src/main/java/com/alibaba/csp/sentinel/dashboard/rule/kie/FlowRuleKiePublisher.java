@@ -1,11 +1,13 @@
 package com.alibaba.csp.sentinel.dashboard.rule.kie;
 
 import com.alibaba.csp.sentinel.dashboard.client.servicecombkie.KieConfigClient;
+import com.alibaba.csp.sentinel.dashboard.client.servicecombkie.response.KieConfigLabel;
 import com.alibaba.csp.sentinel.dashboard.client.servicecombkie.response.KieConfigResponse;
+import com.alibaba.csp.sentinel.dashboard.config.KieConfig;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.discovery.kie.KieServerInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.kie.KieServerManagement;
-import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
+import com.alibaba.csp.sentinel.dashboard.discovery.kie.common.KieServerInfo;
+import com.alibaba.csp.sentinel.dashboard.discovery.kie.common.KieServerLabel;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import org.apache.commons.lang.StringUtils;
@@ -17,7 +19,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Component("flowRuleKiePublisher")
-public class FlowRuleKiePublisher implements DynamicRulePublisher<List<FlowRuleEntity>> {
+public class FlowRuleKiePublisher implements RuleKiePublisher<List<FlowRuleEntity>> {
 
     @Autowired
     KieServerManagement kieServerManagement;
@@ -25,27 +27,82 @@ public class FlowRuleKiePublisher implements DynamicRulePublisher<List<FlowRuleE
     @Autowired
     KieConfigClient kieConfigClient;
 
+    @Autowired
+    KieConfig kieConfig;
+
     @Override
-    public void publish(String id, List<FlowRuleEntity> entities) {
-        if(StringUtils.isEmpty(id) || Objects.isNull(entities)){
+    public void update(String serverId, List<FlowRuleEntity> entities) {
+        if(StringUtils.isEmpty(serverId) || Objects.isNull(entities)){
             throw new NullPointerException();
         }
 
-        Optional<KieServerInfo> kieServerInfo = kieServerManagement.queryKieInfo(id);
+        Optional<KieServerInfo> kieServerInfo = kieServerManagement.queryKieInfo(serverId);
         if(!kieServerInfo.isPresent()){
-            RecordLog.error(String.format("Cannot find kie server by id: %s.", id));
-            throw new IllegalArgumentException();
+            String errorMessage = String.format("Cannot find kie server by id: %s.", serverId);
+            RecordLog.error(errorMessage);
+            throw new IllegalArgumentException(errorMessage);
         }
 
+        String urlPrefix = kieConfig.getKieBaseUrl(kieServerInfo.get().getLabel().getProject());
+
         entities.forEach(ruleEntity -> {
-            String url = kieServerInfo.get().getKieConfigUrl() + "/" + ruleEntity.getRuleId();
+            String url = urlPrefix + "/" + ruleEntity.getRuleId();
             FlowRule flowRule = ruleEntity.toRule();
 
             Optional<KieConfigResponse> response = kieConfigClient.updateConfig(url, flowRule);
             if(!response.isPresent()){
                 RecordLog.error("Update rules failed");
-                throw new RuntimeException();
+                throw new RuntimeException("Update rules failed");
             }
         });
+    }
+
+    @Override
+    public void add(String serverId, List<FlowRuleEntity> entities) {
+        if(StringUtils.isEmpty(serverId) || Objects.isNull(entities)){
+            throw new NullPointerException();
+        }
+
+        Optional<KieServerInfo> kieServerInfo = kieServerManagement.queryKieInfo(serverId);
+        if(!kieServerInfo.isPresent()){
+            String errorMessage = String.format("Cannot find kie server by id: %s.", serverId);
+            RecordLog.error(errorMessage);
+            throw new IllegalArgumentException(errorMessage);
+        }
+
+        KieServerLabel kieServerLabel = kieServerInfo.get().getLabel();
+        KieConfigLabel kieConfigLabel = KieConfigLabel.builder()
+                .app(kieServerLabel.getApp())
+                .environment(kieServerLabel.getEnvironment())
+                .service(kieServerLabel.getService())
+                .version(kieServerLabel.getServerVersion())
+                .build();
+
+        String url = kieConfig.getKieBaseUrl(kieServerInfo.get().getLabel().getProject());
+        entities.forEach(ruleEntity -> {
+            FlowRule flowRule = ruleEntity.toRule();
+            Optional<KieConfigResponse> response = kieConfigClient.addConfig(url, "FlowRule", flowRule, kieConfigLabel);
+            if(!response.isPresent()){
+                RecordLog.error("Add rules failed");
+                throw new RuntimeException("Add rules failed");
+            }
+        });
+    }
+
+    @Override
+    public void delete(String serverId, String ruleId) {
+        if(StringUtils.isEmpty(serverId) || StringUtils.isEmpty(ruleId)){
+            throw new NullPointerException();
+        }
+
+        Optional<KieServerInfo> kieServerInfo = kieServerManagement.queryKieInfo(serverId);
+        if(!kieServerInfo.isPresent()){
+            String errorMessage = String.format("Cannot find kie server by id: %s.", serverId);
+            RecordLog.error(errorMessage);
+            throw new IllegalArgumentException(errorMessage);
+        }
+
+        String url = kieConfig.getKieBaseUrl(kieServerInfo.get().getLabel().getProject());
+        kieConfigClient.deleteConfig(url, ruleId);
     }
 }

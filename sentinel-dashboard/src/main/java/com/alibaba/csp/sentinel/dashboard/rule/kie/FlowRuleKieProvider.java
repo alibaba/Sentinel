@@ -3,10 +3,10 @@ package com.alibaba.csp.sentinel.dashboard.rule.kie;
 import com.alibaba.csp.sentinel.dashboard.client.servicecombkie.KieConfigClient;
 import com.alibaba.csp.sentinel.dashboard.client.servicecombkie.response.KieConfigItem;
 import com.alibaba.csp.sentinel.dashboard.client.servicecombkie.response.KieConfigResponse;
+import com.alibaba.csp.sentinel.dashboard.config.KieConfig;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.discovery.kie.KieServerInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.kie.KieServerManagement;
-import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
+import com.alibaba.csp.sentinel.dashboard.discovery.kie.common.KieServerInfo;
 import com.alibaba.csp.sentinel.dashboard.rule.kie.util.KieConfigUtil;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 
 @Component("flowRuleKieProvider")
-public class FlowRuleKieProvider implements DynamicRuleProvider<List<FlowRuleEntity>> {
+public class FlowRuleKieProvider implements RuleKieProvider<List<FlowRuleEntity>> {
 
     @Autowired
     KieServerManagement kieServerManagement;
@@ -23,14 +23,18 @@ public class FlowRuleKieProvider implements DynamicRuleProvider<List<FlowRuleEnt
     @Autowired
     KieConfigClient kieConfigClient;
 
+    @Autowired
+    KieConfig kieConfig;
+
     @Override
     public List<FlowRuleEntity> getRules(String id){
         Optional<KieServerInfo> kieServerInfo = kieServerManagement.queryKieInfo(id);
         if(!kieServerInfo.isPresent()){
             return Collections.emptyList();
         }
-        Optional<KieConfigResponse> response = kieConfigClient.getConfig(kieServerInfo.get().getKieConfigUrl());
+        String url = kieConfig.getKieBaseUrl(kieServerInfo.get().getLabel().getProject());
 
+        Optional<KieConfigResponse> response = kieConfigClient.getConfig(url);
         return response.map(configResponse -> parseResponseToEntity(kieServerInfo.get(), configResponse))
                 .orElse(Collections.emptyList());
     }
