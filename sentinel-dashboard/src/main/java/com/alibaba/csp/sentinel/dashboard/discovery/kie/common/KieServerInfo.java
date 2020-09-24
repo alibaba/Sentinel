@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.dashboard.discovery.kie.common;
 
+import com.alibaba.csp.sentinel.dashboard.config.DashboardConfig;
 import lombok.Builder;
 import lombok.Data;
 
@@ -58,5 +59,23 @@ public class KieServerInfo{
                 .append(", lastHeartbeat=").append(lastHeartbeat)
                 .append(", healthy=").append(isHealthy())
                 .append('}').toString();
+    }
+
+    public boolean isHealthy() {
+        long delta = System.currentTimeMillis() - lastHeartbeat;
+        return delta < DashboardConfig.getUnhealthyMachineMillis();
+    }
+
+    /**
+     * whether dead should be removed
+     *
+     * @return
+     */
+    public boolean isDead() {
+        if (DashboardConfig.getAutoRemoveMachineMillis() > 0) {
+            long delta = System.currentTimeMillis() - lastHeartbeat;
+            return delta > DashboardConfig.getAutoRemoveMachineMillis();
+        }
+        return false;
     }
 }

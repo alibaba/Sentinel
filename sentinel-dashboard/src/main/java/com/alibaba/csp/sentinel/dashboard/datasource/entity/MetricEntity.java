@@ -24,7 +24,7 @@ public class MetricEntity {
     private Long id;
     private Date gmtCreate;
     private Date gmtModified;
-    private String app;
+    private String serverId;
     /**
      * 监控信息的时间戳
      */
@@ -52,7 +52,7 @@ public class MetricEntity {
         entity.setId(oldEntity.getId());
         entity.setGmtCreate(oldEntity.getGmtCreate());
         entity.setGmtModified(oldEntity.getGmtModified());
-        entity.setApp(oldEntity.getApp());
+        entity.setServerId(oldEntity.getServerId());
         entity.setTimestamp(oldEntity.getTimestamp());
         entity.setResource(oldEntity.getResource());
         entity.setPassQps(oldEntity.getPassQps());
@@ -120,12 +120,12 @@ public class MetricEntity {
         this.gmtModified = gmtModified;
     }
 
-    public String getApp() {
-        return app;
+    public String getServerId() {
+        return serverId;
     }
 
-    public void setApp(String app) {
-        this.app = app;
+    public void setServerId(String serverId) {
+        this.serverId = serverId;
     }
 
     public Date getTimestamp() {
@@ -203,7 +203,7 @@ public class MetricEntity {
             "id=" + id +
             ", gmtCreate=" + gmtCreate +
             ", gmtModified=" + gmtModified +
-            ", app='" + app + '\'' +
+            ", app='" + serverId + '\'' +
             ", timestamp=" + timestamp +
             ", resource='" + resource + '\'' +
             ", passQps=" + passQps +

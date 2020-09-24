@@ -4,9 +4,7 @@ import com.alibaba.csp.sentinel.dashboard.discovery.kie.common.KieServerInfo;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -47,5 +45,28 @@ public class SimpleKieDiscovery implements KieServerDiscovery {
                         -> kieServerInfos.stream()
                         .filter(y -> id.equals(y.getId())))
                 .findAny();
+    }
+
+    @Override
+    public List<String> getServerIds() {
+        return serverMap.values().stream().flatMap(Collection::stream)
+                .map(KieServerInfo::getId)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public KieServerInfo getServerInfo(String id) {
+        return serverMap.values().stream().flatMap(Collection::stream)
+                .filter(x -> x.getId().equals(id))
+                .findFirst().orElse(null);
+    }
+
+    @Override
+    public void removeServer(String id) {
+        serverMap.values().forEach(set -> {
+           Optional<KieServerInfo> kieServerInfo = set.stream().filter(info -> info.getId().equals(id))
+                   .findFirst();
+           kieServerInfo.ifPresent(set::remove);
+        });
     }
 }

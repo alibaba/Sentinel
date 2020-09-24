@@ -50,7 +50,7 @@ public class KieFlowController {
     private RuleKiePublisher<List<FlowRuleEntity>> rulePublisher;
 
     @GetMapping("/rules")
-    public Result<List<FlowRuleEntity>> apiQueryRules(@RequestParam(name = "server_id") String serverId) {
+    public Result<List<FlowRuleEntity>> apiQueryRules(@RequestParam(name = "serverId") String serverId) {
         if (StringUtil.isEmpty(serverId)) {
             return Result.ofFail(-1, "Id can't be null or empty");
         }
@@ -64,12 +64,12 @@ public class KieFlowController {
         }
     }
 
-    @PutMapping("/{server_id}/rules")
-    public Result<List<FlowRuleEntity>> updateRules(@PathVariable("server_id") String serverId,
-                                                    @RequestBody List<FlowRuleEntity> entities){
+    @PutMapping("/{serverId}/rule")
+    public Result<FlowRuleEntity> updateRules(@PathVariable("serverId") String serverId,
+                                                    @RequestBody FlowRuleEntity entity){
         try {
-            rulePublisher.update(serverId, entities);
-            return Result.ofSuccess(entities);
+            rulePublisher.update(serverId, Collections.singletonList(entity));
+            return Result.ofSuccess(entity);
         } catch (Throwable throwable) {
             logger.error("Error when update flow rules", throwable);
             return Result.ofThrowable(-1, throwable);
@@ -121,8 +121,8 @@ public class KieFlowController {
         return null;
     }
 
-    @PostMapping("/{server_id}/rule")
-    public Result<FlowRuleEntity> apiAddFlowRule(@PathVariable("server_id") String serverId,
+    @PostMapping("/{serverId}/rule")
+    public Result<FlowRuleEntity> apiAddFlowRule(@PathVariable("serverId") String serverId,
                                                  @RequestBody FlowRuleEntity entity) {
         Result<FlowRuleEntity> checkResult = checkEntityInternal(entity);
 
@@ -141,9 +141,9 @@ public class KieFlowController {
         return Result.ofSuccess(entity);
     }
 
-    @DeleteMapping("/{server_id}/rule/{rule_id}")
-    public Result<String> apiDelFlowRule(@PathVariable("server_id") String serverId,
-                                         @PathVariable("rule_id") String ruleId){
+    @DeleteMapping("/{serverId}/rule/{ruleId}")
+    public Result<String> apiDelFlowRule(@PathVariable("serverId") String serverId,
+                                         @PathVariable("ruleId") String ruleId){
         try{
             rulePublisher.delete(serverId, ruleId);
             return Result.ofSuccess(ruleId);

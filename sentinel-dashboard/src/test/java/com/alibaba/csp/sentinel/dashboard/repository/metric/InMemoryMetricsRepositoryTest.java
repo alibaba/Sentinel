@@ -26,14 +26,7 @@ import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 import static org.junit.Assert.*;
 
@@ -66,7 +59,7 @@ public class InMemoryMetricsRepositoryTest {
     @Test
     public void testSave() {
         MetricEntity entry = new MetricEntity();
-        entry.setApp("testSave");
+        entry.setServerId("testSave");
         entry.setResource("testResource");
         entry.setTimestamp(new Date(System.currentTimeMillis()));
         entry.setPassQps(1L);
@@ -84,7 +77,7 @@ public class InMemoryMetricsRepositoryTest {
         List<MetricEntity> entities = new ArrayList<>(10000);
         for (int i = 0; i < 10000; i++) {
             MetricEntity entry = new MetricEntity();
-            entry.setApp("testSaveAll");
+            entry.setServerId("testSaveAll");
             entry.setResource("testResource" + i);
             entry.setTimestamp(new Date(System.currentTimeMillis()));
             entry.setPassQps(1L);
@@ -103,7 +96,7 @@ public class InMemoryMetricsRepositoryTest {
     public void testExpireMetric() {
         long now = System.currentTimeMillis();
         MetricEntity expireEntry = new MetricEntity();
-        expireEntry.setApp(DEFAULT_APP);
+        expireEntry.setServerId(DEFAULT_APP);
         expireEntry.setResource(DEFAULT_RESOURCE);
         expireEntry.setTimestamp(new Date(now - EXPIRE_TIME - 1L));
         expireEntry.setPassQps(1L);
@@ -113,7 +106,7 @@ public class InMemoryMetricsRepositoryTest {
         inMemoryMetricsRepository.save(expireEntry);
 
         MetricEntity entry = new MetricEntity();
-        entry.setApp(DEFAULT_APP);
+        entry.setServerId(DEFAULT_APP);
         entry.setResource(DEFAULT_RESOURCE);
         entry.setTimestamp(new Date(now));
         entry.setPassQps(1L);
@@ -179,7 +172,7 @@ public class InMemoryMetricsRepositoryTest {
     private void batchSave() {
         for (int i = 0; i < 100; i++) {
             MetricEntity entry = new MetricEntity();
-            entry.setApp(DEFAULT_APP);
+            entry.setServerId(DEFAULT_APP);
             entry.setResource(DEFAULT_RESOURCE);
             entry.setTimestamp(new Date(System.currentTimeMillis()));
             entry.setPassQps(1L);

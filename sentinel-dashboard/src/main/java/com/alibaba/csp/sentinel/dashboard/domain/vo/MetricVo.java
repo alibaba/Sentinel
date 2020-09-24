@@ -15,18 +15,18 @@
  */
 package com.alibaba.csp.sentinel.dashboard.domain.vo;
 
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.MetricEntity;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.MetricEntity;
 
 /**
  * @author leyou
  */
 public class MetricVo implements Comparable<MetricVo> {
     private Long id;
-    private String app;
+    private String serverId;
     private Long timestamp;
     private Long gmtCreate = System.currentTimeMillis();
     private String resource;
@@ -75,7 +75,7 @@ public class MetricVo implements Comparable<MetricVo> {
     public static MetricVo fromMetricEntity(MetricEntity entity) {
         MetricVo vo = new MetricVo();
         vo.id = entity.getId();
-        vo.app = entity.getApp();
+        vo.serverId = entity.getServerId();
         vo.timestamp = entity.getTimestamp().getTime();
         vo.gmtCreate = entity.getGmtCreate().getTime();
         vo.resource = entity.getResource();
@@ -121,12 +121,12 @@ public class MetricVo implements Comparable<MetricVo> {
         this.id = id;
     }
 
-    public String getApp() {
-        return app;
+    public String getServerId() {
+        return serverId;
     }
 
-    public void setApp(String app) {
-        this.app = app;
+    public void setServerId(String serverId) {
+        this.serverId = serverId;
     }
 
     public Long getTimestamp() {

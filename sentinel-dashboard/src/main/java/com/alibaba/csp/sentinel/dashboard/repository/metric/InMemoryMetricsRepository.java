@@ -20,11 +20,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -51,12 +47,12 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
 
     @Override
     public void save(MetricEntity entity) {
-        if (entity == null || StringUtil.isBlank(entity.getApp())) {
+        if (entity == null || StringUtil.isBlank(entity.getServerId())) {
             return;
         }
         readWriteLock.writeLock().lock();
         try {
-            allMetrics.computeIfAbsent(entity.getApp(), e -> new HashMap<>(16))
+            allMetrics.computeIfAbsent(entity.getServerId(), e -> new HashMap<>(16))
                     .computeIfAbsent(entity.getResource(), e -> new LinkedHashMap<Long, MetricEntity>() {
                         @Override
                         protected boolean removeEldestEntry(Entry<Long, MetricEntity> eldest) {
@@ -84,13 +80,13 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
     }
 
     @Override
-    public List<MetricEntity> queryByAppAndResourceBetween(String app, String resource,
+    public List<MetricEntity> queryByAppAndResourceBetween(String serverId, String resource,
                                                            long startTime, long endTime) {
         List<MetricEntity> results = new ArrayList<>();
-        if (StringUtil.isBlank(app)) {
+        if (StringUtil.isBlank(serverId)) {
             return results;
         }
-        Map<String, LinkedHashMap<Long, MetricEntity>> resourceMap = allMetrics.get(app);
+        Map<String, LinkedHashMap<Long, MetricEntity>> resourceMap = allMetrics.get(serverId);
         if (resourceMap == null) {
             return results;
         }
