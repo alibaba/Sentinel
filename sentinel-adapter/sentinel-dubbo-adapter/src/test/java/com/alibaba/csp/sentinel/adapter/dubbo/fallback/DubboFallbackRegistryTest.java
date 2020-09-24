@@ -38,7 +38,7 @@ public class DubboFallbackRegistryTest {
         BlockException ex = new FlowException("xxx");
         Result result = new DefaultDubboFallback().handle(null, null, ex);
         Assert.assertTrue(result.hasException());
-        Assert.assertEquals(RuntimeException.class, result.getException().getClass());
+        Assert.assertEquals(SentinelRpcException.class, result.getException().getClass());
     }
 
     @Test
