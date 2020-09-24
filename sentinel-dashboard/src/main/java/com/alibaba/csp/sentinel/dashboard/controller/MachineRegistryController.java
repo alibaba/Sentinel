@@ -108,6 +108,8 @@ public class MachineRegistryController {
 
             KieServerInfo kieServerInfo = KieServerInfo.builder()
                     .label(kieServerLabel)
+                    .ip(kieServerInfoVo.getIp())
+                    .port(kieServerInfoVo.getPort())
                     .id(kieServerInfoVo.getId())
                     .sentinelVersion(sentinelVersion)
                     .heartbeatVersion(heartbeatVersion)
