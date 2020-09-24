@@ -48,14 +48,16 @@ final class AuthorityRuleChecker {
             for (int i = 0 ; i <= max; i++) {
                 /* Look for first character. */
                 if (source[i] != target[0]) {
-                    while (++i <= max && source[i] != target[0]);
+                    while (++i <= max && source[i] != target[0]) {
+                    }
                 }
                 /* Found first character, now look at the rest of v2 */
                 if (i <= max) {
                     int j = i + 1;
                     int end = j + target.length - 1;
                     for (int k = 1; j < end && source[j]
-                            == target[k]; j++, k++);
+                            == target[k]; j++, k++) {
+                    }
                     if (j == end
                             && ( ++ max == j || ",".equals(String.valueOf(source[j])) )) {
                         /* Found whole string. */
