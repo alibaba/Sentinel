@@ -65,6 +65,7 @@ public class KieConfigClient {
         labels.put("environment", configLabel.getEnvironment());
         labels.put("service", configLabel.getService());
         labels.put("version", configLabel.getVersion());
+        labels.put("resource", configLabel.getResource());
 
         object.put("labels", labels);
         return object.toJSONString();

@@ -80,6 +80,7 @@ public class FlowRuleKiePublisher implements RuleKiePublisher<List<FlowRuleEntit
 
         String url = kieConfig.getKieBaseUrl(kieServerInfo.get().getLabel().getProject());
         entities.forEach(ruleEntity -> {
+            kieConfigLabel.setResource(ruleEntity.getResource());
             FlowRule flowRule = ruleEntity.toRule();
             Optional<KieConfigResponse> response = kieConfigClient.addConfig(url, "FlowRule", flowRule, kieConfigLabel);
             if(!response.isPresent()){

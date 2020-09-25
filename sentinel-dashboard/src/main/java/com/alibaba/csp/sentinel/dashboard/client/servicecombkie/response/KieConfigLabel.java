@@ -22,4 +22,7 @@ public class KieConfigLabel {
 
     @JSONField(name = "environment")
     private String environment;
+
+    @JSONField(name = "resource")
+    private String resource;
 }
