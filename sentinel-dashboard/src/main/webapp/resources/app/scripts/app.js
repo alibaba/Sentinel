@@ -317,7 +317,7 @@ angular
 
       .state('dashboard.metric', {
         templateUrl: 'app/views/metric.html',
-        url: '/metric/:app',
+        url: '/metric/:app/:service/:id',
         controller: 'MetricCtl',
         resolve: {
           loadMyFiles: ['$ocLazyLoad', function ($ocLazyLoad) {

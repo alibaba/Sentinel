@@ -1,8 +1,9 @@
 var app = angular.module('sentinelDashboardApp');
 
-app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interval', '$timeout',
-  function ($scope, $stateParams, MetricService, $interval, $timeout) {
-
+app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interval', '$timeout', 'KieMetricService',
+  function ($scope, $stateParams, MetricService, $interval, $timeout, KieMetricService) {
+    $scope.service_id = $stateParams.id;
+    $scope.service = $stateParams.service;
     $scope.endTime = new Date();
     $scope.startTime = new Date();
     $scope.startTime.setMinutes($scope.endTime.getMinutes() - 30);
@@ -172,13 +173,13 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
     $scope.emptyObjs = [];
     function queryIdentityDatas() {
       var params = {
-        app: $scope.app,
+        serverId: $scope.service_id,
         pageIndex: $scope.servicePageConfig.currentPageIndex,
         pageSize: $scope.servicePageConfig.pageSize,
         desc: $scope.isDescOrder,
         searchKey: $scope.serviceQuery
       };
-      MetricService.queryAppSortedIdentities(params).success(function (data) {
+      KieMetricService.queryTopResourceMetric(params).success(function (data) {
         $scope.metrics = [];
         $scope.emptyObjs = [];
         if (data.code === 0 && data.data) {
