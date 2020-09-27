@@ -7,12 +7,14 @@ app.service('KieService', ['$http', function ($http) {
             method: 'GET'
         });
     }
-
-    
-    this.getKieInfos = function (project) {
+    this.getKieInfos = function (project, environment) {
         return $http({
-            url: '/kie/' + project + '/kieInfos',
-            method: 'GET'
-        });
+            url: '/kie/kieInfos',
+            method: 'GET',
+            params: {
+                project: project,
+                environment: environment
+            }
+        })
     }
 }]);

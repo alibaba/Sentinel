@@ -64,6 +64,8 @@ angular.module('sentinelDashboardApp')
           $scope.apps = [];
           // 当前project下所有service的信息
           $scope.services = [];
+          $scope.environments = ['', 'development', 'production', 'testing', 'acceptance'];
+          $scope.currentEnvir = '';
           await KieService.getProjects().success(data => {
             // fix
             if (window.fixtureFlag) {
@@ -74,7 +76,7 @@ angular.module('sentinelDashboardApp')
               $scope.currentProject = $scope.projects[0];
             }
           });
-          await KieService.getKieInfos($scope.currentProject).success(data => {
+          await KieService.getKieInfos($scope.currentProject, $scope.currentEnvir).success(data => {
             // fix
             if (window.fixtureFlag) {
               data = FixtureService.getKieInfos();
@@ -101,7 +103,11 @@ angular.module('sentinelDashboardApp')
 
         $scope.projectChange = () => {
           // project复选框change事件
-          KieService.getKieInfos($scope.currentProject).success(data => {
+          KieService.getKieInfos($scope.currentProject, $scope.currentEnvir).success(data => {
+            // fix
+            if (window.fixtureFlag) {
+              data = FixtureService.getKieInfos();
+            }
             if (data.success) {
               $scope.services = data.data;
               $scope.apps.splice(0, $scope.apps.length);
@@ -115,10 +121,38 @@ angular.module('sentinelDashboardApp')
                   }
                   $scope.appActives.push(tmp);
                 }
-              })
+              });
             }
           });
         }
+
+        $scope.envirChange = () => {
+          // environment复选框change事件
+          console.log("environment change!");
+          console.log("$scope.currentEnvir", $scope.currentEnvir);
+          KieService.getKieInfos($scope.currentProject, $scope.currentEnvir).success(data => {
+            // fix
+            if (window.fixtureFlag) {
+              data = FixtureService.getKieInfos();
+            }
+            if (data.success) {
+              $scope.services = data.data;
+              $scope.apps.splice(0, $scope.apps.length);
+              $scope.appActives.splice(0, $scope.appActives.length);
+              $scope.services.forEach(val => {
+                if (!$scope.apps.includes(val.app)) {
+                  $scope.apps.push(val.app);
+                  let tmp = {
+                    'app': val.app,
+                    'active': false
+                  }
+                  $scope.appActives.push(tmp);
+                }
+              });
+            }
+          });
+        }
+
       }
     }
   }]);

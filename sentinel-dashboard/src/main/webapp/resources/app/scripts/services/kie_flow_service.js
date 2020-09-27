@@ -1,11 +1,10 @@
 var app = angular.module('sentinelDashboardApp');
 
 app.service('KieFlowService', ['$http', function ($http) {
-    this.getKieFlowRules = function (id) {
+    this.getKieFlowRules = function (service_id) {
         var param = {
-            id: id
+            serverId: service_id
         };
-        console.log("param", param);
         return $http({
             url: '/kie/flow/rules',
             params: param,
@@ -13,11 +12,26 @@ app.service('KieFlowService', ['$http', function ($http) {
         })
     }
 
-    this.updateKieFlowRules = function (id, param) {
+    this.updateKieFlowRule = function (service_id, param) {
         return $http({
-            url: '/kie/flow/rules/' + id,
+            url: '/kie/flow/' + service_id + '/rule',
             method: 'PUT',
             data: param
         })
+    }
+
+    this.deleteKieFlowRule = function(service_id, rule_id) {
+        return $http({
+            url: '/kie/flow/' + service_id + '/rule/' + rule_id,
+            method: 'DELETE'
+        });
+    }
+
+    this.addKieFlowRule = function(service_id, param) {
+        return $http({
+            url: '/kie/flow/' + service_id + '/rule',
+            method: 'POST',
+            data: param
+        });
     }
 }]);

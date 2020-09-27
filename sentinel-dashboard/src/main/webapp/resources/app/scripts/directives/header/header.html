@@ -8,6 +8,11 @@
       <select ng-model="currentProject" class="form-control" ng-options="project for project in projects"
               ng-change="projectChange()" ng-selected="currentProject"></select>
     </div>
+    <div class="navbar-brand" style="font-size: 18px; color: #fff;">Environment:</div>
+    <div class="col-md-4" style="width: 150px; padding: 10px 10px;">
+      <select ng-model="currentEnvir" class="form-control" ng-options="envir for envir in environments"
+              ng-change="envirChange()" ng-selected="currentEnvir"></select>
+    </div>
     <ul class="nav navbar-nav navbar-right">
       <li ng-show="showLogout">
         <a href="javascript:void(0);" ng-click="logout()"

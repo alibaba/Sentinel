@@ -2,8 +2,9 @@ var app = angular.module('sentinelDashboardApp');
 
 app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', 'ngDialog', 'KieFlowService', 'FixtureService',
   function ($scope, $stateParams, FlowService, ngDialog, KieFlowService, FixtureService) {
+    $scope.app = $stateParams.app
     $scope.service = $stateParams.service;
-    $scope.currentId = $stateParams.id
+    $scope.service_id = $stateParams.id
     $scope.rulesPageConfig = {
       pageSize: 10,
       currentPageIndex: 1,
@@ -30,11 +31,11 @@ app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', '
     flowRulesInit();
 
     function getKieFlowRules() {
-      console.log("$scope.currentId", $scope.currentId);
-      KieFlowService.getKieFlowRules($scope.currentId).success(data => {
+      console.log("$scope.service_id", $scope.service_id);
+      KieFlowService.getKieFlowRules($scope.service_id).success(data => {
         // fix
         if (window.fixtureFlag) {
-          data = FixtureService.getKieFlowRules($scope.currentId);
+          data = FixtureService.getKieFlowRules($scope.service_id);
         }
         if (data.success && data.data) {
           $scope.rules = data.data;
@@ -67,14 +68,14 @@ app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', '
     };
 
     $scope.addNewRule = function () {
-      var mac = $scope.macInputModel.split(':');
+      console.log("$scope.addNewRule");
       $scope.currentRule = {
         grade: 1,
         strategy: 0,
         controlBehavior: 0,
         app: $scope.app,
-        ip: mac[0],
-        port: mac[1],
+        ip: null,
+        port: null,
         limitApp: 'default',
         clusterMode: false,
         clusterConfig: {
@@ -130,23 +131,27 @@ app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', '
     };
 
     function deleteRule(rule) {
-      FlowService.deleteRule(rule).success(function (data) {
-        if (data.code == 0) {
-          // getMachineRules();
+      KieFlowService.deleteKieFlowRule($scope.service_id, rule.ruleId).success(data => {
+        if (data.success) {
           confirmDialog.close();
+          getKieFlowRules();
         } else {
+          confirmDialog.close();
           alert('失败：' + data.msg);
+          getKieFlowRules();
         }
       });
     };
 
     function addNewRule(rule) {
-      FlowService.newRule(rule).success(function (data) {
-        if (data.code === 0) {
-          // getMachineRules();
+      KieFlowService.addKieFlowRule($scope.service_id, rule).success(data => {
+        if (data.success) {
           flowRuleDialog.close();
+          getKieFlowRules();
         } else {
+          flowRuleDialog.close();
           alert('失败：' + data.msg);
+          getKieFlowRules();
         }
       });
     };
@@ -160,8 +165,7 @@ app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', '
 
     function saveRule(rule, edit) {
       if (edit) {
-        $scope.rules[$scope.editIndex] = rule;
-        KieFlowService.updateKieFlowRules($scope.currentId, $scope.rules).success(data => {
+        KieFlowService.updateKieFlowRule($scope.service_id, rule).success(data => {
           if (data.success) {
             flowRuleDialog.close();
             getKieFlowRules();

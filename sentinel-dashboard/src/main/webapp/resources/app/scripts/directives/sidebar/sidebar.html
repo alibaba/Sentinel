@@ -15,7 +15,7 @@
           &nbsp;&nbsp;首页</a>
       </li>
 
-      <li ng-repeat="appActive in appActives" ng-class="{active: true}">{{dropDown}}
+      <li ng-repeat="appActive in appActives | filter: { app: searchApp }" ng-class="{active: true}">{{dropDown}}
         <a href="javascript:void(0);" ng-click="appClick($event)" collapse="{{collpaseall == 1}}" style="font-size: 16px;word-break: break-word;">
           &nbsp;{{appActive.app}}
           <span class="fa arrow"></span>
