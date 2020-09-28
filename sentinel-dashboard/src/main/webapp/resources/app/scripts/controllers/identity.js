@@ -1,12 +1,15 @@
 var app = angular.module('sentinelDashboardApp');
 
 app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
-  'ngDialog', 'FlowServiceV1', 'DegradeService', 'AuthorityRuleService', 'ParamFlowService', 'MachineService',
-  '$interval', '$location', '$timeout',
+  'ngDialog', 'DegradeService', 'AuthorityRuleService', 'ParamFlowService', '$location', '$timeout', 'KieFlowService',
   function ($scope, $stateParams, IdentityService, ngDialog,
-    FlowService, DegradeService, AuthorityRuleService, ParamFlowService, MachineService, $interval, $location, $timeout) {
-
+    DegradeService, AuthorityRuleService, ParamFlowService, $location, $timeout, KieFlowService) {
     $scope.app = $stateParams.app;
+    $scope.service = $stateParams.service; 
+    $scope.service_id = $stateParams.id;
+
+    $scope.ip = window.localStorage.getItem('currentIp');
+    $scope.port = window.localStorage.getItem('currentPort');
 
     $scope.currentPage = 1;
     $scope.pageSize = 16;
@@ -40,25 +43,21 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
     var flowRuleDialog;
     var flowRuleDialogScope;
     $scope.addNewFlowRule = function (resource) {
-      if (!$scope.macInputModel) {
-        return;
-      }
-      var mac = $scope.macInputModel.split(':');
       flowRuleDialogScope = $scope.$new(true);
       flowRuleDialogScope.currentRule = {
-        enable: false,
-        strategy: 0,
         grade: 1,
+        strategy: 0,
         controlBehavior: 0,
-        resource: resource,
+        app: $scope.app,
+        ip: null,
+        port: null,
         limitApp: 'default',
         clusterMode: false,
         clusterConfig: {
             thresholdType: 0
         },
-        app: $scope.app,
-        ip: mac[0],
-        port: mac[1]
+        enable: false,
+        resource: resource
       };
 
       flowRuleDialogScope.flowRuleDialog = {
@@ -74,7 +73,7 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
       flowRuleDialogScope.saveRule = saveFlowRule;
       flowRuleDialogScope.saveRuleAndContinue = saveFlowRuleAndContinue;
       flowRuleDialogScope.onOpenAdvanceClick = function () {
-        flowRuleDialogScope.flowRuleDialog.showAdvanceButton = false;
+        flowRuleDialogScope.flowRuleDialog.showAdvanceButton = false; 
       };
       flowRuleDialogScope.onCloseAdvanceClick = function () {
         flowRuleDialogScope.flowRuleDialog.showAdvanceButton = true;
@@ -89,31 +88,23 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
     };
 
     function saveFlowRule() {
-      if (!FlowService.checkRuleValid(flowRuleDialogScope.currentRule)) {
-        return;
-      }
-      FlowService.newRule(flowRuleDialogScope.currentRule).success(function (data) {
-        if (data.code === 0) {
+      KieFlowService.addKieFlowRule($scope.service_id, flowRuleDialogScope.currentRule).success(data => {
+        if (data.success) {
           flowRuleDialog.close();
-          let url = '/dashboard/flow/' + $scope.app;
-          $location.path(url);
         } else {
+          flowRuleDialog.close();
           alert('失败：' + data.msg);
         }
-      }).error((data, header, config, status) => {
-          alert('未知错误');
       });
     }
 
     function saveFlowRuleAndContinue() {
-        if (!FlowService.checkRuleValid(flowRuleDialogScope.currentRule)) {
-            return;
-        }
-      FlowService.newRule(flowRuleDialogScope.currentRule).success(function (data) {
-        if (data.code === 0) {
+      KieFlowService.addKieFlowRule($scope.service_id, flowRuleDialogScope.currentRule).success(data => {
+        if (data.success) {
           flowRuleDialog.close();
         } else {
-            alert('失败：' + data.msg);
+          flowRuleDialog.close();
+          alert('失败：' + data.msg);
         }
       });
     }
@@ -374,10 +365,8 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
     };
 
     $scope.initTreeTable = function () {
-      // if (!$scope.table) {
         com_github_culmat_jsTreeTable.register(window);
         $scope.table = window.treeTable($('#identities'));
-      // }
     };
 
     $scope.expandAll = function () {
@@ -395,61 +384,14 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
       queryIdentities();
     };
 
-    function queryAppMachines() {
-      MachineService.getAppMachines($scope.app).success(
-        function (data) {
-          if (data.code === 0) {
-            if (data.data) {
-              $scope.machines = [];
-              $scope.macsInputOptions = [];
-              data.data.forEach(function (item) {
-                if (item.healthy) {
-                  $scope.macsInputOptions.push({
-                    text: item.ip + ':' + item.port,
-                    value: item.ip + ':' + item.port
-                  });
-                }
-              });
-            }
-            if ($scope.macsInputOptions.length > 0) {
-              $scope.macInputModel = $scope.macsInputOptions[0].value;
-            }
-          } else {
-            $scope.macsInputOptions = [];
-          }
-        }
-      );
-    }
-
-    // Fetch all machines by current app name.
-    queryAppMachines();
-
-    $scope.$watch('macInputModel', function () {
-      if ($scope.macInputModel) {
-        reInitIdentityDatas();
-      }
-    });
-
-    $scope.$on('$destroy', function () {
-      $interval.cancel(intervalId);
-    });
-
-    var intervalId;
+    reInitIdentityDatas();
     function reInitIdentityDatas() {
-      // $interval.cancel(intervalId);
       queryIdentities();
-      // intervalId = $interval(function () {
-      //    queryIdentities();
-      // }, DATA_REFRESH_INTERVAL * 1000);
     };
 
     function queryIdentities() {
-      var mac = $scope.macInputModel.split(':');
-      if (mac == null || mac.length < 2) {
-        return;
-      }
       if ($scope.isTreeView) {
-        IdentityService.fetchIdentityOfMachine(mac[0], mac[1], $scope.searchKey).success(
+        IdentityService.fetchIdentityOfMachine($scope.ip, $scope.port, $scope.searchKey).success(
           function (data) {
             if (data.code == 0 && data.data) {
               $scope.identities = data.data;
@@ -461,7 +403,7 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
           }
         );
       } else {
-        IdentityService.fetchClusterNodeOfMachine(mac[0], mac[1], $scope.searchKey).success(
+        IdentityService.fetchClusterNodeOfMachine($scope.ip, $scope.port, $scope.searchKey).success(
           function (data) {
             if (data.code == 0 && data.data) {
               $scope.identities = data.data;

@@ -10,18 +10,17 @@ angular.module('sentinelDashboardApp')
         $scope.serviceClick = function ($event) {
           console.log("serviceClick");
           let entry = angular.element($event.target).scope().entry;
-          entry.active = !entry.active;// toggle this clicked app bar
-          $scope.services.forEach(function (item) { // collapse other app bars
+          console.log("entry", entry);
+          window.localStorage.setItem('currentIp', entry.ip);
+          window.localStorage.setItem('currentPort', entry.port);
+          entry.active = !entry.active;// toggle this clicked service bar
+          $scope.services.forEach(function (item) { // collapse other service bars
             if (item !== entry) {
               item.active = false;
             }
           });
         };
 
-        // FIX ME 更改了维度，app->service
-        /**
-         * @deprecated
-         */
         $scope.addSearchApp = function () {
           let findApp = false;
           for (let i = 0; i < $scope.apps.length; i++) {

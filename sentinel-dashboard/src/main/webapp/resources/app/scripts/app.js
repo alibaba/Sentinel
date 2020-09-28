@@ -285,7 +285,7 @@ angular
 
       .state('dashboard.identity', {
         templateUrl: 'app/views/identity.html',
-        url: '/identity/:app',
+        url: '/identity/:app/:service/:id',
         controller: 'IdentityCtl',
         resolve: {
           loadMyFiles: ['$ocLazyLoad', function ($ocLazyLoad) {

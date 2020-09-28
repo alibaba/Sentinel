@@ -63,6 +63,7 @@ const JS_APP = [
   'app/scripts/services/kie_flow_service.js',
   'app/scripts/services/fixture_service.js',
   'app/scripts/services/kie_metric_service.js',
+  'app/scripts/services/kie_identity_service.js',
 ];
 
 gulp.task('lib', function () {

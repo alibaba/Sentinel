@@ -29,15 +29,14 @@
               <span class="arrow"></span>
             </a>
   
-            <!--<ul class="nav nav-second-level" collapse="{{entry.active}}" style="display: none;">-->
             <ul class="nav nav-second-level" ng-show="entry.active">
               <li ui-sref-active="active">
                 <a ui-sref="dashboard.metric({app: entry.app, service: entry.service, id: entry.id})">
                   <i class="fa fa-bar-chart"></i>&nbsp;&nbsp;实时监控</a>
               </li>
   
-              <li ui-sref-active="active" ng-if="false">
-                <a ui-sref="dashboard.identity({app: entry.app})">
+              <li ui-sref-active="active">
+                <a ui-sref="dashboard.identity({app: entry.app, service: entry.service, id: entry.id})">
                   <i class="glyphicon glyphicon-list-alt"></i>&nbsp;&nbsp;簇点链路</a>
               </li>
   
