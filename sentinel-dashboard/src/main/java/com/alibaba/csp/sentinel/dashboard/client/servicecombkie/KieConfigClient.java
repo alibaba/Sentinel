@@ -38,20 +38,30 @@ public class KieConfigClient {
         return object.toJSONString();
     }
 
-    private <T> Optional<HttpEntity> sendToKie(HttpUriRequest request) {
+    private <T> Optional<String> sendToKie(HttpUriRequest request) {
+        CloseableHttpResponse response = null;
         try {
-            CloseableHttpResponse response = client.execute(request);
+            response = client.execute(request);
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != HttpStatus.SC_OK) {
                 RecordLog.warn(String.format("Get config from ServiceComb-kie failed, status code is %d",
                         statusCode));
                 return Optional.empty();
             }
-
-            return Optional.ofNullable(response.getEntity());
+            HttpEntity entity = response.getEntity();
+            String result = EntityUtils.toString(entity, "utf-8");
+            return Optional.ofNullable(result);
         } catch (IOException e) {
             RecordLog.error("Send to ServiceComb-kie failed.", e);
             return Optional.empty();
+        } finally {
+            try {
+                if (response != null) {
+                    response.close();
+                }
+            }catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -73,20 +83,14 @@ public class KieConfigClient {
 
     public Optional<KieConfigResponse> getConfig(String url) {
         HttpGet httpGet = new HttpGet(url);
-        Optional<HttpEntity> httpEntity = sendToKie(httpGet);
+        Optional<String> result = sendToKie(httpGet);
 
-        if (!httpEntity.isPresent()) {
+        if (!result.isPresent()) {
             return Optional.empty();
         }
 
-        try {
-            String result = EntityUtils.toString(httpEntity.get(), "utf-8");
-            KieConfigResponse kieResponse = JSON.parseObject(result, KieConfigResponse.class);
-            return Optional.ofNullable(kieResponse);
-        } catch (IOException e) {
-            RecordLog.error("Get config from ServiceComb-kie failed.", e);
-            return Optional.empty();
-        }
+        KieConfigResponse kieResponse = JSON.parseObject(result.get(), KieConfigResponse.class);
+        return Optional.ofNullable(kieResponse);
     }
 
 
@@ -102,20 +106,14 @@ public class KieConfigClient {
             return Optional.empty();
         }
 
-        Optional<HttpEntity> httpEntity = sendToKie(httpPut);
+        Optional<String> result = sendToKie(httpPut);
 
-        if (!httpEntity.isPresent()) {
+        if (!result.isPresent()) {
             return Optional.empty();
         }
 
-        try {
-            String result = EntityUtils.toString(httpEntity.get(), "utf-8");
-            KieConfigResponse kieResponse = JSON.parseObject(result, KieConfigResponse.class);
-            return Optional.ofNullable(kieResponse);
-        } catch (IOException e) {
-            RecordLog.error("Update config to ServiceComb-kie failed.", e);
-            return Optional.empty();
-        }
+        KieConfigResponse kieResponse = JSON.parseObject(result.get(), KieConfigResponse.class);
+        return Optional.ofNullable(kieResponse);
     }
 
     public <T> Optional<KieConfigResponse> addConfig(String url, String key, T rule, KieConfigLabel label) {
@@ -130,39 +128,22 @@ public class KieConfigClient {
             return Optional.empty();
         }
 
-        Optional<HttpEntity> httpEntity = sendToKie(httpPost);
+        Optional<String> result = sendToKie(httpPost);
 
-        if (!httpEntity.isPresent()) {
+        if (!result.isPresent()) {
             return Optional.empty();
         }
 
-        try {
-            String result = EntityUtils.toString(httpEntity.get(), "utf-8");
-            KieConfigResponse kieResponse = JSON.parseObject(result, KieConfigResponse.class);
-            return Optional.ofNullable(kieResponse);
-        } catch (IOException e) {
-            RecordLog.error("Add config to ServiceComb-kie failed.", e);
-            return Optional.empty();
-        }
+        KieConfigResponse kieResponse = JSON.parseObject(result.get(), KieConfigResponse.class);
+        return Optional.ofNullable(kieResponse);
     }
 
     public Optional<String> deleteConfig(String urlPrefix, String id) {
         String url = urlPrefix + "/" + id;
         HttpDelete httpDelete = new HttpDelete(url);
 
-        Optional<HttpEntity> httpEntity = sendToKie(httpDelete);
+        return sendToKie(httpDelete);
 
-        if (!httpEntity.isPresent()) {
-            return Optional.empty();
-        }
-
-        try {
-            String result = EntityUtils.toString(httpEntity.get(), "utf-8");
-            return Optional.ofNullable(result);
-        } catch (IOException e) {
-            RecordLog.error("Add config to ServiceComb-kie failed.", e);
-            return Optional.empty();
-        }
     }
 }
 
