@@ -62,7 +62,7 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
 
       flowRuleDialogScope.flowRuleDialog = {
         title: '新增流控规则',
-        type: 'add',
+        type: 'addByI',
         confirmBtnText: '新增',
         saveAndContinueBtnText: '新增并继续添加',
         showAdvanceButton: true

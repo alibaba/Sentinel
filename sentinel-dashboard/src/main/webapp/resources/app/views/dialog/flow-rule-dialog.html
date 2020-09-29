@@ -9,8 +9,9 @@
             <div class="col-sm-9">
               <input type="text" ng-if="flowRuleDialog.type == 'edit'" class="form-control" placeholder="资源名" ng-model='currentRule.resource'
                 disabled="" />
-              <input type="text" ng-if="flowRuleDialog.type == 'add'" class="form-control highlight-border" placeholder="资源名" ng-model='currentRule.resource'
+              <input type="text" ng-if="flowRuleDialog.type == 'addByI'" class="form-control highlight-border" placeholder="资源名" ng-model='currentRule.resource'
               />
+              <ham-select-search ng-if="flowRuleDialog.type == 'add'" datas="resourceList" value="currentRule.resource" ng-model="currentRule.resource"></ham-select-search>
             </div>
           </div>
 

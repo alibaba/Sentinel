@@ -116,6 +116,7 @@ angular
             return $ocLazyLoad.load({
               name: 'sentinelDashboardApp',
               files: [
+                'app/scripts/directives/selectOption/selectOption.js',
                 'app/scripts/controllers/flow_v1.js',
               ]
             });

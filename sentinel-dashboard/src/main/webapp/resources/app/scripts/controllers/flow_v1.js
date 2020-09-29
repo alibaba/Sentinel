@@ -1,10 +1,13 @@
 var app = angular.module('sentinelDashboardApp');
 
-app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', 'ngDialog', 'KieFlowService', 'FixtureService',
-  function ($scope, $stateParams, FlowService, ngDialog, KieFlowService, FixtureService) {
+app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', 'ngDialog', 'KieFlowService', 'FixtureService', 'KieIdentityService',
+  function ($scope, $stateParams, FlowService, ngDialog, KieFlowService, FixtureService, KieIdentityService) {
     $scope.app = $stateParams.app
     $scope.service = $stateParams.service;
     $scope.service_id = $stateParams.id
+    $scope.ip = window.localStorage.getItem('currentIp');
+    $scope.port = window.localStorage.getItem('currentPort');
+
     $scope.rulesPageConfig = {
       pageSize: 10,
       currentPageIndex: 1,
@@ -67,7 +70,16 @@ app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', '
       });
     };
 
-    $scope.addNewRule = function () {
+    $scope.addNewRule = async function () {
+      $scope.resourceList = [];
+      await KieIdentityService.queryIdentityOfService($scope.ip, $scope.port).success(val => {
+        if (val.success) {
+          val.data.map(ele => {   
+            $scope.resourceList.push(ele.resource);
+          });
+        }
+      });
+      console.log("$scope.resourceList", $scope.resourceList);
       console.log("$scope.addNewRule");
       $scope.currentRule = {
         grade: 1,
