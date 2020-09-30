@@ -25,6 +25,8 @@ public class MetricEntity {
     private Date gmtCreate;
     private Date gmtModified;
     private String serverId;
+    private String ip;
+    private Integer port;
     /**
      * 监控信息的时间戳
      */
@@ -195,6 +197,18 @@ public class MetricEntity {
 
     public void setSuccessQps(Long successQps) {
         this.successQps = successQps;
+    }
+
+    public void setIp(String ip){
+        this.ip = ip;
+    }
+
+    public void setPort(Integer port){
+        this.port = port;
+    }
+
+    public String getMachineSocket(){
+        return ip + ":" + port;
     }
 
     @Override

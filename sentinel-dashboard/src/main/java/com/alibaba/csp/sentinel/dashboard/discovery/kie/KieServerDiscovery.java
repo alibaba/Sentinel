@@ -1,6 +1,8 @@
 package com.alibaba.csp.sentinel.dashboard.discovery.kie;
 
+import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.kie.common.KieServerInfo;
+import com.alibaba.csp.sentinel.dashboard.discovery.kie.common.KieServerLabel;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,9 +13,9 @@ public interface KieServerDiscovery {
 
     Set<String> queryProjects();
 
-    long addServerInfo(KieServerInfo serverInfo);
+    long addMachineInfo(KieServerLabel label, MachineInfo machineInfo);
 
-    boolean removeServerInfo(String project, String app, String server, String environment, String version);
+    boolean removeMachineInfo(String project, String app, String server, String environment, String version);
 
     Optional<KieServerInfo> queryKieInfo(String id);
 
@@ -22,4 +24,6 @@ public interface KieServerDiscovery {
     KieServerInfo getServerInfo(String id);
 
     void removeServer(String id);
+
+    Set<MachineInfo> getMachineInfos(String id);
 }

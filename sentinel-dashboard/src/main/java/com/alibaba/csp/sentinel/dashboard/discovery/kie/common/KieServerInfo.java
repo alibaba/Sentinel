@@ -15,35 +15,31 @@
  */
 package com.alibaba.csp.sentinel.dashboard.discovery.kie.common;
 
-import com.alibaba.csp.sentinel.dashboard.config.DashboardConfig;
+import com.alibaba.csp.sentinel.dashboard.discovery.AppInfo;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
-public class KieServerInfo{
+public class KieServerInfo extends AppInfo {
     private String id;
-
-    private String hostname;
-    private String ip;
-    private int port;
-    private long heartbeatVersion;
-    private long lastHeartbeat;
-    private boolean healthy;
-    private String sentinelVersion;
 
     private KieServerLabel label;
 
     @Override
-    public int hashCode(){
+    public int hashCode() {
         return label.hashCode();
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) { return true; }
-        if (!(o instanceof KieServerInfo)) { return false; }
-        KieServerInfo that = (KieServerInfo)o;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof KieServerInfo)) {
+            return false;
+        }
+        KieServerInfo that = (KieServerInfo) o;
         return label.equals(that.label);
     }
 
@@ -52,30 +48,6 @@ public class KieServerInfo{
         return new StringBuilder("KieServerInfo {")
                 .append("label='").append(label).append('\'')
                 .append(", id='").append(id).append('\'')
-                .append(", hostname='").append(hostname).append('\'')
-                .append(", ip='").append(ip).append('\'')
-                .append(", port=").append(port)
-                .append(", heartbeatVersion=").append(heartbeatVersion)
-                .append(", lastHeartbeat=").append(lastHeartbeat)
-                .append(", healthy=").append(isHealthy())
                 .append('}').toString();
-    }
-
-    public boolean isHealthy() {
-        long delta = System.currentTimeMillis() - lastHeartbeat;
-        return delta < DashboardConfig.getUnhealthyMachineMillis();
-    }
-
-    /**
-     * whether dead should be removed
-     *
-     * @return
-     */
-    public boolean isDead() {
-        if (DashboardConfig.getAutoRemoveMachineMillis() > 0) {
-            long delta = System.currentTimeMillis() - lastHeartbeat;
-            return delta > DashboardConfig.getAutoRemoveMachineMillis();
-        }
-        return false;
     }
 }

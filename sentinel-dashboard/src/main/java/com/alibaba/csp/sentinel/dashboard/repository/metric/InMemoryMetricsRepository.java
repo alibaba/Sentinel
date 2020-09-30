@@ -38,9 +38,10 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
     private static final long MAX_METRIC_LIVE_TIME_MS = 1000 * 60 * 5;
 
     /**
-     * {@code app -> resource -> timestamp -> metric}
+     * {@code serverId -> ip:port -> resource -> timestamp -> metric}
      */
-    private Map<String, Map<String, LinkedHashMap<Long, MetricEntity>>> allMetrics = new ConcurrentHashMap<>();
+    private Map<String, Map<String, Map<String, LinkedHashMap<Long, MetricEntity>>>> allMetrics =
+            new ConcurrentHashMap<>();
 
     private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
@@ -53,6 +54,7 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
         readWriteLock.writeLock().lock();
         try {
             allMetrics.computeIfAbsent(entity.getServerId(), e -> new HashMap<>(16))
+                    .computeIfAbsent(entity.getMachineSocket(), e -> new HashMap<>())
                     .computeIfAbsent(entity.getResource(), e -> new LinkedHashMap<Long, MetricEntity>() {
                         @Override
                         protected boolean removeEldestEntry(Entry<Long, MetricEntity> eldest) {
@@ -80,13 +82,15 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
     }
 
     @Override
-    public List<MetricEntity> queryByAppAndResourceBetween(String serverId, String resource,
+    public List<MetricEntity> queryByAppAndResourceBetween(String serverId, String ip, Integer port, String resource,
                                                            long startTime, long endTime) {
         List<MetricEntity> results = new ArrayList<>();
         if (StringUtil.isBlank(serverId)) {
             return results;
         }
-        Map<String, LinkedHashMap<Long, MetricEntity>> resourceMap = allMetrics.get(serverId);
+
+        String socket = ip + ":" + port;
+        Map<String, LinkedHashMap<Long, MetricEntity>> resourceMap = allMetrics.get(serverId).get(socket);
         if (resourceMap == null) {
             return results;
         }
@@ -108,14 +112,16 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
     }
 
     @Override
-    public List<String> listResourcesOfApp(String app) {
+    public List<String> listResourcesOfApp(String serverId, String ip, Integer port) {
         List<String> results = new ArrayList<>();
-        if (StringUtil.isBlank(app)) {
+        if (StringUtil.isBlank(serverId) || allMetrics.get(serverId) == null) {
             return results;
         }
-        // resource -> timestamp -> metric
-        Map<String, LinkedHashMap<Long, MetricEntity>> resourceMap = allMetrics.get(app);
-        if (resourceMap == null) {
+
+        String socket = ip + ":" + port;
+        // ip:port -> resource -> timestamp -> metric
+        Map<String, LinkedHashMap<Long, MetricEntity>> resourceMap = allMetrics.get(serverId).get(socket);
+        if (resourceMap == null ) {
             return results;
         }
         final long minTimeMs = System.currentTimeMillis() - 1000 * 60;

@@ -48,6 +48,8 @@ public class MetricController {
     @ResponseBody
     @RequestMapping("/queryTopResourceMetric.json")
     public Result<?> queryTopResourceMetric(final String serverId,
+                                            final String ip,
+                                            final Integer port,
                                             Integer pageIndex,
                                             Integer pageSize,
                                             Boolean desc,
@@ -76,7 +78,7 @@ public class MetricController {
         if (endTime - startTime > maxQueryIntervalMs) {
             return Result.ofFail(-1, "time intervalMs is too big, must <= 1h");
         }
-        List<String> resources = metricStore.listResourcesOfApp(serverId);
+        List<String> resources = metricStore.listResourcesOfApp(serverId, ip, port);
         logger.debug("queryTopResourceMetric(), resources.size()={}", resources.size());
 
         if (resources == null || resources.isEmpty()) {
@@ -105,7 +107,7 @@ public class MetricController {
         long time = System.currentTimeMillis();
         for (final String resource : topResource) {
             List<MetricEntity> entities = metricStore.queryByAppAndResourceBetween(
-                serverId, resource, startTime, endTime);
+                serverId, ip, port, resource, startTime, endTime);
             logger.debug("resource={}, entities.size()={}", resource, entities == null ? "null" : entities.size());
             List<MetricVo> vos = MetricVo.fromMetricEntities(entities, resource);
             Iterable<MetricVo> vosSorted = sortMetricVoAndDistinct(vos);
@@ -129,8 +131,8 @@ public class MetricController {
 
     @ResponseBody
     @RequestMapping("/queryByAppAndResource.json")
-    public Result<?> queryByAppAndResource(String app, String identity, Long startTime, Long endTime) {
-        if (StringUtil.isEmpty(app)) {
+    public Result<?> queryByAppAndResource(String serverId, String ip, Integer port, String identity, Long startTime, Long endTime) {
+        if (StringUtil.isEmpty(serverId)) {
             return Result.ofFail(-1, "app can't be null or empty");
         }
         if (StringUtil.isEmpty(identity)) {
@@ -146,7 +148,7 @@ public class MetricController {
             return Result.ofFail(-1, "time intervalMs is too big, must <= 1h");
         }
         List<MetricEntity> entities = metricStore.queryByAppAndResourceBetween(
-            app, identity, startTime, endTime);
+            serverId, ip, port, identity, startTime, endTime);
         List<MetricVo> vos = MetricVo.fromMetricEntities(entities, identity);
         return Result.ofSuccess(sortMetricVoAndDistinct(vos));
     }

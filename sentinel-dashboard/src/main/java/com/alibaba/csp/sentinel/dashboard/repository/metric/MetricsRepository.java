@@ -48,7 +48,7 @@ public interface MetricsRepository<T> {
      * @param endTime   end timestamp
      * @return all metrics in query conditions
      */
-    List<T> queryByAppAndResourceBetween(String app, String resource, long startTime, long endTime);
+    List<T> queryByAppAndResourceBetween(String app, String ip, Integer port, String resource, long startTime, long endTime);
 
     /**
      * List resource name of provided application name.
@@ -56,5 +56,5 @@ public interface MetricsRepository<T> {
      * @param app application name
      * @return list of resources
      */
-    List<String> listResourcesOfApp(String app);
+    List<String> listResourcesOfApp(String app, String ip, Integer port);
 }

@@ -1,6 +1,9 @@
 package com.alibaba.csp.sentinel.dashboard.discovery.kie;
 
+import com.alibaba.csp.sentinel.dashboard.discovery.AppInfo;
+import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.kie.common.KieServerInfo;
+import com.alibaba.csp.sentinel.dashboard.discovery.kie.common.KieServerLabel;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import org.springframework.stereotype.Component;
 
@@ -24,17 +27,23 @@ public class SimpleKieDiscovery implements KieServerDiscovery {
     }
 
     @Override
-    public long addServerInfo(KieServerInfo serverInfo) {
-        AssertUtil.notNull(serverInfo, "serverInfo cannot be null");
-        AssertUtil.notNull(serverInfo.getLabel().getProject(), "project cannot be null");
+    public long addMachineInfo(KieServerLabel labelInfo, MachineInfo machineInfo) {
+        AssertUtil.notNull(labelInfo, "labelInfo cannot be null");
+        AssertUtil.notNull(labelInfo.getProject(), "machineInfo cannot be null");
 
-        Set<KieServerInfo> set = serverMap.computeIfAbsent(serverInfo.getLabel().getProject(), x -> new HashSet<>());
-        set.add(serverInfo);
+        Set<KieServerInfo> set = serverMap.computeIfAbsent(labelInfo.getProject(), x -> new HashSet<>());
+        KieServerInfo kieServerInfo = KieServerInfo.builder()
+                .id(UUID.randomUUID().toString())
+                .label(labelInfo)
+                .build();
+
+        kieServerInfo.addMachine(machineInfo);
+        set.add(kieServerInfo);
         return 1;
     }
 
     @Override
-    public boolean removeServerInfo(String project, String app, String server, String environment, String version) {
+    public boolean removeMachineInfo(String project, String app, String server, String environment, String version) {
         return false;
     }
 
@@ -68,5 +77,16 @@ public class SimpleKieDiscovery implements KieServerDiscovery {
                    .findFirst();
            kieServerInfo.ifPresent(set::remove);
         });
+    }
+
+    @Override
+    public Set<MachineInfo> getMachineInfos(String serverId) {
+        Optional<KieServerInfo> kieServerInfo = serverMap.values().stream()
+                .flatMap(kieServerInfos
+                        -> kieServerInfos.stream()
+                        .filter(y -> serverId.equals(y.getId())))
+                .findAny();
+
+        return kieServerInfo.map(AppInfo::getMachines).orElse(null);
     }
 }

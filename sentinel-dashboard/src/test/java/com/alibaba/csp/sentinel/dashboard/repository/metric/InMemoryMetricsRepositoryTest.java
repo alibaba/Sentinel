@@ -66,8 +66,10 @@ public class InMemoryMetricsRepositoryTest {
         entry.setExceptionQps(1L);
         entry.setBlockQps(0L);
         entry.setSuccessQps(1L);
+        entry.setIp("192.168.0.1");
+        entry.setPort(8080);
         inMemoryMetricsRepository.save(entry);
-        List<String> resources = inMemoryMetricsRepository.listResourcesOfApp("testSave");
+        List<String> resources = inMemoryMetricsRepository.listResourcesOfApp("testSave", "192.168.0.1", 8080);
         Assert.assertTrue(resources.size() == 1 && "testResource".equals(resources.get(0)));
     }
 
@@ -84,10 +86,12 @@ public class InMemoryMetricsRepositoryTest {
             entry.setExceptionQps(1L);
             entry.setBlockQps(0L);
             entry.setSuccessQps(1L);
+            entry.setIp("192.168.0.1");
+            entry.setPort(8080);
             entities.add(entry);
         }
         inMemoryMetricsRepository.saveAll(entities);
-        List<String> result = inMemoryMetricsRepository.listResourcesOfApp("testSaveAll");
+        List<String> result = inMemoryMetricsRepository.listResourcesOfApp("testSaveAll", "192.168.0.1", 8080);
         Assert.assertTrue(result.size() == entities.size());
     }
 
@@ -103,6 +107,8 @@ public class InMemoryMetricsRepositoryTest {
         expireEntry.setExceptionQps(1L);
         expireEntry.setBlockQps(0L);
         expireEntry.setSuccessQps(1L);
+        expireEntry.setIp("192.168.0.1");
+        expireEntry.setPort(8080);
         inMemoryMetricsRepository.save(expireEntry);
 
         MetricEntity entry = new MetricEntity();
@@ -113,10 +119,12 @@ public class InMemoryMetricsRepositoryTest {
         entry.setExceptionQps(1L);
         entry.setBlockQps(0L);
         entry.setSuccessQps(1L);
+        entry.setIp("192.168.0.1");
+        entry.setPort(8080);
         inMemoryMetricsRepository.save(entry);
 
         List<MetricEntity> list = inMemoryMetricsRepository.queryByAppAndResourceBetween(
-                DEFAULT_APP, DEFAULT_RESOURCE, now - EXPIRE_TIME, now);
+                DEFAULT_APP, "192.168.0.1", 8080, DEFAULT_RESOURCE, now - EXPIRE_TIME, now);
 
         assertFalse(CollectionUtils.isEmpty(list));
         assertEquals(1, list.size());
@@ -139,7 +147,7 @@ public class InMemoryMetricsRepositoryTest {
                             if (finalJ % 2 == 0) {
                                 batchSave();
                             } else {
-                                inMemoryMetricsRepository.listResourcesOfApp(DEFAULT_APP);
+                                inMemoryMetricsRepository.listResourcesOfApp(DEFAULT_APP, "192.168.0.1", 8080);
                             }
 
                         } catch (InterruptedException | BrokenBarrierException e) {

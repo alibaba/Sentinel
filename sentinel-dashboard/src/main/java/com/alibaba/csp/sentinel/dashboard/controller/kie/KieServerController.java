@@ -1,5 +1,6 @@
 package com.alibaba.csp.sentinel.dashboard.controller.kie;
 
+import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.kie.KieServerManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.kie.common.KieServerInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.kie.common.KieServerLabel;
@@ -9,10 +10,7 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Set;
@@ -54,5 +52,11 @@ public class KieServerController {
         }).collect(Collectors.toSet());
 
         return Result.ofSuccess(kieServerInfoVos);
+    }
+
+    @GetMapping("/{serverId}/machineInfos")
+    public Result<Set<MachineInfo>> queryMachineInfos(@PathVariable("serverId") String serverId){
+        Set<MachineInfo> machineInfos = management.getMachineInfos(serverId);
+        return Result.ofSuccess(machineInfos);
     }
 }

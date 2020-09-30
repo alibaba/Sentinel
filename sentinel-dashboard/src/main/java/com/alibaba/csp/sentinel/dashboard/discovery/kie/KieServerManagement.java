@@ -15,7 +15,9 @@
  */
 package com.alibaba.csp.sentinel.dashboard.discovery.kie;
 
+import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.kie.common.KieServerInfo;
+import com.alibaba.csp.sentinel.dashboard.discovery.kie.common.KieServerLabel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -45,13 +47,13 @@ public class KieServerManagement implements KieServerDiscovery {
     }
 
     @Override
-    public long addServerInfo(KieServerInfo serverInfo) {
-        discovery.addServerInfo(serverInfo);
+    public long addMachineInfo(KieServerLabel label, MachineInfo machineInfo) {
+        discovery.addMachineInfo(label, machineInfo);
         return 1;
     }
 
     @Override
-    public boolean removeServerInfo(String project, String app, String server, String environment, String version) {
+    public boolean removeMachineInfo(String project, String app, String server, String environment, String version) {
         return false;
     }
 
@@ -73,5 +75,10 @@ public class KieServerManagement implements KieServerDiscovery {
     @Override
     public void removeServer(String id){
         discovery.removeServer(id);
+    }
+
+    @Override
+    public Set<MachineInfo> getMachineInfos(String id) {
+        return discovery.getMachineInfos(id);
     }
 }

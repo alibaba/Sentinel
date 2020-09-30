@@ -19,7 +19,6 @@ import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineDiscovery;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.kie.KieServerManagement;
-import com.alibaba.csp.sentinel.dashboard.discovery.kie.common.KieServerInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.kie.common.KieServerLabel;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.dashboard.domain.vo.kie.KieServerInfoVo;
@@ -98,7 +97,7 @@ public class MachineRegistryController {
                 System.currentTimeMillis() : kieServerInfoVo.getHeartbeatVersion();
 
         try{
-            KieServerLabel kieServerLabel = KieServerLabel.builder()
+            KieServerLabel label = KieServerLabel.builder()
                     .app(kieServerInfoVo.getApp())
                     .project(kieServerInfoVo.getProject())
                     .service(kieServerInfoVo.getService())
@@ -106,19 +105,16 @@ public class MachineRegistryController {
                     .environment(kieServerInfoVo.getEnvironment())
                     .build();
 
-            KieServerInfo kieServerInfo = KieServerInfo.builder()
-                    .label(kieServerLabel)
-                    .ip(kieServerInfoVo.getIp())
-                    .port(kieServerInfoVo.getPort())
-                    .id(kieServerInfoVo.getId())
-                    .sentinelVersion(sentinelVersion)
-                    .heartbeatVersion(heartbeatVersion)
-                    .lastHeartbeat(System.currentTimeMillis())
-                    .build();
+            MachineInfo machineInfo = new MachineInfo();
+            machineInfo.setIp(kieServerInfoVo.getIp());
+            machineInfo.setPort(kieServerInfoVo.getPort());
+            machineInfo.setHeartbeatVersion(heartbeatVersion);
+            machineInfo.setLastHeartbeat(System.currentTimeMillis());
+            machineInfo.setVersion(sentinelVersion);
 
-            kieManagement.addServerInfo(kieServerInfo);
+            kieManagement.addMachineInfo(label, machineInfo);
 
-            logger.info(String.format("Register to dashboard, %s.", kieServerInfo));
+            logger.info(String.format("Register to dashboard, %s.", machineInfo));
             return Result.ofSuccessMsg("success");
         }catch (Exception e){
             logger.error("Receive heartbeat error", e);
