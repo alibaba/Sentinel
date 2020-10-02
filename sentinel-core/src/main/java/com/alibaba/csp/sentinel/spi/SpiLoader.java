@@ -471,8 +471,10 @@ public final class SpiLoader<S> {
                 instance = singletonMap.get(clazz.getName());
                 if (instance == null) {
                     synchronized (this) {
-                        instance = service.cast(clazz.newInstance());
-                        singletonMap.put(clazz.getName(), instance);
+                        if (instance == null) {
+                            instance = service.cast(clazz.newInstance());
+                            singletonMap.put(clazz.getName(), instance);
+                        }
                     }
                 }
             } else {
@@ -494,12 +496,18 @@ public final class SpiLoader<S> {
             return;
         }
 
+        Exception firstException = null;
         for (Closeable closeable : closeables) {
             try {
                 closeable.close();
             } catch (Exception e) {
-                fail("error closing SPI configuration file", e);
+                if (firstException != null) {
+                    firstException = e;
+                }
             }
+        }
+        if (firstException != null) {
+            fail("error closing resources", firstException);
         }
     }
 
