@@ -396,26 +396,26 @@ public final class SpiLoader<S> {
                             , spi == null ? false : spi.isDefault()
                             , spi == null ? 0 : spi.order());
                 }
-
-                sortedClassList.addAll(classList);
-                Collections.sort(sortedClassList, new Comparator<Class<? extends S>>() {
-                    @Override
-                    public int compare(Class<? extends S> o1, Class<? extends S> o2) {
-                        Spi spi1 = o1.getAnnotation(Spi.class);
-                        int order1 = spi1 == null ? 0 : spi1.order();
-
-                        Spi spi2 = o2.getAnnotation(Spi.class);
-                        int order2 = spi2 == null ? 0 : spi2.order();
-
-                        return Integer.compare(order1, order2);
-                    }
-                });
             } catch (IOException e) {
                 fail("error reading SPI configuration file", e);
             } finally {
                 closeResources(in, br);
             }
         }
+
+        sortedClassList.addAll(classList);
+        Collections.sort(sortedClassList, new Comparator<Class<? extends S>>() {
+            @Override
+            public int compare(Class<? extends S> o1, Class<? extends S> o2) {
+                Spi spi1 = o1.getAnnotation(Spi.class);
+                int order1 = spi1 == null ? 0 : spi1.order();
+
+                Spi spi2 = o2.getAnnotation(Spi.class);
+                int order2 = spi2 == null ? 0 : spi2.order();
+
+                return Integer.compare(order1, order2);
+            }
+        });
     }
 
     @Override
