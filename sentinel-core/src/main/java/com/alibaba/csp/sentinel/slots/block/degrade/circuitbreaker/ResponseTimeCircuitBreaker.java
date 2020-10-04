@@ -19,7 +19,6 @@ import java.util.List;
 
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.context.Context;
-import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.statistic.base.LeapArray;
@@ -33,6 +32,8 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
  * @since 1.8.0
  */
 public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
+
+    private static final double SLOW_REQUEST_RATIO_MAX_VALUE = 1.0d;
 
     private final long maxAllowedRt;
     private final double maxSlowRequestRatio;
@@ -108,6 +109,10 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
         }
         double currentRatio = slowCount * 1.0d / totalCount;
         if (currentRatio > maxSlowRequestRatio) {
+            transformToOpen(currentRatio);
+        }
+        if (Double.compare(currentRatio, maxSlowRequestRatio) == 0 &&
+                Double.compare(maxSlowRequestRatio, SLOW_REQUEST_RATIO_MAX_VALUE) == 0) {
             transformToOpen(currentRatio);
         }
     }
