@@ -51,7 +51,7 @@ public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode>
     /**
      * <p>
      * Remember that same resource({@link ResourceWrapper#equals(Object)}) will share
-     * the same {@link ProcessorSlotChain} globally, no matter in witch context. So if
+     * the same {@link ProcessorSlotChain} globally, no matter in which context. So if
      * code goes into {@link #entry(Context, ResourceWrapper, DefaultNode, int, boolean, Object...)},
      * the resource name must be same but context name may not.
      * </p>
