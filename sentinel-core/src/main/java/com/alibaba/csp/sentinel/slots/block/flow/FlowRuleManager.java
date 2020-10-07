@@ -48,7 +48,7 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
  */
 public class FlowRuleManager {
 
-    private static final AtomicReference<Map<String, List<FlowRule>>> flowRules = new AtomicReference<>();
+    private static final AtomicReference<Map<String, List<FlowRule>>> flowRules = new AtomicReference<Map<String, List<FlowRule>>>();
 
     private static final FlowPropertyListener LISTENER = new FlowPropertyListener();
     private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();

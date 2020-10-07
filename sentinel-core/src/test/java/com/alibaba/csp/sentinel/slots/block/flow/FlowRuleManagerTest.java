@@ -27,8 +27,8 @@ import static org.junit.Assert.assertEquals;
  */
 public class FlowRuleManagerTest {
 
-    public static final List<FlowRule> STATIC_RULES_1 = new ArrayList<>();
-    public static final List<FlowRule> STATIC_RULES_2 = new ArrayList<>();
+    public static final List<FlowRule> STATIC_RULES_1 = new ArrayList<FlowRule>();
+    public static final List<FlowRule> STATIC_RULES_2 = new ArrayList<FlowRule>();
 
     static {
         FlowRule first = new FlowRule();
