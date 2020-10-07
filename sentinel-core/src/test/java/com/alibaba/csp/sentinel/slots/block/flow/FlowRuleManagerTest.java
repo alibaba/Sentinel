@@ -50,13 +50,11 @@ public class FlowRuleManagerTest {
         new Thread(loader, "Loader").start();
 
         for(int i = 0; i < 10000; i++){
-            System.out.println("main:" + i);
             //The initial size is 1, and the size after updating should also be 1,
             //if the actual size is 0, that must be called after clear(),
             // but before putAll() in FlowPropertyListener.configUpdate
             assertEquals(1, FlowRuleManager.getRules().size());
         }
-
     }
 
     public Runnable loader = new Runnable() {
@@ -64,8 +62,7 @@ public class FlowRuleManagerTest {
         public void run() {
             for(int i = 0; i < 10000; i++){
                 //to guarantee that they're different and change happens
-                System.out.println("loader:" + i);
-                FlowRuleManager.loadRules(i%2 == 0 ? STATIC_RULES_2 : STATIC_RULES_1);
+                FlowRuleManager.loadRules(i % 2 == 0 ? STATIC_RULES_2 : STATIC_RULES_1);
             }
         }
     };

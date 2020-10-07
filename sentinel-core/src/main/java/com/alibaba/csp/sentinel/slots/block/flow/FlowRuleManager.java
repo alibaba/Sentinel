@@ -44,6 +44,7 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
  *
  * @author jialiang.linjl
  * @author Eric Zhao
+ * @author Weihua
  */
 public class FlowRuleManager {
 
