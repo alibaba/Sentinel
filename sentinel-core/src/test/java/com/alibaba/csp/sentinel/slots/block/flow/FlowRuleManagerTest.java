@@ -57,7 +57,7 @@ public class FlowRuleManagerTest {
         }
     }
 
-    public Runnable loader = new Runnable() {
+    private static Runnable loader = new Runnable() {
         @Override
         public void run() {
             for(int i = 0; i < 10000; i++){

@@ -1,25 +1,70 @@
 package com.alibaba.csp.sentinel.slots.block.authority;
 
-import java.util.Collections;
-import java.util.List;
-
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-
 import org.junit.After;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test cases for {@link AuthorityRuleManager}.
  *
  * @author Eric Zhao
+ * @author Weihua
  */
 public class AuthorityRuleManagerTest {
+
+    public static final List<AuthorityRule> STATIC_RULES_1 = new ArrayList<>();
+    public static final List<AuthorityRule> STATIC_RULES_2 = new ArrayList<>();
+
+    static {
+        AuthorityRule first = new AuthorityRule();
+        first.setResource("/a/b/c");
+        first.setLimitApp("postman");
+        STATIC_RULES_1.add(first);
+
+        AuthorityRule second = new AuthorityRule();
+        second.setResource("/a/b/c");
+        second.setLimitApp("jmeter");
+        STATIC_RULES_2.add(second);
+    }
 
     @After
     public void setUp() {
         AuthorityRuleManager.loadRules(null);
+    }
+
+    private static Thread loader = new Thread("Loader"){
+        @Override
+        public void run() {
+            for(int i = 0; i < 10000 && !loader.isInterrupted(); i++){
+                //to guarantee that they're different and change happens
+                AuthorityRuleManager.loadRules(i % 2 == 0 ? STATIC_RULES_2 : STATIC_RULES_1);
+            }
+        }
+    };
+
+    @Test
+    public void testLoadAndGetRules(){
+        AuthorityRuleManager.loadRules(STATIC_RULES_1);
+        assertEquals(1, AuthorityRuleManager.getRules().size()); // the initial size
+        loader.start();
+
+        for(int i = 0; i < 10000; i++){
+            //The initial size is 1, and the size after updating should also be 1,
+            //if the actual size is 0, that must be called after clear(),
+            // but before putAll() in RulePropertyListener.configUpdate
+            assertEquals(1, AuthorityRuleManager.getRules().size());
+        }
+        loader.interrupt();
+        AuthorityRuleManager.loadRules(null);
+        assertEquals(0, AuthorityRuleManager.getAuthorityRules().size());
     }
 
     @Test
