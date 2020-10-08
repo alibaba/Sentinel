@@ -134,14 +134,14 @@ public class FlowRuleManager {
             //the rules was always not null, it's no need to check nullable
             //remove checking to avoid IDE warning
             flowRules.set(rules);
-            RecordLog.info("[FlowRuleManager] Flow rules received: {}", flowRules.get());
+            RecordLog.info("[FlowRuleManager] Flow rules received: {}", rules);
         }
 
         @Override
         public void configLoad(List<FlowRule> conf) {
             Map<String, List<FlowRule>> rules = FlowRuleUtil.buildFlowRuleMap(conf);
             flowRules.set(rules);
-            RecordLog.info("[FlowRuleManager] Flow rules loaded: {}", flowRules.get());
+            RecordLog.info("[FlowRuleManager] Flow rules loaded: {}", rules);
         }
     }
 
