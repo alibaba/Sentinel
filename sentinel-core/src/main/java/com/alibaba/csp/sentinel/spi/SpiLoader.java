@@ -471,6 +471,7 @@ public final class SpiLoader<S> {
                 instance = singletonMap.get(clazz.getName());
                 if (instance == null) {
                     synchronized (this) {
+                        instance = singletonMap.get(clazz.getName());
                         if (instance == null) {
                             instance = service.cast(clazz.newInstance());
                             singletonMap.put(clazz.getName(), instance);
