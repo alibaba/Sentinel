@@ -97,6 +97,35 @@ export class MetricComponent implements OnInit, OnDestroy {
         ip: this.selectedIns.ip,
         port: this.selectedIns.port
     };
+    this.kieMetricService.queryResourceMetric(param).subscribe(res => {
+        if (res.success) {
+            for (var key in res.data.metric) {
+                if (!this.listData.includes(key)) {
+                    this.listData.push(key);
+                    this.chartOptionMap[key] = this.chartOptionTemp;
+                    this.chartOptionMap[key].title.text = key;
+                }
+                this.chartOptionMap[key].xAxis.data = [];
+                this.chartOptionMap[key].series[0].data = [];
+                this.chartOptionMap[key].series[1].data = [];
+                res.data.metric[key].forEach(ele => {
+                    this.chartOptionMap[key].xAxis.data.push(this.timeFormatter(ele.timestamp));
+                    this.chartOptionMap[key].series[0].data.push(ele.passQps);
+                    this.chartOptionMap[key].series[1].data.push(ele.blockQps);
+                });
+                this.tableDataMap[key] = new Array();
+                for (var i = 0;i < 5;i++) {
+                    if (res.data.metric[key].length) {
+                        this.tableDataMap[key].push(res.data.metric[key].pop());
+                    }
+                }
+            }
+            setTimeout(()=> {
+                let mycharts = echarts.init(<HTMLDivElement>document.getElementById(key));
+                mycharts.setOption(this.chartOptionMap[key]);
+            }, 100);
+        }
+    });
     this.intervalId = setInterval(() => {
         this.kieMetricService.queryResourceMetric(param).subscribe(res => {
             if (res.success) {
@@ -121,8 +150,10 @@ export class MetricComponent implements OnInit, OnDestroy {
                         }
                     }
                 }
-                let mycharts = echarts.init(<HTMLDivElement>document.getElementById(key));
-                mycharts.setOption(this.chartOptionMap[key]);
+                setTimeout(()=> {
+                    let mycharts = echarts.init(<HTMLDivElement>document.getElementById(key));
+                    mycharts.setOption(this.chartOptionMap[key]);
+                }, 100);
             }
         });
     }, this.INTERVAL_TIME);
@@ -145,6 +176,35 @@ export class MetricComponent implements OnInit, OnDestroy {
         ip: this.selectedIns.ip,
         port: this.selectedIns.port
     };
+    this.kieMetricService.queryResourceMetric(param).subscribe(res => {
+        if (res.success) {
+            for (var key in res.data.metric) {
+                if (!this.listData.includes(key)) {
+                    this.listData.push(key);
+                    this.chartOptionMap[key] = this.chartOptionTemp;
+                    this.chartOptionMap[key].title.text = key;
+                }
+                this.chartOptionMap[key].xAxis.data = [];
+                this.chartOptionMap[key].series[0].data = [];
+                this.chartOptionMap[key].series[1].data = [];
+                res.data.metric[key].forEach(ele => {
+                    this.chartOptionMap[key].xAxis.data.push(this.timeFormatter(ele.timestamp));
+                    this.chartOptionMap[key].series[0].data.push(ele.passQps);
+                    this.chartOptionMap[key].series[1].data.push(ele.blockQps);
+                });
+                this.tableDataMap[key] = new Array();
+                for (var i = 0;i < 5;i++) {
+                    if (res.data.metric[key].length) {
+                        this.tableDataMap[key].push(res.data.metric[key].pop());
+                    }
+                }
+            }
+            setTimeout(()=> {
+                let mycharts = echarts.init(<HTMLDivElement>document.getElementById(key));
+                mycharts.setOption(this.chartOptionMap[key]);
+            }, 100);
+        }
+    });
     this.intervalId = setInterval(() => {
     this.kieMetricService.queryResourceMetric(param).subscribe(res => {
         if (res.success) {
@@ -163,8 +223,10 @@ export class MetricComponent implements OnInit, OnDestroy {
                     this.chartOptionMap[key].series[1].data.push(ele.blockQps);
                 });
             }
-            let mycharts = echarts.init(<HTMLDivElement>document.getElementById(key));
-            mycharts.setOption(this.chartOptionMap[key]);
+            setTimeout(()=> {
+                let mycharts = echarts.init(<HTMLDivElement>document.getElementById(key));
+                mycharts.setOption(this.chartOptionMap[key]);
+            }, 100);
         }
     });
     }, this.INTERVAL_TIME);
