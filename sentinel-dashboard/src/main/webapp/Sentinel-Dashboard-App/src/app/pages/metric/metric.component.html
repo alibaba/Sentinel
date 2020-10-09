@@ -1,0 +1,20 @@
+<div>
+    <div class="service-head">
+        {{ service }}
+    </div>
+    <div class="main">
+        <div class="operator">
+            <nz-select style="width: 200px;" [(ngModel)]="selectedIns" (ngModelChange)="instanceChange($event)">
+              <nz-option *ngFor="let option of instanceList" [nzValue]="option" [nzLabel]="option.ip + ':' + option.port">
+              </nz-option>
+            </nz-select>
+        </div>
+        <nz-list nzItemLayout="horizontal">
+            <nz-list-item *ngFor="let item of data">
+                <div echarts [options]="chartOption" style="width: 50%; height: 200px;"></div>
+            </nz-list-item>
+        </nz-list>
+    </div>
+</div>
+
+

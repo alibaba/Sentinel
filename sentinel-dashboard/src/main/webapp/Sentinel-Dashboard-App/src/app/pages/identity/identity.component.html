@@ -1,0 +1,52 @@
+<div>
+    <div class="service-head">
+        {{ service }}
+    </div>
+    <div class="main">
+        <div class="operator">
+            <button nz-button [nzSize]="btnSize" style="float: right;" (click)="refresh($event)"><i nz-icon nzType="redo" nzTheme="outline"></i></button>
+        </div>
+        <div id="table">
+            <nz-table #basicTable [nzData]="resourceInfos">
+                <thead>
+                    <tr>
+                        <th>资源名</th>
+                        <th>通过QPS</th>
+                        <th>拒绝QPS</th>
+                        <th>线程数</th>
+                        <th>平均RT</th>
+                        <th>分钟通过</th>
+                        <th>分钟拒绝</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let rowData of basicTable.data">
+                        <td>{{ rowData.resource }}</td>
+                        <td>{{ rowData.passQps }}</td>
+                        <td>{{ rowData.blockQps }}</td>
+                        <td>{{ rowData.threadNum }}</td>
+                        <td>{{ rowData.averageRt }}</td>
+                        <td>{{ rowData.oneMinutePass }}</td>
+                        <td>{{ rowData.oneMinuteBlock }}</td>
+                        <td>
+                            <a (click)="createFlowRule(rowData)">
+                                <i nz-icon nzType="plus"></i>流控
+                            </a>
+                            <nz-divider nzType="vertical"></nz-divider>
+                        </td>
+                    </tr>
+                </tbody>
+            </nz-table>
+        </div>
+        <div id="modal" style="display: none;">
+            <app-create-flow #createFlow *ngIf="isCreModVis"
+            [isVisible]="isCreModVis"
+            [app]="app"
+            [service_id]="service_id"
+            [currentResource]="currentResource"
+            (creModClose)="creModClose($event)">
+            </app-create-flow>
+        </div>
+    </div>
+</div>

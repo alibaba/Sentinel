@@ -60,12 +60,12 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/**").addResourceLocations("classpath:/resources/");
+        registry.addResourceHandler("/**").addResourceLocations("classpath:/Sentinel-Dashboard-App/");
     }
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        registry.addViewController("/").setViewName("forward:/index.htm");
+        registry.addViewController("/").setViewName("forward:/index.html");
     }
 
     /**

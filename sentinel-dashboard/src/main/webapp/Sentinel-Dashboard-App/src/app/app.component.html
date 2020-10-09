@@ -1,0 +1,64 @@
+<nz-layout class="app-layout">
+  <nz-sider class="menu-sidebar"
+            nzCollapsible
+            nzWidth="256px"
+            nzBreakpoint="md"
+            [(nzCollapsed)]="isCollapsed"
+            [nzTrigger]="null">
+    <div class="sidebar-logo">
+      <img src="https://ng.ant.design/assets/img/logo.svg" alt="logo">
+      <h1>Sentinel 控制台</h1>
+    </div>
+
+    <ul nz-menu nzTheme='dark' nzMode="inline">
+      <li *ngFor="let menuInfo of menuInfos" nz-submenu [nzTitle]="menuInfo.app" [(nzOpen)]="menuInfo.open" (nzOpenChange)="openHandler(menuInfo)">
+        <ul>
+          <li *ngFor="let serviceInfo of menuInfo.serviceInfos" nz-submenu 
+              [nzTitle]="serviceInfo.service + ' v:' + serviceInfo.version"
+              [(nzOpen)]="serviceInfo.open">
+              <ul>
+                <li nz-menu-item nzMatchRouter>
+                  <a routerLink="/metric/{{menuInfo.app}}/{{serviceInfo.service}}/{{serviceInfo.id}}">实时监控</a>
+                  <!-- <a routerLink="/metric">实时监控</a> -->
+                </li>
+                <li nz-menu-item nzMatchRouter>
+                  <a routerLink="/identity/{{menuInfo.app}}/{{serviceInfo.service}}/{{serviceInfo.id}}">簇点链路</a>
+                </li>
+                <li nz-menu-item nzMatchRouter>
+                  <a routerLink="/flow/{{menuInfo.app}}/{{serviceInfo.service}}/{{serviceInfo.id}}">流控规则</a>
+                </li>
+              </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+
+
+
+  </nz-sider>
+  <nz-layout>
+    <nz-header>
+      <div class="app-header">
+        <span class="header-trigger" (click)="isCollapsed = !isCollapsed">
+            <i class="trigger"
+               nz-icon
+               [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'"
+            ></i>
+        </span>
+        <span class="select-title">Projects:</span>
+        <nz-select style="width: 150px;" [(ngModel)]="currentProject" (ngModelChange)="projectChange($event)" nzPlaceHolder="">
+          <nz-option *ngFor="let option of projects" [nzValue]="option" [nzLabel]="option"></nz-option>
+        </nz-select>
+        <span class="select-title">Environment:</span>
+        <nz-select style="width: 150px;" [(ngModel)]="currentEnvir" (ngModelChange)="envirChange($event)" nzPlaceHolder="">
+          <nz-option *ngFor="let option of environments" [nzValue]="option" [nzLabel]="option"></nz-option>
+        </nz-select>
+      </div>
+    </nz-header>
+    <nz-content>
+      <div class="inner-content">
+        <router-outlet></router-outlet>
+      </div>
+    </nz-content>
+  </nz-layout>
+</nz-layout>

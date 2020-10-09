@@ -1,0 +1,61 @@
+<div>
+    <div class="service-head">
+        {{service}}
+    </div>
+    <div class="main">
+        <div class="operator">
+            <button nz-button [nzSize]="btnSize" nzType="primary" (click)="createFlowRule($event)"><i nz-icon nzType="plus"></i>新增流控规则</button>
+
+            <button nz-button [nzSize]="btnSize" style="float: right;" (click)="refresh($event)"><i nz-icon nzType="redo" nzTheme="outline"></i></button>
+        </div>
+        <div id="table">
+            <nz-table #basicTable [nzData]="flowRules">
+                <thead>
+                    <tr>
+                        <th>资源名</th>
+                        <th>来源应用</th>
+                        <th>流控模式</th>
+                        <th>阈值类型</th>
+                        <th>阈值</th>
+                        <th>阈值模式</th>
+                        <th>流控效果</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let rowData of basicTable.data">
+                        <td>{{ rowData.resource }}</td>
+                        <td>{{ rowData.limitApp }}</td>
+                        <td>{{ strategyModeMap[rowData.strategy] || '' }}</td>
+                        <td>{{ gradeModeMap[rowData.grade] || '' }}</td>
+                        <td>{{ rowData.count }}</td>
+                        <td>{{ renderCountMode(rowData) }}</td>
+                        <td>{{ controlBehaviorModeMap[rowData.controlBehavior] || '' }}</td>
+                        <td>
+                            <a (click)="updateFlowRule(rowData)">编辑</a>
+                            <nz-divider nzType="vertical"></nz-divider>
+                            <a (click)="deleteFlowRule(rowData)">删除</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </nz-table>
+        </div>
+        <div id="model" style="display: none;">
+            <app-create-flow #createFlow *ngIf="isCreModVis"
+            [isVisible]="isCreModVis"
+            [app]="app"
+            [service_id]="service_id"
+            (creModClose)="creModClose($event)"></app-create-flow>
+            <app-delete-flow #deleteFlow *ngIf="isDelModVis"
+            [isVisible]="isDelModVis"
+            [service_id]="service_id"
+            [currentRule]="currentRule"
+            (delModClose)="delModClose($event)"></app-delete-flow>
+            <app-update-flow #updateFlow *ngIf="isUpdModVis"
+            [isVisible]="isUpdModVis"
+            [service_id]="service_id"
+            [currentRule]="currentRule"
+            (updModClose)="updModClose($event)"></app-update-flow>
+        </div>
+    </div>
+</div>

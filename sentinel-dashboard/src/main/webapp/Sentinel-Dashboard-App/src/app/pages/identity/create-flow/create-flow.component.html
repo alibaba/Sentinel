@@ -1,0 +1,154 @@
+<form nz-form [formGroup]="flowRuleForm">
+    <nz-modal
+      [(nzVisible)]="isVisible"
+      nzTitle="新增流控规则"
+      [nzOkLoading]="isOkLoading"
+      (nzOnOk)="handleOk()"
+      [nzOkDisabled]="!flowRuleForm.valid"            
+      (nzOnCancel)="handleCancel()"
+      [nzWidth]="600">
+        <!-- 资源名 -->
+        <nz-form-item>
+            <nz-form-label [nzSpan]="4" nzRequired>资源名</nz-form-label>
+            <nz-form-control [nzSpan]="15" [nzOffset]="2">
+              <input nz-input formControlName="resource"/>
+            </nz-form-control>
+        </nz-form-item>
+        <!-- 来源应用 -->
+        <nz-form-item>
+            <nz-form-label [nzSpan]="4" nzRequired>来源应用</nz-form-label>
+            <nz-form-control [nzSpan]="15" [nzOffset]="2">
+                <nz-input-group>
+                    <input nz-input formControlName="limitApp"/>
+                </nz-input-group>
+            </nz-form-control>
+        </nz-form-item>
+        <!-- 阈值类型 -->
+        <nz-form-item>
+            <nz-form-label [nzSpan]="4">阈值类型</nz-form-label>
+            <nz-form-control [nzOffset]="2">
+                <nz-radio-group formControlName="grade">
+                    <label nz-radio nzValue="1">QPS</label>
+                    <label nz-radio nzValue="0">线程数</label>
+                </nz-radio-group>
+            </nz-form-control>
+        </nz-form-item>  
+        <div nz-row [nzGutter]="32">
+            <div nz-col [nzSpan]="10">
+                <!-- 是否集群 -->
+                <nz-form-item>
+                    <nz-form-label [nzSpan]="10" [nzOffset]="1">是否集群</nz-form-label>
+                    <nz-form-control [nzOffset]="5">
+                        <nz-switch formControlName="clusterMode" (ngModelChange)="isClusterSwitch($event)"></nz-switch>
+                    </nz-form-control>
+                </nz-form-item>
+            </div>
+            <div nz-col [nzSpan]="12">
+                <!-- 阈值 单机阈值/均摊阈值（开启集群） -->
+                <nz-form-item>
+                    <nz-form-label [nzSpan]="10" *ngIf="!isCluster" nzRequired>单机阈值</nz-form-label>
+                    <nz-form-label [nzSpan]="10" *ngIf="isCluster" nzRequired>均摊阈值</nz-form-label>
+                    <nz-form-control [nzOffset]="2" [nzSpan]="10">
+                        <nz-input-group>
+                            <input nz-input formControlName="count" [placeholder]="isCluster ? '均摊阈值' : '单机阈值'" />
+                        </nz-input-group>
+                    </nz-form-control>
+                </nz-form-item>      
+            </div>
+        </div>
+        <!-- 集群阈值模式 -->
+        <nz-form-item *ngIf="isCluster">
+            <nz-form-label [nzSpan]="5">集群阈值模式</nz-form-label>
+            <nz-form-control [nzOffset]="1">
+                <nz-radio-group formControlName="thresholdType">
+                    <label nz-radio nzValue="0">单机均摊</label>
+                    <label nz-radio nzValue="1">总体阈值</label>
+                </nz-radio-group>
+            </nz-form-control>
+        </nz-form-item>
+        <!-- 失败退化 -->
+        <nz-form-item *ngIf="isCluster">
+            <nz-form-label [nzSpan]="4">失败退化</nz-form-label>
+            <nz-form-control [nzOffset]="2">
+                <nz-switch formControlName="fallbackToLocalWhenFail"></nz-switch>
+                <nz-form-label [nzOffset]="2" [nzNoColon]="true">
+                    <i nz-icon nzType="info-circle" nzTheme="twotone"></i>
+                    &nbsp;如果 Token Server 不可用是否退化到单机限流
+                </nz-form-label>
+            </nz-form-control>
+        </nz-form-item>
+        <!-- 高级选项 -->
+        <div *ngIf="!isCluster">
+            <nz-form-item>
+                <nz-form-label [nzSpan]="4">高级选项</nz-form-label>
+                <nz-form-control [nzOffset]="2">
+                    <nz-switch formControlName="advanceOp" (ngModelChange)="advanceOpChange($event)"></nz-switch>
+                </nz-form-control>
+            </nz-form-item>
+            <!-- 流控模式 -->
+            <nz-form-item *ngIf="advanceOptionFlag">
+                <nz-form-label [nzSpan]="4">流控模式</nz-form-label>
+                <nz-form-control [nzOffset]="2">
+                    <nz-radio-group formControlName="strategy" (ngModelChange)="strategyModeChange($event)">
+                        <label nz-radio nzValue="0">直接</label>
+                        <label nz-radio nzValue="1">关联</label>
+                        <label nz-radio nzValue="2">链路</label>
+                    </nz-radio-group>
+                </nz-form-control>
+            </nz-form-item>
+            <!-- 流控模式：关联 -->
+            <!-- 关联资源 -->
+            <nz-form-item *ngIf="strategyModeMap[strategyMode] === '关联'">
+                <nz-form-label [nzSpan]="4">关联资源</nz-form-label>
+                <nz-form-control [nzSpan]="15" [nzOffset]="2">
+                    <nz-input-group>
+                        <input nz-input formControlName="refResource"/>
+                    </nz-input-group>
+                </nz-form-control>
+            </nz-form-item>
+            <!-- 流控模式：链路 -->
+            <!-- 入口资源 -->
+            <nz-form-item *ngIf="strategyModeMap[strategyMode] === '链路'">
+                  <nz-form-label [nzSpan]="4">入口资源</nz-form-label>
+                  <nz-form-control [nzSpan]="15" [nzOffset]="2">
+                      <nz-input-group>
+                          <input nz-input formControlName="refResource"/>
+                      </nz-input-group>
+                  </nz-form-control>
+            </nz-form-item>
+            <!-- 流控效果 -->
+            <nz-form-item *ngIf="advanceOptionFlag">
+                <nz-form-label [nzSpan]="4">流控效果</nz-form-label>
+                <nz-form-control [nzOffset]="2">
+                    <nz-radio-group>
+                        <nz-radio-group formControlName="controlBehavior" (ngModelChange)="controlBehaviorModeChange($event)">
+                            <label nz-radio nzValue="0">快速失败</label>
+                            <label nz-radio nzValue="1">Warm Up</label>
+                            <label nz-radio nzValue="2">排队等待</label>
+                        </nz-radio-group>
+                    </nz-radio-group>
+                </nz-form-control>
+            </nz-form-item>
+            <!-- 流控效果：Warm Up -->
+            <!-- 预热时长 -->
+            <nz-form-item *ngIf="controlBehaviorModeMap[controlBehaviorMode] === 'Warm Up'">
+                <nz-form-label [nzSpan]="4">预热时长</nz-form-label>
+                <nz-form-control [nzSpan]="15" [nzOffset]="2">
+                    <nz-input-group>
+                        <input nz-input formControlName="warmUpPeriodSec" placeholder="秒"/>
+                    </nz-input-group>
+                </nz-form-control>
+            </nz-form-item>
+            <!-- 流控效果：排队等待 -->
+            <!-- 超时时间 -->
+            <nz-form-item *ngIf="controlBehaviorModeMap[controlBehaviorMode] === '排队等待'">
+                <nz-form-label [nzSpan]="4">超时时间</nz-form-label>
+                <nz-form-control [nzSpan]="15" [nzOffset]="2">
+                    <nz-input-group>
+                        <input nz-input formControlName="maxQueueingTimeMs" placeholder="毫秒"/>
+                    </nz-input-group>
+                </nz-form-control>
+            </nz-form-item>
+        </div>
+    </nz-modal>
+</form>

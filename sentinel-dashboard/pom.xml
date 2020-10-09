@@ -191,10 +191,7 @@
             </resource>
 
             <resource>
-                <directory>src/main/webapp/</directory>
-                <excludes>
-                    <exclude>resources/node_modules/**</exclude>
-                </excludes>
+                <directory>src/main/webapp/Sentinel-Dashboard-App/dist/</directory>
             </resource>
         </resources>
     </build>
