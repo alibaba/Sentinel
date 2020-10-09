@@ -8,6 +8,7 @@ import { MetricComponent } from './metric.component';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { NzListModule } from 'ng-zorro-antd/list';
 import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzTableModule } from 'ng-zorro-antd/table';
 
 @NgModule({
   imports: [
@@ -17,7 +18,8 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
     MetricRoutingModule,
     NgxEchartsModule,
     NzListModule,
-    NzSelectModule
+    NzSelectModule,
+    NzTableModule
   ],
   declarations: [MetricComponent],
   exports: [MetricComponent]

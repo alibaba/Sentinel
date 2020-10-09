@@ -55,16 +55,18 @@ export class MetricComponent implements OnInit, OnDestroy {
   service_id: string;
   listData: any[] = [];
   intervalId: any;
+
   // [{ip: ip,port: port},...]
   instanceList: any = [];
   selectedIns: any;
   INTERVAL_TIME: number = 5000;
 
+  tableDataMap: any = {};
+
   constructor(
     private route: ActivatedRoute,
     private kieMetricService: KieMetricService,
-    private kieInfoService: KieInfoService,
-    private elementRef: ElementRef
+    private kieInfoService: KieInfoService
   ) { }
 
   async ngOnInit() {  
@@ -108,10 +110,16 @@ export class MetricComponent implements OnInit, OnDestroy {
                     this.chartOptionMap[key].series[0].data = [];
                     this.chartOptionMap[key].series[1].data = [];
                     res.data.metric[key].forEach(ele => {
-                        this.chartOptionMap[key].xAxis.data.push(new Date(ele.timestamp).toString().slice(16,24));
+                        this.chartOptionMap[key].xAxis.data.push(this.timeFormatter(ele.timestamp));
                         this.chartOptionMap[key].series[0].data.push(ele.passQps);
                         this.chartOptionMap[key].series[1].data.push(ele.blockQps);
                     });
+                    this.tableDataMap[key] = new Array();
+                    for (var i = 0;i < 5;i++) {
+                        if (res.data.metric[key].length) {
+                            this.tableDataMap[key].push(res.data.metric[key].pop());
+                        }
+                    }
                 }
                 let mycharts = echarts.init(<HTMLDivElement>document.getElementById(key));
                 mycharts.setOption(this.chartOptionMap[key]);
@@ -150,7 +158,7 @@ export class MetricComponent implements OnInit, OnDestroy {
                 this.chartOptionMap[key].series[0].data = [];
                 this.chartOptionMap[key].series[1].data = [];
                 res.data.metric[key].forEach(ele => {
-                    this.chartOptionMap[key].xAxis.data.push(new Date(ele.timestamp).toString().slice(16,24));
+                    this.chartOptionMap[key].xAxis.data.push(this.timeFormatter(ele.timestamp));
                     this.chartOptionMap[key].series[0].data.push(ele.passQps);
                     this.chartOptionMap[key].series[1].data.push(ele.blockQps);
                 });
@@ -160,6 +168,10 @@ export class MetricComponent implements OnInit, OnDestroy {
         }
     });
     }, this.INTERVAL_TIME);
+  }
+
+  public timeFormatter(timestamp: string): string {
+    return new Date(timestamp).toString().slice(16, 24);
   }
 
 }
