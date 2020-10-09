@@ -21,7 +21,7 @@ import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzAutocompleteModule } from 'ng-zorro-antd/auto-complete';
-
+import { NzMessageModule } from 'ng-zorro-antd/message';
 
 
 @NgModule({
@@ -41,7 +41,8 @@ import { NzAutocompleteModule } from 'ng-zorro-antd/auto-complete';
     NzSwitchModule,
     NzGridModule,
     NzSelectModule,
-    NzAutocompleteModule
+    NzAutocompleteModule,
+    NzMessageModule
   ],
   declarations: [
     FlowComponent, 

@@ -9,6 +9,7 @@ import {
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 import { KieFlowService } from 'src/app/services/kie-flow/kie-flow.service';
+import { NzMessageService } from 'ng-zorro-antd/message';
 
 @Component({
   selector: 'app-create-flow',
@@ -38,7 +39,8 @@ export class CreateFlowComponent implements OnInit {
 
   constructor(
     private formBuilder: FormBuilder,
-    private kieFlowService: KieFlowService
+    private kieFlowService: KieFlowService,
+    private message: NzMessageService
   ) { }
 
   ngOnInit(): void {
@@ -155,6 +157,15 @@ export class CreateFlowComponent implements OnInit {
           isVisible: this.isVisible,
           refresh: true
         });
+        this.message.success('新增流控规则成功');
+      } else {
+        this.isOkLoading = false;
+        this.isVisible = false;
+        this.creModClose.emit({
+          isVisible: this.isVisible,
+          refresh: true
+        });
+        this.message.error('新增流控规则失败');
       }
     });
   }

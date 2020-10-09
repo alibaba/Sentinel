@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 
 import { KieFlowService } from 'src/app/services/kie-flow/kie-flow.service';
+import { NzMessageService } from 'ng-zorro-antd/message';
 
 @Component({
   selector: 'app-delete-flow',
@@ -26,7 +27,8 @@ export class DeleteFlowComponent implements OnInit {
   gradeModeMap: any = {};
 
   constructor(
-    private kieFlowService: KieFlowService
+    private kieFlowService: KieFlowService,
+    private message: NzMessageService
   ) { }
 
   ngOnInit(): void {
@@ -51,6 +53,15 @@ export class DeleteFlowComponent implements OnInit {
           isVisible: this.isVisible,
           refresh: true
         });
+        this.message.success('删除流控规则成功');
+      } else {
+        this.isOkLoading = false;
+        this.isVisible = false;
+        this.delModClose.emit({
+          isVisible: this.isVisible,
+          refresh: true
+        });
+        this.message.error('删除流控规则失败');
       }
     });
   }

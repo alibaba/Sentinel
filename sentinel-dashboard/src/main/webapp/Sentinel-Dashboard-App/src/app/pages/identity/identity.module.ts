@@ -18,6 +18,7 @@ import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzMessageModule } from 'ng-zorro-antd/message';
 
 
 @NgModule({
@@ -36,7 +37,8 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
     NzRadioModule,
     NzSwitchModule,
     NzGridModule,
-    NzSelectModule
+    NzSelectModule,
+    NzMessageModule
   ],
   declarations: [
     IdentityComponent,

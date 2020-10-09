@@ -10,6 +10,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { KieFlowService } from 'src/app/services/kie-flow/kie-flow.service';
 import { KieIdentityService } from 'src/app/services/kie-identity/kie-identity.service';
 import { KieInfoService } from 'src/app/services/kie-info/kie-info.service';
+import { NzMessageService } from 'ng-zorro-antd/message';
 
 interface FlowRule {
   // 表格数据
@@ -58,12 +59,14 @@ export class CreateFlowComponent implements OnInit {
   resourceList: string[] = [];
   ip: string;
   port: number;
+  autocomOption: any[] = []
 
   constructor(
     private formBuilder: FormBuilder,
     private kieFlowService: KieFlowService,
     private kieIdentityService: KieIdentityService,
-    private kieInfoService: KieInfoService
+    private kieInfoService: KieInfoService,
+    private message: NzMessageService
   ) { }
 
   ngOnInit(): void {
@@ -125,6 +128,7 @@ export class CreateFlowComponent implements OnInit {
     resources.data.map(ele => {
       this.resourceList.push(ele.resource);
     });
+    this.autocomOption = this.resourceList;
   }
 
   public handleOk(): void {
@@ -204,6 +208,15 @@ export class CreateFlowComponent implements OnInit {
           isVisible: this.isVisible,
           refresh: true
         });
+        this.message.success('新增流控规则成功');
+      } else {
+        this.isOkLoading = false;
+        this.isVisible = false;
+        this.creModClose.emit({
+          isVisible: this.isVisible,
+          refresh: true
+        });
+        this.message.error('新增流控规则失败');
       }
     });
   }
@@ -233,4 +246,8 @@ export class CreateFlowComponent implements OnInit {
     this.controlBehaviorMode = Number(e);
   }
 
+  public onInput(e) {
+    const value = (e.target as HTMLInputElement).value;
+    this.autocomOption = this.resourceList.includes(value) ? this.resourceList : [value, ...this.resourceList];
+  }
 }

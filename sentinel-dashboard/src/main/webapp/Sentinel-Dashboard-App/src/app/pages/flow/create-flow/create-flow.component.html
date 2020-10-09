@@ -11,8 +11,8 @@
         <nz-form-item>
             <nz-form-label [nzSpan]="4" nzRequired>资源名</nz-form-label>
             <nz-form-control [nzSpan]="15" [nzOffset]="2">
-              <input nz-input formControlName="resource" [nzAutocomplete]="auto"/>
-              <nz-autocomplete [nzDataSource]="resourceList" nzBackfill #auto></nz-autocomplete>
+              <input nz-input formControlName="resource" [nzAutocomplete]="auto" (input)="onInput($event)"/>
+              <nz-autocomplete [nzDataSource]="autocomOption" nzBackfill #auto></nz-autocomplete>
             </nz-form-control>
         </nz-form-item>
         <!-- 来源应用 -->
