@@ -15,7 +15,7 @@ export class MetricComponent implements OnInit {
   app: string;
   service: string;
   service_id: string;
-  data: any;
+  listData: any;
 
   // [{ip: ip,port: port},...]
   instanceList: any = [];
@@ -33,7 +33,7 @@ export class MetricComponent implements OnInit {
     this.service = res.service;
     this.service_id = res.service_id;
     });
-    this.data = [
+    this.listData = [
         {
           title: 'Ant Design Title 1'
         },
@@ -49,67 +49,58 @@ export class MetricComponent implements OnInit {
     ];
 
     this.chartOption = {
-      title: {
-          text: '折线图堆叠'
-      },
-      tooltip: {
-          trigger: 'axis'
-      },
-      legend: {
-          data: ['邮件营销', '联盟广告', '视频广告', '直接访问', '搜索引擎']
-      },
-      grid: {
-          left: '3%',
-          right: '4%',
-          bottom: '3%',
-          containLabel: true
-      },
-      toolbox: {
-          feature: {
-              saveAsImage: {}
-          }
-      },
-      xAxis: {
-          type: 'category',
-          boundaryGap: false,
-          data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
-      },
-      yAxis: {
-          type: 'value'
-      },
-      series: [
-          {
-              name: '邮件营销',
-              type: 'line',
-              stack: '总量',
-              data: [120, 132, 101, 134, 90, 230, 210]
-          },
-          {
-              name: '联盟广告',
-              type: 'line',
-              stack: '总量',
-              data: [220, 182, 191, 234, 290, 330, 310]
-          },
-          {
-              name: '视频广告',
-              type: 'line',
-              stack: '总量',
-              data: [150, 232, 201, 154, 190, 330, 410]
-          },
-          {
-              name: '直接访问',
-              type: 'line',
-              stack: '总量',
-              data: [320, 332, 301, 334, 390, 330, 320]
-          },
-          {
-              name: '搜索引擎',
-              type: 'line',
-              stack: '总量',
-              data: [820, 932, 901, 934, 1290, 1330, 1320]
-          }
-      ]
+        title: {
+            text: 'resource'
+        },
+        tooltip: {
+            trigger: 'axis'
+        },
+        legend: {
+            data: ['通过QPS', '拒绝QPS']
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+            splitLine: {
+                show: false
+            },
+        },
+        yAxis: {
+            type: 'value',
+            splitLine: {
+                show: false
+            },
+        },
+        series: [
+            {
+                color: 'green',
+                symbol: 'none',
+                name: '通过QPS',
+                type: 'line',
+                stack: '总量',
+                data: [120, 132, 101, 134, 90, 230, 210]
+                // data: [200, 200, 200, 200, 200, 200, 200]
+            },
+            {
+                color: 'blue',
+                symbol: 'none',
+                name: '拒绝QPS',
+                type: 'line',
+                stack: '总量',
+                data: [220, 182, 191, 234, 290, 330, 310]
+            }
+        ]
     };  
+
+    console.log('----------');
+    console.log(this.chartOption.series[0].data);
 
     const instanceInfos: any = await new Promise(resolve => {
         this.kieInfoService.queryInstanceInfos(this.service_id).subscribe(res => {
@@ -130,25 +121,52 @@ export class MetricComponent implements OnInit {
         port: 123
     });
 
-    const metricInfos: any = await new Promise(resolve => {
-        var param = {
-            serviceId: this.service_id,
-            ip: this.selectedIns.ip,
-            port: this.selectedIns.port
-        };
+    // const metricInfos: any = await new Promise(resolve => {
+    //     var param = {
+    //         serviceId: this.service_id,
+    //         ip: this.selectedIns.ip,
+    //         port: this.selectedIns.port
+    //     };
+    //     this.kieMetricService.queryResourceMetric(param).subscribe(res => {
+    //         if (res.success) {
+    //             resolve(res);
+    //         }
+    //     });
+    // });
+
+    var param = {
+        serviceId: this.service_id,
+        ip: this.selectedIns.ip,
+        port: this.selectedIns.port
+    };
+    setInterval(() => {
         this.kieMetricService.queryResourceMetric(param).subscribe(res => {
             if (res.success) {
-                resolve(res);
+                console.log(res);
             }
         });
-    });
-    console.log(metricInfos);
+    }, 10000);
 
+    // console.log(metricInfos);
+    // metricInfos.data;
   }
 
   public instanceChange(e): void {
       console.log('instanceChange');
-      console.log(e);
+      this.chartOption.series[0].data = [200, 200, 200, 200, 200, 200, 200];
+      console.log(this.chartOption);
+      console.log(this.chartOption.series[0]);
+      this.selectedIns = e;
+      var param = {
+          serviceId: this.service_id,
+          ip: this.selectedIns.ip,
+          port: this.selectedIns.port
+      };
+      this.kieMetricService.queryResourceMetric(param).subscribe(res => {
+          if (res.success) {
+            console.log("res", res);
+          }
+      });
   }
 
 }

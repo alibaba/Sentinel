@@ -11,6 +11,6 @@ export class KieMetricService {
   ) { }
 
   public queryResourceMetric(param: any): Observable<any> {
-    return this.http.get(`/metric/queryTopResourceMetric.json?serverId=${param.serviceId}&ip=${param.ip}&port=${param.port}&pageIndex=1&pageSize=6`);
+    return this.http.get(`/metric/queryTopResourceMetric.json?serverId=${param.serviceId}&ip=${param.ip}&port=${param.port}`);
   }
 }
