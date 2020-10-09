@@ -27,7 +27,9 @@
               "./node_modules/ng-zorro-antd/ng-zorro-antd.min.css",
               "src/styles.css"
             ],
-            "scripts": []
+            "scripts": [
+              "src/assets/echarts.common.min.js"
+            ]
           },
           "configurations": {
             "production": {
