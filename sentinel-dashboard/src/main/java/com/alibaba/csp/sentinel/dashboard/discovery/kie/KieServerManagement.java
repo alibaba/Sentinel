@@ -68,11 +68,6 @@ public class KieServerManagement implements KieServerDiscovery {
     }
 
     @Override
-    public KieServerInfo getServerInfo(String id){
-        return discovery.getServerInfo(id);
-    }
-
-    @Override
     public void removeServer(String id){
         discovery.removeServer(id);
     }

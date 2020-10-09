@@ -21,8 +21,6 @@ public interface KieServerDiscovery {
 
     List<String> getServerIds();
 
-    KieServerInfo getServerInfo(String id);
-
     void removeServer(String id);
 
     Set<MachineInfo> getMachineInfos(String id);

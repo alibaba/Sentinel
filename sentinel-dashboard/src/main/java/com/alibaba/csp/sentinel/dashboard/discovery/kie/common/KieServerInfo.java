@@ -16,11 +16,15 @@
 package com.alibaba.csp.sentinel.dashboard.discovery.kie.common;
 
 import com.alibaba.csp.sentinel.dashboard.discovery.AppInfo;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @Builder
+@AllArgsConstructor
 public class KieServerInfo extends AppInfo {
     private String id;
 

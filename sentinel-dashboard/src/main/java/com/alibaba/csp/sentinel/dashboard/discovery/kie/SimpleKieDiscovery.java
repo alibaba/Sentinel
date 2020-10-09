@@ -13,17 +13,21 @@ import java.util.stream.Collectors;
 
 @Component(value = "SimpleKieDiscovery")
 public class SimpleKieDiscovery implements KieServerDiscovery {
-    ConcurrentHashMap<String, Set<KieServerInfo>> serverMap = new ConcurrentHashMap<>();
+    ConcurrentHashMap<KieServerLabel, KieServerInfo> serverMap = new ConcurrentHashMap<>();
 
     @Override
     public Set<KieServerInfo> queryKieInfos(String project, String environment) {
-        return serverMap.get(project).stream().filter(x-> x.getLabel().getEnvironment().equals(environment))
-                .collect(Collectors.toSet());
+
+        return serverMap.entrySet().stream().filter(entry -> {
+            KieServerLabel label = entry.getKey();
+            return label.getProject().equals(project) && label.getEnvironment().equals(environment);
+        }).map(Map.Entry::getValue).collect(Collectors.toSet());
     }
 
     @Override
     public Set<String> queryProjects() {
-        return serverMap.keySet();
+        return serverMap.keySet().stream().map(KieServerLabel::getProject)
+                .collect(Collectors.toSet());
     }
 
     @Override
@@ -31,14 +35,10 @@ public class SimpleKieDiscovery implements KieServerDiscovery {
         AssertUtil.notNull(labelInfo, "labelInfo cannot be null");
         AssertUtil.notNull(labelInfo.getProject(), "machineInfo cannot be null");
 
-        Set<KieServerInfo> set = serverMap.computeIfAbsent(labelInfo.getProject(), x -> new HashSet<>());
-        KieServerInfo kieServerInfo = KieServerInfo.builder()
-                .id(UUID.randomUUID().toString())
-                .label(labelInfo)
-                .build();
+        KieServerInfo kieServerInfo = serverMap.computeIfAbsent(labelInfo,
+                o -> new KieServerInfo(UUID.randomUUID().toString(), labelInfo));
 
         kieServerInfo.addMachine(machineInfo);
-        set.add(kieServerInfo);
         return 1;
     }
 
@@ -50,43 +50,24 @@ public class SimpleKieDiscovery implements KieServerDiscovery {
     @Override
     public Optional<KieServerInfo> queryKieInfo(String id) {
        return serverMap.values().stream()
-                .flatMap(kieServerInfos
-                        -> kieServerInfos.stream()
-                        .filter(y -> id.equals(y.getId())))
-                .findAny();
+               .filter(value -> value.getId().equals(id))
+               .findFirst();
     }
 
     @Override
     public List<String> getServerIds() {
-        return serverMap.values().stream().flatMap(Collection::stream)
-                .map(KieServerInfo::getId)
+        return serverMap.values().stream().map(KieServerInfo::getId)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public KieServerInfo getServerInfo(String id) {
-        return serverMap.values().stream().flatMap(Collection::stream)
-                .filter(x -> x.getId().equals(id))
-                .findFirst().orElse(null);
-    }
-
-    @Override
     public void removeServer(String id) {
-        serverMap.values().forEach(set -> {
-           Optional<KieServerInfo> kieServerInfo = set.stream().filter(info -> info.getId().equals(id))
-                   .findFirst();
-           kieServerInfo.ifPresent(set::remove);
-        });
+        serverMap.entrySet().removeIf(entry -> entry.getValue().getId().equals(id));
     }
 
     @Override
     public Set<MachineInfo> getMachineInfos(String serverId) {
-        Optional<KieServerInfo> kieServerInfo = serverMap.values().stream()
-                .flatMap(kieServerInfos
-                        -> kieServerInfos.stream()
-                        .filter(y -> serverId.equals(y.getId())))
-                .findAny();
-
+        Optional<KieServerInfo> kieServerInfo = queryKieInfo(serverId);
         return kieServerInfo.map(AppInfo::getMachines).orElse(null);
     }
 }

@@ -160,14 +160,19 @@ public class MetricFetcher {
         if (maxWaitSeconds <= 0) {
             throw new IllegalArgumentException("maxWaitSeconds must > 0, but " + maxWaitSeconds);
         }
-        KieServerInfo serverInfo = management.getServerInfo(serverId);
+        Optional<KieServerInfo> serverInfo = management.queryKieInfo(serverId);
+        if(!serverInfo.isPresent()) {
+            logger.info("Get server info failed: {}", serverId);
+            return;
+        }
+
         // auto remove for app
-        if (serverInfo.isDead()) {
+        if (serverInfo.get().isDead()) {
             logger.info("Dead app removed: {}", serverId);
             management.removeServer(serverId);
             return;
         }
-        Set<MachineInfo> machines = serverInfo.getMachines();
+        Set<MachineInfo> machines = serverInfo.get().getMachines();
         logger.debug("enter fetchOnce(" + serverId + "), machines.size()=" + machines.size()
                 + ", time intervalMs [" + startTime + ", " + endTime + "]");
         if (machines.isEmpty()) {
@@ -186,7 +191,7 @@ public class MetricFetcher {
             // auto remove
             if (machine.isDead()) {
                 latch.countDown();
-                management.getServerInfo(serverId).removeMachine(machine.getIp(), machine.getPort());
+                serverInfo.get().removeMachine(machine.getIp(), machine.getPort());
                 logger.info("Dead machine removed: {}:{} of {}", machine.getIp(), machine.getPort(), serverId);
                 continue;
             }
