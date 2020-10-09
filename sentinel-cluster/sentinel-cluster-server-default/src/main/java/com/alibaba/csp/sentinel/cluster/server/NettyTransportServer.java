@@ -52,7 +52,6 @@ public class NettyTransportServer implements ClusterTokenServer {
     private static final int DEFAULT_BOSS_EVENT_LOOP_THREADS = 1;
     private static final int DEFAULT_EVENT_LOOP_THREADS = Math.max(1,
         SystemPropertyUtil.getInt("io.netty.eventLoopThreads", Runtime.getRuntime().availableProcessors() * 2));
-    private static final boolean useEpoll = SystemPropertyUtil.getBoolean("io.netty.epoll", false);
     private static final int MAX_RETRY_TIMES = 3;
     private static final int RETRY_SLEEP_MS = 2000;
 
@@ -75,6 +74,7 @@ public class NettyTransportServer implements ClusterTokenServer {
         if (!currentState.compareAndSet(SERVER_STATUS_OFF, SERVER_STATUS_STARTING)) {
             return;
         }
+        boolean useEpoll = SystemPropertyUtil.getBoolean("io.netty.epoll", false);
         ServerBootstrap b = new ServerBootstrap();
         this.bossGroup = useEpoll ? new EpollEventLoopGroup(DEFAULT_BOSS_EVENT_LOOP_THREADS) : new NioEventLoopGroup(DEFAULT_BOSS_EVENT_LOOP_THREADS);
         this.workerGroup = useEpoll ? new EpollEventLoopGroup(DEFAULT_EVENT_LOOP_THREADS) : new NioEventLoopGroup(DEFAULT_EVENT_LOOP_THREADS);
