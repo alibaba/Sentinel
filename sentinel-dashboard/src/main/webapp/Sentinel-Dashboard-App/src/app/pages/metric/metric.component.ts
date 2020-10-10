@@ -25,7 +25,7 @@ export class MetricComponent implements OnInit, OnDestroy {
         type: 'category',
         data: [],
         axisLabel: {
-            interval: 30
+            interval: 60
         }
     },
     yAxis: {
@@ -109,7 +109,7 @@ export class MetricComponent implements OnInit, OnDestroy {
                 this.chartOptionMap[key].series[0].data = [];
                 this.chartOptionMap[key].series[1].data = [];
                 res.data.metric[key].forEach(ele => {
-                    this.chartOptionMap[key].xAxis.data.push(this.timeFormatter(ele.timestamp));
+                    this.chartOptionMap[key].xAxis.data.push(new Date(ele.timestamp).toString().slice(16, 21));
                     this.chartOptionMap[key].series[0].data.push(ele.passQps);
                     this.chartOptionMap[key].series[1].data.push(ele.blockQps);
                 });
@@ -139,7 +139,7 @@ export class MetricComponent implements OnInit, OnDestroy {
                     this.chartOptionMap[key].series[0].data = [];
                     this.chartOptionMap[key].series[1].data = [];
                     res.data.metric[key].forEach(ele => {
-                        this.chartOptionMap[key].xAxis.data.push(this.timeFormatter(ele.timestamp));
+                        this.chartOptionMap[key].xAxis.data.push(new Date(ele.timestamp).toString().slice(16, 21));
                         this.chartOptionMap[key].series[0].data.push(ele.passQps);
                         this.chartOptionMap[key].series[1].data.push(ele.blockQps);
                     });
@@ -188,7 +188,7 @@ export class MetricComponent implements OnInit, OnDestroy {
                 this.chartOptionMap[key].series[0].data = [];
                 this.chartOptionMap[key].series[1].data = [];
                 res.data.metric[key].forEach(ele => {
-                    this.chartOptionMap[key].xAxis.data.push(this.timeFormatter(ele.timestamp));
+                    this.chartOptionMap[key].xAxis.data.push(new Date(ele.timestamp).toString().slice(16, 21));
                     this.chartOptionMap[key].series[0].data.push(ele.passQps);
                     this.chartOptionMap[key].series[1].data.push(ele.blockQps);
                 });
@@ -218,7 +218,7 @@ export class MetricComponent implements OnInit, OnDestroy {
                 this.chartOptionMap[key].series[0].data = [];
                 this.chartOptionMap[key].series[1].data = [];
                 res.data.metric[key].forEach(ele => {
-                    this.chartOptionMap[key].xAxis.data.push(this.timeFormatter(ele.timestamp));
+                    this.chartOptionMap[key].xAxis.data.push(new Date(ele.timestamp).toString().slice(16, 21));
                     this.chartOptionMap[key].series[0].data.push(ele.passQps);
                     this.chartOptionMap[key].series[1].data.push(ele.blockQps);
                 });
