@@ -13,3 +13,9 @@ rule:
       namespace: ${configserver.namespace:}
     zookeeper:
       server-addr: ${configserver.address:}
+
+spring:
+  influx:
+    url: "http://127.0.0.1:8086"
+    database: sentinel_db
+    retention-policy:

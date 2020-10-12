@@ -36,7 +36,6 @@ import java.util.stream.Collectors;
  * @author Carpenter Lee
  * @author Eric Zhao
  */
-@Component
 public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity> {
 
     private static final long MAX_METRIC_LIVE_TIME_MS = 1000 * 60 * 5;
@@ -112,7 +111,7 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
     }
 
     @Override
-    public List<String> listResourcesOfApp(String app) {
+    public List<String> listResourcesOfApp(String app, long startTime) {
         List<String> results = new ArrayList<>();
         if (StringUtil.isBlank(app)) {
             return results;

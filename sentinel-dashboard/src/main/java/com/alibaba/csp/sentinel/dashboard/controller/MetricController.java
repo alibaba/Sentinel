@@ -84,7 +84,7 @@ public class MetricController {
         if (endTime - startTime > maxQueryIntervalMs) {
             return Result.ofFail(-1, "time intervalMs is too big, must <= 1h");
         }
-        List<String> resources = metricStore.listResourcesOfApp(app);
+        List<String> resources = metricStore.listResourcesOfApp(app,startTime);
         logger.debug("queryTopResourceMetric(), resources.size()={}", resources.size());
 
         if (resources == null || resources.isEmpty()) {

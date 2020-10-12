@@ -74,7 +74,7 @@ public class InMemoryMetricsRepositoryTest {
         entry.setBlockQps(0L);
         entry.setSuccessQps(1L);
         inMemoryMetricsRepository.save(entry);
-        List<String> resources = inMemoryMetricsRepository.listResourcesOfApp("testSave");
+        List<String> resources = inMemoryMetricsRepository.listResourcesOfApp("testSave",entry.getTimestamp().getTime());
         Assert.assertTrue(resources.size() == 1 && "testResource".equals(resources.get(0)));
     }
 
@@ -94,7 +94,7 @@ public class InMemoryMetricsRepositoryTest {
             entities.add(entry);
         }
         inMemoryMetricsRepository.saveAll(entities);
-        List<String> result = inMemoryMetricsRepository.listResourcesOfApp("testSaveAll");
+        List<String> result = inMemoryMetricsRepository.listResourcesOfApp("testSaveAll",System.currentTimeMillis());
         Assert.assertTrue(result.size() == entities.size());
     }
 
@@ -146,7 +146,7 @@ public class InMemoryMetricsRepositoryTest {
                             if (finalJ % 2 == 0) {
                                 batchSave();
                             } else {
-                                inMemoryMetricsRepository.listResourcesOfApp(DEFAULT_APP);
+                                inMemoryMetricsRepository.listResourcesOfApp(DEFAULT_APP,System.currentTimeMillis());
                             }
 
                         } catch (InterruptedException | BrokenBarrierException e) {
