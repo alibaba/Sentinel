@@ -43,6 +43,7 @@ export class FlowComponent implements OnInit {
   gradeModeMap: any;
   btnSize: NzButtonSize = 'large';
   currentRule: any;
+  flowfilter: any;
 
   // Model 对话框显示
   isCreModVis: boolean = false;
@@ -55,7 +56,6 @@ export class FlowComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // console.log('FlowComponent init!');
     this.mapInit();
     this.route.params.subscribe(res => {
       this.app = res.app;
@@ -96,7 +96,6 @@ export class FlowComponent implements OnInit {
             this.flowRules.push(ele);
           });
         }
-        // console.log("this.flowRules", this.flowRules);
       }
     });
   }

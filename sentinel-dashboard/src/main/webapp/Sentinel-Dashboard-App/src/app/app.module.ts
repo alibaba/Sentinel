@@ -18,6 +18,9 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzCollapseModule } from 'ng-zorro-antd/collapse';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzInputModule } from 'ng-zorro-antd/input';
+
+import { CommonModule as PrivateCommonModule } from './common/common.module';
 
 import { IconDefinition } from '@ant-design/icons-angular';
 import {
@@ -25,10 +28,11 @@ import {
   MenuFoldOutline, 
   MenuUnfoldOutline,
   InfoCircleTwoTone,
-  RedoOutline
+  RedoOutline,
+  FilterOutline,
 } from '@ant-design/icons-angular/icons'
 
-const icons: IconDefinition[] = [ PlusOutline, MenuFoldOutline, MenuUnfoldOutline, InfoCircleTwoTone, RedoOutline ];
+const icons: IconDefinition[] = [ PlusOutline, MenuFoldOutline, MenuUnfoldOutline, InfoCircleTwoTone, RedoOutline, FilterOutline ];
 
 registerLocaleData(zh);
 
@@ -49,6 +53,8 @@ registerLocaleData(zh);
     NzCollapseModule,
     NzButtonModule,
     NzIconModule.forRoot(icons),
+    NzInputModule,
+    PrivateCommonModule
   ],
   providers: [
     { provide: LocationStrategy, useClass: HashLocationStrategy},

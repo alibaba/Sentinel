@@ -17,6 +17,7 @@ export class AppComponent implements OnInit {
   apps: any[];
   menuInfos: any[] = [];
   appPanels: any[];
+  appfilter: string;
 
   constructor(
     private kieService: KieInfoService,
@@ -24,9 +25,6 @@ export class AppComponent implements OnInit {
   ) { }
 
   async ngOnInit() {
-    
-    console.log("app init!");
-    // console.log(window.location.href.split('/').splice(4));
     this.isCollapsed = false;
     this.environments = ['', 'development', 'production', 'testing', 'acceptance'];
     this.currentEnvir = 'development';
@@ -56,7 +54,6 @@ export class AppComponent implements OnInit {
       if (res.success) {
         this.apps = Array.from(new Set(res.data.map(val => val.app)));
         this.services = res.data;
-        console.log("this.apps", this.apps);
         this.initMenuInfos();
       }
     });
@@ -68,7 +65,6 @@ export class AppComponent implements OnInit {
       if (res.success) {
         this.apps = Array.from(new Set(res.data.map(val => val.app)));  
         this.services = res.data;
-        console.log("this.apps", this.apps);
         this.initMenuInfos();
       }
     });

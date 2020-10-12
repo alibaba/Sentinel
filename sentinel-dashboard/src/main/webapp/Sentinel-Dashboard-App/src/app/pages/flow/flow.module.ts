@@ -23,6 +23,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzAutocompleteModule } from 'ng-zorro-antd/auto-complete';
 import { NzMessageModule } from 'ng-zorro-antd/message';
 
+import { CommonModule as PrivateCommonModule } from 'src/app/common/common.module';
 
 @NgModule({
   imports: [
@@ -42,7 +43,8 @@ import { NzMessageModule } from 'ng-zorro-antd/message';
     NzGridModule,
     NzSelectModule,
     NzAutocompleteModule,
-    NzMessageModule
+    NzMessageModule,
+    PrivateCommonModule
   ],
   declarations: [
     FlowComponent, 

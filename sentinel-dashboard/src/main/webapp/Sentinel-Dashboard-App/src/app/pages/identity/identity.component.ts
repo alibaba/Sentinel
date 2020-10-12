@@ -22,6 +22,7 @@ export class IdentityComponent implements OnInit, OnChanges {
   resourceInfos: any[];
   currentResource: string;
   btnSize: NzButtonSize = 'large';
+  identityfilter: any;
 
   ip: string;
   port: number;
@@ -36,7 +37,6 @@ export class IdentityComponent implements OnInit, OnChanges {
   ) { }
 
   async ngOnInit() {
-    // console.log("identity Init!");
     this.route.params.subscribe(res => {
       this.app = res.app;
       this.service = res.service;
@@ -72,7 +72,6 @@ export class IdentityComponent implements OnInit, OnChanges {
     this.kieIdentityService.queryResource(this.ip, this.port).subscribe(res => {
       if (res.success) {
         this.resourceInfos = res.data;
-        // console.log("this.resourceInfos", this.resourceInfos);
       }
     })
   }

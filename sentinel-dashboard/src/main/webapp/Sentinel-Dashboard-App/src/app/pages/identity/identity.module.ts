@@ -20,6 +20,8 @@ import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzMessageModule } from 'ng-zorro-antd/message';
 
+import { CommonModule as PrivateCommonModule } from 'src/app/common/common.module';
+
 
 @NgModule({
   imports: [
@@ -38,7 +40,8 @@ import { NzMessageModule } from 'ng-zorro-antd/message';
     NzSwitchModule,
     NzGridModule,
     NzSelectModule,
-    NzMessageModule
+    NzMessageModule,
+    PrivateCommonModule
   ],
   declarations: [
     IdentityComponent,

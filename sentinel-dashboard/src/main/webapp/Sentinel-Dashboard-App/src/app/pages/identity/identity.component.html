@@ -5,9 +5,17 @@
     <div class="main">
         <div class="operator">
             <button nz-button [nzSize]="btnSize" style="float: right;" (click)="refresh($event)"><i nz-icon nzType="redo" nzTheme="outline"></i></button>
+            <div style="width: 150px; float: right; padding-right: 10px;">
+                <nz-input-group [nzSize]="'large'" [nzPrefix]="prefixTemplateFilter">
+                    <input type="text" nz-input placeholder="资源名" [(ngModel)]="identityfilter"/>
+                </nz-input-group>
+                <ng-template #prefixTemplateFilter>
+                    <i nz-icon nzType="filter" nzTheme="outline"></i>
+                </ng-template>
+            </div>
         </div>
         <div id="table">
-            <nz-table #basicTable [nzData]="resourceInfos">
+            <nz-table #basicTable [nzData]="resourceInfos | identityFilter: identityfilter">
                 <thead>
                     <tr>
                         <th>资源名</th>

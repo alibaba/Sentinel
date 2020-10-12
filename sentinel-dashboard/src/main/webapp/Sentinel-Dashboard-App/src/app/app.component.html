@@ -9,9 +9,14 @@
       <img src="https://ng.ant.design/assets/img/logo.svg" alt="logo">
       <h1>Sentinel 控制台</h1>
     </div>
-
+    <nz-input-group [nzSize]="'large'" [nzPrefix]="prefixTemplateFilter">
+      <input type="text" nz-input placeholder="应用名" [(ngModel)]="appfilter"/>
+    </nz-input-group>
+    <ng-template #prefixTemplateFilter>
+      <i nz-icon nzType="filter" nzTheme="outline"></i>
+    </ng-template>
     <ul nz-menu nzTheme='dark' nzMode="inline">
-      <li *ngFor="let menuInfo of menuInfos" nz-submenu [nzTitle]="menuInfo.app" [(nzOpen)]="menuInfo.open" (nzOpenChange)="openHandler(menuInfo)">
+      <li *ngFor="let menuInfo of menuInfos | appFilter: appfilter" nz-submenu [nzTitle]="menuInfo.app" [(nzOpen)]="menuInfo.open" (nzOpenChange)="openHandler(menuInfo)">
         <ul>
           <li *ngFor="let serviceInfo of menuInfo.serviceInfos" nz-submenu 
               [nzTitle]="serviceInfo.service + ' v:' + serviceInfo.version"
@@ -32,9 +37,6 @@
         </ul>
       </li>
     </ul>
-
-
-
   </nz-sider>
   <nz-layout>
     <nz-header>
