@@ -103,16 +103,21 @@ export class AppComponent implements OnInit {
     if (window.location.href.split('/').splice(4).length) {
       var nowApp = window.location.href.split('/').splice(4)[1];
       var nowServiceId = window.location.href.split('/').splice(4)[3];
+      var flag = false;
       this.menuInfos.forEach(menuInfo => {
         if (menuInfo.app === nowApp) {
           menuInfo.open = true;
           menuInfo.serviceInfos.forEach(service => {
             if (service.id === nowServiceId) {
               service.open = true;
+              flag = true;
             }
           });
         }
       });
+      if (!flag) {
+        window.location.replace('/#/home');
+      }
     }
   }
 
