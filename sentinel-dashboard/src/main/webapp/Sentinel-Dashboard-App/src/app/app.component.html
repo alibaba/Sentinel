@@ -31,6 +31,12 @@
                 <li nz-menu-item nzMatchRouter>
                   <a routerLink="/flow/{{menuInfo.app}}/{{serviceInfo.service}}/{{serviceInfo.id}}">流控规则</a>
                 </li>
+                <li nz-menu-item nzMatchRouter>
+                  <a routerLink="/degrade/{{menuInfo.app}}/{{serviceInfo.service}}/{{serviceInfo.id}}">降级规则</a>
+                </li>
+                <li nz-menu-item nzMatchRouter>
+                  <a routerLink="/system/{{menuInfo.app}}/{{serviceInfo.service}}/{{serviceInfo.id}}">系统规则</a>
+                </li>
               </ul>
           </li>
         </ul>
