@@ -1,0 +1,47 @@
+<form nz-form [formGroup]="systemRuleForm">                    
+    <nz-modal
+      [(nzVisible)]="isVisible"
+      nzTitle="新增系统保护规则"
+      [nzOkLoading]="isOkLoading"
+      (nzOnOk)="handleOk()"
+      [nzOkDisabled]="!systemRuleForm.valid"            
+      (nzOnCancel)="handleCancel()"
+      [nzWidth]="650">
+        <!-- 阈值类型 -->
+        <nz-form-item>
+            <nz-form-label [nzSpan]="4">阈值类型</nz-form-label>
+            <nz-form-control [nzOffset]="1">
+                <nz-radio-group formControlName="thresholdKind"
+                    [(ngModel)]="sThK"
+                    (ngModelChange)="handleChangeSThK()">
+                    <label nz-radio nzValue="load">LOAD</label>
+                    <label nz-radio nzValue="rt">RT</label>
+                    <label nz-radio nzValue="threadn">线程数</label>
+                    <label nz-radio nzValue="eqps">入口 QPS</label>
+                    <label nz-radio nzValue="cpur">CPU 使用率</label>
+                </nz-radio-group>
+            </nz-form-control>
+        </nz-form-item>
+        <!-- 阈值 -->
+        <nz-form-item>
+            <nz-form-label [nzSpan]="4" nzRequired>阈值</nz-form-label>
+            <nz-form-control [nzSpan]="16" [nzOffset]="1">
+                <nz-input-number *ngIf="sThK != 'cpur'"
+                    formControlName="thresholdValue"
+                    [nzPlaceHolder]="'[0, ~)的整数'"
+                    [nzMin]="0"
+                    [nzStep]="1"
+                    [nzSize]="'large'"
+                    style="width: 100%"></nz-input-number>
+                <nz-input-number *ngIf="sThK == 'cpur'"
+                    formControlName="thresholdValue"
+                    [nzPlaceHolder]="'[0.0, 1.0]的小数，代表百分比'"
+                    [nzMin]="0"
+                    [nzMax]="1"
+                    [nzStep]="0.1"
+                    [nzSize]="'large'"
+                    style="width: 100%"></nz-input-number>
+            </nz-form-control>
+        </nz-form-item>
+    </nz-modal>
+</form>

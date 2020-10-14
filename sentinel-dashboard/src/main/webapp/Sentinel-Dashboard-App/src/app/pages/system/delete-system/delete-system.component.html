@@ -1,0 +1,15 @@
+<nz-modal
+  [(nzVisible)]="isVisible"
+  nzTitle="删除系统保护规则"
+  [nzOkLoading]="isOkLoading"
+  (nzOnOk)="handleOk()"
+  [nzOkType]="'danger'"
+  (nzOnCancel)="handleCancel()"
+  [nzWidth]="600">
+    <div>请确认是否删除如下系统保护规则:</div>
+    <br>
+    <div style="color: #c7254e;">
+        <span>阈值类型：{{currentThresholdKind || '--'}}，</span>
+        <span>阈值：{{currentThresholdValue || '--'}}</span>
+    </div>
+</nz-modal>

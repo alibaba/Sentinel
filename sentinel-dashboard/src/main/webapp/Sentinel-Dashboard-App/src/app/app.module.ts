@@ -19,6 +19,7 @@ import { NzCollapseModule } from 'ng-zorro-antd/collapse';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 
 import { CommonModule as PrivateCommonModule } from './common/common.module';
 
@@ -54,6 +55,7 @@ registerLocaleData(zh);
     NzButtonModule,
     NzIconModule.forRoot(icons),
     NzInputModule,
+    NzInputNumberModule,
     PrivateCommonModule
   ],
   providers: [
