@@ -15,26 +15,6 @@
  */
 package com.alibaba.csp.sentinel.dashboard.metric;
 
-import java.net.ConnectException;
-import java.net.SocketTimeoutException;
-import java.nio.charset.Charset;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.ThreadPoolExecutor.DiscardPolicy;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
@@ -42,10 +22,13 @@ import com.alibaba.csp.sentinel.dashboard.datasource.entity.MetricEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
+import com.alibaba.csp.sentinel.dashboard.repository.metric.MetricsRepository;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
 import com.alibaba.csp.sentinel.util.StringUtil;
-
-import com.alibaba.csp.sentinel.dashboard.repository.metric.MetricsRepository;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.MissingNode;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.concurrent.FutureCallback;
@@ -59,7 +42,18 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import retrofit2.http.Url;
+
+import java.net.*;
+import java.nio.charset.Charset;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.ThreadPoolExecutor.DiscardPolicy;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * Fetch metric of machines.
@@ -85,7 +79,11 @@ public class MetricFetcher {
     @Autowired
     private AppManagement appManagement;
 
+    @Value("${spring.influx.url:}")
+    private String influxdburl;
+
     private CloseableHttpAsyncClient httpclient;
+    ObjectMapper mapper = new ObjectMapper();
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private ScheduledExecutorService fetchScheduleService = Executors.newScheduledThreadPool(1,
@@ -207,9 +205,20 @@ public class MetricFetcher {
                 unhealthy.incrementAndGet();
                 continue;
             }
-            final String url = "http://" + machine.getIp() + ":" + machine.getPort() + "/" + METRIC_URL_PATH
-                + "?startTime=" + startTime + "&endTime=" + endTime + "&refetch=" + false;
-            final HttpGet httpGet = new HttpGet(url);
+            String metricurl;
+            if(StringUtil.isBlank(influxdburl)){
+                metricurl = "http://" + machine.getIp() + ":" + machine.getPort() + "/" + METRIC_URL_PATH
+                        + "?startTime=" + startTime + "&endTime=" + endTime + "&refetch=" + false;
+            }else{
+                metricurl = influxdburl+"/query?db=sentinel_metrics_db&q="
+                        +"select%20data%20from%20%22metrics%22%20where%20app='"+app
+                        +"'%20and%20host='"+machine.getHostname()+"'"
+                        +"%20and%20time%3E="+ startTime +"000000%20and%20time%3C="+endTime+"000000";
+            }
+            final String strUrl = metricurl;
+//            URL url = new URL(strUrl);
+//            URI uri = new URI(url.getProtocol(),url.getHost()+":"+url.getPort(), url.getPath(), url.getQuery(), null);
+            final HttpGet httpGet = new HttpGet(strUrl);
             httpGet.setHeader(HTTP.CONN_DIRECTIVE, HTTP.CONN_CLOSE);
             httpclient.execute(httpGet, new FutureCallback<HttpResponse>() {
                 @Override
@@ -218,23 +227,22 @@ public class MetricFetcher {
                         handleResponse(response, machine, metricMap);
                         success.incrementAndGet();
                     } catch (Exception e) {
-                        logger.error(msg + " metric " + url + " error:", e);
+                        logger.error(msg + " metric " + strUrl + " error:", e);
                     } finally {
                         latch.countDown();
                     }
                 }
-
                 @Override
                 public void failed(final Exception ex) {
                     latch.countDown();
                     fail.incrementAndGet();
                     httpGet.abort();
                     if (ex instanceof SocketTimeoutException) {
-                        logger.error("Failed to fetch metric from <{}>: socket timeout", url);
+                        logger.error("Failed to fetch metric from <{}>: socket timeout", strUrl);
                     } else if (ex instanceof ConnectException) {
-                        logger.error("Failed to fetch metric from <{}> (ConnectionException: {})", url, ex.getMessage());
+                        logger.error("Failed to fetch metric from <{}> (ConnectionException: {})", strUrl, ex.getMessage());
                     } else {
-                        logger.error(msg + " metric " + url + " error", ex);
+                        logger.error(msg + " metric " + strUrl + " error", ex);
                     }
                 }
 
@@ -305,6 +313,9 @@ public class MetricFetcher {
         } catch (Exception ignore) {
         }
         String body = EntityUtils.toString(response.getEntity(), charset != null ? charset : DEFAULT_CHARSET);
+        if(StringUtil.isNotBlank(influxdburl)){
+            body = bodyData(body);
+        }
         if (StringUtil.isEmpty(body) || body.startsWith(NO_METRICS)) {
             //logger.info(machine.getApp() + ":" + machine.getIp() + ":" + machine.getPort() + ", bodyStr is empty");
             return;
@@ -313,6 +324,28 @@ public class MetricFetcher {
         //logger.info(machine.getApp() + ":" + machine.getIp() + ":" + machine.getPort() +
         //    ", bodyStr.length()=" + body.length() + ", lines=" + lines.length);
         handleBody(lines, machine, metricMap);
+    }
+
+    private String bodyData(String body) {
+        try {
+            JsonNode nodes = mapper.readTree(body);
+            JsonNode node = nodes.findPath("values");
+            if(!(node instanceof ArrayNode)){
+                return "";
+            }
+            ArrayNode vnode = (ArrayNode)node;
+            Iterator<JsonNode> values = vnode.elements();
+            String data = StreamSupport.stream(
+                    Spliterators.spliteratorUnknownSize(values, Spliterator.ORDERED),
+                    false)
+                    .map(n -> (ArrayNode) n)
+                    .map(v -> v.get(1).asText())
+                    .collect(Collectors.joining("\n"));
+            return data;
+        } catch (Exception e) {
+            logger.info("parse metric exceptions: ", e);
+            return "";
+        }
     }
 
     private void handleBody(String[] lines, MachineInfo machine, Map<String, MetricEntity> map) {
@@ -369,7 +402,6 @@ public class MetricFetcher {
        add(Constants.SYSTEM_LOAD_RESOURCE_NAME);
        add(Constants.CPU_USAGE_RESOURCE_NAME);
     }};
-
 }
 
 
