@@ -6,17 +6,25 @@
         <div class="operator">
             <button nz-button [nzSize]="btnSize" nzType="primary" (click)="createSystemRule($event)"><i nz-icon nzType="plus"></i>新增系统规则</button>
             <button nz-button [nzSize]="btnSize" style="float: right;" (click)="refresh($event)"><i nz-icon nzType="redo" nzTheme="outline"></i></button>
-            <div style="width: 150px; float: right; padding-right: 10px;">
-                <nz-input-group [nzSize]="'large'" [nzPrefix]="prefixTemplateFilter">
-                    <input type="text" nz-input placeholder="资源名" [(ngModel)]="systemfilter"/>
-                </nz-input-group>
-                <ng-template #prefixTemplateFilter>
-                    <i nz-icon nzType="filter" nzTheme="outline"></i>
-                </ng-template>
+            <div style="width: 160px; float: right; padding-right: 10px;">
+                <nz-select
+                    [nzSize]="btnSize"
+                    nzPlaceHolder="选择阈值类型"
+                    nzShowSearch
+                    nzAllowClear
+                    [(ngModel)]="systemfilter"
+                    style="width: 100%;">
+                    <nz-option nzValue="highestSystemLoad" nzLabel="系统 load"></nz-option>
+                    <nz-option nzValue="avgRt" nzLabel="平均 RT"></nz-option>
+                    <nz-option nzValue="maxThread" nzLabel="并发数"></nz-option>
+                    <nz-option nzValue="qps" nzLabel="入口 QPS"></nz-option>
+                    <nz-option nzValue="highestCpuUsage" nzLabel="CPU 使用率"></nz-option>
+                </nz-select>
             </div>
         </div>
         <div id="table">
-            <nz-table #basicTable [nzData]="systemRules | systemFilter: systemfilter">
+            <nz-table #basicTable [nzData]="systemRules | systemFilter: systemfilter"
+                nzShowPagination nzShowSizeChanger>
                 <thead>
                     <tr>
                         <th>阈值类型</th>

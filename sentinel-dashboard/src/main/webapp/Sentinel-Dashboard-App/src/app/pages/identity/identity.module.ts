@@ -19,6 +19,7 @@ import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzMessageModule } from 'ng-zorro-antd/message';
+import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 
 import { CommonModule as PrivateCommonModule } from 'src/app/common/common.module';
 
@@ -41,11 +42,12 @@ import { CommonModule as PrivateCommonModule } from 'src/app/common/common.modul
     NzGridModule,
     NzSelectModule,
     NzMessageModule,
+    NzInputNumberModule,
     PrivateCommonModule
   ],
   declarations: [
     IdentityComponent,
-    CreateFlowComponent,
+    CreateFlowComponent
   ],
   exports: [IdentityComponent]
 })

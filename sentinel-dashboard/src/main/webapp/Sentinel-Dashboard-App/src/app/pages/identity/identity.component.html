@@ -48,13 +48,12 @@
             </nz-table>
         </div>
         <div id="modal" style="display: none;">
-            <app-create-flow #createFlow *ngIf="isCreModVis"
-            [isVisible]="isCreModVis"
-            [app]="app"
-            [service_id]="service_id"
-            [currentResource]="currentResource"
-            (creModClose)="creModClose($event)">
-            </app-create-flow>
+            <app-create-flow #createFlow *ngIf="isCreFlowModVis"
+                [isVisible]="isCreFlowModVis"
+                [app]="app"
+                [service_id]="service_id"
+                [currentResource]="currentResource"
+                (creModClose)="creFlowModClose($event)"></app-create-flow>
         </div>
     </div>
 </div>

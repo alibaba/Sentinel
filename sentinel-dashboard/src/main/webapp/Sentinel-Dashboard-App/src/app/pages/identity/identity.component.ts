@@ -28,7 +28,7 @@ export class IdentityComponent implements OnInit, OnChanges {
   port: number;
 
   // Modal框 显示控制
-  isCreModVis: boolean = false;
+  isCreFlowModVis: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -78,11 +78,11 @@ export class IdentityComponent implements OnInit, OnChanges {
 
   public createFlowRule(rowData): void {
     this.currentResource = rowData.resource;
-    this.isCreModVis = true;
+    this.isCreFlowModVis = true;
   }
 
-  public creModClose(e): void {
-    this.isCreModVis = e.isVisible;
+  public creFlowModClose(e): void {
+    this.isCreFlowModVis = e.isVisible;
     if (e.refresh) {
       this.queryResource();
     }
