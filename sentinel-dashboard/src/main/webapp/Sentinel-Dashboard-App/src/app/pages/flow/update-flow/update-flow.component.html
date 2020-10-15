@@ -51,7 +51,7 @@
                     <nz-form-label [nzSpan]="10" *ngIf="isCluster" nzRequired>均摊阈值</nz-form-label>
                     <nz-form-control [nzOffset]="2" [nzSpan]="10">
                         <nz-input-group>
-                            <input nz-input formControlName="count"/>
+                            <input type="number" nz-input formControlName="count"/>
                         </nz-input-group>
                     </nz-form-control>
                 </nz-form-item>
@@ -136,7 +136,7 @@
                 <nz-form-label [nzSpan]="4">预热时长</nz-form-label>
                 <nz-form-control [nzSpan]="15" [nzOffset]="2">
                     <nz-input-group>
-                        <input nz-input formControlName="warmUpPeriodSec" placeholder="秒"/>
+                        <input type="number" nz-input formControlName="warmUpPeriodSec" placeholder="秒"/>
                     </nz-input-group>
                 </nz-form-control>
             </nz-form-item>
@@ -146,7 +146,7 @@
                 <nz-form-label [nzSpan]="4">超时时间</nz-form-label>
                 <nz-form-control [nzSpan]="15" [nzOffset]="2">
                     <nz-input-group>
-                        <input nz-input formControlName="maxQueueingTimeMs" placeholder="毫秒"/>
+                        <input type="number" nz-input formControlName="maxQueueingTimeMs" placeholder="毫秒"/>
                     </nz-input-group>
                 </nz-form-control>
             </nz-form-item>
