@@ -81,7 +81,6 @@ export class CreateFlowComponent implements OnInit {
 
   public handleOk(): void {
     this.isOkLoading = true;
-    console.log(this.flowRuleForm.value);
     var params = {
       grade: 1,
       strategy: 0,
@@ -165,7 +164,7 @@ export class CreateFlowComponent implements OnInit {
           isVisible: this.isVisible,
           refresh: true
         });
-        this.message.error('新增流控规则失败');
+        this.message.error('新增流控规则失败 ' + res.msg);
       }
     });
   }

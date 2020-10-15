@@ -1,34 +1,29 @@
-import { 
-  Component, 
-  OnInit, 
-  Input,
-  Output,
-  EventEmitter 
-} from '@angular/core';
-
-import { KieFlowService } from 'src/app/services/kie-flow/kie-flow.service';
+import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { KieDegradeService } from 'src/app/services/kie-degrade/kie-degrade.service';
 
 @Component({
-  selector: 'app-delete-flow',
-  templateUrl: './delete-flow.component.html',
-  styleUrls: ['./delete-flow.component.css']
+  selector: 'app-delete-degrade',
+  templateUrl: './delete-degrade.component.html',
+  styleUrls: ['./delete-degrade.component.css']
 })
-export class DeleteFlowComponent implements OnInit {
+export class DeleteDegradeComponent implements OnInit {
   @Input() isVisible: boolean;
+
+  @Input() app: string;
 
   @Input() service_id: string;
 
   @Input() currentRule: any;
 
-  @Output() private delModClose = new EventEmitter();
-
+  @Output() private delModClose = new EventEmitter()
+  
   isOkLoading: boolean = false;
   gradeModeMap: any = {};
 
   constructor(
-    private kieFlowService: KieFlowService,
-    private message: NzMessageService
+    private message: NzMessageService,
+    private kieDegradeService: KieDegradeService
   ) { }
 
   ngOnInit(): void {
@@ -36,15 +31,16 @@ export class DeleteFlowComponent implements OnInit {
   }
 
   private mapInit() {
-    this.gradeModeMap = {
-      0: '线程数',
-      1: 'QPS'
-    }
+    this.gradeModeMap = { 
+      0: '慢比例调用',    
+      1: '异常比例',      
+      2: '异常数'         
+    };
   }
 
   public handleOk() {
     this.isOkLoading = true;
-    this.kieFlowService.deleteKieFlowRule(this.service_id, this.currentRule.ruleId).subscribe(res => {
+    this.kieDegradeService.deleteKieDegradeRule(this.service_id, this.currentRule.ruleId).subscribe(res => {
       if (res.success) {
         this.isOkLoading = false;
         this.isVisible = false;
@@ -52,7 +48,7 @@ export class DeleteFlowComponent implements OnInit {
           isVisible: this.isVisible,
           refresh: true
         });
-        this.message.success('删除流控规则成功');
+        this.message.success('删除降级规则成功');
       } else {
         this.isOkLoading = false;
         this.isVisible = false;
@@ -60,7 +56,7 @@ export class DeleteFlowComponent implements OnInit {
           isVisible: this.isVisible,
           refresh: true
         });
-        this.message.error('删除流控规则失败 ' + res.msg);
+        this.message.error('删除降级规则失败 ' + res.msg);
       }
     });
   }
@@ -72,5 +68,4 @@ export class DeleteFlowComponent implements OnInit {
       refresh: false
     });
   }
-  
 }

@@ -94,7 +94,7 @@ export class CreateSystemComponent implements OnInit {
           isVisible: this.isVisible,
           refresh: true
         });
-        this.message.error('新增系统保护规则失败');
+        this.message.error('新增系统保护规则失败 ' + res.msg);
       }
     });
   }

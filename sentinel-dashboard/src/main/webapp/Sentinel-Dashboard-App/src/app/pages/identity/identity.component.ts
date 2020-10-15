@@ -1,8 +1,6 @@
 import {
   Component, 
-  OnInit,
-  OnChanges,
-  SimpleChanges
+  OnInit
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { KieIdentityService } from 'src/app/services/kie-identity/kie-identity.service';
@@ -15,7 +13,7 @@ import { KieInfoService } from 'src/app/services/kie-info/kie-info.service';
   templateUrl: './identity.component.html',
   styleUrls: ['./identity.component.css']
 })
-export class IdentityComponent implements OnInit, OnChanges {
+export class IdentityComponent implements OnInit {
   app: string;
   service: string;
   service_id: string;
@@ -60,12 +58,6 @@ export class IdentityComponent implements OnInit, OnChanges {
       });
     });
     this.resourceInfos = resources.data;
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    console.log('ngOnChanges');
-    console.log(changes['ip']);
-    console.log(changes['port']);
   }
 
   public queryResource(): void {

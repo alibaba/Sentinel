@@ -124,7 +124,6 @@ export class CreateFlowComponent implements OnInit {
         }
       });
     });
-    console.log(resources);
     resources.data.map(ele => {
       this.resourceList.push(ele.resource);
     });
@@ -216,7 +215,7 @@ export class CreateFlowComponent implements OnInit {
           isVisible: this.isVisible,
           refresh: true
         });
-        this.message.error('新增流控规则失败');
+        this.message.error('新增流控规则失败 ' + res.msg);
       }
     });
   }

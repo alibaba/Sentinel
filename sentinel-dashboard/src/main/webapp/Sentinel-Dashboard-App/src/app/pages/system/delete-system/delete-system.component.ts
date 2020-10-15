@@ -77,7 +77,7 @@ export class DeleteSystemComponent implements OnInit {
           isVisible: this.isVisible,
           refresh: true
         });
-        this.message.error('删除系统保护规则失败');
+        this.message.error('删除系统保护规则失败 ' + res.msg);
       }
     });
   }

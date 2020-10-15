@@ -3,13 +3,15 @@ import { AppFilterPipe } from './pipe/app-filter.pipe';
 import { FlowFilterPipe } from './pipe/flow-filter.pipe';
 import { IdentityFilterPipe } from './pipe/identity-filter.pipe';
 import { SystemFilterPipe } from './pipe/system-filter.pipe';
+import { DegradeFilterPipe } from './pipe/degrade-filter.pipe';
 
 @NgModule({
   declarations: [
     AppFilterPipe, 
     FlowFilterPipe, 
     IdentityFilterPipe,
-    SystemFilterPipe
+    SystemFilterPipe,
+    DegradeFilterPipe
   ],
   imports: [
   ],
@@ -17,7 +19,8 @@ import { SystemFilterPipe } from './pipe/system-filter.pipe';
     AppFilterPipe,
     FlowFilterPipe,
     IdentityFilterPipe,
-    SystemFilterPipe
+    SystemFilterPipe,
+    DegradeFilterPipe
   ]
 })
 export class CommonModule { }

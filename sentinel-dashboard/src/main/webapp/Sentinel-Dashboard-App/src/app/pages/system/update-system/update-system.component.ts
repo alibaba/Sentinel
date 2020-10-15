@@ -106,7 +106,7 @@ export class UpdateSystemComponent implements OnInit {
           isVisible: this.isVisible,
           refresh: true
         });
-        this.message.error('编辑系统保护规则失败');
+        this.message.error('编辑系统保护规则失败 ' + res.msg);
       }
     });
   }

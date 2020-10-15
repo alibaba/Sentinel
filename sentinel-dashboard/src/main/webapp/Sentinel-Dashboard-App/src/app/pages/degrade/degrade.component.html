@@ -1,1 +1,68 @@
-<p>degrade works!</p>
+<div>
+    <div class="service-head">
+        {{service}}
+    </div>
+    <div class="main">
+        <div class="operator">
+            <button nz-button [nzSize]="btnSize" nzType="primary" (click)="createDegradeRule($event)"><i nz-icon nzType="plus"></i>新增降级规则</button>
+            <button nz-button [nzSize]="btnSize" style="float: right;" (click)="refresh($event)"><i nz-icon nzType="redo" nzTheme="outline"></i></button>
+            <div style="width: 150px; float: right; padding-right: 10px;">
+                <nz-input-group [nzSize]="'large'" [nzPrefix]="prefixTemplateFilter">
+                    <input type="text" nz-input placeholder="资源名" [(ngModel)]="degradefilter"/>
+                </nz-input-group>
+                <ng-template #prefixTemplateFilter>
+                    <i nz-icon nzType="filter" nzTheme="outline"></i>
+                </ng-template>
+            </div>
+        </div>
+        <div id="table">
+            <nz-table #basicTable [nzData]="degradeRules | degradeFilter: degradefilter">
+                <thead>
+                    <tr>
+                        <th>资源名</th>
+                        <th>降级策略</th>
+                        <th>阈值</th>
+                        <th>熔断时长(s)</th>
+                        <th nzWidth="10%">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let rowData of basicTable.data">
+                        <td>{{ rowData.resource }}</td>
+                        <td>{{ gradeModeMap[rowData.grade] }}</td>
+                        <td>{{ rowData.count }}</td>
+                        <td>{{ rowData.timeWindow }}</td>
+                        <td>
+                            <a (click)="updateDegradeRule(rowData)">编辑</a>
+                            <nz-divider nzType="vertical"></nz-divider>
+                            <a (click)="deleteDegradeRule(rowData)">删除</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </nz-table>
+        </div>
+        <div id="modal" style="display: none;">
+            <app-create-degrade #createDegrade *ngIf="isCreModVis"
+                [isVisible]="isCreModVis"
+                [app]="app"
+                [service_id]="service_id"
+                [currentRule]="currentRule"
+                (creModClose)="creModClose($event)">
+            </app-create-degrade>
+            <app-delete-degrade #deleteDegrade *ngIf="isDelModVis"
+                [isVisible]="isDelModVis"
+                [app]="app"
+                [service_id]="service_id"
+                [currentRule]="currentRule"
+                (delModClose)="delModClose($event)">
+            </app-delete-degrade>
+            <app-update-degrade #updateDegrade *ngIf="isUpdModVis"
+                [isVisible]="isUpdModVis"
+                [app]="app"
+                [service_id]="service_id"
+                [currentRule]="currentRule"
+                (updModClose)="updModClose($event)">
+            </app-update-degrade>
+        </div>
+    </div>
+</div>

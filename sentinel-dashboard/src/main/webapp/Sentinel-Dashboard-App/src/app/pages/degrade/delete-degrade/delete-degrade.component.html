@@ -1,0 +1,16 @@
+<nz-modal
+  [(nzVisible)]="isVisible"
+  nzTitle="删除降级规则"
+  [nzOkLoading]="isOkLoading"
+  (nzOnOk)="handleOk()"
+  [nzOkType]="'danger'"
+  (nzOnCancel)="handleCancel()"
+  [nzWidth]="600">
+    <div>请确认是否删除如下降级规则:</div>
+    <br>
+    <div style="color: #c7254e;">
+        <span>资源名：{{ currentRule.resource }}，</span>
+        <span>降级模式：{{ gradeModeMap[currentRule.grade] }}，</span>
+        <span>阈值：{{ currentRule.count }}</span>
+    </div>
+</nz-modal>

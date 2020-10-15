@@ -1,0 +1,73 @@
+<form nz-form [formGroup]="degradeRuleForm">
+    <nz-modal
+      [(nzVisible)]="isVisible"
+      nzTitle="新增降级规则"
+      [nzOkLoading]="isOkLoading"
+      (nzOnOk)="handleOk()"
+      (nzOnCancel)="handleCancel()"
+      [nzOkDisabled]="!degradeRuleForm.valid"
+      [nzWidth]="600">
+        <!-- 资源名 -->
+        <nz-form-item>
+          <nz-form-label [nzSpan]="4" nzRequired>资源名</nz-form-label>
+          <nz-form-control [nzSpan]="15" [nzOffset]="2">
+            <input nz-input formControlName="resource" [nzAutocomplete]="auto" (input)="onInput($event)"/>
+            <nz-autocomplete [nzDataSource]="autocomOption" nzBackfill #auto></nz-autocomplete>
+          </nz-form-control>
+        </nz-form-item>
+        <!-- 熔断策略 -->
+        <nz-form-item>
+          <nz-form-label [nzSpan]="4">熔断策略</nz-form-label>
+          <nz-form-control [nzOffset]="2">
+              <nz-radio-group formControlName="grade" (ngModelChange)="greadeModeChange($event)">
+                <label nz-radio nzValue="0">慢比例调用</label>
+                <label nz-radio nzValue="1">异常比例</label>
+                <label nz-radio nzValue="2">异常数</label>
+              </nz-radio-group>
+          </nz-form-control>
+        </nz-form-item>
+        <!-- 熔断策略：慢调用比例 -->
+        <nz-form-item *ngIf="gradeModeMap[gradeMode] === '慢比例调用'">
+          <!-- 最大 RT -->
+          <nz-form-label [nzSpan]="4" nzRequired>最大 RT</nz-form-label>
+          <nz-form-control [nzOffset]="2" [nzSpan]="5">
+            <input nz-input type="number" formControlName="count" placeholder="RT(毫秒)"/>
+          </nz-form-control>
+          <!-- 比例阈值 -->
+          <nz-form-label [nzSpan]="4" nzRequired>比例阈值</nz-form-label>
+          <nz-form-control [nzSpan]="6">
+            <input nz-input type="number" formControlName="slowRatioThreshold" placeholder="取值 [0.0, 1.0]"/>
+          </nz-form-control>
+        </nz-form-item>
+        <!-- 熔断策略：异常比例 -->
+        <nz-form-item *ngIf="gradeModeMap[gradeMode] === '异常比例'">
+          <!-- 比例阈值 -->
+          <nz-form-label [nzSpan]="4" nzRequired>比例阈值</nz-form-label>
+          <nz-form-control [nzOffset]="2" [nzSpan]="6">
+            <input nz-input type="number" formControlName="count" placeholder="取值 [0.0, 1.0]"/>
+          </nz-form-control>
+        </nz-form-item>
+        <!-- 熔断策略：异常数 -->
+        <nz-form-item *ngIf="gradeModeMap[gradeMode] === '异常数'">
+          <!-- 异常数 -->
+          <nz-form-label [nzSpan]="4" nzRequired>异常数</nz-form-label>
+          <nz-form-control [nzOffset]="2" [nzSpan]="5">
+            <input nz-input type="number" formControlName="count" placeholder="异常数"/>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <!-- 熔断时长 -->
+          <nz-form-label [nzSpan]="4" nzRequired>熔断时长</nz-form-label>
+          <nz-form-control [nzOffset]="2" [nzSpan]="6">
+            <nz-input-group nzAddOnAfter="s">
+              <input nz-input type="number" formControlName="timeWindow" placeholder="熔断时长(s)"/>
+            </nz-input-group>
+          </nz-form-control>
+          <!-- 最小请求数 -->
+          <nz-form-label [nzSpan]="4" nzRequired>最小请求数</nz-form-label>
+          <nz-form-control [nzSpan]="5">
+            <input nz-input type="number" formControlName="minRequestAmount"/>
+          </nz-form-control>
+        </nz-form-item>
+    </nz-modal>
+</form>
