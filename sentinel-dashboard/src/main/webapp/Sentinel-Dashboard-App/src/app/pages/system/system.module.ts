@@ -1,11 +1,11 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+
+import { SystemRoutingModule } from './system-routing.module';
+
+import { SystemComponent } from './system.component';
+
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-
-import { IdentityRoutingModule } from './identity-routing.module';
-
-import { IdentityComponent } from './identity.component';
-import { CreateFlowComponent } from './create-flow/create-flow.component';
 
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -18,37 +18,46 @@ import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzAutocompleteModule } from 'ng-zorro-antd/auto-complete';
 import { NzMessageModule } from 'ng-zorro-antd/message';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 
 import { CommonModule as PrivateCommonModule } from 'src/app/common/common.module';
+import { CreateSystemComponent } from './create-system/create-system.component';
+import { DeleteSystemComponent } from './delete-system/delete-system.component';
+import { UpdateSystemComponent } from './update-system/update-system.component';
 
 
 @NgModule({
   imports: [
     CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    IdentityRoutingModule,
-    NzButtonModule,
+    SystemRoutingModule,
     NzIconModule,
+    NzButtonModule,
     NzTableModule,
     NzDividerModule,
     NzModalModule,
     NzFormModule,
+    FormsModule,
+    ReactiveFormsModule,
     NzInputModule,
     NzRadioModule,
     NzSwitchModule,
     NzGridModule,
     NzSelectModule,
+    NzAutocompleteModule,
     NzMessageModule,
     NzInputNumberModule,
     PrivateCommonModule
   ],
   declarations: [
-    IdentityComponent,
-    CreateFlowComponent
+    SystemComponent,
+    CreateSystemComponent, 
+    DeleteSystemComponent, 
+    UpdateSystemComponent
   ],
-  exports: [IdentityComponent]
+  exports: [
+    SystemComponent
+  ]
 })
-export class IdentityModule { }
+export class SystemModule { }

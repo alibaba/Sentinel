@@ -1,0 +1,78 @@
+<div>
+    <div class="service-head">
+        {{service}}
+    </div>
+    <div class="main">
+        <div class="operator">
+            <button nz-button [nzSize]="btnSize" nzType="primary" (click)="createSystemRule($event)"><i nz-icon nzType="plus"></i>新增系统规则</button>
+            <button nz-button [nzSize]="btnSize" style="float: right;" (click)="refresh($event)"><i nz-icon nzType="redo" nzTheme="outline"></i></button>
+            <div style="width: 160px; float: right; padding-right: 10px;">
+                <nz-select
+                    [nzSize]="btnSize"
+                    nzPlaceHolder="选择阈值类型"
+                    nzShowSearch
+                    nzAllowClear
+                    [(ngModel)]="systemfilter"
+                    style="width: 100%;">
+                    <nz-option nzValue="highestSystemLoad" nzLabel="系统 load"></nz-option>
+                    <nz-option nzValue="avgRt" nzLabel="平均 RT"></nz-option>
+                    <nz-option nzValue="maxThread" nzLabel="并发数"></nz-option>
+                    <nz-option nzValue="qps" nzLabel="入口 QPS"></nz-option>
+                    <nz-option nzValue="highestCpuUsage" nzLabel="CPU 使用率"></nz-option>
+                </nz-select>
+            </div>
+        </div>
+        <div id="table">
+            <nz-table #basicTable [nzData]="systemRules | systemFilter: systemfilter"
+                nzShowPagination nzShowSizeChanger>
+                <thead>
+                    <tr>
+                        <th>阈值类型</th>
+                        <th>单机阈值</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let rowData of basicTable.data">
+                        <td style="word-wrap:break-word;word-break:break-all;">
+                            <span *ngIf="rowData.highestSystemLoad >= 0">系统 load</span>
+                            <span *ngIf="rowData.avgRt >= 0">平均 RT</span>
+                            <span *ngIf="rowData.maxThread >= 0">并发数</span>
+                            <span *ngIf="rowData.qps >= 0">入口 QPS</span>
+                            <span *ngIf="rowData.highestCpuUsage >= 0">CPU 使用率</span>
+                        </td>
+                        <td style="word-wrap:break-word;word-break:break-all;">
+                            <span *ngIf="rowData.highestSystemLoad >= 0">{{rowData.highestSystemLoad || '--'}}</span>
+                            <span *ngIf="rowData.avgRt >= 0">{{rowData.avgRt || '--'}}</span>
+                            <span *ngIf="rowData.maxThread >= 0">{{rowData.maxThread || '--'}}</span>
+                            <span *ngIf="rowData.qps >= 0">{{rowData.qps || '--'}}</span>
+                            <span *ngIf="rowData.highestCpuUsage >= 0">{{rowData.highestCpuUsage || '--'}}</span>
+                        </td>
+                        <td>
+                            <a (click)="updateSystemRule(rowData)">编辑</a>
+                            <nz-divider nzType="vertical"></nz-divider>
+                            <a (click)="deleteSystemRule(rowData)">删除</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </nz-table>
+        </div>
+        <div id="model" style="display: none;">
+            <app-create-system #createSystem *ngIf="isCreModVis"
+                [isVisible]="isCreModVis"
+                [app]="app"
+                [service_id]="service_id"
+                (creModClose)="creModClose($event)"></app-create-system>
+            <app-delete-system #deleteSystem *ngIf="isDelModVis"
+                [isVisible]="isDelModVis"
+                [service_id]="service_id"
+                [currentRule]="currentRule"
+                (delModClose)="delModClose($event)"></app-delete-system>
+            <app-update-system #updateSystem *ngIf="isUpdModVis"
+                [isVisible]="isUpdModVis"
+                [service_id]="service_id"
+                [currentRule]="currentRule"
+                (updModClose)="updModClose($event)"></app-update-system>
+        </div>
+    </div>
+</div>

@@ -1,1 +1,1 @@
-declare var echart: any;
+declare var echarts: any;

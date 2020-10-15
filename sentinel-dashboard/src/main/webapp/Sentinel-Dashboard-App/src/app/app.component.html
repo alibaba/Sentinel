@@ -24,13 +24,18 @@
               <ul>
                 <li nz-menu-item nzMatchRouter>
                   <a routerLink="/metric/{{menuInfo.app}}/{{serviceInfo.service}}/{{serviceInfo.id}}">实时监控</a>
-                  <!-- <a routerLink="/metric">实时监控</a> -->
                 </li>
                 <li nz-menu-item nzMatchRouter>
                   <a routerLink="/identity/{{menuInfo.app}}/{{serviceInfo.service}}/{{serviceInfo.id}}">簇点链路</a>
                 </li>
                 <li nz-menu-item nzMatchRouter>
                   <a routerLink="/flow/{{menuInfo.app}}/{{serviceInfo.service}}/{{serviceInfo.id}}">流控规则</a>
+                </li>
+                <li nz-menu-item nzMatchRouter>
+                  <a routerLink="/degrade/{{menuInfo.app}}/{{serviceInfo.service}}/{{serviceInfo.id}}">降级规则</a>
+                </li>
+                <li nz-menu-item nzMatchRouter>
+                  <a routerLink="/system/{{menuInfo.app}}/{{serviceInfo.service}}/{{serviceInfo.id}}">系统规则</a>
                 </li>
               </ul>
           </li>

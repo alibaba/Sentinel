@@ -21,16 +21,23 @@ export class MetricComponent implements OnInit, OnDestroy {
     legend: {
         data: ['通过QPS', '拒绝QPS']
     },
-    xAxis: {
+    xAxis: { 
         type: 'category',
         data: [],
         axisLabel: {
+            formatter: (value) => {
+                value = value.substr(0,5);
+                return value;
+            },
             interval: 60
         }
     },
     yAxis: {
         splitLine: {
-            show: false
+            show: true,
+            lineStyle: {
+                type: 'dashed'
+            }
         }
     },
     series: [
@@ -62,6 +69,7 @@ export class MetricComponent implements OnInit, OnDestroy {
   INTERVAL_TIME: number = 5000;
 
   tableDataMap: any = {};
+  isChartRender: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -91,7 +99,6 @@ export class MetricComponent implements OnInit, OnDestroy {
         });
     });
     this.selectedIns = this.instanceList[0];
-
     var param = {
         serviceId: this.service_id,
         ip: this.selectedIns.ip,
@@ -103,63 +110,10 @@ export class MetricComponent implements OnInit, OnDestroy {
         if (times === 3) {
             clearInterval(tempInterval);
         }
-        this.kieMetricService.queryResourceMetric(param).subscribe(res => {
-            if (res.success) {
-                for (var key in res.data.metric) {
-                    if (!this.listData.includes(key)) {
-                        this.listData.push(key);
-                        this.chartOptionMap[key] = this.chartOptionTemp;
-                    }
-                    this.chartOptionMap[key].title.text = key;
-                    this.chartOptionMap[key].xAxis.data = [];
-                    this.chartOptionMap[key].series[0].data = [];
-                    this.chartOptionMap[key].series[1].data = [];
-                    res.data.metric[key].forEach(ele => {
-                        this.chartOptionMap[key].xAxis.data.push(new Date(ele.timestamp).toString().slice(16, 21));
-                        this.chartOptionMap[key].series[0].data.push(ele.passQps);
-                        this.chartOptionMap[key].series[1].data.push(ele.blockQps);
-                    });
-                    this.tableDataMap[key] = new Array();
-                    for (var i = 0;i < 5;i++) {
-                        if (res.data.metric[key].length) {
-                            this.tableDataMap[key].push(res.data.metric[key].pop());
-                        }
-                    }
-                    let mycharts = echarts.init(<HTMLDivElement>document.getElementById(key));
-                    mycharts.setOption(this.chartOptionMap[key]);
-                }
-            }
-        });
+        this.queryResourceMetric(param);
     }, 100);
     this.intervalId = setInterval(() => {
-        this.kieMetricService.queryResourceMetric(param).subscribe(res => {
-            if (res.success) {
-                console.log(res.data.metric);
-                for (var key in res.data.metric) {    
-                    if (!this.listData.includes(key)) {
-                        this.listData.push(key);
-                        this.chartOptionMap[key] = this.chartOptionTemp;
-                    }
-                    this.chartOptionMap[key].title.text = key;
-                    this.chartOptionMap[key].xAxis.data = [];
-                    this.chartOptionMap[key].series[0].data = [];
-                    this.chartOptionMap[key].series[1].data = [];
-                    res.data.metric[key].forEach(ele => {
-                        this.chartOptionMap[key].xAxis.data.push(new Date(ele.timestamp).toString().slice(16, 21));
-                        this.chartOptionMap[key].series[0].data.push(ele.passQps);
-                        this.chartOptionMap[key].series[1].data.push(ele.blockQps);
-                    });
-                    this.tableDataMap[key] = new Array();
-                    for (var i = 0;i < 5;i++) {
-                        if (res.data.metric[key].length) {
-                            this.tableDataMap[key].push(res.data.metric[key].pop());
-                        }
-                    }
-                    let mycharts = echarts.init(<HTMLDivElement>document.getElementById(key));
-                    mycharts.setOption(this.chartOptionMap[key]);
-                }
-            }
-        });
+        this.queryResourceMetric(param);
     }, this.INTERVAL_TIME);
   }
 
@@ -180,67 +134,55 @@ export class MetricComponent implements OnInit, OnDestroy {
         ip: this.selectedIns.ip,
         port: this.selectedIns.port
     };
-    var times = 0;
     var tempInterval = setInterval(() => {
-        times++;
-        if (times === 3) {
+        if (this.isChartRender) {
             clearInterval(tempInterval);
         }
-        this.kieMetricService.queryResourceMetric(param).subscribe(res => {
-            if (res.success) {
-                for (var key in res.data.metric) {
-                    if (!this.listData.includes(key)) {
-                        this.listData.push(key);
-                        this.chartOptionMap[key] = this.chartOptionTemp;
-                    }
-                    this.chartOptionMap[key].title.text = key;
-                    this.chartOptionMap[key].xAxis.data = [];
-                    this.chartOptionMap[key].series[0].data = [];
-                    this.chartOptionMap[key].series[1].data = [];
-                    res.data.metric[key].forEach(ele => {
-                        this.chartOptionMap[key].xAxis.data.push(new Date(ele.timestamp).toString().slice(16, 21));
-                        this.chartOptionMap[key].series[0].data.push(ele.passQps);
-                        this.chartOptionMap[key].series[1].data.push(ele.blockQps);
-                    });
-                    this.tableDataMap[key] = new Array();
-                    for (var i = 0;i < 5;i++) {
-                        if (res.data.metric[key].length) {
-                            this.tableDataMap[key].push(res.data.metric[key].pop());
-                        }
-                    }
-                    let mycharts = echarts.init(<HTMLDivElement>document.getElementById(key));
-                    mycharts.setOption(this.chartOptionMap[key]);
-                }
-            }
-        });
+        this.queryResourceMetric(param);
     }, 100);
     this.intervalId = setInterval(() => {
+        this.queryResourceMetric(param);
+    }, this.INTERVAL_TIME);
+  }
+
+  public timeFormatter(timestamp: string): string {
+    return new Date(timestamp).toString().slice(16, 24);
+  }
+
+  private queryResourceMetric(param: any) {
     this.kieMetricService.queryResourceMetric(param).subscribe(res => {
         if (res.success) {
             for (var key in res.data.metric) {
                 if (!this.listData.includes(key)) {
                     this.listData.push(key);
-                    this.chartOptionMap[key] = this.chartOptionTemp;
+                    this.chartOptionMap[key] = Object.assign({}, this.chartOptionTemp);
                 }
                 this.chartOptionMap[key].title.text = key;
                 this.chartOptionMap[key].xAxis.data = [];
                 this.chartOptionMap[key].series[0].data = [];
                 this.chartOptionMap[key].series[1].data = [];
                 res.data.metric[key].forEach(ele => {
-                    this.chartOptionMap[key].xAxis.data.push(new Date(ele.timestamp).toString().slice(16, 21));
+                    this.chartOptionMap[key].xAxis.data.push(new Date(ele.timestamp).toString().slice(16, 25));
                     this.chartOptionMap[key].series[0].data.push(ele.passQps);
                     this.chartOptionMap[key].series[1].data.push(ele.blockQps);
                 });
-                let mycharts = echarts.init(<HTMLDivElement>document.getElementById(key));
-                mycharts.setOption(this.chartOptionMap[key]);
+                this.tableDataMap[key] = new Array();
+                    for (var i = 0;i < 5;i++) {
+                        if (res.data.metric[key].length) {
+                            this.tableDataMap[key].push(res.data.metric[key].pop());
+                        }
+                    }
+                if (null === <HTMLDivElement>document.getElementById(key)) {
+                    this.isChartRender = false;
+                    continue;
+                } else {
+                    this.isChartRender = true;
+                    let mycharts = echarts.init(<HTMLDivElement>document.getElementById(key));
+                    mycharts.setOption(this.chartOptionMap[key]);
+                }
             }
         }
-    });
-    }, this.INTERVAL_TIME);
-  }
-
-  public timeFormatter(timestamp: string): string {
-    return new Date(timestamp).toString().slice(16, 24);
+    })
   }
 
 }
