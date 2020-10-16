@@ -51,7 +51,7 @@ public class ParamFlowRuleApiProvider implements DynamicRuleProvider<List<ParamF
             return new ArrayList<>();
         } else {
             MachineInfo machine = list.get(0);
-            return sentinelApiClient.fetchParamFlowRulesOfMachine(machine.getApp(), machine.getIp(), machine.getPort()).get();
+            return sentinelApiClient.fetchParamFlowRulesOfMachine(machine.getApp(),machine.getHostname(), machine.getIp(), machine.getPort()).get();
         }
     }
 }

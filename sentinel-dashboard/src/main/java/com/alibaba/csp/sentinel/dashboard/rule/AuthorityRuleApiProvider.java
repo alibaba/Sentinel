@@ -51,7 +51,7 @@ public class AuthorityRuleApiProvider implements DynamicRuleProvider<List<Author
             return new ArrayList<>();
         } else {
             MachineInfo machine = list.get(0);
-            return sentinelApiClient.fetchAuthorityRulesOfMachine(machine.getApp(), machine.getIp(), machine.getPort());
+            return sentinelApiClient.fetchAuthorityRulesOfMachine(machine.getApp(),machine.getHostname(), machine.getIp(), machine.getPort());
         }
     }
 }

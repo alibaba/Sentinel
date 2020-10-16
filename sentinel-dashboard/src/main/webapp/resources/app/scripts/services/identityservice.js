@@ -2,10 +2,12 @@ var app = angular.module('sentinelDashboardApp');
 
 app.service('IdentityService', ['$http', function ($http) {
 
-  this.fetchIdentityOfMachine = function (ip, port, searchKey) {
+  this.fetchIdentityOfMachine = function (app,ip, port,hostname,searchKey) {
     var param = {
+      app: app,
       ip: ip,
       port: port,
+      hostname: hostname,
       searchKey: searchKey
     };
     return $http({
@@ -14,10 +16,12 @@ app.service('IdentityService', ['$http', function ($http) {
       method: 'GET'
     });
   };
-  this.fetchClusterNodeOfMachine = function (ip, port, searchKey) {
+  this.fetchClusterNodeOfMachine = function (app,ip, port,hostname,searchKey) {
     var param = {
+      app: app,
       ip: ip,
       port: port,
+      hostname: hostname,
       type: 'cluster',
       searchKey: searchKey
     };

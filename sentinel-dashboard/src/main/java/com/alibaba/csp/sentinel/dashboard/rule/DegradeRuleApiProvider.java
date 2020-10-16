@@ -51,7 +51,7 @@ public class DegradeRuleApiProvider implements DynamicRuleProvider<List<DegradeR
             return new ArrayList<>();
         } else {
             MachineInfo machine = list.get(0);
-            return sentinelApiClient.fetchDegradeRuleOfMachine(machine.getApp(), machine.getIp(), machine.getPort());
+            return sentinelApiClient.fetchDegradeRuleOfMachine(machine.getApp(),machine.getHostname(), machine.getIp(), machine.getPort());
         }
     }
 }

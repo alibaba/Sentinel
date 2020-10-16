@@ -64,8 +64,9 @@ public class FlowControllerV1 {
     @GetMapping("/rules")
     @AuthAction(PrivilegeType.READ_RULE)
     public Result<List<FlowRuleEntity>> apiQueryMachineRules(@RequestParam String app,
-                                                             @RequestParam String ip,
-                                                             @RequestParam Integer port) {
+                                                             @RequestParam String hostname,
+                                                             @RequestParam Integer port,
+                                                             @RequestParam String ip) {
 
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
@@ -77,7 +78,7 @@ public class FlowControllerV1 {
             return Result.ofFail(-1, "port can't be null");
         }
         try {
-            List<FlowRuleEntity> rules = sentinelApiClient.fetchFlowRuleOfMachine(app, ip, port);
+            List<FlowRuleEntity> rules = sentinelApiClient.fetchFlowRuleOfMachine(app, hostname,ip, port);
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {

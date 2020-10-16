@@ -51,7 +51,7 @@ public class SystemRuleApiProvider implements DynamicRuleProvider<List<SystemRul
             return new ArrayList<>();
         } else {
             MachineInfo machine = list.get(0);
-            return sentinelApiClient.fetchSystemRuleOfMachine(machine.getApp(), machine.getIp(), machine.getPort());
+            return sentinelApiClient.fetchSystemRuleOfMachine(machine.getApp(),machine.getHostname(), machine.getIp(), machine.getPort());
         }
     }
 }
