@@ -15,6 +15,9 @@
  */
 package com.alibaba.csp.sentinel.cluster.server;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -29,8 +32,6 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
-import io.netty.channel.epoll.EpollEventLoopGroup;
-import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -74,13 +75,12 @@ public class NettyTransportServer implements ClusterTokenServer {
         if (!currentState.compareAndSet(SERVER_STATUS_OFF, SERVER_STATUS_STARTING)) {
             return;
         }
-        boolean useEpoll = SystemPropertyUtil.getBoolean("io.netty.epoll", false);
         ServerBootstrap b = new ServerBootstrap();
-        this.bossGroup = useEpoll ? new EpollEventLoopGroup(DEFAULT_BOSS_EVENT_LOOP_THREADS) : new NioEventLoopGroup(DEFAULT_BOSS_EVENT_LOOP_THREADS);
-        this.workerGroup = useEpoll ? new EpollEventLoopGroup(DEFAULT_EVENT_LOOP_THREADS) : new NioEventLoopGroup(DEFAULT_EVENT_LOOP_THREADS);
-        Class channelClass = useEpoll ? EpollServerSocketChannel.class : NioServerSocketChannel.class;
+        EventLoopInfo eventLoopInfo = new EventLoopInfo(DEFAULT_BOSS_EVENT_LOOP_THREADS, DEFAULT_EVENT_LOOP_THREADS);
+        this.bossGroup = eventLoopInfo.bossEventLoopGroup;
+        this.workerGroup = eventLoopInfo.workEventLoopGroup;
         b.group(bossGroup, workerGroup)
-            .channel(channelClass)
+            .channel(eventLoopInfo.serverSocketChannelClass)
             .option(ChannelOption.SO_BACKLOG, 128)
             .handler(new LoggingHandler(LogLevel.INFO))
             .childHandler(new ChannelInitializer<SocketChannel>() {
@@ -183,5 +183,67 @@ public class NettyTransportServer implements ClusterTokenServer {
 
     public int clientCount() {
         return connectionPool.count();
+    }
+
+    static class EventLoopInfo {
+        private static final String EPOLL_CLASS_NAME = "io.netty.channel.epoll.Epoll";
+        private static final String EPOLL_EVENT_LOOP_GROUP_CLASS_NAME = "io.netty.channel.epoll.EpollEventLoopGroup";
+        private static final String EPOLL_SERVER_SOCKET_CHANNEL_CLASS_NAME = "io.netty.channel.epoll.EpollServerSocketChannel";
+        private static final String KQUEUE_CLASS_NAME = "io.netty.channel.kqueue.KQueue";
+        private static final String KQUEUE_EVENT_LOOP_GROUP_CLASS_NAME = "io.netty.channel.kqueue.KQueueEventLoopGroup";
+        private static final String KQUEUE_SERVER_SOCKET_CHANNEL_CLASS_NAME = "io.netty.channel.kqueue.KQueueServerSocketChannel";
+        private Class eventLoopGroupClass = NioEventLoopGroup.class;
+        private Class serverSocketChannelClass = NioServerSocketChannel.class;
+        private EventLoopGroup bossEventLoopGroup = null;
+        private EventLoopGroup workEventLoopGroup = null;
+        private boolean mathPlatform = false;
+        EventLoopInfo(int bossGroupThreadCount, int workGroupThreadCount) {
+            //check for epoll
+            checkPlatform(EPOLL_CLASS_NAME, EPOLL_EVENT_LOOP_GROUP_CLASS_NAME, EPOLL_SERVER_SOCKET_CHANNEL_CLASS_NAME);
+            //check for kqueue
+            checkPlatform(KQUEUE_CLASS_NAME, KQUEUE_EVENT_LOOP_GROUP_CLASS_NAME, KQUEUE_SERVER_SOCKET_CHANNEL_CLASS_NAME);
+            createEventLoopInstance(bossGroupThreadCount, workGroupThreadCount);
+
+        }
+
+        private void checkPlatform(String checkClassName, String eventLoopGroupClassName, String serverSocketChannelClassName) {
+            if (!mathPlatform) {
+                try {
+                    Class checkClass = Class.forName(checkClassName);
+                    Method isAvailableMethod = checkClass.getMethod("isAvailable");
+                    if (isAvailableMethod != null) {
+                        Boolean platSupport = (Boolean)isAvailableMethod.invoke(null);
+                        if (platSupport) {
+                            Class platEventLoopGroupClass = Class.forName(eventLoopGroupClassName);
+                            if (platEventLoopGroupClass == null) {
+                                return;
+                            }
+                            Constructor platEventLoopConstructor = platEventLoopGroupClass.getConstructor(int.class);
+                            Class platServerSocketChannel = Class.forName(serverSocketChannelClassName);
+                            if (platServerSocketChannel != null && platEventLoopConstructor != null) {
+                                eventLoopGroupClass = platEventLoopGroupClass;
+                                serverSocketChannelClass = platServerSocketChannel;
+                                mathPlatform = true;
+                            }
+                        }
+                    }
+                } catch (Exception ignored) {
+
+                }
+            }
+        }
+
+        public void createEventLoopInstance(int bossThreadCount, int workThreadCount) {
+            try {
+                Constructor constructor = this.eventLoopGroupClass.getConstructor(int.class);
+                this.bossEventLoopGroup = (EventLoopGroup)constructor.newInstance(bossThreadCount);
+                this.workEventLoopGroup = (EventLoopGroup)constructor.newInstance(workThreadCount);
+            } catch (Exception ignored) {
+                this.eventLoopGroupClass = NioEventLoopGroup.class;
+                this.serverSocketChannelClass = NioServerSocketChannel.class;
+                this.bossEventLoopGroup = new NioEventLoopGroup(bossThreadCount);
+                this.workEventLoopGroup = new NioEventLoopGroup(workThreadCount);
+            }
+        }
     }
 }
