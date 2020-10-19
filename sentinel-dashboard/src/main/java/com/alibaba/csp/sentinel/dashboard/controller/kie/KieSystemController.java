@@ -79,6 +79,29 @@ public class KieSystemController {
     @PostMapping("/{serverId}/rule")
     public Result<SystemRuleEntity> apiAddRule(@PathVariable("serverId") String serverId,
                                                @RequestBody SystemRuleEntity entity) {
+        // -1 is a fake value
+        if (entity.getHighestSystemLoad() == null) {
+            entity.setHighestSystemLoad(-1D);
+        }
+
+        if (entity.getHighestCpuUsage() == null) {
+            entity.setHighestCpuUsage(-1D);
+        }
+
+        if (entity.getAvgRt() == null) {
+            entity.setAvgRt(-1L);
+        }
+
+        if (entity.getMaxThread() == null) {
+            entity.setMaxThread(-1L);
+        }
+        if (entity.getQps() == null) {
+            entity.setQps(-1D);
+        }
+
+        Date date = new Date();
+        entity.setGmtCreate(date);
+        entity.setGmtModified(date);
         try{
             rulePublisher.add(serverId, Collections.singletonList(entity));
         } catch (Throwable throwable) {
@@ -86,9 +109,6 @@ public class KieSystemController {
             return Result.ofThrowable(-1, throwable);
         }
 
-        Date date = new Date();
-        entity.setGmtCreate(date);
-        entity.setGmtModified(date);
         return Result.ofSuccess(entity);
     }
 
