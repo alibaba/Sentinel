@@ -82,21 +82,32 @@ public class KieSystemController {
         // -1 is a fake value
         if (entity.getHighestSystemLoad() == null) {
             entity.setHighestSystemLoad(-1D);
+        } else {
+            entity.setResource("highestSystemLoad");
         }
 
         if (entity.getHighestCpuUsage() == null) {
             entity.setHighestCpuUsage(-1D);
+        }else {
+            entity.setResource("highestCpuUsage");
         }
 
         if (entity.getAvgRt() == null) {
             entity.setAvgRt(-1L);
+        }else {
+            entity.setResource("avgRt");
         }
 
         if (entity.getMaxThread() == null) {
             entity.setMaxThread(-1L);
+        }else {
+            entity.setResource("maxThread");
         }
+
         if (entity.getQps() == null) {
             entity.setQps(-1D);
+        }else {
+            entity.setResource("qps");
         }
 
         Date date = new Date();

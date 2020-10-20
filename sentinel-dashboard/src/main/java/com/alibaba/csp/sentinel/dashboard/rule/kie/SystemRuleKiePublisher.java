@@ -81,6 +81,7 @@ public class SystemRuleKiePublisher implements RuleKiePublisher<List<SystemRuleE
         String url = kieConfig.getKieBaseUrl(kieServerInfo.get().getLabel().getProject());
         entities.forEach(ruleEntity -> {
             SystemRule rule = ruleEntity.toRule();
+            kieConfigLabel.setResource(ruleEntity.getResource());
             Optional<KieConfigResponse> response = kieConfigClient.addConfig(url, "SystemRule", rule, kieConfigLabel);
             if(!response.isPresent()){
                 RecordLog.error("Add rules failed");

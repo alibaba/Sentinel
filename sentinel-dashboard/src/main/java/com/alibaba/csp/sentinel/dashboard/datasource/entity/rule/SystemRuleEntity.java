@@ -39,6 +39,8 @@ public class SystemRuleEntity implements RuleEntity {
     private Date gmtCreate;
     private Date gmtModified;
 
+    private String resource;
+
     public static SystemRuleEntity fromSystemRule(String app, String ip, Integer port, SystemRule rule) {
         SystemRuleEntity entity = fromSystemRule(rule);
         entity.setApp(app);
@@ -157,6 +159,14 @@ public class SystemRuleEntity implements RuleEntity {
 
     public void setGmtModified(Date gmtModified) {
         this.gmtModified = gmtModified;
+    }
+
+    public String getResource() {
+        return resource;
+    }
+
+    public void setResource(String resource) {
+        this.resource = resource;
     }
 
     @Override
