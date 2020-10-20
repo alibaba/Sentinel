@@ -77,6 +77,7 @@ export class UpdateSystemComponent implements OnInit {
     this.isOkLoading = true;
     var params = {
       app: this.app,
+      ruleId: this.currentRule.ruleId,
       highestSystemLoad: null, // LOAD
       avgRt: null, // RT
       maxThread: null, // 线程数
