@@ -53,23 +53,33 @@ export class UpdateSystemComponent implements OnInit {
     });
     if (this.currentRule.highestSystemLoad >= 0) {
       this.sThK = 'load';
-      this.systemRuleForm.controls.thresholdValue.patchValue(this.currentRule.highestSystemLoad);
+      setTimeout(() => {
+        this.systemRuleForm.controls.thresholdValue.patchValue(this.currentRule.highestSystemLoad);
+      });
     }
     if (this.currentRule.avgRt >= 0) {
       this.sThK = 'rt';
-      this.systemRuleForm.controls.thresholdValue.patchValue(this.currentRule.avgRt);
+      setTimeout(() => {
+        this.systemRuleForm.controls.thresholdValue.patchValue(this.currentRule.avgRt);
+      });
     }
     if (this.currentRule.maxThread >= 0) {
       this.sThK = 'threadn';
-      this.systemRuleForm.controls.thresholdValue.patchValue(this.currentRule.maxThread);
+      setTimeout(() => {
+        this.systemRuleForm.controls.thresholdValue.patchValue(this.currentRule.maxThread);
+      });
     }
     if (this.currentRule.qps >= 0) {
       this.sThK = 'eqps';
-      this.systemRuleForm.controls.thresholdValue.patchValue(this.currentRule.qps);
+      setTimeout(() => {
+        this.systemRuleForm.controls.thresholdValue.patchValue(this.currentRule.qps);
+      });
     }
     if (this.currentRule.highestCpuUsage >= 0) {
       this.sThK = 'cpur';
-      this.systemRuleForm.controls.thresholdValue.patchValue(this.currentRule.highestCpuUsage);
+      setTimeout(() => {
+        this.systemRuleForm.controls.thresholdValue.patchValue(this.currentRule.highestCpuUsage);
+      });
     }
   }
 
