@@ -62,7 +62,7 @@ If your're using Maven, just add the following dependency in `pom.xml`.
 </dependency>
 ```
 
-If not, you can download JAR in [Maven Center Repository](https://mvnrepository.com/artifact/com.alibaba.csp/sentinel-core).
+If not, you can download JAR in [Maven Central Repository](https://mvnrepository.com/artifact/com.alibaba.csp/sentinel-core).
 
 ### 2. Define Resource
 
