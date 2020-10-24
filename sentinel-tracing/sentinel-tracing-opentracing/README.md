@@ -1,7 +1,7 @@
 # Sentinel Tracing OpenTracing
 
 Sentinel Tracing OpenTracing provides integration with OpenTracing. It would output a SENTINEL span in the Block callback 
-with OpenTracing SDK, and display in Tracing UI (such as Jaeger, Zipkin etc). This feature maybe can help to statistic, alert sentinel blocks
+with OpenTracing SDK, and display in Tracing UI (such as Jaeger, Zipkin etc). This feature maybe can help to statistic, alert sentinel blocks.
 
 ## Usage
 
@@ -17,7 +17,7 @@ To use Sentinel Tracing OpenTracing, you could add the following dependency:
 
 And you also need to add 3rd middleware dependency, for example:
 
-Jaeger Client with Spring Cloud
+Integration with Jaeger Client for Spring Cloud
 
 ```xml
 <dependency>
