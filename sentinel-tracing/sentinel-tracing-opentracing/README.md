@@ -1,6 +1,7 @@
 # Sentinel Tracing OpenTracing
 
-Sentinel Tracing OpenTracing provides integration with OpenTracing. It would output a SENTINEL span in the Block callback with OpenTracing SDK, and display in Tracing UI (such as Jaeger, Zipkin etc). This feature maybe can help to statistic, alert sentinel blocks
+Sentinel Tracing OpenTracing provides integration with OpenTracing. It would output a SENTINEL span in the Block callback 
+with OpenTracing SDK, and display in Tracing UI (such as Jaeger, Zipkin etc). This feature maybe can help to statistic, alert sentinel blocks
 
 ## Usage
 
