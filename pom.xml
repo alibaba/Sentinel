@@ -74,6 +74,7 @@
         <module>sentinel-adapter</module>
         <module>sentinel-cluster</module>
         <module>sentinel-logging</module>
+        <module>sentinel-tracing</module>
 
         <module>sentinel-dashboard</module>
 
