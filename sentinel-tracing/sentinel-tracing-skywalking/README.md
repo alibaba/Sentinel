@@ -1,7 +1,7 @@
 # Sentinel Tracing SkyWalking
 
 Sentinel Tracing SkyWalking provides integration with SkyWalking. It would output a SENTINEL span in the Block callback
-with SkyWalking and OpenTracing SDK, and display in SkyWalking Tracing UI. This feature maybe can help to statistic, alert sentinel blocks. 
+with SkyWalking and OpenTracing SDK, and display in SkyWalking Tracing UI. This feature maybe can help to statistic, alert sentinel blocks.
 
 ## Usage
 
