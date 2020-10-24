@@ -127,8 +127,8 @@ public class ContextUtil {
                     setNullContext();
                     return NULL_CONTEXT;
                 } else {
+                    LOCK.lock();
                     try {
-                        LOCK.lock();
                         node = contextNameNodeMap.get(name);
                         if (node == null) {
                             if (contextNameNodeMap.size() > Constants.MAX_CONTEXT_NAME_SIZE) {

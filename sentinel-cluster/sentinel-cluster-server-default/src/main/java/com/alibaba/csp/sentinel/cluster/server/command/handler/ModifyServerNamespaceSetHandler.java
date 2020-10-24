@@ -44,7 +44,7 @@ public class ModifyServerNamespaceSetHandler implements CommandHandler<String> {
         }
         try {
             data = URLDecoder.decode(data, "utf-8");
-            RecordLog.info("[ModifyServerNamespaceSetHandler] Receiving cluster server namespace set: " + data);
+            RecordLog.info("[ModifyServerNamespaceSetHandler] Receiving cluster server namespace set: {}", data);
             Set<String> set = JSON.parseObject(data, new TypeReference<Set<String>>() {});
             ClusterServerConfigManager.loadServerNamespaceSet(set);
             return CommandResponse.ofSuccess("success");

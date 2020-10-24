@@ -64,7 +64,7 @@ As Zuul run as per thread per connection block model, we add filters around rout
 
 - `SentinelZuulPreFilter`: This pre-filter will regard all proxy ID (`proxy` in `RequestContext`) and all customized API as resources. When a `BlockException` caught, the filter will try to find a fallback to execute.
 - `SentinelZuulPostFilter`: When the response has no exception caught, the post filter will complete the entries.
-- `SentinelZuulPreFilter`:  When an exception is caught, the filter will trace the exception and complete the entries.
+- `SentinelZuulErrorFilter`:  When an exception is caught, the filter will trace the exception and complete the entries.
 
 <img width="792" src="https://user-images.githubusercontent.com/9305625/47277113-6b5da780-d5ef-11e8-8a0a-93a6b09b0887.png">
 

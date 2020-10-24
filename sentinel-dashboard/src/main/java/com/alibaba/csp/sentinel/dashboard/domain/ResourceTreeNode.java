@@ -56,7 +56,7 @@ public class ResourceTreeNode {
             ResourceTreeNode node = fromNodeVo(vo);
             map.put(node.id, node);
             // real root
-            if (node.parentId == null) {
+            if (node.parentId == null || node.parentId.isEmpty()) {
                 root = node;
             } else if (map.containsKey(node.parentId)) {
                 map.get(node.parentId).children.add(node);

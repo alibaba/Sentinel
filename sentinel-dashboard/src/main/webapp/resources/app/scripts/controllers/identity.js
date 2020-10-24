@@ -98,7 +98,7 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
           let url = '/dashboard/flow/' + $scope.app;
           $location.path(url);
         } else {
-          alert('失败!');
+          alert('失败：' + data.msg);
         }
       }).error((data, header, config, status) => {
           alert('未知错误');
@@ -110,10 +110,10 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
             return;
         }
       FlowService.newRule(flowRuleDialogScope.currentRule).success(function (data) {
-        if (data.code == 0) {
+        if (data.code === 0) {
           flowRuleDialog.close();
         } else {
-          alert('失败!');
+            alert('失败：' + data.msg);
         }
       });
     }
@@ -132,6 +132,8 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
         strategy: 0,
         resource: resource,
         limitApp: 'default',
+        minRequestAmount: 5,
+        statIntervalMs: 1000,
         app: $scope.app,
         ip: mac[0],
         port: mac[1]
@@ -159,12 +161,12 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
             return;
         }
       DegradeService.newRule(degradeRuleDialogScope.currentRule).success(function (data) {
-        if (data.code == 0) {
+        if (data.code === 0) {
           degradeRuleDialog.close();
           var url = '/dashboard/degrade/' + $scope.app;
           $location.path(url);
         } else {
-          alert('失败!');
+          alert('失败：' + data.msg);
         }
       });
     }
@@ -174,10 +176,10 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
             return;
         }
       DegradeService.newRule(degradeRuleDialogScope.currentRule).success(function (data) {
-        if (data.code == 0) {
+        if (data.code === 0) {
           degradeRuleDialog.close();
         } else {
-          alert('失败!');
+            alert('失败：' + data.msg);
         }
       });
     }

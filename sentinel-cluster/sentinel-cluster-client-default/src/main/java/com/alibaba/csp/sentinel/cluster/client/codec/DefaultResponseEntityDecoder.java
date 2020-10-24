@@ -47,7 +47,7 @@ public class DefaultResponseEntityDecoder implements ResponseEntityDecoder<ByteB
 
             EntityDecoder<ByteBuf, ?> decoder = ResponseDataDecodeRegistry.getDecoder(type);
             if (decoder == null) {
-                RecordLog.warn("Unknown type of response data decoder: {0}", type);
+                RecordLog.warn("Unknown type of response data decoder: {}", type);
                 return null;
             }
 

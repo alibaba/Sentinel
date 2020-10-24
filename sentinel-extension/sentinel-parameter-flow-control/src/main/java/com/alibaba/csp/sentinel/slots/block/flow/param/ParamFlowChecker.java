@@ -56,8 +56,14 @@ public final class ParamFlowChecker {
             return true;
         }
 
-        // Get parameter value. If value is null, then pass.
+        // Get parameter value.
         Object value = args[paramIdx];
+
+        // Assign value with the result of paramFlowKey method
+        if (value instanceof ParamFlowArgument) {
+            value = ((ParamFlowArgument) value).paramFlowKey();
+        }
+        // If value is null, then pass
         if (value == null) {
             return true;
         }

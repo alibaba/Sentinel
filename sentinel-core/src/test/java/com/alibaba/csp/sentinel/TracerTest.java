@@ -1,12 +1,47 @@
 package com.alibaba.csp.sentinel;
 
+import com.alibaba.csp.sentinel.context.ContextTestUtil;
+import com.alibaba.csp.sentinel.context.ContextUtil;
+import com.alibaba.csp.sentinel.util.function.Predicate;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
  * @author Carpenter Lee
  */
 public class TracerTest extends Tracer {
+
+    @Before
+    public void setUp() {
+        ContextTestUtil.cleanUpContext();
+        ContextTestUtil.resetContextMap();
+    }
+
+    @After
+    public void tearDown() {
+        ContextTestUtil.cleanUpContext();
+        ContextTestUtil.resetContextMap();
+    }
+
+    @Test
+    public void testTraceWhenContextSizeExceedsThreshold() {
+        int i = 0;
+        for (; i < Constants.MAX_CONTEXT_NAME_SIZE; i++) {
+            ContextUtil.enter("test-context-" + i);
+            ContextUtil.exit();
+        }
+
+        try {
+            ContextUtil.enter("test-context-" + i);
+            throw new RuntimeException("test");
+        } catch (Exception e) {
+            Tracer.trace(e);
+        } finally {
+            ContextUtil.exit();
+        }
+    }
 
     @Test
     public void setExceptionsToTrace() {
@@ -16,6 +51,25 @@ public class TracerTest extends Tracer {
         Assert.assertTrue(Tracer.shouldTrace(new TraceException2()));
         Assert.assertTrue(Tracer.shouldTrace(new TraceExceptionSub()));
         Assert.assertFalse(Tracer.shouldTrace(new Exception()));
+    }
+
+    @Test
+    public void setExceptionPredicate() {
+
+        Predicate<Throwable> throwablePredicate = new Predicate<Throwable>() {
+            @Override
+            public boolean test(Throwable throwable) {
+                if (throwable instanceof TraceException) {
+                    return true;
+                } else if (throwable instanceof IgnoreException) {
+                    return false;
+                }
+                return false;
+            }
+        };
+        Tracer.setExceptionPredicate(throwablePredicate);
+        Assert.assertTrue(Tracer.shouldTrace(new TraceException()));
+        Assert.assertFalse(Tracer.shouldTrace(new IgnoreException()));
     }
 
     @Test
@@ -52,6 +106,11 @@ public class TracerTest extends Tracer {
     @Test(expected = IllegalArgumentException.class)
     public void testNull2() {
         Tracer.setExceptionsToIgnore(IgnoreException.class, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNull3() {
+        Tracer.setExceptionPredicate(null);
     }
 
     private class TraceException extends Exception {}

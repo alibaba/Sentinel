@@ -89,8 +89,8 @@ public class SentinelReactorSubscriber<T> extends InheritableBaseSubscriber<T> {
             ContextUtil.enter(sentinelContextConfig.getContextName(), sentinelContextConfig.getOrigin());
         }
         try {
-            AsyncEntry entry = SphU.asyncEntry(entryConfig.getResourceName(), entryConfig.getEntryType(),
-                entryConfig.getAcquireCount(), entryConfig.getArgs());
+            AsyncEntry entry = SphU.asyncEntry(entryConfig.getResourceName(), entryConfig.getResourceType(),
+                entryConfig.getEntryType(), entryConfig.getAcquireCount(), entryConfig.getArgs());
             this.currentEntry = entry;
             actual.onSubscribe(this);
         } catch (BlockException ex) {
@@ -155,7 +155,7 @@ public class SentinelReactorSubscriber<T> extends InheritableBaseSubscriber<T> {
 
     @Override
     protected void hookOnCancel() {
-
+        tryCompleteEntry();
     }
 
     private boolean tryCompleteEntry() {

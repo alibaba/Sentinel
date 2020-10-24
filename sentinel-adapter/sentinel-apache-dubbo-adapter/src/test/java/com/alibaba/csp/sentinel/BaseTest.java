@@ -15,26 +15,61 @@
  */
 package com.alibaba.csp.sentinel;
 
+import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboAdapterGlobalConfig;
+import com.alibaba.csp.sentinel.adapter.dubbo.fallback.DefaultDubboFallback;
+import com.alibaba.csp.sentinel.config.SentinelConfig;
+import com.alibaba.csp.sentinel.context.ContextUtil;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
-
 import org.apache.dubbo.rpc.RpcContext;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 
 /**
  * Base test class, provide common methods for subClass
  * The package is same as CtSph, to call CtSph.resetChainMap() method for test
- *
+ * <p>
  * Note: Only for test. DO NOT USE IN PRODUCTION!
  *
  * @author cdfive
+ * @author lianglin
  */
 public class BaseTest {
+
 
     /**
      * Clean up resources for context, clusterNodeMap, processorSlotChainMap
      */
-    protected static void cleanUpAll() {
-        RpcContext.removeContext();
+    public void cleanUpAll() {
+        try {
+            clearDubboContext();
+            cleanUpCstContext();
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void cleanUpCstContext() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         ClusterBuilderSlot.getClusterNodeMap().clear();
         CtSph.resetChainMap();
+        Method method = ContextUtil.class.getDeclaredMethod("resetContextMap");
+        method.setAccessible(true);
+        method.invoke(null, null);
+        ContextUtil.exit();
+        FlowRuleManager.loadRules(new ArrayList<>());
+        DegradeRuleManager.loadRules(new ArrayList<>());
+    }
+
+    private void clearDubboContext() {
+        SentinelConfig.setConfig("csp.sentinel.dubbo.resource.use.prefix", "false");
+        SentinelConfig.setConfig(DubboAdapterGlobalConfig.DUBBO_PROVIDER_RES_NAME_PREFIX_KEY, "");
+        SentinelConfig.setConfig(DubboAdapterGlobalConfig.DUBBO_CONSUMER_RES_NAME_PREFIX_KEY, "");
+        SentinelConfig.setConfig(DubboAdapterGlobalConfig.DUBBO_INTERFACE_GROUP_VERSION_ENABLED, "false");
+        DubboAdapterGlobalConfig.setConsumerFallback(new DefaultDubboFallback());
+        RpcContext.removeContext();
+
     }
 }
