@@ -16,7 +16,7 @@ To use Sentinel Tracing OpenTracing, you could add the following dependency:
 
 And you also need to add 3rd middleware dependency, for example:
 
-- Jaeger Client with Spring Cloud
+Jaeger Client with Spring Cloud
 
 ```xml
 <dependency>
