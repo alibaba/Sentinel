@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.dashboard.datasource.entity.rule;
 
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowClusterConfig;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowItem;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
@@ -29,6 +30,8 @@ import java.util.List;
  * @since 0.2.1
  */
 public class ParamFlowRuleEntity extends AbstractRuleEntity<ParamFlowRule> {
+
+    private String ruleId;
 
     public ParamFlowRuleEntity() {
     }
@@ -116,5 +119,13 @@ public class ParamFlowRuleEntity extends AbstractRuleEntity<ParamFlowRule> {
     @JSONField(serialize = false)
     public ParamFlowClusterConfig getClusterConfig() {
         return rule.getClusterConfig();
+    }
+
+    public String getRuleId() {
+        return ruleId;
+    }
+
+    public void setRuleId(String ruleId) {
+        this.ruleId = ruleId;
     }
 }
