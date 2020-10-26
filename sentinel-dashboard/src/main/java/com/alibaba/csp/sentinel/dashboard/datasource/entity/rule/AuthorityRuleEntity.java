@@ -26,6 +26,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public class AuthorityRuleEntity extends AbstractRuleEntity<AuthorityRule> {
 
+    private String ruleId;
+
     public AuthorityRuleEntity() {
     }
 
@@ -40,6 +42,14 @@ public class AuthorityRuleEntity extends AbstractRuleEntity<AuthorityRule> {
         entity.setIp(ip);
         entity.setPort(port);
         return entity;
+    }
+
+    public String getRuleId() {
+        return ruleId;
+    }
+
+    public void setRuleId(String ruleId) {
+        this.ruleId = ruleId;
     }
 
     @JsonIgnore
