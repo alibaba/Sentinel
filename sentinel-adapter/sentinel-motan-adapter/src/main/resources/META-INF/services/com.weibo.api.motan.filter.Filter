@@ -1,0 +1,3 @@
+com.alibaba.csp.sentinel.adapter.motan.SentinelMotanProviderFilter
+com.alibaba.csp.sentinel.adapter.motan.SentinelMotanConsumerFilter
+com.alibaba.csp.sentinel.adapter.motan.MotanAppContextFilter
