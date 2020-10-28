@@ -1,0 +1,75 @@
+<div>
+  <div class="service-head">
+    {{service}}
+  </div>
+  <div class="main">
+    <div class="operator">
+      <button nz-button [nzSize]="btnSize" nzType="primary" (click)="createParamFlowRule($event)">
+        <i nz-icon nzType="plus"></i>新增热点规则
+      </button>
+      <button nz-button [nzSize]="btnSize" style="float: right;" (click)="refresh($event)">
+        <i nz-icon nzType="redo" nzTheme="outline"></i>
+      </button>
+      <div style="width: 150px; float: right; padding-right: 10px;">
+        <nz-input-group [nzSize]="'large'" [nzPrefix]="prefixTemplateFilter">
+          <input type="text" nz-input placeholder="资源名" [(ngModel)]="paramFlowFilter"/>
+        </nz-input-group>
+        <ng-template #prefixTemplateFilter>
+          <i nz-icon nzType="filter" nzTheme="outline"></i>
+        </ng-template>
+      </div>
+    </div>
+    <div id="table">
+      <nz-table #basicTable [nzData]="paramFlowRules | flowFilter: paramFlowFilter">
+        <thead>
+        <tr>
+          <th>资源名</th>
+          <th>参数索引</th>
+          <th>流控模式</th>
+          <th>阈值</th>
+          <th>是否集群</th>
+          <th>例外项数目</th>
+          <th nzWidth="10%">操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let rowData of basicTable.data">
+          <td>{{ rowData.rule.resource }}</td>
+          <td>{{ rowData.rule.paramIdx }}</td>
+          <td>{{ gradeModeMap[rowData.rule.grade] }}</td>
+          <td>{{ rowData.rule.count }}</td>
+          <td>{{ rowData.rule.clusterMode ? '是' : '否' }}</td>
+          <td>{{ rowData.rule.paramFlowItemList.length }}</td>
+          <td>
+            <a (click)="updateParamFlowRule(rowData)">编辑</a>
+            <nz-divider nzType="vertical"></nz-divider>
+            <a (click)="deleteParamFlowRule(rowData)">删除</a>
+          </td>
+        </tr>
+        </tbody>
+      </nz-table>
+    </div>
+    <div id="modal" style="display: none;">
+      <app-create-param-flow #createParamFlow *ngIf="isCreModVis"
+                             [isVisible]="isCreModVis"
+                             [app]="app"
+                             [service_id]="service_id"
+                             (creModClose)="creModClose($event)">
+      </app-create-param-flow>
+      <app-delete-param-flow #deleteParamFlow *ngIf="isDelModVis"
+                             [isVisible]="isDelModVis"
+                             [service_id]="service_id"
+                             [currentRule]="currentRule"
+                             (delModClose)="delModClose($event)">
+      </app-delete-param-flow>
+      <app-update-param-flow #updateParamFlow *ngIf="isUpdModVis"
+                             [isVisible]="isUpdModVis"
+                             [app]="app"
+                             [service_id]="service_id"
+                             [currentRule]="currentRule"
+                             (updModClose)="updModClose($event)">
+      </app-update-param-flow>
+    </div>
+  </div>
+</div>
+

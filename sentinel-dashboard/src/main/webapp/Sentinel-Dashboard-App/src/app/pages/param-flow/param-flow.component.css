@@ -1,0 +1,18 @@
+.service-head{
+  padding: 5px;
+  font-size: 30px;
+  font-weight: bold;
+}
+
+nz-button {
+  margin-right: 8px;
+  margin-bottom: 12px;
+}
+
+.operator {
+  padding-bottom: 10px;
+}
+
+.main {
+  padding: 5px;
+}

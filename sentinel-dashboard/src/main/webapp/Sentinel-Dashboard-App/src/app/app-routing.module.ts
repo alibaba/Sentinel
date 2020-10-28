@@ -8,6 +8,7 @@ const routes: Routes = [
   { path: 'identity/:app/:service/:service_id', loadChildren: () => import('./pages/identity/identity.module').then(m => m.IdentityModule) },
   { path: 'metric/:app/:service/:service_id', loadChildren: () => import('./pages/metric/metric.module').then(m => m.MetricModule) },
   { path: 'degrade/:app/:service/:service_id', loadChildren: () => import('./pages/degrade/degrade.module').then(m => m.DegradeModule) },
+  { path: 'param-flow/:app/:service/:service_id', loadChildren: () => import('./pages/param-flow/param-flow.module').then(m => m.ParamFlowModule) },
   { path: 'system/:app/:service/:service_id', loadChildren: () => import('./pages/system/system.module').then(m => m.SystemModule) },
 ];
 

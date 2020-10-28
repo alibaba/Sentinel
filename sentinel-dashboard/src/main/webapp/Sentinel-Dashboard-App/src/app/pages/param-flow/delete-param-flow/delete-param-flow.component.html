@@ -1,0 +1,17 @@
+<nz-modal
+  [(nzVisible)]="isVisible"
+  nzTitle="删除热点规则"
+  [nzOkLoading]="isOkLoading"
+  (nzOnOk)="handleOk()"
+  [nzOkType]="'danger'"
+  (nzOnCancel)="handleCancel()"
+  [nzWidth]="600">
+  <div>请确认是否删除如下热点规则:</div>
+  <br>
+  <div style="color: #c7254e;">
+    <span>资源名：{{currentRule.rule.resource}}，</span>
+    <span>热点参数索引：{{currentRule.rule.paramIdx}}，</span>
+    <span>限流模式：{{gradeModeMap[currentRule.rule.grade] || ''}}，</span>
+    <span>限流阈值：{{currentRule.rule.count}}</span>
+  </div>
+</nz-modal>

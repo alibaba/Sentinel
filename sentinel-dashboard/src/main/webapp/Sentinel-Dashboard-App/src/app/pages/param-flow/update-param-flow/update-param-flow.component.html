@@ -1,0 +1,154 @@
+<form nz-form [formGroup]="paramFlowRuleForm">
+  <nz-modal
+    [(nzVisible)]="isVisible"
+    nzTitle="编辑热点规则"
+    [nzOkLoading]="isOkLoading"
+    (nzOnOk)="handleOk()"
+    (nzOnCancel)="handleCancel()"
+    [nzOkDisabled]="!paramFlowRuleForm.valid"
+    [nzWidth]="600">
+    <!-- 资源名 -->
+    <nz-form-item>
+      <nz-form-label [nzSpan]="4">资源名</nz-form-label>
+      <nz-form-control [nzSpan]="15" [nzOffset]="2">
+        <input nz-input formControlName="resource"/>
+      </nz-form-control>
+    </nz-form-item>
+    <!-- 限流模式 -->
+    <nz-form-item>
+      <nz-form-label [nzSpan]="4">限流模式</nz-form-label>
+      <nz-form-control [nzOffset]="2">
+        {{gradeModeMap[paramFlowRuleForm.value.grade]}} 模式
+      </nz-form-control>
+    </nz-form-item>
+    <!-- 参数索引 -->
+    <nz-form-item>
+      <nz-form-label [nzSpan]="4" nzRequired>参数索引</nz-form-label>
+      <nz-form-control [nzSpan]="15" [nzOffset]="2">
+        <nz-input-group>
+          <input type="number" nz-input formControlName="paramIdx" placeholder="请填入传入的热点参数的索引（从0开始）"/>
+        </nz-input-group>
+      </nz-form-control>
+    </nz-form-item>
+    <!-- 统计窗口时长 -->
+    <nz-form-item *ngIf="!isCluster">
+      <nz-form-label [nzSpan]="4">统计窗口时长</nz-form-label>
+      <nz-form-control [nzSpan]="15" [nzOffset]="2">
+        <nz-input-group [nzAddOnAfter]="addOnAfterTemplate">
+          <input type="number" nz-input formControlName="durationInSec" placeholder=""/>
+          <ng-template #addOnAfterTemplate>秒</ng-template>
+        </nz-input-group>
+      </nz-form-control>
+    </nz-form-item>
+    <div nz-row [nzGutter]="32">
+      <div nz-col [nzSpan]="10">
+        <!-- 是否集群 -->
+        <nz-form-item>
+          <nz-form-label [nzSpan]="10" [nzOffset]="1">是否集群</nz-form-label>
+          <nz-form-control [nzOffset]="5">
+            <nz-switch formControlName="clusterMode" (ngModelChange)="isClusterSwitch($event)"></nz-switch>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div nz-col [nzSpan]="12">
+        <!-- 阈值 单机阈值/均摊阈值（开启集群） -->
+        <nz-form-item>
+          <nz-form-label [nzSpan]="10" *ngIf="!isCluster" nzRequired>单机阈值</nz-form-label>
+          <nz-form-label [nzSpan]="10" *ngIf="isCluster" nzRequired>均摊阈值</nz-form-label>
+          <nz-form-control [nzOffset]="2" [nzSpan]="10">
+            <nz-input-group>
+              <input type="number" nz-input formControlName="count" [placeholder]="isCluster ? '均摊阈值' : '单机阈值'"/>
+            </nz-input-group>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </div>
+    <!-- 集群阈值模式 -->
+    <nz-form-item *ngIf="isCluster">
+      <nz-form-label [nzSpan]="5">集群阈值模式</nz-form-label>
+      <nz-form-control [nzOffset]="1">
+        <nz-radio-group formControlName="thresholdType">
+          <label nz-radio nzValue="0">单机均摊</label>
+          <label nz-radio nzValue="1">总体阈值</label>
+        </nz-radio-group>
+      </nz-form-control>
+    </nz-form-item>
+    <!-- 失败退化 -->
+    <nz-form-item *ngIf="isCluster">
+      <nz-form-label [nzSpan]="4">失败退化</nz-form-label>
+      <nz-form-control [nzOffset]="2">
+        <nz-switch formControlName="fallbackToLocalWhenFail"></nz-switch>
+        <nz-form-label [nzOffset]="2" [nzNoColon]="true">
+          <i nz-icon nzType="info-circle" nzTheme="twotone"></i>
+          &nbsp;若选择， Token Server 不可用时退化到单机限流
+        </nz-form-label>
+      </nz-form-control>
+    </nz-form-item>
+    <!-- 高级选项 -->
+    <nz-form-item>
+      <nz-form-label [nzSpan]="4">高级选项</nz-form-label>
+      <nz-form-control [nzOffset]="2">
+        <nz-switch formControlName="advanceOp" (ngModelChange)="advanceOpChange($event)"></nz-switch>
+      </nz-form-control>
+    </nz-form-item>
+    <!-- 参数例外项 -->
+    <div *ngIf="advanceOptionFlag">
+      <form [formGroup]="newParamFlowItem" (submit)="addParamFLowItem(newParamFlowItem.value)">
+        <!-- 参数类型 -->
+        <nz-form-item>
+          <nz-form-label [nzSpan]="4">参数类型</nz-form-label>
+          <nz-form-control [nzOffset]="2">
+            <nz-select name="select-validate" formControlName="classType">
+              <nz-option *ngFor="let type of classTypeList" [nzValue]="type" [nzLabel]="type"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <!-- 例外项参数值 -->
+        <nz-form-item>
+          <nz-form-label [nzSpan]="4">参数值</nz-form-label>
+          <nz-form-control [nzOffset]="2">
+            <nz-input-group>
+              <input nz-input formControlName="object" placeholder="例外项参数值"/>
+            </nz-input-group>
+          </nz-form-control>
+        </nz-form-item>
+        <!-- 限流阈值 -->
+        <nz-form-item>
+          <nz-form-label [nzSpan]="4">限流阈值</nz-form-label>
+          <nz-form-control [nzOffset]="2">
+            <nz-input-group>
+              <input type="number" nz-input formControlName="count" placeholder="限流阈值"/>
+            </nz-input-group>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-control [nzOffset]="6">
+            <button type="submit" nz-button nzType="primary" [disabled]="!newParamFlowItem.valid">
+              <i nz-icon nzType="plus"></i>添加
+            </button>
+          </nz-form-control>
+        </nz-form-item>
+      </form>
+      <div id="table" formArrayName="paramFlowItemList">
+        <nz-table #paramFLowItemTable [nzData]="paramFlowItemList.value">
+          <thead>
+          <tr>
+            <th>参数值</th>
+            <th>参数类型</th>
+            <th>限流阈值</th>
+            <th nzWidth="15%">操作</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let control of paramFlowItemList.controls;let i = index" [formGroupName]="i">
+            <td><input nz-input formControlName="object" [value]="control.value.object"/></td>
+            <td>{{control.value.classType}}</td>
+            <td><input type="number" nz-input formControlName="count" [value]="control.value.count"/></td>
+            <td nzWidth="15%"><a (click)="deletePramFlowItem(i)">删除</a></td>
+          </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </div>
+  </nz-modal>
+</form>

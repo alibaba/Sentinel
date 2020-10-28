@@ -59,7 +59,7 @@ export class CreateFlowComponent implements OnInit {
   resourceList: string[] = [];
   ip: string;
   port: number;
-  autocomOption: any[] = []
+  autocomOption: any[] = [];
 
   constructor(
     private formBuilder: FormBuilder,
