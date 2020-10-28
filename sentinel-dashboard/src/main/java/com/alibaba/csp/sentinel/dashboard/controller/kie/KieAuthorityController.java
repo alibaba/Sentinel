@@ -101,17 +101,21 @@ public class KieAuthorityController {
     }
 
     private <R> Result<R> checkEntityInternal(AuthorityRuleEntity entity) {
-        if (StringUtil.isBlank(entity.getApp())) {
-            return Result.ofFail(-1, "app can't be blank");
+        if (entity == null) {
+            return Result.ofFail(-1, "bad rule body");
         }
-        if (StringUtil.isBlank(entity.getLimitApp())) {
-            return Result.ofFail(-1, "limitApp can't be null or empty");
+        if (entity.getRule() == null) {
+            return Result.ofFail(-1, "rule can't be null");
         }
         if (StringUtil.isBlank(entity.getResource())) {
-            return Result.ofFail(-1, "resource can't be null or empty");
+            return Result.ofFail(-1, "resource name cannot be null or empty");
         }
-        else if (entity.getStrategy() != RuleConstant.AUTHORITY_WHITE && entity.getStrategy() != RuleConstant.AUTHORITY_BLACK) {
-            return Result.ofFail(-1, "strategy should be AUTHORITY_WHITE or AUTHORITY_BLACK");
+        if (StringUtil.isBlank(entity.getLimitApp())) {
+            return Result.ofFail(-1, "limitApp should be valid");
+        }
+        if (entity.getStrategy() != RuleConstant.AUTHORITY_WHITE
+                && entity.getStrategy() != RuleConstant.AUTHORITY_BLACK) {
+            return Result.ofFail(-1, "Unknown strategy (must be blacklist or whitelist)");
         }
         return null;
     }
