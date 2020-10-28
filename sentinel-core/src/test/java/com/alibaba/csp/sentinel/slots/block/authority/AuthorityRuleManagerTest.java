@@ -7,6 +7,8 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -40,29 +42,36 @@ public class AuthorityRuleManagerTest {
         AuthorityRuleManager.loadRules(null);
     }
 
-    private static Thread loader = new Thread("Loader"){
-        @Override
-        public void run() {
-            for(int i = 0; i < 10000 && !loader.isInterrupted(); i++){
-                //to guarantee that they're different and change happens
-                AuthorityRuleManager.loadRules(i % 2 == 0 ? STATIC_RULES_2 : STATIC_RULES_1);
-            }
-        }
-    };
-
     @Test
-    public void testLoadAndGetRules(){
+    public void testLoadAndGetRules() throws InterruptedException {
         AuthorityRuleManager.loadRules(STATIC_RULES_1);
         assertEquals(1, AuthorityRuleManager.getRules().size()); // the initial size
-        loader.start();
+        final CountDownLatch latchStart = new CountDownLatch(1);
+        final CountDownLatch latchEnd = new CountDownLatch(1);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    latchStart.await(10, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    return;
+                }
+                for(int i = 0; i < 10000; i++){
+                    //to guarantee that they're different and change happens
+                    AuthorityRuleManager.loadRules(i % 2 == 0 ? STATIC_RULES_2 : STATIC_RULES_1);
+                }
+                latchEnd.countDown();
+            }
+        }).start();
 
+        latchStart.countDown();
         for(int i = 0; i < 10000; i++){
             //The initial size is 1, and the size after updating should also be 1,
             //if the actual size is 0, that must be called after clear(),
             // but before putAll() in RulePropertyListener.configUpdate
             assertEquals(1, AuthorityRuleManager.getRules().size());
         }
-        loader.interrupt();
+        latchEnd.await(10, TimeUnit.SECONDS);
         AuthorityRuleManager.loadRules(null);
         assertEquals(0, AuthorityRuleManager.getAuthorityRules().size());
     }
