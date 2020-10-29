@@ -74,13 +74,18 @@ public class SlowRatioCircuitBreakerDemo {
         int concurrency = 8;
         for (int i = 0; i < concurrency; i++) {
             Thread entryThread = new Thread(() -> {
+                long rtstart = System.currentTimeMillis();
                 while (true) {
                     Entry entry = null;
                     try {
                         entry = SphU.entry(KEY);
                         pass.incrementAndGet();
                         // RT: [40ms, 60ms)
-                        sleep(ThreadLocalRandom.current().nextInt(40, 60));
+                        if(System.currentTimeMillis()-rtstart>30*1000){             //模拟30秒后响应时间正常，熔断降级结束，服务恢复正常
+                            sleep(ThreadLocalRandom.current().nextInt(20, 40));     //模拟正常的响应时间
+                        }else{
+                            sleep(ThreadLocalRandom.current().nextInt(60, 80));     //模拟慢调用的响应时间（如果无法引起熔断，可以将区间数据再增加）
+                        }
                     } catch (BlockException e) {
                         block.incrementAndGet();
                         sleep(ThreadLocalRandom.current().nextInt(5, 10));
