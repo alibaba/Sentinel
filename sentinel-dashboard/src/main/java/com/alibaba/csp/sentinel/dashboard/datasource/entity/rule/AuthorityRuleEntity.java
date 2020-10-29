@@ -26,6 +26,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public class AuthorityRuleEntity extends AbstractRuleEntity<AuthorityRule> {
 
+    private String ruleId;
+
     public AuthorityRuleEntity() {
     }
 
@@ -58,5 +60,13 @@ public class AuthorityRuleEntity extends AbstractRuleEntity<AuthorityRule> {
     @JSONField(serialize = false)
     public int getStrategy() {
         return rule.getStrategy();
+    }
+
+    public String getRuleId() {
+        return ruleId;
+    }
+
+    public void setRuleId(String ruleId) {
+        this.ruleId = ruleId;
     }
 }
