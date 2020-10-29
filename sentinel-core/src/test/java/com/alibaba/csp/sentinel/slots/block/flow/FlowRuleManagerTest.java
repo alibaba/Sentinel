@@ -19,6 +19,8 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 
@@ -44,27 +46,34 @@ public class FlowRuleManagerTest {
     }
 
     @Test
-    public void testLoadAndGetRules(){
+    public void testLoadAndGetRules() throws InterruptedException{
         FlowRuleManager.loadRules(STATIC_RULES_1);
         assertEquals(1, FlowRuleManager.getRules().size()); // the initial size
-        new Thread(loader, "Loader").start();
+        final CountDownLatch latchStart = new CountDownLatch(1);
+        final CountDownLatch latchEnd = new CountDownLatch(1);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    latchStart.await(10, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    return;
+                }
+                for(int i = 0; i < 10000; i++){
+                    //to guarantee that they're different and change happens
+                    FlowRuleManager.loadRules(i % 2 == 0 ? STATIC_RULES_2 : STATIC_RULES_1);
+                }
+                latchEnd.countDown();
+            }
+        }).start();
 
-        for(int i = 0; i < 10000; i++){
+        latchStart.countDown();
+        for (int i = 0; i < 10000; i++) {
             //The initial size is 1, and the size after updating should also be 1,
             //if the actual size is 0, that must be called after clear(),
             // but before putAll() in FlowPropertyListener.configUpdate
             assertEquals(1, FlowRuleManager.getRules().size());
         }
+        latchEnd.await(10, TimeUnit.SECONDS);
     }
-
-    public Runnable loader = new Runnable() {
-        @Override
-        public void run() {
-            for(int i = 0; i < 10000; i++){
-                //to guarantee that they're different and change happens
-                FlowRuleManager.loadRules(i % 2 == 0 ? STATIC_RULES_2 : STATIC_RULES_1);
-            }
-        }
-    };
-
 }
