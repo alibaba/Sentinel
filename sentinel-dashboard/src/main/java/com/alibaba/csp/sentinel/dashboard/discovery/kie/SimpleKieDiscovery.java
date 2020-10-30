@@ -4,6 +4,7 @@ import com.alibaba.csp.sentinel.dashboard.discovery.AppInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.kie.common.KieServerInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.kie.common.KieServerLabel;
+import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +32,16 @@ public class SimpleKieDiscovery implements KieServerDiscovery {
     }
 
     @Override
+    public List<KieServerInfo> getKieInfos() {
+        return new ArrayList<>(serverMap.values());
+    }
+
+    @Override
+    public List<KieServerLabel> getKieLabels() {
+        return new ArrayList<>(serverMap.keySet());
+    }
+
+    @Override
     public long addMachineInfo(KieServerLabel labelInfo, MachineInfo machineInfo) {
         AssertUtil.notNull(labelInfo, "labelInfo cannot be null");
         AssertUtil.notNull(labelInfo.getProject(), "machineInfo cannot be null");
@@ -43,8 +54,18 @@ public class SimpleKieDiscovery implements KieServerDiscovery {
     }
 
     @Override
-    public boolean removeMachineInfo(String project, String app, String server, String environment, String version) {
-        return false;
+    public boolean removeMachineInfo(String id, String ip, int port) {
+        AssertUtil.assertNotBlank(id, "id cannot be blank");
+        Optional<KieServerInfo> kieServerInfo = serverMap.values().stream()
+                .filter(value -> value.getId().equals(id))
+                .findFirst();
+        if(!kieServerInfo.isPresent()){
+            String errorMessage = String.format("Cannot find kie server by id: %s.", id);
+            RecordLog.error(errorMessage);
+            throw new IllegalArgumentException(errorMessage);
+        }
+        KieServerInfo kieServer = kieServerInfo.get();
+        return kieServer.removeMachine(ip,port);
     }
 
     @Override

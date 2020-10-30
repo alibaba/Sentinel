@@ -13,9 +13,13 @@ public interface KieServerDiscovery {
 
     Set<String> queryProjects();
 
+    List<KieServerInfo> getKieInfos();
+
+    List<KieServerLabel> getKieLabels();
+
     long addMachineInfo(KieServerLabel label, MachineInfo machineInfo);
 
-    boolean removeMachineInfo(String project, String app, String server, String environment, String version);
+    boolean removeMachineInfo(String id, String ip, int port);
 
     Optional<KieServerInfo> queryKieInfo(String id);
 

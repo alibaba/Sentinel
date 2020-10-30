@@ -47,14 +47,24 @@ public class KieServerManagement implements KieServerDiscovery {
     }
 
     @Override
+    public List<KieServerInfo> getKieInfos() {
+        return discovery.getKieInfos();
+    }
+
+    @Override
+    public List<KieServerLabel> getKieLabels() {
+        return discovery.getKieLabels();
+    }
+
+    @Override
     public long addMachineInfo(KieServerLabel label, MachineInfo machineInfo) {
         discovery.addMachineInfo(label, machineInfo);
         return 1;
     }
 
     @Override
-    public boolean removeMachineInfo(String project, String app, String server, String environment, String version) {
-        return false;
+    public boolean removeMachineInfo(String id, String ip, int port) {
+        return discovery.removeMachineInfo(id, ip, port);
     }
 
     @Override
