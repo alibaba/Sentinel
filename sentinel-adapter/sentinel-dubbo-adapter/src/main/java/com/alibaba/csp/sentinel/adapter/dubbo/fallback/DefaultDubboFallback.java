@@ -29,7 +29,9 @@ public class DefaultDubboFallback implements DubboFallback {
 
     @Override
     public Result handle(Invoker<?> invoker, Invocation invocation, BlockException ex) {
-        // Just wrap the exception.
-        return new RpcResult(new SentinelRpcException(ex));
+        // Just wrap the exception. edit by wzg923 2020/9/23
+        RpcResult result = new RpcResult();
+        result.setException(new SentinelRpcException(ex.toRuntimeException()));
+        return result;
     }
 }
