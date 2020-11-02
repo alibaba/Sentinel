@@ -15,12 +15,9 @@
  */
 package com.alibaba.csp.sentinel.slots.block.authority;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
@@ -39,12 +36,13 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
  */
 public final class AuthorityRuleManager {
 
-    private static Map<String, Set<AuthorityRule>> authorityRules = new ConcurrentHashMap<>();
+    private static AtomicReference<Map<String, Set<AuthorityRule>>> authorityRules = new AtomicReference<>();
 
     private static final RulePropertyListener LISTENER = new RulePropertyListener();
     private static SentinelProperty<List<AuthorityRule>> currentProperty = new DynamicSentinelProperty<>();
 
     static {
+        authorityRules.set(Collections.<String, Set<AuthorityRule>>emptyMap());
         currentProperty.addListener(LISTENER);
     }
 
@@ -70,7 +68,7 @@ public final class AuthorityRuleManager {
     }
 
     public static boolean hasConfig(String resource) {
-        return authorityRules.containsKey(resource);
+        return authorityRules.get().containsKey(resource);
     }
 
     /**
@@ -83,7 +81,7 @@ public final class AuthorityRuleManager {
         if (authorityRules == null) {
             return rules;
         }
-        for (Map.Entry<String, Set<AuthorityRule>> entry : authorityRules.entrySet()) {
+        for (Map.Entry<String, Set<AuthorityRule>> entry : authorityRules.get().entrySet()) {
             rules.addAll(entry.getValue());
         }
         return rules;
@@ -95,11 +93,8 @@ public final class AuthorityRuleManager {
         public void configUpdate(List<AuthorityRule> conf) {
             Map<String, Set<AuthorityRule>> rules = loadAuthorityConf(conf);
 
-            authorityRules.clear();
-            if (rules != null) {
-                authorityRules.putAll(rules);
-            }
-            RecordLog.info("[AuthorityRuleManager] Authority rules received: {}", authorityRules);
+            authorityRules.set(rules);
+            RecordLog.info("[AuthorityRuleManager] Authority rules received: {}", authorityRules.get());
         }
 
         private Map<String, Set<AuthorityRule>> loadAuthorityConf(List<AuthorityRule> list) {
@@ -139,16 +134,13 @@ public final class AuthorityRuleManager {
         public void configLoad(List<AuthorityRule> value) {
             Map<String, Set<AuthorityRule>> rules = loadAuthorityConf(value);
 
-            authorityRules.clear();
-            if (rules != null) {
-                authorityRules.putAll(rules);
-            }
-            RecordLog.info("[AuthorityRuleManager] Load authority rules: {}", authorityRules);
+            authorityRules.set(rules);
+            RecordLog.info("[AuthorityRuleManager] Load authority rules: {}", authorityRules.get());
         }
     }
 
     static Map<String, Set<AuthorityRule>> getAuthorityRules() {
-        return authorityRules;
+        return authorityRules.get();
     }
 
     public static boolean isValidRule(AuthorityRule rule) {
