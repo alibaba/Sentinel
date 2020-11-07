@@ -1,5 +1,7 @@
 package com.alibaba.csp.sentinel.adapter.motan;
 
+import com.alibaba.csp.sentinel.adapter.motan.config.MotanAdapterGlobalConfig;
+import com.weibo.api.motan.common.MotanConstants;
 import com.weibo.api.motan.core.extension.Activation;
 import com.weibo.api.motan.core.extension.SpiMeta;
 import com.weibo.api.motan.filter.Filter;
@@ -13,18 +15,17 @@ import java.util.Map;
 /**
  * program: sentinel-parent
  * description: ${description}
- * author: zxn
- * create: 2020-10-28 00:28
+ * author: zhangxn8
  **/
-@SpiMeta(name = "motanAppContext")
-@Activation(sequence = 2)
+@SpiMeta(name = MotanAdapterGlobalConfig.MOTAN_APP_CONTEXT)
+@Activation(sequence = 2, key = { MotanConstants.NODE_TYPE_SERVICE, MotanConstants.NODE_TYPE_REFERER })
 public class MotanAppContextFilter implements Filter {
 
     @Override
     public Response filter(Caller<?> caller, Request request) {
-        if (request != null){
+        if (request != null) {
             Map<String, String> attachment = request.getAttachments();
-            RpcContext.getContext().setRpcAttachment("application", attachment.getOrDefault("application", "motan"));
+            RpcContext.getContext().setRpcAttachment(MotanAdapterGlobalConfig.APPLICATION, attachment.getOrDefault(MotanAdapterGlobalConfig.APPLICATION, MotanAdapterGlobalConfig.MOTAN));
         }
         return caller.call(request);
     }

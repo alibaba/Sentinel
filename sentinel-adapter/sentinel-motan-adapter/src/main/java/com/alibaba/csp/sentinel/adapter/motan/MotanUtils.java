@@ -9,8 +9,7 @@ import com.weibo.api.motan.util.ReflectUtil;
 /**
  * program: sentinel-parent
  * description: ${description}
- * author: zxn
- * create: 2020-10-28 00:33
+ * author: zhangxn8
  **/
 public class MotanUtils {
 

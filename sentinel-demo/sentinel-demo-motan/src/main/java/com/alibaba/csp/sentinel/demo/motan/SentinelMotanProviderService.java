@@ -12,8 +12,7 @@ import com.weibo.api.motan.util.MotanSwitcherUtil;
 /**
  * program: sentinel-parent
  * description: ${description}
- * author: zxn
- * create: 2020-10-28 00:58
+ * author: zhangxn8
  **/
 public class SentinelMotanProviderService {
 

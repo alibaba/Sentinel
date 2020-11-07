@@ -15,12 +15,11 @@ import com.weibo.api.motan.rpc.Response;
 
 /**
  * program: sentinel-parent
- * description: ${description}
- * author: zxn
- * create: 2020-10-28 00:44
+ * description: provider filter
+ * author: zhangxn8
  **/
 @Activation(key =MotanConstants.NODE_TYPE_SERVICE)
-@SpiMeta(name = "sentinelMotanProvider")
+@SpiMeta(name = MotanAdapterGlobalConfig.SENTINEL_MOTAN_PROVIDER)
 public class SentinelMotanProviderFilter extends BaseMotanSentinelFilter {
 
     public SentinelMotanProviderFilter(){
@@ -41,7 +40,7 @@ public class SentinelMotanProviderFilter extends BaseMotanSentinelFilter {
     public Response filter(Caller<?> caller, Request request) {
         Entry interfaceEntry = null;
         Entry methodEntry = null;
-        String prefix = "";
+        String prefix = MotanAdapterGlobalConfig.getMotanProviderPrefix();
         String interfaceResourceName = getInterfaceName(caller, prefix);
         String methodResourceName = getMethodName(caller, request, prefix);
         try {

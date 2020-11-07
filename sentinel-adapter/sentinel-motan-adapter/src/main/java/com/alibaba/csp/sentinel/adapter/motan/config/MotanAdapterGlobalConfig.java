@@ -9,12 +9,19 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 /**
  * program: sentinel-parent
  * description: ${description}
- * author: zxn
- * create: 2020-10-28 00:35
+ * author: zhangxn8
  **/
 public class MotanAdapterGlobalConfig {
 
     private static final String TRUE_STR = "true";
+
+    public static final String APPLICATION = "application";
+    public static final String MOTAN = "motan";
+
+    public static final String BASE_SENTINEL_MOTAN_FILTER = "baseSentinelMotanFilter";
+    public static final String MOTAN_APP_CONTEXT = "motanAppContext";
+    public static final String SENTINEL_MOTAN_CONSUMER = "sentinelMotanConsumer";
+    public static final String SENTINEL_MOTAN_PROVIDER = "sentinelMotanProvider";
 
     public static final String MOTAN_RES_NAME_WITH_PREFIX_KEY = "csp.sentinel.motan.resource.use.prefix";
     public static final String MOTAN_PROVIDER_RES_NAME_PREFIX_KEY = "csp.sentinel.motan.resource.provider.prefix";
