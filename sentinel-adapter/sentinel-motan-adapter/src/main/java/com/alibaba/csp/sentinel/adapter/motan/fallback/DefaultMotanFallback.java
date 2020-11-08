@@ -7,10 +7,8 @@ import com.weibo.api.motan.rpc.Request;
 import com.weibo.api.motan.rpc.Response;
 
 /**
- * program: sentinel-parent
- * description: ${description}
  * author: zhangxn8
- **/
+ */
 public class DefaultMotanFallback implements MotanFallback{
 
     @Override
