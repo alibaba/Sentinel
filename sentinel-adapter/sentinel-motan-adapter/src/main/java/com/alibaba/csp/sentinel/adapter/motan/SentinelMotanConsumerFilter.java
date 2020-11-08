@@ -13,11 +13,9 @@ import com.weibo.api.motan.rpc.Request;
 import com.weibo.api.motan.rpc.Response;
 
 /**
- * program: sentinel-parent
- * description: consumer filter
  * author: zhangxn8
- **/
-@Activation(key =MotanConstants.NODE_TYPE_REFERER)
+ */
+@Activation(key = MotanConstants.NODE_TYPE_REFERER)
 @SpiMeta(name = MotanAdapterGlobalConfig.SENTINEL_MOTAN_CONSUMER)
 public class SentinelMotanConsumerFilter extends BaseMotanSentinelFilter {
 

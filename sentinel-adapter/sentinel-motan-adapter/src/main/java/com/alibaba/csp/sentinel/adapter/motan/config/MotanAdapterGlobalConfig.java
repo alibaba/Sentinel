@@ -7,10 +7,8 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
- * program: sentinel-parent
- * description: ${description}
  * author: zhangxn8
- **/
+ */
 public class MotanAdapterGlobalConfig {
 
     private static final String TRUE_STR = "true";

@@ -12,10 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * program: sentinel-parent
- * description: ${description}
  * author: zhangxn8
- **/
+ */
 public class SentinelMotanConsumerService {
 
     private static final String INTERFACE_RES_KEY = MotanDemoService.class.getName();
@@ -53,7 +51,7 @@ public class SentinelMotanConsumerService {
 
         // 使用服务
         MotanDemoService service = motanDemoServiceReferer.getRef();
-        for (int i = 0 ;i< 20 ;i++) {
+        for (int i = 0 ;i< 5000 ;i++) {
             System.out.println(service.hello("motan"));
         }
 

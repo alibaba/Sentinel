@@ -8,10 +8,8 @@ import com.weibo.api.motan.rpc.Caller;
 import com.weibo.api.motan.rpc.Request;
 
 /**
- * program: sentinel-parent
- * description: ${description}
  * author: zhangxn8
- **/
+ */
 @SpiMeta(name = MotanAdapterGlobalConfig.BASE_SENTINEL_MOTAN_FILTER)
 @Activation(sequence = 1)
 public abstract class BaseMotanSentinelFilter implements Filter {

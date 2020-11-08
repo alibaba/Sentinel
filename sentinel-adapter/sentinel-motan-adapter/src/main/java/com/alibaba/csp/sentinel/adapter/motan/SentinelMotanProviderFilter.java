@@ -13,12 +13,12 @@ import com.weibo.api.motan.rpc.Caller;
 import com.weibo.api.motan.rpc.Request;
 import com.weibo.api.motan.rpc.Response;
 
+import java.util.Map;
+
 /**
- * program: sentinel-parent
- * description: provider filter
  * author: zhangxn8
- **/
-@Activation(key =MotanConstants.NODE_TYPE_SERVICE)
+ */
+@Activation(key = MotanConstants.NODE_TYPE_SERVICE)
 @SpiMeta(name = MotanAdapterGlobalConfig.SENTINEL_MOTAN_PROVIDER)
 public class SentinelMotanProviderFilter extends BaseMotanSentinelFilter {
 
@@ -40,11 +40,13 @@ public class SentinelMotanProviderFilter extends BaseMotanSentinelFilter {
     public Response filter(Caller<?> caller, Request request) {
         Entry interfaceEntry = null;
         Entry methodEntry = null;
+        Map<String, String> attachment = request.getAttachments();
+        String origin = attachment.getOrDefault(MotanAdapterGlobalConfig.APPLICATION, MotanAdapterGlobalConfig.MOTAN);
         String prefix = MotanAdapterGlobalConfig.getMotanProviderPrefix();
         String interfaceResourceName = getInterfaceName(caller, prefix);
         String methodResourceName = getMethodName(caller, request, prefix);
         try {
-            ContextUtil.enter(methodResourceName, "");
+            ContextUtil.enter(methodResourceName, origin);
             interfaceEntry = SphU.entry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN);
             methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN,
                     request.getArguments());
