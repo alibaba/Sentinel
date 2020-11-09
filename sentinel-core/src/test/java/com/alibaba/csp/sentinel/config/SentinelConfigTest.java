@@ -21,12 +21,17 @@ public class SentinelConfigTest {
 
     @Test
     public void testDefaultConfig() {
+       
+        SentinelConfig.setConfig(SentinelConfig.COLD_FACTOR, String.valueOf(DEFAULT_COLD_FACTOR));
+        
         assertEquals(SentinelConfig.DEFAULT_CHARSET, SentinelConfig.charset());
         assertEquals(SentinelConfig.DEFAULT_SINGLE_METRIC_FILE_SIZE, SentinelConfig.singleMetricFileSize());
         assertEquals(SentinelConfig.DEFAULT_TOTAL_METRIC_FILE_COUNT, SentinelConfig.totalMetricFileCount());
         assertEquals(SentinelConfig.DEFAULT_COLD_FACTOR, SentinelConfig.coldFactor());
         assertEquals(SentinelConfig.DEFAULT_STATISTIC_MAX_RT, SentinelConfig.statisticMaxRt());
     }
+
+  
 
     //    add JVM parameter
 //    -Dcsp.sentinel.charset=gbk
