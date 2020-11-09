@@ -45,6 +45,7 @@ public class TracerTest extends Tracer {
 
     @Test
     public void setExceptionsToTrace() {
+        Tracer.exceptionPredicate = null;
         Tracer.ignoreClasses = null;
         Tracer.traceClasses = null;
         Tracer.setExceptionsToTrace(TraceException.class, TraceException2.class);
@@ -74,6 +75,7 @@ public class TracerTest extends Tracer {
 
     @Test
     public void setExceptionsToIgnore() {
+        Tracer.exceptionPredicate = null;
         Tracer.ignoreClasses = null;
         Tracer.traceClasses = null;
         Tracer.setExceptionsToIgnore(IgnoreException.class, IgnoreException2.class);
