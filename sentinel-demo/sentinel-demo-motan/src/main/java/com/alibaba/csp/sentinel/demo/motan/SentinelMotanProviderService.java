@@ -10,7 +10,7 @@ import com.weibo.api.motan.config.ServiceConfig;
 import com.weibo.api.motan.util.MotanSwitcherUtil;
 
 /**
- * author: zhangxn8
+ * @author zhangxn8
  */
 public class SentinelMotanProviderService {
 

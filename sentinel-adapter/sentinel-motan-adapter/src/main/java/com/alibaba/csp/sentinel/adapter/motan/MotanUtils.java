@@ -7,7 +7,7 @@ import com.weibo.api.motan.rpc.Request;
 import com.weibo.api.motan.util.ReflectUtil;
 
 /**
- * author: zhangxn8
+ * @author zhangxn8
  */
 public class MotanUtils {
 

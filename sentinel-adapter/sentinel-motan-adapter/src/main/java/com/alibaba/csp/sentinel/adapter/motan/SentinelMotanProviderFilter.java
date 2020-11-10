@@ -9,6 +9,7 @@ import com.weibo.api.motan.common.MotanConstants;
 import com.weibo.api.motan.core.extension.Activation;
 import com.weibo.api.motan.core.extension.SpiMeta;
 import com.weibo.api.motan.exception.MotanAbstractException;
+import com.weibo.api.motan.filter.Filter;
 import com.weibo.api.motan.rpc.Caller;
 import com.weibo.api.motan.rpc.Request;
 import com.weibo.api.motan.rpc.Response;
@@ -16,24 +17,14 @@ import com.weibo.api.motan.rpc.Response;
 import java.util.Map;
 
 /**
- * author: zhangxn8
+ * @author zhangxn8
  */
 @Activation(key = MotanConstants.NODE_TYPE_SERVICE)
 @SpiMeta(name = MotanAdapterGlobalConfig.SENTINEL_MOTAN_PROVIDER)
-public class SentinelMotanProviderFilter extends BaseMotanSentinelFilter {
+public class SentinelMotanProviderFilter implements Filter {
 
     public SentinelMotanProviderFilter(){
         RecordLog.info("Sentinel motan provider filter initialized");
-    }
-
-    @Override
-    String getMethodName(Caller<?> caller, Request request, String prefix) {
-        return MotanUtils.getMethodResourceName(caller, request, prefix);
-    }
-
-    @Override
-    String getInterfaceName(Caller<?> caller, String prefix) {
-        return MotanUtils.getInterfaceName(caller, prefix);
     }
 
     @Override
@@ -43,8 +34,8 @@ public class SentinelMotanProviderFilter extends BaseMotanSentinelFilter {
         Map<String, String> attachment = request.getAttachments();
         String origin = attachment.getOrDefault(MotanAdapterGlobalConfig.APPLICATION, MotanAdapterGlobalConfig.MOTAN);
         String prefix = MotanAdapterGlobalConfig.getMotanProviderPrefix();
-        String interfaceResourceName = getInterfaceName(caller, prefix);
-        String methodResourceName = getMethodName(caller, request, prefix);
+        String interfaceResourceName = MotanUtils.getInterfaceName(caller, prefix);
+        String methodResourceName = MotanUtils.getMethodResourceName(caller, request, prefix);
         try {
             ContextUtil.enter(methodResourceName, origin);
             interfaceEntry = SphU.entry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN);

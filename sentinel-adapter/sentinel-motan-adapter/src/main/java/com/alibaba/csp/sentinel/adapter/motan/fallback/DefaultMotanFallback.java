@@ -7,7 +7,7 @@ import com.weibo.api.motan.rpc.Request;
 import com.weibo.api.motan.rpc.Response;
 
 /**
- * author: zhangxn8
+ * @author zhangxn8
  */
 public class DefaultMotanFallback implements MotanFallback{
 

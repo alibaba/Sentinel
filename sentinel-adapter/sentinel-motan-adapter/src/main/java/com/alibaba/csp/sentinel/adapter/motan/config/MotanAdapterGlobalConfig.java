@@ -7,7 +7,7 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
- * author: zhangxn8
+ * @author zhangxn8
  */
 public class MotanAdapterGlobalConfig {
 

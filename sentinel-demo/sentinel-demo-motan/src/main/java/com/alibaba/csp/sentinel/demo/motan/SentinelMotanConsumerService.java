@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * author: zhangxn8
+ * @author zhangxn8
  */
 public class SentinelMotanConsumerService {
 
