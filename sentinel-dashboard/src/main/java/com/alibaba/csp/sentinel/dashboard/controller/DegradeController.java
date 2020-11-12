@@ -201,9 +201,6 @@ public class DegradeController {
         if (entity.getMinRequestAmount()  == null || entity.getMinRequestAmount() <= 0) {
             return Result.ofFail(-1, "Invalid minRequestAmount");
         }
-        if (entity.getStatIntervalMs() == null || entity.getStatIntervalMs() <= 0) {
-            return Result.ofFail(-1, "Invalid statInterval");
-        }
         if (strategy == RuleConstant.DEGRADE_GRADE_RT) {
             Double slowRatio = entity.getSlowRatioThreshold();
             if (slowRatio == null) {

@@ -69,14 +69,6 @@ app.service('DegradeService', ['$http', function ($http) {
           alert('最小请求数目需大于 0');
           return false;
       }
-      if (rule.statIntervalMs == undefined || rule.statIntervalMs <= 0) {
-          alert('统计窗口时长需大于 0s');
-          return false;
-      }
-      if (rule.statIntervalMs !== undefined && rule.statIntervalMs > 60 * 1000 * 2) {
-          alert('统计窗口时长不能超过 120 分钟');
-          return false;
-      }
       // 异常比率类型.
       if (rule.grade == 1 && rule.count > 1) {
           alert('异常比率超出范围：[0.0 - 1.0]');
