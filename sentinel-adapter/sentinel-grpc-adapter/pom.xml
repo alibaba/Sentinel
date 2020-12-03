@@ -12,7 +12,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <grpc.version>1.13.1</grpc.version>
+        <grpc.version>1.30.2</grpc.version>
     </properties>
 
     <dependencies>
