@@ -329,7 +329,7 @@ public class MetricFetcher {
             return "http://" + machine.getIp() + ":" + machine.getPort() + "/" + METRIC_URL_PATH
                     + "?startTime=" + startTime + "&endTime=" + endTime + "&refetch=" + false;
         }else{
-            return influxdburl+"/query?db=sentinel_metrics_db&q="
+            return influxdburl+"/query?db=sentinel_db&q="
                     +"select%20data%20from%20%22metrics%22%20where%20app='"+app
                     +"'%20and%20host='"+machine.getHostname()+"'"
                     +"%20and%20time%3E="+ startTime +"000000%20and%20time%3C="+endTime+"000000";

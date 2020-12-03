@@ -55,7 +55,10 @@ app.controller('SentinelClusterSingleController', ['$scope', '$stateParams', 'ng
                 return;
             }
             let mac = $scope.macInputModel.split(':');
-            ClusterStateService.fetchClusterUniversalStateSingle($scope.app, mac[0], mac[1]).success(function (data) {
+            if (mac == null || mac.length < 3) {
+                return;
+            }
+            ClusterStateService.fetchClusterUniversalStateSingle($scope.app, mac[0], mac[1], mac[2]).success(function (data) {
                 if (data.code == 0 && data.data) {
                     $scope.loadError = undefined;
                     $scope.stateVO = data.data;
@@ -220,7 +223,7 @@ app.controller('SentinelClusterSingleController', ['$scope', '$stateParams', 'ng
                                 if (item.healthy) {
                                     $scope.macsInputOptionsOrigin.push({
                                         text: item.ip + ':' + item.port,
-                                        value: item.ip + ':' + item.port
+                                        value: item.ip + ':' + item.port+':'+item.hostname
                                     });
                                 }
                             });

@@ -16,5 +16,4 @@ rule:
 
 spring:
   influx:
-    url: "http://influxdb.glodon.com"
     database: sentinel_db
