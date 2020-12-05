@@ -44,6 +44,7 @@
         <module>sentinel-demo-jax-rs</module>
         <module>sentinel-demo-quarkus</module>
         <module>sentinel-demo-annotation-cdi-interceptor</module>
+        <module>sentinel-demo-motan</module>
     </modules>
 
     <dependencies>
