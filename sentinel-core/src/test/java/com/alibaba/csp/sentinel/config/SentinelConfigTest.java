@@ -2,6 +2,8 @@ package com.alibaba.csp.sentinel.config;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.Before;
+import org.junit.After;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -18,6 +20,16 @@ import static org.junit.Assert.assertEquals;
  * @author cdfive
  */
 public class SentinelConfigTest {
+
+    @Before
+    public void setUp() {
+        SentinelConfig.setConfig(SentinelConfig.COLD_FACTOR, SentinelConfig.DEFAULT_CHARSET);
+    }
+
+    @After
+    public void tearDown() {
+        SentinelConfig.setConfig(SentinelConfig.COLD_FACTOR, SentinelConfig.DEFAULT_CHARSET);
+    }
 
     @Test
     public void testDefaultConfig() {
