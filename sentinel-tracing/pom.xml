@@ -12,6 +12,11 @@
     <artifactId>sentinel-tracing</artifactId>
     <packaging>pom</packaging>
 
+    <properties>
+        <java.source.version>1.8</java.source.version>
+        <java.target.version>1.8</java.target.version>
+    </properties>
+
     <modules>
         <module>sentinel-tracing-core</module>
         <module>sentinel-tracing-opentelemetry</module>
