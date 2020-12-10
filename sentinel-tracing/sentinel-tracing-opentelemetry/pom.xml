@@ -27,7 +27,6 @@
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-api</artifactId>
             <version>${opentelemetry.version}</version>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 

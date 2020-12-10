@@ -27,14 +27,12 @@
             <groupId>io.opentracing</groupId>
             <artifactId>opentracing-api</artifactId>
             <version>${opentracing.version}</version>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>io.opentracing</groupId>
             <artifactId>opentracing-util</artifactId>
             <version>${opentracing.version}</version>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 
