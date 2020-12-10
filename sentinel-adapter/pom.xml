@@ -31,6 +31,7 @@
         <module>sentinel-okhttp-adapter</module>
         <module>sentinel-jax-rs-adapter</module>
         <module>sentinel-quarkus-adapter</module>
+        <module>sentinel-motan-adapter</module>
     </modules>
 
     <dependencyManagement>

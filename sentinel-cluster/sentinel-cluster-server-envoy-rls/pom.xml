@@ -16,7 +16,7 @@
         <java.target.version>1.8</java.target.version>
 
         <protobuf.version>3.10.0</protobuf.version>
-        <grpc.version>1.24.0</grpc.version>
+        <grpc.version>1.30.2</grpc.version>
 
         <maven.shade.version>3.2.1</maven.shade.version>
     </properties>

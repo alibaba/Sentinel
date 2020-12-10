@@ -17,12 +17,14 @@ public class TracerTest extends Tracer {
     public void setUp() {
         ContextTestUtil.cleanUpContext();
         ContextTestUtil.resetContextMap();
+        Tracer.exceptionPredicate = null;
     }
 
     @After
     public void tearDown() {
         ContextTestUtil.cleanUpContext();
         ContextTestUtil.resetContextMap();
+        Tracer.exceptionPredicate = null;
     }
 
     @Test
