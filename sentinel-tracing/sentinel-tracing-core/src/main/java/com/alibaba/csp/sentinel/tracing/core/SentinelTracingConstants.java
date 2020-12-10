@@ -22,6 +22,7 @@ package com.alibaba.csp.sentinel.tracing.core;
  * @since 1.8.1
  */
 public class SentinelTracingConstants {
+    public static final String TRACER_NAME = "SENTINEL-TRACER";
     public static final String SPAN_NAME = "SENTINEL";
     public static final String ORIGIN = "origin";
     public static final String ASYNC = "async";

@@ -13,7 +13,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <skywalking.version>8.1.0</skywalking.version>
+        <skywalking.version>8.2.0</skywalking.version>
     </properties>
 
     <dependencies>
