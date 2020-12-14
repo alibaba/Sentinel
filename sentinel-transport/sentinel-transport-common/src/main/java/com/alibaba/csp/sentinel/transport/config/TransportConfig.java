@@ -27,6 +27,7 @@ import java.util.List;
 /**
  * @author Carpenter Lee
  * @author Jason Joo
+ * @author Leo Li
  */
 public class TransportConfig {
 
@@ -39,6 +40,8 @@ public class TransportConfig {
     public static final String HEARTBEAT_DEFAULT_PATH = "/registry/machine";
 
     private static int runtimePort = -1;
+
+	private static String protocol = "http";
 
     /**
      * Get heartbeat interval in milliseconds.
@@ -92,11 +95,17 @@ public class TransportConfig {
                 continue;
             }
             ipPortStr = ipPortStr.trim();
-            if (ipPortStr.startsWith("http://")) {
-                ipPortStr = ipPortStr.substring(7);
-            }
-            int index = ipPortStr.indexOf(":");
-            int port = 80;
+			int port = 80;
+			if (ipPortStr.startsWith("http://")) {
+				ipPortStr = ipPortStr.substring(7);
+				port = 80;
+			}
+			if (ipPortStr.startsWith("https://")) {
+				ipPortStr = ipPortStr.substring(8);
+				port = 443;
+				protocol = "https";
+			}
+			int index = ipPortStr.indexOf(":");
             if (index == 0) {
                 // skip
                 continue;
@@ -123,6 +132,10 @@ public class TransportConfig {
     public static int getRuntimePort() {
         return runtimePort;
     }
+
+	public static String getProtocol() {
+		return protocol;
+	}
 
     /**
      * Get Server port of this HTTP server.

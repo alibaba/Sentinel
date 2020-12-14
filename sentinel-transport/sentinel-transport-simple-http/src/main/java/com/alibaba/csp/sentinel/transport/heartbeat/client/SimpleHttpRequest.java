@@ -27,6 +27,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  * Simple HTTP request representation.
  *
  * @author leyou
+ * @author Leo Li
  */
 public class SimpleHttpRequest {
 
@@ -35,11 +36,18 @@ public class SimpleHttpRequest {
     private int soTimeout = 3000;
     private Map<String, String> params;
     private Charset charset = Charset.forName(SentinelConfig.charset());
+	private String protocol;
 
     public SimpleHttpRequest(InetSocketAddress socketAddress, String requestPath) {
         this.socketAddress = socketAddress;
         this.requestPath = requestPath;
     }
+
+	public SimpleHttpRequest(String protocol, InetSocketAddress socketAddress, String requestPath) {
+		this.protocol = protocol;
+		this.socketAddress = socketAddress;
+		this.requestPath = requestPath;
+	}
 
     public InetSocketAddress getSocketAddress() {
         return socketAddress;
@@ -85,6 +93,14 @@ public class SimpleHttpRequest {
         this.charset = charset;
         return this;
     }
+
+	public String getProtocol() {
+		return protocol;
+	}
+
+	public void setProtocol(String protocol) {
+		this.protocol = protocol;
+	}
 
     public SimpleHttpRequest addParam(String key, String value) {
         if (StringUtil.isBlank(key)) {

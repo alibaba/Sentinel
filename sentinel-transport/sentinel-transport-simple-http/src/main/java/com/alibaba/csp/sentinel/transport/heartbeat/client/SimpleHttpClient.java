@@ -22,10 +22,18 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
  * <p>
@@ -47,8 +55,13 @@ import com.alibaba.csp.sentinel.log.RecordLog;
  * </p>
  *
  * @author leyou
+ * @author Leo Li
  */
 public class SimpleHttpClient {
+
+	private static X509TrustManager x509TrustManager;
+	private static SSLContext sslContext;
+	private static SSLSocketFactory sslSocketFactory;
 
     /**
      * Execute a GET HTTP request.
@@ -77,57 +90,73 @@ public class SimpleHttpClient {
         if (request == null) {
             return null;
         }
-        return request(request.getSocketAddress(),
+        return request(request.getProtocol(), request.getSocketAddress(),
             RequestMethod.POST, request.getRequestPath(),
             request.getParams(), request.getCharset(),
             request.getSoTimeout());
     }
 
+	private SimpleHttpResponse request(String protocol, InetSocketAddress socketAddress,
+									   RequestMethod type, String requestPath,
+									   Map<String, String> paramsMap, Charset charset, int soTimeout)
+			throws IOException {
+		Socket socket = null;
+		BufferedWriter writer;
+		try {
+			if (StringUtil.equals(protocol, "http")) {
+				socket = new Socket();
+			} else if (StringUtil.equals(protocol, "https")){
+				sslSocketFactory = getSSLSocketFactory();
+				if (sslSocketFactory != null) {
+					socket = sslSocketFactory.createSocket();
+				} else {
+					socket = new Socket();
+				}
+			}
+			socket.setSoTimeout(soTimeout);
+			socket.connect(socketAddress, soTimeout);
+
+			writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), charset));
+			requestPath = getRequestPath(type, requestPath, paramsMap, charset);
+			writer.write(getStatusLine(type, requestPath) + "\r\n");
+			if (charset != null) {
+				writer.write("Content-Type: application/x-www-form-urlencoded; charset=" + charset.name() + "\r\n");
+			} else {
+				writer.write("Content-Type: application/x-www-form-urlencoded\r\n");
+			}
+			writer.write("Host: " + socketAddress.getHostName() + "\r\n");
+			if (type == RequestMethod.GET) {
+				writer.write("Content-Length: 0\r\n");
+				writer.write("\r\n");
+			} else {
+				// POST method.
+				String params = encodeRequestParams(paramsMap, charset);
+				writer.write("Content-Length: " + params.getBytes(charset).length + "\r\n");
+				writer.write("\r\n");
+				writer.write(params);
+			}
+			writer.flush();
+
+			SimpleHttpResponse response = new SimpleHttpResponseParser().parse(socket.getInputStream());
+			socket.close();
+			socket = null;
+			return response;
+		} finally {
+			if (socket != null) {
+				try {
+					socket.close();
+				} catch (Exception ex) {
+					RecordLog.warn("Error when closing {} request to {} in SimpleHttpClient", type, socketAddress, ex);
+				}
+			}
+		}
+	}
+
     private SimpleHttpResponse request(InetSocketAddress socketAddress,
                                        RequestMethod type, String requestPath,
                                        Map<String, String> paramsMap, Charset charset, int soTimeout)
         throws IOException {
-        Socket socket = null;
-        BufferedWriter writer;
-        try {
-            socket = new Socket();
-            socket.setSoTimeout(soTimeout);
-            socket.connect(socketAddress, soTimeout);
-
-            writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), charset));
-            requestPath = getRequestPath(type, requestPath, paramsMap, charset);
-            writer.write(getStatusLine(type, requestPath) + "\r\n");
-            if (charset != null) {
-                writer.write("Content-Type: application/x-www-form-urlencoded; charset=" + charset.name() + "\r\n");
-            } else {
-                writer.write("Content-Type: application/x-www-form-urlencoded\r\n");
-            }
-            writer.write("Host: " + socketAddress.getHostName() + "\r\n");
-            if (type == RequestMethod.GET) {
-                writer.write("Content-Length: 0\r\n");
-                writer.write("\r\n");
-            } else {
-                // POST method.
-                String params = encodeRequestParams(paramsMap, charset);
-                writer.write("Content-Length: " + params.getBytes(charset).length + "\r\n");
-                writer.write("\r\n");
-                writer.write(params);
-            }
-            writer.flush();
-
-            SimpleHttpResponse response = new SimpleHttpResponseParser().parse(socket.getInputStream());
-            socket.close();
-            socket = null;
-            return response;
-        } finally {
-            if (socket != null) {
-                try {
-                    socket.close();
-                } catch (Exception ex) {
-                    RecordLog.warn("Error when closing {} request to {} in SimpleHttpClient", type, socketAddress, ex);
-                }
-            }
-        }
+		return request("http", socketAddress, type, requestPath, paramsMap, charset, soTimeout);
     }
 
     private String getRequestPath(RequestMethod type, String requestPath,
@@ -183,6 +212,50 @@ public class SimpleHttpClient {
             return "";
         }
     }
+
+	private X509TrustManager getX509TrustManager() {
+		if (x509TrustManager == null) {
+			x509TrustManager = new X509TrustManager() {
+				public boolean isServerTrusted(X509Certificate[] certs) {
+					return true;
+				}
+
+				public boolean isClientTrusted(X509Certificate[] certs) {
+					return true;
+				}
+
+				@Override
+				public void checkServerTrusted(X509Certificate[] certs, String authType)
+						throws CertificateException {
+				}
+
+				@Override
+				public void checkClientTrusted(X509Certificate[] certs, String authType)
+						throws CertificateException {
+				}
+
+				@Override
+				public X509Certificate[] getAcceptedIssuers() {
+					return null;
+				}
+			};
+		}
+		return x509TrustManager;
+	}
+
+	private SSLSocketFactory getSSLSocketFactory() {
+		if (sslContext == null) {
+			try {
+				sslContext = SSLContext.getInstance("TLS");
+				x509TrustManager = getX509TrustManager();
+				sslContext.init(null, new TrustManager[] { x509TrustManager }, null);
+				sslSocketFactory = sslContext.getSocketFactory();
+			} catch (Exception e) {
+				RecordLog.error("get ssl socket factory error", e);
+			}
+		}
+		return sslSocketFactory;
+	}
 
     private enum RequestMethod {
         GET,

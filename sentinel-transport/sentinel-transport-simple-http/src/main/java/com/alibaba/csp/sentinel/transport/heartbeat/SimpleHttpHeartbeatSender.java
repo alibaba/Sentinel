@@ -32,6 +32,7 @@ import java.util.List;
  *
  * @author Eric Zhao
  * @author Carpenter Lee
+ * @author Leo Li
  */
 public class SimpleHttpHeartbeatSender implements HeartbeatSender {
 
@@ -69,7 +70,7 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
         }
 
         InetSocketAddress addr = new InetSocketAddress(addrInfo.r1, addrInfo.r2);
-        SimpleHttpRequest request = new SimpleHttpRequest(addr, TransportConfig.getHeartbeatApiPath());
+		SimpleHttpRequest request = new SimpleHttpRequest(TransportConfig.getProtocol(), addr, TransportConfig.getHeartbeatApiPath());
         request.setParams(heartBeat.generateCurrentMessage());
         try {
             SimpleHttpResponse response = httpClient.post(request);
