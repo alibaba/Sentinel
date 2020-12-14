@@ -15,13 +15,13 @@
  */
 package com.alibaba.csp.sentinel.transport.heartbeat.client;
 
-import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.util.StringUtil;
+import com.alibaba.csp.sentinel.util.function.Endpoint;
 
 /**
  * Simple HTTP request representation.
@@ -31,30 +31,23 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  */
 public class SimpleHttpRequest {
 
-    private InetSocketAddress socketAddress;
+    private Endpoint endpoint;
     private String requestPath = "";
     private int soTimeout = 3000;
     private Map<String, String> params;
     private Charset charset = Charset.forName(SentinelConfig.charset());
-	private String protocol;
 
-    public SimpleHttpRequest(InetSocketAddress socketAddress, String requestPath) {
-        this.socketAddress = socketAddress;
+    public SimpleHttpRequest(Endpoint endpoint, String requestPath) {
+        this.endpoint = endpoint;
         this.requestPath = requestPath;
     }
 
-	public SimpleHttpRequest(String protocol, InetSocketAddress socketAddress, String requestPath) {
-		this.protocol = protocol;
-		this.socketAddress = socketAddress;
-		this.requestPath = requestPath;
-	}
-
-    public InetSocketAddress getSocketAddress() {
-        return socketAddress;
+    public Endpoint getEndpoint() {
+        return endpoint;
     }
 
-    public SimpleHttpRequest setSocketAddress(InetSocketAddress socketAddress) {
-        this.socketAddress = socketAddress;
+    public SimpleHttpRequest setEndpoint(Endpoint endpoint) {
+        this.endpoint = endpoint;
         return this;
     }
 
@@ -93,14 +86,6 @@ public class SimpleHttpRequest {
         this.charset = charset;
         return this;
     }
-
-	public String getProtocol() {
-		return protocol;
-	}
-
-	public void setProtocol(String protocol) {
-		this.protocol = protocol;
-	}
 
     public SimpleHttpRequest addParam(String key, String value) {
         if (StringUtil.isBlank(key)) {

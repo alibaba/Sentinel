@@ -25,7 +25,7 @@ import com.alibaba.csp.sentinel.util.AppNameUtil;
 import com.alibaba.csp.sentinel.util.HostNameUtil;
 import com.alibaba.csp.sentinel.util.PidUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.csp.sentinel.util.function.Tuple2;
+import com.alibaba.csp.sentinel.util.function.Endpoint;
 
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -59,14 +59,14 @@ public class HttpHeartbeatSender implements HeartbeatSender {
 
     public HttpHeartbeatSender() {
         this.client = HttpClients.createDefault();
-        List<Tuple2<String, Integer>> dashboardList = TransportConfig.getConsoleServerList();
+        List<Endpoint> dashboardList = TransportConfig.getConsoleServerList();
         if (dashboardList == null || dashboardList.isEmpty()) {
             RecordLog.info("[NettyHttpHeartbeatSender] No dashboard server available");
             consoleHost = null;
             consolePort = -1;
         } else {
-            consoleHost = dashboardList.get(0).r1;
-            consolePort = dashboardList.get(0).r2;
+            consoleHost = dashboardList.get(0).getHost();
+            consolePort = dashboardList.get(0).getPort();
             RecordLog.info("[NettyHttpHeartbeatSender] Dashboard address parsed: <{}:{}>", consoleHost, consolePort);
         }
     }

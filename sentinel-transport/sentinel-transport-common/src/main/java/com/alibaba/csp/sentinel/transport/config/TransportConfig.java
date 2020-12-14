@@ -19,7 +19,8 @@ import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.HostNameUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.csp.sentinel.util.function.Tuple2;
+import com.alibaba.csp.sentinel.util.function.Endpoint;
+import com.alibaba.csp.sentinel.util.function.Protocol;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,8 +42,6 @@ public class TransportConfig {
 
     private static int runtimePort = -1;
 
-	private static String protocol = "http";
-
     /**
      * Get heartbeat interval in milliseconds.
      *
@@ -59,20 +58,20 @@ public class TransportConfig {
     }
 
     /**
-     * Get a list of (ip/domain, port) indicating Sentinel Dashboard's address.<br>
-     * NOTE: only support <b>HTTP</b> protocol
+     * Get a list of Endpoint(protocol, ip/domain, port) indicating Sentinel Dashboard's address.<br>
+     * NOTE: only support <b>HTTP</b> and <b>HTTPS</b> protocol
      *
-     * @return list of (ip/domain, port) pair. <br>
+     * @return list of Endpoint(protocol, ip/domain, port). <br>
      *         <b>May not be null</b>. <br>
      *         An empty list returned when not configured.
      */
-    public static List<Tuple2<String, Integer>> getConsoleServerList() {
+    public static List<Endpoint> getConsoleServerList() {
         String config = SentinelConfig.getConfig(CONSOLE_SERVER);
-        List<Tuple2<String, Integer>> list = new ArrayList<Tuple2<String, Integer>>();
+        List<Endpoint> list = new ArrayList<Endpoint>();
         if (StringUtil.isBlank(config)) {
             return list;
         }
-        
+
         int pos = -1;
         int cur = 0;
         while (true) {
@@ -95,17 +94,16 @@ public class TransportConfig {
                 continue;
             }
             ipPortStr = ipPortStr.trim();
-			int port = 80;
-			if (ipPortStr.startsWith("http://")) {
-				ipPortStr = ipPortStr.substring(7);
-				port = 80;
-			}
-			if (ipPortStr.startsWith("https://")) {
-				ipPortStr = ipPortStr.substring(8);
-				port = 443;
-				protocol = "https";
-			}
-			int index = ipPortStr.indexOf(":");
+            int port = 80;
+            Protocol protocol = Protocol.HTTP;
+            if (ipPortStr.startsWith("http://")) {
+                ipPortStr = ipPortStr.substring(7);
+            } else if (ipPortStr.startsWith("https://")) {
+                ipPortStr = ipPortStr.substring(8);
+                port = 443;
+                protocol = Protocol.HTTPS;
+            }
+            int index = ipPortStr.indexOf(":");
             if (index == 0) {
                 // skip
                 continue;
@@ -124,7 +122,7 @@ public class TransportConfig {
                 }
                 host = ipPortStr.substring(0, index);
             }
-            list.add(Tuple2.of(host, port));
+            list.add(new Endpoint(protocol, host, port));
         }
         return list;
     }
@@ -132,10 +130,6 @@ public class TransportConfig {
     public static int getRuntimePort() {
         return runtimePort;
     }
-
-	public static String getProtocol() {
-		return protocol;
-	}
 
     /**
      * Get Server port of this HTTP server.
