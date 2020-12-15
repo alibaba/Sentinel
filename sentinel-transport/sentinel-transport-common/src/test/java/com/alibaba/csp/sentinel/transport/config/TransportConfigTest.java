@@ -131,7 +131,7 @@ public class TransportConfigTest {
         assertEquals("112.13.223.4", list.get(2).getHost());
         assertEquals(8080, list.get(2).getPort());
         assertEquals("www.dashboard.org", list.get(3).getHost());
-        assertEquals(81, list.get(3).getPort());
+        assertEquals(80, list.get(3).getPort());
         
         // malformed
         SentinelConfig.setConfig(TransportConfig.CONSOLE_SERVER, "www.dashboard.org:0");
