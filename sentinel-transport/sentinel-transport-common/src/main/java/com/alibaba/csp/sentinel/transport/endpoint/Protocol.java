@@ -16,8 +16,4 @@ public enum Protocol {
     public String getProtocol() {
         return protocol;
     }
-
-    public static void main(String[] args) {
-        System.out.println(Protocol.HTTP.name());
-    }
 }

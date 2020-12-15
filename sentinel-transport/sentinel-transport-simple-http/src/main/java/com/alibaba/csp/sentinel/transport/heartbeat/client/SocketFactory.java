@@ -18,10 +18,6 @@ public class SocketFactory {
     }
 
     public static Socket getSocket(Protocol protocol) throws IOException {
-        return protocol == Protocol.HTTP ? new Socket() : getSslSocketFactory().createSocket();
-    }
-
-    private static SSLSocketFactory getSslSocketFactory() {
-        return SSLSocketFactoryInstance.SSL_SOCKET_FACTORY;
+        return protocol == Protocol.HTTP ? new Socket() : SSLSocketFactoryInstance.SSL_SOCKET_FACTORY.createSocket();
     }
 }
