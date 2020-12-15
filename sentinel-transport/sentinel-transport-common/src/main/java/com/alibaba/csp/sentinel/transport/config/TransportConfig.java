@@ -19,8 +19,8 @@ import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.HostNameUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.csp.sentinel.util.function.Endpoint;
-import com.alibaba.csp.sentinel.util.function.Protocol;
+import com.alibaba.csp.sentinel.transport.endpoint.Endpoint;
+import com.alibaba.csp.sentinel.transport.endpoint.Protocol;
 
 import java.util.ArrayList;
 import java.util.List;

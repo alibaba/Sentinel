@@ -1,4 +1,4 @@
-package com.alibaba.csp.sentinel.util.function;
+package com.alibaba.csp.sentinel.transport.endpoint;
 
 import java.net.InetSocketAddress;
 
@@ -40,10 +40,6 @@ public class Endpoint {
 
     public void setPort(int port) {
         this.port = port;
-    }
-
-    public InetSocketAddress getInetSocketAddress() {
-        return new InetSocketAddress(host, port);
     }
 
     @Override

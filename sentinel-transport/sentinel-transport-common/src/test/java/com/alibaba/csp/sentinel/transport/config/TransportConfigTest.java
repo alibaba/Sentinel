@@ -17,8 +17,8 @@ package com.alibaba.csp.sentinel.transport.config;
 
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.csp.sentinel.util.function.Endpoint;
-import com.alibaba.csp.sentinel.util.function.Protocol;
+import com.alibaba.csp.sentinel.transport.endpoint.Endpoint;
+import com.alibaba.csp.sentinel.transport.endpoint.Protocol;
 
 import org.junit.After;
 import org.junit.Before;

@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.util.function.Endpoint;
+import com.alibaba.csp.sentinel.transport.endpoint.Endpoint;
 
 /**
  * <p>
@@ -91,11 +91,10 @@ public class SimpleHttpClient {
         throws IOException {
         Socket socket = null;
         BufferedWriter writer;
-        InetSocketAddress socketAddress = null;
+        InetSocketAddress socketAddress = new InetSocketAddress(endpoint.getHost(), endpoint.getPort());
         try {
             socket = SocketFactory.getSocket(endpoint.getProtocol());
             socket.setSoTimeout(soTimeout);
-            socketAddress = endpoint.getInetSocketAddress();
             socket.connect(socketAddress, soTimeout);
 
             writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), charset));

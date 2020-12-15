@@ -21,7 +21,7 @@ import com.alibaba.csp.sentinel.transport.config.TransportConfig;
 import com.alibaba.csp.sentinel.transport.heartbeat.client.SimpleHttpClient;
 import com.alibaba.csp.sentinel.transport.heartbeat.client.SimpleHttpRequest;
 import com.alibaba.csp.sentinel.transport.heartbeat.client.SimpleHttpResponse;
-import com.alibaba.csp.sentinel.util.function.Endpoint;
+import com.alibaba.csp.sentinel.transport.endpoint.Endpoint;
 
 import java.util.List;
 
