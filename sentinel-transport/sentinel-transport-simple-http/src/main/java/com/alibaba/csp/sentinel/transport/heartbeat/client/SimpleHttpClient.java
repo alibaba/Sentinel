@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.transport.endpoint.Endpoint;
 
 /**
  * <p>
@@ -47,6 +48,7 @@ import com.alibaba.csp.sentinel.log.RecordLog;
  * </p>
  *
  * @author leyou
+ * @author Leo Li
  */
 public class SimpleHttpClient {
 
@@ -61,7 +63,7 @@ public class SimpleHttpClient {
         if (request == null) {
             return null;
         }
-        return request(request.getSocketAddress(),
+        return request(request.getEndpoint(),
             RequestMethod.GET, request.getRequestPath(), request.getParams(),
             request.getCharset(), request.getSoTimeout());
     }
@@ -77,20 +79,21 @@ public class SimpleHttpClient {
         if (request == null) {
             return null;
         }
-        return request(request.getSocketAddress(),
+        return request(request.getEndpoint(),
             RequestMethod.POST, request.getRequestPath(),
             request.getParams(), request.getCharset(),
             request.getSoTimeout());
     }
 
-    private SimpleHttpResponse request(InetSocketAddress socketAddress,
+    private SimpleHttpResponse request(Endpoint endpoint,
                                        RequestMethod type, String requestPath,
                                        Map<String, String> paramsMap, Charset charset, int soTimeout)
         throws IOException {
         Socket socket = null;
         BufferedWriter writer;
+        InetSocketAddress socketAddress = new InetSocketAddress(endpoint.getHost(), endpoint.getPort());
         try {
-            socket = new Socket();
+            socket = SocketFactory.getSocket(endpoint.getProtocol());
             socket.setSoTimeout(soTimeout);
             socket.connect(socketAddress, soTimeout);
 
