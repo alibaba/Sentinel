@@ -15,38 +15,39 @@
  */
 package com.alibaba.csp.sentinel.transport.heartbeat.client;
 
-import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.util.StringUtil;
+import com.alibaba.csp.sentinel.transport.endpoint.Endpoint;
 
 /**
  * Simple HTTP request representation.
  *
  * @author leyou
+ * @author Leo Li
  */
 public class SimpleHttpRequest {
 
-    private InetSocketAddress socketAddress;
+    private Endpoint endpoint;
     private String requestPath = "";
     private int soTimeout = 3000;
     private Map<String, String> params;
     private Charset charset = Charset.forName(SentinelConfig.charset());
 
-    public SimpleHttpRequest(InetSocketAddress socketAddress, String requestPath) {
-        this.socketAddress = socketAddress;
+    public SimpleHttpRequest(Endpoint endpoint, String requestPath) {
+        this.endpoint = endpoint;
         this.requestPath = requestPath;
     }
 
-    public InetSocketAddress getSocketAddress() {
-        return socketAddress;
+    public Endpoint getEndpoint() {
+        return endpoint;
     }
 
-    public SimpleHttpRequest setSocketAddress(InetSocketAddress socketAddress) {
-        this.socketAddress = socketAddress;
+    public SimpleHttpRequest setEndpoint(Endpoint endpoint) {
+        this.endpoint = endpoint;
         return this;
     }
 
