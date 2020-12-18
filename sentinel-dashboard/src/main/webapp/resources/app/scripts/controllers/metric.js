@@ -59,6 +59,7 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
       $interval.cancel(intervalId);
     });
     $scope.initAllChart = function () {
+      //revoke useless charts positively
       while($scope.charts.length > 0) {
       	let chart = $scope.charts.pop();
       	chart.destroy();
