@@ -138,7 +138,10 @@ public final class ParamFlowRuleManager {
                 List<ParamFlowRule> oldRuleList = new ArrayList<>(entry.getValue());
                 oldRuleList.removeAll(newRuleList);
                 for (ParamFlowRule rule : oldRuleList) {
-                    ParameterMetricStorage.getParamMetricForResource(resource).clearForRule(rule);
+                    ParameterMetric parameterMetric = ParameterMetricStorage.getParamMetricForResource(resource);
+                    if (parameterMetric != null) {
+                        parameterMetric.clearForRule(rule);
+                    }
                 }
             }
 
