@@ -9,6 +9,7 @@ package com.alibaba.csp.sentinel.slots.statistic.base;
  * From http://gee.cs.oswego.edu/cgi-bin/viewcvs.cgi/jsr166/src/jsr166e/
  */
 
+import com.alibaba.csp.sentinel.util.UnsafeUtil;
 import java.util.Random;
 
 /**
@@ -98,18 +99,16 @@ abstract class Striped64 extends Number {
         Cell(long x) { value = x; }
 
         final boolean cas(long cmp, long val) {
-            return UNSAFE.compareAndSwapLong(this, valueOffset, cmp, val);
+            return UnsafeUtil.compareAndSwapLong(this, valueOffset, cmp, val);
         }
 
         // Unsafe mechanics
-        private static final sun.misc.Unsafe UNSAFE;
         private static final long valueOffset;
 
         static {
             try {
-                UNSAFE = getUnsafe();
                 Class<?> ak = Cell.class;
-                valueOffset = UNSAFE.objectFieldOffset
+                valueOffset = UnsafeUtil.objectFieldOffset
                     (ak.getDeclaredField("value"));
             } catch (Exception e) {
                 throw new Error(e);
@@ -179,14 +178,14 @@ abstract class Striped64 extends Number {
      * CASes the base field.
      */
     final boolean casBase(long cmp, long val) {
-        return UNSAFE.compareAndSwapLong(this, baseOffset, cmp, val);
+        return UnsafeUtil.compareAndSwapLong(this, baseOffset, cmp, val);
     }
 
     /**
      * CASes the busy field from 0 to 1 to acquire lock.
      */
     final boolean casBusy() {
-        return UNSAFE.compareAndSwapInt(this, busyOffset, 0, 1);
+        return UnsafeUtil.compareAndSwapInt(this, busyOffset, 0, 1);
     }
 
     /**
@@ -299,50 +298,18 @@ abstract class Striped64 extends Number {
     }
 
     // Unsafe mechanics
-    private static final sun.misc.Unsafe UNSAFE;
     private static final long baseOffset;
     private static final long busyOffset;
 
     static {
         try {
-            UNSAFE = getUnsafe();
             Class<?> sk = Striped64.class;
-            baseOffset = UNSAFE.objectFieldOffset
+            baseOffset = UnsafeUtil.objectFieldOffset
                 (sk.getDeclaredField("base"));
-            busyOffset = UNSAFE.objectFieldOffset
+            busyOffset = UnsafeUtil.objectFieldOffset
                 (sk.getDeclaredField("busy"));
         } catch (Exception e) {
             throw new Error(e);
-        }
-    }
-
-    /**
-     * Returns a sun.misc.Unsafe.  Suitable for use in a 3rd party package.
-     * Replace with a simple call to Unsafe.getUnsafe when integrating
-     * into a jdk.
-     *
-     * @return a sun.misc.Unsafe
-     */
-    private static sun.misc.Unsafe getUnsafe() {
-        try {
-            return sun.misc.Unsafe.getUnsafe();
-        } catch (SecurityException se) {
-            try {
-                return java.security.AccessController.doPrivileged
-                    (new java.security
-                        .PrivilegedExceptionAction<sun.misc.Unsafe>() {
-                        @Override
-                        public sun.misc.Unsafe run() throws Exception {
-                            java.lang.reflect.Field f = sun.misc
-                                .Unsafe.class.getDeclaredField("theUnsafe");
-                            f.setAccessible(true);
-                            return (sun.misc.Unsafe)f.get(null);
-                        }
-                    });
-            } catch (java.security.PrivilegedActionException e) {
-                throw new RuntimeException("Could not initialize intrinsics",
-                    e.getCause());
-            }
         }
     }
 
