@@ -15,7 +15,7 @@
  */
 package com.alibaba.csp.sentinel.tracing.opentelemetry;
 
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 
 import com.alibaba.csp.sentinel.tracing.core.SentinelTracingConstants;
@@ -34,7 +34,7 @@ public class SentinelOpenTelemetryProcessorSlotEntryCallback extends SentinelTra
 
     @Override
     protected Span buildSpan() {
-        return OpenTelemetry.getGlobalTracer(instrumentationName).spanBuilder(SentinelTracingConstants.SPAN_NAME).startSpan();
+        return GlobalOpenTelemetry.getTracer(instrumentationName).spanBuilder(SentinelTracingConstants.SPAN_NAME).startSpan();
     }
 
     @Override

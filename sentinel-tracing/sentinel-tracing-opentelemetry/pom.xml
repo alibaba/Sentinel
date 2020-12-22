@@ -13,7 +13,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <opentelemetry.version>0.12.0</opentelemetry.version>
+        <opentelemetry.version>0.13.1</opentelemetry.version>
     </properties>
 
     <dependencies>
