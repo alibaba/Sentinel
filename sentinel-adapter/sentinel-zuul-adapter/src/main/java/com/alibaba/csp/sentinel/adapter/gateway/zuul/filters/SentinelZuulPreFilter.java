@@ -138,6 +138,8 @@ public class SentinelZuulPreFilter extends ZuulFilter {
             ctx.setResponseStatusCode(blockResponse.getCode());
             // Set Response ContentType
             ctx.getResponse().setContentType("application/json; charset=utf-8");
+            // re-throw this exception for Zuul
+            throw new ZuulException(ex, blockResponse.getMessage(), blockResponse.getCode(), ex.getMessage());
         } finally {
             // We don't exit the entry here. We need to exit the entries in post filter to record Rt correctly.
             // So here the entries will be carried in the request context.
