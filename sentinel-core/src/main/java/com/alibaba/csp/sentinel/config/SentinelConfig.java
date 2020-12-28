@@ -158,6 +158,24 @@ public final class SentinelConfig {
     public static String charset() {
         return props.get(CHARSET);
     }
+    
+    /**
+     * Get the metric log flush interval in second
+     * @return  the metric log flush interval in second
+     */
+    public static long metricLogFlushIntervalSec() {
+        String flushIntervalStr = SentinelConfig.getConfig(SentinelConfig.METRIC_FLUSH_INTERVAL);
+        if (flushIntervalStr == null) {
+            return DEFAULT_METRIC_FLUSH_INTERVAL;
+        }
+        try {
+            return Long.parseLong(flushIntervalStr);
+        } catch (Throwable throwable) {
+            RecordLog.warn("[SentinelConfig] Parse the metricLogFlushInterval fail, use default value: "
+                    + DEFAULT_METRIC_FLUSH_INTERVAL, throwable);
+            return DEFAULT_METRIC_FLUSH_INTERVAL;
+        }
+    }
 
     public static long singleMetricFileSize() {
         try {

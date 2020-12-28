@@ -68,27 +68,14 @@ public class FlowRuleManager {
     /**
      * <p> Start the MetricTimerListener
      * <ol>
-     *     <li>if the {@link SentinelConfig#METRIC_FLUSH_INTERVAL} more than 0,
-     * the timer will run with the {@link SentinelConfig#METRIC_FLUSH_INTERVAL} as the rate </li>.
-     *      <li>if the {@link SentinelConfig#METRIC_FLUSH_INTERVAL} less than 0(include) or value is not valid,
+     *     <li>If the flushInterval more than 0,
+     * the timer will run with the flushInterval as the rate </li>.
+     *      <li>If the flushInterval less than 0(include) or value is not valid,
      * then means the timer will not be started </li>
      * <ol></p>
      */
     private static void startMetricTimerListener() {
-        long flushInterval;
-        String flushIntervalStr = SentinelConfig.getConfig(SentinelConfig.METRIC_FLUSH_INTERVAL);
-        if (flushIntervalStr == null) {
-            flushInterval = SentinelConfig.DEFAULT_METRIC_FLUSH_INTERVAL;
-        } else {
-            try {
-                flushInterval = Long.parseLong(flushIntervalStr);
-            } catch (Exception e) {
-                RecordLog.warn("[FlowRuleManager] The custom config({}) is not a valid Long value, "
-                        + "the value({}) will be replaced with system default value({}).", SentinelConfig.METRIC_FLUSH_INTERVAL,
-                        flushIntervalStr, SentinelConfig.DEFAULT_METRIC_FLUSH_INTERVAL);
-                flushInterval = SentinelConfig.DEFAULT_METRIC_FLUSH_INTERVAL;
-            }
-        }
+        long flushInterval = SentinelConfig.metricLogFlushIntervalSec();
         if (flushInterval <= 0) {
             RecordLog.info("[FlowRuleManager] The MetricTimerListener is'n started. If you want to start it, "
                     + "please change the value(current: {}) of config({}) more than 0 to start it.", flushInterval,
