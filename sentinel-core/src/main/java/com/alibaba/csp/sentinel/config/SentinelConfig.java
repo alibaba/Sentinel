@@ -164,7 +164,7 @@ public final class SentinelConfig {
      * @return  the metric log flush interval in second
      */
     public static long metricLogFlushIntervalSec() {
-        String flushIntervalStr = SentinelConfig.getConfig(SentinelConfig.METRIC_FLUSH_INTERVAL);
+        String flushIntervalStr = SentinelConfig.getConfig(METRIC_FLUSH_INTERVAL);
         if (flushIntervalStr == null) {
             return DEFAULT_METRIC_FLUSH_INTERVAL;
         }
