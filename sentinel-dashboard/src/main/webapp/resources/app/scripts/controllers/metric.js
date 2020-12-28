@@ -2,7 +2,7 @@ var app = angular.module('sentinelDashboardApp');
 
 app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interval', '$timeout',
   function ($scope, $stateParams, MetricService, $interval, $timeout) {
-
+	$scope.charts = [];
     $scope.endTime = new Date();
     $scope.startTime = new Date();
     $scope.startTime.setMinutes($scope.endTime.getMinutes() - 30);
@@ -59,6 +59,11 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
       $interval.cancel(intervalId);
     });
     $scope.initAllChart = function () {
+      //revoke useless charts positively
+      while($scope.charts.length > 0) {
+      	let chart = $scope.charts.pop();
+      	chart.destroy();
+      }
       $.each($scope.metrics, function (idx, metric) {
         if (idx == $scope.metrics.length - 1) {
           return;
@@ -70,6 +75,7 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
           height: 250,
           padding: [10, 30, 70, 50]
         });
+        $scope.charts.push(chart);
         var maxQps = 0;
         for (var i in metric.data) {
           var item = metric.data[i];
