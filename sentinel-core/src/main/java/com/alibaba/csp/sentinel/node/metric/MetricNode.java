@@ -25,7 +25,7 @@ import java.util.Date;
  * @author jialiang.linjl
  * @author Carpenter Lee
  */
-public class MetricNode {
+public class MetricNode implements MetricNodeMBean {
 
     private String resource;
     /**
@@ -50,10 +50,12 @@ public class MetricNode {
      */
     private int concurrency;
 
+    @Override
     public long getTimestamp() {
         return timestamp;
     }
 
+    @Override
     public long getOccupiedPassQps() {
         return occupiedPassQps;
     }
@@ -66,6 +68,7 @@ public class MetricNode {
         this.timestamp = timestamp;
     }
 
+    @Override
     public long getSuccessQps() {
         return successQps;
     }
@@ -74,6 +77,7 @@ public class MetricNode {
         this.successQps = successQps;
     }
 
+    @Override
     public long getPassQps() {
         return passQps;
     }
@@ -82,6 +86,7 @@ public class MetricNode {
         this.passQps = passQps;
     }
 
+    @Override
     public long getExceptionQps() {
         return exceptionQps;
     }
@@ -90,6 +95,7 @@ public class MetricNode {
         this.exceptionQps = exceptionQps;
     }
 
+    @Override
     public long getBlockQps() {
         return blockQps;
     }
@@ -98,6 +104,7 @@ public class MetricNode {
         this.blockQps = blockQps;
     }
 
+    @Override
     public long getRt() {
         return rt;
     }
@@ -106,6 +113,7 @@ public class MetricNode {
         this.rt = rt;
     }
 
+    @Override
     public String getResource() {
         return resource;
     }
@@ -114,6 +122,7 @@ public class MetricNode {
         this.resource = resource;
     }
 
+    @Override
     public int getClassification() {
         return classification;
     }
@@ -123,6 +132,7 @@ public class MetricNode {
         return this;
     }
 
+    @Override
     public int getConcurrency() {
         return concurrency;
     }

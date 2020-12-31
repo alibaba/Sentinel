@@ -25,6 +25,7 @@ import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.ClusterNode;
+import com.alibaba.csp.sentinel.node.metric.jmx.MetricMBeanWriter;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 
@@ -35,6 +36,7 @@ public class MetricTimerListener implements Runnable {
 
     private static final MetricWriter metricWriter = new MetricWriter(SentinelConfig.singleMetricFileSize(),
         SentinelConfig.totalMetricFileCount());
+    private static final MetricMBeanWriter metricMBeanWriter = new MetricMBeanWriter();
 
     @Override
     public void run() {
@@ -53,6 +55,11 @@ public class MetricTimerListener implements Runnable {
                     RecordLog.warn("[MetricTimerListener] Write metric error", e);
                 }
             }
+        }
+        try {
+            metricMBeanWriter.write(maps);
+        } catch (Exception e) {
+            RecordLog.warn("[MetricTimerListener] Write metric to MBean error", e);
         }
     }
 
