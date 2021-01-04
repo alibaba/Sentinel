@@ -36,7 +36,7 @@ public class EventObserverRegistry {
 
     /**
      * Register a circuit breaker state change observer.
-     * <p> Notes. the observer will all the state change</p>
+     * <p> Notes. the observer will observe all the state change</p>
      * @param name observer name
      * @param observer a valid observer
      */
@@ -102,17 +102,17 @@ public class EventObserverRegistry {
         /**
          * observer name
          */
-        final private String name;
+        private final String name;
     
         /**
          * the resource name which the observer focus on
          */
-        final private String resource;
+        private final String resource;
     
         /**
          * the observer
          */
-        final private CircuitBreakerStateChangeObserver observer;
+        private final CircuitBreakerStateChangeObserver observer;
     
         public ObserverEntity(String name, String resource, CircuitBreakerStateChangeObserver observer) {
             this.name = name;
