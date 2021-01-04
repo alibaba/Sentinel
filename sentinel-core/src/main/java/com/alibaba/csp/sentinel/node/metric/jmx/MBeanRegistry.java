@@ -13,10 +13,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * This class provides a unified interface for registering/unregistering of Metric MBean
+ * @author chenglu
+ */
 public class MBeanRegistry {
     private static volatile MBeanRegistry instance = new MBeanRegistry();
     
-    private Map<MetricNode, String> mapBean2Path = new ConcurrentHashMap<>(8);
+    private Map<MetricNode, String> mapBean2Name= new ConcurrentHashMap<>(8);
     
     private Map<String, MetricNode> mapName2Bean = new ConcurrentHashMap<>(8);
     
@@ -39,14 +43,15 @@ public class MBeanRegistry {
     /**
      * Registers a new MBean with the platform MBean server.
      * @param bean the bean being registered
-     * node of this parent.
+     * @param mBeanName the mBeanName
+     * @throws JMException MBean can not register exception
      */
     public void register(MetricNode bean, String mBeanName) throws JMException {
         assert bean != null;
         try {
             ObjectName oname = new ObjectName(mBeanName);
             mBeanServer.registerMBean(bean, oname);
-            mapBean2Path.put(bean, mBeanName);
+            mapBean2Name.put(bean, mBeanName);
             mapName2Bean.put(mBeanName, bean);
         } catch (JMException e) {
             RecordLog.warn("Failed to register MBean " + mBeanName, e);
@@ -56,14 +61,14 @@ public class MBeanRegistry {
     
     public void unRegister(MetricNode bean) {
         assert bean != null;
-        String beanName = mapBean2Path.get(bean);
+        String beanName = mapBean2Name.get(bean);
         if (beanName == null) {
             return;
         }
         try {
             ObjectName objectName = new ObjectName(beanName);
             mBeanServer.unregisterMBean(objectName);
-            mapBean2Path.remove(bean);
+            mapBean2Name.remove(bean);
             mapName2Bean.remove(beanName);
         } catch (JMException e) {
         
