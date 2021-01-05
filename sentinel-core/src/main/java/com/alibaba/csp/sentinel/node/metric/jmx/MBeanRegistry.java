@@ -20,9 +20,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MBeanRegistry {
     private static volatile MBeanRegistry instance = new MBeanRegistry();
     
-    private Map<MetricNode, String> mapBean2Name= new ConcurrentHashMap<>(8);
+    private Map<MetricBean, String> mapBean2Name= new ConcurrentHashMap<>(8);
     
-    private Map<String, MetricNode> mapName2Bean = new ConcurrentHashMap<>(8);
+    private Map<String, MetricBean> mapName2Bean = new ConcurrentHashMap<>(8);
     
     private MBeanServer mBeanServer;
     
@@ -46,7 +46,7 @@ public class MBeanRegistry {
      * @param mBeanName the mBeanName
      * @throws JMException MBean can not register exception
      */
-    public void register(MetricNode bean, String mBeanName) throws JMException {
+    public void register(MetricBean bean, String mBeanName) throws JMException {
         assert bean != null;
         try {
             ObjectName oname = new ObjectName(mBeanName);
@@ -75,14 +75,14 @@ public class MBeanRegistry {
         }
     }
     
-    public MetricNode findMBean(String mBeanName) {
+    public MetricBean findMBean(String mBeanName) {
         if (mBeanName == null) {
             return null;
         }
         return mapName2Bean.get(mBeanName);
     }
     
-    public List<MetricNode> listAllMBeans() {
+    public List<MetricBean> listAllMBeans() {
         return new ArrayList<>(mapName2Bean.values());
     }
 }

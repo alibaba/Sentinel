@@ -25,7 +25,7 @@ import java.util.Date;
  * @author jialiang.linjl
  * @author Carpenter Lee
  */
-public class MetricNode implements MetricNodeMBean {
+public class MetricNode {
 
     private String resource;
     /**
@@ -50,12 +50,10 @@ public class MetricNode implements MetricNodeMBean {
      */
     private int concurrency;
 
-    @Override
     public long getTimestamp() {
         return timestamp;
     }
 
-    @Override
     public long getOccupiedPassQps() {
         return occupiedPassQps;
     }
@@ -68,7 +66,6 @@ public class MetricNode implements MetricNodeMBean {
         this.timestamp = timestamp;
     }
 
-    @Override
     public long getSuccessQps() {
         return successQps;
     }
@@ -77,7 +74,6 @@ public class MetricNode implements MetricNodeMBean {
         this.successQps = successQps;
     }
 
-    @Override
     public long getPassQps() {
         return passQps;
     }
@@ -86,7 +82,6 @@ public class MetricNode implements MetricNodeMBean {
         this.passQps = passQps;
     }
 
-    @Override
     public long getExceptionQps() {
         return exceptionQps;
     }
@@ -95,7 +90,6 @@ public class MetricNode implements MetricNodeMBean {
         this.exceptionQps = exceptionQps;
     }
 
-    @Override
     public long getBlockQps() {
         return blockQps;
     }
@@ -104,7 +98,6 @@ public class MetricNode implements MetricNodeMBean {
         this.blockQps = blockQps;
     }
 
-    @Override
     public long getRt() {
         return rt;
     }
@@ -113,7 +106,6 @@ public class MetricNode implements MetricNodeMBean {
         this.rt = rt;
     }
 
-    @Override
     public String getResource() {
         return resource;
     }
@@ -122,7 +114,6 @@ public class MetricNode implements MetricNodeMBean {
         this.resource = resource;
     }
 
-    @Override
     public int getClassification() {
         return classification;
     }
@@ -132,7 +123,6 @@ public class MetricNode implements MetricNodeMBean {
         return this;
     }
 
-    @Override
     public int getConcurrency() {
         return concurrency;
     }
@@ -268,5 +258,5 @@ public class MetricNode implements MetricNodeMBean {
         }
         return node;
     }
-    
+
 }

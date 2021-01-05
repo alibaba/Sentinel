@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.node.metric.jmx.MetricMBeanTimerListener;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.node.metric.MetricTimerListener;
@@ -55,13 +56,14 @@ public class FlowRuleManager {
     private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
-    private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1,
+    private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(2,
         new NamedThreadFactory("sentinel-metrics-record-task", true));
 
     static {
         flowRules.set(Collections.<String, List<FlowRule>>emptyMap());
         currentProperty.addListener(LISTENER);
         SCHEDULER.scheduleAtFixedRate(new MetricTimerListener(), 0, 1, TimeUnit.SECONDS);
+        SCHEDULER.scheduleAtFixedRate(new MetricMBeanTimerListener(), 0, 1, TimeUnit.SECONDS);
     }
 
     /**
