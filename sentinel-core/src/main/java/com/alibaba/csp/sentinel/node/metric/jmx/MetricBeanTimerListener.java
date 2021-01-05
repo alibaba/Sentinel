@@ -7,17 +7,16 @@ import com.alibaba.csp.sentinel.node.metric.MetricNode;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
+ * the MetricBean Timer to expose the metrics of {@link com.alibaba.csp.sentinel.node.Node}
  * @author chenglu
  */
-public class MetricMBeanTimerListener implements Runnable {
+public class MetricBeanTimerListener implements Runnable {
     
-    private static final MetricMBeanWriter METRIC_MBEAN_WRITER = new MetricMBeanWriter();
+    private static final MetricBeanWriter METRIC_BEAN_WRITER = new MetricBeanWriter();
     
     @Override
     public void run() {
@@ -29,7 +28,7 @@ public class MetricMBeanTimerListener implements Runnable {
         }
         aggregate(metricNodeMap, Constants.ENTRY_NODE.metrics(), Constants.ENTRY_NODE);
         try {
-            METRIC_MBEAN_WRITER.write(metricNodeMap);
+            METRIC_BEAN_WRITER.write(metricNodeMap);
         } catch (Exception e) {
             RecordLog.warn("[MetricMBeanTimerListener] write MBean fail", e);
         }

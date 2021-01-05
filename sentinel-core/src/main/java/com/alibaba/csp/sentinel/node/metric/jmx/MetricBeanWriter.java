@@ -13,7 +13,7 @@ import java.util.Set;
 /**
  * @author chenglu
  */
-public class MetricMBeanWriter {
+public class MetricBeanWriter {
     
     private final MBeanRegistry mBeanRegistry = MBeanRegistry.getInstance();
     

@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -28,7 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.node.metric.jmx.MetricMBeanTimerListener;
+import com.alibaba.csp.sentinel.node.metric.jmx.MetricBeanTimerListener;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.node.metric.MetricTimerListener;
@@ -64,7 +63,7 @@ public class FlowRuleManager {
         flowRules.set(Collections.<String, List<FlowRule>>emptyMap());
         currentProperty.addListener(LISTENER);
         startMetricTimerListener();
-        SCHEDULER.scheduleAtFixedRate(new MetricMBeanTimerListener(), 0, 1, TimeUnit.SECONDS);
+        SCHEDULER.scheduleAtFixedRate(new MetricBeanTimerListener(), 0, 1, TimeUnit.SECONDS);
     }
     
     /**

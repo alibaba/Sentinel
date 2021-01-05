@@ -3,6 +3,7 @@ package com.alibaba.csp.sentinel.node.metric.jmx;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
 
 /**
+ * the MetricBean for JMX expose
  * @author chenglu
  */
 public class MetricBean implements MetricMXBean {

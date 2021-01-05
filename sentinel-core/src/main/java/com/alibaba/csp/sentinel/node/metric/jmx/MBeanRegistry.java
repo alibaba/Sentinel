@@ -54,12 +54,16 @@ public class MBeanRegistry {
             mapBean2Name.put(bean, mBeanName);
             mapName2Bean.put(mBeanName, bean);
         } catch (JMException e) {
-            RecordLog.warn("Failed to register MBean " + mBeanName, e);
+            RecordLog.warn("[MBeanRegistry] Failed to register MBean " + mBeanName, e);
             throw e;
         }
     }
     
-    public void unRegister(MetricNode bean) {
+    /**
+     * unregister the MetricBean
+     * @param bean MetricBean
+     */
+    public void unRegister(MetricBean bean) {
         assert bean != null;
         String beanName = mapBean2Name.get(bean);
         if (beanName == null) {
@@ -71,10 +75,15 @@ public class MBeanRegistry {
             mapBean2Name.remove(bean);
             mapName2Bean.remove(beanName);
         } catch (JMException e) {
-        
+            RecordLog.warn("[MBeanRegistry] UnRegister the MetricBean fail", e);
         }
     }
     
+    /**
+     * find the MBean by BeanName
+     * @param mBeanName mBeanName
+     * @return MetricMBean
+     */
     public MetricBean findMBean(String mBeanName) {
         if (mBeanName == null) {
             return null;
@@ -82,6 +91,10 @@ public class MBeanRegistry {
         return mapName2Bean.get(mBeanName);
     }
     
+    /**
+     * list all MBeans
+     * @return MetricBeans
+     */
     public List<MetricBean> listAllMBeans() {
         return new ArrayList<>(mapName2Bean.values());
     }
