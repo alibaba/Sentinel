@@ -55,7 +55,8 @@ public class MetricMBeanWriter {
             return;
         }
         for (MetricBean metricBean : metricBeans) {
-            if (existResource.contains(metricBean.getResource())) {
+            final String mBeanName = "Sentinel:type=" + appName + ",name=\"" + metricBean.getResource() +"\"";
+            if (existResource.contains(mBeanName)) {
                 continue;
             }
             metricBean.reset();
