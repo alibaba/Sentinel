@@ -11,12 +11,22 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * the metric bean writer, it provides {@link MetricBeanWriter#write} method for register the
+ * MetricBean in {@link MBeanRegistry} or update the value of MetricBean
  * @author chenglu
  */
 public class MetricBeanWriter {
-    
     private final MBeanRegistry mBeanRegistry = MBeanRegistry.getInstance();
     
+    /**
+     * write the MetricNode value to MetricBean
+     * if the MetricBean is not registered into {@link MBeanRegistry},
+     * it will be created and registered into {@link MBeanRegistry}.
+     * else it will update the value of MetricBean.
+     * Notes. if the MetricNode is null, then {@link MetricBean} will be reset.
+     * @param map metricNode value group by resource
+     * @throws Exception write failed exception
+     */
     public synchronized void write(Map<String, MetricNode> map) throws Exception {
         if (map == null || map.isEmpty()) {
             List<MetricBean> metricNodes = mBeanRegistry.listAllMBeans();

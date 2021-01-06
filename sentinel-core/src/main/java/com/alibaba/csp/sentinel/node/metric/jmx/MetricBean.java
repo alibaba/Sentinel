@@ -94,7 +94,7 @@ public class MetricBean implements MetricMXBean {
     }
     
     /**
-     *
+     * set the MetricBean's value which from MetricNode
      * @param metricNode metric Node for write file
      */
     public void setValueFromNode(MetricNode metricNode) {

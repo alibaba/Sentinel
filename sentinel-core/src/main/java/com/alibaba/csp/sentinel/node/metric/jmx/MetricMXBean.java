@@ -4,6 +4,7 @@ package com.alibaba.csp.sentinel.node.metric.jmx;
  * @author chenglu
  */
 public interface MetricMXBean {
+    
     long getTimestamp();
     
     long getOccupiedPassQps();

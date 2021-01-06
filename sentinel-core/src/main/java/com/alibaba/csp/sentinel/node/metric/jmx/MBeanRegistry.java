@@ -92,7 +92,7 @@ public class MBeanRegistry {
     }
     
     /**
-     * list all MBeans
+     * list all MBeans which is registered into MBeanRegistry
      * @return MetricBeans
      */
     public List<MetricBean> listAllMBeans() {

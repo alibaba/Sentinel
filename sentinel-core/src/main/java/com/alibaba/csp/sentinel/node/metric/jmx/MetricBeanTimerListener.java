@@ -35,6 +35,12 @@ public class MetricBeanTimerListener implements Runnable {
         metricNodeMap.clear();
     }
     
+    /**
+     * aggregate the metrics, the metrics under the same resource will left the lasted value
+     * @param metricNodeMap metrics map
+     * @param metrics metrics info group by timestamp
+     * @param node the node
+     */
     private void aggregate(Map<String, MetricNode> metricNodeMap, Map<Long, MetricNode> metrics, ClusterNode node) {
         for (Map.Entry<Long, MetricNode> entry : metrics.entrySet()) {
             String resource = node.getName();
