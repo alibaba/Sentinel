@@ -138,4 +138,18 @@ public class ParamFlowRuleManagerTest {
         assertTrue(allRules.contains(ruleC));
         assertTrue(allRules.contains(ruleD));
     }
+
+    @Test
+    public void testLoadParamRulesWithNoMetric() {
+        String resource = "test";
+        ParamFlowRule paramFlowRule = new ParamFlowRule(resource)
+                .setDurationInSec(1).setParamIdx(1);
+        ParamFlowRuleManager.loadRules(Collections.singletonList(paramFlowRule));
+        ParamFlowRule newParamFlowRule = new ParamFlowRule(resource)
+                .setDurationInSec(2).setParamIdx(1);
+        ParamFlowRuleManager.loadRules(Collections.singletonList(newParamFlowRule));
+        List<ParamFlowRule> result = ParamFlowRuleManager.getRulesOfResource(resource);
+        assertEquals(1, result.size());
+        assertEquals(2, result.get(0).getDurationInSec());
+    }
 }

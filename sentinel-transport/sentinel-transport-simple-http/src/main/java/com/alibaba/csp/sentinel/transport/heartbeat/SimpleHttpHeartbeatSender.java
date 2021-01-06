@@ -21,9 +21,8 @@ import com.alibaba.csp.sentinel.transport.config.TransportConfig;
 import com.alibaba.csp.sentinel.transport.heartbeat.client.SimpleHttpClient;
 import com.alibaba.csp.sentinel.transport.heartbeat.client.SimpleHttpRequest;
 import com.alibaba.csp.sentinel.transport.heartbeat.client.SimpleHttpResponse;
-import com.alibaba.csp.sentinel.util.function.Tuple2;
+import com.alibaba.csp.sentinel.transport.endpoint.Endpoint;
 
-import java.net.InetSocketAddress;
 import java.util.List;
 
 /**
@@ -32,6 +31,7 @@ import java.util.List;
  *
  * @author Eric Zhao
  * @author Carpenter Lee
+ * @author Leo Li
  */
 public class SimpleHttpHeartbeatSender implements HeartbeatSender {
 
@@ -42,13 +42,13 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
     private final HeartbeatMessage heartBeat = new HeartbeatMessage();
     private final SimpleHttpClient httpClient = new SimpleHttpClient();
 
-    private final List<Tuple2<String, Integer>> addressList;
+    private final List<Endpoint> addressList;
 
     private int currentAddressIdx = 0;
 
     public SimpleHttpHeartbeatSender() {
         // Retrieve the list of default addresses.
-        List<Tuple2<String, Integer>> newAddrs = TransportConfig.getConsoleServerList();
+        List<Endpoint> newAddrs = TransportConfig.getConsoleServerList();
         if (newAddrs.isEmpty()) {
             RecordLog.warn("[SimpleHttpHeartbeatSender] Dashboard server address not configured or not available");
         } else {
@@ -63,24 +63,23 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
             RecordLog.info("[SimpleHttpHeartbeatSender] Command server port not initialized, won't send heartbeat");
             return false;
         }
-        Tuple2<String, Integer> addrInfo = getAvailableAddress();
+        Endpoint addrInfo = getAvailableAddress();
         if (addrInfo == null) {
             return false;
         }
 
-        InetSocketAddress addr = new InetSocketAddress(addrInfo.r1, addrInfo.r2);
-        SimpleHttpRequest request = new SimpleHttpRequest(addr, TransportConfig.getHeartbeatApiPath());
+        SimpleHttpRequest request = new SimpleHttpRequest(addrInfo, TransportConfig.getHeartbeatApiPath());
         request.setParams(heartBeat.generateCurrentMessage());
         try {
             SimpleHttpResponse response = httpClient.post(request);
             if (response.getStatusCode() == OK_STATUS) {
                 return true;
             } else if (clientErrorCode(response.getStatusCode()) || serverErrorCode(response.getStatusCode())) {
-                RecordLog.warn("[SimpleHttpHeartbeatSender] Failed to send heartbeat to " + addr
+                RecordLog.warn("[SimpleHttpHeartbeatSender] Failed to send heartbeat to " + addrInfo
                     + ", http status code: " + response.getStatusCode());
             }
         } catch (Exception e) {
-            RecordLog.warn("[SimpleHttpHeartbeatSender] Failed to send heartbeat to " + addr, e);
+            RecordLog.warn("[SimpleHttpHeartbeatSender] Failed to send heartbeat to " + addrInfo, e);
         }
         return false;
     }
@@ -90,7 +89,7 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
         return DEFAULT_INTERVAL;
     }
 
-    private Tuple2<String, Integer> getAvailableAddress() {
+    private Endpoint getAvailableAddress() {
         if (addressList == null || addressList.isEmpty()) {
             return null;
         }

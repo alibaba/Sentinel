@@ -21,24 +21,26 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.spi.SpiOrder;
 import com.alibaba.csp.sentinel.transport.HeartbeatSender;
 import com.alibaba.csp.sentinel.transport.config.TransportConfig;
+import com.alibaba.csp.sentinel.transport.endpoint.Protocol;
+import com.alibaba.csp.sentinel.transport.heartbeat.client.HttpClientsFactory;
 import com.alibaba.csp.sentinel.util.AppNameUtil;
 import com.alibaba.csp.sentinel.util.HostNameUtil;
 import com.alibaba.csp.sentinel.util.PidUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.csp.sentinel.util.function.Tuple2;
+import com.alibaba.csp.sentinel.transport.endpoint.Endpoint;
 
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 
 import java.util.List;
 
 /**
  * @author Eric Zhao
  * @author Carpenter Lee
+ * @author Leo Li
  */
 @SpiOrder(SpiOrder.LOWEST_PRECEDENCE - 100)
 public class HttpHeartbeatSender implements HeartbeatSender {
@@ -54,21 +56,24 @@ public class HttpHeartbeatSender implements HeartbeatSender {
         .setSocketTimeout(timeoutMs)
         .build();
 
+    private final Protocol consoleProtocol;
     private final String consoleHost;
     private final int consolePort;
 
     public HttpHeartbeatSender() {
-        this.client = HttpClients.createDefault();
-        List<Tuple2<String, Integer>> dashboardList = TransportConfig.getConsoleServerList();
+        List<Endpoint> dashboardList = TransportConfig.getConsoleServerList();
         if (dashboardList == null || dashboardList.isEmpty()) {
             RecordLog.info("[NettyHttpHeartbeatSender] No dashboard server available");
+            consoleProtocol = Protocol.HTTP;
             consoleHost = null;
             consolePort = -1;
         } else {
-            consoleHost = dashboardList.get(0).r1;
-            consolePort = dashboardList.get(0).r2;
+            consoleProtocol = dashboardList.get(0).getProtocol();
+            consoleHost = dashboardList.get(0).getHost();
+            consolePort = dashboardList.get(0).getPort();
             RecordLog.info("[NettyHttpHeartbeatSender] Dashboard address parsed: <{}:{}>", consoleHost, consolePort);
         }
+        this.client = HttpClientsFactory.getHttpClientsByProtocol(consoleProtocol);
     }
 
     @Override
@@ -77,7 +82,7 @@ public class HttpHeartbeatSender implements HeartbeatSender {
             return false;
         }
         URIBuilder uriBuilder = new URIBuilder();
-        uriBuilder.setScheme("http").setHost(consoleHost).setPort(consolePort)
+        uriBuilder.setScheme(consoleProtocol.getProtocol()).setHost(consoleHost).setPort(consolePort)
             .setPath(TransportConfig.getHeartbeatApiPath())
             .setParameter("app", AppNameUtil.getAppName())
             .setParameter("app_type", String.valueOf(SentinelConfig.getAppType()))
