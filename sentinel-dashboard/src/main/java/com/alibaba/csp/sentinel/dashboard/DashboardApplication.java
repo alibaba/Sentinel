@@ -34,6 +34,7 @@ public class DashboardApplication {
     }
 
     private static void triggerSentinelInit() {
+        System.out.println("23213");
         new Thread(() -> InitExecutor.doInit()).start();
     }
 }
