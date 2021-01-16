@@ -20,6 +20,7 @@ import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.spi.SpiOrder;
 import com.alibaba.csp.sentinel.transport.HeartbeatSender;
+import com.alibaba.csp.sentinel.transport.command.SentinelApiHandlerMapping;
 import com.alibaba.csp.sentinel.transport.config.TransportConfig;
 import com.alibaba.csp.sentinel.transport.endpoint.Endpoint;
 import com.alibaba.csp.sentinel.transport.endpoint.Protocol;

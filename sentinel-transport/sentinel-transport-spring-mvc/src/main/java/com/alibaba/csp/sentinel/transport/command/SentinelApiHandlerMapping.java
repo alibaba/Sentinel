@@ -16,9 +16,16 @@
 package com.alibaba.csp.sentinel.transport.command;
 
 import com.alibaba.csp.sentinel.command.CommandHandler;
+import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.transport.config.TransportConfig;
 import com.alibaba.csp.sentinel.transport.log.CommandCenterLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.core.Ordered;
+import org.springframework.util.ClassUtils;
 import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.handler.AbstractHandlerMapping;
 
@@ -29,7 +36,18 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author shenbaoyong
  */
-public class SentinelApiHandlerMapping extends AbstractHandlerMapping {
+public class SentinelApiHandlerMapping extends AbstractHandlerMapping implements ApplicationListener {
+
+    private static final String SPRING_BOOT_WEB_SERVER_INITIALIZED_EVENT_CLASS = "org.springframework.boot.web.context.WebServerInitializedEvent";
+    private static Class webServerInitializedEventClass;
+    static {
+        try {
+            webServerInitializedEventClass = ClassUtils.forName(SPRING_BOOT_WEB_SERVER_INITIALIZED_EVENT_CLASS, null);
+            RecordLog.info("[SentinelApiHandlerMapping] class {} is present, this is a spring-boot app, we can auto detect port", SPRING_BOOT_WEB_SERVER_INITIALIZED_EVENT_CLASS);
+        } catch (ClassNotFoundException e) {
+            RecordLog.info("[SentinelApiHandlerMapping] class {} is not present, this is not a spring-boot app, we can not auto detect port", SPRING_BOOT_WEB_SERVER_INITIALIZED_EVENT_CLASS);
+        }
+    }
 
     final static Map<String, CommandHandler> handlerMap = new ConcurrentHashMap<>();
 
@@ -75,6 +93,23 @@ public class SentinelApiHandlerMapping extends AbstractHandlerMapping {
         if (handlerMap != null) {
             for (Map.Entry<String, CommandHandler> e : handlerMap.entrySet()) {
                 registerCommand(e.getKey(), e.getValue());
+            }
+        }
+    }
+
+    @Override
+    public void onApplicationEvent(ApplicationEvent applicationEvent) {
+        if(webServerInitializedEventClass != null && webServerInitializedEventClass.isAssignableFrom(applicationEvent.getClass())){
+            Integer port = null;
+            try {
+                BeanWrapper beanWrapper = new BeanWrapperImpl(applicationEvent);
+                port = (Integer) beanWrapper.getPropertyValue("webServer.port");
+            }catch (Exception e){
+                RecordLog.warn("[SentinelApiHandlerMapping] resolve port from event " + applicationEvent +  " fail", e);
+            }
+            if(port != null && TransportConfig.getPort() == null){
+                RecordLog.info("[SentinelApiHandlerMapping] resolve port {} from event {}", port, applicationEvent);
+                TransportConfig.setRuntimePort(port);
             }
         }
     }
