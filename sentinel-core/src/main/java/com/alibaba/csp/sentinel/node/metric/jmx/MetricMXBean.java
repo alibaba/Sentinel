@@ -1,6 +1,7 @@
 package com.alibaba.csp.sentinel.node.metric.jmx;
 
 /**
+ * the Metric JMX Bean interface
  * @author chenglu
  */
 public interface MetricMXBean {
