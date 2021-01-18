@@ -63,6 +63,13 @@ public class FlowRuleManager {
         flowRules.set(Collections.<String, List<FlowRule>>emptyMap());
         currentProperty.addListener(LISTENER);
         startMetricTimerListener();
+        startMetricBeanTimerListener();
+    }
+    
+    /**
+     * start the MetricBeanTimerListener at the fix rate
+     */
+    private static void startMetricBeanTimerListener() {
         SCHEDULER.scheduleAtFixedRate(new MetricBeanTimerListener(), 0, 1, TimeUnit.SECONDS);
     }
     

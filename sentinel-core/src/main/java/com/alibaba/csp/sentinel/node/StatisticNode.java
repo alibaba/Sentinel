@@ -113,7 +113,7 @@ public class StatisticNode implements Node {
     private long lastFetchTime = -1;
 
     @Override
-    public Map<Long, MetricNode> metrics() {
+    public synchronized Map<Long, MetricNode> metrics() {
         // The fetch operation is thread-safe under a single-thread scheduler pool.
         long currentTime = TimeUtil.currentTimeMillis();
         currentTime = currentTime - currentTime % 1000;
