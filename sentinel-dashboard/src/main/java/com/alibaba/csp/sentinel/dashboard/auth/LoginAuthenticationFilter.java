@@ -52,7 +52,6 @@ import java.util.List;
 @Component
 public class LoginAuthenticationFilter implements Filter {
     
-    
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
 
     private static final String URL_SUFFIX_DOT = ".";
