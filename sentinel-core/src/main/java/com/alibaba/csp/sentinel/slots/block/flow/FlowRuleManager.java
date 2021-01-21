@@ -55,8 +55,9 @@ public class FlowRuleManager {
     private static final FlowPropertyListener LISTENER = new FlowPropertyListener();
     private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
 
+    /** the corePool size of SCHEDULER must be set at 1, so the two task ({@link #startMetricTimerListener()}, {@link #startMetricBeanTimerListener()}) can run orderly by the SCHEDULER **/
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
-    private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(2,
+    private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1,
         new NamedThreadFactory("sentinel-metrics-record-task", true));
 
     static {
@@ -67,10 +68,11 @@ public class FlowRuleManager {
     }
     
     /**
-     * start the MetricBeanTimerListener at the fix rate
+     * start the MetricBeanTimerListener at the fix rate, the initialDelay is different with the {@link #startMetricTimerListener()},
+     * so that the two task will start running at different time.
      */
     private static void startMetricBeanTimerListener() {
-        SCHEDULER.scheduleAtFixedRate(new MetricBeanTimerListener(), 0, 1, TimeUnit.SECONDS);
+        SCHEDULER.scheduleAtFixedRate(new MetricBeanTimerListener(), 80, 1000, TimeUnit.MILLISECONDS);
     }
     
     /**

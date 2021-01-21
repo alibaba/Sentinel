@@ -6,8 +6,11 @@ import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
+import com.alibaba.csp.sentinel.util.TimeUtil;
+import com.alibaba.csp.sentinel.util.function.Predicate;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,10 +26,10 @@ public class MetricBeanTimerListener implements Runnable {
         Map<String, MetricNode> metricNodeMap = new HashMap<>();
         for (Map.Entry<ResourceWrapper, ClusterNode> e : ClusterBuilderSlot.getClusterNodeMap().entrySet()) {
             ClusterNode node = e.getValue();
-            Map<Long, MetricNode> metrics = node.metrics();
+            List<MetricNode> metrics = getLastMetrics(node);
             aggregate(metricNodeMap, metrics, node);
         }
-        aggregate(metricNodeMap, Constants.ENTRY_NODE.metrics(), Constants.ENTRY_NODE);
+        aggregate(metricNodeMap, getLastMetrics(Constants.ENTRY_NODE), Constants.ENTRY_NODE);
         try {
             METRIC_BEAN_WRITER.write(metricNodeMap);
         } catch (Exception e) {
@@ -35,16 +38,29 @@ public class MetricBeanTimerListener implements Runnable {
         metricNodeMap.clear();
     }
     
+    private List<MetricNode> getLastMetrics(ClusterNode node) {
+        final long currentTime = TimeUtil.currentTimeMillis();
+        final long minTime = currentTime - currentTime % 1000;
+        return node.rawMetricsInMin(new Predicate<Long>() {
+            @Override
+            public boolean test(Long aLong) {
+                return aLong >= minTime;
+            }
+        });
+    }
+    
     /**
      * aggregate the metrics, the metrics under the same resource will left the lasted value
      * @param metricNodeMap metrics map
      * @param metrics metrics info group by timestamp
      * @param node the node
      */
-    private void aggregate(Map<String, MetricNode> metricNodeMap, Map<Long, MetricNode> metrics, ClusterNode node) {
-        for (Map.Entry<Long, MetricNode> entry : metrics.entrySet()) {
+    private void aggregate(Map<String, MetricNode> metricNodeMap, List<MetricNode> metrics, ClusterNode node) {
+        if (metrics == null || metrics.size() == 0) {
+            return;
+        }
+        for (MetricNode metricNode : metrics) {
             String resource = node.getName();
-            MetricNode metricNode = entry.getValue();
             metricNode.setResource(resource);
             metricNode.setClassification(node.getResourceType());
             MetricNode existMetricNode = metricNodeMap.get(resource);
