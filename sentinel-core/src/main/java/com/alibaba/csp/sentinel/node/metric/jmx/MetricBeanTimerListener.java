@@ -40,11 +40,12 @@ public class MetricBeanTimerListener implements Runnable {
     
     private List<MetricNode> getLastMetrics(ClusterNode node) {
         final long currentTime = TimeUtil.currentTimeMillis();
-        final long minTime = currentTime - currentTime % 1000;
+        final long maxTime = currentTime - currentTime % 1000;
+        final long minTime = maxTime - 1000;
         return node.rawMetricsInMin(new Predicate<Long>() {
             @Override
             public boolean test(Long aLong) {
-                return aLong >= minTime;
+                return aLong >= minTime && aLong < maxTime;
             }
         });
     }

@@ -63,8 +63,8 @@ public class FlowRuleManager {
     static {
         flowRules.set(Collections.<String, List<FlowRule>>emptyMap());
         currentProperty.addListener(LISTENER);
-        startMetricTimerListener();
         startMetricBeanTimerListener();
+        startMetricTimerListener();
     }
     
     /**
@@ -72,7 +72,7 @@ public class FlowRuleManager {
      * so that the two task will start running at different time.
      */
     private static void startMetricBeanTimerListener() {
-        SCHEDULER.scheduleAtFixedRate(new MetricBeanTimerListener(), 80, 1000, TimeUnit.MILLISECONDS);
+        SCHEDULER.scheduleAtFixedRate(new MetricBeanTimerListener(), 0, 1000, TimeUnit.MILLISECONDS);
     }
     
     /**
