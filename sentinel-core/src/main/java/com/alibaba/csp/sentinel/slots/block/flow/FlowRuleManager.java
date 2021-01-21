@@ -15,6 +15,17 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow;
 
+import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
+import com.alibaba.csp.sentinel.config.SentinelConfig;
+import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.node.metric.MetricTimerListener;
+import com.alibaba.csp.sentinel.node.metric.jmx.MetricBeanTimerListener;
+import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
+import com.alibaba.csp.sentinel.property.PropertyListener;
+import com.alibaba.csp.sentinel.property.SentinelProperty;
+import com.alibaba.csp.sentinel.util.AssertUtil;
+import com.alibaba.csp.sentinel.util.StringUtil;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,17 +34,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-
-import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
-import com.alibaba.csp.sentinel.config.SentinelConfig;
-import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.node.metric.jmx.MetricBeanTimerListener;
-import com.alibaba.csp.sentinel.util.AssertUtil;
-import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.csp.sentinel.node.metric.MetricTimerListener;
-import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
-import com.alibaba.csp.sentinel.property.PropertyListener;
-import com.alibaba.csp.sentinel.property.SentinelProperty;
 
 /**
  * <p>
@@ -72,7 +72,7 @@ public class FlowRuleManager {
      * so that the two task will start running at different time.
      */
     private static void startMetricBeanTimerListener() {
-        SCHEDULER.scheduleAtFixedRate(new MetricBeanTimerListener(), 0, 1000, TimeUnit.MILLISECONDS);
+        SCHEDULER.scheduleAtFixedRate(new MetricBeanTimerListener(), 0, 1, TimeUnit.SECONDS);
     }
     
     /**
