@@ -1,6 +1,7 @@
 package com.alibaba.csp.sentinel.node.metric.jmx;
 
 import com.alibaba.csp.sentinel.config.SentinelConfig;
+import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
 
 import java.util.ArrayList;
@@ -55,6 +56,7 @@ public class MetricBeanWriter {
                 metricBean = new MetricBean();
                 metricBean.setValueFromNode(metricNode);
                 mBeanRegistry.register(metricBean, mBeanName);
+                RecordLog.info("[MetricBeanWriter] Registering with JMX as Metric MBean [{}]", mBeanName);
             }
             existResource.add(mBeanName);
         }
