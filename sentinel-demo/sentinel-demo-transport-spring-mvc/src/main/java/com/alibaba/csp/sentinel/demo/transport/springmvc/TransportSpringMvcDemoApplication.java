@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.demo.transport.springmvc;
 
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.SphU;
+import com.alibaba.csp.sentinel.init.InitExecutor;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
@@ -48,11 +49,12 @@ import java.util.List;
 public class TransportSpringMvcDemoApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(TransportSpringMvcDemoApplication.class);
+        triggerSentinelInit();
         initFlowRules();
+        SpringApplication.run(TransportSpringMvcDemoApplication.class);
     }
 
-    public static void initFlowRules(){
+    public static void initFlowRules() {
         List<FlowRule> rules = new ArrayList<>();
         FlowRule rule = new FlowRule();
         rule.setResource("demo-hello-api");
@@ -64,7 +66,7 @@ public class TransportSpringMvcDemoApplication {
 
     @GetMapping("/hello")
     @ResponseBody
-    public String hello(){
+    public String hello() {
         Entry entry = null;
         try {
             entry = SphU.entry("demo-hello-api");
@@ -76,6 +78,10 @@ public class TransportSpringMvcDemoApplication {
                 entry.exit();
             }
         }
+    }
+
+    private static void triggerSentinelInit() {
+        new Thread(() -> InitExecutor.doInit()).start();
     }
 
     @Bean

@@ -45,7 +45,7 @@ public class SentinelApiHandlerAdapter implements HandlerAdapter, Ordered {
 
     @Override
     public ModelAndView handle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        SentinelApiHandler sentinelApiHandler = (SentinelApiHandler)handler;
+        SentinelApiHandler sentinelApiHandler = (SentinelApiHandler) handler;
         sentinelApiHandler.handle(request, response);
         return null;
     }

@@ -40,6 +40,7 @@ public class SentinelApiHandlerMapping extends AbstractHandlerMapping implements
 
     private static final String SPRING_BOOT_WEB_SERVER_INITIALIZED_EVENT_CLASS = "org.springframework.boot.web.context.WebServerInitializedEvent";
     private static Class webServerInitializedEventClass;
+
     static {
         try {
             webServerInitializedEventClass = ClassUtils.forName(SPRING_BOOT_WEB_SERVER_INITIALIZED_EVENT_CLASS, null);
@@ -60,7 +61,7 @@ public class SentinelApiHandlerMapping extends AbstractHandlerMapping implements
     @Override
     protected Object getHandlerInternal(HttpServletRequest request) throws Exception {
         String commandName = request.getRequestURI();
-        if(commandName.startsWith("/")){
+        if (commandName.startsWith("/")) {
             commandName = commandName.substring(1);
         }
         CommandHandler commandHandler = handlerMap.get(commandName);
@@ -99,15 +100,15 @@ public class SentinelApiHandlerMapping extends AbstractHandlerMapping implements
 
     @Override
     public void onApplicationEvent(ApplicationEvent applicationEvent) {
-        if(webServerInitializedEventClass != null && webServerInitializedEventClass.isAssignableFrom(applicationEvent.getClass())){
+        if (webServerInitializedEventClass != null && webServerInitializedEventClass.isAssignableFrom(applicationEvent.getClass())) {
             Integer port = null;
             try {
                 BeanWrapper beanWrapper = new BeanWrapperImpl(applicationEvent);
                 port = (Integer) beanWrapper.getPropertyValue("webServer.port");
-            }catch (Exception e){
-                RecordLog.warn("[SentinelApiHandlerMapping] resolve port from event " + applicationEvent +  " fail", e);
+            } catch (Exception e) {
+                RecordLog.warn("[SentinelApiHandlerMapping] resolve port from event " + applicationEvent + " fail", e);
             }
-            if(port != null && TransportConfig.getPort() == null){
+            if (port != null && TransportConfig.getPort() == null) {
                 RecordLog.info("[SentinelApiHandlerMapping] resolve port {} from event {}", port, applicationEvent);
                 TransportConfig.setRuntimePort(port);
             }

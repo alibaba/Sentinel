@@ -41,7 +41,7 @@ public class SentinelApiHandler {
         this.commandHandler = commandHandler;
     }
 
-    public void handle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse){
+    public void handle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
         PrintWriter printWriter = null;
         try {
             long start = System.currentTimeMillis();
@@ -51,7 +51,7 @@ public class SentinelApiHandler {
             Map<String, String[]> parameterMap = httpServletRequest.getParameterMap();
             for (Map.Entry<String, String[]> entry : parameterMap.entrySet()) {
                 String[] value = entry.getValue();
-                if(value != null && value.length >= 1){
+                if (value != null && value.length >= 1) {
                     request.addParam(entry.getKey(), value[0]);
                 }
             }
@@ -68,7 +68,7 @@ public class SentinelApiHandler {
         } catch (Throwable e) {
             CommandCenterLog.warn("[SentinelApiHandler] error", e);
             try {
-                if(printWriter != null){
+                if (printWriter != null) {
                     String errorMessage = SERVER_ERROR_MESSAGE;
                     e.printStackTrace();
                     writeResponse(httpServletResponse, printWriter, StatusCode.INTERNAL_SERVER_ERROR, errorMessage);
