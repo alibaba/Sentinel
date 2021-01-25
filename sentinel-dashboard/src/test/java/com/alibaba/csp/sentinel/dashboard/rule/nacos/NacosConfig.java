@@ -15,20 +15,23 @@
  */
 package com.alibaba.csp.sentinel.dashboard.rule.nacos;
 
-import java.util.List;
-
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.datasource.Converter;
+import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigFactory;
 import com.alibaba.nacos.api.config.ConfigService;
-
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.List;
+import java.util.Properties;
+
 /**
- * @author Eric Zhao
- * @since 1.4.0
+ * @author pan Wu
+ * @since 1.8.0
  */
 @Configuration
 public class NacosConfig {
@@ -45,6 +48,78 @@ public class NacosConfig {
 
     @Bean
     public ConfigService nacosConfigService() throws Exception {
-        return ConfigFactory.createConfigService("localhost");
+        NacosProperties nacosProperties = nacosProperties();
+        Properties properties = new Properties();
+        properties.put(PropertyKeyConst.SERVER_ADDR, nacosProperties.getServerAddr());
+        if (!StringUtil.isBlank(nacosProperties.getUsername())) {
+            properties.put(PropertyKeyConst.USERNAME, nacosProperties.getUsername());
+        }
+        if (!StringUtil.isBlank(nacosProperties.getPassword())) {
+            properties.put(PropertyKeyConst.PASSWORD, nacosProperties.getPassword());
+        }
+        if (!StringUtil.isBlank(nacosProperties.getNamespace())) {
+            properties.put(PropertyKeyConst.NAMESPACE, nacosProperties.getNamespace());
+        }
+        if (!StringUtil.isBlank(nacosProperties.getGroupId())) {
+            properties.put("groupId", nacosProperties.getGroupId());
+        }
+
+
+        return ConfigFactory.createConfigService(properties);
+    }
+
+    @Bean
+    @ConfigurationProperties(prefix = "nacos")
+    public NacosProperties nacosProperties() {
+        return new NacosProperties();
+    }
+
+
+    public static class NacosProperties {
+        private String serverAddr;
+        private String username;
+        private String password;
+        private String namespace;
+        private String groupId;
+
+        public String getServerAddr() {
+            return serverAddr;
+        }
+
+        public void setServerAddr(String serverAddr) {
+            this.serverAddr = serverAddr;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+
+        public String getNamespace() {
+            return namespace;
+        }
+
+        public void setNamespace(String namespace) {
+            this.namespace = namespace;
+        }
+
+        public String getGroupId() {
+            return groupId;
+        }
+
+        public void setGroupId(String groupId) {
+            this.groupId = groupId;
+        }
     }
 }

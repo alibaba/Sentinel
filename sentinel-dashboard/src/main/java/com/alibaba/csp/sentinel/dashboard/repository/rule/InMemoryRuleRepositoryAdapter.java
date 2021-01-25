@@ -42,7 +42,20 @@ public abstract class InMemoryRuleRepositoryAdapter<T extends RuleEntity> implem
     @Override
     public T save(T entity) {
         if (entity.getId() == null) {
-            entity.setId(nextId());
+            String app = entity.getApp();
+            if (app == null) {
+                entity.setId(nextId());
+            } else {
+                // @pan 旧逻辑在重启应用后会出现规则id乱序，此处修复
+                long nextId;
+                int size = this.findAllByApp(app).size();
+                if (size == 0) {
+                    nextId = 1L;
+                } else {
+                    nextId = this.findAllByApp(app).get(size - 1).getId() + 1L;
+                }
+                entity.setId(nextId);
+            }
         }
         T processedEntity = preProcess(entity);
         if (processedEntity != null) {
