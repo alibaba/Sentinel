@@ -38,6 +38,11 @@ public class MetricBeanTimerListener implements Runnable {
         metricNodeMap.clear();
     }
     
+    /**
+     * Get the last second {@link MetricNode} of {@link ClusterNode}
+     * @param node {@link ClusterNode}
+     * @return the list of {@link MetricNode}
+     */
     private List<MetricNode> getLastMetrics(ClusterNode node) {
         final long currentTime = TimeUtil.currentTimeMillis();
         final long maxTime = currentTime - currentTime % 1000;
@@ -65,6 +70,7 @@ public class MetricBeanTimerListener implements Runnable {
             metricNode.setResource(resource);
             metricNode.setClassification(node.getResourceType());
             MetricNode existMetricNode = metricNodeMap.get(resource);
+            // always keep the MetricNode is the last
             if (existMetricNode != null && existMetricNode.getTimestamp() > metricNode.getTimestamp()) {
                 continue;
             }
