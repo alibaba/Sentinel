@@ -18,12 +18,13 @@ package com.alibaba.csp.sentinel.slots.block.authority;
 import java.util.Map;
 import java.util.Set;
 
+import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
-import com.alibaba.csp.sentinel.spi.SpiOrder;
+import com.alibaba.csp.sentinel.spi.Spi;
 
 /**
  * A {@link ProcessorSlot} that dedicates to {@link AuthorityRule} checking.
@@ -31,7 +32,7 @@ import com.alibaba.csp.sentinel.spi.SpiOrder;
  * @author leyou
  * @author Eric Zhao
  */
-@SpiOrder(-6000)
+@Spi(order = Constants.ORDER_AUTHORITY_SLOT)
 public class AuthoritySlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
