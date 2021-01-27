@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -29,7 +30,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.util.List;
 
@@ -51,6 +51,8 @@ import java.util.List;
  */
 @Component
 public class LoginAuthenticationFilter implements Filter {
+    
+    private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
 
     private static final String URL_SUFFIX_DOT = ".";
 
@@ -85,7 +87,9 @@ public class LoginAuthenticationFilter implements Filter {
         String servletPath = httpRequest.getServletPath();
 
         // Exclude the urls which needn't auth
-        if (authFilterExcludeUrls.contains(servletPath)) {
+        boolean authFilterExcludeMatch = authFilterExcludeUrls.stream()
+                .anyMatch(authFilterExcludeUrl -> PATH_MATCHER.match(authFilterExcludeUrl, servletPath));
+        if (authFilterExcludeMatch) {
             chain.doFilter(request, response);
             return;
         }
