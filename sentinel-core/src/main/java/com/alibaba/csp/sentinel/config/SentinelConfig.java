@@ -41,6 +41,11 @@ public final class SentinelConfig {
      */
     public static final int APP_TYPE_COMMON = 0;
 
+    /**
+     * Parameter value for using context classloader.
+     */
+    private static final String CLASSLOADER_CONTEXT = "context";
+
     private static final Map<String, String> props = new ConcurrentHashMap<>();
 
     private static int appType = APP_TYPE_COMMON;
@@ -306,6 +311,15 @@ public final class SentinelConfig {
 
     private static String toEnvKey(/*@NotBlank*/ String propKey) {
         return propKey.toUpperCase().replace('.', '_');
+    }
+    /**
+     * Whether use context classloader via config parameter
+     *
+     * @return Whether use context classloader
+     */
+    public static boolean shouldUseContextClassloader() {
+        String classloaderConf = SentinelConfig.getConfig(SentinelConfig.SPI_CLASSLOADER);
+        return CLASSLOADER_CONTEXT.equalsIgnoreCase(classloaderConf);
     }
 
     private SentinelConfig() {}

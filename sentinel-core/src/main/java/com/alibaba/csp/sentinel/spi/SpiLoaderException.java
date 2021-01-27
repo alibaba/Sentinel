@@ -13,21 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.slots;
-
-import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowSlot;
+package com.alibaba.csp.sentinel.spi;
 
 /**
- * @author Eric Zhao
- * @since 0.2.0
+ * Error thrown when something goes wrong while loading Provider via {@link SpiLoader}.
  *
- * @deprecated since 1.7.2, we can use @Spi(order = -3000) to adjust the order of {@link ParamFlowSlot},
- * this class is reserved for compatibility with older versions.
- *
- * @see ParamFlowSlot
- * @see DefaultSlotChainBuilder
+ * @author cdfive
  */
-@Deprecated
-public class HotParamSlotChainBuilder extends DefaultSlotChainBuilder {
+public class SpiLoaderException extends RuntimeException {
 
+    public SpiLoaderException() {
+        super();
+    }
+
+    public SpiLoaderException(String message) {
+        super(message);
+    }
+
+    public SpiLoaderException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
