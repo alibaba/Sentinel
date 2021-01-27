@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.util.SpiLoader;
+import com.alibaba.csp.sentinel.spi.SpiLoader;
 
 /**
  * Get all {@link MetricExtension} via SPI.
@@ -35,7 +35,7 @@ public class MetricExtensionProvider {
     }
 
     private static void resolveInstance() {
-        List<MetricExtension> extensions = SpiLoader.loadInstanceList(MetricExtension.class);
+        List<MetricExtension> extensions = SpiLoader.of(MetricExtension.class).loadInstanceList();
 
         if (extensions.isEmpty()) {
             RecordLog.info("[MetricExtensionProvider] No existing MetricExtension found");

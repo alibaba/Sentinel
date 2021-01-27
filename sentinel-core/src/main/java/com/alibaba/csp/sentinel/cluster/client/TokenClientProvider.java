@@ -16,7 +16,7 @@
 package com.alibaba.csp.sentinel.cluster.client;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.util.SpiLoader;
+import com.alibaba.csp.sentinel.spi.SpiLoader;
 
 /**
  * Provider for a universal {@link ClusterTokenClient} instance.
@@ -38,7 +38,7 @@ public final class TokenClientProvider {
     }
 
     private static void resolveTokenClientInstance() {
-        ClusterTokenClient resolvedClient = SpiLoader.loadFirstInstance(ClusterTokenClient.class);
+        ClusterTokenClient resolvedClient = SpiLoader.of(ClusterTokenClient.class).loadFirstInstance();
         if (resolvedClient == null) {
             RecordLog.info(
                 "[TokenClientProvider] No existing cluster token client, cluster client mode will not be activated");
