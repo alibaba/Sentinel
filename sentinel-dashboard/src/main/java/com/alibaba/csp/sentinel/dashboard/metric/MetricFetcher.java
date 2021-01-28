@@ -331,25 +331,24 @@ public class MetricFetcher {
                  * aggregation metrics by app_resource_timeSecond, ignore ip and port.
                  */
                 String key = buildMetricKey(machine.getApp(), node.getResource(), node.getTimestamp());
-                MetricEntity entity = map.get(key);
-                if (entity != null) {
-                    entity.addPassQps(node.getPassQps());
-                    entity.addBlockQps(node.getBlockQps());
-                    entity.addRtAndSuccessQps(node.getRt(), node.getSuccessQps());
-                    entity.addExceptionQps(node.getExceptionQps());
-                    entity.addCount(1);
-                } else {
-                    entity = new MetricEntity();
-                    entity.setApp(machine.getApp());
-                    entity.setTimestamp(new Date(node.getTimestamp()));
-                    entity.setPassQps(node.getPassQps());
-                    entity.setBlockQps(node.getBlockQps());
-                    entity.setRtAndSuccessQps(node.getRt(), node.getSuccessQps());
-                    entity.setExceptionQps(node.getExceptionQps());
-                    entity.setCount(1);
-                    entity.setResource(node.getResource());
-                    map.put(key, entity);
-                }
+
+                MetricEntity metricEntity = map.computeIfAbsent(key, s -> {
+                    MetricEntity initMetricEntity = new MetricEntity();
+                    initMetricEntity.setApp(machine.getApp());
+                    initMetricEntity.setTimestamp(new Date(node.getTimestamp()));
+                    initMetricEntity.setPassQps(0L);
+                    initMetricEntity.setBlockQps(0L);
+                    initMetricEntity.setRtAndSuccessQps(0, 0L);
+                    initMetricEntity.setExceptionQps(0L);
+                    initMetricEntity.setCount(0);
+                    initMetricEntity.setResource(node.getResource());
+                    return initMetricEntity;
+                });
+                metricEntity.addPassQps(node.getPassQps());
+                metricEntity.addBlockQps(node.getBlockQps());
+                metricEntity.addRtAndSuccessQps(node.getRt(), node.getSuccessQps());
+                metricEntity.addExceptionQps(node.getExceptionQps());
+                metricEntity.addCount(1);
             } catch (Exception e) {
                 logger.warn("handleBody line exception, machine: {}, line: {}", machine.toLogString(), line);
             }
