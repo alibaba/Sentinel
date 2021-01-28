@@ -19,8 +19,8 @@ import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRuleManager;
-import com.alibaba.fastjson.JSON;
 
 /**
  * @author Eric Zhao
@@ -31,6 +31,6 @@ public class GetParamFlowRulesCommandHandler implements CommandHandler<String> {
 
     @Override
     public CommandResponse<String> handle(CommandRequest request) {
-        return CommandResponse.ofSuccess(JSON.toJSONString(ParamFlowRuleManager.getRules()));
+        return CommandResponse.ofSuccess(JsonTransformerLoader.serializer().serialize(ParamFlowRuleManager.getRules()));
     }
 }

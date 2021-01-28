@@ -20,7 +20,7 @@ import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
 
 /**
  * @author Eric Zhao
@@ -31,6 +31,6 @@ public class GetGatewayApiDefinitionGroupCommandHandler implements CommandHandle
 
     @Override
     public CommandResponse<String> handle(CommandRequest request) {
-        return CommandResponse.ofSuccess(JSON.toJSONString(GatewayApiDefinitionManager.getApiDefinitions()));
+        return CommandResponse.ofSuccess(JsonTransformerLoader.serializer().serialize(GatewayApiDefinitionManager.getApiDefinitions()));
     }
 }

@@ -24,10 +24,10 @@ import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
 import com.alibaba.csp.sentinel.node.ClusterNode;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
 import com.alibaba.csp.sentinel.command.vo.NodeVo;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
-import com.alibaba.fastjson.JSONArray;
 
 /**
  * @author jialiang.linjl
@@ -44,7 +44,7 @@ public class FetchSimpleClusterNodeCommandHandler implements CommandHandler<Stri
         List<NodeVo> list = new ArrayList<NodeVo>();
         Map<ResourceWrapper, ClusterNode> map = ClusterBuilderSlot.getClusterNodeMap();
         if (map == null) {
-            return CommandResponse.ofSuccess(JSONArray.toJSONString(list));
+            return CommandResponse.ofSuccess(JsonTransformerLoader.serializer().serialize(list));
         }
         for (Map.Entry<ResourceWrapper, ClusterNode> entry : map.entrySet()) {
             if ("notZero".equalsIgnoreCase(type)) {
@@ -55,7 +55,7 @@ public class FetchSimpleClusterNodeCommandHandler implements CommandHandler<Stri
                 list.add(NodeVo.fromClusterNode(entry.getKey(), entry.getValue()));
             }
         }
-        return CommandResponse.ofSuccess(JSONArray.toJSONString(list));
+        return CommandResponse.ofSuccess(JsonTransformerLoader.serializer().serialize(list));
     }
 
 }

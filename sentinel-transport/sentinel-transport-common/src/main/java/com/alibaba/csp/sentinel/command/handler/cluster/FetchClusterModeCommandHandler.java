@@ -15,6 +15,9 @@
  */
 package com.alibaba.csp.sentinel.command.handler.cluster;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
 import com.alibaba.csp.sentinel.cluster.client.TokenClientProvider;
 import com.alibaba.csp.sentinel.cluster.server.EmbeddedClusterTokenServerProvider;
@@ -22,7 +25,7 @@ import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
 
 /**
  * @author Eric Zhao
@@ -33,12 +36,12 @@ public class FetchClusterModeCommandHandler implements CommandHandler<String> {
 
     @Override
     public CommandResponse<String> handle(CommandRequest request) {
-        JSONObject res = new JSONObject()
-            .fluentPut("mode", ClusterStateManager.getMode())
-            .fluentPut("lastModified", ClusterStateManager.getLastModified())
-            .fluentPut("clientAvailable", isClusterClientSpiAvailable())
-            .fluentPut("serverAvailable", isClusterServerSpiAvailable());
-        return CommandResponse.ofSuccess(res.toJSONString());
+        Map<String, Object> res = new HashMap<String, Object>(4);
+        res.put("mode", ClusterStateManager.getMode());
+        res.put("lastModified", ClusterStateManager.getLastModified());
+        res.put("clientAvailable", isClusterClientSpiAvailable());
+        res.put("serverAvailable", isClusterServerSpiAvailable());
+        return CommandResponse.ofSuccess(JsonTransformerLoader.serializer().serialize(res));
     }
 
     private boolean isClusterClientSpiAvailable() {

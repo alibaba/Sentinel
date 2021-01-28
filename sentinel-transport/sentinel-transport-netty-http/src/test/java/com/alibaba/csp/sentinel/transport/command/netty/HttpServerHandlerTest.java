@@ -18,13 +18,13 @@ package com.alibaba.csp.sentinel.transport.command.netty;
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.init.InitExecutor;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.transport.CommandCenter;
 import com.alibaba.csp.sentinel.transport.command.NettyHttpCommandCenter;
 import com.alibaba.csp.sentinel.transport.command.handler.MultipleSlashNameCommandTestHandler;
-import com.alibaba.fastjson.JSON;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -169,7 +169,7 @@ public class HttpServerHandlerTest {
                 + ",\"grade\":1,\"limitApp\":\"default\",\"maxQueueingTimeMs\":500"
                 + ",\"resource\":\"key\",\"strategy\":0,\"warmUpPeriodSec\":10}]";
         */
-        String expectedBody = JSON.toJSONString(rules);
+        String expectedBody = JsonTransformerLoader.serializer().serialize(rules);
 
         processSuccess(httpRequestStr, expectedBody);
     }

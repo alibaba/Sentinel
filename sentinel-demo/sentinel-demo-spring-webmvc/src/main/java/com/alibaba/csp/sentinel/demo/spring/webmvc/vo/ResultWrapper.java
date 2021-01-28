@@ -15,7 +15,7 @@
  */
 package com.alibaba.csp.sentinel.demo.spring.webmvc.vo;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
 
 /**
  * @author kaizi2009
@@ -51,6 +51,6 @@ public class ResultWrapper {
     }
 
     public String toJsonString() {
-        return JSONObject.toJSONString(this);
+        return JsonTransformerLoader.serializer().serialize(this);
     }
 }

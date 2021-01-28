@@ -19,14 +19,13 @@ import java.net.URLDecoder;
 
 import com.alibaba.csp.sentinel.cluster.server.config.ClusterServerConfigManager;
 import com.alibaba.csp.sentinel.cluster.server.config.ServerFlowConfig;
-import com.alibaba.csp.sentinel.cluster.server.config.ServerTransportConfig;
 import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.fastjson.JSON;
 
 /**
  * @author Eric Zhao
@@ -47,14 +46,14 @@ public class ModifyClusterServerFlowConfigHandler implements CommandHandler<Stri
 
             if (StringUtil.isEmpty(namespace)) {
                 RecordLog.info("[ModifyClusterServerFlowConfigHandler] Receiving cluster server global flow config: {}", data);
-                ServerFlowConfig config = JSON.parseObject(data, ServerFlowConfig.class);
+                ServerFlowConfig config = JsonTransformerLoader.deserializer().deserialize(data, ServerFlowConfig.class);
                 if (!ClusterServerConfigManager.isValidFlowConfig(config)) {
                     CommandResponse.ofFailure(new IllegalArgumentException("Bad flow config"));
                 }
                 ClusterServerConfigManager.loadGlobalFlowConfig(config);
             } else {
                 RecordLog.info("[ModifyClusterServerFlowConfigHandler] Receiving cluster server flow config for namespace <{}>: {}", namespace, data);
-                ServerFlowConfig config = JSON.parseObject(data, ServerFlowConfig.class);
+                ServerFlowConfig config = JsonTransformerLoader.deserializer().deserialize(data, ServerFlowConfig.class);
                 if (!ClusterServerConfigManager.isValidFlowConfig(config)) {
                     CommandResponse.ofFailure(new IllegalArgumentException("Bad flow config"));
                 }

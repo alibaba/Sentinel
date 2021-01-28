@@ -5,14 +5,15 @@ import com.alibaba.csp.sentinel.datasource.FileInJarReadableDataSource;
 import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
+import com.alibaba.csp.sentinel.serialization.common.TypeReference;
 import com.alibaba.csp.sentinel.slots.block.Rule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
 
+import java.lang.reflect.Type;
 import java.util.List;
 
 /**
@@ -41,6 +42,7 @@ import java.util.List;
  * @author dingq
  */
 public class JarFileDataSourceDemo {
+    private static final Type TYPE_LIST_FLOW = new TypeReference<List<FlowRule>>() {}.getType();
 
     public static void main(String[] args) throws Exception {
         JarFileDataSourceDemo demo = new JarFileDataSourceDemo();
@@ -65,6 +67,6 @@ public class JarFileDataSourceDemo {
         FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
     }
 
-    private Converter<String, List<FlowRule>> flowRuleListParser = source -> JSON.parseObject(source,
-            new TypeReference<List<FlowRule>>() {});
+    private Converter<String, List<FlowRule>> flowRuleListParser = source -> JsonTransformerLoader.deserializer()
+            .deserialize(source, TYPE_LIST_FLOW);
 }

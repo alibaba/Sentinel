@@ -25,13 +25,17 @@ import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
 import com.alibaba.csp.sentinel.datasource.WritableDataSource;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.serialization.common.JsonDeserializer;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
+import com.alibaba.csp.sentinel.serialization.common.TypeReference;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 
+import java.lang.reflect.Type;
 import java.net.URLDecoder;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -40,7 +44,8 @@ import java.util.Set;
  */
 @CommandMapping(name = "gateway/updateApiDefinitions", desc = "")
 public class UpdateGatewayApiDefinitionGroupCommandHandler implements CommandHandler<String> {
-
+    private static final Type TYPE_LIST_MAP_STRING_STRING = new TypeReference<List<Map<String, String>>>() {}.getType();
+    private static final Type TYPE_SET_PREDICATE_ITEM = new TypeReference<Set<ApiPathPredicateItem>>() {}.getType();
     private static WritableDataSource<Set<ApiDefinition>> apiDefinitionWds = null;
 
     @Override
@@ -79,14 +84,14 @@ public class UpdateGatewayApiDefinitionGroupCommandHandler implements CommandHan
      */
     private Set<ApiDefinition> parseJson(String data) {
         Set<ApiDefinition> apiDefinitions = new HashSet<>();
-        JSONArray array = JSON.parseArray(data);
-        for (Object obj : array) {
-            JSONObject o = (JSONObject)obj;
-            ApiDefinition apiDefinition = new ApiDefinition((o.getString("apiName")));
-            Set<ApiPredicateItem> predicateItems = new HashSet<>();
-            JSONArray itemArray = o.getJSONArray("predicateItems");
-            if (itemArray != null) {
-                predicateItems.addAll(itemArray.toJavaList(ApiPathPredicateItem.class));
+        JsonDeserializer deserializer = JsonTransformerLoader.deserializer();
+        List<Map<String, String>> array = deserializer.deserialize(data, TYPE_LIST_MAP_STRING_STRING);
+        for (Map<String, String> map : array) {
+            ApiDefinition apiDefinition = new ApiDefinition(map.get("apiName"));
+            String itemArrayStr = map.get("predicateItems");
+            Set<ApiPredicateItem> predicateItems = deserializer.deserialize(itemArrayStr, TYPE_SET_PREDICATE_ITEM);
+            if (predicateItems == null) {
+                predicateItems = Collections.emptySet();
             }
             apiDefinition.setPredicateItems(predicateItems);
             apiDefinitions.add(apiDefinition);

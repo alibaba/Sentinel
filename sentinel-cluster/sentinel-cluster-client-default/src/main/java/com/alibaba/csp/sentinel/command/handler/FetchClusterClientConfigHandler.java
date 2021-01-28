@@ -23,7 +23,7 @@ import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
 import com.alibaba.csp.sentinel.command.entity.ClusterClientStateEntity;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
 
 /**
  * @author Eric Zhao
@@ -43,7 +43,7 @@ public class FetchClusterClientConfigHandler implements CommandHandler<String> {
         } else {
             stateVO.setClientState(ClientConstants.CLIENT_STATUS_OFF);
         }
-        return CommandResponse.ofSuccess(JSON.toJSONString(stateVO));
+        return CommandResponse.ofSuccess(JsonTransformerLoader.serializer().serialize(stateVO));
     }
 }
 

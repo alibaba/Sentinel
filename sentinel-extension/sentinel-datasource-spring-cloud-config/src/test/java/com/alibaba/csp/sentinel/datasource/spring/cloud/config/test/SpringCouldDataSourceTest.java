@@ -20,12 +20,13 @@ import com.alibaba.csp.sentinel.datasource.spring.cloud.config.SentinelRuleLocat
 import com.alibaba.csp.sentinel.datasource.spring.cloud.config.SpringCloudConfigDataSource;
 import com.alibaba.csp.sentinel.datasource.spring.cloud.config.client.ConfigClient;
 import com.alibaba.csp.sentinel.datasource.spring.cloud.config.server.ConfigServer;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
+import com.alibaba.csp.sentinel.serialization.common.TypeReference;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
-import com.alibaba.fastjson.JSON;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -49,7 +50,7 @@ public class SpringCouldDataSourceTest {
     Converter<String, List<FlowRule>> converter = new Converter<String, List<FlowRule>>() {
         @Override
         public List<FlowRule> convert(String source) {
-            return JSON.parseArray(source, FlowRule.class);
+            return JsonTransformerLoader.deserializer().deserialize(source, new TypeReference<List<FlowRule>>() {}.getType());
         }
     };
 

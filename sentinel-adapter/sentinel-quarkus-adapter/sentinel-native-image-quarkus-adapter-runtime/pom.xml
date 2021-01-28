@@ -36,6 +36,12 @@
             <artifactId>sentinel-logging-slf4j</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <!-- temporary solution due to gson is used as default serialization library now -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.73</version>
+        </dependency>
     </dependencies>
 
     <build>

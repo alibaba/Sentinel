@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.command.handler;
 
+import java.lang.reflect.Type;
 import java.net.URLDecoder;
 import java.util.List;
 
@@ -24,8 +25,10 @@ import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
 import com.alibaba.csp.sentinel.datasource.WritableDataSource;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
+import com.alibaba.csp.sentinel.serialization.common.TypeReference;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.csp.sentinel.util.VersionUtil;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRule;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRuleManager;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
@@ -34,8 +37,6 @@ import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 import com.alibaba.csp.sentinel.slots.system.SystemRule;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 
 import static com.alibaba.csp.sentinel.transport.util.WritableDataSourceRegistry.*;
 
@@ -45,17 +46,13 @@ import static com.alibaba.csp.sentinel.transport.util.WritableDataSourceRegistry
  */
 @CommandMapping(name = "setRules", desc = "modify the rules, accept param: type={ruleType}&data={ruleJson}")
 public class ModifyRulesCommandHandler implements CommandHandler<String> {
-    private static final int FASTJSON_MINIMAL_VER = 0x01020C00;
-
+    private static final Type TYPE_LIST_FLOW = new TypeReference<List<FlowRule>>() {}.getType();
+    private static final Type TYPE_LIST_AUTHORITY = new TypeReference<List<AuthorityRule>>() {}.getType();
+    private static final Type TYPE_LIST_DEGRADE = new TypeReference<List<DegradeRule>>() {}.getType();
+    private static final Type TYPE_LIST_SYSTEM = new TypeReference<List<SystemRule>>() {}.getType();
+    
     @Override
     public CommandResponse<String> handle(CommandRequest request) {
-        // XXX from 1.7.2, force to fail when fastjson is older than 1.2.12
-        // We may need a better solution on this.
-        if (VersionUtil.fromVersionString(JSON.VERSION) < FASTJSON_MINIMAL_VER) {
-            // fastjson too old
-            return CommandResponse.ofFailure(new RuntimeException("The \"fastjson-" + JSON.VERSION
-                    + "\" introduced in application is too old, you need fastjson-1.2.12 at least."));
-        }
         String type = request.getParam("type");
         // rule data in get parameter
         String data = request.getParam("data");
@@ -73,28 +70,32 @@ public class ModifyRulesCommandHandler implements CommandHandler<String> {
         String result = "success";
 
         if (FLOW_RULE_TYPE.equalsIgnoreCase(type)) {
-            List<FlowRule> flowRules = JSONArray.parseArray(data, FlowRule.class);
+            List<FlowRule> flowRules = JsonTransformerLoader.deserializer().deserialize(data, TYPE_LIST_FLOW);
+            AssertUtil.notNull(flowRules, "Malformed flow rules");
             FlowRuleManager.loadRules(flowRules);
             if (!writeToDataSource(getFlowDataSource(), flowRules)) {
                 result = WRITE_DS_FAILURE_MSG;
             }
             return CommandResponse.ofSuccess(result);
         } else if (AUTHORITY_RULE_TYPE.equalsIgnoreCase(type)) {
-            List<AuthorityRule> rules = JSONArray.parseArray(data, AuthorityRule.class);
+            List<AuthorityRule> rules = JsonTransformerLoader.deserializer().deserialize(data, TYPE_LIST_AUTHORITY);
+            AssertUtil.notNull(rules, "Malformed rules");
             AuthorityRuleManager.loadRules(rules);
             if (!writeToDataSource(getAuthorityDataSource(), rules)) {
                 result = WRITE_DS_FAILURE_MSG;
             }
             return CommandResponse.ofSuccess(result);
         } else if (DEGRADE_RULE_TYPE.equalsIgnoreCase(type)) {
-            List<DegradeRule> rules = JSONArray.parseArray(data, DegradeRule.class);
+            List<DegradeRule> rules = JsonTransformerLoader.deserializer().deserialize(data, TYPE_LIST_DEGRADE);
+            AssertUtil.notNull(rules, "Malformed rules");
             DegradeRuleManager.loadRules(rules);
             if (!writeToDataSource(getDegradeDataSource(), rules)) {
                 result = WRITE_DS_FAILURE_MSG;
             }
             return CommandResponse.ofSuccess(result);
         } else if (SYSTEM_RULE_TYPE.equalsIgnoreCase(type)) {
-            List<SystemRule> rules = JSONArray.parseArray(data, SystemRule.class);
+            List<SystemRule> rules = JsonTransformerLoader.deserializer().deserialize(data, TYPE_LIST_SYSTEM);
+            AssertUtil.notNull(rules, "Malformed rules");
             SystemRuleManager.loadRules(rules);
             if (!writeToDataSource(getSystemSource(), rules)) {
                 result = WRITE_DS_FAILURE_MSG;

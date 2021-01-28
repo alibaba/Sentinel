@@ -15,7 +15,7 @@
  */
 package com.alibaba.csp.sentinel.adapter.spring.webmvc;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
 
 /**
  * @author kaizi2009
@@ -37,6 +37,14 @@ public class ResultWrapper {
     public void setCode(Integer code) {
         this.code = code;
     }
+    
+    public String getMessage() {
+        return message;
+    }
+    
+    public void setMessage(String message) {
+        this.message = message;
+    }
 
     public static ResultWrapper error() {
 
@@ -48,6 +56,6 @@ public class ResultWrapper {
     }
 
     public String toJsonString() {
-        return JSONObject.toJSONString(this);
+        return JsonTransformerLoader.serializer().serialize(this);
     }
 }

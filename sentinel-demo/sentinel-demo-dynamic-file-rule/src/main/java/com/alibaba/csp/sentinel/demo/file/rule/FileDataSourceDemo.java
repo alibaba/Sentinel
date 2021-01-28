@@ -23,6 +23,8 @@ import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
 import com.alibaba.csp.sentinel.datasource.FileRefreshableDataSource;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
+import com.alibaba.csp.sentinel.serialization.common.TypeReference;
 import com.alibaba.csp.sentinel.slots.block.Rule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
@@ -30,8 +32,6 @@ import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.system.SystemRule;
 import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
 
 /**
  * <p>
@@ -97,10 +97,10 @@ public class FileDataSourceDemo {
         SystemRuleManager.register2Property(systemRuleDataSource.getProperty());
     }
 
-    private Converter<String, List<FlowRule>> flowRuleListParser = source -> JSON.parseObject(source,
-        new TypeReference<List<FlowRule>>() {});
-    private Converter<String, List<DegradeRule>> degradeRuleListParser = source -> JSON.parseObject(source,
-        new TypeReference<List<DegradeRule>>() {});
-    private Converter<String, List<SystemRule>> systemRuleListParser = source -> JSON.parseObject(source,
-        new TypeReference<List<SystemRule>>() {});
+    private Converter<String, List<FlowRule>> flowRuleListParser = source -> JsonTransformerLoader.deserializer().deserialize(source,
+        new TypeReference<List<FlowRule>>() {}.getType());
+    private Converter<String, List<DegradeRule>> degradeRuleListParser = source -> JsonTransformerLoader.deserializer().deserialize(source,
+        new TypeReference<List<DegradeRule>>() {}.getType());
+    private Converter<String, List<SystemRule>> systemRuleListParser = source -> JsonTransformerLoader.deserializer().deserialize(source,
+        new TypeReference<List<SystemRule>>() {}.getType());
 }

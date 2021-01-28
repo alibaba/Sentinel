@@ -66,8 +66,8 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-serialization-common</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

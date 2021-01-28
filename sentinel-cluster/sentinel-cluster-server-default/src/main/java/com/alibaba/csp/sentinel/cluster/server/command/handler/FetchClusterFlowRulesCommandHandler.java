@@ -20,8 +20,8 @@ import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.fastjson.JSON;
 
 /**
  * @author Eric Zhao
@@ -34,9 +34,9 @@ public class FetchClusterFlowRulesCommandHandler implements CommandHandler<Strin
     public CommandResponse<String> handle(CommandRequest request) {
         String namespace = request.getParam("namespace");
         if (StringUtil.isEmpty(namespace)) {
-            return CommandResponse.ofSuccess(JSON.toJSONString(ClusterFlowRuleManager.getAllFlowRules()));
+            return CommandResponse.ofSuccess(JsonTransformerLoader.serializer().serialize(ClusterFlowRuleManager.getAllFlowRules()));
         } else {
-            return CommandResponse.ofSuccess(JSON.toJSONString(ClusterFlowRuleManager.getFlowRules(namespace)));
+            return CommandResponse.ofSuccess(JsonTransformerLoader.serializer().serialize(ClusterFlowRuleManager.getFlowRules(namespace)));
         }
     }
 }

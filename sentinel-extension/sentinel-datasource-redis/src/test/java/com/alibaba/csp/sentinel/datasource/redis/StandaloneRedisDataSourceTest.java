@@ -21,10 +21,10 @@ import ai.grakn.redismock.RedisServer;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
 import com.alibaba.csp.sentinel.datasource.redis.config.RedisConnectionConfig;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
+import com.alibaba.csp.sentinel.serialization.common.TypeReference;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
@@ -141,7 +141,7 @@ public class StandaloneRedisDataSourceTest {
     }
 
     private Converter<String, List<FlowRule>> buildFlowConfigParser() {
-        return source -> JSON.parseObject(source, new TypeReference<List<FlowRule>>() {});
+        return source -> JsonTransformerLoader.deserializer().deserialize(source, new TypeReference<List<FlowRule>>() {}.getType());
     }
 
     private void initRedisRuleData() {

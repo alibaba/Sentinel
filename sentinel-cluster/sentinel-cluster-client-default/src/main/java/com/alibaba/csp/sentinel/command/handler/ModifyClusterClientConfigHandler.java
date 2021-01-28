@@ -17,7 +17,6 @@ package com.alibaba.csp.sentinel.command.handler;
 
 import java.net.URLDecoder;
 
-import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfig;
 import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfigManager;
 import com.alibaba.csp.sentinel.command.CommandConstants;
 import com.alibaba.csp.sentinel.command.CommandHandler;
@@ -26,8 +25,8 @@ import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
 import com.alibaba.csp.sentinel.command.entity.ClusterClientStateEntity;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.fastjson.JSON;
 
 /**
  * @author Eric Zhao
@@ -45,7 +44,7 @@ public class ModifyClusterClientConfigHandler implements CommandHandler<String> 
         try {
             data = URLDecoder.decode(data, "utf-8");
             RecordLog.info("[ModifyClusterClientConfigHandler] Receiving cluster client config: {}", data);
-            ClusterClientStateEntity entity = JSON.parseObject(data, ClusterClientStateEntity.class);
+            ClusterClientStateEntity entity = JsonTransformerLoader.deserializer().deserialize(data, ClusterClientStateEntity.class);
 
             ClusterClientConfigManager.applyNewConfig(entity.toClientConfig());
             ClusterClientConfigManager.applyNewAssignConfig(entity.toAssignConfig());

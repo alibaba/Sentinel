@@ -39,6 +39,12 @@
             <artifactId>sentinel-cluster-server-default</artifactId>
             <version>${project.version}</version>
         </dependency>
+        
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.73</version>
+        </dependency>
 
         <!-- Nacos for dynamic data source -->
         <dependency>

@@ -17,10 +17,10 @@ package com.alibaba.csp.sentinel.datasource.consul;
 
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
+import com.alibaba.csp.sentinel.serialization.common.TypeReference;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
 
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.Response;
@@ -91,14 +91,14 @@ public class ConsulDataSourceTest {
     @Test
     public void testConsulDataSourceWhenUpdate() throws InterruptedException {
         rules.get(0).setMaxQueueingTimeMs(new Random().nextInt());
-        client.setKVValue(ruleKey, JSON.toJSONString(rules));
+        client.setKVValue(ruleKey, JsonTransformerLoader.serializer().serialize(rules));
         TimeUnit.SECONDS.sleep(waitTimeoutInSecond);
         List<FlowRule> rules = FlowRuleManager.getRules();
         Assert.assertEquals(this.rules, rules);
     }
 
     private Converter<String, List<FlowRule>> buildFlowConfigParser() {
-        return source -> JSON.parseObject(source, new TypeReference<List<FlowRule>>() {});
+        return source -> JsonTransformerLoader.deserializer().deserialize(source, new TypeReference<List<FlowRule>>() {}.getType());
     }
 
     private void initConsulRuleData(String flowRulesJson) {

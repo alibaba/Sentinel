@@ -17,9 +17,10 @@ package com.alibaba.csp.sentinel.datasource.etcd;
 
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
+import com.alibaba.csp.sentinel.serialization.common.JsonTransformerLoader;
+import com.alibaba.csp.sentinel.serialization.common.TypeReference;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
-import com.alibaba.fastjson.JSON;
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
 import io.etcd.jetcd.KV;
@@ -73,7 +74,7 @@ public class EtcdDataSourceTest {
     @Test
     public void testDynamicUpdate() throws InterruptedException {
         String demo_key = "etcd_demo_key";
-        ReadableDataSource<String, List<FlowRule>> flowRuleEtcdDataSource = new EtcdDataSource<>(demo_key, (value) -> JSON.parseArray(value, FlowRule.class));
+        ReadableDataSource<String, List<FlowRule>> flowRuleEtcdDataSource = new EtcdDataSource<>(demo_key, (value) -> JsonTransformerLoader.deserializer().deserialize(value, new TypeReference<List<FlowRule>>() {}.getType()));
         FlowRuleManager.register2Property(flowRuleEtcdDataSource.getProperty());
 
         KV kvClient = Client.builder()
