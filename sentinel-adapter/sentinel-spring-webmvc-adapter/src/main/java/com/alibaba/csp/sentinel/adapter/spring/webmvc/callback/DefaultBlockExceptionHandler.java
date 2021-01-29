@@ -34,12 +34,6 @@ public class DefaultBlockExceptionHandler implements BlockExceptionHandler {
         // Return 429 (Too Many Requests) by default.
         response.setStatus(429);
 
-        StringBuffer url = request.getRequestURL();
-
-        if ("GET".equals(request.getMethod()) && StringUtil.isNotBlank(request.getQueryString())) {
-            url.append("?").append(request.getQueryString());
-        }
-
         PrintWriter out = response.getWriter();
         out.print("Blocked by Sentinel (flow limiting)");
         out.flush();
