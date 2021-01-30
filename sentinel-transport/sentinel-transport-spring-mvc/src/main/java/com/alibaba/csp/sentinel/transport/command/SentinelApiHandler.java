@@ -33,7 +33,6 @@ import java.util.Map;
 public class SentinelApiHandler {
 
     public static final String SERVER_ERROR_MESSAGE = "Command server error";
-    public static final String INVALID_COMMAND_MESSAGE = "Invalid command";
 
     private CommandHandler commandHandler;
 
@@ -46,7 +45,7 @@ public class SentinelApiHandler {
         try {
             long start = System.currentTimeMillis();
             printWriter = httpServletResponse.getWriter();
-            CommandCenterLog.info("[SentinelApiHandler] request income: " + httpServletRequest.getRequestURL());
+            CommandCenterLog.debug("[SentinelApiHandler] request income: {}", httpServletRequest.getRequestURL());
             CommandRequest request = new CommandRequest();
             Map<String, String[]> parameterMap = httpServletRequest.getParameterMap();
             for (Map.Entry<String, String[]> entry : parameterMap.entrySet()) {
@@ -55,23 +54,16 @@ public class SentinelApiHandler {
                     request.addParam(entry.getKey(), value[0]);
                 }
             }
-            if (commandHandler == null) {
-                writeResponse(httpServletResponse, printWriter, StatusCode.BAD_REQUEST, INVALID_COMMAND_MESSAGE);
-                return;
-            }
             CommandResponse<?> response = commandHandler.handle(request);
             handleResponse(response, httpServletResponse, printWriter);
 
             long cost = System.currentTimeMillis() - start;
-            CommandCenterLog.info("[SentinelApiHandler] Deal request : " + httpServletRequest.getRequestURL()
-                     + ", time cost: " + cost + " ms");
+            CommandCenterLog.debug("[SentinelApiHandler] Deal request: {}, time cost: {} ms", httpServletRequest.getRequestURL(), cost);
         } catch (Throwable e) {
             CommandCenterLog.warn("[SentinelApiHandler] error", e);
             try {
                 if (printWriter != null) {
-                    String errorMessage = SERVER_ERROR_MESSAGE;
-                    e.printStackTrace();
-                    writeResponse(httpServletResponse, printWriter, StatusCode.INTERNAL_SERVER_ERROR, errorMessage);
+                    writeResponse(httpServletResponse, printWriter, StatusCode.INTERNAL_SERVER_ERROR, SERVER_ERROR_MESSAGE);
                 }
             } catch (Exception e1) {
                 CommandCenterLog.warn("Failed to write error response", e1);
