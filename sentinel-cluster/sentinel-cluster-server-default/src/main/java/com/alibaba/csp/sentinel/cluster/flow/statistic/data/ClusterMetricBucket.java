@@ -15,7 +15,7 @@
  */
 package com.alibaba.csp.sentinel.cluster.flow.statistic.data;
 
-import com.alibaba.csp.sentinel.slots.statistic.base.LongAdder;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * @author Eric Zhao
