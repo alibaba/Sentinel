@@ -12,11 +12,6 @@
     <packaging>pom</packaging>
     <name>sentinel-demo</name>
 
-    <properties>
-        <java.source.version>1.8</java.source.version>
-        <java.target.version>1.8</java.target.version>
-    </properties>
-
     <modules>
         <module>sentinel-demo-basic</module>
         <module>sentinel-demo-dynamic-file-rule</module>
