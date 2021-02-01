@@ -20,6 +20,7 @@
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-core</artifactId>
         </dependency>
+
         <dependency>
             <groupId>com.weibo</groupId>
             <artifactId>motan-core</artifactId>
@@ -33,18 +34,5 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.compiler.version}</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <encoding>${java.encoding}</encoding>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+
 </project>

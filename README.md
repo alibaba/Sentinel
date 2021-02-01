@@ -49,9 +49,9 @@ Below is a simple demo that guides new users to use Sentinel in just 3 steps. It
 
 ### 1. Add Dependency
 
-**Note:** Sentinel Core requires Java 7 or later.
+**Note:** Sentinel requires JDK 1.8 or later.
 
-If your're using Maven, just add the following dependency in `pom.xml`.
+If you're using Maven, just add the following dependency in `pom.xml`.
 
 ```xml
 <!-- replace here with the latest version -->

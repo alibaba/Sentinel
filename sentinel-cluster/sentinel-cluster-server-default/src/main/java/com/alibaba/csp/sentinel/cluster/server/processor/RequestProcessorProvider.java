@@ -59,11 +59,7 @@ public final class RequestProcessorProvider {
     }
 
     static void addProcessorIfAbsent(int type, RequestProcessor processor) {
-        // TBD: use putIfAbsent in JDK 1.8.
-        if (PROCESSOR_MAP.containsKey(type)) {
-            return;
-        }
-        PROCESSOR_MAP.put(type, processor);
+        PROCESSOR_MAP.putIfAbsent(type, processor);
     }
 
     static void addProcessor(int type, RequestProcessor processor) {
