@@ -72,7 +72,14 @@ public class FlowRuleManager {
      * so that the two task will start running at different time.
      */
     private static void startMetricBeanTimerListener() {
-        SCHEDULER.scheduleAtFixedRate(new MetricBeanTimerListener(), 0, 1, TimeUnit.SECONDS);
+        long flushInterval = SentinelConfig.metricMbeanFlushIntervalSec();
+        if (flushInterval <= 0) {
+            RecordLog.info("[FlowRuleManager] The MetricBeanTimerListener doesn't start. If you want to start it, "
+                            + "please change the value(current: {}) of config({}) more than 0 to start it.", flushInterval,
+                    SentinelConfig.METRIC_MBEAN_FLUSH_INTERVAL);
+            return;
+        }
+        SCHEDULER.scheduleAtFixedRate(new MetricBeanTimerListener(), 0, flushInterval, TimeUnit.SECONDS);
     }
     
     /**
