@@ -16,14 +16,17 @@
 package com.alibaba.csp.sentinel.slots.block.flow;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
+import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -43,10 +46,11 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
  *
  * @author jialiang.linjl
  * @author Eric Zhao
+ * @author Weihua
  */
 public class FlowRuleManager {
 
-    private static final Map<String, List<FlowRule>> flowRules = new ConcurrentHashMap<String, List<FlowRule>>();
+    private static final AtomicReference<Map<String, List<FlowRule>>> flowRules = new AtomicReference<Map<String, List<FlowRule>>>();
 
     private static final FlowPropertyListener LISTENER = new FlowPropertyListener();
     private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
@@ -56,10 +60,31 @@ public class FlowRuleManager {
         new NamedThreadFactory("sentinel-metrics-record-task", true));
 
     static {
+        flowRules.set(Collections.<String, List<FlowRule>>emptyMap());
         currentProperty.addListener(LISTENER);
-        SCHEDULER.scheduleAtFixedRate(new MetricTimerListener(), 0, 1, TimeUnit.SECONDS);
+        startMetricTimerListener();
     }
-
+    
+    /**
+     * <p> Start the MetricTimerListener
+     * <ol>
+     *     <li>If the flushInterval more than 0,
+     * the timer will run with the flushInterval as the rate </li>.
+     *      <li>If the flushInterval less than 0(include) or value is not valid,
+     * then means the timer will not be started </li>
+     * <ol></p>
+     */
+    private static void startMetricTimerListener() {
+        long flushInterval = SentinelConfig.metricLogFlushIntervalSec();
+        if (flushInterval <= 0) {
+            RecordLog.info("[FlowRuleManager] The MetricTimerListener is'n started. If you want to start it, "
+                    + "please change the value(current: {}) of config({}) more than 0 to start it.", flushInterval,
+                    SentinelConfig.METRIC_FLUSH_INTERVAL);
+            return;
+        }
+        SCHEDULER.scheduleAtFixedRate(new MetricTimerListener(), 0, flushInterval, TimeUnit.SECONDS);
+    }
+    
     /**
      * Listen to the {@link SentinelProperty} for {@link FlowRule}s. The property is the source of {@link FlowRule}s.
      * Flow rules can also be set by {@link #loadRules(List)} directly.
@@ -83,7 +108,7 @@ public class FlowRuleManager {
      */
     public static List<FlowRule> getRules() {
         List<FlowRule> rules = new ArrayList<FlowRule>();
-        for (Map.Entry<String, List<FlowRule>> entry : flowRules.entrySet()) {
+        for (Map.Entry<String, List<FlowRule>> entry : flowRules.get().entrySet()) {
             rules.addAll(entry.getValue());
         }
         return rules;
@@ -99,11 +124,11 @@ public class FlowRuleManager {
     }
 
     static Map<String, List<FlowRule>> getFlowRuleMap() {
-        return flowRules;
+        return flowRules.get();
     }
 
     public static boolean hasConfig(String resource) {
-        return flowRules.containsKey(resource);
+        return flowRules.get().containsKey(resource);
     }
 
     public static boolean isOtherOrigin(String origin, String resourceName) {
@@ -111,7 +136,7 @@ public class FlowRuleManager {
             return false;
         }
 
-        List<FlowRule> rules = flowRules.get(resourceName);
+        List<FlowRule> rules = flowRules.get().get(resourceName);
 
         if (rules != null) {
             for (FlowRule rule : rules) {
@@ -129,21 +154,17 @@ public class FlowRuleManager {
         @Override
         public void configUpdate(List<FlowRule> value) {
             Map<String, List<FlowRule>> rules = FlowRuleUtil.buildFlowRuleMap(value);
-            if (rules != null) {
-                flowRules.clear();
-                flowRules.putAll(rules);
-            }
-            RecordLog.info("[FlowRuleManager] Flow rules received: " + flowRules);
+            //the rules was always not null, it's no need to check nullable
+            //remove checking to avoid IDE warning
+            flowRules.set(rules);
+            RecordLog.info("[FlowRuleManager] Flow rules received: {}", rules);
         }
 
         @Override
         public void configLoad(List<FlowRule> conf) {
             Map<String, List<FlowRule>> rules = FlowRuleUtil.buildFlowRuleMap(conf);
-            if (rules != null) {
-                flowRules.clear();
-                flowRules.putAll(rules);
-            }
-            RecordLog.info("[FlowRuleManager] Flow rules loaded: " + flowRules);
+            flowRules.set(rules);
+            RecordLog.info("[FlowRuleManager] Flow rules loaded: {}", rules);
         }
     }
 

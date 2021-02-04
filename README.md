@@ -49,16 +49,16 @@ Below is a simple demo that guides new users to use Sentinel in just 3 steps. It
 
 ### 1. Add Dependency
 
-**Note:** Sentinel Core requires Java 7 or later.
+**Note:** Sentinel requires JDK 1.8 or later.
 
-If your're using Maven, just add the following dependency in `pom.xml`.
+If you're using Maven, just add the following dependency in `pom.xml`.
 
 ```xml
 <!-- replace here with the latest version -->
 <dependency>
     <groupId>com.alibaba.csp</groupId>
     <artifactId>sentinel-core</artifactId>
-    <version>1.8.0</version>
+    <version>1.8.1</version>
 </dependency>
 ```
 
@@ -113,7 +113,7 @@ After running the demo for a while, you can see the following records in `~/logs
 1529998908000|2018-06-26 15:41:48|HelloWorld|20|19502|20|0|0   |0
 1529998909000|2018-06-26 15:41:49|HelloWorld|20|18386|20|0|0   |0
 
-p stands for incoming request, block for blocked by rules, success for success handled by Sentinel, e for exception count, rt for average response time (ms), occupied stands for occupiedPassQps since 1.5.0 which enable us booking more than 1 shot when entering.
+p stands for incoming request, block for blocked by rules, s for success handled by Sentinel, e for exception count, rt for average response time (ms), occupied stands for occupiedPassQps since 1.5.0 which enable us booking more than 1 shot when entering.
 ```
 
 This shows that the demo can print "hello world" 20 times per second.

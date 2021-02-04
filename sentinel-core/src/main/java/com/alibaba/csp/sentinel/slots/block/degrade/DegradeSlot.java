@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.slots.block.degrade;
 
 import java.util.List;
 
+import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.DefaultNode;
@@ -25,7 +26,7 @@ import com.alibaba.csp.sentinel.slotchain.ProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreaker;
-import com.alibaba.csp.sentinel.spi.SpiOrder;
+import com.alibaba.csp.sentinel.spi.Spi;
 
 /**
  * A {@link ProcessorSlot} dedicates to circuit breaking.
@@ -33,7 +34,7 @@ import com.alibaba.csp.sentinel.spi.SpiOrder;
  * @author Carpenter Lee
  * @author Eric Zhao
  */
-@SpiOrder(-1000)
+@Spi(order = Constants.ORDER_DEGRADE_SLOT)
 public class DegradeSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override

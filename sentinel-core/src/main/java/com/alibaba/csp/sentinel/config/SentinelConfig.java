@@ -41,6 +41,11 @@ public final class SentinelConfig {
      */
     public static final int APP_TYPE_COMMON = 0;
 
+    /**
+     * Parameter value for using context classloader.
+     */
+    private static final String CLASSLOADER_CONTEXT = "context";
+
     private static final Map<String, String> props = new ConcurrentHashMap<>();
 
     private static int appType = APP_TYPE_COMMON;
@@ -55,12 +60,14 @@ public final class SentinelConfig {
     public static final String COLD_FACTOR = "csp.sentinel.flow.cold.factor";
     public static final String STATISTIC_MAX_RT = "csp.sentinel.statistic.max.rt";
     public static final String SPI_CLASSLOADER = "csp.sentinel.spi.classloader";
+    public static final String METRIC_FLUSH_INTERVAL = "csp.sentinel.metric.flush.interval";
 
     public static final String DEFAULT_CHARSET = "UTF-8";
     public static final long DEFAULT_SINGLE_METRIC_FILE_SIZE = 1024 * 1024 * 50;
     public static final int DEFAULT_TOTAL_METRIC_FILE_COUNT = 6;
     public static final int DEFAULT_COLD_FACTOR = 3;
     public static final int DEFAULT_STATISTIC_MAX_RT = 5000;
+    public static final long DEFAULT_METRIC_FLUSH_INTERVAL = 1L;
 
     static {
         try {
@@ -68,7 +75,7 @@ public final class SentinelConfig {
             loadProps();
             resolveAppName();
             resolveAppType();
-            RecordLog.info("[SentinelConfig] Application type resolved: " + appType);
+            RecordLog.info("[SentinelConfig] Application type resolved: {}", appType);
         } catch (Throwable ex) {
             RecordLog.warn("[SentinelConfig] Failed to initialize", ex);
             ex.printStackTrace();
@@ -98,6 +105,7 @@ public final class SentinelConfig {
         setConfig(TOTAL_METRIC_FILE_COUNT, String.valueOf(DEFAULT_TOTAL_METRIC_FILE_COUNT));
         setConfig(COLD_FACTOR, String.valueOf(DEFAULT_COLD_FACTOR));
         setConfig(STATISTIC_MAX_RT, String.valueOf(DEFAULT_STATISTIC_MAX_RT));
+        setConfig(METRIC_FLUSH_INTERVAL, String.valueOf(DEFAULT_METRIC_FLUSH_INTERVAL));
     }
 
     private static void loadProps() {
@@ -154,6 +162,25 @@ public final class SentinelConfig {
 
     public static String charset() {
         return props.get(CHARSET);
+    }
+    
+    /**
+     * Get the metric log flush interval in second
+     * @return  the metric log flush interval in second
+     * @since 1.8.1
+     */
+    public static long metricLogFlushIntervalSec() {
+        String flushIntervalStr = SentinelConfig.getConfig(METRIC_FLUSH_INTERVAL);
+        if (flushIntervalStr == null) {
+            return DEFAULT_METRIC_FLUSH_INTERVAL;
+        }
+        try {
+            return Long.parseLong(flushIntervalStr);
+        } catch (Throwable throwable) {
+            RecordLog.warn("[SentinelConfig] Parse the metricLogFlushInterval fail, use default value: "
+                    + DEFAULT_METRIC_FLUSH_INTERVAL, throwable);
+            return DEFAULT_METRIC_FLUSH_INTERVAL;
+        }
     }
 
     public static long singleMetricFileSize() {
@@ -285,6 +312,15 @@ public final class SentinelConfig {
 
     private static String toEnvKey(/*@NotBlank*/ String propKey) {
         return propKey.toUpperCase().replace('.', '_');
+    }
+    /**
+     * Whether use context classloader via config parameter
+     *
+     * @return Whether use context classloader
+     */
+    public static boolean shouldUseContextClassloader() {
+        String classloaderConf = SentinelConfig.getConfig(SentinelConfig.SPI_CLASSLOADER);
+        return CLASSLOADER_CONTEXT.equalsIgnoreCase(classloaderConf);
     }
 
     private SentinelConfig() {}

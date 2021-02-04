@@ -181,7 +181,7 @@ public class CtSph implements Sph {
      * be created if the resource doesn't relate one.
      *
      * <p>Same resource({@link ResourceWrapper#equals(Object)}) will share the same
-     * {@link ProcessorSlotChain} globally, no matter in witch {@link Context}.<p/>
+     * {@link ProcessorSlotChain} globally, no matter in which {@link Context}.<p/>
      *
      * <p>
      * Note that total {@link ProcessorSlot} count must not exceed {@link Constants#MAX_SLOT_CHAIN_SIZE},
