@@ -2,7 +2,7 @@
 
 Sentinel DataSource Redis provides integration with Redis. The data source leverages Redis pub-sub feature to implement push model (listener).
 
-The data source uses [Lettuce](https://lettuce.io/) as the Redis client internal. Requires JDK 1.8 or later.
+The data source uses [Lettuce](https://lettuce.io/) as the Redis client, which requires JDK 1.8 or later.
 
 > **NOTE**: Currently we do not support Redis Cluster now.
 

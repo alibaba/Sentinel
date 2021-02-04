@@ -23,12 +23,13 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 import java.io.*;
 import java.lang.reflect.Modifier;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * A simple SPI loading facility.
+ * A simple SPI loading facility (refactored since 1.8.1).
  *
  * <p>SPI is short for Service Provider Interface.</p>
  *
@@ -54,13 +55,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * 3. The comment line character is #, all characters following it are ignored.
  * </p>
  *
- * <p>
- * Provide common functions, such as:
- * Load all Provider instance unsorted/sorted list.
- * Load highest/lowest order priority instance.
- * Load first-found or default instance.
- * Load instance by aliasname or provider class.
- * </p>
+ *
+ * <p>{@code SpiLoader} provide common functions, such as:</p>
+ * <ul>
+ * <li>Load all Provider instance unsorted/sorted list.</li>
+ * <li>Load highest/lowest order priority instance.</li>
+ * <li>Load first-found or default instance.</li>
+ * <li>Load instance by alias name or provider class.</li>
+ * </ul>
  *
  * @author Eric Zhao
  * @author cdfive
@@ -92,7 +94,7 @@ public final class SpiLoader<S> {
     // Cache the singleton instance of Provider, key: classname of Provider, value: Provider instance
     private final ConcurrentHashMap<String, S> singletonMap = new ConcurrentHashMap<>();
 
-    // Whether this SpiLoader has beend loaded, that is, loaded the Provider configuration file
+    // Whether this SpiLoader has been loaded, that is, loaded the Provider configuration file
     private final AtomicBoolean loaded = new AtomicBoolean(false);
 
     // Default provider class
@@ -327,11 +329,11 @@ public final class SpiLoader<S> {
         try {
             urls = classLoader.getResources(fullFileName);
         } catch (IOException e) {
-            fail("Error locating SPI configuration file,filename=" + fullFileName + ",classloader=" + classLoader, e);
+            fail("Error locating SPI configuration file, filename=" + fullFileName + ", classloader=" + classLoader, e);
         }
 
         if (urls == null || !urls.hasMoreElements()) {
-            RecordLog.warn("No SPI configuration file,filename=" + fullFileName + ",classloader=" + classLoader);
+            RecordLog.warn("No SPI configuration file, filename=" + fullFileName + ", classloader=" + classLoader);
             return;
         }
 
@@ -342,7 +344,7 @@ public final class SpiLoader<S> {
             BufferedReader br = null;
             try {
                 in = url.openStream();
-                br = new BufferedReader(new InputStreamReader(in, "utf-8"));
+                br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
                 String line;
                 while ((line = br.readLine()) != null) {
                     if (StringUtil.isBlank(line)) {
@@ -378,19 +380,20 @@ public final class SpiLoader<S> {
                     String aliasName = spi == null || "".equals(spi.value()) ? clazz.getName() : spi.value();
                     if (classMap.containsKey(aliasName)) {
                         Class<? extends S> existClass = classMap.get(aliasName);
-                        fail("Found repeat aliasname for " + clazz.getName() + " and "
+                        fail("Found repeat alias name for " + clazz.getName() + " and "
                                 + existClass.getName() + ",SPI configuration file=" + fullFileName);
                     }
                     classMap.put(aliasName, clazz);
 
                     if (spi != null && spi.isDefault()) {
                         if (defaultClass != null) {
-                            fail("Found more than one default Provider,SPI configuration file=" + fullFileName);
+                            fail("Found more than one default Provider, SPI configuration file=" + fullFileName);
                         }
                         defaultClass = clazz;
                     }
 
-                    RecordLog.info("[SpiLoader]Found SPI,Service={},Provider={},aliasname={},isSingleton={},isDefault={},order={}",
+                    RecordLog.info("[SpiLoader] Found SPI implementation for SPI {}, provider={}, aliasName={}"
+                            + ", isSingleton={}, isDefault={}, order={}",
                         service.getName(), line, aliasName
                             , spi == null ? true : spi.isSingleton()
                             , spi == null ? false : spi.isDefault()

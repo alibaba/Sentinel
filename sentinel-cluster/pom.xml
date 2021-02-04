@@ -5,7 +5,7 @@
     <parent>
         <artifactId>sentinel-parent</artifactId>
         <groupId>com.alibaba.csp</groupId>
-        <version>1.8.1-SNAPSHOT</version>
+        <version>1.8.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>
@@ -13,9 +13,6 @@
     <description>The parent module of Sentinel cluster server</description>
 
     <properties>
-        <java.source.version>1.7</java.source.version>
-        <java.target.version>1.7</java.target.version>
-
         <netty.version>4.1.31.Final</netty.version>
     </properties>
 

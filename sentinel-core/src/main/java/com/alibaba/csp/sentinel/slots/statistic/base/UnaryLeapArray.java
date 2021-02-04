@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.slots.statistic.base;
 
+import java.util.concurrent.atomic.LongAdder;
+
 /**
  * @author Eric Zhao
  */
