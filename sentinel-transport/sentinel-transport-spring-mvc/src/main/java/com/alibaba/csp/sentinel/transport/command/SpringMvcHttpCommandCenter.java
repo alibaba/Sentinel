@@ -17,7 +17,7 @@ package com.alibaba.csp.sentinel.transport.command;
 
 import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandHandlerProvider;
-import com.alibaba.csp.sentinel.spi.SpiOrder;
+import com.alibaba.csp.sentinel.spi.Spi;
 import com.alibaba.csp.sentinel.transport.CommandCenter;
 
 import java.util.Map;
@@ -25,7 +25,7 @@ import java.util.Map;
 /**
  * @author shenbaoyong
  */
-@SpiOrder(SpiOrder.LOWEST_PRECEDENCE - 100)
+@Spi(order = Spi.ORDER_LOWEST - 100)
 public class SpringMvcHttpCommandCenter implements CommandCenter {
 
     @Override

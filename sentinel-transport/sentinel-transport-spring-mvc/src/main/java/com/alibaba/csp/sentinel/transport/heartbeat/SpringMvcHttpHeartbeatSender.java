@@ -18,9 +18,8 @@ package com.alibaba.csp.sentinel.transport.heartbeat;
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.spi.SpiOrder;
+import com.alibaba.csp.sentinel.spi.Spi;
 import com.alibaba.csp.sentinel.transport.HeartbeatSender;
-import com.alibaba.csp.sentinel.transport.command.SentinelApiHandlerMapping;
 import com.alibaba.csp.sentinel.transport.config.TransportConfig;
 import com.alibaba.csp.sentinel.transport.endpoint.Endpoint;
 import com.alibaba.csp.sentinel.transport.endpoint.Protocol;
@@ -42,7 +41,7 @@ import java.util.List;
  * @author Carpenter Lee
  * @author Leo Li
  */
-@SpiOrder(SpiOrder.LOWEST_PRECEDENCE - 100)
+@Spi(order = Spi.ORDER_LOWEST - 100)
 public class SpringMvcHttpHeartbeatSender implements HeartbeatSender {
 
     private final CloseableHttpClient client;

@@ -68,8 +68,6 @@ public class SentinelApiHandler {
             } catch (Exception e1) {
                 CommandCenterLog.warn("Failed to write error response", e1);
             }
-        } finally {
-
         }
     }
 
