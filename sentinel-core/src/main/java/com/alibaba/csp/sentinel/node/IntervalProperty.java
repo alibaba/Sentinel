@@ -61,8 +61,8 @@ public class IntervalProperty {
         if (newInterval != INTERVAL) {
             INTERVAL = newInterval;
             ClusterBuilderSlot.resetClusterNodes();
+            RecordLog.info("[IntervalProperty] INTERVAL updated to: {}", INTERVAL);
         }
-        RecordLog.info("[IntervalProperty] INTERVAL updated to: {}", INTERVAL);
     }
 
 }

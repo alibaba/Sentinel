@@ -112,7 +112,7 @@ public class ContextUtil {
     public static Context enter(String name, String origin) {
         if (Constants.CONTEXT_DEFAULT_NAME.equals(name)) {
             throw new ContextNameDefineException(
-                "The " + Constants.CONTEXT_DEFAULT_NAME + " can't be permit to defined!");
+                "The " + Constants.CONTEXT_DEFAULT_NAME + " can't be permit to be defined!");
         }
         return trueEnter(name, origin);
     }
@@ -139,10 +139,7 @@ public class ContextUtil {
                                 // Add entrance node.
                                 Constants.ROOT.addChild(node);
 
-                                Map<String, DefaultNode> newMap = new HashMap<>(contextNameNodeMap.size() + 1);
-                                newMap.putAll(contextNameNodeMap);
-                                newMap.put(name, node);
-                                contextNameNodeMap = newMap;
+                                contextNameNodeMap.put(name, node);
                             }
                         }
                     } finally {
