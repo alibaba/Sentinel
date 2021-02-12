@@ -33,7 +33,7 @@ public class OnOffSetCommandHandler implements CommandHandler<String> {
         String value = request.getParam("value");
 
         try {
-            Constants.ON = Boolean.valueOf(value);
+            Constants.ON = Boolean.parseBoolean(value);
         } catch (Exception e) {
             RecordLog.info("Bad value when setting global switch", e);
         }

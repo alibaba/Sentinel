@@ -89,7 +89,7 @@ public class ContextUtil {
      * <p>
      * A context will be bound with an {@link EntranceNode}, which represents the entrance statistic node
      * of the invocation chain. New {@link EntranceNode} will be created if
-     * current context does't have one. Note that same context name will share
+     * current context doesn't have one. Note that same context name will share
      * same {@link EntranceNode} globally.
      * </p>
      * <p>
