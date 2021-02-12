@@ -105,7 +105,7 @@ public class StatisticNode implements Node {
     /**
      * The counter for thread count.
      */
-    private LongAdder curThreadNum = new LongAdder();
+    private final LongAdder curThreadNum = new LongAdder();
 
     /**
      * The last timestamp when metrics were fetched.
