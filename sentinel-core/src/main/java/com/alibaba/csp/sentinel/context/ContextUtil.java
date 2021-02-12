@@ -138,8 +138,11 @@ public class ContextUtil {
                                 node = new EntranceNode(new StringResourceWrapper(name, EntryType.IN), null);
                                 // Add entrance node.
                                 Constants.ROOT.addChild(node);
-
-                                contextNameNodeMap.put(name, node);
+                                
+                                Map<String, DefaultNode> newMap = new HashMap<>(contextNameNodeMap.size() + 1);
+                                newMap.putAll(contextNameNodeMap);
+                                newMap.put(name, node);
+                                contextNameNodeMap = newMap;
                             }
                         }
                     } finally {
