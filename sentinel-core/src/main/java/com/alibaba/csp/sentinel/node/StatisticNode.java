@@ -41,7 +41,7 @@ import com.alibaba.csp.sentinel.util.function.Predicate;
  *
  * <p>
  * case 1: When the first request comes in, Sentinel will create a new window bucket of
- * a specified time-span to store running statics, such as total response time(rt),
+ * a specified time-span to store running statistics, such as total response time(rt),
  * incoming request(QPS), block request(bq), etc. And the time-span is defined by sample count.
  * </p>
  * <pre>
@@ -52,7 +52,7 @@ import com.alibaba.csp.sentinel.util.function.Predicate;
  * 	  request
  * </pre>
  * <p>
- * Sentinel use the statics of the valid buckets to decide whether this request can be passed.
+ * Sentinel use the statistics of the valid buckets to decide whether this request can be passed.
  * For example, if a rule defines that only 100 requests can be passed,
  * it will sum all qps in valid buckets, and compare it to the threshold defined in rule.
  * </p>
