@@ -38,7 +38,7 @@ public final class CurrentConcurrencyManager {
     /**
      * use ConcurrentHashMap to store the nowCalls of rules.
      */
-    private static final ConcurrentHashMap<Long, AtomicInteger> NOW_CALLS_MAP = new ConcurrentHashMap<Long, AtomicInteger>();
+    private static final ConcurrentHashMap<Long, AtomicInteger> NOW_CALLS_MAP = new ConcurrentHashMap<>();
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1,

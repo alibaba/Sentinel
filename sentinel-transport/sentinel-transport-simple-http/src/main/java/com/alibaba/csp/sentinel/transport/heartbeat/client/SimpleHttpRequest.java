@@ -92,7 +92,7 @@ public class SimpleHttpRequest {
             throw new IllegalArgumentException("Parameter key cannot be empty");
         }
         if (params == null) {
-            params = new HashMap<String, String>();
+            params = new HashMap<>();
         }
         params.put(key, value);
         return this;

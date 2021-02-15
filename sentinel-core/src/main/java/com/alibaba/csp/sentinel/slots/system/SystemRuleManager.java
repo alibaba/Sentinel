@@ -56,8 +56,8 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  * Referring to BBR algorithm to learn more.
  * </p>
  * <p>
- * Note that {@link SystemRule} only effect on inbound requests, outbound traffic
- * will not limit by {@link SystemRule}
+ * Note that {@link SystemRule} only take effect on inbound requests, outbound traffic
+ * will not be limited by {@link SystemRule}
  * </p>
  *
  * @author jialiang.linjl

@@ -35,7 +35,7 @@ public class SentinelMotanConsumerService {
     private static final String RES_KEY = INTERFACE_RES_KEY + ":hello(java.lang.String)";
 
     public static void main(String[] args) {
-        RefererConfig<MotanDemoService> motanDemoServiceReferer = new RefererConfig<MotanDemoService>();
+        RefererConfig<MotanDemoService> motanDemoServiceReferer = new RefererConfig<>();
         // 设置接口及实现类
         motanDemoServiceReferer.setInterface(MotanDemoService.class);
         // 配置服务的group以及版本号

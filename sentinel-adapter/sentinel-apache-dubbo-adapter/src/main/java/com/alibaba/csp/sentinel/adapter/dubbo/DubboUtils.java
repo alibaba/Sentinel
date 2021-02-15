@@ -20,6 +20,9 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
+import java.util.Arrays;
+import java.util.StringJoiner;
+
 /**
  * @author Eric Zhao
  */
@@ -45,14 +48,9 @@ public final class DubboUtils {
             .append(":")
             .append(invocation.getMethodName())
             .append("(");
-        boolean isFirst = true;
-        for (Class<?> clazz : invocation.getParameterTypes()) {
-            if (!isFirst) {
-                buf.append(",");
-            }
-            buf.append(clazz.getName());
-            isFirst = false;
-        }
+        StringJoiner joiner = new StringJoiner(",");
+        Arrays.stream(invocation.getParameterTypes()).forEach(clazz -> joiner.add(clazz.getName()));
+        buf.append(joiner.toString());
         buf.append(")");
         return buf.toString();
     }
@@ -74,7 +72,6 @@ public final class DubboUtils {
     }
 
     public static String getInterfaceName(Invoker<?> invoker, Boolean useGroupAndVersion) {
-        StringBuilder buf = new StringBuilder(64);
         return useGroupAndVersion ? invoker.getUrl().getColonSeparatedKey() : invoker.getInterface().getName();
     }
 

@@ -34,7 +34,7 @@ public class FetchSystemStatusCommandHandler implements CommandHandler<String> {
     @Override
     public CommandResponse<String> handle(CommandRequest request) {
 
-        Map<String, Object> systemStatus = new HashMap<String, Object>();
+        Map<String, Object> systemStatus = new HashMap<>();
 
         systemStatus.put("rqps", Constants.ENTRY_NODE.successQps());
         systemStatus.put("qps", Constants.ENTRY_NODE.passQps());
