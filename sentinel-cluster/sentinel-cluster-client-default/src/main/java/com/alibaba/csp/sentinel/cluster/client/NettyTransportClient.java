@@ -205,7 +205,7 @@ public class NettyTransportClient implements ClusterTransportClient {
     }
 
     @Override
-    public ClusterResponse<?> sendRequest(ClusterRequest<?> request) throws Exception {
+    public ClusterResponse sendRequest(ClusterRequest request) throws Exception {
         if (!isReady()) {
             throw new SentinelClusterException(ClusterErrorMessages.CLIENT_NOT_READY);
         }

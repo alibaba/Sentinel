@@ -47,7 +47,7 @@ public interface ClusterTransportClient {
      * @return response from remote server
      * @throws Exception some error occurs
      */
-    ClusterResponse<?> sendRequest(ClusterRequest<?> request) throws Exception;
+    ClusterResponse sendRequest(ClusterRequest request) throws Exception;
 
     /**
      * Check whether the client has been started and ready for sending requests.

@@ -209,7 +209,7 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
                 "[DefaultClusterTokenClient] Client not created, please check your config for cluster client");
             return clientFail();
         }
-        ClusterResponse<?> response = transportClient.sendRequest(request);
+        ClusterResponse response = transportClient.sendRequest(request);
         TokenResult result = new TokenResult(response.getStatus());
         if (response.getData() != null) {
             FlowTokenResponseData responseData = (FlowTokenResponseData)response.getData();
