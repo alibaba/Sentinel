@@ -32,7 +32,7 @@ import java.util.Map;
 /**
  * <p>
  * Combined the runtime statistics collected from the previous
- * slots (NodeSelectorSlot, ClusterNodeBuilderSlot, and StatisticSlot), FlowSlot
+ * slots (NodeSelectorSlot, ClusterBuilderSlot, and StatisticSlot), FlowSlot
  * will use pre-set rules to decide whether the incoming requests should be
  * blocked.
  * </p>
