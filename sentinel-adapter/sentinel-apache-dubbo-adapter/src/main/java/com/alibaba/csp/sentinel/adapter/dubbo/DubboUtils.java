@@ -48,9 +48,14 @@ public final class DubboUtils {
             .append(":")
             .append(invocation.getMethodName())
             .append("(");
-        StringJoiner joiner = new StringJoiner(",");
-        Arrays.stream(invocation.getParameterTypes()).forEach(clazz -> joiner.add(clazz.getName()));
-        buf.append(joiner.toString());
+        boolean isFirst = true;
+        for (Class<?> clazz : invocation.getParameterTypes()) {
+            if (!isFirst) {
+                buf.append(",");
+            }
+            buf.append(clazz.getName());
+            isFirst = false;
+        }
         buf.append(")");
         return buf.toString();
     }
