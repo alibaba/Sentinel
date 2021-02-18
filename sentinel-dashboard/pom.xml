@@ -58,11 +58,11 @@
             <version>${spring.boot.version}</version>
             <scope>test</scope>
         </dependency>
-
+    
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.14</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-log4j2</artifactId>
+            <version>${spring.boot.version}</version>
         </dependency>
 
         <dependency>
