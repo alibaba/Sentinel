@@ -40,6 +40,7 @@
         <module>sentinel-demo-quarkus</module>
         <module>sentinel-demo-annotation-cdi-interceptor</module>
         <module>sentinel-demo-motan</module>
+        <module>sentinel-demo-transport-spring-mvc</module>
     </modules>
 
     <dependencies>
