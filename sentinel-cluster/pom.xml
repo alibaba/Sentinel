@@ -13,7 +13,7 @@
     <description>The parent module of Sentinel cluster server</description>
 
     <properties>
-        <netty.version>4.1.31.Final</netty.version>
+        <netty.version>4.1.48.Final</netty.version>
     </properties>
 
     <modules>
