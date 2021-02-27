@@ -14,7 +14,7 @@ public class AuthConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public LoginAuthenticationFilter loginAuthenticationFilter() {
-        return new LoginAuthenticationFilter();
+        return new DefaultLoginAuthenticationFilter();
     }
 
     @Bean
