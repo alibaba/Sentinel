@@ -31,8 +31,8 @@ public class AuthConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public AuthorizationInterceptor authorizationInterceptor() {
-        return new AuthorizationInterceptor();
+    public AuthorizationInterceptor authorizationInterceptor(AuthService<HttpServletRequest> httpServletRequestAuthService) {
+        return new DefaultAuthorizationInterceptor(httpServletRequestAuthService);
     }
 
 }
