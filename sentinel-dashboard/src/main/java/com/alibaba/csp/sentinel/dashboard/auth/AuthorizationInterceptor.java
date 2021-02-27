@@ -18,7 +18,6 @@ package com.alibaba.csp.sentinel.dashboard.auth;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.fastjson.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -33,7 +32,6 @@ import java.lang.reflect.Method;
  * @author lkxiaolou
  * @since 1.7.1
  */
-@Component
 public class AuthorizationInterceptor implements HandlerInterceptor {
 
     @Autowired

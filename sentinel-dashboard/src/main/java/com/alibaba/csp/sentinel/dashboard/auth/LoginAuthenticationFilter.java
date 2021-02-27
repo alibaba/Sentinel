@@ -19,7 +19,6 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 
 import javax.servlet.Filter;
@@ -49,7 +48,6 @@ import java.util.List;
  * @author cdfive
  * @since 1.6.0
  */
-@Component
 public class LoginAuthenticationFilter implements Filter {
     
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
