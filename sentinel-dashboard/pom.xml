@@ -13,6 +13,7 @@
     <packaging>jar</packaging>
 
     <properties>
+        <resource.delimiter>@</resource.delimiter>
         <spring.boot.version>2.0.5.RELEASE</spring.boot.version>
         <curator.version>4.0.1</curator.version>
     </properties>
@@ -138,6 +139,20 @@
 
     <build>
         <finalName>sentinel-dashboard</finalName>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <configuration>
+                        <delimiters>
+                            <delimiter>${resource.delimiter}</delimiter>
+                        </delimiters>
+                        <useDefaultDelimiters>false</useDefaultDelimiters>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
