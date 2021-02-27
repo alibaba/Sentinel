@@ -28,7 +28,6 @@ import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.dashboard.repository.metric.MetricsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,12 +45,15 @@ import com.alibaba.csp.sentinel.dashboard.domain.vo.MetricVo;
 @RequestMapping(value = "/metric", produces = MediaType.APPLICATION_JSON_VALUE)
 public class MetricController {
 
-    private static Logger logger = LoggerFactory.getLogger(MetricController.class);
+    private static final Logger logger = LoggerFactory.getLogger(MetricController.class);
 
     private static final long maxQueryIntervalMs = 1000 * 60 * 60;
 
-    @Autowired
-    private MetricsRepository<MetricEntity> metricStore;
+    private final MetricsRepository<MetricEntity> metricsRepository;
+
+    public MetricController(MetricsRepository<MetricEntity> metricsRepository) {
+        this.metricsRepository = metricsRepository;
+    }
 
     @ResponseBody
     @RequestMapping("/queryTopResourceMetric.json")
@@ -84,7 +86,7 @@ public class MetricController {
         if (endTime - startTime > maxQueryIntervalMs) {
             return Result.ofFail(-1, "time intervalMs is too big, must <= 1h");
         }
-        List<String> resources = metricStore.listResourcesOfApp(app);
+        List<String> resources = this.metricsRepository.listResourcesOfApp(app);
         logger.debug("queryTopResourceMetric(), resources.size()={}", resources.size());
 
         if (resources == null || resources.isEmpty()) {
@@ -112,7 +114,7 @@ public class MetricController {
         logger.debug("topResource={}", topResource);
         long time = System.currentTimeMillis();
         for (final String resource : topResource) {
-            List<MetricEntity> entities = metricStore.queryByAppAndResourceBetween(
+            List<MetricEntity> entities = this.metricsRepository.queryByAppAndResourceBetween(
                 app, resource, startTime, endTime);
             logger.debug("resource={}, entities.size()={}", resource, entities == null ? "null" : entities.size());
             List<MetricVo> vos = MetricVo.fromMetricEntities(entities, resource);
@@ -153,7 +155,7 @@ public class MetricController {
         if (endTime - startTime > maxQueryIntervalMs) {
             return Result.ofFail(-1, "time intervalMs is too big, must <= 1h");
         }
-        List<MetricEntity> entities = metricStore.queryByAppAndResourceBetween(
+        List<MetricEntity> entities = this.metricsRepository.queryByAppAndResourceBetween(
             app, identity, startTime, endTime);
         List<MetricVo> vos = MetricVo.fromMetricEntities(entities, identity);
         return Result.ofSuccess(sortMetricVoAndDistinct(vos));
