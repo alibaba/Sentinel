@@ -92,15 +92,15 @@ public class DefaultSentinelApiClient implements SentinelApiClient {
     private static final String SYSTEM_RULE_TYPE = "system";
     private static final String AUTHORITY_TYPE = "authority";
 
-    private CloseableHttpAsyncClient httpClient;
+    private final CloseableHttpAsyncClient httpClient;
 
     private static final SentinelVersion version160 = new SentinelVersion(1, 6, 0);
     private static final SentinelVersion version171 = new SentinelVersion(1, 7, 1);
 
-    @Autowired
-    private AppManagement appManagement;
+    private final AppManagement appManagement;
 
-    public DefaultSentinelApiClient() {
+    public DefaultSentinelApiClient(AppManagement appManagement) {
+        this.appManagement = appManagement;
         IOReactorConfig ioConfig = IOReactorConfig.custom().setConnectTimeout(3000).setSoTimeout(10000)
                 .setIoThreadCount(Runtime.getRuntime().availableProcessors() * 2).build();
         httpClient = HttpAsyncClients.custom().setRedirectStrategy(new DefaultRedirectStrategy() {
