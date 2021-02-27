@@ -27,7 +27,7 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.protocol.RequestContent;
 import org.junit.Test;
 
-public class SentinelApiClientTest {
+public class DefaultSentinelApiClientTest {
     @Test
     public void postRequest() throws HttpException, IOException {
         // Processor is required because it will determine the final request body including
@@ -40,13 +40,13 @@ public class SentinelApiClientTest {
         
         HttpUriRequest request;
         
-        request = SentinelApiClient.postRequest("/test", params, false);
+        request = DefaultSentinelApiClient.postRequest("/test", params, false);
         assertNotNull(request);
         processor.process(request, null);
         assertNotNull(request.getFirstHeader("Content-Type"));
         assertEquals("application/x-www-form-urlencoded", request.getFirstHeader("Content-Type").getValue());
         
-        request = SentinelApiClient.postRequest("/test", params, true);
+        request = DefaultSentinelApiClient.postRequest("/test", params, true);
         assertNotNull(request);
         processor.process(request, null);
         assertNotNull(request.getFirstHeader("Content-Type"));
