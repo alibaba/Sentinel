@@ -49,8 +49,11 @@ public class DefaultLoginAuthenticationFilter implements LoginAuthenticationFilt
     /**
      * Authentication using AuthService interface.
      */
-    @Autowired
-    private AuthService<HttpServletRequest> authService;
+    private final AuthService<HttpServletRequest> authService;
+
+    public DefaultLoginAuthenticationFilter(AuthService<HttpServletRequest> authService) {
+        this.authService = authService;
+    }
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
