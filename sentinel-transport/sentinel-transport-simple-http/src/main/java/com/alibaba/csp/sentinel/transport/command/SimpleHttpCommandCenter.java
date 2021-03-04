@@ -184,7 +184,7 @@ public class SimpleHttpCommandCenter implements CommandCenter {
                     //add server initiative timeout，prevent bizThreadPool full
                    Future<String> future = bizExecutor.submit(eventTask,"ok");
                    try {
-                       future.get(3000, TimeUnit.MILLISECONDS);
+                       future.get(DEFAULT_SERVER_SO_TIMEOUT, TimeUnit.MILLISECONDS);
                    }catch (TimeoutException | InterruptedException | ExecutionException  ex){
                        CommandCenterLog.error("httpEventTask request timeout");
                        future.cancel(true);
