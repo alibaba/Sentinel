@@ -181,7 +181,7 @@ public class SimpleHttpCommandCenter implements CommandCenter {
                     socket = this.serverSocket.accept();
                     setSocketSoTimeout(socket);
                     HttpEventTask eventTask = new HttpEventTask(socket);
-                    //add server initiative timeout，prevent bizThreadPool full
+                    //add server initiative timeout，prevent bizThreadPool full normal requests may be affected
                    Future<String> future = bizExecutor.submit(eventTask,"ok");
                    try {
                        future.get(DEFAULT_SERVER_SO_TIMEOUT, TimeUnit.MILLISECONDS);
