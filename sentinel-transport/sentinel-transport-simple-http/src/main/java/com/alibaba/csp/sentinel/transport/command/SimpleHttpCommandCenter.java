@@ -175,11 +175,13 @@ public class SimpleHttpCommandCenter implements CommandCenter {
 
         @Override
         public void run() {
+            //loop accept ,receive request and
             while (true) {
                 Socket socket = null;
                 try {
                     socket = this.serverSocket.accept();
                     setSocketSoTimeout(socket);
+                    //Give it to the biz threadPool for processing
                     HttpEventTask eventTask = new HttpEventTask(socket);
                     //add server initiative timeout，prevent bizThreadPool full normal requests may be affected
                    Future<String> future = bizExecutor.submit(eventTask,"ok");
