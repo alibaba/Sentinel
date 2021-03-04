@@ -22,14 +22,7 @@ import java.net.SocketException;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandHandlerProvider;
@@ -188,7 +181,14 @@ public class SimpleHttpCommandCenter implements CommandCenter {
                     socket = this.serverSocket.accept();
                     setSocketSoTimeout(socket);
                     HttpEventTask eventTask = new HttpEventTask(socket);
-                    bizExecutor.submit(eventTask);
+                    //add server initiative timeout，prevent bizThreadPool full
+                   Future<String> future = bizExecutor.submit(eventTask,"ok");
+                   try {
+                       future.get(3000, TimeUnit.MILLISECONDS);
+                   }catch (TimeoutException | InterruptedException | ExecutionException  ex){
+                       CommandCenterLog.error("httpEventTask request timeout");
+                       future.cancel(true);
+                   }
                 } catch (Exception e) {
                     CommandCenterLog.info("Server error", e);
                     if (socket != null) {
