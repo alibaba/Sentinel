@@ -186,7 +186,7 @@ public class SimpleHttpCommandCenter implements CommandCenter {
                    try {
                        future.get(DEFAULT_SERVER_SO_TIMEOUT, TimeUnit.MILLISECONDS);
                    }catch (TimeoutException | InterruptedException | ExecutionException ex){
-                       CommandCenterLog.error("httpEventTask request timeout");
+                       CommandCenterLog.error("httpEventTask handle request timeout");
                        //http eventTask timeout,call cancel (interrupt this thread)
                        future.cancel(true);
                    }
