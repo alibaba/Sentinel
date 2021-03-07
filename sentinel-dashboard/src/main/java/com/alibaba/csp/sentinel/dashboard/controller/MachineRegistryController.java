@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.dashboard.controller;
 
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
+import com.alibaba.csp.sentinel.dashboard.service.SentinelApolloPublicNamespaceService;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineDiscovery;
@@ -38,6 +39,9 @@ public class MachineRegistryController {
 
     @Autowired
     private AppManagement appManagement;
+
+    @Autowired
+    private SentinelApolloPublicNamespaceService sentinelApolloPublicNamespaceService;
 
     @ResponseBody
     @RequestMapping("/machine")
@@ -68,6 +72,7 @@ public class MachineRegistryController {
             machineInfo.setLastHeartbeat(System.currentTimeMillis());
             machineInfo.setVersion(sentinelVersion);
             appManagement.addMachine(machineInfo);
+            sentinelApolloPublicNamespaceService.registryProjectIfNotExists(app);
             return Result.ofSuccessMsg("success");
         } catch (Exception e) {
             logger.error("Receive heartbeat error", e);

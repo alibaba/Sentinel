@@ -15,12 +15,14 @@
  */
 package com.alibaba.csp.sentinel.dashboard.client;
 
+import com.alibaba.cloud.sentinel.datasource.RuleType;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.ApiDefinitionEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayFlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.*;
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ClusterClientConfig;
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ServerFlowConfig;
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ServerTransportConfig;
+import com.alibaba.csp.sentinel.dashboard.service.SentinelApolloPublicNamespaceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Primary;
@@ -34,10 +36,13 @@ import java.util.concurrent.CompletableFuture;
 @Primary
 public class CustomSentinelApiClient extends SentinelApiClient {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(CustomSentinelApiClient.class);
 
-    public CustomSentinelApiClient() {
-        this.logger.info("use SentinelApiClient {}", this.getClass());
+    private final SentinelApolloPublicNamespaceService sentinelApolloPublicNamespaceService;
+
+    public CustomSentinelApiClient(SentinelApolloPublicNamespaceService sentinelApolloPublicNamespaceService) {
+        this.sentinelApolloPublicNamespaceService = sentinelApolloPublicNamespaceService;
+        logger.info("use SentinelApiClient {}", this.getClass());
     }
 
     @Override
@@ -48,8 +53,7 @@ public class CustomSentinelApiClient extends SentinelApiClient {
 
     @Override
     public CompletableFuture<Void> setFlowRuleOfMachineAsync(String app, String ip, int port, List<FlowRuleEntity> rules) {
-//        return super.setFlowRuleOfMachineAsync(app, ip, port, rules);
-        throw new UnsupportedOperationException("unsupported operation");
+        return this.sentinelApolloPublicNamespaceService.setRulesAsync(app, RuleType.FLOW, rules);
     }
 
     @Override
