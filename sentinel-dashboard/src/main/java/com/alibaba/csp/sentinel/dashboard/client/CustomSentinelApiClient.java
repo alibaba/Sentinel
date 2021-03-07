@@ -23,14 +23,17 @@ import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ClusterClientCon
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ServerFlowConfig;
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ServerTransportConfig;
 import com.alibaba.csp.sentinel.dashboard.service.SentinelApolloPublicNamespaceService;
+import com.alibaba.csp.sentinel.slots.block.Rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Component
 @Primary
@@ -45,6 +48,10 @@ public class CustomSentinelApiClient extends SentinelApiClient {
         logger.info("use SentinelApiClient {}", this.getClass());
     }
 
+    private static List<Rule> toRules(List<? extends RuleEntity> ruleEntities) {
+        return ruleEntities.stream().map(RuleEntity::toRule).collect(Collectors.toList());
+    }
+
     @Override
     public boolean setFlowRuleOfMachine(String app, String ip, int port, List<FlowRuleEntity> rules) {
 //        return super.setFlowRuleOfMachine(app, ip, port, rules);
@@ -53,7 +60,7 @@ public class CustomSentinelApiClient extends SentinelApiClient {
 
     @Override
     public CompletableFuture<Void> setFlowRuleOfMachineAsync(String app, String ip, int port, List<FlowRuleEntity> rules) {
-        return this.sentinelApolloPublicNamespaceService.setRulesAsync(app, RuleType.FLOW, rules);
+        return this.sentinelApolloPublicNamespaceService.setRulesAsync(app, RuleType.FLOW, toRules(rules));
     }
 
     @Override
