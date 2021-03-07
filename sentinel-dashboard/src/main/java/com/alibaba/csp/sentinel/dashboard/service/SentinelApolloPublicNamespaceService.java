@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 
 @Service
 public class SentinelApolloPublicNamespaceService {
@@ -168,6 +169,18 @@ public class SentinelApolloPublicNamespaceService {
         };
 
         return CompletableFuture.runAsync(runnable);
+    }
+
+    public boolean setRules(String projectName, RuleType ruleType, List<? extends Rule> rules) {
+        CompletableFuture<Void> completableFuture = this.setRulesAsync(projectName, ruleType, rules);
+        try {
+            completableFuture.get();
+            return true;
+        } catch (InterruptedException | ExecutionException e) {
+            logger.debug("wait fail. setRules of project " + projectName, e);
+        }
+
+        return false;
     }
 
 }

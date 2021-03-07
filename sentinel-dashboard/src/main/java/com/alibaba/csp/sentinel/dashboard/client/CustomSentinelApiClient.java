@@ -65,26 +65,22 @@ public class CustomSentinelApiClient extends SentinelApiClient {
 
     @Override
     public boolean setDegradeRuleOfMachine(String app, String ip, int port, List<DegradeRuleEntity> rules) {
-//        return super.setDegradeRuleOfMachine(app, ip, port, rules);
-        throw new UnsupportedOperationException("unsupported operation");
+        return this.sentinelApolloPublicNamespaceService.setRules(app, RuleType.DEGRADE, toRules(rules));
     }
 
     @Override
     public boolean setSystemRuleOfMachine(String app, String ip, int port, List<SystemRuleEntity> rules) {
-//        return super.setSystemRuleOfMachine(app, ip, port, rules);
-        throw new UnsupportedOperationException("unsupported operation");
+        return this.sentinelApolloPublicNamespaceService.setRules(app, RuleType.SYSTEM, toRules(rules));
     }
 
     @Override
     public boolean setAuthorityRuleOfMachine(String app, String ip, int port, List<AuthorityRuleEntity> rules) {
-//        return super.setAuthorityRuleOfMachine(app, ip, port, rules);
-        throw new UnsupportedOperationException("unsupported operation");
+        return this.sentinelApolloPublicNamespaceService.setRules(app, RuleType.AUTHORITY, toRules(rules));
     }
 
     @Override
     public CompletableFuture<Void> setParamFlowRuleOfMachine(String app, String ip, int port, List<ParamFlowRuleEntity> rules) {
-//        return super.setParamFlowRuleOfMachine(app, ip, port, rules);
-        throw new UnsupportedOperationException("unsupported operation");
+        return this.sentinelApolloPublicNamespaceService.setRulesAsync(app, RuleType.PARAM_FLOW, toRules(rules));
     }
 
     @Override
