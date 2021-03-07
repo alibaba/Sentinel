@@ -19,7 +19,6 @@ import com.alibaba.cloud.sentinel.datasource.RuleType;
 import com.alibaba.csp.sentinel.dashboard.config.SentinelApolloOpenApiProperties;
 import com.alibaba.csp.sentinel.dashboard.config.SentinelApolloPrivateConfiguration;
 import com.alibaba.csp.sentinel.dashboard.config.SentinelApolloPublicProperties;
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
 import com.alibaba.csp.sentinel.slots.block.Rule;
 import com.alibaba.fastjson.JSON;
 import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
@@ -27,18 +26,17 @@ import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import com.ctrip.framework.apollo.openapi.dto.NamespaceReleaseDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenAppNamespaceDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
-import com.ctrip.framework.apollo.openapi.dto.OpenNamespaceDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Service
 public class SentinelApolloPublicNamespaceService {
@@ -81,6 +79,20 @@ public class SentinelApolloPublicNamespaceService {
     }
 
     /**
+     * reverse operation with {@link #resolvePublicNamespaceName(String)}.
+     */
+    private String deResolvePublicNamespaceName(String publicNamespaceName) {
+        Assert.notNull(publicNamespaceName, "public namespace name should not be null");
+        final String namespacePrefix = this.sentinelApolloPublicProperties.getNamespacePrefix();
+        final int namespacePrefixLength = namespacePrefix.length();
+        Assert.isTrue(
+                publicNamespaceName.length() > namespacePrefixLength,
+                "public namespace name's length " + publicNamespaceName.length() + "should bigger that namespace prefix " + namespacePrefix + "'s length" + namespacePrefixLength
+        );
+        return publicNamespaceName.substring(namespacePrefixLength);
+    }
+
+    /**
      * @see com.alibaba.cloud.sentinel.datasource.config.ApolloDataSourceProperties#setFlowRulesKey(String)
      */
     private String resolveFlowRulesKey(String projectName, RuleType ruleType) {
@@ -90,6 +102,7 @@ public class SentinelApolloPublicNamespaceService {
     /**
      * create, publish, authorize to current user about new public namespace.
      * use synchronized to forbid concurrent problem, because there is no performance problem here.
+     *
      * @return null if resolve failed
      */
     private Object resolvePublicNamespaceInApollo(String publicNamespaceName) {
@@ -181,6 +194,32 @@ public class SentinelApolloPublicNamespaceService {
         }
 
         return false;
+    }
+
+    /**
+     * @return project's name in sentinel dashboard's cache
+     */
+    public Set<String> listCachedProjectNames() {
+        return this.publicNamespaceNames.keySet().stream().map(this::deResolvePublicNamespaceName).collect(Collectors.toSet());
+    }
+
+    public void clearCacheOfProject(String projectName) {
+        String publicNamespaceName = this.resolvePublicNamespaceName(projectName);
+        this.publicNamespaceNames.remove(publicNamespaceName);
+    }
+
+    /**
+     * this method is not atomic.
+     * maybe exists concurrent problem with {@link #ensurePublicNamespaceExists(String)}.
+     *
+     * @return project's names which cleared in cache
+     */
+    public Set<String> clearAllCachedProjectNames() {
+        Set<String> projectNames = new TreeSet<>(this.listCachedProjectNames());
+        for (String projectName : projectNames) {
+            this.clearCacheOfProject(projectName);
+        }
+        return projectNames;
     }
 
 }
