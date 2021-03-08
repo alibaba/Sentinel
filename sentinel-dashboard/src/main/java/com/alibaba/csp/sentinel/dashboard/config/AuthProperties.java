@@ -13,17 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.auth;
+package com.alibaba.csp.sentinel.dashboard.config;
 
-import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
-/**
- * The web interceptor for privilege-based authorization.
- *
- * @author lkxiaolou
- * @author wxq
- * @since 1.7.1
- */
-public interface AuthorizationInterceptor extends HandlerInterceptor {
+@ConfigurationProperties(prefix = "auth")
+public class AuthProperties {
+
+    private boolean enabled = true;
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 
 }
