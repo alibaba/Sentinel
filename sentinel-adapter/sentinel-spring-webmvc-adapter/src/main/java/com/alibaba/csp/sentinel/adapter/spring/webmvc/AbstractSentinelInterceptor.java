@@ -71,7 +71,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
      * @param step
      * @return reference count after increasing (initial value as zero to be increased) 
      */
-    private Integer increaseReferece(HttpServletRequest request, String rcKey, int step) {
+    private Integer increaseReference(HttpServletRequest request, String rcKey, int step) {
         Object obj = request.getAttribute(rcKey);
         
         if (obj == null) {
@@ -94,7 +94,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
                 return true;
             }
             
-            if (increaseReferece(request, this.baseWebMvcConfig.getRequestRefName(), 1) != 1) {
+            if (increaseReference(request, this.baseWebMvcConfig.getRequestRefName(), 1) != 1) {
                 return true;
             }
             
@@ -136,7 +136,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
                                 Object handler, Exception ex) throws Exception {
-        if (increaseReferece(request, this.baseWebMvcConfig.getRequestRefName(), -1) != 0) {
+        if (increaseReference(request, this.baseWebMvcConfig.getRequestRefName(), -1) != 0) {
             return;
         }
         

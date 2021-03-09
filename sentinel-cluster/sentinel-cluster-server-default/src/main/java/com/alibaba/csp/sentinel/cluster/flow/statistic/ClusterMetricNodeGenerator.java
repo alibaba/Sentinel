@@ -59,11 +59,7 @@ public class ClusterMetricNodeGenerator {
     }
 
     private static void putToMap(Map<String, List<ClusterMetricNode>> map, ClusterMetricNode node) {
-        List<ClusterMetricNode> nodeList = map.get(node.getResourceName());
-        if (nodeList == null) {
-            nodeList = new ArrayList<>();
-            map.put(node.getResourceName(), nodeList);
-        }
+        List<ClusterMetricNode> nodeList = map.computeIfAbsent(node.getResourceName(), k -> new ArrayList<>());
         nodeList.add(node);
     }
 
