@@ -18,30 +18,32 @@ package com.alibaba.csp.sentinel.dashboard.config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@EnableConfigurationProperties(SentinelApolloPrivateProperties.class)
 public class SentinelApolloPrivateConfiguration {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private final String appId;
 
     private final String env;
 
     private final String clusterName;
 
+    private final SentinelApolloPrivateProperties properties;
+
     public SentinelApolloPrivateConfiguration(
-            @Value("${app.id}") String appId,
+            SentinelApolloPrivateProperties sentinelApolloPrivateProperties,
             @Value("${env}") String env,
             @Value("${apollo.cluster}") String clusterName) {
-        this.appId = appId;
+        this.properties = sentinelApolloPrivateProperties;
         this.env = env;
         this.clusterName = clusterName;
     }
 
-    public String getAppId() {
-        return appId;
+    public String getOperatedAppId() {
+        return this.properties.getOperatedAppId();
     }
 
     public String getEnv() {

@@ -43,7 +43,7 @@ public class SentinelApolloPublicNamespaceService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final String appId;
+    private final String operatedAppId;
 
     private final String env;
 
@@ -61,7 +61,7 @@ public class SentinelApolloPublicNamespaceService {
             SentinelApolloPrivateConfiguration sentinelApolloPrivateConfiguration,
             SentinelApolloOpenApiProperties sentinelApolloOpenApiProperties,
             SentinelApolloPublicProperties sentinelApolloPublicProperties, ApolloOpenApiClient apolloOpenApiClient) {
-        this.appId = sentinelApolloPrivateConfiguration.getAppId();
+        this.operatedAppId = sentinelApolloPrivateConfiguration.getOperatedAppId();
         this.env = sentinelApolloPrivateConfiguration.getEnv();
         this.clusterName = sentinelApolloPrivateConfiguration.getClusterName();
         this.operateUser = sentinelApolloOpenApiProperties.getOperateUser();
@@ -110,7 +110,7 @@ public class SentinelApolloPublicNamespaceService {
         // create
         OpenAppNamespaceDTO openAppNamespaceDTO = new OpenAppNamespaceDTO();
         openAppNamespaceDTO.setName(publicNamespaceName);
-        openAppNamespaceDTO.setAppId(this.appId);
+        openAppNamespaceDTO.setAppId(this.operatedAppId);
         openAppNamespaceDTO.setFormat(ConfigFileFormat.Properties.getValue());
         openAppNamespaceDTO.setPublic(true);
         // disable auto prefix with orgId
@@ -132,7 +132,7 @@ public class SentinelApolloPublicNamespaceService {
         final String currentDateString = simpleDateFormat.format(new Date());
         namespaceReleaseDTO.setReleaseTitle(currentDateString + "-first-publish-release");
 
-        this.apolloOpenApiClient.publishNamespace(this.appId, this.env, this.clusterName, publicNamespaceName, namespaceReleaseDTO);
+        this.apolloOpenApiClient.publishNamespace(this.operatedAppId, this.env, this.clusterName, publicNamespaceName, namespaceReleaseDTO);
 
         // authorize
         // TODO
@@ -143,7 +143,7 @@ public class SentinelApolloPublicNamespaceService {
     private void ensurePublicNamespaceExists(String publicNamespaceName) {
         // query by apollo portal
         try {
-            this.publicNamespaceNames.computeIfAbsent(publicNamespaceName, key -> this.apolloOpenApiClient.getNamespace(appId, env, clusterName, key));
+            this.publicNamespaceNames.computeIfAbsent(publicNamespaceName, key -> this.apolloOpenApiClient.getNamespace(operatedAppId, env, clusterName, key));
         } catch (RuntimeException e) {
             this.logger.warn("get public namespace [{}] meet an RuntimeException, may not exists in apollo. exception message = '{}'", publicNamespaceName, e.getMessage());
         }
@@ -177,8 +177,8 @@ public class SentinelApolloPublicNamespaceService {
 
         final String publicNamespaceName = this.resolvePublicNamespaceName(projectName);
         Runnable runnable = () -> {
-            apolloOpenApiClient.createOrUpdateItem(this.appId, this.env, this.clusterName, publicNamespaceName, openItemDTO);
-            apolloOpenApiClient.publishNamespace(this.appId, this.env, this.clusterName, publicNamespaceName, namespaceReleaseDTO);
+            apolloOpenApiClient.createOrUpdateItem(this.operatedAppId, this.env, this.clusterName, publicNamespaceName, openItemDTO);
+            apolloOpenApiClient.publishNamespace(this.operatedAppId, this.env, this.clusterName, publicNamespaceName, namespaceReleaseDTO);
         };
 
         return CompletableFuture.runAsync(runnable);
