@@ -69,6 +69,14 @@ public final class Constants {
      * The global switch for Sentinel.
      */
     public static volatile boolean ON = true;
+    /**
+     * fallback type throw exception
+     */
+    public final static String EXCEPTION_FALLBACK = "__exception__";
+    /**
+     * fallback type null value
+     */
+    public final static String NULL_FALLBACK = "__null__";
 
     private Constants() {}
 }
