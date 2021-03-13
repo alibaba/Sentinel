@@ -20,6 +20,7 @@ import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.slots.block.Rule;
 import com.alibaba.fastjson.JSON;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.function.BiFunction;
 
@@ -34,5 +35,18 @@ public interface DataSourceConverterUtils {
         Class<? extends Rule> ruleClazz = ruleType.getClazz();
         return JSON.parseArray(json, ruleClazz);
     };
+
+    static String serializeToString(List<? extends Rule> rules) {
+        return SERIALIZER.convert(rules);
+    }
+
+    static List<? extends Rule> deserialize(String content, RuleType ruleType) {
+        return DESERIALIZER.apply(content, ruleType);
+    }
+
+    static List<? extends Rule> deserialize(byte[] bytes, RuleType ruleType) {
+        String content = new String(bytes, StandardCharsets.UTF_8);
+        return DESERIALIZER.apply(content, ruleType);
+    }
 
 }

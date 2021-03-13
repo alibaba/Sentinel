@@ -15,22 +15,26 @@
  */
 package com.alibaba.csp.sentinel.dashboard.controller;
 
+import com.alibaba.cloud.sentinel.datasource.RuleType;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
+import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.dashboard.service.SentinelProjectConfigService;
+import com.alibaba.csp.sentinel.slots.block.Rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/config", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -74,6 +78,16 @@ public class ProjectConfigController {
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + filename);
 
         this.sentinelProjectConfigService.exportAllToZip(response.getOutputStream());
+    }
+
+    @PostMapping("/import/all")
+    @AuthAction(AuthService.PrivilegeType.ALL)
+    public Result<Map<String, Map<RuleType, List<? extends Rule>>>> importAll(@RequestParam("file") MultipartFile file) throws IOException {
+        final Map<String, Map<RuleType, List<? extends Rule>>> projectName2rules;
+        try (InputStream inputStream = file.getInputStream()) {
+            projectName2rules = this.sentinelProjectConfigService.importAllFrom(inputStream);
+        }
+        return Result.ofSuccess(projectName2rules);
     }
 
 }

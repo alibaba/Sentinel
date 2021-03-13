@@ -16,21 +16,20 @@
 package com.alibaba.csp.sentinel.dashboard.service;
 
 import com.alibaba.cloud.sentinel.datasource.RuleType;
+import com.alibaba.csp.sentinel.dashboard.util.DataSourceConverterUtils;
 import com.alibaba.csp.sentinel.slots.block.Rule;
 import org.apache.commons.lang.time.DateFormatUtils;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import static com.alibaba.csp.sentinel.dashboard.util.DataSourceConverterUtils.SERIALIZER;
@@ -40,14 +39,38 @@ public class SentinelProjectConfigService {
 
     private static final Logger logger = LoggerFactory.getLogger(SentinelProjectConfigService.class);
 
+    private static final String FILENAME_SUFFIX = ".json";
+
     private final SentinelApolloPublicNamespaceService sentinelApolloPublicNamespaceService;
 
     public SentinelProjectConfigService(SentinelApolloPublicNamespaceService sentinelApolloPublicNamespaceService) {
         this.sentinelApolloPublicNamespaceService = sentinelApolloPublicNamespaceService;
     }
 
+    static ZipEntry resolveZipEntry(String projectName, RuleType ruleType) {
+        return new ZipEntry(String.join(File.separator, projectName, ruleType.name() + FILENAME_SUFFIX));
+    }
+
+    /**
+     * @throws IllegalArgumentException if zipEntry is a directory
+     */
+    static String getProjectName(ZipEntry zipEntry) {
+        if (zipEntry.isDirectory()) {
+            throw new IllegalArgumentException(zipEntry + " should not be a directory");
+        }
+        File file = new File(zipEntry.getName());
+        return file.getParent();
+    }
+
+    static RuleType getRuleType(ZipEntry zipEntry) {
+        String filename = new File(zipEntry.getName()).getName();
+        Assert.isTrue(filename.endsWith(FILENAME_SUFFIX), "filename '" + filename + "' should ends with " + FILENAME_SUFFIX);
+        String ruleTypeName = filename.substring(0, filename.length() - FILENAME_SUFFIX.length());
+        return RuleType.valueOf(ruleTypeName);
+    }
+
     private static void write2ZipOutputStream(ZipOutputStream zipOutputStream, String projectName, RuleType ruleType, List<? extends Rule> rules) throws IOException {
-        ZipEntry zipEntry = new ZipEntry(String.join(File.separator, projectName, ruleType.name() + ".json"));
+        ZipEntry zipEntry = resolveZipEntry(projectName, ruleType);
 
         try {
             zipOutputStream.putNextEntry(zipEntry);
@@ -95,6 +118,50 @@ public class SentinelProjectConfigService {
     public void exportToZip(OutputStream outputStream, String projectName) throws IOException {
         Map<RuleType, List<? extends Rule>> ruleTypeListMap = this.sentinelApolloPublicNamespaceService.getRules(projectName);
         writeAsZipOutputStream(outputStream, Collections.singletonMap(projectName, ruleTypeListMap));
+    }
+
+    private static List<? extends Rule> readRules(InputStream inputStream, RuleType ruleType) throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        IOUtils.copy(inputStream, byteArrayOutputStream);
+        byte[] bytes = byteArrayOutputStream.toByteArray();
+        return DataSourceConverterUtils.deserialize(bytes, ruleType);
+    }
+
+    private static Map<String, Map<RuleType, List<? extends Rule>>> readFromZipInputStream(ZipInputStream zipInputStream) throws IOException {
+        Map<String, Map<RuleType, List<? extends Rule>>> projectName2rules = new HashMap<>();
+        for (
+                ZipEntry zipEntry = zipInputStream.getNextEntry();
+                null != zipEntry;
+                zipEntry = zipInputStream.getNextEntry()
+        ) {
+            if (!zipEntry.isDirectory()) {
+                String projectName = getProjectName(zipEntry);
+                if (!projectName2rules.containsKey(projectName)) {
+                    projectName2rules.put(projectName, new HashMap<>());
+                }
+
+                RuleType ruleType = getRuleType(zipEntry);
+                // read content
+                List<? extends Rule> rules = readRules(zipInputStream, ruleType);
+                // add rules
+                projectName2rules.get(projectName).put(ruleType, rules);
+            }
+
+            zipInputStream.closeEntry();
+        }
+
+        return projectName2rules;
+    }
+
+    public Map<String, Map<RuleType, List<? extends Rule>>> importAllFrom(InputStream inputStream) throws IOException {
+        final Map<String, Map<RuleType, List<? extends Rule>>> projectName2rules;
+        try (ZipInputStream zipInputStream = new ZipInputStream(inputStream)) {
+            projectName2rules = readFromZipInputStream(zipInputStream);
+        }
+
+        this.sentinelApolloPublicNamespaceService.setRules(projectName2rules);
+
+        return projectName2rules;
     }
 
 }

@@ -19,6 +19,7 @@ import com.alibaba.cloud.sentinel.datasource.RuleType;
 import com.alibaba.csp.sentinel.dashboard.config.SentinelApolloOpenApiProperties;
 import com.alibaba.csp.sentinel.dashboard.config.SentinelApolloPrivateConfiguration;
 import com.alibaba.csp.sentinel.dashboard.config.SentinelApolloPublicProperties;
+import com.alibaba.csp.sentinel.dashboard.util.DataSourceConverterUtils;
 import com.alibaba.csp.sentinel.slots.block.Rule;
 import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
@@ -26,6 +27,7 @@ import com.ctrip.framework.apollo.openapi.dto.NamespaceReleaseDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenAppNamespaceDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenNamespaceDTO;
+import org.apache.commons.lang.time.DateFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -37,9 +39,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-
-import static com.alibaba.csp.sentinel.dashboard.util.DataSourceConverterUtils.DESERIALIZER;
-import static com.alibaba.csp.sentinel.dashboard.util.DataSourceConverterUtils.SERIALIZER;
 
 @Service
 public class SentinelApolloPublicNamespaceService {
@@ -177,29 +176,45 @@ public class SentinelApolloPublicNamespaceService {
         this.ensurePublicNamespaceExists(publicNamespaceName);
     }
 
-    public CompletableFuture<Void> setRulesAsync(String projectName, RuleType ruleType, List<? extends Rule> rules) {
-        this.registryProjectIfNotExists(projectName);
-
+    private OpenItemDTO resolveOpenItemDTO(String projectName, RuleType ruleType, List<? extends Rule> rules) {
         OpenItemDTO openItemDTO = new OpenItemDTO();
         final String ruleKey = this.resolveFlowRulesKey(projectName, ruleType);
         openItemDTO.setKey(ruleKey);
 
         // TODO, use json converter in spring-cloud-starter-alibaba-sentinel defined in SentinelConverterConfiguration?
-        final String value = SERIALIZER.convert(rules);
+        final String value = DataSourceConverterUtils.serializeToString(rules);
 
         openItemDTO.setValue(value);
         openItemDTO.setDataChangeCreatedBy(this.operateUser);
 
+        return openItemDTO;
+    }
+
+    private void createOrUpdateConfig(String projectName, RuleType ruleType, List<? extends Rule> rules) {
+        final String publicNamespaceName = this.resolvePublicNamespaceName(projectName);
+        OpenItemDTO openItemDTO = this.resolveOpenItemDTO(projectName, ruleType, rules);
+        apolloOpenApiClient.createOrUpdateItem(this.operatedAppId, this.env, this.clusterName, publicNamespaceName, openItemDTO);
+    }
+
+    private NamespaceReleaseDTO resolveNamespaceReleaseDTO() {
         NamespaceReleaseDTO namespaceReleaseDTO = new NamespaceReleaseDTO();
         namespaceReleaseDTO.setReleasedBy(this.operateUser);
-        namespaceReleaseDTO.setReleaseTitle(projectName + "." + ruleType);
+        namespaceReleaseDTO.setReleaseTitle("sentinel dashboard operate on " + DateFormatUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
+        return namespaceReleaseDTO;
+    }
 
+    private void publishConfig(String projectName) {
         final String publicNamespaceName = this.resolvePublicNamespaceName(projectName);
-        Runnable runnable = () -> {
-            apolloOpenApiClient.createOrUpdateItem(this.operatedAppId, this.env, this.clusterName, publicNamespaceName, openItemDTO);
-            apolloOpenApiClient.publishNamespace(this.operatedAppId, this.env, this.clusterName, publicNamespaceName, namespaceReleaseDTO);
-        };
+        NamespaceReleaseDTO namespaceReleaseDTO = this.resolveNamespaceReleaseDTO();
+        apolloOpenApiClient.publishNamespace(this.operatedAppId, this.env, this.clusterName, publicNamespaceName, namespaceReleaseDTO);
+    }
 
+    public CompletableFuture<Void> setRulesAsync(String projectName, RuleType ruleType, List<? extends Rule> rules) {
+        this.registryProjectIfNotExists(projectName);
+        Runnable runnable = () -> {
+            this.createOrUpdateConfig(projectName, ruleType, rules);
+            this.publishConfig(projectName);
+        };
         return CompletableFuture.runAsync(runnable);
     }
 
@@ -213,6 +228,27 @@ public class SentinelApolloPublicNamespaceService {
         }
 
         return false;
+    }
+
+    private void setRules(String projectName, Map<RuleType, List<? extends Rule>> ruleTypeListMap) {
+        // create or update config
+        for (Map.Entry<RuleType, List<? extends Rule>> entry : ruleTypeListMap.entrySet()) {
+            RuleType ruleType = entry.getKey();
+            List<? extends Rule> rules = entry.getValue();
+            this.createOrUpdateConfig(projectName, ruleType, rules);
+        }
+
+        // publish config
+        this.publishConfig(projectName);
+    }
+
+    public void setRules(Map<String, Map<RuleType, List<? extends Rule>>> projectName2rules) {
+        for (Map.Entry<String, Map<RuleType, List<? extends Rule>>> entry : projectName2rules.entrySet()) {
+            String projectName = entry.getKey();
+            Map<RuleType, List<? extends Rule>> ruleTypeListMap = entry.getValue();
+            // TODO, consider that parallel with each project
+            this.setRules(projectName, ruleTypeListMap);
+        }
     }
 
     /**
@@ -251,7 +287,7 @@ public class SentinelApolloPublicNamespaceService {
         for (RuleType ruleType : RuleType.values()) {
             String ruleKey = this.resolveFlowRulesKey(projectName, ruleType);
             if (keyValues.containsKey(ruleKey)) {
-                List<? extends Rule> ruleList = DESERIALIZER.apply(keyValues.get(ruleKey), ruleType);
+                List<? extends Rule> ruleList = DataSourceConverterUtils.deserialize(keyValues.get(ruleKey), ruleType);
                 rules.put(ruleType, ruleList);
             }
         }
