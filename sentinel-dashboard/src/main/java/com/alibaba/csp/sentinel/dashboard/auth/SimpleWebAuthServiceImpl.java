@@ -15,10 +15,6 @@
  */
 package com.alibaba.csp.sentinel.dashboard.auth;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Component;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -26,9 +22,6 @@ import javax.servlet.http.HttpSession;
  * @author cdfive
  * @since 1.6.0
  */
-@Component
-@Primary
-@ConditionalOnProperty(name = "auth.enabled", matchIfMissing = true)
 public class SimpleWebAuthServiceImpl implements AuthService<HttpServletRequest> {
 
     public static final String WEB_SESSION_KEY = "session_sentinel_admin";
