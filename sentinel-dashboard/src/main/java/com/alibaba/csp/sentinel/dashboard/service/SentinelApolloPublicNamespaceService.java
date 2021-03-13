@@ -20,7 +20,6 @@ import com.alibaba.csp.sentinel.dashboard.config.SentinelApolloOpenApiProperties
 import com.alibaba.csp.sentinel.dashboard.config.SentinelApolloPrivateConfiguration;
 import com.alibaba.csp.sentinel.dashboard.config.SentinelApolloPublicProperties;
 import com.alibaba.csp.sentinel.slots.block.Rule;
-import com.alibaba.fastjson.JSON;
 import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import com.ctrip.framework.apollo.openapi.dto.NamespaceReleaseDTO;
@@ -37,6 +36,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+
+import static com.alibaba.csp.sentinel.dashboard.util.DataSourceConverterUtils.SERIALIZER;
 
 @Service
 public class SentinelApolloPublicNamespaceService {
@@ -167,7 +168,7 @@ public class SentinelApolloPublicNamespaceService {
         openItemDTO.setKey(ruleKey);
 
         // TODO, use json converter in spring-cloud-starter-alibaba-sentinel defined in SentinelConverterConfiguration?
-        final String value = JSON.toJSONString(rules, true);
+        final String value = SERIALIZER.convert(rules);
         openItemDTO.setValue(value);
         openItemDTO.setDataChangeCreatedBy(this.operateUser);
 
