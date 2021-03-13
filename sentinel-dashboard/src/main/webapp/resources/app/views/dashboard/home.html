@@ -4,7 +4,48 @@
       <h1 class="page-header">欢迎使用 Sentinel 控制台</h1>
     </div>
     <!-- /.col-lg-12 -->
-  </div>
+
+
+    <div class="separator"></div>
+    <!-- 导出配置文件 -->
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span12">
+          <h3>
+            导出配置
+          </h3>
+          <p>
+            导出所有应用的配置，格式是.zip
+          </p>
+          <p>
+            .zip文件里的目录结构如下
+            <pre>
+|-- 应用名
+|   |-- FLOW.json
+|   |-- DEGRADE.json
+|   |-- PARAM_FLOW.json
+|   |-- SYSTEM.json
+|   |-- AUTHORITY.json
+            </pre>
+          </p>
+          <p>
+            应用的xxx规则保存在xxx.json文件中
+          </p>
+          <p>
+            如果某个应用没有对应的xxx规则，那么在应用名的文件夹下，不会有xxx.json文件
+          </p>
+          <p>
+            例如应用名是order，没有DEGRADE规则，那么在order的文件夹下，不会产生DEGRADE.json文件
+          </p>
+          <a href="config/export/all" target="_blank">
+            <button class="btn btn-block btn-lg btn-primary">
+              下载
+            </button>
+          </a>
+        </div>
+      </div>
+    </div>
+
   <!-- /.row -->
   <!-- /.panel -->
   <div class="row">
