@@ -153,7 +153,6 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
             this.nodeCache.start();
         } catch (Exception e) {
             RecordLog.warn("[ZookeeperDataSource] Error occurred when initializing Zookeeper data source", e);
-            e.printStackTrace();
         }
     }
 

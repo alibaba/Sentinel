@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.demo.zuul2.gateway;
 
 import java.io.IOException;
 
+import com.alibaba.csp.sentinel.log.RecordLog;
 import com.google.inject.Injector;
 import com.google.inject.Scopes;
 import com.netflix.appinfo.EurekaInstanceConfig;
@@ -51,7 +52,7 @@ public class ZuulBootstrap {
             server = serverStartup.server();
             server.start(true);
         } catch (IOException e) {
-            e.printStackTrace();
+            RecordLog.warn("[ZuulBootstrap] Error when start", e);
         }
     }
 

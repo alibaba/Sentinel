@@ -85,7 +85,6 @@ public class RegularExpireStrategy implements ExpireStrategy {
             try {
                 clearToken();
             } catch (Throwable e) {
-                e.printStackTrace();
                 RecordLog.warn("[RegularExpireStrategy] undefined throwable during clear token: ", e);
             }
         }

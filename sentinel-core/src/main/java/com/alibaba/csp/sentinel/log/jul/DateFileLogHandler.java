@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.log.jul;
 
+import com.alibaba.csp.sentinel.log.RecordLog;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -107,7 +109,7 @@ class DateFileLogHandler extends Handler {
             File logFile = new File(fileName);
             return logFile.exists();
         } catch (Throwable e) {
-
+            RecordLog.warn("[DateFileLogHandler] Error when logFileExits", e);
         }
         return false;
     }
@@ -138,10 +140,8 @@ class DateFileLogHandler extends Handler {
                 handler.setFormatter(this.getFormatter());
                 handler.setLevel(this.getLevel());
             }
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (SecurityException | IOException e) {
+            RecordLog.warn("[DateFileLogHandler] Error when rotateDate", e);
         }
     }
 

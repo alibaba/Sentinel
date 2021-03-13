@@ -19,9 +19,9 @@ import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
-import com.alibaba.csp.sentinel.transport.log.CommandCenterLog;
 import com.alibaba.csp.sentinel.transport.command.SimpleHttpCommandCenter;
 import com.alibaba.csp.sentinel.transport.command.exception.RequestException;
+import com.alibaba.csp.sentinel.transport.log.CommandCenterLog;
 import com.alibaba.csp.sentinel.transport.util.HttpCommandUtils;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
@@ -117,7 +117,6 @@ public class HttpEventTask implements Runnable {
             try {
                 if (printWriter != null) {
                     String errorMessage = SERVER_ERROR_MESSAGE;
-                    e.printStackTrace();
                     if (!writtenHead) {
                         writeResponse(printWriter, StatusCode.INTERNAL_SERVER_ERROR, errorMessage);
                     } else {
