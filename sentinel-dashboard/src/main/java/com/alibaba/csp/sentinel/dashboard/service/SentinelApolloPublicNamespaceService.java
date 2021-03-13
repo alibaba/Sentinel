@@ -25,6 +25,7 @@ import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import com.ctrip.framework.apollo.openapi.dto.NamespaceReleaseDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenAppNamespaceDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
+import com.ctrip.framework.apollo.openapi.dto.OpenNamespaceDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -37,6 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import static com.alibaba.csp.sentinel.dashboard.util.DataSourceConverterUtils.DESERIALIZER;
 import static com.alibaba.csp.sentinel.dashboard.util.DataSourceConverterUtils.SERIALIZER;
 
 @Service
@@ -71,6 +73,16 @@ public class SentinelApolloPublicNamespaceService {
         this.apolloOpenApiClient = apolloOpenApiClient;
     }
 
+    private static Map<String, String> toKeyValues(List<OpenItemDTO> openItemDTOS) {
+        Map<String, String> map = new HashMap<>();
+        for (OpenItemDTO openItemDTO : openItemDTOS) {
+            String key = openItemDTO.getKey();
+            String value = openItemDTO.getValue();
+            map.put(key, value);
+        }
+        return map;
+    }
+
     /**
      * every project name in sentinel is one to one with apollo's public namespace.
      */
@@ -90,7 +102,12 @@ public class SentinelApolloPublicNamespaceService {
                 publicNamespaceName.length() > namespacePrefixLength,
                 "public namespace name's length " + publicNamespaceName.length() + "should bigger that namespace prefix " + namespacePrefix + "'s length" + namespacePrefixLength
         );
+        Assert.isTrue(this.isProjectPublicNamespaceName(publicNamespaceName), "public namespace name " + publicNamespaceName + " is not belong to any sentinel project");
         return publicNamespaceName.substring(namespacePrefixLength);
+    }
+
+    private boolean isProjectPublicNamespaceName(String publicNamespaceName) {
+        return publicNamespaceName.startsWith(this.sentinelApolloPublicProperties.getNamespacePrefix());
     }
 
     /**
@@ -169,6 +186,7 @@ public class SentinelApolloPublicNamespaceService {
 
         // TODO, use json converter in spring-cloud-starter-alibaba-sentinel defined in SentinelConverterConfiguration?
         final String value = SERIALIZER.convert(rules);
+
         openItemDTO.setValue(value);
         openItemDTO.setDataChangeCreatedBy(this.operateUser);
 
@@ -221,6 +239,52 @@ public class SentinelApolloPublicNamespaceService {
             this.clearCacheOfProject(projectName);
         }
         return projectNames;
+    }
+
+    public Map<RuleType, List<? extends Rule>> getRules(String projectName) {
+        final String publicNamespaceName = this.resolvePublicNamespaceName(projectName);
+        OpenNamespaceDTO openNamespaceDTO = this.apolloOpenApiClient.getNamespace(this.operatedAppId, this.env, this.clusterName, publicNamespaceName);
+
+        Map<RuleType, List<? extends Rule>> rules = new HashMap<>();
+
+        Map<String, String> keyValues = toKeyValues(openNamespaceDTO.getItems());
+        for (RuleType ruleType : RuleType.values()) {
+            String ruleKey = this.resolveFlowRulesKey(projectName, ruleType);
+            if (keyValues.containsKey(ruleKey)) {
+                List<? extends Rule> ruleList = DESERIALIZER.apply(keyValues.get(ruleKey), ruleType);
+                rules.put(ruleType, ruleList);
+            }
+        }
+
+        return rules;
+    }
+
+    private Set<String> getAllProjectNamesInApollo() {
+        List<OpenNamespaceDTO> openNamespaceDTOS = this.apolloOpenApiClient.getNamespaces(this.operatedAppId, this.env, this.clusterName);
+        return openNamespaceDTOS.stream()
+                .filter(OpenNamespaceDTO::isPublic)
+                .map(OpenNamespaceDTO::getNamespaceName)
+                .filter(this::isProjectPublicNamespaceName)
+                .map(this::deResolvePublicNamespaceName)
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * all project's rule config.
+     * key is the project's name, value is its rules.
+     */
+    public Map<String, Map<RuleType, List<? extends Rule>>> getRules() {
+        // find all projects
+        Set<String> projectNames = this.getAllProjectNamesInApollo();
+
+        // TODO, change to parallel
+        Map<String, Map<RuleType, List<? extends Rule>>> projectName2Rules = new HashMap<>();
+        for (String projectName : projectNames) {
+            Map<RuleType, List<? extends Rule>> rules = this.getRules(projectName);
+            projectName2Rules.put(projectName, rules);
+        }
+
+        return projectName2Rules;
     }
 
 }
