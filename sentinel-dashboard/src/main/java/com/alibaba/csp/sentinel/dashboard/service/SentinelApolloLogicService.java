@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.dashboard.service;
 
 import com.alibaba.cloud.sentinel.datasource.RuleType;
+import com.alibaba.csp.sentinel.dashboard.config.SentinelApolloOpenApiProperties;
 import com.alibaba.csp.sentinel.dashboard.config.SentinelApolloPublicProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -30,15 +31,25 @@ public class SentinelApolloLogicService {
 
     private final SentinelApolloPublicProperties sentinelApolloPublicProperties;
 
-    public SentinelApolloLogicService(SentinelApolloPublicProperties sentinelApolloPublicProperties) {
+    private final Integer projectNameLengthLimit;
+
+    public SentinelApolloLogicService(
+            SentinelApolloPublicProperties sentinelApolloPublicProperties,
+            SentinelApolloOpenApiProperties sentinelApolloOpenApiProperties
+    ) {
         this.sentinelApolloPublicProperties = sentinelApolloPublicProperties;
+        this.projectNameLengthLimit = sentinelApolloOpenApiProperties.getNamespaceLengthLimit() - sentinelApolloPublicProperties.getNamespacePrefix().length();
     }
 
     /**
      * @return which public namespace save this project's config.
+     * @throws IllegalArgumentException if projectName's length is longer than {@link #projectNameLengthLimit}
      */
     public String resolvePublicNamespaceName(String projectName) {
-        // recommend use orgId.sentinel.project-own-appId
+        if (projectName.length() > projectNameLengthLimit) {
+            String message = String.format("project.name [%s] is too long. Its length should not exceed %d", projectName, this.projectNameLengthLimit);
+            throw new IllegalArgumentException(message);
+        }
         return this.sentinelApolloPublicProperties.getNamespacePrefix() + projectName;
     }
 
@@ -48,6 +59,7 @@ public class SentinelApolloLogicService {
 
     /**
      * reverse operation with {@link #resolvePublicNamespaceName(String)}.
+     * @throws IllegalArgumentException if publicNamespaceName is not valid
      */
     public String deResolvePublicNamespaceName(String publicNamespaceName) {
         Assert.notNull(publicNamespaceName, "public namespace name should not be null");

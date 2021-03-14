@@ -20,11 +20,17 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 
 @ConfigurationProperties(prefix = "sentinel.apollo.open.api")
 @Validated
 public class SentinelApolloOpenApiProperties {
+
+    /**
+     * default namespace's length limit in apollo.
+     */
+    private static final Integer DEFAULT_NAMESPACE_LENGTH_LIMIT = 32;
 
     @NotEmpty
     private String portalUrl;
@@ -64,6 +70,12 @@ public class SentinelApolloOpenApiProperties {
 
     @PositiveOrZero
     private Integer readTimeout = ApolloOpenApiConstants.DEFAULT_READ_TIMEOUT;
+
+    /**
+     * namespace's length is limited in apollo.
+     */
+    @Positive
+    private Integer namespaceLengthLimit = DEFAULT_NAMESPACE_LENGTH_LIMIT;
 
     public String getPortalUrl() {
         return portalUrl;
@@ -129,4 +141,11 @@ public class SentinelApolloOpenApiProperties {
         this.readTimeout = readTimeout;
     }
 
+    public Integer getNamespaceLengthLimit() {
+        return namespaceLengthLimit;
+    }
+
+    public void setNamespaceLengthLimit(Integer namespaceLengthLimit) {
+        this.namespaceLengthLimit = namespaceLengthLimit;
+    }
 }
