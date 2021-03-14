@@ -17,7 +17,6 @@ package com.alibaba.csp.sentinel.dashboard.service;
 
 import com.alibaba.cloud.sentinel.datasource.RuleType;
 import com.alibaba.csp.sentinel.dashboard.config.SentinelApolloOpenApiProperties;
-import com.alibaba.csp.sentinel.dashboard.config.SentinelApolloPrivateConfiguration;
 import com.alibaba.csp.sentinel.dashboard.config.SentinelApolloPublicProperties;
 import com.alibaba.csp.sentinel.dashboard.util.DataSourceConverterUtils;
 import com.alibaba.csp.sentinel.slots.block.Rule;
@@ -60,13 +59,12 @@ public class SentinelApolloPublicNamespaceService {
     private final Map<String, Object> publicNamespaceNames = new ConcurrentHashMap<>();
 
     public SentinelApolloPublicNamespaceService(
-            SentinelApolloPrivateConfiguration sentinelApolloPrivateConfiguration,
             SentinelApolloOpenApiProperties sentinelApolloOpenApiProperties,
             SentinelApolloPublicProperties sentinelApolloPublicProperties, ApolloOpenApiClient apolloOpenApiClient) {
-        this.operatedAppId = sentinelApolloPrivateConfiguration.getOperatedAppId();
-        this.env = sentinelApolloPrivateConfiguration.getEnv();
-        this.clusterName = sentinelApolloPrivateConfiguration.getClusterName();
         this.operateUser = sentinelApolloOpenApiProperties.getOperateUser();
+        this.operatedAppId = sentinelApolloOpenApiProperties.getOperatedAppId();
+        this.env = sentinelApolloOpenApiProperties.getOperatedEnv();
+        this.clusterName = sentinelApolloOpenApiProperties.getOperatedCluster();
 
         this.sentinelApolloPublicProperties = sentinelApolloPublicProperties;
         this.apolloOpenApiClient = apolloOpenApiClient;

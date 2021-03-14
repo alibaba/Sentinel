@@ -38,6 +38,27 @@ public class SentinelApolloOpenApiProperties {
     @NotEmpty
     private String operateUser;
 
+    /**
+     * which app id in apollo dashboard operates.
+     * recommend that distinguish with dashboard's app id.
+     */
+    @NotEmpty
+    private String operatedAppId;
+
+    /**
+     * which environment in apollo dashboard operates.
+     * recommend that as same as dashboard's environment.
+     */
+    @NotEmpty
+    private String operatedEnv;
+
+    /**
+     * which cluster in apollo dashboard operates.
+     * recommend that as same as dashboard's cluster.
+     */
+    @NotEmpty
+    private String operatedCluster;
+
     @PositiveOrZero
     private Integer connectTimeout = ApolloOpenApiConstants.DEFAULT_CONNECT_TIMEOUT;
 
@@ -66,6 +87,30 @@ public class SentinelApolloOpenApiProperties {
 
     public void setOperateUser(String operateUser) {
         this.operateUser = operateUser;
+    }
+
+    public String getOperatedAppId() {
+        return operatedAppId;
+    }
+
+    public void setOperatedAppId(String operatedAppId) {
+        this.operatedAppId = operatedAppId;
+    }
+
+    public String getOperatedEnv() {
+        return operatedEnv;
+    }
+
+    public void setOperatedEnv(String operatedEnv) {
+        this.operatedEnv = operatedEnv;
+    }
+
+    public String getOperatedCluster() {
+        return operatedCluster;
+    }
+
+    public void setOperatedCluster(String operatedCluster) {
+        this.operatedCluster = operatedCluster;
     }
 
     public Integer getConnectTimeout() {
