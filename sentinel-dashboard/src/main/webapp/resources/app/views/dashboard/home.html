@@ -28,6 +28,66 @@
 |   |-- AUTHORITY.json
             </pre>
           </p>
+          <div class="container-fluid">
+            <div class="row-fluid">
+              <div class="span12">
+                <table class="table table-bordered">
+                  <thead>
+                    <tr>
+                      <th>
+                        .json文件
+                      </th>
+                      <th>
+                        文件的内容
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="success">
+                      <td>
+                        FLOW.json
+                      </td>
+                      <td>
+                        流控规则
+                      </td>
+                    </tr>
+                    <tr class="info">
+                      <td>
+                        DEGRADE.json
+                      </td>
+                      <td>
+                        降级规则
+                      </td>
+                    </tr>
+                    <tr class="success">
+                      <td>
+                        PARAM_FLOW.json
+                      </td>
+                      <td>
+                        热点规则
+                      </td>
+                    </tr>
+                    <tr class="info">
+                      <td>
+                        SYSTEM.json
+                      </td>
+                      <td>
+                        系统规则
+                      </td>
+                    </tr>
+                    <tr class="success">
+                      <td>
+                        AUTHORITY.json
+                      </td>
+                      <td>
+                        授权规则
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
           <p>
             应用的xxx规则保存在xxx.json文件中
           </p>
@@ -75,8 +135,9 @@
             </p>
             <form class="form-horizontal" action="config/import/all" method="POST" enctype="multipart/form-data">
               <div class="control-group">
-                <label class="form-label" for="inputFile">选择你在另一个环境导出的.zip文件</label>
+                <label class="form-label" for="inputFile">文件输入</label>
                 <input class="form-control-file form-control-lg" id="inputFile" type="file" name="file"/>
+                <p class="help-block">请选择你在另一个环境导出的.zip文件</p>
               </div>
               <div class="control-group">
                 <div class="controls">
