@@ -17,7 +17,6 @@ package com.alibaba.csp.sentinel.dashboard.service;
 
 import com.alibaba.cloud.sentinel.datasource.RuleType;
 import com.alibaba.csp.sentinel.dashboard.config.SentinelApolloOpenApiProperties;
-import com.alibaba.csp.sentinel.dashboard.config.SentinelApolloPublicProperties;
 import com.alibaba.csp.sentinel.dashboard.util.DataSourceConverterUtils;
 import com.alibaba.csp.sentinel.slots.block.Rule;
 import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
@@ -30,7 +29,6 @@ import org.apache.commons.lang.time.DateFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -52,7 +50,7 @@ public class SentinelApolloPublicNamespaceService {
 
     private final String operateUser;
 
-    private final SentinelApolloPublicProperties sentinelApolloPublicProperties;
+    private final SentinelApolloLogicService sentinelApolloLogicService;
 
     private final ApolloOpenApiClient apolloOpenApiClient;
 
@@ -60,13 +58,12 @@ public class SentinelApolloPublicNamespaceService {
 
     public SentinelApolloPublicNamespaceService(
             SentinelApolloOpenApiProperties sentinelApolloOpenApiProperties,
-            SentinelApolloPublicProperties sentinelApolloPublicProperties, ApolloOpenApiClient apolloOpenApiClient) {
+            SentinelApolloLogicService sentinelApolloLogicService, ApolloOpenApiClient apolloOpenApiClient) {
         this.operateUser = sentinelApolloOpenApiProperties.getOperateUser();
         this.operatedAppId = sentinelApolloOpenApiProperties.getOperatedAppId();
         this.env = sentinelApolloOpenApiProperties.getOperatedEnv();
         this.clusterName = sentinelApolloOpenApiProperties.getOperatedCluster();
-
-        this.sentinelApolloPublicProperties = sentinelApolloPublicProperties;
+        this.sentinelApolloLogicService = sentinelApolloLogicService;
         this.apolloOpenApiClient = apolloOpenApiClient;
     }
 
@@ -78,40 +75,6 @@ public class SentinelApolloPublicNamespaceService {
             map.put(key, value);
         }
         return map;
-    }
-
-    /**
-     * every project name in sentinel is one to one with apollo's public namespace.
-     */
-    private String resolvePublicNamespaceName(String projectName) {
-        // recommend use orgId.sentinel.project-own-appId
-        return this.sentinelApolloPublicProperties.getNamespacePrefix() + projectName;
-    }
-
-    /**
-     * reverse operation with {@link #resolvePublicNamespaceName(String)}.
-     */
-    private String deResolvePublicNamespaceName(String publicNamespaceName) {
-        Assert.notNull(publicNamespaceName, "public namespace name should not be null");
-        final String namespacePrefix = this.sentinelApolloPublicProperties.getNamespacePrefix();
-        final int namespacePrefixLength = namespacePrefix.length();
-        Assert.isTrue(
-                publicNamespaceName.length() > namespacePrefixLength,
-                "public namespace name's length " + publicNamespaceName.length() + "should bigger that namespace prefix " + namespacePrefix + "'s length" + namespacePrefixLength
-        );
-        Assert.isTrue(this.isProjectPublicNamespaceName(publicNamespaceName), "public namespace name " + publicNamespaceName + " is not belong to any sentinel project");
-        return publicNamespaceName.substring(namespacePrefixLength);
-    }
-
-    private boolean isProjectPublicNamespaceName(String publicNamespaceName) {
-        return publicNamespaceName.startsWith(this.sentinelApolloPublicProperties.getNamespacePrefix());
-    }
-
-    /**
-     * @see com.alibaba.cloud.sentinel.datasource.config.ApolloDataSourceProperties#setFlowRulesKey(String)
-     */
-    private String resolveFlowRulesKey(String projectName, RuleType ruleType) {
-        return projectName + this.sentinelApolloPublicProperties.getSuffix().get(ruleType);
     }
 
     /**
@@ -167,7 +130,7 @@ public class SentinelApolloPublicNamespaceService {
     }
 
     public void registryProjectIfNotExists(String projectName) {
-        final String publicNamespaceName = this.resolvePublicNamespaceName(projectName);
+        final String publicNamespaceName = this.sentinelApolloLogicService.resolvePublicNamespaceName(projectName);
         if (this.publicNamespaceNames.containsKey(publicNamespaceName)) {
             return;
         }
@@ -176,7 +139,7 @@ public class SentinelApolloPublicNamespaceService {
 
     private OpenItemDTO resolveOpenItemDTO(String projectName, RuleType ruleType, List<? extends Rule> rules) {
         OpenItemDTO openItemDTO = new OpenItemDTO();
-        final String ruleKey = this.resolveFlowRulesKey(projectName, ruleType);
+        final String ruleKey = this.sentinelApolloLogicService.resolveFlowRulesKey(projectName, ruleType);
         openItemDTO.setKey(ruleKey);
 
         // TODO, use json converter in spring-cloud-starter-alibaba-sentinel defined in SentinelConverterConfiguration?
@@ -189,7 +152,7 @@ public class SentinelApolloPublicNamespaceService {
     }
 
     private void createOrUpdateConfig(String projectName, RuleType ruleType, List<? extends Rule> rules) {
-        final String publicNamespaceName = this.resolvePublicNamespaceName(projectName);
+        final String publicNamespaceName = this.sentinelApolloLogicService.resolvePublicNamespaceName(projectName);
         OpenItemDTO openItemDTO = this.resolveOpenItemDTO(projectName, ruleType, rules);
         apolloOpenApiClient.createOrUpdateItem(this.operatedAppId, this.env, this.clusterName, publicNamespaceName, openItemDTO);
     }
@@ -202,7 +165,7 @@ public class SentinelApolloPublicNamespaceService {
     }
 
     private void publishConfig(String projectName) {
-        final String publicNamespaceName = this.resolvePublicNamespaceName(projectName);
+        final String publicNamespaceName = this.sentinelApolloLogicService.resolvePublicNamespaceName(projectName);
         NamespaceReleaseDTO namespaceReleaseDTO = this.resolveNamespaceReleaseDTO();
         apolloOpenApiClient.publishNamespace(this.operatedAppId, this.env, this.clusterName, publicNamespaceName, namespaceReleaseDTO);
     }
@@ -253,11 +216,11 @@ public class SentinelApolloPublicNamespaceService {
      * @return project's name in sentinel dashboard's cache
      */
     public Set<String> listCachedProjectNames() {
-        return this.publicNamespaceNames.keySet().stream().map(this::deResolvePublicNamespaceName).collect(Collectors.toSet());
+        return this.publicNamespaceNames.keySet().stream().map(this.sentinelApolloLogicService::deResolvePublicNamespaceName).collect(Collectors.toSet());
     }
 
     public void clearCacheOfProject(String projectName) {
-        String publicNamespaceName = this.resolvePublicNamespaceName(projectName);
+        String publicNamespaceName = this.sentinelApolloLogicService.resolvePublicNamespaceName(projectName);
         this.publicNamespaceNames.remove(publicNamespaceName);
     }
 
@@ -276,14 +239,14 @@ public class SentinelApolloPublicNamespaceService {
     }
 
     public Map<RuleType, List<? extends Rule>> getRules(String projectName) {
-        final String publicNamespaceName = this.resolvePublicNamespaceName(projectName);
+        final String publicNamespaceName = this.sentinelApolloLogicService.resolvePublicNamespaceName(projectName);
         OpenNamespaceDTO openNamespaceDTO = this.apolloOpenApiClient.getNamespace(this.operatedAppId, this.env, this.clusterName, publicNamespaceName);
 
         Map<RuleType, List<? extends Rule>> rules = new HashMap<>();
 
         Map<String, String> keyValues = toKeyValues(openNamespaceDTO.getItems());
         for (RuleType ruleType : RuleType.values()) {
-            String ruleKey = this.resolveFlowRulesKey(projectName, ruleType);
+            String ruleKey = this.sentinelApolloLogicService.resolveFlowRulesKey(projectName, ruleType);
             if (keyValues.containsKey(ruleKey)) {
                 List<? extends Rule> ruleList = DataSourceConverterUtils.deserialize(keyValues.get(ruleKey), ruleType);
                 rules.put(ruleType, ruleList);
@@ -298,8 +261,8 @@ public class SentinelApolloPublicNamespaceService {
         return openNamespaceDTOS.stream()
                 .filter(OpenNamespaceDTO::isPublic)
                 .map(OpenNamespaceDTO::getNamespaceName)
-                .filter(this::isProjectPublicNamespaceName)
-                .map(this::deResolvePublicNamespaceName)
+                .filter(this.sentinelApolloLogicService::isProjectPublicNamespaceName)
+                .map(this.sentinelApolloLogicService::deResolvePublicNamespaceName)
                 .collect(Collectors.toSet());
     }
 
