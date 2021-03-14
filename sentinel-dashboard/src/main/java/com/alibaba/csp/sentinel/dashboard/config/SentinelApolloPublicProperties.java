@@ -68,7 +68,7 @@ public class SentinelApolloPublicProperties {
      *
      * @see RuleType#getName() for config with key.
      */
-    private Map<RuleType, String> suffix = new ConcurrentHashMap<>(DEFAULT_SUFFIX);
+    private final Map<RuleType, String> suffix = new ConcurrentHashMap<>(DEFAULT_SUFFIX);
 
     public String getNamespacePrefix() {
         return namespacePrefix;
