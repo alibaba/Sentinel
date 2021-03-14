@@ -29,8 +29,10 @@ public class SentinelApolloOpenApiProperties {
 
     /**
      * default namespace's length limit in apollo.
+     * because {@link SentinelApolloPublicProperties#getNamespacePrefix()} may be size 5 ~ 15,
+     * so the default value should small enough.
      */
-    private static final Integer DEFAULT_NAMESPACE_LENGTH_LIMIT = 32;
+    private static final Integer DEFAULT_NAMESPACE_LENGTH_LIMIT = 32 - 5;
 
     @NotEmpty
     private String portalUrl;
