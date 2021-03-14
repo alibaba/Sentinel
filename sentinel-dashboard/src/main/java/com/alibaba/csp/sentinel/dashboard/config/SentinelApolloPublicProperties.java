@@ -21,12 +21,10 @@ import com.alibaba.csp.sentinel.config.SentinelConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,6 +42,8 @@ public class SentinelApolloPublicProperties {
     private static final String SENTINEL = "sentinel";
     private static final String DOT_SENTINEL_DOT = DOT + SENTINEL + DOT;
 
+    private static final String DEFAULT_NAMESPACE_PREFIX = SENTINEL + DOT;
+
     /**
      * default value for {@link #suffix}.
      */
@@ -56,12 +56,12 @@ public class SentinelApolloPublicProperties {
     );
 
     /**
-     * One {@link SentinelConfig#PROJECT_NAME_PROP_KEY} one public namespace, every project has their own public namespace in apollo, save their rules.
+     * every project's rules will save in a public namespace, all project's public namespace will start with this prefix.
      * <p>
      * This attribute is used to forbid public namespace's name conflict. i.e add a common prefix to public namespace's name.
      */
-    @NotEmpty
-    private String namespacePrefix;
+    @NotNull
+    private String namespacePrefix = DEFAULT_NAMESPACE_PREFIX;
 
     /**
      * value will be used in {@link ApolloDataSourceProperties#setFlowRulesKey(String)}'s suffix.
@@ -75,6 +75,9 @@ public class SentinelApolloPublicProperties {
     }
 
     public void setNamespacePrefix(String namespacePrefix) {
+        if (! DEFAULT_NAMESPACE_PREFIX.equals(namespacePrefix)) {
+            logger.info("detect you use custom namespace prefix, the value will be changed from [{}] to [{}]", DEFAULT_NAMESPACE_PREFIX, namespacePrefix);
+        }
         this.namespacePrefix = namespacePrefix;
     }
 
