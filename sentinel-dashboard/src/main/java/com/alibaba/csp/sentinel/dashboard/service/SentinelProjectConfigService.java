@@ -159,6 +159,11 @@ public class SentinelProjectConfigService {
             projectName2rules = readFromZipInputStream(zipInputStream);
         }
 
+        // registry projects
+        for (String projectName : projectName2rules.keySet()) {
+            this.sentinelApolloPublicNamespaceService.registryProjectIfNotExists(projectName);
+        }
+
         this.sentinelApolloPublicNamespaceService.setRules(projectName2rules);
 
         return projectName2rules;
