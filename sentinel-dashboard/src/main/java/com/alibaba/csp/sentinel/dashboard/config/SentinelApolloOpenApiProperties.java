@@ -37,7 +37,7 @@ public class SentinelApolloOpenApiProperties {
      * recommend use current apollo project's user.
      */
     @NotEmpty
-    private String operateUser;
+    private String operatedUser;
 
     /**
      * which environment in apollo dashboard operates.
@@ -75,12 +75,12 @@ public class SentinelApolloOpenApiProperties {
         this.token = token;
     }
 
-    public String getOperateUser() {
-        return operateUser;
+    public String getOperatedUser() {
+        return operatedUser;
     }
 
-    public void setOperateUser(String operateUser) {
-        this.operateUser = operateUser;
+    public void setOperatedUser(String operatedUser) {
+        this.operatedUser = operatedUser;
     }
 
     public String getOperatedEnv() {
