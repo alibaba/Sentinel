@@ -51,7 +51,7 @@ public class MotanUtils {
                 isFirst = false;
             }
         } catch (ClassNotFoundException e) {
-            RecordLog.info("[MotanUtils] getMethodResourceName encountered Exception", e);
+            RecordLog.warn("[MotanUtils] Error in getMethodResourceName", e);
         }
         buf.append(")");
         return buf.toString();

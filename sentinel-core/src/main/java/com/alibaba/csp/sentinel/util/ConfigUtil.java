@@ -15,8 +15,6 @@
  */
 package com.alibaba.csp.sentinel.util;
 
-import com.alibaba.csp.sentinel.log.RecordLog;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -77,7 +75,7 @@ public final class ConfigUtil {
                 properties.load(bufferedReader);
             }
         } catch (Throwable e) {
-            RecordLog.warn("[ConfigUtil] Error in loadPropertiesFromAbsoluteFile, fileName: " + fileName, e);
+            e.printStackTrace();
         }
         return properties;
     }
@@ -104,7 +102,7 @@ public final class ConfigUtil {
                 list.add(urls.nextElement());
             }
         } catch (Throwable e) {
-            RecordLog.warn("[ConfigUtil] Error when loadPropertiesFromClasspathFile", e);
+            e.printStackTrace();
         }
 
         if (list.isEmpty()) {
@@ -119,7 +117,7 @@ public final class ConfigUtil {
                 p.load(bufferedReader);
                 properties.putAll(p);
             } catch (Throwable e) {
-                RecordLog.warn("[ConfigUtil] Error when loadPropertiesFromClasspathFile", e);
+                e.printStackTrace();
             }
         }
         return properties;
