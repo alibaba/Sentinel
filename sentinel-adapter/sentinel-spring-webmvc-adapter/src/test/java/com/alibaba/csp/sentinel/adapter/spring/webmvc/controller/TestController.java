@@ -31,6 +31,11 @@ public class TestController {
         return "Hello!";
     }
 
+    @GetMapping("/fallbackConfig")
+    public String fallbackConfig() {
+        return "fallbackConfig";
+    }
+
     @GetMapping("/err")
     public String apiError() {
         return "Oops...";

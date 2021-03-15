@@ -37,4 +37,16 @@ public interface BlockExceptionHandler {
      */
     void handle(HttpServletRequest request, HttpServletResponse response, BlockException e) throws Exception;
 
+    /**
+     * handle the request when blocked
+     *
+     * @param request
+     * @param response
+     * @param e
+     * @param resourceName
+     * @throws Exception
+     */
+    void handle(HttpServletRequest request, HttpServletResponse response, BlockException e, String resourceName) throws Exception;
+
+
 }

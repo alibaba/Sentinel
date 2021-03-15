@@ -19,13 +19,17 @@ import com.alibaba.csp.sentinel.adapter.spring.webmvc.SentinelWebInterceptor;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.SentinelWebTotalInterceptor;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.BlockExceptionHandler;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.RequestOriginParser;
+import com.alibaba.csp.sentinel.fallback.FallbackRule;
+import com.alibaba.csp.sentinel.fallback.FallbackRuleManager;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.util.StringUtil;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.PrintWriter;
 
 /**
  * Config sentinel interceptor
@@ -59,6 +63,29 @@ public class InterceptorConfig implements WebMvcConfigurer {
                     response.getWriter().write("/Blocked by sentinel");
                 } else {
                     //Handle in global exception handling
+                    throw e;
+                }
+            }
+
+            @Override
+            public void handle(HttpServletRequest request, HttpServletResponse response, BlockException e, String resourceName) throws Exception {
+                String path = e.getRule().getResource();
+                if (resourceName.equals(path)){
+                    response.setStatus(200);
+                    StringBuffer url = request.getRequestURL();
+                    if ("GET".equals(request.getMethod()) && StringUtil.isNotBlank(request.getQueryString())) {
+                        url.append("?").append(request.getQueryString());
+                    }
+                    FallbackRule fallbackRule = FallbackRuleManager.getFallbackRule(resourceName);
+                    PrintWriter out = response.getWriter();
+                    if (StringUtil.isNotEmpty(fallbackRule.getFallback())) {
+                        out.print(fallbackRule.getFallback());
+                    } else {
+                        out.print("/Blocked by sentinel");
+                    }
+                    out.flush();
+                    out.close();
+                } else {
                     throw e;
                 }
             }

@@ -21,6 +21,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.alibaba.csp.sentinel.fallback.FallbackRule;
+import com.alibaba.csp.sentinel.fallback.FallbackRuleManager;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
@@ -47,7 +49,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest(classes = TestApplication.class)
 @AutoConfigureMockMvc
 public class SentinelSpringMvcIntegrationTest {
-
+    private static final String DEFAULT_FALLBACK_JSON = "{\"code\":429,\"message\":\"__Too many requests.__\"}";
     private static final String HELLO_STR = "Hello!";
     @Autowired
     private MockMvc mvc;
@@ -105,6 +107,26 @@ public class SentinelSpringMvcIntegrationTest {
     }
 
     @Test
+    public void testFallbackConfig() throws Exception {
+        String url = "/fallbackConfig";
+        //load fallback config
+        configureFallbackRulesFor(url, DEFAULT_FALLBACK_JSON);
+        configureRulesFor(url, 1, null);
+        int repeat = 3;
+        for(int i=0; i< repeat; i++){
+            this.mvc.perform(get(url)).andExpect(status().isOk());
+            ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
+            assertNotNull(cn);
+        }
+        // this will be blocked and return fallback config
+        this.mvc.perform(get(url))
+                .andExpect(status().isOk())
+                .andExpect(content().string(DEFAULT_FALLBACK_JSON));
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
+        assertNotNull(cn);
+    }
+
+    @Test
     public void testRuntimeException() throws Exception {
         String url = "/runtimeException";
         configureExceptionRulesFor(url, 3, null);
@@ -148,6 +170,12 @@ public class SentinelSpringMvcIntegrationTest {
             rule.setLimitApp(limitApp);
         }
         FlowRuleManager.loadRules(Collections.singletonList(rule));
+    }
+
+    private void configureFallbackRulesFor(String resource, String fallback){
+        FallbackRule fallbackRule = new FallbackRule(resource)
+                .setFallback(fallback);
+        FallbackRuleManager.loadFallbacks(Collections.singletonList(fallbackRule));
     }
 
     @After
