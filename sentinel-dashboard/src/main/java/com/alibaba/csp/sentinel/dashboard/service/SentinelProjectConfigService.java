@@ -41,10 +41,10 @@ public class SentinelProjectConfigService {
 
     private static final String FILENAME_SUFFIX = ".json";
 
-    private final SentinelApolloPublicNamespaceService sentinelApolloPublicNamespaceService;
+    private final SentinelApolloService sentinelApolloService;
 
-    public SentinelProjectConfigService(SentinelApolloPublicNamespaceService sentinelApolloPublicNamespaceService) {
-        this.sentinelApolloPublicNamespaceService = sentinelApolloPublicNamespaceService;
+    public SentinelProjectConfigService(SentinelApolloService sentinelApolloService) {
+        this.sentinelApolloService = sentinelApolloService;
     }
 
     static ZipEntry resolveZipEntry(String projectName, RuleType ruleType) {
@@ -111,12 +111,12 @@ public class SentinelProjectConfigService {
     }
 
     public void exportAllToZip(OutputStream outputStream) throws IOException {
-        Map<String, Map<RuleType, List<? extends Rule>>> projectName2rules = this.sentinelApolloPublicNamespaceService.getRules();
+        Map<String, Map<RuleType, List<? extends Rule>>> projectName2rules = this.sentinelApolloService.getRules();
         writeAsZipOutputStream(outputStream, projectName2rules);
     }
 
     public void exportToZip(OutputStream outputStream, String projectName) throws IOException {
-        Map<RuleType, List<? extends Rule>> ruleTypeListMap = this.sentinelApolloPublicNamespaceService.getRules(projectName);
+        Map<RuleType, List<? extends Rule>> ruleTypeListMap = this.sentinelApolloService.getRules(projectName);
         writeAsZipOutputStream(outputStream, Collections.singletonMap(projectName, ruleTypeListMap));
     }
 
@@ -161,10 +161,10 @@ public class SentinelProjectConfigService {
 
         // registry projects
         for (String projectName : projectName2rules.keySet()) {
-            this.sentinelApolloPublicNamespaceService.registryProjectIfNotExists(projectName);
+            this.sentinelApolloService.registryProjectIfNotExists(projectName);
         }
 
-        this.sentinelApolloPublicNamespaceService.setRules(projectName2rules);
+        this.sentinelApolloService.setRules(projectName2rules);
 
         return projectName2rules;
     }

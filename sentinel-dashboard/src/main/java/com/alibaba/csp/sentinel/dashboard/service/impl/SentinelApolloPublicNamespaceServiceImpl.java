@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.service;
+package com.alibaba.csp.sentinel.dashboard.service.impl;
 
 import com.alibaba.cloud.sentinel.datasource.RuleType;
 import com.alibaba.csp.sentinel.dashboard.config.SentinelApolloOpenApiProperties;
+import com.alibaba.csp.sentinel.dashboard.service.SentinelApolloLogicService;
+import com.alibaba.csp.sentinel.dashboard.service.SentinelApolloService;
 import com.alibaba.csp.sentinel.dashboard.util.DataSourceConverterUtils;
 import com.alibaba.csp.sentinel.slots.block.Rule;
 import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
@@ -28,7 +30,6 @@ import com.ctrip.framework.apollo.openapi.dto.OpenNamespaceDTO;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -37,8 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-@Service
-public class SentinelApolloPublicNamespaceService {
+public class SentinelApolloPublicNamespaceServiceImpl implements SentinelApolloService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -56,7 +56,7 @@ public class SentinelApolloPublicNamespaceService {
 
     private final Map<String, Object> publicNamespaceNames = new ConcurrentHashMap<>();
 
-    public SentinelApolloPublicNamespaceService(
+    public SentinelApolloPublicNamespaceServiceImpl(
             SentinelApolloOpenApiProperties sentinelApolloOpenApiProperties,
             SentinelApolloLogicService sentinelApolloLogicService, ApolloOpenApiClient apolloOpenApiClient) {
         this.operateUser = sentinelApolloOpenApiProperties.getOperateUser();
@@ -129,12 +129,12 @@ public class SentinelApolloPublicNamespaceService {
         this.publicNamespaceNames.computeIfAbsent(publicNamespaceName, this::resolvePublicNamespaceInApollo);
     }
 
-    public void registryProjectIfNotExists(String projectName) {
+    public boolean registryProjectIfNotExists(String projectName) {
         final String publicNamespaceName = this.sentinelApolloLogicService.resolvePublicNamespaceName(projectName);
-        if (this.publicNamespaceNames.containsKey(publicNamespaceName)) {
-            return;
+        if (! this.publicNamespaceNames.containsKey(publicNamespaceName)) {
+            this.ensurePublicNamespaceExists(publicNamespaceName);
         }
-        this.ensurePublicNamespaceExists(publicNamespaceName);
+        return true;
     }
 
     private OpenItemDTO resolveOpenItemDTO(String projectName, RuleType ruleType, List<? extends Rule> rules) {

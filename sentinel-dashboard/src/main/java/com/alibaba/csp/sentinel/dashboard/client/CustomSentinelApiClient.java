@@ -22,14 +22,13 @@ import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.*;
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ClusterClientConfig;
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ServerFlowConfig;
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ServerTransportConfig;
-import com.alibaba.csp.sentinel.dashboard.service.SentinelApolloPublicNamespaceService;
+import com.alibaba.csp.sentinel.dashboard.service.SentinelApolloService;
 import com.alibaba.csp.sentinel.slots.block.Rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -41,10 +40,10 @@ public class CustomSentinelApiClient extends SentinelApiClient {
 
     private static final Logger logger = LoggerFactory.getLogger(CustomSentinelApiClient.class);
 
-    private final SentinelApolloPublicNamespaceService sentinelApolloPublicNamespaceService;
+    private final SentinelApolloService sentinelApolloService;
 
-    public CustomSentinelApiClient(SentinelApolloPublicNamespaceService sentinelApolloPublicNamespaceService) {
-        this.sentinelApolloPublicNamespaceService = sentinelApolloPublicNamespaceService;
+    public CustomSentinelApiClient(SentinelApolloService sentinelApolloService) {
+        this.sentinelApolloService = sentinelApolloService;
         logger.info("use SentinelApiClient {}", this.getClass());
     }
 
@@ -60,27 +59,27 @@ public class CustomSentinelApiClient extends SentinelApiClient {
 
     @Override
     public CompletableFuture<Void> setFlowRuleOfMachineAsync(String app, String ip, int port, List<FlowRuleEntity> rules) {
-        return this.sentinelApolloPublicNamespaceService.setRulesAsync(app, RuleType.FLOW, toRules(rules));
+        return this.sentinelApolloService.setRulesAsync(app, RuleType.FLOW, toRules(rules));
     }
 
     @Override
     public boolean setDegradeRuleOfMachine(String app, String ip, int port, List<DegradeRuleEntity> rules) {
-        return this.sentinelApolloPublicNamespaceService.setRules(app, RuleType.DEGRADE, toRules(rules));
+        return this.sentinelApolloService.setRules(app, RuleType.DEGRADE, toRules(rules));
     }
 
     @Override
     public boolean setSystemRuleOfMachine(String app, String ip, int port, List<SystemRuleEntity> rules) {
-        return this.sentinelApolloPublicNamespaceService.setRules(app, RuleType.SYSTEM, toRules(rules));
+        return this.sentinelApolloService.setRules(app, RuleType.SYSTEM, toRules(rules));
     }
 
     @Override
     public boolean setAuthorityRuleOfMachine(String app, String ip, int port, List<AuthorityRuleEntity> rules) {
-        return this.sentinelApolloPublicNamespaceService.setRules(app, RuleType.AUTHORITY, toRules(rules));
+        return this.sentinelApolloService.setRules(app, RuleType.AUTHORITY, toRules(rules));
     }
 
     @Override
     public CompletableFuture<Void> setParamFlowRuleOfMachine(String app, String ip, int port, List<ParamFlowRuleEntity> rules) {
-        return this.sentinelApolloPublicNamespaceService.setRulesAsync(app, RuleType.PARAM_FLOW, toRules(rules));
+        return this.sentinelApolloService.setRulesAsync(app, RuleType.PARAM_FLOW, toRules(rules));
     }
 
     @Override
