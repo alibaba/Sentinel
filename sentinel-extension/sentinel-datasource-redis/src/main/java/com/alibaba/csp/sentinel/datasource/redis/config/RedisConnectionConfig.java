@@ -34,6 +34,11 @@ public class RedisConnectionConfig {
     public static final int DEFAULT_SENTINEL_PORT = 26379;
 
     /**
+     * The default redisCluster port.
+     */
+    public static final int DEFAULT_CLUSTER_PORT = 6379;
+
+    /**
      * The default redis port.
      */
     public static final int DEFAULT_REDIS_PORT = 6379;
@@ -51,6 +56,7 @@ public class RedisConnectionConfig {
     private char[] password;
     private long timeout = DEFAULT_TIMEOUT_MILLISECONDS;
     private final List<RedisConnectionConfig> redisSentinels = new ArrayList<RedisConnectionConfig>();
+    private final List<RedisConnectionConfig> redisClusters = new ArrayList<RedisConnectionConfig>();
 
     /**
      * Default empty constructor.
@@ -238,6 +244,13 @@ public class RedisConnectionConfig {
         return redisSentinels;
     }
 
+    /**
+     * @return the list of {@link RedisConnectionConfig Redis Cluster URIs}.
+     */
+    public List<RedisConnectionConfig> getRedisClusters() {
+        return redisClusters;
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
@@ -252,6 +265,10 @@ public class RedisConnectionConfig {
         if (redisSentinelMasterId != null) {
             sb.append("redisSentinels=").append(getRedisSentinels());
             sb.append(", redisSentinelMasterId=").append(redisSentinelMasterId);
+        }
+
+        if (redisClusters.size() > 0) {
+            sb.append("redisClusters=").append(getRedisClusters());
         }
 
         sb.append(']');
@@ -281,6 +298,10 @@ public class RedisConnectionConfig {
             : redisURI.redisSentinelMasterId != null) {
             return false;
         }
+        if (redisClusters != null ? !redisClusters.equals(redisURI.redisClusters)
+            : redisURI.redisClusters != null) {
+            return false;
+        }
         return !(redisSentinels != null ? !redisSentinels.equals(redisURI.redisSentinels)
             : redisURI.redisSentinels != null);
 
@@ -293,6 +314,7 @@ public class RedisConnectionConfig {
         result = 31 * result + port;
         result = 31 * result + database;
         result = 31 * result + (redisSentinels != null ? redisSentinels.hashCode() : 0);
+        result = 31 * result + (redisClusters != null ? redisClusters.hashCode() : 0);
         return result;
     }
 
@@ -309,6 +331,7 @@ public class RedisConnectionConfig {
         private char[] password;
         private long timeout = DEFAULT_TIMEOUT_MILLISECONDS;
         private final List<RedisHostAndPort> redisSentinels = new ArrayList<RedisHostAndPort>();
+        private final List<RedisHostAndPort> redisClusters = new ArrayList<RedisHostAndPort>();
 
         private Builder() {
         }
@@ -421,6 +444,63 @@ public class RedisConnectionConfig {
             AssertUtil.isTrue(isValidPort(port), String.format("Port out of range: %s", port));
 
             redisSentinels.add(RedisHostAndPort.of(host, port));
+            return this;
+        }
+
+        /**
+         * Set Cluster host. Creates a new builder.
+         *
+         * @param host the host name
+         * @return New builder with Cluster host/port.
+         */
+        public static RedisConnectionConfig.Builder redisCluster(String host) {
+
+            AssertUtil.notEmpty(host, "Host must not be empty");
+
+            RedisConnectionConfig.Builder builder = RedisConnectionConfig.builder();
+            return builder.withRedisCluster(host);
+        }
+
+        /**
+         * Set Cluster host and port. Creates a new builder.
+         *
+         * @param host the host name
+         * @param port the port
+         * @return New builder with Cluster host/port.
+         */
+        public static RedisConnectionConfig.Builder redisCluster(String host, int port) {
+
+            AssertUtil.notEmpty(host, "Host must not be empty");
+            AssertUtil.isTrue(isValidPort(port), String.format("Port out of range: %s", port));
+
+            RedisConnectionConfig.Builder builder = RedisConnectionConfig.builder();
+            return builder.withRedisCluster(host, port);
+        }
+
+        /**
+         * Add a withRedisCluster host to the existing builder.
+         *
+         * @param host the host name
+         * @return the builder
+         */
+        public RedisConnectionConfig.Builder withRedisCluster(String host) {
+            return withRedisCluster(host, DEFAULT_CLUSTER_PORT);
+        }
+
+        /**
+         * Add a withRedisCluster host/port to the existing builder.
+         *
+         * @param host the host name
+         * @param port the port
+         * @return the builder
+         */
+        public RedisConnectionConfig.Builder withRedisCluster(String host, int port) {
+
+            AssertUtil.assertState(this.host == null, "Cannot use with Redis mode.");
+            AssertUtil.notEmpty(host, "Host must not be empty");
+            AssertUtil.isTrue(isValidPort(port), String.format("Port out of range: %s", port));
+
+            redisClusters.add(RedisHostAndPort.of(host, port));
             return this;
         }
 
@@ -544,9 +624,9 @@ public class RedisConnectionConfig {
          */
         public RedisConnectionConfig build() {
 
-            if (redisSentinels.isEmpty() && StringUtil.isEmpty(host)) {
+            if (redisSentinels.isEmpty() && redisClusters.isEmpty() && StringUtil.isEmpty(host)) {
                 throw new IllegalStateException(
-                    "Cannot build a RedisConnectionConfig. One of the following must be provided Host, Socket or "
+                    "Cannot build a RedisConnectionConfig. One of the following must be provided Host, Socket, Cluster or "
                         + "Sentinel");
             }
 
@@ -565,6 +645,11 @@ public class RedisConnectionConfig {
 
             for (RedisHostAndPort sentinel : redisSentinels) {
                 redisURI.getRedisSentinels().add(
+                    new RedisConnectionConfig(sentinel.getHost(), sentinel.getPort(), timeout));
+            }
+
+            for (RedisHostAndPort sentinel : redisClusters) {
+                redisURI.getRedisClusters().add(
                     new RedisConnectionConfig(sentinel.getHost(), sentinel.getPort(), timeout));
             }
 

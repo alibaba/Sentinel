@@ -13,22 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel;
+package com.alibaba.csp.sentinel.dashboard.config;
 
-/**
- * An enum marks resource invocation direction.
- *
- * @author jialiang.linjl
- * @author Yanming Zhou
- */
-public enum EntryType {
-    /**
-     * Inbound traffic
-     */
-    IN,
-    /**
-     * Outbound traffic
-     */
-    OUT;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+@ConfigurationProperties(prefix = "auth")
+public class AuthProperties {
+
+    private boolean enabled = true;
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 
 }
