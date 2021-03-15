@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright 1999-2021 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,23 +15,32 @@
  */
 package com.alibaba.csp.sentinel.demo.slot;
 
+import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeSlot;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowSlot;
 import com.alibaba.csp.sentinel.spi.Spi;
 
 /**
- * An example slot that records current context and entry resource.
+ * A demo slot that records current context and entry resource.
+ *
+ * Note that the value of order attribute in `@Spi` is -1500, the smaller the value, the higher the order,
+ * so this slot will be executed after {@link FlowSlot}(order=-2000) and before {@link DegradeSlot}(order=-1000),
+ * refer to the constants for slot order definitions in {@link Constants}.
  *
  * @author Eric Zhao
+ * @author cdfive
  */
-@Spi(order = -3500)
+@Spi(order = -1500)
 public class DemoSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, boolean prioritized, Object... args)
             throws Throwable {
+        System.out.println("------Entering for entry on DemoSlot------");
         System.out.println("Current context: " + context.getName());
         System.out.println("Current entry resource: " + context.getCurEntry().getResourceWrapper().getName());
 
@@ -40,7 +49,9 @@ public class DemoSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
     public void exit(Context context, ResourceWrapper resourceWrapper, int count, Object... args) {
-        System.out.println("Exiting for entry on DemoSlot: " + context.getCurEntry().getResourceWrapper().getName());
+        System.out.println("------Exiting for entry on DemoSlot------");
+        System.out.println("Current context: " + context.getName());
+        System.out.println("Current entry resource: " + context.getCurEntry().getResourceWrapper().getName());
 
         fireExit(context, resourceWrapper, count, args);
     }
