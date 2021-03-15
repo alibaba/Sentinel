@@ -42,7 +42,7 @@ public class SentinelApolloPublicProperties {
     private static final String SENTINEL = "sentinel";
     private static final String DOT_SENTINEL_DOT = DOT + SENTINEL + DOT;
 
-    private static final String DEFAULT_NAMESPACE_PREFIX = SENTINEL + DOT;
+    private static final String DEFAULT_NAMESPACE_NAME = SENTINEL;
 
     /**
      * default value for {@link #suffix}.
@@ -56,12 +56,9 @@ public class SentinelApolloPublicProperties {
     );
 
     /**
-     * every project's rules will save in a public namespace, all project's public namespace will start with this prefix.
-     * <p>
-     * This attribute is used to forbid public namespace's name conflict. i.e add a common prefix to public namespace's name.
+     * a private namespace for {@link ApolloDataSourceProperties#getNamespaceName()} used.
      */
-    @NotNull
-    private String namespacePrefix = DEFAULT_NAMESPACE_PREFIX;
+    private String namespaceName = DEFAULT_NAMESPACE_NAME;
 
     /**
      * value will be used in {@link ApolloDataSourceProperties#setFlowRulesKey(String)}'s suffix.
@@ -70,15 +67,15 @@ public class SentinelApolloPublicProperties {
      */
     private final Map<RuleType, String> suffix = new ConcurrentHashMap<>(DEFAULT_SUFFIX);
 
-    public String getNamespacePrefix() {
-        return namespacePrefix;
+    public String getNamespaceName() {
+        return namespaceName;
     }
 
-    public void setNamespacePrefix(String namespacePrefix) {
-        if (! DEFAULT_NAMESPACE_PREFIX.equals(namespacePrefix)) {
-            logger.info("detect you use custom namespace prefix, the value will be changed from [{}] to [{}]", DEFAULT_NAMESPACE_PREFIX, namespacePrefix);
+    public void setNamespaceName(String namespaceName) {
+        if (! DEFAULT_NAMESPACE_NAME.equals(namespaceName)) {
+            logger.info("detect you use custom namespace name, the value will be changed from [{}] to [{}]", DEFAULT_NAMESPACE_NAME, namespaceName);
         }
-        this.namespacePrefix = namespacePrefix;
+        this.namespaceName = namespaceName;
     }
 
     public Map<RuleType, String> getSuffix() {

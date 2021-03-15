@@ -27,13 +27,6 @@ import javax.validation.constraints.PositiveOrZero;
 @Validated
 public class SentinelApolloOpenApiProperties {
 
-    /**
-     * default namespace's length limit in apollo.
-     * because {@link SentinelApolloPublicProperties#getNamespacePrefix()} may be size 5 ~ 15,
-     * so the default value should small enough.
-     */
-    private static final Integer DEFAULT_NAMESPACE_LENGTH_LIMIT = 32 - 5;
-
     @NotEmpty
     private String portalUrl;
 
@@ -45,13 +38,6 @@ public class SentinelApolloOpenApiProperties {
      */
     @NotEmpty
     private String operateUser;
-
-    /**
-     * which app id in apollo dashboard operates.
-     * recommend that distinguish with dashboard's app id.
-     */
-    @NotEmpty
-    private String operatedAppId;
 
     /**
      * which environment in apollo dashboard operates.
@@ -72,12 +58,6 @@ public class SentinelApolloOpenApiProperties {
 
     @PositiveOrZero
     private Integer readTimeout = ApolloOpenApiConstants.DEFAULT_READ_TIMEOUT;
-
-    /**
-     * namespace's length is limited in apollo.
-     */
-    @Positive
-    private Integer namespaceLengthLimit = DEFAULT_NAMESPACE_LENGTH_LIMIT;
 
     public String getPortalUrl() {
         return portalUrl;
@@ -101,14 +81,6 @@ public class SentinelApolloOpenApiProperties {
 
     public void setOperateUser(String operateUser) {
         this.operateUser = operateUser;
-    }
-
-    public String getOperatedAppId() {
-        return operatedAppId;
-    }
-
-    public void setOperatedAppId(String operatedAppId) {
-        this.operatedAppId = operatedAppId;
     }
 
     public String getOperatedEnv() {
@@ -143,11 +115,4 @@ public class SentinelApolloOpenApiProperties {
         this.readTimeout = readTimeout;
     }
 
-    public Integer getNamespaceLengthLimit() {
-        return namespaceLengthLimit;
-    }
-
-    public void setNamespaceLengthLimit(Integer namespaceLengthLimit) {
-        this.namespaceLengthLimit = namespaceLengthLimit;
-    }
 }
