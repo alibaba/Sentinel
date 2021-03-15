@@ -15,10 +15,16 @@
  */
 package com.alibaba.csp.sentinel.adapter.dubbo.fallback;
 
+import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.adapter.dubbo.DubboAdapterGlobalConfig;
+import com.alibaba.csp.sentinel.fallback.FallbackRule;
+import com.alibaba.csp.sentinel.fallback.FallbackRuleManager;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.SentinelRpcException;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
+import com.alibaba.csp.sentinel.util.StringUtil;
+import com.alibaba.dubbo.common.json.JSON;
+import com.alibaba.dubbo.common.json.ParseException;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
@@ -48,9 +54,38 @@ public class DubboFallbackRegistryTest {
             public Result handle(Invoker<?> invoker, Invocation invocation, BlockException e) {
                 return new RpcResult("Error: " + e.getClass().getName());
             }
+
+            @Override
+            public Result handle(Invoker<?> invoker, Invocation invocation, BlockException ex, String resourceName) {
+                FallbackRule fallbackRule = FallbackRuleManager.getFallbackRule(resourceName);
+                if (StringUtil.isNotEmpty(fallbackRule.getFallback())) {
+                    // return null
+                    if (Constants.NULL_FALLBACK.equals(fallbackRule.getFallback())) {
+                        return null;
+                        // throw exception
+                    } else if (Constants.EXCEPTION_FALLBACK.equals(fallbackRule.getFallback())) {
+                        throw new SentinelRpcException(ex.toRuntimeException());
+                        // return fallback object
+                    } else {
+                        if (StringUtil.isNotEmpty(fallbackRule.getClazzReference())) {
+                            RpcResult result = new RpcResult();
+                            try {
+                                result.setValue(JSON.parse(fallbackRule.getFallback(), fallbackRule.getClass()));
+                            } catch (ParseException e) {
+                                result.setException(new SentinelRpcException(e.getMessage()));
+                            }
+                            return result;
+                        } else {
+                            return new RpcResult("Error: " + ex.getClass().getName());
+                        }
+                    }
+                } else {
+                    return new RpcResult("Error: " + ex.getClass().getName());
+                }
+            }
         });
         Result result = DubboAdapterGlobalConfig.getConsumerFallback()
-            .handle(null, null, ex);
+                .handle(null, null, ex);
         Assert.assertFalse("The invocation should not fail", result.hasException());
         Assert.assertEquals("Error: " + ex.getClass().getName(), result.getValue());
     }

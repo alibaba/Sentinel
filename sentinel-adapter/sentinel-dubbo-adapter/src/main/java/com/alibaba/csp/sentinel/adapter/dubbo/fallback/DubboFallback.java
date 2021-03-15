@@ -36,4 +36,14 @@ public interface DubboFallback {
      * @return fallback result
      */
     Result handle(Invoker<?> invoker, Invocation invocation, BlockException ex);
+
+    /**
+     * Handle the block exception and provide fallback result customize.
+     * @param invoker
+     * @param invocation
+     * @param ex
+     * @param resourceName
+     * @return
+     */
+    Result handle(Invoker<?> invoker, Invocation invocation, BlockException ex, String resourceName);
 }
