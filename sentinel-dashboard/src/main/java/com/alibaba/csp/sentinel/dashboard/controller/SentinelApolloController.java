@@ -29,6 +29,12 @@ public class SentinelApolloController {
         this.sentinelApolloService = sentinelApolloService;
     }
 
+    @GetMapping("/registered/projects")
+    public ResponseEntity<Set<String>> getRegisteredProjects() {
+        Set<String> projectNames = this.sentinelApolloService.getRegisteredProjects();
+        return ResponseEntity.ok(projectNames);
+    }
+
     @GetMapping("/namespace/cache/list")
     public ResponseEntity<Set<String>> list() {
         return null;
