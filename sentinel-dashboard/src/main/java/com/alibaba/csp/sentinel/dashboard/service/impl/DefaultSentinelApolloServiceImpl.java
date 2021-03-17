@@ -117,21 +117,26 @@ public class DefaultSentinelApolloServiceImpl implements SentinelApolloService {
         this.apolloOpenApiClient.publishNamespace(appId, this.operatedEnv, this.operatedCluster, privateNamespaceName, namespaceReleaseDTO);
     }
 
-    @Override
-    public void registryProjectIfNotExists(String projectName) {
-        if (this.registeredProjects.containsKey(projectName)) {
-            return;
-        }
-
+    private boolean existsNamespace(String projectName) {
         final String appId = projectName;
         try {
             this.apolloOpenApiClient.getNamespace(appId, this.operatedEnv, this.operatedCluster, this.namespaceName);
-            return;
+            return true;
         } catch (RuntimeException e) {
-            logger.warn("project [{}] maybe not exists namespace [{}] in apollo", projectName, this.namespaceName);
+            logger.warn("project [{}] not exists namespace [{}] in apollo", projectName, this.namespaceName);
+            return false;
         }
-        this.createPrivateNamespace(projectName, this.namespaceName);
-        this.publishPrivateNamespace(projectName, this.namespaceName);
+    }
+
+    @Override
+    public void registryProjectIfNotExists(String projectName) {
+        if (! this.registeredProjects.containsKey(projectName)) {
+            if (! this.existsNamespace(projectName)) {
+                this.createPrivateNamespace(projectName, this.namespaceName);
+                this.publishPrivateNamespace(projectName, this.namespaceName);
+            }
+            this.registeredProjects.put(projectName, new Date());
+        }
     }
 
     @Override
