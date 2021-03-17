@@ -20,6 +20,7 @@ import com.alibaba.csp.sentinel.slots.block.Rule;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -28,13 +29,17 @@ import java.util.concurrent.CompletableFuture;
  */
 public interface SentinelApolloService {
 
-    boolean registryProjectIfNotExists(String projectName);
+    void registryProjectIfNotExists(String projectName);
+
+    Set<String> getRegisteredProjects();
 
     CompletableFuture<Void> setRulesAsync(String projectName, RuleType ruleType, List<? extends Rule> rules);
 
     boolean setRules(String projectName, RuleType ruleType, List<? extends Rule> rules);
 
     void setRules(Map<String, Map<RuleType, List<? extends Rule>>> projectName2rules);
+
+    List<? extends Rule> getRules(String projectName, RuleType ruleType);
 
     Map<RuleType, List<? extends Rule>> getRules(String projectName);
 

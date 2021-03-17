@@ -17,13 +17,11 @@ package com.alibaba.csp.sentinel.dashboard.config;
 
 import com.alibaba.cloud.sentinel.datasource.RuleType;
 import com.alibaba.cloud.sentinel.datasource.config.ApolloDataSourceProperties;
-import com.alibaba.csp.sentinel.config.SentinelConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
@@ -32,11 +30,11 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Share those config to other project.
  */
-@ConfigurationProperties(prefix = "sentinel.apollo.public")
+@ConfigurationProperties(prefix = "sentinel.apollo")
 @Validated
-public class SentinelApolloPublicProperties {
+public class SentinelApolloProperties {
 
-    private static final Logger logger = LoggerFactory.getLogger(SentinelApolloPublicProperties.class);
+    private static final Logger logger = LoggerFactory.getLogger(SentinelApolloProperties.class);
 
     private static final String DOT = ".";
     private static final String SENTINEL = "sentinel";
