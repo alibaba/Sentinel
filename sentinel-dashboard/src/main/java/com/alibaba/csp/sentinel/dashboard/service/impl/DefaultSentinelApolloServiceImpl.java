@@ -19,22 +19,26 @@ import com.alibaba.cloud.sentinel.datasource.RuleType;
 import com.alibaba.cloud.sentinel.datasource.config.ApolloDataSourceProperties;
 import com.alibaba.csp.sentinel.dashboard.config.SentinelApolloOpenApiProperties;
 import com.alibaba.csp.sentinel.dashboard.config.SentinelApolloProperties;
+import com.alibaba.csp.sentinel.dashboard.repository.project.ProjectRepository;
 import com.alibaba.csp.sentinel.dashboard.service.SentinelApolloService;
 import com.alibaba.csp.sentinel.dashboard.util.DataSourceConverterUtils;
 import com.alibaba.csp.sentinel.slots.block.Rule;
 import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
+import com.ctrip.framework.apollo.openapi.client.exception.ApolloOpenApiException;
 import com.ctrip.framework.apollo.openapi.dto.NamespaceReleaseDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenAppNamespaceDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenNamespaceDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -46,11 +50,8 @@ public class DefaultSentinelApolloServiceImpl implements SentinelApolloService {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultSentinelApolloServiceImpl.class);
 
-    /**
-     * key is project name.
-     */
-    // TODO, use persistent storage
-    private final Map<String, Date> registeredProjects = new ConcurrentHashMap<>();
+    @Autowired
+    private ProjectRepository projectRepository;
 
     private final ApolloOpenApiClient apolloOpenApiClient;
 
@@ -85,6 +86,16 @@ public class DefaultSentinelApolloServiceImpl implements SentinelApolloService {
             map.put(key, value);
         }
         return Collections.unmodifiableMap(map);
+    }
+
+    @ExceptionHandler(ApolloOpenApiException.class)
+    public void handleApolloOpenApiException(ApolloOpenApiException e) {
+        final int status = e.getStatus();
+        if (status == HttpStatus.UNAUTHORIZED.value()) {
+            logger.info("{}", HttpStatus.UNAUTHORIZED);
+        }
+
+        throw e;
     }
 
     /**
@@ -130,18 +141,24 @@ public class DefaultSentinelApolloServiceImpl implements SentinelApolloService {
 
     @Override
     public void registryProjectIfNotExists(String projectName) {
-        if (! this.registeredProjects.containsKey(projectName)) {
+        if (! this.projectRepository.exists(projectName)) {
             if (! this.existsNamespace(projectName)) {
                 this.createPrivateNamespace(projectName, this.namespaceName);
                 this.publishPrivateNamespace(projectName, this.namespaceName);
             }
-            this.registeredProjects.put(projectName, new Date());
+            this.projectRepository.add(projectName);
         }
     }
 
     @Override
     public Set<String> getRegisteredProjects() {
-        return Collections.unmodifiableSet(this.registeredProjects.keySet());
+//        return Collections.unmodifiableSet(this.registeredProjects.keySet());
+        return Collections.unmodifiableSet(this.projectRepository.findAll());
+    }
+
+    @Override
+    public Set<String> clearRegisteredProjects() {
+        return this.projectRepository.deleteAll();
     }
 
     private OpenItemDTO resolveOpenItemDTO(String projectName, RuleType ruleType, List<? extends Rule> rules) {

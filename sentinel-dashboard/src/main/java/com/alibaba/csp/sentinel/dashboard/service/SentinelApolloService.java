@@ -33,6 +33,8 @@ public interface SentinelApolloService {
 
     Set<String> getRegisteredProjects();
 
+    Set<String> clearRegisteredProjects();
+
     CompletableFuture<Void> setRulesAsync(String projectName, RuleType ruleType, List<? extends Rule> rules);
 
     boolean setRules(String projectName, RuleType ruleType, List<? extends Rule> rules);

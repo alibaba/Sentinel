@@ -1,13 +1,12 @@
 package com.alibaba.csp.sentinel.dashboard.controller;
 
+import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
+import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
 import com.alibaba.csp.sentinel.dashboard.service.SentinelApolloService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
 
@@ -30,24 +29,17 @@ public class SentinelApolloController {
     }
 
     @GetMapping("/registered/projects")
+    @AuthAction(AuthService.PrivilegeType.READ_METRIC)
     public ResponseEntity<Set<String>> getRegisteredProjects() {
         Set<String> projectNames = this.sentinelApolloService.getRegisteredProjects();
         return ResponseEntity.ok(projectNames);
     }
 
-    @GetMapping("/namespace/cache/list")
-    public ResponseEntity<Set<String>> list() {
-        return null;
-    }
-
-    @RequestMapping("/namespace/cache/clear")
-    public ResponseEntity<Set<String>> clear(@RequestParam String projectName) {
-        return null;
-    }
-
-    @RequestMapping("/namespace/cache/clear/all")
-    public ResponseEntity<Set<String>> clearAll() {
-        return null;
+    @DeleteMapping("/registered/projects")
+    @AuthAction(AuthService.PrivilegeType.ALL)
+    public ResponseEntity<Set<String>> deleteRegisteredProjects() {
+        Set<String> projectNames = this.sentinelApolloService.clearRegisteredProjects();
+        return ResponseEntity.ok(projectNames);
     }
 
 }

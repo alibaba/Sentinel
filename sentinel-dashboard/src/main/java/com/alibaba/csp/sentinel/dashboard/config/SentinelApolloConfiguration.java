@@ -15,9 +15,12 @@
  */
 package com.alibaba.csp.sentinel.dashboard.config;
 
+import com.alibaba.csp.sentinel.dashboard.repository.project.ApolloProjectStore;
+import com.alibaba.csp.sentinel.dashboard.repository.project.ProjectRepository;
 import com.alibaba.csp.sentinel.dashboard.service.SentinelApolloService;
 import com.alibaba.csp.sentinel.dashboard.service.impl.DefaultSentinelApolloServiceImpl;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -47,6 +50,12 @@ public class SentinelApolloConfiguration {
     @ConditionalOnMissingBean
     public SentinelApolloService sentinelApolloService() {
         return new DefaultSentinelApolloServiceImpl(this.sentinelApolloOpenApiProperties, this.apolloOpenApiClient, this.sentinelApolloProperties);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ProjectRepository projectRepository(@Value("${app.id}") String appId) {
+        return new ApolloProjectStore(appId, this.apolloOpenApiClient, this.sentinelApolloOpenApiProperties);
     }
 
 }
