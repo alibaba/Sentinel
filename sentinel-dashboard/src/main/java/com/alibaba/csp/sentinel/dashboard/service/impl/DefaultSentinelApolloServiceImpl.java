@@ -225,7 +225,8 @@ public class DefaultSentinelApolloServiceImpl implements SentinelApolloService {
 
     @Override
     public List<? extends Rule> getRules(String projectName, RuleType ruleType) {
-        return this.getRules(projectName).get(ruleType);
+        Map<RuleType, List<? extends Rule>> ruleTypeListMap = this.getRules(projectName);
+        return ruleTypeListMap.getOrDefault(ruleType, Collections.emptyList());
     }
 
     @Override

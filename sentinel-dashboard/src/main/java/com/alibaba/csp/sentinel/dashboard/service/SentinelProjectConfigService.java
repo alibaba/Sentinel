@@ -89,7 +89,9 @@ public class SentinelProjectConfigService {
         for (Map.Entry<RuleType, List<? extends Rule>> entry : ruleTypeListMap.entrySet()) {
             RuleType ruleType = entry.getKey();
             List<? extends Rule> rules = entry.getValue();
-            write2ZipOutputStream(zipOutputStream, projectName, ruleType, rules);
+            if (rules.size() > 0) {
+                write2ZipOutputStream(zipOutputStream, projectName, ruleType, rules);
+            }
         }
     }
 
@@ -99,7 +101,9 @@ public class SentinelProjectConfigService {
             for (Map.Entry<String, Map<RuleType, List<? extends Rule>>> entry : projectName2rules.entrySet()) {
                 String projectName = entry.getKey();
                 Map<RuleType, List<? extends Rule>> ruleTypeListMap = entry.getValue();
-                write2ZipOutputStream(zipOutputStream, projectName, ruleTypeListMap);
+                if (ruleTypeListMap.size() > 0) {
+                    write2ZipOutputStream(zipOutputStream, projectName, ruleTypeListMap);
+                }
             }
         }
     }
