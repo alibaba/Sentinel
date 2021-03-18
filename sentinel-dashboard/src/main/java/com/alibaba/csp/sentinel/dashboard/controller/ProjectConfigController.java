@@ -55,14 +55,29 @@ public class ProjectConfigController {
      */
     @GetMapping("/export")
     @AuthAction(AuthService.PrivilegeType.READ_RULE)
-    public void export(@RequestParam String projectName, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void export(
+            @RequestParam String projectName,
+            @RequestParam(required = false) RuleType ruleType,
+            HttpServletRequest request, HttpServletResponse response
+    ) throws IOException {
         String filename = SentinelProjectConfigService.generateZipFilename();
         // log who download the configs
-        logger.info("Download configs, remote addr [{}], remote host [{}]. Filename is [{}]", request.getRemoteAddr(), request.getRemoteHost(), filename);
+        logger.info(
+                "Download configs, remote addr [{}], remote host [{}]. Filename is [{}], project name = [{}], rule type = [{}]",
+                request.getRemoteAddr(),
+                request.getRemoteHost(),
+                filename,
+                projectName,
+                ruleType
+        );
         // set downloaded filename
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + filename);
 
-        this.sentinelProjectConfigService.exportToZip(response.getOutputStream(), projectName);
+        if (null == ruleType) {
+            this.sentinelProjectConfigService.exportToZip(response.getOutputStream(), projectName);
+        } else {
+            this.sentinelProjectConfigService.exportToZip(response.getOutputStream(), projectName, ruleType);
+        }
     }
 
     /**

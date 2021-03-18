@@ -120,6 +120,15 @@ public class SentinelProjectConfigService {
         writeAsZipOutputStream(outputStream, Collections.singletonMap(projectName, ruleTypeListMap));
     }
 
+    public void exportToZip(OutputStream outputStream, String projectName, RuleType ruleType) throws IOException {
+        List<? extends Rule> rules = this.sentinelApolloService.getRules(projectName, ruleType);
+        Map<String, Map<RuleType, List<? extends Rule>>> projectName2rules = Collections.singletonMap(
+                projectName,
+                Collections.singletonMap(ruleType, rules)
+        );
+        writeAsZipOutputStream(outputStream, projectName2rules);
+    }
+
     private static List<? extends Rule> readRules(InputStream inputStream, RuleType ruleType) throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         IOUtils.copy(inputStream, byteArrayOutputStream);
