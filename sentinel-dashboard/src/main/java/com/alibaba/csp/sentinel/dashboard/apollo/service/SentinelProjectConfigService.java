@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.service;
+package com.alibaba.csp.sentinel.dashboard.apollo.service;
 
 import com.alibaba.cloud.sentinel.datasource.RuleType;
-import com.alibaba.csp.sentinel.dashboard.util.DataSourceConverterUtils;
+import com.alibaba.csp.sentinel.dashboard.apollo.util.DataSourceConverterUtils;
 import com.alibaba.csp.sentinel.slots.block.Rule;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
@@ -32,7 +32,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import static com.alibaba.csp.sentinel.dashboard.util.DataSourceConverterUtils.SERIALIZER;
+import static com.alibaba.csp.sentinel.dashboard.apollo.util.DataSourceConverterUtils.SERIALIZER;
 
 @Service
 public class SentinelProjectConfigService {

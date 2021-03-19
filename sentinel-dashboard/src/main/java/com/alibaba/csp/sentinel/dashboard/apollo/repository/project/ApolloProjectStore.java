@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.repository.project;
+package com.alibaba.csp.sentinel.dashboard.apollo.repository.project;
 
-import com.alibaba.csp.sentinel.dashboard.config.SentinelApolloOpenApiProperties;
+import com.alibaba.csp.sentinel.dashboard.apollo.config.SentinelApolloOpenApiProperties;
 import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import com.ctrip.framework.apollo.openapi.client.exception.ApolloOpenApiException;

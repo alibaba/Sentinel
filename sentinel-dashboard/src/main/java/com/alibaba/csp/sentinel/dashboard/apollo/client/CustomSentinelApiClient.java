@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.client;
+package com.alibaba.csp.sentinel.dashboard.apollo.client;
 
 import com.alibaba.cloud.sentinel.datasource.RuleType;
+import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.ApiDefinitionEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayFlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.*;
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ClusterClientConfig;
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ServerFlowConfig;
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ServerTransportConfig;
-import com.alibaba.csp.sentinel.dashboard.service.SentinelApolloService;
+import com.alibaba.csp.sentinel.dashboard.apollo.service.SentinelApolloService;
 import com.alibaba.csp.sentinel.slots.block.Rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

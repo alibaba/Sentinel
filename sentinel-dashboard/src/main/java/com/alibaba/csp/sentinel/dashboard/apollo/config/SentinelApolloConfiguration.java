@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.config;
+package com.alibaba.csp.sentinel.dashboard.apollo.config;
 
-import com.alibaba.csp.sentinel.dashboard.repository.project.ApolloProjectStore;
-import com.alibaba.csp.sentinel.dashboard.repository.project.ProjectRepository;
-import com.alibaba.csp.sentinel.dashboard.service.SentinelApolloService;
-import com.alibaba.csp.sentinel.dashboard.service.impl.DefaultSentinelApolloServiceImpl;
+import com.alibaba.csp.sentinel.dashboard.apollo.repository.project.ApolloProjectStore;
+import com.alibaba.csp.sentinel.dashboard.apollo.repository.project.ProjectRepository;
+import com.alibaba.csp.sentinel.dashboard.apollo.service.SentinelApolloService;
+import com.alibaba.csp.sentinel.dashboard.apollo.service.impl.DefaultSentinelApolloServiceImpl;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;

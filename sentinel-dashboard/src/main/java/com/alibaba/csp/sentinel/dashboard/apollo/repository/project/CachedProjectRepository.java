@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.repository.project;
+package com.alibaba.csp.sentinel.dashboard.apollo.repository.project;
 
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -42,7 +42,7 @@ public class CachedProjectRepository implements ProjectRepository {
 
     @Override
     public void add(String projectName) {
-        this.add(projectName);
+        this.projectRepository.add(projectName);
     }
 
     @Override

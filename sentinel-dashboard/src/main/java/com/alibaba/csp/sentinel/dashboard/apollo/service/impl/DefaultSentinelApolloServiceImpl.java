@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.service.impl;
+package com.alibaba.csp.sentinel.dashboard.apollo.service.impl;
 
 import com.alibaba.cloud.sentinel.datasource.RuleType;
 import com.alibaba.cloud.sentinel.datasource.config.ApolloDataSourceProperties;
-import com.alibaba.csp.sentinel.dashboard.config.SentinelApolloOpenApiProperties;
-import com.alibaba.csp.sentinel.dashboard.config.SentinelApolloProperties;
-import com.alibaba.csp.sentinel.dashboard.repository.project.ProjectRepository;
-import com.alibaba.csp.sentinel.dashboard.service.SentinelApolloService;
-import com.alibaba.csp.sentinel.dashboard.util.DataSourceConverterUtils;
+import com.alibaba.csp.sentinel.dashboard.apollo.config.SentinelApolloOpenApiProperties;
+import com.alibaba.csp.sentinel.dashboard.apollo.config.SentinelApolloProperties;
+import com.alibaba.csp.sentinel.dashboard.apollo.repository.project.ProjectRepository;
+import com.alibaba.csp.sentinel.dashboard.apollo.service.SentinelApolloService;
+import com.alibaba.csp.sentinel.dashboard.apollo.util.DataSourceConverterUtils;
 import com.alibaba.csp.sentinel.slots.block.Rule;
 import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;

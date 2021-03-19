@@ -25,7 +25,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *
  * @author Carpenter Lee
  */
-//@SpringBootApplication
+@SpringBootApplication
 public class DashboardApplication {
 
     public static void main(String[] args) {

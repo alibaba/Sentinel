@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.config;
+package com.alibaba.csp.sentinel.dashboard.apollo.config;
 
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

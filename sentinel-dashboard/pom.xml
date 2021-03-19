@@ -331,7 +331,7 @@
                 <version>${spring.boot.version}</version>
                 <configuration>
                     <fork>true</fork>
-                    <mainClass>com.alibaba.csp.sentinel.dashboard.CustomDashboardApplication</mainClass>
+                    <mainClass>com.alibaba.csp.sentinel.dashboard.apollo.CustomDashboardApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>

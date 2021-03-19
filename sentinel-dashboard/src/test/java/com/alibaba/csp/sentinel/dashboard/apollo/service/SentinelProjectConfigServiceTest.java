@@ -1,4 +1,4 @@
-package com.alibaba.csp.sentinel.dashboard.service;
+package com.alibaba.csp.sentinel.dashboard.apollo.service;
 
 import com.alibaba.cloud.sentinel.datasource.RuleType;
 import junit.framework.TestCase;

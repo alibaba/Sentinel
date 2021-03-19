@@ -13,20 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.repository.project;
+package com.alibaba.csp.sentinel.dashboard.apollo;
 
-import java.util.Set;
+import com.alibaba.csp.sentinel.dashboard.DashboardApplication;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-public interface ProjectRepository {
+@SpringBootApplication(scanBasePackageClasses = DashboardApplication.class)
+public class CustomDashboardApplication {
 
-    void add(String projectName);
-
-    int delete(String projectName);
-
-    boolean exists(String projectName);
-
-    Set<String> findAll();
-
-    Set<String> deleteAll();
-
+    public static void main(String[] args) {
+        SpringApplication.run(CustomDashboardApplication.class, args);
+    }
 }
