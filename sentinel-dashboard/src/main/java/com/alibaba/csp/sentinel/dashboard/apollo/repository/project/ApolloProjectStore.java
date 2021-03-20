@@ -42,8 +42,15 @@ public class ApolloProjectStore implements ProjectRepository {
     private final String appId;
     private final String env;
     private final String clusterName;
+    /**
+     * store sentinel dashboard's data in this private namespace.
+     */
     private final String namespaceName = DEFAULT_NAMESPACE_NAME;
     private final String operatedUser;
+
+    private volatile boolean selfPrivateNamespaceExists = false;
+
+    private final Object lock = new Object();
 
     public ApolloProjectStore(
             String appId,
@@ -54,16 +61,29 @@ public class ApolloProjectStore implements ProjectRepository {
         this.env = sentinelApolloOpenApiProperties.getOperatedEnv();
         this.clusterName = sentinelApolloOpenApiProperties.getOperatedCluster();
         this.operatedUser = sentinelApolloOpenApiProperties.getOperatedUser();
-
-        this.ensureNamespaceCreated();
     }
 
-    private void ensureNamespaceCreated() {
+    private void ensureSelfPrivateNamespaceExists() {
+        if (false == this.selfPrivateNamespaceExists) {
+            synchronized (this.lock) {
+                if (false == this.selfPrivateNamespaceExists) {
+                    this.createSelfPrivateNamespaceIfNotExists();
+                    this.selfPrivateNamespaceExists = true;
+                    logger.info("self private namespace [{}] create success or exist already.", this.namespaceName);
+                }
+            }
+        }
+    }
+
+    /**
+     * watch out that apollo portal may be not available.
+     */
+    private void createSelfPrivateNamespaceIfNotExists() {
         try {
             this.apolloOpenApiClient.getNamespace(appId, env, clusterName, namespaceName);
             return;
         } catch (ApolloOpenApiException e) {
-            logger.warn("namespace {} may not exists, status = {}, exception message = {}", namespaceName, e.getStatus(), e.getMessage());
+            logger.warn("namespace {} may not exists or apollo portal is unavailable now. status = {}, exception message = {}", namespaceName, e.getStatus(), e.getMessage());
         }
 
         OpenAppNamespaceDTO openAppNamespaceDTO = new OpenAppNamespaceDTO();
@@ -73,10 +93,12 @@ public class ApolloProjectStore implements ProjectRepository {
         openAppNamespaceDTO.setDataChangeCreatedBy(operatedUser);
 
         this.apolloOpenApiClient.createAppNamespace(openAppNamespaceDTO);
+        logger.info("self private namespace [{}] create success.", this.namespaceName);
     }
 
     @Override
     public void add(String projectName) {
+        this.ensureSelfPrivateNamespaceExists();
         if (this.exists(projectName)) {
             return;
         }
@@ -92,6 +114,7 @@ public class ApolloProjectStore implements ProjectRepository {
 
     @Override
     public int delete(String projectName) {
+        this.ensureSelfPrivateNamespaceExists();
         if (this.exists(projectName)) {
             this.apolloOpenApiClient.removeItem(appId, env, clusterName, namespaceName, projectName, operatedUser);
             logger.debug("delete project [{}] success.", projectName);
@@ -103,11 +126,13 @@ public class ApolloProjectStore implements ProjectRepository {
 
     @Override
     public boolean exists(String projectName) {
+        this.ensureSelfPrivateNamespaceExists();
         return null != apolloOpenApiClient.getItem(this.appId, this.env, this.clusterName, this.namespaceName, projectName);
     }
 
     @Override
     public Set<String> findAll() {
+        this.ensureSelfPrivateNamespaceExists();
         OpenNamespaceDTO openNamespaceDTO = this.apolloOpenApiClient.getNamespace(appId, env, clusterName, namespaceName);
         List<OpenItemDTO> openItemDTOS = openNamespaceDTO.getItems();
         Set<String> projectNames = new HashSet<>();
@@ -120,6 +145,7 @@ public class ApolloProjectStore implements ProjectRepository {
 
     @Override
     public Set<String> deleteAll() {
+        this.ensureSelfPrivateNamespaceExists();
         Set<String> projectNames = this.findAll();
         for (String projectName : projectNames) {
             this.delete(projectName);
