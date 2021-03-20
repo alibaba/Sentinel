@@ -1,6 +1,8 @@
 #!/bin/bash
-SERVICE_NAME=sentinel-dashboard
+export SERVICE_NAME=sentinel-dashboard
 
-cd `dirname $0`/..
+cd $(dirname $0)/..
 
-nohup java -jar ${SERVICE_NAME}*.jar >> start.log 2>&1 &
+JAVA_OPTS="${JAVA_OPTS:- -Xmx512M -XX:+UseG1GC}"
+
+nohup java ${JAVA_OPTS} -jar ${SERVICE_NAME}*.jar >> console.log 2>&1 &
