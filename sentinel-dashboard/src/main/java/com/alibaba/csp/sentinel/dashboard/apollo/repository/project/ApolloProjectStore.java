@@ -20,6 +20,7 @@ import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import com.ctrip.framework.apollo.openapi.client.exception.ApolloOpenApiException;
 import com.ctrip.framework.apollo.openapi.dto.OpenAppNamespaceDTO;
+import com.ctrip.framework.apollo.openapi.dto.OpenClusterDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenNamespaceDTO;
 import org.slf4j.Logger;
@@ -48,9 +49,13 @@ public class ApolloProjectStore implements ProjectRepository {
     private final String namespaceName = DEFAULT_NAMESPACE_NAME;
     private final String operatedUser;
 
+    private volatile boolean selfClusterExists = false;
+
+    private final Object lockForSelfCluster = new Object();
+
     private volatile boolean selfPrivateNamespaceExists = false;
 
-    private final Object lock = new Object();
+    private final Object lockForSelfPrivateNamespace = new Object();
 
     public ApolloProjectStore(
             String appId,
@@ -64,8 +69,10 @@ public class ApolloProjectStore implements ProjectRepository {
     }
 
     private void ensureSelfPrivateNamespaceExists() {
+        this.ensureSelfClusterExists();
+
         if (false == this.selfPrivateNamespaceExists) {
-            synchronized (this.lock) {
+            synchronized (this.lockForSelfPrivateNamespace) {
                 if (false == this.selfPrivateNamespaceExists) {
                     this.createSelfPrivateNamespaceIfNotExists();
                     this.selfPrivateNamespaceExists = true;
@@ -82,8 +89,8 @@ public class ApolloProjectStore implements ProjectRepository {
         try {
             this.apolloOpenApiClient.getNamespace(appId, env, clusterName, namespaceName);
             return;
-        } catch (ApolloOpenApiException e) {
-            logger.warn("namespace {} may not exists or apollo portal is unavailable now. status = {}, exception message = {}", namespaceName, e.getStatus(), e.getMessage());
+        } catch (RuntimeException e) {
+            logger.warn("namespace {} may not exists or apollo portal is unavailable now. exception message = {}", namespaceName, e.getMessage());
         }
 
         OpenAppNamespaceDTO openAppNamespaceDTO = new OpenAppNamespaceDTO();
@@ -94,6 +101,35 @@ public class ApolloProjectStore implements ProjectRepository {
 
         this.apolloOpenApiClient.createAppNamespace(openAppNamespaceDTO);
         logger.info("self private namespace [{}] create success.", this.namespaceName);
+    }
+
+    private void ensureSelfClusterExists() {
+        if (false == this.selfClusterExists) {
+            synchronized (this.lockForSelfCluster) {
+                if (false == this.selfClusterExists) {
+                    this.createSelfClusterIfNotExists();
+                    this.selfClusterExists = true;
+                    logger.info("cluster [{}] create success or exist already.", this.clusterName);
+                }
+            }
+        }
+    }
+
+    private void createSelfClusterIfNotExists() {
+        try {
+            this.apolloOpenApiClient.getCluster(appId, env, clusterName);
+            return;
+        } catch (RuntimeException e) {
+            logger.warn("cluster {} may not exists or apollo portal is unavailable now. exception message = {}", clusterName, e.getMessage());
+        }
+
+        OpenClusterDTO openClusterDTO = new OpenClusterDTO();
+        openClusterDTO.setAppId(appId);
+        openClusterDTO.setName(clusterName);
+        openClusterDTO.setDataChangeCreatedBy(operatedUser);
+
+        this.apolloOpenApiClient.createCluster(env, openClusterDTO);
+        logger.info("cluster [{}] create success.", this.clusterName);
     }
 
     @Override

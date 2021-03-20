@@ -26,10 +26,7 @@ import com.alibaba.csp.sentinel.slots.block.Rule;
 import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import com.ctrip.framework.apollo.openapi.client.exception.ApolloOpenApiException;
-import com.ctrip.framework.apollo.openapi.dto.NamespaceReleaseDTO;
-import com.ctrip.framework.apollo.openapi.dto.OpenAppNamespaceDTO;
-import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
-import com.ctrip.framework.apollo.openapi.dto.OpenNamespaceDTO;
+import com.ctrip.framework.apollo.openapi.dto.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,6 +103,21 @@ public class DefaultSentinelApolloServiceImpl implements SentinelApolloService {
         return projectName + flowRulesKeySuffix;
     }
 
+    private void ensureClusterExists(String appId) {
+        try {
+            this.apolloOpenApiClient.getCluster(appId, this.operatedEnv, this.operatedCluster);
+            return;
+        } catch (RuntimeException e) {
+            logger.info("app id [{}], env [{}], cluster [{}] not exists ", appId, this.operatedEnv, this.operatedCluster);
+        }
+
+        OpenClusterDTO openClusterDTO = new OpenClusterDTO();
+        openClusterDTO.setAppId(appId);
+        openClusterDTO.setName(this.operatedCluster);
+        openClusterDTO.setDataChangeCreatedBy(this.operatedUser);
+        this.apolloOpenApiClient.createCluster(this.operatedEnv, openClusterDTO);
+    }
+
     private void createPrivateNamespace(String projectName, String privateNamespaceName) {
         final String appId = projectName;
         OpenAppNamespaceDTO openAppNamespaceDTO = new OpenAppNamespaceDTO();
@@ -134,6 +146,7 @@ public class DefaultSentinelApolloServiceImpl implements SentinelApolloService {
 
     private boolean existsNamespace(String projectName) {
         final String appId = projectName;
+        this.ensureClusterExists(appId);
         try {
             this.apolloOpenApiClient.getNamespace(appId, this.operatedEnv, this.operatedCluster, this.namespaceName);
             return true;
