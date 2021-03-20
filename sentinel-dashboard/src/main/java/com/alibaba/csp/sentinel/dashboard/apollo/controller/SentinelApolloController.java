@@ -28,6 +28,7 @@ import java.util.Set;
 /**
  * forbid cache consistent problem.
  * export api to clear them.
+ * operation using.
  *
  * @author wxq
  */
@@ -54,6 +55,20 @@ public class SentinelApolloController {
     @AuthAction(AuthService.PrivilegeType.ALL)
     public ResponseEntity<Set<String>> deleteRegisteredProjects() {
         Set<String> projectNames = this.sentinelApolloService.clearRegisteredProjects();
+        return ResponseEntity.ok(projectNames);
+    }
+
+    @RequestMapping("/clear/cannot/read/config/projects")
+    @AuthAction(AuthService.PrivilegeType.ALL)
+    public ResponseEntity<Set<String>> clearCannotReadConfigProjects() {
+        Set<String> projectNames = this.sentinelApolloService.clearCannotReadConfigProjects();
+        return ResponseEntity.ok(projectNames);
+    }
+
+    @RequestMapping("/clear/cannot/publish/config/projects")
+    @AuthAction(AuthService.PrivilegeType.ALL)
+    public ResponseEntity<Set<String>> clearCannotPublishConfigProjects() {
+        Set<String> projectNames = this.sentinelApolloService.clearCannotPublishConfigProjects();
         return ResponseEntity.ok(projectNames);
     }
 

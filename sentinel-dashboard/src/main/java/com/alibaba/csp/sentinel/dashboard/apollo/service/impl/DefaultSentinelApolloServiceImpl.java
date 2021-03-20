@@ -128,6 +128,10 @@ public class DefaultSentinelApolloServiceImpl implements SentinelApolloService {
         this.apolloOpenApiClient.publishNamespace(appId, this.operatedEnv, this.operatedCluster, privateNamespaceName, namespaceReleaseDTO);
     }
 
+    private void publishRulesOfProject(String projectName) {
+        this.publishPrivateNamespace(projectName, this.namespaceName);
+    }
+
     private boolean existsNamespace(String projectName) {
         final String appId = projectName;
         try {
@@ -159,6 +163,50 @@ public class DefaultSentinelApolloServiceImpl implements SentinelApolloService {
     @Override
     public Set<String> clearRegisteredProjects() {
         return this.projectRepository.deleteAll();
+    }
+
+    @Override
+    public Set<String> clearCannotReadConfigProjects() {
+        Set<String> allProjectNames = this.projectRepository.findAll();
+        // TODO, change to parallel
+        Set<String> exceptionProjectNames = new HashSet<>();
+        for (String projectName : allProjectNames) {
+            try {
+                this.getRules(projectName);
+            } catch (RuntimeException e) {
+                logger.debug("cannot read project [{}]'s config", projectName);
+                exceptionProjectNames.add(projectName);
+            }
+        }
+
+        logger.info("those projects will be clear from storage because cannot read their config. {}", exceptionProjectNames);
+        for (String exceptionProjectName : exceptionProjectNames) {
+            this.projectRepository.delete(exceptionProjectName);
+        }
+
+        return Collections.unmodifiableSet(exceptionProjectNames);
+    }
+
+    @Override
+    public Set<String> clearCannotPublishConfigProjects() {
+        Set<String> allProjectNames = this.projectRepository.findAll();
+        // TODO, change to parallel
+        Set<String> exceptionProjectNames = new HashSet<>();
+        for (String projectName : allProjectNames) {
+            try {
+                this.publishRulesOfProject(projectName);
+            } catch (RuntimeException e) {
+                logger.debug("cannot publish project [{}]'s config", projectName);
+                exceptionProjectNames.add(projectName);
+            }
+        }
+
+        logger.info("those projects will be clear from storage because cannot publish their config. {}", exceptionProjectNames);
+        for (String exceptionProjectName : exceptionProjectNames) {
+            this.projectRepository.delete(exceptionProjectName);
+        }
+
+        return Collections.unmodifiableSet(exceptionProjectNames);
     }
 
     private OpenItemDTO resolveOpenItemDTO(String projectName, RuleType ruleType, List<? extends Rule> rules) {
