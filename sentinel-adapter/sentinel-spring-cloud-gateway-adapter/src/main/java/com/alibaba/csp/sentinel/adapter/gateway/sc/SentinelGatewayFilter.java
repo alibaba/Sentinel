@@ -43,7 +43,7 @@ import reactor.core.publisher.Mono;
  * @author Eric Zhao
  * @since 1.6.0
  */
-public class SentinelGatewayFilter implements GatewayFilter, GlobalFilter, Ordered {
+public class SentinelGatewayFilter implements GlobalFilter, Ordered {
 
     private final int order;
 
