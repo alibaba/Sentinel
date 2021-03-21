@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-parent</artifactId>
-        <version>1.8.1</version>
+        <version>1.8.2-SNAPSHOT</version>
     </parent>
     <artifactId>sentinel-demo</artifactId>
     <packaging>pom</packaging>
@@ -40,6 +40,7 @@
         <module>sentinel-demo-quarkus</module>
         <module>sentinel-demo-annotation-cdi-interceptor</module>
         <module>sentinel-demo-motan</module>
+        <module>sentinel-demo-transport-spring-mvc</module>
     </modules>
 
     <dependencies>

@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-parent</artifactId>
-        <version>1.8.1</version>
+        <version>1.8.2-SNAPSHOT</version>
     </parent>
     <artifactId>sentinel-transport</artifactId>
     <description>The transport module of Sentinel</description>
@@ -16,5 +16,6 @@
 
         <module>sentinel-transport-simple-http</module>
         <module>sentinel-transport-netty-http</module>
+        <module>sentinel-transport-spring-mvc</module>
     </modules>
 </project>
