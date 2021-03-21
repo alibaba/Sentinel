@@ -1,6 +1,12 @@
 <div class="row" style="margin-left: 1px; margin-top:10px; height: 50px;">
   <div class="col-md-6" style="margin-bottom: 10px;">
-    <span style="font-size: 30px;font-weight: bold;">{{app}}</span>
+    <span style="font-size: 30px;font-weight: bold;">
+      <a href="config/export?projectName={{app}}&ruleType=FLOW" target="_blank">
+        <button class="btn btn-primary">
+          导出{{app}}的流控规则
+        </button>
+      </a>
+    </span>
   </div>
   <div class="col-md-6">
     <button class="btn btn-default-inverse" style="float: right; margin-right: 10px;" ng-disabled="!macInputModel" ng-click="addNewRule()">
