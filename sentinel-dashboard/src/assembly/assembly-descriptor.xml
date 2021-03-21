@@ -32,6 +32,17 @@
             <lineEnding>unix</lineEnding>
         </fileSet>
 
+        <!--apollo namespaces-->
+        <fileSet>
+            <directory>src/main/namespaces</directory>
+            <outputDirectory>namespaces</outputDirectory>
+            <includes>
+                <include>*.properties</include>
+                <include>*.md</include>
+            </includes>
+            <lineEnding>unix</lineEnding>
+        </fileSet>
+
         <!--artifact -->
         <fileSet>
             <directory>target</directory>

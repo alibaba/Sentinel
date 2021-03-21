@@ -1,0 +1,5 @@
+需要给控制台在Apollo上申请一个项目
+
+然后将这个文件夹下的.properties文件放到Apollo上，
+
+作为控制台的配置，以及sentinel客户端的公共配置
