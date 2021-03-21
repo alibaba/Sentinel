@@ -39,6 +39,10 @@ public interface SentinelApolloService {
 
     Set<String> clearCannotPublishConfigProjects();
 
+    Set<String> autoRegistryProjectsSkipFailed();
+
+    CompletableFuture<Set<String>> autoRegistryProjectsSkipFailedAsync();
+
     CompletableFuture<Void> setRulesAsync(String projectName, RuleType ruleType, List<? extends Rule> rules);
 
     boolean setRules(String projectName, RuleType ruleType, List<? extends Rule> rules);

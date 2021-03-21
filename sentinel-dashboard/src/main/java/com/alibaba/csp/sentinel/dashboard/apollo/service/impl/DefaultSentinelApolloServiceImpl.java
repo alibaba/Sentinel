@@ -151,7 +151,7 @@ public class DefaultSentinelApolloServiceImpl implements SentinelApolloService {
             this.apolloOpenApiClient.getNamespace(appId, this.operatedEnv, this.operatedCluster, this.namespaceName);
             return true;
         } catch (RuntimeException e) {
-            logger.warn("project [{}] not exists namespace [{}] in apollo", projectName, this.namespaceName);
+            logger.debug("project [{}] not exists namespace [{}] in apollo", projectName, this.namespaceName);
             return false;
         }
     }
@@ -220,6 +220,30 @@ public class DefaultSentinelApolloServiceImpl implements SentinelApolloService {
         }
 
         return Collections.unmodifiableSet(exceptionProjectNames);
+    }
+
+    @Override
+    public Set<String> autoRegistryProjectsSkipFailed() {
+        List<OpenAppDTO> openAppDTOS = this.apolloOpenApiClient.getAllApps();
+        logger.info("find [{}] projects", openAppDTOS.size());
+
+        openAppDTOS.parallelStream().forEach(
+                openAppDTO -> {
+                    String projectName = openAppDTO.getAppId();
+                    try {
+                        this.registryProjectIfNotExists(projectName);
+                    } catch (RuntimeException e) {
+                        logger.debug("auto registry project [{}] failed, skip it. exception message = [{}]", projectName, e.getMessage());
+                    }
+                }
+        );
+
+        return this.getRegisteredProjects();
+    }
+
+    @Override
+    public CompletableFuture<Set<String>> autoRegistryProjectsSkipFailedAsync() {
+        return CompletableFuture.supplyAsync(this::autoRegistryProjectsSkipFailed);
     }
 
     private OpenItemDTO resolveOpenItemDTO(String projectName, RuleType ruleType, List<? extends Rule> rules) {

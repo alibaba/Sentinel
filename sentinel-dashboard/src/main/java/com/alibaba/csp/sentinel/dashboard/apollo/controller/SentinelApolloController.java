@@ -24,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * forbid cache consistent problem.
@@ -44,18 +45,32 @@ public class SentinelApolloController {
         this.sentinelApolloService = sentinelApolloService;
     }
 
-    @GetMapping("/registered/projects")
+    @GetMapping("/get/registered/projects")
     @AuthAction(AuthService.PrivilegeType.READ_METRIC)
     public ResponseEntity<Set<String>> getRegisteredProjects() {
         Set<String> projectNames = this.sentinelApolloService.getRegisteredProjects();
         return ResponseEntity.ok(projectNames);
     }
 
-    @DeleteMapping("/registered/projects")
+    @RequestMapping("/clear/registered/projects")
     @AuthAction(AuthService.PrivilegeType.ALL)
     public ResponseEntity<Set<String>> deleteRegisteredProjects() {
         Set<String> projectNames = this.sentinelApolloService.clearRegisteredProjects();
         return ResponseEntity.ok(projectNames);
+    }
+
+    @RequestMapping("/auto/registry/projects/skip/failed")
+    @AuthAction(AuthService.PrivilegeType.READ_METRIC)
+    public ResponseEntity<Set<String>> autoRegistryProjectsSkipFailed() {
+        Set<String> registeredProjectNames = this.sentinelApolloService.autoRegistryProjectsSkipFailed();
+        return ResponseEntity.ok(registeredProjectNames);
+    }
+
+    @RequestMapping("/auto/registry/projects/skip/failed/async")
+    @AuthAction(AuthService.PrivilegeType.READ_METRIC)
+    public ResponseEntity<String> autoRegistryProjectsSkipFailedAsync() {
+        CompletableFuture<Set<String>> registeredProjectNamesCompletableFuture = this.sentinelApolloService.autoRegistryProjectsSkipFailedAsync();
+        return ResponseEntity.ok("已在后台异步操作，请通过其它操作进行查询");
     }
 
     @RequestMapping("/clear/cannot/read/config/projects")

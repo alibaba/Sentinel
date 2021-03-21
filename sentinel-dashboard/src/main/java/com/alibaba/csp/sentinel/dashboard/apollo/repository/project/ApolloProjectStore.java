@@ -180,6 +180,9 @@ public class ApolloProjectStore implements ProjectRepository {
     public Set<String> deleteAll() {
         this.ensureSelfPrivateNamespaceExists();
         Set<String> projectNames = this.findAll();
+
+        logger.info("delete {} projects. {}", projectNames.size(), projectNames);
+
         for (String projectName : projectNames) {
             this.delete(projectName);
         }

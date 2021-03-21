@@ -1,156 +1,245 @@
 <div>
-  <div class="row">
-    <div class="col-lg-12">
-      <h1 class="page-header">欢迎使用 Sentinel 控制台</h1>
-    </div>
-    <!-- /.col-lg-12 -->
-
-    <div class="container-fluid">
-      <div class="container-fluid">
-        <div class="row-fluid">
-          <div class="span12">
-            <h3>
-              导入配置
-            </h3>
-            <form class="form-horizontal" action="config/import/all" method="POST" enctype="multipart/form-data">
-              <div class="control-group">
-                <label class="form-label" for="inputFile">文件输入</label>
-                <input class="form-control-file form-control-lg" id="inputFile" type="file" name="file"/>
-                <p class="help-block">请选择你在另一个环境导出的.zip文件</p>
-              </div>
-              <div class="control-group">
-                <div class="controls">
-                  <button type="submit" class="btn btn-primary">导入</button>
-                </div>
-              </div>
-            </form>
-            <p>
-              以json文件作为最小单位，来导入规则，
-              如果.zip中有文件<strong>应用名/xxx.json</strong>，
-              那么应用原有的所有xxx规则会被删除，新的所有xxx规则来源于文件<strong>应用名/xxx.json</strong>
-            </p>
-            <p>
-              例如.zip文件中有文件<strong>order/FLOW.json</strong>，
-              那么order原有的所有FLOW规则会被删除，
-              新的FLOW规则会从文件<strong>order/FLOW.json</strong>导入
-            </p>
-            <p>
-              如果.zip中不存在文件<strong>应用名/xxx.json</strong>，那么应用的所有xxx规则将会保持不变
-            </p>
-            <p>
-              例如.zip中不存在文件<strong>account/DEGRADE.json</strong>，那么account的所有DEGRADE规则保持不变，不会被删除
-            </p>
-            <p>
-              所以，如果.zip文件中有文件<strong>user/FLOW.json</strong>，但是没有文件<strong>user/DEGRADE.json</strong>，
-              那么user的所有FLOW规则将会被文件<strong>user/FLOW.json</strong>替代，但是user的所有DEGRADE规则保持不变
-            </p>
-          </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header">欢迎使用 Sentinel 控制台</h1>
         </div>
-      </div>
+        <!-- /.col-lg-12 -->
 
-    <div class="separator"></div>
-    <!-- 导出配置文件 -->
-    <div class="container-fluid">
-      <div class="row-fluid">
-        <div class="span12">
-          <h3>
-            导出配置
-          </h3>
-          <p>
-            导出所有应用的配置，格式是.zip
-          </p>
-          <p>
-            .zip文件里的目录结构如下
-            <pre>
+        <div class="container-fluid">
+            <div class="container-fluid">
+                <div class="row-fluid">
+                    <div class="span12">
+                        <h3 class="text-center">
+                            导入规则
+                        </h3>
+                        <form class="form-horizontal" action="config/import/all" method="POST"
+                              enctype="multipart/form-data">
+                            <div class="control-group">
+                                <label class="form-label" for="inputFile">文件输入</label>
+                                <input class="form-control-file form-control-lg" id="inputFile" type="file"
+                                       name="file"/>
+                                <p class="help-block">请选择你在另一个环境导出的.zip文件</p>
+                            </div>
+                            <div class="control-group">
+                                <div class="controls">
+                                    <button type="submit" class="btn btn-primary">导入</button>
+                                </div>
+                            </div>
+                        </form>
+                        <p>
+                            以json文件作为最小单位，来导入规则，
+                            如果.zip中有文件<strong>应用名/xxx.json</strong>，
+                            那么应用原有的所有xxx规则会被删除，新的所有xxx规则来源于文件<strong>应用名/xxx.json</strong>
+                        </p>
+                        <p>
+                            例如.zip文件中有文件<strong>order/FLOW.json</strong>，
+                            那么order原有的所有FLOW规则会被删除，
+                            新的FLOW规则会从文件<strong>order/FLOW.json</strong>导入
+                        </p>
+                        <p>
+                            如果.zip中不存在文件<strong>应用名/xxx.json</strong>，那么应用的所有xxx规则将会保持不变
+                        </p>
+                        <p>
+                            例如.zip中不存在文件<strong>account/DEGRADE.json</strong>，那么account的所有DEGRADE规则保持不变，不会被删除
+                        </p>
+                        <p>
+                            所以，如果.zip文件中有文件<strong>user/FLOW.json</strong>，但是没有文件<strong>user/DEGRADE.json</strong>，
+                            那么user的所有FLOW规则将会被文件<strong>user/FLOW.json</strong>替代，但是user的所有DEGRADE规则保持不变
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="separator"></div>
+            <!-- 导出配置文件 -->
+            <div class="container-fluid">
+                <div class="row-fluid">
+                    <div class="span12">
+                        <h3 class="text-center">
+                            导出规则
+                        </h3>
+                        <p>
+                            导出所有应用的配置，格式是.zip
+                        </p>
+                        <p>
+                            .zip文件里的目录结构如下
+                        <pre>
 |-- 应用名
 |   |-- FLOW.json
 |   |-- DEGRADE.json
 |   |-- PARAM_FLOW.json
 |   |-- SYSTEM.json
-|   |-- AUTHORITY.json
-            </pre>
-          </p>
-          <div class="container-fluid">
-            <div class="row-fluid">
-              <div class="span12">
-                <table class="table table-bordered">
-                  <thead>
-                    <tr>
-                      <th>
-                        .json文件
-                      </th>
-                      <th>
-                        文件的内容
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr class="success">
-                      <td>
-                        FLOW.json
-                      </td>
-                      <td>
-                        流控规则
-                      </td>
-                    </tr>
-                    <tr class="info">
-                      <td>
-                        DEGRADE.json
-                      </td>
-                      <td>
-                        降级规则
-                      </td>
-                    </tr>
-                    <tr class="success">
-                      <td>
-                        PARAM_FLOW.json
-                      </td>
-                      <td>
-                        热点规则
-                      </td>
-                    </tr>
-                    <tr class="info">
-                      <td>
-                        SYSTEM.json
-                      </td>
-                      <td>
-                        系统规则
-                      </td>
-                    </tr>
-                    <tr class="success">
-                      <td>
-                        AUTHORITY.json
-                      </td>
-                      <td>
-                        授权规则
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+|   |-- AUTHORITY.json</pre>
+                        </p>
+                        <div class="container-fluid">
+                            <div class="row-fluid">
+                                <div class="span12">
+                                    <table class="table table-bordered table-hover">
+                                        <thead>
+                                        <tr>
+                                            <th>
+                                                .json文件
+                                            </th>
+                                            <th>
+                                                文件的内容
+                                            </th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr class="success">
+                                            <td>
+                                                FLOW.json
+                                            </td>
+                                            <td>
+                                                流控规则
+                                            </td>
+                                        </tr>
+                                        <tr class="info">
+                                            <td>
+                                                DEGRADE.json
+                                            </td>
+                                            <td>
+                                                降级规则
+                                            </td>
+                                        </tr>
+                                        <tr class="success">
+                                            <td>
+                                                PARAM_FLOW.json
+                                            </td>
+                                            <td>
+                                                热点规则
+                                            </td>
+                                        </tr>
+                                        <tr class="info">
+                                            <td>
+                                                SYSTEM.json
+                                            </td>
+                                            <td>
+                                                系统规则
+                                            </td>
+                                        </tr>
+                                        <tr class="success">
+                                            <td>
+                                                AUTHORITY.json
+                                            </td>
+                                            <td>
+                                                授权规则
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <p>
+                            应用的xxx规则保存在xxx.json文件中
+                        </p>
+                        <p>
+                            如果某个应用没有对应的xxx规则，那么在应用名的文件夹下，不会有xxx.json文件
+                        </p>
+                        <p>
+                            例如应用名是order，没有DEGRADE规则，那么在order的文件夹下，不会产生DEGRADE.json文件
+                        </p>
+                        <a href="config/export/all" target="_blank">
+                            <button class="btn btn-block btn-primary">
+                                导出所有应用的所有规则
+                            </button>
+                        </a>
+                    </div>
+                </div>
             </div>
-          </div>
-          <p>
-            应用的xxx规则保存在xxx.json文件中
-          </p>
-          <p>
-            如果某个应用没有对应的xxx规则，那么在应用名的文件夹下，不会有xxx.json文件
-          </p>
-          <p>
-            例如应用名是order，没有DEGRADE规则，那么在order的文件夹下，不会产生DEGRADE.json文件
-          </p>
-          <a href="config/export/all" target="_blank">
-            <button class="btn btn-block btn-primary">
-              下载
-            </button>
-          </a>
-        </div>
-      </div>
-    </div>
 
-  <!-- /.row -->
-  <!-- /.panel -->
-  <div class="row">
-  </div>
-  <!-- /.row -->
+            <div class="container-fluid">
+                <div class="row-fluid">
+                    <div class="span12">
+                        <h3 class="text-center">
+                            应用基本操作
+                        </h3>
+                        <table class="table table-bordered table-hover">
+                            <thead>
+                            <tr>
+                                <th>
+                                    按钮
+                                </th>
+                                <th>
+                                    功能描述
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    <a href="sentinel/apollo/get/registered/projects" target="_blank">
+                                        <button class="btn btn-primary">
+                                            查看应用
+                                        </button>
+                                    </a>
+                                </td>
+                                <td>
+                                    获取已经被控制台存储的应用
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <a href="sentinel/apollo/clear/registered/projects" target="_blank">
+                                        <button class="btn btn-danger">
+                                            清理所有应用
+                                        </button>
+                                    </a>
+                                </td>
+                                <td>
+                                    清理在控制台中被存储的应用，不会删除应用的流控规则等配置。
+                                    这个功能是为了清理脏数据而设计，会返回被清理的应用
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <a href="sentinel/apollo/auto/registry/projects/skip/failed/async" target="_blank">
+                                        <button class="btn btn-primary">
+                                            自动注册应用
+                                        </button>
+                                    </a>
+                                </td>
+                                <td>
+                                    遍历所有在Apollo上的项目，然后将被赋权的项目，存储到控制台，
+                                    会自动跳过没有被赋权的项目，异步操作
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <a href="sentinel/apollo/clear/cannot/read/config/projects" target="_blank">
+                                        <button class="btn btn-danger">
+                                            清理无法读取规则的应用
+                                        </button>
+                                    </a>
+                                </td>
+                                <td>
+                                    如果控制台发现自己无法从Apollo上<strong>读取</strong>应用的配置，会将它从已经存储的应用列表中删除
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <a href="sentinel/apollo/clear/cannot/publish/config/projects" target="_blank">
+                                        <button class="btn btn-danger">
+                                            清理无法发布规则的应用
+                                        </button>
+                                    </a>
+                                </td>
+                                <td>
+                                    如果控制台发现自己无法从Apollo上<strong>发布</strong>应用的配置，会将它从已经存储的应用列表中删除
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- /.row -->
+            <!-- /.panel -->
+            <div class="row">
+            </div>
+            <!-- /.row -->
+        </div>
+    </div>
 </div>
