@@ -19,10 +19,7 @@ import com.alibaba.csp.sentinel.dashboard.apollo.config.SentinelApolloOpenApiPro
 import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import com.ctrip.framework.apollo.openapi.client.exception.ApolloOpenApiException;
-import com.ctrip.framework.apollo.openapi.dto.OpenAppNamespaceDTO;
-import com.ctrip.framework.apollo.openapi.dto.OpenClusterDTO;
-import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
-import com.ctrip.framework.apollo.openapi.dto.OpenNamespaceDTO;
+import com.ctrip.framework.apollo.openapi.dto.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -186,6 +183,13 @@ public class ApolloProjectStore implements ProjectRepository {
         for (String projectName : projectNames) {
             this.delete(projectName);
         }
+
+        // should publish to clear totally
+        NamespaceReleaseDTO namespaceReleaseDTO = new NamespaceReleaseDTO();
+        namespaceReleaseDTO.setReleasedBy(this.operatedUser);
+        namespaceReleaseDTO.setReleaseTitle("delete all " + projectNames.size() + " projects");
+        this.apolloOpenApiClient.publishNamespace(appId, env, clusterName, namespaceName, namespaceReleaseDTO);
+
         return projectNames;
     }
 
