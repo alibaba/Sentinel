@@ -1,3 +1,5 @@
+- [Home Page](en/README)
+
 - Deployment
 
   - [Quick Start](en/deployment/quick-start.md)

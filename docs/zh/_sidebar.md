@@ -1,3 +1,5 @@
+- [首页](zh/README)
+
 - 设计
   - [总览](zh/design/overview)
   - [sentinel客户端](zh/design/sentinel-client)
@@ -7,7 +9,6 @@
 - 部署
   - [快速开始](zh/deployment/quick-start)
   - [生产部署指南](zh/deployment/production-deployment-guide)
-
 
 - 使用
   - [sentinel-dashboard](zh/usage/sentinel-dashboard)
