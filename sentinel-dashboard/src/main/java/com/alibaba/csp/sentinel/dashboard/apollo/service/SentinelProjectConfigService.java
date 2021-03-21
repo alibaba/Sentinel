@@ -39,6 +39,11 @@ public class SentinelProjectConfigService {
 
     private static final Logger logger = LoggerFactory.getLogger(SentinelProjectConfigService.class);
 
+    /**
+     * @see <a href="https://stackoverflow.com/questions/13846000/file-separators-of-path-name-of-zipentry">File separators of Path name of ZipEntry?</a>
+     */
+    private static final String FORWARD_SLASH = "/";
+
     private static final String FILENAME_SUFFIX = ".json";
 
     private final SentinelApolloService sentinelApolloService;
@@ -48,23 +53,28 @@ public class SentinelProjectConfigService {
     }
 
     static ZipEntry resolveZipEntry(String projectName, RuleType ruleType) {
-        return new ZipEntry(String.join(File.separator, projectName, ruleType.name() + FILENAME_SUFFIX));
+        return new ZipEntry(String.join(FORWARD_SLASH, projectName, ruleType.name() + FILENAME_SUFFIX));
     }
 
     /**
      * @throws IllegalArgumentException if zipEntry is a directory
+     * @see #resolveZipEntry(String, RuleType)
      */
     static String getProjectName(ZipEntry zipEntry) {
-        if (zipEntry.isDirectory()) {
-            throw new IllegalArgumentException(zipEntry + " should not be a directory");
-        }
+        Assert.isTrue(! zipEntry.isDirectory(), "zip entry" + zipEntry + " should not be a directory");
         File file = new File(zipEntry.getName());
         return file.getParent();
     }
 
+    /**
+     * @see #resolveZipEntry(String, RuleType)
+     */
     static RuleType getRuleType(ZipEntry zipEntry) {
+        Assert.isTrue(! zipEntry.isDirectory(), "zip entry" + zipEntry + " should not be a directory");
         String filename = new File(zipEntry.getName()).getName();
         Assert.isTrue(filename.endsWith(FILENAME_SUFFIX), "filename '" + filename + "' should ends with " + FILENAME_SUFFIX);
+
+        // delete suffix
         String ruleTypeName = filename.substring(0, filename.length() - FILENAME_SUFFIX.length());
         return RuleType.valueOf(ruleTypeName);
     }
@@ -173,6 +183,7 @@ public class SentinelProjectConfigService {
         }
 
         // registry projects
+        logger.info("import {} projects config. project names = {}", projectName2rules.size(), projectName2rules.keySet());
         for (String projectName : projectName2rules.keySet()) {
             this.sentinelApolloService.registryProjectIfNotExists(projectName);
         }

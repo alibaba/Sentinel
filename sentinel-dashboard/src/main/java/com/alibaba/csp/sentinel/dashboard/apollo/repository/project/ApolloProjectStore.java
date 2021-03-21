@@ -22,6 +22,7 @@ import com.ctrip.framework.apollo.openapi.client.exception.ApolloOpenApiExceptio
 import com.ctrip.framework.apollo.openapi.dto.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 
 import java.util.*;
 
@@ -159,6 +160,7 @@ public class ApolloProjectStore implements ProjectRepository {
 
     @Override
     public boolean exists(String projectName) {
+        Assert.notNull(projectName, "project name cannot be null");
         this.ensureSelfPrivateNamespaceExists();
         return null != apolloOpenApiClient.getItem(this.appId, this.env, this.clusterName, this.namespaceName, projectName);
     }
