@@ -145,6 +145,23 @@
                                 导出所有应用的所有规则
                             </button>
                         </a>
+                        <br/>
+                        <p>
+                            控制台没有显示应用，但是只想导出单个应用的规则，可以在下方填入应用名，然后点击按钮
+                        </p>
+                        <form class="form-horizontal" action="config/export" method="GET"
+                              enctype="application/x-www-form-urlencoded">
+                            <div class="control-group">
+                                <label class="form-label" for="projectName">应用名</label>
+                                <input class="form-control-file form-control-lg" id="projectName" type="text"
+                                       name="projectName"/>
+                            </div>
+                            <div class="control-group">
+                                <div class="controls">
+                                    <button type="submit" class="btn btn-primary">导出应用的规则</button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
