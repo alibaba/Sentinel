@@ -240,6 +240,9 @@ public class DefaultSentinelApolloServiceImpl implements SentinelApolloService {
                 }
         );
 
+        this.clearCannotReadConfigProjects();
+        this.clearCannotPublishConfigProjects();
+
         return this.getRegisteredProjects();
     }
 
