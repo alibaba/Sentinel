@@ -176,6 +176,16 @@ public class DefaultSentinelApolloServiceImpl implements SentinelApolloService {
     }
 
     @Override
+    public Set<String> getAllApps() {
+        List<OpenAppDTO> openAppDTOS = this.apolloOpenApiClient.getAllApps();
+        Set<String> appIds = new HashSet<>(openAppDTOS.size());
+        for (OpenAppDTO openAppDTO : openAppDTOS) {
+            appIds.add(openAppDTO.getAppId());
+        }
+        return Collections.unmodifiableSet(new TreeSet<>(appIds));
+    }
+
+    @Override
     public Set<String> clearRegisteredProjects() {
         return this.projectRepository.deleteAll();
     }

@@ -9,9 +9,9 @@
             <div class="container-fluid">
                 <div class="row-fluid">
                     <div class="span12">
-                        <h3 class="text-center">
+                        <h2 class="text-center">
                             导入规则
-                        </h3>
+                        </h2>
                         <form class="form-horizontal" action="config/import/all" method="POST"
                               enctype="multipart/form-data">
                             <div class="control-group">
@@ -55,9 +55,9 @@
             <div class="container-fluid">
                 <div class="row-fluid">
                     <div class="span12">
-                        <h3 class="text-center">
+                        <h2 class="text-center">
                             导出规则
-                        </h3>
+                        </h2>
                         <p>
                             导出所有应用的配置，格式是.zip
                         </p>
@@ -152,9 +152,9 @@
             <div class="container-fluid">
                 <div class="row-fluid">
                     <div class="span12">
-                        <h3 class="text-center">
+                        <h2 class="text-center">
                             应用基本操作
-                        </h3>
+                        </h2>
                         <table class="table table-bordered table-hover">
                             <thead>
                             <tr>
@@ -171,25 +171,24 @@
                                 <td>
                                     <a href="sentinel/apollo/get/registered/projects" target="_blank">
                                         <button class="btn btn-primary">
-                                            查看应用
+                                            查看已接入控制台的应用
                                         </button>
                                     </a>
                                 </td>
                                 <td>
-                                    获取已经被控制台存储的应用
+                                    获取已经被控制台管理的应用，也就是可以被控制台直接修改规则的应用
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    <a href="sentinel/apollo/clear/registered/projects" target="_blank">
-                                        <button class="btn btn-danger">
-                                            清理所有应用
+                                    <a href="sentinel/apollo/get/all/apps" target="_blank">
+                                        <button class="btn btn-primary">
+                                            查看Apollo的所有项目
                                         </button>
                                     </a>
                                 </td>
                                 <td>
-                                    清理在控制台中被存储的应用，不会删除应用的流控规则等配置。
-                                    这个功能是为了清理脏数据而设计，会返回被清理的应用
+                                    获取目前在Apollo上有哪些项目（应用的app.id），无论是否接入控制台，都会显示
                                 </td>
                             </tr>
                             <tr>
@@ -203,6 +202,19 @@
                                 <td>
                                     遍历所有在Apollo上的项目，然后将被赋权的项目，存储到控制台，
                                     会自动跳过没有被赋权的项目，异步操作
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <a href="sentinel/apollo/clear/registered/projects" target="_blank">
+                                        <button class="btn btn-danger">
+                                            清理所有应用
+                                        </button>
+                                    </a>
+                                </td>
+                                <td>
+                                    清理在控制台中被存储的应用，不会删除应用的流控规则等配置。
+                                    这个功能是为了清理脏数据而设计，会返回被清理的应用
                                 </td>
                             </tr>
                             <tr>

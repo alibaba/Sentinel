@@ -52,6 +52,13 @@ public class SentinelApolloController {
         return ResponseEntity.ok(projectNames);
     }
 
+    @GetMapping("/get/all/apps")
+    @AuthAction(AuthService.PrivilegeType.READ_METRIC)
+    public ResponseEntity<Set<String>> getAllApps() {
+        Set<String> appIds = this.sentinelApolloService.getAllApps();
+        return ResponseEntity.ok(appIds);
+    }
+
     @RequestMapping("/clear/registered/projects")
     @AuthAction(AuthService.PrivilegeType.ALL)
     public ResponseEntity<Set<String>> deleteRegisteredProjects() {

@@ -33,6 +33,8 @@ public interface SentinelApolloService {
 
     Set<String> getRegisteredProjects();
 
+    Set<String> getAllApps();
+
     Set<String> clearRegisteredProjects();
 
     Set<String> clearCannotReadConfigProjects();
