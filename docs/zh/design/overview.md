@@ -52,6 +52,8 @@ sequenceDiagram
   apollo -->>- 应用: 有的，新的配置为xxx
 ```
 
+更细节的介绍请参考[设计/sentinel客户端](zh/design/sentinel-client)
+
 ## sentinel-dashboard
 
 sentinel控制台用来增删查改应用的流控规则
@@ -79,3 +81,5 @@ sequenceDiagram
 ```
 
 所以可以验证，推送到Apollo上的配置，是否已经生效了
+
+更细节的介绍请参考[sentinel-dashboard](zh/design/sentinel-dashboard)

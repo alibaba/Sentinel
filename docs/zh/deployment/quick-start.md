@@ -58,6 +58,8 @@ Blocked by Sentinel (flow limiting)
 
 快速开始已经走完，
 
+如果想了这个控制台是如何进行改造，接入Apollo配置中心的，可以参考[设计/总览](zh/design/overview)
+
 如果想自己部署一套sentinel控制台，可以参考[部署/生产部署指南](zh/deployment/production-deployment-guide)
 
 如果想将应用接入sentinel控制台，可以参考[使用/sentinel-客户端](zh/usage/sentinel-client)
