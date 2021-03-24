@@ -11,7 +11,7 @@
 
     <artifactId>sentinel-dashboard</artifactId>
     <packaging>jar</packaging>
-    <version>1.8.1-0-CUSTOM-SNAPSHOT</version>
+    <version>1.8.1-0</version>
 
     <properties>
         <resource.delimiter>@</resource.delimiter>
