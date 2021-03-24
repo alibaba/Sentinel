@@ -194,7 +194,7 @@ public class FlowRuleChecker {
                 try {
                     Thread.sleep(result.getWaitInMs());
                 } catch (InterruptedException e) {
-                    RecordLog.warn("[FlowRuleChecker] Error when applyTokenResult", e);
+                    RecordLog.warn("[FlowRuleChecker] applyTokenResult was interrupted", e);
                 }
                 return true;
             case TokenResultStatus.NO_RULE_EXISTS:
