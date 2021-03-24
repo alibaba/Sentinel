@@ -48,6 +48,16 @@ sentinel控制台单机部署，没有高可用
 
 如果sentinel控制台程序崩溃，将会无法修改应用配置，但是不影响应用的正常运行
 
+
+## 多机房
+
+根据apollo.cluster作为机房划分的依据
+
+参考[三、集群独立配置说明](https://ctripcorp.github.io/apollo/#/zh/usage/apollo-user-guide?id=%e4%b8%89%e3%80%81%e9%9b%86%e7%be%a4%e7%8b%ac%e7%ab%8b%e9%85%8d%e7%bd%ae%e8%af%b4%e6%98%8e)
+
+一个机房，一个控制台
+
+从需求上认为，每个机房的限流规则都不一样，当然也可以通过修改配置的方式，所有机房的应用都使用同一份限流规则
 ## 运维
 
 sentinel控制台在运维上应该尽可能友好，例如多个环境隔离的sentinel控制台之间，配置同步要尽可能地方便

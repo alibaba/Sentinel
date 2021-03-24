@@ -8,7 +8,7 @@
 
 查看[快速开始](zh/deployment/quick-start)开始使用
 
-查看[生产部署指南](zh/deployment/production-deployment-guide)将dashboard部署到生产环境
+查看[部署指南](zh/deployment/deployment-guide)将dashboard部署到生产环境
 
 ## 特性
 
