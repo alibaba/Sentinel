@@ -43,6 +43,15 @@
             <lineEnding>unix</lineEnding>
         </fileSet>
 
+        <!--docs-->
+        <fileSet>
+            <directory>../docs</directory>
+            <outputDirectory>docs</outputDirectory>
+            <includes>
+                <include>**/*</include>
+            </includes>
+        </fileSet>
+
         <!--artifact -->
         <fileSet>
             <directory>target</directory>
