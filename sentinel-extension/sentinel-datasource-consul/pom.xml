@@ -15,11 +15,17 @@
     <properties>
         <java.source.version>1.8</java.source.version>
         <java.target.version>1.8</java.target.version>
-        <consul.version>1.4.2</consul.version>
-        <consul.process.version>2.0.0</consul.process.version>
+        <consul.version>1.4.5</consul.version>
+        <consul.process.version>2.2.0</consul.process.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-xml</artifactId>
+            <version>3.0.6</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-datasource-extension</artifactId>

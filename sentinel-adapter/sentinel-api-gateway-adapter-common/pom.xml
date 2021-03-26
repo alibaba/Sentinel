@@ -12,11 +12,6 @@
     <artifactId>sentinel-api-gateway-adapter-common</artifactId>
     <packaging>jar</packaging>
 
-    <properties>
-        <java.source.version>1.7</java.source.version>
-        <java.target.version>1.7</java.target.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.alibaba.csp</groupId>

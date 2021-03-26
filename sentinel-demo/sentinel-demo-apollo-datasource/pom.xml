@@ -12,8 +12,6 @@
   <artifactId>sentinel-demo-apollo-datasource</artifactId>
 
   <properties>
-    <java.source.version>1.8</java.source.version>
-    <java.target.version>1.8</java.target.version>
     <log4j2.version>2.9.1</log4j2.version>
     <slf4j.version>1.7.25</slf4j.version>
   </properties>

@@ -11,11 +11,6 @@
 
     <artifactId>sentinel-demo-spring-cloud-gateway</artifactId>
 
-    <properties>
-        <java.source.version>1.8</java.source.version>
-        <java.target.version>1.8</java.target.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.cloud</groupId>

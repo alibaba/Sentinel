@@ -16,5 +16,6 @@
 
         <module>sentinel-transport-simple-http</module>
         <module>sentinel-transport-netty-http</module>
+        <module>sentinel-transport-spring-mvc</module>
     </modules>
 </project>

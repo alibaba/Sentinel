@@ -13,10 +13,7 @@
     <description>The parent module of Sentinel cluster server</description>
 
     <properties>
-        <java.source.version>1.7</java.source.version>
-        <java.target.version>1.7</java.target.version>
-
-        <netty.version>4.1.31.Final</netty.version>
+        <netty.version>4.1.48.Final</netty.version>
     </properties>
 
     <modules>
