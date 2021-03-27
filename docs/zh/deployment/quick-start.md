@@ -1,6 +1,8 @@
 # 快速开始
 
-## 服务端sentinel-dashboard
+## 公网体验地址
+
+### 服务端sentinel-dashboard
 
 为了方便快速给个直观的感受，
 已经在公网部署了控制台，直接访问
@@ -19,7 +21,7 @@ sentinel
 
 ![簇点链路](https://user-images.githubusercontent.com/15523186/112151118-d4600400-8c1b-11eb-8d2e-a007832a37c5.png)
 
-## 客户端sentinel-demo-apollo
+### 客户端sentinel-demo-apollo
 
 demo也已经部署到公网，源码地址是 https://github.com/Anilople/sentinel-demo-apollo.git
 
@@ -56,6 +58,48 @@ http://47.102.116.251:8081/echo?id=3
 Blocked by Sentinel (flow limiting)
 ```
 
+## 本地搭建
+
+### 服务端sentinel-dashboard
+
+在自己的机器上快速搭建sentinel控制台
+
+从[releases](https://github.com/Anilople/Sentinel/releases)下载最新的.zip文件
+
+确保自己的机器上，8080端口没有被占用
+
+解压后，运行（Windows可以用Git Bash）
+
+```bash
+sh scripts/startup.sh
+```
+
+然后访问 http://localhost:8080
+
+### 客户端sentinel-demo-apollo
+
+确保自己的机器上，8081端口没有被占用
+
+执行如下命令
+
+```bash
+git clone https://github.com/Anilople/sentinel-demo-apollo
+cd sentinel-demo-apollo
+mvn clean package -DskipTests
+cd target
+java -jar sentinel-demo-apollo*.jar
+```
+
+然后访问 http://localhost:8081/echo?id=3
+
+再访问 http://localhost:8080
+
+即可看到sentinel-demo-apollo的簇点链路
+
+也可以下载源码后，自行用IDE启动sentinel-demo-apollo
+
+## 后续
+
 快速开始已经走完，
 
 如果想了这个控制台是如何进行改造，接入Apollo配置中心的，可以参考[设计/总览](zh/design/overview)
@@ -63,6 +107,7 @@ Blocked by Sentinel (flow limiting)
 如果想自己部署一套sentinel控制台，可以参考[部署/部署指南](zh/deployment/deployment-guide)
 
 如果想将应用接入sentinel控制台，可以参考[使用/sentinel-客户端](zh/usage/sentinel-client)
+
 ## 参考资料
 
 * 官方文档[Sentinel 控制台](https://sentinelguard.io/zh-cn/docs/dashboard.html)
