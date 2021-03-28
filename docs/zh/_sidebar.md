@@ -14,6 +14,7 @@
   - [sentinel-dashboard](zh/usage/sentinel-dashboard)
   - [sentinel-客户端](zh/usage/sentinel-client)
 
-- [FAQ](zh/faq.md)
+- FAQ
+  - [错误信息](zh/faq/error-message)
 
 - [Releases](https://github.com/Anilople/Sentinel/releases)
