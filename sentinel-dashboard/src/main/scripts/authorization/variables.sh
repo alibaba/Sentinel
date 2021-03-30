@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# JSESSIONID from HTTP header Cookie
+# you can copy from web browser, then paste it here
+JSESSIONID=${JSESSIONID:=79A476FA0AE22F96F51D17FFA8897ADF}
+echo "JSESSIONID=${JSESSIONID}"
+
+# apollo portal ip
+APOLLO_PORTAL_IP=${APOLLO_PORTAL_IP:=106.54.227.205}
+# apollo portal port
+APOLLO_PORTAL_PORT=${APOLLO_PORTAL_PORT:=8070}
+
+APOLLO_PORTAL=${APOLLO_PORTAL:=${APOLLO_PORTAL_IP}:${APOLLO_PORTAL_PORT}}
+echo "APOLLO_PORTAL=${APOLLO_PORTAL}"
+
+# apollo open api's Token
+# copy it from Open Platform Authorization Management
+APOLLO_OPEN_API_TOKEN=${APOLLO_OPEN_API_TOKEN:=a610c865a7fae479cb40549f8cae540788f7d5f4}
+echo "APOLLO_OPEN_API_TOKEN=${APOLLO_OPEN_API_TOKEN}"

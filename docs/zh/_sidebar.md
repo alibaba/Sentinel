@@ -13,6 +13,7 @@
 - 使用
   - [sentinel-dashboard](zh/usage/sentinel-dashboard)
   - [sentinel-客户端](zh/usage/sentinel-client)
+  - [Apollo开放平台](zh/usage/apollo-open-api)
 
 - FAQ
   - [错误信息](zh/faq/error-message)

@@ -17,6 +17,8 @@
             <outputDirectory>scripts</outputDirectory>
             <includes>
                 <include>*.sh</include>
+                <include>authorization/*.sh</include>
+                <include>authorization/*.txt</include>
             </includes>
             <fileMode>0755</fileMode>
             <lineEnding>unix</lineEnding>

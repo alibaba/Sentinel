@@ -31,3 +31,5 @@ Thumbs.db
 
 # apollo config cache
 config-cache/
+
+*.log
