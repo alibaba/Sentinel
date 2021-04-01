@@ -50,7 +50,7 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
  */
 public class FlowRuleManager {
 
-    private static final AtomicReference<Map<String, List<FlowRule>>> flowRules = new AtomicReference<Map<String, List<FlowRule>>>();
+    private static volatile Map<String, List<FlowRule>> flowRules = Collections.<String, List<FlowRule>>emptyMap();
 
     private static final FlowPropertyListener LISTENER = new FlowPropertyListener();
     private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
@@ -60,7 +60,6 @@ public class FlowRuleManager {
         new NamedThreadFactory("sentinel-metrics-record-task", true));
 
     static {
-        flowRules.set(Collections.<String, List<FlowRule>>emptyMap());
         currentProperty.addListener(LISTENER);
         startMetricTimerListener();
     }
@@ -108,7 +107,7 @@ public class FlowRuleManager {
      */
     public static List<FlowRule> getRules() {
         List<FlowRule> rules = new ArrayList<FlowRule>();
-        for (Map.Entry<String, List<FlowRule>> entry : flowRules.get().entrySet()) {
+        for (Map.Entry<String, List<FlowRule>> entry : flowRules.entrySet()) {
             rules.addAll(entry.getValue());
         }
         return rules;
@@ -124,11 +123,11 @@ public class FlowRuleManager {
     }
 
     static Map<String, List<FlowRule>> getFlowRuleMap() {
-        return flowRules.get();
+        return flowRules;
     }
 
     public static boolean hasConfig(String resource) {
-        return flowRules.get().containsKey(resource);
+        return flowRules.containsKey(resource);
     }
 
     public static boolean isOtherOrigin(String origin, String resourceName) {
@@ -136,7 +135,7 @@ public class FlowRuleManager {
             return false;
         }
 
-        List<FlowRule> rules = flowRules.get().get(resourceName);
+        List<FlowRule> rules = flowRules.get(resourceName);
 
         if (rules != null) {
             for (FlowRule rule : rules) {
@@ -156,14 +155,14 @@ public class FlowRuleManager {
             Map<String, List<FlowRule>> rules = FlowRuleUtil.buildFlowRuleMap(value);
             //the rules was always not null, it's no need to check nullable
             //remove checking to avoid IDE warning
-            flowRules.set(rules);
+            flowRules = rules;
             RecordLog.info("[FlowRuleManager] Flow rules received: {}", rules);
         }
 
         @Override
         public void configLoad(List<FlowRule> conf) {
             Map<String, List<FlowRule>> rules = FlowRuleUtil.buildFlowRuleMap(conf);
-            flowRules.set(rules);
+            flowRules = rules;
             RecordLog.info("[FlowRuleManager] Flow rules loaded: {}", rules);
         }
     }
