@@ -54,12 +54,15 @@
             <!-- 导出配置文件 -->
             <div class="container-fluid">
                 <div class="row-fluid">
+                    <h2 class="text-center">
+                        导出规则
+                    </h2>
                     <div class="span12">
-                        <h2 class="text-center">
-                            导出规则
-                        </h2>
+                        <h3 class="text-center">
+                            简介
+                        </h3>
                         <p>
-                            导出所有应用的配置，格式是.zip
+                            导出应用的配置，格式是.zip
                         </p>
                         <p>
                             .zip文件里的目录结构如下
@@ -71,10 +74,8 @@
 |   |-- SYSTEM.json
 |   |-- AUTHORITY.json</pre>
                         </p>
-                        <div class="container-fluid">
-                            <div class="row-fluid">
-                                <div class="span12">
-                                    <table class="table table-bordered table-hover">
+
+                        <table class="table table-bordered table-hover">
                                         <thead>
                                         <tr>
                                             <th>
@@ -128,9 +129,7 @@
                                         </tr>
                                         </tbody>
                                     </table>
-                                </div>
-                            </div>
-                        </div>
+
                         <p>
                             应用的xxx规则保存在xxx.json文件中
                         </p>
@@ -140,14 +139,26 @@
                         <p>
                             例如应用名是order，没有DEGRADE规则，那么在order的文件夹下，不会产生DEGRADE.json文件
                         </p>
-                        <a href="config/export/all" target="_blank">
-                            <button class="btn btn-block btn-primary">
-                                导出所有应用的所有规则
-                            </button>
-                        </a>
-                        <br/>
+
+                    </div>
+                    <div class="span12">
+                        <h3 class="text-center">
+                            导出单个应用的所有规则
+                        </h3>
                         <p>
-                            控制台没有显示应用，但是只想导出单个应用的规则，可以在下方填入应用名，然后点击按钮
+                            控制台没有显示应用，但是只想导出单个应用的规则，
+                        </p>
+                        <p>
+                            可以在下方填入应用名，然后点击按钮，
+                        </p>
+                        <p>
+                            注意会导出这个应用的所有规则
+                        </p>
+                        <p>
+                            如果在左侧的<strong>侧边栏</strong>中，可以找到应用，
+                            推荐<strong>不使用这里的按钮</strong>，
+                            可以在侧边栏点开应用的<strong>实时监控</strong>或者<strong>簇点链路</strong>，
+                            然后在页面中点击导出xxx的所有规则
                         </p>
                         <form class="form-horizontal" action="config/export" method="GET"
                               enctype="application/x-www-form-urlencoded">
@@ -158,20 +169,39 @@
                             </div>
                             <div class="control-group">
                                 <div class="controls">
-                                    <button type="submit" class="btn btn-primary">导出应用的规则</button>
+                                    <button type="submit" class="btn btn-primary">导出应用的所有规则</button>
                                 </div>
                             </div>
                         </form>
+                    </div>
+                    <div class="span12">
+                        <h3 class="text-center">
+                            导出所有应用的所有规则
+                        </h3>
+                        <p>
+                            慎用，会一次性导出所有应用的所有规则，推荐在大规模迁移规则的时候使用，
+                        </p>
+                        <p>
+                            导出的.zip文件，有覆盖他人配置的风险，请谨慎操作
+                        </p>
+                        <a href="config/export/all" target="_blank">
+                            <button class="btn btn-block btn-primary">
+                                导出所有应用的所有规则
+                            </button>
+                        </a>
                     </div>
                 </div>
             </div>
 
             <div class="container-fluid">
                 <div class="row-fluid">
+                    <h2 class="text-center">
+                        应用基本操作
+                    </h2>
                     <div class="span12">
-                        <h2 class="text-center">
-                            应用基本操作
-                        </h2>
+                        <h3 class="text-center">
+                            查询
+                        </h3>
                         <table class="table table-bordered table-hover">
                             <thead>
                             <tr>
@@ -208,6 +238,25 @@
                                     获取目前在Apollo上有哪些项目（应用的app.id），无论是否接入控制台，都会显示
                                 </td>
                             </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="span12">
+                        <h3 class="text-center">
+                            注册
+                        </h3>
+                        <table class="table table-bordered table-hover">
+                            <thead>
+                            <tr>
+                                <th>
+                                    按钮
+                                </th>
+                                <th>
+                                    功能描述
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody>
                             <tr>
                                 <td>
                                     <a href="sentinel/apollo/auto/registry/projects/skip/failed/async" target="_blank">
@@ -221,6 +270,25 @@
                                     会自动跳过没有被赋权的项目，异步操作
                                 </td>
                             </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="span12">
+                        <h3 class="text-center">
+                            清理
+                        </h3>
+                        <table class="table table-bordered table-hover">
+                            <thead>
+                            <tr>
+                                <th>
+                                    按钮
+                                </th>
+                                <th>
+                                    功能描述
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody>
                             <tr>
                                 <td>
                                     <a href="sentinel/apollo/clear/registered/projects" target="_blank">
