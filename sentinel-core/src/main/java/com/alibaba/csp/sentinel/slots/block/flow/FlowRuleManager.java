@@ -77,7 +77,7 @@ public class FlowRuleManager {
     private static void startMetricTimerListener() {
         long flushInterval = SentinelConfig.metricLogFlushIntervalSec();
         if (flushInterval <= 0) {
-            RecordLog.info("[FlowRuleManager] The MetricTimerListener is'n started. If you want to start it, "
+            RecordLog.info("[FlowRuleManager] The MetricTimerListener isn't started. If you want to start it, "
                     + "please change the value(current: {}) of config({}) more than 0 to start it.", flushInterval,
                     SentinelConfig.METRIC_FLUSH_INTERVAL);
             return;
