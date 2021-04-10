@@ -14,6 +14,7 @@
   - [sentinel-dashboard](zh/usage/sentinel-dashboard)
   - [sentinel-客户端](zh/usage/sentinel-client)
   - [Apollo开放平台](zh/usage/apollo-open-api)
+  - [Apollo控制台](zh/usage/apollo-portal)
 
 - FAQ
   - [错误信息](zh/faq/error-message)
