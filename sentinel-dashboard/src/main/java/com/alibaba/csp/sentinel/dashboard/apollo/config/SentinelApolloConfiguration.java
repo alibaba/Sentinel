@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.dashboard.apollo.config;
 
 import com.alibaba.csp.sentinel.dashboard.apollo.repository.project.ApolloProjectStore;
 import com.alibaba.csp.sentinel.dashboard.apollo.repository.project.ProjectRepository;
+import com.alibaba.csp.sentinel.dashboard.apollo.service.ApolloPortalService;
 import com.alibaba.csp.sentinel.dashboard.apollo.service.SentinelApolloService;
 import com.alibaba.csp.sentinel.dashboard.apollo.service.impl.DefaultSentinelApolloServiceImpl;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
@@ -36,20 +37,28 @@ public class SentinelApolloConfiguration {
 
     private final SentinelApolloProperties sentinelApolloProperties;
 
+    private final ApolloPortalService apolloPortalService;
+
     public SentinelApolloConfiguration(
             SentinelApolloOpenApiProperties sentinelApolloOpenApiProperties,
             ApolloOpenApiClient apolloOpenApiClient,
-            SentinelApolloProperties sentinelApolloProperties
-    ) {
+            SentinelApolloProperties sentinelApolloProperties,
+            ApolloPortalService apolloPortalService) {
         this.sentinelApolloOpenApiProperties = sentinelApolloOpenApiProperties;
         this.apolloOpenApiClient = apolloOpenApiClient;
         this.sentinelApolloProperties = sentinelApolloProperties;
+        this.apolloPortalService = apolloPortalService;
     }
 
     @Bean
     @ConditionalOnMissingBean
     public SentinelApolloService sentinelApolloService() {
-        return new DefaultSentinelApolloServiceImpl(this.sentinelApolloOpenApiProperties, this.apolloOpenApiClient, this.sentinelApolloProperties);
+        return new DefaultSentinelApolloServiceImpl(
+                this.sentinelApolloOpenApiProperties,
+                this.apolloOpenApiClient,
+                this.sentinelApolloProperties,
+                this.apolloPortalService
+        );
     }
 
     @Bean

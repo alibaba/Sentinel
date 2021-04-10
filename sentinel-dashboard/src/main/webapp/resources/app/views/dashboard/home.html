@@ -54,12 +54,15 @@
             <!-- 导出配置文件 -->
             <div class="container-fluid">
                 <div class="row-fluid">
+                    <h2 class="text-center">
+                        导出规则
+                    </h2>
                     <div class="span12">
-                        <h2 class="text-center">
-                            导出规则
-                        </h2>
+                        <h3 class="text-center">
+                            简介
+                        </h3>
                         <p>
-                            导出所有应用的配置，格式是.zip
+                            导出应用的配置，格式是.zip
                         </p>
                         <p>
                             .zip文件里的目录结构如下
@@ -71,10 +74,8 @@
 |   |-- SYSTEM.json
 |   |-- AUTHORITY.json</pre>
                         </p>
-                        <div class="container-fluid">
-                            <div class="row-fluid">
-                                <div class="span12">
-                                    <table class="table table-bordered table-hover">
+
+                        <table class="table table-bordered table-hover">
                                         <thead>
                                         <tr>
                                             <th>
@@ -128,9 +129,7 @@
                                         </tr>
                                         </tbody>
                                     </table>
-                                </div>
-                            </div>
-                        </div>
+
                         <p>
                             应用的xxx规则保存在xxx.json文件中
                         </p>
@@ -140,14 +139,26 @@
                         <p>
                             例如应用名是order，没有DEGRADE规则，那么在order的文件夹下，不会产生DEGRADE.json文件
                         </p>
-                        <a href="config/export/all" target="_blank">
-                            <button class="btn btn-block btn-primary">
-                                导出所有应用的所有规则
-                            </button>
-                        </a>
-                        <br/>
+
+                    </div>
+                    <div class="span12">
+                        <h3 class="text-center">
+                            导出单个应用的所有规则
+                        </h3>
                         <p>
-                            控制台没有显示应用，但是只想导出单个应用的规则，可以在下方填入应用名，然后点击按钮
+                            控制台没有显示应用，但是只想导出单个应用的规则，
+                        </p>
+                        <p>
+                            可以在下方填入应用名，然后点击按钮，
+                        </p>
+                        <p>
+                            注意会导出这个应用的所有规则
+                        </p>
+                        <p>
+                            如果在左侧的<strong>侧边栏</strong>中，可以找到应用，
+                            推荐<strong>不使用这里的按钮</strong>，
+                            可以在侧边栏点开应用的<strong>实时监控</strong>或者<strong>簇点链路</strong>，
+                            然后在页面中点击导出xxx的所有规则
                         </p>
                         <form class="form-horizontal" action="config/export" method="GET"
                               enctype="application/x-www-form-urlencoded">
@@ -158,20 +169,39 @@
                             </div>
                             <div class="control-group">
                                 <div class="controls">
-                                    <button type="submit" class="btn btn-primary">导出应用的规则</button>
+                                    <button type="submit" class="btn btn-primary">导出应用的所有规则</button>
                                 </div>
                             </div>
                         </form>
+                    </div>
+                    <div class="span12">
+                        <h3 class="text-center">
+                            导出所有应用的所有规则
+                        </h3>
+                        <p>
+                            慎用，会一次性导出所有应用的所有规则，推荐在大规模迁移规则的时候使用，
+                        </p>
+                        <p>
+                            导出的.zip文件，有覆盖他人配置的风险，请谨慎操作
+                        </p>
+                        <a href="config/export/all" target="_blank">
+                            <button class="btn btn-block btn-primary">
+                                导出所有应用的所有规则
+                            </button>
+                        </a>
                     </div>
                 </div>
             </div>
 
             <div class="container-fluid">
                 <div class="row-fluid">
+                    <h2 class="text-center">
+                        应用基本操作
+                    </h2>
                     <div class="span12">
-                        <h2 class="text-center">
-                            应用基本操作
-                        </h2>
+                        <h3 class="text-center">
+                            查询
+                        </h3>
                         <table class="table table-bordered table-hover">
                             <thead>
                             <tr>
@@ -208,6 +238,61 @@
                                     获取目前在Apollo上有哪些项目（应用的app.id），无论是否接入控制台，都会显示
                                 </td>
                             </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="span12">
+                        <h3 class="text-center">
+                            注册
+                        </h3>
+                        <p>
+                            注册应用到sentinel控制台，让sentinel控制台可以修改应用的规则
+                        </p>
+                        <p>
+                            注册 = Apollo开放平台授权被管理的AppId + Sentinel控制台存储应用
+                        </p>
+                        <h4>
+                            注册侧边栏的应用
+                        </h4>
+                        <p>
+                            自动注册左侧侧边栏中，还没有被注册到sentinel控制台的应用。
+                        </p>
+                        <p>
+                            如果应用还没有被赋权，那么会使用超级管理员权限，
+                            调用Apollo开放平台授权管理的接口，将其自动赋权。
+                        </p>
+                        <p>
+                            会返回需要注册的应用是否注册成功，如果没有新的应用需要注册，你会看不到任何应用名
+                        </p>
+                        <form class="form-horizontal" action="sentinel/apollo/auto/registry/heartbeat/projects" method="POST"
+                              enctype="multipart/form-data">
+                            <div class="control-group">
+                                <label class="form-label" for="inputText">JSESSIONID</label>
+                                <input class="form-control-file form-control-lg" id="inputText" type="text"
+                                       name="JSESSIONID"/>
+                                <p class="help-block">输入超级管理员用户apollo登录portal后，Cookie里的JSESSIONID</p>
+                            </div>
+                            <div class="control-group">
+                                <div class="controls">
+                                    <button type="submit" class="btn btn-primary">注册侧边栏的应用</button>
+                                </div>
+                            </div>
+                        </form>
+                        <h4>
+                            其它注册功能
+                        </h4>
+                        <table class="table table-bordered table-hover">
+                            <thead>
+                            <tr>
+                                <th>
+                                    按钮
+                                </th>
+                                <th>
+                                    功能描述
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody>
                             <tr>
                                 <td>
                                     <a href="sentinel/apollo/auto/registry/projects/skip/failed/async" target="_blank">
@@ -217,10 +302,29 @@
                                     </a>
                                 </td>
                                 <td>
-                                    遍历所有在Apollo上的项目，然后将被赋权的项目，存储到控制台，
-                                    会自动跳过没有被赋权的项目，异步操作
+                                    遍历所有在Apollo上的项目，然后将被管理的AppId，存储到Sentinel控制台，
+                                    会自动跳过没有被管理的AppId，异步操作，Apollo的项目过多时，这个操作会耗时很长（1w个项目会耗时5分钟）
                                 </td>
                             </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="span12">
+                        <h3 class="text-center">
+                            清理
+                        </h3>
+                        <table class="table table-bordered table-hover">
+                            <thead>
+                            <tr>
+                                <th>
+                                    按钮
+                                </th>
+                                <th>
+                                    功能描述
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody>
                             <tr>
                                 <td>
                                     <a href="sentinel/apollo/clear/registered/projects" target="_blank">
