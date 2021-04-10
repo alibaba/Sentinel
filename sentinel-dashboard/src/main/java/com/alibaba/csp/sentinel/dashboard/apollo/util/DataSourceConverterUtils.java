@@ -25,26 +25,28 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 /**
+ * convert {@link Rule} to json string or vice versa.
  *
+ * @author wxq
  */
-public interface DataSourceConverterUtils {
+public class DataSourceConverterUtils {
 
-    Converter<List<? extends Rule>, String> SERIALIZER = rule -> JSON.toJSONString(rule, true);
+    private static final Converter<List<? extends Rule>, String> SERIALIZER = rule -> JSON.toJSONString(rule, true);
 
-    BiFunction<String, RuleType, List<? extends Rule>> DESERIALIZER = (json, ruleType) -> {
+    private static final BiFunction<String, RuleType, List<? extends Rule>> DESERIALIZER = (json, ruleType) -> {
         Class<? extends Rule> ruleClazz = ruleType.getClazz();
         return JSON.parseArray(json, ruleClazz);
     };
 
-    static String serializeToString(List<? extends Rule> rules) {
+    public static String serializeToString(List<? extends Rule> rules) {
         return SERIALIZER.convert(rules);
     }
 
-    static List<? extends Rule> deserialize(String content, RuleType ruleType) {
+    public static List<? extends Rule> deserialize(String content, RuleType ruleType) {
         return DESERIALIZER.apply(content, ruleType);
     }
 
-    static List<? extends Rule> deserialize(byte[] bytes, RuleType ruleType) {
+    public static List<? extends Rule> deserialize(byte[] bytes, RuleType ruleType) {
         String content = new String(bytes, StandardCharsets.UTF_8);
         return DESERIALIZER.apply(content, ruleType);
     }

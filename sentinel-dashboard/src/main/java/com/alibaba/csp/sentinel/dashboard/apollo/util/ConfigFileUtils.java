@@ -16,7 +16,6 @@
 package com.alibaba.csp.sentinel.dashboard.apollo.util;
 
 import com.alibaba.cloud.sentinel.datasource.RuleType;
-import com.alibaba.csp.sentinel.dashboard.apollo.service.SentinelApolloService;
 import com.alibaba.csp.sentinel.slots.block.Rule;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
@@ -34,8 +33,11 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import static com.alibaba.csp.sentinel.dashboard.apollo.util.DataSourceConverterUtils.SERIALIZER;
-
+/**
+ * Save {@link Rule} to .zip file, or read {@link Rule} from .zip file.
+ *
+ * @author wxq
+ */
 public class ConfigFileUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigFileUtils.class);
@@ -79,7 +81,7 @@ public class ConfigFileUtils {
 
         try {
             zipOutputStream.putNextEntry(zipEntry);
-            String jsonContent = SERIALIZER.convert(rules);
+            String jsonContent = DataSourceConverterUtils.serializeToString(rules);
             zipOutputStream.write(jsonContent.getBytes(StandardCharsets.UTF_8));
             zipOutputStream.closeEntry();
         } catch (IOException e) {
