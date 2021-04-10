@@ -294,15 +294,7 @@ public class DefaultSentinelApolloServiceImpl implements SentinelApolloService {
         logger.info("those {} projects have not registry yet. {}", projectNamesCannotRegistry.size(), projectNamesCannotRegistry);
 
         // authorize them
-        Map<String, ResponseEntity<ConsumerRole[]>> assignResult = this.apolloPortalService.assignAppRoleToConsumer(jsessionid, projectNamesCannotRegistry);
-
-        final Map<String, Boolean> registryResult = new HashMap<>();
-        for (Map.Entry<String, ResponseEntity<ConsumerRole[]>> entry : assignResult.entrySet()) {
-            String projectName = entry.getKey();
-            ResponseEntity<ConsumerRole[]> responseEntity = entry.getValue();
-            logger.debug("registry project [{}] ResponseEntity [{}] ", projectName, responseEntity);
-            registryResult.put(projectName, responseEntity.getStatusCode().is2xxSuccessful());
-        }
+        Map<String, Boolean> registryResult = this.apolloPortalService.assignAppRoleToSentinelDashboard(jsessionid, projectNamesCannotRegistry);
         return registryResult;
     }
 
