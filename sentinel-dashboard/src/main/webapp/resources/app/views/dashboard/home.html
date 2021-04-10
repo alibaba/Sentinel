@@ -12,6 +12,12 @@
                         <h2 class="text-center">
                             导入规则
                         </h2>
+                        <p>
+                            使用这个功能之前，你需要在其它环境的Sentinel控制台导出规则
+                        </p>
+                        <p>
+                            还要确保应用（项目）在Apollo上已经被创建
+                        </p>
                         <form class="form-horizontal" action="config/import/all" method="POST"
                               enctype="multipart/form-data">
                             <div class="control-group">
@@ -21,11 +27,22 @@
                                 <p class="help-block">请选择你在另一个环境导出的.zip文件</p>
                             </div>
                             <div class="control-group">
+                                <label class="form-label" for="inputText">JSESSIONID</label>
+                                <input class="form-control-file form-control-lg" id="inputText" type="text"
+                                       name="JSESSIONID"/>
+                                <p class="help-block">可选输入</p>
+                                <p class="help-block">超级管理员用户apollo登录portal后，Cookie里的JSESSIONID</p>
+                                <p class="help-block">输入后，会自动注册应用到Sentinel控制台</p>
+                            </div>
+                            <div class="control-group">
                                 <div class="controls">
                                     <button type="submit" class="btn btn-primary">导入</button>
                                 </div>
                             </div>
                         </form>
+                        <p>
+                            以下是导入规则的细节
+                        </p>
                         <p>
                             以json文件作为最小单位，来导入规则，
                             如果.zip中有文件<strong>应用名/xxx.json</strong>，

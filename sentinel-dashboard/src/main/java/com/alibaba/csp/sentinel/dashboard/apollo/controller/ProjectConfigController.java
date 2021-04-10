@@ -17,16 +17,20 @@ package com.alibaba.csp.sentinel.dashboard.apollo.controller;
 
 import com.alibaba.cloud.sentinel.datasource.RuleType;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
+import com.alibaba.csp.sentinel.dashboard.apollo.service.ApolloPortalService;
+import com.alibaba.csp.sentinel.dashboard.apollo.service.SentinelApolloService;
 import com.alibaba.csp.sentinel.dashboard.apollo.service.SentinelProjectConfigService;
 import com.alibaba.csp.sentinel.dashboard.apollo.util.ConfigFileUtils;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.slots.block.Rule;
+import com.alibaba.fastjson.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,8 +38,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping(value = "/config", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -45,8 +51,14 @@ public class ProjectConfigController {
 
     private final SentinelProjectConfigService sentinelProjectConfigService;
 
-    public ProjectConfigController(SentinelProjectConfigService sentinelProjectConfigService) {
+    private final ApolloPortalService apolloPortalService;
+
+    public ProjectConfigController(
+            SentinelProjectConfigService sentinelProjectConfigService,
+            ApolloPortalService apolloPortalService
+    ) {
         this.sentinelProjectConfigService = sentinelProjectConfigService;
+        this.apolloPortalService = apolloPortalService;
     }
 
     /**
@@ -96,14 +108,53 @@ public class ProjectConfigController {
         this.sentinelProjectConfigService.exportAllToZip(response.getOutputStream());
     }
 
+    /**
+     * Import project's rules from .zip file.
+     * @param file config file. A .zip file.
+     * @param jsessionid JSESSIONID in apollo portal's Cookie
+     * @return key is project name, value is its rules after change by config file
+     * @throws IOException if read file failed
+     * @throws IllegalArgumentException if cannot authorize sentinel dashboard to manage project in apollo
+     */
     @PostMapping("/import/all")
     @AuthAction(AuthService.PrivilegeType.ALL)
-    public Result<Map<String, Map<RuleType, List<? extends Rule>>>> importAll(@RequestParam("file") MultipartFile file) throws IOException {
+    public Result<Map<String, Map<RuleType, List<? extends Rule>>>> importAll(
+            @RequestParam("file") MultipartFile file,
+            @RequestPart(value = "JSESSIONID", required = false) String jsessionid
+    ) throws IOException {
+        // read all rules from file
         final Map<String, Map<RuleType, List<? extends Rule>>> projectName2rules;
         try (InputStream inputStream = file.getInputStream()) {
-            projectName2rules = this.sentinelProjectConfigService.importAllFrom(inputStream);
+            projectName2rules = ConfigFileUtils.readProjectName2Rules(inputStream);
         }
-        return Result.ofSuccess(projectName2rules);
+
+        // try to authorize sentinel dashboard to manage them in apollo
+        if (StringUtils.hasText(jsessionid)) {
+            // user want to authorize project in apollo
+            Map<String, Boolean> assignResult = this.apolloPortalService.assignAppRoleToSentinelDashboard(jsessionid, projectName2rules.keySet());
+
+            Set<String> successProjectNames = new HashSet<>();
+            Set<String> failedProjectNames = new HashSet<>();
+            for (Map.Entry<String, Boolean> entry : assignResult.entrySet()) {
+                String projectName = entry.getKey();
+                Boolean success = entry.getValue();
+                if (success) {
+                    successProjectNames.add(projectName);
+                } else {
+                    failedProjectNames.add(projectName);
+                }
+            }
+
+            if (! failedProjectNames.isEmpty()) {
+                logger.warn("there are {} projects authorize failed. {}", failedProjectNames.size(), failedProjectNames);
+                throw new IllegalArgumentException("无法注册这些应用，请确认JSESSIONID填写是否正确，以及这些应用（项目）在Apollo上是否存在。" + JSON.toJSONString(failedProjectNames));
+            }
+        }
+
+        // change their rules according rules in file
+        final Map<String, Map<RuleType, List<? extends Rule>>> projectName2rulesSaved = this.sentinelProjectConfigService.importAllFrom(projectName2rules);
+
+        return Result.ofSuccess(projectName2rulesSaved);
     }
 
 }

@@ -62,9 +62,7 @@ public class SentinelProjectConfigService {
         writeAsZipOutputStream(outputStream, projectName2rules);
     }
 
-    public Map<String, Map<RuleType, List<? extends Rule>>> importAllFrom(InputStream inputStream) throws IOException {
-        final Map<String, Map<RuleType, List<? extends Rule>>> projectName2rules = readProjectName2Rules(inputStream);
-
+    public Map<String, Map<RuleType, List<? extends Rule>>> importAllFrom(Map<String, Map<RuleType, List<? extends Rule>>> projectName2rules) {
         // registry projects
         logger.info("import {} projects config. project names = {}", projectName2rules.size(), projectName2rules.keySet());
         for (String projectName : projectName2rules.keySet()) {
