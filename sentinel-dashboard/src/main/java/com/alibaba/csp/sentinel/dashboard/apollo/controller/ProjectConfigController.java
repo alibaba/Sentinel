@@ -17,10 +17,11 @@ package com.alibaba.csp.sentinel.dashboard.apollo.controller;
 
 import com.alibaba.cloud.sentinel.datasource.RuleType;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
+import com.alibaba.csp.sentinel.dashboard.apollo.service.SentinelProjectConfigService;
+import com.alibaba.csp.sentinel.dashboard.apollo.util.ConfigFileUtils;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
-import com.alibaba.csp.sentinel.dashboard.apollo.service.SentinelProjectConfigService;
 import com.alibaba.csp.sentinel.slots.block.Rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +61,7 @@ public class ProjectConfigController {
             @RequestParam(required = false) RuleType ruleType,
             HttpServletRequest request, HttpServletResponse response
     ) throws IOException {
-        String filename = SentinelProjectConfigService.generateZipFilename();
+        String filename = ConfigFileUtils.generateZipFilename();
         // log who download the configs
         logger.info(
                 "Download configs, remote addr [{}], remote host [{}]. Filename is [{}], project name = [{}], rule type = [{}]",
@@ -86,7 +87,7 @@ public class ProjectConfigController {
     @GetMapping("/export/all")
     @AuthAction(AuthService.PrivilegeType.READ_RULE)
     public void export(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String filename = SentinelProjectConfigService.generateZipFilename();
+        String filename = ConfigFileUtils.generateZipFilename();
         // log who download the configs
         logger.info("Download configs, remote addr [{}], remote host [{}]. Filename is [{}]", request.getRemoteAddr(), request.getRemoteHost(), filename);
         // set downloaded filename
