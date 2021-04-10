@@ -19,9 +19,12 @@ import com.alibaba.cloud.sentinel.datasource.RuleType;
 import com.alibaba.cloud.sentinel.datasource.config.ApolloDataSourceProperties;
 import com.alibaba.csp.sentinel.dashboard.apollo.config.SentinelApolloOpenApiProperties;
 import com.alibaba.csp.sentinel.dashboard.apollo.config.SentinelApolloProperties;
+import com.alibaba.csp.sentinel.dashboard.apollo.entity.ConsumerRole;
 import com.alibaba.csp.sentinel.dashboard.apollo.repository.project.ProjectRepository;
+import com.alibaba.csp.sentinel.dashboard.apollo.service.ApolloPortalService;
 import com.alibaba.csp.sentinel.dashboard.apollo.service.SentinelApolloService;
 import com.alibaba.csp.sentinel.dashboard.apollo.util.DataSourceConverterUtils;
+import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.slots.block.Rule;
 import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
@@ -31,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -38,6 +42,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Use private namespace to save rules.
@@ -63,10 +69,16 @@ public class DefaultSentinelApolloServiceImpl implements SentinelApolloService {
 
     private final SentinelApolloProperties sentinelApolloProperties;
 
+    @Autowired
+    private AppManagement appManagement;
+
+    private final ApolloPortalService apolloPortalService;
+
     public DefaultSentinelApolloServiceImpl(
             SentinelApolloOpenApiProperties sentinelApolloOpenApiProperties,
             ApolloOpenApiClient apolloOpenApiClient,
-            SentinelApolloProperties sentinelApolloProperties
+            SentinelApolloProperties sentinelApolloProperties,
+            ApolloPortalService apolloPortalService
     ) {
         this.apolloOpenApiClient = apolloOpenApiClient;
         this.operatedUser = sentinelApolloOpenApiProperties.getOperatedUser();
@@ -74,6 +86,7 @@ public class DefaultSentinelApolloServiceImpl implements SentinelApolloService {
         this.operatedCluster = sentinelApolloOpenApiProperties.getOperatedCluster();
         this.namespaceName = sentinelApolloProperties.getNamespaceName();
         this.sentinelApolloProperties = sentinelApolloProperties;
+        this.apolloPortalService = apolloPortalService;
     }
 
     private static Map<String, String> toKeyValues(List<OpenItemDTO> openItemDTOS) {
@@ -160,8 +173,8 @@ public class DefaultSentinelApolloServiceImpl implements SentinelApolloService {
     @Override
     public void registryProjectIfNotExists(String projectName) {
         Assert.notNull(projectName, "project name cannot be null");
-        if (! this.projectRepository.exists(projectName)) {
-            if (! this.existsNamespace(projectName)) {
+        if (!this.projectRepository.exists(projectName)) {
+            if (!this.existsNamespace(projectName)) {
                 this.createPrivateNamespace(projectName, this.namespaceName);
                 this.publishPrivateNamespace(projectName, this.namespaceName);
             }
@@ -171,8 +184,8 @@ public class DefaultSentinelApolloServiceImpl implements SentinelApolloService {
 
     @Override
     public Set<String> getRegisteredProjects() {
-//        return Collections.unmodifiableSet(this.registeredProjects.keySet());
-        return Collections.unmodifiableSet(this.projectRepository.findAll());
+        Set<String> projectNames = this.projectRepository.findAll();
+        return Collections.unmodifiableSet(new TreeSet<>(projectNames));
     }
 
     @Override
@@ -259,6 +272,38 @@ public class DefaultSentinelApolloServiceImpl implements SentinelApolloService {
     @Override
     public CompletableFuture<Set<String>> autoRegistryProjectsSkipFailedAsync() {
         return CompletableFuture.supplyAsync(this::autoRegistryProjectsSkipFailed);
+    }
+
+    @Override
+    public Map<String, Boolean> autoRegistryHeartbeatProjects(String jsessionid) {
+        Set<String> projectNamesWithHeartbeat = new HashSet<>(this.appManagement.getAppNames());
+        logger.info("sentinel dashboard can see {} projects in sidebar", projectNamesWithHeartbeat.size());
+
+        Predicate<String> isCannotRegistry = projectName -> {
+            try {
+                this.registryProjectIfNotExists(projectName);
+                return false;
+            } catch (RuntimeException e) {
+                return true;
+            }
+        };
+
+        // find which project cannot registry to sentinel dashboard
+        Set<String> projectNamesCannotRegistry = projectNamesWithHeartbeat.parallelStream().filter(isCannotRegistry).collect(Collectors.toSet());
+
+        logger.info("those {} projects have not registry yet. {}", projectNamesCannotRegistry.size(), projectNamesCannotRegistry);
+
+        // authorize them
+        Map<String, ResponseEntity<ConsumerRole[]>> assignResult = this.apolloPortalService.assignAppRoleToConsumer(jsessionid, projectNamesCannotRegistry);
+
+        final Map<String, Boolean> registryResult = new HashMap<>();
+        for (Map.Entry<String, ResponseEntity<ConsumerRole[]>> entry : assignResult.entrySet()) {
+            String projectName = entry.getKey();
+            ResponseEntity<ConsumerRole[]> responseEntity = entry.getValue();
+            logger.debug("registry project [{}] ResponseEntity [{}] ", projectName, responseEntity);
+            registryResult.put(projectName, responseEntity.getStatusCode().is2xxSuccessful());
+        }
+        return registryResult;
     }
 
     private OpenItemDTO resolveOpenItemDTO(String projectName, RuleType ruleType, List<? extends Rule> rules) {

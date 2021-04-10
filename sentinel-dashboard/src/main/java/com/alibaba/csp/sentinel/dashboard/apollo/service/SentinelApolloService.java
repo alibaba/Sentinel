@@ -16,7 +16,9 @@
 package com.alibaba.csp.sentinel.dashboard.apollo.service;
 
 import com.alibaba.cloud.sentinel.datasource.RuleType;
+import com.alibaba.csp.sentinel.dashboard.apollo.entity.ConsumerRole;
 import com.alibaba.csp.sentinel.slots.block.Rule;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Map;
@@ -44,6 +46,8 @@ public interface SentinelApolloService {
     Set<String> autoRegistryProjectsSkipFailed();
 
     CompletableFuture<Set<String>> autoRegistryProjectsSkipFailedAsync();
+
+    Map<String, Boolean> autoRegistryHeartbeatProjects(String jsessionid);
 
     CompletableFuture<Void> setRulesAsync(String projectName, RuleType ruleType, List<? extends Rule> rules);
 

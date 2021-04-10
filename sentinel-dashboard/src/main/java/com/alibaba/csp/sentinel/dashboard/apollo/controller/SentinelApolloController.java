@@ -15,16 +15,22 @@
  */
 package com.alibaba.csp.sentinel.dashboard.apollo.controller;
 
+import com.alibaba.csp.sentinel.dashboard.apollo.entity.ConsumerRole;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
 import com.alibaba.csp.sentinel.dashboard.apollo.service.SentinelApolloService;
+import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * forbid cache consistent problem.
@@ -78,6 +84,24 @@ public class SentinelApolloController {
     public ResponseEntity<String> autoRegistryProjectsSkipFailedAsync() {
         CompletableFuture<Set<String>> registeredProjectNamesCompletableFuture = this.sentinelApolloService.autoRegistryProjectsSkipFailedAsync();
         return ResponseEntity.ok("已在后台异步操作，请通过其它操作进行查询");
+    }
+
+    @RequestMapping(value = "/auto/registry/heartbeat/projects", produces = MediaType.APPLICATION_JSON_VALUE)
+    @AuthAction(AuthService.PrivilegeType.ALL)
+    public Result<Map<String, Boolean>> autoRegistryHeartbeatProjects(@RequestPart("JSESSIONID") String jsessionid) {
+        Map<String, Boolean> registryResult = this.sentinelApolloService.autoRegistryHeartbeatProjects(jsessionid);
+        final long failedCount = registryResult.values().stream().filter(aBoolean -> false == aBoolean).count();
+        if (failedCount <= 0) {
+            // all success
+            return Result.ofSuccess(registryResult)
+                    .setMsg("所有应用注册成功");
+        } else {
+            // exists failed
+            final long totalCount = registryResult.size();
+            final long successCount = totalCount - failedCount;
+            String message = String.format("总共有%d个需要注册的应用，有%d个注册成功，%d个注册失败", totalCount, successCount, failedCount);
+            return Result.<Map<String, Boolean>>ofFail(-1, message).setData(registryResult);
+        }
     }
 
     @RequestMapping("/clear/cannot/read/config/projects")
