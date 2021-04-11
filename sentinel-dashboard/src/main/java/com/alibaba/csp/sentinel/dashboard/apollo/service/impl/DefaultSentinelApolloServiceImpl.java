@@ -42,6 +42,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -387,15 +388,24 @@ public class DefaultSentinelApolloServiceImpl implements SentinelApolloService {
     }
 
     @Override
+    public Map<String, Map<RuleType, List<? extends Rule>>> getRules(Set<String> projectNames) {
+        Function<String, String> keyFunction = projectName -> projectName;
+        Function<String, Map<RuleType, List<? extends Rule>>> valueFunction = this::getRules;
+
+        Map<String, Map<RuleType, List<? extends Rule>>> map = projectNames.parallelStream()
+                .collect(
+                        Collectors.toMap(
+                                keyFunction,
+                                valueFunction
+                        )
+                );
+        return Collections.unmodifiableMap(map);
+    }
+
+    @Override
     public Map<String, Map<RuleType, List<? extends Rule>>> getRules() {
         Set<String> projectNames = this.getRegisteredProjects();
-
-        Map<String, Map<RuleType, List<? extends Rule>>> map = new HashMap<>();
-
-        for (String projectName : projectNames) {
-            map.put(projectName, this.getRules(projectName));
-        }
-        return Collections.unmodifiableMap(map);
+        return this.getRules(projectNames);
     }
 
 }

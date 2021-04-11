@@ -59,6 +59,8 @@ public interface SentinelApolloService {
 
     Map<RuleType, List<? extends Rule>> getRules(String projectName);
 
+    Map<String, Map<RuleType, List<? extends Rule>>> getRules(Set<String> projectNames);
+
     Map<String, Map<RuleType, List<? extends Rule>>> getRules();
 
 }

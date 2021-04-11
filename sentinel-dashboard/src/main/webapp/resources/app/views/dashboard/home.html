@@ -192,33 +192,29 @@
 
         <div class="col-md-12">
             <h3 class="text-center">
-                导出单个应用的所有规则
+                导出多个应用的所有规则
             </h3>
             <p>
-                控制台没有显示应用，但是只想导出单个应用的规则，
+                控制台没有显示应用，但是想导出单个应用的规则；
+                或者想导出多个应用的规则，而不是导出全部应用的规则
             </p>
             <p>
-                可以在下方填入应用名，然后点击按钮，
+                注意会导出这些应用的所有规则
             </p>
             <p>
-                注意会导出这个应用的所有规则
-            </p>
-            <p>
-                如果在左侧的<strong>侧边栏</strong>中，可以找到应用，
-                推荐<strong>不使用这里的按钮</strong>，
+                如果只想导出一个应用的规则，当在左侧的<strong>侧边栏</strong>中，可以找到应用，
+                推荐<strong>不要使用这里的按钮</strong>，
                 可以在侧边栏点开应用的<strong>实时监控</strong>或者<strong>簇点链路</strong>，
                 然后在页面中点击导出xxx的所有规则
             </p>
-            <form class="form-horizontal" action="config/export" method="GET"
-                  enctype="application/x-www-form-urlencoded">
+            <form class="form-horizontal" action="config/export/multiple" method="POST" enctype="multipart/form-data">
                 <div class="control-group">
-                    <label class="form-label" for="projectName">应用名</label>
-                    <input class="form-control-file form-control-lg" id="projectName" type="text"
-                           name="projectName"/>
+                    <textarea class="form-control" name="multipleProjectNamesTextarea" rows="5"></textarea>
+                    <p class="help-block">填入多个应用名，每个占一行，请勿输入空格，tab等字符</p>
                 </div>
                 <div class="control-group">
                     <div class="controls">
-                        <button type="submit" class="btn btn-primary">导出应用的所有规则</button>
+                        <button type="submit" class="btn btn-primary">导出多个应用的所有规则</button>
                     </div>
                 </div>
             </form>
