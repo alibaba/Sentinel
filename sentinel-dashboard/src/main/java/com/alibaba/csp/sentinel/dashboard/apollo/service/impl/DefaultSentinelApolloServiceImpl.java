@@ -19,7 +19,6 @@ import com.alibaba.cloud.sentinel.datasource.RuleType;
 import com.alibaba.cloud.sentinel.datasource.config.ApolloDataSourceProperties;
 import com.alibaba.csp.sentinel.dashboard.apollo.config.SentinelApolloOpenApiProperties;
 import com.alibaba.csp.sentinel.dashboard.apollo.config.SentinelApolloProperties;
-import com.alibaba.csp.sentinel.dashboard.apollo.entity.ConsumerRole;
 import com.alibaba.csp.sentinel.dashboard.apollo.repository.project.ProjectRepository;
 import com.alibaba.csp.sentinel.dashboard.apollo.service.ApolloPortalService;
 import com.alibaba.csp.sentinel.dashboard.apollo.service.SentinelApolloService;
@@ -30,11 +29,11 @@ import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import com.ctrip.framework.apollo.openapi.client.exception.ApolloOpenApiException;
 import com.ctrip.framework.apollo.openapi.dto.*;
+import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -197,6 +196,19 @@ public class DefaultSentinelApolloServiceImpl implements SentinelApolloService {
             appIds.add(openAppDTO.getAppId());
         }
         return Collections.unmodifiableSet(new TreeSet<>(appIds));
+    }
+
+    @Override
+    public Set<String> getNotExistingProjectNames(Set<String> projectNames) {
+        List<String> appIds = new ArrayList<>(new TreeSet<>(projectNames));
+
+        // get existing projects
+        List<OpenAppDTO> openAppDTOS = this.apolloOpenApiClient.getAppsByIds(appIds);
+        Set<String> existingProjectNames = openAppDTOS.stream().map(OpenAppDTO::getAppId).collect(Collectors.toSet());
+
+        Set<String> notExistingProjectNames = Sets.difference(projectNames, existingProjectNames);
+
+        return Collections.unmodifiableSet(new TreeSet<>(notExistingProjectNames));
     }
 
     @Override

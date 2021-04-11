@@ -16,9 +16,8 @@
 package com.alibaba.csp.sentinel.dashboard.apollo.service;
 
 import com.alibaba.cloud.sentinel.datasource.RuleType;
-import com.alibaba.csp.sentinel.dashboard.apollo.entity.ConsumerRole;
 import com.alibaba.csp.sentinel.slots.block.Rule;
-import org.springframework.http.ResponseEntity;
+import com.ctrip.framework.apollo.openapi.client.exception.ApolloOpenApiException;
 
 import java.util.List;
 import java.util.Map;
@@ -27,26 +26,72 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * sentinel dashboard call this service to modify rules of project.
+ *
  * @author wxq
  */
 public interface SentinelApolloService {
 
+    /**
+     * @throws ApolloOpenApiException if cannot create or publish namespace of project in apollo
+     */
     void registryProjectIfNotExists(String projectName);
 
+    /**
+     * @return projects are saved in sentinel dashboard's storage
+     */
     Set<String> getRegisteredProjects();
 
+    /**
+     * @return all projects in apollo
+     */
     Set<String> getAllApps();
 
+    /**
+     * Find which project not exist in apollo.
+     *
+     * @return projects not exist in apollo
+     */
+    Set<String> getNotExistingProjectNames(Set<String> projectNames);
+
+    /**
+     * Delete projects are saved in sentinel dashboard's storage
+     *
+     * @return projects are deleted
+     */
     Set<String> clearRegisteredProjects();
 
+    /**
+     * If sentinel dashboard cannot read project's config from apollo, sentinel dashboard will delete this project in self storage.
+     *
+     * @return projects are deleted
+     */
     Set<String> clearCannotReadConfigProjects();
 
+    /**
+     * If sentinel dashboard cannot publish project's config to apollo, sentinel dashboard will delete this project in self storage.
+     *
+     * @return projects are deleted
+     */
     Set<String> clearCannotPublishConfigProjects();
 
+    /**
+     * Traversal all projects in apollo, try to registry them by using {@link #registryProjectIfNotExists(String)}.
+     *
+     * @return projects are registered
+     */
     Set<String> autoRegistryProjectsSkipFailed();
 
+    /**
+     * Asynchronous operation of {@link #autoRegistryProjectsSkipFailed()}.
+     */
     CompletableFuture<Set<String>> autoRegistryProjectsSkipFailedAsync();
 
+    /**
+     * Registry projects which show in sentinel dashboard's sidebar
+     *
+     * @param jsessionid JSESSIONID in Cookie
+     * @return key is project name, value is it registry successful or not
+     */
     Map<String, Boolean> autoRegistryHeartbeatProjects(String jsessionid);
 
     CompletableFuture<Void> setRulesAsync(String projectName, RuleType ruleType, List<? extends Rule> rules);

@@ -23,10 +23,9 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static com.alibaba.csp.sentinel.dashboard.apollo.util.ConfigFileUtils.writeAsZipOutputStream;
 
@@ -78,4 +77,31 @@ public class SentinelProjectConfigService {
         return projectName2rules;
     }
 
+    /**
+     * @return projects that do not exist in apollo
+     */
+    public Set<String> getNotExistProjectNames(Set<String> projectNames) {
+        return this.sentinelApolloService.getNotExistingProjectNames(projectNames);
+    }
+
+    /**
+     * Please use {@link #getNotExistProjectNames(Set)} first, then use current method.
+     *
+     * @return projects cannot registry to sentinel dashboard
+     */
+    public Set<String> getCannotRegisteredProjectNames(Set<String> projectNames) {
+        Predicate<String> cannotRegistry = projectName -> {
+            try {
+                this.sentinelApolloService.registryProjectIfNotExists(projectName);
+            } catch (RuntimeException e) {
+                return true;
+            }
+            return false;
+        };
+
+        Set<String> cannotRegisteredProjectNames = projectNames.parallelStream()
+                .filter(cannotRegistry)
+                .collect(Collectors.toSet());
+        return Collections.unmodifiableSet(new TreeSet<>(cannotRegisteredProjectNames));
+    }
 }
