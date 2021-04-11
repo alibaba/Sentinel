@@ -19,15 +19,18 @@ import com.alibaba.csp.sentinel.dashboard.apollo.entity.ConsumerRole;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
 import com.alibaba.csp.sentinel.dashboard.apollo.service.SentinelApolloService;
+import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -45,16 +48,23 @@ public class SentinelApolloController {
 
     private static final Logger logger = LoggerFactory.getLogger(SentinelApolloController.class);
 
-    private final SentinelApolloService sentinelApolloService;
+    @Autowired
+    private SentinelApolloService sentinelApolloService;
 
-    public SentinelApolloController(SentinelApolloService sentinelApolloService) {
-        this.sentinelApolloService = sentinelApolloService;
-    }
+    @Autowired
+    private AppManagement appManagement;
 
     @GetMapping("/get/registered/projects")
     @AuthAction(AuthService.PrivilegeType.READ_METRIC)
     public ResponseEntity<Set<String>> getRegisteredProjects() {
         Set<String> projectNames = this.sentinelApolloService.getRegisteredProjects();
+        return ResponseEntity.ok(projectNames);
+    }
+
+    @GetMapping("/get/projects/in/sidebar")
+    @AuthAction(AuthService.PrivilegeType.READ_METRIC)
+    public ResponseEntity<Set<String>> getProjectsInSidebar() {
+        Set<String> projectNames = new TreeSet<>(appManagement.getAppNames());
         return ResponseEntity.ok(projectNames);
     }
 
