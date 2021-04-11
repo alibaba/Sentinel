@@ -15,25 +15,26 @@
  */
 package com.alibaba.csp.sentinel.dashboard.apollo.controller;
 
-import com.alibaba.csp.sentinel.dashboard.apollo.entity.ConsumerRole;
+import com.alibaba.csp.sentinel.dashboard.apollo.service.SentinelApolloService;
+import com.alibaba.csp.sentinel.dashboard.apollo.service.SentinelDashboardService;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
-import com.alibaba.csp.sentinel.dashboard.apollo.service.SentinelApolloService;
-import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 /**
  * forbid cache consistent problem.
@@ -52,7 +53,7 @@ public class SentinelApolloController {
     private SentinelApolloService sentinelApolloService;
 
     @Autowired
-    private AppManagement appManagement;
+    private SentinelDashboardService sentinelDashboardService;
 
     @GetMapping("/get/registered/projects")
     @AuthAction(AuthService.PrivilegeType.READ_METRIC)
@@ -64,7 +65,7 @@ public class SentinelApolloController {
     @GetMapping("/get/projects/in/sidebar")
     @AuthAction(AuthService.PrivilegeType.READ_METRIC)
     public ResponseEntity<Set<String>> getProjectsInSidebar() {
-        Set<String> projectNames = new TreeSet<>(appManagement.getAppNames());
+        Set<String> projectNames = this.sentinelDashboardService.getProjectNamesInSidebar();
         return ResponseEntity.ok(projectNames);
     }
 
@@ -96,22 +97,46 @@ public class SentinelApolloController {
         return ResponseEntity.ok("已在后台异步操作，请通过其它操作进行查询");
     }
 
-    @RequestMapping(value = "/auto/registry/heartbeat/projects", produces = MediaType.APPLICATION_JSON_VALUE)
-    @AuthAction(AuthService.PrivilegeType.ALL)
-    public Result<Map<String, Boolean>> autoRegistryHeartbeatProjects(@RequestPart("JSESSIONID") String jsessionid) {
-        Map<String, Boolean> registryResult = this.sentinelApolloService.autoRegistryHeartbeatProjects(jsessionid);
-        final long failedCount = registryResult.values().stream().filter(aBoolean -> false == aBoolean).count();
+    private static Result<Map<String, Set<String>>> toResult(Map<String, Boolean> registryResult) {
+        Set<String> succeedProjectNames = new HashSet<>();
+        Set<String> failedProjectNames = new HashSet<>();
+
+        for (Map.Entry<String, Boolean> entry : registryResult.entrySet()) {
+            String projectName = entry.getKey();
+            Boolean success = entry.getValue();
+            if (success) {
+                succeedProjectNames.add(projectName);
+            } else {
+                failedProjectNames.add(projectName);
+            }
+        }
+
+        Map<String, Set<String>> resultData = new HashMap<>();
+        resultData.put("succeedProjectNames", succeedProjectNames);
+        resultData.put("failedProjectNames", failedProjectNames);
+
+        final long totalCount = registryResult.size();
+        final long failedCount = failedProjectNames.size();
+        final long successCount = totalCount - failedCount;
+
         if (failedCount <= 0) {
             // all success
-            return Result.ofSuccess(registryResult)
-                    .setMsg("所有应用注册成功");
+            String message = String.format("所有应用（%d个）注册成功", totalCount);
+            return Result.ofSuccess(resultData)
+                    .setMsg(message)
+                    ;
         } else {
-            // exists failed
-            final long totalCount = registryResult.size();
-            final long successCount = totalCount - failedCount;
+            // exist failed
             String message = String.format("总共有%d个需要注册的应用，有%d个注册成功，%d个注册失败", totalCount, successCount, failedCount);
-            return Result.<Map<String, Boolean>>ofFail(-1, message).setData(registryResult);
+            return Result.<Map<String, Set<String>>>ofFail(-1, message).setData(resultData);
         }
+    }
+
+    @RequestMapping(value = "/auto/registry/projects/in/sidebar", produces = MediaType.APPLICATION_JSON_VALUE)
+    @AuthAction(AuthService.PrivilegeType.ALL)
+    public Result<Map<String, Set<String>>> autoRegistryProjectsInSidebar(@RequestPart("JSESSIONID") String jsessionid) {
+        Map<String, Boolean> registryResult = this.sentinelApolloService.autoRegistryProjectsInSidebar(jsessionid);
+        return toResult(registryResult);
     }
 
     @RequestMapping("/clear/cannot/read/config/projects")

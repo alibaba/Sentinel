@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.dashboard.apollo.repository.project.ApolloProjec
 import com.alibaba.csp.sentinel.dashboard.apollo.repository.project.ProjectRepository;
 import com.alibaba.csp.sentinel.dashboard.apollo.service.ApolloPortalService;
 import com.alibaba.csp.sentinel.dashboard.apollo.service.SentinelApolloService;
+import com.alibaba.csp.sentinel.dashboard.apollo.service.SentinelDashboardService;
 import com.alibaba.csp.sentinel.dashboard.apollo.service.impl.DefaultSentinelApolloServiceImpl;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,15 +40,18 @@ public class SentinelApolloConfiguration {
 
     private final ApolloPortalService apolloPortalService;
 
+    private final SentinelDashboardService sentinelDashboardService;
+
     public SentinelApolloConfiguration(
             SentinelApolloOpenApiProperties sentinelApolloOpenApiProperties,
             ApolloOpenApiClient apolloOpenApiClient,
             SentinelApolloProperties sentinelApolloProperties,
-            ApolloPortalService apolloPortalService) {
+            ApolloPortalService apolloPortalService, SentinelDashboardService sentinelDashboardService) {
         this.sentinelApolloOpenApiProperties = sentinelApolloOpenApiProperties;
         this.apolloOpenApiClient = apolloOpenApiClient;
         this.sentinelApolloProperties = sentinelApolloProperties;
         this.apolloPortalService = apolloPortalService;
+        this.sentinelDashboardService = sentinelDashboardService;
     }
 
     @Bean
@@ -57,7 +61,8 @@ public class SentinelApolloConfiguration {
                 this.sentinelApolloOpenApiProperties,
                 this.apolloOpenApiClient,
                 this.sentinelApolloProperties,
-                this.apolloPortalService
+                this.apolloPortalService,
+                this.sentinelDashboardService
         );
     }
 
