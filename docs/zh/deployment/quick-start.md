@@ -60,6 +60,16 @@ http://47.102.116.251:8081/echo?id=3
 Blocked by Sentinel (flow limiting)
 ```
 
+或者
+
+```
+Whitelabel Error Page
+This application has no explicit mapping for /error, so you are seeing this as a fallback.
+
+Sat Apr 3 22:55:30 CST 2021
+There was an unexpected error (type=Internal Server Error, status=500).
+```
+
 ## 本地搭建
 
 ### 服务端sentinel-dashboard

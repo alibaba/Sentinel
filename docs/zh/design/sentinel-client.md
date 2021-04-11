@@ -10,21 +10,37 @@
 
 具体接入方法参考[使用/sentinel-客户端](zh/usage/sentinel-client)
 
-## 公共namespace包含的信息
+## 配置管理
 
-### sentinel控制台地址
+为了和dashboard的无缝衔接，在设计上，只需要在`apollo.bootstrap.namespaces`中额外添加一个公共namespace，`部门.sentinel`，并授权给sentinel控制台使用的token，授权类型为App
+
+### 公共namespace
+
+命名通常为`部门.sentinel`，由Sentinel控制台管理员告知
+
+被所有Sentinel客户端使用
+
+主要保存[Spring Cloud Alibaba Sentinel](https://github.com/alibaba/spring-cloud-alibaba/wiki/Sentinel)的配置
+
+以下逐一介绍公共namespace包含的信息
+
+#### sentinel控制台地址
 
 ```properties
 spring.cloud.sentinel.transport.dashboard = xxx:8080
 ```
 
-### project.name
+sentinel控制台的地址
+
+#### project.name
 
 ```properties
 project.name = ${app.id}
 ```
 
-### datasource
+和Apollo配置中心里的项目一一对应，这样可以避免`project.name`在命名上的冲突
+
+#### datasource
 
 有非常多种类型的流控规则，为了让客户端不用自行配置，在公共配置中，帮助所有应用提前配置好
 
@@ -50,3 +66,13 @@ spring.cloud.sentinel.datasource.DEGRADE.apollo.default-flow-rule-value = []
 
 经过上述的配置，客户端在接入时，无需自己管理应该怎么进行配置，而是直接从公共配置中读取，直接使用，极大节约了开发在这方面需要耗费的精力
 
+### 私有namespace
+
+默认使用`sentinel`，这是在公共namespace里配置的
+
+每个应用都有自己的`sentinel`
+
+由sentinel-dashboard通过Apollo开放平台创建，并进行增删查改，sentinel-dashboard会将规则推送到这个私有namespace
+## 使用
+
+参考 [使用/Sentinel客户端](zh/usage/sentinel-client)

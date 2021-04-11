@@ -2,9 +2,9 @@
 
 基于阿里巴巴的[Sentinel 面向分布式服务架构的高可用流量控制组件](https://sentinelguard.io/)和携程的[Apollo分布式配置中心](https://ctripcorp.github.io/apollo)定制
 
-目的是为了在私有环境部署一套生产环境可用的sentinel-dashboard，用来对微服务应用进行**流量控制**
+目的是为了在私有环境部署一套生产环境可用的[Sentinel控制台](https://github.com/alibaba/Sentinel/wiki/%E6%8E%A7%E5%88%B6%E5%8F%B0)，用来对微服务应用进行**流量控制**
 
-查看[快速开始](zh/deployment/quick-start)开始使用
+查看[快速开始](zh/deployment/quick-start)开始体验
 
 查看[部署指南](zh/deployment/deployment-guide)将dashboard部署到生产环境
 
@@ -13,18 +13,19 @@
 ## 特性
 
 * 流控，降级，熔断，热点流量限制，黑白名单规则
-* 和Apollo配置中心无缝衔接
+* 部署简单
 * 运维简单
-* TODO，待补充
+* 和Apollo配置中心无缝衔接
+* 生产可用
+* 可内网部署
 
 ## 示例
 
-* https://github.com/Anilople/sentinel-demo-apollo
+* [sentinel-demo-apollo](https://github.com/Anilople/sentinel-demo-apollo)
 
 ## 社区
 
 在[discussions](https://github.com/Anilople/Sentinel/discussions)获取帮助
-
 ## 不足
 
 * 实时监控不支持持久化

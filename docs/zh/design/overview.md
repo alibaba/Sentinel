@@ -54,7 +54,7 @@ sequenceDiagram
 
 更细节的介绍请参考[设计/sentinel客户端](zh/design/sentinel-client)
 
-## sentinel-dashboard
+## sentinel控制台
 
 sentinel控制台用来增删查改应用的流控规则
 
@@ -83,3 +83,17 @@ sequenceDiagram
 所以可以验证，推送到Apollo上的配置，是否已经生效了
 
 更细节的介绍请参考[sentinel-dashboard](zh/design/sentinel-dashboard)
+
+## 基本概念
+
+由于Sentinel控制台使用的一些概念，与Apollo配置中心不同
+
+还有这个定制版也使用了一些新概念，为了方便读者理解，这里做一些说明
+
+Sentinel控制台的应用 = Apollo的项目
+
+Sentinel的规则 = 流控规则、降级规则、热点规则、系统规则、授权规则的并集
+
+赋权， 指在Apollo Portal上， 用超级管理员账户登录， 并在开放平台授权管理页面，进行赋权操作，授权类型为App。 应用需要被授权，才可以被Sentinel控制台修改它的规则。 被管理的AppId = Sentinel控制台的应用。
+
+将应用注册到Sentinel控制台， 相当于在Apollo Portal上赋予Sentinel控制台修改应用规则的权限， 并将应用记录到Sentinel控制台的存储中
