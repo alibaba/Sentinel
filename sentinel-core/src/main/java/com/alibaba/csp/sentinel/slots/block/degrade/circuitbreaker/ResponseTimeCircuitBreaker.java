@@ -195,7 +195,7 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
         long curSlowCount = curCounter.getSlowCount();
         long leftTimeInWindow = slidingCounter.getWindowLengthInMs() -
                 entry.getCreateTimestamp() % slidingCounter.getWindowLengthInMs();
-        if (rt - maxAllowedRt > leftTimeInWindow || curInflightCount <= 0L) {
+        if (rt - maxAllowedRt > leftTimeInWindow || (rt - leftTimeInWindow >=0 && curInflightCount <= 0L)) {
             // We can ensure the slow count will not change.
             long windowTime = curCounter.getTimestamp();
             if (windowTime <= entry.getCreateTimestamp() &&

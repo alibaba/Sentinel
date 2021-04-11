@@ -1,26 +1,29 @@
 package com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreaker.State;
 import com.alibaba.csp.sentinel.test.AbstractTimeBasedTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author xierz
@@ -74,6 +77,7 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
      */
     @Test
     public void testDegradeByOneSlowRT() {
+        CircuitBreakerStateChangeObserver observer = mock(CircuitBreakerStateChangeObserver.class);
         String resource = "testDegradeByOneSlowRT";
         DegradeRule rule = new DegradeRule(resource)
                 .setCount(5000)
@@ -83,17 +87,7 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
                 .setStatIntervalMs(1000)
                 .setTimeWindow(1);
 
-        AtomicReference<State> prevStateRef = new AtomicReference<>();
-        AtomicReference<State> newStateRef = new AtomicReference<>();
-        AtomicReference<Double> snapshotValueRef = new AtomicReference<>();
-        EventObserverRegistry.getInstance().addStateChangeObserver(resource, new CircuitBreakerStateChangeObserver() {
-            @Override
-            public void onStateChange(State prevState, State newState, DegradeRule rule, Double snapshotValue) {
-                prevStateRef.set(prevState);
-                newStateRef.set(newState);
-                snapshotValueRef.set(snapshotValue);
-            }
-        });
+        EventObserverRegistry.getInstance().addStateChangeObserver(resource, observer);
         DegradeRuleManager.loadRules(Collections.singletonList(rule));
 
         List<Entry> entryList = new ArrayList<>(20);
@@ -127,10 +121,9 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
         sleep(200);
         // Entry created at 970 exits at 6050, will trigger breaker.
         safeExit(entryList.get(17));
-        assertSame(prevStateRef.get(), State.CLOSED);
-        assertSame(newStateRef.get(), State.OPEN);
         // Entry 0,800,900,980 are not slow RT
-        assertEquals(0, Double.compare(snapshotValueRef.get(), 1.0d * 17 / 21));
+        verify(observer)
+                .onStateChange(eq(State.CLOSED), eq(State.OPEN), any(DegradeRule.class), eq(1.0d * 17 / 21));
 
         EventObserverRegistry.getInstance().removeStateChangeObserver(resource);
         batchExitImmediately(entryList);
@@ -142,6 +135,7 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
      */
     @Test
     public void testDegradeBySuccessorEntry() {
+        CircuitBreakerStateChangeObserver observer = mock(CircuitBreakerStateChangeObserver.class);
         String resource = "testDegradeBySuccessorEntry";
         DegradeRule rule = new DegradeRule(resource)
                 .setCount(5000)
@@ -151,17 +145,7 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
                 .setStatIntervalMs(1000)
                 .setTimeWindow(1);
 
-        AtomicReference<State> prevStateRef = new AtomicReference<>();
-        AtomicReference<State> newStateRef = new AtomicReference<>();
-        AtomicReference<Double> snapshotValueRef = new AtomicReference<>();
-        EventObserverRegistry.getInstance().addStateChangeObserver(resource, new CircuitBreakerStateChangeObserver() {
-            @Override
-            public void onStateChange(State prevState, State newState, DegradeRule rule, Double snapshotValue) {
-                prevStateRef.set(prevState);
-                newStateRef.set(newState);
-                snapshotValueRef.set(snapshotValue);
-            }
-        });
+        EventObserverRegistry.getInstance().addStateChangeObserver(resource, observer);
         DegradeRuleManager.loadRules(Collections.singletonList(rule));
 
         List<Entry> entryList = new ArrayList<>(20);
@@ -188,9 +172,8 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
         // while entry created at 6000 will blocked.
         assertNotNull(mayBlockedEntryList.get(9));
         assertNull(mayBlockedEntryList.get(10));
-        assertSame(prevStateRef.get(), State.CLOSED);
-        assertSame(newStateRef.get(), State.OPEN);
-        assertEquals(0, Double.compare(snapshotValueRef.get(), 1.0d));
+        verify(observer)
+                .onStateChange(eq(State.CLOSED), eq(State.OPEN), any(DegradeRule.class), eq(1.0d));
 
         EventObserverRegistry.getInstance().removeStateChangeObserver(resource);
         batchExitImmediately(entryList);
@@ -203,6 +186,7 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
      */
     @Test
     public void testDegradeBySkipEntry() {
+        CircuitBreakerStateChangeObserver observer = mock(CircuitBreakerStateChangeObserver.class);
         String resource = "testDegradeBySkipEntry";
         DegradeRule rule = new DegradeRule(resource)
                 .setCount(5000)
@@ -212,17 +196,7 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
                 .setStatIntervalMs(1000)
                 .setTimeWindow(1);
 
-        AtomicReference<State> prevStateRef = new AtomicReference<>();
-        AtomicReference<State> newStateRef = new AtomicReference<>();
-        AtomicReference<Double> snapshotValueRef = new AtomicReference<>();
-        EventObserverRegistry.getInstance().addStateChangeObserver(resource, new CircuitBreakerStateChangeObserver() {
-            @Override
-            public void onStateChange(State prevState, State newState, DegradeRule rule, Double snapshotValue) {
-                prevStateRef.set(prevState);
-                newStateRef.set(newState);
-                snapshotValueRef.set(snapshotValue);
-            }
-        });
+        EventObserverRegistry.getInstance().addStateChangeObserver(resource, observer);
         DegradeRuleManager.loadRules(Collections.singletonList(rule));
 
         List<Entry> entryList = new ArrayList<>(20);
@@ -237,9 +211,8 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
         sleep(7000);
         // Entry created at 8000 will check previous buckets
         assertFalse(entryAndSleepFor(resource, 0));
-        assertSame(prevStateRef.get(), State.CLOSED);
-        assertSame(newStateRef.get(), State.OPEN);
-        assertEquals(0, Double.compare(snapshotValueRef.get(), 1.0d));
+        verify(observer)
+                .onStateChange(eq(State.CLOSED), eq(State.OPEN), any(DegradeRule.class), eq(1.0d));
 
         EventObserverRegistry.getInstance().removeStateChangeObserver(resource);
         batchExitImmediately(entryList);
@@ -250,6 +223,7 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
      */
     @Test
     public void testDegradeBySimplyReachRatio() {
+        CircuitBreakerStateChangeObserver observer = mock(CircuitBreakerStateChangeObserver.class);
         String resource = "testDegradeBySimplyReachRatio";
         DegradeRule rule = new DegradeRule(resource)
                 .setCount(50)
@@ -259,17 +233,7 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
                 .setStatIntervalMs(1000)
                 .setTimeWindow(1);
 
-        AtomicReference<State> prevStateRef = new AtomicReference<>();
-        AtomicReference<State> newStateRef = new AtomicReference<>();
-        AtomicReference<Double> snapshotValueRef = new AtomicReference<>();
-        EventObserverRegistry.getInstance().addStateChangeObserver(resource, new CircuitBreakerStateChangeObserver() {
-            @Override
-            public void onStateChange(State prevState, State newState, DegradeRule rule, Double snapshotValue) {
-                prevStateRef.set(prevState);
-                newStateRef.set(newState);
-                snapshotValueRef.set(snapshotValue);
-            }
-        });
+        EventObserverRegistry.getInstance().addStateChangeObserver(resource, observer);
         DegradeRuleManager.loadRules(Collections.singletonList(rule));
 
         List<Entry> entryList = new ArrayList<>(20);
@@ -283,12 +247,11 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
 
         // Entry: 0,50,100...900,950  Exited: 0,50,100...450
         batchExitImmediately(entryList.subList(0, 10));
-        assertNull(newStateRef.get());
+        verifyZeroInteractions(observer);
         // Entry created at 500 exits at 1000, slowRatio=11/20 which is bigger than maxSlowRequestRatio=0.5
         safeExit(entryList.get(10));
-        assertSame(prevStateRef.get(), State.CLOSED);
-        assertSame(newStateRef.get(), State.OPEN);
-        assertEquals(0, Double.compare(snapshotValueRef.get(), 0.55d));
+        verify(observer)
+                .onStateChange(eq(State.CLOSED), eq(State.OPEN), any(DegradeRule.class), eq(1.0d * 11 / 20));
 
         EventObserverRegistry.getInstance().removeStateChangeObserver(resource);
         batchExitImmediately(entryList);
