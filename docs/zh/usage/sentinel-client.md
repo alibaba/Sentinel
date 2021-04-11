@@ -16,11 +16,9 @@ https://mvnrepository.com/artifact/com.alibaba.cloud/spring-cloud-starter-alibab
 
 | spring-cloud-starter-alibaba-sentinel | 适配的Spring Boot版本 |
 | ------------------------------------- | --------------------- |
-| **2.2**.x                             | **2.2**.x             |
-| **2.1**.x                             | **2.1**.x             |
 | **2.0**.x                             | **2.0**.x             |
-| **1.5**.x                             | **1.5**.x             |
 
+TODO，更多适配的版本信息待补充
 ### dependencyManagement
 
 为了方便管理spring-cloud-starter-alibaba-sentinel的版本，推荐使用maven的依赖管理

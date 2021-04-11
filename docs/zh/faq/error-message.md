@@ -1,6 +1,6 @@
 # 错误信息
 
-## sentinel-dashboard
+## sentinel控制台
 
 sentinel控制台错误信息排查
 
@@ -36,7 +36,7 @@ Create app namespace: sentinel for appId: sentinel-demo-apollo, format: properti
 
 如果集群的名字不是`default`，是没有对`sentinel-demo-apollo`进行赋权，导致sentinel控制台无法修改配置
 
-## sentinel-client
+## sentinel客户端
 
 sentinel客户端错误信息排查
 

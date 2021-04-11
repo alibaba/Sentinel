@@ -1,10 +1,26 @@
-# sentinel-dashboard
+# sentinel控制台
 
 控制台的代码需要进行修改，这里会从代码结构上进行介绍，如何修改
-
-## 配置
+## 配置管理
 
 为了方便管理sentinel控制台，sentinel控制台的配置，也会被放在Apollo上
+
+私有namespace：
+
+* `application`：原封不动地放入官方的`application.properties`
+* `custom`：放入自定义的配置，可以在这里覆盖官方的配置。Apollo Open Api的配置，logback的配置。
+* `storage`：dashboard的key-value存储，运行时动态创建，目的是减少外部依赖（否则需要引入其它存储，例如MySQL）
+
+公共namespace：
+
+* `部门.sentinel`：给所有sentinel客户端使用，放置dashboard的地址，[Spring Cloud Alibaba Sentinel](https://github.com/alibaba/spring-cloud-alibaba/wiki/Sentinel)的配置
+
+## 权限管理
+
+需要使用[Apollo开放平台](https://ctripcorp.github.io/apollo/#/zh/usage/apollo-open-api-platform)，这也是sentinel-dashboard可以修改sentinel客户端配置的关键
+
+sentinel-dashboard需要作为一个第三方应用，获取一个token，然后用这个token，通过apollo open api去操作sentinel-dashboard自己，以及所有sentinel客户端的配置
+
 
 ## 持久化
 
@@ -35,12 +51,6 @@ graph TD
 ```
 
 即可满足需求，使用了[com.alibaba.csp.sentinel.dashboard.apollo.client.CustomSentinelApiClient](https://github.com/Anilople/Sentinel/blob/master/sentinel-dashboard/src/main/java/com/alibaba/csp/sentinel/dashboard/apollo/client/CustomSentinelApiClient.java)来继承并覆盖默认的[com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient](https://github.com/Anilople/Sentinel/blob/master/sentinel-dashboard/src/main/java/com/alibaba/csp/sentinel/dashboard/client/SentinelApiClient.java)，并在其中关键的一些方法，把对应用的HTTP调用，修改成对Apollo的HTTP调用（使用[Apollo开放平台](https://ctripcorp.github.io/apollo/#/zh/usage/apollo-open-api-platform)），有些方法尚未实现
-
-所有源码都在模块`sentinel-dashboard`中，Java Package为`com.alibaba.csp.sentinel.dashboard.apollo`
-
-修改源码的原则有：
-
-* 尽量不修改官方源码，方便后续的升级
 
 ## 高可用
 
@@ -83,3 +93,10 @@ apollo.bootstrap.eagerLoad.enabled=true
 参考 https://docs.spring.io/spring-boot/docs/2.0.9.RELEASE/reference/html/boot-features-logging.html
 
 Spring Boot的logback默认配置在 https://github.com/spring-projects/spring-boot/tree/v2.0.9.RELEASE/spring-boot-project/spring-boot/src/main/resources/org/springframework/boot/logging/logback
+## 使用
+
+参考 [使用/Sentinel控制台](zh/usage/sentinel-dashboard)
+## 开发
+
+参考 [开发/Sentinel控制台](zh/development/sentinel-dashboard)
+
