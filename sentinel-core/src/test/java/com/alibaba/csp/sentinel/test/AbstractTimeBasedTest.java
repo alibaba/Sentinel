@@ -105,7 +105,7 @@ public abstract class AbstractTimeBasedTest {
      *
      * @param entryList filled with entries, set null if blocked.
      */
-    protected final void batchEntryEvenly(String resource, int size, int intervalMs, List<Entry> entryList) {
+    protected final void batchEntryPeriodically(String resource, int size, int intervalMs, List<Entry> entryList) {
         for (int i = 0; i < size; i++) {
             Entry entry = null;
             try {

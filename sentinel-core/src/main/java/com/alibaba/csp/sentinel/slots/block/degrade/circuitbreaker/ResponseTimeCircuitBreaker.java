@@ -55,7 +55,7 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
          * 1. If maxAllowedRt is greater than or equal to statIntervalMs,
          *    then sampleCnt = (maxAllowedRt / statIntervalMs()) + 1
          * 2. If maxAllowedRt is lesser than or equal to half of statIntervalMs, then sampleCnt = 1
-         * 3. Else sampleCnt = 1
+         * 3. Else sampleCnt = 2
          * In all the above cases, the windowLengthInMs of slidingCounter is equal to statIntervalMs,
          * and intervalInMs is just happen to greater than maxAllowedRt.
          */
@@ -85,7 +85,7 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
     public boolean tryPass(Context context) {
         boolean superTryPass = super.tryPass(context);
         if (!superTryPass) {
-            return superTryPass;
+            return false;
         }
         long createTime = context.getCurEntry().getCreateTimestamp();
         SlowRequestCounter curCounter = slidingCounter.currentWindow(createTime).value();
@@ -108,14 +108,14 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
                     break;
                 }
                 prevTotalCount = prevCounter.getTotalCount();
-                if (prevTotalCount >= minRequestAmount && openIfNecessary(prevTotalCount, prevCounter.getInflightCount())) {
+                if (prevTotalCount >= minRequestAmount && openIfNecessary(prevTotalCount, prevCounter.getSlowCount())) {
                     return false;
                 }
             }
         }
+        curCounter.totalCount.add(1L);
         curCounter.slowCount.add(1L);
         curCounter.inflightCount.add(1L);
-        curCounter.totalCount.add(1L);
         return true;
     }
 
@@ -152,7 +152,7 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
     /**
      * calculate and transfer state to open.
      *
-     * @return whether transfer to open.
+     * @return whether transferred to open.
      */
     private boolean openIfNecessary(long totalCount, long slowCount) {
         double currentRatio = slowCount * 1.0d / totalCount;
@@ -219,6 +219,7 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
     }
 
     static class SlowRequestCounter {
+        // totalCount >= slowCount >= inflightCount
         private LongAdder slowCount;
         private LongAdder inflightCount;
         private LongAdder totalCount;
@@ -229,14 +230,13 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
         static final int STATUS_MASK = (1 << TIMESTAMP_SHIFT) - 1;
         /** status value to indicate previous count has not been checked */
         static final int UNCHECKED = 0x00;
-        /** status value to indicate previous count had been checked by a successor entry */
+        /** status value to indicate previous count has been checked by a successor entry */
         static final int CHECKED_BY_ENTRY = 0x01;
-        /** status value to indicate current count had been checked by a slow exit or a skip entry */
+        /** status value to indicate current count has been checked by slowly exit or a no successor entry */
         static final int CHECKED_BY_SLOW = 0x02;
         /*
-         * state is logically divided into two parts:
-         * The lower one representing counter status,
-         * and the upper the timestamp the counter belonged to.
+         * State is logically divided into two parts: the lower one representing counter status,
+         * and the upper the timestamp this counter belonged, shifted 2 bit to left.
          *
          * NOTE: We must ensure the timestamp of a counter equal to
          * start time of the window that the counter belonged to.

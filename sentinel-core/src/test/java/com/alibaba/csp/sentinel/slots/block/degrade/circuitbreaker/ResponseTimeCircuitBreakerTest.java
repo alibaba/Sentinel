@@ -69,8 +69,8 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
     }
 
     /**
-     * If maxAllowedRT=5000, and a entry created at 980 exits at 6050,
-     * then we can judge that all inflight request can be treated as slow request.
+     * If maxAllowedRT=5000, and a entry created at 970 exits at 6050,
+     * then we can judge that all inflight requests can be treated as slow request.
      */
     @Test
     public void testDegradeByOneSlowRT() {
@@ -104,7 +104,7 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
         assertTrue(entryAndSleepFor(resource, 0));
         sleep(800);
         // Entry: 0 --- 800,810,820...990  Exited: 0
-        batchEntryEvenly(resource, 20, 10, entryList);
+        batchEntryPeriodically(resource, 20, 10, entryList);
         assertTrue(noOneBlocked(entryList));
         assertTrue(entryAndSleepFor(resource, 0));
 
@@ -118,14 +118,14 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
 
         sleep(850);
         assertTrue(entryAndSleepFor(resource, 0));
-        // Entry 810 slow exits at 5850, that`s timeout but will not trigger breaker.
+        // Entry created at 810 exits at 5850, that`s timeout but will not trigger breaker.
         safeExit(entryList.get(1));
         assertTrue(entryAndSleepFor(resource, 0));
-        // Entry 980 exits at 5850, that`s not timeout and will not trigger breaker.
+        // Entry created at 980 exits at 5850, that`s not timeout and will not trigger breaker.
         safeExit(entryList.get(18));
         assertTrue(entryAndSleepFor(resource, 0));
         sleep(200);
-        // Entry 970 slow exits at 6050, will trigger breaker.
+        // Entry created at 970 exits at 6050, will trigger breaker.
         safeExit(entryList.get(17));
         assertSame(prevStateRef.get(), State.CLOSED);
         assertSame(newStateRef.get(), State.OPEN);
@@ -138,11 +138,11 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
 
     /**
      * If maxAllowedRT=5000, and entries created at range [0-1000) not exit at 6000,
-     * then we can judge that all entries can be treated as slow request.
+     * then we can judge that all inflight requests can be treated as slow request.
      */
     @Test
     public void testDegradeBySuccessorEntry() {
-        String resource = "testDegradeByEntry";
+        String resource = "testDegradeBySuccessorEntry";
         DegradeRule rule = new DegradeRule(resource)
                 .setCount(5000)
                 .setGrade(RuleConstant.DEGRADE_GRADE_RT)
@@ -170,21 +170,22 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
          * then we can judge that all entries can be treated as slow request.
          */
         // Entry: 0,50,100...900,950
-        batchEntryEvenly(resource, 20, 50, entryList);
+        batchEntryPeriodically(resource, 20, 50, entryList);
         assertTrue(noOneBlocked(entryList));
 
-        // Entry: 0,50,100...900,950 --- 4000,4100..5400  Exited: 5000,5100..5400
+        // Entry: 0,50,100...900,950 --- 4000,4100...5400  Exited: 4000,4100...5400
         sleep(3000);
         List<Entry> anotherEntryList = new ArrayList<>(15);
-        batchEntryEvenly(resource, 15, 100, anotherEntryList);
+        batchEntryPeriodically(resource, 15, 100, anotherEntryList);
         assertTrue(noOneBlocked(entryList));
         batchExitImmediately(anotherEntryList);
 
         // Entry: 0,50,100...900,950 --- 4000,4100..5400 --- 5500,5550...6500
         List<Entry> mayBlockedEntryList = new ArrayList<>(20);
-        batchEntryEvenly(resource, 20, 50, mayBlockedEntryList);
+        batchEntryPeriodically(resource, 20, 50, mayBlockedEntryList);
         assertFalse(noOneBlocked(mayBlockedEntryList));
-        // Entry is null means blocked. Entry 5950 will not blocked, while entry 6000 will blocked.
+        // Entry is null means blocked. Entry created at 5950 will not blocked
+        // while entry created at 6000 will blocked.
         assertNotNull(mayBlockedEntryList.get(9));
         assertNull(mayBlockedEntryList.get(10));
         assertSame(prevStateRef.get(), State.CLOSED);
@@ -198,11 +199,11 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
 
     /**
      * If maxAllowedRT=5000, and entries created at range [0-1000) not exit at 8000,
-     * then we can judge that all entries can be treated as slow request.
+     * then we can judge that all inflight requests can be treated as slow request.
      */
     @Test
     public void testDegradeBySkipEntry() {
-        String resource = "testDegradeByEntry";
+        String resource = "testDegradeBySkipEntry";
         DegradeRule rule = new DegradeRule(resource)
                 .setCount(5000)
                 .setGrade(RuleConstant.DEGRADE_GRADE_RT)
@@ -230,14 +231,64 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
          * then we can judge that all entries can be treated as slow request.
          */
         // Entry: 0,50,100...900,950
-        batchEntryEvenly(resource, 20, 50, entryList);
+        batchEntryPeriodically(resource, 20, 50, entryList);
         assertTrue(noOneBlocked(entryList));
 
         sleep(7000);
+        // Entry created at 8000 will check previous buckets
         assertFalse(entryAndSleepFor(resource, 0));
         assertSame(prevStateRef.get(), State.CLOSED);
         assertSame(newStateRef.get(), State.OPEN);
         assertEquals(0, Double.compare(snapshotValueRef.get(), 1.0d));
+
+        EventObserverRegistry.getInstance().removeStateChangeObserver(resource);
+        batchExitImmediately(entryList);
+    }
+
+    /**
+     * then we can judge that all inflight requests can be treated as slow request.
+     */
+    @Test
+    public void testDegradeBySimplyReachRatio() {
+        String resource = "testDegradeBySimplyReachRatio";
+        DegradeRule rule = new DegradeRule(resource)
+                .setCount(50)
+                .setGrade(RuleConstant.DEGRADE_GRADE_RT)
+                .setMinRequestAmount(3)
+                .setSlowRatioThreshold(0.5)
+                .setStatIntervalMs(1000)
+                .setTimeWindow(1);
+
+        AtomicReference<State> prevStateRef = new AtomicReference<>();
+        AtomicReference<State> newStateRef = new AtomicReference<>();
+        AtomicReference<Double> snapshotValueRef = new AtomicReference<>();
+        EventObserverRegistry.getInstance().addStateChangeObserver(resource, new CircuitBreakerStateChangeObserver() {
+            @Override
+            public void onStateChange(State prevState, State newState, DegradeRule rule, Double snapshotValue) {
+                prevStateRef.set(prevState);
+                newStateRef.set(newState);
+                snapshotValueRef.set(snapshotValue);
+            }
+        });
+        DegradeRuleManager.loadRules(Collections.singletonList(rule));
+
+        List<Entry> entryList = new ArrayList<>(20);
+        /*
+         * If maxAllowedRT=5000, and entries created at range [0-1000) not exit at 8000,
+         * then we can judge that all entries can be treated as slow request.
+         */
+        // Entry: 0,50,100...900,950
+        batchEntryPeriodically(resource, 20, 50, entryList);
+        assertTrue(noOneBlocked(entryList));
+
+        // Entry: 0,50,100...900,950  Exited: 0,50,100...450
+        batchExitImmediately(entryList.subList(0, 10));
+        assertNull(newStateRef.get());
+        // Entry created at 500 exits at 1000, slowRatio=11/20 which is bigger than maxSlowRequestRatio=0.5
+        safeExit(entryList.get(10));
+        assertSame(prevStateRef.get(), State.CLOSED);
+        assertSame(newStateRef.get(), State.OPEN);
+        assertEquals(0, Double.compare(snapshotValueRef.get(), 0.55d));
 
         EventObserverRegistry.getInstance().removeStateChangeObserver(resource);
         batchExitImmediately(entryList);
