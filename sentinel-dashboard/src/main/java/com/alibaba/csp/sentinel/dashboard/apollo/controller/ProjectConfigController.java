@@ -38,10 +38,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping(value = "/config", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -91,6 +90,41 @@ public class ProjectConfigController {
         } else {
             this.sentinelProjectConfigService.exportToZip(response.getOutputStream(), projectName, ruleType);
         }
+    }
+
+    /**
+     * Export multiple project's config base on user's choice.
+     *
+     * @param multipleProjectNamesTextarea multiple project names in a textarea
+     */
+    @PostMapping("/export/multiple")
+    @AuthAction(AuthService.PrivilegeType.READ_RULE)
+    public void exportMultiple(
+            @RequestPart String multipleProjectNamesTextarea,
+            HttpServletRequest request, HttpServletResponse response
+    ) throws IOException {
+        String[] lines = multipleProjectNamesTextarea.split("\\R+");
+        Set<String> projectNames = Arrays.stream(lines)
+                // trim every lines
+                .map(String::trim)
+                // skip blank lines
+                .filter(StringUtils::hasText)
+                .collect(Collectors.toSet());
+
+        String filename = ConfigFileUtils.generateZipFilename();
+        // log who download the configs
+        logger.info(
+                "Download configs, remote addr [{}], remote host [{}]. Filename is [{}], {} projects = {}",
+                request.getRemoteAddr(),
+                request.getRemoteHost(),
+                filename,
+                projectNames.size(),
+                projectNames
+        );
+        // set downloaded filename
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + filename);
+
+        this.sentinelProjectConfigService.exportToZip(response.getOutputStream(), projectNames);
     }
 
     /**

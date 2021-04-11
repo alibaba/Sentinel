@@ -22,13 +22,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import static com.alibaba.csp.sentinel.dashboard.apollo.util.ConfigFileUtils.readProjectName2Rules;
 import static com.alibaba.csp.sentinel.dashboard.apollo.util.ConfigFileUtils.writeAsZipOutputStream;
 
 @Service
@@ -59,6 +58,11 @@ public class SentinelProjectConfigService {
                 projectName,
                 Collections.singletonMap(ruleType, rules)
         );
+        writeAsZipOutputStream(outputStream, projectName2rules);
+    }
+
+    public void exportToZip(OutputStream outputStream, Set<String> projectNames) throws IOException {
+        Map<String, Map<RuleType, List<? extends Rule>>> projectName2rules = this.sentinelApolloService.getRules(projectNames);
         writeAsZipOutputStream(outputStream, projectName2rules);
     }
 
