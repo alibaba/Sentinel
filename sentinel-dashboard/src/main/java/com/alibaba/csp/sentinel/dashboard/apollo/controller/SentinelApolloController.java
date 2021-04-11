@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.dashboard.apollo.controller;
 
 import com.alibaba.csp.sentinel.dashboard.apollo.entity.ConsumerRole;
+import com.alibaba.csp.sentinel.dashboard.apollo.service.SentinelDashboardService;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
 import com.alibaba.csp.sentinel.dashboard.apollo.service.SentinelApolloService;
@@ -52,7 +53,7 @@ public class SentinelApolloController {
     private SentinelApolloService sentinelApolloService;
 
     @Autowired
-    private AppManagement appManagement;
+    private SentinelDashboardService sentinelDashboardService;
 
     @GetMapping("/get/registered/projects")
     @AuthAction(AuthService.PrivilegeType.READ_METRIC)
@@ -64,7 +65,7 @@ public class SentinelApolloController {
     @GetMapping("/get/projects/in/sidebar")
     @AuthAction(AuthService.PrivilegeType.READ_METRIC)
     public ResponseEntity<Set<String>> getProjectsInSidebar() {
-        Set<String> projectNames = new TreeSet<>(appManagement.getAppNames());
+        Set<String> projectNames = this.sentinelDashboardService.getProjectNamesInSidebar();
         return ResponseEntity.ok(projectNames);
     }
 
