@@ -92,7 +92,7 @@ public interface SentinelApolloService {
      * @param jsessionid JSESSIONID in Cookie
      * @return key is project name, value is it registry successful or not
      */
-    Map<String, Boolean> autoRegistryHeartbeatProjects(String jsessionid);
+    Map<String, Boolean> autoRegistryProjectsInSidebar(String jsessionid);
 
     CompletableFuture<Void> setRulesAsync(String projectName, RuleType ruleType, List<? extends Rule> rules);
 

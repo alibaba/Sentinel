@@ -15,12 +15,10 @@
  */
 package com.alibaba.csp.sentinel.dashboard.apollo.controller;
 
-import com.alibaba.csp.sentinel.dashboard.apollo.entity.ConsumerRole;
 import com.alibaba.csp.sentinel.dashboard.apollo.service.SentinelDashboardService;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
 import com.alibaba.csp.sentinel.dashboard.apollo.service.SentinelApolloService;
-import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,10 +29,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 /**
  * forbid cache consistent problem.
@@ -97,10 +92,10 @@ public class SentinelApolloController {
         return ResponseEntity.ok("已在后台异步操作，请通过其它操作进行查询");
     }
 
-    @RequestMapping(value = "/auto/registry/heartbeat/projects", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/auto/registry/projects/in/sidebar", produces = MediaType.APPLICATION_JSON_VALUE)
     @AuthAction(AuthService.PrivilegeType.ALL)
-    public Result<Map<String, Boolean>> autoRegistryHeartbeatProjects(@RequestPart("JSESSIONID") String jsessionid) {
-        Map<String, Boolean> registryResult = this.sentinelApolloService.autoRegistryHeartbeatProjects(jsessionid);
+    public Result<Map<String, Boolean>> autoRegistryProjectsInSidebar(@RequestPart("JSESSIONID") String jsessionid) {
+        Map<String, Boolean> registryResult = this.sentinelApolloService.autoRegistryProjectsInSidebar(jsessionid);
         final long failedCount = registryResult.values().stream().filter(aBoolean -> false == aBoolean).count();
         if (failedCount <= 0) {
             // all success

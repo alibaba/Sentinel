@@ -22,8 +22,8 @@ import com.alibaba.csp.sentinel.dashboard.apollo.config.SentinelApolloProperties
 import com.alibaba.csp.sentinel.dashboard.apollo.repository.project.ProjectRepository;
 import com.alibaba.csp.sentinel.dashboard.apollo.service.ApolloPortalService;
 import com.alibaba.csp.sentinel.dashboard.apollo.service.SentinelApolloService;
+import com.alibaba.csp.sentinel.dashboard.apollo.service.SentinelDashboardService;
 import com.alibaba.csp.sentinel.dashboard.apollo.util.DataSourceConverterUtils;
-import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.slots.block.Rule;
 import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
@@ -69,16 +69,16 @@ public class DefaultSentinelApolloServiceImpl implements SentinelApolloService {
 
     private final SentinelApolloProperties sentinelApolloProperties;
 
-    @Autowired
-    private AppManagement appManagement;
-
     private final ApolloPortalService apolloPortalService;
+
+    private final SentinelDashboardService sentinelDashboardService;
 
     public DefaultSentinelApolloServiceImpl(
             SentinelApolloOpenApiProperties sentinelApolloOpenApiProperties,
             ApolloOpenApiClient apolloOpenApiClient,
             SentinelApolloProperties sentinelApolloProperties,
-            ApolloPortalService apolloPortalService
+            ApolloPortalService apolloPortalService,
+            SentinelDashboardService sentinelDashboardService
     ) {
         this.apolloOpenApiClient = apolloOpenApiClient;
         this.operatedUser = sentinelApolloOpenApiProperties.getOperatedUser();
@@ -87,6 +87,7 @@ public class DefaultSentinelApolloServiceImpl implements SentinelApolloService {
         this.namespaceName = sentinelApolloProperties.getNamespaceName();
         this.sentinelApolloProperties = sentinelApolloProperties;
         this.apolloPortalService = apolloPortalService;
+        this.sentinelDashboardService = sentinelDashboardService;
     }
 
     private static Map<String, String> toKeyValues(List<OpenItemDTO> openItemDTOS) {
@@ -287,10 +288,7 @@ public class DefaultSentinelApolloServiceImpl implements SentinelApolloService {
         return CompletableFuture.supplyAsync(this::autoRegistryProjectsSkipFailed);
     }
 
-    @Override
-    public Map<String, Boolean> autoRegistryHeartbeatProjects(String jsessionid) {
-        Set<String> projectNamesWithHeartbeat = new HashSet<>(this.appManagement.getAppNames());
-        logger.info("sentinel dashboard can see {} projects in sidebar", projectNamesWithHeartbeat.size());
+    private Map<String, Boolean> autoRegistryMultipleProjects(String jsessionid, Set<String> projectNames) {
 
         Predicate<String> isCannotRegistry = projectName -> {
             try {
@@ -302,13 +300,34 @@ public class DefaultSentinelApolloServiceImpl implements SentinelApolloService {
         };
 
         // find which project cannot registry to sentinel dashboard
-        Set<String> projectNamesCannotRegistry = projectNamesWithHeartbeat.parallelStream().filter(isCannotRegistry).collect(Collectors.toSet());
+        Set<String> projectNamesCannotRegistry = projectNames.parallelStream().filter(isCannotRegistry).collect(Collectors.toSet());
 
-        logger.info("those {} projects have not registry yet. {}", projectNamesCannotRegistry.size(), projectNamesCannotRegistry);
+        logger.info("there are {} projects have not registry yet, now try to registry them. {}", projectNamesCannotRegistry.size(), projectNamesCannotRegistry);
 
         // authorize them
-        Map<String, Boolean> registryResult = this.apolloPortalService.assignAppRoleToSentinelDashboard(jsessionid, projectNamesCannotRegistry);
+        this.apolloPortalService.assignAppRoleToSentinelDashboard(jsessionid, projectNamesCannotRegistry);
+
+        // find again
+        Set<String> projectNamesCannotRegistryFinal = projectNames.parallelStream().filter(isCannotRegistry).collect(Collectors.toSet());
+
+        Map<String, Boolean> registryResult = new HashMap<>();
+        for (String projectName : projectNames) {
+            if (projectNamesCannotRegistryFinal.contains(projectName)) {
+                // registry failed
+                registryResult.put(projectName, Boolean.FALSE);
+            } else {
+                registryResult.put(projectName, Boolean.TRUE);
+            }
+        }
+
         return registryResult;
+    }
+
+    @Override
+    public Map<String, Boolean> autoRegistryProjectsInSidebar(String jsessionid) {
+        Set<String> projectNamesWithHeartbeat = this.sentinelDashboardService.getProjectNamesInSidebar();
+        logger.info("sentinel dashboard can see {} projects in sidebar", projectNamesWithHeartbeat.size());
+        return this.autoRegistryMultipleProjects(jsessionid, projectNamesWithHeartbeat);
     }
 
     private OpenItemDTO resolveOpenItemDTO(String projectName, RuleType ruleType, List<? extends Rule> rules) {
