@@ -22,6 +22,7 @@ import com.alibaba.csp.sentinel.dashboard.apollo.exception.ProjectsNotExistExcep
 import com.alibaba.csp.sentinel.dashboard.apollo.service.ApolloPortalService;
 import com.alibaba.csp.sentinel.dashboard.apollo.service.SentinelProjectConfigService;
 import com.alibaba.csp.sentinel.dashboard.apollo.util.ConfigFileUtils;
+import com.alibaba.csp.sentinel.dashboard.apollo.util.ProjectNameUtils;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
@@ -165,13 +166,7 @@ public class ProjectConfigController {
             @RequestPart String multipleProjectNamesTextarea,
             HttpServletRequest request, HttpServletResponse response
     ) throws IOException {
-        String[] lines = multipleProjectNamesTextarea.split("\\R+");
-        Set<String> projectNames = Arrays.stream(lines)
-                // trim every lines
-                .map(String::trim)
-                // skip blank lines
-                .filter(StringUtils::hasText)
-                .collect(Collectors.toSet());
+        Set<String> projectNames = ProjectNameUtils.getEffectiveProjectNames(multipleProjectNamesTextarea);
 
         this.check(projectNames);
 

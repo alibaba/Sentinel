@@ -343,6 +343,39 @@
 
         <div class="col-md-12">
             <h3>
+                注册多个应用
+            </h3>
+            <p>
+                从输入的应用列表中，自动注册还没有被注册到sentinel控制台的应用。
+            </p>
+            <p>
+                如果应用还没有被赋权，那么会使用超级管理员权限，
+                调用Apollo开放平台授权管理的接口，将其自动赋权。
+            </p>
+            <p>
+                会返回需要注册的应用是否注册成功，如果没有新的应用需要注册，你会看不到任何应用名
+            </p>
+            <form class="form-horizontal" action="sentinel/apollo/auto/registry/multiple/projects" method="POST" enctype="multipart/form-data">
+                <div class="control-group">
+                    <label class="form-label" for="inputText">JSESSIONID</label>
+                    <input class="form-control-file form-control-lg" id="inputText" type="text"
+                           name="JSESSIONID"/>
+                    <p class="help-block">输入超级管理员用户apollo登录portal后，Cookie里的JSESSIONID</p>
+                </div>
+                <div class="control-group">
+                    <textarea class="form-control" name="multipleProjectNamesTextarea" rows="5"></textarea>
+                    <p class="help-block">填入多个应用名，每个占一行，请勿输入空格，tab等字符</p>
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <button type="submit" class="btn btn-primary">注册多个应用</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="col-md-12">
+            <h3>
                 其它注册功能
             </h3>
             <table class="table table-bordered table-hover">

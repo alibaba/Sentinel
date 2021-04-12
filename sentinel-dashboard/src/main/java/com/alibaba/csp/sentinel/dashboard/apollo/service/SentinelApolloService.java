@@ -94,6 +94,14 @@ public interface SentinelApolloService {
      */
     Map<String, Boolean> autoRegistryProjectsInSidebar(String jsessionid);
 
+    /**
+     * Registry projects to sentinel dashboard.
+     *
+     * @param jsessionid JSESSIONID in Cookie
+     * @return key is project name, value is it registry successful or not
+     */
+    Map<String, Boolean> autoRegistryMultipleProjects(String jsessionid, Set<String> projectNames);
+
     CompletableFuture<Void> setRulesAsync(String projectName, RuleType ruleType, List<? extends Rule> rules);
 
     boolean setRules(String projectName, RuleType ruleType, List<? extends Rule> rules);
