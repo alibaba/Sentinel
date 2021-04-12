@@ -288,7 +288,8 @@ public class DefaultSentinelApolloServiceImpl implements SentinelApolloService {
         return CompletableFuture.supplyAsync(this::autoRegistryProjectsSkipFailed);
     }
 
-    private Map<String, Boolean> autoRegistryMultipleProjects(String jsessionid, Set<String> projectNames) {
+    @Override
+    public Map<String, Boolean> autoRegistryMultipleProjects(String jsessionid, Set<String> projectNames) {
 
         Predicate<String> isCannotRegistry = projectName -> {
             try {
