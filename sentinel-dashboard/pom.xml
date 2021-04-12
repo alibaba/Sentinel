@@ -376,6 +376,12 @@
                     <exclude>resources/node_modules/**</exclude>
                 </excludes>
             </resource>
+
+            <!-- documentation -->
+            <resource>
+                <directory>../docs</directory>
+                <targetPath>docs</targetPath>
+            </resource>
         </resources>
     </build>
 </project>
