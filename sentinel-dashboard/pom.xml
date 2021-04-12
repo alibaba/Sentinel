@@ -19,7 +19,7 @@
         <curator.version>4.0.1</curator.version>
         <sentinel.version>1.8.1</sentinel.version>
         <apollo.version>1.5.1</apollo.version>
-        <spring-cloud-starter-alibaba-sentinel.version>2.0.3.RELEASE</spring-cloud-starter-alibaba-sentinel.version>
+        <spring-cloud-starter-alibaba-sentinel.version>2.0.4.RELEASE</spring-cloud-starter-alibaba-sentinel.version>
     </properties>
 
     <dependencyManagement>
