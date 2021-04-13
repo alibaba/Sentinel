@@ -1,8 +1,19 @@
 ## 概述
 
-基于阿里巴巴的[Sentinel 面向分布式服务架构的高可用流量控制组件](https://sentinelguard.io/)和携程的[Apollo分布式配置中心](https://ctripcorp.github.io/apollo)定制
+如果你在
 
-目的是为了在私有环境部署一套生产环境可用的[Sentinel控制台](https://github.com/alibaba/Sentinel/wiki/%E6%8E%A7%E5%88%B6%E5%8F%B0)，用来对微服务应用进行**流量控制**
+* 寻找分布式服务架构下的流量控制解决方案
+* 寻找[Hystrix](https://github.com/Netflix/Hystrix)的替代方案
+
+可以尝试使用这个项目，这是一个开源项目，在生态上如下图
+
+![sentinel-opensource-eco-landscape-en.png](https://raw.githubusercontent.com/Anilople/Sentinel/master/doc/image/sentinel-opensource-eco-landscape-en.png)
+
+
+
+本项目完成的事情是，结合阿里巴巴的[Sentinel 面向分布式服务架构的高可用流量控制组件](https://sentinelguard.io/)和携程的[Apollo分布式配置中心](https://ctripcorp.github.io/apollo)
+
+给出了一个企业级的，分布式服务架构下的流量控制解决方案，并且可以在私有环境部署生产可用的[Sentinel控制台](https://github.com/alibaba/Sentinel/wiki/%E6%8E%A7%E5%88%B6%E5%8F%B0)，很适合无法直接在互联网上使用[AHAS Sentinel 控制台](https://github.com/alibaba/Sentinel/wiki/AHAS-Sentinel-%E6%8E%A7%E5%88%B6%E5%8F%B0)的公司
 
 查看[快速开始](zh/deployment/quick-start)开始体验
 
@@ -17,7 +28,7 @@
 * 运维简单
 * 和Apollo配置中心无缝衔接
 * 生产可用
-* 可内网部署
+* 可私有部署
 
 ## 示例
 
@@ -30,4 +41,4 @@
 
 * 实时监控不支持持久化
 * 集群限流未支持
-* 仅限于应用数量小于500的场景，如果应用很多，请使用阿里云上提供企业级的 Sentinel 服务：[AHAS Sentinel 控制台](https://github.com/alibaba/Sentinel/wiki/AHAS-Sentinel-%E6%8E%A7%E5%88%B6%E5%8F%B0)
+* 如果应用数量很多，请使用阿里云上提供企业级的 Sentinel 服务：[AHAS Sentinel 控制台](https://github.com/alibaba/Sentinel/wiki/AHAS-Sentinel-%E6%8E%A7%E5%88%B6%E5%8F%B0)
