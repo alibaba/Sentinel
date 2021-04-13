@@ -1,1 +1,0 @@
-# frequently asked questions
