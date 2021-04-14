@@ -6,15 +6,14 @@
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-parent</artifactId>
-        <version>1.8.1-SNAPSHOT</version>
+        <version>1.8.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>sentinel-dashboard</artifactId>
     <packaging>jar</packaging>
 
     <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <resource.delimiter>@</resource.delimiter>
         <spring.boot.version>2.0.5.RELEASE</spring.boot.version>
         <curator.version>4.0.1</curator.version>
     </properties>
@@ -140,6 +139,20 @@
 
     <build>
         <finalName>sentinel-dashboard</finalName>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <configuration>
+                        <delimiters>
+                            <delimiter>${resource.delimiter}</delimiter>
+                        </delimiters>
+                        <useDefaultDelimiters>false</useDefaultDelimiters>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -156,15 +169,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
-                </configuration>
             </plugin>
 
             <plugin>

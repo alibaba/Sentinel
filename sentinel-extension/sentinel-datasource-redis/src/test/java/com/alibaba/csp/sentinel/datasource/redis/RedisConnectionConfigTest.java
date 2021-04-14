@@ -94,4 +94,43 @@ public class RedisConnectionConfigTest {
         Assert.assertNull(redisConnectionConfig.getHost());
         Assert.assertEquals(3, redisConnectionConfig.getRedisSentinels().size());
     }
+
+    @Test
+    public void testRedisClusterDefaultPortSuccess() {
+        String host = "localhost";
+        RedisConnectionConfig redisConnectionConfig = RedisConnectionConfig.Builder.redisCluster(host)
+                .withPassword("211233")
+                .build();
+        Assert.assertNull(redisConnectionConfig.getHost());
+        Assert.assertEquals(1, redisConnectionConfig.getRedisClusters().size());
+        Assert.assertEquals(RedisConnectionConfig.DEFAULT_CLUSTER_PORT,
+                redisConnectionConfig.getRedisClusters().get(0).getPort());
+    }
+
+    @Test
+    public void testRedisClusterMoreThanOneServerSuccess() {
+        String host = "localhost";
+        String host2 = "server2";
+        int port1 = 1879;
+        int port2 = 1880;
+        RedisConnectionConfig redisConnectionConfig = RedisConnectionConfig.Builder.redisCluster(host, port1)
+                .withRedisCluster(host2, port2)
+                .build();
+        Assert.assertNull(redisConnectionConfig.getHost());
+        Assert.assertEquals(2, redisConnectionConfig.getRedisClusters().size());
+    }
+
+    @Test
+    public void testRedisClusterMoreThanOneDuplicateServerSuccess() {
+        String host = "localhost";
+        String host2 = "server2";
+        int port2 = 1879;
+        RedisConnectionConfig redisConnectionConfig = RedisConnectionConfig.Builder.redisCluster(host)
+                .withRedisCluster(host2, port2)
+                .withRedisCluster(host2, port2)
+                .withPassword("211233")
+                .build();
+        Assert.assertNull(redisConnectionConfig.getHost());
+        Assert.assertEquals(3, redisConnectionConfig.getRedisClusters().size());
+    }
 }

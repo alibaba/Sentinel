@@ -21,8 +21,9 @@ import com.alibaba.csp.sentinel.slots.DefaultSlotChainBuilder;
  * @author Eric Zhao
  * @since 1.6.1
  *
- * @deprecated since 1.7.2, we can use @SpiOrder(-4000) to adjust the order of {@link GatewayFlowSlot},
+ * @deprecated since 1.7.2, we can use @Spi(order = -4000) to adjust the order of {@link GatewayFlowSlot},
  * this class is reserved for compatibility with older versions.
+ *
  * @see GatewayFlowSlot
  * @see DefaultSlotChainBuilder
  */

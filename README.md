@@ -28,6 +28,8 @@ Features overview:
 
 ## Documentation
 
+See the [Sentinel](https://sentinelguard.io/) for the document website.
+
 See the [中文文档](https://github.com/alibaba/Sentinel/wiki/%E4%BB%8B%E7%BB%8D) for document in Chinese.
 
 See the [Wiki](https://github.com/alibaba/Sentinel/wiki) for full documentation, examples, blog posts, operational details and other information.
@@ -49,16 +51,16 @@ Below is a simple demo that guides new users to use Sentinel in just 3 steps. It
 
 ### 1. Add Dependency
 
-**Note:** Sentinel Core requires Java 7 or later.
+**Note:** Sentinel requires JDK 1.8 or later.
 
-If your're using Maven, just add the following dependency in `pom.xml`.
+If you're using Maven, just add the following dependency in `pom.xml`.
 
 ```xml
 <!-- replace here with the latest version -->
 <dependency>
     <groupId>com.alibaba.csp</groupId>
     <artifactId>sentinel-core</artifactId>
-    <version>1.8.0</version>
+    <version>1.8.1</version>
 </dependency>
 ```
 
