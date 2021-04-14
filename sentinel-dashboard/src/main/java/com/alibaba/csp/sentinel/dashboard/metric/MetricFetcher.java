@@ -251,7 +251,7 @@ public class MetricFetcher {
         } catch (Exception e) {
             logger.info(msg + " metric, wait http client error:", e);
         }
-        long cost = System.currentTimeMillis() - start;
+        //long cost = System.currentTimeMillis() - start;
         //logger.info("finished " + msg + " metric for " + app + ", time intervalMs [" + startTime + ", " + endTime
         //    + "], total machines=" + machines.size() + ", dead=" + dead + ", fetch success="
         //    + success + ", fetch fail=" + fail + ", time cost=" + cost + " ms");
