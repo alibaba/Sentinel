@@ -41,4 +41,4 @@
 
 * 实时监控不支持持久化
 * 集群限流未支持
-* 如果应用数量很多，请使用阿里云上提供企业级的 Sentinel 服务：[AHAS Sentinel 控制台](https://github.com/alibaba/Sentinel/wiki/AHAS-Sentinel-%E6%8E%A7%E5%88%B6%E5%8F%B0)
+* 如果应用数量很多（超过500个），请分多套Sentinel控制台部署，或者使用阿里云上提供企业级的 Sentinel 服务：[AHAS Sentinel 控制台](https://github.com/alibaba/Sentinel/wiki/AHAS-Sentinel-%E6%8E%A7%E5%88%B6%E5%8F%B0)

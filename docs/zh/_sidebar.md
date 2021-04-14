@@ -18,7 +18,5 @@
 - 开发
   - [Sentinel控制台](zh/development/sentinel-dashboard)
 
-- FAQ
-  - [错误信息](zh/faq/error-message)
-
-- [Releases](https://github.com/Anilople/Sentinel/releases)
+- 帮助
+  - [错误信息](zh/help/error-message)

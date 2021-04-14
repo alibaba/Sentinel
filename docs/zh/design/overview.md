@@ -1,5 +1,11 @@
 # 总览
 
+配置使用[Apollo](https://ctripcorp.github.io/apollo)进行管理，支持动态更新
+
+这个项目主要是对Sentinel控制台进行了定制化，并从管理上，整理规范了一系列的配置，对客户端来说，达到开箱即用的效果
+
+
+
 
 如官方参考图
 
@@ -13,6 +19,21 @@ Sentinel Dashboard被修改，代码在https://github.com/Anilople/Sentinel
 
 * sentinel-dashboard、Sentinel Dashboard、Sentinel控制台、控制台 表示的是相同的意思
 * sentinel-client、sentinel客户端 表示的是相同的意思
+
+
+## 基本概念
+
+由于Sentinel控制台使用的一些概念，与Apollo配置中心不同
+
+还有这个定制版也使用了一些新概念，为了方便读者理解，这里做一些说明
+
+Sentinel控制台的应用 = Apollo的项目
+
+Sentinel的规则 = 流控规则、降级规则、热点规则、系统规则、授权规则的并集
+
+赋权， 指在Apollo Portal上， 用超级管理员账户登录， 并在开放平台授权管理页面，进行赋权操作，授权类型为App。 应用需要被授权，才可以被Sentinel控制台修改它的规则。 被管理的AppId = Sentinel控制台的应用。
+
+将应用注册到Sentinel控制台， 相当于在Apollo Portal上赋予Sentinel控制台修改应用规则的权限， 并将应用记录到Sentinel控制台的存储中
 
 ## sentinel客户端
 
@@ -28,7 +49,7 @@ Sentinel Dashboard被修改，代码在https://github.com/Anilople/Sentinel
 
 监控API，默认端口是8719
 
-给sentinel-dashboard查询流控规则
+给sentinel-dashboard查询规则
 
 ### 发送心跳到sentinel-dashboard
 
@@ -72,7 +93,7 @@ sequenceDiagram
 
 控制台只负责响应用户在Web上的操作，用户对某个应用的流控规则修改后，控制台会将规则推送到Apollo
 
-在查询应用的规则上，控制台并不会到Apollo上进行查询，而是通过应用的监控API，来查询
+在**查询**应用的流控规则上，控制台并不会到Apollo上进行查询，而是通过应用的监控API，来查询
 
 ```mermaid
 sequenceDiagram
@@ -82,18 +103,6 @@ sequenceDiagram
 
 所以可以验证，推送到Apollo上的配置，是否已经生效了
 
+对其它规则的查询也同理
+
 更细节的介绍请参考[sentinel-dashboard](zh/design/sentinel-dashboard)
-
-## 基本概念
-
-由于Sentinel控制台使用的一些概念，与Apollo配置中心不同
-
-还有这个定制版也使用了一些新概念，为了方便读者理解，这里做一些说明
-
-Sentinel控制台的应用 = Apollo的项目
-
-Sentinel的规则 = 流控规则、降级规则、热点规则、系统规则、授权规则的并集
-
-赋权， 指在Apollo Portal上， 用超级管理员账户登录， 并在开放平台授权管理页面，进行赋权操作，授权类型为App。 应用需要被授权，才可以被Sentinel控制台修改它的规则。 被管理的AppId = Sentinel控制台的应用。
-
-将应用注册到Sentinel控制台， 相当于在Apollo Portal上赋予Sentinel控制台修改应用规则的权限， 并将应用记录到Sentinel控制台的存储中

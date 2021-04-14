@@ -1,3 +1,4 @@
+- [Downloads](https://github.com/Anilople/Sentinel/releases)
 - Translations
   - [:uk: English](/en/)
   - [:cn: 中文](/zh/)

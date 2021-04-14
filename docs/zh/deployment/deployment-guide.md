@@ -51,6 +51,8 @@ cd target
 
 ## Apollo开放平台授权管理-创建第三方应用
 
+给Sentinel控制台创建第三方应用
+
 Chrome浏览器打开http://106.54.227.205/
 
 Username: apollo
@@ -76,6 +78,8 @@ Password: admin
 在这里演示的是Token值为`e73070a5914099a7d4f1ceeac31c5cd055231994`
 
 ## Apollo-Portal
+
+给Sentinel控制台创建项目，管理它的配置
 
 Chrome浏览器打开http://106.54.227.205/
 
