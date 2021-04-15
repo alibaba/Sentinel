@@ -37,9 +37,9 @@ public class NacosDataSourceDemo {
 
     private static final String KEY = "TestResource";
     // nacos server ip
-    private static final String remoteAddress = "localhost";
+    private static final String remoteAddress = "localhost:8848";
     // nacos group
-    private static final String groupId = "Sentinel:Demo";
+    private static final String groupId = "Sentinel_Demo";
     // nacos dataId
     private static final String dataId = "com.alibaba.csp.sentinel.demo.flow.rule";
     // if change to true, should be config NACOS_NAMESPACE_ID
