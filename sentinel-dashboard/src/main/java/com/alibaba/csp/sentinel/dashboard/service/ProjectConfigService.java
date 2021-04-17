@@ -38,9 +38,9 @@ import static com.alibaba.csp.sentinel.dashboard.util.ConfigFileUtils.writeAsZip
  * @author wxq
  */
 @Service
-public class SentinelProjectConfigService {
+public class ProjectConfigService {
 
-    private static final Logger logger = LoggerFactory.getLogger(SentinelProjectConfigService.class);
+    private static final Logger logger = LoggerFactory.getLogger(ProjectConfigService.class);
 
     @Autowired
     private RuleRepository<AuthorityRuleEntity, Long> authorityRuleEntityLongRuleRepository;

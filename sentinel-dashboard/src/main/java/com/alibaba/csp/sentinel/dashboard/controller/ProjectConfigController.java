@@ -19,7 +19,7 @@ import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
 import com.alibaba.csp.sentinel.dashboard.rule.RuleTypeEnum;
-import com.alibaba.csp.sentinel.dashboard.service.SentinelProjectConfigService;
+import com.alibaba.csp.sentinel.dashboard.service.ProjectConfigService;
 import com.alibaba.csp.sentinel.dashboard.util.ConfigFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,8 +31,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Set;
 
 /**
  * Import or export rule of project.
@@ -46,7 +44,7 @@ public class ProjectConfigController {
     private static final Logger logger = LoggerFactory.getLogger(ProjectConfigController.class);
 
     @Autowired
-    private SentinelProjectConfigService sentinelProjectConfigService;
+    private ProjectConfigService projectConfigService;
 
     /**
      * export one project's config to a zip file.
@@ -74,9 +72,9 @@ public class ProjectConfigController {
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + filename);
 
         if (null == ruleTypeEnum) {
-            this.sentinelProjectConfigService.exportToZip(response.getOutputStream(), projectName);
+            this.projectConfigService.exportToZip(response.getOutputStream(), projectName);
         } else {
-            this.sentinelProjectConfigService.exportToZip(response.getOutputStream(), projectName, ruleTypeEnum);
+            this.projectConfigService.exportToZip(response.getOutputStream(), projectName, ruleTypeEnum);
         }
     }
 
@@ -92,7 +90,7 @@ public class ProjectConfigController {
         // set downloaded filename
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + filename);
 
-        this.sentinelProjectConfigService.exportAllToZip(response.getOutputStream());
+        this.projectConfigService.exportAllToZip(response.getOutputStream());
     }
 
 }
