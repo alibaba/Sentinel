@@ -1,6 +1,12 @@
 <div class="row" style="margin-left: 1px; margin-top:10px; height: 50px;">
   <div class="col-md-6" style="margin-bottom: 10px;">
-    <span style="font-size: 30px;font-weight: bold;">{{app}}</span>
+    <span style="font-size: 30px;font-weight: bold;">
+      <a href="config/export?projectName={{app}}" target="_blank">
+        <button class="btn btn-primary">
+          导出{{app}}的所有规则
+        </button>
+      </a>
+    </span>
   </div>
   <div class="btn-group" style="float:right; margin-right: 30px;" ng-show="!isTreeView" ng-click="treeView()">
     <button class="btn btn-default-inverse" style="height: 30px;font-size: 12px;">树状视图</button>
