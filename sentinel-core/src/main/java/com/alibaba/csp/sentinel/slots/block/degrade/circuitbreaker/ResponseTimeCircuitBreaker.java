@@ -52,27 +52,18 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
         this.minRequestAmount = rule.getMinRequestAmount();
         /*
          * Init slidingCounter based on the value of statIntervalMs and maxAllowedRt
-         * 1. If maxAllowedRt is greater than or equal to statIntervalMs,
+         * 1. If maxAllowedRt can be divided into statIntervalMs,
          *    then sampleCnt = (maxAllowedRt / statIntervalMs()) + 1
-         * 2. If maxAllowedRt is lesser than or equal to half of statIntervalMs, then sampleCnt = 1
-         * 3. Else sampleCnt = 2
+         * 2. Else sampleCnt = (maxAllowedRt / statIntervalMs()) + 2
          * In all the above cases, the windowLengthInMs of slidingCounter is equal to statIntervalMs,
-         * and intervalInMs is just happen to greater than maxAllowedRt.
+         * and intervalInMs is greater than maxAllowedRt.
          */
         long sampleCntLong = maxAllowedRt / rule.getStatIntervalMs();
         AssertUtil.isTrue((int) sampleCntLong == sampleCntLong, "count of the max allowed rt is too large");
-        if (sampleCntLong == 0L) {
-            long mutiple = rule.getStatIntervalMs() / maxAllowedRt;
-            if (mutiple >= 2L) {
-                this.slidingCounter = new SlowRequestLeapArray(1, rule.getStatIntervalMs());
-            } else {
-                this.slidingCounter = new SlowRequestLeapArray(2, 2 * rule.getStatIntervalMs());
-            }
-        } else {
-            int sampleCnt = (int) sampleCntLong + 1;
-            int intervalInMs = sampleCnt * rule.getStatIntervalMs();
-            this.slidingCounter = new SlowRequestLeapArray(sampleCnt, intervalInMs);
-        }
+        boolean canDivided = maxAllowedRt % rule.getStatIntervalMs() == 0;
+        int sampleCnt = (int) sampleCntLong + (canDivided ? 1 : 2);
+        int intervalInMs = sampleCnt * rule.getStatIntervalMs();
+        this.slidingCounter = new SlowRequestLeapArray(sampleCnt, intervalInMs);
     }
 
     /**
