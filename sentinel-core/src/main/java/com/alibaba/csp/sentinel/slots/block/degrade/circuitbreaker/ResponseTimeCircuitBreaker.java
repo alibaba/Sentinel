@@ -18,7 +18,7 @@ package com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.LongAdder;
 
 import com.alibaba.csp.sentinel.Entry;
@@ -79,7 +79,7 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
      * {@inheritDoc}
      *
      * @implSpec
-     * This implementation will try to check previous deprecated buckets when the state equal to {@code State.CLOSED}.
+     * This implementation will try to check previous deprecated buckets when the status equal to {@code State.CLOSED}.
      */
     @Override
     public boolean tryPass(Context context) {
@@ -93,28 +93,22 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
         // Just check prev inflight request once.
         if (currentState.get() != State.HALF_OPEN
                 && curCounter.getStatus() != SlowRequestCounter.CHECKED_BY_ENTRY
-                && curCounter.casOnlyStatus(curWindowTime, SlowRequestCounter.UNCHECKED, SlowRequestCounter.CHECKED_BY_ENTRY)) {
+                && curCounter.casStatus(SlowRequestCounter.UNCHECKED, SlowRequestCounter.CHECKED_BY_ENTRY)) {
             long prevTotalCount = curCounter.getPrevTotalCount();
             if (prevTotalCount >= minRequestAmount && openIfNecessary(prevTotalCount, curCounter.getPrevSlowCount())) {
                 return false;
             }
             // Check inflight request in deprecated buckets.
             List<SlowRequestCounter> deprecatedCounterList = slidingCounter.listAllDeprecated(curWindowTime);
-            for (SlowRequestCounter prevCounter : deprecatedCounterList) {
-                long prevWindowTime = prevCounter.getTimestamp();
-                if (curWindowTime - prevWindowTime < slidingCounter.getIntervalInMs()
-                        || !prevCounter.casOnlyStatus(prevWindowTime, SlowRequestCounter.CHECKED_BY_ENTRY,
-                        SlowRequestCounter.CHECKED_BY_SLOW)) {
-                    break;
-                }
-                prevTotalCount = prevCounter.getTotalCount();
-                if (prevTotalCount >= minRequestAmount && openIfNecessary(prevTotalCount, prevCounter.getSlowCount())) {
+            for (SlowRequestCounter deprecatedCounter : deprecatedCounterList) {
+                long oldTotalCount = deprecatedCounter.getTotalCount();
+                if (oldTotalCount >= minRequestAmount && openIfNecessary(oldTotalCount,
+                        deprecatedCounter.getInflightCount() + deprecatedCounter.getSlowCount())) {
                     return false;
                 }
             }
         }
         curCounter.totalCount.add(1L);
-        curCounter.slowCount.add(1L);
         curCounter.inflightCount.add(1L);
         return true;
     }
@@ -141,16 +135,16 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
             completeTime = TimeUtil.currentTimeMillis();
         }
         long rt = completeTime - entry.getCreateTimestamp();
-        // decrement the inflight count and slow count optionally.
+        // decrease the inflight count and increase slow count if rt > maxAllowedRt.
         entryCounter.inflightCount.add(-1);
-        if (rt <= maxAllowedRt) {
-            entryCounter.slowCount.add(-1);
+        if (rt > maxAllowedRt) {
+            entryCounter.slowCount.add(1);
         }
         handleStateChangeWhenThresholdExceeded(rt, entry, entryCounter);
     }
 
     /**
-     * calculate and transfer state to open.
+     * calculate and transfer status to open.
      *
      * @return whether transferred to open.
      */
@@ -195,61 +189,47 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
         long curSlowCount = curCounter.getSlowCount();
         long leftTimeInWindow = slidingCounter.getWindowLengthInMs() -
                 entry.getCreateTimestamp() % slidingCounter.getWindowLengthInMs();
-        if (rt - maxAllowedRt > leftTimeInWindow || (rt - leftTimeInWindow >=0 && curInflightCount <= 0L)) {
+        if (rt - maxAllowedRt > leftTimeInWindow || (rt - leftTimeInWindow >= 0 && curInflightCount <= 0L)) {
             // We can ensure the slow count will not change.
-            long windowTime = curCounter.getTimestamp();
-            if (windowTime <= entry.getCreateTimestamp() &&
-                    curCounter.casOnlyStatus(windowTime, SlowRequestCounter.CHECKED_BY_ENTRY,
-                            SlowRequestCounter.CHECKED_BY_SLOW)) {
-                openIfNecessary(curTotalCount, curSlowCount);
-            }
+            openIfNecessary(curTotalCount, curInflightCount + curSlowCount);
         } else {
-            double currentRatio = (curSlowCount - curInflightCount) * 1.0d / curTotalCount;
+            double currentRatio = curSlowCount * 1.0d / curTotalCount;
             boolean isEqualToMaxRatio = Double.compare(currentRatio, maxSlowRequestRatio) == 0 &&
                     Double.compare(maxSlowRequestRatio, SLOW_REQUEST_RATIO_MAX_VALUE) == 0;
             if (currentRatio > maxSlowRequestRatio || isEqualToMaxRatio) {
-                long windowTime = curCounter.getTimestamp();
-                if (windowTime <= entry.getCreateTimestamp() &&
-                        curCounter.casOnlyStatus(windowTime, SlowRequestCounter.CHECKED_BY_ENTRY,
-                                SlowRequestCounter.CHECKED_BY_SLOW)) {
-                    transformToOpen(currentRatio);
-                }
+                transformToOpen(currentRatio);
             }
         }
     }
 
     static class SlowRequestCounter {
-        // totalCount >= slowCount >= inflightCount
+        /*
+         * When a entry try pass, increase totalCount and inflightCount.
+         * When a entry exits, decrease inflightCount and increase slowCount if rt > maxAllowedRt.
+         * When this counter reset, prevSlowCount=inflightCount+slowCount and prevTotalCount=totalCount.
+         */
         private LongAdder slowCount;
         private LongAdder inflightCount;
         private LongAdder totalCount;
         private LongAdder prevSlowCount;
         private LongAdder prevTotalCount;
 
-        static final int TIMESTAMP_SHIFT = 2;
-        static final int STATUS_MASK = (1 << TIMESTAMP_SHIFT) - 1;
         /** status value to indicate previous count has not been checked */
-        static final int UNCHECKED = 0x00;
+        static final int UNCHECKED = 0;
         /** status value to indicate previous count has been checked by a successor entry */
-        static final int CHECKED_BY_ENTRY = 0x01;
-        /** status value to indicate current count has been checked by slowly exit or a no successor entry */
-        static final int CHECKED_BY_SLOW = 0x02;
+        static final int CHECKED_BY_ENTRY = 1;
         /*
-         * State is logically divided into two parts: the lower one representing counter status,
-         * and the upper the timestamp this counter belonged, shifted 2 bit to left.
-         *
-         * NOTE: We must ensure the timestamp of a counter equal to
-         * start time of the window that the counter belonged to.
+         * status of the counter.
          */
-        private AtomicLong state;
+        private AtomicInteger status;
 
-        public SlowRequestCounter(long timeMillis) {
+        public SlowRequestCounter() {
             this.slowCount = new LongAdder();
             this.inflightCount = new LongAdder();
             this.totalCount = new LongAdder();
             this.prevSlowCount = new LongAdder();
             this.prevTotalCount = new LongAdder();
-            this.state = new AtomicLong(timeMillis << 2 | UNCHECKED);
+            this.status = new AtomicInteger(UNCHECKED);
         }
 
         public long getSlowCount() {
@@ -273,61 +253,48 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
         }
 
         public int getStatus() {
-            return (int) state.get() & STATUS_MASK;
+            return status.get();
         }
 
-        public long getTimestamp() {
-            return state.get() >>> TIMESTAMP_SHIFT;
-        }
-
-        static long toState(long timeMillis, int status) {
-            return timeMillis << TIMESTAMP_SHIFT | status;
-        }
-
-        public boolean casOnlyStatus(long oldTimeMillis, int oldStatus, int status) {
-            return state.compareAndSet(toState(oldTimeMillis, oldStatus), toState(oldTimeMillis, status));
-        }
-
-        public boolean casAllState(long oldTimeMillis, int oldStatus, long timeMillis, int status) {
-            return state.compareAndSet(toState(oldTimeMillis, oldStatus), toState(timeMillis, status));
+        public boolean casStatus(int oldStatus, int status) {
+            return this.status.compareAndSet(oldStatus, status);
         }
 
         /**
          * Track the previous deprecated bucket.
          */
-        public SlowRequestCounter reset(long oldTimeMillis, long timeMillis) {
+        public SlowRequestCounter reset() {
             prevSlowCount.reset();
-            prevSlowCount.add(slowCount.sumThenReset());
-            inflightCount.reset();
+            prevSlowCount.add(slowCount.sumThenReset() + inflightCount.sumThenReset());
             prevTotalCount.reset();
             prevTotalCount.add(totalCount.sumThenReset());
-            casAllState(oldTimeMillis, CHECKED_BY_ENTRY, timeMillis, UNCHECKED);
+            status.set(UNCHECKED);
             return this;
         }
 
         /**
          * Reset all counts and status.
          */
-        public SlowRequestCounter resetCompletely(long timeMillis) {
+        public SlowRequestCounter resetCompletely() {
             prevSlowCount.reset();
             prevTotalCount.reset();
             inflightCount.reset();
             slowCount.reset();
             totalCount.reset();
-            state.set(toState(timeMillis, CHECKED_BY_ENTRY));
+            status.set(CHECKED_BY_ENTRY);
             return this;
         }
 
         @Override
         public String toString() {
             return "SlowRequestCounter{" +
-                    "slowCount=" + slowCount +
-                    ", inflightCount=" + inflightCount +
-                    ", totalCount=" + totalCount +
-                    ", prevSlowCount=" + prevSlowCount +
-                    ", prevTotalCount=" + prevTotalCount +
-                    ", state=" + state +
-                    '}';
+                "slowCount=" + slowCount +
+                ", inflightCount=" + inflightCount +
+                ", totalCount=" + totalCount +
+                ", prevSlowCount=" + prevSlowCount +
+                ", prevTotalCount=" + prevTotalCount +
+                ", status=" + status +
+                '}';
         }
     }
 
@@ -339,15 +306,13 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
 
         @Override
         public SlowRequestCounter newEmptyBucket(long timeMillis) {
-            long windowStartTime = calculateWindowStart(timeMillis);
-            return new SlowRequestCounter(windowStartTime);
+            return new SlowRequestCounter();
         }
 
         @Override
         protected WindowWrap<SlowRequestCounter> resetWindowTo(WindowWrap<SlowRequestCounter> w, long startTime) {
-            long oldStartTime = w.windowStart();
             w.resetTo(startTime);
-            w.value().reset(oldStartTime, startTime);
+            w.value().reset();
             return w;
         }
 
@@ -369,24 +334,20 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
             }
             int idx = (int) ((timeMillis / windowLengthInMs) % size);
             timeMillis -= timeMillis % windowLengthInMs;
-            idx = (--idx) < 0 ? idx + size : idx;
-            WindowWrap<SlowRequestCounter> prevWindow = array.get(idx);
-            if (prevWindow != null && !isWindowDeprecated(timeMillis, prevWindow)) {
-                // There exist a valid prev window, return empty list.
-                return Collections.EMPTY_LIST;
-            }
-            if (prevWindow == null && size == 2) {
-                return Collections.EMPTY_LIST;
-            }
-            List<SlowRequestCounter> counterList = new ArrayList<>(size - 1);
-            if (prevWindow != null) {
-                counterList.add(prevWindow.value());
-            }
-            for (int i = 0; i < size - 2; i++) {
+            // Reduce memory footprint in normal case.
+            List<SlowRequestCounter> counterList = Collections.EMPTY_LIST;
+            for (int i = 0; i < size - 1; i++) {
                 idx = (--idx) < 0 ? idx + size : idx;
-                WindowWrap<SlowRequestCounter> windowWrap = array.get(i);
-                if (windowWrap == null || !isWindowDeprecated(timeMillis, windowWrap)) {
+                WindowWrap<SlowRequestCounter> windowWrap = array.get(idx);
+                if (windowWrap == null) {
                     continue;
+                }
+                // There is a valid previous window.
+                if (!isWindowDeprecated(timeMillis, windowWrap)) {
+                    break;
+                }
+                if (counterList == Collections.EMPTY_LIST) {
+                    counterList = new ArrayList<>(size - 1 - i);
                 }
                 counterList.add(windowWrap.value());
             }
@@ -398,6 +359,7 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
          */
         public void resetCompletely() {
             int size = array.length();
+            // Reset start timestamp to a small value.
             long resetTimeMillis = 0L;
             for (int i = 0; i < size; i++, resetTimeMillis += windowLengthInMs) {
                 WindowWrap<SlowRequestCounter> windowWrap = array.get(i);
@@ -405,7 +367,7 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
                     continue;
                 }
                 SlowRequestCounter counter = windowWrap.value();
-                counter.resetCompletely(resetTimeMillis);
+                counter.resetCompletely();
                 windowWrap.resetTo(resetTimeMillis);
             }
         }

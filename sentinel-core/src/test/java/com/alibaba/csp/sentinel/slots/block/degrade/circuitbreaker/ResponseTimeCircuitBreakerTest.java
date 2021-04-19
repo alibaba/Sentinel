@@ -5,7 +5,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -58,9 +60,9 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
         assertTrue(entryAndSleepFor(resource, 20));
 
         // should be blocked, cause 3/3 requests' rt is bigger than max rt.
-        assertFalse(entryAndSleepFor(resource,20));
+        assertFalse(entryAndSleepFor(resource, 20));
         sleep(1000);
-        assertFalse(entryAndSleepFor(resource,20));
+        assertFalse(entryAndSleepFor(resource, 20));
         sleep(4000);
         // HALF_OPEN to OPEN
         assertTrue(entryAndSleepFor(resource, 20));
@@ -72,8 +74,8 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
     }
 
     /**
-     * If maxAllowedRT=5000, and a entry created at 970 exits at 6050,
-     * then we can judge that all inflight requests can be treated as slow request.
+     * If maxAllowedRT=5000, statIntervalMs=1000 and a entry created at 970 exits at 6050,
+     * then we can judge that all inflight requests created at range [0-1000) can be treated as slow request.
      */
     @Test
     public void testDegradeByOneSlowRT() {
@@ -92,8 +94,8 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
 
         List<Entry> entryList = new ArrayList<>(20);
         /*
-         * If maxAllowedRT=5000, and a entry created at 980 exits at 6050,
-         * then we can judge that all inflight request can be treated as slow request.
+         * If maxAllowedRT=5000, statIntervalMs=1000 and a entry created at 970 exits at 6050,
+         * then we can judge that all inflight requests created at range [0-1000) can be treated as slow request.
          */
         assertTrue(entryAndSleepFor(resource, 0));
         sleep(800);
@@ -130,7 +132,7 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
     }
 
     /**
-     * If maxAllowedRT=5000, and entries created at range [0-1000) not exit at 6000,
+     * If maxAllowedRT=5000, statIntervalMs=1000 and entries created at range [0-1000) not exit at 6000,
      * then we can judge that all inflight requests can be treated as slow request.
      */
     @Test
@@ -181,7 +183,7 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
     }
 
     /**
-     * If maxAllowedRT=5000, and entries created at range [0-1000) not exit at 8000,
+     * If maxAllowedRT=5000, statIntervalMs=1000 and entries created at range [0-1000) not exit at 8000,
      * then we can judge that all inflight requests can be treated as slow request.
      */
     @Test
@@ -219,7 +221,7 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
     }
 
     /**
-     * then we can judge that all inflight requests can be treated as slow request.
+     * If maxAllowedRT=50, statIntervalMs=1000 and maxSlowRequestRatio=0.5.
      */
     @Test
     public void testDegradeBySimplyReachRatio() {
@@ -238,8 +240,7 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
 
         List<Entry> entryList = new ArrayList<>(20);
         /*
-         * If maxAllowedRT=5000, and entries created at range [0-1000) not exit at 8000,
-         * then we can judge that all entries can be treated as slow request.
+         * If maxAllowedRT=50, statIntervalMs=1000 and maxSlowRequestRatio=0.5
          */
         // Entry: 0,50,100...900,950
         batchEntryPeriodically(resource, 20, 50, entryList);
@@ -252,6 +253,63 @@ public class ResponseTimeCircuitBreakerTest extends AbstractTimeBasedTest {
         safeExit(entryList.get(10));
         verify(observer)
                 .onStateChange(eq(State.CLOSED), eq(State.OPEN), any(DegradeRule.class), eq(1.0d * 11 / 20));
+
+        EventObserverRegistry.getInstance().removeStateChangeObserver(resource);
+        batchExitImmediately(entryList);
+    }
+
+    /**
+     * If maxAllowedRT=5000, statIntervalMs=1000
+     */
+    @Test
+    public void testDegradeAfterPrevCheck() {
+        CircuitBreakerStateChangeObserver observer = mock(CircuitBreakerStateChangeObserver.class);
+        String resource = "testDegradeAfterPrevCheck";
+        DegradeRule rule = new DegradeRule(resource)
+                .setCount(5000)
+                .setGrade(RuleConstant.DEGRADE_GRADE_RT)
+                .setMinRequestAmount(3)
+                .setSlowRatioThreshold(0.5)
+                .setStatIntervalMs(1000)
+                .setTimeWindow(1);
+
+        EventObserverRegistry.getInstance().addStateChangeObserver(resource, observer);
+        DegradeRuleManager.loadRules(Collections.singletonList(rule));
+
+        /*
+         * If maxAllowedRT=50, statIntervalMs=1000 and maxSlowRequestRatio=0.5
+         */
+        List<Entry> entryList = new ArrayList<>(20);
+        for (int i = 0; i < 5; i++) {
+            // Entry: 0,250,500...4500,4750  Exited: all
+            batchEntryPeriodically(resource, 4, 250, entryList);
+            assertTrue(noOneBlocked(entryList));
+            batchExitImmediately(entryList.subList(4 * i, 4 * (i + 1)));
+        }
+        sleep(7000);
+        // Entry created at 12000 should check all previous buckets.
+        assertTrue(entryAndSleepFor(resource, 1000));
+
+        entryList.clear();
+        // Entry: 13000,13050,130100...130950
+        batchEntryPeriodically(resource, 20, 50, entryList);
+        assertTrue(noOneBlocked(entryList));
+        sleep(7000);
+        // Entry created at 21000 should check all previous buckets.
+        assertFalse(entryAndSleepFor(resource, 0));
+        verify(observer)
+                .onStateChange(eq(State.CLOSED), eq(State.OPEN), any(DegradeRule.class), eq(1.0d));
+
+        sleep(1000);
+        entryList.clear();
+        batchEntryPeriodically(resource, 1, 0, entryList);
+        assertTrue(noOneBlocked(entryList));
+        verify(observer)
+                .onStateChange(eq(State.OPEN), eq(State.HALF_OPEN), any(DegradeRule.class), isNull());
+        batchExitImmediately(entryList);
+        verify(observer)
+                .onStateChange(eq(State.HALF_OPEN), eq(State.CLOSED), any(DegradeRule.class), isNull());
+
 
         EventObserverRegistry.getInstance().removeStateChangeObserver(resource);
         batchExitImmediately(entryList);
