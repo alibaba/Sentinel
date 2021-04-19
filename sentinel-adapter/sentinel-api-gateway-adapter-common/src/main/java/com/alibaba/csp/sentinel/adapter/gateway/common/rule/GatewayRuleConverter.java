@@ -48,19 +48,23 @@ final class GatewayRuleConverter {
     }
 
     static ParamFlowRule applyNonParamToParamRule(/*@Valid*/ GatewayFlowRule gatewayRule, int idx) {
-        return new ParamFlowRule(gatewayRule.getResource())
-            .setCount(gatewayRule.getCount())
-            .setGrade(gatewayRule.getGrade())
-            .setDurationInSec(gatewayRule.getIntervalSec())
-            .setBurstCount(gatewayRule.getBurst())
-            .setControlBehavior(gatewayRule.getControlBehavior())
-            .setMaxQueueingTimeMs(gatewayRule.getMaxQueueingTimeoutMs())
+        ParamFlowRule paramFlowRule = new ParamFlowRule(gatewayRule.getResource())
+                .setCount(gatewayRule.getCount())
+                .setGrade(gatewayRule.getGrade())
+                .setDurationInSec(gatewayRule.getIntervalSec())
+                .setBurstCount(gatewayRule.getBurst())
+                .setControlBehavior(gatewayRule.getControlBehavior())
+                .setMaxQueueingTimeMs(gatewayRule.getMaxQueueingTimeoutMs())
                 .setClusterMode(gatewayRule.isClusterMode())
-                .setClusterConfig(applyToParamFlowClusterConfig(gatewayRule.getClusterConfig()))
-            .setParamIdx(idx);
+                .setParamIdx(idx);
+        if (paramFlowRule.isClusterMode()){
+            paramFlowRule.setClusterConfig(applyToParamFlowClusterConfig(gatewayRule.getClusterConfig()));
+        }
+        return paramFlowRule;
     }
 
     static ParamFlowClusterConfig applyToParamFlowClusterConfig(GatewayFlowClusterConfig config){
+
         return new ParamFlowClusterConfig()
                 .setFlowId(config.getFlowId())
                 .setThresholdType(config.getThresholdType())
@@ -87,7 +91,6 @@ final class GatewayRuleConverter {
             .setControlBehavior(gatewayRule.getControlBehavior())
             .setMaxQueueingTimeMs(gatewayRule.getMaxQueueingTimeoutMs())
                 .setClusterMode(gatewayRule.isClusterMode())
-                .setClusterConfig(applyToParamFlowClusterConfig(gatewayRule.getClusterConfig()))
             .setParamIdx(idx);
         GatewayParamFlowItem gatewayItem = gatewayRule.getParamItem();
         // Apply the current idx to gateway rule item.
@@ -96,6 +99,9 @@ final class GatewayRuleConverter {
         String valuePattern = gatewayItem.getPattern();
         if (valuePattern != null) {
             paramRule.getParamFlowItemList().add(generateNonMatchPassParamItem());
+        }
+        if (paramRule.isClusterMode()){
+            paramRule.setClusterConfig(applyToParamFlowClusterConfig(gatewayRule.getClusterConfig()));
         }
         return paramRule;
     }
