@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.adapter.gateway.common.rule;
 
 import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
+import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowClusterConfig;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowItem;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
 
@@ -54,7 +55,19 @@ final class GatewayRuleConverter {
             .setBurstCount(gatewayRule.getBurst())
             .setControlBehavior(gatewayRule.getControlBehavior())
             .setMaxQueueingTimeMs(gatewayRule.getMaxQueueingTimeoutMs())
+                .setClusterMode(gatewayRule.isClusterMode())
+                .setClusterConfig(applyToParamFlowClusterConfig(gatewayRule.getClusterConfig()))
             .setParamIdx(idx);
+    }
+
+    static ParamFlowClusterConfig applyToParamFlowClusterConfig(GatewayFlowClusterConfig config){
+        return new ParamFlowClusterConfig()
+                .setFlowId(config.getFlowId())
+                .setThresholdType(config.getThresholdType())
+                .setSampleCount(config.getSampleCount())
+                .setFallbackToLocalWhenFail(config.isFallbackToLocalWhenFail())
+                .setWindowIntervalMs(config.getWindowIntervalMs());
+
     }
 
     /**
@@ -73,6 +86,8 @@ final class GatewayRuleConverter {
             .setBurstCount(gatewayRule.getBurst())
             .setControlBehavior(gatewayRule.getControlBehavior())
             .setMaxQueueingTimeMs(gatewayRule.getMaxQueueingTimeoutMs())
+                .setClusterMode(gatewayRule.isClusterMode())
+                .setClusterConfig(applyToParamFlowClusterConfig(gatewayRule.getClusterConfig()))
             .setParamIdx(idx);
         GatewayParamFlowItem gatewayItem = gatewayRule.getParamItem();
         // Apply the current idx to gateway rule item.

@@ -19,6 +19,7 @@ import java.util.Objects;
 
 import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowClusterConfig;
 
 /**
  * @author Eric Zhao
@@ -45,6 +46,15 @@ public class GatewayFlowRule {
      * converted to normal flow rule.
      */
     private GatewayParamFlowItem paramItem;
+
+    /**
+     * Indicating whether the rule is for cluster mode.
+     */
+    private boolean clusterMode = false;
+    /**
+     * Cluster mode specific config for gateway flow rule.
+     */
+    private GatewayFlowClusterConfig clusterConfig;
 
     public GatewayFlowRule() {}
 
@@ -133,6 +143,38 @@ public class GatewayFlowRule {
         return this;
     }
 
+    /**
+     * @return
+     */
+    public boolean isClusterMode() {
+        return clusterMode;
+    }
+
+    /**
+     * @param clusterMode
+     * @return
+     */
+    public GatewayFlowRule setClusterMode(boolean clusterMode) {
+        this.clusterMode = clusterMode;
+        return this;
+    }
+
+    /**
+     * @return
+     */
+    public GatewayFlowClusterConfig getClusterConfig() {
+        return clusterConfig;
+    }
+
+    /**
+     * @param clusterConfig
+     * @return
+     */
+    public GatewayFlowRule setClusterConfig(GatewayFlowClusterConfig clusterConfig) {
+        this.clusterConfig = clusterConfig;
+        return this;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) { return true; }
@@ -147,7 +189,9 @@ public class GatewayFlowRule {
         if (controlBehavior != rule.controlBehavior) { return false; }
         if (burst != rule.burst) { return false; }
         if (maxQueueingTimeoutMs != rule.maxQueueingTimeoutMs) { return false; }
+        if (clusterMode != rule.clusterMode) { return false; }
         if (!Objects.equals(resource, rule.resource)) { return false; }
+        if (!Objects.equals(clusterConfig, rule.clusterConfig)) { return false; }
         return Objects.equals(paramItem, rule.paramItem);
 
     }
@@ -166,21 +210,25 @@ public class GatewayFlowRule {
         result = 31 * result + burst;
         result = 31 * result + maxQueueingTimeoutMs;
         result = 31 * result + (paramItem != null ? paramItem.hashCode() : 0);
+        result = 31 * result + (clusterMode ? 1 : 0);
+        result = 31 * result + (clusterConfig != null ? clusterConfig.hashCode() : 0);
         return result;
     }
 
     @Override
     public String toString() {
         return "GatewayFlowRule{" +
-            "resource='" + resource + '\'' +
-            ", resourceMode=" + resourceMode +
-            ", grade=" + grade +
-            ", count=" + count +
-            ", intervalSec=" + intervalSec +
-            ", controlBehavior=" + controlBehavior +
-            ", burst=" + burst +
-            ", maxQueueingTimeoutMs=" + maxQueueingTimeoutMs +
-            ", paramItem=" + paramItem +
-            '}';
+                "resource='" + resource + '\'' +
+                ", resourceMode=" + resourceMode +
+                ", grade=" + grade +
+                ", count=" + count +
+                ", intervalSec=" + intervalSec +
+                ", controlBehavior=" + controlBehavior +
+                ", burst=" + burst +
+                ", maxQueueingTimeoutMs=" + maxQueueingTimeoutMs +
+                ", paramItem=" + paramItem +
+                ", clusterMode=" + clusterMode +
+                ", clusterConfig=" + clusterConfig +
+                '}';
     }
 }
