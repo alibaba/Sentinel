@@ -16,15 +16,15 @@
 package com.alibaba.csp.sentinel.dashboard.apollo.service;
 
 import com.alibaba.csp.sentinel.dashboard.apollo.config.SentinelApolloOpenApiProperties;
+import com.alibaba.csp.sentinel.dashboard.apollo.converter.ResponseEntityConverter;
 import com.alibaba.csp.sentinel.dashboard.apollo.entity.ConsumerRole;
 import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
@@ -69,7 +69,11 @@ public class ApolloPortalService {
         return httpHeaders;
     }
 
-    public ResponseEntity<ConsumerRole[]> assignAppRoleToConsumer(String jsessionid, String appId) {
+    /**
+     *
+     * @throws RestClientResponseException if meet some HTTP status code are not well
+     */
+    public ResponseEntity<ConsumerRole[]> assignAppRoleToConsumer(String jsessionid, String appId) throws RestClientResponseException {
         RestTemplate restTemplate = new RestTemplate();
 
         HttpHeaders httpHeaders = buildHttpHeaders(jsessionid);
@@ -88,11 +92,23 @@ public class ApolloPortalService {
      * @param appIds app id in apollo
      * @return authorization's result, key is app id, value is http response
      */
-    public Map<String, ResponseEntity<ConsumerRole[]>> assignAppRoleToConsumer(final String jsessionid, Set<String> appIds) {
+    public Map<String, ResponseEntity<String>> assignAppRoleToConsumer(final String jsessionid, Set<String> appIds) {
         Function<String, String> keyFunction = Function.identity();
-        Function<String, ResponseEntity<ConsumerRole[]>> valueFunction = appId -> assignAppRoleToConsumer(jsessionid, appId);
+        Function<String, ResponseEntity<String>> valueFunction = appId -> {
+            try {
+                ResponseEntity<ConsumerRole[]> responseEntity = assignAppRoleToConsumer(jsessionid, appId);
+                return ResponseEntityConverter.convert2String(responseEntity);
+            } catch (RestClientResponseException e) {
+                String body = e.getResponseBodyAsString();
+                HttpHeaders httpHeaders = e.getResponseHeaders();
+                HttpStatus httpStatus = HttpStatus.valueOf(e.getRawStatusCode());
+                logger.error("failed to assignAppRoleToConsumer, appId = [{}], http status code = [{}], body = [{}]", appId, e.getRawStatusCode(), body);
+                ResponseEntity<String> responseEntity = new ResponseEntity<>(body, httpHeaders, httpStatus);
+                return responseEntity;
+            }
+        };
 
-        Map<String, ResponseEntity<ConsumerRole[]>> result = appIds.parallelStream()
+        Map<String, ResponseEntity<String>> result = appIds.parallelStream()
                 .collect(
                         Collectors.toMap(
                                 keyFunction,
@@ -106,17 +122,21 @@ public class ApolloPortalService {
      * Use admin permission to call apollo portal, authorize managed app id, type is app.
      * @param jsessionid JESSIONID in Cookie
      * @param appIds app id in apollo
-     * @return authorization's result, key is app id, value is true if success, false if failed.
+     * @return authorization's result, key is app id, value is true if success, others if failed.
      */
-    public Map<String, Boolean> assignAppRoleToSentinelDashboard(final String jsessionid, Set<String> appIds) {
-        Map<String, ResponseEntity<ConsumerRole[]>> assignResult = assignAppRoleToConsumer(jsessionid, appIds);
+    public Map<String, String> assignAppRoleToSentinelDashboard(final String jsessionid, Set<String> appIds) {
+        Map<String, ResponseEntity<String>> assignResult = assignAppRoleToConsumer(jsessionid, appIds);
 
-        final Map<String, Boolean> registryResult = new HashMap<>();
-        for (Map.Entry<String, ResponseEntity<ConsumerRole[]>> entry : assignResult.entrySet()) {
+        final Map<String, String> registryResult = new HashMap<>();
+        for (Map.Entry<String, ResponseEntity<String>> entry : assignResult.entrySet()) {
             String projectName = entry.getKey();
-            ResponseEntity<ConsumerRole[]> responseEntity = entry.getValue();
+            ResponseEntity<String> responseEntity = entry.getValue();
             logger.debug("registry project [{}] ResponseEntity [{}] ", projectName, responseEntity);
-            registryResult.put(projectName, responseEntity.getStatusCode().is2xxSuccessful());
+            if (responseEntity.getStatusCode().is2xxSuccessful()) {
+                registryResult.put(projectName, Boolean.TRUE.toString());
+            } else {
+                registryResult.put(projectName, responseEntity.toString());
+            }
         }
 
         return registryResult;
