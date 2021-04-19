@@ -30,6 +30,7 @@
         <dependency>
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-cluster-server-default</artifactId>
+            <version>${parent.version}</version>
         </dependency>
 
         <dependency>
