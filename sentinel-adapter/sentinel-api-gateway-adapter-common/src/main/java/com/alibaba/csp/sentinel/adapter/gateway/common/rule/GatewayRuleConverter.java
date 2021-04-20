@@ -55,9 +55,9 @@ final class GatewayRuleConverter {
                 .setBurstCount(gatewayRule.getBurst())
                 .setControlBehavior(gatewayRule.getControlBehavior())
                 .setMaxQueueingTimeMs(gatewayRule.getMaxQueueingTimeoutMs())
-                .setClusterMode(gatewayRule.isClusterMode())
                 .setParamIdx(idx);
-        if (paramFlowRule.isClusterMode()){
+        if (gatewayRule.isClusterMode() && gatewayRule.getClusterConfig().getFlowId()!=null){
+            paramFlowRule.setClusterMode(gatewayRule.isClusterMode());
             paramFlowRule.setClusterConfig(applyToParamFlowClusterConfig(gatewayRule.getClusterConfig()));
         }
         return paramFlowRule;
@@ -90,7 +90,6 @@ final class GatewayRuleConverter {
             .setBurstCount(gatewayRule.getBurst())
             .setControlBehavior(gatewayRule.getControlBehavior())
             .setMaxQueueingTimeMs(gatewayRule.getMaxQueueingTimeoutMs())
-                .setClusterMode(gatewayRule.isClusterMode())
             .setParamIdx(idx);
         GatewayParamFlowItem gatewayItem = gatewayRule.getParamItem();
         // Apply the current idx to gateway rule item.
@@ -100,7 +99,8 @@ final class GatewayRuleConverter {
         if (valuePattern != null) {
             paramRule.getParamFlowItemList().add(generateNonMatchPassParamItem());
         }
-        if (paramRule.isClusterMode()){
+        if (gatewayRule.isClusterMode() && gatewayRule.getClusterConfig().getFlowId()!=null){
+            paramRule.setClusterMode(gatewayRule.isClusterMode());
             paramRule.setClusterConfig(applyToParamFlowClusterConfig(gatewayRule.getClusterConfig()));
         }
         return paramRule;
