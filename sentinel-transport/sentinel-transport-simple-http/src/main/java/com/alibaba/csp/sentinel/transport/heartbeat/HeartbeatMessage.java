@@ -20,6 +20,7 @@ import java.util.Map;
 
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
+import com.alibaba.csp.sentinel.heartbeat.HeartbeatMessageProvider;
 import com.alibaba.csp.sentinel.transport.config.TransportConfig;
 import com.alibaba.csp.sentinel.util.AppNameUtil;
 import com.alibaba.csp.sentinel.util.HostNameUtil;
@@ -30,7 +31,9 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
  * The message consists of key-value pair parameters.
  *
  * @author leyou
+ * @deprecated please use {@link HeartbeatMessageProvider#getHeartbeatMessage()} instead
  */
+@Deprecated
 public class HeartbeatMessage {
 
     private final Map<String, String> message = new HashMap<String, String>();

@@ -15,13 +15,15 @@
  */
 package com.alibaba.csp.sentinel.transport.heartbeat;
 
+import com.alibaba.csp.sentinel.heartbeat.HeartbeatMessageProvider;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.transport.HeartbeatSender;
 import com.alibaba.csp.sentinel.transport.config.TransportConfig;
+import com.alibaba.csp.sentinel.transport.endpoint.Endpoint;
 import com.alibaba.csp.sentinel.transport.heartbeat.client.SimpleHttpClient;
 import com.alibaba.csp.sentinel.transport.heartbeat.client.SimpleHttpRequest;
 import com.alibaba.csp.sentinel.transport.heartbeat.client.SimpleHttpResponse;
-import com.alibaba.csp.sentinel.transport.endpoint.Endpoint;
+import com.alibaba.csp.sentinel.transport.message.HeartbeatMessage;
 
 import java.util.List;
 
@@ -39,7 +41,7 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
 
     private static final long DEFAULT_INTERVAL = 1000 * 10;
 
-    private final HeartbeatMessage heartBeat = new HeartbeatMessage();
+    private final HeartbeatMessage heartbeatMessage = HeartbeatMessageProvider.getHeartbeatMessage();
     private final SimpleHttpClient httpClient = new SimpleHttpClient();
 
     private final List<Endpoint> addressList;
@@ -69,7 +71,7 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
         }
 
         SimpleHttpRequest request = new SimpleHttpRequest(addrInfo, TransportConfig.getHeartbeatApiPath());
-        request.setParams(heartBeat.generateCurrentMessage());
+        request.setParams(this.heartbeatMessage.get());
         try {
             SimpleHttpResponse response = httpClient.post(request);
             if (response.getStatusCode() == OK_STATUS) {
