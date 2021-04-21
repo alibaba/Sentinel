@@ -15,27 +15,27 @@
  */
 package com.alibaba.csp.sentinel.transport.heartbeat;
 
-import com.alibaba.csp.sentinel.Constants;
-import com.alibaba.csp.sentinel.config.SentinelConfig;
+import com.alibaba.csp.sentinel.heartbeat.HeartbeatMessageProvider;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.spi.Spi;
 import com.alibaba.csp.sentinel.transport.HeartbeatSender;
 import com.alibaba.csp.sentinel.transport.config.TransportConfig;
+import com.alibaba.csp.sentinel.transport.endpoint.Endpoint;
 import com.alibaba.csp.sentinel.transport.endpoint.Protocol;
 import com.alibaba.csp.sentinel.transport.heartbeat.client.HttpClientsFactory;
-import com.alibaba.csp.sentinel.util.AppNameUtil;
-import com.alibaba.csp.sentinel.util.HostNameUtil;
-import com.alibaba.csp.sentinel.util.PidUtil;
+import com.alibaba.csp.sentinel.transport.message.HeartbeatMessage;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.csp.sentinel.transport.endpoint.Endpoint;
-
+import org.apache.http.NameValuePair;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Eric Zhao
@@ -60,6 +60,8 @@ public class HttpHeartbeatSender implements HeartbeatSender {
     private final String consoleHost;
     private final int consolePort;
 
+    private final HeartbeatMessage heartbeatMessage = HeartbeatMessageProvider.getHeartbeatMessage();
+
     public HttpHeartbeatSender() {
         List<Endpoint> dashboardList = TransportConfig.getConsoleServerList();
         if (dashboardList == null || dashboardList.isEmpty()) {
@@ -76,22 +78,26 @@ public class HttpHeartbeatSender implements HeartbeatSender {
         this.client = HttpClientsFactory.getHttpClientsByProtocol(consoleProtocol);
     }
 
+    private List<NameValuePair> resolveParameters() {
+        List<NameValuePair> nameValuePairs = new ArrayList<>();
+        Map<String, String> map = this.heartbeatMessage.get();
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            NameValuePair nameValuePair = new BasicNameValuePair(entry.getKey(), entry.getValue());
+            nameValuePairs.add(nameValuePair);
+        }
+        return nameValuePairs;
+    }
+
     @Override
     public boolean sendHeartbeat() throws Exception {
         if (StringUtil.isEmpty(consoleHost)) {
             return false;
         }
+        List<NameValuePair> parameters = this.resolveParameters();
         URIBuilder uriBuilder = new URIBuilder();
         uriBuilder.setScheme(consoleProtocol.getProtocol()).setHost(consoleHost).setPort(consolePort)
             .setPath(TransportConfig.getHeartbeatApiPath())
-            .setParameter("app", AppNameUtil.getAppName())
-            .setParameter("app_type", String.valueOf(SentinelConfig.getAppType()))
-            .setParameter("v", Constants.SENTINEL_VERSION)
-            .setParameter("version", String.valueOf(System.currentTimeMillis()))
-            .setParameter("hostname", HostNameUtil.getHostName())
-            .setParameter("ip", TransportConfig.getHeartbeatClientIp())
-            .setParameter("port", TransportConfig.getPort())
-            .setParameter("pid", String.valueOf(PidUtil.getPid()));
+            .setParameters(parameters);
 
         HttpGet request = new HttpGet(uriBuilder.build());
         request.setConfig(requestConfig);
