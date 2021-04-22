@@ -34,6 +34,11 @@ public abstract class AbstractHeartbeatMessage implements HeartbeatMessage {
 
     private final Map<String, String> information = new HashMap<>();
 
+    /**
+     * wrapper {@link #information} to forbid user modify origin.
+     */
+    private final Map<String, String> unmodifiableInformation = Collections.unmodifiableMap(this.information);
+
     private final Map<String, Supplier<String>> informationSuppliers = new ConcurrentHashMap<>();
 
     public AbstractHeartbeatMessage() {
@@ -81,7 +86,7 @@ public abstract class AbstractHeartbeatMessage implements HeartbeatMessage {
     public Map<String, String> get() {
         this.beforeGet();
         this.refresh(CURRENT_TIME_MILLIS);
-        return Collections.unmodifiableMap(this.information);
+        return this.unmodifiableInformation;
     }
 
 }
