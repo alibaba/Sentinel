@@ -18,7 +18,6 @@ package com.alibaba.csp.sentinel.transport.message;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 import static com.alibaba.csp.sentinel.transport.message.HeartbeatMessageKeyConstants.*;
@@ -39,7 +38,7 @@ public abstract class AbstractHeartbeatMessage implements HeartbeatMessage {
      */
     private final Map<String, String> unmodifiableInformation = Collections.unmodifiableMap(this.information);
 
-    private final Map<String, Supplier<String>> informationSuppliers = new ConcurrentHashMap<>();
+    private final Map<String, Supplier<String>> informationSuppliers = new HashMap<>();
 
     public AbstractHeartbeatMessage() {
         this.registerInformationSupplier(PID, PID_SUPPLIER);
