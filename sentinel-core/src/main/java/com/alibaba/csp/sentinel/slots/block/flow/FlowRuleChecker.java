@@ -194,7 +194,7 @@ public class FlowRuleChecker {
                 try {
                     Thread.sleep(result.getWaitInMs());
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    // ignored
                 }
                 return true;
             case TokenResultStatus.NO_RULE_EXISTS:

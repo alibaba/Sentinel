@@ -75,14 +75,17 @@ public final class SpiLoader<S> {
     // Default path for the folder of Provider configuration file
     private static final String SPI_FILE_PREFIX = "META-INF/services/";
 
+    // Comment which start with "#" should be skipped
+    private static final String COMMENT_PREFIX = "#";
+
     // Cache the SpiLoader instances, key: classname of Service, value: SpiLoader instance
     private static final ConcurrentHashMap<String, SpiLoader> SPI_LOADER_MAP = new ConcurrentHashMap<>();
 
     // Cache the classes of Provider
-    private final List<Class<? extends S>> classList = Collections.synchronizedList(new ArrayList<Class<? extends S>>());
+    private final List<Class<? extends S>> classList = Collections.synchronizedList(new ArrayList<>());
 
     // Cache the sorted classes of Provider
-    private final List<Class<? extends S>> sortedClassList = Collections.synchronizedList(new ArrayList<Class<? extends S>>());
+    private final List<Class<? extends S>> sortedClassList = Collections.synchronizedList(new ArrayList<>());
 
     /**
      * Cache the classes of Provider, key: aliasName, value: class of Provider.
@@ -122,8 +125,7 @@ public final class SpiLoader<S> {
             synchronized (SpiLoader.class) {
                 spiLoader = SPI_LOADER_MAP.get(className);
                 if (spiLoader == null) {
-                    SPI_LOADER_MAP.putIfAbsent(className, new SpiLoader<>(service));
-                    spiLoader = SPI_LOADER_MAP.get(className);
+                    spiLoader = SPI_LOADER_MAP.computeIfAbsent(className, t -> new SpiLoader<>(service));
                 }
             }
         }
@@ -316,15 +318,7 @@ public final class SpiLoader<S> {
         }
 
         String fullFileName = SPI_FILE_PREFIX + service.getName();
-        ClassLoader classLoader;
-        if (SentinelConfig.shouldUseContextClassloader()) {
-            classLoader = Thread.currentThread().getContextClassLoader();
-        } else {
-            classLoader = service.getClassLoader();
-        }
-        if (classLoader == null) {
-            classLoader = ClassLoader.getSystemClassLoader();
-        }
+        ClassLoader classLoader = determineClassLoader();
         Enumeration<URL> urls = null;
         try {
             urls = classLoader.getResources(fullFileName);
@@ -340,35 +334,20 @@ public final class SpiLoader<S> {
         while (urls.hasMoreElements()) {
             URL url = urls.nextElement();
 
-            InputStream in = null;
-            BufferedReader br = null;
-            try {
-                in = url.openStream();
-                br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+            try (InputStream in = url.openStream();
+                 BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = br.readLine()) != null) {
-                    if (StringUtil.isBlank(line)) {
-                        // Skip blank line
+                    String className = determineClassName(line);
+                    if (className == null) {
                         continue;
                     }
-
-                    line = line.trim();
-                    int commentIndex = line.indexOf("#");
-                    if (commentIndex == 0) {
-                        // Skip comment line
-                        continue;
-                    }
-
-                    if (commentIndex > 0) {
-                        line = line.substring(0, commentIndex);
-                    }
-                    line = line.trim();
 
                     Class<S> clazz = null;
                     try {
-                        clazz = (Class<S>) Class.forName(line, false, classLoader);
+                        clazz = (Class<S>) Class.forName(className, false, classLoader);
                     } catch (ClassNotFoundException e) {
-                        fail("class " + line + " not found", e);
+                        fail("class " + className + " not found", e);
                     }
 
                     if (!service.isAssignableFrom(clazz)) {
@@ -377,7 +356,7 @@ public final class SpiLoader<S> {
 
                     classList.add(clazz);
                     Spi spi = clazz.getAnnotation(Spi.class);
-                    String aliasName = spi == null || "".equals(spi.value()) ? clazz.getName() : spi.value();
+                    String aliasName = (spi == null || "".equals(spi.value())) ? clazz.getName() : spi.value();
                     if (classMap.containsKey(aliasName)) {
                         Class<? extends S> existClass = classMap.get(aliasName);
                         fail("Found repeat alias name for " + clazz.getName() + " and "
@@ -393,32 +372,61 @@ public final class SpiLoader<S> {
                     }
 
                     RecordLog.info("[SpiLoader] Found SPI implementation for SPI {}, provider={}, aliasName={}"
-                            + ", isSingleton={}, isDefault={}, order={}",
-                        service.getName(), line, aliasName
-                            , spi == null ? true : spi.isSingleton()
-                            , spi == null ? false : spi.isDefault()
+                                    + ", isSingleton={}, isDefault={}, order={}",
+                            service.getName(), className, aliasName
+                            , spi == null || spi.isSingleton()
+                            , spi != null && spi.isDefault()
                             , spi == null ? 0 : spi.order());
                 }
             } catch (IOException e) {
                 fail("error reading SPI configuration file", e);
-            } finally {
-                closeResources(in, br);
             }
+
         }
 
         sortedClassList.addAll(classList);
-        Collections.sort(sortedClassList, new Comparator<Class<? extends S>>() {
-            @Override
-            public int compare(Class<? extends S> o1, Class<? extends S> o2) {
-                Spi spi1 = o1.getAnnotation(Spi.class);
-                int order1 = spi1 == null ? 0 : spi1.order();
+        sortedClassList.sort((o1, o2) -> {
+            Spi spi1 = o1.getAnnotation(Spi.class);
+            int order1 = (spi1 == null ? 0 : spi1.order());
 
-                Spi spi2 = o2.getAnnotation(Spi.class);
-                int order2 = spi2 == null ? 0 : spi2.order();
+            Spi spi2 = o2.getAnnotation(Spi.class);
+            int order2 = (spi2 == null ? 0 : spi2.order());
 
-                return Integer.compare(order1, order2);
-            }
+            return Integer.compare(order1, order2);
         });
+    }
+
+    private String determineClassName(String line) {
+        if (StringUtil.isBlank(line)) {
+            // Skip blank line
+            return null;
+        }
+
+        line = line.trim();
+        int commentIndex = line.indexOf(COMMENT_PREFIX);
+        if (commentIndex == 0) {
+            // Skip comment line
+            return null;
+        }
+
+        if (commentIndex > 0) {
+            line = line.substring(0, commentIndex);
+        }
+        line = line.trim();
+        return line;
+    }
+
+    private ClassLoader determineClassLoader() {
+        ClassLoader classLoader;
+        if (SentinelConfig.shouldUseContextClassloader()) {
+            classLoader = Thread.currentThread().getContextClassLoader();
+        } else {
+            classLoader = service.getClassLoader();
+        }
+        if (classLoader == null) {
+            classLoader = ClassLoader.getSystemClassLoader();
+        }
+        return classLoader;
     }
 
     @Override
@@ -488,31 +496,6 @@ public final class SpiLoader<S> {
             fail(clazz.getName() + " could not be instantiated");
         }
         return instance;
-    }
-
-    /**
-     * Close all resources
-     *
-     * @param closeables {@link Closeable} resources
-     */
-    private void closeResources(Closeable... closeables) {
-        if (closeables == null || closeables.length == 0) {
-            return;
-        }
-
-        Exception firstException = null;
-        for (Closeable closeable : closeables) {
-            try {
-                closeable.close();
-            } catch (Exception e) {
-                if (firstException != null) {
-                    firstException = e;
-                }
-            }
-        }
-        if (firstException != null) {
-            fail("error closing resources", firstException);
-        }
     }
 
     /**

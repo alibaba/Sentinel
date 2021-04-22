@@ -36,7 +36,7 @@ public class CommandHandlerProvider implements Iterable<CommandHandler> {
      * @return list of all named command handlers
      */
     public Map<String, CommandHandler> namedHandlers() {
-        Map<String, CommandHandler> map = new HashMap<String, CommandHandler>();
+        Map<String, CommandHandler> map = new HashMap<>();
         List<CommandHandler> handlers = spiLoader.loadInstanceList();
         for (CommandHandler handler : handlers) {
             String name = parseCommandName(handler);

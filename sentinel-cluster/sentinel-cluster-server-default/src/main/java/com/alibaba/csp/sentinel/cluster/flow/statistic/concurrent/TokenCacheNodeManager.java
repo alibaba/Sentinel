@@ -77,6 +77,9 @@ public class TokenCacheNodeManager {
     }
 
     public static boolean validToken(TokenCacheNode cacheNode) {
-        return cacheNode.getTokenId() != null && cacheNode.getFlowId() != null && cacheNode.getClientTimeout() >= 0 && cacheNode.getResourceTimeout() >= 0;
+        return cacheNode.getTokenId() != null
+                && cacheNode.getFlowId() != null
+                && cacheNode.getClientTimeout() >= 0
+                && cacheNode.getResourceTimeout() >= 0;
     }
 }

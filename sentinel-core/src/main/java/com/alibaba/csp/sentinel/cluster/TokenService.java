@@ -53,7 +53,7 @@ public interface TokenService {
      * @param acquireCount token count to acquire
      * @return result of the token request
      */
-    TokenResult requestConcurrentToken(String clientAddress,Long ruleId,int acquireCount);
+    TokenResult requestConcurrentToken(String clientAddress, Long ruleId, int acquireCount);
     /**
      * Request release concurrent tokens from remote token server asynchronously.
      *

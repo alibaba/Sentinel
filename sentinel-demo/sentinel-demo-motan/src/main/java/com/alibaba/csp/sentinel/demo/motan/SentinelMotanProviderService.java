@@ -33,7 +33,7 @@ public class SentinelMotanProviderService {
 
         InitExecutor.doInit();
 
-        ServiceConfig<MotanDemoService> motanDemoService = new ServiceConfig<MotanDemoService>();
+        ServiceConfig<MotanDemoService> motanDemoService = new ServiceConfig<>();
 
         // 设置接口及实现类
         motanDemoService.setInterface(MotanDemoService.class);

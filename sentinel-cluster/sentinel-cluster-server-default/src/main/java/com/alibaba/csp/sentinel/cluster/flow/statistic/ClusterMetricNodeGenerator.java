@@ -59,11 +59,7 @@ public class ClusterMetricNodeGenerator {
     }
 
     private static void putToMap(Map<String, List<ClusterMetricNode>> map, ClusterMetricNode node) {
-        List<ClusterMetricNode> nodeList = map.get(node.getResourceName());
-        if (nodeList == null) {
-            nodeList = new ArrayList<>();
-            map.put(node.getResourceName(), nodeList);
-        }
+        List<ClusterMetricNode> nodeList = map.computeIfAbsent(node.getResourceName(), k -> new ArrayList<>());
         nodeList.add(node);
     }
 
@@ -95,7 +91,7 @@ public class ClusterMetricNodeGenerator {
             return new ClusterMetricNode().setFlowId(flowId)
                 .setResourceName(rule.getResource())
                 .setTimestamp(TimeUtil.currentTimeMillis())
-                .setTopParams(new HashMap<Object, Double>(0));
+                .setTopParams(new HashMap<>(0));
         }
         return new ClusterMetricNode()
             .setFlowId(flowId)

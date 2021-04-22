@@ -50,12 +50,7 @@ public final class ClusterFlowRuleManager {
      * for a specific namespace to do rule management manually.
      */
     public static final Function<String, SentinelProperty<List<FlowRule>>> DEFAULT_PROPERTY_SUPPLIER =
-            new Function<String, SentinelProperty<List<FlowRule>>>() {
-                @Override
-                public SentinelProperty<List<FlowRule>> apply(String namespace) {
-                    return new DynamicSentinelProperty<>();
-                }
-            };
+            namespace -> new DynamicSentinelProperty<>();
 
     /**
      * (flowId, clusterRule)

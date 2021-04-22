@@ -130,7 +130,7 @@ public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
     /**
      * {@link DefaultNode}s of the same resource in different context.
      */
-    private volatile Map<String, DefaultNode> map = new HashMap<String, DefaultNode>(10);
+    private volatile Map<String, DefaultNode> contextNameNodeMap = new HashMap<>(10);
 
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, Object obj, int count, boolean prioritized, Object... args)
@@ -153,16 +153,16 @@ public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
          * The answer is all {@link DefaultNode}s with same resource name share one
          * {@link ClusterNode}. See {@link ClusterBuilderSlot} for detail.
          */
-        DefaultNode node = map.get(context.getName());
+        DefaultNode node = contextNameNodeMap.get(context.getName());
         if (node == null) {
             synchronized (this) {
-                node = map.get(context.getName());
+                node = contextNameNodeMap.get(context.getName());
                 if (node == null) {
                     node = new DefaultNode(resourceWrapper, null);
-                    HashMap<String, DefaultNode> cacheMap = new HashMap<String, DefaultNode>(map.size());
-                    cacheMap.putAll(map);
+                    HashMap<String, DefaultNode> cacheMap = new HashMap<>(contextNameNodeMap.size() + 1);
+                    cacheMap.putAll(contextNameNodeMap);
                     cacheMap.put(context.getName(), node);
-                    map = cacheMap;
+                    contextNameNodeMap = cacheMap;
                     // Build invocation tree
                     ((DefaultNode) context.getLastNode()).addChild(node);
                 }

@@ -50,17 +50,17 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
  */
 public class FlowRuleManager {
 
-    private static final AtomicReference<Map<String, List<FlowRule>>> flowRules = new AtomicReference<Map<String, List<FlowRule>>>();
+    private static final AtomicReference<Map<String, List<FlowRule>>> flowRules = new AtomicReference<>();
 
     private static final FlowPropertyListener LISTENER = new FlowPropertyListener();
-    private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
+    private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<>();
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1,
         new NamedThreadFactory("sentinel-metrics-record-task", true));
 
     static {
-        flowRules.set(Collections.<String, List<FlowRule>>emptyMap());
+        flowRules.set(Collections.emptyMap());
         currentProperty.addListener(LISTENER);
         startMetricTimerListener();
     }

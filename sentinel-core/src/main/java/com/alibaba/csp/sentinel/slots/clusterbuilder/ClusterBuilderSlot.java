@@ -63,7 +63,7 @@ public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode>
      * </p>
      * <p>
      * The longer the application runs, the more stable this mapping will
-     * become. so we don't concurrent map but a lock. as this lock only happens
+     * become. so we don't use concurrent map but a lock. as this lock only happens
      * at the very beginning while concurrent map will hold the lock all the time.
      * </p>
      */
@@ -82,7 +82,7 @@ public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode>
                 if (clusterNode == null) {
                     // Create the cluster node.
                     clusterNode = new ClusterNode(resourceWrapper.getName(), resourceWrapper.getResourceType());
-                    HashMap<ResourceWrapper, ClusterNode> newMap = new HashMap<>(Math.max(clusterNodeMap.size(), 16));
+                    HashMap<ResourceWrapper, ClusterNode> newMap = new HashMap<>(Math.max(clusterNodeMap.size() + 1, 16));
                     newMap.putAll(clusterNodeMap);
                     newMap.put(node.getId(), clusterNode);
 
