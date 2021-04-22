@@ -65,10 +65,9 @@ public abstract class AbstractHeartbeatMessage implements HeartbeatMessage {
      *
      * @param key information's key
      */
-    protected AbstractHeartbeatMessage refresh(String key) {
+    protected void refresh(String key) {
         String newValue = this.informationSuppliers.get(key).get();
         this.information.put(key, newValue);
-        return this;
     }
 
     /**
