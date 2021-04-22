@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.transport.message;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,63 +25,64 @@ import static com.alibaba.csp.sentinel.transport.message.HeartbeatMessageKeyCons
 import static com.alibaba.csp.sentinel.transport.message.HeartbeatMessageSuppliers.*;
 
 /**
- * If you want to custom {@link HeartbeatMessage}, recommend that inherit this abstract class,
- * <p>
- * and use {@link #registerStaticInformation(String, String)} or {@link #registerDynamicInformation(String, Supplier)} to add the information you want.
+ * If you want to custom {@link HeartbeatMessage}, recommend that inherit this abstract class.
  *
  * @author wxq
  * @since 1.8.2
  */
 public abstract class AbstractHeartbeatMessage implements HeartbeatMessage {
 
-    private final Map<String, String> staticMessage = new ConcurrentHashMap<>();
+    private final Map<String, String> information = new HashMap<>();
 
-    private final Map<String, Supplier<String>> dynamicMessage = new ConcurrentHashMap<>();
+    private final Map<String, Supplier<String>> informationSuppliers = new ConcurrentHashMap<>();
 
     public AbstractHeartbeatMessage() {
-        // static information
-        this.registerStaticInformation(PID, PID_SUPPLIER);
-        this.registerStaticInformation(APP_NAME, APP_NAME_SUPPLIER);
+        this.registerInformationSupplier(PID, PID_SUPPLIER);
+        this.registerInformationSupplier(APP_NAME, APP_NAME_SUPPLIER);
         // application type (since 1.6.0).
-        this.registerStaticInformation(APP_TYPE, APP_TYPE_SUPPLIER);
+        this.registerInformationSupplier(APP_TYPE, APP_TYPE_SUPPLIER);
         // Version of Sentinel.
-        this.registerStaticInformation(SENTINEL_VERSION, SENTINEL_VERSION_SUPPLIER);
-        this.registerStaticInformation(HOST_NAME, HOST_NAME_SUPPLIER);
-        this.registerStaticInformation(HEARTBEAT_CLIENT_IP, HEARTBEAT_CLIENT_IP_SUPPLIER);
-
-        // dynamic information
+        this.registerInformationSupplier(SENTINEL_VERSION, SENTINEL_VERSION_SUPPLIER);
+        this.registerInformationSupplier(HOST_NAME, HOST_NAME_SUPPLIER);
+        this.registerInformationSupplier(HEARTBEAT_CLIENT_IP, HEARTBEAT_CLIENT_IP_SUPPLIER);
         // sentinel client's port
-        this.registerDynamicInformation(PORT, PORT_SUPPLIER);
+        this.registerInformationSupplier(PORT, PORT_SUPPLIER);
         // Actually timestamp.
-        this.registerDynamicInformation(CURRENT_TIME_MILLIS, CURRENT_TIME_MILLIS_SUPPLIER);
-    }
-
-    protected void registerStaticInformation(String key, String value) {
-        this.staticMessage.put(key, value);
-    }
-
-    protected void registerStaticInformation(String key, Supplier<String> valueSupplier) {
-        this.registerStaticInformation(key, valueSupplier.get());
+        this.registerInformationSupplier(CURRENT_TIME_MILLIS, CURRENT_TIME_MILLIS_SUPPLIER);
     }
 
     /**
-     * value will be resolved every time when user use method {@link #get()}.
+     * @param key           information's key
+     * @param valueSupplier information's value supplier
      */
-    protected void registerDynamicInformation(String key, Supplier<String> valueSupplier) {
-        this.dynamicMessage.put(key, valueSupplier);
+    protected void registerInformationSupplier(String key, Supplier<String> valueSupplier) {
+        this.informationSuppliers.put(key, valueSupplier);
+        this.information.put(key, valueSupplier.get());
+    }
+
+    /**
+     * update the value of key from value supplier
+     *
+     * @param key information's key
+     */
+    protected AbstractHeartbeatMessage refresh(String key) {
+        String newValue = this.informationSuppliers.get(key).get();
+        this.information.put(key, newValue);
+        return this;
+    }
+
+    /**
+     * subclass may use {@link #refresh(String)} in this method instead of override {@link #get()} directly.
+     */
+    protected void beforeGet() {
+
     }
 
     @Override
     public Map<String, String> get() {
-        Map<String, String> message = new HashMap<>(this.staticMessage.size() + this.dynamicMessage.size());
-        message.putAll(this.staticMessage);
-
-        for (Map.Entry<String, Supplier<String>> entry : this.dynamicMessage.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue().get();
-            message.put(key, value);
-        }
-
-        return message;
+        this.beforeGet();
+        this.refresh(CURRENT_TIME_MILLIS);
+        return Collections.unmodifiableMap(this.information);
     }
+
 }

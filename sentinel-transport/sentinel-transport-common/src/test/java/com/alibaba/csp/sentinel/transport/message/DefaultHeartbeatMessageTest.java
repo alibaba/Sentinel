@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.transport.message;
 
 import org.junit.Test;
 
+import static com.alibaba.csp.sentinel.transport.message.HeartbeatMessageKeyConstants.CURRENT_TIME_MILLIS;
 import static org.junit.Assert.*;
 
 /**
@@ -27,6 +28,7 @@ public class DefaultHeartbeatMessageTest {
 
     /**
      * key value pair's count.
+     *
      * @see HeartbeatMessageKeyConstants for how many keys
      */
     @Test
@@ -36,6 +38,16 @@ public class DefaultHeartbeatMessageTest {
 
         // should change here when add a new key value pair
         assertEquals(8, size);
+    }
+
+    @Test
+    public void testInformationCurrentTimeMillis() throws InterruptedException {
+        HeartbeatMessage heartbeatMessage = new DefaultHeartbeatMessage();
+        assertTrue(heartbeatMessage.get().containsKey(CURRENT_TIME_MILLIS));
+        String time1 = heartbeatMessage.get().get(CURRENT_TIME_MILLIS);
+        Thread.sleep(2);
+        String time2 = heartbeatMessage.get().get(CURRENT_TIME_MILLIS);
+        assertTrue(Long.parseLong(time2) > Long.parseLong(time1));
     }
 
 }
