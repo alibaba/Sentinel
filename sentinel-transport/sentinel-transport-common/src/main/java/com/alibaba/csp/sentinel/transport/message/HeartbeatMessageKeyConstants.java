@@ -31,46 +31,46 @@ public final class HeartbeatMessageKeyConstants {
     }
 
     /**
-     * @see HeartbeatMessageSuppliers#PID_SUPPLIER for value supplier
+     * @see HeartbeatMessageSuppliers#PID_SUPPLIER
      */
     public static final String PID = "pid";
 
     /**
-     * @see HeartbeatMessageSuppliers#APP_NAME_SUPPLIER for value supplier
+     * @see HeartbeatMessageSuppliers#APP_NAME_SUPPLIER
      */
     public static final String APP_NAME = "app";
 
     /**
-     * @see HeartbeatMessageSuppliers#APP_TYPE_SUPPLIER for value supplier
+     * @see HeartbeatMessageSuppliers#APP_TYPE_SUPPLIER
      */
     public static final String APP_TYPE = "app_type";
 
     /**
-     * @see HeartbeatMessageSuppliers#SENTINEL_VERSION_SUPPLIER for value supplier
+     * @see HeartbeatMessageSuppliers#SENTINEL_VERSION_SUPPLIER
      */
     public static final String SENTINEL_VERSION = "v";
 
     /**
-     * @see HeartbeatMessageSuppliers#HOST_NAME_SUPPLIER for value supplier
+     * @see HeartbeatMessageSuppliers#HOST_NAME_SUPPLIER
      */
     public static final String HOST_NAME = "hostname";
 
     /**
-     * @see HeartbeatMessageSuppliers#HEARTBEAT_CLIENT_IP_SUPPLIER for value supplier
+     * @see HeartbeatMessageSuppliers#HEARTBEAT_CLIENT_IP_SUPPLIER
      */
     public static final String HEARTBEAT_CLIENT_IP = "ip";
 
     /**
      * dynamic information.
      *
-     * @see HeartbeatMessageSuppliers#PORT_SUPPLIER for value supplier
+     * @see HeartbeatMessageSuppliers#PORT_SUPPLIER
      */
     public static final String PORT = "port";
 
     /**
      * dynamic information.
      *
-     * @see HeartbeatMessageSuppliers#CURRENT_TIME_MILLIS_SUPPLIER for value supplier
+     * @see HeartbeatMessageSuppliers#CURRENT_TIME_MILLIS_SUPPLIER
      */
     public static final String CURRENT_TIME_MILLIS = "version";
 

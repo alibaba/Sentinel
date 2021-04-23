@@ -25,7 +25,7 @@ import com.alibaba.csp.sentinel.util.PidUtil;
 import java.util.function.Supplier;
 
 /**
- * Value supplier for key in {@link HeartbeatMessageKeyConstants}.
+ * Value supplier in {@link HeartbeatMessageKeyConstants}.
  *
  * @author wxq
  * @since 1.8.2
@@ -36,42 +36,42 @@ public final class HeartbeatMessageSuppliers {
     }
 
     /**
-     * @see HeartbeatMessageKeyConstants#PID for key
+     * @see HeartbeatMessageKeyConstants#PID
      */
     public static final Supplier<String> PID_SUPPLIER = () -> String.valueOf(PidUtil.getPid());
 
     /**
-     * @see HeartbeatMessageKeyConstants#APP_NAME for key
+     * @see HeartbeatMessageKeyConstants#APP_NAME
      */
     public static final Supplier<String> APP_NAME_SUPPLIER = AppNameUtil::getAppName;
 
     /**
-     * @see HeartbeatMessageKeyConstants#APP_TYPE for key
+     * @see HeartbeatMessageKeyConstants#APP_TYPE
      */
     public static final Supplier<String> APP_TYPE_SUPPLIER = () -> String.valueOf(SentinelConfig.getAppType());
 
     /**
-     * @see HeartbeatMessageKeyConstants#SENTINEL_VERSION for key
+     * @see HeartbeatMessageKeyConstants#SENTINEL_VERSION
      */
     public static final Supplier<String> SENTINEL_VERSION_SUPPLIER = () -> Constants.SENTINEL_VERSION;
 
     /**
-     * @see HeartbeatMessageKeyConstants#HOST_NAME for key
+     * @see HeartbeatMessageKeyConstants#HOST_NAME
      */
     public static final Supplier<String> HOST_NAME_SUPPLIER = HostNameUtil::getHostName;
 
     /**
-     * @see HeartbeatMessageKeyConstants#HEARTBEAT_CLIENT_IP for key
+     * @see HeartbeatMessageKeyConstants#HEARTBEAT_CLIENT_IP
      */
     public static final Supplier<String> HEARTBEAT_CLIENT_IP_SUPPLIER = TransportConfig::getHeartbeatClientIp;
 
     /**
-     * @see HeartbeatMessageKeyConstants#PORT for key
+     * @see HeartbeatMessageKeyConstants#PORT
      */
     public static final Supplier<String> PORT_SUPPLIER = TransportConfig::getPort;
 
     /**
-     * @see HeartbeatMessageKeyConstants#CURRENT_TIME_MILLIS for key
+     * @see HeartbeatMessageKeyConstants#CURRENT_TIME_MILLIS
      */
     public static final Supplier<String> CURRENT_TIME_MILLIS_SUPPLIER = () -> String.valueOf(System.currentTimeMillis());
 }
