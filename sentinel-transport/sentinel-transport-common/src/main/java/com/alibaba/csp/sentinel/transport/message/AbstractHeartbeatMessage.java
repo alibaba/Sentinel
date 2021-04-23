@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.transport.message;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 import static com.alibaba.csp.sentinel.transport.message.HeartbeatMessageKeyConstants.*;
@@ -37,54 +38,44 @@ public abstract class AbstractHeartbeatMessage implements HeartbeatMessage {
      * wrapper {@link #information} to forbid user modify origin.
      */
     private final Map<String, String> unmodifiableInformation = Collections.unmodifiableMap(this.information);
+    
+    private final BiConsumer<String, Supplier<String>> informationUpdater = (key, valueSupplier) -> {
+    	String value = valueSupplier.get();
+    	this.information.put(key, value);
+    };
 
-    private final Map<String, Supplier<String>> informationSuppliers = new HashMap<>();
+    private final Map<String, Supplier<String>> dynamicInformationSuppliers = new HashMap<>();
 
     public AbstractHeartbeatMessage() {
-        this.registerInformationSupplier(PID, PID_SUPPLIER);
-        this.registerInformationSupplier(APP_NAME, APP_NAME_SUPPLIER);
+        this.setInformation(PID, PID_SUPPLIER.get());
+        this.setInformation(APP_NAME, APP_NAME_SUPPLIER.get());
         // application type (since 1.6.0).
-        this.registerInformationSupplier(APP_TYPE, APP_TYPE_SUPPLIER);
+        this.setInformation(APP_TYPE, APP_TYPE_SUPPLIER.get());
         // Version of Sentinel.
-        this.registerInformationSupplier(SENTINEL_VERSION, SENTINEL_VERSION_SUPPLIER);
-        this.registerInformationSupplier(HOST_NAME, HOST_NAME_SUPPLIER);
-        this.registerInformationSupplier(HEARTBEAT_CLIENT_IP, HEARTBEAT_CLIENT_IP_SUPPLIER);
+        this.setInformation(SENTINEL_VERSION, SENTINEL_VERSION_SUPPLIER.get());
+        this.setInformation(HOST_NAME, HOST_NAME_SUPPLIER.get());
+        this.setInformation(HEARTBEAT_CLIENT_IP, HEARTBEAT_CLIENT_IP_SUPPLIER.get());
         // sentinel client's port
-        this.registerInformationSupplier(PORT, PORT_SUPPLIER);
+        this.setInformation(PORT, PORT_SUPPLIER.get());
+        
         // Actually timestamp.
-        this.registerInformationSupplier(CURRENT_TIME_MILLIS, CURRENT_TIME_MILLIS_SUPPLIER);
+        this.registerDynamicInformationSupplier(CURRENT_TIME_MILLIS, CURRENT_TIME_MILLIS_SUPPLIER);
     }
 
-    /**
-     * @param key           information's key
-     * @param valueSupplier information's value supplier
-     */
-    protected void registerInformationSupplier(String key, Supplier<String> valueSupplier) {
-        this.informationSuppliers.put(key, valueSupplier);
+    @Override
+	public void setInformation(String key, String value) {
+		this.information.put(key, value);
+	}
+
+	@Override
+    public void registerDynamicInformationSupplier(String key, Supplier<String> valueSupplier) {
+        this.dynamicInformationSuppliers.put(key, valueSupplier);
         this.information.put(key, valueSupplier.get());
-    }
-
-    /**
-     * update the value of key from value supplier
-     *
-     * @param key information's key
-     */
-    protected void refresh(String key) {
-        String newValue = this.informationSuppliers.get(key).get();
-        this.information.put(key, newValue);
-    }
-
-    /**
-     * subclass may use {@link #refresh(String)} in this method instead of override {@link #get()} directly.
-     */
-    protected void beforeGet() {
-
     }
 
     @Override
     public Map<String, String> get() {
-        this.beforeGet();
-        this.refresh(CURRENT_TIME_MILLIS);
+    	this.dynamicInformationSuppliers.forEach(this.informationUpdater);
         return this.unmodifiableInformation;
     }
 

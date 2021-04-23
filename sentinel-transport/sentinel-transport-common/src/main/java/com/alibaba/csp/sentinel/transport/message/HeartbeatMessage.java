@@ -18,13 +18,32 @@ package com.alibaba.csp.sentinel.transport.message;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import com.alibaba.csp.sentinel.transport.config.TransportConfig;
+
 /**
  * sentinel client will send message to dashboard when send heartbeat.
  *
  * @author wxq
  * @since 1.8.2
+ * @see HeartbeatMessageKeyConstants standard information's key
  */
-@FunctionalInterface
 public interface HeartbeatMessage extends Supplier<Map<String, String>> {
 
+	/**
+	 * Set the information to message. If your value will change in runtime,
+	 * recommend use {@link #registerDynamicInformationSupplier(String, Supplier)}.
+	 */
+	void setInformation(String key, String value);
+
+	/**
+	 * Will get a new value from value supplier in every calling of {@link #get()}.
+	 * If your value is static, recommend use
+	 * {@link #setInformation(String, String)}.
+	 * 
+	 * @param key           information's key
+	 * @param valueSupplier information's value supplier
+	 * @see TransportConfig#HEARTBEAT_INTERVAL_MS the value supplier's invoke
+	 *      frequency
+	 */
+	void registerDynamicInformationSupplier(String key, Supplier<String> valueSupplier);
 }

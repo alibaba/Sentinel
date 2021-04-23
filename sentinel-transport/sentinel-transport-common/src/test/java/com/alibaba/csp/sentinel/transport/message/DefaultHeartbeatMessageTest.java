@@ -20,6 +20,8 @@ import org.junit.Test;
 import static com.alibaba.csp.sentinel.transport.message.HeartbeatMessageKeyConstants.CURRENT_TIME_MILLIS;
 import static org.junit.Assert.*;
 
+import java.util.UUID;
+
 /**
  * @author wxq
  * @since 1.8.2
@@ -48,6 +50,17 @@ public class DefaultHeartbeatMessageTest {
         Thread.sleep(2);
         String time2 = heartbeatMessage.get().get(CURRENT_TIME_MILLIS);
         assertTrue(Long.parseLong(time2) > Long.parseLong(time1));
+    }
+
+    @Test
+    public void testSetInformation() {
+    	HeartbeatMessage heartbeatMessage = new DefaultHeartbeatMessage();
+    	String key = UUID.randomUUID().toString();
+    	String value = UUID.randomUUID().toString();
+    	assertFalse(heartbeatMessage.get().containsKey(key));
+    	
+    	heartbeatMessage.setInformation(key, value);
+    	assertEquals(value, heartbeatMessage.get().get(key));
     }
 
 }
