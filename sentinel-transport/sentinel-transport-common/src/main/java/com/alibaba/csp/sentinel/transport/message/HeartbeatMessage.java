@@ -32,13 +32,14 @@ public interface HeartbeatMessage extends Supplier<Map<String, String>> {
 	/**
 	 * Set the information to message. If your value will change in runtime,
 	 * recommend use {@link #registerDynamicInformationSupplier(String, Supplier)}.
+	 * 
+	 * @see Map#put(String, String)
 	 */
-	void setInformation(String key, String value);
+	void put(String key, String value);
 
 	/**
 	 * Will get a new value from value supplier in every calling of {@link #get()}.
-	 * If your value is static, recommend use
-	 * {@link #setInformation(String, String)}.
+	 * If your value is static, recommend use {@link #put(String, String)}.
 	 * 
 	 * @param key           information's key
 	 * @param valueSupplier information's value supplier

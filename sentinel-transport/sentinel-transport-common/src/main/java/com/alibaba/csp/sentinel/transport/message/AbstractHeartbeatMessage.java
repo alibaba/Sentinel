@@ -48,23 +48,23 @@ public abstract class AbstractHeartbeatMessage implements HeartbeatMessage {
 	private final Map<String, Supplier<String>> dynamicInformationSuppliers = new HashMap<>();
 
 	public AbstractHeartbeatMessage() {
-		this.setInformation(PID, PID_SUPPLIER.get());
-		this.setInformation(APP_NAME, APP_NAME_SUPPLIER.get());
+		this.put(PID, PID_SUPPLIER.get());
+		this.put(APP_NAME, APP_NAME_SUPPLIER.get());
 		// application type (since 1.6.0).
-		this.setInformation(APP_TYPE, APP_TYPE_SUPPLIER.get());
+		this.put(APP_TYPE, APP_TYPE_SUPPLIER.get());
 		// Version of Sentinel.
-		this.setInformation(SENTINEL_VERSION, SENTINEL_VERSION_SUPPLIER.get());
-		this.setInformation(HOST_NAME, HOST_NAME_SUPPLIER.get());
-		this.setInformation(HEARTBEAT_CLIENT_IP, HEARTBEAT_CLIENT_IP_SUPPLIER.get());
+		this.put(SENTINEL_VERSION, SENTINEL_VERSION_SUPPLIER.get());
+		this.put(HOST_NAME, HOST_NAME_SUPPLIER.get());
+		this.put(HEARTBEAT_CLIENT_IP, HEARTBEAT_CLIENT_IP_SUPPLIER.get());
 		// sentinel client's port
-		this.setInformation(PORT, PORT_SUPPLIER.get());
+		this.put(PORT, PORT_SUPPLIER.get());
 
 		// Actually timestamp.
 		this.registerDynamicInformationSupplier(CURRENT_TIME_MILLIS, CURRENT_TIME_MILLIS_SUPPLIER);
 	}
 
 	@Override
-	public void setInformation(String key, String value) {
+	public void put(String key, String value) {
 		this.information.put(key, value);
 	}
 

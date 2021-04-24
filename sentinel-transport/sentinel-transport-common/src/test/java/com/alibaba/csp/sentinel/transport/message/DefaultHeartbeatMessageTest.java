@@ -59,7 +59,7 @@ public class DefaultHeartbeatMessageTest {
     	String value = UUID.randomUUID().toString();
     	assertFalse(heartbeatMessage.get().containsKey(key));
     	
-    	heartbeatMessage.setInformation(key, value);
+    	heartbeatMessage.put(key, value);
     	assertEquals(value, heartbeatMessage.get().get(key));
     }
 

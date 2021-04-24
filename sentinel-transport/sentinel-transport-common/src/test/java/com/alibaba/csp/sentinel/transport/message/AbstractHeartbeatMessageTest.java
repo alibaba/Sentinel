@@ -31,7 +31,8 @@ public class AbstractHeartbeatMessageTest {
 
 	@Test
 	public void testBeforeGet() {
-		HeartbeatMessage heartbeatMessage = new BeforeGetHeartbeatMessageTest();
+		HeartbeatMessage heartbeatMessage = new DynamicHeartbeatMessageTest();
+		assertEquals("0", heartbeatMessage.get().get("count"));
 		assertEquals("1", heartbeatMessage.get().get("count"));
 		assertEquals("2", heartbeatMessage.get().get("count"));
 	}
@@ -54,9 +55,9 @@ public class AbstractHeartbeatMessageTest {
 	 * @author wxq
 	 * @since 1.8.2
 	 */
-	private static class BeforeGetHeartbeatMessageTest extends AbstractHeartbeatMessage {
+	private static class DynamicHeartbeatMessageTest extends AbstractHeartbeatMessage {
 
-		public BeforeGetHeartbeatMessageTest() {
+		public DynamicHeartbeatMessageTest() {
 			AtomicInteger atomicInteger = new AtomicInteger();
 			Supplier<String> countValueSupplier = () -> String.valueOf(atomicInteger.getAndIncrement());
 			this.registerDynamicInformationSupplier("count", countValueSupplier);
