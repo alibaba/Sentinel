@@ -71,7 +71,6 @@ public abstract class AbstractHeartbeatMessage implements HeartbeatMessage {
 	@Override
 	public void registerDynamicInformationSupplier(String key, Supplier<String> valueSupplier) {
 		this.dynamicInformationSuppliers.put(key, valueSupplier);
-		this.information.put(key, valueSupplier.get());
 	}
 
 	@Override
