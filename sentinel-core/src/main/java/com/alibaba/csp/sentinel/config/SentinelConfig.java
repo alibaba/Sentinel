@@ -125,6 +125,24 @@ public final class SentinelConfig {
         AssertUtil.notNull(key, "key cannot be null");
         return props.get(key);
     }
+    
+    /**
+     * Get config value of the specific key.
+     *
+     * @param key config key
+     * @param envVariableKey Get the value of the environment variable with the given key
+     * @return the config value.
+     */
+    public static String getConfig(String key, boolean envVariableKey) {
+        AssertUtil.notNull(key, "key cannot be null");
+        if (envVariableKey) {
+            String value = System.getenv(key);
+            if (StringUtil.isNotEmpty(value)) {
+                return value;
+            }
+        }
+        return getConfig(key);
+    }
 
     public static void setConfig(String key, String value) {
         AssertUtil.notNull(key, "key cannot be null");
