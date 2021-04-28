@@ -16,7 +16,7 @@
 package com.alibaba.csp.sentinel.dashboard.rule.nacos;
 
 import com.alibaba.cloud.nacos.NacosConfigManager;
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -26,21 +26,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Eric Zhao
- * @since 1.4.0
+ * @author wuwen
  */
-public class FlowRuleNacosProvider implements DynamicRuleProvider<List<FlowRuleEntity>> {
+public class DegradeRuleNacosProvider implements DynamicRuleProvider<List<DegradeRuleEntity>> {
 
     @Autowired
     private NacosConfigManager nacosConfigManager;
 
     @Autowired
-    private Converter<String, List<FlowRuleEntity>> converter;
+    private Converter<String, List<DegradeRuleEntity>> converter;
 
     @Override
-    public List<FlowRuleEntity> getRules(String appName) throws Exception {
-        String rules = nacosConfigManager.getConfigService().getConfig(appName + NacosConfigUtil.FLOW_DATA_ID_POSTFIX,
-                NacosConfigUtil.GROUP_ID, 3000);
+    public List<DegradeRuleEntity> getRules(String appName) throws Exception {
+        String rules = nacosConfigManager.getConfigService()
+                .getConfig(appName + NacosConfigUtil.DEGRADE_DATA_ID_POSTFIX,
+            NacosConfigUtil.GROUP_ID, 3000);
         if (StringUtil.isEmpty(rules)) {
             return new ArrayList<>();
         }

@@ -15,22 +15,21 @@
  */
 package com.alibaba.csp.sentinel.dashboard.rule;
 
+import com.alibaba.csp.sentinel.dashboard.client.FetchRuleOfMachineFunction;
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
-import com.alibaba.csp.sentinel.dashboard.client.SetRuleOfMachineFunction;
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * @author Eric Zhao
- * @since 1.4.0
+ * @author wuwen
  */
-public class FlowRuleApiPublisher extends AbstractRuleApiPublisher<FlowRuleEntity> {
+public class DegradeRuleApiProvider extends AbstractRuleApiProvider<DegradeRuleEntity>  {
 
     @Autowired
     private SentinelApiClient sentinelApiClient;
 
     @Override
-    SetRuleOfMachineFunction<FlowRuleEntity> setRuleFun() {
-        return sentinelApiClient::setFlowRuleOfMachine;
+    FetchRuleOfMachineFunction<DegradeRuleEntity> fetchRuleFun() {
+        return sentinelApiClient::fetchDegradeRuleOfMachine;
     }
 }
