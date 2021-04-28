@@ -184,7 +184,7 @@ public class GatewayFlowRule {
         if (resourceMode != rule.resourceMode) { return false; }
         if (grade != rule.grade) { return false; }
         if (Double.compare(rule.count, count) != 0) { return false; }
-        if (intervalSec != rule.intervalSec) { return false; }
+        if (getIntervalSec() != rule.getIntervalSec()) { return false; }
         if (controlBehavior != rule.controlBehavior) { return false; }
         if (burst != rule.burst) { return false; }
         if (maxQueueingTimeoutMs != rule.maxQueueingTimeoutMs) { return false; }
@@ -197,6 +197,7 @@ public class GatewayFlowRule {
     public int hashCode() {
         int result;
         long temp;
+        long intervalSec = getIntervalSec();
         result = resource != null ? resource.hashCode() : 0;
         result = 31 * result + resourceMode;
         result = 31 * result + grade;
@@ -217,7 +218,7 @@ public class GatewayFlowRule {
             ", resourceMode=" + resourceMode +
             ", grade=" + grade +
             ", count=" + count +
-            ", intervalSec=" + intervalSec +
+            ", intervalSec=" + getIntervalSec() +
             ", controlBehavior=" + controlBehavior +
             ", burst=" + burst +
             ", maxQueueingTimeoutMs=" + maxQueueingTimeoutMs +
