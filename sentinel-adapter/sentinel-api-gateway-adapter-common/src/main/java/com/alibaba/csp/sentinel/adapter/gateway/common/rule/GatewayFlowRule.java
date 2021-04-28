@@ -25,6 +25,15 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
  * @since 1.6.0
  */
 public class GatewayFlowRule {
+    /**间隔单位*/
+    /**0-秒*/
+    public static final int INTERVAL_UNIT_SECOND = 0;
+    /**1-分*/
+    public static final int INTERVAL_UNIT_MINUTE = 1;
+    /**2-时*/
+    public static final int INTERVAL_UNIT_HOUR = 2;
+    /**3-天*/
+    public static final int INTERVAL_UNIT_DAY = 3;
 
     private String resource;
     private int resourceMode = SentinelGatewayConstants.RESOURCE_MODE_ROUTE_ID;
@@ -32,6 +41,8 @@ public class GatewayFlowRule {
     private int grade = RuleConstant.FLOW_GRADE_QPS;
     private double count;
     private long intervalSec = 1;
+    private Long interval;
+    private Integer intervalUnit;
 
     private int controlBehavior = RuleConstant.CONTROL_BEHAVIOR_DEFAULT;
     private int burst;
@@ -98,12 +109,42 @@ public class GatewayFlowRule {
     }
 
     public long getIntervalSec() {
+        if (interval != null && intervalUnit != null){
+            switch (intervalUnit) {
+                case INTERVAL_UNIT_SECOND:
+                    return interval;
+                case INTERVAL_UNIT_MINUTE:
+                    return interval * 60;
+                case INTERVAL_UNIT_HOUR:
+                    return interval * 60 * 60;
+                case INTERVAL_UNIT_DAY:
+                    return interval * 60 * 60 * 24;
+                default:
+                    break;
+            }
+        }
         return intervalSec;
     }
 
     public GatewayFlowRule setIntervalSec(long intervalSec) {
         this.intervalSec = intervalSec;
         return this;
+    }
+
+    public Long getInterval() {
+        return interval;
+    }
+
+    public void setInterval(Long interval) {
+        this.interval = interval;
+    }
+
+    public Integer getIntervalUnit() {
+        return intervalUnit;
+    }
+
+    public void setIntervalUnit(Integer intervalUnit) {
+        this.intervalUnit = intervalUnit;
     }
 
     public int getBurst() {
