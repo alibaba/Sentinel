@@ -38,7 +38,7 @@ public class ParamFlowRuleEntity extends AbstractRuleEntity<ParamFlowRule> {
         this.rule = rule;
     }
 
-    public static ParamFlowRuleEntity fromAuthorityRule(String app, String ip, Integer port, ParamFlowRule rule) {
+    public static ParamFlowRuleEntity fromParamFlowRule(String app, String ip, Integer port, ParamFlowRule rule) {
         ParamFlowRuleEntity entity = new ParamFlowRuleEntity(rule);
         entity.setApp(app);
         entity.setIp(ip);
