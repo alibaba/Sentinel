@@ -503,7 +503,7 @@ public class SentinelApiClient {
             AssertUtil.isTrue(port > 0, "Bad machine port");
             return fetchItemsAsync(ip, port, GET_PARAM_RULE_PATH, null, ParamFlowRule.class)
                 .thenApply(rules -> rules.stream()
-                    .map(e -> ParamFlowRuleEntity.fromAuthorityRule(app, ip, port, e))
+                    .map(e -> ParamFlowRuleEntity.fromParamFlowRule(app, ip, port, e))
                     .collect(Collectors.toList())
                 );
         } catch (Exception e) {
