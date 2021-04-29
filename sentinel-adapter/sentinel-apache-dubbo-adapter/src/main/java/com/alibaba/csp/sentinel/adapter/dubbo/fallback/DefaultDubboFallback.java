@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.adapter.dubbo.fallback;
 
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 
+import com.alibaba.csp.sentinel.slots.block.SentinelRpcException;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -30,6 +31,6 @@ public class DefaultDubboFallback implements DubboFallback {
     @Override
     public Result handle(Invoker<?> invoker, Invocation invocation, BlockException ex) {
         // Just wrap the exception.
-        return AsyncRpcResult.newDefaultAsyncResult(ex.toRuntimeException(), invocation);
+        return AsyncRpcResult.newDefaultAsyncResult(new SentinelRpcException(ex.toRuntimeException()), invocation);
     }
 }
