@@ -48,7 +48,7 @@ public class FooConsumerBootstrap {
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static final ExecutorService pool = Executors.newFixedThreadPool(10,
-        new NamedThreadFactory("dubbo-consumer-pool"));
+        new NamedThreadFactory("dubbo-consumer-pool", true));
 
     public static void main(String[] args) {
         initFlowRule();
