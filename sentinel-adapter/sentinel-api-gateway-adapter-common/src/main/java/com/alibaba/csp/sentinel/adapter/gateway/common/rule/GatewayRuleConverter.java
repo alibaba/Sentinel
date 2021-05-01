@@ -20,6 +20,9 @@ import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowItem;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author Eric Zhao
  * @since 1.6.0
@@ -44,6 +47,16 @@ final class GatewayRuleConverter {
         return new ParamFlowItem().setClassType(String.class.getName())
             .setCount(0)
             .setObject(SentinelGatewayConstants.GATEWAY_NOT_MATCH_PARAM);
+    }
+
+    static List<ParamFlowItem> generateMatchedParamItem(List<GatewayFieldFlowItem> gatewayFieldFlowItemList) {
+        List<ParamFlowItem> paramFlowItemList = new ArrayList<>(gatewayFieldFlowItemList.size());
+        for (GatewayFieldFlowItem gatewayFieldFlowItem : gatewayFieldFlowItemList) {
+            paramFlowItemList.add(new ParamFlowItem().setClassType(gatewayFieldFlowItem.getClassType())
+                    .setCount(gatewayFieldFlowItem.getCount())
+                    .setObject(gatewayFieldFlowItem.getObject()));
+        }
+        return paramFlowItemList;
     }
 
     static ParamFlowRule applyNonParamToParamRule(/*@Valid*/ GatewayFlowRule gatewayRule, int idx) {
@@ -81,6 +94,10 @@ final class GatewayRuleConverter {
         String valuePattern = gatewayItem.getPattern();
         if (valuePattern != null) {
             paramRule.getParamFlowItemList().add(generateNonMatchPassParamItem());
+        }
+        // Apply the gateway field's flow param.
+        if (gatewayItem.getGatewayFieldFlowItemList() != null) {
+            paramRule.getParamFlowItemList().addAll(generateMatchedParamItem(gatewayItem.getGatewayFieldFlowItemList()));
         }
         return paramRule;
     }
