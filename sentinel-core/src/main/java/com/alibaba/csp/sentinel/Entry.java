@@ -15,7 +15,9 @@
  */
 package com.alibaba.csp.sentinel;
 
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.TimeUtil;
+import com.alibaba.csp.sentinel.util.function.BiConsumer;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
@@ -44,6 +46,7 @@ import com.alibaba.csp.sentinel.context.Context;
  * @author qinan.qn
  * @author jialiang.linjl
  * @author leyou(lihao)
+ * @author Eric Zhao
  * @see SphU
  * @see Context
  * @see ContextUtil
@@ -52,18 +55,23 @@ public abstract class Entry implements AutoCloseable {
 
     private static final Object[] OBJECTS0 = new Object[0];
 
-    private long createTime;
+    private final long createTimestamp;
+    private long completeTimestamp;
+
     private Node curNode;
     /**
      * {@link Node} of the specific origin, Usually the origin is the Service Consumer.
      */
     private Node originNode;
+
     private Throwable error;
-    protected ResourceWrapper resourceWrapper;
+    private BlockException blockError;
+
+    protected final ResourceWrapper resourceWrapper;
 
     public Entry(ResourceWrapper resourceWrapper) {
         this.resourceWrapper = resourceWrapper;
-        this.createTime = TimeUtil.currentTimeMillis();
+        this.createTimestamp = TimeUtil.currentTimeMillis();
     }
 
     public ResourceWrapper getResourceWrapper() {
@@ -119,8 +127,17 @@ public abstract class Entry implements AutoCloseable {
      */
     public abstract Node getLastNode();
 
-    public long getCreateTime() {
-        return createTime;
+    public long getCreateTimestamp() {
+        return createTimestamp;
+    }
+
+    public long getCompleteTimestamp() {
+        return completeTimestamp;
+    }
+
+    public Entry setCompleteTimestamp(long completeTimestamp) {
+        this.completeTimestamp = completeTimestamp;
+        return this;
     }
 
     public Node getCurNode() {
@@ -129,6 +146,15 @@ public abstract class Entry implements AutoCloseable {
 
     public void setCurNode(Node node) {
         this.curNode = node;
+    }
+
+    public BlockException getBlockError() {
+        return blockError;
+    }
+
+    public Entry setBlockError(BlockException blockError) {
+        this.blockError = blockError;
+        return this;
     }
 
     public Throwable getError() {
@@ -153,4 +179,14 @@ public abstract class Entry implements AutoCloseable {
         this.originNode = originNode;
     }
 
+    /**
+     * Like {@code CompletableFuture} since JDK 8, it guarantees specified handler
+     * is invoked when this entry terminated (exited), no matter it's blocked or permitted.
+     * Use it when you did some STATEFUL operations on entries.
+     * 
+     * @param handler handler function on the invocation terminates
+     * @since 1.8.0
+     */
+    public abstract void whenTerminate(BiConsumer<Context, Entry> handler);
+    
 }

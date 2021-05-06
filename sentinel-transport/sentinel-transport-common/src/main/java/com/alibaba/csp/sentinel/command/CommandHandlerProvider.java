@@ -15,13 +15,10 @@
  */
 package com.alibaba.csp.sentinel.command;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.ServiceLoader;
+import java.util.*;
 
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
-import com.alibaba.csp.sentinel.spi.ServiceLoaderUtil;
+import com.alibaba.csp.sentinel.spi.SpiLoader;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
@@ -31,8 +28,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  */
 public class CommandHandlerProvider implements Iterable<CommandHandler> {
 
-    private final ServiceLoader<CommandHandler> serviceLoader = ServiceLoaderUtil.getServiceLoader(
-        CommandHandler.class);
+    private final SpiLoader<CommandHandler> spiLoader = SpiLoader.of(CommandHandler.class);
 
     /**
      * Get all command handlers annotated with {@link CommandMapping} with command name.
@@ -41,7 +37,8 @@ public class CommandHandlerProvider implements Iterable<CommandHandler> {
      */
     public Map<String, CommandHandler> namedHandlers() {
         Map<String, CommandHandler> map = new HashMap<String, CommandHandler>();
-        for (CommandHandler handler : serviceLoader) {
+        List<CommandHandler> handlers = spiLoader.loadInstanceList();
+        for (CommandHandler handler : handlers) {
             String name = parseCommandName(handler);
             if (!StringUtil.isEmpty(name)) {
                 map.put(name, handler);
@@ -61,7 +58,7 @@ public class CommandHandlerProvider implements Iterable<CommandHandler> {
 
     @Override
     public Iterator<CommandHandler> iterator() {
-        return serviceLoader.iterator();
+        return spiLoader.loadInstanceList().iterator();
     }
 
     private static final CommandHandlerProvider INSTANCE = new CommandHandlerProvider();

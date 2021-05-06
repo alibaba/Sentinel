@@ -41,7 +41,7 @@ public class ModifyClusterModeCommandHandler implements CommandHandler<String> {
             if (mode == ClusterStateManager.CLUSTER_SERVER && !isClusterServerSpiAvailable()) {
                 return CommandResponse.ofFailure(new IllegalStateException("token server mode not available: no SPI found"));
             }
-            RecordLog.info("[ModifyClusterModeCommandHandler] Modifying cluster mode to: " + mode);
+            RecordLog.info("[ModifyClusterModeCommandHandler] Modifying cluster mode to: {}", mode);
 
             ClusterStateManager.applyState(mode);
             return CommandResponse.ofSuccess("success");

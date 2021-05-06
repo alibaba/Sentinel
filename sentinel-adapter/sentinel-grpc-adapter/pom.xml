@@ -5,14 +5,14 @@
     <parent>
         <artifactId>sentinel-adapter</artifactId>
         <groupId>com.alibaba.csp</groupId>
-        <version>1.7.2-SNAPSHOT</version>
+        <version>1.8.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>sentinel-grpc-adapter</artifactId>
     <packaging>jar</packaging>
 
     <properties>
-        <grpc.version>1.13.1</grpc.version>
+        <grpc.version>1.30.2</grpc.version>
     </properties>
 
     <dependencies>
@@ -43,7 +43,7 @@
         <dependency>
             <groupId>javax.annotation</groupId>
             <artifactId>javax.annotation-api</artifactId>
-            <version>1.2</version>
+            <version>${javax.annotation-api.version}</version>
         </dependency>
 
 

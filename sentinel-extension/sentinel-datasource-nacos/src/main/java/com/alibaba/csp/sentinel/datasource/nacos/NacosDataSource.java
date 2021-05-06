@@ -99,8 +99,8 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
 
             @Override
             public void receiveConfigInfo(final String configInfo) {
-                RecordLog.info(String.format("[NacosDataSource] New property value received for (properties: %s) (dataId: %s, groupId: %s): %s",
-                    properties, dataId, groupId, configInfo));
+                RecordLog.info("[NacosDataSource] New property value received for (properties: {}) (dataId: {}, groupId: {}): {}",
+                    properties, dataId, groupId, configInfo);
                 T newValue = NacosDataSource.this.parser.convert(configInfo);
                 // Update the new value to the property.
                 getProperty().updateValue(newValue);

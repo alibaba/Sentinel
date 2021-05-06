@@ -94,7 +94,7 @@ public class EtcdDataSource<T> extends AbstractDataSource<String, T> {
                         RecordLog.warn("[EtcdDataSource] Failed to update config", e);
                     }
                 } else if (eventType == WatchEvent.EventType.DELETE) {
-                    RecordLog.info("[EtcdDataSource] Cleaning config for key <{0}>", key);
+                    RecordLog.info("[EtcdDataSource] Cleaning config for key <{}>", key);
                     getProperty().updateValue(null);
                 }
             }

@@ -42,7 +42,7 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
     + "startTime={startTime}&endTime={endTime}&maxLines={maxLines}&identify={resourceName}")
 public class SendMetricCommandHandler implements CommandHandler<String> {
 
-    private MetricSearcher searcher;
+    private volatile MetricSearcher searcher;
 
     private final Object lock = new Object();
 

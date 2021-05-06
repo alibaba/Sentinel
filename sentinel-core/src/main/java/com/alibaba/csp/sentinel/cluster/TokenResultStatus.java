@@ -59,6 +59,15 @@ public final class TokenResultStatus {
      * Token acquire failed (strategy not available).
      */
     public static final int NOT_AVAILABLE = 5;
+    /**
+     * Token is successfully released.
+     */
+    public static final int RELEASE_OK = 6;
+    /**
+     * Token already is released before the request arrives.
+     */
+    public static final int ALREADY_RELEASE=7;
 
-    private TokenResultStatus() {}
+    private TokenResultStatus() {
+    }
 }
