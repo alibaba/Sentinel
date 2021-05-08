@@ -19,6 +19,7 @@ import java.util.List;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.datasource.Converter;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.nacos.api.config.ConfigFactory;
 import com.alibaba.nacos.api.config.ConfigService;
@@ -41,6 +42,11 @@ public class NacosConfig {
     @Bean
     public Converter<String, List<FlowRuleEntity>> flowRuleEntityDecoder() {
         return s -> JSON.parseArray(s, FlowRuleEntity.class);
+    }
+
+    @Bean
+    public Converter<List<FlowRule>, String> flowRuleEncoder() {
+        return JSON::toJSONString;
     }
 
     @Bean
