@@ -2,17 +2,18 @@ package com.alibaba.csp.sentinel.slots;
 
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertFalse;
+
 public class RuleProviderTest {
 
     @Test
     public void testIsInRules() {
-        Assert.assertFalse(RuleProvider.isInRules("testResource"));
+        assertFalse(RuleProvider.isInRules("testResource"));
     }
 
     @Test
@@ -22,7 +23,7 @@ public class RuleProviderTest {
         flowRule.setResource("newResource");
         rules.add(flowRule);
         FlowRuleManager.loadRules(rules);
-        Assert.assertFalse(RuleProvider.isNotInRules("newResource"));
+        assertFalse(RuleProvider.isNotInRules("newResource"));
     }
 
 }
