@@ -1,6 +1,5 @@
 package com.alibaba.csp.sentinel.config;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.BufferedWriter;
@@ -10,7 +9,9 @@ import java.io.IOException;
 
 import static com.alibaba.csp.sentinel.config.SentinelConfig.*;
 import static com.alibaba.csp.sentinel.util.ConfigUtil.addSeparator;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test cases for {@link SentinelConfig}.
