@@ -42,7 +42,7 @@ public class MetricTimerListener implements Runnable {
         Map<Long, List<MetricNode>> maps = new TreeMap<>();
         for (Entry<ResourceWrapper, ClusterNode> e : ClusterBuilderSlot.getClusterNodeMap().entrySet()) {
             if (SentinelConfig.shouldFilterMetric() && RuleProvider.isNotInRules(e.getValue().getName())) {
-                RecordLog.debug("[MetricTimerListener] Metric filter by config", e.getValue());
+                RecordLog.debug("[MetricTimerListener] Metric filter by config ", e.getValue());
             } else {
                 ClusterNode node = e.getValue();
                 Map<Long, MetricNode> metrics = node.metrics();
