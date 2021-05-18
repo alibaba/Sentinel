@@ -1,6 +1,5 @@
 package com.alibaba.csp.sentinel.config;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.BufferedWriter;
