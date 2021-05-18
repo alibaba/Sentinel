@@ -10,7 +10,7 @@ import java.io.IOException;
 
 import static com.alibaba.csp.sentinel.config.SentinelConfig.*;
 import static com.alibaba.csp.sentinel.util.ConfigUtil.addSeparator;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Test cases for {@link SentinelConfig}.
@@ -67,17 +67,6 @@ public class SentinelConfigTest {
         assertEquals(4, SentinelConfig.coldFactor());
     }
 
-    @Test
-    public void testShouldFilterMetric() {
-        assertFalse(SentinelConfig.shouldFilterMetric());
-
-        System.setProperty(METRIC_FILTER, "true");
-        assertTrue(SentinelConfig.shouldFilterMetric());
-
-        SentinelConfig.setConfig(METRIC_FILTER, "true");
-        assertTrue(SentinelConfig.shouldFilterMetric());
-    }
-
 
     //add Jvm parameter
     //-Dcsp.sentinel.config.file=classpath:sentinel-propertiesTest.properties
@@ -108,12 +97,12 @@ public class SentinelConfigTest {
             out.flush();
             out.close();
 
-            assertTrue(SentinelConfig.getConfig(CHARSET).equals("utf-8"));
-            assertTrue(SentinelConfig.getConfig(SINGLE_METRIC_FILE_SIZE).equals("1000"));
-            assertTrue(SentinelConfig.getConfig(TOTAL_METRIC_FILE_COUNT).equals("20"));
-            assertTrue(SentinelConfig.getConfig(COLD_FACTOR).equals("5"));
-            assertTrue(SentinelConfig.getConfig(STATISTIC_MAX_RT).equals("1000"));
-            assertTrue(SentinelConfig.getAppName().equals("sentinel_test"));
+            Assert.assertTrue(SentinelConfig.getConfig(CHARSET).equals("utf-8"));
+            Assert.assertTrue(SentinelConfig.getConfig(SINGLE_METRIC_FILE_SIZE).equals("1000"));
+            Assert.assertTrue(SentinelConfig.getConfig(TOTAL_METRIC_FILE_COUNT).equals("20"));
+            Assert.assertTrue(SentinelConfig.getConfig(COLD_FACTOR).equals("5"));
+            Assert.assertTrue(SentinelConfig.getConfig(STATISTIC_MAX_RT).equals("1000"));
+            Assert.assertTrue(SentinelConfig.getAppName().equals("sentinel_test"));
 
         } finally {
             if (file != null) {
