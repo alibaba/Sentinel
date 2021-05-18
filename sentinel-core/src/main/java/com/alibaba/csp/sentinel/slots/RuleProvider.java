@@ -16,7 +16,7 @@ import java.util.List;
 
 public class RuleProvider {
 
-    public static List<AbstractRule> getAllRule() {
+    public static List<AbstractRule> getAllRules() {
         List<AuthorityRule> authorityRules = AuthorityRuleManager.getRules();
         List<DegradeRule> degradeRules = DegradeRuleManager.getRules();
         List<FlowRule> flowRules = FlowRuleManager.getRules();
@@ -32,7 +32,7 @@ public class RuleProvider {
     }
 
     public static boolean isInRules(String resource) {
-        List<AbstractRule> allRules = getAllRule();
+        List<AbstractRule> allRules = getAllRules();
         for (AbstractRule abstractRule : allRules) {
             if (StringUtil.equals(abstractRule.getResource(), resource)) {
                 return true;

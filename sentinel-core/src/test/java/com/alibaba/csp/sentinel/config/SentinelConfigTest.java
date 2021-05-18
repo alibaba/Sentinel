@@ -110,7 +110,7 @@ public class SentinelConfigTest {
             out.flush();
             out.close();
 
-            assertEquals("utf-8", getConfig(CHARSET));
+            assertTrue(SentinelConfig.getConfig(CHARSET).equals("utf-8"));
             assertTrue(SentinelConfig.getConfig(SINGLE_METRIC_FILE_SIZE).equals("1000"));
             assertTrue(SentinelConfig.getConfig(TOTAL_METRIC_FILE_COUNT).equals("20"));
             assertTrue(SentinelConfig.getConfig(COLD_FACTOR).equals("5"));
