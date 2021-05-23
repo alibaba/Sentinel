@@ -29,7 +29,7 @@ You can also add to [sentinel-group/sentinel-awesome](https://github.com/sentine
 
 ## Demos
 
-- [sentinel-zuul-example](https://github.com/tigerMoon/sentinel-zuul-sample): A simple project integration Sentinel to Spring Cloud Zuul which provide Service and API Path level flow control management by [tiger](https://github.com/tigerMoon)
+- [sentinel-zuul-example](https://github.com/tigerMoon/sentinel-zuul-sample): A simple project integration Sentinel to Spring Cloud Zuul which provides Service and API Path level flow control management by [tiger](https://github.com/tigerMoon)
 
 ## Extensions / Integrations
 
