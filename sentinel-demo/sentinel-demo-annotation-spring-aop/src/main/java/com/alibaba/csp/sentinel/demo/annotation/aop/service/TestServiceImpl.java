@@ -18,7 +18,10 @@ package com.alibaba.csp.sentinel.demo.annotation.aop.service;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 
+import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
 import org.springframework.stereotype.Service;
+
+import java.util.Random;
 
 /**
  * @author Eric Zhao
@@ -28,7 +31,12 @@ public class TestServiceImpl implements TestService {
 
     @Override
     @SentinelResource(value = "test", blockHandler = "handleException", blockHandlerClass = {ExceptionUtil.class})
-    public void test() {
+    public void test() throws BlockException {
+        Random r = new Random();
+        int rInt = r.nextInt(10);
+        if(rInt == 0) {
+            throw new FlowException("custom");
+        }
         System.out.println("Test");
     }
 

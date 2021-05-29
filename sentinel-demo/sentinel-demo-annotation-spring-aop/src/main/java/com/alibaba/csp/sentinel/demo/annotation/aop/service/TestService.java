@@ -15,12 +15,14 @@
  */
 package com.alibaba.csp.sentinel.demo.annotation.aop.service;
 
+import com.alibaba.csp.sentinel.slots.block.BlockException;
+
 /**
  * @author Eric Zhao
  */
 public interface TestService {
 
-    void test();
+    void test() throws BlockException;
 
     String hello(long s);
 
