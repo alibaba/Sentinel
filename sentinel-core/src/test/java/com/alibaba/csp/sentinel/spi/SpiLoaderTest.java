@@ -22,6 +22,7 @@ import com.alibaba.csp.sentinel.slotchain.ProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.SlotChainBuilder;
 import com.alibaba.csp.sentinel.slots.DefaultSlotChainBuilder;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthoritySlot;
+import com.alibaba.csp.sentinel.slots.block.degrade.DefaultDegradeSlot;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeSlot;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowSlot;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
@@ -98,13 +99,14 @@ public class SpiLoaderTest {
         prototypeSlotClasses.add(NodeSelectorSlot.class);
         prototypeSlotClasses.add(ClusterBuilderSlot.class);
 
-        List<Class<? extends ProcessorSlot>> singletonSlotClasses = new ArrayList<>(6);
+        List<Class<? extends ProcessorSlot>> singletonSlotClasses = new ArrayList<>(7);
         singletonSlotClasses.add(LogSlot.class);
         singletonSlotClasses.add(StatisticSlot.class);
         singletonSlotClasses.add(AuthoritySlot.class);
         singletonSlotClasses.add(SystemSlot.class);
         singletonSlotClasses.add(FlowSlot.class);
         singletonSlotClasses.add(DegradeSlot.class);
+        singletonSlotClasses.add(DefaultDegradeSlot.class);
 
         for (int i = 0; i < slots1.size(); i++) {
             ProcessorSlot slot1 = slots1.get(i);
@@ -148,7 +150,7 @@ public class SpiLoaderTest {
         assertNotNull(sortedSlots);
 
         // Total 8 default slot in sentinel-core
-        assertEquals(8, sortedSlots.size());
+        assertEquals(9, sortedSlots.size());
 
         // Verify the order of slot
         int index = 0;
@@ -160,6 +162,7 @@ public class SpiLoaderTest {
         assertTrue(sortedSlots.get(index++) instanceof SystemSlot);
         assertTrue(sortedSlots.get(index++) instanceof FlowSlot);
         assertTrue(sortedSlots.get(index++) instanceof DegradeSlot);
+        assertTrue(sortedSlots.get(index++) instanceof DefaultDegradeSlot);
     }
 
     @Test
@@ -177,7 +180,7 @@ public class SpiLoaderTest {
         assertNotNull(slot);
 
         // NodeSelectorSlot is lowest order priority with @Spi(order = -1000) among all slots
-        assertTrue(slot instanceof DegradeSlot);
+        assertTrue(slot instanceof DefaultDegradeSlot);
     }
 
     @Test
