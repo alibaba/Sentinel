@@ -19,27 +19,47 @@ app.controller('MachineCtl', ['$scope', '$stateParams', 'MachineService',
       $scope.reverse = ($scope.propertyName === propertyName) ? !$scope.reverse : false;
       $scope.propertyName = propertyName;
     };
-
-    MachineService.getAppMachines($scope.app).success(
-      function (data) {
-        // console.log('get machines: ' + data.data[0].hostname)
-        if (data.code == 0 && data.data) {
-          $scope.machines = data.data;
-          var health = 0;
-          $scope.machines.forEach(function (item) {
-            if (item.health) {
-              health++;
-            }
-            if (!item.hostname) {
-              item.hostname = '未知'
-            }
-          })
-          $scope.healthCount = health;
-          $scope.machinesPageConfig.totalCount = $scope.machines.length;
-        } else {
-          $scope.machines = [];
-          $scope.healthCount = 0;
+    
+    $scope.reloadMachines = function() {
+      MachineService.getAppMachines($scope.app).success(
+        function (data) {
+          // console.log('get machines: ' + data.data[0].hostname)
+          if (data.code == 0 && data.data) {
+            $scope.machines = data.data;
+            var healthy = 0;
+            $scope.machines.forEach(function (item) {
+              if (item.healthy) {
+                  healthy++;
+              }
+              if (!item.hostname) {
+                item.hostname = '未知'
+              }
+            })
+            $scope.healthyCount = healthy;
+            $scope.machinesPageConfig.totalCount = $scope.machines.length;
+          } else {
+            $scope.machines = [];
+            $scope.healthyCount = 0;
+          }
         }
+      );
+    };
+    
+    $scope.removeMachine = function(ip, port) {
+      if (!confirm("confirm to remove machine [" + ip + ":" + port + "]?")) {
+        return;
       }
-    );
+      MachineService.removeAppMachine($scope.app, ip, port).success(
+        function(data) {
+          if (data.code == 0) {
+            $scope.reloadMachines();
+          } else {
+            alert("remove failed");
+          }
+        }
+      );
+    };
+    
+    $scope.reloadMachines();
+    
   }]);

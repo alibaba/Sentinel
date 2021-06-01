@@ -18,7 +18,6 @@ package com.alibaba.csp.sentinel.annotation.aspectj;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
-import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -51,19 +50,29 @@ public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
         }
         String resourceName = getResourceName(annotation.value(), originMethod);
         EntryType entryType = annotation.entryType();
+        int resourceType = annotation.resourceType();
         Entry entry = null;
         try {
-            entry = SphU.entry(resourceName, entryType);
-            Object result = pjp.proceed();
-            return result;
+            entry = SphU.entry(resourceName, resourceType, entryType, pjp.getArgs());
+            return pjp.proceed();
         } catch (BlockException ex) {
             return handleBlockException(pjp, annotation, ex);
         } catch (Throwable ex) {
-            Tracer.trace(ex);
+            Class<? extends Throwable>[] exceptionsToIgnore = annotation.exceptionsToIgnore();
+            // The ignore list will be checked first.
+            if (exceptionsToIgnore.length > 0 && exceptionBelongsTo(ex, exceptionsToIgnore)) {
+                throw ex;
+            }
+            if (exceptionBelongsTo(ex, annotation.exceptionsToTrace())) {
+                traceException(ex);
+                return handleFallback(pjp, annotation, ex);
+            }
+
+            // No fallback function can handle the exception, so throw it out.
             throw ex;
         } finally {
             if (entry != null) {
-                entry.exit();
+                entry.exit(1, pjp.getArgs());
             }
         }
     }

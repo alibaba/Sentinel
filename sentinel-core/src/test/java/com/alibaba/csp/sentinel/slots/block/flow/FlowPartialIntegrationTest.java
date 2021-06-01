@@ -16,10 +16,14 @@
 package com.alibaba.csp.sentinel.slots.block.flow;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.alibaba.csp.sentinel.Entry;
@@ -32,6 +36,16 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
  * @author jialiang.linjl
  */
 public class FlowPartialIntegrationTest {
+
+    @Before
+    public void setUp() throws Exception {
+        FlowRuleManager.loadRules(new ArrayList<FlowRule>());
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        FlowRuleManager.loadRules(new ArrayList<FlowRule>());
+    }
 
     @Test
     public void testQPSGrade() {
@@ -57,8 +71,8 @@ public class FlowPartialIntegrationTest {
         }
     }
 
-    @Test
-    public void testThreadGrade() throws InterruptedException {
+    @Test(expected = BlockException.class)
+    public void testThreadGrade() throws InterruptedException, BlockException {
         FlowRule flowRule = new FlowRule();
         flowRule.setResource("testThreadGrade");
         flowRule.setGrade(RuleConstant.FLOW_GRADE_THREAD);
@@ -73,17 +87,15 @@ public class FlowPartialIntegrationTest {
                 Entry e = null;
                 try {
                     e = SphU.entry("testThreadGrade");
-                    assertTrue(true);
                     synchronized (sequence) {
                         System.out.println("notify up");
                         sequence.notify();
                     }
-                    Thread.sleep(1000);
+                    Thread.sleep(100);
                 } catch (BlockException e1) {
-                    assertTrue(false);
+                    fail("Should had failed");
                 } catch (InterruptedException e1) {
-                    assertTrue(false);
-                    e1.printStackTrace();
+                    fail("Should had failed");
                 }
                 e.exit();
             }
@@ -92,33 +104,28 @@ public class FlowPartialIntegrationTest {
         Thread thread = new Thread(runnable);
         thread.start();
 
-        Entry e = null;
         synchronized (sequence) {
             System.out.println("sleep");
             sequence.wait();
             System.out.println("wake up");
         }
-        try {
-            e = SphU.entry("testThreadGrade");
-            assertTrue(false);
-        } catch (BlockException e1) {
-            assertTrue(true);
-        }
-        System.out.println("done");
 
+        SphU.entry("testThreadGrade");
+        System.out.println("done");
     }
 
     @Test
     public void testOriginFlowRule() {
+        String RESOURCE_NAME = "testOriginFlowRule";
         // normal
         FlowRule flowRule = new FlowRule();
-        flowRule.setResource("testOriginFlowRule");
+        flowRule.setResource(RESOURCE_NAME);
         flowRule.setGrade(RuleConstant.FLOW_GRADE_QPS);
         flowRule.setCount(0);
         flowRule.setLimitApp("other");
 
         FlowRule flowRule2 = new FlowRule();
-        flowRule2.setResource("testOriginFlowRule");
+        flowRule2.setResource(RESOURCE_NAME);
         flowRule2.setGrade(RuleConstant.FLOW_GRADE_QPS);
         flowRule2.setCount(1);
         flowRule2.setLimitApp("app2");
@@ -128,11 +135,10 @@ public class FlowPartialIntegrationTest {
         ContextUtil.enter("node1", "app1");
         Entry e = null;
         try {
-            e = SphU.entry("testOriginFlowRule");
-            assertTrue(false);
+            e = SphU.entry(RESOURCE_NAME);
+            fail("Should had failed");
         } catch (BlockException e1) {
             e1.printStackTrace();
-            assertTrue(true);
         }
         assertTrue(e == null);
 
@@ -141,11 +147,9 @@ public class FlowPartialIntegrationTest {
         ContextUtil.enter("node1", "app2");
         e = null;
         try {
-            e = SphU.entry("testOriginFlowRule");
-            assertTrue(true);
+            e = SphU.entry(RESOURCE_NAME);
         } catch (BlockException e1) {
-            e1.printStackTrace();
-            assertTrue(false);
+            fail("Should had failed");
         }
 
         e.exit();
@@ -165,17 +169,14 @@ public class FlowPartialIntegrationTest {
         Entry e = null;
         try {
             e = SphU.entry("testOther");
-            assertTrue(true);
         } catch (BlockException e1) {
-            e1.printStackTrace();
-            assertTrue(false);
+            e1.printStackTrace();fail("Should had failed");
         }
 
         if (e != null) {
-            assertTrue(true);
             e.exit();
         } else {
-            assertTrue(false);
+            fail("Should had failed");
         }
     }
 
@@ -194,10 +195,9 @@ public class FlowPartialIntegrationTest {
         Entry e = null;
         try {
             e = SphU.entry("testStrategy");
-            assertTrue(false);
+            fail("Should had failed");
         } catch (BlockException e1) {
             e1.printStackTrace();
-            assertTrue(true);
         }
 
         ContextUtil.exit();
@@ -215,10 +215,9 @@ public class FlowPartialIntegrationTest {
         ContextUtil.enter("entry1");
         try {
             e = SphU.entry("testStrategy");
-            assertTrue(true);
         } catch (BlockException e1) {
             e1.printStackTrace();
-            assertTrue(false);
+            fail("Should had failed");
         }
         e.exit();
         ContextUtil.exit();
@@ -238,10 +237,9 @@ public class FlowPartialIntegrationTest {
         ContextUtil.enter("entry1");
         try {
             e = SphU.entry("entry2");
-            assertTrue(false);
+            fail("Should had failed");
         } catch (BlockException e1) {
             e1.printStackTrace();
-            assertTrue(true);
         }
 
         ContextUtil.exit();
@@ -250,13 +248,11 @@ public class FlowPartialIntegrationTest {
         ContextUtil.enter("entry3");
         try {
             e = SphU.entry("entry2");
-            assertTrue(true);
         } catch (BlockException e1) {
-            assertTrue(false);
+            fail("Should had failed");
         }
         e.exit();
 
         ContextUtil.exit();
-
     }
 }

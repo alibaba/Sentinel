@@ -43,15 +43,21 @@ const CSS_APP = [
 const JS_APP = [
   'app/scripts/app.js',
   'app/scripts/filters/filters.js',
+  'app/scripts/services/version_service.js',
+  'app/scripts/services/auth_service.js',
   'app/scripts/services/appservice.js',
-  'app/scripts/services/flowservice.js',
-  'app/scripts/services/degradeservice.js',
+  'app/scripts/services/flow_service_v1.js',
+  'app/scripts/services/flow_service_v2.js',
+  'app/scripts/services/degrade_service.js',
   'app/scripts/services/systemservice.js',
   'app/scripts/services/machineservice.js',
   'app/scripts/services/identityservice.js',
   'app/scripts/services/metricservice.js',
   'app/scripts/services/param_flow_service.js',
   'app/scripts/services/authority_service.js',
+  'app/scripts/services/cluster_state_service.js',
+  'app/scripts/services/gateway/api_service.js',
+  'app/scripts/services/gateway/flow_service.js',
 ];
 
 gulp.task('lib', function () {

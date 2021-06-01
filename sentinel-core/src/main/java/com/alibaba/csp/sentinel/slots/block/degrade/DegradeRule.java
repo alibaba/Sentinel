@@ -15,18 +15,10 @@
  */
 package com.alibaba.csp.sentinel.slots.block.degrade;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-
-import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
-import com.alibaba.csp.sentinel.context.Context;
-import com.alibaba.csp.sentinel.node.ClusterNode;
-import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
+
+import java.util.Objects;
 
 /**
  * <p>
@@ -51,13 +43,9 @@ import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
  * </ul>
  *
  * @author jialiang.linjl
+ * @author Eric Zhao
  */
 public class DegradeRule extends AbstractRule {
-
-    private static final int RT_MAX_EXCEED_N = 5;
-
-    private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(
-        Runtime.getRuntime().availableProcessors(), new NamedThreadFactory("sentinel-degrade-reset-task", true));
 
     public DegradeRule() {}
 
@@ -66,21 +54,34 @@ public class DegradeRule extends AbstractRule {
     }
 
     /**
-     * RT threshold or exception ratio threshold count.
+     * Circuit breaking strategy (0: average RT, 1: exception ratio, 2: exception count).
+     */
+    private int grade = RuleConstant.DEGRADE_GRADE_RT;
+
+    /**
+     * Threshold count.
      */
     private double count;
 
     /**
-     * Degrade recover timeout (in seconds) when degradation occurs.
+     * Recovery timeout (in seconds) when circuit breaker opens. After the timeout, the circuit breaker will
+     * transform to half-open state for trying a few requests.
      */
     private int timeWindow;
 
     /**
-     * Degrade strategy (0: average RT, 1: exception ratio).
+     * Minimum number of requests (in an active statistic time span) that can trigger circuit breaking.
+     *
+     * @since 1.7.0
      */
-    private int grade = RuleConstant.DEGRADE_GRADE_RT;
+    private int minRequestAmount = RuleConstant.DEGRADE_DEFAULT_MIN_REQUEST_AMOUNT;
 
-    private volatile boolean cut = false;
+    /**
+     * The threshold of slow request ratio in RT mode.
+     */
+    private double slowRatioThreshold = 1.0d;
+
+    private int statIntervalMs = 1000;
 
     public int getGrade() {
         return grade;
@@ -91,10 +92,6 @@ public class DegradeRule extends AbstractRule {
         return this;
     }
 
-    private AtomicLong passCount = new AtomicLong(0);
-
-    private final Object lock = new Object();
-
     public double getCount() {
         return count;
     }
@@ -102,18 +99,6 @@ public class DegradeRule extends AbstractRule {
     public DegradeRule setCount(double count) {
         this.count = count;
         return this;
-    }
-
-    public boolean isCut() {
-        return cut;
-    }
-
-    private void setCut(boolean cut) {
-        this.cut = cut;
-    }
-
-    public AtomicLong getPassCount() {
-        return passCount;
     }
 
     public int getTimeWindow() {
@@ -125,97 +110,51 @@ public class DegradeRule extends AbstractRule {
         return this;
     }
 
+    public int getMinRequestAmount() {
+        return minRequestAmount;
+    }
+
+    public DegradeRule setMinRequestAmount(int minRequestAmount) {
+        this.minRequestAmount = minRequestAmount;
+        return this;
+    }
+
+    public double getSlowRatioThreshold() {
+        return slowRatioThreshold;
+    }
+
+    public DegradeRule setSlowRatioThreshold(double slowRatioThreshold) {
+        this.slowRatioThreshold = slowRatioThreshold;
+        return this;
+    }
+
+    public int getStatIntervalMs() {
+        return statIntervalMs;
+    }
+
+    public DegradeRule setStatIntervalMs(int statIntervalMs) {
+        this.statIntervalMs = statIntervalMs;
+        return this;
+    }
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof DegradeRule)) {
-            return false;
-        }
-        if (!super.equals(o)) {
-            return false;
-        }
-
-        DegradeRule that = (DegradeRule)o;
-
-        if (count != that.count) {
-            return false;
-        }
-        if (timeWindow != that.timeWindow) {
-            return false;
-        }
-        if (grade != that.grade) {
-            return false;
-        }
-        return true;
+        if (this == o) { return true; }
+        if (o == null || getClass() != o.getClass()) { return false; }
+        if (!super.equals(o)) { return false; }
+        DegradeRule rule = (DegradeRule)o;
+        return Double.compare(rule.count, count) == 0 &&
+            timeWindow == rule.timeWindow &&
+            grade == rule.grade &&
+            minRequestAmount == rule.minRequestAmount &&
+            Double.compare(rule.slowRatioThreshold, slowRatioThreshold) == 0 &&
+            statIntervalMs == rule.statIntervalMs;
     }
 
     @Override
     public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + new Double(count).hashCode();
-        result = 31 * result + timeWindow;
-        result = 31 * result + grade;
-        return result;
-    }
-
-    @Override
-    public boolean passCheck(Context context, DefaultNode node, int acquireCount, Object... args) {
-        if (cut) {
-            return false;
-        }
-
-        ClusterNode clusterNode = ClusterBuilderSlot.getClusterNode(this.getResource());
-        if (clusterNode == null) {
-            return true;
-        }
-
-        if (grade == RuleConstant.DEGRADE_GRADE_RT) {
-            double rt = clusterNode.avgRt();
-            if (rt < this.count) {
-                passCount.set(0);
-                return true;
-            }
-
-            // Sentinel will degrade the service only if count exceeds.
-            if (passCount.incrementAndGet() < RT_MAX_EXCEED_N) {
-                return true;
-            }
-        } else if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
-            double exception = clusterNode.exceptionQps();
-            double success = clusterNode.successQps();
-            long total = clusterNode.totalQps();
-            // if total qps less than RT_MAX_EXCEED_N, pass.
-            if (total < RT_MAX_EXCEED_N) {
-                return true;
-            }
-
-            double realSuccess = success - exception;
-            if (realSuccess <= 0 && exception < RT_MAX_EXCEED_N) {
-                return true;
-            }
-
-            if (exception / success < count) {
-                return true;
-            }
-        } else if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
-            double exception = clusterNode.totalException();
-            if (exception < count) {
-                return true;
-            }
-        }
-
-        synchronized (lock) {
-            if (!cut) {
-                // Automatically degrade.
-                cut = true;
-                ResetTask resetTask = new ResetTask(this);
-                pool.schedule(resetTask, timeWindow, TimeUnit.SECONDS);
-            }
-
-            return false;
-        }
+        return Objects.hash(super.hashCode(), count, timeWindow, grade, minRequestAmount,
+            slowRatioThreshold, statIntervalMs);
     }
 
     @Override
@@ -226,22 +165,9 @@ public class DegradeRule extends AbstractRule {
             ", count=" + count +
             ", limitApp=" + getLimitApp() +
             ", timeWindow=" + timeWindow +
-            "}";
-    }
-
-    private static final class ResetTask implements Runnable {
-
-        private DegradeRule rule;
-
-        ResetTask(DegradeRule rule) {
-            this.rule = rule;
-        }
-
-        @Override
-        public void run() {
-            rule.getPassCount().set(0);
-            rule.setCut(false);
-        }
+            ", minRequestAmount=" + minRequestAmount +
+            ", slowRatioThreshold=" + slowRatioThreshold +
+            ", statIntervalMs=" + statIntervalMs +
+            '}';
     }
 }
-

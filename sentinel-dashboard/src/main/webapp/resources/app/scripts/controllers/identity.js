@@ -1,7 +1,7 @@
 var app = angular.module('sentinelDashboardApp');
 
 app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
-  'ngDialog', 'FlowService', 'DegradeService', 'AuthorityRuleService', 'ParamFlowService', 'MachineService',
+  'ngDialog', 'FlowServiceV1', 'DegradeService', 'AuthorityRuleService', 'ParamFlowService', 'MachineService',
   '$interval', '$location', '$timeout',
   function ($scope, $stateParams, IdentityService, ngDialog,
     FlowService, DegradeService, AuthorityRuleService, ParamFlowService, MachineService, $interval, $location, $timeout) {
@@ -52,6 +52,10 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
         controlBehavior: 0,
         resource: resource,
         limitApp: 'default',
+        clusterMode: false,
+        clusterConfig: {
+            thresholdType: 0
+        },
         app: $scope.app,
         ip: mac[0],
         port: mac[1]
@@ -89,13 +93,15 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
         return;
       }
       FlowService.newRule(flowRuleDialogScope.currentRule).success(function (data) {
-        if (data.code == 0) {
+        if (data.code === 0) {
           flowRuleDialog.close();
           let url = '/dashboard/flow/' + $scope.app;
           $location.path(url);
         } else {
-          alert('Failed to add new rule');
+          alert('Failed: ' + data.msg);
         }
+      }).error((data, header, config, status) => {
+          alert('Unknown error');
       });
     }
 
@@ -104,10 +110,10 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
             return;
         }
       FlowService.newRule(flowRuleDialogScope.currentRule).success(function (data) {
-        if (data.code == 0) {
+        if (data.code === 0) {
           flowRuleDialog.close();
         } else {
-          alert('Failed');
+            alert('Failed: ' + data.msg);
         }
       });
     }
@@ -126,6 +132,8 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
         strategy: 0,
         resource: resource,
         limitApp: 'default',
+        minRequestAmount: 5,
+        statIntervalMs: 1000,
         app: $scope.app,
         ip: mac[0],
         port: mac[1]
@@ -153,12 +161,12 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
             return;
         }
       DegradeService.newRule(degradeRuleDialogScope.currentRule).success(function (data) {
-        if (data.code == 0) {
+        if (data.code === 0) {
           degradeRuleDialog.close();
           var url = '/dashboard/degrade/' + $scope.app;
           $location.path(url);
         } else {
-          alert('Failed');
+          alert('Failed: ' + data.msg);
         }
       });
     }
@@ -168,10 +176,10 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
             return;
         }
       DegradeService.newRule(degradeRuleDialogScope.currentRule).success(function (data) {
-        if (data.code == 0) {
+        if (data.code === 0) {
           degradeRuleDialog.close();
         } else {
-          alert('Failed');
+            alert('Failed: ' + data.msg);
         }
       });
     }
@@ -316,6 +324,15 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
                   paramFlowItemList: [],
                   count: 0,
                   limitApp: 'default',
+                  controlBehavior: 0,
+                  durationInSec: 1,
+                  burstCount: 0,
+                  maxQueueingTimeMs: 0,
+                  clusterMode: false,
+                  clusterConfig: {
+                      thresholdType: 0,
+                      fallbackToLocalWhenFail: true,
+                  }
               }
           };
 
@@ -381,13 +398,12 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
     function queryAppMachines() {
       MachineService.getAppMachines($scope.app).success(
         function (data) {
-          if (data.code == 0) {
-            // $scope.machines = data.data;
+          if (data.code === 0) {
             if (data.data) {
               $scope.machines = [];
               $scope.macsInputOptions = [];
               data.data.forEach(function (item) {
-                if (item.health) {
+                if (item.healthy) {
                   $scope.macsInputOptions.push({
                     text: item.ip + ':' + item.port,
                     value: item.ip + ':' + item.port

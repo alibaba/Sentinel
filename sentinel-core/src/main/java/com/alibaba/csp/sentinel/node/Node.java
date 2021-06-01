@@ -15,107 +15,185 @@
  */
 package com.alibaba.csp.sentinel.node;
 
+import java.util.List;
 import java.util.Map;
 
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
+import com.alibaba.csp.sentinel.slots.statistic.metric.DebugSupport;
+import com.alibaba.csp.sentinel.util.function.Predicate;
 
 /**
- * This class holds real-time statistics for a resource.
+ * Holds real-time statistics for resources.
  *
  * @author qinan.qn
  * @author leyou
+ * @author Eric Zhao
  */
-public interface Node {
+public interface Node extends OccupySupport, DebugSupport {
 
     /**
-     * Get incoming request per minute. {@code pass + block}
+     * Get incoming request per minute ({@code pass + block}).
+     *
+     * @return total request count per minute
      */
     long totalRequest();
 
     /**
+     * Get pass count per minute.
+     *
+     * @return total passed request count per minute
+     * @since 1.5.0
+     */
+    long totalPass();
+
+    /**
      * Get {@link Entry#exit()} count per minute.
      *
-     * @return Outgoing request per minute.
+     * @return total completed request count per minute
      */
     long totalSuccess();
 
     /**
-     * Get block request count per minute.
+     * Get blocked request count per minute (totalBlockRequest).
+     *
+     * @return total blocked request count per minute
      */
     long blockRequest();
 
     /**
      * Get exception count per minute.
+     *
+     * @return total business exception count per minute
      */
     long totalException();
 
     /**
      * Get pass request per second.
+     *
+     * @return QPS of passed requests
      */
-    long passQps();
+    double passQps();
 
     /**
      * Get block request per second.
+     *
+     * @return QPS of blocked requests
      */
-    long blockQps();
+    double blockQps();
 
     /**
      * Get {@link #passQps()} + {@link #blockQps()} request per second.
+     *
+     * @return QPS of passed and blocked requests
      */
-    long totalQps();
+    double totalQps();
 
     /**
      * Get {@link Entry#exit()} request per second.
+     *
+     * @return QPS of completed requests
      */
-    long successQps();
+    double successQps();
 
-    long maxSuccessQps();
+    /**
+     * Get estimated max success QPS till now.
+     *
+     * @return max completed QPS
+     */
+    double maxSuccessQps();
 
     /**
      * Get exception count per second.
+     *
+     * @return QPS of exception occurs
      */
-    long exceptionQps();
+    double exceptionQps();
 
     /**
      * Get average rt per second.
+     *
+     * @return average response time per second
      */
-    long avgRt();
+    double avgRt();
 
-    long minRt();
+    /**
+     * Get minimal response time.
+     *
+     * @return recorded minimal response time
+     */
+    double minRt();
 
     /**
      * Get current active thread count.
+     *
+     * @return current active thread count
      */
     int curThreadNum();
 
     /**
      * Get last second block QPS.
      */
-    long previousBlockQps();
+    double previousBlockQps();
 
     /**
      * Last window QPS.
      */
-    long previousPassQps();
+    double previousPassQps();
 
+    /**
+     * Fetch all valid metric nodes of resources.
+     *
+     * @return valid metric nodes of resources
+     */
     Map<Long, MetricNode> metrics();
 
-    void addPassRequest();
+    /**
+     * Fetch all raw metric items that satisfies the time predicate.
+     *
+     * @param timePredicate time predicate
+     * @return raw metric items that satisfies the time predicate
+     * @since 1.7.0
+     */
+    List<MetricNode> rawMetricsInMin(Predicate<Long> timePredicate);
+
+    /**
+     * Add pass count.
+     *
+     * @param count count to add pass
+     */
+    void addPassRequest(int count);
 
     /**
      * Add rt and success count.
      *
-     * @param rt
+     * @param rt      response time
+     * @param success success count to add
      */
-    void rt(long rt);
+    void addRtAndSuccess(long rt, int success);
 
-    void increaseBlockQps();
+    /**
+     * Increase the block count.
+     *
+     * @param count count to add
+     */
+    void increaseBlockQps(int count);
 
-    void increaseExceptionQps();
+    /**
+     * Add the biz exception count.
+     *
+     * @param count count to add
+     */
+    void increaseExceptionQps(int count);
 
+    /**
+     * Increase current thread count.
+     */
     void increaseThreadNum();
 
+    /**
+     * Decrease current thread count.
+     */
     void decreaseThreadNum();
 
     /**
@@ -123,9 +201,4 @@ public interface Node {
      * {@link SampleCountProperty#SAMPLE_COUNT} is changed.
      */
     void reset();
-
-    /**
-     * Debug only.
-     */
-    void debug();
 }

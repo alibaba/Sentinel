@@ -1,7 +1,7 @@
 # Sentinel Annotation AspectJ
 
 This extension is an AOP implementation using AspectJ for Sentinel annotations.
-Currently only runtime waving is supported.
+Currently only runtime weaving is supported.
 
 ## Annotation
 
@@ -9,31 +9,31 @@ The `@SentinelResource` annotation indicates a resource definition, including:
 
 - `value`: Resource name, required (cannot be empty)
 - `entryType`: Resource entry type (inbound or outbound), `EntryType.OUT` by default
-- `fallback`: Fallback method when degraded (optional).
-The fallback method should be located in the same class with original method.
-The signature of the fallback method should match the original method (parameter types and return type).
-- `blockHandler`: Handler method that handles `BlockException` when blocked.
-The signature should match original method, with the last additional parameter type `BlockException`.
-The block handler method should be located in the same class with original method by default.
-If you want to use method in other classes, you can set the `blockHandlerClass` with corresponding `Class`
-(Note the method in other classes must be *static*).
+- `fallback` (refactored since 1.6.0): Fallback method when exceptions caught (including `BlockException`, but except the exceptions defined in `exceptionsToIgnore`). The fallback method should be located in the same class with original method by default. If you want to use method in other classes, you can set the `fallbackClass` with corresponding `Class` (Note the method in other classes must be *static*). The method signature requirement:
+  - The return type should match the origin method;
+  - The parameter list should match the origin method, and an additional `Throwable` parameter can be provided to get the actual exception.
+- `defaultFallback` (since 1.6.0): The default fallback method when exceptions caught (including `BlockException`, but except the exceptions defined in `exceptionsToIgnore`). Its intended to be a universal common fallback method. The method should be located in the same class with original method by default. If you want to use method in other classes, you can set the `fallbackClass` with corresponding `Class` (Note the method in other classes must be *static*). The default fallback method signature requirement:
+  - The return type should match the origin method;
+  - parameter list should be empty, and an additional `Throwable` parameter can be provided to get the actual exception.
+- `blockHandler`: Handler method that handles `BlockException` when blocked. The parameter list of the method should match original method, with the last additional parameter type `BlockException`. The return type should be same as the original method. The `blockHandler` method should be located in the same class with original method by default. If you want to use method in other classes, you can set the `blockHandlerClass` with corresponding `Class` (Note the method in other classes must be *static*).
+- `exceptionsToIgnore` (since 1.6.0): List of business exception classes that should not be traced and caught in fallback.
+- `exceptionsToTrace` (since 1.5.1): List of business exception classes to trace and record. In most cases, using `exceptionsToIgnore` is better. If both `exceptionsToTrace` and `exceptionsToIgnore` are present, only `exceptionsToIgnore` will be activated.
 
 For example:
 
 ```java
-@SentinelResource(value = "abc", fallback = "doFallback", blockHandler = "handleException")
+@SentinelResource(value = "abc", fallback = "doFallback")
 public String doSomething(long i) {
     return "Hello " + i;
 }
 
-public String doFallback(long i) {
+public String doFallback(long i, Throwable t) {
     // Return fallback value.
-    return "Oops, degraded";
+    return "fallback";
 }
 
-public String handleException(long i, BlockException ex) {
-    // Handle the block exception here.
-    return null;
+public String defaultFallback(Throwable t) {
+    return "default_fallback";
 }
 ```
 

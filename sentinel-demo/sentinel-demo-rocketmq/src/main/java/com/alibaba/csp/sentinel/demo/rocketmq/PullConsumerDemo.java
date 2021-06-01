@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.demo.rocketmq;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -44,6 +45,7 @@ public class PullConsumerDemo {
 
     private static final Map<MessageQueue, Long> OFFSET_TABLE = new HashMap<MessageQueue, Long>();
 
+    @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static final ExecutorService pool = Executors.newFixedThreadPool(32);
 
     private static final AtomicLong SUCCESS_COUNT = new AtomicLong(0);
@@ -54,10 +56,16 @@ public class PullConsumerDemo {
         initFlowControlRule();
 
         DefaultMQPullConsumer consumer = new DefaultMQPullConsumer(Constants.TEST_GROUP_NAME);
-
+        consumer.setNamesrvAddr(Constants.TEST_NAMESRV_ADDR);
         consumer.start();
 
-        Set<MessageQueue> mqs = consumer.fetchSubscribeMessageQueues(Constants.TEST_TOPIC_NAME);
+        Set<MessageQueue> mqs = new HashSet<>();
+        try {
+            mqs = consumer.fetchSubscribeMessageQueues(Constants.TEST_TOPIC_NAME);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         for (MessageQueue mq : mqs) {
             System.out.printf("Consuming messages from the queue: %s%n", mq);
             SINGLE_MQ:
@@ -75,14 +83,11 @@ public class PullConsumerDemo {
                     putMessageQueueOffset(mq, nextOffset);
                     consumer.updateConsumeOffset(mq, nextOffset);
                     switch (pullResult.getPullStatus()) {
-                        case FOUND:
-                            break;
-                        case NO_MATCHED_MSG:
-                            break;
                         case NO_NEW_MSG:
                             break SINGLE_MQ;
+                        case FOUND:
+                        case NO_MATCHED_MSG:
                         case OFFSET_ILLEGAL:
-                            break;
                         default:
                             break;
                     }

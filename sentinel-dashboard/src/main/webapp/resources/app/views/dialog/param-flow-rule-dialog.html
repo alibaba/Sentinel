@@ -25,12 +25,59 @@
                     </div>
                     
                     <div class="form-group">
-						<label class="col-sm-2 control-label">Threshold</label>
-						<div class="col-sm-9">
-							<input type="number" class="form-control highlight-border" ng-model='currentRule.rule.count' placeholder='threshold (>=0)' />
+						<div ng-if="!currentRule.rule.clusterMode">
+							<label class="col-sm-2 control-label">Single machine threshold</label>
+							<div class="col-sm-3">
+								<input type="number" class="form-control highlight-border" ng-model='currentRule.rule.count' placeholder='Single machine threshold' />
+							</div>
+							<label class="col-sm-3 control-label" title="The length of the statistical window, the unit is s">Statistics window duration</label>
+							<div class="input-group col-sm-3">
+								<input type="number" class="form-control highlight-border"
+									   ng-model='currentRule.rule.durationInSec' min="1"
+									   placeholder='Please fill in the duration of the statistics window (in seconds)' />
+								<span class="input-group-addon">second</span>
+							</div>
+						</div>
+						<div ng-if="currentRule.rule.clusterMode && currentRule.rule.clusterConfig.thresholdType == 0">
+							<label class="col-sm-2 control-label">Amortization threshold</label>
+							<div class="col-sm-9">
+								<input type="number" class="form-control highlight-border" ng-model='currentRule.rule.count' placeholder='Cluster amortization threshold' />
+							</div>
+						</div>
+						<div ng-if="currentRule.rule.clusterMode && currentRule.rule.clusterConfig.thresholdType == 1">
+							<label class="col-sm-2 control-label">Cluster threshold</label>
+							<div class="col-sm-9">
+								<input type="number" class="form-control highlight-border" ng-model='currentRule.rule.count' placeholder='Cluster overall threshold' />
+							</div>
 						</div>
                     </div>
 
+					<div class="form-group">
+						<label class="col-sm-2 control-label">Whether to cluster</label>
+						<div class="col-sm-2">
+							<input type="checkbox" name="clusterMode" ng-model="currentRule.rule.clusterMode">
+						</div>
+						<div ng-if="currentRule.rule.clusterMode">
+							<label class="col-sm-3 control-label">Cluster threshold mode</label>
+							<div class="col-sm-4">
+								<div class="form-control highlight-border" align="center">
+									<input type="radio" name="clusterThresholdType" value="0" ng-model='currentRule.rule.clusterConfig.thresholdType' />&nbsp;Stand-alone share&nbsp;&nbsp;
+									<input type="radio" name="clusterThresholdType" value="1" ng-model='currentRule.rule.clusterConfig.thresholdType' />&nbsp;Overall threshold
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="form-group" ng-if="currentRule.rule.clusterMode">
+						<label class="col-sm-2 control-label">Failure to degenerate</label>
+						<div class="col-sm-8">
+							<div class="checkbox-inline">
+								<input type="checkbox" name="fallbackToLocalWhenFail"
+									   ng-model="currentRule.rule.clusterConfig.fallbackToLocalWhenFail">
+								<i class="glyphicon glyphicon-info-sign"></i>&nbsp;If selected, when the Token Server is unavailable, it will degenerate to a single-machine current limit
+							</div>
+						</div>
+					</div>
 
                     <!-- exclusion item part start -->
 					<div ng-if="!paramFlowRuleDialog.showAdvanceButton">

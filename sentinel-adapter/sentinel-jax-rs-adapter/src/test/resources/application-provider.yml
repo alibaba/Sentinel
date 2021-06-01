@@ -1,0 +1,3 @@
+resteasy:
+  jaxrs:
+    scan-packages: com.alibaba.csp.sentinel.adapter.jaxrs

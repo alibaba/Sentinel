@@ -2,3 +2,7 @@ ignore:
   - "sentinel-demo/.*"
   - "sentinel-dashboard/.*"
   - "sentinel-benchmark/.*"
+  - "sentinel-transport/.*"
+  - "sentinel-core/src/main/java/com/alibaba/csp/sentinel/slots/statistic/base/LongAdder.java"
+  - "sentinel-core/src/main/java/com/alibaba/csp/sentinel/slots/statistic/base/Striped64.java"
+  - "sentinel-core/src/main/java/com/alibaba/csp/sentinel/eagleeye/*"

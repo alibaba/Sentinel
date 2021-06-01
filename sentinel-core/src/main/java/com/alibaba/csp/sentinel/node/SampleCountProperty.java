@@ -60,6 +60,6 @@ public class SampleCountProperty {
             SAMPLE_COUNT = newSampleCount;
             ClusterBuilderSlot.resetClusterNodes();
         }
-        RecordLog.info("SAMPLE_COUNT updated to: " + SAMPLE_COUNT);
+        RecordLog.info("SAMPLE_COUNT updated to: {}", SAMPLE_COUNT);
     }
 }

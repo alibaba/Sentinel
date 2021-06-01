@@ -55,6 +55,9 @@
                             <td style="width: 10%;">
                                 Threshold
                             </td>
+                            <td style="width: 8%;">
+                                Whether to cluster
+                            </td>
                             <td style="width: 10%; word-break: break-word;">
                                 Exception Item Count
                             </td>
@@ -73,6 +76,10 @@
                             </td>
                             <td style="word-wrap:break-word;word-break:break-all;">
                                 {{ruleEntity.rule.count}}
+                            </td>
+                            <td>
+                                <span ng-if="ruleEntity.rule.clusterMode">是</span>
+                                <span ng-if="!ruleEntity.rule.clusterMode">否</span>
                             </td>
                             <td>
                                 {{ruleEntity.rule.paramFlowItemList == undefined ? 0 : ruleEntity.rule.paramFlowItemList.length}}

@@ -22,20 +22,20 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  */
 public class SystemBlockException extends BlockException {
 
-    String resourceName;
-
-    public String getResourceName() {
-        return resourceName;
-    }
+    private final String resourceName;
 
     public SystemBlockException(String resourceName, String message, Throwable cause) {
         super(message, cause);
         this.resourceName = resourceName;
     }
 
-    public SystemBlockException(String resourceName, String ruleLimitApp) {
-        super(ruleLimitApp);
+    public SystemBlockException(String resourceName, String limitType) {
+        super(limitType);
         this.resourceName = resourceName;
+    }
+
+    public String getResourceName() {
+        return resourceName;
     }
 
     @Override
@@ -43,4 +43,13 @@ public class SystemBlockException extends BlockException {
         return this;
     }
 
+    /**
+     * Return the limit type of system rule.
+     *
+     * @return the limit type
+     * @since 1.4.2
+     */
+    public String getLimitType() {
+        return getRuleLimitApp();
+    }
 }

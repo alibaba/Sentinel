@@ -86,7 +86,11 @@ public class ConcurrentLinkedHashMapWrapper<T, R> implements CacheMap<T, R> {
     }
 
     @Override
-    public Set<T> ascendingKeySet() {
-        return map.ascendingKeySet();
+    public Set<T> keySet(boolean ascending) {
+        if (ascending) {
+            return map.ascendingKeySet();
+        } else {
+            return map.descendingKeySet();
+        }
     }
 }

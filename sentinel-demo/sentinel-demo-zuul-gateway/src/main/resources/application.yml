@@ -1,0 +1,13 @@
+server:
+  port: 8097
+spring:
+  application:
+    name: zuul-gateway
+zuul:
+  routes:
+    aliyun-product-route:
+      path: /aliyun_product/**
+      url: https://www.aliyun.com/product
+    another-route-httpbin:
+      path: /another/**
+      url: https://httpbin.org
