@@ -11,12 +11,12 @@
     <div class="col-md-12">
       <div class="card">
         <div class="inputs-header">
-          <span class="brand" style="font-size: 13px;">请求链路</span>
-          <button class="btn btn-primary" style="float: right; margin-right: 10px; height: 30px;font-size: 12px;" ng-click="queryIdentities()">刷新</button>
-          <input class="form-control witdh-200" placeholder="关键字" ng-model="searchKey" ng-change="searchChange(searchKey)">
+          <span class="brand" style="font-size: 13px;">Request link</span>
+          <button class="btn btn-primary" style="float: right; margin-right: 10px; height: 30px;font-size: 12px;" ng-click="queryIdentities()">Refresh</button>
+          <input class="form-control witdh-200" placeholder="Keyword" ng-model="searchKey" ng-change="searchChange(searchKey)">
           <div class="control-group" style="float:right;margin-right: 10px;margin-bottom: -10px;">
             <selectize id="gsInput" class="selectize-input-200" config="macsInputConfig" options="macsInputOptions" ng-model="macInputModel"
-              placeholder="机器"></selectize>
+              placeholder="machine"></selectize>
           </div>
         </div>
 
@@ -27,18 +27,18 @@
               <thead>
                 <tr style="background: #F3F5F7;">
                   <td style="width: 34%;">
-                    API 名称
+                    API name
                   </td>
                   <td style="width: 8%;">
-                    API 类型
+                    API Types
                   </td>
-                  <td style="width: 7%;">通过 QPS</td>
-                  <td style="width: 7%;">拒绝 QPS</td>
-                  <td style="width: 5%;">线程数</td>
-                  <td style="width: 6%;">平均 RT</td>
-                  <td style="width: 6%;">分钟通过</td>
-                  <td style="width: 6%;">分钟拒绝</td>
-                  <td style="width: 20%">操作</td>
+                  <td style="width: 7%;">by QPS</td>
+                  <td style="width: 7%;">Refuse QPS</td>
+                  <td style="width: 5%;">Threads</td>
+                  <td style="width: 6%;">average RT</td>
+                  <td style="width: 6%;">Minutes passed</td>
+                  <td style="width: 6%;">Minute rejection</td>
+                  <td style="width: 20%">operating</td>
                 </tr>
                 <tr></tr>
               </thead>
@@ -50,7 +50,7 @@
                   </td>
                   <td>
                     <span ng-if="apiNames.indexOf(resource.resource) == -1">Route ID</span>
-                    <span ng-if="apiNames.indexOf(resource.resource) != -1">自定义 API</span>
+                    <span ng-if="apiNames.indexOf(resource.resource) != -1">customize API</span>
                   </td>
                   <td>{{resource.passQps}}</td>
                   <td>{{resource.blockQps}}</td>
@@ -63,9 +63,9 @@
                   <td>
                     <div class="control-group">
                       <button class="btn btn-xs btn-default" type="button" ng-click="addNewGatewayFlowRule(resource.resource)" style="font-size: 12px; height:25px;">
-                        <i class="fa fa-plus"></i>&nbsp;流控</button>
+                        <i class="fa fa-plus"></i>&nbsp;Flow Control</button>
                       <button class="btn btn-xs btn-default" type="button" ng-click="addNewDegradeRule(resource.resource)" style="font-size: 12px; height:25px;">
-                        <i class="fa fa-plus"></i>&nbsp;降级</button>
+                        <i class="fa fa-plus"></i>&nbsp;Downgrade</button>
                     </div>
                   </td>
                 </tr>
@@ -78,12 +78,12 @@
             on-page-change="">
           </dir-pagination-controls>
           <div class="tools">
-            <span>共 {{totalCount}} 条记录, </span>
+            <span>共 {{totalCount}} Records, </span>
             <span>
-              每页
-              <input class="form-control" ng-model="pageSize"> 条记录
+              Per page
+              <input class="form-control" ng-model="pageSize"> Records
             </span>
-            <!--<span>第 {{currentPage}} / {{totalPage}} 页</span>-->
+            <!--<span>First {{currentPage}} / {{totalPage}} page</span>-->
           </div>
           <!-- .tools -->
         </div>

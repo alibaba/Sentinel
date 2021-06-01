@@ -4,7 +4,7 @@
   </div>
   <div class="col-md-6">
     <button class="btn btn-outline-primary" style="float: right; margin-right: 10px;" ng-disabled="!macInputModel" ng-click="addNewRule()">
-      <i class="fa fa-plus"></i>&nbsp;&nbsp;新增网关流控规则</button>
+      <i class="fa fa-plus"></i>&nbsp;&nbsp;Add gateway flow control rules</button>
   </div>
 </div>
 
@@ -15,12 +15,12 @@
     <div class="col-md-12">
       <div class="card">
         <div class="inputs-header">
-          <span class="brand" style="font-size: 13px;">网关流控规则</span>
-          <button class="btn btn-primary" style="float: right; margin-right: 10px; height: 30px;font-size: 12px;" ng-click="getMachineRules()">刷新</button>
-          <input class="form-control witdh-200" placeholder="关键字" ng-model="searchKey">
+          <span class="brand" style="font-size: 13px;">Gateway flow control rules</span>
+          <button class="btn btn-primary" style="float: right; margin-right: 10px; height: 30px;font-size: 12px;" ng-click="getMachineRules()">Refresh</button>
+          <input class="form-control witdh-200" placeholder="Keyword" ng-model="searchKey">
           <div class="control-group" style="float:right;margin-right: 10px;margin-bottom: -10px;">
             <selectize id="gsInput" class="selectize-input-200" config="macsInputConfig" options="macsInputOptions" ng-model="macInputModel"
-              placeholder="机器"></selectize>
+              placeholder="machine"></selectize>
           </div>
         </div>
 
@@ -30,19 +30,19 @@
             <thead>
               <tr style="background: #F3F5F7;">
                 <td>
-                  API 名称
+                  API name
                 </td>
                 <td>
-                  API 类型
+                  API Types
                 </td>
                 <td>
-                  阈值类型
+                  Threshold type
                 </td>
                 <td>
-                  单机阈值
+                  Single machine threshold
                 </td>
                 <td>
-                  操作
+                  operating
                 </td>
               </tr>
             </thead>
@@ -53,16 +53,16 @@
                 <td>{{rule.resource}}</td>
                 <td>
                   <span ng-if="rule.resourceMode == 0">Route ID</span>
-                  <span ng-if="rule.resourceMode == 1">API 分组</span>
+                  <span ng-if="rule.resourceMode == 1">API Grouping</span>
                 </td>
                 <td>
                   <span ng-if="rule.grade == 1">QPS</span>
-                  <span ng-if="rule.grade == 0">线程数</span>
+                  <span ng-if="rule.grade == 0">Threads</span>
                 </td>
                 <td>{{rule.count}}</td>
                 <td>
-                  <button class="btn btn-xs btn-outline-primary" type="button" ng-click="editRule(rule)" style="font-size: 12px; height:25px;">编辑</button>
-                  <button class="btn btn-xs btn-outline-danger" type="button" ng-click="deleteRule(rule)" style="font-size: 12px; height:25px;">删除</button>
+                  <button class="btn btn-xs btn-outline-primary" type="button" ng-click="editRule(rule)" style="font-size: 12px; height:25px;">edit</button>
+                  <button class="btn btn-xs btn-outline-danger" type="button" ng-click="deleteRule(rule)" style="font-size: 12px; height:25px;">delete</button>
                 </td>
               </tr>
             </tbody>
@@ -74,12 +74,12 @@
             on-page-change="">
           </dir-pagination-controls>
           <div class="tools" style="">
-            <span>共 {{rulesPageConfig.totalCount}} 条记录, </span>
+            <span>共 {{rulesPageConfig.totalCount}} Records, </span>
             <span>
-              每页
-              <input class="form-control" ng-model="rulesPageConfig.pageSize"> 条记录
+              Per page
+              <input class="form-control" ng-model="rulesPageConfig.pageSize"> Records
             </span>
-            <!--<span>第 {{apisPageConfig.currentPageIndex}} / {{apisPageConfig.totalPage}} 页</span>-->
+            <!--<span>First {{apisPageConfig.currentPageIndex}} / {{apisPageConfig.totalPage}} page</span>-->
           </div>
           <!-- .tools -->
         </div>

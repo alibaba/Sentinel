@@ -4,7 +4,7 @@
     </div>
     <div class="col-md-6">
         <a class="btn btn-default-inverse" style="float: right; margin-right: 10px;" ui-sref="dashboard.clusterAppServerList({app: app})">
-            Token Server 列表
+            Token Server List
         </a>
     </div>
 </div>
@@ -15,7 +15,7 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="inputs-header">
-                    <span class="brand" style="font-size: 13px;">集群限流 - Token Client 列表</span>
+                    <span class="brand" style="font-size: 13px;">Cluster current limit - Token Client List</span>
                 </div>
 
                 <!-- error panel -->
@@ -39,9 +39,9 @@
                         <tr style="background: #F3F5F7;">
                             <td style="min-width: 12%;">Client ID</td>
                             <td>Server IP</td>
-                            <td>Server 端口</td>
-                            <td>连接状态</td>
-                            <td style="min-width: 15%;">操作</td>
+                            <td>Server port</td>
+                            <td>Connection Status</td>
+                            <td style="min-width: 15%;">operating</td>
                         </tr>
                         </thead>
                         <tbody>
@@ -50,13 +50,13 @@
                             <td style="word-wrap:break-word;word-break:break-all;">{{clientVO.state.clientConfig.serverHost}}</td>
                             <td>{{clientVO.state.clientConfig.serverPort}}</td>
                             <td>
-                                <span class="form-control-static text-danger" ng-if="clientVO.state.clientConfig.clientState === 0">未连接</span>
-                                <span class="form-control-static" ng-if="clientVO.state.clientConfig.clientState === 1">连接中</span>
-                                <span class="form-control-static text-success" ng-if="clientVO.state.clientConfig.clientState === 2">已连接</span>
+                                <span class="form-control-static text-danger" ng-if="clientVO.state.clientConfig.clientState === 0">not connected</span>
+                                <span class="form-control-static" ng-if="clientVO.state.clientConfig.clientState === 1">connecting</span>
+                                <span class="form-control-static text-success" ng-if="clientVO.state.clientConfig.clientState === 2">connected</span>
                             </td>
                             <td>
                                 <button class="btn btn-xs btn-outline-primary" type="button"
-                                        ng-click="modifyClientConfigDialog(clientVO)" style="font-size: 12px; height:25px;">编辑配置</button>
+                                        ng-click="modifyClientConfigDialog(clientVO)" style="font-size: 12px; height:25px;">Edit configuration</button>
                             </td>
                         </tr>
                         </tbody>
