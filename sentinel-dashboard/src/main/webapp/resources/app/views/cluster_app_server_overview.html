@@ -10,7 +10,7 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="inputs-header">
-                    <span class="brand" style="font-size: 13px;">集群限流 - Token Server 总览</span>
+                    <span class="brand" style="font-size: 13px;">Cluster current limit - Token Server Overview</span>
                 </div>
 
                 <!-- error panel -->
@@ -30,7 +30,7 @@
                 <div class="card-body" style="padding: 0px 0px;" ng-if="!loadError">
                     <form role="form" class="form-horizontal">
                         <div class="form-group" hidden>
-                            <label class="col-sm-2 control-label">Token Server 列表</label>
+                            <label class="col-sm-2 control-label">Token Server List</label>
                             <div class="col-sm-4">
                                 <select ng-model="tmp.curChosenServer" ng-change="onChosenServerChange()"
                                         ng-options="serverEntity.id for serverEntity in serverVOList"
@@ -45,10 +45,10 @@
                         <tr style="background: #F3F5F7;">
                             <td style="width: 12%;">Server ID</td>
                             <td style="width: 5%;">Port</td>
-                            <td style="width: 10%;">命名空间集合</td>
-                            <td>总连接数</td>
-                            <td>连接情况</td>
-                            <td>QPS 总览</td>
+                            <td style="width: 10%;">Namespace collection</td>
+                            <td>Total number of connections</td>
+                            <td>Connection situation</td>
+                            <td>QPS Overview</td>
                         </tr>
                         </thead>
                         <tbody>
@@ -63,13 +63,13 @@
                             </td>
                             <td>
                                 <p ng-repeat="cg in serverVO.state.connection">
-                                    namespace: {{cg.namespace}}, 连接数: {{cg.connectedCount}}, clients:
+                                    namespace: {{cg.namespace}}, Number of connections: {{cg.connectedCount}}, clients:
                                     {{generateConnectionSet(cg.connectionSet)}}
                                 </p>
                             </td>
                             <td>
                                 <p ng-repeat="crl in serverVO.state.requestLimitData">
-                                    namespace: {{crl.namespace}}, 当前 QPS: {{crl.currentQps}}, 最大允许 QPS:
+                                    namespace: {{crl.namespace}}, current QPS: {{crl.currentQps}}, Maximum allowable QPS:
                                     {{crl.maxAllowedQps}}
                                 </p>
                             </td>
