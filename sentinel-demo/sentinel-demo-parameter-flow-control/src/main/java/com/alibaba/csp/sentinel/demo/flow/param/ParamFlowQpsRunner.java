@@ -43,6 +43,7 @@ class ParamFlowQpsRunner<T> {
     private final int threadCount;
 
     private final Map<T, AtomicLong> passCountMap = new ConcurrentHashMap<>();
+    private final Map<T, AtomicLong> blockCountMap = new ConcurrentHashMap<>();
 
     private volatile boolean stop = false;
 
@@ -59,6 +60,7 @@ class ParamFlowQpsRunner<T> {
         for (T param : params) {
             assertTrue(param != null, "Parameters should not be null");
             passCountMap.putIfAbsent(param, new AtomicLong());
+            blockCountMap.putIfAbsent(param, new AtomicLong());
         }
     }
 
@@ -94,36 +96,48 @@ class ParamFlowQpsRunner<T> {
 
     private void passFor(T param) {
         passCountMap.get(param).incrementAndGet();
+        // System.out.println(String.format("Parameter <%s> passed at: %d", param, TimeUtil.currentTimeMillis()));
+    }
+
+    private void blockFor(T param) {
+        blockCountMap.get(param).incrementAndGet();
     }
 
     final class RunTask implements Runnable {
+
         @Override
         public void run() {
+
             while (!stop) {
                 Entry entry = null;
-
+                T param = generateParam();
                 try {
-                    T param = generateParam();
                     entry = SphU.entry(resourceName, EntryType.IN, 1, param);
                     // Add pass for parameter.
                     passFor(param);
-                } catch (BlockException e1) {
+                } catch (BlockException e) {
                     // block.incrementAndGet();
-                } catch (Exception e2) {
+                    blockFor(param);
+                } catch (Exception ex) {
                     // biz exception
+                    ex.printStackTrace();
                 } finally {
                     // total.incrementAndGet();
                     if (entry != null) {
-                        entry.exit();
+                        entry.exit(1, param);
                     }
                 }
 
-                try {
-                    TimeUnit.MILLISECONDS.sleep(ThreadLocalRandom.current().nextInt(0, 10));
-                } catch (InterruptedException e) {
-                    // ignore
-                }
+                sleep(ThreadLocalRandom.current().nextInt(0, 10));
             }
+        }
+    }
+
+    private void sleep(int timeMs) {
+        try {
+            TimeUnit.MILLISECONDS.sleep(timeMs);
+        } catch (InterruptedException e) {
+            // ignore
         }
     }
 
@@ -139,21 +153,19 @@ class ParamFlowQpsRunner<T> {
                 map.putIfAbsent(param, 0L);
             }
             while (!stop) {
-                try {
-                    TimeUnit.SECONDS.sleep(1);
-                } catch (InterruptedException e) {
-                }
+                sleep(1000);
+
                 // There may be a mismatch for time window of internal sliding window.
                 // See corresponding `metrics.log` for accurate statistic log.
                 for (T param : params) {
-                    long globalPass = passCountMap.get(param).get();
-                    long oldPass = map.get(param);
-                    long oneSecondPass = globalPass - oldPass;
-                    map.put(param, globalPass);
-                    System.out.println(String.format("[%d][%d] Hot param metrics for resource %s: "
-                            + "pass count for param <%s> is %d",
-                        seconds, TimeUtil.currentTimeMillis(), resourceName, param, oneSecondPass));
+
+                    System.out.println(String.format(
+                        "[%d][%d] Parameter flow metrics for resource %s: "
+                            + "pass count for param <%s> is %d, block count: %d",
+                        seconds, TimeUtil.currentTimeMillis(), resourceName, param,
+                        passCountMap.get(param).getAndSet(0), blockCountMap.get(param).getAndSet(0)));
                 }
+                System.out.println("=============================");
                 if (seconds-- <= 0) {
                     stop = true;
                 }

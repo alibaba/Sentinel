@@ -32,7 +32,7 @@ import com.alibaba.fastjson.JSON;
 /**
  * @author leyou
  */
-@CommandMapping(name = "jsonTree")
+@CommandMapping(name = "jsonTree", desc = "get tree node VO start from root node")
 public class FetchJsonTreeCommandHandler implements CommandHandler<String> {
 
     @Override

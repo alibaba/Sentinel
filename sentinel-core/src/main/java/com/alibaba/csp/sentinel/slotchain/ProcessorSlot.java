@@ -23,6 +23,7 @@ import com.alibaba.csp.sentinel.context.Context;
  * @author qinan.qn
  * @author jialiang.linjl
  * @author leyou(lihao)
+ * @author Eric Zhao
  */
 public interface ProcessorSlot<T> {
 
@@ -31,26 +32,28 @@ public interface ProcessorSlot<T> {
      *
      * @param context         current {@link Context}
      * @param resourceWrapper current resource
-     * @param param           Generics parameter, usually is a {@link com.alibaba.csp.sentinel.node.Node}
+     * @param param           generics parameter, usually is a {@link com.alibaba.csp.sentinel.node.Node}
      * @param count           tokens needed
+     * @param prioritized     whether the entry is prioritized
      * @param args            parameters of the original call
      * @throws Throwable blocked exception or unexpected error
      */
-    void entry(Context context, ResourceWrapper resourceWrapper, T param, int count, Object... args)
-        throws Throwable;
+    void entry(Context context, ResourceWrapper resourceWrapper, T param, int count, boolean prioritized,
+               Object... args) throws Throwable;
 
     /**
-     * Means finish of {@link #entry(Context, ResourceWrapper, Object, int, Object...)}.
+     * Means finish of {@link #entry(Context, ResourceWrapper, Object, int, boolean, Object...)}.
      *
      * @param context         current {@link Context}
      * @param resourceWrapper current resource
      * @param obj             relevant object (e.g. Node)
      * @param count           tokens needed
+     * @param prioritized     whether the entry is prioritized
      * @param args            parameters of the original call
      * @throws Throwable blocked exception or unexpected error
      */
-    void fireEntry(Context context, ResourceWrapper resourceWrapper, Object obj, int count, Object... args)
-        throws Throwable;
+    void fireEntry(Context context, ResourceWrapper resourceWrapper, Object obj, int count, boolean prioritized,
+                   Object... args) throws Throwable;
 
     /**
      * Exit of this slot.

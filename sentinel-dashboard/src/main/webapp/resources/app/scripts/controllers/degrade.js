@@ -45,7 +45,7 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
 
     var degradeRuleDialog;
     $scope.editRule = function (rule) {
-      $scope.currentRule = rule;
+      $scope.currentRule = angular.copy(rule);
       $scope.degradeRuleDialog = {
         title: 'Edit Degrade Rule',
         type: 'edit',
@@ -66,7 +66,9 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
         app: $scope.app,
         ip: mac[0],
         port: mac[1],
-        limitApp: 'default'
+        limitApp: 'default',
+        minRequestAmount: 5,
+        statIntervalMs: 1000,
       };
       $scope.degradeRuleDialog = {
         title: 'Add Degrade Rule',
@@ -95,7 +97,7 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
     function parseDegradeMode(grade) {
         switch (grade) {
             case 0:
-              return 'RT';
+              return '慢调用比例';
             case 1:
               return 'Exception Ratio';
             case 2:
@@ -137,7 +139,7 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
           getMachineRules();
           confirmDialog.close();
         } else {
-          alert('Failed');
+          alert('Failed: ' + data.msg);
         }
       });
     };
@@ -148,7 +150,7 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
           getMachineRules();
           degradeRuleDialog.close();
         } else {
-          alert('Failed');
+          alert('Failed: ' + data.msg);
         }
       });
     };
@@ -163,7 +165,7 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
             confirmDialog.close();
           }
         } else {
-          alert('Failed');
+          alert('Failed: ' + data.msg);
         }
       });
     }
@@ -177,7 +179,7 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
               $scope.machines = [];
               $scope.macsInputOptions = [];
               data.data.forEach(function (item) {
-                if (item.health) {
+                if (item.healthy) {
                   $scope.macsInputOptions.push({
                     text: item.ip + ':' + item.port,
                     value: item.ip + ':' + item.port

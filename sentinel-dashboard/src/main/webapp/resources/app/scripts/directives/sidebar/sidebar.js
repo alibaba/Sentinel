@@ -1,9 +1,3 @@
-/**
- * @ngdoc directive
- * @name izzyposWebApp.directive:adminPosHeader
- * @description # adminPosHeader
- */
-
 angular.module('sentinelDashboardApp')
   .directive('sidebar', ['$location', '$stateParams', 'AppService', function () {
     return {
@@ -20,11 +14,25 @@ angular.module('sentinelDashboardApp')
         AppService.getApps().success(
           function (data) {
             if (data.code === 0) {
-              let initHashApp = $location.path().split('/')[3];
+              let path = $location.path().split('/');
+              let initHashApp = path[path.length - 1];
               $scope.apps = data.data;
-              $scope.apps.forEach(function (item) {
+              $scope.apps = $scope.apps.map(function (item) {
                 if (item.app === initHashApp) {
                   item.active = true;
+                }
+                let healthyCount = 0;
+                for (let i in item.machines) {
+                  if (item.machines[i].healthy) {
+                      healthyCount++;
+                  }
+                }
+                item.healthyCount = healthyCount;
+                // Handle appType
+                item.isGateway = item.appType === 1 || item.appType === 11 || item.appType === 12;
+
+                if (item.shown) {
+                  return item;
                 }
               });
             }
@@ -33,16 +41,14 @@ angular.module('sentinelDashboardApp')
 
         // toggle side bar
         $scope.click = function ($event) {
-          let element = angular.element($event.target);
           let entry = angular.element($event.target).scope().entry;
-          entry.active = !entry.active;
+          entry.active = !entry.active;// toggle this clicked app bar
 
-          if (entry.active === false) {
-            element.parent().children('ul').hide();
-          } else {
-            element.parent().parent().children('li').children('ul').hide();
-            element.parent().children('ul').show();
-          }
+          $scope.apps.forEach(function (item) { // collapse other app bars
+            if (item !== entry) {
+              item.active = false;
+            }
+          });
         };
 
         /**

@@ -19,7 +19,20 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/**
+ * Metrics data for a specific resource at given {@code timestamp}.
+ *
+ * @author jialiang.linjl
+ * @author Carpenter Lee
+ */
 public class MetricNode {
+
+    private String resource;
+    /**
+     * Resource classification (e.g. SQL or RPC)
+     * @since 1.7.0
+     */
+    private int classification;
 
     private long timestamp;
     private long passQps;
@@ -28,10 +41,25 @@ public class MetricNode {
     private long exceptionQps;
     private long rt;
 
-    private String resource;
+    /**
+     * @since 1.5.0
+     */
+    private long occupiedPassQps;
+    /**
+     * @since 1.7.0
+     */
+    private int concurrency;
 
     public long getTimestamp() {
         return timestamp;
+    }
+
+    public long getOccupiedPassQps() {
+        return occupiedPassQps;
+    }
+
+    public void setOccupiedPassQps(long occupiedPassQps) {
+        this.occupiedPassQps = occupiedPassQps;
     }
 
     public void setTimestamp(long timestamp) {
@@ -86,24 +114,45 @@ public class MetricNode {
         this.resource = resource;
     }
 
+    public int getClassification() {
+        return classification;
+    }
+
+    public MetricNode setClassification(int classification) {
+        this.classification = classification;
+        return this;
+    }
+
+    public int getConcurrency() {
+        return concurrency;
+    }
+
+    public MetricNode setConcurrency(int concurrency) {
+        this.concurrency = concurrency;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "MetricNode{" +
-            "timestamp=" + timestamp +
+            "resource='" + resource + '\'' +
+            ", classification=" + classification +
+            ", timestamp=" + timestamp +
             ", passQps=" + passQps +
             ", blockQps=" + blockQps +
             ", successQps=" + successQps +
             ", exceptionQps=" + exceptionQps +
             ", rt=" + rt +
-            ", resource='" + resource + '\'' +
+            ", concurrency=" + concurrency +
+            ", occupiedPassQps=" + occupiedPassQps +
             '}';
     }
 
     /**
-     * To formatting string. All "|" in {@link #resource} will be replaced with "_", format is:
-     * <br/>
+     * To formatting string. All "|" in {@link #resource} will be replaced with
+     * "_", format is: <br/>
      * <code>
-     * timestamp|resource|passQps|blockQps|successQps|exceptionQps|rt
+     * timestamp|resource|passQps|blockQps|successQps|exceptionQps|rt|occupiedPassQps
      * </code>
      *
      * @return string format of this.
@@ -117,12 +166,15 @@ public class MetricNode {
         sb.append(blockQps).append("|");
         sb.append(successQps).append("|");
         sb.append(exceptionQps).append("|");
-        sb.append(rt);
+        sb.append(rt).append("|");
+        sb.append(occupiedPassQps).append("|");
+        sb.append(concurrency).append("|");
+        sb.append(classification);
         return sb.toString();
     }
 
     /**
-     * Parse {@link MetricNode} from thin string, see {@link #toThinString()} ()}
+     * Parse {@link MetricNode} from thin string, see {@link #toThinString()}
      *
      * @param line
      * @return
@@ -137,14 +189,23 @@ public class MetricNode {
         node.setSuccessQps(Long.parseLong(strs[4]));
         node.setExceptionQps(Long.parseLong(strs[5]));
         node.setRt(Long.parseLong(strs[6]));
+        if (strs.length >= 8) {
+            node.setOccupiedPassQps(Long.parseLong(strs[7]));
+        }
+        if (strs.length >= 9) {
+            node.setConcurrency(Integer.parseInt(strs[8]));
+        }
+        if (strs.length == 10) {
+            node.setClassification(Integer.parseInt(strs[9]));
+        }
         return node;
     }
 
     /**
-     * To formatting string. All "|" in {@link MetricNode#resource} will be replaced with "_", format is:
-     * <br/>
+     * To formatting string. All "|" in {@link MetricNode#resource} will be
+     * replaced with "_", format is: <br/>
      * <code>
-     * timestamp|yyyy-MM-dd HH:mm:ss|resource|passQps|blockQps|successQps|exceptionQps|rt\n
+     * timestamp|yyyy-MM-dd HH:mm:ss|resource|passQps|blockQps|successQps|exceptionQps|rt|occupiedPassQps\n
      * </code>
      *
      * @return string format of this.
@@ -161,7 +222,10 @@ public class MetricNode {
         sb.append(getBlockQps()).append("|");
         sb.append(getSuccessQps()).append("|");
         sb.append(getExceptionQps()).append("|");
-        sb.append(getRt());
+        sb.append(getRt()).append("|");
+        sb.append(getOccupiedPassQps()).append("|");
+        sb.append(concurrency).append("|");
+        sb.append(classification);
         sb.append('\n');
         return sb.toString();
     }
@@ -183,6 +247,15 @@ public class MetricNode {
         node.setSuccessQps(Long.parseLong(strs[5]));
         node.setExceptionQps(Long.parseLong(strs[6]));
         node.setRt(Long.parseLong(strs[7]));
+        if (strs.length >= 9) {
+            node.setOccupiedPassQps(Long.parseLong(strs[8]));
+        }
+        if (strs.length >= 10) {
+            node.setConcurrency(Integer.parseInt(strs[9]));
+        }
+        if (strs.length == 11) {
+            node.setClassification(Integer.parseInt(strs[10]));
+        }
         return node;
     }
 

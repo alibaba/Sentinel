@@ -28,7 +28,7 @@ import com.alibaba.fastjson.JSON;
 /**
  * @author qinan.qn
  */
-@CommandMapping(name = "clusterNodeById")
+@CommandMapping(name = "clusterNodeById", desc = "get clusterNode VO by id, request param: id={resourceName}")
 public class FetchClusterNodeByIdCommandHandler implements CommandHandler<String> {
 
     @Override

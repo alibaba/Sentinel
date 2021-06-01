@@ -4,6 +4,9 @@
   </div>
 </div>
 
+<!--<div>-->
+<!--<span>Total number of instances {{machines.length}}, health {{healthyCount}}, Lost contact {{machines.length-healthyCount}}</span>-->
+<!--</div>-->
 
 <div class="separator"></div>
 <div class="container-fluid">
@@ -11,9 +14,9 @@
     <div class="col-md-12">
       <div class="card">
         <div class="inputs-header">
-          <span class="brand" style="font-size: 13px;">Machine List</span>
-          <span>{{machines.length}} machines in total, {{healthCount}} healthy, {{machines.length-healthCount}} disconnected.</span>
-          <input class="form-control witdh-300" placeholder="keyword..." ng-model="searchKey">
+          <span class="brand" style="font-size: 13px;">Machine list</span>
+          <span>Total number of instances {{machines.length}}, health {{healthyCount}}, Lost contact {{machines.length - healthyCount}}.</span>
+          <input class="form-control width-300" placeholder="Keyword" ng-model="searchKey">
         </div>
 
         <!--.tools-header -->
@@ -27,6 +30,7 @@
                 <td>Sentinel Version</td>
                 <td>Health Status</td>
                 <td>Heartbeat Timestamp</td>
+                <td>Operating</td>
               </tr>
             </thead>
             <tbody>
@@ -36,10 +40,12 @@
                 <td style="word-wrap:break-word;word-break:break-all;">{{entry.ip}}</td>
                 <td> {{entry.port}} </td>
                 <td> {{entry.version}} </td>
-                <td ng-if="entry.health">Healthy</td>
-                <td ng-if="!entry.health" style="color: red">Disconnected</td>
-                <td>{{entry.timestamp | date: 'yyyy/MM/dd HH:mm:ss'}}</td>
-                <!--<td ng-if="!entry.health" style="color: grey">{{entry.timestamp | date: 'yyyy/MM/dd HH:mm:ss'}}</td>-->
+                <td ng-if="entry.healthy">Healthy</td>
+                <td ng-if="!entry.healthy" style="color: red">Disconnected</td>
+                <td>{{entry.lastHeartbeat | date: 'yyyy/MM/dd HH:mm:ss'}}</td>
+                <td>
+                    <button ng-if="!entry.healthy" class="btn btn-xs btn-outline-danger" style="height: 25px; font-size: 12px;" ng-click="removeMachine(entry.ip, entry.port)">Remove</button>
+                </td>
               </tr>
             </tbody>
           </table>

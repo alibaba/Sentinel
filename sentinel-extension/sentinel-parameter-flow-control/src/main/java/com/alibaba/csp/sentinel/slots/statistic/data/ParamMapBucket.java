@@ -59,14 +59,25 @@ public class ParamMapBucket {
     }
 
     public ParamMapBucket add(RollingParamEvent event, int count, Object value) {
-        data[event.ordinal()].putIfAbsent(value, new AtomicInteger());
         AtomicInteger counter = data[event.ordinal()].get(value);
-        counter.addAndGet(count);
+        // Note: not strictly concise.
+        if (counter == null) {
+            AtomicInteger old = data[event.ordinal()].putIfAbsent(value, new AtomicInteger(count));
+            if (old != null) {
+                old.addAndGet(count);
+            }
+        } else {
+            counter.addAndGet(count);
+        }
         return this;
     }
 
     public Set<Object> ascendingKeySet(RollingParamEvent type) {
-        return data[type.ordinal()].ascendingKeySet();
+        return data[type.ordinal()].keySet(true);
+    }
+
+    public Set<Object> descendingKeySet(RollingParamEvent type) {
+        return data[type.ordinal()].keySet(false);
     }
 
     public static final int DEFAULT_MAX_CAPACITY = 200;

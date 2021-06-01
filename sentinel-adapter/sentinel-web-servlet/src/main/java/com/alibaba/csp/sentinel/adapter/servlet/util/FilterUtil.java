@@ -27,6 +27,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 /**
  * Util class for web servlet filter.
  *
+ * @author zhaoyuguang
  * @author youji.zj
  * @author Eric Zhao
  */
@@ -64,8 +65,8 @@ public final class FilterUtil {
             url.append("?").append(request.getQueryString());
         }
 
-        if (StringUtil.isEmpty(WebServletConfig.getBlockPage())) {
-            writeDefaultBlockedPage(response);
+        if (StringUtil.isBlank(WebServletConfig.getBlockPage())) {
+            writeDefaultBlockedPage(response, WebServletConfig.getBlockPageHttpStatus());
         } else {
             String redirectUrl = WebServletConfig.getBlockPage() + "?http_referer=" + url.toString();
             // Redirect to the customized block page.
@@ -73,9 +74,10 @@ public final class FilterUtil {
         }
     }
 
-    private static void writeDefaultBlockedPage(HttpServletResponse response) throws IOException {
+    private static void writeDefaultBlockedPage(HttpServletResponse response, int httpStatus) throws IOException {
+        response.setStatus(httpStatus);
         PrintWriter out = response.getWriter();
-        out.println("Blocked by Sentinel (flow limiting)");
+        out.print(DEFAULT_BLOCK_MSG);
         out.flush();
         out.close();
     }
@@ -182,6 +184,8 @@ public final class FilterUtil {
 
         return i;
     }
+
+    public static final String DEFAULT_BLOCK_MSG = "Blocked by Sentinel (flow limiting)";
 
     private FilterUtil() {}
 }

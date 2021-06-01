@@ -18,6 +18,5 @@ message FooResponse {
 // Example service definition.
 service FooService {
     rpc sayHello(FooRequest) returns (FooResponse) {}
-
     rpc anotherHello(FooRequest) returns (FooResponse) {}
 }

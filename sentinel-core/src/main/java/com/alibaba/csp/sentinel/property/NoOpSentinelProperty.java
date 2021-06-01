@@ -21,6 +21,7 @@ package com.alibaba.csp.sentinel.property;
  * @author leyou
  */
 public final class NoOpSentinelProperty implements SentinelProperty<Object> {
+
     @Override
     public void addListener(PropertyListener<Object> listener) { }
 
@@ -28,5 +29,7 @@ public final class NoOpSentinelProperty implements SentinelProperty<Object> {
     public void removeListener(PropertyListener<Object> listener) { }
 
     @Override
-    public void updateValue(Object newValue) { }
+    public boolean updateValue(Object newValue) {
+        return true;
+    }
 }

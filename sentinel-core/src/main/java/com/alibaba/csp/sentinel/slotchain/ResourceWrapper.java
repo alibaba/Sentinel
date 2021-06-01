@@ -16,28 +16,64 @@
 package com.alibaba.csp.sentinel.slotchain;
 
 import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
- * A wrapper of resource name and {@link EntryType}.
+ * A wrapper of resource name and type.
  *
  * @author qinan.qn
  * @author jialiang.linjl
+ * @author Eric Zhao
  */
 public abstract class ResourceWrapper {
 
-    protected String name;
-    protected EntryType type = EntryType.OUT;
+    protected final String name;
 
-    public abstract String getName();
+    protected final EntryType entryType;
+    protected final int resourceType;
 
-    public abstract String getShowName();
+    public ResourceWrapper(String name, EntryType entryType, int resourceType) {
+        AssertUtil.notEmpty(name, "resource name cannot be empty");
+        AssertUtil.notNull(entryType, "entryType cannot be null");
+        this.name = name;
+        this.entryType = entryType;
+        this.resourceType = resourceType;
+    }
+
+    /**
+     * Get the resource name.
+     *
+     * @return the resource name
+     */
+    public String getName() {
+        return name;
+    }
 
     /**
      * Get {@link EntryType} of this wrapper.
      *
      * @return {@link EntryType} of this wrapper.
      */
-    public abstract EntryType getType();
+    public EntryType getEntryType() {
+        return entryType;
+    }
+
+    /**
+     * Get the classification of this resource.
+     *
+     * @return the classification of this resource
+     * @since 1.7.0
+     */
+    public int getResourceType() {
+        return resourceType;
+    }
+
+    /**
+     * Get the beautified resource name to be showed.
+     *
+     * @return the beautified resource name
+     */
+    public abstract String getShowName();
 
     /**
      * Only {@link #getName()} is considered.
