@@ -10,7 +10,7 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="inputs-header">
-                    <span class="brand" style="font-size: 13px;">集群限流 - 机器分配/管控</span>
+                    <span class="brand" style="font-size: 13px;">Cluster current limit-machine allocation/management</span>
                 </div>
 
                 <!-- error panel -->
@@ -30,17 +30,17 @@
                 <div class="card-body" style="padding: 0px 0px;" ng-if="!loadError">
                     <form role="form" class="form-horizontal">
                         <div class="form-group">
-                            <label class="col-sm-2 control-label">Server 列表</label>
+                            <label class="col-sm-2 control-label">Server List</label>
                             <div class="col-sm-4">
                                 <select ng-model="tmp.curChosenServer" ng-change="onCurrentServerChange()" size="8"
                                         ng-options="serverGroup.machineId for serverGroup in clusterMap"
                                         class="form-control"></select>
                             </div>
-                            <button type="button" class="btn btn-outline-warning" ng-click="removeFromServerList()">移除
+                            <button type="button" class="btn btn-outline-warning" ng-click="removeFromServerList()">Remove
                             </button>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-2 control-label">Token Server 端口</label>
+                            <label class="col-sm-2 control-label">Token Server port</label>
                             <div class="col-sm-4">
                                 <input type="number" class="form-control highlight-border"
                                        ng-disabled="!tmp.curChosenServer.belongToApp"
@@ -48,12 +48,12 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-2 control-label">命名空间集合</label>
+                            <label class="col-sm-2 control-label">Namespace collection</label>
                             <div class="col-sm-4">
                                 <input type="text" required class="form-control highlight-border"
                                        ng-disabled="!tmp.curChosenServer.belongToApp"
                                        ng-model='tmp.curChosenServer.namespaceSetStr'
-                                       placeholder='请指定服务端服务的命名空间集合（以,分隔）'/>
+                                       placeholder='Please specify the namespace collection of the server service (separated by,) '/>
                             </div>
                         </div>
                     </form>
@@ -61,7 +61,7 @@
                         <div>
                             <div class="form-group">
                                 <div class="col-sm-12">
-                                    <label class="control-label" style="width: 200px; text-align: center;">当前对应客户端列表</label>
+                                    <label class="control-label" style="width: 200px; text-align: center;">Current corresponding client list</label>
                                     <select size="8" multiple="multiple" ng-model="tmp.curClientChosen"
                                             ng-options="ip for ip in tmp.curChosenServer.clientSet"
                                             class="form-control" style="width: 100%;"></select>
@@ -82,7 +82,7 @@
 
                             <div class="form-group">
                                 <div class="col-sm-12">
-                                    <label class="control-label" style="width: 220px; text-align: center;">未分配机器列表</label>
+                                    <label class="control-label" style="width: 220px; text-align: center;">List of unassigned machines</label>
                                     <div>
                                         <select size="8" multiple="multiple" ng-model="tmp.curRemainingClientChosen"
                                                 ng-options="ip for ip in remainingClientAddressList"
@@ -94,7 +94,7 @@
                             <div class="form-group">
                                 <div class="col-sm-6">
                                     <button type="button" class="btn btn-outline-primary"
-                                            ng-click="addToServerList()">添加为 server
+                                            ng-click="addToServerList()">Add as server
                                     </button>
                                 </div>
                             </div>
@@ -103,7 +103,7 @@
                     <div class="separator"></div>
                     <div style="margin-top: 20px;">
                         <button type="button" style="margin: 0 10px 10px 10px;" class="btn btn-outline-success"
-                                ng-click="saveAndApplyAssign()">保存并执行分配
+                                ng-click="saveAndApplyAssign()">Save and execute assignment
                         </button>
                     </div>
                 </div>

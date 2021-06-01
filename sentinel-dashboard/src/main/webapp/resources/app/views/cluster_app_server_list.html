@@ -4,9 +4,9 @@
     </div>
     <div class="col-md-6">
         <button class="btn btn-default-inverse" style="float: right; margin-right: 10px;" ng-if="!loadError" ng-click="newServerDialog()">
-            <i class="fa fa-plus"></i>&nbsp;&nbsp;新增 Token Server</button>
+            <i class="fa fa-plus"></i>&nbsp;&nbsp;Add Token Server</button>
         <a class="btn btn-default-inverse" style="float: right; margin-right: 10px;" ui-sref="dashboard.clusterAppClientList({app: app})">
-            Token Client 列表
+            Token Client List
         </a>
     </div>
 </div>
@@ -17,7 +17,7 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="inputs-header">
-                    <span class="brand" style="font-size: 13px;">集群限流 - Token Server 列表</span>
+                    <span class="brand" style="font-size: 13px;">Cluster current limit - Token Server List</span>
                     <input class="form-control width-200" placeholder="搜索 server..." ng-model="searchKey">
                 </div>
 
@@ -42,44 +42,44 @@
                         <tr style="background: #F3F5F7;">
                             <td style="width: 15%;">Server ID</td>
                             <td style="width: 10%;">Port</td>
-                            <td style="width: 15%;">命名空间集合</td>
-                            <td style="width: 10%;">运行模式</td>
-                            <td>总连接数</td>
-                            <td>QPS 总览</td>
-                            <td style="width: 20%;">操作</td>
+                            <td style="width: 15%;">Namespace collection</td>
+                            <td style="width: 10%;">Operating mode</td>
+                            <td>Total number of connections</td>
+                            <td>QPS Overview</td>
+                            <td style="width: 20%;">operating</td>
                         </tr>
                         </thead>
                         <tbody>
                         <tr ng-repeat="serverVO in serverVOList | filter: {id: searchKey}">
                             <td style="word-wrap:break-word;word-break:break-all;">
                                 <span ng-if="serverVO.belongToApp">{{serverVO.id}}</span>
-                                <span ng-if="!serverVO.belongToApp">{{serverVO.id}}（自主指定）</span>
+                                <span ng-if="!serverVO.belongToApp">{{serverVO.id}} (Self-designated) </span>
                             </td>
                             <td>{{serverVO.port}}</td>
                             <td style="word-wrap:break-word;word-break:break-all;">
                                 <span ng-if="serverVO.belongToApp">{{serverVO.state.namespaceSetStr}}</span>
-                                <span ng-if="!serverVO.belongToApp">未知</span>
+                                <span ng-if="!serverVO.belongToApp">unknown</span>
                             </td>
                             <td style="word-wrap:break-word;word-break:break-all;">
-                                <span ng-if="!serverVO.belongToApp">未知</span>
-                                <span ng-if="serverVO.belongToApp && serverVO.state.embedded">嵌入模式</span>
-                                <span ng-if="serverVO.belongToApp && !serverVO.state.embedded">独立模式</span>
+                                <span ng-if="!serverVO.belongToApp">unknown</span>
+                                <span ng-if="serverVO.belongToApp && serverVO.state.embedded">Embedded mode</span>
+                                <span ng-if="serverVO.belongToApp && !serverVO.state.embedded">Standalone mode</span>
                             </td>
                             <td style="word-wrap:break-word;word-break:break-all;">
                                 <span ng-if="serverVO.belongToApp">{{serverVO.connectedCount}}</span>
-                                <span ng-if="!serverVO.belongToApp">未知</span>
+                                <span ng-if="!serverVO.belongToApp">unknown</span>
                             </td>
                             <td>
                                 <span ng-if="serverVO.belongToApp">{{serverVO.state.requestLimitDataStr}}</span>
-                                <span ng-if="!serverVO.belongToApp">未知</span>
+                                <span ng-if="!serverVO.belongToApp">unknown</span>
                             </td>
                             <td>
                                 <button class="btn btn-xs btn-outline-primary" type="button" ng-if="serverVO.belongToApp"
-                                        ng-click="viewConnectionDetail(serverVO)" style="font-size: 12px; height:25px;">连接详情</button>
+                                        ng-click="viewConnectionDetail(serverVO)" style="font-size: 12px; height:25px;">Connection details</button>
                                 <button class="btn btn-xs btn-outline-primary" type="button"
-                                        ng-click="modifyServerAssignConfig(serverVO)" style="font-size: 12px; height:25px;">管理</button>
+                                        ng-click="modifyServerAssignConfig(serverVO)" style="font-size: 12px; height:25px;">management</button>
                                 <button class="btn btn-xs btn-outline-danger" type="button"
-                                        ng-click="unbindServer(serverVO.id)" style="font-size: 12px; height:25px;">移除</button>
+                                        ng-click="unbindServer(serverVO.id)" style="font-size: 12px; height:25px;">Remove</button>
                             </td>
                         </tr>
                         </tbody>

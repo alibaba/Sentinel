@@ -4,7 +4,7 @@
   </div>
   <div class="col-md-6">
     <button class="btn btn-outline-primary" style="float: right; margin-right: 10px;" ng-disabled="!macInputModel" ng-click="addNewApi()">
-      <i class="fa fa-plus"></i>&nbsp;&nbsp;新增 API 分组</button>
+      <i class="fa fa-plus"></i>&nbsp;&nbsp;Add API Grouping</button>
   </div>
 </div>
 
@@ -15,12 +15,12 @@
     <div class="col-md-12">
       <div class="card">
         <div class="inputs-header">
-          <span class="brand" style="font-size: 13px;">API 分组管理</span>
-          <button class="btn btn-primary" style="float: right; margin-right: 10px; height: 30px;font-size: 12px;" ng-click="getApis()">刷新</button>
-          <input class="form-control witdh-200" placeholder="关键字" ng-model="searchKey">
+          <span class="brand" style="font-size: 13px;">API Group management</span>
+          <button class="btn btn-primary" style="float: right; margin-right: 10px; height: 30px;font-size: 12px;" ng-click="getApis()">Refresh</button>
+          <input class="form-control witdh-200" placeholder="Keyword" ng-model="searchKey">
           <div class="control-group" style="float:right;margin-right: 10px;margin-bottom: -10px;">
             <selectize id="gsInput" class="selectize-input-200" config="macsInputConfig" options="macsInputOptions" ng-model="macInputModel"
-              placeholder="机器"></selectize>
+              placeholder="machine"></selectize>
           </div>
         </div>
 
@@ -30,16 +30,16 @@
             <thead>
               <tr style="background: #F3F5F7;">
                 <td>
-                  API 名称
+                  API name
                 </td>
                 <td>
-                  匹配模式
+                  Match mode
                 </td>
                 <td>
-                  匹配串
+                  Match string
                 </td>
                 <td>
-                  操作
+                  operating
                 </td>
               </tr>
             </thead>
@@ -48,14 +48,14 @@
                   pagination-id="entriesPagination">
                 <td ng-if="api.firstFlag==0" rowspan="{{api.itemSize}}" style="vertical-align: middle;">{{api.apiName}}</td>
                 <td>
-                  <span ng-if="api.matchStrategy == 0">精确</span>
-                  <span ng-if="api.matchStrategy == 1">前缀</span>
-                  <span ng-if="api.matchStrategy == 2">正则</span>
+                  <span ng-if="api.matchStrategy == 0">accurate</span>
+                  <span ng-if="api.matchStrategy == 1">Prefix</span>
+                  <span ng-if="api.matchStrategy == 2">Regular</span>
                 </td>
                 <td>{{api.pattern}}</td>
                 <td ng-if="api.firstFlag==0" rowspan="{{api.itemSize}}" style="vertical-align: middle;">
-                  <button class="btn btn-xs btn-outline-primary" type="button" ng-click="editApi(api)" style="font-size: 12px; height:25px;">编辑</button>
-                  <button class="btn btn-xs btn-outline-danger" type="button" ng-click="deleteApi(api)" style="font-size: 12px; height:25px;">删除</button>
+                  <button class="btn btn-xs btn-outline-primary" type="button" ng-click="editApi(api)" style="font-size: 12px; height:25px;">edit</button>
+                  <button class="btn btn-xs btn-outline-danger" type="button" ng-click="deleteApi(api)" style="font-size: 12px; height:25px;">delete</button>
                 </td>
               </tr>
             </tbody>
@@ -67,12 +67,12 @@
             on-page-change="">
           </dir-pagination-controls>
           <div class="tools" style="">
-            <span>共 {{apisPageConfig.totalCount}} 条记录, </span>
+            <span>共 {{apisPageConfig.totalCount}} Records, </span>
             <span>
-              每页
-              <input class="form-control" ng-model="apisPageConfig.pageSize"> 条记录
+              Per page
+              <input class="form-control" ng-model="apisPageConfig.pageSize"> Records
             </span>
-            <!--<span>第 {{apisPageConfig.currentPageIndex}} / {{apisPageConfig.totalPage}} 页</span>-->
+            <!--<span>First {{apisPageConfig.currentPageIndex}} / {{apisPageConfig.totalPage}} page</span>-->
           </div>
           <!-- .tools -->
         </div>
