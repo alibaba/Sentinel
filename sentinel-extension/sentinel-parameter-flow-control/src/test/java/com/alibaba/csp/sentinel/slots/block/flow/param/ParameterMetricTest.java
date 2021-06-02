@@ -15,16 +15,20 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow.param;
 
-import java.util.HashMap;
-import java.util.Map;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
-import com.alibaba.csp.sentinel.slots.statistic.metric.HotParameterLeapArray;
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
 
 /**
  * Test cases for {@link ParameterMetric}.
@@ -35,38 +39,146 @@ import static org.mockito.Mockito.when;
 public class ParameterMetricTest {
 
     @Test
-    public void testGetTopParamCount() {
+    public void testInitAndClearParameterMetric() {
+        // Create a parameter metric for resource "abc".
         ParameterMetric metric = new ParameterMetric();
-        int index = 1;
-        int n = 10;
-        RollingParamEvent event = RollingParamEvent.REQUEST_PASSED;
-        HotParameterLeapArray leapArray = mock(HotParameterLeapArray.class);
-        Map<Object, Double> topValues = new HashMap<Object, Double>() {{
-            put("a", 3d);
-            put("b", 7d);
-        }};
-        when(leapArray.getTopValues(event, n)).thenReturn(topValues);
 
-        // Get when not initialized.
-        assertEquals(0, metric.getTopPassParamCount(index, n).size());
+        ParamFlowRule rule = new ParamFlowRule("abc")
+            .setParamIdx(1);
+        metric.initialize(rule);
+        CacheMap<Object, AtomicInteger> threadCountMap = metric.getThreadCountMap().get(rule.getParamIdx());
+        assertNotNull(threadCountMap);
+        CacheMap<Object, AtomicLong> timeRecordMap = metric.getRuleTimeCounter(rule);
+        assertNotNull(timeRecordMap);
+        metric.initialize(rule);
+        assertSame(threadCountMap, metric.getThreadCountMap().get(rule.getParamIdx()));
+        assertSame(timeRecordMap, metric.getRuleTimeCounter(rule));
 
-        metric.getRollingParameters().put(index, leapArray);
-        assertEquals(topValues, metric.getTopPassParamCount(index, n));
+        ParamFlowRule rule2 = new ParamFlowRule("abc")
+            .setParamIdx(1);
+        metric.initialize(rule2);
+        CacheMap<Object, AtomicLong> timeRecordMap2 = metric.getRuleTimeCounter(rule2);
+        assertSame(timeRecordMap, timeRecordMap2);
+
+        rule2.setParamIdx(2);
+        metric.initialize(rule2);
+        assertNotSame(timeRecordMap2, metric.getRuleTimeCounter(rule2));
+
+        ParamFlowRule rule3 = new ParamFlowRule("abc")
+            .setParamIdx(1)
+            .setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER);
+        metric.initialize(rule3);
+        assertNotSame(timeRecordMap, metric.getRuleTimeCounter(rule3));
+
+        metric.clear();
+        assertEquals(0, metric.getThreadCountMap().size());
+        assertEquals(0, metric.getRuleTimeCounterMap().size());
+        assertEquals(0, metric.getRuleTokenCounterMap().size());
     }
 
     @Test
-    public void testInitAndClearHotParameterMetric() {
+    public void testAddAndDecreaseThreadCountCommon() {
+        testAddAndDecreaseThreadCount(PARAM_TYPE_NORMAL);
+        testAddAndDecreaseThreadCount(PARAM_TYPE_ARRAY);
+        testAddAndDecreaseThreadCount(PARAM_TYPE_COLLECTION);
+    }
+
+    private void testAddAndDecreaseThreadCount(int paramType) {
+
+        ParamFlowRule rule = new ParamFlowRule();
+        rule.setParamIdx(0);
+
+        int n = 3;
+        long[] v = new long[] {19L, 3L, 8L};
         ParameterMetric metric = new ParameterMetric();
-        int index = 1;
-        metric.initializeForIndex(index);
-        HotParameterLeapArray leapArray = metric.getRollingParameters().get(index);
-        assertNotNull(leapArray);
+        metric.initialize(rule);
+        assertTrue(metric.getThreadCountMap().containsKey(rule.getParamIdx()));
 
-        metric.initializeForIndex(index);
-        assertSame(leapArray, metric.getRollingParameters().get(index));
+        switch (paramType) {
+            case PARAM_TYPE_ARRAY:
+                metric.addThreadCount((Object)v);
+                break;
+            case PARAM_TYPE_COLLECTION:
+                metric.addThreadCount(Arrays.asList(v[0], v[1], v[2]));
+                break;
+            case PARAM_TYPE_NORMAL:
+            default:
+                metric.addThreadCount(v[0]);
+                metric.addThreadCount(v[1]);
+                metric.addThreadCount(v[2]);
+                break;
+        }
 
-        metric.clear();
-        assertEquals(0, metric.getRollingParameters().size());
+        assertEquals(1, metric.getThreadCountMap().size());
+        CacheMap<Object, AtomicInteger> threadCountMap = metric.getThreadCountMap().get(rule.getParamIdx());
+        assertEquals(v.length, threadCountMap.size());
+        for (long vs : v) {
+            assertEquals(1, threadCountMap.get(vs).get());
+        }
+
+        for (int i = 1; i < n; i++) {
+            switch (paramType) {
+                case PARAM_TYPE_ARRAY:
+                    metric.addThreadCount((Object)v);
+                    break;
+                case PARAM_TYPE_COLLECTION:
+                    metric.addThreadCount(Arrays.asList(v[0], v[1], v[2]));
+                    break;
+                case PARAM_TYPE_NORMAL:
+                default:
+                    metric.addThreadCount(v[0]);
+                    metric.addThreadCount(v[1]);
+                    metric.addThreadCount(v[2]);
+                    break;
+            }
+        }
+        assertEquals(1, metric.getThreadCountMap().size());
+        threadCountMap = metric.getThreadCountMap().get(rule.getParamIdx());
+        assertEquals(v.length, threadCountMap.size());
+        for (long vs : v) {
+            assertEquals(n, threadCountMap.get(vs).get());
+        }
+
+        for (int i = 1; i < n; i++) {
+            switch (paramType) {
+                case PARAM_TYPE_ARRAY:
+                    metric.decreaseThreadCount((Object)v);
+                    break;
+                case PARAM_TYPE_COLLECTION:
+                    metric.decreaseThreadCount(Arrays.asList(v[0], v[1], v[2]));
+                    break;
+                case PARAM_TYPE_NORMAL:
+                default:
+                    metric.decreaseThreadCount(v[0]);
+                    metric.decreaseThreadCount(v[1]);
+                    metric.decreaseThreadCount(v[2]);
+                    break;
+            }
+        }
+        assertEquals(1, metric.getThreadCountMap().size());
+        threadCountMap = metric.getThreadCountMap().get(rule.getParamIdx());
+        assertEquals(v.length, threadCountMap.size());
+        for (long vs : v) {
+            assertEquals(1, threadCountMap.get(vs).get());
+        }
+
+        switch (paramType) {
+            case PARAM_TYPE_ARRAY:
+                metric.decreaseThreadCount((Object)v);
+                break;
+            case PARAM_TYPE_COLLECTION:
+                metric.decreaseThreadCount(Arrays.asList(v[0], v[1], v[2]));
+                break;
+            case PARAM_TYPE_NORMAL:
+            default:
+                metric.decreaseThreadCount(v[0]);
+                metric.decreaseThreadCount(v[1]);
+                metric.decreaseThreadCount(v[2]);
+                break;
+        }
+        assertEquals(1, metric.getThreadCountMap().size());
+        threadCountMap = metric.getThreadCountMap().get(rule.getParamIdx());
+        assertEquals(0, threadCountMap.size());
     }
 
     private static final int PARAM_TYPE_NORMAL = 0;

@@ -15,8 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.system;
 
-import com.alibaba.csp.sentinel.context.Context;
-import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 
 /**
@@ -34,6 +32,7 @@ import com.alibaba.csp.sentinel.slots.block.AbstractRule;
  * </p>
  *
  * @author jialiang.linjl
+ * @author Carpenter Lee
  * @see SystemRuleManager
  */
 public class SystemRule extends AbstractRule {
@@ -42,6 +41,10 @@ public class SystemRule extends AbstractRule {
      * negative value means no threshold checking.
      */
     private double highestSystemLoad = -1;
+    /**
+     * cpu usage, between [0, 1]
+     */
+    private double highestCpuUsage = -1;
     private double qps = -1;
     private long avgRt = -1;
     private long maxThread = -1;
@@ -110,9 +113,22 @@ public class SystemRule extends AbstractRule {
         this.highestSystemLoad = highestSystemLoad;
     }
 
-    @Override
-    public boolean passCheck(Context context, DefaultNode node, int count, Object... args) {
-        return true;
+    /**
+     * Get highest cpu usage. Cpu usage is between [0, 1]
+     *
+     * @return highest cpu usage
+     */
+    public double getHighestCpuUsage() {
+        return highestCpuUsage;
+    }
+
+    /**
+     * set highest cpu usage. Cpu usage is between [0, 1]
+     *
+     * @param highestCpuUsage the value to set.
+     */
+    public void setHighestCpuUsage(double highestCpuUsage) {
+        this.highestCpuUsage = highestCpuUsage;
     }
 
     @Override
@@ -130,6 +146,9 @@ public class SystemRule extends AbstractRule {
         SystemRule that = (SystemRule)o;
 
         if (Double.compare(that.highestSystemLoad, highestSystemLoad) != 0) {
+            return false;
+        }
+        if (Double.compare(that.highestCpuUsage, highestCpuUsage) != 0) {
             return false;
         }
 
@@ -150,6 +169,9 @@ public class SystemRule extends AbstractRule {
         temp = Double.doubleToLongBits(highestSystemLoad);
         result = 31 * result + (int)(temp ^ (temp >>> 32));
 
+        temp = Double.doubleToLongBits(highestCpuUsage);
+        result = 31 * result + (int)(temp ^ (temp >>> 32));
+
         temp = Double.doubleToLongBits(qps);
         result = 31 * result + (int)(temp ^ (temp >>> 32));
 
@@ -162,6 +184,7 @@ public class SystemRule extends AbstractRule {
     public String toString() {
         return "SystemRule{" +
             "highestSystemLoad=" + highestSystemLoad +
+            ", highestCpuUsage=" + highestCpuUsage +
             ", qps=" + qps +
             ", avgRt=" + avgRt +
             ", maxThread=" + maxThread +

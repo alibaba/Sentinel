@@ -1,0 +1,94 @@
+<div class="row" style="margin-left: 1px; margin-top:10px; height: 50px;">
+  <div class="col-md-6" style="margin-bottom: 10px;">
+    <span style="font-size: 30px;font-weight: bold;">{{app}}</span>
+  </div>
+  <div class="col-md-6">
+    <button class="btn btn-outline-primary" style="float: right; margin-right: 10px;" ng-disabled="!macInputModel" ng-click="addNewRule()">
+      <i class="fa fa-plus"></i>&nbsp;&nbsp;Add gateway flow control rules</button>
+  </div>
+</div>
+
+<div class="separator"></div>
+
+<div class="container-fluid">
+  <div class="row" style="margin-top: 20px; margin-bottom: 20px;">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="inputs-header">
+          <span class="brand" style="font-size: 13px;">Gateway flow control rules</span>
+          <button class="btn btn-primary" style="float: right; margin-right: 10px; height: 30px;font-size: 12px;" ng-click="getMachineRules()">Refresh</button>
+          <input class="form-control witdh-200" placeholder="Keyword" ng-model="searchKey">
+          <div class="control-group" style="float:right;margin-right: 10px;margin-bottom: -10px;">
+            <selectize id="gsInput" class="selectize-input-200" config="macsInputConfig" options="macsInputOptions" ng-model="macInputModel"
+              placeholder="machine"></selectize>
+          </div>
+        </div>
+
+        <!--.tools-header -->
+        <div class="card-body" style="padding: 0px 0px;">
+          <table class="table" style="border-left: none; border-right:none;margin-top: 10px;">
+            <thead>
+              <tr style="background: #F3F5F7;">
+                <td>
+                  API name
+                </td>
+                <td>
+                  API Types
+                </td>
+                <td>
+                  Threshold type
+                </td>
+                <td>
+                  Single machine threshold
+                </td>
+                <td>
+                  operating
+                </td>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr dir-paginate="rule in rules | filter: searchKey | itemsPerPage: rulesPageConfig.pageSize " current-page="rulesPageConfig.currentPageIndex"
+                  pagination-id="entriesPagination">
+                <td>{{rule.resource}}</td>
+                <td>
+                  <span ng-if="rule.resourceMode == 0">Route ID</span>
+                  <span ng-if="rule.resourceMode == 1">API Grouping</span>
+                </td>
+                <td>
+                  <span ng-if="rule.grade == 1">QPS</span>
+                  <span ng-if="rule.grade == 0">Threads</span>
+                </td>
+                <td>{{rule.count}}</td>
+                <td>
+                  <button class="btn btn-xs btn-outline-primary" type="button" ng-click="editRule(rule)" style="font-size: 12px; height:25px;">edit</button>
+                  <button class="btn btn-xs btn-outline-danger" type="button" ng-click="deleteRule(rule)" style="font-size: 12px; height:25px;">delete</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- .card-body -->
+        <div class="pagination-footer">
+          <dir-pagination-controls boundary-links="true" template-url="app/views/pagination.tpl.html" pagination-id="entriesPagination"
+            on-page-change="">
+          </dir-pagination-controls>
+          <div class="tools" style="">
+            <span>共 {{rulesPageConfig.totalCount}} Records, </span>
+            <span>
+              Per page
+              <input class="form-control" ng-model="rulesPageConfig.pageSize"> Records
+            </span>
+            <!--<span>First {{apisPageConfig.currentPageIndex}} / {{apisPageConfig.totalPage}} page</span>-->
+          </div>
+          <!-- .tools -->
+        </div>
+        <!-- pagination-footer -->
+      </div>
+      <!-- .card -->
+    </div>
+    <!-- .col-md-12 -->
+  </div>
+  <!-- -->
+</div>
+<!-- .container-fluid -->

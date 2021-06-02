@@ -3,7 +3,6 @@
 Sentinel gRPC Adapter provides client and server interceptor for gRPC services.
 
 > Note that currently the interceptor only supports unary methods in gRPC.
-  In some circumstances (e.g. asynchronous call), the RT metrics might not be accurate.
 
 ## Client Interceptor
 
@@ -35,4 +34,3 @@ Server server = ServerBuilder.forPort(port)
      .intercept(new SentinelGrpcServerInterceptor()) // Add the server interceptor.
      .build();
 ```
-

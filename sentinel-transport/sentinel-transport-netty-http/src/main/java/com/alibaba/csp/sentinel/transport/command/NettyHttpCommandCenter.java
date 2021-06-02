@@ -22,6 +22,7 @@ import java.util.concurrent.Executors;
 import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandHandlerProvider;
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
+import com.alibaba.csp.sentinel.spi.Spi;
 import com.alibaba.csp.sentinel.transport.command.netty.HttpServer;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.transport.CommandCenter;
@@ -31,10 +32,12 @@ import com.alibaba.csp.sentinel.transport.CommandCenter;
  *
  * @author Eric Zhao
  */
+@Spi(order = Spi.ORDER_LOWEST - 100)
 public class NettyHttpCommandCenter implements CommandCenter {
 
     private final HttpServer server = new HttpServer();
 
+    @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private final ExecutorService pool = Executors.newSingleThreadExecutor(
         new NamedThreadFactory("sentinel-netty-command-center-executor"));
 
@@ -46,9 +49,8 @@ public class NettyHttpCommandCenter implements CommandCenter {
                 try {
                     server.start();
                 } catch (Exception ex) {
-                    RecordLog.info("Start netty server error", ex);
+                    RecordLog.warn("[NettyHttpCommandCenter] Failed to start Netty transport server", ex);
                     ex.printStackTrace();
-                    System.exit(-1);
                 }
             }
         });

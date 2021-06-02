@@ -525,7 +525,15 @@ body {
     max-width: 200px;
 }
 
+.width-200 {
+    max-width: 200px;
+}
+
 .witdh-300 {
+    max-width: 300px;
+}
+
+.width-300 {
     max-width: 300px;
 }
 

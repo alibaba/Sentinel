@@ -63,9 +63,13 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  * @author jialiang.linjl
  * @author leyou
  */
-public class SystemRuleManager {
+public final class SystemRuleManager {
 
     private static volatile double highestSystemLoad = Double.MAX_VALUE;
+    /**
+     * cpu usage, between [0, 1]
+     */
+    private static volatile double highestCpuUsage = Double.MAX_VALUE;
     private static volatile double qps = Double.MAX_VALUE;
     private static volatile long maxRt = Long.MAX_VALUE;
     private static volatile long maxThread = Long.MAX_VALUE;
@@ -73,6 +77,7 @@ public class SystemRuleManager {
      * mark whether the threshold are set by user.
      */
     private static volatile boolean highestSystemLoadIsSet = false;
+    private static volatile boolean highestCpuUsageIsSet = false;
     private static volatile boolean qpsIsSet = false;
     private static volatile boolean maxRtIsSet = false;
     private static volatile boolean maxThreadIsSet = false;
@@ -83,13 +88,14 @@ public class SystemRuleManager {
     private final static SystemPropertyListener listener = new SystemPropertyListener();
     private static SentinelProperty<List<SystemRule>> currentProperty = new DynamicSentinelProperty<List<SystemRule>>();
 
+    @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private final static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1,
         new NamedThreadFactory("sentinel-system-status-record-task", true));
 
     static {
         checkSystemStatus.set(false);
         statusListener = new SystemStatusListener();
-        scheduler.scheduleAtFixedRate(statusListener, 5, 1, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(statusListener, 0, 1, TimeUnit.SECONDS);
         currentProperty.addListener(listener);
     }
 
@@ -101,6 +107,7 @@ public class SystemRuleManager {
      */
     public static void register2Property(SentinelProperty<List<SystemRule>> property) {
         synchronized (listener) {
+            RecordLog.info("[SystemRuleManager] Registering new property to system rule manager");
             currentProperty.removeListener(listener);
             property.addListener(listener);
             currentProperty = property;
@@ -134,6 +141,12 @@ public class SystemRuleManager {
             result.add(loadRule);
         }
 
+        if (highestCpuUsageIsSet) {
+            SystemRule rule = new SystemRule();
+            rule.setHighestCpuUsage(highestCpuUsage);
+            result.add(rule);
+        }
+
         if (maxRtIsSet) {
             SystemRule rtRule = new SystemRule();
             rtRule.setAvgRt(maxRt);
@@ -155,26 +168,22 @@ public class SystemRuleManager {
         return result;
     }
 
-    public static double getQps() {
+    public static double getInboundQpsThreshold() {
         return qps;
     }
 
-    public static void setQps(double qps) {
-        SystemRuleManager.qps = qps;
-    }
-
-    public static long getMaxRt() {
+    public static long getRtThreshold() {
         return maxRt;
     }
 
-    public static long getMaxThread() {
+    public static long getMaxThreadThreshold() {
         return maxThread;
     }
 
     static class SystemPropertyListener extends SimplePropertyListener<List<SystemRule>> {
 
         @Override
-        public void configUpdate(List<SystemRule> rules) {
+        public synchronized void configUpdate(List<SystemRule> rules) {
             restoreSetting();
             // systemRules = rules;
             if (rules != null && rules.size() >= 1) {
@@ -185,9 +194,18 @@ public class SystemRuleManager {
                 checkSystemStatus.set(false);
             }
 
-
-            RecordLog.info(String.format("[SystemRuleManager] Current system check status: %s, highestSystemLoad: "
-                + highestSystemLoad + ", " + "maxRt: %d, maxThread: %d, maxQps: " + qps, checkSystemStatus.get(), maxRt, maxThread));
+            RecordLog.info(String.format("[SystemRuleManager] Current system check status: %s, "
+                    + "highestSystemLoad: %e, "
+                    + "highestCpuUsage: %e, "
+                    + "maxRt: %d, "
+                    + "maxThread: %d, "
+                    + "maxQps: %e",
+                checkSystemStatus.get(),
+                highestSystemLoad,
+                highestCpuUsage,
+                maxRt,
+                maxThread,
+                qps));
         }
 
         protected void restoreSetting() {
@@ -195,11 +213,13 @@ public class SystemRuleManager {
 
             // should restore changes
             highestSystemLoad = Double.MAX_VALUE;
+            highestCpuUsage = Double.MAX_VALUE;
             maxRt = Long.MAX_VALUE;
             maxThread = Long.MAX_VALUE;
             qps = Double.MAX_VALUE;
 
             highestSystemLoadIsSet = false;
+            highestCpuUsageIsSet = false;
             maxRtIsSet = false;
             maxThreadIsSet = false;
             qpsIsSet = false;
@@ -211,12 +231,12 @@ public class SystemRuleManager {
         return checkSystemStatus.get();
     }
 
-    public static double getHighestSystemLoad() {
+    public static double getSystemLoadThreshold() {
         return highestSystemLoad;
     }
 
-    public static void setHighestSystemLoad(double highestSystemLoad) {
-        SystemRuleManager.highestSystemLoad = highestSystemLoad;
+    public static double getCpuUsageThreshold() {
+        return highestCpuUsage;
     }
 
     public static void loadSystemConf(SystemRule rule) {
@@ -227,6 +247,17 @@ public class SystemRuleManager {
             highestSystemLoad = Math.min(highestSystemLoad, rule.getHighestSystemLoad());
             highestSystemLoadIsSet = true;
             checkStatus = true;
+        }
+
+        if (rule.getHighestCpuUsage() >= 0) {
+            if (rule.getHighestCpuUsage() > 1) {
+                RecordLog.warn(String.format("[SystemRuleManager] Ignoring invalid SystemRule: "
+                    + "highestCpuUsage %.3f > 1", rule.getHighestCpuUsage()));
+            } else {
+                highestCpuUsage = Math.min(highestCpuUsage, rule.getHighestCpuUsage());
+                highestCpuUsageIsSet = true;
+                checkStatus = true;
+            }
         }
 
         if (rule.getAvgRt() >= 0) {
@@ -257,13 +288,16 @@ public class SystemRuleManager {
      * @throws BlockException when any system rule's threshold is exceeded.
      */
     public static void checkSystem(ResourceWrapper resourceWrapper) throws BlockException {
+        if (resourceWrapper == null) {
+            return;
+        }
         // Ensure the checking switch is on.
         if (!checkSystemStatus.get()) {
             return;
         }
 
         // for inbound traffic only
-        if (resourceWrapper.getType() != EntryType.IN) {
+        if (resourceWrapper.getEntryType() != EntryType.IN) {
             return;
         }
 
@@ -284,17 +318,32 @@ public class SystemRuleManager {
             throw new SystemBlockException(resourceWrapper.getName(), "rt");
         }
 
-        // BBR algorithm.
+        // load. BBR algorithm.
         if (highestSystemLoadIsSet && getCurrentSystemAvgLoad() > highestSystemLoad) {
-            if (currentThread > 1 &&
-                currentThread > Constants.ENTRY_NODE.maxSuccessQps() * Constants.ENTRY_NODE.minRt() / 1000) {
+            if (!checkBbr(currentThread)) {
                 throw new SystemBlockException(resourceWrapper.getName(), "load");
             }
         }
 
+        // cpu usage
+        if (highestCpuUsageIsSet && getCurrentCpuUsage() > highestCpuUsage) {
+            throw new SystemBlockException(resourceWrapper.getName(), "cpu");
+        }
+    }
+
+    private static boolean checkBbr(int currentThread) {
+        if (currentThread > 1 &&
+            currentThread > Constants.ENTRY_NODE.maxSuccessQps() * Constants.ENTRY_NODE.minRt() / 1000) {
+            return false;
+        }
+        return true;
     }
 
     public static double getCurrentSystemAvgLoad() {
         return statusListener.getSystemAverageLoad();
+    }
+
+    public static double getCurrentCpuUsage() {
+        return statusListener.getCpuUsage();
     }
 }

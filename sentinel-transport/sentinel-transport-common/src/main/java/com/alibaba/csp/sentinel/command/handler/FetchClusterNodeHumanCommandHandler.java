@@ -29,7 +29,7 @@ import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 /**
  * @author qinan.qn
  */
-@CommandMapping(name = "cnode")
+@CommandMapping(name = "cnode", desc = "get clusterNode metrics by id, request param: id={resourceName}")
 public class FetchClusterNodeHumanCommandHandler implements CommandHandler<String> {
 
     private final static String FORMAT = "%-4s%-80s%-10s%-10s%-10s%-11s%-9s%-6s%-10s%-11s%-9s%-11s";

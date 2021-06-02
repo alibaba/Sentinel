@@ -2,7 +2,7 @@ var app = angular.module('sentinelDashboardApp');
 
 app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interval', '$timeout',
   function ($scope, $stateParams, MetricService, $interval, $timeout) {
-
+	$scope.charts = [];
     $scope.endTime = new Date();
     $scope.startTime = new Date();
     $scope.startTime.setMinutes($scope.endTime.getMinutes() - 30);
@@ -59,6 +59,11 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
       $interval.cancel(intervalId);
     });
     $scope.initAllChart = function () {
+      //revoke useless charts positively
+      while($scope.charts.length > 0) {
+      	let chart = $scope.charts.pop();
+      	chart.destroy();
+      }
       $.each($scope.metrics, function (idx, metric) {
         if (idx == $scope.metrics.length - 1) {
           return;
@@ -68,8 +73,9 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
           forceFit: true,
           width: 100,
           height: 250,
-          padding: [10, 30, 70, 30]
+          padding: [10, 30, 70, 50]
         });
+        $scope.charts.push(chart);
         var maxQps = 0;
         for (var i in metric.data) {
           var item = metric.data[i];
@@ -89,14 +95,14 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
           min: 0,
           max: maxQps,
           fine: true,
-          alias: 'p_qps'
+          alias: '通过 QPS'
           // max: 10
         });
         chart.scale('blockQps', {
           min: 0,
           max: maxQps,
           fine: true,
-          alias: 'b_qps',
+          alias: '拒绝 QPS',
         });
         chart.scale('rt', {
           min: 0,
@@ -131,10 +137,10 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
           allowAllCanceled: true,
           itemFormatter: function (val) {
             if ('passQps' === val) {
-              return 'p_qps';
+              return '通过 QPS';
             }
             if ('blockQps' === val) {
-              return 'b_qps';
+              return '拒绝 QPS';
             }
             return val;
           },
@@ -181,7 +187,7 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
       MetricService.queryAppSortedIdentities(params).success(function (data) {
         $scope.metrics = [];
         $scope.emptyObjs = [];
-        if (data.code == 0 && data.data) {
+        if (data.code === 0 && data.data) {
           var metricsObj = data.data.metric;
           var identityNames = Object.keys(metricsObj);
           if (identityNames.length < 1) {

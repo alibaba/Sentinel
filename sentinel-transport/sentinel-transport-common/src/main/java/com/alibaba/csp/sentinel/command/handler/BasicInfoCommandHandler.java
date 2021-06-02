@@ -26,7 +26,7 @@ import com.alibaba.csp.sentinel.util.HostNameUtil;
  *
  * @author Eric Zhao
  */
-@CommandMapping(name = "basicInfo")
+@CommandMapping(name = "basicInfo", desc = "get sentinel config info")
 public class BasicInfoCommandHandler implements CommandHandler<String> {
 
     @Override

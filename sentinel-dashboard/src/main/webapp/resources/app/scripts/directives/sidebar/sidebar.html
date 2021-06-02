@@ -16,9 +16,10 @@
       </li>
 
       <li ng-class="{active: true}" ng-repeat="entry in apps | filter: { app: searchApp }">{{dropDown}}
-        <a href="#" ng-click="click($event)" collapse="{{collpaseall == 1}}" style="font-size: 16px;word-break: break-word;">
+        <a href="javascript:void(0);" ng-click="click($event)" collapse="{{collpaseall == 1}}" style="font-size: 16px;word-break: break-word;">
           &nbsp;{{entry.app}}
           <span class="fa arrow"></span>
+          <span class="arrow">({{entry.healthyCount}}/{{entry.machines.length}})</span>
         </a>
 
         <!--<ul class="nav nav-second-level" collapse="{{entry.active}}" style="display: none;">-->
@@ -27,20 +28,41 @@
             <a ui-sref="dashboard.metric({app: entry.app})">
               <i class="fa fa-bar-chart"></i>&nbsp;&nbsp;Monitoring</a>
           </li>
-          <li ui-sref-active="active">
+
+          <li ui-sref-active="active" ng-if="!entry.isGateway">
             <a ui-sref="dashboard.identity({app: entry.app})">
               <i class="glyphicon glyphicon-list-alt"></i>&nbsp;&nbsp;Resource Chain</a>
           </li>
 
-          <li ui-sref-active="active">
-            <a ui-sref="dashboard.flow({app: entry.app})">
+          <li ui-sref-active="active" ng-if="entry.isGateway">
+            <a ui-sref="dashboard.gatewayIdentity({app: entry.app})">
+              <i class="glyphicon glyphicon-filter"></i>&nbsp;&nbsp;Request link</a>
+          </li>
+
+          <!--<li ui-sref-active="active" ng-if="entry.appType==0">-->
+            <!--<a ui-sref="dashboard.flow({app: entry.app})">-->
+              <!--<i class="glyphicon glyphicon-filter"></i>&nbsp;&nbsp;Flow Rules V1</a>-->
+          <!--</li>-->
+
+          <li ui-sref-active="active" ng-if="entry.isGateway">
+            <a ui-sref="dashboard.gatewayApi({app: entry.app})">
+              <i class="glyphicon glyphicon-tags"></i>&nbsp;&nbsp;&nbsp;API management</a>
+          </li>
+          <li ui-sref-active="active" ng-if="entry.isGateway">
+            <a ui-sref="dashboard.gatewayFlow({app: entry.app})">
               <i class="glyphicon glyphicon-filter"></i>&nbsp;&nbsp;Flow Rules</a>
           </li>
+
+          <li ui-sref-active="active" ng-if="!entry.isGateway">
+            <a ui-sref="dashboard.flowV1({app: entry.app})">
+              <i class="glyphicon glyphicon-filter"></i>&nbsp;&nbsp;Flow Rules</a>
+          </li>
+
           <li ui-sref-active="active">
             <a ui-sref="dashboard.degrade({app: entry.app})">
               <i class="glyphicon glyphicon-flash"></i>&nbsp;&nbsp;Degrade Rules</a>
           </li>
-          <li ui-sref-active="active">
+          <li ui-sref-active="active" ng-if="!entry.isGateway">
             <a ui-sref="dashboard.paramFlow({app: entry.app})">
               <i class="glyphicon glyphicon-fire"></i>&nbsp;&nbsp;Parameter Rules</a>
           </li>
@@ -48,15 +70,19 @@
             <a ui-sref="dashboard.system({app: entry.app})">
               <i class="glyphicon glyphicon-lock"></i>&nbsp;&nbsp;System Rules</a>
           </li>
-          <li ui-sref-active="active">
+          <li ui-sref-active="active" ng-if="!entry.isGateway">
             <a ui-sref="dashboard.authority({app: entry.app})">
               <i class="glyphicon glyphicon-check"></i>&nbsp;&nbsp;Authority Rules</a>
           </li>
+          <li ui-sref-active="active" ng-if="!entry.isGateway">
+            <a ui-sref="dashboard.clusterAppServerList({app: entry.app})">
+              <i class="glyphicon glyphicon-cloud"></i>&nbsp;&nbsp;Cluster flow control</a>
+          </li>
+
           <li ui-sref-active="active">
             <a ui-sref="dashboard.machine({app: entry.app})">
               <i class="glyphicon glyphicon-th-list"></i>&nbsp;&nbsp;Machine List</a>
           </li>
-
         </ul>
         <!-- /.nav-second-level -->
       </li>

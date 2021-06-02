@@ -15,9 +15,9 @@
 					</div>
 
 					<!--<div class="form-group">-->
-						<!--<label class="col-sm-2 control-label">流控应用</label>-->
+						<!--<label class="col-sm-2 control-label">Flow Control Application</label>-->
 						<!--<div class="col-sm-9">-->
-							<!--<input type="text" class="form-control highlight-border" ng-model='currentRule.limitApp' placeholder='"default"表示所有应用。' />-->
+							<!--<input type="text" class="form-control highlight-border" ng-model='currentRule.limitApp' placeholder='"default"Means all apps. ' />-->
 						<!--</div>-->
 					<!--</div>-->
 
@@ -25,7 +25,7 @@
 						<label class="col-sm-2 control-label">Strategy</label>
 						<div class="col-sm-9">
 							<div class="form-control highlight-border" align="center">
-								<input type="radio" name="grade" value="0" checked ng-model='currentRule.grade' title="average response time per second" />&nbsp;RT&nbsp;&nbsp;
+								<input type="radio" name="grade" value="0" checked ng-model='currentRule.grade' title="Response time (valid for version 1.8.0+)" />&nbsp;RT&nbsp;&nbsp;
 								<input type="radio" name="grade" value="1" ng-model='currentRule.grade' title="Exception ratio per second" />&nbsp;Exception Ratio&nbsp;&nbsp;
 								<input type="radio" name="grade" value="2" ng-model='currentRule.grade' title="Exception count per minute" />&nbsp;Exception Count
 							</div>
@@ -33,19 +33,52 @@
 					</div>
 
 					<div class="form-group">
-						<label ng-if="currentRule.grade == 0" class="col-sm-2 control-label">RT</label>
+						<label ng-if="currentRule.grade == 0" class="col-sm-2 control-label"  title="Maximum RT, more than this value is counted as a slow call">Max RT</label>
 						<label ng-if="currentRule.grade == 1" class="col-sm-2 control-label">Exception Ratio</label>
 						<label ng-if="currentRule.grade == 2" class="col-sm-2 control-label">Exception Count</label>
-						<div class="col-sm-3">
-							<input type='number' class="form-control highlight-border" ng-model='currentRule.count' ng-if="currentRule.grade == 0" placeholder="ms"/>
-							<input type='number' class="form-control highlight-border" ng-model='currentRule.count' ng-if="currentRule.grade == 1" placeholder="0.0~1.0"/>
-							<input type='number' class="form-control highlight-border" ng-model='currentRule.count' ng-if="currentRule.grade == 2" placeholder="count"/>
-						</div>
-						<label class="col-sm-2 control-label">Degrade Window</label>
 						<div class="col-sm-4">
-							<input type='number' min="0" class="form-control highlight-border" ng-model='currentRule.timeWindow' placeholder="time window in seconds" />
+							<input type='number' class="form-control highlight-border" ng-model='currentRule.count' ng-if="currentRule.grade == 0" placeholder="RT (ms)"/>
+							<input type='number' class="form-control highlight-border" ng-model='currentRule.count' ng-if="currentRule.grade == 1" placeholder="Range [0.0,1.0]"/>
+							<input type='number' class="form-control highlight-border" ng-model='currentRule.count' ng-if="currentRule.grade == 2" placeholder="Exceptions"/>
+						</div>
+						<div ng-if="currentRule.grade == 0">
+							<label class="col-sm-2 control-label">Degrade Window</label>
+							<div class="col-sm-3">
+								<input type='number' min="0" class="form-control highlight-border" ng-model='currentRule.slowRatioThreshold'
+									   placeholder="value [0.0, 1.0]" />
+							</div>
 						</div>
 					</div>
+
+					<div class="form-group">
+						<label class="col-sm-2 control-label">Binding time</label>
+						<div class="col-sm-4">
+							<div class="input-group">
+								<input type='number' min="0" class="form-control highlight-border" ng-model='currentRule.timeWindow'
+									   placeholder="Binding time(s)" />
+								<span class="input-group-addon">s</span>
+							</div>
+						</div>
+
+						<label class="col-sm-2 control-label" style="text-align: center; padding-right: 5px;"
+							   title="The minimum number of requests to trigger a fuse.">Minimum requests</label>
+						<div class="col-sm-3">
+							<input type='number' min="1" class="form-control highlight-border" ng-model='currentRule.minRequestAmount'
+								   placeholder="Minimum requests" />
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="col-sm-2 control-label">Statistical time</label>
+						<div class="col-sm-4">
+							<div class="input-group">
+							<input type='number' min="1" class="form-control highlight-border" ng-model='currentRule.statIntervalMs'
+								   placeholder="Statistical time(ms)" />
+							<span class="input-group-addon">ms</span>
+							</div>
+						</div>
+					</div>
+
 				</form>
 			</div>
 			<div class="separator"></div>

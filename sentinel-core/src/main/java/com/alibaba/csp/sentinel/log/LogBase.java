@@ -15,128 +15,131 @@
  */
 package com.alibaba.csp.sentinel.log;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import com.alibaba.csp.sentinel.util.PidUtil;
+import java.io.File;
+import java.util.Properties;
+
+import static com.alibaba.csp.sentinel.util.ConfigUtil.addSeparator;
 
 /**
- * Default log base dir is ${user.home}/logs/csp/, we can use {@link #LOG_DIR} System property to override it.
- * Default log file name dose not contain pid, but if multi instances of the same app are running in the same
- * machine, we may want to distinguish the log file by pid number, in this case, {@link #LOG_NAME_USE_PID}
- * System property could be configured as "true" to turn on this switch.
+ * <p>The base config class for logging.</p>
  *
- * @author leyou
+ * <p>
+ * The default log base directory is {@code ${user.home}/logs/csp/}. We can use the {@link #LOG_DIR}
+ * property to override it. The default log file name dose not contain pid, but if multi-instances of the same service
+ * are running in the same machine, we may want to distinguish the log file by process ID number.
+ * In this case, {@link #LOG_NAME_USE_PID} property could be configured as "true" to turn on this switch.
+ * </p>
+ *
+ * @author Carpenter Lee
+ * @author Eric Zhao
  */
 public class LogBase {
-    public static final String LOG_CHARSET = "utf-8";
-    private static final String DIR_NAME = "logs" + File.separator + "csp";
-    private static final String USER_HOME = "user.home";
+
     public static final String LOG_DIR = "csp.sentinel.log.dir";
     public static final String LOG_NAME_USE_PID = "csp.sentinel.log.use.pid";
-    private static boolean logNameUsePid = false;
+    public static final String LOG_OUTPUT_TYPE = "csp.sentinel.log.output.type";
+    public static final String LOG_CHARSET = "csp.sentinel.log.charset";
 
+    /**
+     * Output biz log (e.g. RecordLog and CommandCenterLog) to file.
+     */
+    public static final String LOG_OUTPUT_TYPE_FILE = "file";
+    /**
+     * Output biz log (e.g. RecordLog and CommandCenterLog) to console.
+     */
+    public static final String LOG_OUTPUT_TYPE_CONSOLE = "console";
+    public static final String LOG_CHARSET_UTF8 = "utf-8";
+
+    private static final String DIR_NAME = "logs" + File.separator + "csp";
+    private static final String USER_HOME = "user.home";
+
+
+    private static boolean logNameUsePid;
+    private static String logOutputType;
     private static String logBaseDir;
+    private static String logCharSet;
 
     static {
         try {
-            init();
+            initializeDefault();
+            loadProperties();
         } catch (Throwable t) {
+            System.err.println("[LogBase] FATAL ERROR when initializing logging config");
             t.printStackTrace();
-            System.exit(-1);
         }
     }
 
-    private static void init() {
-        // first use -D, then use user home.
-        String logDir = System.getProperty(LOG_DIR);
+    private static void initializeDefault() {
+        logNameUsePid = false;
+        logOutputType = LOG_OUTPUT_TYPE_FILE;
+        logBaseDir = addSeparator(System.getProperty(USER_HOME)) + DIR_NAME + File.separator;
+        logCharSet = LOG_CHARSET_UTF8;
+    }
 
-        if (logDir == null || logDir.isEmpty()) {
-            logDir = System.getProperty(USER_HOME);
-            logDir = addSeparator(logDir) + DIR_NAME + File.separator;
+    private static void loadProperties() {
+        Properties properties = LogConfigLoader.getProperties();
+
+        logOutputType = properties.get(LOG_OUTPUT_TYPE) == null ? logOutputType : properties.getProperty(LOG_OUTPUT_TYPE);
+        if (!LOG_OUTPUT_TYPE_FILE.equalsIgnoreCase(logOutputType) && !LOG_OUTPUT_TYPE_CONSOLE.equalsIgnoreCase(logOutputType)) {
+            logOutputType = LOG_OUTPUT_TYPE_FILE;
         }
-        logDir = addSeparator(logDir);
-        File dir = new File(logDir);
+        System.out.println("INFO: Sentinel log output type is: " + logOutputType);
+
+        logCharSet = properties.getProperty(LOG_CHARSET) == null ? logCharSet : properties.getProperty(LOG_CHARSET);
+        System.out.println("INFO: Sentinel log charset is: " + logCharSet);
+
+
+        logBaseDir = properties.getProperty(LOG_DIR) == null ? logBaseDir : properties.getProperty(LOG_DIR);
+        logBaseDir = addSeparator(logBaseDir);
+        File dir = new File(logBaseDir);
         if (!dir.exists()) {
             if (!dir.mkdirs()) {
-                System.err.println("ERROR: create log base dir error: " + logDir);
+                System.err.println("ERROR: create Sentinel log base directory error: " + logBaseDir);
             }
         }
-        // logBaseDir must end with File.separator
-        logBaseDir = logDir;
-        System.out.println("INFO: log base dir is: " + logBaseDir);
+        System.out.println("INFO: Sentinel log base directory is: " + logBaseDir);
 
-        String usePid = System.getProperty(LOG_NAME_USE_PID, "");
+        String usePid = properties.getProperty(LOG_NAME_USE_PID);
         logNameUsePid = "true".equalsIgnoreCase(usePid);
-        System.out.println("INFO: log name use pid is: " + logNameUsePid);
+        System.out.println("INFO: Sentinel log name use pid is: " + logNameUsePid);
     }
 
+
     /**
-     * Whether log file name should contain pid. This switch is configured by {@link #LOG_NAME_USE_PID} System property.
+     * Whether log file name should contain pid. This switch is configured by {@link #LOG_NAME_USE_PID} system property.
      *
-     * @return if log file name should contain pid, return true, otherwise return false.
+     * @return true if log file name should contain pid, return true, otherwise false
      */
     public static boolean isLogNameUsePid() {
         return logNameUsePid;
     }
 
-    private static String addSeparator(String logDir) {
-        if (!logDir.endsWith(File.separator)) {
-            logDir += File.separator;
-        }
-        return logDir;
-    }
-
-    protected static void log(Logger logger, Handler handler, Level level, String detail, Object... params) {
-        if (detail == null) {
-            return;
-        }
-        LoggerUtils.disableOtherHandlers(logger, handler);
-        if (params.length == 0) {
-            logger.log(level, detail);
-        } else {
-            logger.log(level, detail, params);
-        }
-    }
-
-    protected static void log(Logger logger, Handler handler, Level level, String detail, Throwable throwable) {
-        if (detail == null) {
-            return;
-        }
-        LoggerUtils.disableOtherHandlers(logger, handler);
-        logger.log(level, detail, throwable);
-    }
-
     /**
-     * Get log file base directory path, the returned path is guaranteed end with {@link File#separator}
+     * Get the log file base directory path, which is guaranteed ended with {@link File#separator}.
      *
-     * @return log file base directory path.
+     * @return log file base directory path
      */
     public static String getLogBaseDir() {
         return logBaseDir;
     }
 
-    protected static Handler makeLogger(String logName, Logger heliumRecordLog) {
-        CspFormatter formatter = new CspFormatter();
-        String fileName = LogBase.getLogBaseDir() + logName;
-        if (isLogNameUsePid()) {
-            fileName += ".pid" + PidUtil.getPid();
-        }
-        Handler handler = null;
-        try {
-            handler = new DateFileLogHandler(fileName + ".%d", 1024 * 1024 * 200, 4, true);
-            handler.setFormatter(formatter);
-            handler.setEncoding(LOG_CHARSET);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        if (handler != null) {
-            LoggerUtils.disableOtherHandlers(heliumRecordLog, handler);
-        }
-        heliumRecordLog.setLevel(Level.ALL);
-        return handler;
+    /**
+     * Get the log file output type.
+     *
+     * @return log output type, "file" by default
+     */
+    public static String getLogOutputType() {
+        return logOutputType;
     }
+
+    /**
+     * Get the log file charset.
+     *
+     * @return the log file charset, "utf-8" by default
+     */
+    public static String getLogCharset() {
+        return logCharSet;
+    }
+
 }

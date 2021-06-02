@@ -30,15 +30,57 @@
                 <input type="radio" name="grade" value="0" ng-model='currentRule.grade' />&nbsp;Thread Count
               </div>
             </div>
-            <label class="col-sm-2 control-label">Threshold</label>
-            <div class="col-sm-3">
-              <input type='number' min="0" class="form-control highlight-border" ng-model='currentRule.count' placeholder="threshold" />
+            <div ng-if="!currentRule.clusterMode">
+              <label class="col-sm-2 control-label">Single machine threshold</label>
+              <div class="col-sm-3">
+                <input type='number' min="0" class="form-control highlight-border" ng-model='currentRule.count' placeholder="Single machine threshold" />
+              </div>
+            </div>
+            <div ng-if="currentRule.clusterMode && currentRule.clusterConfig.thresholdType == 0">
+              <label class="col-sm-2 control-label">Amortization threshold</label>
+              <div class="col-sm-3">
+                <input type='number' min="0" class="form-control highlight-border" ng-model='currentRule.count' placeholder="Stand-alone amortization threshold" />
+              </div>
+            </div>
+            <div ng-if="currentRule.clusterMode && currentRule.clusterConfig.thresholdType == 1">
+              <label class="col-sm-2 control-label">Cluster threshold</label>
+              <div class="col-sm-3">
+                <input type='number' min="0" class="form-control highlight-border" ng-model='currentRule.count' placeholder="Cluster overall threshold" />
+              </div>
             </div>
           </div>
 
-          <div ng-if="!flowRuleDialog.showAdvanceButton">
+          <div class="form-group">
+            <label class="col-sm-2 control-label">Whether to cluster</label>
+            <div class="col-sm-2">
+              <label class="checkbox-inline">
+                <input type="checkbox" name="clusterMode" ng-model="currentRule.clusterMode">
+              </label>
+            </div>
+            <div ng-if="currentRule.clusterMode">
+              <label class="col-sm-3 control-label">Cluster threshold mode</label>
+              <div class="col-sm-4">
+                <div class="form-control highlight-border" align="center">
+                  <input type="radio" name="clusterThresholdType" value="0" ng-model='currentRule.clusterConfig.thresholdType' />&nbsp;Stand-alone share&nbsp;&nbsp;
+                  <input type="radio" name="clusterThresholdType" value="1" ng-model='currentRule.clusterConfig.thresholdType' />&nbsp;Overall threshold
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group" ng-if="currentRule.clusterMode">
+            <label class="col-sm-2 control-label">Failure to degenerate</label>
+            <div class="col-sm-8">
+              <label class="checkbox-inline">
+                <input type="checkbox" name="fallbackToLocalWhenFail" ng-model="currentRule.clusterConfig.fallbackToLocalWhenFail">
+                <i class="glyphicon glyphicon-info-sign"></i>&nbsp;in case Token Server Is unavailable degraded to single-machine current limit
+              </label>
+            </div>
+          </div>
+
+          <div ng-if="!flowRuleDialog.showAdvanceButton && !currentRule.clusterMode">
             <div class="form-group">
-              <label class="col-sm-2 control-label">Flow Strategy</label>
+              <label class="col-sm-2 control-label" title="Call relation flow control mode">Flow Strategy</label>
               <div class="col-sm-9">
                 <div class="form-control highlight-border" align="center">
                   <input type="radio" name="strategy" value="0" ng-model='currentRule.strategy' />&nbsp;Direct&nbsp;&nbsp;
@@ -61,7 +103,7 @@
               </div>
             </div>
           </div>
-          <div ng-if="currentRule.grade==1 && !flowRuleDialog.showAdvanceButton">
+          <div ng-if="currentRule.grade==1 && !flowRuleDialog.showAdvanceButton && !currentRule.clusterMode">
             <div class="form-group">
               <label class="col-sm-2 control-label">Control Behavior</label>
               <div class="col-sm-9">
@@ -88,7 +130,7 @@
               </div>
             </div>
           </div>
-          <div class="form-group text-center">
+          <div class="form-group text-center" ng-if="!currentRule.clusterMode">
             <a ng-click="onOpenAdvanceClick()" ng-if="flowRuleDialog.showAdvanceButton" style="cursor: pointer;">Show Advanced Options</a>
             <a ng-click="onCloseAdvanceClick()" ng-if="!flowRuleDialog.showAdvanceButton" style="cursor: pointer;">Hide Advanced Options</a>
           </div>
