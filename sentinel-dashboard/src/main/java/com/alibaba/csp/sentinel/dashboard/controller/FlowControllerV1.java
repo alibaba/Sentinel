@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
@@ -76,14 +77,9 @@ public class FlowControllerV1 {
         if (port == null) {
             return Result.ofFail(-1, "port can't be null");
         }
-        try {
-            List<FlowRuleEntity> rules = sentinelApiClient.fetchFlowRuleOfMachine(app, ip, port);
-            rules = repository.saveAll(rules);
-            return Result.ofSuccess(rules);
-        } catch (Throwable throwable) {
-            logger.error("Error when querying flow rules", throwable);
-            return Result.ofThrowable(-1, throwable);
-        }
+        List<FlowRuleEntity> rules = sentinelApiClient.fetchFlowRuleOfMachine(app, ip, port);
+        rules = repository.saveAll(rules);
+        return Result.ofSuccess(rules);
     }
 
     private <R> Result<R> checkEntityInternal(FlowRuleEntity entity) {
@@ -164,7 +160,8 @@ public class FlowControllerV1 {
                                                   String limitApp, String resource, Integer grade,
                                                   Double count, Integer strategy, String refResource,
                                                   Integer controlBehavior, Integer warmUpPeriodSec,
-                                                  Integer maxQueueingTimeMs) {
+                                                  Integer maxQueueingTimeMs)
+            throws InterruptedException, ExecutionException, TimeoutException {
         if (id == null) {
             return Result.ofFail(-1, "id can't be null");
         }
@@ -222,25 +219,18 @@ public class FlowControllerV1 {
         }
         Date date = new Date();
         entity.setGmtModified(date);
-        try {
-            entity = repository.save(entity);
-            if (entity == null) {
-                return Result.ofFail(-1, "save entity fail: null");
-            }
-
-            publishRules(entity.getApp(), entity.getIp(), entity.getPort()).get(5000, TimeUnit.MILLISECONDS);
-            return Result.ofSuccess(entity);
-        } catch (Throwable t) {
-            Throwable e = t instanceof ExecutionException ? t.getCause() : t;
-            logger.error("Error when updating flow rules, app={}, ip={}, ruleId={}", entity.getApp(),
-                entity.getIp(), id, e);
-            return Result.ofFail(-1, e.getMessage());
+        entity = repository.save(entity);
+        if (entity == null) {
+            return Result.ofFail(-1, "save entity fail: null");
         }
+    
+        publishRules(entity.getApp(), entity.getIp(), entity.getPort()).get(5000, TimeUnit.MILLISECONDS);
+        return Result.ofSuccess(entity);
     }
 
     @DeleteMapping("/delete.json")
     @AuthAction(PrivilegeType.WRITE_RULE)
-    public Result<Long> apiDeleteFlowRule(Long id) {
+    public Result<Long> apiDeleteFlowRule(Long id) throws InterruptedException, ExecutionException, TimeoutException {
 
         if (id == null) {
             return Result.ofFail(-1, "id can't be null");
@@ -249,21 +239,10 @@ public class FlowControllerV1 {
         if (oldEntity == null) {
             return Result.ofSuccess(null);
         }
-
-        try {
-            repository.delete(id);
-        } catch (Exception e) {
-            return Result.ofFail(-1, e.getMessage());
-        }
-        try {
-            publishRules(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort()).get(5000, TimeUnit.MILLISECONDS);
-            return Result.ofSuccess(id);
-        } catch (Throwable t) {
-            Throwable e = t instanceof ExecutionException ? t.getCause() : t;
-            logger.error("Error when deleting flow rules, app={}, ip={}, id={}", oldEntity.getApp(),
-                oldEntity.getIp(), id, e);
-            return Result.ofFail(-1, e.getMessage());
-        }
+    
+        repository.delete(id);
+        publishRules(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort()).get(5000, TimeUnit.MILLISECONDS);
+        return Result.ofSuccess(id);
     }
 
     private CompletableFuture<Void> publishRules(String app, String ip, Integer port) {

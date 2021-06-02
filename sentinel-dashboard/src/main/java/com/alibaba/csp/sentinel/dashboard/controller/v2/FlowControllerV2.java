@@ -67,27 +67,22 @@ public class FlowControllerV2 {
 
     @GetMapping("/rules")
     @AuthAction(PrivilegeType.READ_RULE)
-    public Result<List<FlowRuleEntity>> apiQueryMachineRules(@RequestParam String app) {
+    public Result<List<FlowRuleEntity>> apiQueryMachineRules(@RequestParam String app) throws Exception {
 
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
         }
-        try {
-            List<FlowRuleEntity> rules = ruleProvider.getRules(app);
-            if (rules != null && !rules.isEmpty()) {
-                for (FlowRuleEntity entity : rules) {
-                    entity.setApp(app);
-                    if (entity.getClusterConfig() != null && entity.getClusterConfig().getFlowId() != null) {
-                        entity.setId(entity.getClusterConfig().getFlowId());
-                    }
+        List<FlowRuleEntity> rules = ruleProvider.getRules(app);
+        if (rules != null && !rules.isEmpty()) {
+            for (FlowRuleEntity entity : rules) {
+                entity.setApp(app);
+                if (entity.getClusterConfig() != null && entity.getClusterConfig().getFlowId() != null) {
+                    entity.setId(entity.getClusterConfig().getFlowId());
                 }
             }
-            rules = repository.saveAll(rules);
-            return Result.ofSuccess(rules);
-        } catch (Throwable throwable) {
-            logger.error("Error when querying flow rules", throwable);
-            return Result.ofThrowable(-1, throwable);
         }
+        rules = repository.saveAll(rules);
+        return Result.ofSuccess(rules);
     }
 
     private <R> Result<R> checkEntityInternal(FlowRuleEntity entity) {
@@ -136,7 +131,7 @@ public class FlowControllerV2 {
 
     @PostMapping("/rule")
     @AuthAction(value = AuthService.PrivilegeType.WRITE_RULE)
-    public Result<FlowRuleEntity> apiAddFlowRule(@RequestBody FlowRuleEntity entity) {
+    public Result<FlowRuleEntity> apiAddFlowRule(@RequestBody FlowRuleEntity entity) throws Exception {
 
         Result<FlowRuleEntity> checkResult = checkEntityInternal(entity);
         if (checkResult != null) {
@@ -148,13 +143,8 @@ public class FlowControllerV2 {
         entity.setGmtModified(date);
         entity.setLimitApp(entity.getLimitApp().trim());
         entity.setResource(entity.getResource().trim());
-        try {
-            entity = repository.save(entity);
-            publishRules(entity.getApp());
-        } catch (Throwable throwable) {
-            logger.error("Failed to add flow rule", throwable);
-            return Result.ofThrowable(-1, throwable);
-        }
+        entity = repository.save(entity);
+        publishRules(entity.getApp());
         return Result.ofSuccess(entity);
     }
 
@@ -162,7 +152,7 @@ public class FlowControllerV2 {
     @AuthAction(AuthService.PrivilegeType.WRITE_RULE)
 
     public Result<FlowRuleEntity> apiUpdateFlowRule(@PathVariable("id") Long id,
-                                                    @RequestBody FlowRuleEntity entity) {
+                                                    @RequestBody FlowRuleEntity entity) throws Exception {
         if (id == null || id <= 0) {
             return Result.ofFail(-1, "Invalid id");
         }
@@ -186,22 +176,17 @@ public class FlowControllerV2 {
         Date date = new Date();
         entity.setGmtCreate(oldEntity.getGmtCreate());
         entity.setGmtModified(date);
-        try {
-            entity = repository.save(entity);
-            if (entity == null) {
-                return Result.ofFail(-1, "save entity fail");
-            }
-            publishRules(oldEntity.getApp());
-        } catch (Throwable throwable) {
-            logger.error("Failed to update flow rule", throwable);
-            return Result.ofThrowable(-1, throwable);
+        entity = repository.save(entity);
+        if (entity == null) {
+            return Result.ofFail(-1, "save entity fail");
         }
+        publishRules(oldEntity.getApp());
         return Result.ofSuccess(entity);
     }
 
     @DeleteMapping("/rule/{id}")
     @AuthAction(PrivilegeType.DELETE_RULE)
-    public Result<Long> apiDeleteRule(@PathVariable("id") Long id) {
+    public Result<Long> apiDeleteRule(@PathVariable("id") Long id) throws Exception {
         if (id == null || id <= 0) {
             return Result.ofFail(-1, "Invalid id");
         }
@@ -209,13 +194,8 @@ public class FlowControllerV2 {
         if (oldEntity == null) {
             return Result.ofSuccess(null);
         }
-
-        try {
-            repository.delete(id);
-            publishRules(oldEntity.getApp());
-        } catch (Exception e) {
-            return Result.ofFail(-1, e.getMessage());
-        }
+        repository.delete(id);
+        publishRules(oldEntity.getApp());
         return Result.ofSuccess(id);
     }
 

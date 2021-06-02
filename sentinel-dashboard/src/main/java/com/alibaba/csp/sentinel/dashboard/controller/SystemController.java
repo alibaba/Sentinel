@@ -73,14 +73,9 @@ public class SystemController {
         if (checkResult != null) {
             return checkResult;
         }
-        try {
-            List<SystemRuleEntity> rules = sentinelApiClient.fetchSystemRuleOfMachine(app, ip, port);
-            rules = repository.saveAll(rules);
-            return Result.ofSuccess(rules);
-        } catch (Throwable throwable) {
-            logger.error("Query machine system rules error", throwable);
-            return Result.ofThrowable(-1, throwable);
-        }
+        List<SystemRuleEntity> rules = sentinelApiClient.fetchSystemRuleOfMachine(app, ip, port);
+        rules = repository.saveAll(rules);
+        return Result.ofSuccess(rules);
     }
 
     private int countNotNullAndNotNegative(Number... values) {
@@ -147,12 +142,7 @@ public class SystemController {
         Date date = new Date();
         entity.setGmtCreate(date);
         entity.setGmtModified(date);
-        try {
-            entity = repository.save(entity);
-        } catch (Throwable throwable) {
-            logger.error("Add SystemRule error", throwable);
-            return Result.ofThrowable(-1, throwable);
-        }
+        entity = repository.save(entity);
         if (!publishRules(app, ip, port)) {
             logger.warn("Publish system rules fail after rule add");
         }
@@ -209,12 +199,7 @@ public class SystemController {
         }
         Date date = new Date();
         entity.setGmtModified(date);
-        try {
-            entity = repository.save(entity);
-        } catch (Throwable throwable) {
-            logger.error("save error:", throwable);
-            return Result.ofThrowable(-1, throwable);
-        }
+        entity = repository.save(entity);
         if (!publishRules(entity.getApp(), entity.getIp(), entity.getPort())) {
             logger.info("publish system rules fail after rule update");
         }
@@ -231,12 +216,7 @@ public class SystemController {
         if (oldEntity == null) {
             return Result.ofSuccess(null);
         }
-        try {
-            repository.delete(id);
-        } catch (Throwable throwable) {
-            logger.error("delete error:", throwable);
-            return Result.ofThrowable(-1, throwable);
-        }
+        repository.delete(id);
         if (!publishRules(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort())) {
             logger.info("publish system rules fail after rule delete");
         }

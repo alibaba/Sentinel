@@ -235,13 +235,7 @@ public class GatewayFlowRuleController {
         Date date = new Date();
         entity.setGmtCreate(date);
         entity.setGmtModified(date);
-
-        try {
-            entity = repository.save(entity);
-        } catch (Throwable throwable) {
-            logger.error("add gateway flow rule error:", throwable);
-            return Result.ofThrowable(-1, throwable);
-        }
+        entity = repository.save(entity);
 
         if (!publishRules(app, ip, port)) {
             logger.warn("publish gateway flow rules fail after add");
@@ -381,13 +375,7 @@ public class GatewayFlowRuleController {
 
         Date date = new Date();
         entity.setGmtModified(date);
-
-        try {
-            entity = repository.save(entity);
-        } catch (Throwable throwable) {
-            logger.error("update gateway flow rule error:", throwable);
-            return Result.ofThrowable(-1, throwable);
-        }
+        entity = repository.save(entity);
 
         if (!publishRules(app, entity.getIp(), entity.getPort())) {
             logger.warn("publish gateway flow rules fail after update");
@@ -409,13 +397,8 @@ public class GatewayFlowRuleController {
         if (oldEntity == null) {
             return Result.ofSuccess(null);
         }
-
-        try {
-            repository.delete(id);
-        } catch (Throwable throwable) {
-            logger.error("delete gateway flow rule error:", throwable);
-            return Result.ofThrowable(-1, throwable);
-        }
+    
+        repository.delete(id);
 
         if (!publishRules(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort())) {
             logger.warn("publish gateway flow rules fail after delete");

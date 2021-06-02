@@ -58,13 +58,8 @@ public class ClusterAssignController {
             || assignRequest.getRemainingList() == null) {
             return Result.ofFail(-1, "bad request body");
         }
-        try {
-            return Result.ofSuccess(clusterAssignService.applyAssignToApp(app, assignRequest.getClusterMap(),
+        return Result.ofSuccess(clusterAssignService.applyAssignToApp(app, assignRequest.getClusterMap(),
                 assignRequest.getRemainingList()));
-        } catch (Throwable throwable) {
-            logger.error("Error when assigning full cluster servers for app: " + app, throwable);
-            return Result.ofFail(-1, throwable.getMessage());
-        }
     }
 
     @PostMapping("/single_server/{app}")
@@ -76,13 +71,8 @@ public class ClusterAssignController {
         if (assignRequest == null || assignRequest.getClusterMap() == null) {
             return Result.ofFail(-1, "bad request body");
         }
-        try {
-            return Result.ofSuccess(clusterAssignService.applyAssignToApp(app, Collections.singletonList(assignRequest.getClusterMap()),
+        return Result.ofSuccess(clusterAssignService.applyAssignToApp(app, Collections.singletonList(assignRequest.getClusterMap()),
                 assignRequest.getRemainingList()));
-        } catch (Throwable throwable) {
-            logger.error("Error when assigning single cluster servers for app: " + app, throwable);
-            return Result.ofFail(-1, throwable.getMessage());
-        }
     }
 
     @PostMapping("/unbind_server/{app}")
@@ -94,11 +84,6 @@ public class ClusterAssignController {
         if (machineIds == null || machineIds.isEmpty()) {
             return Result.ofFail(-1, "bad request body");
         }
-        try {
-            return Result.ofSuccess(clusterAssignService.unbindClusterServers(app, machineIds));
-        } catch (Throwable throwable) {
-            logger.error("Error when unbinding cluster server {} for app <{}>", machineIds, app, throwable);
-            return Result.ofFail(-1, throwable.getMessage());
-        }
+        return Result.ofSuccess(clusterAssignService.unbindClusterServers(app, machineIds));
     }
 }

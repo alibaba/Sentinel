@@ -83,7 +83,8 @@ public class ParamFlowRuleController {
     @AuthAction(PrivilegeType.READ_RULE)
     public Result<List<ParamFlowRuleEntity>> apiQueryAllRulesForMachine(@RequestParam String app,
                                                                         @RequestParam String ip,
-                                                                        @RequestParam Integer port) {
+                                                                        @RequestParam Integer port)
+            throws ExecutionException, InterruptedException {
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app cannot be null or empty");
         }
@@ -96,22 +97,10 @@ public class ParamFlowRuleController {
         if (!checkIfSupported(app, ip, port)) {
             return unsupportedVersion();
         }
-        try {
-            return sentinelApiClient.fetchParamFlowRulesOfMachine(app, ip, port)
+        return sentinelApiClient.fetchParamFlowRulesOfMachine(app, ip, port)
                 .thenApply(repository::saveAll)
                 .thenApply(Result::ofSuccess)
                 .get();
-        } catch (ExecutionException ex) {
-            logger.error("Error when querying parameter flow rules", ex.getCause());
-            if (isNotSupported(ex.getCause())) {
-                return unsupportedVersion();
-            } else {
-                return Result.ofThrowable(-1, ex.getCause());
-            }
-        } catch (Throwable throwable) {
-            logger.error("Error when querying parameter flow rules", throwable);
-            return Result.ofFail(-1, throwable.getMessage());
-        }
     }
 
     private boolean isNotSupported(Throwable ex) {
@@ -120,7 +109,8 @@ public class ParamFlowRuleController {
 
     @PostMapping("/rule")
     @AuthAction(AuthService.PrivilegeType.WRITE_RULE)
-    public Result<ParamFlowRuleEntity> apiAddParamFlowRule(@RequestBody ParamFlowRuleEntity entity) {
+    public Result<ParamFlowRuleEntity> apiAddParamFlowRule(@RequestBody ParamFlowRuleEntity entity)
+            throws ExecutionException, InterruptedException {
         Result<ParamFlowRuleEntity> checkResult = checkEntityInternal(entity);
         if (checkResult != null) {
             return checkResult;
@@ -133,21 +123,9 @@ public class ParamFlowRuleController {
         Date date = new Date();
         entity.setGmtCreate(date);
         entity.setGmtModified(date);
-        try {
-            entity = repository.save(entity);
-            publishRules(entity.getApp(), entity.getIp(), entity.getPort()).get();
-            return Result.ofSuccess(entity);
-        } catch (ExecutionException ex) {
-            logger.error("Error when adding new parameter flow rules", ex.getCause());
-            if (isNotSupported(ex.getCause())) {
-                return unsupportedVersion();
-            } else {
-                return Result.ofThrowable(-1, ex.getCause());
-            }
-        } catch (Throwable throwable) {
-            logger.error("Error when adding new parameter flow rules", throwable);
-            return Result.ofFail(-1, throwable.getMessage());
-        }
+        entity = repository.save(entity);
+        publishRules(entity.getApp(), entity.getIp(), entity.getPort()).get();
+        return Result.ofSuccess(entity);
     }
 
     private <R> Result<R> checkEntityInternal(ParamFlowRuleEntity entity) {
@@ -190,7 +168,8 @@ public class ParamFlowRuleController {
     @PutMapping("/rule/{id}")
     @AuthAction(AuthService.PrivilegeType.WRITE_RULE)
     public Result<ParamFlowRuleEntity> apiUpdateParamFlowRule(@PathVariable("id") Long id,
-                                                              @RequestBody ParamFlowRuleEntity entity) {
+                                                              @RequestBody ParamFlowRuleEntity entity)
+            throws ExecutionException, InterruptedException {
         if (id == null || id <= 0) {
             return Result.ofFail(-1, "Invalid id");
         }
@@ -210,26 +189,14 @@ public class ParamFlowRuleController {
         Date date = new Date();
         entity.setGmtCreate(oldEntity.getGmtCreate());
         entity.setGmtModified(date);
-        try {
-            entity = repository.save(entity);
-            publishRules(entity.getApp(), entity.getIp(), entity.getPort()).get();
-            return Result.ofSuccess(entity);
-        } catch (ExecutionException ex) {
-            logger.error("Error when updating parameter flow rules, id=" + id, ex.getCause());
-            if (isNotSupported(ex.getCause())) {
-                return unsupportedVersion();
-            } else {
-                return Result.ofThrowable(-1, ex.getCause());
-            }
-        } catch (Throwable throwable) {
-            logger.error("Error when updating parameter flow rules, id=" + id, throwable);
-            return Result.ofFail(-1, throwable.getMessage());
-        }
+        entity = repository.save(entity);
+        publishRules(entity.getApp(), entity.getIp(), entity.getPort()).get();
+        return Result.ofSuccess(entity);
     }
 
     @DeleteMapping("/rule/{id}")
     @AuthAction(PrivilegeType.DELETE_RULE)
-    public Result<Long> apiDeleteRule(@PathVariable("id") Long id) {
+    public Result<Long> apiDeleteRule(@PathVariable("id") Long id) throws ExecutionException, InterruptedException {
         if (id == null) {
             return Result.ofFail(-1, "id cannot be null");
         }
@@ -237,22 +204,10 @@ public class ParamFlowRuleController {
         if (oldEntity == null) {
             return Result.ofSuccess(null);
         }
-
-        try {
-            repository.delete(id);
-            publishRules(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort()).get();
-            return Result.ofSuccess(id);
-        } catch (ExecutionException ex) {
-            logger.error("Error when deleting parameter flow rules", ex.getCause());
-            if (isNotSupported(ex.getCause())) {
-                return unsupportedVersion();
-            } else {
-                return Result.ofThrowable(-1, ex.getCause());
-            }
-        } catch (Throwable throwable) {
-            logger.error("Error when deleting parameter flow rules", throwable);
-            return Result.ofFail(-1, throwable.getMessage());
-        }
+    
+        repository.delete(id);
+        publishRules(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort()).get();
+        return Result.ofSuccess(id);
     }
 
     private CompletableFuture<Void> publishRules(String app, String ip, Integer port) {

@@ -41,6 +41,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class ResourceController {
 
     private static Logger logger = LoggerFactory.getLogger(ResourceController.class);
+    
+    private static final String ROOT = "root";
+    
+    private static final String DEFAULT = "default";
 
     @Autowired
     private SentinelApiClient httpFetcher;
@@ -61,8 +65,6 @@ public class ResourceController {
         if (StringUtil.isEmpty(ip) || port == null) {
             return Result.ofFail(-1, "invalid param, give ip, port");
         }
-        final String ROOT = "root";
-        final String DEFAULT = "default";
         if (StringUtil.isEmpty(type)) {
             type = ROOT;
         }
@@ -74,18 +76,17 @@ public class ResourceController {
             ResourceTreeNode treeNode = ResourceTreeNode.fromNodeVoList(nodeVos);
             treeNode.searchIgnoreCase(searchKey);
             return Result.ofSuccess(ResourceVo.fromResourceTreeNode(treeNode));
-        } else {
-            // Normal (cluster node).
-            List<NodeVo> nodeVos = httpFetcher.fetchClusterNodeOfMachine(ip, port, true);
-            if (nodeVos == null) {
-                return Result.ofSuccess(null);
-            }
-            if (StringUtil.isNotEmpty(searchKey)) {
-                nodeVos = nodeVos.stream().filter(node -> node.getResource()
+        }
+        // Normal (cluster node).
+        List<NodeVo> nodeVos = httpFetcher.fetchClusterNodeOfMachine(ip, port, true);
+        if (nodeVos == null) {
+            return Result.ofSuccess(null);
+        }
+        if (StringUtil.isNotEmpty(searchKey)) {
+            nodeVos = nodeVos.stream().filter(node -> node.getResource()
                     .toLowerCase().contains(searchKey.toLowerCase()))
                     .collect(Collectors.toList());
-            }
-            return Result.ofSuccess(ResourceVo.fromNodeVoList(nodeVos));
         }
+        return Result.ofSuccess(ResourceVo.fromNodeVoList(nodeVos));
     }
 }

@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 import static com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants.*;
 
@@ -58,7 +59,8 @@ public class GatewayApiController {
 
     @GetMapping("/list.json")
     @AuthAction(AuthService.PrivilegeType.READ_RULE)
-    public Result<List<ApiDefinitionEntity>> queryApis(String app, String ip, Integer port) {
+    public Result<List<ApiDefinitionEntity>> queryApis(String app, String ip, Integer port)
+            throws ExecutionException, InterruptedException {
 
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
@@ -69,15 +71,10 @@ public class GatewayApiController {
         if (port == null) {
             return Result.ofFail(-1, "port can't be null");
         }
-
-        try {
-            List<ApiDefinitionEntity> apis = sentinelApiClient.fetchApis(app, ip, port).get();
-            repository.saveAll(apis);
-            return Result.ofSuccess(apis);
-        } catch (Throwable throwable) {
-            logger.error("queryApis error:", throwable);
-            return Result.ofThrowable(-1, throwable);
-        }
+    
+        List<ApiDefinitionEntity> apis = sentinelApiClient.fetchApis(app, ip, port).get();
+        repository.saveAll(apis);
+        return Result.ofSuccess(apis);
     }
 
     @PostMapping("/new.json")
@@ -148,13 +145,7 @@ public class GatewayApiController {
         Date date = new Date();
         entity.setGmtCreate(date);
         entity.setGmtModified(date);
-
-        try {
-            entity = repository.save(entity);
-        } catch (Throwable throwable) {
-            logger.error("add gateway api error:", throwable);
-            return Result.ofThrowable(-1, throwable);
-        }
+        entity = repository.save(entity);
 
         if (!publishApis(app, ip, port)) {
             logger.warn("publish gateway apis fail after add");
@@ -211,13 +202,7 @@ public class GatewayApiController {
 
         Date date = new Date();
         entity.setGmtModified(date);
-
-        try {
-            entity = repository.save(entity);
-        } catch (Throwable throwable) {
-            logger.error("update gateway api error:", throwable);
-            return Result.ofThrowable(-1, throwable);
-        }
+        entity = repository.save(entity);
 
         if (!publishApis(app, entity.getIp(), entity.getPort())) {
             logger.warn("publish gateway apis fail after update");
@@ -238,14 +223,8 @@ public class GatewayApiController {
         if (oldEntity == null) {
             return Result.ofSuccess(null);
         }
-
-        try {
-            repository.delete(id);
-        } catch (Throwable throwable) {
-            logger.error("delete gateway api error:", throwable);
-            return Result.ofThrowable(-1, throwable);
-        }
-
+        repository.delete(id);
+        
         if (!publishApis(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort())) {
             logger.warn("publish gateway apis fail after delete");
         }
