@@ -47,7 +47,7 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
      * Single-thread pool. Once the thread pool is blocked, we throw up the old task.
      */
     private final ExecutorService pool = new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS,
-        new ArrayBlockingQueue<Runnable>(1), new NamedThreadFactory("sentinel-nacos-ds-update"),
+        new ArrayBlockingQueue<Runnable>(1), new NamedThreadFactory("sentinel-nacos-ds-update", true),
         new ThreadPoolExecutor.DiscardOldestPolicy());
 
     private final Listener configListener;
