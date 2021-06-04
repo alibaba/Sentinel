@@ -1,3 +1,18 @@
+/*
+ * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.alibaba.csp.sentinel.dashboard.client;
 
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayFlowRule;
@@ -47,6 +62,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -55,9 +71,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+/**
+ * Communicate with Sentinel client.
+ *
+ * @author leyou
+ * @author wxq
+ */
 public class DefaultSentinelApiClient implements SentinelApiClient {
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static Logger logger = LoggerFactory.getLogger(SentinelApiClient.class);
 
     private static final Charset DEFAULT_CHARSET = Charset.forName(SentinelConfig.charset());
     private static final String HTTP_HEADER_CONTENT_TYPE = "Content-Type";
@@ -92,15 +113,15 @@ public class DefaultSentinelApiClient implements SentinelApiClient {
     private static final String SYSTEM_RULE_TYPE = "system";
     private static final String AUTHORITY_TYPE = "authority";
 
-    private final CloseableHttpAsyncClient httpClient;
+    private CloseableHttpAsyncClient httpClient;
 
     private static final SentinelVersion version160 = new SentinelVersion(1, 6, 0);
     private static final SentinelVersion version171 = new SentinelVersion(1, 7, 1);
 
-    private final AppManagement appManagement;
+    @Autowired
+    private AppManagement appManagement;
 
-    public DefaultSentinelApiClient(AppManagement appManagement) {
-        this.appManagement = appManagement;
+    public DefaultSentinelApiClient() {
         IOReactorConfig ioConfig = IOReactorConfig.custom().setConnectTimeout(3000).setSoTimeout(10000)
                 .setIoThreadCount(Runtime.getRuntime().availableProcessors() * 2).build();
         httpClient = HttpAsyncClients.custom().setRedirectStrategy(new DefaultRedirectStrategy() {
@@ -311,7 +332,7 @@ public class DefaultSentinelApiClient implements SentinelApiClient {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() throws IOException {
         httpClient.close();
     }
 
@@ -476,7 +497,7 @@ public class DefaultSentinelApiClient implements SentinelApiClient {
             AssertUtil.isTrue(port > 0, "Bad machine port");
             return fetchItemsAsync(ip, port, GET_PARAM_RULE_PATH, null, ParamFlowRule.class)
                     .thenApply(rules -> rules.stream()
-                            .map(e -> ParamFlowRuleEntity.fromAuthorityRule(app, ip, port, e))
+                            .map(e -> ParamFlowRuleEntity.fromParamFlowRule(app, ip, port, e))
                             .collect(Collectors.toList())
                     );
         } catch (Exception e) {
@@ -841,5 +862,4 @@ public class DefaultSentinelApiClient implements SentinelApiClient {
             return false;
         }
     }
-
 }

@@ -33,8 +33,8 @@ public class SentinelApiClientConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean
-    public SentinelApiClient sentinelApiClient(AppManagement appManagement) {
-        return new DefaultSentinelApiClient(appManagement);
+    public SentinelApiClient sentinelApiClient() {
+        return new DefaultSentinelApiClient();
     }
 
 }
