@@ -37,7 +37,7 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
 
 
     private final ExecutorService pool = new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS,
-            new ArrayBlockingQueue<Runnable>(1), new NamedThreadFactory("sentinel-zookeeper-ds-update"),
+            new ArrayBlockingQueue<Runnable>(1), new NamedThreadFactory("sentinel-zookeeper-ds-update", true),
             new ThreadPoolExecutor.DiscardOldestPolicy());
 
     private NodeCacheListener listener;
