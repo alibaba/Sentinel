@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
@@ -49,14 +48,13 @@ public class GlobalExceptionHandler {
      * @return fail message.
      */
     @ExceptionHandler({ExecutionException.class})
-    @ResponseBody
     public Result<String> handleExecutionException(ExecutionException e, WebRequest webRequest) {
         Map<String, String[]> params = webRequest.getParameterMap();
-        String contextPath = resolveContextPath(webRequest);
+        String contextPath = getRequestPath(webRequest);
         logger.error("[HandleExecutionException] Request failed, context path: {}, request params: {}, error: ",
-                contextPath, buildParamMessage(params), e.getCause());
+                contextPath, buildParamMessage(params), e);
         if (isNotSupported(e.getCause())) {
-            return Result.ofFail(4041, "Sentinel client not supported for cluster flow control (unsupported version or dependency absent)");
+            return Result.ofFail(4041, "Sentinel client not supported for the command (unsupported version or dependency absent)");
         } else {
             return Result.ofFail(-1, "Operation failed, please check dashboard log for more information!");
         }
@@ -80,22 +78,21 @@ public class GlobalExceptionHandler {
      * @return common failed exception.
      */
     @ExceptionHandler({Throwable.class})
-    @ResponseBody
     public Result<String> handleException(Throwable e, WebRequest webRequest) {
         Map<String, String[]> params = webRequest.getParameterMap();
-        String contextPath = resolveContextPath(webRequest);
+        String contextPath = getRequestPath(webRequest);
         logger.error("[handleException] Request failed, context path: {}, request params: {}, error: ",
                 contextPath, buildParamMessage(params), e);
         return Result.ofFail(-1, "Operation failed, please check dashboard log for more information!");
     }
     
     /**
-     * resolve context path.
+     * get request path.
      *
      * @param webRequest web request.
-     * @return context path.
+     * @return request path.
      */
-    private String resolveContextPath(WebRequest webRequest) {
+    private String getRequestPath(WebRequest webRequest) {
         if (webRequest instanceof ServletWebRequest) {
             return ((ServletWebRequest) webRequest).getRequest().getRequestURI();
         }
