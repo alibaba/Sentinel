@@ -39,7 +39,7 @@ public class NettyHttpCommandCenter implements CommandCenter {
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private final ExecutorService pool = Executors.newSingleThreadExecutor(
-        new NamedThreadFactory("sentinel-netty-command-center-executor"));
+        new NamedThreadFactory("sentinel-netty-command-center-executor", true));
 
     @Override
     public void start() throws Exception {
