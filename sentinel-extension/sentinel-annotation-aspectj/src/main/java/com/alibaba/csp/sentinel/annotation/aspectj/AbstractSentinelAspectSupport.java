@@ -102,15 +102,7 @@ public abstract class AbstractSentinelAspectSupport {
                 args[args.length - 1] = ex;
             }
 
-            try {
-                if (isStatic(fallbackMethod)) {
-                    return fallbackMethod.invoke(null, args);
-                }
-                return fallbackMethod.invoke(pjp.getTarget(), args);
-            } catch (InvocationTargetException e) {
-                // throw the actual exception
-                throw e.getTargetException();
-            }
+            return invoke(pjp, fallbackMethod, args);
         }
         // If fallback is absent, we'll try the defaultFallback if provided.
         return handleDefaultFallback(pjp, defaultFallback, fallbackClass, ex);
@@ -123,15 +115,7 @@ public abstract class AbstractSentinelAspectSupport {
         if (fallbackMethod != null) {
             // Construct args.
             Object[] args = fallbackMethod.getParameterTypes().length == 0 ? new Object[0] : new Object[] {ex};
-            try {
-                if (isStatic(fallbackMethod)) {
-                    return fallbackMethod.invoke(null, args);
-                }
-                return fallbackMethod.invoke(pjp.getTarget(), args);
-            } catch (InvocationTargetException e) {
-                // throw the actual exception
-                throw e.getTargetException();
-            }
+            return invoke(pjp, fallbackMethod, args);
         }
 
         // If no any fallback is present, then directly throw the exception.
@@ -149,19 +133,42 @@ public abstract class AbstractSentinelAspectSupport {
             // Construct args.
             Object[] args = Arrays.copyOf(originArgs, originArgs.length + 1);
             args[args.length - 1] = ex;
-            try {
-                if (isStatic(blockHandlerMethod)) {
-                    return blockHandlerMethod.invoke(null, args);
-                }
-                return blockHandlerMethod.invoke(pjp.getTarget(), args);
-            } catch (InvocationTargetException e) {
-                // throw the actual exception
-                throw e.getTargetException();
-            }
+            return invoke(pjp, blockHandlerMethod, args);
         }
 
         // If no block handler is present, then go to fallback.
         return handleFallback(pjp, annotation, ex);
+    }
+
+    private Object invoke(ProceedingJoinPoint pjp, Method method, Object[] args) throws Throwable {
+        try {
+            if (!method.isAccessible()) {
+                makeAccessible(method);
+            }
+            if (isStatic(method)) {
+                return method.invoke(null, args);
+            }
+            return method.invoke(pjp.getTarget(), args);
+        } catch (InvocationTargetException e) {
+            // throw the actual exception
+            throw e.getTargetException();
+        }
+    }
+
+    /**
+     * Make the given method accessible, explicitly setting it accessible if
+     * necessary. The {@code setAccessible(true)} method is only called
+     * when actually necessary, to avoid unnecessary conflicts with a JVM
+     * SecurityManager (if active).
+     * @param method the method to make accessible
+     * @see java.lang.reflect.Method#setAccessible
+     */
+    private static void makeAccessible(Method method) {
+        boolean isNotPublic = !Modifier.isPublic(method.getModifiers()) ||
+                !Modifier.isPublic(method.getDeclaringClass().getModifiers());
+        if (isNotPublic && !method.isAccessible()) {
+            method.setAccessible(true);
+        }
     }
 
     private Method extractFallbackMethod(ProceedingJoinPoint pjp, String fallbackName, Class<?>[] locationClass) {
