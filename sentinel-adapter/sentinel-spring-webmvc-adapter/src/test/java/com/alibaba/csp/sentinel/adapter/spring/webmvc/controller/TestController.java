@@ -52,4 +52,9 @@ public class TestController {
         return "Exclude " + id;
     }
 
+    @GetMapping("/antPathMather/{id}")
+    public String antPathMather(@PathVariable("id") Long id) {
+        return "antPathMather " + id;
+    }
+
 }

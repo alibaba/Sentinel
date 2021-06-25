@@ -42,6 +42,13 @@ public class SentinelWebMvcConfig extends BaseWebMvcConfig {
      */
     private boolean webContextUnify = true;
 
+    /**
+     * support antPath like /path/**  , and is false by default
+     *
+     * @since 1.7.2
+     */
+    private boolean antPathSupport = false;
+
     public SentinelWebMvcConfig() {
         super();
         setRequestAttributeName(DEFAULT_REQUEST_ATTRIBUTE_NAME);
@@ -71,6 +78,16 @@ public class SentinelWebMvcConfig extends BaseWebMvcConfig {
 
     public SentinelWebMvcConfig setWebContextUnify(boolean webContextUnify) {
         this.webContextUnify = webContextUnify;
+        return this;
+    }
+
+
+    public boolean isAntPathSupport() {
+        return antPathSupport;
+    }
+
+    public SentinelWebMvcConfig setAntPathSupport(boolean antPathSupport) {
+        this.antPathSupport = antPathSupport;
         return this;
     }
 

@@ -67,6 +67,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
         //Custom configuration if necessary
         config.setHttpMethodSpecify(false);
         config.setWebContextUnify(true);
+        config.setAntPathSupport(true);
         config.setOriginParser(new RequestOriginParser() {
             @Override
             public String parseOrigin(HttpServletRequest request) {
