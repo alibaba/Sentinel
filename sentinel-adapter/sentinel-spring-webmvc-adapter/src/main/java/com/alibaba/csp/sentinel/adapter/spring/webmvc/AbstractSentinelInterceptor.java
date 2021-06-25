@@ -15,8 +15,13 @@
  */
 package com.alibaba.csp.sentinel.adapter.spring.webmvc;
 
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
@@ -29,9 +34,6 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
-
-import org.springframework.web.servlet.HandlerInterceptor;
-import org.springframework.web.servlet.ModelAndView;
 
 /**
  * Since request may be reprocessed in flow if any forwarding or including or other action
@@ -50,6 +52,7 @@ import org.springframework.web.servlet.ModelAndView;
  * </pre>
  * 
  * @author kaizi2009
+ * @author fenglibin
  * @since 1.7.1
  */
 public abstract class AbstractSentinelInterceptor implements HandlerInterceptor {
@@ -102,7 +105,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
             String origin = parseOrigin(request);
             String contextName = getContextName(request);
             ContextUtil.enter(contextName, origin);
-            Entry entry = SphU.entry(resourceName, ResourceTypeConstants.COMMON_WEB, EntryType.IN);
+            Entry entry = SphU.entry(resourceName, ResourceTypeConstants.COMMON_WEB, EntryType.IN, getParamValues(request));
             request.setAttribute(baseWebMvcConfig.getRequestAttributeName(), entry);
             return true;
         } catch (BlockException e) {
@@ -196,5 +199,26 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
         }
         return origin;
     }
+    
+    /**
+     * Get all the request parameter, which can be used to hot spot rule.
+     * @param request
+     * @return
+     */
+    protected Object[] getParamValues(HttpServletRequest request) {
+    	if(request.getParameterMap()==null || request.getParameterMap().size()==0) {
+    		return null;
+    	}
+		Object[] values = new Object[request.getParameterMap().size()];
+		int index = 0;
+		for (Map.Entry<String, String[]> param : request.getParameterMap().entrySet()) {
+			String[] value = param.getValue();
+			if (value != null && value.length > 0) {
+				values[index] = value[0];
+			}
+			index++;
+		}
+		return values;
+	}
 
 }
