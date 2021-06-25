@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
+import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRuleManager;
 import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import org.springframework.util.AntPathMatcher;
@@ -92,6 +93,7 @@ public class SentinelWebInterceptor extends AbstractSentinelInterceptor {
         urls.addAll(getUrl(SystemRuleManager.getRules()));
         urls.addAll(getUrl(FlowRuleManager.getRules()));
         urls.addAll(getUrl(DegradeRuleManager.getRules()));
+        urls.addAll(getUrl(ParamFlowRuleManager.getRules()));
         for (String url : urls) {
             if (new AntPathMatcher().match(url, originUrl)) {
                 return url;
