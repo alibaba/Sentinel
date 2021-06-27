@@ -201,7 +201,8 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
     }
     
     /**
-     * Get all the request parameter, which can be used to hot spot rule.
+     * Get all the request parameter values, which can be used to hot spot rule.
+     * If the parameter's values is an array, only the first value will be used.
      * @param request
      * @return
      */
