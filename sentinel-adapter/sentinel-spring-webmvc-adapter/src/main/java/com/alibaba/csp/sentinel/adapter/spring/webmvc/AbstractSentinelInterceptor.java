@@ -203,10 +203,11 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
     /**
      * Get all the request parameter values, which can be used to hot spot rule.
      * If the parameter's values is an array, only the first value will be used.
+     * If this value get logic is not satisfied for the user's requirement, please override this method. 
      * @param request
      * @return
      */
-    protected Object[] getParamValues(HttpServletRequest request) {
+    public Object[] getParamValues(HttpServletRequest request) {
     	if(request.getParameterMap()==null || request.getParameterMap().size()==0) {
     		return null;
     	}
