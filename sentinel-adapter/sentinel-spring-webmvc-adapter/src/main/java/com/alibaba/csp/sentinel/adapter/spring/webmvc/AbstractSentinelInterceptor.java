@@ -205,10 +205,10 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
      * If the parameter's values is an array, only the first value will be used.
      * If this value get logic is not satisfied for the user's requirement, please override this method. 
      * @param request
-     * @return
+     * @return http request parameter's value array
      */
     public Object[] getParamValues(HttpServletRequest request) {
-    	if(request.getParameterMap()==null || request.getParameterMap().size()==0) {
+    	if(request==null || request.getParameterMap()==null || request.getParameterMap().size()==0) {
     		return null;
     	}
 		Object[] values = new Object[request.getParameterMap().size()];
