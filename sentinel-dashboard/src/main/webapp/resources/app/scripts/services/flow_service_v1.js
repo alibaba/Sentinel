@@ -49,6 +49,7 @@ app.service('FlowServiceV1', ['$http', function ($http) {
             controlBehavior: rule.controlBehavior,
             warmUpPeriodSec: rule.warmUpPeriodSec,
             maxQueueingTimeMs: rule.maxQueueingTimeMs,
+            app: rule.app
         };
 
         return $http({
