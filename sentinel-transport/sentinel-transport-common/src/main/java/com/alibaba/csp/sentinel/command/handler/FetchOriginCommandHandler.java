@@ -46,8 +46,8 @@ public class FetchOriginCommandHandler implements CommandHandler<String> {
         for (Entry<ResourceWrapper, ClusterNode> e : ClusterBuilderSlot.getClusterNodeMap().entrySet()) {
             if (e.getKey().getName().equals(name)) {
                 cNode = e.getValue();
-                sb.append("id: ").append(e.getKey().getShowName()).append("\n");
-                sb.append("\n");
+                sb.append("id: ").append(e.getKey().getShowName()).append('\n');
+                sb.append('\n');
                 exactly = true;
                 break;
             }
@@ -57,8 +57,8 @@ public class FetchOriginCommandHandler implements CommandHandler<String> {
             for (Entry<ResourceWrapper, ClusterNode> e : ClusterBuilderSlot.getClusterNodeMap().entrySet()) {
                 if (e.getKey().getName().indexOf(name) > 0) {
                     cNode = e.getValue();
-                    sb.append("id: ").append(e.getKey().getShowName()).append("\n");
-                    sb.append("\n");
+                    sb.append("id: ").append(e.getKey().getShowName()).append('\n');
+                    sb.append('\n');
                     break;
                 }
             }

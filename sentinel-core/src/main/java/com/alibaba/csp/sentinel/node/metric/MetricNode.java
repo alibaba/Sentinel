@@ -159,16 +159,16 @@ public class MetricNode {
      */
     public String toThinString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(timestamp).append("|");
+        sb.append(timestamp).append('|');
         String legalName = resource.replaceAll("\\|", "_");
-        sb.append(legalName).append("|");
-        sb.append(passQps).append("|");
-        sb.append(blockQps).append("|");
-        sb.append(successQps).append("|");
-        sb.append(exceptionQps).append("|");
-        sb.append(rt).append("|");
-        sb.append(occupiedPassQps).append("|");
-        sb.append(concurrency).append("|");
+        sb.append(legalName).append('|');
+        sb.append(passQps).append('|');
+        sb.append(blockQps).append('|');
+        sb.append(successQps).append('|');
+        sb.append(exceptionQps).append('|');
+        sb.append(rt).append('|');
+        sb.append(occupiedPassQps).append('|');
+        sb.append(concurrency).append('|');
         sb.append(classification);
         return sb.toString();
     }
@@ -214,17 +214,17 @@ public class MetricNode {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         StringBuilder sb = new StringBuilder(32);
         sb.delete(0, sb.length());
-        sb.append(getTimestamp()).append("|");
-        sb.append(df.format(new Date(getTimestamp()))).append("|");
+        sb.append(getTimestamp()).append('|');
+        sb.append(df.format(new Date(getTimestamp()))).append('|');
         String legalName = getResource().replaceAll("\\|", "_");
-        sb.append(legalName).append("|");
-        sb.append(getPassQps()).append("|");
-        sb.append(getBlockQps()).append("|");
-        sb.append(getSuccessQps()).append("|");
-        sb.append(getExceptionQps()).append("|");
-        sb.append(getRt()).append("|");
-        sb.append(getOccupiedPassQps()).append("|");
-        sb.append(concurrency).append("|");
+        sb.append(legalName).append('|');
+        sb.append(getPassQps()).append('|');
+        sb.append(getBlockQps()).append('|');
+        sb.append(getSuccessQps()).append('|');
+        sb.append(getExceptionQps()).append('|');
+        sb.append(getRt()).append('|');
+        sb.append(getOccupiedPassQps()).append('|');
+        sb.append(concurrency).append('|');
         sb.append(classification);
         sb.append('\n');
         return sb.toString();

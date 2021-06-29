@@ -28,18 +28,18 @@ abstract class AbstractDubboFilter implements Filter {
     protected String getMethodResourceName(Invoker<?> invoker, Invocation invocation) {
         StringBuilder buf = new StringBuilder(64);
         buf.append(invoker.getInterface().getName())
-            .append(":")
+            .append(':')
             .append(invocation.getMethodName())
-            .append("(");
+            .append('(');
         boolean isFirst = true;
         for (Class<?> clazz : invocation.getParameterTypes()) {
             if (!isFirst) {
-                buf.append(",");
+                buf.append(',');
             }
             buf.append(clazz.getName());
             isFirst = false;
         }
-        buf.append(")");
+        buf.append(')');
         return buf.toString();
     }
 

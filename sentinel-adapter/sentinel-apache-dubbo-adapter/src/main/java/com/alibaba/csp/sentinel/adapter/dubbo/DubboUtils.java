@@ -48,12 +48,12 @@ public final class DubboUtils {
         boolean isFirst = true;
         for (Class<?> clazz : invocation.getParameterTypes()) {
             if (!isFirst) {
-                buf.append(",");
+                buf.append(',');
             }
             buf.append(clazz.getName());
             isFirst = false;
         }
-        buf.append(")");
+        buf.append(')');
         return buf.toString();
     }
 

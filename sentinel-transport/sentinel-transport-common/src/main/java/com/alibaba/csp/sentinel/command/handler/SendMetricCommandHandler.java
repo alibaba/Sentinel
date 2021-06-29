@@ -96,7 +96,7 @@ public class SendMetricCommandHandler implements CommandHandler<String> {
         }
         StringBuilder sb = new StringBuilder();
         for (MetricNode node : list) {
-            sb.append(node.toThinString()).append("\n");
+            sb.append(node.toThinString()).append('\n');
         }
         return CommandResponse.ofSuccess(sb.toString());
     }

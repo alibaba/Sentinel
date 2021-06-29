@@ -87,14 +87,14 @@ public class OccupiableBucketLeapArray extends LeapArray<MetricBucket> {
         List<WindowWrap<MetricBucket>> lists = listAll();
         sb.append("a_Thread_").append(Thread.currentThread().getId()).append(" time=").append(time).append("; ");
         for (WindowWrap<MetricBucket> window : lists) {
-            sb.append(window.windowStart()).append(":").append(window.value().toString()).append(";");
+            sb.append(window.windowStart()).append(':').append(window.value().toString()).append(';');
         }
-        sb.append("\n");
+        sb.append('\n');
 
         lists = borrowArray.listAll();
         sb.append("b_Thread_").append(Thread.currentThread().getId()).append(" time=").append(time).append("; ");
         for (WindowWrap<MetricBucket> window : lists) {
-            sb.append(window.windowStart()).append(":").append(window.value().toString()).append(";");
+            sb.append(window.windowStart()).append(':').append(window.value().toString()).append(';');
         }
         System.out.println(sb.toString());
     }

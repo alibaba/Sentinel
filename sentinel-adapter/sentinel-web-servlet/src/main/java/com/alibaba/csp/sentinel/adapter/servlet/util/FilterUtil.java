@@ -62,7 +62,7 @@ public final class FilterUtil {
         StringBuffer url = request.getRequestURL();
 
         if ("GET".equals(request.getMethod()) && StringUtil.isNotBlank(request.getQueryString())) {
-            url.append("?").append(request.getQueryString());
+            url.append('?').append(request.getQueryString());
         }
 
         if (StringUtil.isBlank(WebServletConfig.getBlockPage())) {
