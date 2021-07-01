@@ -18,14 +18,32 @@
 package com.alibaba.csp.sentinel.metric.exporter;
 
 /**
+ * {@link MetricExporter} work on export metric to target monitor.
+ * you can implement your export ways by this class.
+ *
  * @author chenglu
  * @date 2021-07-01 21:16
  */
 public interface MetricExporter {
     
+    /**
+     * start the {@link MetricExporter}.
+     *
+     * @throws Exception start exception.
+     */
     void start() throws Exception;
     
+    /**
+     * export the data to target monitor by the implement.
+     *
+     * @throws Exception export exception.
+     */
     void export() throws Exception;
     
+    /**
+     * shutdown the {@link MetricExporter}.
+     *
+     * @throws Exception shutdown exception.
+     */
     void shutdown() throws Exception;
 }

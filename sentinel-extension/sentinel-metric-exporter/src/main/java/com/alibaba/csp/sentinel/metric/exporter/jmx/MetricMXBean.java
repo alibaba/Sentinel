@@ -18,8 +18,11 @@
 package com.alibaba.csp.sentinel.metric.exporter.jmx;
 
 /**
- * the Metric JMX Bean interface
+ * the Metric JMX Bean interface.
+ *
  * @author chenglu
+ * @date 2021-07-01 20:02
+ * @since 1.8.3
  */
 public interface MetricMXBean {
     

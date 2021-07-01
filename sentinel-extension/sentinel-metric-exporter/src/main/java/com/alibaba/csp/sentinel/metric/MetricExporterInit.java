@@ -18,6 +18,7 @@
 package com.alibaba.csp.sentinel.metric;
 
 import com.alibaba.csp.sentinel.init.InitFunc;
+import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.metric.collector.MetricCollector;
 import com.alibaba.csp.sentinel.metric.exporter.MetricExporter;
 import com.alibaba.csp.sentinel.metric.exporter.jmx.JMXMetricExporter;
@@ -26,36 +27,52 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * The{@link MetricExporterInit} work on load Metric exporters.
  *
  * @author chenglu
  * @date 2021-07-01 19:58
+ * @since 1.8.3
  */
 public class MetricExporterInit implements InitFunc {
     
+    /**
+     * the list of metric exporters.
+     */
     private static List<MetricExporter> metricExporters = new ArrayList<>();
     
+    /**
+     * the metric collector.
+     */
     private static MetricCollector metricCollector = new MetricCollector();
     
+    /*
+      load metric exports.
+     */
     static {
+        // now we use this simple way to load MetricExporter.
         metricExporters.add(new JMXMetricExporter(metricCollector));
     }
     
     @Override
     public void init() throws Exception {
+        // start the metric exporters.
         for (MetricExporter metricExporter : metricExporters) {
            try {
                metricExporter.start();
            } catch (Exception e) {
-           
+               RecordLog.warn("[MetricExporterInit] MetricExporterInit start the metricExport[{}] failed, will ignore it.",
+                       metricExporter.getClass().getName(), e);
            }
         }
         
+        // add shutdown hook.
         Runtime.getRuntime().addShutdownHook(new Thread(
                 () -> metricExporters.forEach(metricExporter -> {
                     try {
                         metricExporter.shutdown();
                     } catch (Exception e) {
+                        RecordLog.warn("[MetricExporterInit] MetricExporterInit shutdown the metricExport[{}] failed, will ignore it.",
+                                metricExporter.getClass().getName(), e);
                     }
                 })
         ));

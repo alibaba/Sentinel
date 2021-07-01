@@ -23,30 +23,31 @@ import com.alibaba.csp.sentinel.node.metric.MetricNode;
  * the MetricBean for JMX expose.
  *
  * @author chenglu
+ * @date 2021-07-01 20:02
+ * @since 1.8.3
  */
 public class MetricBean implements MetricMXBean {
     
     private String resource;
     /**
      * Resource classification (e.g. SQL or RPC)
-     * @since 1.7.0
      */
     private int classification;
     
     private long timestamp;
+    
     private long passQps;
+    
     private long blockQps;
+    
     private long successQps;
+    
     private long exceptionQps;
+    
     private long rt;
     
-    /**
-     * @since 1.5.0
-     */
     private long occupiedPassQps;
-    /**
-     * @since 1.7.0
-     */
+
     private int concurrency;
     
     @Override
@@ -100,7 +101,7 @@ public class MetricBean implements MetricMXBean {
     }
     
     /**
-     * reset the MBean value to the initialized value
+     * reset the MBean value to the initialized value.
      */
     public void reset() {
         this.blockQps = 0;
@@ -112,7 +113,8 @@ public class MetricBean implements MetricMXBean {
     }
     
     /**
-     * set the MetricBean's value which from MetricNode
+     * set the MetricBean's value which from MetricNode.
+     *
      * @param metricNode metric Node for write file
      */
     public void setValueFromNode(MetricNode metricNode) {

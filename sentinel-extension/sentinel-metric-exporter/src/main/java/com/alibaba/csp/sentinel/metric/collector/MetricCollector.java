@@ -29,15 +29,18 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * The {@link MetricCollector} work on collecting metrics in {@link MetricNode}.
+ *
  * @author chenglu
  * @date 2021-07-01 20:01
+ * @since 1.8.3
  */
 public class MetricCollector {
     
     /**
+     * collect the metrics in {@link MetricNode}.
      *
-     *
-     * @return
+     * @return the metric grouped by resource name.
      */
     public Map<String, MetricNode> collectMetric() {
         Map<String, MetricNode> metricNodeMap = new HashMap<>();

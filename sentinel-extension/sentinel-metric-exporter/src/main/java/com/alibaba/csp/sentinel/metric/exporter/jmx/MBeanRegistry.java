@@ -30,8 +30,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * This class provides a unified interface for registering/unregistering of Metric MBean
+ * This class provides a unified interface for registering/unregistering of Metric MBean.
+ *
  * @author chenglu
+ * @date 2021-07-01 20:02
+ * @since 1.8.3
  */
 public class MBeanRegistry {
     

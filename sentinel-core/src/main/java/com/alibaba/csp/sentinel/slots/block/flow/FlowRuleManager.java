@@ -19,7 +19,6 @@ import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.metric.MetricTimerListener;
-import com.alibaba.csp.sentinel.node.metric.jmx.MetricBeanTimerListener;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
@@ -54,30 +53,14 @@ public class FlowRuleManager {
     private static final FlowPropertyListener LISTENER = new FlowPropertyListener();
     private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
 
-    /** the corePool size of SCHEDULER must be set at 1, so the two task ({@link #startMetricTimerListener()}, {@link #startMetricBeanTimerListener()}) can run orderly by the SCHEDULER **/
+    /** the corePool size of SCHEDULER must be set at 1, so the two task ({@link #startMetricTimerListener()} can run orderly by the SCHEDULER **/
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1,
         new NamedThreadFactory("sentinel-metrics-record-task", true));
 
     static {
         currentProperty.addListener(LISTENER);
-        startMetricBeanTimerListener();
         startMetricTimerListener();
-    }
-
-    /**
-     * start the MetricBeanTimerListener at the fix rate, the initialDelay is different with the {@link #startMetricTimerListener()},
-     * so that the two task will start running at different time.
-     */
-    private static void startMetricBeanTimerListener() {
-        long flushInterval = SentinelConfig.metricMbeanFlushIntervalSec();
-        if (flushInterval <= 0) {
-            RecordLog.info("[FlowRuleManager] The MetricBeanTimerListener doesn't start. If you want to start it, "
-                            + "please change the value(current: {}) of config({}) more than 0 to start it.", flushInterval,
-                    SentinelConfig.METRIC_MBEAN_FLUSH_INTERVAL);
-            return;
-        }
-        SCHEDULER.scheduleAtFixedRate(new MetricBeanTimerListener(), 0, flushInterval, TimeUnit.SECONDS);
     }
     
     /**

@@ -22,7 +22,6 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,11 +29,16 @@ import java.util.Set;
 /**
  * the metric bean writer, it provides {@link MetricBeanWriter#write} method for register the
  * MetricBean in {@link MBeanRegistry} or update the value of MetricBean
+ *
  * @author chenglu
+ * @date 2021-07-01 20:02
+ * @since 1.8.3
  */
 public class MetricBeanWriter {
     
     private final MBeanRegistry mBeanRegistry = MBeanRegistry.getInstance();
+    
+    private static final String DEFAULT_APP_NAME = "sentinel-application";
     
     /**
      * write the MetricNode value to MetricBean
@@ -51,16 +55,14 @@ public class MetricBeanWriter {
             if (metricNodes == null || metricNodes.isEmpty()) {
                 return;
             }
-            Iterator<MetricBean> iterator = metricNodes.iterator();
-            while (iterator.hasNext()) {
-                MetricBean metricNode = iterator.next();
+            for (MetricBean metricNode : metricNodes) {
                 metricNode.reset();
             }
             return;
         }
         String appName = SentinelConfig.getAppName();
         if (appName == null) {
-            appName = "sentinel-application";
+            appName = DEFAULT_APP_NAME;
         }
         Set<String> existResource = new HashSet<>();
         // set or update the new value

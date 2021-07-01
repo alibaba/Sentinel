@@ -18,6 +18,7 @@
 package com.alibaba.csp.sentinel.metric.exporter.jmx;
 
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
+import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.metric.collector.MetricCollector;
 import com.alibaba.csp.sentinel.metric.exporter.MetricExporter;
 
@@ -26,16 +27,27 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * The JMX metric exporter, mainly for write metric datas to JMX bean. It implement {@link MetricExporter}, provide method
+ * start, export and shutdown. The mainly design for the jmx is refresh the JMX bean data scheduled.
+ * {@link JMXExportTask} work on export data to {@link MetricBean}.
+ *
  * @author chenglu
  * @date 2021-07-01 20:02
+ * @since 1.8.3
  */
 public class JMXMetricExporter implements MetricExporter {
     
     private static final ScheduledExecutorService JMX_EXPORTER_SCHEDULE = Executors.newScheduledThreadPool(1,
-            new NamedThreadFactory("sentinel-metrics-record-task", true));
+            new NamedThreadFactory("sentinel-metrics-jmx-export-task", true));
     
+    /**
+     * JMX metric writer, write metric datas to {@link MetricBean}.
+     */
     private final MetricBeanWriter metricBeanWriter = new MetricBeanWriter();
     
+    /**
+     * global metrics collector.
+     */
     private MetricCollector metricCollector;
     
     public JMXMetricExporter(MetricCollector metricCollector) {
@@ -57,6 +69,9 @@ public class JMXMetricExporter implements MetricExporter {
         JMX_EXPORTER_SCHEDULE.shutdown();
     }
     
+    /**
+     * JMXExportTask mainly work on execute the JMX metric export.
+     */
     class JMXExportTask implements Runnable {
         
         @Override
@@ -64,7 +79,7 @@ public class JMXMetricExporter implements MetricExporter {
             try {
                 export();
             } catch (Exception e) {
-                e.printStackTrace();
+                RecordLog.warn("[JMX Metric Exporter] export to JMX MetricBean failed.", e);
             }
         }
     }
