@@ -42,18 +42,18 @@ public final class DubboUtils {
         StringBuilder buf = new StringBuilder(64);
         String interfaceResource = useGroupAndVersion ? invoker.getUrl().getColonSeparatedKey() : invoker.getInterface().getName();
         buf.append(interfaceResource)
-            .append(":")
+            .append(':')
             .append(invocation.getMethodName())
-            .append("(");
+            .append('(');
         boolean isFirst = true;
         for (Class<?> clazz : invocation.getParameterTypes()) {
             if (!isFirst) {
-                buf.append(",");
+                buf.append(',');
             }
             buf.append(clazz.getName());
             isFirst = false;
         }
-        buf.append(")");
+        buf.append(')');
         return buf.toString();
     }
 

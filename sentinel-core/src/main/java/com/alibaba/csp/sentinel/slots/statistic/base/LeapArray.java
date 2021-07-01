@@ -15,13 +15,13 @@
  */
 package com.alibaba.csp.sentinel.slots.statistic.base;
 
+import com.alibaba.csp.sentinel.util.AssertUtil;
+import com.alibaba.csp.sentinel.util.TimeUtil;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.concurrent.locks.ReentrantLock;
-
-import com.alibaba.csp.sentinel.util.AssertUtil;
-import com.alibaba.csp.sentinel.util.TimeUtil;
 
 /**
  * <p>
@@ -401,9 +401,9 @@ public abstract class LeapArray<T> {
     public void debug(long time) {
         StringBuilder sb = new StringBuilder();
         List<WindowWrap<T>> lists = list(time);
-        sb.append("Thread_").append(Thread.currentThread().getId()).append("_");
+        sb.append("Thread_").append(Thread.currentThread().getId()).append('_');
         for (WindowWrap<T> window : lists) {
-            sb.append(window.windowStart()).append(":").append(window.value().toString());
+            sb.append(window.windowStart()).append(':').append(window.value().toString());
         }
         System.out.println(sb.toString());
     }

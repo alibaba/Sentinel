@@ -69,7 +69,7 @@ public class FetchTreeCommandHandler implements CommandHandler<String> {
 
     private void visitTree(int level, DefaultNode node, /*@NonNull*/ StringBuilder sb) {
         for (int i = 0; i < level; ++i) {
-            sb.append("-");
+            sb.append('-');
         }
         if (!(node instanceof EntranceNode)) {
             sb.append(String.format("%s(t:%s pq:%s bq:%s tq:%s rt:%s prq:%s 1mp:%s 1mb:%s 1mt:%s)",

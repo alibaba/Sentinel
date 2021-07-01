@@ -15,8 +15,6 @@
  */
 package com.alibaba.csp.sentinel.command.handler;
 
-import java.util.Map.Entry;
-
 import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
@@ -25,6 +23,8 @@ import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.StatisticNode;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
+
+import java.util.Map.Entry;
 
 /**
  * @author qinan.qn
@@ -46,8 +46,8 @@ public class FetchOriginCommandHandler implements CommandHandler<String> {
         for (Entry<ResourceWrapper, ClusterNode> e : ClusterBuilderSlot.getClusterNodeMap().entrySet()) {
             if (e.getKey().getName().equals(name)) {
                 cNode = e.getValue();
-                sb.append("id: ").append(e.getKey().getShowName()).append("\n");
-                sb.append("\n");
+                sb.append("id: ").append(e.getKey().getShowName()).append('\n');
+                sb.append('\n');
                 exactly = true;
                 break;
             }
@@ -58,7 +58,7 @@ public class FetchOriginCommandHandler implements CommandHandler<String> {
                 if (e.getKey().getName().indexOf(name) > 0) {
                     cNode = e.getValue();
                     sb.append("id: ").append(e.getKey().getShowName()).append("\n");
-                    sb.append("\n");
+                    sb.append('\n');
                     break;
                 }
             }

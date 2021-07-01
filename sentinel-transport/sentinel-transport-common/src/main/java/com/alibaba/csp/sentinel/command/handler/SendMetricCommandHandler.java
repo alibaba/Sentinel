@@ -15,9 +15,6 @@
  */
 package com.alibaba.csp.sentinel.command.handler;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
@@ -31,6 +28,9 @@ import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 import com.alibaba.csp.sentinel.util.PidUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.util.TimeUtil;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Retrieve and aggregate {@link MetricNode} metrics.
@@ -96,7 +96,7 @@ public class SendMetricCommandHandler implements CommandHandler<String> {
         }
         StringBuilder sb = new StringBuilder();
         for (MetricNode node : list) {
-            sb.append(node.toThinString()).append("\n");
+            sb.append(node.toThinString()).append('\n');
         }
         return CommandResponse.ofSuccess(sb.toString());
     }
