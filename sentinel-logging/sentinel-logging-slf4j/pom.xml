@@ -5,7 +5,7 @@
     <parent>
         <artifactId>sentinel-logging</artifactId>
         <groupId>com.alibaba.csp</groupId>
-        <version>1.8.1-SNAPSHOT</version>
+        <version>1.8.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -13,8 +13,6 @@
     <packaging>jar</packaging>
 
     <properties>
-        <java.source.version>1.7</java.source.version>
-        <java.target.version>1.7</java.target.version>
         <slf4j.version>1.7.25</slf4j.version>
         <slf4j-test.version>1.2.0</slf4j-test.version>
     </properties>

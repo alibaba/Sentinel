@@ -41,6 +41,11 @@ public final class SentinelConfig {
      */
     public static final int APP_TYPE_COMMON = 0;
 
+    /**
+     * Parameter value for using context classloader.
+     */
+    private static final String CLASSLOADER_CONTEXT = "context";
+
     private static final Map<String, String> props = new ConcurrentHashMap<>();
 
     private static int appType = APP_TYPE_COMMON;
@@ -122,6 +127,24 @@ public final class SentinelConfig {
         AssertUtil.notNull(key, "key cannot be null");
         return props.get(key);
     }
+    
+    /**
+     * Get config value of the specific key.
+     *
+     * @param key config key
+     * @param envVariableKey Get the value of the environment variable with the given key
+     * @return the config value.
+     */
+    public static String getConfig(String key, boolean envVariableKey) {
+        AssertUtil.notNull(key, "key cannot be null");
+        if (envVariableKey) {
+            String value = System.getenv(key);
+            if (StringUtil.isNotEmpty(value)) {
+                return value;
+            }
+        }
+        return getConfig(key);
+    }
 
     public static void setConfig(String key, String value) {
         AssertUtil.notNull(key, "key cannot be null");
@@ -164,6 +187,7 @@ public final class SentinelConfig {
     /**
      * Get the metric log flush interval in second
      * @return  the metric log flush interval in second
+     * @since 1.8.1
      */
     public static long metricLogFlushIntervalSec() {
         String flushIntervalStr = SentinelConfig.getConfig(METRIC_FLUSH_INTERVAL);
@@ -326,6 +350,15 @@ public final class SentinelConfig {
 
     private static String toEnvKey(/*@NotBlank*/ String propKey) {
         return propKey.toUpperCase().replace('.', '_');
+    }
+    /**
+     * Whether use context classloader via config parameter
+     *
+     * @return Whether use context classloader
+     */
+    public static boolean shouldUseContextClassloader() {
+        String classloaderConf = SentinelConfig.getConfig(SentinelConfig.SPI_CLASSLOADER);
+        return CLASSLOADER_CONTEXT.equalsIgnoreCase(classloaderConf);
     }
 
     private SentinelConfig() {}
