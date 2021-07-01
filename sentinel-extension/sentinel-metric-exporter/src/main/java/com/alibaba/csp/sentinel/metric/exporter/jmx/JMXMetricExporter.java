@@ -37,8 +37,10 @@ import java.util.concurrent.TimeUnit;
  */
 public class JMXMetricExporter implements MetricExporter {
     
-    private static final ScheduledExecutorService JMX_EXPORTER_SCHEDULE = Executors.newScheduledThreadPool(1,
-            new NamedThreadFactory("sentinel-metrics-jmx-export-task", true));
+    /**
+     * schedule executor.
+     */
+    private final ScheduledExecutorService jmxExporterSchedule;
     
     /**
      * JMX metric writer, write metric datas to {@link MetricBean}.
@@ -48,15 +50,17 @@ public class JMXMetricExporter implements MetricExporter {
     /**
      * global metrics collector.
      */
-    private MetricCollector metricCollector;
+    private final MetricCollector metricCollector;
     
     public JMXMetricExporter(MetricCollector metricCollector) {
         this.metricCollector = metricCollector;
+        jmxExporterSchedule = Executors.newScheduledThreadPool(1,
+                new NamedThreadFactory("sentinel-metrics-jmx-export-task", true));
     }
     
     @Override
     public void start() throws Exception {
-        JMX_EXPORTER_SCHEDULE.scheduleAtFixedRate(new JMXExportTask(), 1, 1, TimeUnit.SECONDS);
+        jmxExporterSchedule.scheduleAtFixedRate(new JMXExportTask(), 1, 1, TimeUnit.SECONDS);
     }
     
     @Override
@@ -66,7 +70,7 @@ public class JMXMetricExporter implements MetricExporter {
     
     @Override
     public void shutdown() throws Exception {
-        JMX_EXPORTER_SCHEDULE.shutdown();
+        jmxExporterSchedule.shutdown();
     }
     
     /**

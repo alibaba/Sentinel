@@ -55,6 +55,7 @@ public class MetricExporterInit implements InitFunc {
     
     @Override
     public void init() throws Exception {
+        RecordLog.info("[MetricExporterInit] MetricExporter start init.");
         // start the metric exporters.
         for (MetricExporter metricExporter : metricExporters) {
            try {

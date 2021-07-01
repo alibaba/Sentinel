@@ -29,6 +29,7 @@ import com.alibaba.csp.sentinel.node.metric.MetricNode;
 public class MetricBean implements MetricMXBean {
     
     private String resource;
+    
     /**
      * Resource classification (e.g. SQL or RPC)
      */
