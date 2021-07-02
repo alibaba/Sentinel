@@ -61,7 +61,6 @@ public final class SentinelConfig {
     public static final String STATISTIC_MAX_RT = "csp.sentinel.statistic.max.rt";
     public static final String SPI_CLASSLOADER = "csp.sentinel.spi.classloader";
     public static final String METRIC_FLUSH_INTERVAL = "csp.sentinel.metric.flush.interval";
-    public static final String METRIC_MBEAN_FLUSH_INTERVAL = "csp.sentinel.metric.mbean.flush.interval";
 
     public static final String DEFAULT_CHARSET = "UTF-8";
     public static final long DEFAULT_SINGLE_METRIC_FILE_SIZE = 1024 * 1024 * 50;
@@ -69,7 +68,6 @@ public final class SentinelConfig {
     public static final int DEFAULT_COLD_FACTOR = 3;
     public static final int DEFAULT_STATISTIC_MAX_RT = 5000;
     public static final long DEFAULT_METRIC_FLUSH_INTERVAL = 1L;
-    public static final long DEFAULT_METRIC_MBEAN_FLUSH_INTERVAL = 1L;
 
     static {
         try {
@@ -200,24 +198,6 @@ public final class SentinelConfig {
             RecordLog.warn("[SentinelConfig] Parse the metricLogFlushInterval fail, use default value: "
                     + DEFAULT_METRIC_FLUSH_INTERVAL, throwable);
             return DEFAULT_METRIC_FLUSH_INTERVAL;
-        }
-    }
-    
-    /**
-     * Get the metric Mbean flush interval in second
-     * @return the metric Mbean flush interval in second
-     */
-    public static long metricMbeanFlushIntervalSec() {
-        String flushIntervalStr = SentinelConfig.getConfig(METRIC_MBEAN_FLUSH_INTERVAL);
-        if (flushIntervalStr == null) {
-            return DEFAULT_METRIC_MBEAN_FLUSH_INTERVAL;
-        }
-        try {
-            return Long.parseLong(flushIntervalStr);
-        } catch (Throwable throwable) {
-            RecordLog.warn("[SentinelConfig] Parse the metricMbeanFlushIntervalSec fail, use default value: "
-                    + DEFAULT_METRIC_MBEAN_FLUSH_INTERVAL, throwable);
-            return DEFAULT_METRIC_MBEAN_FLUSH_INTERVAL;
         }
     }
 
