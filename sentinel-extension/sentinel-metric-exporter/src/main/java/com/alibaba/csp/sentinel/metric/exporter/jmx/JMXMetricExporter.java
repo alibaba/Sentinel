@@ -22,8 +22,8 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.metric.collector.MetricCollector;
 import com.alibaba.csp.sentinel.metric.exporter.MetricExporter;
 
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -54,8 +54,7 @@ public class JMXMetricExporter implements MetricExporter {
     
     public JMXMetricExporter(MetricCollector metricCollector) {
         this.metricCollector = metricCollector;
-        jmxExporterSchedule = Executors.newScheduledThreadPool(1,
-                new NamedThreadFactory("sentinel-metrics-jmx-export-task", true));
+        jmxExporterSchedule = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("sentinel-metrics-jmx-export-task", true));
     }
     
     @Override
