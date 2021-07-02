@@ -67,7 +67,8 @@ public class MetricBeanWriter {
         Set<String> existResource = new HashSet<>();
         // set or update the new value
         for (MetricNode metricNode : map.values()) {
-            final String mBeanName = "Sentinel:type=" + appName + ",name=\"" + metricNode.getResource() +"\"";
+            final String mBeanName = "Sentinel:type=" + appName + ",name=\"" + metricNode.getResource()
+                    +"\",classification=\"" + metricNode.getClassification() +"\"";
             MetricBean metricBean = mBeanRegistry.findMBean(mBeanName);
             if (metricBean != null) {
                 metricBean.setValueFromNode(metricNode);
