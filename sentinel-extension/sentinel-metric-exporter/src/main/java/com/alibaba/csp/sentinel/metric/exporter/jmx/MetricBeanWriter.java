@@ -87,7 +87,8 @@ public class MetricBeanWriter {
             return;
         }
         for (MetricBean metricBean : metricBeans) {
-            final String mBeanName = "Sentinel:type=" + appName + ",name=\"" + metricBean.getResource() +"\"";
+            final String mBeanName = "Sentinel:type=" + appName + ",name=\"" + metricBean.getResource()
+                    +"\",classification=\"" + metricBean.getClassification() +"\"";
             if (existResource.contains(mBeanName)) {
                 continue;
             }
