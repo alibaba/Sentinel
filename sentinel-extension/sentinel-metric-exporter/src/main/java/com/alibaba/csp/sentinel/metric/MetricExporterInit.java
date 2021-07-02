@@ -46,7 +46,7 @@ public class MetricExporterInit implements InitFunc {
     private static MetricCollector metricCollector = new MetricCollector();
     
     /*
-      load metric exports.
+      load metric exporters.
      */
     static {
         // now we use this simple way to load MetricExporter.
