@@ -54,7 +54,7 @@ public class JMXMetricExporter implements MetricExporter {
     
     public JMXMetricExporter(MetricCollector metricCollector) {
         this.metricCollector = metricCollector;
-        jmxExporterSchedule = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("sentinel-metrics-jmx-export-task", true));
+        jmxExporterSchedule = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("sentinel-metrics-jmx-exporter-task", true));
     }
     
     @Override
