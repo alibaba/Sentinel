@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-parent</artifactId>
-        <version>1.8.1</version>
+        <version>1.8.2</version>
     </parent>
     <artifactId>sentinel-demo</artifactId>
     <packaging>pom</packaging>
@@ -22,7 +22,8 @@
         <module>sentinel-demo-apollo-datasource</module>
         <module>sentinel-demo-annotation-spring-aop</module>
         <module>sentinel-demo-parameter-flow-control</module>
-        <module>sentinel-demo-slot-chain-spi</module>
+        <module>sentinel-demo-slot-spi</module>
+        <module>sentinel-demo-slotchain-spi</module>
         <module>sentinel-demo-cluster</module>
         <module>sentinel-demo-command-handler</module>
         <module>sentinel-demo-spring-webflux</module>
@@ -40,6 +41,7 @@
         <module>sentinel-demo-quarkus</module>
         <module>sentinel-demo-annotation-cdi-interceptor</module>
         <module>sentinel-demo-motan</module>
+        <module>sentinel-demo-transport-spring-mvc</module>
     </modules>
 
     <dependencies>

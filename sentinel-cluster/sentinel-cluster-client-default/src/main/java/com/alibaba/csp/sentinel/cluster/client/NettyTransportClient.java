@@ -62,7 +62,7 @@ public class NettyTransportClient implements ClusterTransportClient {
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1,
-        new NamedThreadFactory("sentinel-cluster-transport-client-scheduler"));
+        new NamedThreadFactory("sentinel-cluster-transport-client-scheduler", true));
 
     public static final int RECONNECT_DELAY_MS = 2000;
 
