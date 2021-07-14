@@ -5,7 +5,7 @@
     <parent>
         <artifactId>sentinel-extension</artifactId>
         <groupId>com.alibaba.csp</groupId>
-        <version>1.8.2-SNAPSHOT</version>
+        <version>1.8.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -24,11 +24,6 @@
             <artifactId>sentinel-core</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjrt</artifactId>
-            <version>${aspectj.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
