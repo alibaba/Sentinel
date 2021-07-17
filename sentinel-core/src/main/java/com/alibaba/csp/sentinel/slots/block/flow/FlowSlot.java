@@ -21,13 +21,18 @@ import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.RuleSelector;
+import com.alibaba.csp.sentinel.slots.block.RuleSelectorLoader;
 import com.alibaba.csp.sentinel.spi.Spi;
+import com.alibaba.csp.sentinel.spi.SpiLoader;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.function.Function;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * <p>
@@ -143,8 +148,14 @@ public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     private final FlowRuleChecker checker;
 
+    private static RuleSelector<FlowRule> ruleSelector = null;
+
     public FlowSlot() {
         this(new FlowRuleChecker());
+    }
+
+    static {
+        ruleSelector = RuleSelectorLoader.getSelector(RuleConstant.RULE_SELECTOR_TYPE_FLOW_RULE);
     }
 
     /**
@@ -168,14 +179,14 @@ public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     void checkFlow(ResourceWrapper resource, Context context, DefaultNode node, int count, boolean prioritized)
         throws BlockException {
-        checker.checkFlow(ruleProvider, resource, context, node, count, prioritized);
+        checker.checkFlow(ruleSelector, resource, context, node, count, prioritized);
     }
 
     @Override
     public void exit(Context context, ResourceWrapper resourceWrapper, int count, Object... args) {
         fireExit(context, resourceWrapper, count, args);
     }
-
+/*
     private final Function<String, Collection<FlowRule>> ruleProvider = new Function<String, Collection<FlowRule>>() {
         @Override
         public Collection<FlowRule> apply(String resource) {
@@ -184,4 +195,5 @@ public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             return flowRules.get(resource);
         }
     };
+ */
 }

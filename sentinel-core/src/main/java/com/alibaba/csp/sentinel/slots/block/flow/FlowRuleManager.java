@@ -15,17 +15,18 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
+import com.alibaba.csp.sentinel.init.InitFunc;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.slots.block.Rule;
+import com.alibaba.csp.sentinel.slots.block.RuleSelector;
+import com.alibaba.csp.sentinel.spi.SpiLoader;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.node.metric.MetricTimerListener;
@@ -50,16 +51,36 @@ public class FlowRuleManager {
 
     private static volatile Map<String, List<FlowRule>> flowRules = new HashMap<>();
 
-    private static final FlowPropertyListener LISTENER = new FlowPropertyListener();
     private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
+
+    private static FlowRulePropertyListener LISTENER;
+
+    static RuleSelector<FlowRule> ruleSelector;
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1,
         new NamedThreadFactory("sentinel-metrics-record-task", true));
 
     static {
+        loadFlowRulePropertyListener();
         currentProperty.addListener(LISTENER);
         startMetricTimerListener();
+    }
+
+    private static void loadFlowRulePropertyListener() {
+        FlowRulePropertyListener flowRulePropertyListeners = SpiLoader.of(FlowRulePropertyListener.class).loadFirstInstance();
+        if (Objects.isNull(flowRulePropertyListeners)) {
+            flowRulePropertyListeners = new FlowRulePropertyListener();
+        }
+        LISTENER = flowRulePropertyListeners;
+    }
+
+    private static void loadFlowRuleSelector() {
+        FlowRulePropertyListener flowRulePropertyListeners = SpiLoader.of(FlowRulePropertyListener.class).loadFirstInstance();
+        if (Objects.isNull(flowRulePropertyListeners)) {
+            flowRulePropertyListeners = new FlowRulePropertyListener();
+        }
+        LISTENER = flowRulePropertyListeners;
     }
 
     /**
@@ -120,6 +141,10 @@ public class FlowRuleManager {
         currentProperty.updateValue(rules);
     }
 
+    static void setFlowRuleMap(Map<String, List<FlowRule>> rules) {
+        FlowRuleManager.flowRules = rules;
+    }
+
     static Map<String, List<FlowRule>> getFlowRuleMap() {
         return flowRules;
     }
@@ -145,7 +170,7 @@ public class FlowRuleManager {
 
         return true;
     }
-
+/*
     private static final class FlowPropertyListener implements PropertyListener<List<FlowRule>> {
 
         @Override
@@ -166,5 +191,5 @@ public class FlowRuleManager {
             RecordLog.info("[FlowRuleManager] Flow rules loaded: {}", rules);
         }
     }
-
+*/
 }

@@ -65,5 +65,10 @@ public final class RuleConstant {
     public static final int DEFAULT_SAMPLE_COUNT = 2;
     public static final int DEFAULT_WINDOW_INTERVAL_MS = 1000;
 
+    public static final String RULE_SELECTOR_TYPE_FLOW_RULE = "flow";
+    public static final String RULE_SELECTOR_TYPE_DEGRADE_RULE = "degrade";
+    public static final String RULE_SELECTOR_TYPE_SYSTEM_RULE = "system";
+    public static final String RULE_SELECTOR_TYPE_AUTHORITY_RULE = "authority";
+
     private RuleConstant() {}
 }
