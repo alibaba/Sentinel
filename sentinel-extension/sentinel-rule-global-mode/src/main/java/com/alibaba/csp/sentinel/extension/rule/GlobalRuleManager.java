@@ -12,9 +12,6 @@ import java.util.Map;
  */
 public class GlobalRuleManager {
 
-    private static volatile Map<String, List<FlowRule>> flowRules = new HashMap<>();
-
-
-
+    static volatile Map<String, List<FlowRule>> flowRules = new HashMap<>();
 
 }

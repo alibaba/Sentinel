@@ -4,9 +4,11 @@ import com.alibaba.csp.sentinel.extension.rule.GlobalRule;
 import com.alibaba.csp.sentinel.slots.block.flow.DefaultFlowRulePropertyListener;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRulePropertyListener;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -17,6 +19,16 @@ public class GlobalFlowRulePropertyListener extends DefaultFlowRulePropertyListe
 
     @Override
     public void configUpdate(List<FlowRule> rules) {
+    }
+
+    @Override
+    public void configLoad(List<FlowRule> rules) {
+        if (Objects.isNull(rules) || rules.size() <= 0) {
+            return;
+        }
+    }
+
+    private void handleRule(List<FlowRule> rules) {
         if (Objects.isNull(rules) || rules.size() <= 0) {
             return;
         }
@@ -30,12 +42,10 @@ public class GlobalFlowRulePropertyListener extends DefaultFlowRulePropertyListe
             }
         });
         super.configUpdate(normalFlowRule);
+        handleGlobalRule(globalFlowRule);
     }
 
-    @Override
-    public void configLoad(List<FlowRule> rules) {
-        if (Objects.isNull(rules) || rules.size() <= 0) {
-            return;
-        }
+    private void handleGlobalRule(List<FlowRule> rules) {
+        Map<String, List<FlowRule>> globalRuleMap = FlowRuleUtil.buildFlowRuleMap(rules);
     }
 }
