@@ -12,7 +12,7 @@ import java.util.*;
  */
 public class RuleSelectorLoader {
 
-    private static List<RuleSelector> selectors;
+    private volatile static List<RuleSelector> selectors = null;
 
     public static RuleSelector getSelector(String useType) {
         RuleSelector highestPrioritySelector = getHighestPrioritySelector(useType);
@@ -32,7 +32,7 @@ public class RuleSelectorLoader {
     }
 
     public static List<RuleSelector> getSelector(String useType, boolean reloadWhenNoExist) {
-        if (selectors.size() == 0 && reloadWhenNoExist) {
+        if ((Objects.isNull(selectors) || selectors.size() == 0) && reloadWhenNoExist) {
             loadRuleSelector();
         }
         if (selectors.size() == 0) {
@@ -50,9 +50,7 @@ public class RuleSelectorLoader {
     }
 
     private synchronized static void loadRuleSelector() {
-        selectors = new ArrayList<>();
-        List<RuleSelector> ruleSelectors = SpiLoader.of(RuleSelector.class).loadInstanceListSorted();
-        selectors.addAll(ruleSelectors);
+        selectors = SpiLoader.of(RuleSelector.class).loadInstanceListSorted();
     }
 
 }

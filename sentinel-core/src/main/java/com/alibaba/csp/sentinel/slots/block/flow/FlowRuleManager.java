@@ -25,7 +25,9 @@ import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.init.InitFunc;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.Rule;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.RuleSelector;
+import com.alibaba.csp.sentinel.slots.block.RuleSelectorLoader;
 import com.alibaba.csp.sentinel.spi.SpiLoader;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -53,9 +55,9 @@ public class FlowRuleManager {
 
     private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
 
-    private static FlowRulePropertyListener LISTENER;
+    private volatile static FlowRulePropertyListener LISTENER = null;
 
-    static RuleSelector<FlowRule> ruleSelector;
+    private static RuleSelector<FlowRule> ruleSelector;
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1,
@@ -63,22 +65,18 @@ public class FlowRuleManager {
 
     static {
         loadFlowRulePropertyListener();
+        ruleSelector = RuleSelectorLoader.getSelector(RuleConstant.RULE_SELECTOR_TYPE_FLOW_RULE);
         currentProperty.addListener(LISTENER);
         startMetricTimerListener();
     }
 
-    private static void loadFlowRulePropertyListener() {
-        FlowRulePropertyListener flowRulePropertyListeners = SpiLoader.of(FlowRulePropertyListener.class).loadFirstInstance();
-        if (Objects.isNull(flowRulePropertyListeners)) {
-            flowRulePropertyListeners = new FlowRulePropertyListener();
+    private synchronized static void loadFlowRulePropertyListener() {
+        if (Objects.nonNull(LISTENER)) {
+            return;
         }
-        LISTENER = flowRulePropertyListeners;
-    }
-
-    private static void loadFlowRuleSelector() {
         FlowRulePropertyListener flowRulePropertyListeners = SpiLoader.of(FlowRulePropertyListener.class).loadFirstInstance();
         if (Objects.isNull(flowRulePropertyListeners)) {
-            flowRulePropertyListeners = new FlowRulePropertyListener();
+            flowRulePropertyListeners = new DefaultFlowRulePropertyListener();
         }
         LISTENER = flowRulePropertyListeners;
     }
@@ -170,7 +168,16 @@ public class FlowRuleManager {
 
         return true;
     }
-/*
+
+    public static RuleSelector<FlowRule> getRuleSelector() {
+        return ruleSelector;
+    }
+
+    public static void setRuleSelector(RuleSelector<FlowRule> ruleSelector) {
+        FlowRuleManager.ruleSelector = ruleSelector;
+    }
+
+    /*
     private static final class FlowPropertyListener implements PropertyListener<List<FlowRule>> {
 
         @Override

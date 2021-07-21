@@ -148,14 +148,8 @@ public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     private final FlowRuleChecker checker;
 
-    private static RuleSelector<FlowRule> ruleSelector = null;
-
     public FlowSlot() {
         this(new FlowRuleChecker());
-    }
-
-    static {
-        ruleSelector = RuleSelectorLoader.getSelector(RuleConstant.RULE_SELECTOR_TYPE_FLOW_RULE);
     }
 
     /**
@@ -179,7 +173,7 @@ public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     void checkFlow(ResourceWrapper resource, Context context, DefaultNode node, int count, boolean prioritized)
         throws BlockException {
-        checker.checkFlow(ruleSelector, resource, context, node, count, prioritized);
+        checker.checkFlow(FlowRuleManager.getRuleSelector(), resource, context, node, count, prioritized);
     }
 
     @Override
