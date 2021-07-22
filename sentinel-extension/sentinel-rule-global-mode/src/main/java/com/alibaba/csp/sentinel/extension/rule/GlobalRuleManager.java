@@ -18,8 +18,8 @@ public class GlobalRuleManager {
     private static ReentrantLock flowRuleUpdateLoad = new ReentrantLock();
 
     public static void updateGlobalFlowRules(Map<String, List<FlowRule>> flowRuleMap) {
+        flowRuleUpdateLoad.lock();
         try {
-            flowRuleUpdateLoad.lock();
             GlobalRuleManager.flowRuleMap = flowRuleMap;
         } finally {
             flowRuleUpdateLoad.unlock();

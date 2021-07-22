@@ -18,6 +18,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -40,9 +41,10 @@ public class GlobalFlowRuleTest {
     public void setUp() {
         ContextUtil.exit();
         GlobalFlowRule globalFlowRule = new GlobalFlowRule();
-        globalFlowRule.setResource("*");
+        globalFlowRule.setResource("[a-z]*");
         globalFlowRule.setCount(1);
-        FlowRuleManager.loadRules(null);
+        globalFlowRule.setGrade(RuleConstant.FLOW_GRADE_QPS);
+        FlowRuleManager.loadRules(Arrays.asList(globalFlowRule));
     }
 
     @After
@@ -52,11 +54,16 @@ public class GlobalFlowRuleTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testCheckFlowPass() throws Exception {
-        SphU.entry("test");
+        Entry entry = SphU.entry("test");
+        entry.exit();
     }
 
     @Test(expected = FlowException.class)
     @SuppressWarnings("unchecked")
     public void testCheckFlowBlock() throws Exception {
+        for (int i = 0; i < 10; i++) {
+            Entry entry = SphU.entry("test");
+            entry.exit();
+        }
     }
 }

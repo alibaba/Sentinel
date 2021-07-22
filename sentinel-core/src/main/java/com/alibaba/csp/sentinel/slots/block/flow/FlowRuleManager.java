@@ -57,7 +57,7 @@ public class FlowRuleManager {
 
     private volatile static FlowRulePropertyListener LISTENER = null;
 
-    private static RuleSelector<FlowRule> ruleSelector;
+    private static RuleSelector ruleSelector;
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1,
@@ -169,6 +169,7 @@ public class FlowRuleManager {
         return true;
     }
 
+    @SuppressWarnings(value = "unchecked")
     public static RuleSelector<FlowRule> getRuleSelector() {
         return ruleSelector;
     }
