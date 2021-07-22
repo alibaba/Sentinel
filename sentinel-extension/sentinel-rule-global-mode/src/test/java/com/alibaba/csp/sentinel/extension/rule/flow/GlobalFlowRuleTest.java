@@ -3,9 +3,11 @@ package com.alibaba.csp.sentinel.extension.rule.flow;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
+import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.extension.rule.GlobalFlowRule;
+import com.alibaba.csp.sentinel.extension.rule.config.GlobalRuleConfig;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
@@ -45,10 +47,6 @@ public class GlobalFlowRuleTest {
         globalFlowRule.setCount(1);
         globalFlowRule.setGrade(RuleConstant.FLOW_GRADE_QPS);
         FlowRuleManager.loadRules(Arrays.asList(globalFlowRule));
-    }
-
-    @After
-    public void tearDown() {
     }
 
     @Test

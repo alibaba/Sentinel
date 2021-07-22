@@ -15,12 +15,7 @@
  */
 package com.alibaba.csp.sentinel.slots.block.degrade;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
@@ -30,6 +25,9 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreaker;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.ExceptionCircuitBreaker;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.ResponseTimeCircuitBreaker;
+import com.alibaba.csp.sentinel.slots.block.flow.DefaultFlowRulePropertyListener;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRulePropertyListener;
+import com.alibaba.csp.sentinel.spi.SpiLoader;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
@@ -45,12 +43,28 @@ public final class DegradeRuleManager {
     private static volatile Map<String, List<CircuitBreaker>> circuitBreakers = new HashMap<>();
     private static volatile Map<String, Set<DegradeRule>> ruleMap = new HashMap<>();
 
-    private static final RulePropertyListener LISTENER = new RulePropertyListener();
+    private static DegradeRulePropertyListener LISTENER = null;
+
     private static SentinelProperty<List<DegradeRule>> currentProperty
         = new DynamicSentinelProperty<>();
 
     static {
+        loadFlowRulePropertyListener();
         currentProperty.addListener(LISTENER);
+    }
+
+    /**
+     * load Property Listener
+     */
+    private synchronized static void loadFlowRulePropertyListener() {
+        if (Objects.nonNull(LISTENER)) {
+            return;
+        }
+        DegradeRulePropertyListener degradeRulePropertyListener = SpiLoader.of(DegradeRulePropertyListener.class).loadFirstInstance();
+        if (Objects.isNull(degradeRulePropertyListener)) {
+            degradeRulePropertyListener = new DefaultDegradeRulePropertyListener();
+        }
+        LISTENER = degradeRulePropertyListener;
     }
 
     /**
@@ -201,6 +215,7 @@ public final class DegradeRuleManager {
         }
     }
 
+    /*
     private static class RulePropertyListener implements PropertyListener<List<DegradeRule>> {
 
         private synchronized void reloadFrom(List<DegradeRule> list) {
@@ -265,4 +280,5 @@ public final class DegradeRuleManager {
             return cbMap;
         }
     }
+     */
 }

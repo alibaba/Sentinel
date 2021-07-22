@@ -2,6 +2,7 @@ package com.alibaba.csp.sentinel.extension.rule.flow;
 
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.extension.rule.GlobalRuleManager;
+import com.alibaba.csp.sentinel.extension.rule.config.GlobalRuleConfig;
 import com.alibaba.csp.sentinel.slots.block.flow.DefaultFlowRuleSelector;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 
@@ -36,7 +37,7 @@ public class GlobalFlowRuleSelector extends DefaultFlowRuleSelector {
         if (Objects.nonNull(matchedNormalRules)) {
             matchedRules.addAll(matchedNormalRules);
         }
-        if (true || (Objects.isNull(matchedNormalRules)) || matchedNormalRules.size() <= 0) {
+        if (isCanMergingRule() || (Objects.isNull(matchedNormalRules)) || matchedNormalRules.size() <= 0) {
             Map<String, List<FlowRule>> globalFlowMap = GlobalRuleManager.getGlobalFlowRules();
             for (Map.Entry<String, List<FlowRule>> globalFlowEntry : globalFlowMap.entrySet()) {
                 List<FlowRule> globalFlowRules = globalFlowEntry.getValue();
@@ -56,5 +57,9 @@ public class GlobalFlowRuleSelector extends DefaultFlowRuleSelector {
             patternCacheMap.put(matchRule, pattern);
         }
         return pattern.matcher(resourceName).matches();
+    }
+
+    private boolean isCanMergingRule() {
+        return Boolean.parseBoolean(SentinelConfig.getConfig(GlobalRuleConfig.GLOBAL_RULE_MERGING_FLOW_RULE));
     }
 }
