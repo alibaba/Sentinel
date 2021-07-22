@@ -41,7 +41,7 @@ public class RuleSelectorLoader {
         List<RuleSelector> matchedSelectorList = new ArrayList<>();
         for (RuleSelector selector : selectors) {
             List supportedRuleTypes = selector.getSupportedRuleTypes();
-            if (Objects.isNull(supportedRuleTypes) || supportedRuleTypes.size() <= 0 || supportedRuleTypes.contains(useType)) {
+            if (Objects.isNull(supportedRuleTypes) || supportedRuleTypes.size() <= 0 || !supportedRuleTypes.contains(useType)) {
                 continue;
             }
             matchedSelectorList.add(selector);

@@ -177,6 +177,10 @@ public class FlowRuleManager {
         FlowRuleManager.ruleSelector = ruleSelector;
     }
 
+    public static FlowRulePropertyListener getListener() {
+        return LISTENER;
+    }
+
     /*
     private static final class FlowPropertyListener implements PropertyListener<List<FlowRule>> {
 
