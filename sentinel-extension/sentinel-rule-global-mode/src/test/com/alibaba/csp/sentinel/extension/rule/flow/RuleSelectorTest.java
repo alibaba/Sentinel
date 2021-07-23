@@ -1,4 +1,4 @@
-package com.alibaba.csp.sentinel.extension.rule;
+package com.alibaba.csp.sentinel.extension.rule.flow;
 
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.extension.rule.flow.GlobalFlowRuleSelector;

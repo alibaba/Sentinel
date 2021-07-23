@@ -4,7 +4,6 @@ import com.alibaba.csp.sentinel.extension.rule.GlobalRule;
 import com.alibaba.csp.sentinel.extension.rule.GlobalRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.DefaultFlowRulePropertyListener;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRulePropertyListener;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleUtil;
 
 import java.util.ArrayList;

@@ -10,7 +10,7 @@ import java.util.Map;
  * @author : jiez
  * @date : 2021/7/17 10:19
  */
-public class DefaultFlowRulePropertyListener implements FlowRulePropertyListener {
+public class DefaultFlowRulePropertyListener extends BaseFlowRulePropertyListener {
 
     @Override
     public synchronized void configUpdate(List<FlowRule> value) {

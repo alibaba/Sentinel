@@ -8,5 +8,6 @@ import java.util.List;
  * @author : jiez
  * @date : 2021/7/21 16:44
  */
-public interface FlowRulePropertyListener extends PropertyListener<List<FlowRule>> {
+public abstract class BaseFlowRulePropertyListener implements PropertyListener<List<FlowRule>> {
+    
 }

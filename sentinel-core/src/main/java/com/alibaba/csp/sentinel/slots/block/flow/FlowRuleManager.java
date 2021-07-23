@@ -56,9 +56,9 @@ public class FlowRuleManager {
 
     private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
 
-    private volatile static FlowRulePropertyListener LISTENER = null;
+    private volatile static BaseFlowRulePropertyListener LISTENER = null;
 
-    private static RuleSelector ruleSelector;
+    private static RuleSelector ruleSelector = null;
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1,
@@ -75,7 +75,7 @@ public class FlowRuleManager {
         if (Objects.nonNull(LISTENER)) {
             return;
         }
-        FlowRulePropertyListener flowRulePropertyListeners = SpiLoader.of(FlowRulePropertyListener.class).loadFirstInstance();
+        BaseFlowRulePropertyListener flowRulePropertyListeners = SpiLoader.of(BaseFlowRulePropertyListener.class).loadFirstInstance();
         if (Objects.isNull(flowRulePropertyListeners)) {
             flowRulePropertyListeners = new DefaultFlowRulePropertyListener();
         }
@@ -179,7 +179,7 @@ public class FlowRuleManager {
         FlowRuleManager.ruleSelector = ruleSelector;
     }
 
-    public static FlowRulePropertyListener getListener() {
+    public static BaseFlowRulePropertyListener getListener() {
         return LISTENER;
     }
 

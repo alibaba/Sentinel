@@ -1,21 +1,26 @@
-package com.alibaba.csp.sentinel.extension.rule.flow;
+package com.alibaba.csp.sentinel.extension.rule.authority;
 
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.extension.rule.GlobalRuleManager;
 import com.alibaba.csp.sentinel.extension.rule.config.GlobalRuleConfig;
-import com.alibaba.csp.sentinel.slots.block.flow.DefaultFlowRuleSelector;
+import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRule;
+import com.alibaba.csp.sentinel.slots.block.authority.DefaultAuthorityRuleSelector;
+import com.alibaba.csp.sentinel.slots.block.degrade.DefaultDegradeRuleSelector;
+import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreaker;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * @author : jiez
  * @date : 2021/7/22 15:05
  */
-public class GlobalFlowRuleSelector extends DefaultFlowRuleSelector {
+public class GlobalAuthorityRuleSelector extends DefaultAuthorityRuleSelector {
 
     private Map<String, Pattern> patternCacheMap = new ConcurrentHashMap<>(16);
 
@@ -36,19 +41,19 @@ public class GlobalFlowRuleSelector extends DefaultFlowRuleSelector {
      * @return list of match rule
      */
     @Override
-    public List<FlowRule> select(String resource) {
-        List<FlowRule> matchedRules = new ArrayList<>();
-        List<FlowRule> matchedNormalRules = super.select(resource);
+    public List<AuthorityRule> select(String resource) {
+        List<AuthorityRule> matchedRules = new ArrayList<>();
+        List<AuthorityRule> matchedNormalRules = super.select(resource);
         if (Objects.nonNull(matchedNormalRules)) {
             matchedRules.addAll(matchedNormalRules);
         }
         if (isCanMergingRule() || (Objects.isNull(matchedNormalRules)) || matchedNormalRules.size() <= 0) {
-            Map<String, List<FlowRule>> globalFlowMap = GlobalRuleManager.getGlobalFlowRules();
-            for (Map.Entry<String, List<FlowRule>> globalFlowEntry : globalFlowMap.entrySet()) {
-                List<FlowRule> globalFlowRules = globalFlowEntry.getValue();
-                if (matchGlobalRuleByRegularExpression(globalFlowEntry.getKey(), resource)
-                        && Objects.nonNull(globalFlowRules)) {
-                    matchedRules.addAll(globalFlowRules);
+            Map<String, List<AuthorityRule>> globalAuthorityRuleMap = GlobalRuleManager.getGlobalAuthorityRules();
+            for (Map.Entry<String, List<AuthorityRule>> globalAuthorityRuleEntry : globalAuthorityRuleMap.entrySet()) {
+                List<AuthorityRule> globalAuthorityRules = globalAuthorityRuleEntry.getValue();
+                if (matchGlobalRuleByRegularExpression(globalAuthorityRuleEntry.getKey(), resource)
+                        && Objects.nonNull(globalAuthorityRules)) {
+                    matchedRules.addAll(globalAuthorityRules);
                 }
             }
         }
@@ -77,6 +82,7 @@ public class GlobalFlowRuleSelector extends DefaultFlowRuleSelector {
      * @return boolean is need merge
      */
     private boolean isCanMergingRule() {
-        return Boolean.parseBoolean(SentinelConfig.getConfig(GlobalRuleConfig.GLOBAL_RULE_MERGING_FLOW_RULE));
+        return Boolean.parseBoolean(SentinelConfig.getConfig(GlobalRuleConfig.GLOBAL_RULE_MERGING_AUTHORITY_RULE));
     }
+
 }

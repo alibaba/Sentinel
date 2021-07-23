@@ -12,76 +12,35 @@ import java.util.*;
  * @author : jiez
  * @date : 2021/7/22 22:47
  */
-public class DefaultDegradeRulePropertyListener implements DegradeRulePropertyListener {
-    @Override
-    public void configUpdate(List<DegradeRule> value) {
+public class DefaultDegradeRulePropertyListener extends BaseDegradeRulePropertyListener {
 
+    @Override
+    public void configUpdate(List<DegradeRule> conf) {
+        reloadFrom(conf);
+        RecordLog.info("[DegradeRuleManager] Degrade rules has been updated to: {}", DegradeRuleManager.getRules());
     }
 
     @Override
-    public void configLoad(List<DegradeRule> value) {
-
+    public void configLoad(List<DegradeRule> conf) {
+        reloadFrom(conf);
+        RecordLog.info("[DegradeRuleManager] Degrade rules loaded: {}", DegradeRuleManager.getRules());
     }
 
-//    private synchronized void reloadFrom(List<DegradeRule> list) {
-//        Map<String, List<CircuitBreaker>> cbs = buildCircuitBreakers(list);
-//        Map<String, Set<DegradeRule>> rm = new HashMap<>(cbs.size());
-//
-//        for (Map.Entry<String, List<CircuitBreaker>> e : cbs.entrySet()) {
-//            assert e.getValue() != null && !e.getValue().isEmpty();
-//
-//            Set<DegradeRule> rules = new HashSet<>(e.getValue().size());
-//            for (CircuitBreaker cb : e.getValue()) {
-//                rules.add(cb.getRule());
-//            }
-//            rm.put(e.getKey(), rules);
-//        }
-//
-//        DegradeRuleManager.circuitBreakers = cbs;
-//        DegradeRuleManager.ruleMap = rm;
-//    }
-//
-//    @Override
-//    public void configUpdate(List<DegradeRule> conf) {
-//        reloadFrom(conf);
-//        RecordLog.info("[DegradeRuleManager] Degrade rules has been updated to: {}", ruleMap);
-//    }
-//
-//    @Override
-//    public void configLoad(List<DegradeRule> conf) {
-//        reloadFrom(conf);
-//        RecordLog.info("[DegradeRuleManager] Degrade rules loaded: {}", ruleMap);
-//    }
-//
-//    private Map<String, List<CircuitBreaker>> buildCircuitBreakers(List<DegradeRule> list) {
-//        Map<String, List<CircuitBreaker>> cbMap = new HashMap<>(8);
-//        if (list == null || list.isEmpty()) {
-//            return cbMap;
-//        }
-//        for (DegradeRule rule : list) {
-//            if (!isValidRule(rule)) {
-//                RecordLog.warn("[DegradeRuleManager] Ignoring invalid rule when loading new rules: {}", rule);
-//                continue;
-//            }
-//
-//            if (StringUtil.isBlank(rule.getLimitApp())) {
-//                rule.setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
-//            }
-//            CircuitBreaker cb = getExistingSameCbOrNew(rule);
-//            if (cb == null) {
-//                RecordLog.warn("[DegradeRuleManager] Unknown circuit breaking strategy, ignoring: {}", rule);
-//                continue;
-//            }
-//
-//            String resourceName = rule.getResource();
-//
-//            List<CircuitBreaker> cbList = cbMap.get(resourceName);
-//            if (cbList == null) {
-//                cbList = new ArrayList<>();
-//                cbMap.put(resourceName, cbList);
-//            }
-//            cbList.add(cb);
-//        }
-//        return cbMap;
-//    }
+    private synchronized void reloadFrom(List<DegradeRule> list) {
+        Map<String, List<CircuitBreaker>> cbs = DegradeRuleManager.buildCircuitBreakers(list);
+        Map<String, Set<DegradeRule>> rm = new HashMap<>(cbs.size());
+
+        for (Map.Entry<String, List<CircuitBreaker>> e : cbs.entrySet()) {
+            assert e.getValue() != null && !e.getValue().isEmpty();
+
+            Set<DegradeRule> rules = new HashSet<>(e.getValue().size());
+            for (CircuitBreaker cb : e.getValue()) {
+                rules.add(cb.getRule());
+            }
+            rm.put(e.getKey(), rules);
+        }
+
+        super.updateDegradeRuleManagerRuleAndBreakerCache(rm, cbs);
+    }
+
 }

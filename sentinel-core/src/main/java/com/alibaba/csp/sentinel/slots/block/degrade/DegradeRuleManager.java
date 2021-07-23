@@ -19,14 +19,13 @@ import java.util.*;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
-import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.RuleSelector;
+import com.alibaba.csp.sentinel.slots.block.RuleSelectorLoader;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreaker;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.ExceptionCircuitBreaker;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.ResponseTimeCircuitBreaker;
-import com.alibaba.csp.sentinel.slots.block.flow.DefaultFlowRulePropertyListener;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRulePropertyListener;
 import com.alibaba.csp.sentinel.spi.SpiLoader;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -43,13 +42,16 @@ public final class DegradeRuleManager {
     private static volatile Map<String, List<CircuitBreaker>> circuitBreakers = new HashMap<>();
     private static volatile Map<String, Set<DegradeRule>> ruleMap = new HashMap<>();
 
-    private static DegradeRulePropertyListener LISTENER = null;
-
     private static SentinelProperty<List<DegradeRule>> currentProperty
         = new DynamicSentinelProperty<>();
 
+    private static BaseDegradeRulePropertyListener LISTENER = null;
+
+    private static RuleSelector<CircuitBreaker> ruleSelector = null;
+
     static {
         loadFlowRulePropertyListener();
+        ruleSelector = RuleSelectorLoader.getSelector(RuleConstant.RULE_SELECTOR_TYPE_DEGRADE_RULE);
         currentProperty.addListener(LISTENER);
     }
 
@@ -60,7 +62,7 @@ public final class DegradeRuleManager {
         if (Objects.nonNull(LISTENER)) {
             return;
         }
-        DegradeRulePropertyListener degradeRulePropertyListener = SpiLoader.of(DegradeRulePropertyListener.class).loadFirstInstance();
+        BaseDegradeRulePropertyListener degradeRulePropertyListener = SpiLoader.of(BaseDegradeRulePropertyListener.class).loadFirstInstance();
         if (Objects.isNull(degradeRulePropertyListener)) {
             degradeRulePropertyListener = new DefaultDegradeRulePropertyListener();
         }
@@ -83,6 +85,14 @@ public final class DegradeRuleManager {
         }
     }
 
+    /**
+     * Provide to BaseDegradeRulePropertyListener for circuit breakers update
+     * @param circuitBreakers
+     */
+    private synchronized static void setCircuitBreakers(Map<String, List<CircuitBreaker>> circuitBreakers) {
+        DegradeRuleManager.circuitBreakers = circuitBreakers;
+    }
+
     static List<CircuitBreaker> getCircuitBreakers(String resourceName) {
         return circuitBreakers.get(resourceName);
     }
@@ -92,6 +102,16 @@ public final class DegradeRuleManager {
             return false;
         }
         return circuitBreakers.containsKey(resource);
+    }
+
+    /**
+     * Provide to BaseDegradeRulePropertyListener for rule update
+     *
+     * @param ruleMap ruleMap
+     * @see BaseDegradeRulePropertyListener
+     */
+    private static void setRuleMap(Map<String, Set<DegradeRule>> ruleMap) {
+        DegradeRuleManager.ruleMap = ruleMap;
     }
 
     /**
@@ -213,6 +233,57 @@ public final class DegradeRuleManager {
             default:
                 return false;
         }
+    }
+
+    synchronized static void updateDegradeRuleManagerRuleAndBreakerCache(Map<String, Set<DegradeRule>> ruleMap, Map<String, List<CircuitBreaker>> circuitBreakers) {
+        if (Objects.nonNull(ruleMap)) {
+            setRuleMap(ruleMap);
+        }
+        if (Objects.nonNull(circuitBreakers)) {
+            setCircuitBreakers(circuitBreakers);
+        }
+    }
+
+    public static RuleSelector<CircuitBreaker> getRuleSelector() {
+        return ruleSelector;
+    }
+
+    /**
+     * Convert degrade rule to circuit breaker
+     *
+     * @param list
+     * @return
+     */
+    public static Map<String, List<CircuitBreaker>> buildCircuitBreakers(List<DegradeRule> list) {
+        Map<String, List<CircuitBreaker>> cbMap = new HashMap<>(8);
+        if (list == null || list.isEmpty()) {
+            return cbMap;
+        }
+        for (DegradeRule rule : list) {
+            if (!DegradeRuleManager.isValidRule(rule)) {
+                RecordLog.warn("[DegradeRuleManager] Ignoring invalid rule when loading new rules: {}", rule);
+                continue;
+            }
+
+            if (StringUtil.isBlank(rule.getLimitApp())) {
+                rule.setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
+            }
+            CircuitBreaker cb = DegradeRuleManager.getExistingSameCbOrNew(rule);
+            if (cb == null) {
+                RecordLog.warn("[DegradeRuleManager] Unknown circuit breaking strategy, ignoring: {}", rule);
+                continue;
+            }
+
+            String resourceName = rule.getResource();
+
+            List<CircuitBreaker> cbList = cbMap.get(resourceName);
+            if (cbList == null) {
+                cbList = new ArrayList<>();
+                cbMap.put(resourceName, cbList);
+            }
+            cbList.add(cb);
+        }
+        return cbMap;
     }
 
     /*

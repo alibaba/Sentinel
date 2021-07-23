@@ -1,7 +1,8 @@
 package com.alibaba.csp.sentinel.slots.block;
 
+import com.alibaba.csp.sentinel.slots.block.authority.DefaultAuthorityRuleSelector;
+import com.alibaba.csp.sentinel.slots.block.degrade.DefaultDegradeRuleSelector;
 import com.alibaba.csp.sentinel.slots.block.flow.DefaultFlowRuleSelector;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRulePropertyListener;
 import com.alibaba.csp.sentinel.spi.SpiLoader;
 
 import java.util.*;
@@ -17,7 +18,7 @@ public class RuleSelectorLoader {
     public static RuleSelector getSelector(String useType) {
         RuleSelector highestPrioritySelector = getHighestPrioritySelector(useType);
         if (Objects.isNull(highestPrioritySelector)) {
-            return new DefaultFlowRuleSelector();
+            return getDefaultSelector(useType);
         }
         return highestPrioritySelector;
     }
@@ -53,4 +54,16 @@ public class RuleSelectorLoader {
         selectors = SpiLoader.of(RuleSelector.class).loadInstanceListSorted();
     }
 
+    private static RuleSelector getDefaultSelector(String useType) {
+        switch (useType) {
+            case RuleConstant.RULE_SELECTOR_TYPE_FLOW_RULE:
+                return new DefaultFlowRuleSelector();
+            case RuleConstant.RULE_SELECTOR_TYPE_DEGRADE_RULE:
+                return new DefaultDegradeRuleSelector();
+            case RuleConstant.RULE_SELECTOR_TYPE_AUTHORITY_RULE:
+                return new DefaultAuthorityRuleSelector();
+            default:
+                return null;
+        }
+    }
 }

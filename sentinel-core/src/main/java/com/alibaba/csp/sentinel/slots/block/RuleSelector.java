@@ -6,7 +6,7 @@ import java.util.List;
  * @author : jiez
  * @date : 2021/7/17 11:03
  */
-public interface RuleSelector<T extends Rule> {
+public interface RuleSelector<T> {
 
     /**
      * Return Supported Rule Type list

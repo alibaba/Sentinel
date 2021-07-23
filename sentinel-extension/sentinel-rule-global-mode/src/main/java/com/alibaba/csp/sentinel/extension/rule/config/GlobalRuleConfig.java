@@ -7,4 +7,9 @@ package com.alibaba.csp.sentinel.extension.rule.config;
 public class GlobalRuleConfig {
 
     public static final String GLOBAL_RULE_MERGING_FLOW_RULE = "csp.sentinel.global.rule.merging.flow";
+
+    public static final String GLOBAL_RULE_MERGING_DEGRADE_RULE = "csp.sentinel.global.rule.merging.degrade";
+
+    public static final String GLOBAL_RULE_MERGING_AUTHORITY_RULE = "csp.sentinel.global.rule.merging.authority";
+
 }
