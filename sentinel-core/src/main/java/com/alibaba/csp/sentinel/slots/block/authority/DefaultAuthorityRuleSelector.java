@@ -29,6 +29,10 @@ public class DefaultAuthorityRuleSelector implements RuleSelector<AuthorityRule>
         if (authorityRules == null) {
             return null;
         }
-        return new ArrayList<>(authorityRules.get(resource));
+        Set<AuthorityRule> matchedAuthorityRules = authorityRules.get(resource);
+        if (Objects.nonNull(matchedAuthorityRules) && matchedAuthorityRules.size() > 0) {
+            return new ArrayList<>(matchedAuthorityRules);
+        }
+        return new ArrayList<>();
     }
 }

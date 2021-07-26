@@ -93,7 +93,7 @@ public final class DegradeRuleManager {
         DegradeRuleManager.circuitBreakers = circuitBreakers;
     }
 
-    static List<CircuitBreaker> getCircuitBreakers(String resourceName) {
+    public static List<CircuitBreaker> getCircuitBreakers(String resourceName) {
         return circuitBreakers.get(resourceName);
     }
 

@@ -10,12 +10,6 @@ import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 public interface GlobalRule<T extends Rule> {
 
     /**
-     * judge is global rule
-     * @return is global rule
-     */
-    boolean globalRule();
-
-    /**
      * transfer to ordinary rule
      *
      * @return <T> some class extend from rule

@@ -118,7 +118,11 @@ public final class AuthorityRuleManager {
         return rules;
     }
 
-/*
+    public static BaseAuthorityRulePropertyListener getListener() {
+        return LISTENER;
+    }
+
+    /*
     private static class RulePropertyListener implements PropertyListener<List<AuthorityRule>> {
 
         @Override

@@ -1,32 +1,19 @@
 package com.alibaba.csp.sentinel.extension.rule.flow;
 
 import com.alibaba.csp.sentinel.Entry;
-import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
-import com.alibaba.csp.sentinel.config.SentinelConfig;
-import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.context.ContextUtil;
-import com.alibaba.csp.sentinel.extension.rule.GlobalFlowRule;
-import com.alibaba.csp.sentinel.extension.rule.config.GlobalRuleConfig;
-import com.alibaba.csp.sentinel.node.DefaultNode;
-import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
-import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
+import com.alibaba.csp.sentinel.extension.rule.GlobalRuleManager;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import com.alibaba.csp.sentinel.slots.block.RuleSelector;
-import com.alibaba.csp.sentinel.slots.block.RuleSelectorLoader;
 import com.alibaba.csp.sentinel.slots.block.flow.*;
 import com.alibaba.csp.sentinel.util.AssertUtil;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Collections;
-
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.when;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author : jiez
@@ -47,6 +34,39 @@ public class GlobalFlowRuleTest {
         globalFlowRule.setCount(1);
         globalFlowRule.setGrade(RuleConstant.FLOW_GRADE_QPS);
         FlowRuleManager.loadRules(Arrays.asList(globalFlowRule));
+    }
+
+    @Test
+    public void testLoadRules() {
+        GlobalFlowRule globalFlowRule = new GlobalFlowRule();
+        globalFlowRule.setResource("[a-z]*");
+        globalFlowRule.setCount(1);
+        globalFlowRule.setGrade(RuleConstant.FLOW_GRADE_QPS);
+
+        FlowRule flowRule = new FlowRule();
+        flowRule.setResource("test");
+        flowRule.setCount(1);
+        flowRule.setGrade(RuleConstant.FLOW_GRADE_QPS);
+        flowRule.setStrategy(RuleConstant.STRATEGY_DIRECT);
+        flowRule.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_DEFAULT);
+
+        FlowRuleManager.loadRules(Arrays.asList(globalFlowRule, flowRule));
+
+        AssertUtil.isTrue(FlowRuleManager.getRules().size() == 1, "load normal rule fail");
+        AssertUtil.isTrue(countRuleFromMap(GlobalRuleManager.getGlobalFlowRules()) == 1, "load normal rule fail");
+    }
+
+    private Integer countRuleFromMap(Map<String, List<FlowRule>> ruleMap) {
+        if (Objects.isNull(ruleMap)) {
+            return 0;
+        }
+        int count = 0;
+        for (Map.Entry<String, List<FlowRule>> entry : ruleMap.entrySet()) {
+            if (Objects.nonNull(entry.getValue())) {
+                count = count + entry.getValue().size();
+            }
+        }
+        return count;
     }
 
     @Test
