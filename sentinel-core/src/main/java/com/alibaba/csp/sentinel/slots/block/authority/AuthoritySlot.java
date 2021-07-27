@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.slots.block.authority;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -24,6 +25,7 @@ import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
+import com.alibaba.csp.sentinel.slots.block.RuleSelector;
 import com.alibaba.csp.sentinel.spi.Spi;
 
 /**
@@ -37,7 +39,7 @@ public class AuthoritySlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, boolean prioritized, Object... args)
-        throws Throwable {
+            throws Throwable {
         checkBlackWhiteAuthority(resourceWrapper, context);
         fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }
@@ -48,6 +50,7 @@ public class AuthoritySlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     }
 
     void checkBlackWhiteAuthority(ResourceWrapper resource, Context context) throws AuthorityException {
+        /*
         Map<String, Set<AuthorityRule>> authorityRules = AuthorityRuleManager.getAuthorityRules();
 
         if (authorityRules == null) {
@@ -55,6 +58,12 @@ public class AuthoritySlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         }
 
         Set<AuthorityRule> rules = authorityRules.get(resource.getName());
+        if (rules == null) {
+            return;
+        }
+         */
+        RuleSelector<AuthorityRule> ruleSelector = AuthorityRuleManager.getRuleSelector();
+        List<AuthorityRule> rules = ruleSelector.select(resource.getName());
         if (rules == null) {
             return;
         }

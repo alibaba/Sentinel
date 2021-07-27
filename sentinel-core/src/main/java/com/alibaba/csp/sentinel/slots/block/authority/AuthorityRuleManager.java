@@ -15,20 +15,18 @@
  */
 package com.alibaba.csp.sentinel.slots.block.authority;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
+import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.RuleSelector;
+import com.alibaba.csp.sentinel.slots.block.RuleSelectorLoader;
+import com.alibaba.csp.sentinel.spi.SpiLoader;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
-import com.alibaba.csp.sentinel.property.PropertyListener;
-import com.alibaba.csp.sentinel.property.SentinelProperty;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Manager for authority rules.
@@ -41,11 +39,30 @@ public final class AuthorityRuleManager {
 
     private static Map<String, Set<AuthorityRule>> authorityRules = new ConcurrentHashMap<>();
 
-    private static final RulePropertyListener LISTENER = new RulePropertyListener();
     private static SentinelProperty<List<AuthorityRule>> currentProperty = new DynamicSentinelProperty<>();
 
+    private static BaseAuthorityRulePropertyListener LISTENER = null;
+
+    private static RuleSelector<AuthorityRule> ruleSelector = null;
+
     static {
+        loadAuthorityRulePropertyListener();
+        ruleSelector = RuleSelectorLoader.getSelector(RuleConstant.RULE_SELECTOR_TYPE_AUTHORITY_RULE);
         currentProperty.addListener(LISTENER);
+    }
+
+    /**
+     * load Property Listener
+     */
+    private synchronized static void loadAuthorityRulePropertyListener() {
+        if (Objects.nonNull(LISTENER)) {
+            return;
+        }
+        BaseAuthorityRulePropertyListener authorityRulePropertyListener = SpiLoader.of(BaseAuthorityRulePropertyListener.class).loadFirstInstance();
+        if (Objects.isNull(authorityRulePropertyListener)) {
+            authorityRulePropertyListener = new DefaultAuthorityRulePropertyListener();
+        }
+        LISTENER = authorityRulePropertyListener;
     }
 
     public static void register2Property(SentinelProperty<List<AuthorityRule>> property) {
@@ -57,6 +74,18 @@ public final class AuthorityRuleManager {
             property.addListener(LISTENER);
             currentProperty = property;
             RecordLog.info("[AuthorityRuleManager] Registering new property to authority rule manager");
+        }
+    }
+
+    /**
+     * Provide to class(in a package) for update
+     *
+     * @param rules
+     */
+    static void updateAuthorityRules(Map<String, Set<AuthorityRule>> rules) {
+        authorityRules.clear();
+        if (rules != null) {
+            authorityRules.putAll(rules);
         }
     }
 
@@ -89,6 +118,11 @@ public final class AuthorityRuleManager {
         return rules;
     }
 
+    public static BaseAuthorityRulePropertyListener getListener() {
+        return LISTENER;
+    }
+
+    /*
     private static class RulePropertyListener implements PropertyListener<List<AuthorityRule>> {
 
         @Override
@@ -146,13 +180,51 @@ public final class AuthorityRuleManager {
             RecordLog.info("[AuthorityRuleManager] Load authority rules: {}", authorityRules);
         }
     }
+*/
 
     static Map<String, Set<AuthorityRule>> getAuthorityRules() {
         return authorityRules;
     }
 
+    public static RuleSelector<AuthorityRule> getRuleSelector() {
+        return ruleSelector;
+    }
+
     public static boolean isValidRule(AuthorityRule rule) {
         return rule != null && !StringUtil.isBlank(rule.getResource())
-            && rule.getStrategy() >= 0 && StringUtil.isNotBlank(rule.getLimitApp());
+                && rule.getStrategy() >= 0 && StringUtil.isNotBlank(rule.getLimitApp());
+    }
+
+    public static Map<String, Set<AuthorityRule>> buildAuthorityRuleMap(List<AuthorityRule> rules) {
+        Map<String, Set<AuthorityRule>> newRuleMap = new HashMap<>();
+
+        if (rules == null || rules.isEmpty()) {
+            return newRuleMap;
+        }
+
+        for (AuthorityRule rule : rules) {
+            if (!AuthorityRuleManager.isValidRule(rule)) {
+                RecordLog.warn("[AuthorityRuleManager] Ignoring invalid authority rule when loading new rules: {}", rule);
+                continue;
+            }
+
+            if (StringUtil.isBlank(rule.getLimitApp())) {
+                rule.setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
+            }
+
+            String identity = rule.getResource();
+            Set<AuthorityRule> ruleSet = newRuleMap.get(identity);
+            // putIfAbsent
+            if (ruleSet == null) {
+                ruleSet = new HashSet<>();
+                ruleSet.add(rule);
+                newRuleMap.put(identity, ruleSet);
+            } else {
+                // One resource should only have at most one authority rule, so just ignore redundant rules.
+                RecordLog.warn("[AuthorityRuleManager] Ignoring redundant rule: {}", rule.toString());
+            }
+        }
+
+        return newRuleMap;
     }
 }

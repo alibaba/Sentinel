@@ -25,6 +25,7 @@ import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.RuleSelector;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreaker;
 import com.alibaba.csp.sentinel.spi.Spi;
 
@@ -46,7 +47,9 @@ public class DegradeSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     }
 
     void performChecking(Context context, ResourceWrapper r) throws BlockException {
-        List<CircuitBreaker> circuitBreakers = DegradeRuleManager.getCircuitBreakers(r.getName());
+//        List<CircuitBreaker> circuitBreakers = DegradeRuleManager.getCircuitBreakers(r.getName());
+        RuleSelector<CircuitBreaker> ruleSelector = DegradeRuleManager.getRuleSelector();
+        List<CircuitBreaker> circuitBreakers = ruleSelector.select(r.getName());
         if (circuitBreakers == null || circuitBreakers.isEmpty()) {
             return;
         }
@@ -64,7 +67,9 @@ public class DegradeSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             fireExit(context, r, count, args);
             return;
         }
-        List<CircuitBreaker> circuitBreakers = DegradeRuleManager.getCircuitBreakers(r.getName());
+//        List<CircuitBreaker> circuitBreakers = DegradeRuleManager.getCircuitBreakers(r.getName());
+        RuleSelector<CircuitBreaker> ruleSelector = DegradeRuleManager.getRuleSelector();
+        List<CircuitBreaker> circuitBreakers = ruleSelector.select(r.getName());
         if (circuitBreakers == null || circuitBreakers.isEmpty()) {
             fireExit(context, r, count, args);
             return;

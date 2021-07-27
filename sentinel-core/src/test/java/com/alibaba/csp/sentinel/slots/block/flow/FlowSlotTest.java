@@ -23,6 +23,7 @@ import com.alibaba.csp.sentinel.context.ContextTestUtil;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
+import com.alibaba.csp.sentinel.slots.block.RuleSelector;
 import com.alibaba.csp.sentinel.util.function.Function;
 
 import org.junit.After;
@@ -55,7 +56,7 @@ public class FlowSlotTest {
         FlowSlot flowSlot = new FlowSlot(checker);
         Context context = mock(Context.class);
         DefaultNode node = mock(DefaultNode.class);
-        doCallRealMethod().when(checker).checkFlow(any(Function.class), any(ResourceWrapper.class), any(Context.class),
+        doCallRealMethod().when(checker).checkFlow(any(RuleSelector.class), any(ResourceWrapper.class), any(Context.class),
             any(DefaultNode.class), anyInt(), anyBoolean());
 
         String resA = "resAK";
@@ -81,7 +82,7 @@ public class FlowSlotTest {
         FlowSlot flowSlot = new FlowSlot(checker);
         Context context = mock(Context.class);
         DefaultNode node = mock(DefaultNode.class);
-        doCallRealMethod().when(checker).checkFlow(any(Function.class), any(ResourceWrapper.class), any(Context.class),
+        doCallRealMethod().when(checker).checkFlow(any(RuleSelector.class), any(ResourceWrapper.class), any(Context.class),
             any(DefaultNode.class), anyInt(), anyBoolean());
 
         String resA = "resAK";

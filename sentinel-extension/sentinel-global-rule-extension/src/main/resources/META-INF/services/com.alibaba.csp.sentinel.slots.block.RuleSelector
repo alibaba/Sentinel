@@ -1,0 +1,3 @@
+com.alibaba.csp.sentinel.extension.global.rule.flow.GlobalFlowRuleSelector
+com.alibaba.csp.sentinel.extension.global.rule.degrade.GlobalDegradeRuleSelector
+com.alibaba.csp.sentinel.extension.global.rule.authority.GlobalAuthorityRuleSelector

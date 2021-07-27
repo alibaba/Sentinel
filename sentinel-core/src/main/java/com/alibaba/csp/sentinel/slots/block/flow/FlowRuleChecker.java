@@ -30,6 +30,7 @@ import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.RuleSelector;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.util.function.Function;
@@ -41,12 +42,12 @@ import com.alibaba.csp.sentinel.util.function.Function;
  */
 public class FlowRuleChecker {
 
-    public void checkFlow(Function<String, Collection<FlowRule>> ruleProvider, ResourceWrapper resource,
+    public void checkFlow(RuleSelector<FlowRule> ruleProvider, ResourceWrapper resource,
                           Context context, DefaultNode node, int count, boolean prioritized) throws BlockException {
         if (ruleProvider == null || resource == null) {
             return;
         }
-        Collection<FlowRule> rules = ruleProvider.apply(resource.getName());
+        Collection<FlowRule> rules = ruleProvider.select(resource.getName());
         if (rules != null) {
             for (FlowRule rule : rules) {
                 if (!canPassCheck(rule, context, node, count, prioritized)) {
@@ -57,12 +58,12 @@ public class FlowRuleChecker {
     }
 
     public boolean canPassCheck(/*@NonNull*/ FlowRule rule, Context context, DefaultNode node,
-                                                    int acquireCount) {
+                                             int acquireCount) {
         return canPassCheck(rule, context, node, acquireCount, false);
     }
 
     public boolean canPassCheck(/*@NonNull*/ FlowRule rule, Context context, DefaultNode node, int acquireCount,
-                                                    boolean prioritized) {
+                                             boolean prioritized) {
         String limitApp = rule.getLimitApp();
         if (limitApp == null) {
             return true;
@@ -133,7 +134,7 @@ public class FlowRuleChecker {
 
             return selectReferenceNode(rule, context, node);
         } else if (RuleConstant.LIMIT_APP_OTHER.equals(limitApp)
-            && FlowRuleManager.isOtherOrigin(origin, rule.getResource())) {
+                && FlowRuleManager.isOtherOrigin(origin, rule.getResource())) {
             if (strategy == RuleConstant.STRATEGY_DIRECT) {
                 return context.getOriginNode();
             }
