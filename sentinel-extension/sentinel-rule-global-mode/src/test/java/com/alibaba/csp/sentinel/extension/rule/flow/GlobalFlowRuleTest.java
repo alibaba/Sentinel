@@ -56,6 +56,22 @@ public class GlobalFlowRuleTest {
         AssertUtil.isTrue(countRuleFromMap(GlobalRuleManager.getGlobalFlowRules()) == 1, "load normal rule fail");
     }
 
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testCheckFlowPass() throws Exception {
+        Entry entry = SphU.entry("test2");
+        entry.exit();
+    }
+
+    @Test(expected = FlowException.class)
+    @SuppressWarnings("unchecked")
+    public void testCheckFlowBlock() throws Exception {
+        for (int i = 0; i < 10; i++) {
+            Entry entry = SphU.entry("test");
+            entry.exit();
+        }
+    }
+
     private Integer countRuleFromMap(Map<String, List<FlowRule>> ruleMap) {
         if (Objects.isNull(ruleMap)) {
             return 0;
@@ -67,21 +83,5 @@ public class GlobalFlowRuleTest {
             }
         }
         return count;
-    }
-
-    @Test
-    @SuppressWarnings("unchecked")
-    public void testCheckFlowPass() throws Exception {
-        Entry entry = SphU.entry("test");
-        entry.exit();
-    }
-
-    @Test(expected = FlowException.class)
-    @SuppressWarnings("unchecked")
-    public void testCheckFlowBlock() throws Exception {
-        for (int i = 0; i < 10; i++) {
-            Entry entry = SphU.entry("test");
-            entry.exit();
-        }
     }
 }
