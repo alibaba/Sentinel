@@ -12,8 +12,6 @@
     <artifactId>sentinel-global-rule-extension</artifactId>
     <packaging>jar</packaging>
 
-    <name>sentinel-rule-global-mode</name>
-
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
