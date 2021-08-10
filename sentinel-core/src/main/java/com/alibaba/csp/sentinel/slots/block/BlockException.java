@@ -24,7 +24,11 @@ package com.alibaba.csp.sentinel.slots.block;
  */
 public abstract class BlockException extends Exception {
 
+    private static final int MAX_SEARCH_DEPTH = 10;
+
     public static final String BLOCK_EXCEPTION_FLAG = "SentinelBlockException";
+    public static final String BLOCK_EXCEPTION_MSG_PREFIX = "SentinelBlockException: ";
+
 
     public static final int MAX_COUNTER = 50;
     /**
@@ -88,12 +92,18 @@ public abstract class BlockException extends Exception {
         this.ruleLimitApp = ruleLimitApp;
     }
 
+    public RuntimeException toRuntimeException() {
+        RuntimeException t = new RuntimeException(BLOCK_EXCEPTION_MSG_PREFIX + getClass().getSimpleName());
+        t.setStackTrace(sentinelStackTrace);
+        return t;
+    }
+
     /**
      * Check whether the exception is sentinel blocked exception. One exception is sentinel blocked
      * exception only when:
      * <ul>
      * <li>the exception or its (sub-)cause is {@link BlockException}, or</li>
-     * <li>the exception's message is or any of its sub-cause's message equals to {@link #BLOCK_EXCEPTION_FLAG}</li>
+     * <li>the exception's message or any of its sub-cause's message is prefixed by {@link #BLOCK_EXCEPTION_FLAG}</li>
      * </ul>
      *
      * @param t the exception.

@@ -47,7 +47,7 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
     $scope.editRule = function (rule) {
       $scope.currentRule = angular.copy(rule);
       $scope.degradeRuleDialog = {
-        title: '编辑降级规则',
+        title: '编辑熔断规则',
         type: 'edit',
         confirmBtnText: '保存'
       };
@@ -66,10 +66,12 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
         app: $scope.app,
         ip: mac[0],
         port: mac[1],
-        limitApp: 'default'
+        limitApp: 'default',
+        minRequestAmount: 5,
+        statIntervalMs: 1000,
       };
       $scope.degradeRuleDialog = {
-        title: '新增降级规则',
+        title: '新增熔断规则',
         type: 'add',
         confirmBtnText: '新增'
       };
@@ -95,7 +97,7 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
     function parseDegradeMode(grade) {
         switch (grade) {
             case 0:
-              return 'RT';
+              return '慢调用比例';
             case 1:
               return '异常比例';
             case 2:
@@ -109,11 +111,11 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
     $scope.deleteRule = function (rule) {
       $scope.currentRule = rule;
       $scope.confirmDialog = {
-        title: '删除降级规则',
+        title: '删除熔断规则',
         type: 'delete_rule',
-        attentionTitle: '请确认是否删除如下降级规则',
+        attentionTitle: '请确认是否删除如下熔断规则',
         attention: '资源名: ' + rule.resource +
-            ', 降级模式: ' + parseDegradeMode(rule.grade) + ', 阈值: ' + rule.count,
+            ', 熔断策略: ' + parseDegradeMode(rule.grade) + ', 阈值: ' + rule.count,
         confirmBtnText: '删除',
       };
       confirmDialog = ngDialog.open({
@@ -137,7 +139,7 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
           getMachineRules();
           confirmDialog.close();
         } else {
-          alert('失败!');
+          alert('失败：' + data.msg);
         }
       });
     };
@@ -148,7 +150,7 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
           getMachineRules();
           degradeRuleDialog.close();
         } else {
-          alert('失败!');
+          alert('失败：' + data.msg);
         }
       });
     };
@@ -163,7 +165,7 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
             confirmDialog.close();
           }
         } else {
-          alert('失败!');
+          alert('失败：' + data.msg);
         }
       });
     }
@@ -171,7 +173,7 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
     function queryAppMachines() {
       MachineService.getAppMachines($scope.app).success(
         function (data) {
-          if (data.code == 0) {
+          if (data.code === 0) {
             // $scope.machines = data.data;
             if (data.data) {
               $scope.machines = [];

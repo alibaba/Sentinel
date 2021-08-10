@@ -2,6 +2,7 @@ package com.alibaba.csp.sentinel;
 
 import com.alibaba.csp.sentinel.context.ContextTestUtil;
 import com.alibaba.csp.sentinel.context.ContextUtil;
+import com.alibaba.csp.sentinel.util.function.Predicate;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -16,12 +17,14 @@ public class TracerTest extends Tracer {
     public void setUp() {
         ContextTestUtil.cleanUpContext();
         ContextTestUtil.resetContextMap();
+        Tracer.exceptionPredicate = null;
     }
 
     @After
     public void tearDown() {
         ContextTestUtil.cleanUpContext();
         ContextTestUtil.resetContextMap();
+        Tracer.exceptionPredicate = null;
     }
 
     @Test
@@ -50,6 +53,25 @@ public class TracerTest extends Tracer {
         Assert.assertTrue(Tracer.shouldTrace(new TraceException2()));
         Assert.assertTrue(Tracer.shouldTrace(new TraceExceptionSub()));
         Assert.assertFalse(Tracer.shouldTrace(new Exception()));
+    }
+
+    @Test
+    public void setExceptionPredicate() {
+
+        Predicate<Throwable> throwablePredicate = new Predicate<Throwable>() {
+            @Override
+            public boolean test(Throwable throwable) {
+                if (throwable instanceof TraceException) {
+                    return true;
+                } else if (throwable instanceof IgnoreException) {
+                    return false;
+                }
+                return false;
+            }
+        };
+        Tracer.setExceptionPredicate(throwablePredicate);
+        Assert.assertTrue(Tracer.shouldTrace(new TraceException()));
+        Assert.assertFalse(Tracer.shouldTrace(new IgnoreException()));
     }
 
     @Test
@@ -86,6 +108,11 @@ public class TracerTest extends Tracer {
     @Test(expected = IllegalArgumentException.class)
     public void testNull2() {
         Tracer.setExceptionsToIgnore(IgnoreException.class, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNull3() {
+        Tracer.setExceptionPredicate(null);
     }
 
     private class TraceException extends Exception {}

@@ -48,7 +48,7 @@ public class TokenClientHandler extends ChannelInboundHandlerAdapter {
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         currentState.set(ClientConstants.CLIENT_STATUS_STARTED);
         fireClientPing(ctx);
-        RecordLog.info("[TokenClientHandler] Client handler active, remote address: " + getRemoteAddress(ctx));
+        RecordLog.info("[TokenClientHandler] Client handler active, remote address: {}", getRemoteAddress(ctx));
     }
 
     @Override
@@ -90,12 +90,12 @@ public class TokenClientHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        RecordLog.info("[TokenClientHandler] Client handler inactive, remote address: " + getRemoteAddress(ctx));
+        RecordLog.info("[TokenClientHandler] Client handler inactive, remote address: {}", getRemoteAddress(ctx));
     }
 
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
-        RecordLog.info("[TokenClientHandler] Client channel unregistered, remote address: " + getRemoteAddress(ctx));
+        RecordLog.info("[TokenClientHandler] Client channel unregistered, remote address: {}", getRemoteAddress(ctx));
         currentState.set(ClientConstants.CLIENT_STATUS_OFF);
 
         disconnectCallback.run();

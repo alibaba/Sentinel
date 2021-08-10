@@ -17,7 +17,6 @@ package com.alibaba.csp.sentinel.adapter.spring.webmvc.config;
 
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.BlockExceptionHandler;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.RequestOriginParser;
-import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
  * Common base configuration for Spring Web MVC adapter.
@@ -28,6 +27,7 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
 public abstract class BaseWebMvcConfig {
 
     protected String requestAttributeName;
+    protected String requestRefName;
     protected BlockExceptionHandler blockExceptionHandler;
     protected RequestOriginParser originParser;
 
@@ -37,6 +37,16 @@ public abstract class BaseWebMvcConfig {
 
     public void setRequestAttributeName(String requestAttributeName) {
         this.requestAttributeName = requestAttributeName;
+        this.requestRefName = this.requestAttributeName + "-rc";
+    }
+    
+    /**
+     * Paired with attr name used to track reference count.
+     * 
+     * @return
+     */
+    public String getRequestRefName() {
+        return requestRefName;
     }
 
     public BlockExceptionHandler getBlockExceptionHandler() {

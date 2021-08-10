@@ -29,7 +29,7 @@ You can also add to [sentinel-group/sentinel-awesome](https://github.com/sentine
 
 ## Demos
 
-- [sentinel-zuul-example](https://github.com/tigerMoon/sentinel-zuul-sample): A simple project integration Sentinel to Spring Cloud Zuul which provide Service and API Path level flow control management by [tiger](https://github.com/tigerMoon)
+- [sentinel-zuul-example](https://github.com/tigerMoon/sentinel-zuul-sample): A simple project integration Sentinel to Spring Cloud Zuul which provides Service and API Path level flow control management by [tiger](https://github.com/tigerMoon)
 
 ## Extensions / Integrations
 
@@ -73,3 +73,4 @@ You can also add to [sentinel-group/sentinel-awesome](https://github.com/sentine
 - [Alibaba Sentinel RESTful 接口流控处理优化](https://www.jianshu.com/p/96f5980d9798) by [luanlouis](https://github.com/luanlouis)
 - [Sentinel 控制台前端开发环境搭建](https://www.cnblogs.com/cdfive2018/p/11084001.html) by [cdfive](https://github.com/cdfive)
 - [阿里 Sentinel 源码解析](https://www.javadoop.com/post/sentinel) by [Javadoop](https://www.javadoop.com)
+- [Introduction to Alibaba Sentinel](https://www.baeldung.com/java-sentinel-intro) by [Amit Bhave](https://github.com/Amitbhave)

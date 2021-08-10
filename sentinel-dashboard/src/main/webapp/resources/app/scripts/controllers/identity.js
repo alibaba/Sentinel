@@ -132,13 +132,15 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
         strategy: 0,
         resource: resource,
         limitApp: 'default',
+        minRequestAmount: 5,
+        statIntervalMs: 1000,
         app: $scope.app,
         ip: mac[0],
         port: mac[1]
       };
 
       degradeRuleDialogScope.degradeRuleDialog = {
-        title: '新增降级规则',
+        title: '新增熔断规则',
         type: 'add',
         confirmBtnText: '新增',
         saveAndContinueBtnText: '新增并继续添加'

@@ -69,7 +69,7 @@ public class SentinelConfigTest {
 
 
     //add Jvm parameter
-    //-Dcsp.sentinel.config.file=sentinel-propertiesTest.properties
+    //-Dcsp.sentinel.config.file=classpath:sentinel-propertiesTest.properties
     //-Dcsp.sentinel.flow.cold.factor=5
     //-Dcsp.sentinel.statistic.max.rt=1000
     //@Test
@@ -92,6 +92,8 @@ public class SentinelConfigTest {
             out.write(buildPropertyStr(COLD_FACTOR, "123"));
             out.write("\n");
             out.write(buildPropertyStr(STATISTIC_MAX_RT, "6000"));
+            out.write("\n");
+            out.write(buildPropertyStr(PROJECT_NAME_PROP_KEY, "sentinel_test"));
             out.flush();
             out.close();
 
@@ -100,6 +102,7 @@ public class SentinelConfigTest {
             Assert.assertTrue(SentinelConfig.getConfig(TOTAL_METRIC_FILE_COUNT).equals("20"));
             Assert.assertTrue(SentinelConfig.getConfig(COLD_FACTOR).equals("5"));
             Assert.assertTrue(SentinelConfig.getConfig(STATISTIC_MAX_RT).equals("1000"));
+            Assert.assertTrue(SentinelConfig.getAppName().equals("sentinel_test"));
 
         } finally {
             if (file != null) {

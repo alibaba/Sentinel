@@ -27,7 +27,7 @@ import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.util.AssertUtil;
-import com.alibaba.csp.sentinel.util.SpiLoader;
+import com.alibaba.csp.sentinel.spi.SpiLoader;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
@@ -59,11 +59,11 @@ public final class GatewayApiDefinitionManager {
     }
 
     private static void initializeApiChangeObserverSpi() {
-        List<ApiDefinitionChangeObserver> listeners = SpiLoader.loadInstanceList(ApiDefinitionChangeObserver.class);
+        List<ApiDefinitionChangeObserver> listeners = SpiLoader.of(ApiDefinitionChangeObserver.class).loadInstanceList();
         for (ApiDefinitionChangeObserver e : listeners) {
             API_CHANGE_OBSERVERS.put(e.getClass().getCanonicalName(), e);
-            RecordLog.info("[GatewayApiDefinitionManager] ApiDefinitionChangeObserver added: "
-                + e.getClass().getCanonicalName());
+            RecordLog.info("[GatewayApiDefinitionManager] ApiDefinitionChangeObserver added: {}"
+                , e.getClass().getCanonicalName());
         }
     }
 
@@ -103,13 +103,13 @@ public final class GatewayApiDefinitionManager {
         @Override
         public void configUpdate(Set<ApiDefinition> set) {
             applyApiUpdateInternal(set);
-            RecordLog.info("[GatewayApiDefinitionManager] Api definition updated: " + API_MAP);
+            RecordLog.info("[GatewayApiDefinitionManager] Api definition updated: {}", API_MAP);
         }
 
         @Override
         public void configLoad(Set<ApiDefinition> set) {
             applyApiUpdateInternal(set);
-            RecordLog.info("[GatewayApiDefinitionManager] Api definition loaded: " + API_MAP);
+            RecordLog.info("[GatewayApiDefinitionManager] Api definition loaded: {}", API_MAP);
         }
 
         private static synchronized void applyApiUpdateInternal(Set<ApiDefinition> set) {

@@ -16,14 +16,15 @@
 package com.alibaba.csp.sentinel.slots.block.flow;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
+import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -43,10 +44,11 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
  *
  * @author jialiang.linjl
  * @author Eric Zhao
+ * @author Weihua
  */
 public class FlowRuleManager {
 
-    private static final Map<String, List<FlowRule>> flowRules = new ConcurrentHashMap<String, List<FlowRule>>();
+    private static volatile Map<String, List<FlowRule>> flowRules = new HashMap<>();
 
     private static final FlowPropertyListener LISTENER = new FlowPropertyListener();
     private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
@@ -57,7 +59,27 @@ public class FlowRuleManager {
 
     static {
         currentProperty.addListener(LISTENER);
-        SCHEDULER.scheduleAtFixedRate(new MetricTimerListener(), 0, 1, TimeUnit.SECONDS);
+        startMetricTimerListener();
+    }
+
+    /**
+     * <p> Start the MetricTimerListener
+     * <ol>
+     *     <li>If the flushInterval more than 0,
+     * the timer will run with the flushInterval as the rate </li>.
+     *      <li>If the flushInterval less than 0(include) or value is not valid,
+     * then means the timer will not be started </li>
+     * <ol></p>
+     */
+    private static void startMetricTimerListener() {
+        long flushInterval = SentinelConfig.metricLogFlushIntervalSec();
+        if (flushInterval <= 0) {
+            RecordLog.info("[FlowRuleManager] The MetricTimerListener isn't started. If you want to start it, "
+                    + "please change the value(current: {}) of config({}) more than 0 to start it.", flushInterval,
+                SentinelConfig.METRIC_FLUSH_INTERVAL);
+            return;
+        }
+        SCHEDULER.scheduleAtFixedRate(new MetricTimerListener(), 0, flushInterval, TimeUnit.SECONDS);
     }
 
     /**
@@ -127,23 +149,21 @@ public class FlowRuleManager {
     private static final class FlowPropertyListener implements PropertyListener<List<FlowRule>> {
 
         @Override
-        public void configUpdate(List<FlowRule> value) {
+        public synchronized void configUpdate(List<FlowRule> value) {
             Map<String, List<FlowRule>> rules = FlowRuleUtil.buildFlowRuleMap(value);
             if (rules != null) {
-                flowRules.clear();
-                flowRules.putAll(rules);
+                flowRules = rules;
             }
-            RecordLog.info("[FlowRuleManager] Flow rules received: " + flowRules);
+            RecordLog.info("[FlowRuleManager] Flow rules received: {}", rules);
         }
 
         @Override
-        public void configLoad(List<FlowRule> conf) {
+        public synchronized void configLoad(List<FlowRule> conf) {
             Map<String, List<FlowRule>> rules = FlowRuleUtil.buildFlowRuleMap(conf);
             if (rules != null) {
-                flowRules.clear();
-                flowRules.putAll(rules);
+                flowRules = rules;
             }
-            RecordLog.info("[FlowRuleManager] Flow rules loaded: " + flowRules);
+            RecordLog.info("[FlowRuleManager] Flow rules loaded: {}", rules);
         }
     }
 
