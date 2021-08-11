@@ -23,11 +23,11 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.spi.Spi;
 import com.alibaba.csp.sentinel.util.AssertUtil;
-import com.alibaba.csp.sentinel.util.function.Function;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -176,12 +176,9 @@ public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         fireExit(context, resourceWrapper, count, args);
     }
 
-    private final Function<String, Collection<FlowRule>> ruleProvider = new Function<String, Collection<FlowRule>>() {
-        @Override
-        public Collection<FlowRule> apply(String resource) {
-            // Flow rule map should not be null.
-            Map<String, List<FlowRule>> flowRules = FlowRuleManager.getFlowRuleMap();
-            return flowRules.get(resource);
-        }
+    private final Function<String, Collection<FlowRule>> ruleProvider = resource -> {
+        // Flow rule map should not be null.
+        Map<String, List<FlowRule>> flowRules = FlowRuleManager.getFlowRuleMap();
+        return flowRules.get(resource);
     };
 }

@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.slots.block.flow;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.ClusterRuleConstant;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.controller.DefaultController;
@@ -23,12 +24,12 @@ import com.alibaba.csp.sentinel.slots.block.flow.controller.RateLimiterControlle
 import com.alibaba.csp.sentinel.slots.block.flow.controller.WarmUpController;
 import com.alibaba.csp.sentinel.slots.block.flow.controller.WarmUpRateLimiterController;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.csp.sentinel.util.function.Function;
 import com.alibaba.csp.sentinel.util.function.Predicate;
 
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
  * @author Eric Zhao
@@ -250,12 +251,7 @@ public final class FlowRuleUtil {
         }
     }
 
-    private static final Function<FlowRule, String> extractResource = new Function<FlowRule, String>() {
-        @Override
-        public String apply(FlowRule rule) {
-            return rule.getResource();
-        }
-    };
+    private static final Function<FlowRule, String> extractResource = AbstractRule::getResource;
 
     private FlowRuleUtil() {
     }

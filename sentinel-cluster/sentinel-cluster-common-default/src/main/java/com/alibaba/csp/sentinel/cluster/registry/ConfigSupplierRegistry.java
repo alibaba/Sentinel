@@ -18,7 +18,8 @@ package com.alibaba.csp.sentinel.cluster.registry;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.AppNameUtil;
 import com.alibaba.csp.sentinel.util.AssertUtil;
-import com.alibaba.csp.sentinel.util.function.Supplier;
+
+import java.util.function.Supplier;
 
 /**
  * @author Eric Zhao
@@ -29,12 +30,7 @@ public final class ConfigSupplierRegistry {
     /**
      * The default namespace supplier provides appName as namespace.
      */
-    private static final Supplier<String> DEFAULT_APP_NAME_SUPPLIER = new Supplier<String>() {
-        @Override
-        public String get() {
-            return AppNameUtil.getAppName();
-        }
-    };
+    private static final Supplier<String> DEFAULT_APP_NAME_SUPPLIER = AppNameUtil::getAppName;
     /**
      * Registered namespace supplier.
      */

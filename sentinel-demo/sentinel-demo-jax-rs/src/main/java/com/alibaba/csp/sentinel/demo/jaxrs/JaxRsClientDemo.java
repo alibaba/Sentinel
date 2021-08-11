@@ -16,7 +16,6 @@
 package com.alibaba.csp.sentinel.demo.jaxrs;
 
 import com.alibaba.csp.sentinel.adapter.jaxrs.SentinelJaxRsClientTemplate;
-import com.alibaba.csp.sentinel.util.function.Supplier;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -37,14 +36,7 @@ public class JaxRsClientDemo {
         final String host = "http://127.0.0.1:8181";
         final String url = "/hello/1";
         String resourceName = "GET:" + url;
-        Response response = SentinelJaxRsClientTemplate.execute(resourceName, new Supplier<Response>() {
-
-            @Override
-            public Response get() {
-                return client.target(host).path(url).request()
-                        .get();
-            }
-        });
+        Response response = SentinelJaxRsClientTemplate.execute(resourceName, () -> client.target(host).path(url).request().get());
         System.out.println(response.readEntity(HelloEntity.class));
         System.exit(0);
     }

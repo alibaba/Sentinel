@@ -31,11 +31,11 @@ import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleUtil;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.csp.sentinel.util.function.Function;
 import com.alibaba.csp.sentinel.util.function.Predicate;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
  * Manager for cluster flow rules.
@@ -50,12 +50,7 @@ public final class ClusterFlowRuleManager {
      * for a specific namespace to do rule management manually.
      */
     public static final Function<String, SentinelProperty<List<FlowRule>>> DEFAULT_PROPERTY_SUPPLIER =
-            new Function<String, SentinelProperty<List<FlowRule>>>() {
-                @Override
-                public SentinelProperty<List<FlowRule>> apply(String namespace) {
-                    return new DynamicSentinelProperty<>();
-                }
-            };
+            namespace -> new DynamicSentinelProperty<>();
 
     /**
      * (flowId, clusterRule)
