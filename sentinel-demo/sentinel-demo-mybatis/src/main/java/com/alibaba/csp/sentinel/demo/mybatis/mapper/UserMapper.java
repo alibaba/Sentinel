@@ -25,19 +25,19 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserMapper {
 
-    @Select("select * from t_user where id = #{id}")
+    @Select("select * from t_user where \n id = #{id}")
     @Results(id = "BaseResultMap", value = {
             @Result(column = "id", property = "id"),
             @Result(column = "name", property = "name"),
     })
     UserPO selectById(@Param("id") Integer id);
 
-    @Delete("delete from t_user where id = #{id}")
+    @Delete("delete from t_user where\n id = #{id}")
     void delete(Integer id);
 
-    @Insert("insert into t_user (id, name) values (#{id}, #{name})")
+    @Insert("insert into t_user (id, name)\n values (#{id}, #{name})")
     void insert(UserPO user);
 
-    @Update("update t_user set name = #{name} where id = #{id}")
+    @Update("update t_user set name = #{name}\n where id = #{id}")
     void update(UserPO user);
 }

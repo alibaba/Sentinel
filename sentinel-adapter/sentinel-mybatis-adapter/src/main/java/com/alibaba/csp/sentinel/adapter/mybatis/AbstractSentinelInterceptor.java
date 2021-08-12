@@ -19,24 +19,17 @@ import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
-import com.alibaba.csp.sentinel.adapter.mybatis.callback.ResourceNameCleaner;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
 import com.alibaba.csp.sentinel.util.StringUtil;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
-
 import org.apache.ibatis.exceptions.ExceptionFactory;
 import org.apache.ibatis.mapping.MappedStatement;
-import org.apache.ibatis.mapping.ParameterMap;
-import org.apache.ibatis.mapping.ParameterMapping;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.plugin.Invocation;
 import org.apache.ibatis.plugin.Plugin;
+
+import java.util.Objects;
+import java.util.Properties;
 
 /**
  * @author kaizi2009
@@ -48,18 +41,20 @@ public abstract class AbstractSentinelInterceptor implements Interceptor {
     public Object intercept(Invocation invocation) throws Throwable {
         Entry entry = null;
         try {
-            MappedStatement mappedStatement = (MappedStatement) invocation.getArgs()[0];
-            String resourceName = getResourceName(mappedStatement);
+            String resourceName = getResourceName(invocation);
             if (StringUtil.isNotEmpty(resourceName)) {
                 ContextUtil.enter(getContextName(), "");
                 entry = SphU.entry(resourceName, EntryType.OUT);
             }
             return invocation.proceed();
-        } catch (BlockException e) {
-            throw ExceptionFactory.wrapException(e.getMessage(), e);
-        } catch (RuntimeException e1) {
-            Tracer.traceEntry(e1, entry);
-            throw e1;
+        } catch (Exception e) {
+            BlockException blockException = BlockException.getBlockException(e);
+            if (Objects.nonNull(blockException)) {
+                throw ExceptionFactory.wrapException(e.getMessage(), blockException);
+            } else {
+                Tracer.traceEntry(e, entry);
+                throw e;
+            }
         } finally {
             if (entry != null) {
                 entry.exit();
@@ -82,12 +77,16 @@ public abstract class AbstractSentinelInterceptor implements Interceptor {
         return CONTEXT_NAME;
     }
 
+    protected MappedStatement getMappedStatement(Invocation invocation) {
+        return (MappedStatement) invocation.getArgs()[0];
+    }
+
     /**
      * Get sentinel resource name
      *
-     * @param mappedStatement
+     * @param invocation
      * @return resource name
      */
-    abstract String getResourceName(MappedStatement mappedStatement);
+    abstract String getResourceName(Invocation invocation);
 
 }

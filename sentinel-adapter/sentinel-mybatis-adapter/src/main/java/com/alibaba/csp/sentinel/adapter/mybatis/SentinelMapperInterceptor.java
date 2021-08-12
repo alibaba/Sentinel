@@ -18,10 +18,9 @@ package com.alibaba.csp.sentinel.adapter.mybatis;
 
 import com.alibaba.csp.sentinel.adapter.mybatis.callback.ResourceNameCleaner;
 import org.apache.ibatis.executor.Executor;
-import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
-import org.apache.ibatis.mapping.SqlSource;
 import org.apache.ibatis.plugin.Intercepts;
+import org.apache.ibatis.plugin.Invocation;
 import org.apache.ibatis.plugin.Signature;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
@@ -54,8 +53,8 @@ public class SentinelMapperInterceptor extends AbstractSentinelInterceptor {
     }
 
     @Override
-    protected String getResourceName(MappedStatement mappedStatement) {
-        String resourceName = mappedStatement.getId();
+    protected String getResourceName(Invocation invocation) {
+        String resourceName = getMappedStatement(invocation).getId();
         if (getResourceNameCleaner() != null) {
             resourceName = getResourceNameCleaner().clean(resourceName);
         }

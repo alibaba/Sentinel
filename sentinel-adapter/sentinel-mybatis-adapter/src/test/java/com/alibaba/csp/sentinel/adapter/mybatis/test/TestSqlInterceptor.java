@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.adapter.mybatis.test;
 
+import com.alibaba.csp.sentinel.adapter.mybatis.BaseJunit;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;

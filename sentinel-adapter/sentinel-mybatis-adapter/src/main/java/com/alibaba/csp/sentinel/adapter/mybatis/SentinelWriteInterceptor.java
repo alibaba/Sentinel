@@ -18,9 +18,8 @@ package com.alibaba.csp.sentinel.adapter.mybatis;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.plugin.Intercepts;
+import org.apache.ibatis.plugin.Invocation;
 import org.apache.ibatis.plugin.Signature;
-import org.apache.ibatis.session.ResultHandler;
-import org.apache.ibatis.session.RowBounds;
 
 /**
  * @author kaizi2009
@@ -36,7 +35,7 @@ public class SentinelWriteInterceptor extends AbstractSentinelInterceptor {
     public static final String RESOURCE_NAME = "mybatis-write";
 
     @Override
-    protected String getResourceName(MappedStatement mappedStatement) {
+    protected String getResourceName(Invocation invocation) {
         return RESOURCE_NAME;
     }
 

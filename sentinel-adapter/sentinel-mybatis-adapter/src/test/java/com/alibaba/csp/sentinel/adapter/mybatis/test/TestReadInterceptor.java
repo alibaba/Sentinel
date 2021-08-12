@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.adapter.mybatis.test;
 
+import com.alibaba.csp.sentinel.adapter.mybatis.BaseJunit;
 import com.alibaba.csp.sentinel.adapter.mybatis.SentinelReadInterceptor;
 import com.alibaba.csp.sentinel.adapter.mybatis.SentinelWriteInterceptor;
 import com.alibaba.csp.sentinel.node.ClusterNode;
@@ -22,8 +23,6 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 import org.junit.Test;
 import org.mybatis.spring.MyBatisSystemException;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

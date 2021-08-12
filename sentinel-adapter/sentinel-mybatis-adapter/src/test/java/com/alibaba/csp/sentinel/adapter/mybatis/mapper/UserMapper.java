@@ -17,7 +17,6 @@ package com.alibaba.csp.sentinel.adapter.mybatis.mapper;
 
 import com.alibaba.csp.sentinel.adapter.mybatis.po.UserPO;
 import org.apache.ibatis.annotations.*;
-import org.apache.ibatis.mapping.FetchType;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -26,20 +25,20 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserMapper {
 
-    @Select("select * from t_user where id = #{id}")
+    @Select("select * from t_user where \n id = #{id}")
     @Results(id = "BaseResultMap", value = {
             @Result(column = "id", property = "id"),
             @Result(column = "name", property = "name"),
     })
     UserPO selectById(Integer id);
 
-    @Select("select * from t_user where id = #{id} and name = #{name}")
+    @Select("select * from t_user where \n  id = #{id} and name = #{name}")
     UserPO selectByIdAndName(@Param("id") Integer id, @Param("name") String name);
 
-    @Select("select * from t_user where id = #{id} and name = #{name}")
+    @Select("select * from t_user where \n  id = #{id} and name = #{name}")
     UserPO selectByIdAndName1(UserPO user);
 
-    @Delete("delete from t_user where id = #{id}")
+    @Delete("delete from t_user where \n  id = #{id}")
     void delete(Integer id);
 
     @Insert("insert into t_user (id, name) values (#{id}, #{name})")

@@ -42,7 +42,7 @@ public class BlockExceptionHandler {
         if (blockException != null) {
             AbstractRule rule = blockException.getRule();
             logger.info("Blocked by mybatis sentinel, {}", rule.toString());
-            return "Blocked by mybatis sentinel";
+            return "Blocked by mybatis sentinel, " + rule.toString();
         } else {
             return exceptionHandler(e);
         }

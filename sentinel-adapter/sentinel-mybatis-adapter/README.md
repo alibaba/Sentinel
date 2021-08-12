@@ -3,6 +3,7 @@
 Sentinel provides Mybatis Interceptor integration to enable flow control for database requests.
 
 Add the following dependency in `pom.xml` (if you are using Maven)
+
 ```xml
 <dependency>
     <groupId>com.alibaba.csp</groupId>
@@ -44,7 +45,9 @@ public class InterceptorConfig {
 ```
 
 Custom configuration
+
 - Clean resource name in `SentinelMapperInterceptor`
+
 ```java
 @Bean
 public SentinelMapperInterceptor newSentinelInterceptor() {
@@ -59,22 +62,24 @@ public SentinelMapperInterceptor newSentinelInterceptor() {
 }
 ```
 
-`SentinelReadInterceptor` is database read flow control.
+- `SentinelReadInterceptor` is database read flow control.
 
-`SentinelWriteInterceptor` is database write flow control.
+- `SentinelWriteInterceptor` is database write flow control.
 
-`SentinelTotalInterceptor` is database total flow control.
+- `SentinelTotalInterceptor` is database total flow control.
 
-`SentinelSqlInterceptor` is `Mybatis` sql flow control(e.g. `SELECT * FROM user`).
+- `SentinelSqlInterceptor` is `Mybatis` sql flow control(e.g. `SELECT * FROM user`).
 
-`SentinelCommandTypeInterceptor` is `Mybatis` command type flow control(e.g. `mybatis-command-type-SELECT`), command type: `org.apache.ibatis.mapping.SqlCommandType`.
+- `SentinelCommandTypeInterceptor` is `Mybatis` command type flow control(e.g. `mybatis-command-type-SELECT`), command type: `org.apache.ibatis.mapping.SqlCommandType`.
 
-`SentinelMapperInterceptor` is `Mybatis` Mapper Interface flow control, you can configure `ResourceNameCleaner` in `SentinelMapperInterceptor`.
+- `SentinelMapperInterceptor` is `Mybatis` Mapper Interface flow control, you can configure `ResourceNameCleaner` in `SentinelMapperInterceptor`.
 
+- `ResourceNameCleaner` can clean resource name, for example:
 
-`ResourceNameCleaner` can clean resource name, for example:
-1. `com.alibaba.csp.sentinel.demo.mybatis.mapper.UserMapper.getById` -> `UserMapper.getById`
-2. `UserMapper.getById` and `UserMapper.getByName` -> `UserMapper.getBy*`, avoid the amount of context and  will exceed the threshold.
-3. If you need to exclude some resources (that should not be recorded as Sentinel resources),  you may unify the unwanted resources to the empty string "" or null.
+    1. `com.alibaba.csp.sentinel.demo.mybatis.mapper.UserMapper.getById` -> `UserMapper.getById`
+
+    2. `UserMapper.getById` and `UserMapper.getByName` -> `UserMapper.getBy*`, avoid the amount of context and  will exceed the threshold.
+
+    3. If you need to exclude some resources (that should not be recorded as Sentinel resources),  you may unify the unwanted resources to the empty string "" or null.
 
 
