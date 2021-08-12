@@ -17,45 +17,36 @@ Configure interceptor, there are six interceptors to choose.
 @Configuration
 public class InterceptorConfig {
     @Bean
-    @Order(5)
-    public SentinelTotalInterceptor newTotalInterceptor() {
-        return new SentinelTotalInterceptor();
-    }
-
-    @Bean
-    @Order(4)
     public SentinelReadInterceptor newReadInterceptor() {
         return new SentinelReadInterceptor();
     }
-
     @Bean
-    @Order(3)
     public SentinelWriteInterceptor newWriteInterceptor() {
         return new SentinelWriteInterceptor();
     }
-
     @Bean
-    @Order(2)
-    public SentinelCommandTypeInterceptor newSentinelCommandTypeInterceptor() {
-        return new SentinelCommandTypeInterceptor();
+    public SentinelTotalInterceptor newTotalInterceptor() {
+        return new SentinelTotalInterceptor();
     }
-
     @Bean
-    @Order(1)
     public SentinelMapperInterceptor newSentinelInterceptor() {
         return new SentinelMapperInterceptor();
     }
-
     @Bean
-    @Order(0)
     public SentinelSqlInterceptor newSentinelSqlInterceptor() {
         return new SentinelSqlInterceptor();
+    }
+    @Bean
+    public SentinelCommandTypeInterceptor newSentinelCommandTypeInterceptor() {
+        return new SentinelCommandTypeInterceptor();
     }
 }
 ```
 
 Custom configuration
+
 - Clean resource name in `SentinelMapperInterceptor`
+
 ```java
 @Bean
 public SentinelMapperInterceptor newSentinelInterceptor() {
@@ -70,22 +61,24 @@ public SentinelMapperInterceptor newSentinelInterceptor() {
 }
 ```
 
-`SentinelReadInterceptor` is database read flow control.
+- `SentinelReadInterceptor` is database read flow control.
 
-`SentinelWriteInterceptor` is database write flow control.
+- `SentinelWriteInterceptor` is database write flow control.
 
-`SentinelTotalInterceptor` is database total flow control.
+- `SentinelTotalInterceptor` is database total flow control.
 
-`SentinelSqlInterceptor` is `Mybatis` sql flow control(e.g. `SELECT * FROM user`).
+- `SentinelSqlInterceptor` is `Mybatis` sql flow control(e.g. `SELECT * FROM user`).
 
-`SentinelCommandTypeInterceptor` is `Mybatis` command type flow control(e.g. `mybatis-command-type-SELECT`), command type: `org.apache.ibatis.mapping.SqlCommandType`.
+- `SentinelCommandTypeInterceptor` is `Mybatis` command type flow control(e.g. `mybatis-command-type-SELECT`), command type: `org.apache.ibatis.mapping.SqlCommandType`.
 
-`SentinelMapperInterceptor` is `Mybatis` Mapper Interface flow control, you can configure `ResourceNameCleaner` in `SentinelMapperInterceptor`.
+- `SentinelMapperInterceptor` is `Mybatis` Mapper Interface flow control, you can configure `ResourceNameCleaner` in `SentinelMapperInterceptor`.
 
+- `ResourceNameCleaner` can clean resource name, for example:
 
-`ResourceNameCleaner` can clean resource name, for example:
-1. `com.alibaba.csp.sentinel.demo.mybatis.mapper.UserMapper.getById` -> `UserMapper.getById`
-2. `UserMapper.getById` and `UserMapper.getByName` -> `UserMapper.getBy*`, avoid the amount of context and  will exceed the threshold.
-3. If you need to exclude some resources (that should not be recorded as Sentinel resources),  you may unify the unwanted resources to the empty string "" or null.
+    1. `com.alibaba.csp.sentinel.demo.mybatis.mapper.UserMapper.getById` -> `UserMapper.getById`
+
+    2. `UserMapper.getById` and `UserMapper.getByName` -> `UserMapper.getBy*`, avoid the amount of context and  will exceed the threshold.
+
+    3. If you need to exclude some resources (that should not be recorded as Sentinel resources),  you may unify the unwanted resources to the empty string "" or null.
 
 

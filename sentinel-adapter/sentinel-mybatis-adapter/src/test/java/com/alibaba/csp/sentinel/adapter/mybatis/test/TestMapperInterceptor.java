@@ -75,9 +75,7 @@ public class TestMapperInterceptor extends BaseJunit {
 
         int repeat = limitCount;
         for (int i = 0; i < repeat; i++) {
-            UserPO user = userMapper.selectById(ID_1);
-            assertNotNull(user);
-            assertEquals(ID_1, user.getId());
+            userMapper.selectById(ID_1);
         }
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(resourceName);
         assertNotNull(cn);
