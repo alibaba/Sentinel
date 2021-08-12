@@ -29,8 +29,6 @@ public abstract class BlockException extends Exception {
     public static final String BLOCK_EXCEPTION_FLAG = "SentinelBlockException";
     public static final String BLOCK_EXCEPTION_MSG_PREFIX = "SentinelBlockException: ";
 
-
-    public static final int MAX_COUNTER = 50;
     /**
      * <p>this constant RuntimeException has no stack trace, just has a message
      * {@link #BLOCK_EXCEPTION_FLAG} that marks its name.
@@ -116,7 +114,7 @@ public abstract class BlockException extends Exception {
 
         int counter = 0;
         Throwable cause = t;
-        while (cause != null && counter++ < MAX_COUNTER) {
+        while (cause != null && counter++ < MAX_SEARCH_DEPTH) {
             if (isBlockThrowable(cause)) {
                 return true;
             }
@@ -144,7 +142,7 @@ public abstract class BlockException extends Exception {
 
         int counter = 0;
         Throwable cause = t;
-        while (cause != null && counter++ < MAX_COUNTER) {
+        while (cause != null && counter++ < MAX_SEARCH_DEPTH) {
             if (isBlockThrowable(cause)) {
                 return (BlockException) cause;
             }
@@ -155,10 +153,17 @@ public abstract class BlockException extends Exception {
     }
 
     private static boolean isBlockThrowable(Throwable cause) {
-        return (cause instanceof BlockException) || (BLOCK_EXCEPTION_FLAG.equals(cause.getMessage()));
+        if (cause instanceof BlockException) {
+            return true;
+        }
+        if (cause.getMessage() != null && cause.getMessage().startsWith(BLOCK_EXCEPTION_FLAG)) {
+            return true;
+        }
+        return false;
     }
 
     public AbstractRule getRule() {
         return rule;
     }
+
 }

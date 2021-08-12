@@ -13,31 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.adapter.mybatis.test;
+package com.alibaba.csp.sentinel.adapter.mybatis;
 
-import com.alibaba.csp.sentinel.adapter.mybatis.TestMybatisApplication;
 import com.alibaba.csp.sentinel.adapter.mybatis.mapper.TeacherMapper;
 import com.alibaba.csp.sentinel.adapter.mybatis.mapper.UserMapper;
-import com.alibaba.csp.sentinel.adapter.mybatis.po.TeacherPO;
-import com.alibaba.csp.sentinel.adapter.mybatis.po.UserPO;
 import com.alibaba.csp.sentinel.adapter.mybatis.service.UserService;
-import com.alibaba.csp.sentinel.context.Context;
-import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 import com.alibaba.csp.sentinel.util.StringUtil;
-
-import java.util.Collections;
-
 import org.junit.After;
-import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.Collections;
 
 /**
  * @author kaizi2009
@@ -76,16 +71,19 @@ public class BaseJunit {
     }
 
     protected void configureExceptionRulesFor(String resource, int count) {
-        FlowRule rule = new FlowRule()
+        DegradeRule rule = new DegradeRule()
                 .setCount(count)
-                .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT);
+                .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT)
+                .setMinRequestAmount(1)
+                .setTimeWindow(10);
         rule.setResource(resource);
-        FlowRuleManager.loadRules(Collections.singletonList(rule));
+        DegradeRuleManager.loadRules(Collections.singletonList(rule));
     }
 
     @After
     public void cleanUp() {
         FlowRuleManager.loadRules(null);
+        DegradeRuleManager.loadRules(null);
         ClusterBuilderSlot.resetClusterNodes();
     }
 }

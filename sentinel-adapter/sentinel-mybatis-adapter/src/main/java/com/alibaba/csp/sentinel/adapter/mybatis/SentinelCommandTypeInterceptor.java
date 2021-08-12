@@ -16,10 +16,10 @@
 package com.alibaba.csp.sentinel.adapter.mybatis;
 
 
-import com.alibaba.csp.sentinel.adapter.mybatis.callback.ResourceNameCleaner;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.plugin.Intercepts;
+import org.apache.ibatis.plugin.Invocation;
 import org.apache.ibatis.plugin.Signature;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
@@ -43,8 +43,8 @@ public class SentinelCommandTypeInterceptor extends AbstractSentinelInterceptor 
     public static final String RESOURCE_NAME_PREFIX = "mybatis-command-type-";
 
     @Override
-    protected String getResourceName(MappedStatement mappedStatement) {
-        return RESOURCE_NAME_PREFIX + mappedStatement.getSqlCommandType().name();
+    protected String getResourceName(Invocation invocation) {
+        return RESOURCE_NAME_PREFIX + getMappedStatement(invocation).getSqlCommandType().name();
     }
 
 }

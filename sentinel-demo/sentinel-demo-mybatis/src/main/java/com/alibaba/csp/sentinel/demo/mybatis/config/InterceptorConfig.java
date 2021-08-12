@@ -16,14 +16,9 @@
 package com.alibaba.csp.sentinel.demo.mybatis.config;
 
 import com.alibaba.csp.sentinel.adapter.mybatis.*;
-import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import javax.annotation.PostConstruct;
-import java.util.Collections;
+import org.springframework.core.annotation.Order;
 
 /**
  * @author kaizi2009
@@ -32,36 +27,39 @@ import java.util.Collections;
 public class InterceptorConfig {
 
     @Bean
-    public SentinelReadInterceptor newReadInterceptor() {
-        SentinelReadInterceptor interceptor = new SentinelReadInterceptor();
-        return interceptor;
-    }
-
-    @Bean
-    public SentinelWriteInterceptor newWriteInterceptor() {
-        SentinelWriteInterceptor interceptor = new SentinelWriteInterceptor();
-        return interceptor;
-    }
-
-    @Bean
+    @Order(5)
     public SentinelTotalInterceptor newTotalInterceptor() {
-        SentinelTotalInterceptor interceptor = new SentinelTotalInterceptor();
-        return interceptor;
+        return new SentinelTotalInterceptor();
     }
 
     @Bean
-    public SentinelMapperInterceptor newSentinelInterceptor() {
-        return new SentinelMapperInterceptor(resourceName -> resourceName.replace("com.alibaba.csp.sentinel.", ""));
+    @Order(4)
+    public SentinelReadInterceptor newReadInterceptor() {
+        return new SentinelReadInterceptor();
     }
 
     @Bean
-    public SentinelSqlInterceptor newSentinelSqlInterceptor() {
-        return new SentinelSqlInterceptor();
+    @Order(3)
+    public SentinelWriteInterceptor newWriteInterceptor() {
+        return new SentinelWriteInterceptor();
     }
 
     @Bean
+    @Order(2)
     public SentinelCommandTypeInterceptor newSentinelCommandTypeInterceptor() {
         return new SentinelCommandTypeInterceptor();
+    }
+
+    @Bean
+    @Order(1)
+    public SentinelMapperInterceptor newSentinelInterceptor() {
+        return new SentinelMapperInterceptor();
+    }
+
+    @Bean
+    @Order(0)
+    public SentinelSqlInterceptor newSentinelSqlInterceptor() {
+        return new SentinelSqlInterceptor();
     }
 
 }

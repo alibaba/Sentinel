@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.adapter.mybatis.test;
 
+import com.alibaba.csp.sentinel.adapter.mybatis.BaseJunit;
 import com.alibaba.csp.sentinel.adapter.mybatis.SentinelWriteInterceptor;
 import com.alibaba.csp.sentinel.adapter.mybatis.po.TeacherPO;
 import com.alibaba.csp.sentinel.adapter.mybatis.po.UserPO;

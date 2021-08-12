@@ -16,42 +16,50 @@
 package com.alibaba.csp.sentinel.adapter.mybatis.config;
 
 import com.alibaba.csp.sentinel.adapter.mybatis.*;
-import com.alibaba.csp.sentinel.adapter.mybatis.callback.ResourceNameCleaner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 
 /**
  * @author
  */
 @Configuration
 public class InterceptorConfig {
-    @Bean
-    public SentinelReadInterceptor newReadInterceptor() {
-        return new SentinelReadInterceptor();
-    }
 
     @Bean
-    public SentinelWriteInterceptor newWriteInterceptor() {
-        return new SentinelWriteInterceptor();
-    }
-
-    @Bean
+    @Order(5)
     public SentinelTotalInterceptor newTotalInterceptor() {
         return new SentinelTotalInterceptor();
     }
 
     @Bean
+    @Order(4)
+    public SentinelReadInterceptor newReadInterceptor() {
+        return new SentinelReadInterceptor();
+    }
+
+    @Bean
+    @Order(3)
+    public SentinelWriteInterceptor newWriteInterceptor() {
+        return new SentinelWriteInterceptor();
+    }
+
+    @Bean
+    @Order(2)
+    public SentinelCommandTypeInterceptor newSentinelCommandTypeInterceptor() {
+        return new SentinelCommandTypeInterceptor();
+    }
+
+    @Bean
+    @Order(1)
     public SentinelMapperInterceptor newSentinelInterceptor() {
         return new SentinelMapperInterceptor();
     }
 
     @Bean
+    @Order(0)
     public SentinelSqlInterceptor newSentinelSqlInterceptor() {
         return new SentinelSqlInterceptor();
     }
 
-    @Bean
-    public SentinelCommandTypeInterceptor newSentinelCommandTypeInterceptor() {
-        return new SentinelCommandTypeInterceptor();
-    }
 }

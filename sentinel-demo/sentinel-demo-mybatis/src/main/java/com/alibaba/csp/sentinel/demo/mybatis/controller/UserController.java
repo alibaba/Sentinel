@@ -19,7 +19,6 @@ import com.alibaba.csp.sentinel.demo.mybatis.mapper.TeacherMapper;
 import com.alibaba.csp.sentinel.demo.mybatis.mapper.UserMapper;
 import com.alibaba.csp.sentinel.demo.mybatis.po.TeacherPO;
 import com.alibaba.csp.sentinel.demo.mybatis.po.UserPO;
-import com.alibaba.csp.sentinel.demo.mybatis.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,8 +29,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class UserController {
 
-    @Autowired
-    private UserService userService;
     @Autowired
     private UserMapper userMapper;
     @Autowired

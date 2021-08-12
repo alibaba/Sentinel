@@ -15,16 +15,17 @@
  */
 package com.alibaba.csp.sentinel.adapter.mybatis.test;
 
+import com.alibaba.csp.sentinel.adapter.mybatis.BaseJunit;
 import com.alibaba.csp.sentinel.adapter.mybatis.SentinelTotalInterceptor;
 import com.alibaba.csp.sentinel.adapter.mybatis.po.UserPO;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 import org.junit.Test;
 import org.mybatis.spring.MyBatisSystemException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.BadSqlGrammarException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -41,6 +42,30 @@ public class TestMapperInterceptor extends BaseJunit {
         testUpdate();
         testInsert();
         testDelete();
+    }
+
+    @Test
+    public void testSqlException() {
+        String resourceName = SentinelTotalInterceptor.RESOURCE_NAME;
+        configureExceptionRulesFor(resourceName, 1);
+
+        int count = 5;
+        for (int i = 1;i<count;i++) {
+            try {
+                teacherMapper.testSqlException(ID_1);
+            } catch (Exception e) {
+            }
+        }
+
+        //Will be limited
+        try {
+            teacherMapper.testSqlException(ID_1);
+        } catch (Exception e) {
+            BlockException blockException = BlockException.getBlockException(e);
+            assertNotNull(blockException);
+        }
+
+        DegradeRuleManager.loadRules(null);
     }
 
     public void testSelect() {
@@ -62,7 +87,7 @@ public class TestMapperInterceptor extends BaseJunit {
         //Will be limited
         try {
             userMapper.selectById(ID_1);
-        } catch (MyBatisSystemException e) {
+        } catch (Exception e) {
             BlockException blockException = BlockException.getBlockException(e);
             assertNotNull(blockException);
         }
@@ -94,7 +119,7 @@ public class TestMapperInterceptor extends BaseJunit {
         //Will be limited
         try {
             userMapper.insert(user);
-        } catch (MyBatisSystemException e) {
+        } catch (Exception e) {
             BlockException blockException = BlockException.getBlockException(e);
             assertNotNull(blockException);
         }
@@ -155,7 +180,7 @@ public class TestMapperInterceptor extends BaseJunit {
         //Will be limited
         try {
             userMapper.delete(ID_1);
-        } catch (MyBatisSystemException e) {
+        } catch (Exception e) {
             BlockException blockException = BlockException.getBlockException(e);
             assertNotNull(blockException);
         }
@@ -164,31 +189,6 @@ public class TestMapperInterceptor extends BaseJunit {
         cn = ClusterBuilderSlot.getClusterNode(resourceName);
         assertNotNull(cn);
         assertEquals(limitCount, cn.passQps(), 0.01);
-        assertEquals(1, cn.blockQps(), 0.01);
-    }
-
-    @Test
-    public void testSqlException() {
-        String resourceName = SentinelTotalInterceptor.RESOURCE_NAME;
-        configureExceptionRulesFor(resourceName, 1);
-        try {
-            teacherMapper.testSqlException(ID_1);
-        } catch (BadSqlGrammarException e) {
-            logger.error("BadSqlGrammarException", e.getMessage());
-        }
-
-        //Will be limited
-        try {
-            teacherMapper.testSqlException(ID_1);
-        } catch (MyBatisSystemException e) {
-            BlockException blockException = BlockException.getBlockException(e);
-            assertNotNull(blockException);
-        }
-
-        //Limited assert
-        ClusterNode cn = ClusterBuilderSlot.getClusterNode(resourceName);
-        assertNotNull(cn);
-        assertEquals(1, cn.passQps(), 0.01);
         assertEquals(1, cn.blockQps(), 0.01);
     }
 

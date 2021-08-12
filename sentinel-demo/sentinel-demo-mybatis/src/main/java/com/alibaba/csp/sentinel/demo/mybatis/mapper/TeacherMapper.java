@@ -32,12 +32,12 @@ public interface TeacherMapper {
     })
     TeacherPO selectById(Integer id);
 
-    @Delete("delete from t_teacher where id = #{id}")
+    @Delete("delete from t_teacher where\n id = #{id}")
     void delete(Integer id);
 
-    @Insert("insert into t_teacher (id, name) values (#{id}, #{name})")
+    @Insert("insert into t_teacher\n (id, name) values (#{id}, #{name})")
     void insert(TeacherPO teacher);
 
-    @Select("select name, email from t_teacher where id = #{id}")
+    @Select("select name, email from t_teacher where\n id = #{id}")
     TeacherPO testSqlException(Integer id);
 }
