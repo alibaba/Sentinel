@@ -37,7 +37,8 @@
         <dependency>
             <groupId>com.github.stefanbirkner</groupId>
             <artifactId>system-rules</artifactId>
-            <version>RELEASE</version>
+			<!--<version>RELEASE</version> -->
+            <version>1.19.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
