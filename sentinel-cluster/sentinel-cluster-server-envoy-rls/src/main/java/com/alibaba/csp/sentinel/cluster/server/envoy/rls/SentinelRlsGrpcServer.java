@@ -31,7 +31,9 @@ public class SentinelRlsGrpcServer {
 
     public SentinelRlsGrpcServer(int port) {
         ServerBuilder<?> builder = ServerBuilder.forPort(port)
+            .addService(new com.alibaba.csp.sentinel.cluster.server.envoy.rls.service.v3.SentinelEnvoyRlsServiceImpl())
             .addService(new SentinelEnvoyRlsServiceImpl());
+
         server = builder.build();
     }
 
