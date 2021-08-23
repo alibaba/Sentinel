@@ -1,7 +1,5 @@
 package com.alibaba.csp.sentinel.transport.endpoint;
 
-import java.net.InetSocketAddress;
-
 /**
  * @author Leo Li
  */

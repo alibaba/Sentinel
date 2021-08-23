@@ -19,8 +19,6 @@ import com.alibaba.csp.sentinel.adapter.spring.webmvc.config.SentinelWebMvcConfi
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 /**
  * @author Eric Zhao
  */
