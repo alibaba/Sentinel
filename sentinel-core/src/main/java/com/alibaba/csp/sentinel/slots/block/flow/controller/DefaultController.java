@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow.controller;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.node.OccupyTimeoutProperty;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
@@ -32,6 +34,8 @@ public class DefaultController implements TrafficShapingController {
 
     private static final int DEFAULT_AVG_USED_TOKENS = 0;
 
+    private AtomicInteger entryThreadNum = new AtomicInteger();
+    
     private double count;
     private int grade;
 
@@ -47,6 +51,10 @@ public class DefaultController implements TrafficShapingController {
 
     @Override
     public boolean canPass(Node node, int acquireCount, boolean prioritized) {
+        if (grade == RuleConstant.FLOW_GRADE_THREAD) {
+            return entryThreadNum.addAndGet(acquireCount) <= count;
+        }
+        
         int curCount = avgUsedTokens(node);
         if (curCount + acquireCount > count) {
             if (prioritized && grade == RuleConstant.FLOW_GRADE_QPS) {
@@ -69,10 +77,7 @@ public class DefaultController implements TrafficShapingController {
     }
 
     private int avgUsedTokens(Node node) {
-        if (node == null) {
-            return DEFAULT_AVG_USED_TOKENS;
-        }
-        return grade == RuleConstant.FLOW_GRADE_THREAD ? node.curThreadNum() : (int)(node.passQps());
+        return node == null ? DEFAULT_AVG_USED_TOKENS : (int)(node.passQps());
     }
 
     private void sleep(long timeMillis) {
@@ -82,4 +87,17 @@ public class DefaultController implements TrafficShapingController {
             // Ignore.
         }
     }
+    
+    @Override
+    public void cleanUpEffect(Node node, int acquireCount) {
+        cleanUpEffect(node, acquireCount, false);
+    }
+
+    @Override
+    public void cleanUpEffect(Node node, int acquireCount, boolean prioritized) {
+        if (grade == RuleConstant.FLOW_GRADE_THREAD) {
+            entryThreadNum.addAndGet(-acquireCount);
+        }
+    }
+    
 }

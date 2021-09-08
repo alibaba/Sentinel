@@ -42,4 +42,22 @@ public interface TrafficShapingController {
      * @return true if the resource entry can pass; false if it should be blocked
      */
     boolean canPass(Node node, int acquireCount);
+    
+    /**
+     * Clean up effect after check.
+     * 
+     * @param node resource node
+     * @param acquireCount count to acquire
+     * @param prioritized whether the request is prioritized
+     * */
+    void cleanUpEffect(Node node, int acquireCount, boolean prioritized);
+    
+    /**
+     * Clean up effect after check.
+     * 
+     * @param node resource node
+     * @param acquireCount count to acquire
+     * */
+    void cleanUpEffect(Node node, int acquireCount);
+    
 }
