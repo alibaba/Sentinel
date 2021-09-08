@@ -43,13 +43,16 @@ public class MetricCollector {
      * @return the metric grouped by resource name.
      */
     public Map<String, MetricNode> collectMetric() {
+        final long currentTime = TimeUtil.currentTimeMillis();
+        final long maxTime = currentTime - currentTime % 1000;
+        final long minTime = maxTime - 1000;
         Map<String, MetricNode> metricNodeMap = new HashMap<>();
         for (Map.Entry<ResourceWrapper, ClusterNode> e : ClusterBuilderSlot.getClusterNodeMap().entrySet()) {
             ClusterNode node = e.getValue();
-            List<MetricNode> metrics = getLastMetrics(node);
+            List<MetricNode> metrics = getLastMetrics(node, minTime, maxTime);
             aggregate(metricNodeMap, metrics, node);
         }
-        aggregate(metricNodeMap, getLastMetrics(Constants.ENTRY_NODE), Constants.ENTRY_NODE);
+        aggregate(metricNodeMap, getLastMetrics(Constants.ENTRY_NODE, minTime, maxTime), Constants.ENTRY_NODE);
         return metricNodeMap;
     }
     
@@ -57,12 +60,11 @@ public class MetricCollector {
     /**
      * Get the last second {@link MetricNode} of {@link ClusterNode}
      * @param node {@link ClusterNode}
+     * @param minTime the min time.
+     * @param maxTime the max time.
      * @return the list of {@link MetricNode}
      */
-    private List<MetricNode> getLastMetrics(ClusterNode node) {
-        final long currentTime = TimeUtil.currentTimeMillis();
-        final long maxTime = currentTime - currentTime % 1000;
-        final long minTime = maxTime - 1000;
+    private List<MetricNode> getLastMetrics(ClusterNode node, long minTime, long maxTime) {
         return node.rawMetricsInMin(time -> time >= minTime && time < maxTime);
     }
     

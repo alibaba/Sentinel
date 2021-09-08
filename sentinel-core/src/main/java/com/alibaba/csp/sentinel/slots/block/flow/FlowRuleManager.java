@@ -62,7 +62,7 @@ public class FlowRuleManager {
         currentProperty.addListener(LISTENER);
         startMetricTimerListener();
     }
-    
+
     /**
      * <p> Start the MetricTimerListener
      * <ol>

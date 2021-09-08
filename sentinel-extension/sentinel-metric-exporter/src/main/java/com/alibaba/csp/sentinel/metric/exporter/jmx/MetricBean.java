@@ -111,6 +111,8 @@ public class MetricBean implements MetricMXBean {
         this.exceptionQps = 0;
         this.occupiedPassQps = 0;
         this.successQps = 0;
+        this.rt = 0;
+        this.concurrency = 0;
     }
     
     /**

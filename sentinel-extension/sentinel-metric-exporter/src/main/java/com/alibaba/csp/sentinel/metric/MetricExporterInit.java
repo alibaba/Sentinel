@@ -40,17 +40,12 @@ public class MetricExporterInit implements InitFunc {
      */
     private static List<MetricExporter> metricExporters = new ArrayList<>();
     
-    /**
-     * the metric collector.
-     */
-    private static MetricCollector metricCollector = new MetricCollector();
-    
     /*
       load metric exporters.
      */
     static {
         // now we use this simple way to load MetricExporter.
-        metricExporters.add(new JMXMetricExporter(metricCollector));
+        metricExporters.add(new JMXMetricExporter());
     }
     
     @Override

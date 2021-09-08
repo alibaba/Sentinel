@@ -50,10 +50,9 @@ public class JMXMetricExporter implements MetricExporter {
     /**
      * global metrics collector.
      */
-    private final MetricCollector metricCollector;
+    private final MetricCollector metricCollector = new MetricCollector();
     
-    public JMXMetricExporter(MetricCollector metricCollector) {
-        this.metricCollector = metricCollector;
+    public JMXMetricExporter() {
         jmxExporterSchedule = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("sentinel-metrics-jmx-exporter-task", true));
     }
     
