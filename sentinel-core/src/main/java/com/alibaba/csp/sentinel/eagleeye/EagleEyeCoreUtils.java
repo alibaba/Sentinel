@@ -103,7 +103,7 @@ final class EagleEyeCoreUtils {
         if (match || (preserveAllTokens && lastMatch)) {
             list.add(str.substring(start, i));
         }
-        return list.toArray(new String[list.size()]);
+        return list.toArray(new String[0]);
     }
 
     public static StringBuilder appendWithBlankCheck(String str, String defaultValue, StringBuilder appender) {
