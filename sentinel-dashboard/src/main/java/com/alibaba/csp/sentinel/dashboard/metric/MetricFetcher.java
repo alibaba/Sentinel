@@ -268,7 +268,7 @@ public class MetricFetcher {
         lastFetchMs = lastFetchMs / 1000 * 1000;
         long endTime = lastFetchMs + FETCH_INTERVAL_SECOND * 1000;
         if (endTime > now - 1000 * 2) {
-            // to near
+            // too near
             return;
         }
         // update last_fetch in advance.
