@@ -108,6 +108,11 @@ public class MetricBean implements MetricMXBean {
         return version;
     }
 
+    /**
+     * set the version to current Mbean.
+     *
+     * @param version current version.
+     */
     public void setVersion(long version) {
         this.version = version;
     }
