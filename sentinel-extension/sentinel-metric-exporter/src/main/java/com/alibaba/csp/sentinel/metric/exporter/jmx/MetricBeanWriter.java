@@ -24,6 +24,7 @@ import com.alibaba.csp.sentinel.node.metric.MetricNode;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -64,7 +65,7 @@ public class MetricBeanWriter {
         if (appName == null) {
             appName = DEFAULT_APP_NAME;
         }
-        Set<String> existResource = new HashSet<>();
+        long version = System.currentTimeMillis();
         // set or update the new value
         for (MetricNode metricNode : map.values()) {
             final String mBeanName = "Sentinel:type=" + appName + ",name=\"" + metricNode.getResource()
@@ -72,28 +73,25 @@ public class MetricBeanWriter {
             MetricBean metricBean = mBeanRegistry.findMBean(mBeanName);
             if (metricBean != null) {
                 metricBean.setValueFromNode(metricNode);
+                metricBean.setVersion(version);
             } else {
                 metricBean = new MetricBean();
                 metricBean.setValueFromNode(metricNode);
+                metricBean.setVersion(version);
                 mBeanRegistry.register(metricBean, mBeanName);
                 RecordLog.info("[MetricBeanWriter] Registering with JMX as Metric MBean [{}]", mBeanName);
             }
-            existResource.add(mBeanName);
         }
         // reset the old value
         List<MetricBean> metricBeans = mBeanRegistry.listAllMBeans();
         if (metricBeans == null || metricBeans.isEmpty()) {
-            existResource.clear();
             return;
         }
         for (MetricBean metricBean : metricBeans) {
-            final String mBeanName = "Sentinel:type=" + appName + ",name=\"" + metricBean.getResource()
-                    +"\",classification=\"" + metricBean.getClassification() +"\"";
-            if (existResource.contains(mBeanName)) {
-                continue;
+            if (!Objects.equals(metricBean.getVersion(), version)) {
+                metricBean.reset();
+                mBeanRegistry.unRegister(metricBean);
             }
-            metricBean.reset();
         }
-        existResource.clear();
     }
 }

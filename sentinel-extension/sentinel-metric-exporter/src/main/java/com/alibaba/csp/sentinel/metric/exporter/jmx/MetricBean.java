@@ -50,6 +50,8 @@ public class MetricBean implements MetricMXBean {
     private long occupiedPassQps;
 
     private int concurrency;
+
+    private long version;
     
     @Override
     public String getResource() {
@@ -100,7 +102,16 @@ public class MetricBean implements MetricMXBean {
     public int getConcurrency() {
         return concurrency;
     }
-    
+
+    @Override
+    public long getVersion() {
+        return version;
+    }
+
+    public void setVersion(long version) {
+        this.version = version;
+    }
+
     /**
      * reset the MBean value to the initialized value.
      */

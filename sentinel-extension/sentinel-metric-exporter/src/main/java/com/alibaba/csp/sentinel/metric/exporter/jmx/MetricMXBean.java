@@ -45,4 +45,6 @@ public interface MetricMXBean {
     int getClassification();
     
     int getConcurrency();
+
+    long getVersion();
 }
