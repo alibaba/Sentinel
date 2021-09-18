@@ -5,16 +5,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * 标题、简要说明. <br>
- * 类详细说明.
- * <p>
- * Copyright: Copyright (c) 2021年09月18日 4:32 下午
- * <p>
- * Company: 苏州渠成易销网络科技有限公司
- * <p>
- *
- * @author shuiping.zhu@successchannel.com
- * @version 1.0.0
+ * @author Tank
+ * @since 1.8.2
  */
 @Configuration
 public class SentinelHandlerExceptionResolverConfig {
