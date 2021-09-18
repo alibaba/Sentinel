@@ -105,7 +105,7 @@ For more information, please refer to [How To Use](https://github.com/alibaba/Se
 
 ### 4. Check the Result
 
-After running the demo for a while, you can see the following records in `~/logs/csp/${appName}-metrics.log.${date}` (When using the default `DateFileLogHandler`).
+After running the demo for a while, you can see the following records in `~/logs/csp/${appName}-metrics.log.$(date)` (When using the default `DateFileLogHandler`).
 
 ```
 |--timestamp-|------date time----|-resource-|p |block|s |e|rt  |occupied
