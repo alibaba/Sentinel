@@ -1,2 +1,0 @@
-com.alibaba.csp.sentinel.command.handler.ModifyClusterClientConfigHandler
-com.alibaba.csp.sentinel.command.handler.FetchClusterClientConfigHandler
