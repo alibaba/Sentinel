@@ -1,3 +1,0 @@
-# name                                                                        # order
-com.alibaba.csp.sentinel.adapter.sofa.rpc.SentinelSofaRpcProviderFilter       # -1000
-com.alibaba.csp.sentinel.adapter.sofa.rpc.SentinelSofaRpcConsumerFilter       # -1000
