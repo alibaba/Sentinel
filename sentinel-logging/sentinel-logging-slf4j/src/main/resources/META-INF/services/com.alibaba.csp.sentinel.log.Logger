@@ -1,2 +1,0 @@
-com.alibaba.csp.sentinel.logging.slf4j.RecordLogLogger
-com.alibaba.csp.sentinel.logging.slf4j.CommandCenterLogLogger
