@@ -3,8 +3,6 @@
 Sentinel DataSource Consul provides integration with Consul. The data source leverages blocking query (backed by
 long polling) of Consul.
 
-> **NOTE**: This module requires JDK 1.8 or later.
-
 ## Usage
 
 To use Sentinel DataSource Consul, you could add the following dependency:

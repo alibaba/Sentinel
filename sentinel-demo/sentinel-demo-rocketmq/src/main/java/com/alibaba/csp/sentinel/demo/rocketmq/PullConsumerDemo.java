@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.demo.rocketmq;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -55,10 +56,16 @@ public class PullConsumerDemo {
         initFlowControlRule();
 
         DefaultMQPullConsumer consumer = new DefaultMQPullConsumer(Constants.TEST_GROUP_NAME);
-
+        consumer.setNamesrvAddr(Constants.TEST_NAMESRV_ADDR);
         consumer.start();
 
-        Set<MessageQueue> mqs = consumer.fetchSubscribeMessageQueues(Constants.TEST_TOPIC_NAME);
+        Set<MessageQueue> mqs = new HashSet<>();
+        try {
+            mqs = consumer.fetchSubscribeMessageQueues(Constants.TEST_TOPIC_NAME);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         for (MessageQueue mq : mqs) {
             System.out.printf("Consuming messages from the queue: %s%n", mq);
             SINGLE_MQ:

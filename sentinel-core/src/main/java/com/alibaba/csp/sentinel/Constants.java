@@ -31,7 +31,7 @@ import com.alibaba.csp.sentinel.util.VersionUtil;
  */
 public final class Constants {
 
-    public static final String SENTINEL_VERSION = VersionUtil.getVersion("1.8.1");
+    public static final String SENTINEL_VERSION = VersionUtil.getVersion("1.8.2");
 
     public final static int MAX_CONTEXT_NAME_SIZE = 2000;
     public final static int MAX_SLOT_CHAIN_SIZE = 6000;
@@ -69,6 +69,18 @@ public final class Constants {
      * The global switch for Sentinel.
      */
     public static volatile boolean ON = true;
+
+    /**
+     * Order of default processor slots
+     */
+    public static final int ORDER_NODE_SELECTOR_SLOT = -10000;
+    public static final int ORDER_CLUSTER_BUILDER_SLOT = -9000;
+    public static final int ORDER_LOG_SLOT = -8000;
+    public static final int ORDER_STATISTIC_SLOT = -7000;
+    public static final int ORDER_AUTHORITY_SLOT = -6000;
+    public static final int ORDER_SYSTEM_SLOT = -5000;
+    public static final int ORDER_FLOW_SLOT = -2000;
+    public static final int ORDER_DEGRADE_SLOT = -1000;
 
     private Constants() {}
 }
