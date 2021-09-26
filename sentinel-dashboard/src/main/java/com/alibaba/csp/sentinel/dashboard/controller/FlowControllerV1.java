@@ -17,19 +17,15 @@ package com.alibaba.csp.sentinel.dashboard.controller;
 
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
-import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
-import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
+import com.alibaba.csp.sentinel.dashboard.repository.store.DynamicRuleRepository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,10 +52,7 @@ public class FlowControllerV1 {
     private final Logger logger = LoggerFactory.getLogger(FlowControllerV1.class);
 
     @Autowired
-    private InMemoryRuleRepositoryAdapter<FlowRuleEntity> repository;
-
-    @Autowired
-    private SentinelApiClient sentinelApiClient;
+    private DynamicRuleRepository<FlowRuleEntity> ruleStore;
 
     @GetMapping("/rules")
     @AuthAction(PrivilegeType.READ_RULE)
@@ -77,8 +70,7 @@ public class FlowControllerV1 {
             return Result.ofFail(-1, "port can't be null");
         }
         try {
-            List<FlowRuleEntity> rules = sentinelApiClient.fetchFlowRuleOfMachine(app, ip, port);
-            rules = repository.saveAll(rules);
+            List<FlowRuleEntity> rules = ruleStore.queryRules(app, ip, port);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
             logger.error("Error when querying flow rules", throwable);
@@ -147,9 +139,9 @@ public class FlowControllerV1 {
         entity.setLimitApp(entity.getLimitApp().trim());
         entity.setResource(entity.getResource().trim());
         try {
-            entity = repository.save(entity);
+            entity = ruleStore.save(entity);
 
-            publishRules(entity.getApp(), entity.getIp(), entity.getPort()).get(5000, TimeUnit.MILLISECONDS);
+            publishRules(entity.getApp(), entity.getIp(), entity.getPort());
             return Result.ofSuccess(entity);
         } catch (Throwable t) {
             Throwable e = t instanceof ExecutionException ? t.getCause() : t;
@@ -168,7 +160,7 @@ public class FlowControllerV1 {
         if (id == null) {
             return Result.ofFail(-1, "id can't be null");
         }
-        FlowRuleEntity entity = repository.findById(id);
+        FlowRuleEntity entity = ruleStore.findById(id);
         if (entity == null) {
             return Result.ofFail(-1, "id " + id + " dose not exist");
         }
@@ -223,12 +215,12 @@ public class FlowControllerV1 {
         Date date = new Date();
         entity.setGmtModified(date);
         try {
-            entity = repository.save(entity);
+            entity = ruleStore.save(entity);
             if (entity == null) {
                 return Result.ofFail(-1, "save entity fail: null");
             }
 
-            publishRules(entity.getApp(), entity.getIp(), entity.getPort()).get(5000, TimeUnit.MILLISECONDS);
+            publishRules(entity.getApp(), entity.getIp(), entity.getPort());
             return Result.ofSuccess(entity);
         } catch (Throwable t) {
             Throwable e = t instanceof ExecutionException ? t.getCause() : t;
@@ -245,18 +237,18 @@ public class FlowControllerV1 {
         if (id == null) {
             return Result.ofFail(-1, "id can't be null");
         }
-        FlowRuleEntity oldEntity = repository.findById(id);
+        FlowRuleEntity oldEntity = ruleStore.findById(id);
         if (oldEntity == null) {
             return Result.ofSuccess(null);
         }
 
         try {
-            repository.delete(id);
+            ruleStore.delete(id);
         } catch (Exception e) {
             return Result.ofFail(-1, e.getMessage());
         }
         try {
-            publishRules(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort()).get(5000, TimeUnit.MILLISECONDS);
+            publishRules(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort());
             return Result.ofSuccess(id);
         } catch (Throwable t) {
             Throwable e = t instanceof ExecutionException ? t.getCause() : t;
@@ -266,8 +258,7 @@ public class FlowControllerV1 {
         }
     }
 
-    private CompletableFuture<Void> publishRules(String app, String ip, Integer port) {
-        List<FlowRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return sentinelApiClient.setFlowRuleOfMachineAsync(app, ip, port, rules);
+    private void publishRules(String app, String ip, Integer port) {
+        ruleStore.publishRules(app, ip, port);
     }
 }

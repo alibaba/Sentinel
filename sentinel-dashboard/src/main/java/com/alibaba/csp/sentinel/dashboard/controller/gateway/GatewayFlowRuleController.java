@@ -18,15 +18,13 @@ package com.alibaba.csp.sentinel.dashboard.controller.gateway;
 
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
-import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayFlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayParamFlowItemEntity;
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.dashboard.domain.vo.gateway.rule.AddFlowRuleReqVo;
 import com.alibaba.csp.sentinel.dashboard.domain.vo.gateway.rule.GatewayParamFlowItemVo;
 import com.alibaba.csp.sentinel.dashboard.domain.vo.gateway.rule.UpdateFlowRuleReqVo;
-import com.alibaba.csp.sentinel.dashboard.repository.gateway.InMemGatewayFlowRuleStore;
+import com.alibaba.csp.sentinel.dashboard.repository.store.DynamicRuleRepository;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,10 +52,7 @@ public class GatewayFlowRuleController {
     private final Logger logger = LoggerFactory.getLogger(GatewayFlowRuleController.class);
 
     @Autowired
-    private InMemGatewayFlowRuleStore repository;
-
-    @Autowired
-    private SentinelApiClient sentinelApiClient;
+    private DynamicRuleRepository<GatewayFlowRuleEntity> ruleStore;
 
     @GetMapping("/list.json")
     @AuthAction(AuthService.PrivilegeType.READ_RULE)
@@ -74,8 +69,7 @@ public class GatewayFlowRuleController {
         }
 
         try {
-            List<GatewayFlowRuleEntity> rules = sentinelApiClient.fetchGatewayFlowRules(app, ip, port).get();
-            repository.saveAll(rules);
+            List<GatewayFlowRuleEntity> rules = ruleStore.queryRules(app, ip, port);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
             logger.error("query gateway flow rules error:", throwable);
@@ -237,7 +231,7 @@ public class GatewayFlowRuleController {
         entity.setGmtModified(date);
 
         try {
-            entity = repository.save(entity);
+            entity = ruleStore.save(entity);
         } catch (Throwable throwable) {
             logger.error("add gateway flow rule error:", throwable);
             return Result.ofThrowable(-1, throwable);
@@ -264,7 +258,7 @@ public class GatewayFlowRuleController {
             return Result.ofFail(-1, "id can't be null");
         }
 
-        GatewayFlowRuleEntity entity = repository.findById(id);
+        GatewayFlowRuleEntity entity = ruleStore.findById(id);
         if (entity == null) {
             return Result.ofFail(-1, "gateway flow rule does not exist, id=" + id);
         }
@@ -383,7 +377,7 @@ public class GatewayFlowRuleController {
         entity.setGmtModified(date);
 
         try {
-            entity = repository.save(entity);
+            entity = ruleStore.save(entity);
         } catch (Throwable throwable) {
             logger.error("update gateway flow rule error:", throwable);
             return Result.ofThrowable(-1, throwable);
@@ -405,13 +399,13 @@ public class GatewayFlowRuleController {
             return Result.ofFail(-1, "id can't be null");
         }
 
-        GatewayFlowRuleEntity oldEntity = repository.findById(id);
+        GatewayFlowRuleEntity oldEntity = ruleStore.findById(id);
         if (oldEntity == null) {
             return Result.ofSuccess(null);
         }
 
         try {
-            repository.delete(id);
+            ruleStore.delete(id);
         } catch (Throwable throwable) {
             logger.error("delete gateway flow rule error:", throwable);
             return Result.ofThrowable(-1, throwable);
@@ -425,7 +419,6 @@ public class GatewayFlowRuleController {
     }
 
     private boolean publishRules(String app, String ip, Integer port) {
-        List<GatewayFlowRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return sentinelApiClient.modifyGatewayFlowRules(app, ip, port, rules);
+        return ruleStore.publishRules(app, ip, port);
     }
 }

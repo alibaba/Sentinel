@@ -19,15 +19,13 @@ import java.util.Date;
 import java.util.List;
 
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
-import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.AuthorityRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
-import com.alibaba.csp.sentinel.dashboard.repository.rule.RuleRepository;
+import com.alibaba.csp.sentinel.dashboard.repository.store.DynamicRuleRepository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,10 +50,9 @@ public class AuthorityRuleController {
 
     private final Logger logger = LoggerFactory.getLogger(AuthorityRuleController.class);
 
+        
     @Autowired
-    private SentinelApiClient sentinelApiClient;
-    @Autowired
-    private RuleRepository<AuthorityRuleEntity, Long> repository;
+    private DynamicRuleRepository<AuthorityRuleEntity> ruleStore;
 
     @GetMapping("/rules")
     @AuthAction(PrivilegeType.READ_RULE)
@@ -72,8 +69,7 @@ public class AuthorityRuleController {
             return Result.ofFail(-1, "Invalid parameter: port");
         }
         try {
-            List<AuthorityRuleEntity> rules = sentinelApiClient.fetchAuthorityRulesOfMachine(app, ip, port);
-            rules = repository.saveAll(rules);
+            List<AuthorityRuleEntity> rules = ruleStore.queryRules(app, ip, port);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
             logger.error("Error when querying authority rules", throwable);
@@ -122,7 +118,7 @@ public class AuthorityRuleController {
         entity.setGmtCreate(date);
         entity.setGmtModified(date);
         try {
-            entity = repository.save(entity);
+            entity = ruleStore.save(entity);
         } catch (Throwable throwable) {
             logger.error("Failed to add authority rule", throwable);
             return Result.ofThrowable(-1, throwable);
@@ -149,7 +145,7 @@ public class AuthorityRuleController {
         entity.setGmtCreate(null);
         entity.setGmtModified(date);
         try {
-            entity = repository.save(entity);
+            entity = ruleStore.save(entity);
             if (entity == null) {
                 return Result.ofFail(-1, "Failed to save authority rule");
             }
@@ -169,12 +165,12 @@ public class AuthorityRuleController {
         if (id == null) {
             return Result.ofFail(-1, "id cannot be null");
         }
-        AuthorityRuleEntity oldEntity = repository.findById(id);
+        AuthorityRuleEntity oldEntity = ruleStore.findById(id);
         if (oldEntity == null) {
             return Result.ofSuccess(null);
         }
         try {
-            repository.delete(id);
+            ruleStore.delete(id);
         } catch (Exception e) {
             return Result.ofFail(-1, e.getMessage());
         }
@@ -185,7 +181,6 @@ public class AuthorityRuleController {
     }
 
     private boolean publishRules(String app, String ip, Integer port) {
-        List<AuthorityRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return sentinelApiClient.setAuthorityRuleOfMachine(app, ip, port, rules);
+        return ruleStore.publishRules(app, ip, port);
     }
 }
