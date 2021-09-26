@@ -1,9 +1,5 @@
 package com.alibaba.csp.sentinel.adapter.reactor;
 
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
-
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.node.ClusterNode;
@@ -12,11 +8,14 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
-
 import org.junit.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import static org.junit.Assert.*;
 
@@ -82,7 +81,7 @@ public class MonoSentinelOperatorIntegrationTest {
 
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(resourceName);
         assertNotNull(cn);
-        assertEquals(1000, cn.avgRt(), 20);
+        assertEquals(1000, cn.avgRt(), 100);
     }
 
     @Test
