@@ -109,6 +109,12 @@
             <artifactId>apollo-openapi</artifactId>
             <version>1.2.0</version>
             <scope>test</scope>
+            <exclusions>
+            	<exclusion>
+            		<groupId>com.google.guava</groupId>
+            		<artifactId>guava</artifactId>
+            	</exclusion>
+            </exclusions>
         </dependency>
 
         <!--for Zookeeper rule publisher sample-->
@@ -117,6 +123,12 @@
             <artifactId>curator-recipes</artifactId>
             <version>${curator.version}</version>
             <scope>test</scope>
+            <exclusions>
+            	<exclusion>
+            		<groupId>com.google.guava</groupId>
+            		<artifactId>guava</artifactId>
+            	</exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
