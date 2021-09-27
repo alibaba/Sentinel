@@ -44,6 +44,9 @@ public class SentinelWebMvcFilter implements Filter {
             filterChain.doFilter(servletRequest, servletResponse);
         } catch (NestedServletException | UndeclaredThrowableException e) {
             BlockException blockException = null;
+            if (e instanceof NestedServletException && e.getCause() instanceof BlockException) {
+                blockException = (BlockException) e.getCause();
+            }
             if (e instanceof NestedServletException && e.getCause() instanceof UndeclaredThrowableException
                     && (((UndeclaredThrowableException) e.getCause()).getUndeclaredThrowable() instanceof BlockException)) {
                 UndeclaredThrowableException undeclaredThrowableException = (UndeclaredThrowableException) e.getCause();
