@@ -164,7 +164,13 @@
                 <artifactId>sentinel-adapter</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
+            
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-metric-exporter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>
