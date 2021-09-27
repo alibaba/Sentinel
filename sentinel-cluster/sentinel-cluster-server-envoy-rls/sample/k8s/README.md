@@ -91,6 +91,12 @@ After preparing the yaml template, you may deploy the Envoy instance:
 kubectl apply -f sample/k8s/envoy.yml
 ```
 
+for v3 api：
+
+```bash
+kubectl apply -f sample/k8s/envoy-v3-api.yml
+```
+
 ## Test the rate limiting
 
 Now it's show time! We could visit the URL `envoy-service:10000/json` in K8S pods.
