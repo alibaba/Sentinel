@@ -27,7 +27,7 @@ import java.lang.reflect.UndeclaredThrowableException;
  * The filter logic is Handle {@link UndeclaredThrowableException} and use the BlockExceptionHandler configured by
  * {@link BaseWebMvcConfig} to return the default status code
  *
- * @author wuzishu
+ * @author idefav
  */
 public class SentinelWebMvcFilter implements Filter {
     @Resource
