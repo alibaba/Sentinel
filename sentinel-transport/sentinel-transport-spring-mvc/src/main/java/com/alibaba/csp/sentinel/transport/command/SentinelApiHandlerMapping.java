@@ -50,7 +50,7 @@ public class SentinelApiHandlerMapping extends AbstractHandlerMapping implements
         }
     }
 
-    final static Map<String, CommandHandler> handlerMap = new ConcurrentHashMap<>();
+    private static final Map<String, CommandHandler> HANDLER_MAP = new ConcurrentHashMap<>();
 
     private boolean ignoreInterceptor = true;
 
@@ -64,7 +64,7 @@ public class SentinelApiHandlerMapping extends AbstractHandlerMapping implements
         if (commandName.startsWith("/")) {
             commandName = commandName.substring(1);
         }
-        CommandHandler commandHandler = handlerMap.get(commandName);
+        CommandHandler commandHandler = HANDLER_MAP.get(commandName);
         return commandHandler != null ? new SentinelApiHandler(commandHandler) : null;
     }
 
@@ -82,12 +82,12 @@ public class SentinelApiHandlerMapping extends AbstractHandlerMapping implements
             return;
         }
 
-        if (handlerMap.containsKey(commandName)) {
+        if (HANDLER_MAP.containsKey(commandName)) {
             CommandCenterLog.warn("[SentinelApiHandlerMapping] Register failed (duplicate command): " + commandName);
             return;
         }
 
-        handlerMap.put(commandName, handler);
+        HANDLER_MAP.put(commandName, handler);
     }
 
     public static void registerCommands(Map<String, CommandHandler> handlerMap) {

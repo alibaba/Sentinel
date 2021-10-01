@@ -64,16 +64,4 @@ public class InterceptorConfig implements WebMvcConfigurer {
         // Add sentinel interceptor
         registry.addInterceptor(new SentinelWebInterceptor(config)).addPathPatterns("/**");
     }
-
-    private void addSpringMvcTotalInterceptor(InterceptorRegistry registry) {
-        //Config
-        SentinelWebMvcTotalConfig config = new SentinelWebMvcTotalConfig();
-
-        //Custom configuration if necessary
-        config.setRequestAttributeName("my_sentinel_spring_mvc_total_entity_container");
-        config.setTotalResourceName("my-spring-mvc-total-url-request");
-
-        //Add sentinel interceptor
-        registry.addInterceptor(new SentinelWebTotalInterceptor(config)).addPathPatterns("/**");
-    }
 }

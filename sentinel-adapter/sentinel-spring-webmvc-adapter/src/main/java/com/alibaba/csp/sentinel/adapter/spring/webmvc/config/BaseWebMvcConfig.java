@@ -39,11 +39,9 @@ public abstract class BaseWebMvcConfig {
         this.requestAttributeName = requestAttributeName;
         this.requestRefName = this.requestAttributeName + "-rc";
     }
-    
+
     /**
      * Paired with attr name used to track reference count.
-     * 
-     * @return
      */
     public String getRequestRefName() {
         return requestRefName;
