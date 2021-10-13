@@ -75,7 +75,7 @@ public class StandaloneRedisDataSourceTest {
             .withPort(server.getBindPort())
             .build();
         initRedisRuleData();
-        ReadableDataSource<String, List<FlowRule>> redisDataSource = new RedisDataSource<List<FlowRule>>(config,
+        ReadableDataSource<String, List<FlowRule>> redisDataSource = new RedisDataSource<>(config,
             ruleKey, channel, flowConfigParser);
         FlowRuleManager.register2Property(redisDataSource.getProperty());
     }

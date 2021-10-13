@@ -51,7 +51,7 @@ public class FlowRuleManager {
     private static volatile Map<String, List<FlowRule>> flowRules = new HashMap<>();
 
     private static final FlowPropertyListener LISTENER = new FlowPropertyListener();
-    private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
+    private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<>();
 
     /** the corePool size of SCHEDULER must be set at 1, so the two task ({@link #startMetricTimerListener()} can run orderly by the SCHEDULER **/
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
@@ -105,7 +105,7 @@ public class FlowRuleManager {
      * @return a new copy of the rules.
      */
     public static List<FlowRule> getRules() {
-        List<FlowRule> rules = new ArrayList<FlowRule>();
+        List<FlowRule> rules = new ArrayList<>();
         for (Map.Entry<String, List<FlowRule>> entry : flowRules.entrySet()) {
             rules.addAll(entry.getValue());
         }

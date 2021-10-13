@@ -43,7 +43,7 @@ public class ArrayMetricTest {
     @Test
     public void testOperateArrayMetric() {
         BucketLeapArray leapArray = mock(BucketLeapArray.class);
-        final WindowWrap<MetricBucket> windowWrap = new WindowWrap<MetricBucket>(windowLengthInMs, 0,
+        final WindowWrap<MetricBucket> windowWrap = new WindowWrap<>(windowLengthInMs, 0,
             new MetricBucket());
         when(leapArray.currentWindow()).thenReturn(windowWrap);
         when(leapArray.values()).thenReturn(new ArrayList<MetricBucket>() {{ add(windowWrap.value()); }});

@@ -19,7 +19,6 @@ import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.After;
 import org.junit.Before;
@@ -57,7 +56,7 @@ public class ParamFlowThrottleRateLimitingCheckerTest {
         String valueA = "valueA";
         ParameterMetric metric = new ParameterMetric();
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
-        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<>(4000));
 
         long currentTime = TimeUtil.currentTimeMillis();
         long endTime = currentTime + rule.getDurationInSec() * 1000;
@@ -101,7 +100,7 @@ public class ParamFlowThrottleRateLimitingCheckerTest {
         final String valueA = "valueA";
         ParameterMetric metric = new ParameterMetric();
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
-        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<>(4000));
 
         int threadCount = 40;
         System.out.println(metric.getRuleTimeCounter(rule));

@@ -101,11 +101,11 @@ public class SystemRuleManagerTest {
 
     @Before
     public void setUp() throws Exception {
-        SystemRuleManager.loadRules(new ArrayList<SystemRule>());
+        SystemRuleManager.loadRules(new ArrayList<>());
     }
 
     @After
     public void tearDown() throws Exception {
-        SystemRuleManager.loadRules(new ArrayList<SystemRule>());
+        SystemRuleManager.loadRules(new ArrayList<>());
     }
 }

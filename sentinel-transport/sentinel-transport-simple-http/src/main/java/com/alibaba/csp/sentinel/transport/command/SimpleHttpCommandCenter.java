@@ -53,7 +53,7 @@ public class SimpleHttpCommandCenter implements CommandCenter {
     private static final int DEFAULT_PORT = 8719;
 
     @SuppressWarnings("rawtypes")
-    private static final Map<String, CommandHandler> handlerMap = new ConcurrentHashMap<String, CommandHandler>();
+    private static final Map<String, CommandHandler> handlerMap = new ConcurrentHashMap<>();
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private ExecutorService executor = Executors.newSingleThreadExecutor(
@@ -74,7 +74,7 @@ public class SimpleHttpCommandCenter implements CommandCenter {
     public void start() throws Exception {
         int nThreads = Runtime.getRuntime().availableProcessors();
         this.bizExecutor = new ThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS,
-            new ArrayBlockingQueue<Runnable>(10),
+            new ArrayBlockingQueue<>(10),
             new NamedThreadFactory("sentinel-command-center-service-executor", true),
             new RejectedExecutionHandler() {
                 @Override

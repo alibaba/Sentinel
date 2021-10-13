@@ -62,7 +62,7 @@ public class DemoFlowRuleApplication {
     }
 
     private static void initFlowQpsRule() {
-        List<FlowRule> rules = new ArrayList<FlowRule>();
+        List<FlowRule> rules = new ArrayList<>();
         FlowRule rule1 = new FlowRule();
         rule1.setResource(RESOURCE_KEY);
         // set limit qps to 5

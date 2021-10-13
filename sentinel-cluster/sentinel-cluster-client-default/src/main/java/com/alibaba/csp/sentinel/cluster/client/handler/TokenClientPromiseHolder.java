@@ -32,7 +32,7 @@ public final class TokenClientPromiseHolder {
     private static final Map<Integer, SimpleEntry<ChannelPromise, ClusterResponse>> PROMISE_MAP = new ConcurrentHashMap<>();
 
     public static void putPromise(int xid, ChannelPromise promise) {
-        PROMISE_MAP.put(xid, new SimpleEntry<ChannelPromise, ClusterResponse>(promise, null));
+        PROMISE_MAP.put(xid, new SimpleEntry<>(promise, null));
     }
 
     public static SimpleEntry<ChannelPromise, ClusterResponse> getEntry(int xid) {

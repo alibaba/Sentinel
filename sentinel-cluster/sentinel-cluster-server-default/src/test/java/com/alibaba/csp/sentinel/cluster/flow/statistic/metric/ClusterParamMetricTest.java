@@ -27,7 +27,7 @@ public class ClusterParamMetricTest extends AbstractTimeBasedTest {
     @Test
     public void testClusterParamMetric() {
         setCurrentMillis(System.currentTimeMillis());
-        Map<Object, Double> topMap = new HashMap<Object, Double>();
+        Map<Object, Double> topMap = new HashMap<>();
         ClusterParamMetric metric = new ClusterParamMetric(5, 25, 100);
         metric.addValue("e1", -1);
         metric.addValue("e1", -2);

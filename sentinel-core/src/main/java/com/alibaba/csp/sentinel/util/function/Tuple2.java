@@ -21,7 +21,7 @@ public class Tuple2<R1, R2> {
      * @return new Tuple
      */
     public static <C1, C2> Tuple2<C1, C2> of(C1 c1, C2 c2) {
-        return new Tuple2<C1, C2>(c1, c2);
+        return new Tuple2<>(c1, c2);
     }
 
     /**
@@ -30,7 +30,7 @@ public class Tuple2<R1, R2> {
      * @return a new Tuple where the first element is the second element of this Tuple and the second element is the first element of this Tuple.
      */
     public Tuple2<R2, R1> swap() {
-        return new Tuple2<R2, R1>(this.r2, this.r1);
+        return new Tuple2<>(this.r2, this.r1);
     }
 
     @Override

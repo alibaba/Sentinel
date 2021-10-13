@@ -232,13 +232,13 @@ public class SentinelAnnotationIntegrationTest extends AbstractJUnit4SpringConte
 
     @Before
     public void setUp() throws Exception {
-        FlowRuleManager.loadRules(new ArrayList<FlowRule>());
+        FlowRuleManager.loadRules(new ArrayList<>());
         ClusterBuilderSlot.resetClusterNodes();
     }
 
     @After
     public void tearDown() throws Exception {
-        FlowRuleManager.loadRules(new ArrayList<FlowRule>());
+        FlowRuleManager.loadRules(new ArrayList<>());
         ClusterBuilderSlot.resetClusterNodes();
     }
 }

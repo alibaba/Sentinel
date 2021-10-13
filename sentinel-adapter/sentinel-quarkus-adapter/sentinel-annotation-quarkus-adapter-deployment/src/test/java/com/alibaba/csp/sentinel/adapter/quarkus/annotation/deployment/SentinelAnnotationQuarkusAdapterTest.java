@@ -56,13 +56,13 @@ public class SentinelAnnotationQuarkusAdapterTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        FlowRuleManager.loadRules(new ArrayList<FlowRule>());
+        FlowRuleManager.loadRules(new ArrayList<>());
         ClusterBuilderSlot.resetClusterNodes();
     }
 
     @AfterEach
     public void tearDown() throws Exception {
-        FlowRuleManager.loadRules(new ArrayList<FlowRule>());
+        FlowRuleManager.loadRules(new ArrayList<>());
         ClusterBuilderSlot.resetClusterNodes();
     }
 

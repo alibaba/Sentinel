@@ -17,7 +17,7 @@ public class DubboUtilsTest {
     @Test
     public void testGetApplication() {
         Invocation invocation = mock(Invocation.class);
-        when(invocation.getAttachments()).thenReturn(new HashMap<String, String>());
+        when(invocation.getAttachments()).thenReturn(new HashMap<>());
         when(invocation.getAttachment(DubboUtils.DUBBO_APPLICATION_KEY, "")).thenReturn("consumerA");
 
         String application = DubboUtils.getApplication(invocation, "");

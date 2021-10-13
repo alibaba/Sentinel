@@ -110,7 +110,7 @@ public class BucketLeapArrayTest {
         BucketLeapArray leapArray = new BucketLeapArray(sampleCount, intervalInMs);
         final int len = sampleCount;
         long firstTime = TimeUtil.currentTimeMillis();
-        List<WindowWrap<MetricBucket>> firstIterWindowList = new ArrayList<WindowWrap<MetricBucket>>(len);
+        List<WindowWrap<MetricBucket>> firstIterWindowList = new ArrayList<>(len);
         for (int i = 0; i < len; i++) {
             WindowWrap<MetricBucket> w = leapArray.currentWindow(firstTime + windowLengthInMs * i);
             w.value().addPass(1);
@@ -169,7 +169,7 @@ public class BucketLeapArrayTest {
         BucketLeapArray leapArray = new BucketLeapArray(sampleCount, intervalInMs);
         long time = TimeUtil.currentTimeMillis();
 
-        Set<WindowWrap<MetricBucket>> windowWraps = new HashSet<WindowWrap<MetricBucket>>();
+        Set<WindowWrap<MetricBucket>> windowWraps = new HashSet<>();
 
         windowWraps.add(leapArray.currentWindow(time));
         windowWraps.add(leapArray.currentWindow(time + windowLengthInMs));
@@ -197,7 +197,7 @@ public class BucketLeapArrayTest {
         BucketLeapArray leapArray = new BucketLeapArray(sampleCount, intervalInMs);
         long time = TimeUtil.currentTimeMillis();
 
-        Set<WindowWrap<MetricBucket>> windowWraps = new HashSet<WindowWrap<MetricBucket>>();
+        Set<WindowWrap<MetricBucket>> windowWraps = new HashSet<>();
 
         windowWraps.add(leapArray.currentWindow(time));
         windowWraps.add(leapArray.currentWindow(time + windowLengthInMs));

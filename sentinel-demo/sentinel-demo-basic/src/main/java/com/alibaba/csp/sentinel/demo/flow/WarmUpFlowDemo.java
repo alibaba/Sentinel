@@ -109,7 +109,7 @@ public class WarmUpFlowDemo {
     }
 
     private static void initFlowRule() {
-        List<FlowRule> rules = new ArrayList<FlowRule>();
+        List<FlowRule> rules = new ArrayList<>();
         FlowRule rule1 = new FlowRule();
         rule1.setResource(KEY);
         rule1.setCount(20);

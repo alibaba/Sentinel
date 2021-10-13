@@ -66,12 +66,12 @@ public class ParamFlowRule extends AbstractRule {
     /**
      * Original exclusion items of parameters.
      */
-    private List<ParamFlowItem> paramFlowItemList = new ArrayList<ParamFlowItem>();
+    private List<ParamFlowItem> paramFlowItemList = new ArrayList<>();
 
     /**
      * Parsed exclusion items of parameters. Only for internal use.
      */
-    private Map<Object, Integer> hotItems = new HashMap<Object, Integer>();
+    private Map<Object, Integer> hotItems = new HashMap<>();
 
     /**
      * Indicating whether the rule is for cluster mode.

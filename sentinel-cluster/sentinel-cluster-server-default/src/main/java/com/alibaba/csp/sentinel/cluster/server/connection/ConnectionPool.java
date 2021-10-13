@@ -44,7 +44,7 @@ public class ConnectionPool {
     /**
      * Format: ("ip:port", connection)
      */
-    private final Map<String, Connection> CONNECTION_MAP = new ConcurrentHashMap<String, Connection>();
+    private final Map<String, Connection> CONNECTION_MAP = new ConcurrentHashMap<>();
 
     /**
      * Periodic scan task.
@@ -110,7 +110,7 @@ public class ConnectionPool {
     }
 
     public List<Connection> listAllConnection() {
-        List<Connection> connections = new ArrayList<Connection>(CONNECTION_MAP.values());
+        List<Connection> connections = new ArrayList<>(CONNECTION_MAP.values());
         return connections;
     }
 

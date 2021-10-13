@@ -105,11 +105,11 @@ public class GatewayRuleManagerTest {
 
     @Before
     public void setUp() {
-        GatewayRuleManager.loadRules(new HashSet<GatewayFlowRule>());
+        GatewayRuleManager.loadRules(new HashSet<>());
     }
 
     @After
     public void tearDown() {
-        GatewayRuleManager.loadRules(new HashSet<GatewayFlowRule>());
+        GatewayRuleManager.loadRules(new HashSet<>());
     }
 }

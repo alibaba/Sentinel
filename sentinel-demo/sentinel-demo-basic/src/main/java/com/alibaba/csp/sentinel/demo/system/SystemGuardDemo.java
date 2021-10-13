@@ -87,7 +87,7 @@ public class SystemGuardDemo {
     }
 
     private static void initSystemRule() {
-        List<SystemRule> rules = new ArrayList<SystemRule>();
+        List<SystemRule> rules = new ArrayList<>();
         SystemRule rule = new SystemRule();
         // max load is 3
         rule.setHighestSystemLoad(3.0);

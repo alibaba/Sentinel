@@ -118,7 +118,7 @@ public class ClusterParamMetric {
             }
         });
 
-        Map<Object, Double> doubleResult = new HashMap<Object, Double>();
+        Map<Object, Double> doubleResult = new HashMap<>();
 
         int size = list.size() > number ? number : list.size();
         for (int i = 0; i < size; i++) {

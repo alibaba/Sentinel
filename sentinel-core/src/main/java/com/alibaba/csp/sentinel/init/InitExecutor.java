@@ -44,7 +44,7 @@ public final class InitExecutor {
         }
         try {
             List<InitFunc> initFuncs = SpiLoader.of(InitFunc.class).loadInstanceListSorted();
-            List<OrderWrapper> initList = new ArrayList<OrderWrapper>();
+            List<OrderWrapper> initList = new ArrayList<>();
             for (InitFunc initFunc : initFuncs) {
                 RecordLog.info("[InitExecutor] Found init func: {}", initFunc.getClass().getCanonicalName());
                 insertSorted(initList, initFunc);

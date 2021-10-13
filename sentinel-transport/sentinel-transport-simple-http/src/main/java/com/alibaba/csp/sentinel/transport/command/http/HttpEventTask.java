@@ -202,7 +202,7 @@ public class HttpEventTask implements Runnable {
      * @throws IOException
      */
     protected static Map<String, String> parsePostHeaders(InputStream in) throws IOException {
-        Map<String, String> headerMap = new HashMap<String, String>(4);
+        Map<String, String> headerMap = new HashMap<>(4);
         String line;
         while (true) {
             line = readLine(in);

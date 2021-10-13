@@ -37,7 +37,7 @@ public class FetchJsonTreeCommandHandler implements CommandHandler<String> {
 
     @Override
     public CommandResponse<String> handle(CommandRequest request) {
-        List<NodeVo> results = new ArrayList<NodeVo>();
+        List<NodeVo> results = new ArrayList<>();
         visit(Constants.ROOT, results, null);
         return CommandResponse.ofSuccess(JSON.toJSONString(results));
     }

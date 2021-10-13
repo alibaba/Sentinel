@@ -43,7 +43,7 @@ public class PullConsumerDemo {
 
     private static final String KEY = String.format("%s:%s", Constants.TEST_GROUP_NAME, Constants.TEST_TOPIC_NAME);
 
-    private static final Map<MessageQueue, Long> OFFSET_TABLE = new HashMap<MessageQueue, Long>();
+    private static final Map<MessageQueue, Long> OFFSET_TABLE = new HashMap<>();
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static final ExecutorService pool = Executors.newFixedThreadPool(32);

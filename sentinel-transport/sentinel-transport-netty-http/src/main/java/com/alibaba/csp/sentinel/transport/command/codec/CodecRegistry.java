@@ -23,8 +23,8 @@ import java.util.List;
  */
 public final class CodecRegistry {
 
-    private final List<Encoder<?>> encoderList = new ArrayList<Encoder<?>>();
-    private final List<Decoder<?>> decoderList = new ArrayList<Decoder<?>>();
+    private final List<Encoder<?>> encoderList = new ArrayList<>();
+    private final List<Decoder<?>> decoderList = new ArrayList<>();
 
     public CodecRegistry() {
         // Register default codecs.

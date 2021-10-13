@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class MethodUtil {
 
-    private static final Map<Method, String> methodNameMap = new ConcurrentHashMap<Method, String>();
+    private static final Map<Method, String> methodNameMap = new ConcurrentHashMap<>();
 
     private static final Object LOCK = new Object();
 

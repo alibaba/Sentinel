@@ -144,7 +144,7 @@ public abstract class LeapArray<T> {
                  * then try to update circular array via a CAS operation. Only one thread can
                  * succeed to update, while other threads yield its time slice.
                  */
-                WindowWrap<T> window = new WindowWrap<T>(windowLengthInMs, windowStart, newEmptyBucket(timeMillis));
+                WindowWrap<T> window = new WindowWrap<>(windowLengthInMs, windowStart, newEmptyBucket(timeMillis));
                 if (array.compareAndSet(idx, null, window)) {
                     // Successfully updated, return the created bucket.
                     return window;
@@ -196,7 +196,7 @@ public abstract class LeapArray<T> {
                 }
             } else if (windowStart < old.windowStart()) {
                 // Should not go through here, as the provided time is already behind.
-                return new WindowWrap<T>(windowLengthInMs, windowStart, newEmptyBucket(timeMillis));
+                return new WindowWrap<>(windowLengthInMs, windowStart, newEmptyBucket(timeMillis));
             }
         }
     }
@@ -283,7 +283,7 @@ public abstract class LeapArray<T> {
 
     public List<WindowWrap<T>> list(long validTime) {
         int size = array.length();
-        List<WindowWrap<T>> result = new ArrayList<WindowWrap<T>>(size);
+        List<WindowWrap<T>> result = new ArrayList<>(size);
 
         for (int i = 0; i < size; i++) {
             WindowWrap<T> windowWrap = array.get(i);
@@ -303,7 +303,7 @@ public abstract class LeapArray<T> {
      */
     public List<WindowWrap<T>> listAll() {
         int size = array.length();
-        List<WindowWrap<T>> result = new ArrayList<WindowWrap<T>>(size);
+        List<WindowWrap<T>> result = new ArrayList<>(size);
 
         for (int i = 0; i < size; i++) {
             WindowWrap<T> windowWrap = array.get(i);
@@ -328,10 +328,10 @@ public abstract class LeapArray<T> {
 
     public List<T> values(long timeMillis) {
         if (timeMillis < 0) {
-            return new ArrayList<T>();
+            return new ArrayList<>();
         }
         int size = array.length();
-        List<T> result = new ArrayList<T>(size);
+        List<T> result = new ArrayList<>(size);
 
         for (int i = 0; i < size; i++) {
             WindowWrap<T> windowWrap = array.get(i);

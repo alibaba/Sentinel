@@ -31,7 +31,7 @@ public class GreetingResource {
 
     ExecutorService executor = new ThreadPoolExecutor(5, 5,
             0L, TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<Runnable>());
+            new LinkedBlockingQueue<>());
 
     @GET
     @Path("/txt")

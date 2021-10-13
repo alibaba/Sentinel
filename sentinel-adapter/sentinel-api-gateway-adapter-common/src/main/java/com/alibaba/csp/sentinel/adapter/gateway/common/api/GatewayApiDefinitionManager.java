@@ -115,7 +115,7 @@ public final class GatewayApiDefinitionManager {
         private static synchronized void applyApiUpdateInternal(Set<ApiDefinition> set) {
             if (set == null || set.isEmpty()) {
                 API_MAP.clear();
-                notifyDownstreamListeners(new HashSet<ApiDefinition>());
+                notifyDownstreamListeners(new HashSet<>());
                 return;
             }
             Map<String, ApiDefinition> map = new HashMap<>(set.size());

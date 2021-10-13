@@ -30,7 +30,7 @@ public class MetricWriterTest {
             "metrics.log.2018-03-07.10",
             "metrics.log.2018-03-07.51"
         };
-        ArrayList<String> list = new ArrayList<String>(Arrays.asList(arr));
+        ArrayList<String> list = new ArrayList<>(Arrays.asList(arr));
         Collections.sort(list, MetricWriter.METRIC_FILE_NAME_CMP);
         assertEquals(Arrays.asList(key), list);
     }
@@ -51,7 +51,7 @@ public class MetricWriterTest {
             "metrics.log.pid1234.2018-03-07.10",
             "metrics.log.pid1234.2018-03-07.51"
         };
-        ArrayList<String> list = new ArrayList<String>(Arrays.asList(arr));
+        ArrayList<String> list = new ArrayList<>(Arrays.asList(arr));
         Collections.sort(list, MetricWriter.METRIC_FILE_NAME_CMP);
         assertEquals(Arrays.asList(key), list);
     }

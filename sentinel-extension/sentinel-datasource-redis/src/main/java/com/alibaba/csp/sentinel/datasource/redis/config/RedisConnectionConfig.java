@@ -55,8 +55,8 @@ public class RedisConnectionConfig {
     private String clientName;
     private char[] password;
     private long timeout = DEFAULT_TIMEOUT_MILLISECONDS;
-    private final List<RedisConnectionConfig> redisSentinels = new ArrayList<RedisConnectionConfig>();
-    private final List<RedisConnectionConfig> redisClusters = new ArrayList<RedisConnectionConfig>();
+    private final List<RedisConnectionConfig> redisSentinels = new ArrayList<>();
+    private final List<RedisConnectionConfig> redisClusters = new ArrayList<>();
 
     /**
      * Default empty constructor.
@@ -330,8 +330,8 @@ public class RedisConnectionConfig {
         private String clientName;
         private char[] password;
         private long timeout = DEFAULT_TIMEOUT_MILLISECONDS;
-        private final List<RedisHostAndPort> redisSentinels = new ArrayList<RedisHostAndPort>();
-        private final List<RedisHostAndPort> redisClusters = new ArrayList<RedisHostAndPort>();
+        private final List<RedisHostAndPort> redisSentinels = new ArrayList<>();
+        private final List<RedisHostAndPort> redisClusters = new ArrayList<>();
 
         private Builder() {
         }

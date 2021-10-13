@@ -39,12 +39,12 @@ public class FlowPartialIntegrationTest {
 
     @Before
     public void setUp() throws Exception {
-        FlowRuleManager.loadRules(new ArrayList<FlowRule>());
+        FlowRuleManager.loadRules(new ArrayList<>());
     }
 
     @After
     public void tearDown() throws Exception {
-        FlowRuleManager.loadRules(new ArrayList<FlowRule>());
+        FlowRuleManager.loadRules(new ArrayList<>());
     }
 
     @Test

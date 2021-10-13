@@ -55,14 +55,14 @@ public class SentinelAnnotationInterceptorIntegrationTest {
 
     @Before
     public void setUp() throws Exception {
-        FlowRuleManager.loadRules(new ArrayList<FlowRule>());
+        FlowRuleManager.loadRules(new ArrayList<>());
         ClusterBuilderSlot.resetClusterNodes();
         fooService = container.select(FooService.class).get();
     }
 
     @After
     public void tearDown() throws Exception {
-        FlowRuleManager.loadRules(new ArrayList<FlowRule>());
+        FlowRuleManager.loadRules(new ArrayList<>());
         ClusterBuilderSlot.resetClusterNodes();
     }
 

@@ -260,7 +260,7 @@ public final class ClusterFlowRuleManager {
     }
 
     private static void resetNamespaceFlowIdMapFor(/*@Valid*/ String namespace) {
-        NAMESPACE_FLOW_ID_MAP.put(namespace, new HashSet<Long>());
+        NAMESPACE_FLOW_ID_MAP.put(namespace, new HashSet<>());
     }
 
     /**

@@ -36,12 +36,12 @@ public class DegradeRuleManagerTest {
 
     @Before
     public void setUp() throws Exception {
-        DegradeRuleManager.loadRules(new ArrayList<DegradeRule>());
+        DegradeRuleManager.loadRules(new ArrayList<>());
     }
 
     @After
     public void tearDown() throws Exception {
-        DegradeRuleManager.loadRules(new ArrayList<DegradeRule>());
+        DegradeRuleManager.loadRules(new ArrayList<>());
     }
 
     @Test

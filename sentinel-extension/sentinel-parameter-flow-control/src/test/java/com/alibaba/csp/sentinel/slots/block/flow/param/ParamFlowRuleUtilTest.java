@@ -72,7 +72,7 @@ public class ParamFlowRuleUtilTest {
     public void testParseHotParamExceptionItemsSuccess() {
         // Test for empty list.
         assertEquals(0, ParamFlowRuleUtil.parseHotItems(null).size());
-        assertEquals(0, ParamFlowRuleUtil.parseHotItems(new ArrayList<ParamFlowItem>()).size());
+        assertEquals(0, ParamFlowRuleUtil.parseHotItems(new ArrayList<>()).size());
 
         // Test for boxing objects and primitive types.
         Double valueA = 1.1d;

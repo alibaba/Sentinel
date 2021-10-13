@@ -34,7 +34,7 @@ public class ConnectionGroup {
 
     private final String namespace;
 
-    private final Set<ConnectionDescriptor> connectionSet = Collections.synchronizedSet(new HashSet<ConnectionDescriptor>());
+    private final Set<ConnectionDescriptor> connectionSet = Collections.synchronizedSet(new HashSet<>());
     private final AtomicInteger connectedCount = new AtomicInteger();
 
     public ConnectionGroup(String namespace) {

@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
-import com.alibaba.csp.sentinel.adapter.gateway.common.api.ApiDefinition;
 import com.alibaba.csp.sentinel.adapter.gateway.common.api.GatewayApiDefinitionManager;
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayFlowRule;
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayParamFlowItem;
@@ -335,15 +334,15 @@ public class GatewayParamParserTest {
 
     @Before
     public void setUp() {
-        GatewayApiDefinitionManager.loadApiDefinitions(new HashSet<ApiDefinition>());
-        GatewayRuleManager.loadRules(new HashSet<GatewayFlowRule>());
+        GatewayApiDefinitionManager.loadApiDefinitions(new HashSet<>());
+        GatewayRuleManager.loadRules(new HashSet<>());
         GatewayRegexCache.clear();
     }
 
     @After
     public void tearDown() {
-        GatewayApiDefinitionManager.loadApiDefinitions(new HashSet<ApiDefinition>());
-        GatewayRuleManager.loadRules(new HashSet<GatewayFlowRule>());
+        GatewayApiDefinitionManager.loadApiDefinitions(new HashSet<>());
+        GatewayRuleManager.loadRules(new HashSet<>());
         GatewayRegexCache.clear();
     }
 }

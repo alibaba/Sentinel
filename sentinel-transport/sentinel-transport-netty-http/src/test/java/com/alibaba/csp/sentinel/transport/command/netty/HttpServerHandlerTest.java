@@ -150,7 +150,7 @@ public class HttpServerHandlerTest {
 
     @Test
     public void testFetchActiveRuleCommandSomeFlowRules() {
-        List<FlowRule> rules = new ArrayList<FlowRule>();
+        List<FlowRule> rules = new ArrayList<>();
         FlowRule rule1 = new FlowRule();
         rule1.setResource("key");
         rule1.setCount(20);

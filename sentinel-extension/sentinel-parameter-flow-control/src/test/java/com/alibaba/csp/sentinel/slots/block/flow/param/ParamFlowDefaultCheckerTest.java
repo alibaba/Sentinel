@@ -23,7 +23,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.After;
 import org.junit.Before;
@@ -59,9 +58,9 @@ public class ParamFlowDefaultCheckerTest extends AbstractTimeBasedTest {
         String valueA = "valueA";
         ParameterMetric metric = new ParameterMetric();
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
-        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<>(4000));
         metric.getRuleTokenCounterMap().put(rule,
-            new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+            new ConcurrentLinkedHashMapWrapper<>(4000));
 
         // We mock the time directly to avoid unstable behaviour.
         setCurrentMillis(System.currentTimeMillis());
@@ -97,9 +96,9 @@ public class ParamFlowDefaultCheckerTest extends AbstractTimeBasedTest {
         String valueA = "valueA";
         ParameterMetric metric = new ParameterMetric();
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
-        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<>(4000));
         metric.getRuleTokenCounterMap().put(rule,
-            new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+            new ConcurrentLinkedHashMapWrapper<>(4000));
 
         // We mock the time directly to avoid unstable behaviour.
         setCurrentMillis(System.currentTimeMillis());
@@ -137,9 +136,9 @@ public class ParamFlowDefaultCheckerTest extends AbstractTimeBasedTest {
         String valueA = "valueA";
         ParameterMetric metric = new ParameterMetric();
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
-        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<>(4000));
         metric.getRuleTokenCounterMap().put(rule,
-            new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+            new ConcurrentLinkedHashMapWrapper<>(4000));
 
         // We mock the time directly to avoid unstable behaviour.
         setCurrentMillis(System.currentTimeMillis());
@@ -207,9 +206,9 @@ public class ParamFlowDefaultCheckerTest extends AbstractTimeBasedTest {
         String valueA = "helloWorld";
         ParameterMetric metric = new ParameterMetric();
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
-        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<>(4000));
         metric.getRuleTokenCounterMap().put(rule,
-            new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+            new ConcurrentLinkedHashMapWrapper<>(4000));
 
         // We mock the time directly to avoid unstable behaviour.
         setCurrentMillis(System.currentTimeMillis());
@@ -260,9 +259,9 @@ public class ParamFlowDefaultCheckerTest extends AbstractTimeBasedTest {
         final String valueA = "valueA";
         ParameterMetric metric = new ParameterMetric();
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
-        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<>(4000));
         metric.getRuleTokenCounterMap().put(rule,
-            new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+            new ConcurrentLinkedHashMapWrapper<>(4000));
         int threadCount = 40;
 
         final CountDownLatch waitLatch = new CountDownLatch(threadCount);

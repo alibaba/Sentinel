@@ -33,7 +33,7 @@ public class SentinelApiClientTest {
         // Processor is required because it will determine the final request body including
         // headers before outgoing.
         RequestContent processor = new RequestContent();
-        Map<String, String> params = new HashMap<String, String>();
+        Map<String, String> params = new HashMap<>();
         params.put("a", "1");
         params.put("b", "2+");
         params.put("c", "3 ");

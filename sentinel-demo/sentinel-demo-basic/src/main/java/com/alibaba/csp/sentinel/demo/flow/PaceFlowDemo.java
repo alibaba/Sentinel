@@ -133,7 +133,7 @@ public class PaceFlowDemo {
     }
 
     private static void initPaceFlowRule() {
-        List<FlowRule> rules = new ArrayList<FlowRule>();
+        List<FlowRule> rules = new ArrayList<>();
         FlowRule rule1 = new FlowRule();
         rule1.setResource(KEY);
         rule1.setCount(count);
@@ -151,7 +151,7 @@ public class PaceFlowDemo {
     }
 
     private static void initDefaultFlowRule() {
-        List<FlowRule> rules = new ArrayList<FlowRule>();
+        List<FlowRule> rules = new ArrayList<>();
         FlowRule rule1 = new FlowRule();
         rule1.setResource(KEY);
         rule1.setCount(count);

@@ -28,7 +28,7 @@ import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 
 class StatLogController {
 
-    private static final Map<String, StatLogger> statLoggers = new ConcurrentHashMap<String, StatLogger>();
+    private static final Map<String, StatLogger> statLoggers = new ConcurrentHashMap<>();
 
     private static final int STAT_ENTRY_COOL_DOWN_MILLIS = 200;
 

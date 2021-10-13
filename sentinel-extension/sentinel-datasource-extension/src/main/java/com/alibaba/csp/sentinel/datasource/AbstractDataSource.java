@@ -36,7 +36,7 @@ public abstract class AbstractDataSource<S, T> implements ReadableDataSource<S, 
             throw new IllegalArgumentException("parser can't be null");
         }
         this.parser = parser;
-        this.property = new DynamicSentinelProperty<T>();
+        this.property = new DynamicSentinelProperty<>();
     }
 
     @Override

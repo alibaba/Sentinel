@@ -168,7 +168,7 @@ public class NettyTransportServer implements ClusterTokenServer {
     }
 
     public List<String> listAllClient() {
-        List<String> clients = new ArrayList<String>();
+        List<String> clients = new ArrayList<>();
         List<Connection> connections = connectionPool.listAllConnection();
         for (Connection conn : connections) {
             clients.add(conn.getConnectionKey());

@@ -61,7 +61,7 @@ public class SimpleHttpResponseParser {
         int bg = 0;
         int len;
         String statusLine = null;
-        Map<String, String> headers = new HashMap<String, String>();
+        Map<String, String> headers = new HashMap<>();
         Charset charset = Charset.forName("utf-8");
         int contentLength = -1;
         SimpleHttpResponse response;

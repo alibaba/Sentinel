@@ -41,7 +41,7 @@ public class FetchSimpleClusterNodeCommandHandler implements CommandHandler<Stri
          * type==notZero means nodes whose totalRequest <= 0 will be ignored.
          */
         String type = request.getParam("type");
-        List<NodeVo> list = new ArrayList<NodeVo>();
+        List<NodeVo> list = new ArrayList<>();
         Map<ResourceWrapper, ClusterNode> map = ClusterBuilderSlot.getClusterNodeMap();
         if (map == null) {
             return CommandResponse.ofSuccess(JSONArray.toJSONString(list));

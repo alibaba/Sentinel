@@ -44,7 +44,7 @@ public class ZookeeperDataSourceTest {
         final String remoteAddress = server.getConnectString();
         final String path = "/sentinel-zk-ds-demo/flow-HK";
 
-        ReadableDataSource<String, List<FlowRule>> flowRuleDataSource = new ZookeeperDataSource<List<FlowRule>>(remoteAddress, path,
+        ReadableDataSource<String, List<FlowRule>> flowRuleDataSource = new ZookeeperDataSource<>(remoteAddress, path,
                 new Converter<String, List<FlowRule>>() {
                     @Override
                     public List<FlowRule> convert(String source) {
@@ -100,7 +100,7 @@ public class ZookeeperDataSourceTest {
             zkClient.create().creatingParentContainersIfNeeded().withACL(Collections.singletonList(acl)).forPath(path, null);
         }
 
-        ReadableDataSource<String, List<FlowRule>> flowRuleDataSource = new ZookeeperDataSource<List<FlowRule>>(remoteAddress,
+        ReadableDataSource<String, List<FlowRule>> flowRuleDataSource = new ZookeeperDataSource<>(remoteAddress,
                 authInfoList, groupId, dataId,
                 new Converter<String, List<FlowRule>>() {
                     @Override
@@ -194,7 +194,7 @@ public class ZookeeperDataSourceTest {
         List<AuthInfo> authInfoList = Collections.singletonList(authInfo);
 
 
-        ZookeeperDataSource<List<FlowRule>> flowRuleZkAutoDataSource = new ZookeeperDataSource<List<FlowRule>>(remoteAddress,
+        ZookeeperDataSource<List<FlowRule>> flowRuleZkAutoDataSource = new ZookeeperDataSource<>(remoteAddress,
                 authInfoList, groupId, flowDataId,
                 new Converter<String, List<FlowRule>>() {
                     @Override
@@ -204,7 +204,7 @@ public class ZookeeperDataSourceTest {
                     }
                 });
 
-        ZookeeperDataSource<List<DegradeRule>> degradeRuleZkAutoDataSource = new ZookeeperDataSource<List<DegradeRule>>(remoteAddress,
+        ZookeeperDataSource<List<DegradeRule>> degradeRuleZkAutoDataSource = new ZookeeperDataSource<>(remoteAddress,
                 authInfoList, groupId, degradeDataId,
                 new Converter<String, List<DegradeRule>>() {
                     @Override

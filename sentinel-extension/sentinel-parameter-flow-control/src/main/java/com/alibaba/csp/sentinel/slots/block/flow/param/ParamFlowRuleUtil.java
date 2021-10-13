@@ -77,7 +77,7 @@ public final class ParamFlowRuleUtil {
     public static void fillExceptionFlowItems(ParamFlowRule rule) {
         if (rule != null) {
             if (rule.getParamFlowItemList() == null) {
-                rule.setParamFlowItemList(new ArrayList<ParamFlowItem>());
+                rule.setParamFlowItemList(new ArrayList<>());
             }
 
             Map<Object, Integer> itemMap = parseHotItems(rule.getParamFlowItemList());

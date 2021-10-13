@@ -33,7 +33,7 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
  */
 public class HeartbeatMessage {
 
-    private final Map<String, String> message = new HashMap<String, String>();
+    private final Map<String, String> message = new HashMap<>();
 
     public HeartbeatMessage() {
         message.put("hostname", HostNameUtil.getHostName());

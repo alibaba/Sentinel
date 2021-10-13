@@ -95,7 +95,7 @@ public class ClusterMetricNodeGenerator {
             return new ClusterMetricNode().setFlowId(flowId)
                 .setResourceName(rule.getResource())
                 .setTimestamp(TimeUtil.currentTimeMillis())
-                .setTopParams(new HashMap<Object, Double>(0));
+                .setTopParams(new HashMap<>(0));
         }
         return new ClusterMetricNode()
             .setFlowId(flowId)

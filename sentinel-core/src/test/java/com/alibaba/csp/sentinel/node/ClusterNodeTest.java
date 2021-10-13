@@ -76,7 +76,7 @@ public class ClusterNodeTest {
 
             // Store all distinct nodes by calling ClusterNode#getOrCreateOriginNode.
             // Here we need a thread-safe concurrent set (created from ConcurrentHashMap).
-            final Set<Node> createdNodes = Collections.newSetFromMap(new ConcurrentHashMap<Node, Boolean>());
+            final Set<Node> createdNodes = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
             // 10 threads, 3 origins, 20 tasks (calling 20 times of ClusterNode#getOrCreateOriginNode concurrently)
             final ExecutorService es = Executors.newFixedThreadPool(10);
@@ -84,7 +84,7 @@ public class ClusterNodeTest {
             int taskCount = 20;
             final CountDownLatch latch = new CountDownLatch(taskCount);
 
-            List<Callable<Object>> tasks = new ArrayList<Callable<Object>>(taskCount);
+            List<Callable<Object>> tasks = new ArrayList<>(taskCount);
             for (int i = 0; i < taskCount; i++) {
                 final int index = i % origins.size();
                 tasks.add(new Callable<Object>() {

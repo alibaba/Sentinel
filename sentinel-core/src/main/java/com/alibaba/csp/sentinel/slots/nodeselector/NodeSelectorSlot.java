@@ -130,7 +130,7 @@ public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
     /**
      * {@link DefaultNode}s of the same resource in different context.
      */
-    private volatile Map<String, DefaultNode> map = new HashMap<String, DefaultNode>(10);
+    private volatile Map<String, DefaultNode> map = new HashMap<>(10);
 
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, Object obj, int count, boolean prioritized, Object... args)
@@ -159,7 +159,7 @@ public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
                 node = map.get(context.getName());
                 if (node == null) {
                     node = new DefaultNode(resourceWrapper, null);
-                    HashMap<String, DefaultNode> cacheMap = new HashMap<String, DefaultNode>(map.size());
+                    HashMap<String, DefaultNode> cacheMap = new HashMap<>(map.size());
                     cacheMap.putAll(map);
                     cacheMap.put(context.getName(), node);
                     map = cacheMap;

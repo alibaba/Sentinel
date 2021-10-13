@@ -44,12 +44,12 @@ public class CircuitBreakingIntegrationTest extends AbstractTimeBasedTest {
 
     @Before
     public void setUp() {
-        DegradeRuleManager.loadRules(new ArrayList<DegradeRule>());
+        DegradeRuleManager.loadRules(new ArrayList<>());
     }
 
     @After
     public void tearDown() throws Exception {
-        DegradeRuleManager.loadRules(new ArrayList<DegradeRule>());
+        DegradeRuleManager.loadRules(new ArrayList<>());
     }
 
     @Test

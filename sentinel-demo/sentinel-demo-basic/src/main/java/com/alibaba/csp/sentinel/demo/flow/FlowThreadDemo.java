@@ -85,7 +85,7 @@ public class FlowThreadDemo {
     }
 
     private static void initFlowRule() {
-        List<FlowRule> rules = new ArrayList<FlowRule>();
+        List<FlowRule> rules = new ArrayList<>();
         FlowRule rule1 = new FlowRule();
         rule1.setResource("methodA");
         // set limit concurrent thread for 'methodA' to 20

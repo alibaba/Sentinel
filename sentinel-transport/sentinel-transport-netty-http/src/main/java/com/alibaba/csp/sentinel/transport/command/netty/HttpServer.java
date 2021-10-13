@@ -43,7 +43,7 @@ public final class HttpServer {
 
     private Channel channel;
 
-    final static Map<String, CommandHandler> handlerMap = new ConcurrentHashMap<String, CommandHandler>();
+    final static Map<String, CommandHandler> handlerMap = new ConcurrentHashMap<>();
 
     public void start() throws Exception {
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);

@@ -263,7 +263,7 @@ public final class ParamFlowChecker {
         if (value instanceof Collection) {
             return (Collection<Object>)value;
         } else if (value.getClass().isArray()) {
-            List<Object> params = new ArrayList<Object>();
+            List<Object> params = new ArrayList<>();
             int length = Array.getLength(value);
             for (int i = 0; i < length; i++) {
                 Object param = Array.get(value, i);

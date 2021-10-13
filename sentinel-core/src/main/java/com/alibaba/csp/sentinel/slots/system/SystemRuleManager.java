@@ -86,7 +86,7 @@ public final class SystemRuleManager {
 
     private static SystemStatusListener statusListener = null;
     private final static SystemPropertyListener listener = new SystemPropertyListener();
-    private static SentinelProperty<List<SystemRule>> currentProperty = new DynamicSentinelProperty<List<SystemRule>>();
+    private static SentinelProperty<List<SystemRule>> currentProperty = new DynamicSentinelProperty<>();
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private final static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1,
@@ -130,7 +130,7 @@ public final class SystemRuleManager {
      */
     public static List<SystemRule> getRules() {
 
-        List<SystemRule> result = new ArrayList<SystemRule>();
+        List<SystemRule> result = new ArrayList<>();
         if (!checkSystemStatus.get()) {
             return result;
         }

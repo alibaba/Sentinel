@@ -39,7 +39,7 @@ final class StatRollingData {
 
     StatRollingData(StatLogger statLogger, int initialCapacity, long timeSlot, long rollingTimeMillis) {
         this(statLogger, timeSlot, rollingTimeMillis,
-            new ConcurrentHashMap<StatEntry, StatEntryFunc>(
+            new ConcurrentHashMap<>(
                 Math.min(initialCapacity, statLogger.getMaxEntryCount())));
     }
 
@@ -68,7 +68,7 @@ final class StatRollingData {
                     }
                 } else {
                     Map<StatEntry, StatEntryFunc> cloneStatMap =
-                        new HashMap<StatEntry, StatEntryFunc>(statMap);
+                        new HashMap<>(statMap);
                     statMap.clear();
 
                     func = factory.create();

@@ -97,7 +97,7 @@ public class ParameterMetric {
             synchronized (lock) {
                 if (ruleTimeCounters.get(rule) == null) {
                     long size = Math.min(BASE_PARAM_MAX_CAPACITY * rule.getDurationInSec(), TOTAL_MAX_CAPACITY);
-                    ruleTimeCounters.put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(size));
+                    ruleTimeCounters.put(rule, new ConcurrentLinkedHashMapWrapper<>(size));
                 }
             }
         }
@@ -106,7 +106,7 @@ public class ParameterMetric {
             synchronized (lock) {
                 if (ruleTokenCounter.get(rule) == null) {
                     long size = Math.min(BASE_PARAM_MAX_CAPACITY * rule.getDurationInSec(), TOTAL_MAX_CAPACITY);
-                    ruleTokenCounter.put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(size));
+                    ruleTokenCounter.put(rule, new ConcurrentLinkedHashMapWrapper<>(size));
                 }
             }
         }
@@ -115,7 +115,7 @@ public class ParameterMetric {
             synchronized (lock) {
                 if (threadCountMap.get(rule.getParamIdx()) == null) {
                     threadCountMap.put(rule.getParamIdx(),
-                        new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(THREAD_COUNT_MAX_CAPACITY));
+                        new ConcurrentLinkedHashMapWrapper<>(THREAD_COUNT_MAX_CAPACITY));
                 }
             }
         }

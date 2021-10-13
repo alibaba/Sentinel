@@ -189,7 +189,7 @@ public class MetricWriter {
     }
 
     private String nextFileNameOfDay(long time) {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         File baseFile = new File(baseDir);
         DateFormat fileNameDf = new SimpleDateFormat("yyyy-MM-dd");
         String dateStr = fileNameDf.format(new Date(time));
@@ -279,7 +279,7 @@ public class MetricWriter {
      * @throws Exception
      */
     static List<String> listMetricFiles(String baseDir, String baseFileName) throws Exception {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         File baseFile = new File(baseDir);
         File[] files = baseFile.listFiles();
         if (files == null) {

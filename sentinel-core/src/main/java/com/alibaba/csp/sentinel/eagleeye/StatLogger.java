@@ -46,7 +46,7 @@ public final class StatLogger {
         this.entryDelimiter = entryDelimiter;
         this.keyDelimiter = keyDelimiter;
         this.valueDelimiter = valueDelimiter;
-        this.ref = new AtomicReference<StatRollingData>();
+        this.ref = new AtomicReference<>();
         rolling();
     }
 

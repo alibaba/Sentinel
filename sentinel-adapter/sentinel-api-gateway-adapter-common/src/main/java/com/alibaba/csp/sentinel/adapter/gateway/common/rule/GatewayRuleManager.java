@@ -178,7 +178,7 @@ public final class GatewayRuleManager {
 
         private synchronized void applyGatewayRuleInternal(Set<GatewayFlowRule> conf) {
             if (conf == null || conf.isEmpty()) {
-                applyToConvertedParamMap(new HashSet<ParamFlowRule>());
+                applyToConvertedParamMap(new HashSet<>());
                 GATEWAY_RULE_MAP.clear();
                 return;
             }

@@ -45,7 +45,7 @@ public class CommandResponse<R> {
      * @return constructed server response
      */
     public static <T> CommandResponse<T> ofSuccess(T result) {
-        return new CommandResponse<T>(result);
+        return new CommandResponse<>(result);
     }
 
     /**
@@ -55,7 +55,7 @@ public class CommandResponse<R> {
      * @return constructed server response
      */
     public static <T> CommandResponse<T> ofFailure(Throwable ex) {
-        return new CommandResponse<T>(null, false, ex);
+        return new CommandResponse<>(null, false, ex);
     }
 
     /**
@@ -66,7 +66,7 @@ public class CommandResponse<R> {
      * @return constructed server response
      */
     public static <T> CommandResponse<T> ofFailure(Throwable ex, T result) {
-        return new CommandResponse<T>(result, false, ex);
+        return new CommandResponse<>(result, false, ex);
     }
 
     public boolean isSuccess() {

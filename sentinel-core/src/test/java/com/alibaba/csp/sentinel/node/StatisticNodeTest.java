@@ -217,10 +217,10 @@ public class StatisticNodeTest {
         StatisticNode statisticNode = new StatisticNode();
         ExecutorService bizEs1 = new ThreadPoolExecutor(THREAD_COUNT, THREAD_COUNT,
                 0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>());
+                new LinkedBlockingQueue<>());
         ExecutorService bizEs2 = new ThreadPoolExecutor(THREAD_COUNT, THREAD_COUNT,
                 0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>());
+                new LinkedBlockingQueue<>());
         int taskCount = 100;
         for (int i = 0; i < taskCount; i++) {
             int op = i % 2;

@@ -44,7 +44,7 @@ public final class ClusterStateManager {
     private static volatile int mode = CLUSTER_NOT_STARTED;
     private static volatile long lastModified = -1;
 
-    private static volatile SentinelProperty<Integer> stateProperty = new DynamicSentinelProperty<Integer>();
+    private static volatile SentinelProperty<Integer> stateProperty = new DynamicSentinelProperty<>();
     private static final PropertyListener<Integer> PROPERTY_LISTENER = new ClusterStatePropertyListener();
 
     static {

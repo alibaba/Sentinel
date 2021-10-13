@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -82,14 +81,14 @@ public class ParamFlowCheckerTest {
         String valueD = "valueD";
 
         // Directly set parsed map for test.
-        Map<Object, Integer> map = new HashMap<Object, Integer>();
+        Map<Object, Integer> map = new HashMap<>();
         map.put(valueB, thresholdB);
         map.put(valueD, thresholdD);
         rule.setParsedHotItems(map);
 
         ParameterMetric metric = new ParameterMetric();
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
-        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<>(4000));
 
         assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
         assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueB));
@@ -115,7 +114,7 @@ public class ParamFlowCheckerTest {
         String valueD = "valueD";
 
         // Directly set parsed map for test.
-        Map<Object, Integer> map = new HashMap<Object, Integer>();
+        Map<Object, Integer> map = new HashMap<>();
         map.put(valueB, thresholdB);
         map.put(valueD, thresholdD);
         rule.setParsedHotItems(map);
@@ -157,8 +156,8 @@ public class ParamFlowCheckerTest {
         List<String> list = Arrays.asList(v1, v2, v3);
         ParameterMetric metric = new ParameterMetric();
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
-        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
-        metric.getRuleTokenCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<>(4000));
+        metric.getRuleTokenCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<>(4000));
 
         assertTrue(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, list));
         assertFalse(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, list));
@@ -180,7 +179,7 @@ public class ParamFlowCheckerTest {
         Object arr = new String[]{v1, v2, v3};
         ParameterMetric metric = new ParameterMetric();
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
-        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<>(4000));
 
         assertTrue(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, arr));
         assertFalse(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, arr));
@@ -214,8 +213,8 @@ public class ParamFlowCheckerTest {
         Object[] args = new Object[]{new User(1, "Bob", "Hangzhou"), 10, "Demo"};
         ParameterMetric metric = new ParameterMetric();
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
-        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
-        metric.getRuleTokenCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<>(4000));
+        metric.getRuleTokenCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<>(4000));
 
         assertTrue(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, args));
         assertFalse(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, args));

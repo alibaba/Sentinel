@@ -43,7 +43,7 @@ public class ParamMapBucket {
         RollingParamEvent[] events = RollingParamEvent.values();
         this.data = new CacheMap[events.length];
         for (RollingParamEvent event : events) {
-            data[event.ordinal()] = new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(capacity);
+            data[event.ordinal()] = new ConcurrentLinkedHashMapWrapper<>(capacity);
         }
     }
 

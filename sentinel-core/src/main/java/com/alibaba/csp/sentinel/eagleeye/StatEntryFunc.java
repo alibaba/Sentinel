@@ -117,8 +117,8 @@ class StatEntryFuncCountAndSum implements StatEntryFunc {
 
 class StatEntryFuncMinMax implements StatEntryFunc {
 
-    private AtomicReference<ValueRef> max = new AtomicReference<ValueRef>(new ValueRef(Long.MIN_VALUE, null));
-    private AtomicReference<ValueRef> min = new AtomicReference<ValueRef>(new ValueRef(Long.MAX_VALUE, null));
+    private AtomicReference<ValueRef> max = new AtomicReference<>(new ValueRef(Long.MIN_VALUE, null));
+    private AtomicReference<ValueRef> min = new AtomicReference<>(new ValueRef(Long.MAX_VALUE, null));
 
     @Override
     public void appendTo(StringBuilder appender, char delimiter) {

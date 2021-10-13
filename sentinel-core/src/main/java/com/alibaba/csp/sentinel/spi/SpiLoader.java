@@ -79,10 +79,10 @@ public final class SpiLoader<S> {
     private static final ConcurrentHashMap<String, SpiLoader> SPI_LOADER_MAP = new ConcurrentHashMap<>();
 
     // Cache the classes of Provider
-    private final List<Class<? extends S>> classList = Collections.synchronizedList(new ArrayList<Class<? extends S>>());
+    private final List<Class<? extends S>> classList = Collections.synchronizedList(new ArrayList<>());
 
     // Cache the sorted classes of Provider
-    private final List<Class<? extends S>> sortedClassList = Collections.synchronizedList(new ArrayList<Class<? extends S>>());
+    private final List<Class<? extends S>> sortedClassList = Collections.synchronizedList(new ArrayList<>());
 
     /**
      * Cache the classes of Provider, key: aliasName, value: class of Provider.

@@ -164,9 +164,9 @@ public final class TimeUtil implements Runnable {
             writes += windowWrap.value().getWrites().longValue();
         }
         if (cnt < 1) {
-            return new Tuple2<Long, Long>(0L, 0L);
+            return new Tuple2<>(0L, 0L);
         }
-        return new Tuple2<Long, Long>(reads / cnt, writes / cnt);
+        return new Tuple2<>(reads / cnt, writes / cnt);
     }
 
     /**
