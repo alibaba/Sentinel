@@ -33,11 +33,10 @@ public class ParamFlowRequestDataWriterTest {
         final int maxSize = 15;
         ParamFlowRequestDataWriter writer = new ParamFlowRequestDataWriter(maxSize);
 
-        ArrayList<Object> params = new ArrayList<Object>() {{
-            add(1);
-            add(64);
-            add(3);
-        }};
+        ArrayList<Object> params = new ArrayList<Object>();
+        params.add(1);
+        params.add(64);
+        params.add(3);
 
         List<Object> validParams = writer.resolveValidParams(params);
         assertTrue(validParams.contains(1) && validParams.contains(64) && validParams.contains(3));

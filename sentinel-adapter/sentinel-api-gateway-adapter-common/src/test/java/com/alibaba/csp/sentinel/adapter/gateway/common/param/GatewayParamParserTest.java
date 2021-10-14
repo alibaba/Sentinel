@@ -96,54 +96,54 @@ public class GatewayParamParserTest {
         final String paramName = "p";
         final String cookieName = "myCookie";
         GatewayFlowRule routeRuleNoParam = new GatewayFlowRule(routeId1)
-            .setCount(10)
-            .setIntervalSec(10);
+                .setCount(10)
+                .setIntervalSec(10);
         GatewayFlowRule routeRule1 = new GatewayFlowRule(routeId1)
-            .setCount(2)
-            .setIntervalSec(2)
-            .setBurst(2)
-            .setParamItem(new GatewayParamFlowItem()
-                .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_CLIENT_IP)
-            );
+                .setCount(2)
+                .setIntervalSec(2)
+                .setBurst(2)
+                .setParamItem(new GatewayParamFlowItem()
+                        .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_CLIENT_IP)
+                );
         GatewayFlowRule routeRule2 = new GatewayFlowRule(routeId1)
-            .setCount(10)
-            .setIntervalSec(1)
-            .setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER)
-            .setMaxQueueingTimeoutMs(600)
-            .setParamItem(new GatewayParamFlowItem()
-                .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER)
-                .setFieldName(headerName)
-            );
+                .setCount(10)
+                .setIntervalSec(1)
+                .setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER)
+                .setMaxQueueingTimeoutMs(600)
+                .setParamItem(new GatewayParamFlowItem()
+                        .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER)
+                        .setFieldName(headerName)
+                );
         GatewayFlowRule routeRule3 = new GatewayFlowRule(routeId1)
-            .setCount(20)
-            .setIntervalSec(1)
-            .setBurst(5)
-            .setParamItem(new GatewayParamFlowItem()
-                .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_URL_PARAM)
-                .setFieldName(paramName)
-            );
+                .setCount(20)
+                .setIntervalSec(1)
+                .setBurst(5)
+                .setParamItem(new GatewayParamFlowItem()
+                        .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_URL_PARAM)
+                        .setFieldName(paramName)
+                );
         GatewayFlowRule routeRule4 = new GatewayFlowRule(routeId1)
-            .setCount(120)
-            .setIntervalSec(10)
-            .setBurst(30)
-            .setParamItem(new GatewayParamFlowItem()
-                .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HOST)
-            );
+                .setCount(120)
+                .setIntervalSec(10)
+                .setBurst(30)
+                .setParamItem(new GatewayParamFlowItem()
+                        .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HOST)
+                );
         GatewayFlowRule routeRule5 = new GatewayFlowRule(routeId1)
-            .setCount(50)
-            .setIntervalSec(30)
-            .setParamItem(new GatewayParamFlowItem()
-                .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_COOKIE)
-                .setFieldName(cookieName)
-            );
+                .setCount(50)
+                .setIntervalSec(30)
+                .setParamItem(new GatewayParamFlowItem()
+                        .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_COOKIE)
+                        .setFieldName(cookieName)
+                );
         GatewayFlowRule apiRule1 = new GatewayFlowRule(api1)
-            .setResourceMode(SentinelGatewayConstants.RESOURCE_MODE_CUSTOM_API_NAME)
-            .setCount(5)
-            .setIntervalSec(1)
-            .setParamItem(new GatewayParamFlowItem()
-                .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_URL_PARAM)
-                .setFieldName(paramName)
-            );
+                .setResourceMode(SentinelGatewayConstants.RESOURCE_MODE_CUSTOM_API_NAME)
+                .setCount(5)
+                .setIntervalSec(1)
+                .setParamItem(new GatewayParamFlowItem()
+                        .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_URL_PARAM)
+                        .setFieldName(paramName)
+                );
         rules.add(routeRule1);
         rules.add(routeRule2);
         rules.add(routeRule3);
@@ -160,9 +160,9 @@ public class GatewayParamParserTest {
         final String expectedCookieValue1 = "Sentinel-Foo";
 
         mockClientHostAddress(itemParser, expectedAddress);
-        Map<String, String> expectedHeaders = new HashMap<String, String>() {{
-            put(headerName, expectedHeaderValue1); put("Host", expectedHost);
-        }};
+        Map<String, String> expectedHeaders = new HashMap<String, String>();
+        expectedHeaders.put(headerName, expectedHeaderValue1);
+        expectedHeaders.put("Host", expectedHost);
         mockHeaders(itemParser, expectedHeaders);
         mockSingleUrlParam(itemParser, paramName, expectedUrlParamValue1);
         mockSingleCookie(itemParser, cookieName, expectedCookieValue1);

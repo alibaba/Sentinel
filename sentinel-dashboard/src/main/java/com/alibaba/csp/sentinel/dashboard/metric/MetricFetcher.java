@@ -89,7 +89,7 @@ public class MetricFetcher {
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private ScheduledExecutorService fetchScheduleService = Executors.newScheduledThreadPool(1,
-        new NamedThreadFactory("sentinel-dashboard-metrics-fetch-task", true));
+            new NamedThreadFactory("sentinel-dashboard-metrics-fetch-task", true));
     private ExecutorService fetchService;
     private ExecutorService fetchWorker;
 
@@ -99,27 +99,27 @@ public class MetricFetcher {
         int queueSize = 2048;
         RejectedExecutionHandler handler = new DiscardPolicy();
         fetchService = new ThreadPoolExecutor(cores, cores,
-            keepAliveTime, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(queueSize),
-            new NamedThreadFactory("sentinel-dashboard-metrics-fetchService", true), handler);
+                keepAliveTime, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(queueSize),
+                new NamedThreadFactory("sentinel-dashboard-metrics-fetchService", true), handler);
         fetchWorker = new ThreadPoolExecutor(cores, cores,
-            keepAliveTime, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(queueSize),
-            new NamedThreadFactory("sentinel-dashboard-metrics-fetchWorker",true), handler);
+                keepAliveTime, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(queueSize),
+                new NamedThreadFactory("sentinel-dashboard-metrics-fetchWorker", true), handler);
         IOReactorConfig ioConfig = IOReactorConfig.custom()
-            .setConnectTimeout(3000)
-            .setSoTimeout(3000)
-            .setIoThreadCount(Runtime.getRuntime().availableProcessors() * 2)
-            .build();
+                .setConnectTimeout(3000)
+                .setSoTimeout(3000)
+                .setIoThreadCount(Runtime.getRuntime().availableProcessors() * 2)
+                .build();
 
         httpclient = HttpAsyncClients.custom()
-            .setRedirectStrategy(new DefaultRedirectStrategy() {
-                @Override
-                protected boolean isRedirectable(final String method) {
-                    return false;
-                }
-            }).setMaxConnTotal(4000)
-            .setMaxConnPerRoute(1000)
-            .setDefaultIOReactorConfig(ioConfig)
-            .build();
+                .setRedirectStrategy(new DefaultRedirectStrategy() {
+                    @Override
+                    protected boolean isRedirectable(final String method) {
+                        return false;
+                    }
+                }).setMaxConnTotal(4000)
+                .setMaxConnPerRoute(1000)
+                .setDefaultIOReactorConfig(ioConfig)
+                .build();
         httpclient.start();
         start();
     }
@@ -181,7 +181,7 @@ public class MetricFetcher {
         }
         Set<MachineInfo> machines = appInfo.getMachines();
         logger.debug("enter fetchOnce(" + app + "), machines.size()=" + machines.size()
-            + ", time intervalMs [" + startTime + ", " + endTime + "]");
+                + ", time intervalMs [" + startTime + ", " + endTime + "]");
         if (machines.isEmpty()) {
             return;
         }
@@ -208,7 +208,7 @@ public class MetricFetcher {
                 continue;
             }
             final String url = "http://" + machine.getIp() + ":" + machine.getPort() + "/" + METRIC_URL_PATH
-                + "?startTime=" + startTime + "&endTime=" + endTime + "&refetch=" + false;
+                    + "?startTime=" + startTime + "&endTime=" + endTime + "&refetch=" + false;
             final HttpGet httpGet = new HttpGet(url);
             httpGet.setHeader(HTTP.CONN_DIRECTIVE, HTTP.CONN_CLOSE);
             httpclient.execute(httpGet, new FutureCallback<HttpResponse>() {
@@ -363,11 +363,13 @@ public class MetricFetcher {
         return RES_EXCLUSION_SET.contains(resource);
     }
 
-    private static final Set<String> RES_EXCLUSION_SET = new HashSet<String>() {{
-       add(Constants.TOTAL_IN_RESOURCE_NAME);
-       add(Constants.SYSTEM_LOAD_RESOURCE_NAME);
-       add(Constants.CPU_USAGE_RESOURCE_NAME);
-    }};
+    private static final Set<String> RES_EXCLUSION_SET;
+    static {
+        RES_EXCLUSION_SET = new HashSet<>();
+        RES_EXCLUSION_SET.add(Constants.TOTAL_IN_RESOURCE_NAME);
+        RES_EXCLUSION_SET.add(Constants.SYSTEM_LOAD_RESOURCE_NAME);
+        RES_EXCLUSION_SET.add(Constants.CPU_USAGE_RESOURCE_NAME);
+    }
 
 }
 
