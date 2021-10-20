@@ -74,12 +74,9 @@
         <module>sentinel-adapter</module>
         <module>sentinel-cluster</module>
         <module>sentinel-logging</module>
-
         <module>sentinel-dashboard</module>
-
         <module>sentinel-demo</module>
         <module>sentinel-benchmark</module>
-
     </modules>
 
     <dependencyManagement>
