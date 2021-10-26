@@ -60,9 +60,8 @@ public final class ParamFlowChecker {
         Object value = args[paramIdx];
 
         // Assign value with the result of paramFlowKey method
-        if (value instanceof ParamFlowArgument) {
-            value = ((ParamFlowArgument) value).paramFlowKey();
-        }
+        value = ParamFlowRuleUtil.getRealArg(value);
+
         // If value is null, then pass
         if (value == null) {
             return true;

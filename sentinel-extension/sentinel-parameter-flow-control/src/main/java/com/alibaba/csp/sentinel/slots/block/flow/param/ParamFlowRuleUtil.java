@@ -239,6 +239,13 @@ public final class ParamFlowRuleUtil {
         return value;
     }
 
+    static Object getRealArg(Object arg) {
+        if (arg instanceof ParamFlowArgument) {
+            return ((ParamFlowArgument) arg).paramFlowKey();
+        }
+        return arg;
+    }
+
     private static final Function<ParamFlowRule, String> EXTRACT_RESOURCE = new Function<ParamFlowRule, String>() {
         @Override
         public String apply(ParamFlowRule rule) {

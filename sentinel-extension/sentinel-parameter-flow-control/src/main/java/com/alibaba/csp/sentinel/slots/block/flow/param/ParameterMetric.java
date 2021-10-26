@@ -139,44 +139,32 @@ public class ParameterMetric {
                     continue;
                 }
                 if (Collection.class.isAssignableFrom(arg.getClass())) {
-
                     for (Object value : ((Collection)arg)) {
-                        AtomicInteger oldValue = threadCount.putIfAbsent(value, new AtomicInteger());
-                        if (oldValue != null) {
-                            int currentValue = oldValue.decrementAndGet();
-                            if (currentValue <= 0) {
-                                threadCount.remove(value);
-                            }
-                        }
-
+                        doDecreaseThreadCount(threadCount, value);
                     }
                 } else if (arg.getClass().isArray()) {
                     int length = Array.getLength(arg);
                     for (int i = 0; i < length; i++) {
-                        Object value = Array.get(arg, i);
-                        AtomicInteger oldValue = threadCount.putIfAbsent(value, new AtomicInteger());
-                        if (oldValue != null) {
-                            int currentValue = oldValue.decrementAndGet();
-                            if (currentValue <= 0) {
-                                threadCount.remove(value);
-                            }
-                        }
-
+                        doDecreaseThreadCount(threadCount, Array.get(arg, i));
                     }
                 } else {
-                    AtomicInteger oldValue = threadCount.putIfAbsent(arg, new AtomicInteger());
-                    if (oldValue != null) {
-                        int currentValue = oldValue.decrementAndGet();
-                        if (currentValue <= 0) {
-                            threadCount.remove(arg);
-                        }
-                    }
-
+                    doDecreaseThreadCount(threadCount, arg);
                 }
 
             }
         } catch (Throwable e) {
             RecordLog.warn("[ParameterMetric] Param exception", e);
+        }
+    }
+
+    private void doDecreaseThreadCount(CacheMap<Object, AtomicInteger> threadCount, Object arg) {
+        Object realArg = ParamFlowRuleUtil.getRealArg(arg);
+        AtomicInteger oldValue = threadCount.putIfAbsent(realArg, new AtomicInteger());
+        if (oldValue != null) {
+            int currentValue = oldValue.decrementAndGet();
+            if (currentValue <= 0) {
+                threadCount.remove(realArg);
+            }
         }
     }
 
@@ -201,40 +189,28 @@ public class ParameterMetric {
 
                 if (Collection.class.isAssignableFrom(arg.getClass())) {
                     for (Object value : ((Collection)arg)) {
-                        AtomicInteger oldValue = threadCount.putIfAbsent(value, new AtomicInteger());
-                        if (oldValue != null) {
-                            oldValue.incrementAndGet();
-                        } else {
-                            threadCount.put(value, new AtomicInteger(1));
-                        }
-
+                        doAddThreadCount(threadCount, value);
                     }
                 } else if (arg.getClass().isArray()) {
                     int length = Array.getLength(arg);
                     for (int i = 0; i < length; i++) {
-                        Object value = Array.get(arg, i);
-                        AtomicInteger oldValue = threadCount.putIfAbsent(value, new AtomicInteger());
-                        if (oldValue != null) {
-                            oldValue.incrementAndGet();
-                        } else {
-                            threadCount.put(value, new AtomicInteger(1));
-                        }
-
+                        doAddThreadCount(threadCount, Array.get(arg, i));
                     }
                 } else {
-                    AtomicInteger oldValue = threadCount.putIfAbsent(arg, new AtomicInteger());
-                    if (oldValue != null) {
-                        oldValue.incrementAndGet();
-                    } else {
-                        threadCount.put(arg, new AtomicInteger(1));
-                    }
-
+                    doAddThreadCount(threadCount, arg);
                 }
 
             }
 
         } catch (Throwable e) {
             RecordLog.warn("[ParameterMetric] Param exception", e);
+        }
+    }
+
+    private void doAddThreadCount(CacheMap<Object, AtomicInteger> threadCount, Object arg) {
+        AtomicInteger oldValue = threadCount.putIfAbsent(ParamFlowRuleUtil.getRealArg(arg), new AtomicInteger(1));
+        if (oldValue != null) {
+            oldValue.incrementAndGet();
         }
     }
 
