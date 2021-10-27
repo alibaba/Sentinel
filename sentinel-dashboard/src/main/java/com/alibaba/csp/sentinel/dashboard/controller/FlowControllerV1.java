@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
+import com.alibaba.csp.sentinel.dashboard.repository.rule.nacos.NacosRuleRepositoryAdapter;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
@@ -56,7 +57,7 @@ public class FlowControllerV1 {
     private final Logger logger = LoggerFactory.getLogger(FlowControllerV1.class);
 
     @Autowired
-    private InMemoryRuleRepositoryAdapter<FlowRuleEntity> repository;
+    private NacosRuleRepositoryAdapter<FlowRuleEntity> repository;
 
     @Autowired
     private SentinelApiClient sentinelApiClient;
