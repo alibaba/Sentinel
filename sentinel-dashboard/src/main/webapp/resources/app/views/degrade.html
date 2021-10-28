@@ -4,7 +4,7 @@
   </div>
   <div class="col-md-6">
     <button class="btn btn-default-inverse" style="float: right; margin-right: 10px;" ng-disabled="!macInputModel" ng-click="addNewRule()">
-      <i class="fa fa-plus"></i>&nbsp;&nbsp;新增降级规则</button>
+      <i class="fa fa-plus"></i>&nbsp;&nbsp;新增熔断规则</button>
   </div>
 </div>
 
@@ -15,7 +15,7 @@
     <div class="col-md-12">
       <div class="card">
         <div class="inputs-header">
-          <span class="brand" style="font-size: 13px;">降级规则</span>
+          <span class="brand" style="font-size: 13px;">熔断规则</span>
           <!--<button class="btn btn-danger" style="float: right;margin-right: 10px;height: 30px;font-size: 12px;" ng-click="disableAll()">全部禁用</button>-->
           <button class="btn btn-primary" style="float: right; margin-right: 10px; height: 30px;font-size: 12px;" ng-click="getMachineRules()">刷新</button>
           <input class="form-control witdh-200" placeholder="关键字" ng-model="searchKey">
@@ -34,7 +34,7 @@
                   资源名
                 </td>
                 <td style="width: 10%;">
-                  降级策略
+                  熔断策略
                 </td>
                 <td style="width: 10%;">
                   阈值
