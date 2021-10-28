@@ -20,6 +20,7 @@ import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboAdapterGlobalConfig;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.util.StringUtil;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.Invocation;
@@ -62,7 +63,7 @@ public class SentinelDubboProviderFilter extends BaseSentinelDubboFilter {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         // Get origin caller.
         String origin = DubboAdapterGlobalConfig.getOriginParser().parse(invoker, invocation);
-        if (null == origin) {
+        if (StringUtil.isBlank(origin)) {
             origin = "";
         }
         Entry interfaceEntry = null;
@@ -78,9 +79,9 @@ public class SentinelDubboProviderFilter extends BaseSentinelDubboFilter {
             methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN,
                 invocation.getArguments());
             Result result = invoker.invoke(invocation);
-            if (result.hasException()) {
-                Tracer.traceEntry(result.getException(), interfaceEntry);
-                Tracer.traceEntry(result.getException(), methodEntry);
+            if (result.getAppResponse().hasException()) {
+                Tracer.traceEntry(result.getAppResponse().getException(), interfaceEntry);
+                Tracer.traceEntry(result.getAppResponse().getException(), methodEntry);
             }
             return result;
         } catch (BlockException e) {
