@@ -150,4 +150,11 @@ public class SentinelDefaultTokenServer implements ClusterTokenServer {
             stopServer();
         }
     }
+
+    public int clientCount() {
+        if (server instanceof NettyTransportServer) {
+            return ((NettyTransportServer) server).clientCount();
+        }
+        return -1;
+    }
 }

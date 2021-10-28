@@ -130,22 +130,26 @@ public final class FlowRuleUtil {
     }
 
     private static TrafficShapingController generateRater(/*@Valid*/ FlowRule rule) {
+        double localCount = rule.getCount();
+        if (rule.getClusterLocalCountWhenError() > 0) {
+            localCount = rule.getClusterLocalCountWhenError();
+        }
         if (rule.getGrade() == RuleConstant.FLOW_GRADE_QPS) {
             switch (rule.getControlBehavior()) {
                 case RuleConstant.CONTROL_BEHAVIOR_WARM_UP:
-                    return new WarmUpController(rule.getCount(), rule.getWarmUpPeriodSec(),
+                    return new WarmUpController(localCount, rule.getWarmUpPeriodSec(),
                             ColdFactorProperty.coldFactor);
                 case RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER:
-                    return new RateLimiterController(rule.getMaxQueueingTimeMs(), rule.getCount());
+                    return new RateLimiterController(rule.getMaxQueueingTimeMs(), localCount);
                 case RuleConstant.CONTROL_BEHAVIOR_WARM_UP_RATE_LIMITER:
-                    return new WarmUpRateLimiterController(rule.getCount(), rule.getWarmUpPeriodSec(),
+                    return new WarmUpRateLimiterController(localCount, rule.getWarmUpPeriodSec(),
                             rule.getMaxQueueingTimeMs(), ColdFactorProperty.coldFactor);
                 case RuleConstant.CONTROL_BEHAVIOR_DEFAULT:
                 default:
                     // Default mode or unknown mode: default traffic shaping controller (fast-reject).
             }
         }
-        return new DefaultController(rule.getCount(), rule.getGrade());
+        return new DefaultController(localCount, rule.getGrade());
     }
 
     /**
