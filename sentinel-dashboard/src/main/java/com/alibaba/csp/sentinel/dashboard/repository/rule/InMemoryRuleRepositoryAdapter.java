@@ -43,6 +43,10 @@ public abstract class InMemoryRuleRepositoryAdapter<T extends RuleEntity> implem
     public T save(T entity) {
         if (entity.getId() == null) {
             entity.setId(nextId());
+        } else {
+            if (lastId() < entity.getId()) {
+                setLastId(entity.getId());
+            }
         }
         T processedEntity = preProcess(entity);
         if (processedEntity != null) {
@@ -126,4 +130,18 @@ public abstract class InMemoryRuleRepositoryAdapter<T extends RuleEntity> implem
      * @return next unused id
      */
     abstract protected long nextId();
+
+    /**
+     * Get last used id.
+     *
+     * @return last used id
+     */
+    abstract protected long lastId();
+
+    /**
+     * Set last used id.
+     *
+     * @param id last used id
+     */
+    abstract protected void setLastId(Long id);
 }
