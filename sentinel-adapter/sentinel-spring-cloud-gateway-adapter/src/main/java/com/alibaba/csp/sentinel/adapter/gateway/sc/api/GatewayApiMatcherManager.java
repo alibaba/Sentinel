@@ -50,11 +50,11 @@ public final class GatewayApiMatcherManager {
     }
 
     static synchronized void loadApiDefinitions(/*@Valid*/ Set<ApiDefinition> definitions) {
-        if (definitions == null || definitions.isEmpty()) {
-            API_MATCHER_MAP.clear();
-            return;
+        Map<String, WebExchangeApiMatcher> apiMatcherMap = new ConcurrentHashMap<>();
+        for (ApiDefinition definition : definitions) {
+            apiMatcherMap.put(definition.getApiName(), new WebExchangeApiMatcher(definition));
         }
-        definitions.forEach(GatewayApiMatcherManager::addApiDefinition);
+        API_MATCHER_MAP = apiMatcherMap;
     }
 
     static void addApiDefinition(ApiDefinition definition) {
