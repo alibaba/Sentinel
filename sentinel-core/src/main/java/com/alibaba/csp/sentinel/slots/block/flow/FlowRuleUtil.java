@@ -131,7 +131,7 @@ public final class FlowRuleUtil {
 
     private static TrafficShapingController generateRater(/*@Valid*/ FlowRule rule) {
         double localCount = rule.getCount();
-        if (rule.getClusterLocalCountWhenError() > 0) {
+        if (rule.isClusterMode() && rule.getClusterLocalCountWhenError() > 0) {
             localCount = rule.getClusterLocalCountWhenError();
         }
         if (rule.getGrade() == RuleConstant.FLOW_GRADE_QPS) {
