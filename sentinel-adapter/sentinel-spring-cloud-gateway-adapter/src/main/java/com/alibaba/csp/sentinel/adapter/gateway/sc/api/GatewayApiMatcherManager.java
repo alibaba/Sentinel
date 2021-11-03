@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
  */
 public final class GatewayApiMatcherManager {
 
-    private static Map<String, WebExchangeApiMatcher> API_MATCHER_MAP = new ConcurrentHashMap<>();
+    private static volatile Map<String, WebExchangeApiMatcher> API_MATCHER_MAP = new ConcurrentHashMap<>();
 
     public static Map<String, WebExchangeApiMatcher> getApiMatcherMap() {
         return Collections.unmodifiableMap(API_MATCHER_MAP);
