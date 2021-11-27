@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.dashboard.rule.zookeeper;
 
+import com.alibaba.csp.sentinel.dashboard.config.DashboardConfig;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.fastjson.JSON;
@@ -41,6 +42,7 @@ public class ZookeeperConfig {
 
     @Bean
     public CuratorFramework zkClient() {
+        DashboardConfig.THIRD_PARTY_PERSISTENCE_FLAG = Boolean.TRUE;
         CuratorFramework zkClient =
                 CuratorFrameworkFactory.newClient("127.0.0.1:2181",
                         new ExponentialBackoffRetry(ZookeeperConfigUtil.SLEEP_TIME, ZookeeperConfigUtil.RETRY_TIMES));

@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.dashboard.rule.apollo;
 
 import java.util.List;
 
+import com.alibaba.csp.sentinel.dashboard.config.DashboardConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -45,6 +46,7 @@ public class ApolloConfig {
 
     @Bean
     public ApolloOpenApiClient apolloOpenApiClient() {
+        DashboardConfig.THIRD_PARTY_PERSISTENCE_FLAG = Boolean.TRUE;
         ApolloOpenApiClient client = ApolloOpenApiClient.newBuilder()
             .withPortalUrl("http://localhost:10034")
             .withToken("token")

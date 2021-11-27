@@ -24,6 +24,7 @@ import java.util.concurrent.ExecutionException;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.client.CommandNotFoundException;
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
+import com.alibaba.csp.sentinel.dashboard.config.DashboardConfig;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
@@ -98,7 +99,18 @@ public class ParamFlowRuleController {
         }
         try {
             return sentinelApiClient.fetchParamFlowRulesOfMachine(app, ip, port)
-                .thenApply(repository::saveAll)
+                .thenApply(rules ->{
+                    String appType = DashboardConfig.concatAppAndType(app, DashboardConfig.PARAM_FLOW_TYPE);
+                    if (DashboardConfig.initFlag(appType)) {
+                        rules.forEach(rule -> rule.setId(null));
+                        rules = repository.saveAll(rules);
+                        publishRules(app, null, null);
+                        DashboardConfig.THIRD_PARTY_PERSISTENCE_LIST.add(appType);
+                        return rules;
+                    }
+                    rules = repository.saveAll(rules);
+                    return rules;
+                })
                 .thenApply(Result::ofSuccess)
                 .get();
         } catch (ExecutionException ex) {
