@@ -24,6 +24,7 @@ import java.util.concurrent.ExecutionException;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.client.CommandNotFoundException;
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
+import com.alibaba.csp.sentinel.dashboard.config.DashboardConfig;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
@@ -69,10 +70,10 @@ public class ParamFlowRuleController {
     private boolean checkIfSupported(String app, String ip, int port) {
         try {
             return Optional.ofNullable(appManagement.getDetailApp(app))
-                .flatMap(e -> e.getMachine(ip, port))
-                .flatMap(m -> VersionUtils.parseVersion(m.getVersion())
-                    .map(v -> v.greaterOrEqual(version020)))
-                .orElse(true);
+                    .flatMap(e -> e.getMachine(ip, port))
+                    .flatMap(m -> VersionUtils.parseVersion(m.getVersion())
+                            .map(v -> v.greaterOrEqual(version020)))
+                    .orElse(true);
             // If error occurred or cannot retrieve machine info, return true.
         } catch (Exception ex) {
             return true;
@@ -98,9 +99,20 @@ public class ParamFlowRuleController {
         }
         try {
             return sentinelApiClient.fetchParamFlowRulesOfMachine(app, ip, port)
-                .thenApply(repository::saveAll)
-                .thenApply(Result::ofSuccess)
-                .get();
+                    .thenApply(rules ->{
+                        String appType = DashboardConfig.concatAppAndType(app, DashboardConfig.PARAM_FLOW_TYPE);
+                        if (DashboardConfig.initFlag(appType)) {
+                            rules.forEach(rule -> rule.setId(null));
+                            rules = repository.saveAll(rules);
+                            publishRules(app, null, null);
+                            DashboardConfig.THIRD_PARTY_PERSISTENCE_LIST.add(appType);
+                            return rules;
+                        }
+                        rules = repository.saveAll(rules);
+                        return rules;
+                    })
+                    .thenApply(Result::ofSuccess)
+                    .get();
         } catch (ExecutionException ex) {
             logger.error("Error when querying parameter flow rules", ex.getCause());
             if (isNotSupported(ex.getCause())) {
@@ -262,7 +274,7 @@ public class ParamFlowRuleController {
 
     private <R> Result<R> unsupportedVersion() {
         return Result.ofFail(4041,
-            "Sentinel client not supported for parameter flow control (unsupported version or dependency absent)");
+                "Sentinel client not supported for parameter flow control (unsupported version or dependency absent)");
     }
 
     private final SentinelVersion version020 = new SentinelVersion().setMinorVersion(2);
