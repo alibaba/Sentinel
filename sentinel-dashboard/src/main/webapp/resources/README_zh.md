@@ -26,6 +26,12 @@ npm start
 ```
 npm run build
 ```
+### 如果构建失败
+```$xslt
+npm install -g grunt-cli
+npm install -g bower
+```
+
 
 ## Credit
 
