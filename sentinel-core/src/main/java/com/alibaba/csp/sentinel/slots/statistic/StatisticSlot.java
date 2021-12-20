@@ -155,11 +155,12 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         if (node == null) {
             return;
         }
-        node.addRtAndSuccess(rt, batchCount);
-        node.decreaseThreadNum();
 
         if (error != null && !(error instanceof BlockException)) {
             node.increaseExceptionQps(batchCount);
+        } else {
+            node.addRtAndSuccess(rt, batchCount);
         }
+        node.decreaseThreadNum();
     }
 }
