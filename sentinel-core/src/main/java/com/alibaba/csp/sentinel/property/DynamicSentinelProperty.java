@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.property;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
@@ -42,7 +43,7 @@ public class DynamicSentinelProperty<T> implements SentinelProperty<T> {
 
     @Override
     public void removeListener(PropertyListener<T> listener) {
-        listeners.remove(listener);
+        listeners.removeIf(it -> it.equals(listener));
     }
 
     @Override
@@ -53,8 +54,9 @@ public class DynamicSentinelProperty<T> implements SentinelProperty<T> {
         RecordLog.info("[DynamicSentinelProperty] Config will be updated to: {}", newValue);
 
         value = newValue;
-        for (PropertyListener<T> listener : listeners) {
-            listener.configUpdate(newValue);
+        Iterator<PropertyListener<T>> iterator = listeners.iterator();
+        while (iterator.hasNext()) {
+            iterator.next().configUpdate(newValue);
         }
         return true;
     }
