@@ -31,7 +31,7 @@ import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
  * Conceptually, physical or logical resource that need protection should be
  * surrounded by an entry. The requests to this resource will be blocked if any
  * criteria is met, eg. when any {@link Rule}'s threshold is exceeded. Once blocked,
- * {@link SphO}#enter() will return false.
+ * {@link SphO}#entry() will return false.
  *
  * <p>
  * To configure the criteria, we can use <code>XXXRuleManager.loadRules()</code> to add rules. eg.

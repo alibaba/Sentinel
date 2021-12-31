@@ -169,7 +169,7 @@ public class SentinelApiClient {
     }
 
     /**
-     * Check wheter target instance (identified by tuple of app-ip:port)
+     * Check whether target instance (identified by tuple of app-ip:port)
      * supports the form of "xxxxx; xx=xx" in "Content-Type" header.
      *
      * @param app target app name
@@ -564,7 +564,7 @@ public class SentinelApiClient {
             AssertUtil.isTrue(port > 0, "Bad machine port");
             return fetchItemsAsync(app,hostname,ip, port, GET_PARAM_RULE_PATH, null, ParamFlowRule.class)
                 .thenApply(rules -> rules.stream()
-                    .map(e -> ParamFlowRuleEntity.fromAuthorityRule(app, ip, port, e))
+                    .map(e -> ParamFlowRuleEntity.fromParamFlowRule(app, ip, port, e))
                     .collect(Collectors.toList())
                 );
         } catch (Exception e) {

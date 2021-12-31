@@ -2,7 +2,7 @@
 
 # Sentinel: The Sentinel of Your Microservices
 
-[![Travis Build Status](https://travis-ci.org/alibaba/Sentinel.svg?branch=master)](https://travis-ci.org/alibaba/Sentinel)
+[![Sentinel CI](https://github.com/alibaba/Sentinel/actions/workflows/ci.yml/badge.svg)](https://github.com/alibaba/Sentinel/actions/workflows/ci.yml)
 [![Codecov](https://codecov.io/gh/alibaba/Sentinel/branch/master/graph/badge.svg)](https://codecov.io/gh/alibaba/Sentinel)
 [![Maven Central](https://img.shields.io/maven-central/v/com.alibaba.csp/sentinel-core.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:com.alibaba.csp%20AND%20a:sentinel-core)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
@@ -28,6 +28,8 @@ Features overview:
 
 ## Documentation
 
+See the [Sentinel](https://sentinelguard.io/) for the document website.
+
 See the [中文文档](https://github.com/alibaba/Sentinel/wiki/%E4%BB%8B%E7%BB%8D) for document in Chinese.
 
 See the [Wiki](https://github.com/alibaba/Sentinel/wiki) for full documentation, examples, blog posts, operational details and other information.
@@ -49,16 +51,16 @@ Below is a simple demo that guides new users to use Sentinel in just 3 steps. It
 
 ### 1. Add Dependency
 
-**Note:** Sentinel Core requires Java 7 or later.
+**Note:** Sentinel requires JDK 1.8 or later.
 
-If your're using Maven, just add the following dependency in `pom.xml`.
+If you're using Maven, just add the following dependency in `pom.xml`.
 
 ```xml
 <!-- replace here with the latest version -->
 <dependency>
     <groupId>com.alibaba.csp</groupId>
     <artifactId>sentinel-core</artifactId>
-    <version>1.8.0</version>
+    <version>1.8.3</version>
 </dependency>
 ```
 
@@ -113,7 +115,7 @@ After running the demo for a while, you can see the following records in `~/logs
 1529998908000|2018-06-26 15:41:48|HelloWorld|20|19502|20|0|0   |0
 1529998909000|2018-06-26 15:41:49|HelloWorld|20|18386|20|0|0   |0
 
-p stands for incoming request, block for blocked by rules, success for success handled by Sentinel, e for exception count, rt for average response time (ms), occupied stands for occupiedPassQps since 1.5.0 which enable us booking more than 1 shot when entering.
+p stands for incoming request, block for blocked by rules, s for success handled by Sentinel, e for exception count, rt for average response time (ms), occupied stands for occupiedPassQps since 1.5.0 which enable us booking more than 1 shot when entering.
 ```
 
 This shows that the demo can print "hello world" 20 times per second.
@@ -173,7 +175,5 @@ If you are using Sentinel, please [add your company here](https://github.com/ali
 ![文轩在线](http://static.winxuancdn.com/css/v2/images/logo.png)
 ![客如云](https://www.keruyun.com/static/krynew/images/logo.png)
 ![亲宝宝](https://stlib.qbb6.com/wclt/img/home_hd/version1/title_logo.png)
-![杭州光云科技](https://www.raycloud.com/images/logo.png)
 ![金汇金融](https://res.jinhui365.com/r/images/logo2.png?v=1.527)
 ![闪电购](http://cdn.52shangou.com/shandianbang/official-source/3.1.1/build/images/logo.png)
-
