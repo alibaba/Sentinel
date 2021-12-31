@@ -50,6 +50,10 @@ public class ResultWrapper {
         return new ResultWrapper(-1, "Blocked by Sentinel");
     }
 
+    public static ResultWrapper systemException() {
+        return new ResultWrapper(-1, "System Exception");
+    }
+
     public String toJsonString() {
         return JSONObject.toJSONString(this);
     }

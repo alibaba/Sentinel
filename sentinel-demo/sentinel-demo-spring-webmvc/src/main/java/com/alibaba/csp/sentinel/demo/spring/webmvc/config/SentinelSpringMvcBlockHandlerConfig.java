@@ -15,6 +15,9 @@
  */
 package com.alibaba.csp.sentinel.demo.spring.webmvc.config;
 
+import com.alibaba.csp.sentinel.adapter.spring.webmvc.SentinelWebInterceptor;
+import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.DefaultBlockExceptionHandler;
+import com.alibaba.csp.sentinel.adapter.spring.webmvc.config.SentinelWebMvcConfig;
 import com.alibaba.csp.sentinel.demo.spring.webmvc.vo.ResultWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import org.slf4j.Logger;
@@ -23,6 +26,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Spring configuration for global exception handler.
@@ -36,6 +41,33 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class SentinelSpringMvcBlockHandlerConfig {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    private static SentinelWebInterceptor sentinelWebInterceptor;
+
+    static {
+        SentinelWebMvcConfig config = new SentinelWebMvcConfig();
+        config.setBlockExceptionHandler(new DefaultBlockExceptionHandler());
+        config.setHttpMethodSpecify(true);
+        config.setWebContextUnify(true);
+        config.setOriginParser(request -> request.getHeader("S-user"));
+        sentinelWebInterceptor = new SentinelWebInterceptor(config);
+    }
+
+    /**
+     * Global exception or a business exception to manually call sentinelWebInterceptor.exceptionControllerAdviceExit(req,e); Do exception statistics
+     * Otherwise, Sentinel cannot perform exception statistics and exception degrade
+     *
+     * @param req
+     * @param e
+     * @return
+     */
+    @ExceptionHandler(Exception.class)
+    @ResponseBody
+    public ResultWrapper sentinelBlockHandler(HttpServletRequest req, Exception e) {
+        logger.warn("System Exception: ", e);
+        sentinelWebInterceptor.exceptionControllerAdviceExit(req,e);
+        return ResultWrapper.systemException();
+    }
 
     @ExceptionHandler(BlockException.class)
     @ResponseBody
