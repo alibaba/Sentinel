@@ -48,7 +48,7 @@ public class TokenClientHandler extends ChannelInboundHandlerAdapter {
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         currentState.set(ClientConstants.CLIENT_STATUS_STARTED);
         fireClientPing(ctx);
-        RecordLog.info("[TokenClientHandler] Client handler active, remote address: " + getRemoteAddress(ctx));
+        RecordLog.info("[TokenClientHandler] Client handler active, remote address: {}", getRemoteAddress(ctx));
     }
 
     @Override
@@ -76,10 +76,10 @@ public class TokenClientHandler extends ChannelInboundHandlerAdapter {
     private void handlePingResponse(ChannelHandlerContext ctx, ClusterResponse response) {
         if (response.getStatus() == ClusterConstants.RESPONSE_STATUS_OK) {
             int count = (int) response.getData();
-            RecordLog.info("[TokenClientHandler] Client ping OK (target server: {0}, connected count: {1})",
+            RecordLog.info("[TokenClientHandler] Client ping OK (target server: {}, connected count: {})",
                 getRemoteAddress(ctx), count);
         } else {
-            RecordLog.warn("[TokenClientHandler] Client ping failed (target server: {0})", getRemoteAddress(ctx));
+            RecordLog.warn("[TokenClientHandler] Client ping failed (target server: {})", getRemoteAddress(ctx));
         }
     }
 
@@ -90,12 +90,12 @@ public class TokenClientHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        RecordLog.info("[TokenClientHandler] Client handler inactive, remote address: " + getRemoteAddress(ctx));
+        RecordLog.info("[TokenClientHandler] Client handler inactive, remote address: {}", getRemoteAddress(ctx));
     }
 
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
-        RecordLog.info("[TokenClientHandler] Client channel unregistered, remote address: " + getRemoteAddress(ctx));
+        RecordLog.info("[TokenClientHandler] Client channel unregistered, remote address: {}", getRemoteAddress(ctx));
         currentState.set(ClientConstants.CLIENT_STATUS_OFF);
 
         disconnectCallback.run();

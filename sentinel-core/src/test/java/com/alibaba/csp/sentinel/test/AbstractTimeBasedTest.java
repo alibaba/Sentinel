@@ -15,11 +15,17 @@
  */
 package com.alibaba.csp.sentinel.test;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import com.alibaba.csp.sentinel.Entry;
+import com.alibaba.csp.sentinel.SphU;
+import com.alibaba.csp.sentinel.Tracer;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 
 /**
@@ -54,5 +60,40 @@ public abstract class AbstractTimeBasedTest {
 
     protected final void sleepSecond(int timeSec) {
         sleep(timeSec * 1000);
+    }
+    
+    protected final boolean entryAndSleepFor(String res, int sleepMs) {
+        Entry entry = null;
+        try {
+            entry = SphU.entry(res);
+            sleep(sleepMs);
+        } catch (BlockException ex) {
+            return false;
+        } catch (Exception ex) {
+            Tracer.traceEntry(ex, entry);
+        } finally {
+            if (entry != null) {
+                entry.exit();
+            }
+        }
+        return true;
+    }
+
+    protected final boolean entryWithErrorIfPresent(String res, Exception ex) {
+        Entry entry = null;
+        try {
+            entry = SphU.entry(res);
+            if (ex != null) {
+                Tracer.traceEntry(ex, entry);
+            }
+            sleep(ThreadLocalRandom.current().nextInt(5, 10));
+        } catch (BlockException b) {
+            return false;
+        } finally {
+            if (entry != null) {
+                entry.exit();
+            }
+        }
+        return true;
     }
 }

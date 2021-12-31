@@ -63,7 +63,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  * @author jialiang.linjl
  * @author leyou
  */
-public class SystemRuleManager {
+public final class SystemRuleManager {
 
     private static volatile double highestSystemLoad = Double.MAX_VALUE;
     /**
@@ -95,7 +95,7 @@ public class SystemRuleManager {
     static {
         checkSystemStatus.set(false);
         statusListener = new SystemStatusListener();
-        scheduler.scheduleAtFixedRate(statusListener, 5, 1, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(statusListener, 0, 1, TimeUnit.SECONDS);
         currentProperty.addListener(listener);
     }
 
@@ -107,6 +107,7 @@ public class SystemRuleManager {
      */
     public static void register2Property(SentinelProperty<List<SystemRule>> property) {
         synchronized (listener) {
+            RecordLog.info("[SystemRuleManager] Registering new property to system rule manager");
             currentProperty.removeListener(listener);
             property.addListener(listener);
             currentProperty = property;
@@ -167,26 +168,22 @@ public class SystemRuleManager {
         return result;
     }
 
-    public static double getQps() {
+    public static double getInboundQpsThreshold() {
         return qps;
     }
 
-    public static void setQps(double qps) {
-        SystemRuleManager.qps = qps;
-    }
-
-    public static long getMaxRt() {
+    public static long getRtThreshold() {
         return maxRt;
     }
 
-    public static long getMaxThread() {
+    public static long getMaxThreadThreshold() {
         return maxThread;
     }
 
     static class SystemPropertyListener extends SimplePropertyListener<List<SystemRule>> {
 
         @Override
-        public void configUpdate(List<SystemRule> rules) {
+        public synchronized void configUpdate(List<SystemRule> rules) {
             restoreSetting();
             // systemRules = rules;
             if (rules != null && rules.size() >= 1) {
@@ -234,14 +231,10 @@ public class SystemRuleManager {
         return checkSystemStatus.get();
     }
 
-    public static double getHighestSystemLoad() {
+    public static double getSystemLoadThreshold() {
         return highestSystemLoad;
     }
 
-    public static void setHighestSystemLoad(double highestSystemLoad) {
-        SystemRuleManager.highestSystemLoad = highestSystemLoad;
-    }
-    
     public static double getCpuUsageThreshold() {
         return highestCpuUsage;
     }
@@ -257,9 +250,14 @@ public class SystemRuleManager {
         }
 
         if (rule.getHighestCpuUsage() >= 0) {
-            highestCpuUsage = Math.min(highestCpuUsage, rule.getHighestCpuUsage());
-            highestCpuUsageIsSet = true;
-            checkStatus = true;
+            if (rule.getHighestCpuUsage() > 1) {
+                RecordLog.warn(String.format("[SystemRuleManager] Ignoring invalid SystemRule: "
+                    + "highestCpuUsage %.3f > 1", rule.getHighestCpuUsage()));
+            } else {
+                highestCpuUsage = Math.min(highestCpuUsage, rule.getHighestCpuUsage());
+                highestCpuUsageIsSet = true;
+                checkStatus = true;
+            }
         }
 
         if (rule.getAvgRt() >= 0) {
@@ -289,20 +287,23 @@ public class SystemRuleManager {
      * @param resourceWrapper the resource.
      * @throws BlockException when any system rule's threshold is exceeded.
      */
-    public static void checkSystem(ResourceWrapper resourceWrapper) throws BlockException {
+    public static void checkSystem(ResourceWrapper resourceWrapper, int count) throws BlockException {
+        if (resourceWrapper == null) {
+            return;
+        }
         // Ensure the checking switch is on.
         if (!checkSystemStatus.get()) {
             return;
         }
 
         // for inbound traffic only
-        if (resourceWrapper.getType() != EntryType.IN) {
+        if (resourceWrapper.getEntryType() != EntryType.IN) {
             return;
         }
 
         // total qps
-        double currentQps = Constants.ENTRY_NODE == null ? 0.0 : Constants.ENTRY_NODE.successQps();
-        if (currentQps > qps) {
+        double currentQps = Constants.ENTRY_NODE == null ? 0.0 : Constants.ENTRY_NODE.passQps();
+        if (currentQps + count > qps) {
             throw new SystemBlockException(resourceWrapper.getName(), "qps");
         }
 
@@ -326,9 +327,7 @@ public class SystemRuleManager {
 
         // cpu usage
         if (highestCpuUsageIsSet && getCurrentCpuUsage() > highestCpuUsage) {
-            if (!checkBbr(currentThread)) {
-                throw new SystemBlockException(resourceWrapper.getName(), "cpu");
-            }
+            throw new SystemBlockException(resourceWrapper.getName(), "cpu");
         }
     }
 

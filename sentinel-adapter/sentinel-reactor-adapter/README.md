@@ -1,7 +1,5 @@
 # Sentinel Reactor Adapter
 
-> Note: this module requires Java 8 or later version.
-
 Sentinel provides integration module for [Reactor](https://projectreactor.io/).
 
 Add the following dependency in `pom.xml` (if you are using Maven):

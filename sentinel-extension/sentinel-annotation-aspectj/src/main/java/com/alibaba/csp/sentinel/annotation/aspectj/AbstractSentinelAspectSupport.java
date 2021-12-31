@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright 1999-2020 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.MethodUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
-
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -33,6 +33,7 @@ import java.util.Arrays;
  * Some common functions for Sentinel annotation aspect.
  *
  * @author Eric Zhao
+ * @author zhaoyuguang
  */
 public abstract class AbstractSentinelAspectSupport {
 
@@ -100,10 +101,8 @@ public abstract class AbstractSentinelAspectSupport {
                 args = Arrays.copyOf(originArgs, originArgs.length + 1);
                 args[args.length - 1] = ex;
             }
-            if (isStatic(fallbackMethod)) {
-                return fallbackMethod.invoke(null, args);
-            }
-            return fallbackMethod.invoke(pjp.getTarget(), args);
+
+            return invoke(pjp, fallbackMethod, args);
         }
         // If fallback is absent, we'll try the defaultFallback if provided.
         return handleDefaultFallback(pjp, defaultFallback, fallbackClass, ex);
@@ -116,10 +115,7 @@ public abstract class AbstractSentinelAspectSupport {
         if (fallbackMethod != null) {
             // Construct args.
             Object[] args = fallbackMethod.getParameterTypes().length == 0 ? new Object[0] : new Object[] {ex};
-            if (isStatic(fallbackMethod)) {
-                return fallbackMethod.invoke(null, args);
-            }
-            return fallbackMethod.invoke(pjp.getTarget(), args);
+            return invoke(pjp, fallbackMethod, args);
         }
 
         // If no any fallback is present, then directly throw the exception.
@@ -137,14 +133,42 @@ public abstract class AbstractSentinelAspectSupport {
             // Construct args.
             Object[] args = Arrays.copyOf(originArgs, originArgs.length + 1);
             args[args.length - 1] = ex;
-            if (isStatic(blockHandlerMethod)) {
-                return blockHandlerMethod.invoke(null, args);
-            }
-            return blockHandlerMethod.invoke(pjp.getTarget(), args);
+            return invoke(pjp, blockHandlerMethod, args);
         }
 
         // If no block handler is present, then go to fallback.
         return handleFallback(pjp, annotation, ex);
+    }
+
+    private Object invoke(ProceedingJoinPoint pjp, Method method, Object[] args) throws Throwable {
+        try {
+            if (!method.isAccessible()) {
+                makeAccessible(method);
+            }
+            if (isStatic(method)) {
+                return method.invoke(null, args);
+            }
+            return method.invoke(pjp.getTarget(), args);
+        } catch (InvocationTargetException e) {
+            // throw the actual exception
+            throw e.getTargetException();
+        }
+    }
+
+    /**
+     * Make the given method accessible, explicitly setting it accessible if
+     * necessary. The {@code setAccessible(true)} method is only called
+     * when actually necessary, to avoid unnecessary conflicts with a JVM
+     * SecurityManager (if active).
+     * @param method the method to make accessible
+     * @see java.lang.reflect.Method#setAccessible
+     */
+    private static void makeAccessible(Method method) {
+        boolean isNotPublic = !Modifier.isPublic(method.getModifiers()) ||
+                !Modifier.isPublic(method.getDeclaringClass().getModifiers());
+        if (isNotPublic && !method.isAccessible()) {
+            method.setAccessible(true);
+        }
     }
 
     private Method extractFallbackMethod(ProceedingJoinPoint pjp, String fallbackName, Class<?>[] locationClass) {
@@ -170,7 +194,15 @@ public abstract class AbstractSentinelAspectSupport {
     private Method extractDefaultFallbackMethod(ProceedingJoinPoint pjp, String defaultFallback,
                                                 Class<?>[] locationClass) {
         if (StringUtil.isBlank(defaultFallback)) {
-            return null;
+            SentinelResource annotationClass = pjp.getTarget().getClass().getAnnotation(SentinelResource.class);
+            if (annotationClass != null && StringUtil.isNotBlank(annotationClass.defaultFallback())) {
+                defaultFallback = annotationClass.defaultFallback();
+                if (locationClass == null || locationClass.length < 1) {
+                    locationClass = annotationClass.fallbackClass();
+                }
+            } else {
+                return null;
+            }
         }
         boolean mustStatic = locationClass != null && locationClass.length >= 1;
         Class<?> clazz = mustStatic ? locationClass[0] : pjp.getTarget().getClass();
@@ -264,7 +296,7 @@ public abstract class AbstractSentinelAspectSupport {
                 && returnType.isAssignableFrom(method.getReturnType())
                 && Arrays.equals(parameterTypes, method.getParameterTypes())) {
 
-                RecordLog.info("Resolved method [{0}] in class [{1}]", name, clazz.getCanonicalName());
+                RecordLog.info("Resolved method [{}] in class [{}]", name, clazz.getCanonicalName());
                 return method;
             }
         }
@@ -274,7 +306,7 @@ public abstract class AbstractSentinelAspectSupport {
             return findMethod(mustStatic, superClass, name, returnType, parameterTypes);
         } else {
             String methodType = mustStatic ? " static" : "";
-            RecordLog.warn("Cannot find{0} method [{1}] in class [{2}] with parameters {3}",
+            RecordLog.warn("Cannot find{} method [{}] in class [{}] with parameters {}",
                 methodType, name, clazz.getCanonicalName(), Arrays.toString(parameterTypes));
             return null;
         }

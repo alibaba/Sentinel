@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.ResourceTypeConstants;
 import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
 import com.alibaba.csp.sentinel.adapter.gateway.common.param.GatewayParamParser;
 import com.alibaba.csp.sentinel.adapter.gateway.sc.callback.GatewayCallbackManager;
@@ -70,8 +71,8 @@ public class SentinelGatewayFilter implements GatewayFilter, GlobalFilter, Order
                 .map(f -> f.apply(exchange))
                 .orElse("");
             asyncResult = asyncResult.transform(
-                new SentinelReactorTransformer<>(new EntryConfig(routeId, EntryType.IN,
-                    1, params, new ContextConfig(contextName(routeId), origin)))
+                new SentinelReactorTransformer<>(new EntryConfig(routeId, ResourceTypeConstants.COMMON_API_GATEWAY,
+                    EntryType.IN, 1, params, new ContextConfig(contextName(routeId), origin)))
             );
         }
 
@@ -80,7 +81,8 @@ public class SentinelGatewayFilter implements GatewayFilter, GlobalFilter, Order
             Object[] params = paramParser.parseParameterFor(apiName, exchange,
                 r -> r.getResourceMode() == SentinelGatewayConstants.RESOURCE_MODE_CUSTOM_API_NAME);
             asyncResult = asyncResult.transform(
-                new SentinelReactorTransformer<>(new EntryConfig(apiName, EntryType.IN, 1, params))
+                new SentinelReactorTransformer<>(new EntryConfig(apiName, ResourceTypeConstants.COMMON_API_GATEWAY,
+                    EntryType.IN, 1, params))
             );
         }
 

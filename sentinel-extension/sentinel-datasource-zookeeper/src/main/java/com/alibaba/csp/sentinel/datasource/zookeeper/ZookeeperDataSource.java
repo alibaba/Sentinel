@@ -37,7 +37,7 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
 
 
     private final ExecutorService pool = new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS,
-            new ArrayBlockingQueue<Runnable>(1), new NamedThreadFactory("sentinel-zookeeper-ds-update"),
+            new ArrayBlockingQueue<Runnable>(1), new NamedThreadFactory("sentinel-zookeeper-ds-update", true),
             new ThreadPoolExecutor.DiscardOldestPolicy());
 
     private NodeCacheListener listener;
@@ -110,8 +110,8 @@ public class ZookeeperDataSource<T> extends AbstractDataSource<String, T> {
 
                     try {
                         T newValue = loadConfig();
-                        RecordLog.info(String.format("[ZookeeperDataSource] New property value received for (%s, %s): %s",
-                                serverAddr, path, newValue));
+                        RecordLog.info("[ZookeeperDataSource] New property value received for ({}, {}): {}",
+                            serverAddr, path, newValue);
                         // Update the new value to the property.
                         getProperty().updateValue(newValue);
                     } catch (Exception ex) {

@@ -18,7 +18,7 @@ package com.alibaba.csp.sentinel.cluster.server.codec;
 import com.alibaba.csp.sentinel.cluster.codec.request.RequestEntityDecoder;
 import com.alibaba.csp.sentinel.cluster.codec.response.ResponseEntityWriter;
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.util.SpiLoader;
+import com.alibaba.csp.sentinel.spi.SpiLoader;
 
 /**
  * @author Eric Zhao
@@ -34,23 +34,21 @@ public final class ServerEntityCodecProvider {
     }
 
     private static void resolveInstance() {
-        ResponseEntityWriter writer = SpiLoader.loadFirstInstance(ResponseEntityWriter.class);
+        ResponseEntityWriter writer = SpiLoader.of(ResponseEntityWriter.class).loadFirstInstance();
         if (writer == null) {
             RecordLog.warn("[ServerEntityCodecProvider] No existing response entity writer, resolve failed");
         } else {
             responseEntityWriter = writer;
-            RecordLog.info(
-                "[ServerEntityCodecProvider] Response entity writer resolved: " + responseEntityWriter.getClass()
-                    .getCanonicalName());
+            RecordLog.info("[ServerEntityCodecProvider] Response entity writer resolved: {}",
+                responseEntityWriter.getClass().getCanonicalName());
         }
-        RequestEntityDecoder decoder = SpiLoader.loadFirstInstance(RequestEntityDecoder.class);
+        RequestEntityDecoder decoder = SpiLoader.of(RequestEntityDecoder.class).loadFirstInstance();
         if (decoder == null) {
             RecordLog.warn("[ServerEntityCodecProvider] No existing request entity decoder, resolve failed");
         } else {
             requestEntityDecoder = decoder;
-            RecordLog.info(
-                "[ServerEntityCodecProvider] Request entity decoder resolved: " + requestEntityDecoder.getClass()
-                    .getCanonicalName());
+            RecordLog.info("[ServerEntityCodecProvider] Request entity decoder resolved: {}",
+                requestEntityDecoder.getClass().getCanonicalName());
         }
     }
 

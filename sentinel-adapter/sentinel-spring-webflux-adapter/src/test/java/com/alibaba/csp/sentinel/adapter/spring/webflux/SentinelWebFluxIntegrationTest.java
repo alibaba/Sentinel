@@ -72,6 +72,30 @@ public class SentinelWebFluxIntegrationTest {
     }
 
     @Test
+    public void testWebFluxRouterFunction() throws Exception {
+
+        String url = "/router/hello";
+        this.webClient.get()
+                .uri(url)
+                .accept(MediaType.TEXT_PLAIN)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(String.class).isEqualTo(HELLO_STR);
+
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
+        assertNotNull(cn);
+        assertEquals(1, cn.passQps(), 0.01);
+
+        configureRulesFor(url, 0);
+        this.webClient.get()
+                .uri(url)
+                .accept(MediaType.TEXT_PLAIN)
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.TOO_MANY_REQUESTS)
+                .expectBody(String.class).value(StringContains.containsString(BLOCK_MSG_PREFIX));
+    }
+
+    @Test
     public void testCustomizedUrlCleaner() throws Exception {
         final String fooPrefix = "/foo/";
         String url1 = fooPrefix + 1;
@@ -98,6 +122,26 @@ public class SentinelWebFluxIntegrationTest {
         assertNull(ClusterBuilderSlot.getClusterNode(url1));
         assertNull(ClusterBuilderSlot.getClusterNode(url2));
 
+        WebFluxCallbackManager.resetUrlCleaner();
+    }
+
+    @Test
+    public void testCustomizedIgnoreUrlCleaner() throws Exception {
+        final String fooPrefix = "/foo/";
+        String url1 = fooPrefix + 1;
+        WebFluxCallbackManager.setUrlCleaner(((exchange, originUrl) -> {
+            if (originUrl.startsWith(fooPrefix)) {
+                return "";
+            }
+            return originUrl;
+        }));
+        this.webClient.get()
+                .uri(url1)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(String.class).isEqualTo("Hello 1");
+
+        assertNull(ClusterBuilderSlot.getClusterNode(url1));
         WebFluxCallbackManager.resetUrlCleaner();
     }
 

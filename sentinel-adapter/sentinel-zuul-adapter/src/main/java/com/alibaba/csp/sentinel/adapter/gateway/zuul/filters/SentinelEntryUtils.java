@@ -17,7 +17,7 @@ package com.alibaba.csp.sentinel.adapter.gateway.zuul.filters;
 
 import java.util.Deque;
 
-import com.alibaba.csp.sentinel.AsyncEntry;
+import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.adapter.gateway.zuul.constants.ZuulConstant;
 import com.alibaba.csp.sentinel.context.ContextUtil;
@@ -34,11 +34,11 @@ final class SentinelEntryUtils {
     static void tryExitFromCurrentContext() {
         RequestContext ctx = RequestContext.getCurrentContext();
         if (ctx.containsKey(ZuulConstant.ZUUL_CTX_SENTINEL_ENTRIES_KEY)) {
-            Deque<AsyncEntry> asyncEntries = (Deque<AsyncEntry>) ctx.get(ZuulConstant.ZUUL_CTX_SENTINEL_ENTRIES_KEY);
-            AsyncEntry entry;
-            while (!asyncEntries.isEmpty()) {
-                entry = asyncEntries.pop();
-                entry.exit();
+            Deque<EntryHolder> holders = (Deque<EntryHolder>) ctx.get(ZuulConstant.ZUUL_CTX_SENTINEL_ENTRIES_KEY);
+            EntryHolder holder;
+            while (!holders.isEmpty()) {
+                holder = holders.pop();
+                exit(holder);
             }
             ctx.remove(ZuulConstant.ZUUL_CTX_SENTINEL_ENTRIES_KEY);
         }
@@ -50,16 +50,21 @@ final class SentinelEntryUtils {
     static void tryTraceExceptionThenExitFromCurrentContext(Throwable t) {
         RequestContext ctx = RequestContext.getCurrentContext();
         if (ctx.containsKey(ZuulConstant.ZUUL_CTX_SENTINEL_ENTRIES_KEY)) {
-            Deque<AsyncEntry> asyncEntries = (Deque<AsyncEntry>) ctx.get(ZuulConstant.ZUUL_CTX_SENTINEL_ENTRIES_KEY);
-            AsyncEntry entry;
-            while (!asyncEntries.isEmpty()) {
-                entry = asyncEntries.pop();
-                Tracer.traceEntry(t, entry);
-                entry.exit();
+            Deque<EntryHolder> holders = (Deque<EntryHolder>) ctx.get(ZuulConstant.ZUUL_CTX_SENTINEL_ENTRIES_KEY);
+            EntryHolder holder;
+            while (!holders.isEmpty()) {
+                holder = holders.pop();
+                Tracer.traceEntry(t, holder.getEntry());
+                exit(holder);
             }
             ctx.remove(ZuulConstant.ZUUL_CTX_SENTINEL_ENTRIES_KEY);
         }
         ContextUtil.exit();
+    }
+
+    static void exit(EntryHolder holder) {
+        Entry entry = holder.getEntry();
+        entry.exit(1, holder.getParams());
     }
 
     private SentinelEntryUtils() {}

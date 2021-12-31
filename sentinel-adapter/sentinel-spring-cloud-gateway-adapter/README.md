@@ -1,7 +1,5 @@
 # Sentinel Spring Cloud Gateway Adapter
 
-> Note: this module requires Java 8 or later version.
-
 Sentinel provides integration module with Spring Cloud Gateway.
 The integration module is based on the Sentinel Reactor Adapter.
 

@@ -19,21 +19,21 @@ import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
-import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-
 import io.grpc.ForwardingServerCall;
 import io.grpc.ForwardingServerCallListener;
 import io.grpc.Metadata;
 import io.grpc.ServerCall;
-import io.grpc.ServerCall.Listener;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * <p>gRPC server interceptor for Sentinel. Currently it only works with unary methods.</p>
- *
+ * <p>
  * Example code:
  * <pre>
  * Server server = ServerBuilder.forPort(port)
@@ -41,50 +41,69 @@ import io.grpc.Status;
  *      .intercept(new SentinelGrpcServerInterceptor()) // Add the server interceptor.
  *      .build();
  * </pre>
- *
+ * <p>
  * For client interceptor, see {@link SentinelGrpcClientInterceptor}.
  *
  * @author Eric Zhao
  */
 public class SentinelGrpcServerInterceptor implements ServerInterceptor {
-
     private static final Status FLOW_CONTROL_BLOCK = Status.UNAVAILABLE.withDescription(
-        "Flow control limit exceeded (server side)");
+            "Flow control limit exceeded (server side)");
+    private static final StatusRuntimeException STATUS_RUNTIME_EXCEPTION = new StatusRuntimeException(Status.CANCELLED);
 
     @Override
-    public <ReqT, RespT> Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> serverCall, Metadata metadata,
-                                                      ServerCallHandler<ReqT, RespT> serverCallHandler) {
-        String resourceName = serverCall.getMethodDescriptor().getFullMethodName();
+    public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
+        String fullMethodName = call.getMethodDescriptor().getFullMethodName();
         // Remote address: serverCall.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
         Entry entry = null;
         try {
-            ContextUtil.enter(resourceName);
-            entry = SphU.entry(resourceName, EntryType.IN);
+            entry = SphU.asyncEntry(fullMethodName, EntryType.IN);
+            final AtomicReference<Entry> atomicReferenceEntry = new AtomicReference<>(entry);
             // Allow access, forward the call.
             return new ForwardingServerCallListener.SimpleForwardingServerCallListener<ReqT>(
-                serverCallHandler.startCall(
-                    new ForwardingServerCall.SimpleForwardingServerCall<ReqT, RespT>(serverCall) {
-                        @Override
-                        public void close(Status status, Metadata trailers) {
-                            super.close(status, trailers);
-                            // Record the exception metrics.
-                            if (!status.isOk()) {
-                                recordException(status.asRuntimeException());
-                            }
-                        }
-                    }, metadata)) {};
+                    next.startCall(
+                            new ForwardingServerCall.SimpleForwardingServerCall<ReqT, RespT>(call) {
+                                @Override
+                                public void close(Status status, Metadata trailers) {
+                                    Entry entry = atomicReferenceEntry.get();
+                                    if (entry != null) {
+                                        // Record the exception metrics.
+                                        if (!status.isOk()) {
+                                            Tracer.traceEntry(status.asRuntimeException(), entry);
+                                        }
+                                        //entry exit when the call be closed
+                                        entry.exit();
+                                    }
+                                    super.close(status, trailers);
+                                }
+                            }, headers)) {
+                /**
+                 * If call was canceled, onCancel will be called. and the close will not be called
+                 * so the server is encouraged to abort processing to save resources by onCancel
+                 * @see ServerCall.Listener#onCancel()
+                 */
+                @Override
+                public void onCancel() {
+                    Entry entry = atomicReferenceEntry.get();
+                    if (entry != null) {
+                        Tracer.traceEntry(STATUS_RUNTIME_EXCEPTION, entry);
+                        entry.exit();
+                        atomicReferenceEntry.set(null);
+                    }
+                    super.onCancel();
+                }
+            };
         } catch (BlockException e) {
-            serverCall.close(FLOW_CONTROL_BLOCK, new Metadata());
-            return new ServerCall.Listener<ReqT>() {};
-        } finally {
+            call.close(FLOW_CONTROL_BLOCK, new Metadata());
+            return new ServerCall.Listener<ReqT>() {
+            };
+        } catch (RuntimeException e) {
+            // Catch the RuntimeException startCall throws, entry is guaranteed to exit.
             if (entry != null) {
+                Tracer.traceEntry(e, entry);
                 entry.exit();
             }
-            ContextUtil.exit();
+            throw e;
         }
-    }
-
-    private void recordException(Throwable t) {
-        Tracer.trace(t);
     }
 }

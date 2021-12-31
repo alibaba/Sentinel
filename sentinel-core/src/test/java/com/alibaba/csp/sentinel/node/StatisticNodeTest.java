@@ -15,7 +15,7 @@
  */
 package com.alibaba.csp.sentinel.node;
 
-import com.alibaba.csp.sentinel.Constants;
+import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import org.junit.Assert;
 import org.junit.Test;
@@ -111,7 +111,7 @@ public class StatisticNodeTest {
         assertEquals(totalRequest, node.totalSuccess());
 
         // now there are no data in time span, so the minRT should be equals to TIME_DROP_VALVE
-        assertEquals(node.minRt(), Constants.TIME_DROP_VALVE, 0.01);
+        assertEquals(node.minRt(), SentinelConfig.statisticMaxRt(), 0.01);
 
         log("====================================================");
         log("testStatisticThreadNumAndQps done, cost " + (TimeUtil.currentTimeMillis() - testStartTime) + "ms");

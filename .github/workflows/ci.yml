@@ -1,0 +1,32 @@
+name: Sentinel CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        java: [8, 11]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Java
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{ matrix.java }}
+          architecture: x64
+
+      - name: Test with Maven
+        run: mvn test
+
+      - name: Build with Maven
+        run: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -DminimumPriority=1
+
+      - name: Run Codecov
+        run: bash <(curl -s https://codecov.io/bash)
