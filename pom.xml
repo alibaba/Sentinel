@@ -5,7 +5,7 @@
 
     <groupId>com.alibaba.csp</groupId>
     <artifactId>sentinel-parent</artifactId>
-    <version>1.8.2</version>
+    <version>1.8.3</version>
     <packaging>pom</packaging>
 
     <name>${project.artifactId}</name>
@@ -164,7 +164,13 @@
                 <artifactId>sentinel-adapter</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
+            
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-metric-exporter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>

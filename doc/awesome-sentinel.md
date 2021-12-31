@@ -40,7 +40,7 @@ You can also add to [sentinel-group/sentinel-awesome](https://github.com/sentine
 
 ## Blog Posts
 
-- [Sentinel 为 Dubbo 服务保驾护航](http://dubbo.apache.org/zh-cn/blog/sentinel-introduction-for-dubbo.html) by [Eric Zhao](https://github.com/sczyh30)
+- [Sentinel 为 Dubbo 服务保驾护航](https://dubbo.apache.org/zh/blog/2018/07/27/sentinel-为-dubbo-服务保驾护航) by [Eric Zhao](https://github.com/sczyh30)
 - [在生产环境中使用 Sentinel 控制台](https://github.com/alibaba/Sentinel/wiki/在生产环境中使用-Sentinel) by [Eric Zhao](https://github.com/sczyh30)
 - [Sentinel 与 Hystrix 的对比](https://sentinelguard.io/zh-cn/blog/sentinel-vs-hystrix.html) by [Eric Zhao](https://github.com/sczyh30)
 - [Guideline: 从 Hystrix 迁移到 Sentinel](https://sentinelguard.io/zh-cn/blog/guideline-migrate-from-hystrix-to-sentinel.html) by [Eric Zhao](https://github.com/sczyh30)

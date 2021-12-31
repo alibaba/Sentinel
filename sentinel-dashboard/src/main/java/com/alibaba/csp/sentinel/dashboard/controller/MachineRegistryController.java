@@ -29,6 +29,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import sun.net.util.IPAddressUtil;
 
 @Controller
 @RequestMapping(value = "/registry", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -49,6 +50,9 @@ public class MachineRegistryController {
             return Result.ofFail(-1, "invalid appName");
         }
         if (StringUtil.isBlank(ip) || ip.length() > 128) {
+            return Result.ofFail(-1, "invalid ip: " + ip);
+        }
+        if (!IPAddressUtil.isIPv4LiteralAddress(ip) && !IPAddressUtil.isIPv6LiteralAddress(ip)) {
             return Result.ofFail(-1, "invalid ip: " + ip);
         }
         if (port == null || port < -1) {
