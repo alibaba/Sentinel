@@ -13,7 +13,3 @@ rule:
       namespace: ${configserver.namespace:}
     zookeeper:
       server-addr: ${configserver.address:}
-
-spring:
-  influx:
-    database: sentinel_db

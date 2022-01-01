@@ -16,11 +16,13 @@
 package com.alibaba.csp.sentinel.dashboard.rule.nacos;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.*;
+import com.alibaba.csp.sentinel.dashboard.rule.*;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigFactory;
-import com.alibaba.nacos.api.config.ConfigService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -42,6 +44,16 @@ public class NacosConfig {
     private String namespace;
 
     @Bean
+    public NacosConfigService nacosConfigService() throws Exception {
+        Properties properties = new Properties();
+        properties.put(PropertyKeyConst.SERVER_ADDR, serverAddr);
+        if(StringUtils.isNotBlank(namespace)){
+            properties.put(PropertyKeyConst.NAMESPACE,namespace);
+        }
+        return new NacosConfigService(ConfigFactory.createConfigService(properties));
+    }
+
+    @Bean
     public Converter<List<FlowRuleEntity>, String> flowRuleEntityEncoder() {
         return JSON::toJSONString;
     }
@@ -49,13 +61,20 @@ public class NacosConfig {
     public Converter<String, List<FlowRuleEntity>> flowRuleEntityDecoder() {
         return s -> JSON.parseArray(s, FlowRuleEntity.class);
     }
+
     @Bean
-    public FlowRuleNacosProvider flowRuleProvider(){
-        return new FlowRuleNacosProvider();
+    public DynamicRuleProvider flowRuleProvider(RuleConfigService configService,
+                                                Converter<String,List<FlowRuleEntity>> converter){
+        return new AbstractDynamicRuleProvider((appName)-> configService.getConfig((String) appName,
+                NacosConfigUtil.FLOW_RULE),converter);
     }
+
     @Bean
-    public FlowRuleNacosPublisher flowRulePublisher(Converter<List<FlowRuleEntity>,String> converter){
-        return new FlowRuleNacosPublisher(converter);
+    public DynamicRulePublisher flowRulePublisher(RuleConfigService configService,
+                                                  Converter<List<FlowRuleEntity>,String> converter){
+        return new AbstractDynamicRulePublisher((appId, rules)->
+            configService.publishConfig((String)appId,NacosConfigUtil.FLOW_RULE,(String)rules)
+        ,converter);
     }
 
     @Bean
@@ -66,13 +85,19 @@ public class NacosConfig {
     public Converter<String, List<DegradeRuleEntity>> degradeRuleEntityDecoder() {
         return s -> JSON.parseArray(s, DegradeRuleEntity.class);
     }
+
     @Bean
-    public DegradeRuleNacosProvider degradeRuleProvider(){
-        return new DegradeRuleNacosProvider();
+    public DynamicRuleProvider degradeRuleProvider(RuleConfigService configService,
+                                                        Converter<String, List<DegradeRuleEntity>> converter){
+        return new AbstractDynamicRuleProvider((appName)-> configService.getConfig((String) appName,
+                NacosConfigUtil.DEGRADE_RULE),converter);
     }
+
     @Bean
-    public DegradeRuleNacosPublisher degradeRulePublisher(Converter<List<DegradeRuleEntity>,String> converter){
-        return new DegradeRuleNacosPublisher(converter);
+    public DynamicRulePublisher degradeRulePublisher(RuleConfigService configService,Converter<List<DegradeRuleEntity>,String> converter){
+        return new AbstractDynamicRulePublisher((appId,rules)->{
+            configService.publishConfig((String)appId,NacosConfigUtil.DEGRADE_RULE,(String)rules);
+        },converter);
     }
 
     @Bean
@@ -83,13 +108,18 @@ public class NacosConfig {
     public Converter<String, List<ParamFlowRuleEntity>> paramFlowRuleEntityDecoder() {
         return s -> JSON.parseArray(s, ParamFlowRuleEntity.class);
     }
+
     @Bean
-    public ParamFlowRuleNacosProvider paramFlowRuleProvider(){
-        return new ParamFlowRuleNacosProvider();
+    public DynamicRuleProvider paramFlowRuleProvider(RuleConfigService configService,
+                                                            Converter<String, List<ParamFlowRuleEntity>> converter){
+        return new AbstractDynamicRuleProvider((appName)-> configService.getConfig((String) appName,
+                NacosConfigUtil.PARAM_RULE),converter);
     }
     @Bean
-    public ParamFlowRuleNacosPublisher paramFlowRulePublisher(Converter<List<ParamFlowRuleEntity>,String> converter){
-        return new ParamFlowRuleNacosPublisher(converter);
+    public DynamicRulePublisher paramFlowRulePublisher(RuleConfigService configService,Converter<List<ParamFlowRuleEntity>,String> converter){
+        return new AbstractDynamicRulePublisher((appId,rules)->{
+            configService.publishConfig((String)appId,NacosConfigUtil.PARAM_RULE,(String)rules);
+        },converter);
     }
 
     @Bean
@@ -101,12 +131,16 @@ public class NacosConfig {
         return s -> JSON.parseArray(s, SystemRuleEntity.class);
     }
     @Bean
-    public SystemRuleNacosProvider systemRuleProvider(){
-        return new SystemRuleNacosProvider();
+    public DynamicRuleProvider systemRuleProvider(RuleConfigService configService,
+                                                  Converter<String, List<SystemRuleEntity>> converter){
+        return new AbstractDynamicRuleProvider((appName)-> configService.getConfig((String) appName,
+                NacosConfigUtil.SYSTEM_RULE),converter);
     }
     @Bean
-    public SystemRuleNacosPublisher systemRulePublisher(Converter<List<SystemRuleEntity>,String> converter){
-        return new SystemRuleNacosPublisher(converter);
+    public DynamicRulePublisher systemRulePublisher(RuleConfigService configService,Converter<List<SystemRuleEntity>,String> converter){
+        return new AbstractDynamicRulePublisher((appId,rules)->{
+            configService.publishConfig((String)appId,NacosConfigUtil.SYSTEM_RULE,(String)rules);
+        },converter);
     }
 
     @Bean
@@ -118,23 +152,17 @@ public class NacosConfig {
         return s -> JSON.parseArray(s, AuthorityRuleEntity.class);
     }
     @Bean
-    public AuthorityRuleNacosProvider authorityRuleProvider(){
-        return new AuthorityRuleNacosProvider();
+    public DynamicRuleProvider authorityRuleProvider(RuleConfigService configService,
+                                                     Converter<String, List<AuthorityRuleEntity>> converter){
+        return new AbstractDynamicRuleProvider((appName)-> configService.getConfig((String) appName,
+                NacosConfigUtil.AUTHORITY_RULE),converter);
     }
 
     @Bean
-    public AuthorityRuleNacosPublisher authorityRulePublisher(Converter<List<AuthorityRuleEntity>,String> converter){
-        return new AuthorityRuleNacosPublisher(converter);
-    }
-
-    @Bean
-    public ConfigService nacosConfigService() throws Exception {
-        Properties properties = new Properties();
-        properties.put(PropertyKeyConst.SERVER_ADDR, serverAddr);
-        if(StringUtils.isNotBlank(namespace)){
-            properties.put(PropertyKeyConst.NAMESPACE,namespace);
-        }
-        return ConfigFactory.createConfigService(properties);
+    public DynamicRulePublisher authorityRulePublisher(RuleConfigService configService,Converter<List<AuthorityRuleEntity>,String> converter){
+        return new AbstractDynamicRulePublisher((appId,rules)->{
+            configService.publishConfig((String)appId,NacosConfigUtil.AUTHORITY_RULE,(String)rules);
+        },converter);
     }
 
     public void setServerAddr(String serverAddr) {

@@ -16,16 +16,18 @@
 package com.alibaba.csp.sentinel.dashboard.rule.apollo;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.*;
+import com.alibaba.csp.sentinel.dashboard.rule.AbstractDynamicRuleProvider;
+import com.alibaba.csp.sentinel.dashboard.rule.AbstractDynamicRulePublisher;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
+import com.alibaba.csp.sentinel.dashboard.rule.nacos.NacosConfigUtil;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.fastjson.JSON;
-import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
-import com.ctrip.framework.apollo.spring.annotation.ApolloConfigRegistrar;
 import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 
 import java.util.List;
 
@@ -45,6 +47,14 @@ public class ApolloConfig {
     private String namespace;
     private String serverAddr;
 
+    public String readCfgValue(String dataId,String group,ApolloConfigService configService){
+        return configService.getConfig(dataId,group,3000);
+    }
+
+    public void publishConfig(String dataId,String group,String content,ApolloConfigService configService){
+        configService.publishConfig(dataId,group,content);
+    }
+
     @Bean
     public Converter<List<FlowRuleEntity>, String> flowRuleEntityEncoder() {
         return JSON::toJSONString;
@@ -54,12 +64,18 @@ public class ApolloConfig {
         return s -> JSON.parseArray(s, FlowRuleEntity.class);
     }
     @Bean
-    public FlowRuleApolloProvider flowRuleProvider(){
-        return new FlowRuleApolloProvider();
+    public DynamicRuleProvider flowRuleProvider(ApolloConfigService configService,
+                                                Converter<String,List<FlowRuleEntity>> converter){
+        return new AbstractDynamicRuleProvider((appName)->readCfgValue((String) appName,
+                NacosConfigUtil.FLOW_RULE ,configService),converter);
     }
+
     @Bean
-    public FlowRuleApolloPublisher flowRulePublisher(Converter<List<FlowRuleEntity>,String> converter){
-        return new FlowRuleApolloPublisher(converter);
+    public DynamicRulePublisher flowRulePublisher(ApolloConfigService configService,
+                                                  Converter<List<FlowRuleEntity>,String> converter){
+        return new AbstractDynamicRulePublisher((appId, rules)->{
+            publishConfig((String)appId, NacosConfigUtil.FLOW_RULE,(String)rules,configService);
+        },converter);
     }
 
     @Bean
@@ -71,12 +87,16 @@ public class ApolloConfig {
         return s -> JSON.parseArray(s, DegradeRuleEntity.class);
     }
     @Bean
-    public DegradeRuleApolloProvider degradeRuleProvider(){
-        return new DegradeRuleApolloProvider();
+    public DynamicRuleProvider degradeRuleProvider(ApolloConfigService configService,
+                                                   Converter<String,List<DegradeRuleEntity>> converter){
+        return new AbstractDynamicRuleProvider((appName)->readCfgValue((String) appName,
+                NacosConfigUtil.DEGRADE_RULE ,configService),converter);
     }
     @Bean
-    public DegradeRuleApolloPublisher degradeRulePublisher(Converter<List<DegradeRuleEntity>,String> converter){
-        return new DegradeRuleApolloPublisher(converter);
+    public DynamicRulePublisher degradeRulePublisher(ApolloConfigService configService,Converter<List<DegradeRuleEntity>,String> converter){
+        return new AbstractDynamicRulePublisher((appId, rules)->{
+            publishConfig((String)appId, NacosConfigUtil.DEGRADE_RULE,(String)rules,configService);
+        },converter);
     }
 
     @Bean
@@ -88,12 +108,16 @@ public class ApolloConfig {
         return s -> JSON.parseArray(s, AuthorityRuleEntity.class);
     }
     @Bean
-    public AuthorityRuleApolloProvider authorityRuleProvider(){
-        return new AuthorityRuleApolloProvider();
+    public DynamicRuleProvider authorityRuleProvider(ApolloConfigService configService,
+                                                     Converter<String,List<AuthorityRuleEntity>> converter){
+        return new AbstractDynamicRuleProvider((appName)->readCfgValue((String) appName,
+                NacosConfigUtil.AUTHORITY_RULE ,configService),converter);
     }
     @Bean
-    public AuthorityRuleApolloPublisher authorityRulePublisher(Converter<List<AuthorityRuleEntity>,String> converter){
-        return new AuthorityRuleApolloPublisher(converter);
+    public DynamicRulePublisher authorityRulePublisher(ApolloConfigService configService,Converter<List<AuthorityRuleEntity>,String> converter){
+        return new AbstractDynamicRulePublisher((appId, rules)->{
+            publishConfig((String)appId, NacosConfigUtil.AUTHORITY_RULE,(String)rules,configService);
+        },converter);
     }
 
     @Bean
@@ -105,12 +129,16 @@ public class ApolloConfig {
         return s -> JSON.parseArray(s, ParamFlowRuleEntity.class);
     }
     @Bean
-    public ParamFlowRuleApolloProvider paramFlowRuleProvider(){
-        return new ParamFlowRuleApolloProvider();
+    public DynamicRuleProvider paramFlowRuleProvider(ApolloConfigService configService,
+                                                     Converter<String,List<ParamFlowRuleEntity>> converter){
+        return new AbstractDynamicRuleProvider((appName)->readCfgValue((String) appName,
+                NacosConfigUtil.PARAM_RULE ,configService),converter);
     }
     @Bean
-    public ParamFlowRuleApolloPublisher paramFlowRulePublisher(Converter<List<ParamFlowRuleEntity>,String> converter){
-        return new ParamFlowRuleApolloPublisher(converter);
+    public DynamicRulePublisher paramFlowRulePublisher(ApolloConfigService configService,Converter<List<ParamFlowRuleEntity>,String> converter){
+        return new AbstractDynamicRulePublisher((appId, rules)->{
+            publishConfig((String)appId, NacosConfigUtil.PARAM_RULE,(String)rules,configService);
+        },converter);
     }
 
     @Bean
@@ -122,12 +150,16 @@ public class ApolloConfig {
         return s -> JSON.parseArray(s, SystemRuleEntity.class);
     }
     @Bean
-    public SystemRuleApolloProvider systemRuleProvider(){
-        return new SystemRuleApolloProvider();
+    public DynamicRuleProvider systemRuleProvider(ApolloConfigService configService,
+                                                  Converter<String,List<SystemRuleEntity>> converter){
+        return new AbstractDynamicRuleProvider((appName)->readCfgValue((String) appName,
+                NacosConfigUtil.SYSTEM_RULE,configService),converter);
     }
     @Bean
-    public SystemRuleApolloPublisher systemRulePublisher(Converter<List<SystemRuleEntity>,String> converter){
-        return new SystemRuleApolloPublisher(converter);
+    public DynamicRulePublisher systemRulePublisher(ApolloConfigService configService,Converter<List<SystemRuleEntity>,String> converter){
+        return new AbstractDynamicRulePublisher((appId, rules)->{
+            publishConfig((String)appId, NacosConfigUtil.PARAM_RULE,(String)rules,configService);
+        },converter);
     }
 
     @Bean

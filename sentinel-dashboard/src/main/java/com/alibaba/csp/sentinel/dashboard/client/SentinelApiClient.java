@@ -16,16 +16,19 @@
 package com.alibaba.csp.sentinel.dashboard.client;
 
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayFlowRule;
 import com.alibaba.csp.sentinel.command.CommandConstants;
@@ -59,10 +62,6 @@ import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ServerFlowConfig
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ServerTransportConfig;
 import com.alibaba.csp.sentinel.dashboard.util.VersionUtils;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import org.apache.commons.lang.StringUtils;
 import org.apache.http.Consts;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -82,7 +81,6 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
@@ -135,10 +133,6 @@ public class SentinelApiClient {
 
     @Autowired
     private AppManagement appManagement;
-
-    @Value("${spring.influx.url:}")
-    private String influxdburl;
-    ObjectMapper mapper = new ObjectMapper();
 
     public SentinelApiClient() {
         IOReactorConfig ioConfig = IOReactorConfig.custom().setConnectTimeout(3000).setSoTimeout(10000)
@@ -244,33 +238,9 @@ public class SentinelApiClient {
             }
         } catch (Exception ignore) {
         }
-        return bodyData(EntityUtils.toString(response.getEntity(), charset != null ? charset : DEFAULT_CHARSET));
+        return EntityUtils.toString(response.getEntity(), charset != null ? charset : DEFAULT_CHARSET);
     }
 
-    private String bodyData(String body) {
-        if(StringUtils.isBlank(influxdburl)){
-            return body;
-        }
-        try {
-            JsonNode nodes = mapper.readTree(body);
-            JsonNode node = nodes.findPath("values");
-            if(!(node instanceof ArrayNode)){
-                return "";
-            }
-            ArrayNode vnode = (ArrayNode)node;
-            Iterator<JsonNode> values = vnode.elements();
-            String data = StreamSupport.stream(
-                    Spliterators.spliteratorUnknownSize(values, Spliterator.ORDERED),
-                    false)
-                    .map(n -> (ArrayNode) n)
-                    .map(v -> v.get(1).asText())
-                    .collect(Collectors.joining("\n"));
-            return data;
-        } catch (Exception e) {
-            logger.info("parse metric exceptions: ", e);
-            return "";
-        }
-    }
     /**
      * With no param
      *
@@ -325,35 +295,13 @@ public class SentinelApiClient {
             future.completeExceptionally(new IllegalArgumentException("Bad URL or command name"));
             return future;
         }
-
-
-        boolean isparam = !useHttpPost || !isSupportPost(app, ip, port);
-
-        String url = buildUrl(ip,port,api,params,isparam);
-
-        if(StringUtil.isNotBlank(influxdburl)){
-            url = influxdburl+"/query?db=sentinel_db&q=select%20data%20from%20%22"
-                    +api+"%22%20where%20app='"+app+"'%20and%20host='"+hostname+"'%20limit%201";
-        }
-
-        if (isparam) {
-            // Using GET in older versions, append parameters after url
-            return executeCommand(new HttpGet(url));
-        } else {
-            // Using POST
-            return executeCommand(postRequest(url, params, isSupportEnhancedContentType(app, ip, port)));
-        }
-    }
-
-    private String buildUrl(String ip, int port, String api, Map<String, String> params, boolean isparam){
-        if (params == null) {
-            params = Collections.emptyMap();
-        }
-
         StringBuilder urlBuilder = new StringBuilder();
         urlBuilder.append("http://");
         urlBuilder.append(ip).append(':').append(port).append('/').append(api);
-        if (isparam) {
+        if (params == null) {
+            params = Collections.emptyMap();
+        }
+        if (!useHttpPost || !isSupportPost(app, ip, port)) {
             // Using GET in older versions, append parameters after url
             if (!params.isEmpty()) {
                 if (urlBuilder.indexOf("?") == -1) {
@@ -363,8 +311,12 @@ public class SentinelApiClient {
                 }
                 urlBuilder.append(queryString(params));
             }
+            return executeCommand(new HttpGet(urlBuilder.toString()));
+        } else {
+            // Using POST
+            return executeCommand(
+                    postRequest(urlBuilder.toString(), params, isSupportEnhancedContentType(app, ip, port)));
         }
-        return urlBuilder.toString();
     }
 
     private CompletableFuture<String> executeCommand(HttpUriRequest request) {
