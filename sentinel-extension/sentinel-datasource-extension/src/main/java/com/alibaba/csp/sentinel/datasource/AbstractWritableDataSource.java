@@ -16,20 +16,18 @@
 package com.alibaba.csp.sentinel.datasource;
 
 /**
- * Convert an object from source type {@code S} to target type {@code T}.
+ * The abstract writable data source provides basic functionality for publish config.
  *
- * @author leyou
- * @author Eric Zhao
+ * @param <T> target data type for Sentinel
+ *
+ * @author Jiajiangnan
  */
-@Deprecated
-public interface Converter<S, T> {
+public abstract class AbstractWritableDataSource<T> implements WritableDataSource<T> {
 
-    /**
-     * Convert {@code source} to the target type.
-     *
-     * @param source the source object
-     * @return the target object
-     */
-    @Deprecated
-    T convert(S source);
+    protected final DataSourceHolder dataSourceHolder;
+
+    public AbstractWritableDataSource(DataSourceHolder dataSourceHolder) {
+        this.dataSourceHolder = dataSourceHolder;
+    }
+
 }

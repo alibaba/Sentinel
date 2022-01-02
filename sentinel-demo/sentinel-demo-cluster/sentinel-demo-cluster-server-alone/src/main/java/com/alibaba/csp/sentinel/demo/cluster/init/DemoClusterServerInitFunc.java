@@ -15,21 +15,19 @@
  */
 package com.alibaba.csp.sentinel.demo.cluster.init;
 
-import java.util.List;
-import java.util.Set;
-
 import com.alibaba.csp.sentinel.cluster.flow.rule.ClusterFlowRuleManager;
 import com.alibaba.csp.sentinel.cluster.flow.rule.ClusterParamFlowRuleManager;
 import com.alibaba.csp.sentinel.cluster.server.config.ClusterServerConfigManager;
 import com.alibaba.csp.sentinel.cluster.server.config.ServerTransportConfig;
-import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
+import com.alibaba.csp.sentinel.datasource.converter.JsonArrayConverter;
+import com.alibaba.csp.sentinel.datasource.converter.JsonObjectConverter;
 import com.alibaba.csp.sentinel.datasource.nacos.NacosDataSource;
 import com.alibaba.csp.sentinel.demo.cluster.DemoConstants;
 import com.alibaba.csp.sentinel.init.InitFunc;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
+
+import java.util.List;
 
 /**
  * @author Eric Zhao
@@ -45,27 +43,23 @@ public class DemoClusterServerInitFunc implements InitFunc {
     public void init() throws Exception {
         // Register cluster flow rule property supplier which creates data source by namespace.
         ClusterFlowRuleManager.setPropertySupplier(namespace -> {
-            ReadableDataSource<String, List<FlowRule>> ds = new NacosDataSource<>(remoteAddress, groupId,
-                namespace + DemoConstants.FLOW_POSTFIX,
-                source -> JSON.parseObject(source, new TypeReference<List<FlowRule>>() {}));
+            NacosDataSource<List<FlowRule>> ds = new NacosDataSource<>(remoteAddress, groupId,
+                    namespace + DemoConstants.FLOW_POSTFIX, new JsonArrayConverter<>(FlowRule.class));
             return ds.getProperty();
         });
         // Register cluster parameter flow rule property supplier.
         ClusterParamFlowRuleManager.setPropertySupplier(namespace -> {
-            ReadableDataSource<String, List<ParamFlowRule>> ds = new NacosDataSource<>(remoteAddress, groupId,
-                namespace + DemoConstants.PARAM_FLOW_POSTFIX,
-                source -> JSON.parseObject(source, new TypeReference<List<ParamFlowRule>>() {}));
+            NacosDataSource<List<ParamFlowRule>> ds = new NacosDataSource<>(remoteAddress, groupId,
+                    namespace + DemoConstants.PARAM_FLOW_POSTFIX, new JsonArrayConverter<>(ParamFlowRule.class));
             return ds.getProperty();
         });
 
         // Server namespace set (scope) data source.
-        ReadableDataSource<String, Set<String>> namespaceDs = new NacosDataSource<>(remoteAddress, groupId,
-            namespaceSetDataId, source -> JSON.parseObject(source, new TypeReference<Set<String>>() {}));
+        NacosDataSource<List<String>> namespaceDs = new NacosDataSource<>(remoteAddress, groupId, namespaceSetDataId, new JsonArrayConverter<>(String.class));
         ClusterServerConfigManager.registerNamespaceSetProperty(namespaceDs.getProperty());
         // Server transport configuration data source.
-        ReadableDataSource<String, ServerTransportConfig> transportConfigDs = new NacosDataSource<>(remoteAddress,
-            groupId, serverTransportDataId,
-            source -> JSON.parseObject(source, new TypeReference<ServerTransportConfig>() {}));
+        NacosDataSource<ServerTransportConfig> transportConfigDs = new NacosDataSource<>(remoteAddress,
+            groupId, serverTransportDataId, new JsonObjectConverter<>(ServerTransportConfig.class));
         ClusterServerConfigManager.registerServerTransportProperty(transportConfigDs.getProperty());
     }
 }

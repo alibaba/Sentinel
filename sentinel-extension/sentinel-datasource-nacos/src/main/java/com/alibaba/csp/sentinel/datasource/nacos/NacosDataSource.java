@@ -15,50 +15,31 @@
  */
 package com.alibaba.csp.sentinel.datasource.nacos;
 
-import java.util.Properties;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
-import com.alibaba.csp.sentinel.datasource.AbstractDataSource;
-import com.alibaba.csp.sentinel.datasource.Converter;
+import com.alibaba.csp.sentinel.datasource.DataSourceHolder;
+import com.alibaba.csp.sentinel.datasource.DataSourceMode;
+import com.alibaba.csp.sentinel.datasource.converter.SentinelConverter;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigService;
-import com.alibaba.nacos.api.config.listener.Listener;
+import com.alibaba.nacos.api.exception.NacosException;
+
+import java.util.Properties;
 
 /**
- * A read-only {@code DataSource} with Nacos backend. When the data in Nacos backend has been modified,
- * Nacos will automatically push the new value so that the dynamic configuration can be real-time.
+ * Extense DataSource for Nacos, NacosDataSource holds NacosReadableDataSource and NacosReadableDataSource.
+ * When new an instance By constructor we can define the mode of DataSource like Readable, Writable, or All
  *
- * @author Eric Zhao
+ * @param <T> target data type for Sentinel
+ *
+ * @author Jiajiangnan
  */
-public class NacosDataSource<T> extends AbstractDataSource<String, T> {
+public class NacosDataSource<T> extends DataSourceHolder {
 
-    private static final int DEFAULT_TIMEOUT = 3000;
-
-    /**
-     * Single-thread pool. Once the thread pool is blocked, we throw up the old task.
-     */
-    private final ExecutorService pool = new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS,
-        new ArrayBlockingQueue<Runnable>(1), new NamedThreadFactory("sentinel-nacos-ds-update", true),
-        new ThreadPoolExecutor.DiscardOldestPolicy());
-
-    private final Listener configListener;
-    private final String groupId;
-    private final String dataId;
-    private final Properties properties;
-
-    /**
-     * Note: The Nacos config might be null if its initialization failed.
-     */
-    private ConfigService configService = null;
+    private NacosReadableDataSource<T> readableDataSource;
+    private NacosWritableDataSource<T> writableDataSource;
 
     /**
      * Constructs an read-only DataSource with Nacos backend.
@@ -68,9 +49,20 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
      * @param dataId     data ID, cannot be empty
      * @param parser     customized data parser, cannot be empty
      */
-    public NacosDataSource(final String serverAddr, final String groupId, final String dataId,
-                           Converter<String, T> parser) {
-        this(NacosDataSource.buildProperties(serverAddr), groupId, dataId, parser);
+    public NacosDataSource(final String serverAddr, final String groupId, final String dataId, SentinelConverter<String, T> parser) {
+        this(NacosDataSource.buildProperties(serverAddr), groupId, dataId, parser, DataSourceMode.READABLE);
+    }
+    /**
+     * Constructs an read-only DataSource with Nacos backend.
+     *
+     * @param serverAddr server address of Nacos, cannot be empty
+     * @param groupId    group ID, cannot be empty
+     * @param dataId     data ID, cannot be empty
+     * @param parser     customized data parser, cannot be empty
+     * @param dataSourceMode     dataSourceMode, cannot be empty
+     */
+    public NacosDataSource(final String serverAddr, final String groupId, final String dataId, SentinelConverter<String, T> parser, final DataSourceMode dataSourceMode) {
+        this(NacosDataSource.buildProperties(serverAddr), groupId, dataId, parser, dataSourceMode);
     }
 
     /**
@@ -80,73 +72,40 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
      * @param dataId     data ID, cannot be empty
      * @param parser     customized data parser, cannot be empty
      */
-    public NacosDataSource(final Properties properties, final String groupId, final String dataId,
-                           Converter<String, T> parser) {
+    public NacosDataSource(final Properties properties, final String groupId, final String dataId, SentinelConverter<String, T> parser) {
+        this(properties, groupId, dataId, parser, DataSourceMode.READABLE);
+    }
+
+    /**
+     *
+     * @param properties properties for construct {@link ConfigService} using {@link NacosFactory#createConfigService(Properties)}
+     * @param groupId    group ID, cannot be empty
+     * @param dataId     data ID, cannot be empty
+     * @param parser     customized data parser, cannot be empty
+     * @param dataSourceMode     dataSourceMode, cannot be empty
+     */
+    public NacosDataSource(final Properties properties, final String groupId, final String dataId, SentinelConverter<String, T> parser, final DataSourceMode dataSourceMode) {
         super(parser);
+
         if (StringUtil.isBlank(groupId) || StringUtil.isBlank(dataId)) {
-            throw new IllegalArgumentException(String.format("Bad argument: groupId=[%s], dataId=[%s]",
-                groupId, dataId));
+            throw new IllegalArgumentException(String.format("Bad argument: groupId=[%s], dataId=[%s]", groupId, dataId));
         }
         AssertUtil.notNull(properties, "Nacos properties must not be null, you could put some keys from PropertyKeyConst");
-        this.groupId = groupId;
-        this.dataId = dataId;
-        this.properties = properties;
-        this.configListener = new Listener() {
-            @Override
-            public Executor getExecutor() {
-                return pool;
-            }
 
-            @Override
-            public void receiveConfigInfo(final String configInfo) {
-                RecordLog.info("[NacosDataSource] New property value received for (properties: {}) (dataId: {}, groupId: {}): {}",
-                    properties, dataId, groupId, configInfo);
-                T newValue = NacosDataSource.this.parser.convert(configInfo);
-                // Update the new value to the property.
-                getProperty().updateValue(newValue);
-            }
-        };
-        initNacosListener();
-        loadInitialConfig();
-    }
-
-    private void loadInitialConfig() {
         try {
-            T newValue = loadConfig();
-            if (newValue == null) {
-                RecordLog.warn("[NacosDataSource] WARN: initial config is null, you may have to check your data source");
-            }
-            getProperty().updateValue(newValue);
-        } catch (Exception ex) {
-            RecordLog.warn("[NacosDataSource] Error when loading initial config", ex);
+            super.setDataSourceClient(NacosFactory.createConfigService(properties));
+        } catch (NacosException ex) {
+            RecordLog.warn("[NacosDataSource] Error when create configService which is NacosClient", ex);
         }
-    }
 
-    private void initNacosListener() {
-        try {
-            this.configService = NacosFactory.createConfigService(this.properties);
-            // Add config listener.
-            configService.addListener(dataId, groupId, configListener);
-        } catch (Exception e) {
-            RecordLog.warn("[NacosDataSource] Error occurred when initializing Nacos data source", e);
-            e.printStackTrace();
+        if(DataSourceMode.ALL == dataSourceMode || DataSourceMode.READABLE == dataSourceMode) {
+            this.readableDataSource = new NacosReadableDataSource(properties, groupId, dataId, this);
         }
-    }
 
-    @Override
-    public String readSource() throws Exception {
-        if (configService == null) {
-            throw new IllegalStateException("Nacos config service has not been initialized or error occurred");
+        if(DataSourceMode.ALL == dataSourceMode || DataSourceMode.WRITABLE == dataSourceMode) {
+            this.writableDataSource = new NacosWritableDataSource(properties, groupId, dataId, this);
         }
-        return configService.getConfig(dataId, groupId, DEFAULT_TIMEOUT);
-    }
 
-    @Override
-    public void close() {
-        if (configService != null) {
-            configService.removeListener(dataId, groupId, configListener);
-        }
-        pool.shutdownNow();
     }
 
     private static Properties buildProperties(String serverAddr) {
@@ -154,4 +113,13 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
         properties.setProperty(PropertyKeyConst.SERVER_ADDR, serverAddr);
         return properties;
     }
+
+    public NacosReadableDataSource<T> getReader() {
+        return this.readableDataSource;
+    }
+
+    public NacosWritableDataSource<T> getWriter() {
+        return this.writableDataSource;
+    }
+
 }
