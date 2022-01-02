@@ -14,15 +14,17 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
  */
 public class DataSourceHolder<S, T, C> {
 
-    private C client;
     protected final SentinelConverter<S, T> converter;
+    protected final DataSourceMode dataSourceMode;
     protected final SentinelProperty<T> property;
+    private C client;
 
-    public DataSourceHolder(SentinelConverter<S, T> converter) {
+    public DataSourceHolder(final SentinelConverter<S, T> converter, final DataSourceMode dataSourceMode) {
         if (converter == null) {
             throw new IllegalArgumentException("parser can't be null");
         }
         this.converter = converter;
+        this.dataSourceMode = dataSourceMode;
         this.property = new DynamicSentinelProperty<T>();
     }
 

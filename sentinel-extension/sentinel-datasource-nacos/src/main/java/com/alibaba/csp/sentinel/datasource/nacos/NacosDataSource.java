@@ -85,7 +85,7 @@ public class NacosDataSource<T> extends DataSourceHolder {
      * @param dataSourceMode     dataSourceMode, cannot be empty
      */
     public NacosDataSource(final Properties properties, final String groupId, final String dataId, SentinelConverter<String, T> parser, final DataSourceMode dataSourceMode) {
-        super(parser);
+        super(parser, dataSourceMode);
 
         if (StringUtil.isBlank(groupId) || StringUtil.isBlank(dataId)) {
             throw new IllegalArgumentException(String.format("Bad argument: groupId=[%s], dataId=[%s]", groupId, dataId));
