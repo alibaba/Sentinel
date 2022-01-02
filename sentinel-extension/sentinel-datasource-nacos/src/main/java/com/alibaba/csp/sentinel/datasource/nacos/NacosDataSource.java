@@ -47,10 +47,10 @@ public class NacosDataSource<T> extends DataSourceHolder {
      * @param serverAddr server address of Nacos, cannot be empty
      * @param groupId    group ID, cannot be empty
      * @param dataId     data ID, cannot be empty
-     * @param parser     customized data parser, cannot be empty
+     * @param converter     customized data converter, cannot be empty
      */
-    public NacosDataSource(final String serverAddr, final String groupId, final String dataId, SentinelConverter<String, T> parser) {
-        this(NacosDataSource.buildProperties(serverAddr), groupId, dataId, parser, DataSourceMode.READABLE);
+    public NacosDataSource(final String serverAddr, final String groupId, final String dataId, SentinelConverter<String, T> converter) {
+        this(serverAddr, groupId, dataId, converter, DataSourceMode.READABLE);
     }
     /**
      * Constructs an read-only DataSource with Nacos backend.
@@ -58,11 +58,11 @@ public class NacosDataSource<T> extends DataSourceHolder {
      * @param serverAddr server address of Nacos, cannot be empty
      * @param groupId    group ID, cannot be empty
      * @param dataId     data ID, cannot be empty
-     * @param parser     customized data parser, cannot be empty
+     * @param converter     customized data converter, cannot be empty
      * @param dataSourceMode     dataSourceMode, cannot be empty
      */
-    public NacosDataSource(final String serverAddr, final String groupId, final String dataId, SentinelConverter<String, T> parser, final DataSourceMode dataSourceMode) {
-        this(NacosDataSource.buildProperties(serverAddr), groupId, dataId, parser, dataSourceMode);
+    public NacosDataSource(final String serverAddr, final String groupId, final String dataId, SentinelConverter<String, T> converter, final DataSourceMode dataSourceMode) {
+        this(NacosDataSource.buildProperties(serverAddr), groupId, dataId, converter, dataSourceMode);
     }
 
     /**
@@ -70,10 +70,10 @@ public class NacosDataSource<T> extends DataSourceHolder {
      * @param properties properties for construct {@link ConfigService} using {@link NacosFactory#createConfigService(Properties)}
      * @param groupId    group ID, cannot be empty
      * @param dataId     data ID, cannot be empty
-     * @param parser     customized data parser, cannot be empty
+     * @param converter     customized data converter, cannot be empty
      */
-    public NacosDataSource(final Properties properties, final String groupId, final String dataId, SentinelConverter<String, T> parser) {
-        this(properties, groupId, dataId, parser, DataSourceMode.READABLE);
+    public NacosDataSource(final Properties properties, final String groupId, final String dataId, SentinelConverter<String, T> converter) {
+        this(properties, groupId, dataId, converter, DataSourceMode.READABLE);
     }
 
     /**
@@ -81,11 +81,11 @@ public class NacosDataSource<T> extends DataSourceHolder {
      * @param properties properties for construct {@link ConfigService} using {@link NacosFactory#createConfigService(Properties)}
      * @param groupId    group ID, cannot be empty
      * @param dataId     data ID, cannot be empty
-     * @param parser     customized data parser, cannot be empty
+     * @param converter     customized data converter, cannot be empty
      * @param dataSourceMode     dataSourceMode, cannot be empty
      */
-    public NacosDataSource(final Properties properties, final String groupId, final String dataId, SentinelConverter<String, T> parser, final DataSourceMode dataSourceMode) {
-        super(parser, dataSourceMode);
+    public NacosDataSource(final Properties properties, final String groupId, final String dataId, SentinelConverter<String, T> converter, final DataSourceMode dataSourceMode) {
+        super(converter, dataSourceMode);
 
         if (StringUtil.isBlank(groupId) || StringUtil.isBlank(dataId)) {
             throw new IllegalArgumentException(String.format("Bad argument: groupId=[%s], dataId=[%s]", groupId, dataId));
