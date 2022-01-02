@@ -122,4 +122,14 @@ public class NacosDataSource<T> extends DataSourceHolder {
         return this.writableDataSource;
     }
 
+    public void close() {
+        if(DataSourceMode.ALL == dataSourceMode || DataSourceMode.READABLE == dataSourceMode) {
+            this.readableDataSource.close();
+        }
+
+        if(DataSourceMode.ALL == dataSourceMode || DataSourceMode.WRITABLE == dataSourceMode) {
+            this.writableDataSource.close();
+        }
+    }
+
 }

@@ -40,20 +40,20 @@ public class NacosReadableDataSource<T> extends AbstractReadableDataSource<Strin
 
     private static final int DEFAULT_TIMEOUT = 3000;
 
-    /**
-     * Single-thread pool. Once the thread pool is blocked, we throw up the old task.
-     */
-    private final ExecutorService pool = new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS,
-        new ArrayBlockingQueue<Runnable>(1), new NamedThreadFactory("sentinel-nacos-ds-update", true),
-        new ThreadPoolExecutor.DiscardOldestPolicy());
-
-    private final Listener configListener;
     private final String groupId;
     private final String dataId;
     private final Properties properties;
     private final DataSourceHolder dataSourceHolder;
+    private final boolean autoRefresh;
 
     private final SentinelConverter<String, T> converter;
+
+
+    /**
+     * Single-thread pool. Once the thread pool is blocked, we throw up the old task.
+     */
+    private ExecutorService pool;
+    private Listener configListener;
 
     /**
      * Note: The Nacos config might be null if its initialization failed.
@@ -61,32 +61,31 @@ public class NacosReadableDataSource<T> extends AbstractReadableDataSource<Strin
     private ConfigService configService;
 
     public NacosReadableDataSource(final Properties properties, final String groupId, final String dataId, final DataSourceHolder dataSourceHolder) {
+        this(properties, groupId, dataId, dataSourceHolder, false);
+    }
+
+    public NacosReadableDataSource(final Properties properties, final String groupId, final String dataId, final DataSourceHolder dataSourceHolder, final boolean autoRefresh) {
         super(dataSourceHolder);
         this.groupId = groupId;
         this.dataId = dataId;
         this.properties = properties;
         this.dataSourceHolder = dataSourceHolder;
-        this.converter = dataSourceHolder.getConverter();
-        this.configListener = new Listener() {
-            @Override
-            public Executor getExecutor() {
-                return pool;
-            }
+        this.autoRefresh = autoRefresh;
 
-            @Override
-            public void receiveConfigInfo(final String configInfo) {
-                RecordLog.info("[NacosDataSource] New property value received for (properties: {}) (dataId: {}, groupId: {}): {}", properties, dataId, groupId, configInfo);
-                T newValue = converter.toSentinel(configInfo);
-                // Update the new value to the property.
-                getProperty().updateValue(newValue);
-            }
-        };
+        this.converter = dataSourceHolder.getConverter();
+
         init();
-        initNacosListener();
-        loadInitialConfig();
     }
 
     private void init() {
+        initConfigService();
+        if(this.autoRefresh) {
+            autoRefreshConfig();
+        }
+        loadInitialConfig();
+    }
+
+    private void  initConfigService() {
         this.configService = ObjectUtils.defaultIfNull((ConfigService) dataSourceHolder.getDataSourceClient(), null);
     }
 
@@ -102,8 +101,26 @@ public class NacosReadableDataSource<T> extends AbstractReadableDataSource<Strin
         }
     }
 
-    private void initNacosListener() {
+    private void autoRefreshConfig() {
         try {
+            this.pool = new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS,
+                    new ArrayBlockingQueue<>(1), new NamedThreadFactory("sentinel-nacos-ds-update", true),
+                    new ThreadPoolExecutor.DiscardOldestPolicy());
+
+            this.configListener = new Listener() {
+                @Override
+                public Executor getExecutor() {
+                    return pool;
+                }
+
+                @Override
+                public void receiveConfigInfo(final String configInfo) {
+                    RecordLog.info("[NacosDataSource] New property value received for (properties: {}) (dataId: {}, groupId: {}): {}", properties, dataId, groupId, configInfo);
+                    T newValue = converter.toSentinel(configInfo);
+                    // Update the new value to the property.
+                    getProperty().updateValue(newValue);
+                }
+            };
             // Add config listener.
             configService.addListener(dataId, groupId, configListener);
         } catch (Exception e) {
@@ -122,10 +139,12 @@ public class NacosReadableDataSource<T> extends AbstractReadableDataSource<Strin
 
     @Override
     public void close() {
-        if (configService != null) {
-            configService.removeListener(dataId, groupId, configListener);
+        if(this.autoRefresh) {
+            if (configService != null) {
+                configService.removeListener(dataId, groupId, configListener);
+            }
+            pool.shutdownNow();
         }
-        pool.shutdownNow();
     }
 
 }
