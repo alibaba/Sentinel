@@ -11,15 +11,15 @@ import com.alibaba.fastjson.JSON;
  */
 public class JsonObjectConverter<S, T extends Object> extends JsonConverter <String, T> {
 
-    private final Class<T> ruleClass;
+    private final Class<T> sentinelClass;
 
-    public JsonObjectConverter(Class<T> ruleClass) {
-        this.ruleClass = ruleClass;
+    public JsonObjectConverter(Class<T> sentinelClass) {
+        this.sentinelClass = sentinelClass;
     }
 
     @Override
     public T toSentinel(String source) {
-        return JSON.parseObject(source, ruleClass);
+        return JSON.parseObject(source, sentinelClass);
     }
 
 

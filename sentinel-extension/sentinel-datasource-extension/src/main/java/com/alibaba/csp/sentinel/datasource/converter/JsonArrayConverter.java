@@ -13,15 +13,15 @@ import java.util.List;
  */
 public class JsonArrayConverter<T extends Object> extends JsonConverter <String, List<T>> {
 
-    private final Class<T> ruleClass;
+    private final Class<T> sentinelClass;
 
-    public JsonArrayConverter(Class<T> ruleClass) {
-        this.ruleClass = ruleClass;
+    public JsonArrayConverter(Class<T> sentinelClass) {
+        this.sentinelClass = sentinelClass;
     }
 
     @Override
     public List<T> toSentinel(String source) {
-        return JSON.parseArray(source, ruleClass);
+        return JSON.parseArray(source, sentinelClass);
     }
 
 
