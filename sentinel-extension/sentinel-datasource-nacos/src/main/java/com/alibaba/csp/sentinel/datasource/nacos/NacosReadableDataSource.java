@@ -61,7 +61,7 @@ public class NacosReadableDataSource<T> extends AbstractReadableDataSource<Strin
     private ConfigService configService;
 
     public NacosReadableDataSource(final Properties properties, final String groupId, final String dataId, final DataSourceHolder dataSourceHolder) {
-        this(properties, groupId, dataId, dataSourceHolder, false);
+        this(properties, groupId, dataId, dataSourceHolder, true);
     }
 
     public NacosReadableDataSource(final Properties properties, final String groupId, final String dataId, final DataSourceHolder dataSourceHolder, final boolean autoRefresh) {
