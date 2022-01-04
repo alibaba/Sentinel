@@ -21,9 +21,9 @@ data:
             port_value: 10000
         filter_chains:
         - filters:
-          - name: envoy.http_connection_manager
+          - name: envoy.filters.network.http_connection_manager
             typed_config:
-              "@type": type.googleapis.com/envoy.config.filter.network.http_connection_manager.v2.HttpConnectionManager
+              "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
               stat_prefix: ingress_http
               route_config:
                 name: local_route
@@ -34,23 +34,32 @@ data:
                   - match:
                       prefix: "/"
                     route:
-                      host_rewrite: httpbin.org
                       cluster: service_httpbin
+                    typed_per_filter_config:
+                      envoy.filters.http.dynamic_forward_proxy:
+                        "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.PerRouteConfig
+                        host_rewrite_literal: httpbin.org
                   rate_limits:
                     - stage: 0
                       actions:
                         - {destination_cluster: {}}
               http_filters:
-                - name: envoy.rate_limit
-                  config:
+                - name: envoy.filters.http.ratelimit
+                  typed_config:
+                    "@type": type.googleapis.com/envoy.extensions.filters.http.ratelimit.v3.RateLimit
                     domain: foo
+                    request_type: external
+                    failure_mode_deny: false
                     stage: 0
                     rate_limit_service:
                       grpc_service:
                         envoy_grpc:
                           cluster_name: rate_limit_cluster
-                        timeout: 0.25s
-                - name: envoy.router
+                        timeout: 2s
+                      transport_api_version: V3
+                - name: envoy.filters.http.router
+                  typed_config:
+                    "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
       clusters:
       - name: service_httpbin
         connect_timeout: 0.5s
@@ -68,8 +77,8 @@ data:
                     address: httpbin.org
                     port_value: 80
       - name: rate_limit_cluster
-        type: LOGICAL_DNS
-        connect_timeout: 0.25s
+        type: STRICT_DNS
+        connect_timeout: 10s
         lb_policy: ROUND_ROBIN
         http2_protocol_options: {}
         load_assignment:
@@ -82,7 +91,7 @@ data:
                     address: sentinel-rls-service
                     port_value: 10245
 ---
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: envoy-deployment-basic
@@ -100,7 +109,7 @@ spec:
     spec:
       containers:
         - name: envoy
-          image: envoyproxy/envoy:v1.12.0
+          image: envoyproxy/envoy:v1.20.1
           ports:
             - containerPort: 10000
           command: ["envoy"]
