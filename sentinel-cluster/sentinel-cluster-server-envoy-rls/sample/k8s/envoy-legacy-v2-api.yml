@@ -1,7 +1,8 @@
+# NOTE: legacy V2 API sample, which has been deprecated
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: envoy-cm-17
+  name: envoy-cm
 data:
   envoy-yml: |-
     admin:
@@ -21,9 +22,9 @@ data:
             port_value: 10000
         filter_chains:
         - filters:
-          - name: envoy.filters.network.http_connection_manager
+          - name: envoy.http_connection_manager
             typed_config:
-              "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+              "@type": type.googleapis.com/envoy.config.filter.network.http_connection_manager.v2.HttpConnectionManager
               stat_prefix: ingress_http
               route_config:
                 name: local_route
@@ -34,32 +35,23 @@ data:
                   - match:
                       prefix: "/"
                     route:
+                      host_rewrite: httpbin.org
                       cluster: service_httpbin
-                    typed_per_filter_config:
-                      envoy.filters.http.dynamic_forward_proxy:
-                        "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.PerRouteConfig
-                        host_rewrite_literal: httpbin.org
                   rate_limits:
                     - stage: 0
                       actions:
                         - {destination_cluster: {}}
               http_filters:
-                - name: envoy.filters.http.ratelimit
-                  typed_config:
-                    "@type": type.googleapis.com/envoy.extensions.filters.http.ratelimit.v3.RateLimit
+                - name: envoy.rate_limit
+                  config:
                     domain: foo
-                    request_type: external
-                    failure_mode_deny: false
                     stage: 0
                     rate_limit_service:
                       grpc_service:
                         envoy_grpc:
                           cluster_name: rate_limit_cluster
-                        timeout: 2s
-                      transport_api_version: V3
-                - name: envoy.filters.http.router
-                  typed_config:
-                    "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+                        timeout: 0.25s
+                - name: envoy.router
       clusters:
       - name: service_httpbin
         connect_timeout: 0.5s
@@ -77,8 +69,8 @@ data:
                     address: httpbin.org
                     port_value: 80
       - name: rate_limit_cluster
-        type: STRICT_DNS
-        connect_timeout: 10s
+        type: LOGICAL_DNS
+        connect_timeout: 0.25s
         lb_policy: ROUND_ROBIN
         http2_protocol_options: {}
         load_assignment:
@@ -94,22 +86,22 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: envoy-deployment-basic-17
+  name: envoy-deployment-basic
   labels:
-    app: envoy-17
+    app: envoy
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: envoy-17
+      app: envoy
   template:
     metadata:
       labels:
-        app: envoy-17
+        app: envoy
     spec:
       containers:
         - name: envoy
-          image: envoyproxy/envoy:v1.17.3
+          image: envoyproxy/envoy:v1.12.0
           ports:
             - containerPort: 10000
           command: ["envoy"]
@@ -120,7 +112,7 @@ spec:
       volumes:
         - name: envoy-config
           configMap:
-            name: envoy-cm-17
+            name: envoy-cm
             items:
               - key: envoy-yml
                 path: envoy.yaml
@@ -128,14 +120,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: envoy-service-17
+  name: envoy-service
   labels:
-    name: envoy-service-17
+    name: envoy-service
 spec:
-  type: NodePort
+  type: ClusterIP
   ports:
     - port: 10000
       targetPort: 10000
       protocol: TCP
   selector:
-    app: envoy-17
+    app: envoy

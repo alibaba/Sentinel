@@ -3,6 +3,8 @@
 This module provides the [Envoy rate limiting gRPC service](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/other_features/global_rate_limiting#arch-overview-rate-limit) implementation
 with Sentinel token server.
 
+The token server has supported both Envoy RLS v2 and v3 API. Since Envoy 1.18.0, v2 API support has been removed.
+
 > Note: the gRPC stub classes for Envoy RLS service is generated via `protobuf-maven-plugin` during the `compile` goal.
 > The generated classes is located in the directory: `target/generated-sources/protobuf`.
 
@@ -19,7 +21,7 @@ mvn clean package -P prod
 Sentinel RLS token server supports dynamic rule configuration via the yaml file.
 The file may provide rules for one *domain* (defined in Envoy's conf file).
 In Envoy, one rate limit request might carry multiple *rate limit descriptors*
-(which will be generated from [Envoy rate limit actions](https://www.envoyproxy.io/docs/envoy/v1.12.1/api-v2/api/v2/route/route.proto#envoy-api-msg-route-ratelimit)).
+(which will be generated from [Envoy rate limit actions](https://www.envoyproxy.io/docs/envoy/v1.20.1/api-v3/config/route/v3/route_components.proto#envoy-v3-api-msg-config-route-v3-ratelimit)).
 One rate limit descriptor may have multiple entries (key-value pair).
 We may set different threshold for each rate limit descriptors.
 
