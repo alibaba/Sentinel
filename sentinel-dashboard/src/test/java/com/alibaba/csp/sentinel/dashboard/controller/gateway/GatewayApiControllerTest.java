@@ -15,9 +15,8 @@
  */
 package com.alibaba.csp.sentinel.dashboard.controller.gateway;
 
-import com.alibaba.csp.sentinel.dashboard.auth.AuthorizationInterceptor;
-import com.alibaba.csp.sentinel.dashboard.auth.FakeAuthServiceImpl;
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
+import com.alibaba.csp.sentinel.dashboard.config.NoAuthConfigurationTest;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.ApiDefinitionEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.ApiPredicateItemEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
@@ -61,7 +60,7 @@ import static org.mockito.BDDMockito.*;
  */
 @RunWith(SpringRunner.class)
 @WebMvcTest(GatewayApiController.class)
-@Import({FakeAuthServiceImpl.class, InMemApiDefinitionStore.class, AppManagement.class, SimpleMachineDiscovery.class, AuthorizationInterceptor.class})
+@Import({NoAuthConfigurationTest.class, InMemApiDefinitionStore.class, AppManagement.class, SimpleMachineDiscovery.class})
 public class GatewayApiControllerTest {
 
     private static final String TEST_APP = "test_app";
