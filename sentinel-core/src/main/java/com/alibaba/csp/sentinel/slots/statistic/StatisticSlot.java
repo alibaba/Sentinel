@@ -148,7 +148,8 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             handler.onExit(context, resourceWrapper, count, args);
         }
 
-        fireExit(context, resourceWrapper, count);
+        // fix bug https://github.com/alibaba/Sentinel/issues/2374
+        fireExit(context, resourceWrapper, count, args);
     }
 
     private void recordCompleteFor(Node node, int batchCount, long rt, Throwable error) {
