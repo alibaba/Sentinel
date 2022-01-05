@@ -17,7 +17,6 @@ package com.alibaba.csp.sentinel.slots.block.flow;
 
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
-import com.alibaba.csp.sentinel.log.LogBase;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.metric.MetricTimerListener;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
@@ -82,9 +81,7 @@ public class FlowRuleManager {
                 SentinelConfig.METRIC_FLUSH_INTERVAL);
             return;
         }
-        if (!LogBase.getLogLevel().equals(Level.OFF)) {
-            SCHEDULER.scheduleAtFixedRate(new MetricTimerListener(), 0, flushInterval, TimeUnit.SECONDS);
-        }
+        SCHEDULER.scheduleAtFixedRate(new MetricTimerListener(), 0, flushInterval, TimeUnit.SECONDS);
     }
 
     /**
