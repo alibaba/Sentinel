@@ -65,18 +65,21 @@ public class SendMetricCommandHandler implements CommandHandler<String> {
         String endTimeStr = request.getParam("endTime");
         String maxLinesStr = request.getParam("maxLines");
         String identity = request.getParam("identity");
-        long startTime = -1;
+        long startTime = System.currentTimeMillis()-5000;
         int maxLines = 6000;
         if (StringUtil.isNotBlank(startTimeStr)) {
             startTime = Long.parseLong(startTimeStr);
-        } else {
-            return CommandResponse.ofSuccess("");
+//        } else {
+//            return CommandResponse.ofSuccess("");
         }
         List<MetricNode> list;
         try {
             // Find by end time if set.
             if (StringUtil.isNotBlank(endTimeStr)) {
                 long endTime = Long.parseLong(endTimeStr);
+                if(startTime>=endTime){
+                    startTime = endTime-5000;
+                }
                 list = searcher.findByTimeAndResource(startTime, endTime, identity);
             } else {
                 if (StringUtil.isNotBlank(maxLinesStr)) {

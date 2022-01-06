@@ -283,7 +283,7 @@ app.controller('GatewayIdentityCtl', ['$scope', '$stateParams', 'IdentityService
         return;
       }
 
-      IdentityService.fetchClusterNodeOfMachine(mac[0], mac[1], $scope.searchKey).success(
+      IdentityService.fetchClusterNodeOfMachine($scope.app,$scope.hostname,mac[0], mac[1], $scope.searchKey).success(
         function (data) {
           if (data.code == 0 && data.data) {
             $scope.identities = data.data;

@@ -20,13 +20,21 @@ package com.alibaba.csp.sentinel.dashboard.rule.apollo;
  * @since 1.5.0
  */
 public final class ApolloConfigUtil {
-
-    public static final String FLOW_DATA_ID_POSTFIX = "-flow-rules";
+    public static final String FLOW_RULE = "SENTINEL_GROUP_FLOW";
+    public static final String DEGRADE_RULE = "SENTINEL_GROUP_DEGRADE";
+    public static final String SYSTEM_RULE = "SENTINEL_GROUP_SYSTEM";
+    public static final String PARAM_RULE = "SENTINEL_GROUP_PARAM";
+    public static final String AUTHORITY_RULE = "SENTINEL_GROUP_AUTHORITY";
 
     private ApolloConfigUtil() {
     }
 
     public static String getFlowDataId(String appName) {
-        return String.format("%s%s", appName, FLOW_DATA_ID_POSTFIX);
+        return String.format("%s%s", appName, FLOW_RULE);
     }
+
+    public static String getDataId(String appName,String path) {
+        return String.format("%s%s", appName, path);
+    }
+
 }

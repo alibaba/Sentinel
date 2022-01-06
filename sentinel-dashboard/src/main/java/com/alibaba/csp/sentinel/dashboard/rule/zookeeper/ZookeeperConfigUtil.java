@@ -19,14 +19,17 @@ package com.alibaba.csp.sentinel.dashboard.rule.zookeeper;
 import org.apache.commons.lang.StringUtils;
 
 public class ZookeeperConfigUtil {
-    public static final String RULE_ROOT_PATH = "/sentinel_rule_config";
+    public static final String FLOW_RULE = "/sentinel_flow_rule";
+    public static final String DEGRADE_RULE = "/sentinel_degrade_rule";
+    public static final String PARAM_RULE = "/sentinel_param_rule";
+    public static final String SYSTEM_RULE = "/sentinel_system_rule";
+    public static final String AUTHORITY_RULE = "/sentinel_authority_rule";
 
     public static final int RETRY_TIMES = 3;
     public static final int SLEEP_TIME = 1000;
 
-    public static String getPath(String appName) {
-        StringBuilder stringBuilder = new StringBuilder(RULE_ROOT_PATH);
-
+    public static String getPath(String appName,String path) {
+        StringBuilder stringBuilder = new StringBuilder(path);
         if (StringUtils.isBlank(appName)) {
             return stringBuilder.toString();
         }

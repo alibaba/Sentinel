@@ -18,11 +18,7 @@ package com.alibaba.csp.sentinel.dashboard.metric;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.nio.charset.Charset;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -61,6 +57,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import org.springframework.beans.factory.annotation.Value;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
 /**
  * Fetch metric of machines.
  *
@@ -86,6 +89,10 @@ public class MetricFetcher {
     private AppManagement appManagement;
 
     private CloseableHttpAsyncClient httpclient;
+
+    @Value("${spring.influx.url:}")
+    private String influxdburl;
+    ObjectMapper mapper = new ObjectMapper();
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private ScheduledExecutorService fetchScheduleService = Executors.newScheduledThreadPool(1,
@@ -207,8 +214,7 @@ public class MetricFetcher {
                 unhealthy.incrementAndGet();
                 continue;
             }
-            final String url = "http://" + machine.getIp() + ":" + machine.getPort() + "/" + METRIC_URL_PATH
-                + "?startTime=" + startTime + "&endTime=" + endTime + "&refetch=" + false;
+            final String url = metricurl(app, machine, startTime, endTime);
             final HttpGet httpGet = new HttpGet(url);
             httpGet.setHeader(HTTP.CONN_DIRECTIVE, HTTP.CONN_CLOSE);
             httpclient.execute(httpGet, new FutureCallback<HttpResponse>() {
@@ -305,6 +311,9 @@ public class MetricFetcher {
         } catch (Exception ignore) {
         }
         String body = EntityUtils.toString(response.getEntity(), charset != null ? charset : DEFAULT_CHARSET);
+        if(StringUtil.isNotBlank(influxdburl)){
+            body = bodyData(body);
+        }
         if (StringUtil.isEmpty(body) || body.startsWith(NO_METRICS)) {
             //logger.info(machine.getApp() + ":" + machine.getIp() + ":" + machine.getPort() + ", bodyStr is empty");
             return;
@@ -313,6 +322,40 @@ public class MetricFetcher {
         //logger.info(machine.getApp() + ":" + machine.getIp() + ":" + machine.getPort() +
         //    ", bodyStr.length()=" + body.length() + ", lines=" + lines.length);
         handleBody(lines, machine, metricMap);
+    }
+
+    private String metricurl(String app, MachineInfo machine, long startTime, long endTime) {
+        if(StringUtil.isBlank(influxdburl)){
+            return "http://" + machine.getIp() + ":" + machine.getPort() + "/" + METRIC_URL_PATH
+                    + "?startTime=" + startTime + "&endTime=" + endTime + "&refetch=" + false;
+        }else{
+            return influxdburl+"/query?db=sentinel_db&q="
+                    +"select%20data%20from%20%22metrics%22%20where%20app='"+app
+                    +"'%20and%20host='"+machine.getHostname()+"'"
+                    +"%20and%20time%3E="+ startTime +"000000%20and%20time%3C="+endTime+"000000";
+        }
+    }
+
+    private String bodyData(String body) {
+        try {
+            JsonNode nodes = mapper.readTree(body);
+            JsonNode node = nodes.findPath("values");
+            if(!(node instanceof ArrayNode)){
+                return "";
+            }
+            ArrayNode vnode = (ArrayNode)node;
+            Iterator<JsonNode> values = vnode.elements();
+            String data = StreamSupport.stream(
+                    Spliterators.spliteratorUnknownSize(values, Spliterator.ORDERED),
+                    false)
+                    .map(n -> (ArrayNode) n)
+                    .map(v -> v.get(1).asText())
+                    .collect(Collectors.joining("\n"));
+            return data;
+        } catch (Exception e) {
+            logger.info("parse metric exceptions: ", e);
+            return "";
+        }
     }
 
     private void handleBody(String[] lines, MachineInfo machine, Map<String, MetricEntity> map) {

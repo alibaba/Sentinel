@@ -5,11 +5,12 @@
  */
 angular.module('sentinelDashboardApp').service('ClusterStateService', ['$http', function ($http) {
 
-    this.fetchClusterUniversalStateSingle = function(app, ip, port) {
+    this.fetchClusterUniversalStateSingle = function(app, ip, port,hostname) {
         var param = {
             app: app,
             ip: ip,
-            port: port
+            port: port,
+            hostname: hostname
         };
         return $http({
             url: '/cluster/state_single',

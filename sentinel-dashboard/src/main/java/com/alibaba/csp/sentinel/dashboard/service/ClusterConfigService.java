@@ -111,7 +111,7 @@ public class ClusterConfigService {
 
         List<CompletableFuture<ClusterUniversalStatePairVO>> futures = appInfo.getMachines().stream()
             .filter(e -> e.isHealthy())
-            .map(machine -> getClusterUniversalState(app, machine.getIp(), machine.getPort())
+            .map(machine -> getClusterUniversalState(app,machine.getHostname(), machine.getIp(), machine.getPort())
                 .thenApply(e -> new ClusterUniversalStatePairVO(machine.getIp(), machine.getPort(), e)))
             .collect(Collectors.toList());
 
@@ -145,19 +145,19 @@ public class ClusterConfigService {
             );
     }
 
-    public CompletableFuture<ClusterUniversalStateVO> getClusterUniversalState(String app, String ip, int port) {
-        return sentinelApiClient.fetchClusterMode(ip, port)
+    public CompletableFuture<ClusterUniversalStateVO> getClusterUniversalState(String app,String hostname, String ip, int port) {
+        return sentinelApiClient.fetchClusterMode(app,hostname,ip, port)
             .thenApply(e -> new ClusterUniversalStateVO().setStateInfo(e))
             .thenCompose(vo -> {
                 if (vo.getStateInfo().getClientAvailable()) {
-                    return sentinelApiClient.fetchClusterClientInfoAndConfig(ip, port)
+                    return sentinelApiClient.fetchClusterClientInfoAndConfig(app,hostname,ip, port)
                         .thenApply(cc -> vo.setClient(new ClusterClientStateVO().setClientConfig(cc)));
                 } else {
                     return CompletableFuture.completedFuture(vo);
                 }
             }).thenCompose(vo -> {
                 if (vo.getStateInfo().getServerAvailable()) {
-                    return sentinelApiClient.fetchClusterServerBasicInfo(ip, port)
+                    return sentinelApiClient.fetchClusterServerBasicInfo(app,hostname,ip, port)
                         .thenApply(vo::setServer);
                 } else {
                     return CompletableFuture.completedFuture(vo);

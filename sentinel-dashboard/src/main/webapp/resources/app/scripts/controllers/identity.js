@@ -1,7 +1,7 @@
 var app = angular.module('sentinelDashboardApp');
 
 app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
-  'ngDialog', 'FlowServiceV1', 'DegradeService', 'AuthorityRuleService', 'ParamFlowService', 'MachineService',
+  'ngDialog', 'FlowServiceV2', 'DegradeService', 'AuthorityRuleService', 'ParamFlowService', 'MachineService',
   '$interval', '$location', '$timeout',
   function ($scope, $stateParams, IdentityService, ngDialog,
     FlowService, DegradeService, AuthorityRuleService, ParamFlowService, MachineService, $interval, $location, $timeout) {
@@ -95,7 +95,7 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
       FlowService.newRule(flowRuleDialogScope.currentRule).success(function (data) {
         if (data.code === 0) {
           flowRuleDialog.close();
-          let url = '/dashboard/flow/' + $scope.app;
+          let url = '/dashboard/v2/flow/' + $scope.app;
           $location.path(url);
         } else {
           alert('失败：' + data.msg);
@@ -406,7 +406,7 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
                 if (item.healthy) {
                   $scope.macsInputOptions.push({
                     text: item.ip + ':' + item.port,
-                    value: item.ip + ':' + item.port
+                    value: item.ip + ':' + item.port+':'+item.hostname
                   });
                 }
               });
@@ -445,11 +445,11 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
 
     function queryIdentities() {
       var mac = $scope.macInputModel.split(':');
-      if (mac == null || mac.length < 2) {
+      if (mac == null || mac.length < 3) {
         return;
       }
       if ($scope.isTreeView) {
-        IdentityService.fetchIdentityOfMachine(mac[0], mac[1], $scope.searchKey).success(
+        IdentityService.fetchIdentityOfMachine($scope.app,mac[0], mac[1],mac[2], $scope.searchKey).success(
           function (data) {
             if (data.code == 0 && data.data) {
               $scope.identities = data.data;
@@ -461,7 +461,7 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
           }
         );
       } else {
-        IdentityService.fetchClusterNodeOfMachine(mac[0], mac[1], $scope.searchKey).success(
+        IdentityService.fetchClusterNodeOfMachine($scope.app,mac[0], mac[1],mac[2],$scope.searchKey).success(
           function (data) {
             if (data.code == 0 && data.data) {
               $scope.identities = data.data;

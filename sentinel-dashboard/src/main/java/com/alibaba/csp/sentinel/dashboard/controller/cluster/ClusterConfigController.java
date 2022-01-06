@@ -118,6 +118,7 @@ public class ClusterConfigController {
 
     @GetMapping("/state_single")
     public Result<ClusterUniversalStateVO> apiGetClusterState(@RequestParam String app,
+                                                              @RequestParam String hostname,
                                                               @RequestParam String ip,
                                                               @RequestParam Integer port) {
         if (StringUtil.isEmpty(app)) {
@@ -133,7 +134,7 @@ public class ClusterConfigController {
             return unsupportedVersion();
         }
         try {
-            return clusterConfigService.getClusterUniversalState(app, ip, port)
+            return clusterConfigService.getClusterUniversalState(app,hostname, ip, port)
                 .thenApply(Result::ofSuccess)
                 .get();
         } catch (ExecutionException ex) {
