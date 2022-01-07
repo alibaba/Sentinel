@@ -30,15 +30,15 @@ import com.alibaba.csp.sentinel.cluster.server.TokenServiceProvider;
  * @since 1.4.0
  */
 @RequestType(ClusterConstants.MSG_TYPE_FLOW)
-public class FlowRequestProcessor implements RequestProcessor<FlowRequestData, FlowTokenResponseData> {
+public class FlowRequestProcessor extends AbstractRequestProcessor<FlowRequestData, FlowTokenResponseData> {
 
     @Override
-    public ClusterResponse<FlowTokenResponseData> processRequest(ClusterRequest<FlowRequestData> request) {
+    public ClusterResponse<FlowTokenResponseData> doProcessRequest(ClusterRequest<FlowRequestData> request,FlowRequestData data) {
         TokenService tokenService = TokenServiceProvider.getService();
 
-        long flowId = request.getData().getFlowId();
-        int count = request.getData().getCount();
-        boolean prioritized = request.getData().isPriority();
+        long flowId = data.getFlowId();
+        int count = data.getCount();
+        boolean prioritized = data.isPriority();
 
         TokenResult result = tokenService.requestToken(flowId, count, prioritized);
         return toResponse(result, request);

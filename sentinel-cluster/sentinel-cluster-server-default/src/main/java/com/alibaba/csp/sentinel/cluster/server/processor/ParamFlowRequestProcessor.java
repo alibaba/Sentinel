@@ -32,15 +32,15 @@ import com.alibaba.csp.sentinel.cluster.server.TokenServiceProvider;
  * @since 1.4.0
  */
 @RequestType(ClusterConstants.MSG_TYPE_PARAM_FLOW)
-public class ParamFlowRequestProcessor implements RequestProcessor<ParamFlowRequestData, FlowTokenResponseData> {
+public class ParamFlowRequestProcessor extends AbstractRequestProcessor<ParamFlowRequestData, FlowTokenResponseData> {
 
     @Override
-    public ClusterResponse<FlowTokenResponseData> processRequest(ClusterRequest<ParamFlowRequestData> request) {
+    public ClusterResponse<FlowTokenResponseData> doProcessRequest(ClusterRequest<ParamFlowRequestData> request,ParamFlowRequestData data) {
         TokenService tokenService = TokenServiceProvider.getService();
 
-        long flowId = request.getData().getFlowId();
-        int count = request.getData().getCount();
-        Collection<Object> args = request.getData().getParams();
+        long flowId = data.getFlowId();
+        int count = data.getCount();
+        Collection<Object> args = data.getParams();
 
         TokenResult result = tokenService.requestParamToken(flowId, count, args);
         return toResponse(result, request);

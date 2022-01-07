@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.cluster.server.handler;
 
 import java.net.InetSocketAddress;
+import java.util.Objects;
 
 import com.alibaba.csp.sentinel.cluster.ClusterConstants;
 import com.alibaba.csp.sentinel.cluster.request.ClusterRequest;
@@ -76,6 +77,12 @@ public class TokenServerHandler extends ChannelInboundHandlerAdapter {
                 writeBadResponse(ctx, request);
             } else {
                 ClusterResponse<?> response = processor.processRequest(request);
+                // if response returns a null, means it cannot be processed
+                if (Objects.isNull(response)){
+                    RecordLog.warn("[RequestProcessor] the processor can‘t handle the request body: " + request.getData());
+                    writeBadResponse(ctx, request);
+                    return;
+                }
                 writeResponse(ctx, response);
             }
         }
