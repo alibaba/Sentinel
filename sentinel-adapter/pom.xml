@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-parent</artifactId>
-        <version>${revision}</version>
+        <version>${sentinel.revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>sentinel-adapter</artifactId>

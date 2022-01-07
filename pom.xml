@@ -5,7 +5,7 @@
 
     <groupId>com.alibaba.csp</groupId>
     <artifactId>sentinel-parent</artifactId>
-    <version>${revision}</version>
+    <version>${sentinel.revision}</version>
     <packaging>pom</packaging>
 
     <name>${project.artifactId}</name>
@@ -40,7 +40,7 @@
     </issueManagement>
 
     <properties>
-        <revision>1.8.4.revision-SNAPSHOT</revision>
+        <sentinel.revision>1.8.4-SNAPSHOT</sentinel.revision>
         <!-- Compile libs -->
         <fastjson.version>1.2.75</fastjson.version>
         <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
@@ -318,6 +318,13 @@
                 </configuration>
                 <executions>
                     <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
                         <id>flatten.clean</id>
                         <phase>clean</phase>
                         <goals>
@@ -397,32 +404,6 @@
                                 <phase>verify</phase>
                                 <goals>
                                     <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>flatten-maven-plugin</artifactId>
-                        <version>${maven.flatten.version}</version>
-                        <configuration>
-                            <updatePomFile>true</updatePomFile>
-                            <flattenMode>resolveCiFriendliesOnly</flattenMode>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>flatten</id>
-                                <phase>process-resources</phase>
-                                <goals>
-                                    <goal>flatten</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>flatten.clean</id>
-                                <phase>clean</phase>
-                                <goals>
-                                    <goal>clean</goal>
                                 </goals>
                             </execution>
                         </executions>
