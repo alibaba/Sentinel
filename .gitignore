@@ -23,7 +23,7 @@ buildNumber.properties
 .classpath
 .settings/
 .project
-bin/
+#bin/
 
 # System related
 *.DS_Store
