@@ -24,16 +24,16 @@ rem ============================================================================
 rem JVM Configuration
 rem ===========================================================================================
 set JVM_OPTS=
-set JVM_OPTS=%JVM_OPTS% -server -Xms512m -Xmx512m -Xmn24m -Xss256K -XX:MetaspaceSize=128m 
-set JVM_OPTS=%JVM_OPTS% -XX:SurvivorRatio=4 -XX:MaxTenuringThreshold=15 
-set JVM_OPTS=%JVM_OPTS% -XX:+UseParNewGC -XX:+UseConcMarkSweepGC 
-set JVM_OPTS=%JVM_OPTS% -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSCompactAtFullCollection -XX:CMSFullGCsBeforeCompaction=0 
-set JVM_OPTS=%JVM_OPTS% -XX:+DoEscapeAnalysis -XX:-UseLargePages 
-set JVM_OPTS=%JVM_OPTS% -XX:+UseFastAccessorMethods -XX:+AggressiveOpts 
-set JVM_OPTS=%JVM_OPTS% -XX:+DisableExplicitGC 
-set JVM_OPTS=%JVM_OPTS% -XX:HeapDumpPath=%DIR_GC%\dump.hprof -XX:-OmitStackTraceInFastThrow -XX:+HeapDumpOnOutOfMemoryError 
-set JVM_OPTS=%JVM_OPTS% -Xloggc:%DIR_GC%\gc.log -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=100 -XX:GCLogFileSize=100M 
-set JVM_OPTS=%JVM_OPTS% -Xloggc:%DIR_GC%\gc.log -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=100 -XX:GCLogFileSize=100M
+rem set JVM_OPTS=%JVM_OPTS% -server -Xms512m -Xmx512m -Xmn24m -Xss256K -XX:MetaspaceSize=128m
+rem set JVM_OPTS=%JVM_OPTS% -XX:SurvivorRatio=4 -XX:MaxTenuringThreshold=15
+rem set JVM_OPTS=%JVM_OPTS% -XX:+UseParNewGC -XX:+UseConcMarkSweepGC
+rem set JVM_OPTS=%JVM_OPTS% -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSCompactAtFullCollection -XX:CMSFullGCsBeforeCompaction=0
+rem set JVM_OPTS=%JVM_OPTS% -XX:+DoEscapeAnalysis -XX:-UseLargePages
+rem set JVM_OPTS=%JVM_OPTS% -XX:+UseFastAccessorMethods -XX:+AggressiveOpts
+rem set JVM_OPTS=%JVM_OPTS% -XX:+DisableExplicitGC
+rem set JVM_OPTS=%JVM_OPTS% -XX:HeapDumpPath=%DIR_GC%\dump.hprof -XX:-OmitStackTraceInFastThrow -XX:+HeapDumpOnOutOfMemoryError
+rem set JVM_OPTS=%JVM_OPTS% -Xloggc:%DIR_GC%\gc.log -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=100 -XX:GCLogFileSize=100M
+rem set JVM_OPTS=%JVM_OPTS% -Xloggc:%DIR_GC%\gc.log -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=100 -XX:GCLogFileSize=100M
 
 
 rem ===========================================================================================
