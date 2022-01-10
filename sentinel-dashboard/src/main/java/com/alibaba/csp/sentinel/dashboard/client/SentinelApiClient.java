@@ -163,7 +163,7 @@ public class SentinelApiClient {
     }
     
     /**
-     * Check wheter target instance (identified by tuple of app-ip:port)
+     * Check whether target instance (identified by tuple of app-ip:port)
      * supports the form of "xxxxx; xx=xx" in "Content-Type" header.
      * 
      * @param app target app name
