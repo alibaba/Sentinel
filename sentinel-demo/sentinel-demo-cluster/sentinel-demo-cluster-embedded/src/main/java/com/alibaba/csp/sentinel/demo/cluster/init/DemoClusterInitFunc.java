@@ -81,15 +81,15 @@ public class DemoClusterInitFunc implements InitFunc {
 
     private void initDynamicRuleProperty() {
         NacosDataSource<List<FlowRule>> ruleSource = new NacosDataSource<>(remoteAddress, groupId, flowDataId, new JsonArrayConverter<>(FlowRule.class));
-        FlowRuleManager.register2Property(ruleSource.getProperty());
+        FlowRuleManager.register2Property(ruleSource.getReader().getProperty());
 
         NacosDataSource<List<ParamFlowRule>> paramRuleSource = new NacosDataSource<>(remoteAddress, groupId, paramDataId, new JsonArrayConverter<>(ParamFlowRule.class));
-        ParamFlowRuleManager.register2Property(paramRuleSource.getProperty());
+        ParamFlowRuleManager.register2Property(paramRuleSource.getReader().getProperty());
     }
 
     private void initClientConfigProperty() {
         NacosDataSource<ClusterClientConfig> clientConfigDs = new NacosDataSource<>(remoteAddress, groupId, configDataId, new JsonObjectConverter<>(ClusterClientConfig.class));
-        ClusterClientConfigManager.registerClientConfigProperty(clientConfigDs.getProperty());
+        ClusterClientConfigManager.registerClientConfigProperty(clientConfigDs.getReader().getProperty());
     }
 
     private void initServerTransportConfigProperty() {
@@ -103,7 +103,7 @@ public class DemoClusterInitFunc implements InitFunc {
                                 .orElse(null);
                     }
                 });
-        ClusterServerConfigManager.registerServerTransportProperty(serverTransportDs.getProperty());
+        ClusterServerConfigManager.registerServerTransportProperty(serverTransportDs.getReader().getProperty());
     }
 
     private void registerClusterRuleSupplier() {
@@ -111,12 +111,12 @@ public class DemoClusterInitFunc implements InitFunc {
         // Flow rule dataId format: ${namespace}-flow-rules
         ClusterFlowRuleManager.setPropertySupplier(namespace -> {
             NacosDataSource<List<FlowRule>> ds = new NacosDataSource<>(remoteAddress, groupId, namespace + DemoConstants.FLOW_POSTFIX, new JsonArrayConverter<>(FlowRule.class));
-            return ds.getProperty();
+            return ds.getReader().getProperty();
         });
         // Register cluster parameter flow rule property supplier which creates data source by namespace.
         ClusterParamFlowRuleManager.setPropertySupplier(namespace -> {
             NacosDataSource<List<ParamFlowRule>> ds = new NacosDataSource<>(remoteAddress, groupId, namespace + DemoConstants.PARAM_FLOW_POSTFIX, new JsonArrayConverter<>(ParamFlowRule.class));
-            return ds.getProperty();
+            return ds.getReader().getProperty();
         });
     }
 
@@ -134,7 +134,7 @@ public class DemoClusterInitFunc implements InitFunc {
                             .orElse(null);
                 }
             });
-        ClusterClientConfigManager.registerServerAssignProperty(clientAssignDs.getProperty());
+        ClusterClientConfigManager.registerServerAssignProperty(clientAssignDs.getReader().getProperty());
     }
 
     private void initStateProperty() {
@@ -151,7 +151,7 @@ public class DemoClusterInitFunc implements InitFunc {
                             .orElse(ClusterStateManager.CLUSTER_NOT_STARTED);
             }
         });
-        ClusterStateManager.registerProperty(clusterModeDs.getProperty());
+        ClusterStateManager.registerProperty(clusterModeDs.getReader().getProperty());
     }
 
     private int extractMode(List<ClusterGroupEntity> groupList) {
