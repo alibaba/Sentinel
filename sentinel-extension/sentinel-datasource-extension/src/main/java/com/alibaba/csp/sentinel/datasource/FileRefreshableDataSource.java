@@ -15,13 +15,13 @@
  */
 package com.alibaba.csp.sentinel.datasource;
 
+import com.alibaba.csp.sentinel.log.RecordLog;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
-
-import com.alibaba.csp.sentinel.log.RecordLog;
 
 /**
  * <p>

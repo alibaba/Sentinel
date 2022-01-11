@@ -15,43 +15,44 @@
  */
 package com.alibaba.csp.sentinel.datasource;
 
+import com.alibaba.csp.sentinel.datasource.converter.SentinelConverter;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 
 /**
  * The abstract readable data source provides basic functionality for loading and parsing config.
  *
- * @param <S> source data type
- * @param <T> target data type
- * @author Carpenter Lee
- * @author Eric Zhao
+ * @param <D> data type for DataSource
+ * @param <S> data type for Sentinel
+ *
+ * @author Jiajiangnan
  */
-@Deprecated
-public abstract class AbstractDataSource<S, T> implements ReadableDataSource<S, T> {
+public abstract class AbstractReadableDataSource<D, S> implements ReadableDataSource<D, S>{
 
-    protected final Converter<S, T> parser;
-    protected final SentinelProperty<T> property;
+    protected final SentinelConverter<D, S> converter;
+    protected final SentinelProperty<S> property;
 
-    public AbstractDataSource(Converter<S, T> parser) {
-        if (parser == null) {
-            throw new IllegalArgumentException("parser can't be null");
+    public AbstractReadableDataSource(AbstractDataSourceContext<D, S> context) {
+        this.converter = context.getConverter();
+        if (this.converter == null) {
+            throw new IllegalArgumentException("converter can't be null");
         }
-        this.parser = parser;
-        this.property = new DynamicSentinelProperty<T>();
+        this.property = new DynamicSentinelProperty<S>();
     }
 
     @Override
-    public T loadConfig() throws Exception {
+    public S loadConfig() throws Exception {
         return loadConfig(readSource());
     }
 
-    public T loadConfig(S conf) throws Exception {
-        T value = parser.convert(conf);
+    public S loadConfig(D conf) throws Exception {
+        S value = converter.toSentinel(conf);
         return value;
     }
 
     @Override
-    public SentinelProperty<T> getProperty() {
+    public SentinelProperty<S> getProperty() {
         return property;
     }
+
 }

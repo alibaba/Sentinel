@@ -15,10 +15,6 @@
  */
 package com.alibaba.csp.sentinel.demo.cluster.init;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
 import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
 import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientAssignConfig;
 import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfig;
@@ -27,7 +23,9 @@ import com.alibaba.csp.sentinel.cluster.flow.rule.ClusterFlowRuleManager;
 import com.alibaba.csp.sentinel.cluster.flow.rule.ClusterParamFlowRuleManager;
 import com.alibaba.csp.sentinel.cluster.server.config.ClusterServerConfigManager;
 import com.alibaba.csp.sentinel.cluster.server.config.ServerTransportConfig;
-import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
+import com.alibaba.csp.sentinel.datasource.converter.JsonStringCollectionConverter;
+import com.alibaba.csp.sentinel.datasource.converter.JsonStringObjectConverter;
+import com.alibaba.csp.sentinel.datasource.converter.SentinelConverter;
 import com.alibaba.csp.sentinel.datasource.nacos.NacosDataSource;
 import com.alibaba.csp.sentinel.demo.cluster.DemoConstants;
 import com.alibaba.csp.sentinel.demo.cluster.entity.ClusterGroupEntity;
@@ -41,6 +39,10 @@ import com.alibaba.csp.sentinel.util.AppNameUtil;
 import com.alibaba.csp.sentinel.util.HostNameUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author Eric Zhao
@@ -79,45 +81,49 @@ public class DemoClusterInitFunc implements InitFunc {
     }
 
     private void initDynamicRuleProperty() {
-        ReadableDataSource<String, List<FlowRule>> ruleSource = new NacosDataSource<>(remoteAddress, groupId,
-            flowDataId, source -> JSON.parseObject(source, new TypeReference<List<FlowRule>>() {}));
-        FlowRuleManager.register2Property(ruleSource.getProperty());
+        NacosDataSource<List<FlowRule>> ruleSource = new NacosDataSource(remoteAddress, groupId,
+            flowDataId, new JsonStringCollectionConverter(FlowRule.class));
+        FlowRuleManager.register2Property(ruleSource.getReader().getProperty());
 
-        ReadableDataSource<String, List<ParamFlowRule>> paramRuleSource = new NacosDataSource<>(remoteAddress, groupId,
-            paramDataId, source -> JSON.parseObject(source, new TypeReference<List<ParamFlowRule>>() {}));
-        ParamFlowRuleManager.register2Property(paramRuleSource.getProperty());
+        NacosDataSource<List<ParamFlowRule>> paramRuleSource = new NacosDataSource(remoteAddress, groupId,
+            paramDataId, new JsonStringCollectionConverter(ParamFlowRule.class));
+        ParamFlowRuleManager.register2Property(paramRuleSource.getReader().getProperty());
     }
 
     private void initClientConfigProperty() {
-        ReadableDataSource<String, ClusterClientConfig> clientConfigDs = new NacosDataSource<>(remoteAddress, groupId,
-            configDataId, source -> JSON.parseObject(source, new TypeReference<ClusterClientConfig>() {}));
-        ClusterClientConfigManager.registerClientConfigProperty(clientConfigDs.getProperty());
+        NacosDataSource<ClusterClientConfig> clientConfigDs = new NacosDataSource(remoteAddress, groupId,
+            configDataId, new JsonStringObjectConverter(ClusterClientConfig.class));
+        ClusterClientConfigManager.registerClientConfigProperty(clientConfigDs.getReader().getProperty());
     }
 
     private void initServerTransportConfigProperty() {
-        ReadableDataSource<String, ServerTransportConfig> serverTransportDs = new NacosDataSource<>(remoteAddress, groupId,
-            clusterMapDataId, source -> {
-            List<ClusterGroupEntity> groupList = JSON.parseObject(source, new TypeReference<List<ClusterGroupEntity>>() {});
-            return Optional.ofNullable(groupList)
-                .flatMap(this::extractServerTransportConfig)
-                .orElse(null);
-        });
-        ClusterServerConfigManager.registerServerTransportProperty(serverTransportDs.getProperty());
+        NacosDataSource<ServerTransportConfig> serverTransportDs = new NacosDataSource(remoteAddress, groupId,
+            clusterMapDataId, new SentinelConverter<String, ServerTransportConfig>() {
+                @Override
+                public ServerTransportConfig toSentinel(String source) {
+                    List<ClusterGroupEntity> groupList = JSON.parseObject(source, new TypeReference<List<ClusterGroupEntity>>() {
+                    });
+                    return Optional.ofNullable(groupList)
+                            .flatMap(DemoClusterInitFunc.this::extractServerTransportConfig)
+                            .orElse(null);
+                }
+            });
+        ClusterServerConfigManager.registerServerTransportProperty(serverTransportDs.getReader().getProperty());
     }
 
     private void registerClusterRuleSupplier() {
         // Register cluster flow rule property supplier which creates data source by namespace.
         // Flow rule dataId format: ${namespace}-flow-rules
         ClusterFlowRuleManager.setPropertySupplier(namespace -> {
-            ReadableDataSource<String, List<FlowRule>> ds = new NacosDataSource<>(remoteAddress, groupId,
-                namespace + DemoConstants.FLOW_POSTFIX, source -> JSON.parseObject(source, new TypeReference<List<FlowRule>>() {}));
-            return ds.getProperty();
+            NacosDataSource<List<FlowRule>> ds = new NacosDataSource(remoteAddress, groupId,
+                namespace + DemoConstants.FLOW_POSTFIX, new JsonStringCollectionConverter(FlowRule.class));
+            return ds.getReader().getProperty();
         });
         // Register cluster parameter flow rule property supplier which creates data source by namespace.
         ClusterParamFlowRuleManager.setPropertySupplier(namespace -> {
-            ReadableDataSource<String, List<ParamFlowRule>> ds = new NacosDataSource<>(remoteAddress, groupId,
-                namespace + DemoConstants.PARAM_FLOW_POSTFIX, source -> JSON.parseObject(source, new TypeReference<List<ParamFlowRule>>() {}));
-            return ds.getProperty();
+            NacosDataSource<List<ParamFlowRule>> ds = new NacosDataSource(remoteAddress, groupId,
+                namespace + DemoConstants.PARAM_FLOW_POSTFIX, new JsonStringCollectionConverter(ParamFlowRule.class));
+            return ds.getReader().getProperty();
         });
     }
 
@@ -125,28 +131,34 @@ public class DemoClusterInitFunc implements InitFunc {
         // Cluster map format:
         // [{"clientSet":["112.12.88.66@8729","112.12.88.67@8727"],"ip":"112.12.88.68","machineId":"112.12.88.68@8728","port":11111}]
         // machineId: <ip@commandPort>, commandPort for port exposed to Sentinel dashboard (transport module)
-        ReadableDataSource<String, ClusterClientAssignConfig> clientAssignDs = new NacosDataSource<>(remoteAddress, groupId,
-            clusterMapDataId, source -> {
-            List<ClusterGroupEntity> groupList = JSON.parseObject(source, new TypeReference<List<ClusterGroupEntity>>() {});
-            return Optional.ofNullable(groupList)
-                .flatMap(this::extractClientAssignment)
-                .orElse(null);
-        });
-        ClusterClientConfigManager.registerServerAssignProperty(clientAssignDs.getProperty());
+        NacosDataSource<ClusterClientAssignConfig> clientAssignDs = new NacosDataSource(remoteAddress, groupId,
+            clusterMapDataId, new SentinelConverter<String, ClusterClientAssignConfig>() {
+                @Override
+                public ClusterClientAssignConfig toSentinel(String source) {
+                    List<ClusterGroupEntity> groupList = JSON.parseObject(source, new TypeReference<List<ClusterGroupEntity>>() {});
+                    return Optional.ofNullable(groupList)
+                            .flatMap(DemoClusterInitFunc.this::extractClientAssignment)
+                            .orElse(null);
+                }
+            });
+        ClusterClientConfigManager.registerServerAssignProperty(clientAssignDs.getReader().getProperty());
     }
 
     private void initStateProperty() {
         // Cluster map format:
         // [{"clientSet":["112.12.88.66@8729","112.12.88.67@8727"],"ip":"112.12.88.68","machineId":"112.12.88.68@8728","port":11111}]
         // machineId: <ip@commandPort>, commandPort for port exposed to Sentinel dashboard (transport module)
-        ReadableDataSource<String, Integer> clusterModeDs = new NacosDataSource<>(remoteAddress, groupId,
-            clusterMapDataId, source -> {
-            List<ClusterGroupEntity> groupList = JSON.parseObject(source, new TypeReference<List<ClusterGroupEntity>>() {});
-            return Optional.ofNullable(groupList)
-                .map(this::extractMode)
-                .orElse(ClusterStateManager.CLUSTER_NOT_STARTED);
-        });
-        ClusterStateManager.registerProperty(clusterModeDs.getProperty());
+        NacosDataSource<Integer> clusterModeDs = new NacosDataSource(remoteAddress, groupId,
+            clusterMapDataId, new SentinelConverter<String, Integer>() {
+                @Override
+                public Integer toSentinel(String source) {
+                    List<ClusterGroupEntity> groupList = JSON.parseObject(source, new TypeReference<List<ClusterGroupEntity>>() {});
+                    return Optional.ofNullable(groupList)
+                            .map(DemoClusterInitFunc.this::extractMode)
+                            .orElse(ClusterStateManager.CLUSTER_NOT_STARTED);
+                }
+            });
+        ClusterStateManager.registerProperty(clusterModeDs.getReader().getProperty());
     }
 
     private int extractMode(List<ClusterGroupEntity> groupList) {
