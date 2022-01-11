@@ -50,7 +50,7 @@ public class NacosWritableDataSource<T> extends AbstractWritableDataSource<T> {
     }
 
     private void init() {
-        this.configService = ObjectUtils.defaultIfNull((ConfigService)dataSourceHolder.getDataSourceClient(), null);
+        this.configService = dataSourceHolder.getDataSourceClient() == null ? null : (ConfigService) dataSourceHolder.getDataSourceClient();
     }
 
     @Override

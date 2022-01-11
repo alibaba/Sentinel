@@ -86,7 +86,7 @@ public class NacosReadableDataSource<T> extends AbstractReadableDataSource<Strin
     }
 
     private void  initConfigService() {
-        this.configService = ObjectUtils.defaultIfNull((ConfigService) dataSourceHolder.getDataSourceClient(), null);
+        this.configService = dataSourceHolder.getDataSourceClient() == null ? null : (ConfigService) dataSourceHolder.getDataSourceClient();
     }
 
     private void loadInitialConfig() {
