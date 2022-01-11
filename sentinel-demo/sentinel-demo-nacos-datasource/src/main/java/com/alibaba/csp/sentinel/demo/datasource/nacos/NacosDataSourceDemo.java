@@ -68,7 +68,7 @@ public class NacosDataSourceDemo {
     private static void loadRules() {
         try {
             NacosDataSource<List<FlowRule>> flowRuleDataSource = new NacosDataSource<>(remoteAddress, groupId, dataId, new JsonArrayConverter<>(FlowRule.class));
-            FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
+            FlowRuleManager.register2Property(flowRuleDataSource.getReader().getProperty());
             List<FlowRule> o = flowRuleDataSource.getReader().loadConfig();
             System.out.println(o.size());
         } catch (Exception e) {
@@ -82,7 +82,7 @@ public class NacosDataSourceDemo {
         properties.put(PropertyKeyConst.NAMESPACE, NACOS_NAMESPACE_ID);
 
         NacosDataSource<List<FlowRule>> flowRuleDataSource = new NacosDataSource<>(properties, groupId, dataId, new JsonArrayConverter<>(FlowRule.class));
-        FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
+        FlowRuleManager.register2Property(flowRuleDataSource.getReader().getProperty());
     }
 
     private static void publishRules() {
