@@ -19,9 +19,19 @@ For instance:
 ```java
 // remoteAddress is the address of Nacos
 // groupId and dataId are concepts of Nacos
-ReadableDataSource<String, List<FlowRule>> flowRuleDataSource = new NacosDataSource<>(remoteAddress, groupId, dataId,
-    source -> JSON.parseObject(source, new TypeReference<List<FlowRule>>() {}));
-FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
+// DataSourceMode is the mode of Nacos, include READABLE,WRITABLE, ALL
+NacosDataSource<List<FlowRule>> flowRuleDataSource = new NacosDataSource<>(remoteAddress, groupId, dataId, new JsonArrayConverter<>(FlowRule.class), DataSourceMode.ALL);
+
+//read from nacos
+FlowRuleManager.register2Property(flowRuleDataSource.getReader().getProperty());
+
+//write to nacos
+FlowRule flowRule = new FlowRule();
+flowRule.setResource("/test");
+flowRule.setCount(5);
+List<FlowRule> list = new ArrayList<>();
+list.add(flowRule);
+flowRuleDataSource.getWriter().write(list);
 ```
 
 We've also provided an example: [sentinel-demo-nacos-datasource](https://github.com/alibaba/Sentinel/tree/master/sentinel-demo/sentinel-demo-nacos-datasource).
