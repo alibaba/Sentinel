@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.datasource;
 
 import com.alibaba.csp.sentinel.datasource.converter.SentinelConverter;
+import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 
 /**
@@ -32,9 +33,12 @@ public abstract class AbstractReadableDataSource<S, T> implements ReadableDataSo
 
     private final SentinelConverter<S, T> sentinelConverter;
 
+    protected final SentinelProperty<T> property;
+
     public AbstractReadableDataSource(DataSourceHolder dataSourceHolder) {
         this.dataSourceHolder = dataSourceHolder;
         this.sentinelConverter = dataSourceHolder.getConverter();
+        this.property = new DynamicSentinelProperty<T>();
     }
 
     @Override
@@ -49,6 +53,6 @@ public abstract class AbstractReadableDataSource<S, T> implements ReadableDataSo
 
     @Override
     public SentinelProperty<T> getProperty() {
-        return dataSourceHolder.getProperty();
+        return this.property;
     }
 }
