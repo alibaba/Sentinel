@@ -19,7 +19,6 @@ import com.alibaba.csp.sentinel.datasource.AbstractWritableDataSource;
 import com.alibaba.csp.sentinel.datasource.DataSourceHolder;
 import com.alibaba.csp.sentinel.datasource.converter.SentinelConverter;
 import com.alibaba.nacos.api.config.ConfigService;
-import org.apache.commons.lang3.ObjectUtils;
 
 import java.util.Properties;
 
