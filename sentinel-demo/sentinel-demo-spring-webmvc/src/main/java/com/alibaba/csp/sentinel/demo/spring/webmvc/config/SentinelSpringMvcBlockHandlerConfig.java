@@ -63,7 +63,7 @@ public class SentinelSpringMvcBlockHandlerConfig {
      */
     @ExceptionHandler(Exception.class)
     @ResponseBody
-    public ResultWrapper sentinelBlockHandler(HttpServletRequest req, Exception e) {
+    public ResultWrapper exceptionHandler(HttpServletRequest req, Exception e) {
         logger.warn("System Exception: ", e);
         sentinelWebInterceptor.exceptionControllerAdviceExit(req,e);
         return ResultWrapper.systemException();
