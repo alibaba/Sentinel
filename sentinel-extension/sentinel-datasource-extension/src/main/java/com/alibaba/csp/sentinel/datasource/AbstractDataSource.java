@@ -19,6 +19,8 @@ import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 
 /**
+ * @deprecated use {@link SentinelDataSource} instead since 1.8.4.
+ *
  * The abstract readable data source provides basic functionality for loading and parsing config.
  *
  * @param <S> source data type

@@ -23,6 +23,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * @deprecated use {@link AbstractReadableAutoRefreshDataSource} instead since 1.8.4.
+ *
  * A {@link ReadableDataSource} automatically fetches the backend data.
  *
  * @param <S> source data type

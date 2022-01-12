@@ -15,7 +15,10 @@
  */
 package com.alibaba.csp.sentinel.datasource;
 
+import com.alibaba.csp.sentinel.datasource.converter.SentinelConverter;
+
 /**
+ * @deprecated use {@link SentinelConverter} instead since 1.8.4.
  * Convert an object from source type {@code S} to target type {@code T}.
  *
  * @author leyou

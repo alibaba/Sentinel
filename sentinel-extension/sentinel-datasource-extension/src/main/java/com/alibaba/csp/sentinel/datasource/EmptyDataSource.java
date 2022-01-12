@@ -26,7 +26,6 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
  *
  * @author leyou
  */
-@Deprecated
 public final class EmptyDataSource implements ReadableDataSource<Object, Object> {
 
     public static final ReadableDataSource<Object, Object> EMPTY_DATASOURCE = new EmptyDataSource();
