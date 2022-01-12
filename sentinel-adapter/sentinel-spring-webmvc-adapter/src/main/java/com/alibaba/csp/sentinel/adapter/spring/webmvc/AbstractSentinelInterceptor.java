@@ -64,7 +64,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
         AssertUtil.assertNotBlank(config.getRequestAttributeName(), "requestAttributeName should not be blank");
         this.baseWebMvcConfig = config;
     }
-	
+    
     /**
      * @param request
      * @param rcKey
@@ -73,31 +73,31 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
      */
     private Integer increaseReferece(HttpServletRequest request, String rcKey, int step) {
         Object obj = request.getAttribute(rcKey);
-		
+        
         if (obj == null) {
             // initial
             obj = Integer.valueOf(0);
         }
-		
+        
         Integer newRc = (Integer)obj + step;
         request.setAttribute(rcKey, newRc);
         return newRc;
     }
-	
+    
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
         throws Exception {
         try {
             String resourceName = getResourceName(request);
-			
+
             if (StringUtil.isEmpty(resourceName)) {
                 return true;
             }
-			
+            
             if (increaseReferece(request, this.baseWebMvcConfig.getRequestRefName(), 1) != 1) {
                 return true;
             }
-			
+            
             // Parse the request origin using registered origin parser.
             String origin = parseOrigin(request);
             String contextName = getContextName(request);
@@ -132,8 +132,8 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
     protected String getContextName(HttpServletRequest request) {
         return SENTINEL_SPRING_WEB_CONTEXT_NAME;
     }
-
-    /**
+	
+	/**
      * The afterCompletion method of the HandlerInterceptor does not catch exception statistics when using @ControllerAdvice for global exception fetching
      * Call exceptionControllerAdviceExit method to realize exception statistics
      *
@@ -146,11 +146,11 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
-                                Object handler, Exception ex){
+                                Object handler, Exception ex) {
         if (increaseReferece(request, this.baseWebMvcConfig.getRequestRefName(), -1) != 0) {
             return;
         }
-		
+        
         Entry entry = getEntryInRequest(request, baseWebMvcConfig.getRequestAttributeName());
         if (entry == null) {
             // should not happen
@@ -158,7 +158,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
                     getClass().getSimpleName(), baseWebMvcConfig.getRequestAttributeName());
             return;
         }
-		
+        
         traceExceptionAndExit(entry, ex);
         removeEntryInRequest(request);
         ContextUtil.exit();
