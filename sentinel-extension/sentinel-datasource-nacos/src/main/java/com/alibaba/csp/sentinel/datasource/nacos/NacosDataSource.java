@@ -25,7 +25,7 @@ public class NacosDataSource<T> extends SentinelDataSource {
     private final NacosDataSourceContext<T> context;
 
     /**
-     * Has Deprecated
+     * @deprecated since 1.8.4.
      * Only for compatible with older versions < 1.8.4-SNAPSHOT
      * Constructs an read-only DataSource with Nacos backend.
      *
@@ -45,7 +45,7 @@ public class NacosDataSource<T> extends SentinelDataSource {
     }
 
     /**
-     * Has Deprecated
+     * @deprecated since 1.8.4.
      * Only for compatible with older versions < 1.8.4-SNAPSHOT
      *
      * @param properties properties for construct {@link ConfigService} using {@link NacosFactory#createConfigService(Properties)}
