@@ -112,7 +112,11 @@ public class LogBase {
         // load log level
         String logLevelString = properties.getProperty(LOG_LEVEL);
         if (logLevelString != null && (logLevelString = logLevelString.trim()).length() > 0) {
-            logLevel = Level.parse(logLevelString);
+            try {
+                logLevel = Level.parse(logLevelString);
+            } catch (IllegalArgumentException e) {
+                System.out.println("Log level : " + logLevel + " is invalid. Use default : " + LOG_DEFAULT_LEVEL.toString());
+            }
         }
         System.out.println("INFO: Sentinel log level is: " + logLevel);
     }
