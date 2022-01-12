@@ -25,14 +25,18 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
  * @param <D> data type for DataSource
  * @param <S> data type for Sentinel
  *
+ * @author Carpenter Lee
+ * @author Eric Zhao
  * @author Jiajiangnan
  */
 public abstract class AbstractReadableDataSource<D, S> implements ReadableDataSource<D, S>{
 
+    protected final AbstractDataSourceContext<D, S> context;
     protected final SentinelConverter<D, S> converter;
     protected final SentinelProperty<S> property;
 
     public AbstractReadableDataSource(AbstractDataSourceContext<D, S> context) {
+        this.context = context;
         this.converter = context.getConverter();
         if (this.converter == null) {
             throw new IllegalArgumentException("converter can't be null");
