@@ -132,8 +132,9 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
     protected String getContextName(HttpServletRequest request) {
         return SENTINEL_SPRING_WEB_CONTEXT_NAME;
     }
-	
-	/**
+
+
+    /**
      * The afterCompletion method of the HandlerInterceptor does not catch exception statistics when using @ControllerAdvice for global exception fetching
      * Call exceptionControllerAdviceExit method to realize exception statistics
      *
