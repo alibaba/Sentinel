@@ -1,8 +1,8 @@
 package com.alibaba.csp.sentinel.demo.file.rule;
 
 import com.alibaba.csp.sentinel.datasource.Converter;
-import com.alibaba.csp.sentinel.datasource.FileInJarReadableDataSource;
 import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
+import com.alibaba.csp.sentinel.datasource.file.FileInJarReadableDataSource;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.slots.block.Rule;
