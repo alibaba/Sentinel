@@ -26,6 +26,7 @@ import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.ResourceTypeConstants;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.adapter.gateway.common.param.GatewayParamParser;
+import com.alibaba.csp.sentinel.adapter.gateway.common.param.RequestItemParser;
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayFlowRule;
 import com.alibaba.csp.sentinel.adapter.gateway.zuul.RequestContextItemParser;
 import com.alibaba.csp.sentinel.adapter.gateway.zuul.api.ZuulGatewayApiMatcherManager;
@@ -59,15 +60,19 @@ public class SentinelZuulPreFilter extends ZuulFilter {
 
     private final int order;
 
-    private final GatewayParamParser<RequestContext> paramParser = new GatewayParamParser<>(
-        new RequestContextItemParser());
+    private final GatewayParamParser<RequestContext> paramParser;
 
     public SentinelZuulPreFilter() {
         this(10000);
     }
 
     public SentinelZuulPreFilter(int order) {
+        this(order, new RequestContextItemParser());
+    }
+
+    public SentinelZuulPreFilter(int order, RequestItemParser<RequestContext> requestItemParser) {
         this.order = order;
+        this.paramParser = new GatewayParamParser<>(requestItemParser == null ? new RequestContextItemParser() : requestItemParser);
     }
 
     @Override

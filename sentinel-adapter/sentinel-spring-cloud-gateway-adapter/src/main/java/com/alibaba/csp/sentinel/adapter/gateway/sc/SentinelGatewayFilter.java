@@ -15,21 +15,17 @@
  */
 package com.alibaba.csp.sentinel.adapter.gateway.sc;
 
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.ResourceTypeConstants;
 import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
 import com.alibaba.csp.sentinel.adapter.gateway.common.param.GatewayParamParser;
+import com.alibaba.csp.sentinel.adapter.gateway.common.param.RequestItemParser;
+import com.alibaba.csp.sentinel.adapter.gateway.sc.api.GatewayApiMatcherManager;
+import com.alibaba.csp.sentinel.adapter.gateway.sc.api.matcher.WebExchangeApiMatcher;
 import com.alibaba.csp.sentinel.adapter.gateway.sc.callback.GatewayCallbackManager;
 import com.alibaba.csp.sentinel.adapter.reactor.ContextConfig;
 import com.alibaba.csp.sentinel.adapter.reactor.EntryConfig;
 import com.alibaba.csp.sentinel.adapter.reactor.SentinelReactorTransformer;
-import com.alibaba.csp.sentinel.adapter.gateway.sc.api.GatewayApiMatcherManager;
-import com.alibaba.csp.sentinel.adapter.gateway.sc.api.matcher.WebExchangeApiMatcher;
-
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -39,6 +35,10 @@ import org.springframework.core.Ordered;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 /**
  * @author Eric Zhao
  * @since 1.6.0
@@ -47,16 +47,24 @@ public class SentinelGatewayFilter implements GatewayFilter, GlobalFilter, Order
 
     private final int order;
 
+    private final GatewayParamParser<ServerWebExchange> paramParser;
+
     public SentinelGatewayFilter() {
         this(Ordered.HIGHEST_PRECEDENCE);
     }
 
     public SentinelGatewayFilter(int order) {
-        this.order = order;
+        this(order, new ServerWebExchangeItemParser());
     }
 
-    private final GatewayParamParser<ServerWebExchange> paramParser = new GatewayParamParser<>(
-        new ServerWebExchangeItemParser());
+    public SentinelGatewayFilter(RequestItemParser<ServerWebExchange> serverWebExchangeItemParser) {
+        this(Ordered.HIGHEST_PRECEDENCE, serverWebExchangeItemParser);
+    }
+
+    public SentinelGatewayFilter(int order, RequestItemParser<ServerWebExchange> serverWebExchangeItemParser) {
+        this.order = order;
+        this.paramParser = new GatewayParamParser<>(serverWebExchangeItemParser == null ? new ServerWebExchangeItemParser() : serverWebExchangeItemParser);
+    }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
