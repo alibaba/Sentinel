@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.log;
 
 import java.io.File;
 import java.util.Properties;
+import java.util.logging.Level;
 
 import static com.alibaba.csp.sentinel.util.ConfigUtil.addSeparator;
 
@@ -40,6 +41,7 @@ public class LogBase {
     public static final String LOG_NAME_USE_PID = "csp.sentinel.log.use.pid";
     public static final String LOG_OUTPUT_TYPE = "csp.sentinel.log.output.type";
     public static final String LOG_CHARSET = "csp.sentinel.log.charset";
+    public static final String LOG_LEVEL = "csp.sentinel.log.level";
 
     /**
      * Output biz log (e.g. RecordLog and CommandCenterLog) to file.
@@ -53,12 +55,14 @@ public class LogBase {
 
     private static final String DIR_NAME = "logs" + File.separator + "csp";
     private static final String USER_HOME = "user.home";
+    private static final Level LOG_DEFAULT_LEVEL = Level.INFO;
 
 
     private static boolean logNameUsePid;
     private static String logOutputType;
     private static String logBaseDir;
     private static String logCharSet;
+    private static Level logLevel;
 
     static {
         try {
@@ -75,6 +79,7 @@ public class LogBase {
         logOutputType = LOG_OUTPUT_TYPE_FILE;
         logBaseDir = addSeparator(System.getProperty(USER_HOME)) + DIR_NAME + File.separator;
         logCharSet = LOG_CHARSET_UTF8;
+        logLevel = LOG_DEFAULT_LEVEL;
     }
 
     private static void loadProperties() {
@@ -103,6 +108,17 @@ public class LogBase {
         String usePid = properties.getProperty(LOG_NAME_USE_PID);
         logNameUsePid = "true".equalsIgnoreCase(usePid);
         System.out.println("INFO: Sentinel log name use pid is: " + logNameUsePid);
+
+        // load log level
+        String logLevelString = properties.getProperty(LOG_LEVEL);
+        if (logLevelString != null && (logLevelString = logLevelString.trim()).length() > 0) {
+            try {
+                logLevel = Level.parse(logLevelString);
+            } catch (IllegalArgumentException e) {
+                System.out.println("Log level : " + logLevel + " is invalid. Use default : " + LOG_DEFAULT_LEVEL.toString());
+            }
+        }
+        System.out.println("INFO: Sentinel log level is: " + logLevel);
     }
 
 
@@ -142,4 +158,7 @@ public class LogBase {
         return logCharSet;
     }
 
+    public static Level getLogLevel() {
+        return logLevel;
+    }
 }
