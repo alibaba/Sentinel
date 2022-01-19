@@ -119,38 +119,43 @@ public class ConfigurableRequestItemParser<T> implements RequestItemParser<T> {
         return delegate.getCookieValue(request, cookieName);
     }
 
-    public void addPathExtractor(Function<T, String> extractor) {
+    public ConfigurableRequestItemParser<T> addPathExtractor(Function<T, String> extractor) {
         if (extractor == null) {
-            return;
+            return this;
         }
         pathExtractors.add(extractor);
+        return this;
     }
 
-    public void addRemoteAddressExtractor(Function<T, String> extractor) {
+    public ConfigurableRequestItemParser<T> addRemoteAddressExtractor(Function<T, String> extractor) {
         if (extractor == null) {
-            return;
+            return this;
         }
         remoteAddressExtractors.add(extractor);
+        return this;
     }
 
-    public void addHeaderExtractor(BiFunction<T, String, String> extractor) {
+    public ConfigurableRequestItemParser<T> addHeaderExtractor(BiFunction<T, String, String> extractor) {
         if (extractor == null) {
-            return;
+            return this;
         }
         headerExtractors.add(extractor);
+        return this;
     }
 
-    public void addUrlParamExtractor(BiFunction<T, String, String> extractor) {
+    public ConfigurableRequestItemParser<T> addUrlParamExtractor(BiFunction<T, String, String> extractor) {
         if (extractor == null) {
-            return;
+            return this;
         }
         urlParamExtractors.add(extractor);
+        return this;
     }
 
-    public void addCookieValueExtractor(BiFunction<T, String, String> extractor) {
+    public ConfigurableRequestItemParser<T> addCookieValueExtractor(BiFunction<T, String, String> extractor) {
         if (extractor == null) {
-            return;
+            return this;
         }
         cookieValueExtractors.add(extractor);
+        return this;
     }
 }
