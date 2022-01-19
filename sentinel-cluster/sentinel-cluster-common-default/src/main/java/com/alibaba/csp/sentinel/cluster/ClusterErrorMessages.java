@@ -27,6 +27,7 @@ public final class ClusterErrorMessages {
     public static final String REQUEST_TIME_OUT = "request time out";
     public static final String CLIENT_NOT_READY = "client not ready";
     public static final String NO_RULES_IN_SERVER = "no rules in token server";
+    public static final String PARAM_FLOW_TYPE_NO_SUPPORTED = "param flow types are not supported";
 
     private ClusterErrorMessages() {}
 }
