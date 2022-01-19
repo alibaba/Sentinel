@@ -38,6 +38,7 @@ import com.alibaba.csp.sentinel.adapter.gateway.zuul.fallback.ZuulBlockFallbackM
 import com.alibaba.csp.sentinel.adapter.gateway.zuul.fallback.ZuulBlockFallbackProvider;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.util.function.Predicate;
 
@@ -71,8 +72,9 @@ public class SentinelZuulPreFilter extends ZuulFilter {
     }
 
     public SentinelZuulPreFilter(int order, RequestItemParser<RequestContext> requestItemParser) {
+        AssertUtil.notNull(requestItemParser, "requestItemParser cannot be null");
         this.order = order;
-        this.paramParser = new GatewayParamParser<>(requestItemParser == null ? new RequestContextItemParser() : requestItemParser);
+        this.paramParser = new GatewayParamParser<>(requestItemParser);
     }
 
     @Override

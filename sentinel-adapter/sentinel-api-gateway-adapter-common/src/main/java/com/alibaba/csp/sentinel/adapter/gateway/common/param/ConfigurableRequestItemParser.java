@@ -1,5 +1,21 @@
+/*
+ * Copyright 1999-2022 Alibaba Group Holding Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.alibaba.csp.sentinel.adapter.gateway.common.param;
 
+import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import java.util.ArrayList;
@@ -8,6 +24,24 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
+ * delegate RequestItemParser, support add extractors to customize request item parse.
+ * <p>
+ * example:
+ * if you want to get client real ip in multi nginx proxy, you can register SentinelGatewayFilter bean as follows
+ *
+ * ConfigurableRequestItemParser<ServerWebExchange> parser = new  ConfigurableRequestItemParser<>(new ServerWebExchangeItemParser());
+ * List<String> headerNames = Arrays.asList("X-Real-IP", "Client-IP");
+ * parser.addRemoteAddressExtractor(serverWebExchange -> {
+ *      for (String headerKey : headerNames) {
+ *          String remoteAddress = serverWebExchange.getRequest().getHeaders().getFirst(headerKey);
+ *          if (StringUtils.hasLength(remoteAddress)) {
+ *              return remoteAddress;
+ *          }
+ *      }
+ *      return null;
+ * });
+ * return new SentinelGatewayFilter(parser);
+ *
  * @author icodening
  * @date 2022.01.14
  */
@@ -26,6 +60,7 @@ public class ConfigurableRequestItemParser<T> implements RequestItemParser<T> {
     private final RequestItemParser<T> delegate;
 
     public ConfigurableRequestItemParser(RequestItemParser<T> delegate) {
+        AssertUtil.notNull(delegate, "delegate can not be null");
         this.delegate = delegate;
     }
 

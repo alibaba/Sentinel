@@ -105,12 +105,13 @@ public class SentinelZuulInboundFilter extends HttpInboundFilter {
                                      Function<HttpRequestMessage, String> routeExtractor, RequestItemParser<HttpRequestMessage> requestItemParser) {
         AssertUtil.notEmpty(blockedEndpointName, "blockedEndpointName cannot be empty");
         AssertUtil.notNull(routeExtractor, "routeExtractor cannot be null");
+        AssertUtil.notNull(requestItemParser, "requestItemParser cannot be null");
         this.order = order;
 		this.blockedEndpointName = blockedEndpointName;
 		this.executor = executor;
 		this.fastError = fastError;
 		this.routeExtractor = routeExtractor;
-		this.paramParser = new GatewayParamParser<>(requestItemParser == null ? new HttpRequestMessageItemParser() : requestItemParser);
+		this.paramParser = new GatewayParamParser<>(requestItemParser);
 	}
 
     @Override

@@ -26,6 +26,7 @@ import com.alibaba.csp.sentinel.adapter.gateway.sc.callback.GatewayCallbackManag
 import com.alibaba.csp.sentinel.adapter.reactor.ContextConfig;
 import com.alibaba.csp.sentinel.adapter.reactor.EntryConfig;
 import com.alibaba.csp.sentinel.adapter.reactor.SentinelReactorTransformer;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -61,9 +62,10 @@ public class SentinelGatewayFilter implements GatewayFilter, GlobalFilter, Order
         this(Ordered.HIGHEST_PRECEDENCE, serverWebExchangeItemParser);
     }
 
-    public SentinelGatewayFilter(int order, RequestItemParser<ServerWebExchange> serverWebExchangeItemParser) {
+    public SentinelGatewayFilter(int order, RequestItemParser<ServerWebExchange> requestItemParser) {
+        AssertUtil.notNull(requestItemParser, "requestItemParser cannot be null");
         this.order = order;
-        this.paramParser = new GatewayParamParser<>(serverWebExchangeItemParser == null ? new ServerWebExchangeItemParser() : serverWebExchangeItemParser);
+        this.paramParser = new GatewayParamParser<>(requestItemParser);
     }
 
     @Override
