@@ -7,6 +7,7 @@ import com.alibaba.csp.sentinel.datasource.converter.SentinelConverter;
 import java.util.Properties;
 
 /**
+ * Nacos context through DataSource which hold some common variables.
  *
  * @author Jiajiangnan
  */

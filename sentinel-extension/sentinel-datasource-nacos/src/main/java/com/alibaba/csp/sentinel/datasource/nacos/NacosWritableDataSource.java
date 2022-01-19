@@ -4,7 +4,7 @@ import com.alibaba.csp.sentinel.datasource.AbstractWritableDataSource;
 import com.alibaba.nacos.api.config.ConfigService;
 
 /**
- *
+ * A writable {@code DataSource} with Nacos backend. Which can push the new value so to the nacos server.
  *
  * @author Jiajiangnan
  */

@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Properties;
 
 /**
+ * NacosDataSource who provides a reader to read config from nacos, and provides a writer to publish config to nacos.
  *
  * @author Eric Zhao
  * @author Jiajiangnan
