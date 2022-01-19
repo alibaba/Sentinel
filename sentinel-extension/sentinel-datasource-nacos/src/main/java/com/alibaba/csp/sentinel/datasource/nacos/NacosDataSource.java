@@ -143,11 +143,6 @@ public class NacosDataSource<T> extends SentinelDataSource {
     }
 
     @Override
-    protected void preDataSourceClose() {
-        // Nothing to do
-    }
-
-    @Override
     protected void postDataSourceClose() {
         ConfigService dataSourceClient = context.getClient() == null ? null : (ConfigService) context.getClient();
         if(dataSourceClient != null) {

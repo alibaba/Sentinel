@@ -18,8 +18,12 @@ public abstract class SentinelDataSource {
         postDataSourceClose();
     }
 
-    protected abstract void postDataSourceClose();
+    protected void postDataSourceClose() {
 
-    protected abstract void preDataSourceClose();
+    }
+
+    protected void preDataSourceClose() {
+        
+    };
 
 }
