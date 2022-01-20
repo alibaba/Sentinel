@@ -27,6 +27,7 @@ import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.ResourceTypeConstants;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.adapter.gateway.common.param.GatewayParamParser;
+import com.alibaba.csp.sentinel.adapter.gateway.common.param.RequestItemParser;
 import com.alibaba.csp.sentinel.adapter.gateway.zuul2.HttpRequestMessageItemParser;
 import com.alibaba.csp.sentinel.adapter.gateway.zuul2.api.ZuulGatewayApiMatcherManager;
 import com.alibaba.csp.sentinel.adapter.gateway.zuul2.api.matcher.HttpRequestMessageApiMatcher;
@@ -67,8 +68,7 @@ public class SentinelZuulInboundFilter extends HttpInboundFilter {
     private final boolean fastError;
     private final Function<HttpRequestMessage, String> routeExtractor;
 
-    private final GatewayParamParser<HttpRequestMessage> paramParser = new GatewayParamParser<>(
-            new HttpRequestMessageItemParser());
+    private final GatewayParamParser<HttpRequestMessage> paramParser;
 
     /**
      * Constructor of the inbound filter, which extracts the route from the context route VIP attribute by default.
@@ -98,13 +98,20 @@ public class SentinelZuulInboundFilter extends HttpInboundFilter {
      */
     public SentinelZuulInboundFilter(int order, String blockedEndpointName, Executor executor, boolean fastError,
                                      Function<HttpRequestMessage, String> routeExtractor) {
+        this(order, blockedEndpointName, executor, fastError, routeExtractor, new HttpRequestMessageItemParser());
+	}
+
+	public SentinelZuulInboundFilter(int order, String blockedEndpointName, Executor executor, boolean fastError,
+                                     Function<HttpRequestMessage, String> routeExtractor, RequestItemParser<HttpRequestMessage> requestItemParser) {
         AssertUtil.notEmpty(blockedEndpointName, "blockedEndpointName cannot be empty");
         AssertUtil.notNull(routeExtractor, "routeExtractor cannot be null");
+        AssertUtil.notNull(requestItemParser, "requestItemParser cannot be null");
         this.order = order;
 		this.blockedEndpointName = blockedEndpointName;
 		this.executor = executor;
 		this.fastError = fastError;
 		this.routeExtractor = routeExtractor;
+		this.paramParser = new GatewayParamParser<>(requestItemParser);
 	}
 
     @Override
