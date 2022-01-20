@@ -202,7 +202,7 @@ public class NettyTransportClient implements ClusterTransportClient {
     }
 
     private boolean validRequest(Request request) {
-        return request != null && request.getType() >= 0 ;
+        return request != null && request.getType() >= 0;
     }
 
     @Override
