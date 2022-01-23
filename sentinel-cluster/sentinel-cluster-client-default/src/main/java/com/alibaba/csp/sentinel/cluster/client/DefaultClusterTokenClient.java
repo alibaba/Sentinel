@@ -15,7 +15,10 @@
  */
 package com.alibaba.csp.sentinel.cluster.client;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.alibaba.csp.sentinel.cluster.ClusterConstants;
@@ -173,6 +176,11 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
             .setFlowId(flowId).setParams(params);
         ClusterRequest<ParamFlowRequestData> request = new ClusterRequest<>(ClusterConstants.MSG_TYPE_PARAM_FLOW, data);
         try {
+            //fix bug https://github.com/alibaba/Sentinel/issues/1906
+            if (!checkParamFlowData(request)){
+                return clientFail();
+            }
+
             TokenResult result = sendTokenRequest(request);
             logForResult(result);
             return result;
@@ -180,6 +188,54 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
             ClusterClientStatLogUtil.log(ex.getMessage());
             return new TokenResult(TokenResultStatus.FAIL);
         }
+    }
+
+    public boolean isParamFlowTypeSupport(Object value){
+        if (value instanceof Integer || int.class.isInstance(value)) {
+            return true;
+        } else if (value instanceof String) {
+            return true;
+        } else if (boolean.class.isInstance(value) || value instanceof Boolean) {
+            return true;
+        } else if (long.class.isInstance(value) || value instanceof Long) {
+            return true;
+        } else if (double.class.isInstance(value) || value instanceof Double) {
+            return true;
+        } else if (float.class.isInstance(value) || value instanceof Float) {
+            return true;
+        } else if (byte.class.isInstance(value) || value instanceof Byte) {
+            return true;
+        } else if (short.class.isInstance(value) || value instanceof Short) {
+            return true;
+        } else {
+            // Others are not supported.
+            return false;
+        }
+    }
+
+    public boolean checkParamFlowData(ClusterRequest<ParamFlowRequestData> request){
+        Object data = request.getData();
+        if (Objects.isNull(data)){
+            return false;
+        }
+
+        ParamFlowRequestData requestData = request.getData() ;
+        Collection<Object> params = requestData.getParams();
+        List<Object> validParams = new ArrayList<>();
+        for (Object param : params) {
+            if(isParamFlowTypeSupport(param)){
+                validParams.add(param);
+            }else {
+                RecordLog.warn("[ParamFlowRequestDataWriter] WARN: Non-primitive type detected in params of "
+                        + "cluster parameter flow control, which is not supported: " + param);
+            }
+        }
+
+        if (validParams.size() > 0){
+            requestData.setParams(validParams);
+            return true;
+        }
+        return false;
     }
 
     @Override

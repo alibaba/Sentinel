@@ -16,16 +16,11 @@
 package com.alibaba.csp.sentinel.cluster.client;
 
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import com.alibaba.csp.sentinel.cluster.ClusterErrorMessages;
 import com.alibaba.csp.sentinel.cluster.ClusterTransportClient;
@@ -37,7 +32,6 @@ import com.alibaba.csp.sentinel.cluster.client.handler.TokenClientPromiseHolder;
 import com.alibaba.csp.sentinel.cluster.exception.SentinelClusterException;
 import com.alibaba.csp.sentinel.cluster.request.ClusterRequest;
 import com.alibaba.csp.sentinel.cluster.request.Request;
-import com.alibaba.csp.sentinel.cluster.request.data.ParamFlowRequestData;
 import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.log.RecordLog;
@@ -218,10 +212,6 @@ public class NettyTransportClient implements ClusterTransportClient {
         if (!validRequest(request)) {
             throw new SentinelClusterException(ClusterErrorMessages.BAD_REQUEST);
         }
-        // fix bug https://github.com/alibaba/Sentinel/issues/1906
-        if (!checkParamFlowData(request)){
-            throw new SentinelClusterException(ClusterErrorMessages.PARAM_FLOW_TYPE_NO_SUPPORTED);
-        }
         int xid = getCurrentId();
         try {
             request.setId(xid);
@@ -253,58 +243,6 @@ public class NettyTransportClient implements ClusterTransportClient {
             next = pre >= MAX_ID ? MIN_ID : pre + 1;
         } while (!idGenerator.compareAndSet(pre, next));
         return next;
-    }
-
-    public boolean isParamFlowTypeSupport(Object value){
-        if (value instanceof Integer || int.class.isInstance(value)) {
-            return true;
-        } else if (value instanceof String) {
-            return true;
-        } else if (boolean.class.isInstance(value) || value instanceof Boolean) {
-            return true;
-        } else if (long.class.isInstance(value) || value instanceof Long) {
-            return true;
-        } else if (double.class.isInstance(value) || value instanceof Double) {
-            return true;
-        } else if (float.class.isInstance(value) || value instanceof Float) {
-            return true;
-        } else if (byte.class.isInstance(value) || value instanceof Byte) {
-            return true;
-        } else if (short.class.isInstance(value) || value instanceof Short) {
-            return true;
-        } else {
-            // Others are not supported.
-            return false;
-        }
-    }
-
-    public boolean checkParamFlowData(ClusterRequest request){
-        Object data = request.getData();
-        if (Objects.isNull(data)){
-            return false;
-        }
-        //Only check the 'ParamFlowRequestDatA' type
-        if (!(data instanceof ParamFlowRequestData)){
-            return true;
-        }
-
-        ParamFlowRequestData requestData = (ParamFlowRequestData) data;
-        Collection<Object> params = requestData.getParams();
-        List<Object> validParams = new ArrayList<>();
-        for (Object param : params) {
-            if(isParamFlowTypeSupport(param)){
-                validParams.add(param);
-            }else {
-                RecordLog.warn("[ParamFlowRequestDataWriter] WARN: Non-primitive type detected in params of "
-                        + "cluster parameter flow control, which is not supported: " + param);
-            }
-        }
-
-        if (validParams.size() > 0){
-            requestData.setParams(validParams);
-            return true;
-        }
-        return false;
     }
 
     /*public CompletableFuture<ClusterResponse> sendRequestAsync(ClusterRequest request) {
