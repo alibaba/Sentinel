@@ -210,6 +210,7 @@ public class SentinelAnnotationIntegrationTest extends AbstractJUnit4SpringConte
 
     @Test
     public void testFallBackPrivateMethod() throws Exception {
+        assertThat(fooService.fooWithPrivateFallback(1)).isEqualTo("Hello for 1");
         String resourceName = "apiFooWithFallback";
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(resourceName);
 
