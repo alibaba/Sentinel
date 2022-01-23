@@ -190,7 +190,7 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
         }
     }
 
-    public boolean isParamFlowTypeSupport(Object value){
+    private boolean isParamFlowTypeSupport(Object value){
         if (value instanceof Integer || int.class.isInstance(value)) {
             return true;
         } else if (value instanceof String) {
@@ -213,7 +213,7 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
         }
     }
 
-    public boolean checkParamFlowData(ClusterRequest<ParamFlowRequestData> request){
+    private boolean checkParamFlowData(ClusterRequest<ParamFlowRequestData> request){
         Object data = request.getData();
         if (Objects.isNull(data)){
             return false;
