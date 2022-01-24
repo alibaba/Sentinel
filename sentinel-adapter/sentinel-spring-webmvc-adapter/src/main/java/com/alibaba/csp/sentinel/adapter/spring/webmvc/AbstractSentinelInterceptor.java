@@ -63,6 +63,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
         AssertUtil.notNull(config, "BaseWebMvcConfig should not be null");
         AssertUtil.assertNotBlank(config.getRequestAttributeName(), "requestAttributeName should not be blank");
         this.baseWebMvcConfig = config;
+        SentinelAfterException.baseWebMvcConfig = config;
     }
     
     /**
@@ -133,59 +134,15 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
         return SENTINEL_SPRING_WEB_CONTEXT_NAME;
     }
 
-
-    /**
-     * The afterCompletion method of the HandlerInterceptor does not catch exception statistics when using @ControllerAdvice for global exception fetching
-     * Call exceptionControllerAdviceExit method to realize exception statistics
-     *
-     * @param request
-     * @param ex
-     */
-    public void exceptionControllerAdviceExit(HttpServletRequest request, Exception ex) {
-        this.afterCompletion(request,null,null, ex);
-    }
-
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
                                 Object handler, Exception ex) {
-        if (increaseReferece(request, this.baseWebMvcConfig.getRequestRefName(), -1) != 0) {
-            return;
-        }
-        
-        Entry entry = getEntryInRequest(request, baseWebMvcConfig.getRequestAttributeName());
-        if (entry == null) {
-            // should not happen
-            RecordLog.warn("[{}] No entry found in request, key: {}",
-                    getClass().getSimpleName(), baseWebMvcConfig.getRequestAttributeName());
-            return;
-        }
-        
-        traceExceptionAndExit(entry, ex);
-        removeEntryInRequest(request);
-        ContextUtil.exit();
+        SentinelAfterException.exit(request,ex);
     }
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
                            ModelAndView modelAndView) throws Exception {
-    }
-
-    protected Entry getEntryInRequest(HttpServletRequest request, String attrKey) {
-        Object entryObject = request.getAttribute(attrKey);
-        return entryObject == null ? null : (Entry)entryObject;
-    }
-
-    protected void removeEntryInRequest(HttpServletRequest request) {
-        request.removeAttribute(baseWebMvcConfig.getRequestAttributeName());
-    }
-
-    protected void traceExceptionAndExit(Entry entry, Exception ex) {
-        if (entry != null) {
-            if (ex != null) {
-                Tracer.traceEntry(ex, entry);
-            }
-            entry.exit();
-        }
     }
 
     protected void handleBlockException(HttpServletRequest request, HttpServletResponse response, BlockException e)
