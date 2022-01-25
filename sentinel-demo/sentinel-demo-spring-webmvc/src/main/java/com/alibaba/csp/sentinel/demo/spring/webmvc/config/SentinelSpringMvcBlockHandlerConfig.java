@@ -41,7 +41,7 @@ public class SentinelSpringMvcBlockHandlerConfig {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     /**
-     * Global exception or a business exception to manually call sentinelWebInterceptor.exceptionControllerAdviceExit(req,e); Do exception statistics
+     * Global exception or a business exception to manually call SentinelAfterException.exit(req, e); Do exception statistics
      * Otherwise, Sentinel cannot perform exception statistics and exception degrade
      *
      * @param req
