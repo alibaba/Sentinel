@@ -1,4 +1,6 @@
-package com.alibaba.csp.sentinel.adapter.spring.webmvc;
+package com.alibaba.csp.sentinel.adapter.spring.webmvc.license;
+
+import com.alibaba.csp.sentinel.adapter.spring.webmvc.SentinelWebInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -8,9 +10,9 @@ import javax.servlet.http.HttpServletRequest;
  * @author Roy
  * @date 2022/1/249:15
  */
-public class SentinelAfterException {
+public class SentinelAfterCompletionUtil {
 
-    protected static AbstractSentinelInterceptor abstractSentinelInterceptor;
+    public static SentinelWebInterceptor sentinelWebInterceptor;
 
     /**
      * The afterCompletion method of the HandlerInterceptor does not catch exception statistics when using @ControllerAdvice for global exception fetching
@@ -20,6 +22,6 @@ public class SentinelAfterException {
      * @param ex
      */
     public static void exit(HttpServletRequest request, Exception ex) {
-        abstractSentinelInterceptor.afterCompletion(request, null, null, ex);
+        sentinelWebInterceptor.afterCompletion(request, null, null, ex);
     }
 }

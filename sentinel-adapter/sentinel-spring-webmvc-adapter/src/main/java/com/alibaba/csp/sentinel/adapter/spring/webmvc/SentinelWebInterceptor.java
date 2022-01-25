@@ -20,6 +20,7 @@ import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.UrlCleaner;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.alibaba.csp.sentinel.adapter.spring.webmvc.license.SentinelAfterCompletionUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import org.springframework.web.servlet.HandlerMapping;
 
@@ -45,6 +46,7 @@ public class SentinelWebInterceptor extends AbstractSentinelInterceptor {
         } else {
             this.config = config;
         }
+        SentinelAfterCompletionUtil.sentinelWebInterceptor = this;
     }
 
     @Override

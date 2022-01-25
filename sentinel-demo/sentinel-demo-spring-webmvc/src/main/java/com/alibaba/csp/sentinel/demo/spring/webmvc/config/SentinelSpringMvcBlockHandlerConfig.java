@@ -15,7 +15,7 @@
  */
 package com.alibaba.csp.sentinel.demo.spring.webmvc.config;
 
-import com.alibaba.csp.sentinel.adapter.spring.webmvc.SentinelAfterException;
+import com.alibaba.csp.sentinel.adapter.spring.webmvc.license.SentinelAfterCompletionUtil;
 import com.alibaba.csp.sentinel.demo.spring.webmvc.vo.ResultWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import org.slf4j.Logger;
@@ -52,7 +52,7 @@ public class SentinelSpringMvcBlockHandlerConfig {
     @ResponseBody
     public ResultWrapper exceptionHandler(HttpServletRequest req, Exception e) {
         logger.warn("System Exception: ", e);
-        SentinelAfterException.exit(req, e);
+        SentinelAfterCompletionUtil.exit(req, e);
         return ResultWrapper.systemException();
     }
 

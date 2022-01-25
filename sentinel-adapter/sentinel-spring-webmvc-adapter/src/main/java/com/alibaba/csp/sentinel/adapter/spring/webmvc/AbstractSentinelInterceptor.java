@@ -63,7 +63,6 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
         AssertUtil.notNull(config, "BaseWebMvcConfig should not be null");
         AssertUtil.assertNotBlank(config.getRequestAttributeName(), "requestAttributeName should not be blank");
         this.baseWebMvcConfig = config;
-        SentinelAfterException.abstractSentinelInterceptor = this;
     }
     
     /**
