@@ -14,4 +14,4 @@ To use Sentinel Metric Exporter, you should add the following dependency:
 
 And then you can find the MBean info in your tool.
 
-![MBean Info](https://user-images.githubusercontent.com/25661357/124217810-984a1280-db2b-11eb-8991-659138e6f8bb.png "MBean Info")
+![MBean Info](https://user-images.githubusercontent.com/25661357/150902723-6350a629-a173-47f9-a94b-6563ae55a5ce.png "MBean Info")
