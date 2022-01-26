@@ -14,7 +14,6 @@ import com.netflix.netty.common.channel.config.ChannelConfig;
 import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
 import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.proxyprotocol.StripUntrustedProxyHeadersHandler;
-import com.netflix.netty.common.ssl.ServerSslConfig;
 import com.netflix.netty.common.status.ServerStatusManager;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.FilterLoader;
@@ -42,7 +41,6 @@ public class SampleServerStartup extends BaseServerStartup {
 
         String mainPortName = "main";
         ChannelConfig channelConfig = BaseServerStartup.defaultChannelConfig(mainPortName);
-        ServerSslConfig sslConfig;
         /* These settings may need to be tweaked depending if you're running behind an ELB HTTP listener, TCP listener,
          * or directly on the internet.
          */

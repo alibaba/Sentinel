@@ -15,8 +15,6 @@
  */
 package com.alibaba.csp.sentinel.adapter.gateway.common.api;
 
-import com.alibaba.csp.sentinel.util.AssertUtil;
-
 /**
  * @author Eric Zhao
  * @since 1.6.0

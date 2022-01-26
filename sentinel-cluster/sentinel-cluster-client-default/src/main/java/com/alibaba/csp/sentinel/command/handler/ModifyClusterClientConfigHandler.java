@@ -17,7 +17,6 @@ package com.alibaba.csp.sentinel.command.handler;
 
 import java.net.URLDecoder;
 
-import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfig;
 import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfigManager;
 import com.alibaba.csp.sentinel.command.CommandConstants;
 import com.alibaba.csp.sentinel.command.CommandHandler;

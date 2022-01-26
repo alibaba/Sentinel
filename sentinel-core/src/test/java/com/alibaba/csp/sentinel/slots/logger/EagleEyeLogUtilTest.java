@@ -1,7 +1,6 @@
 package com.alibaba.csp.sentinel.slots.logger;
 
 import com.alibaba.csp.sentinel.log.LogBase;
-import com.alibaba.csp.sentinel.log.RecordLog;
 import org.hamcrest.io.FileMatchers;
 import org.junit.Assert;
 import org.junit.Test;

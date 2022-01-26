@@ -17,7 +17,6 @@ package com.alibaba.csp.sentinel.annotation.aspectj.integration.service;
 
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.csp.sentinel.slots.block.degrade.DegradeException;
 
 import org.springframework.stereotype.Service;
 

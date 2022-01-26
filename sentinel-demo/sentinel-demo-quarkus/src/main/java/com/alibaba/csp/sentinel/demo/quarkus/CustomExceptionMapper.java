@@ -17,10 +17,8 @@ package com.alibaba.csp.sentinel.demo.quarkus;
 
 import org.jboss.logging.Logger;
 
-import javax.annotation.Priority;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
 
 /**
  * @author sea

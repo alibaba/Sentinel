@@ -16,7 +16,6 @@
 package com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker;
 
 import com.alibaba.csp.sentinel.context.Context;
-import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 
 /**

@@ -22,7 +22,6 @@ import java.util.Properties;
 
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.LogBase;
-import com.alibaba.csp.sentinel.util.AppNameUtil;
 
 /**
  * Helper class for executing a task within a config context via properties file.
