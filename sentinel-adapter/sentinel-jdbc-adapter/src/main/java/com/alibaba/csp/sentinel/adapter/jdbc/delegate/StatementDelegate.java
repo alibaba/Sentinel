@@ -23,8 +23,23 @@ import java.sql.*;
  */
 public class StatementDelegate extends WrapperDelegate<Statement> implements Statement {
 
+    private static final String KEY_SQL = "SQL";
+
     public StatementDelegate(Statement delegate) {
         super(delegate);
+    }
+
+    @Override
+    protected String getResourceName() {
+        return getSQL();
+    }
+
+    public void setSQL(String sql) {
+        setAttachment(KEY_SQL, sql);
+    }
+
+    public String getSQL() {
+        return getAttachment(KEY_SQL);
     }
 
     public ResultSet executeQuery(String sql) throws SQLException {

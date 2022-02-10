@@ -15,7 +15,10 @@
  */
 package com.alibaba.csp.sentinel.adapter.jdbc;
 
-import com.alibaba.csp.sentinel.*;
+import com.alibaba.csp.sentinel.Entry;
+import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.ResourceTypeConstants;
+import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -77,7 +80,6 @@ public abstract class AbstractSentinelJDBCComponent implements JDBCContext {
             if (StringUtil.isBlank(resourceName)) {
                 return callable.call();
             }
-            ContextUtil.enter(JDBC_CONTEXT_NAME, "");
             entry = SphU.entry(resourceName, ResourceTypeConstants.COMMON_DB_SQL, EntryType.OUT);
             return callable.call();
         } catch (BlockException e) {
@@ -101,12 +103,12 @@ public abstract class AbstractSentinelJDBCComponent implements JDBCContext {
     }
 
     /**
-     * default use sql statement as resource name
+     * default return null
      *
      * @return sentinel resource name
      */
     protected String getResourceName() {
-        return getSQL();
+        return null;
     }
 
     @FunctionalInterface
