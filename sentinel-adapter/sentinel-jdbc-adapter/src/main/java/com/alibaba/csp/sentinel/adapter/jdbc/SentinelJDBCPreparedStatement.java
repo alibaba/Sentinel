@@ -20,6 +20,7 @@ import com.alibaba.csp.sentinel.adapter.jdbc.delegate.PreparedStatementDelegate;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.function.Function;
 
 /**
  * @author icodening
@@ -29,6 +30,11 @@ public class SentinelJDBCPreparedStatement extends PreparedStatementDelegate {
 
     public SentinelJDBCPreparedStatement(PreparedStatement delegate) {
         super(delegate);
+    }
+
+    public SentinelJDBCPreparedStatement(PreparedStatement delegate,Function<String, String> resourceNameMapper) {
+        super(delegate);
+        setSQLMapper(resourceNameMapper);
     }
 
     @Override

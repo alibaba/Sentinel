@@ -13,25 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.adapter.jdbc;
+package com.alibaba.csp.sentinel.adapter.jdbc.calcite;
 
-import com.alibaba.csp.sentinel.adapter.jdbc.delegate.CallableStatementDelegate;
-
-import java.sql.CallableStatement;
-import java.util.function.Function;
+import org.apache.calcite.sql.SqlLiteral;
+import org.apache.calcite.sql.util.SqlBasicVisitor;
 
 /**
+ * normal sql Literal replace visitor
+ *
  * @author icodening
- * @date 2022.02.09
+ * @date 2022.02.12
  */
-public class SentinelCallableStatement extends CallableStatementDelegate {
+public class SentinelSqlLiteral extends SqlBasicVisitor<SqlLiteral> {
 
-    public SentinelCallableStatement(CallableStatement delegate) {
-        super(delegate);
-    }
+    public static final SentinelSqlLiteral INSTANCE = new SentinelSqlLiteral();
 
-    public SentinelCallableStatement(CallableStatement delegate, Function<String, String> sqlMapper) {
-        super(delegate);
-        setSQLMapper(sqlMapper);
+    @Override
+    public SqlLiteral visit(SqlLiteral literal) {
+        //replace parameters in SQL
+        return SqlLiteral.createCharString("?", literal.getParserPosition());
     }
 }

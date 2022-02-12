@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.adapter.jdbc.delegate;
 
 import java.sql.*;
+import java.util.function.Function;
 
 /**
  * @author icodening
@@ -23,10 +24,25 @@ import java.sql.*;
  */
 public class StatementDelegate extends WrapperDelegate<Statement> implements Statement {
 
+    /**
+     * default sql mapper, return origin sql
+     */
+    private static final Function<String, String> DEFAULT_SQL_MAPPER = (sql)->sql;
+
     private static final String KEY_SQL = "SQL";
+
+    private Function<String, String> sqlMapper = DEFAULT_SQL_MAPPER;
 
     public StatementDelegate(Statement delegate) {
         super(delegate);
+    }
+
+    public void setSQLMapper(Function<String, String> sqlMapper) {
+        this.sqlMapper = sqlMapper;
+    }
+
+    public Function<String, String> getSQLMapper() {
+        return sqlMapper;
     }
 
     @Override
@@ -35,6 +51,14 @@ public class StatementDelegate extends WrapperDelegate<Statement> implements Sta
     }
 
     public void setSQL(String sql) {
+        try {
+            //users can customize the resource name
+            if (getSQLMapper() != null) {
+                setAttachment(KEY_SQL, getSQLMapper().apply(sql));
+                return;
+            }
+        } catch (Throwable ignore) {
+        }
         setAttachment(KEY_SQL, sql);
     }
 

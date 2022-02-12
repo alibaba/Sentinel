@@ -15,11 +15,13 @@
  */
 package com.alibaba.csp.sentinel.adapter.jdbc;
 
+import com.alibaba.csp.sentinel.adapter.jdbc.calcite.CalciteUtil;
 import com.alibaba.csp.sentinel.adapter.jdbc.delegate.StatementDelegate;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.function.Function;
 
 /**
  * @author icodening
@@ -27,8 +29,21 @@ import java.sql.Statement;
  */
 public class SentinelJDBCStatement extends StatementDelegate {
 
+    /**
+     * normal sql mapper, replace sql parameters to '?'
+     */
+    private static final Function<String, String> DEFAULT_NORMAL_SQL_MAPPER = CalciteUtil::replaceSQLParametersWithoutException;
+
     public SentinelJDBCStatement(Statement delegate) {
+        this(delegate, DEFAULT_NORMAL_SQL_MAPPER);
+    }
+
+    public SentinelJDBCStatement(Statement delegate, Function<String, String> sqlMapper) {
         super(delegate);
+        if (sqlMapper == null) {
+            sqlMapper = DEFAULT_NORMAL_SQL_MAPPER;
+        }
+        setSQLMapper(sqlMapper);
     }
 
     @Override

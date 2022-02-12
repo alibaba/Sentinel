@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.adapter.jdbc;
 
+import com.alibaba.csp.sentinel.adapter.jdbc.calcite.CalciteUtil;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
@@ -133,10 +134,38 @@ public class DataSourceSpringTest {
         }
     }
 
+    @Test
+    public void testGContinuousNormalStatmentSelectOne() {
+        for (int i = 0; i < 10; i++) {
+            try (Connection connection = dataSource.getConnection()) {
+                String sql = "select * from student where id = " + (i + 1);
+                ResultSet resultSet = normalQuery(connection, sql);
+                int result = 0;
+                while (resultSet.next()) {
+                    ++result;
+                    long id = resultSet.getLong("id");
+                    String name = resultSet.getString("name");
+                    Date date = new Date(resultSet.getDate("create_time").getTime());
+                    System.out.println("Student {id=" + id + ", name=" + name + ", create_time=" + date + "}");
+                }
+                assertEquals(1, result);
+            } catch (Throwable e) {
+                assertTrue(e instanceof SentinelSQLException);
+            }
+        }
+    }
+
     private ResultSet query(Connection connection, String sql, List<Object> args) throws SQLException {
         PreparedStatement ps = connection.prepareStatement(sql);
         setParams(ps, args);
         ResultSet ret = ps.executeQuery();
+        connection.commit();
+        return ret;
+    }
+
+    private ResultSet normalQuery(Connection connection, String sql) throws SQLException {
+        Statement statement = connection.createStatement();
+        ResultSet ret = statement.executeQuery(sql);
         connection.commit();
         return ret;
     }
@@ -185,6 +214,14 @@ public class DataSourceSpringTest {
         flowRules.add(r2);
         flowRules.add(r3);
         flowRules.add(r4);
+
+        String sql = CalciteUtil.replaceSQLParametersWithoutException("select * from student where id = " + 1);
+        FlowRule r5 = (FlowRule) new FlowRule()
+                .setGrade(RuleConstant.FLOW_GRADE_QPS)
+                .setCount(MAX_QPS)
+                .setResource(sql);
+        flowRules.add(r5);
+
         FlowRuleManager.loadRules(flowRules);
     }
 
