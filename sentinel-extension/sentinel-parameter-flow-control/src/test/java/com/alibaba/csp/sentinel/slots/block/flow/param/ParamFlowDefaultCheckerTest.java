@@ -15,9 +15,15 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow.param;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
+import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
+import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
+import com.alibaba.csp.sentinel.test.AbstractTimeBasedTest;
+import com.alibaba.csp.sentinel.util.TimeUtil;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
@@ -25,16 +31,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.alibaba.csp.sentinel.EntryType;
-import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
-import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
-import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
-import com.alibaba.csp.sentinel.test.AbstractTimeBasedTest;
-import com.alibaba.csp.sentinel.util.TimeUtil;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author jialiang.linjl
@@ -292,7 +291,8 @@ public class ParamFlowDefaultCheckerTest extends AbstractTimeBasedTest {
         successCount.set(0);
         final CountDownLatch waitLatch1 = new CountDownLatch(threadCount);
         final long currentTime = TimeUtil.currentTimeMillis();
-        final long endTime = currentTime + rule.getDurationInSec() * 1000 - 1;
+        final long startTime = currentTime - currentTime % 1000;
+        final long endTime = startTime + rule.getDurationInSec() * 1000 - 1;
         for (int i = 0; i < threadCount; i++) {
             Thread t = new Thread(new Runnable() {
                 @Override
