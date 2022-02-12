@@ -15,16 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow.param;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-
 import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
 import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
@@ -36,6 +26,15 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
 import com.alibaba.csp.sentinel.util.TimeUtil;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Rule checker for parameter flow control.
@@ -153,7 +152,8 @@ public final class ParamFlowChecker {
         while (true) {
             long currentTime = TimeUtil.currentTimeMillis();
 
-            AtomicLong lastAddTokenTime = timeCounters.putIfAbsent(value, new AtomicLong(currentTime));
+            long startTime = currentTime - currentTime % 1000;
+            AtomicLong lastAddTokenTime = timeCounters.putIfAbsent(value, new AtomicLong(startTime));
             if (lastAddTokenTime == null) {
                 // Token never added, just replenish the tokens and consume {@code acquireCount} immediately.
                 tokenCounters.putIfAbsent(value, new AtomicLong(maxCount - acquireCount));
@@ -167,7 +167,7 @@ public final class ParamFlowChecker {
                 AtomicLong oldQps = tokenCounters.putIfAbsent(value, new AtomicLong(maxCount - acquireCount));
                 if (oldQps == null) {
                     // Might not be accurate here.
-                    lastAddTokenTime.set(currentTime);
+                    lastAddTokenTime.set(startTime);
                     return true;
                 } else {
                     long restQps = oldQps.get();
@@ -179,7 +179,7 @@ public final class ParamFlowChecker {
                         return false;
                     }
                     if (oldQps.compareAndSet(restQps, newQps)) {
-                        lastAddTokenTime.set(currentTime);
+                        lastAddTokenTime.set(startTime);
                         return true;
                     }
                     Thread.yield();
@@ -223,7 +223,8 @@ public final class ParamFlowChecker {
         long costTime = Math.round(1.0 * 1000 * acquireCount * rule.getDurationInSec() / tokenCount);
         while (true) {
             long currentTime = TimeUtil.currentTimeMillis();
-            AtomicLong timeRecorder = timeRecorderMap.putIfAbsent(value, new AtomicLong(currentTime));
+            long startTime = currentTime - currentTime % 1000;
+            AtomicLong timeRecorder = timeRecorderMap.putIfAbsent(value, new AtomicLong(startTime));
             if (timeRecorder == null) {
                 return true;
             }
@@ -233,7 +234,8 @@ public final class ParamFlowChecker {
 
             if (expectedTime <= currentTime || expectedTime - currentTime < rule.getMaxQueueingTimeMs()) {
                 AtomicLong lastPastTimeRef = timeRecorderMap.get(value);
-                if (lastPastTimeRef.compareAndSet(lastPassTime, currentTime)) {
+                // 更新最后一次处理的时刻为expectedTime，不能是currentTime, 整秒
+                if (lastPastTimeRef.compareAndSet(lastPassTime, expectedTime)) {
                     long waitTime = expectedTime - currentTime;
                     if (waitTime > 0) {
                         lastPastTimeRef.set(expectedTime);
