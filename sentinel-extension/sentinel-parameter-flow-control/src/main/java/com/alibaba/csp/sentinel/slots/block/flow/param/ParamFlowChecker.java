@@ -234,8 +234,7 @@ public final class ParamFlowChecker {
 
             if (expectedTime <= currentTime || expectedTime - currentTime < rule.getMaxQueueingTimeMs()) {
                 AtomicLong lastPastTimeRef = timeRecorderMap.get(value);
-                // 更新最后一次处理的时刻为expectedTime，不能是currentTime, 整秒
-                if (lastPastTimeRef.compareAndSet(lastPassTime, expectedTime)) {
+                if (lastPastTimeRef.compareAndSet(lastPassTime, currentTime)) {
                     long waitTime = expectedTime - currentTime;
                     if (waitTime > 0) {
                         lastPastTimeRef.set(expectedTime);
