@@ -141,7 +141,10 @@ public class ParamFlowDefaultCheckerTest extends AbstractTimeBasedTest {
             new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 
         // We mock the time directly to avoid unstable behaviour.
-        setCurrentMillis(System.currentTimeMillis());
+        long curTime = System.currentTimeMillis();
+        setCurrentMillis(curTime);
+        long surplusMs = 1000 - curTime % 1000;
+        sleep((int)surplusMs);
 
         assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
         assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA));
