@@ -19,7 +19,6 @@ import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.ResourceTypeConstants;
 import com.alibaba.csp.sentinel.SphU;
-import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
@@ -98,7 +97,6 @@ public abstract class AbstractSentinelJDBCComponent implements JDBCContext {
             if (entry != null) {
                 entry.exit();
             }
-            ContextUtil.exit();
         }
     }
 
