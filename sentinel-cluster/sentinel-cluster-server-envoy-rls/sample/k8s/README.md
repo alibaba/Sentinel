@@ -88,12 +88,6 @@ Then we could set rate limit rules for each target clusters.
 After preparing the yaml template, you may deploy the Envoy instance:
 
 ```bash
-kubectl apply -f sample/k8s/envoy.yml
-```
-
-for v3 api：
-
-```bash
 kubectl apply -f sample/k8s/envoy-v3-api.yml
 ```
 

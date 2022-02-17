@@ -19,10 +19,10 @@ import com.alibaba.csp.sentinel.adapter.gateway.common.api.ApiDefinition;
 import com.alibaba.csp.sentinel.adapter.gateway.sc.api.matcher.WebExchangeApiMatcher;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
  */
 public final class GatewayApiMatcherManager {
 
-    private static volatile Map<String, WebExchangeApiMatcher> API_MATCHER_MAP = new ConcurrentHashMap<>();
+    private static volatile Map<String, WebExchangeApiMatcher> API_MATCHER_MAP = new HashMap<>();
 
     public static Map<String, WebExchangeApiMatcher> getApiMatcherMap() {
         return Collections.unmodifiableMap(API_MATCHER_MAP);
@@ -50,15 +50,12 @@ public final class GatewayApiMatcherManager {
     }
 
     static synchronized void loadApiDefinitions(/*@Valid*/ Set<ApiDefinition> definitions) {
-        Map<String, WebExchangeApiMatcher> apiMatcherMap = new ConcurrentHashMap<>();
+        Map<String, WebExchangeApiMatcher> apiMatcherMap = new HashMap<>();
         for (ApiDefinition definition : definitions) {
             apiMatcherMap.put(definition.getApiName(), new WebExchangeApiMatcher(definition));
         }
-        API_MATCHER_MAP = apiMatcherMap;
-    }
 
-    static void addApiDefinition(ApiDefinition definition) {
-        API_MATCHER_MAP.put(definition.getApiName(), new WebExchangeApiMatcher(definition));
+        API_MATCHER_MAP = apiMatcherMap;
     }
 
     private GatewayApiMatcherManager() {}
