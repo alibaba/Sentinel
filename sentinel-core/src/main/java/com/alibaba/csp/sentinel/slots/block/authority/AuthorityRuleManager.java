@@ -23,12 +23,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import com.alibaba.csp.sentinel.util.AssertUtil;
-import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.util.AssertUtil;
+import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
  * Manager for authority rules.
@@ -93,17 +93,12 @@ public final class AuthorityRuleManager {
 
         @Override
         public void configUpdate(List<AuthorityRule> conf) {
-            Map<String, Set<AuthorityRule>> rules = loadAuthorityConf(conf);
-
-            authorityRules.clear();
-            if (rules != null) {
-                authorityRules.putAll(rules);
-            }
+            authorityRules = loadAuthorityConf(conf);
             RecordLog.info("[AuthorityRuleManager] Authority rules received: {}", authorityRules);
         }
 
-        private Map<String, Set<AuthorityRule>> loadAuthorityConf(List<AuthorityRule> list) {
-            Map<String, Set<AuthorityRule>> newRuleMap = new ConcurrentHashMap<>();
+        private ConcurrentHashMap<String, Set<AuthorityRule>> loadAuthorityConf(List<AuthorityRule> list) {
+            ConcurrentHashMap<String, Set<AuthorityRule>> newRuleMap = new ConcurrentHashMap<>();
 
             if (list == null || list.isEmpty()) {
                 return newRuleMap;
@@ -111,7 +106,8 @@ public final class AuthorityRuleManager {
 
             for (AuthorityRule rule : list) {
                 if (!isValidRule(rule)) {
-                    RecordLog.warn("[AuthorityRuleManager] Ignoring invalid authority rule when loading new rules: {}", rule);
+                    RecordLog.warn("[AuthorityRuleManager] Ignoring invalid authority rule when loading new rules: {}",
+                            rule);
                     continue;
                 }
 
@@ -152,7 +148,7 @@ public final class AuthorityRuleManager {
     }
 
     public static boolean isValidRule(AuthorityRule rule) {
-        return rule != null && !StringUtil.isBlank(rule.getResource())
-            && rule.getStrategy() >= 0 && StringUtil.isNotBlank(rule.getLimitApp());
+        return rule != null && !StringUtil.isBlank(rule.getResource()) && rule.getStrategy() >= 0
+                && StringUtil.isNotBlank(rule.getLimitApp());
     }
 }
