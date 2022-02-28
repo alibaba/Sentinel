@@ -151,11 +151,8 @@ public class FlowRuleManager {
 
         @Override
         public synchronized void configUpdate(List<FlowRule> value) {
-            Map<String, List<FlowRule>> rules = FlowRuleUtil.buildFlowRuleMap(value);
-            if (rules != null) {
-                flowRules = rules;
-            }
-            RecordLog.info("[FlowRuleManager] Flow rules received: {}", rules);
+            flowRules = FlowRuleUtil.buildFlowRuleMap(value);
+            RecordLog.info("[FlowRuleManager] Flow rules received: {}", flowRules);
         }
 
         @Override
