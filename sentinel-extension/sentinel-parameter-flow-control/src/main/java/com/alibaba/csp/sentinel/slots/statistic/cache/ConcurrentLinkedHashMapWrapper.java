@@ -21,11 +21,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.github.benmanes.caffeine.cache.Cache;
 
 /**
- * A {@link ConcurrentLinkedHashMap} wrapper for the universal {@link CacheMap}.
+ * A {@link Caffeine} wrapper for the universal {@link CacheMap}.
  *
  * @author Eric Zhao
  * @since 0.2.0
