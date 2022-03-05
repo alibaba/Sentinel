@@ -85,6 +85,11 @@ public class ConcurrentLinkedHashMapWrapper<T, R> implements CacheMap<T, R> {
     }
 
     @Override
+    public Set<T> keySet() {
+        return map.asMap().keySet();
+    }
+
+    @Override
     public Set<T> keySet(boolean ascending) {
         if (ascending) {
             return map.asMap().keySet().stream().sorted()
