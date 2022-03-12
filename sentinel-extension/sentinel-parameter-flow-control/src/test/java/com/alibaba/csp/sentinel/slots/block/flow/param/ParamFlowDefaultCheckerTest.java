@@ -278,7 +278,6 @@ public class ParamFlowDefaultCheckerTest extends AbstractTimeBasedTest {
                     }
                     waitLatch.countDown();
                 }
-
             });
             t.setName("sentinel-simulate-traffic-task-" + i);
             t.start();
