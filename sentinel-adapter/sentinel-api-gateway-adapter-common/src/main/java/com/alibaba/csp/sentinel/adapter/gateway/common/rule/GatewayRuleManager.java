@@ -119,7 +119,7 @@ public final class GatewayRuleManager {
                 || rule.getGrade() < 0 || rule.getCount() < 0 || rule.getBurst() < 0 || rule.getControlBehavior() < 0) {
             return false;
         }
-        if (rule.getGrade() == RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER
+        if (rule.getControlBehavior() == RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER
                 && rule.getMaxQueueingTimeoutMs() < 0) {
             return false;
         }
