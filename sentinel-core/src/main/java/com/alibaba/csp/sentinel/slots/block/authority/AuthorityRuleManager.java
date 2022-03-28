@@ -23,12 +23,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
-import com.alibaba.csp.sentinel.property.PropertyListener;
-import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
+import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
+import com.alibaba.csp.sentinel.property.PropertyListener;
+import com.alibaba.csp.sentinel.property.SentinelProperty;
 
 /**
  * Manager for authority rules.
@@ -39,7 +39,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  */
 public final class AuthorityRuleManager {
 
-    private static Map<String, Set<AuthorityRule>> authorityRules = new ConcurrentHashMap<>();
+    private static volatile Map<String, Set<AuthorityRule>> authorityRules = new ConcurrentHashMap<>();
 
     private static final RulePropertyListener LISTENER = new RulePropertyListener();
     private static SentinelProperty<List<AuthorityRule>> currentProperty = new DynamicSentinelProperty<>();
@@ -97,7 +97,7 @@ public final class AuthorityRuleManager {
             RecordLog.info("[AuthorityRuleManager] Authority rules received: {}", authorityRules);
         }
 
-        private ConcurrentHashMap<String, Set<AuthorityRule>> loadAuthorityConf(List<AuthorityRule> list) {
+        private Map<String, Set<AuthorityRule>> loadAuthorityConf(List<AuthorityRule> list) {
             ConcurrentHashMap<String, Set<AuthorityRule>> newRuleMap = new ConcurrentHashMap<>();
 
             if (list == null || list.isEmpty()) {
