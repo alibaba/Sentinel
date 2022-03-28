@@ -94,11 +94,12 @@ public final class AuthorityRuleManager {
         @Override
         public void configUpdate(List<AuthorityRule> conf) {
             authorityRules = loadAuthorityConf(conf);
+
             RecordLog.info("[AuthorityRuleManager] Authority rules received: {}", authorityRules);
         }
 
         private Map<String, Set<AuthorityRule>> loadAuthorityConf(List<AuthorityRule> list) {
-            ConcurrentHashMap<String, Set<AuthorityRule>> newRuleMap = new ConcurrentHashMap<>();
+            Map<String, Set<AuthorityRule>> newRuleMap = new ConcurrentHashMap<>();
 
             if (list == null || list.isEmpty()) {
                 return newRuleMap;
@@ -106,8 +107,7 @@ public final class AuthorityRuleManager {
 
             for (AuthorityRule rule : list) {
                 if (!isValidRule(rule)) {
-                    RecordLog.warn("[AuthorityRuleManager] Ignoring invalid authority rule when loading new rules: {}",
-                            rule);
+                    RecordLog.warn("[AuthorityRuleManager] Ignoring invalid authority rule when loading new rules: {}", rule);
                     continue;
                 }
 
@@ -133,12 +133,8 @@ public final class AuthorityRuleManager {
 
         @Override
         public void configLoad(List<AuthorityRule> value) {
-            Map<String, Set<AuthorityRule>> rules = loadAuthorityConf(value);
+            authorityRules = loadAuthorityConf(value);
 
-            authorityRules.clear();
-            if (rules != null) {
-                authorityRules.putAll(rules);
-            }
             RecordLog.info("[AuthorityRuleManager] Load authority rules: {}", authorityRules);
         }
     }
@@ -148,7 +144,7 @@ public final class AuthorityRuleManager {
     }
 
     public static boolean isValidRule(AuthorityRule rule) {
-        return rule != null && !StringUtil.isBlank(rule.getResource()) && rule.getStrategy() >= 0
-                && StringUtil.isNotBlank(rule.getLimitApp());
+        return rule != null && !StringUtil.isBlank(rule.getResource())
+            && rule.getStrategy() >= 0 && StringUtil.isNotBlank(rule.getLimitApp());
     }
 }
