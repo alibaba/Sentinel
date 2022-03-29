@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.command;
 import java.util.*;
 
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
+import com.alibaba.csp.sentinel.command.handler.InterceptingCommandHandler;
 import com.alibaba.csp.sentinel.spi.SpiLoader;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
@@ -38,11 +39,24 @@ public class CommandHandlerProvider implements Iterable<CommandHandler> {
     public Map<String, CommandHandler> namedHandlers() {
         Map<String, CommandHandler> map = new HashMap<String, CommandHandler>();
         List<CommandHandler> handlers = spiLoader.loadInstanceList();
+        List<CommandHandlerInterceptor> commandHandlerInterceptors = SpiLoader.of(CommandHandlerInterceptor.class).loadInstanceListSorted();
         for (CommandHandler handler : handlers) {
             String name = parseCommandName(handler);
-            if (!StringUtil.isEmpty(name)) {
-                map.put(name, handler);
+            if (StringUtil.isEmpty(name)) {
+                continue;
             }
+            if (!commandHandlerInterceptors.isEmpty()) {
+                List<CommandHandlerInterceptor> interceptors = new ArrayList<>();
+                for (CommandHandlerInterceptor commandHandlerInterceptor : commandHandlerInterceptors) {
+                    if (commandHandlerInterceptor.shouldIntercept(name)) {
+                        interceptors.add(commandHandlerInterceptor);
+                    }
+                }
+                if (!interceptors.isEmpty()) {
+                    handler = new InterceptingCommandHandler(handler, interceptors);
+                }
+            }
+            map.put(name, handler);
         }
         return map;
     }
