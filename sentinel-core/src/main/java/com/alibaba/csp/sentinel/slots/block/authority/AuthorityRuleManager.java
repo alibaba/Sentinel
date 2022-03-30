@@ -93,7 +93,7 @@ public final class AuthorityRuleManager {
 
         @Override
         public void configUpdate(List<AuthorityRule> conf) {
-        	authorityRules = loadAuthorityConf(conf);
+            authorityRules = loadAuthorityConf(conf);
 
             RecordLog.info("[AuthorityRuleManager] Authority rules received: {}", authorityRules);
         }
@@ -133,7 +133,7 @@ public final class AuthorityRuleManager {
 
         @Override
         public void configLoad(List<AuthorityRule> value) {
-        	authorityRules = loadAuthorityConf(value);
+            authorityRules = loadAuthorityConf(value);
 
             RecordLog.info("[AuthorityRuleManager] Load authority rules: {}", authorityRules);
         }
