@@ -201,7 +201,7 @@ public class BestMatchingPatternExtractTest {
     }
 
     private HandlerMappingBestMatchingPatternExtractor getRouterFunctionBestMatchingPatternExtractor() {
-        return new RouterFunctionBestMatchingPatternExtractor();
+        return new RouterFunctionMappingBestMatchingPatternExtractor();
     }
 
     /**

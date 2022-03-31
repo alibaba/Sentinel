@@ -33,7 +33,7 @@ import java.util.List;
  * @date 2022.03.29
  * @see RouterFunctionMapping
  */
-public class RouterFunctionBestMatchingPatternExtractor implements HandlerMappingBestMatchingPatternExtractor {
+public class RouterFunctionMappingBestMatchingPatternExtractor implements HandlerMappingBestMatchingPatternExtractor {
 
     private List<RequestPredicate> registeredRequestPredicates = Collections.emptyList();
 
