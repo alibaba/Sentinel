@@ -17,11 +17,13 @@ package com.alibaba.csp.sentinel.adapter.spring.webflux.support;
 
 import org.springframework.web.reactive.HandlerMapping;
 import org.springframework.web.reactive.function.server.RequestPredicate;
+import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.support.RouterFunctionMapping;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.util.pattern.PathPattern;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -33,22 +35,26 @@ import java.util.List;
  */
 public class RouterFunctionBestMatchingPatternExtractor implements HandlerMappingBestMatchingPatternExtractor {
 
-    private final RouterFunctionRequestPredicateRepository routerFunctionRequestPredicateRepository;
+    private List<RequestPredicate> registeredRequestPredicates = Collections.emptyList();
 
-    public RouterFunctionBestMatchingPatternExtractor(RouterFunctionRequestPredicateRepository routerFunctionRequestPredicateRepository) {
-        this.routerFunctionRequestPredicateRepository = routerFunctionRequestPredicateRepository;
-    }
+    private volatile boolean initialized = false;
 
     @Override
     public boolean supportExtract(HandlerMapping handlerMapping) {
         return handlerMapping instanceof RouterFunctionMapping;
     }
 
+    public void setRegisteredRequestPredicates(List<RequestPredicate> registeredRequestPredicates) {
+        if (registeredRequestPredicates != null) {
+            this.registeredRequestPredicates = registeredRequestPredicates;
+        }
+    }
+
     @Override
     public String extract(HandlerMapping handlerMapping, ServerWebExchange exchange) {
+        initRequestPredicatesIfNecessary(handlerMapping);
         SentinelServerRequest sentinelServerRequest = new SentinelServerRequest(exchange);
-        List<RequestPredicate> requestPredicates = routerFunctionRequestPredicateRepository.getRequestPredicates();
-        for (RequestPredicate requestPredicate : requestPredicates) {
+        for (RequestPredicate requestPredicate : registeredRequestPredicates) {
             if (requestPredicate.test(sentinelServerRequest)) {
                 Object attribute = exchange.getAttribute(RouterFunctions.MATCHING_PATTERN_ATTRIBUTE);
                 if (attribute instanceof PathPattern) {
@@ -58,5 +64,18 @@ public class RouterFunctionBestMatchingPatternExtractor implements HandlerMappin
             }
         }
         return null;
+    }
+
+    private void initRequestPredicatesIfNecessary(HandlerMapping handlerMapping){
+        if (!this.initialized) {
+            RouterFunctionMapping routerFunctionMapping = (RouterFunctionMapping) handlerMapping;
+            RouterFunction<?> routerFunction = routerFunctionMapping.getRouterFunction();
+            RouterFunctionRequestPredicateRepository routerFunctionRequestPredicateRepository = new RouterFunctionRequestPredicateRepository();
+            if (routerFunction != null) {
+                routerFunction.accept(new RouterFunctionRequestPredicateRegistrarVisitor(routerFunctionRequestPredicateRepository));
+            }
+            setRegisteredRequestPredicates(routerFunctionRequestPredicateRepository.getRequestPredicates());
+            this.initialized = true;
+        }
     }
 }

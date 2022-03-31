@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.adapter.spring.webflux.match;
+package com.alibaba.csp.sentinel.adapter.spring.webflux.test;
 
 import com.alibaba.csp.sentinel.adapter.spring.webflux.support.*;
 import org.junit.Before;
@@ -201,9 +201,7 @@ public class BestMatchingPatternExtractTest {
     }
 
     private HandlerMappingBestMatchingPatternExtractor getRouterFunctionBestMatchingPatternExtractor() {
-        RequestPredicateRegistrar requestPredicateRegistrar = new RequestPredicateRegistrar(routerFunctionMapping);
-        requestPredicateRegistrar.afterSingletonsInstantiated();
-        return new RouterFunctionBestMatchingPatternExtractor(requestPredicateRegistrar.getRouterFunctionRequestPredicateRepository());
+        return new RouterFunctionBestMatchingPatternExtractor();
     }
 
     /**
