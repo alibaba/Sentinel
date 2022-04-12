@@ -5,14 +5,14 @@
     <parent>
         <artifactId>sentinel-demo</artifactId>
         <groupId>com.alibaba.csp</groupId>
-        <version>1.8.3</version>
+        <version>1.8.4</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>sentinel-demo-jax-rs</artifactId>
 
     <properties>
-        <spring.boot.version>2.2.6.RELEASE</spring.boot.version>
+        <spring.boot.version>2.5.12</spring.boot.version>
     </properties>
 
     <dependencies>

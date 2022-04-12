@@ -5,7 +5,7 @@
     <parent>
         <artifactId>sentinel-demo</artifactId>
         <groupId>com.alibaba.csp</groupId>
-        <version>1.8.3</version>
+        <version>1.8.4</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -35,12 +35,12 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.28</version>
+            <version>1.7.36</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.28</version>
+            <version>1.7.36</version>
         </dependency>
 
         <dependency>

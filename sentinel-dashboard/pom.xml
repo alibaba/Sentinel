@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-parent</artifactId>
-        <version>1.8.3</version>
+        <version>1.8.4</version>
     </parent>
 
     <artifactId>sentinel-dashboard</artifactId>
@@ -14,7 +14,7 @@
 
     <properties>
         <resource.delimiter>@</resource.delimiter>
-        <spring.boot.version>2.0.5.RELEASE</spring.boot.version>
+        <spring.boot.version>2.5.12</spring.boot.version>
         <curator.version>4.0.1</curator.version>
     </properties>
 
@@ -63,7 +63,7 @@
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
-            <version>1.2.14</version>
+            <version>1.2.17</version>
         </dependency>
 
         <dependency>

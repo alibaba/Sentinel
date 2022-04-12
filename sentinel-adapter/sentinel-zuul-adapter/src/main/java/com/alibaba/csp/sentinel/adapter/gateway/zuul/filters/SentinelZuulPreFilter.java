@@ -26,6 +26,7 @@ import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.ResourceTypeConstants;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.adapter.gateway.common.param.GatewayParamParser;
+import com.alibaba.csp.sentinel.adapter.gateway.common.param.RequestItemParser;
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayFlowRule;
 import com.alibaba.csp.sentinel.adapter.gateway.zuul.RequestContextItemParser;
 import com.alibaba.csp.sentinel.adapter.gateway.zuul.api.ZuulGatewayApiMatcherManager;
@@ -37,6 +38,7 @@ import com.alibaba.csp.sentinel.adapter.gateway.zuul.fallback.ZuulBlockFallbackM
 import com.alibaba.csp.sentinel.adapter.gateway.zuul.fallback.ZuulBlockFallbackProvider;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.util.function.Predicate;
 
@@ -59,15 +61,20 @@ public class SentinelZuulPreFilter extends ZuulFilter {
 
     private final int order;
 
-    private final GatewayParamParser<RequestContext> paramParser = new GatewayParamParser<>(
-        new RequestContextItemParser());
+    private final GatewayParamParser<RequestContext> paramParser;
 
     public SentinelZuulPreFilter() {
         this(10000);
     }
 
     public SentinelZuulPreFilter(int order) {
+        this(order, new RequestContextItemParser());
+    }
+
+    public SentinelZuulPreFilter(int order, RequestItemParser<RequestContext> requestItemParser) {
+        AssertUtil.notNull(requestItemParser, "requestItemParser cannot be null");
         this.order = order;
+        this.paramParser = new GatewayParamParser<>(requestItemParser);
     }
 
     @Override
