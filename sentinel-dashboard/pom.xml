@@ -195,4 +195,31 @@
             </resource>
         </resources>
     </build>
+    <profiles>
+        <profile>
+            <id>fatjar</id>
+            <activation><activeByDefault>true</activeByDefault></activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-maven-plugin</artifactId>
+                        <version>${spring.boot.version}</version>
+                        <configuration>
+                            <fork>true</fork>
+                            <mainClass>com.alibaba.csp.sentinel.dashboard.DashboardApplication</mainClass>
+                            <classifier>fatjar</classifier>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>repackage</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
