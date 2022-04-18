@@ -35,6 +35,11 @@ public class FakeAuthServiceImpl implements AuthService<HttpServletRequest> {
     }
 
     @Override
+    public boolean doLogin(String username, String password) {
+       return true;
+    }
+
+    @Override
     public AuthUser getAuthUser(HttpServletRequest request) {
         return new AuthUserImpl();
     }

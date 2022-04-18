@@ -18,6 +18,11 @@ package com.alibaba.csp.sentinel.dashboard.auth;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.lang.StringUtils;
+
+import com.alibaba.csp.sentinel.dashboard.config.AuthProperties;
+import com.alibaba.csp.sentinel.dashboard.config.DashboardConfig;
+
 /**
  * @author cdfive
  * @since 1.6.0
@@ -25,6 +30,41 @@ import javax.servlet.http.HttpSession;
 public class SimpleWebAuthServiceImpl implements AuthService<HttpServletRequest> {
 
     public static final String WEB_SESSION_KEY = "session_sentinel_admin";
+
+    private final AuthProperties authProperties;
+
+    public SimpleWebAuthServiceImpl(AuthProperties authProperties) {
+        super();
+        this.authProperties = authProperties;
+    }
+
+    public boolean doLogin(String username, String password) {
+        final String authUsername;
+        if (StringUtils.isNotBlank(DashboardConfig.getAuthUsername())) {
+            authUsername = DashboardConfig.getAuthUsername();
+        } else {
+            authUsername = authProperties.getUsername();
+        }
+        final String authPassword;
+        if (StringUtils.isNotBlank(DashboardConfig.getAuthPassword())) {
+            authPassword = DashboardConfig.getAuthPassword();
+        } else {
+            authPassword = authProperties.getPassword();
+        }
+        
+        /*
+         * If auth.username or auth.password is blank(set in application.properties or VM arguments),
+         * auth will pass, as the front side validate the input which can't be blank,
+         * so user can input any username or password(both are not blank) to login in that case.
+         */
+        return doLogin(authUsername, authPassword, username, password);
+    }
+
+    protected boolean doLogin(final String authUsername, final String authPassword,
+            final String username, final String password) {
+        return StringUtils.isNotBlank(authUsername) && !authUsername.equals(username)
+                || StringUtils.isNotBlank(authPassword) && !authPassword.equals(password);
+    }
 
     @Override
     public AuthUser getAuthUser(HttpServletRequest request) {
