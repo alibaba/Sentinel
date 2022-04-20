@@ -158,7 +158,10 @@ public class SimpleHttpCommandCenter implements CommandCenter {
                 CommandCenterLog.warn("Error when releasing the server socket", e);
             }
         }
-        bizExecutor.shutdownNow();
+
+        if (bizExecutor != null) {
+            bizExecutor.shutdownNow();
+        }
         executor.shutdownNow();
         TransportConfig.setRuntimePort(PORT_UNINITIALIZED);
         handlerMap.clear();

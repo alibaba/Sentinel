@@ -39,7 +39,7 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
  */
 public final class AuthorityRuleManager {
 
-    private static Map<String, Set<AuthorityRule>> authorityRules = new ConcurrentHashMap<>();
+    private static volatile Map<String, Set<AuthorityRule>> authorityRules = new ConcurrentHashMap<>();
 
     private static final RulePropertyListener LISTENER = new RulePropertyListener();
     private static SentinelProperty<List<AuthorityRule>> currentProperty = new DynamicSentinelProperty<>();
@@ -92,13 +92,16 @@ public final class AuthorityRuleManager {
     private static class RulePropertyListener implements PropertyListener<List<AuthorityRule>> {
 
         @Override
-        public void configUpdate(List<AuthorityRule> conf) {
-            Map<String, Set<AuthorityRule>> rules = loadAuthorityConf(conf);
+        public synchronized void configLoad(List<AuthorityRule> value) {
+            authorityRules = loadAuthorityConf(value);
 
-            authorityRules.clear();
-            if (rules != null) {
-                authorityRules.putAll(rules);
-            }
+            RecordLog.info("[AuthorityRuleManager] Authority rules loaded: {}", authorityRules);
+        }
+
+        @Override
+        public synchronized void configUpdate(List<AuthorityRule> conf) {
+            authorityRules = loadAuthorityConf(conf);
+            
             RecordLog.info("[AuthorityRuleManager] Authority rules received: {}", authorityRules);
         }
 
@@ -135,16 +138,6 @@ public final class AuthorityRuleManager {
             return newRuleMap;
         }
 
-        @Override
-        public void configLoad(List<AuthorityRule> value) {
-            Map<String, Set<AuthorityRule>> rules = loadAuthorityConf(value);
-
-            authorityRules.clear();
-            if (rules != null) {
-                authorityRules.putAll(rules);
-            }
-            RecordLog.info("[AuthorityRuleManager] Load authority rules: {}", authorityRules);
-        }
     }
 
     static Map<String, Set<AuthorityRule>> getAuthorityRules() {

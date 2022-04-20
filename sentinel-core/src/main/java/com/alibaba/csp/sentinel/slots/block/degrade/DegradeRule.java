@@ -59,7 +59,12 @@ public class DegradeRule extends AbstractRule {
     private int grade = RuleConstant.DEGRADE_GRADE_RT;
 
     /**
-     * Threshold count.
+     * Threshold count. The exact meaning depends on the field of grade.
+     * <ul>
+     *     <li>In average RT mode, it means the maximum response time(RT) in milliseconds.</li>
+     *     <li>In exception ratio mode, it means exception ratio which between 0.0 and 1.0.</li>
+     *     <li>In exception count mode, it means exception count</li>
+     * <ul/>
      */
     private double count;
 
@@ -78,9 +83,16 @@ public class DegradeRule extends AbstractRule {
 
     /**
      * The threshold of slow request ratio in RT mode.
+     *
+     * @since 1.8.0
      */
     private double slowRatioThreshold = 1.0d;
 
+    /**
+     * The interval statistics duration in millisecond.
+     *
+     * @since 1.8.0
+     */
     private int statIntervalMs = 1000;
 
     public int getGrade() {
