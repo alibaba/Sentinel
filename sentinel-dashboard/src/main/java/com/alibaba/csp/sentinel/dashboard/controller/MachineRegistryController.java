@@ -21,6 +21,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 
+import org.apache.http.conn.util.InetAddressUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import sun.net.util.IPAddressUtil;
 
 @Controller
 @RequestMapping(value = "/registry", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -52,7 +52,7 @@ public class MachineRegistryController {
         if (StringUtil.isBlank(ip) || ip.length() > 128) {
             return Result.ofFail(-1, "invalid ip: " + ip);
         }
-        if (!IPAddressUtil.isIPv4LiteralAddress(ip) && !IPAddressUtil.isIPv6LiteralAddress(ip)) {
+        if (!InetAddressUtils.isIPv4Address(ip) && !InetAddressUtils.isIPv6Address(ip)) {
             return Result.ofFail(-1, "invalid ip: " + ip);
         }
         if (port == null || port < -1) {
