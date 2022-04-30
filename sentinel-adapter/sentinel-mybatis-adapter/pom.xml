@@ -5,11 +5,19 @@
     <parent>
         <artifactId>sentinel-adapter</artifactId>
         <groupId>com.alibaba.csp</groupId>
-        <version>1.8.2</version>
+        <version>1.8.4</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>sentinel-mybatis-adapter</artifactId>
+    <packaging>jar</packaging>
+
+    <properties>
+        <spring.boot.version>2.5.12</spring.boot.version>
+        <mybatis.version>3.5.3</mybatis.version>
+        <mybatis.spring.boot.version>2.2.1</mybatis.spring.boot.version>
+        <h2.version>1.4.200</h2.version>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -19,7 +27,7 @@
         <dependency>
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis</artifactId>
-            <version>3.5.3</version>
+            <version>${mybatis.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -30,25 +38,25 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <version>1.5.17.RELEASE</version>
+            <version>${spring.boot.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <version>1.5.17.RELEASE</version>
+            <version>${spring.boot.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>1.4.200</version>
+            <version>${h2.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
             <artifactId>mybatis-spring-boot-starter</artifactId>
-            <version>2.1.1</version>
+            <version>${mybatis.spring.boot.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

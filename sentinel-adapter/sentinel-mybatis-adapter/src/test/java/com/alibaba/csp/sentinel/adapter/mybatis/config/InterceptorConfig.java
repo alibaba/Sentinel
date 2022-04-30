@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.adapter.mybatis.config;
 
 import com.alibaba.csp.sentinel.adapter.mybatis.*;
+import com.alibaba.csp.sentinel.adapter.mybatis.callback.ResourceNameCleaner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -53,7 +54,7 @@ public class InterceptorConfig {
     @Bean
     @Order(1)
     public SentinelMapperInterceptor newSentinelInterceptor() {
-        return new SentinelMapperInterceptor();
+        return new SentinelMapperInterceptor().setResourceNameCleaner(resourceName -> resourceName.replaceFirst("com.alibaba", ""));
     }
 
     @Bean

@@ -42,12 +42,12 @@ import java.util.Collections;
 @AutoConfigureMockMvc
 public class BaseJunit {
     public static final Integer ID_1 = 1;
-    public static final String USER_MAPPER_CLASS_NAME = UserMapper.class.getName();
+    public static final String USER_MAPPER_CLASS_NAME = UserMapper.class.getName().replaceFirst("com.alibaba", "");
     public static final String USER_RESOURCE_NAME_SELECT = USER_MAPPER_CLASS_NAME + ".selectById";
     public static final String USER_RESOURCE_NAME_UPDATE = USER_MAPPER_CLASS_NAME + ".update";
     public static final String USER_RESOURCE_NAME_INSERT = USER_MAPPER_CLASS_NAME + ".insert";
     public static final String USER_RESOURCE_NAME_DELETE = USER_MAPPER_CLASS_NAME + ".delete";
-    public static final String TEACHER_RESOURCE_NAME_DELETE = TeacherMapper.class.getName() + ".delete";
+    public static final String TEACHER_RESOURCE_NAME_DELETE = TeacherMapper.class.getName().replaceFirst("com.alibaba", "") + ".delete";
     @Autowired
     protected UserMapper userMapper;
     @Autowired

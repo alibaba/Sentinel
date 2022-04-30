@@ -71,7 +71,8 @@ public class SentinelSqlInterceptor extends AbstractSentinelInterceptor {
         return resourceNameCleaner;
     }
 
-    public void setResourceNameCleaner(ResourceNameCleaner resourceNameCleaner) {
+    public SentinelSqlInterceptor setResourceNameCleaner(ResourceNameCleaner resourceNameCleaner) {
         this.resourceNameCleaner = resourceNameCleaner;
+        return this;
     }
 }
