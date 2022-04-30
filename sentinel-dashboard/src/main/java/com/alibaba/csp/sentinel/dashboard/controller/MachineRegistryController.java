@@ -21,6 +21,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 
+import org.apache.http.conn.util.InetAddressUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +50,9 @@ public class MachineRegistryController {
             return Result.ofFail(-1, "invalid appName");
         }
         if (StringUtil.isBlank(ip) || ip.length() > 128) {
+            return Result.ofFail(-1, "invalid ip: " + ip);
+        }
+        if (!InetAddressUtils.isIPv4Address(ip) && !InetAddressUtils.isIPv6Address(ip)) {
             return Result.ofFail(-1, "invalid ip: " + ip);
         }
         if (port == null || port < -1) {
