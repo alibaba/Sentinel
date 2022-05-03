@@ -238,26 +238,26 @@ angular
             }
        })
 
-      .state('dashboard.degrade', {
-        templateUrl: 'app/views/degrade.html',
+      .state('dashboard.degradeV1', {
+        templateUrl: 'app/views/degrade_v1.html',
         url: '/degrade/:app',
-        controller: 'DegradeCtl',
+        controller: 'DegradeCtlV1',
         resolve: {
           loadMyFiles: ['$ocLazyLoad', function ($ocLazyLoad) {
             return $ocLazyLoad.load({
               name: 'sentinelDashboardApp',
               files: [
-                'app/scripts/controllers/degrade.js',
+                'app/scripts/controllers/degrade_v1.js',
               ]
             });
           }]
         }
       })
 
-      .state('dashboard.degradeV2', {
+      .state('dashboard.degrade', {
           templateUrl: 'app/views/degrade_v2.html',
           url: '/v2/degrade/:app',
-          controller: 'DegradeCtl_v2',
+          controller: 'DegradeCtlV2',
           resolve: {
               loadMyFiles: ['$ocLazyLoad', function ($ocLazyLoad) {
                   return $ocLazyLoad.load({

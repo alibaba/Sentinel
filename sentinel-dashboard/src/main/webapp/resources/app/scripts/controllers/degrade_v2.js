@@ -1,6 +1,6 @@
 var app = angular.module('sentinelDashboardApp');
 
-app.controller('DegradeCtl_v2', ['$scope', '$stateParams', 'DegradeService_v2', 'ngDialog', 'MachineService',
+app.controller('DegradeCtlV2', ['$scope', '$stateParams', 'DegradeService_v2', 'ngDialog', 'MachineService',
   function ($scope, $stateParams, DegradeService, ngDialog, MachineService) {
     //初始化
     $scope.app = $stateParams.app;
