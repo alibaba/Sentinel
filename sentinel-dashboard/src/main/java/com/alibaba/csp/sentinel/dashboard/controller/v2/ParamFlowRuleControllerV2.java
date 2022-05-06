@@ -61,10 +61,10 @@ public class ParamFlowRuleControllerV2 {
     private AppManagement appManagement;
 
     @Autowired
-    @Qualifier("paramFlowRuleNacosProvider")
+    @Qualifier("paramFlowRuleDefaultProvider")
     private DynamicRuleProvider<List<ParamFlowRuleEntity>> ruleProvider;
     @Autowired
-    @Qualifier("paramFlowRuleNacosPublisher")
+    @Qualifier("paramFlowRuleDefaultPublisher")
     private DynamicRulePublisher<List<ParamFlowRuleEntity>> rulePublisher;
 
     @GetMapping("/rules")

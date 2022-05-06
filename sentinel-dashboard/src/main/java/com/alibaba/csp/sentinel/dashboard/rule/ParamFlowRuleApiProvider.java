@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Component("paramRuleDefaultProvider")
+@Component("paramFlowRuleDefaultProvider")
 public class ParamFlowRuleApiProvider implements DynamicRuleProvider<List<ParamFlowRuleEntity>> {
 
     @Autowired

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Set;
 
-@Component("paramRuleDefaultPublisher")
+@Component("paramFlowRuleDefaultPublisher")
 public class ParamFlowRuleApiPublisher implements DynamicRulePublisher<List<ParamFlowRuleEntity>> {
 
     @Autowired
