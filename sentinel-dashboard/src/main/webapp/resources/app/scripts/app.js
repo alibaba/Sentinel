@@ -286,8 +286,8 @@ angular
           }
       })
 
-      .state('dashboard.system', {
-        templateUrl: 'app/views/system.html',
+      .state('dashboard.systemV1', {
+        templateUrl: 'app/views/system_v1.html',
         url: '/system/:app',
         controller: 'SystemCtl',
         resolve: {
@@ -295,12 +295,29 @@ angular
             return $ocLazyLoad.load({
               name: 'sentinelDashboardApp',
               files: [
-                'app/scripts/controllers/system.js',
+                'app/scripts/controllers/system_v1.js',
               ]
             });
           }]
         }
       })
+
+      .state('dashboard.system', {
+          templateUrl: 'app/views/system_v2.html',
+          url: '/v2/system/:app',
+          controller: 'SystemCtlV2',
+          resolve: {
+              loadMyFiles: ['$ocLazyLoad', function ($ocLazyLoad) {
+                  return $ocLazyLoad.load({
+                      name: 'sentinelDashboardApp',
+                      files: [
+                          'app/scripts/controllers/system_v2.js',
+                      ]
+                  });
+              }]
+          }
+      })
+
 
       .state('dashboard.machine', {
         templateUrl: 'app/views/machine.html',

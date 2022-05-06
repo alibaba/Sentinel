@@ -3,9 +3,9 @@
  * 
  * @author Eric Zhao
  */
-angular.module('sentinelDashboardApp').controller('ParamFlowControllerV1', ['$scope', '$stateParams', 'ParamFlowServiceV1', 'ngDialog',
+angular.module('sentinelDashboardApp').controller('ParamFlowControllerV1', ['$scope', '$stateParams', 'ParamFlowService', 'ngDialog',
   'MachineService',
-  function ($scope, $stateParams, ParamFlowServiceV1, ngDialog,
+  function ($scope, $stateParams, ParamFlowService, ngDialog,
             MachineService) {
     const UNSUPPORTED_CODE = 4041;
     $scope.app = $stateParams.app;
