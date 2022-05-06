@@ -3,7 +3,7 @@
  * 
  * @author Eric Zhao
  */
-angular.module('sentinelDashboardApp').service('ParamFlowService', ['$http', function ($http) {
+angular.module('sentinelDashboardApp').service('ParamFlowServiceV1', ['$http', function ($http) {
   this.queryMachineRules = function(app, ip, port) {
     var param = {
       app: app,
