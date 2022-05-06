@@ -239,7 +239,7 @@ angular
       })
 
       .state('dashboard.authorityV1', {
-            templateUrl: 'app/views/authority.html',
+            templateUrl: 'app/views/authority_v1.html',
             url: '/authority/:app',
             controller: 'AuthorityRuleController',
             resolve: {
