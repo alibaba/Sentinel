@@ -76,7 +76,7 @@ public class OperatingSystemBeanManager {
             try {
                 return Class.forName(className);
             } catch (ClassNotFoundException e) {
-                RecordLog.warn("[SystemStatusListener] Failed to load operating system bean class.", e);
+                RecordLog.warn("[OperatingSystemBeanManager] Failed to load operating system bean class.", e);
             }
         }
         return null;
