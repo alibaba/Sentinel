@@ -18,10 +18,13 @@ package com.alibaba.csp.sentinel.slots.block.degrade.param;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreaker;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static com.alibaba.csp.sentinel.slots.block.degrade.param.ParamDegradeUtil.DEFAULT_OTHER_KEY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -73,6 +76,11 @@ public class ParamDegradeRuleManagerTest {
         assertEquals(ruleA.getResource(), ParamDegradeRuleManager.getRules().get(0).getResource());
 
         assertTrue(ParamDegradeRuleManager.hasRules(ruleA.getResource()));
+
+        Map<String, List<CircuitBreaker>> cbMap = ParamDegradeRuleManager.getCircuitBreakers(resA);
+        assertEquals(cbMap.size(), 2);
+        CircuitBreaker cbOther = ParamDegradeRuleManager.getCircuitBreakers(resA, ParamDegradeRuleManager.getItemKey(ruleA, DEFAULT_OTHER_KEY)).get(0);
+        assertEquals(ruleA.getCount(), cbOther.getRule().getCount(), 0.1d);
     }
 
     @Test
