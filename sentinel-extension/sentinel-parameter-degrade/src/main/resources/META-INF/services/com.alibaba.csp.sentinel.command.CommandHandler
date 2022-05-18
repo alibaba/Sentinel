@@ -1,0 +1,2 @@
+com.alibaba.csp.sentinel.command.handler.GetParamDegradeRulesCommandHandler
+com.alibaba.csp.sentinel.command.handler.ModifyParamDegradeRulesCommandHandler
