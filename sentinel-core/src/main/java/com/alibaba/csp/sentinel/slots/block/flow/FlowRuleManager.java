@@ -39,7 +39,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static com.alibaba.csp.sentinel.slots.block.flow.FlowRuleUtil.isValidRule;
 import static com.alibaba.csp.sentinel.util.AtomicUtil.atomicUpdate;
 
 /**
@@ -134,12 +133,10 @@ public class FlowRuleManager {
      * @param rules new rules to load.
      */
     public static void loadRules(List<FlowRule> rules) {
-        synchronized (FlowRuleManager.class){
-            postLock.updateAndGet(fn -> {
-                currentProperty.updateValue(rules);
-                return System.currentTimeMillis();
-            });
-        }
+        postLock.updateAndGet(fn -> {
+            currentProperty.updateValue(rules);
+            return System.currentTimeMillis();
+        });
     }
 
     static Map<String, List<FlowRule>> getFlowRuleMap() {
@@ -176,9 +173,7 @@ public class FlowRuleManager {
      */
     public static boolean appendAndReplaceRules(List<FlowRule> degradeRules) {
 
-        List<FlowRule> tmp = degradeRules.stream()
-                .filter(FlowRuleUtil::isValidRule)
-                .collect(Collectors.toList());
+        List<FlowRule> tmp = degradeRules.stream().filter(FlowRuleUtil::isValidRule).collect(Collectors.toList());
         if (tmp.isEmpty()) {
             //if all input is not valid, return true
             return true;
@@ -189,10 +184,10 @@ public class FlowRuleManager {
             oldRules.removeIf(item -> tmp.stream().anyMatch(finder -> comparator.compare(finder, item) == 0));
             //append and replace
             oldRules.addAll(tmp);
-            loadRules(oldRules);
+            currentProperty.updateValue(oldRules);
             return oldRules;
         };
-        synchronized (FlowRuleManager.class){
+        synchronized (FlowRuleManager.class) {
             return atomicUpdate(postLock, supplier);
         }
 
@@ -207,9 +202,7 @@ public class FlowRuleManager {
      * @param degradeRules degradeRules to be delete
      */
     public static boolean deleteRules(List<FlowRule> degradeRules) {
-        List<FlowRule> tmp = degradeRules.stream()
-                .filter(FlowRuleUtil::isValidRule)
-                .collect(Collectors.toList());
+        List<FlowRule> tmp = degradeRules.stream().filter(FlowRuleUtil::isValidRule).collect(Collectors.toList());
         if (tmp.isEmpty()) {
             //if all input is not valid, return true
             return true;
@@ -218,10 +211,10 @@ public class FlowRuleManager {
             List<FlowRule> oldRules = getRules();
             //remove all rule which resource and limit app is same
             oldRules.removeIf(item -> tmp.stream().anyMatch(finder -> comparator.compare(finder, item) == 0));
-            loadRules(oldRules);
+            currentProperty.updateValue(oldRules);
             return oldRules;
         };
-        synchronized (FlowRuleManager.class){
+        synchronized (FlowRuleManager.class) {
             return atomicUpdate(postLock, supplier);
         }
     }

@@ -29,7 +29,7 @@ public class AtomicUtil {
     public static <T> boolean atomicUpdate(AtomicLong postLock, Supplier<List<T>> consumer) {
         final boolean[] result = {false};
 
-//        while (!result[0]) {
+        while (!result[0]) {
             //get a long num as a lock to promise consumer is atomic
             long oldLock = postLock.get();
             postLock.updateAndGet(operand -> {
@@ -37,9 +37,9 @@ public class AtomicUtil {
                     consumer.get();
                     result[0] = true;
                 }
-                return operand;
+                return System.currentTimeMillis();
             });
-//        }
+        }
 
         return result[0];
     }
