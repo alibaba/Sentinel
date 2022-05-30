@@ -119,7 +119,9 @@ public final class AuthorityRuleManager {
             loadRules(oldRules);
             return oldRules;
         };
-        return atomicUpdate(postLock, supplier);
+        synchronized (AuthorityRuleManager.class) {
+            return atomicUpdate(postLock, supplier);
+        }
 
 
     }
@@ -145,7 +147,9 @@ public final class AuthorityRuleManager {
             loadRules(oldRules);
             return oldRules;
         };
-        return atomicUpdate(postLock, supplier);
+        synchronized (AuthorityRuleManager.class) {
+            return atomicUpdate(postLock, supplier);
+        }
     }
 
     static Map<String, Set<AuthorityRule>> getAuthorityRules() {

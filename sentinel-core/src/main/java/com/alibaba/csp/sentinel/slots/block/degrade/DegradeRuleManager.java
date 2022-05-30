@@ -157,7 +157,9 @@ public final class DegradeRuleManager {
             loadRules(oldRules);
             return oldRules;
         };
-        return atomicUpdate(postLock, supplier);
+        synchronized (DegradeRuleManager.class) {
+            return atomicUpdate(postLock, supplier);
+        }
 
 
     }
@@ -184,7 +186,9 @@ public final class DegradeRuleManager {
             loadRules(oldRules);
             return oldRules;
         };
-        return atomicUpdate(postLock, supplier);
+        synchronized (DegradeRuleManager.class){
+            return atomicUpdate(postLock, supplier);
+        }
     }
 
     /**
