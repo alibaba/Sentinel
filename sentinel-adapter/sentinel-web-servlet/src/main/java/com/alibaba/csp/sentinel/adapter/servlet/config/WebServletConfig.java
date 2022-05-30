@@ -71,7 +71,7 @@ public final class WebServletConfig {
             }
             return s;
         } catch (Exception e) {
-            RecordLog.warn("[WebServletConfig] Invalid block HTTP status ({}}), using default 429",value);
+            RecordLog.warn("[WebServletConfig] Invalid block HTTP status ({}) using default 429",value);
             setBlockPageHttpStatus(HTTP_STATUS_TOO_MANY_REQUESTS);
         }
         return HTTP_STATUS_TOO_MANY_REQUESTS;
