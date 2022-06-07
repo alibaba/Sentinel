@@ -76,7 +76,7 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
                 return true;
             } else if (clientErrorCode(response.getStatusCode()) || serverErrorCode(response.getStatusCode())) {
                 RecordLog.warn("[SimpleHttpHeartbeatSender] Failed to send heartbeat to {} " +
-                        ", http status code:{}",addrInfo,response.getStatusCode());
+                        ", http status code:{}", addrInfo, response.getStatusCode());
             }
         } catch (Exception e) {
             RecordLog.warn("[SimpleHttpHeartbeatSender] Failed to send heartbeat to " + addrInfo, e);

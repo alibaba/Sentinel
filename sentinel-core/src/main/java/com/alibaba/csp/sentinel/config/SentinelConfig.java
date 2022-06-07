@@ -228,7 +228,7 @@ public final class SentinelConfig {
             if (coldFactor <= 1) {
                 coldFactor = DEFAULT_COLD_FACTOR;
                 RecordLog.warn("cold factor={}, should be larger than 1, use default value: {}"
-                        ,coldFactor, DEFAULT_COLD_FACTOR);
+                        , coldFactor, DEFAULT_COLD_FACTOR);
             }
             return coldFactor;
         } catch (Throwable throwable) {

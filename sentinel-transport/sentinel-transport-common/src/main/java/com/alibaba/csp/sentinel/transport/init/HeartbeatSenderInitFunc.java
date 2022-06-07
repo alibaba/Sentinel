@@ -73,7 +73,7 @@ public class HeartbeatSenderInitFunc implements InitFunc {
         Long intervalInConfig = TransportConfig.getHeartbeatIntervalMs();
         if (isValidHeartbeatInterval(intervalInConfig)) {
             RecordLog.info("[HeartbeatSenderInitFunc] Using heartbeat interval " +
-                    "in Sentinel config property:{}" , intervalInConfig);
+                    "in Sentinel config property:{}", intervalInConfig);
             return intervalInConfig;
         } else {
             long senderInterval = sender.intervalMs();
