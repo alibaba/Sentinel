@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
+import com.alibaba.csp.sentinel.adapter.grpc.extractor.GrpcResourceExtractorManager;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
@@ -63,7 +64,7 @@ public class SentinelGrpcClientInterceptor implements ClientInterceptor {
     @Override
     public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(MethodDescriptor<ReqT, RespT> methodDescriptor,
                                                                CallOptions callOptions, Channel channel) {
-        String fullMethodName = methodDescriptor.getFullMethodName();
+        String fullMethodName = GrpcResourceExtractorManager.extract(methodDescriptor);
         Entry entry = null;
         try {
             entry = SphU.asyncEntry(fullMethodName, EntryType.OUT);

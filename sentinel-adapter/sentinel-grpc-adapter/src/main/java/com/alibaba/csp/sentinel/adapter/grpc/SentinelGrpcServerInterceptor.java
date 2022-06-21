@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
+import com.alibaba.csp.sentinel.adapter.grpc.extractor.GrpcResourceExtractorManager;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import io.grpc.ForwardingServerCall;
 import io.grpc.ForwardingServerCallListener;
@@ -53,7 +54,7 @@ public class SentinelGrpcServerInterceptor implements ServerInterceptor {
 
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
-        String fullMethodName = call.getMethodDescriptor().getFullMethodName();
+        String fullMethodName = GrpcResourceExtractorManager.extract(call.getMethodDescriptor());
         // Remote address: serverCall.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
         Entry entry = null;
         try {
