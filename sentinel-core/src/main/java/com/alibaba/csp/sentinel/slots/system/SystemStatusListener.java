@@ -15,15 +15,14 @@
  */
 package com.alibaba.csp.sentinel.slots.system;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.util.concurrent.TimeUnit;
-
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
-import com.sun.management.OperatingSystemMXBean;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
+import java.lang.management.RuntimeMXBean;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author jialiang.linjl
@@ -60,11 +59,11 @@ public class SystemStatusListener implements Runnable {
              * observed. All values between 0.0 and 1.0 are possible depending of the activities going on in the
              * system. If the system recent cpu usage is not available, the method returns a negative value.
              */
-            double systemCpuUsage = osBean.getSystemCpuLoad();
+            double systemCpuUsage = OperatingSystemBeanManager.getSystemCpuUsage();
+            long newProcessCpuTime = OperatingSystemBeanManager.getProcessCpuTime();
 
             // calculate process cpu usage to support application running in container environment
             RuntimeMXBean runtimeBean = ManagementFactory.getPlatformMXBean(RuntimeMXBean.class);
-            long newProcessCpuTime = osBean.getProcessCpuTime();
             long newProcessUpTime = runtimeBean.getUptime();
             int cpuCores = osBean.getAvailableProcessors();
             long processCpuTimeDiffInMs = TimeUnit.NANOSECONDS
