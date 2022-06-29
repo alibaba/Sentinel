@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.util;
 
+import com.alibaba.csp.sentinel.log.RecordLog;
+
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -81,6 +83,7 @@ public final class MethodUtil {
         try {
             return method != null ? (double) method.invoke(targetObj) : Double.NaN;
         } catch (Exception e) {
+            RecordLog.error("[MethodUtil] Failed to invoke method", e);
             return Double.NaN;
         }
     }
@@ -89,6 +92,7 @@ public final class MethodUtil {
         try {
             return method != null ? (long) method.invoke(targetObj) : -1;
         } catch (Exception e) {
+            RecordLog.error("[MethodUtil] Failed to invoke method", e);
             return -1;
         }
     }

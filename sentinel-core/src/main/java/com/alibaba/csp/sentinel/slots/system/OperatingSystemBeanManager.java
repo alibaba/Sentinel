@@ -90,6 +90,7 @@ public class OperatingSystemBeanManager {
             OPERATING_SYSTEM_BEAN_CLASS.cast(OPERATING_SYSTEM_BEAN);
             return OPERATING_SYSTEM_BEAN_CLASS.getDeclaredMethod(name);
         } catch (Exception e) {
+            RecordLog.error("[OperatingSystemBeanManager] Failed to get the declared method", e);
             return null;
         }
     }
