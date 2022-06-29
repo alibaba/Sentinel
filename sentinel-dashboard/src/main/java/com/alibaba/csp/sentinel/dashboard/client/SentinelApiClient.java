@@ -255,7 +255,6 @@ public class SentinelApiClient {
     
     /**
      * No app specified, force to GET
-     * a
      * @param ip
      * @param port
      * @param api
