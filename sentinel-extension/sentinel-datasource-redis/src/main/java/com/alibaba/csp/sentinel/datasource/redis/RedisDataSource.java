@@ -160,7 +160,7 @@ public class RedisDataSource<T> extends AbstractDataSource<String, T> {
             sentinelRedisUriBuilder.withClientName(clientName);
         }
         sentinelRedisUriBuilder.withSentinelMasterId(connectionConfig.getRedisSentinelMasterId())
-            .withTimeout(connectionConfig.getTimeout(), TimeUnit.MILLISECONDS);
+            .withTimeout(Duration.ofMillis(connectionConfig.getTimeout()));
         return RedisClient.create(sentinelRedisUriBuilder.build());
     }
 
