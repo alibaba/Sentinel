@@ -57,11 +57,7 @@ final class AuthorityRuleChecker {
             return false;
         }
 
-        if (strategy == RuleConstant.AUTHORITY_WHITE && !contain) {
-            return false;
-        }
-
-        return true;
+        return strategy != RuleConstant.AUTHORITY_WHITE || contain;
     }
 
     private AuthorityRuleChecker() {}

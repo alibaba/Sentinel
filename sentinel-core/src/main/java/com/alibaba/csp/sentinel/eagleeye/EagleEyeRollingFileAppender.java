@@ -280,10 +280,7 @@ class EagleEyeRollingFileAppender extends EagleEyeAppender {
                 File[] filesToDelete = parentDir.listFiles(new FilenameFilter() {
                     @Override
                     public boolean accept(File dir, String name) {
-                        if (name != null && name.startsWith(baseFileName) && name.endsWith(DELETE_FILE_SUFFIX)) {
-                            return true;
-                        }
-                        return false;
+                        return name != null && name.startsWith(baseFileName) && name.endsWith(DELETE_FILE_SUFFIX);
                     }
                 });
                 if (filesToDelete != null && filesToDelete.length > 0) {

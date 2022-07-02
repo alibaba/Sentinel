@@ -234,12 +234,9 @@ public class HttpEventTask implements Runnable {
         // Actually in RFC "x-*" shouldn't have any properties like "type/subtype; key=val"
         // But some library do add it. So we will be compatible with that but force to
         // encoding specified in configuration as legacy processing will do.
-        if (!type.contains("application/x-www-form-urlencoded")) {
-            // Not supported request type
-            // Now simple-http only support form-encoded post request.
-            return false;
-        }
-        return true;
+        // Not supported request type
+        // Now simple-http only support form-encoded post request.
+        return type.contains("application/x-www-form-urlencoded");
     }
 
     private static String readBody(InputStream in, int bodyLength)
