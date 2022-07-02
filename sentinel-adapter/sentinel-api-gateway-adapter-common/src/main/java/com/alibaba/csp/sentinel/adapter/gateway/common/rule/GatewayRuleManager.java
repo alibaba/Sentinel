@@ -178,7 +178,7 @@ public final class GatewayRuleManager {
 
         private synchronized void applyGatewayRuleInternal(Set<GatewayFlowRule> conf) {
             if (conf == null || conf.isEmpty()) {
-                applyToConvertedParamMap(new HashSet<ParamFlowRule>());
+                applyToConvertedParamMap(new HashSet<>());
                 GATEWAY_RULE_MAP.clear();
                 return;
             }
@@ -195,11 +195,7 @@ public final class GatewayRuleManager {
                 String resourceName = rule.getResource();
                 if (rule.getParamItem() == null) {
                     // Cache the rules with no parameter config, then skip.
-                    List<GatewayFlowRule> noParamList = noParamMap.get(resourceName);
-                    if (noParamList == null) {
-                        noParamList = new ArrayList<>();
-                        noParamMap.put(resourceName, noParamList);
-                    }
+                    List<GatewayFlowRule> noParamList = noParamMap.computeIfAbsent(resourceName, k -> new ArrayList<>());
                     noParamList.add(rule);
                 } else {
                     int idx = getIdxInternal(idxMap, resourceName);
@@ -210,11 +206,7 @@ public final class GatewayRuleManager {
                     cacheRegexPattern(rule.getParamItem());
                 }
                 // Apply to the gateway rule map.
-                Set<GatewayFlowRule> ruleSet = gatewayRuleMap.get(resourceName);
-                if (ruleSet == null) {
-                    ruleSet = new HashSet<>();
-                    gatewayRuleMap.put(resourceName, ruleSet);
-                }
+                Set<GatewayFlowRule> ruleSet = gatewayRuleMap.computeIfAbsent(resourceName, k -> new HashSet<>());
                 ruleSet.add(rule);
             }
             // Handle non-param mode rules.
@@ -239,7 +231,7 @@ public final class GatewayRuleManager {
         private void applyToConvertedParamMap(Set<ParamFlowRule> paramFlowRules) {
             Map<String, List<ParamFlowRule>> newRuleMap = ParamFlowRuleUtil.buildParamRuleMap(
                     new ArrayList<>(paramFlowRules));
-            if (newRuleMap == null || newRuleMap.isEmpty()) {
+            if (newRuleMap.isEmpty()) {
                 // No parameter flow rules, so clear all the metrics.
                 for (String resource : CONVERTED_PARAM_RULE_MAP.keySet()) {
                     ParameterMetricStorage.clearParamMetricForResource(resource);
