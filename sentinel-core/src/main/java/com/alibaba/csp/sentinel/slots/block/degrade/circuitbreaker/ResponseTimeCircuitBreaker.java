@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.LongAdder;
 
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.context.Context;
+import com.alibaba.csp.sentinel.node.SampleCountProperty;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.statistic.base.LeapArray;
@@ -42,7 +43,7 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
     private final LeapArray<SlowRequestCounter> slidingCounter;
 
     public ResponseTimeCircuitBreaker(DegradeRule rule) {
-        this(rule, new SlowRequestLeapArray(1, rule.getStatIntervalMs()));
+        this(rule, new SlowRequestLeapArray(SampleCountProperty.SAMPLE_COUNT, rule.getStatIntervalMs()));
     }
 
     ResponseTimeCircuitBreaker(DegradeRule rule, LeapArray<SlowRequestCounter> stat) {
@@ -57,8 +58,11 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
 
     @Override
     public void resetStat() {
-        // Reset current bucket (bucket count = 1).
-        slidingCounter.currentWindow().value().reset();
+        // Reset current bucket
+        List<SlowRequestCounter> values = slidingCounter.values();
+        for (SlowRequestCounter counter : values) {
+            counter.reset();
+        }
     }
 
     @Override
