@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.concurrent.Callable;
+
 /**
  * @author kaizi2009
  */
@@ -29,6 +31,11 @@ public class TestController {
     @GetMapping("/hello")
     public String apiHello() {
         return "Hello!";
+    }
+
+    @GetMapping("/hello/async")
+    public Callable<String> apiAsyncHello() {
+        return ()-> "Hello!";
     }
 
     @GetMapping("/err")
