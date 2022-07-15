@@ -5,7 +5,7 @@
 Sentinel Dubbo Adapter provides service consumer filter and provider filter
 for [Apache Dubbo](https://dubbo.apache.org/en-us/) services.
 
-**Note: This adapter only supports Apache Dubbo 3.0.5 and above.** 
+**Note: This adapter only supports Apache Dubbo 3.0.5 and above.**
 
 For legacy `com.alibaba:dubbo` 2.6.x, please use `sentinel-dubbo-adapter` module instead.
 
