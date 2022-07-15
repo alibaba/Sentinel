@@ -17,8 +17,13 @@ package com.alibaba.csp.sentinel.adapter.dubbo3;
 
 import com.alibaba.csp.sentinel.adapter.dubbo3.config.DubboAdapterGlobalConfig;
 import com.alibaba.csp.sentinel.util.StringUtil;
+
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcContext;
+
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
 
 /**
  * @author Eric Zhao
@@ -31,6 +36,15 @@ public final class DubboUtils {
         if (invocation == null || invocation.getAttachments() == null) {
             throw new IllegalArgumentException("Bad invocation instance");
         }
+        // 1. try to get application from dubbo context
+        String remoteApplication = invocation.getAttachment(REMOTE_APPLICATION_KEY);
+        if (StringUtils.isEmpty(remoteApplication)) {
+            remoteApplication = RpcContext.getServerAttachment().getAttachment(REMOTE_APPLICATION_KEY);
+        }
+        if (StringUtils.isNotEmpty(remoteApplication)) {
+            return remoteApplication;
+        }
+        // 2. fallback to sentinel application
         return invocation.getAttachment(SENTINEL_DUBBO_APPLICATION_KEY, defaultValue);
     }
 
