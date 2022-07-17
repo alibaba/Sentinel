@@ -106,6 +106,11 @@ public class ExceptionCircuitBreaker extends AbstractCircuitBreaker {
         if (strategy == DEGRADE_GRADE_EXCEPTION_RATIO) {
             // Use errorRatio
             curCount = errCount * 1.0d / totalCount;
+            // special case when ratio equals 1.0
+            if (Double.compare(curCount, threshold) == 0 && Double.compare(threshold, MAX_RATIO) == 0) {
+                transformToOpen(curCount);
+                return;
+            }
         }
         if (curCount > threshold) {
             transformToOpen(curCount);
