@@ -15,24 +15,23 @@
  */
 package com.alibaba.csp.sentinel.adapter.spring.webmvc;
 
-import com.alibaba.csp.sentinel.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.alibaba.csp.sentinel.Entry;
+import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.ResourceTypeConstants;
+import com.alibaba.csp.sentinel.SphU;
+import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.config.BaseWebMvcConfig;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import org.springframework.util.concurrent.ListenableFuture;
-import org.springframework.web.context.request.async.DeferredResult;
-import org.springframework.web.context.request.async.WebAsyncTask;
-import org.springframework.web.method.HandlerMethod;
-import org.springframework.web.servlet.AsyncHandlerInterceptor;
-import org.springframework.web.servlet.ModelAndView;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletionStage;
+import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.ModelAndView;
 
 /**
  * Since request may be reprocessed in flow if any forwarding or including or other action
@@ -53,7 +52,7 @@ import java.util.concurrent.CompletionStage;
  * @author kaizi2009
  * @since 1.7.1
  */
-public abstract class AbstractSentinelInterceptor implements AsyncHandlerInterceptor {
+public abstract class AbstractSentinelInterceptor implements HandlerInterceptor {
 
     public static final String SENTINEL_SPRING_WEB_CONTEXT_NAME = "sentinel_spring_web_context";
     private static final String EMPTY_ORIGIN = "";
@@ -87,40 +86,16 @@ public abstract class AbstractSentinelInterceptor implements AsyncHandlerInterce
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
-            throws Exception {
-        if (isAsyncHandlerMethod(handler)) {
-            return true;
-        }
-
-        afterConcurrentHandlingStarted(request, response, handler);
-        return true;
-    }
-
-    /**
-     * Called instead of {@code postHandle} and {@code afterCompletion}
-     * when the handler is being executed concurrently.
-     * <p>Implementations may use the provided request and response but should
-     * avoid modifying them in ways that would conflict with the concurrent
-     * execution of the handler. A typical use of this method would be to
-     * clean up thread-local variables.
-     *
-     * @param request  the current request
-     * @param response the current response
-     * @param handler  the handler (or {@link HandlerMethod}) that started async
-     *                 execution, for type and/or instance examination
-     * @throws Exception in case of errors
-     */
-    @Override
-    public void afterConcurrentHandlingStarted(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        throws Exception {
         try {
             String resourceName = getResourceName(request);
 
             if (StringUtil.isEmpty(resourceName)) {
-                return;
+                return true;
             }
 
             if (increaseReferece(request, this.baseWebMvcConfig.getRequestRefName(), 1) != 1) {
-                return;
+                return true;
             }
 
             // Parse the request origin using registered origin parser.
@@ -129,12 +104,14 @@ public abstract class AbstractSentinelInterceptor implements AsyncHandlerInterce
             ContextUtil.enter(contextName, origin);
             Entry entry = SphU.entry(resourceName, ResourceTypeConstants.COMMON_WEB, EntryType.IN);
             request.setAttribute(baseWebMvcConfig.getRequestAttributeName(), entry);
+            return true;
         } catch (BlockException e) {
             try {
                 handleBlockException(request, response, e);
             } finally {
                 ContextUtil.exit();
             }
+            return false;
         }
     }
 
@@ -159,10 +136,6 @@ public abstract class AbstractSentinelInterceptor implements AsyncHandlerInterce
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
                                 Object handler, Exception ex) throws Exception {
-        if (increaseReferece(request, this.baseWebMvcConfig.getRequestRefName(), -1) != 0) {
-            return;
-        }
-
         Entry entry = getEntryInRequest(request, baseWebMvcConfig.getRequestAttributeName());
         if (entry == null) {
             // should not happen
@@ -220,17 +193,4 @@ public abstract class AbstractSentinelInterceptor implements AsyncHandlerInterce
         return origin;
     }
 
-    protected boolean isAsyncHandlerMethod(Object handler) {
-        if (!(handler instanceof HandlerMethod)) {
-            return false;
-        }
-
-        HandlerMethod handlerMethod = (HandlerMethod) handler;
-        Class<?> returnType = handlerMethod.getReturnType().getParameterType();
-        return WebAsyncTask.class.isAssignableFrom(returnType) ||
-                Callable.class.isAssignableFrom(returnType) ||
-                DeferredResult.class.isAssignableFrom(returnType) ||
-                ListenableFuture.class.isAssignableFrom(returnType) ||
-                CompletionStage.class.isAssignableFrom(returnType);
-    }
 }
