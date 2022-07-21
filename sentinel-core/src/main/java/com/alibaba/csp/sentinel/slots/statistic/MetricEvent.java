@@ -35,5 +35,7 @@ public enum MetricEvent {
     /**
      * Passed in future quota (pre-occupied, since 1.5.0).
      */
-    OCCUPIED_PASS
+    OCCUPIED_PASS,
+
+    CONCURRENCY
 }

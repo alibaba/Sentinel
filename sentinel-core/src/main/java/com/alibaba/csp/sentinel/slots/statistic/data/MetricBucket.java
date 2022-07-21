@@ -103,6 +103,10 @@ public class MetricBucket {
         return get(MetricEvent.SUCCESS);
     }
 
+    public long concurrency() {
+        return get(MetricEvent.CONCURRENCY);
+    }
+
     public void addPass(int n) {
         add(MetricEvent.PASS, n);
     }
@@ -121,6 +125,10 @@ public class MetricBucket {
 
     public void addSuccess(int n) {
         add(MetricEvent.SUCCESS, n);
+    }
+
+    public void addConcurrency(int n) {
+        add(MetricEvent.CONCURRENCY, n);
     }
 
     public void addRT(long rt) {

@@ -83,6 +83,20 @@ public class ArrayMetric implements Metric {
     }
 
     @Override
+    public long maxConcurrency() {
+        data.currentWindow();
+        long concurrency = 0;
+
+        List<MetricBucket> list = data.values();
+        for (MetricBucket window : list) {
+            if (window.concurrency() > concurrency) {
+                concurrency = window.concurrency();
+            }
+        }
+        return Math.max(concurrency, 0);
+    }
+
+    @Override
     public long exception() {
         data.currentWindow();
         long exception = 0;
@@ -201,6 +215,7 @@ public class ArrayMetric implements Metric {
         }
         node.setTimestamp(wrap.windowStart());
         node.setOccupiedPassQps(wrap.value().occupiedPass());
+        node.setConcurrency((int) wrap.value().concurrency());
         return node;
     }
 
@@ -243,6 +258,12 @@ public class ArrayMetric implements Metric {
     public void addPass(int count) {
         WindowWrap<MetricBucket> wrap = data.currentWindow();
         wrap.value().addPass(count);
+    }
+
+    @Override
+    public void addConcurrency(int count) {
+        WindowWrap<MetricBucket> wrap = data.currentWindow();
+        wrap.value().addConcurrency(count);
     }
 
     @Override

@@ -239,7 +239,9 @@ public class StatisticNode implements Node {
 
     @Override
     public int curThreadNum() {
-        return (int)curThreadNum.sum();
+        int threadNum = (int)curThreadNum.sum();
+        rollingCounterInSecond.addConcurrency(threadNum);
+        return threadNum;
     }
 
     @Override

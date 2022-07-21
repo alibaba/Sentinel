@@ -44,6 +44,13 @@ public interface Metric extends DebugSupport {
     long maxSuccess();
 
     /**
+     * Get max concurrency count.
+     *
+     * @return max concurrency count
+     */
+    long maxConcurrency();
+
+    /**
      * Get total exception count.
      *
      * @return exception count
@@ -128,6 +135,13 @@ public interface Metric extends DebugSupport {
      * @param n count to add
      */
     void addPass(int n);
+
+    /**
+     * Add current concurrency count.
+     *
+     * @param n count to add
+     */
+    void addConcurrency(int n);
 
     /**
      * Add given RT to current total RT.
