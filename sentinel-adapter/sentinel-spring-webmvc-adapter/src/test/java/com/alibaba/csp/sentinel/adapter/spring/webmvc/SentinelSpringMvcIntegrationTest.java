@@ -61,7 +61,18 @@ public class SentinelSpringMvcIntegrationTest {
 
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
         assertNotNull(cn);
-        assertEquals(1, cn.passQps(), 0.01);
+        assertEquals(1, cn.totalPass(), 0.01);
+    }
+
+    @Test
+    public void testBaseAsync() throws Exception {
+        String url = "/hello/async";
+        this.mvc.perform(get(url))
+                .andExpect(status().isOk());
+
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
+        assertNotNull(cn);
+        assertEquals(1, cn.totalPass(), 0.01);
     }
 
     @Test

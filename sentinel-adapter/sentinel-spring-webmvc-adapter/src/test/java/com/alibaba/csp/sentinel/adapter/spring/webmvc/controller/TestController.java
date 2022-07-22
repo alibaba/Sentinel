@@ -19,6 +19,9 @@ package com.alibaba.csp.sentinel.adapter.spring.webmvc.controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
+
+import java.util.concurrent.Callable;
 
 /**
  * @author kaizi2009
@@ -29,6 +32,18 @@ public class TestController {
     @GetMapping("/hello")
     public String apiHello() {
         return "Hello!";
+    }
+
+    @GetMapping("/hello/async")
+    public Callable<String> apiAsyncHello() {
+        return () -> "Hello!";
+    }
+
+    @GetMapping("/forward")
+    public ModelAndView apiForward() {
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("hello");
+        return mav;
     }
 
     @GetMapping("/err")
