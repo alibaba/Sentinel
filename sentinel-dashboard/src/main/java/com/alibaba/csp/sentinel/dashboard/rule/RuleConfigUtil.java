@@ -13,76 +13,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.alibaba.csp.sentinel.dashboard.rule;
 
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
+import com.alibaba.csp.sentinel.datasource.Converter;
+import com.alibaba.fastjson.JSON;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
 /**
- * @author hantianwei@gmail.com
- * @since 1.5.0
+ * @author FengJianxin
+ * @since 1.8.4
  */
-public final class ConfigUtil {
+public final class RuleConfigUtil {
 
-    /**
-     * 流控规则
-     */
-    public static final String FLOW_DATA_ID_POSTFIX = "-flow-rules";
+    private static final Converter<Object, String> ENCODER = JSON::toJSONString;
+    private static final Map<Class<?>, Object> DECODER_MAP = new HashMap<>();
 
-    /**
-     * 网关流控规则
-     */
-    public static final String GW_FLOW_DATA_ID_POSTFIX = "-gw-flow-rules";
-
-    /**
-     * 降级规则
-     */
-    public static final String DEGRADE_DATA_ID_POSTFIX = "degrade-rules";
-
-    /**
-     * 热点规则
-     */
-    public static final String PARAM_FLOW_DATA_ID_POSTFIX = "param-flow-rules";
-
-    /**
-     * 系统规则
-     */
-    public static final String SYSTEM_DATA_ID_POSTFIX = "system-rules";
-
-    /**
-     * 授权规则
-     */
-    public static final String AUTHORITY_DATA_ID_POSTFIX = "authority-rules";
-
-
-    private ConfigUtil() {
+    private RuleConfigUtil() {
     }
 
 
-    public static String getFlowDataId(String appName) {
-        return String.format("%s%s", appName, FLOW_DATA_ID_POSTFIX);
+    public static String getDataId(String appName, RuleType ruleType) {
+        return String.format("%s-%s", appName, ruleType.getName());
     }
 
 
-    public static String getGatewayFlowDataId(String appName) {
-        return String.format("%s%s", appName, GW_FLOW_DATA_ID_POSTFIX);
+    public static Converter<Object, String> getEncoder() {
+        return ENCODER;
     }
 
-
-    public static String getDegradeDataId(String appName) {
-        return String.format("%s%s", appName, DEGRADE_DATA_ID_POSTFIX);
-    }
-
-
-    public static String getParamFlowDataId(String appName) {
-        return String.format("%s%s", appName, PARAM_FLOW_DATA_ID_POSTFIX);
-    }
-
-
-    public static String getSystemDataId(String appName) {
-        return String.format("%s%s", appName, SYSTEM_DATA_ID_POSTFIX);
-    }
-
-
-    public static String getAuthorityDataId(String appName) {
-        return String.format("%s%s", appName, AUTHORITY_DATA_ID_POSTFIX);
+    @SuppressWarnings("unchecked")
+    public static synchronized <T extends RuleEntity> Converter<String, List<T>> getDecoder(Class<T> clazz) {
+        Object decoder = DECODER_MAP.computeIfAbsent(clazz, new Function<Class<?>, Converter<String, List<T>>>() {
+            @Override
+            public Converter<String, List<T>> apply(final Class<?> targetClass) {
+                return source -> JSON.parseArray(source, clazz);
+            }
+        });
+        return (Converter<String, List<T>>) decoder;
     }
 
 }
