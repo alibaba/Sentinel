@@ -1,8 +1,10 @@
-# Sentinel 控制台
+# Sentinel 控制台 - apollo 持久化定制版
 
 ## 0. 概述
 
 Sentinel 控制台是流量控制、熔断降级规则统一配置和管理的入口，它为用户提供了机器自发现、簇点链路自发现、监控、规则配置等功能。在 Sentinel 控制台上，我们可以配置规则并实时查看流量控制效果。
+
+定制说明：<http://blog.fengjx.com/sentinel-dashboard-apollo>
 
 ## 1. 编译和启动
 
