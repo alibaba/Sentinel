@@ -30,7 +30,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
-import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.AsyncHandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
@@ -52,7 +52,7 @@ import org.springframework.web.servlet.ModelAndView;
  * @author kaizi2009
  * @since 1.7.1
  */
-public abstract class AbstractSentinelInterceptor implements HandlerInterceptor {
+public abstract class AbstractSentinelInterceptor implements AsyncHandlerInterceptor {
 
     public static final String SENTINEL_SPRING_WEB_CONTEXT_NAME = "sentinel_spring_web_context";
     private static final String EMPTY_ORIGIN = "";
@@ -156,6 +156,11 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
                            ModelAndView modelAndView) throws Exception {
+    }
+
+    @Override
+    public void afterConcurrentHandlingStarted(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        afterCompletion(request, response, handler, null);
     }
 
     protected Entry getEntryInRequest(HttpServletRequest request, String attrKey) {
