@@ -26,9 +26,12 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
+import com.alibaba.csp.sentinel.slots.system.SystemRule;
+import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Test;
@@ -51,6 +54,24 @@ public class SentinelSpringMvcIntegrationTest {
     private static final String HELLO_STR = "Hello!";
     @Autowired
     private MockMvc mvc;
+
+    @Test
+    public void testAsyncCallable() throws Exception {
+        SystemRule systemRule = new SystemRule();
+        systemRule.setMaxThread(1);
+        SystemRuleManager.loadRules(Collections.singletonList(systemRule));
+
+        String url = "/callable";
+        for (int i = 0; i < 5; i++) {
+            this.mvc.perform(get(url))
+                    .andExpect(status().isOk());
+            TimeUnit.MILLISECONDS.sleep(500);
+        }
+
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
+        assertNotNull(cn);
+        assertEquals(5, cn.totalPass(), 0.01);
+    }
 
     @Test
     public void testBase() throws Exception {

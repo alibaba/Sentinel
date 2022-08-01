@@ -20,11 +20,22 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author kaizi2009
  */
 @RestController
 public class TestController {
+
+    @GetMapping("/callable")
+    public Callable<String> apiCallable(){
+        return ()->{
+            TimeUnit.MILLISECONDS.sleep(100);
+            return "hello!";
+        };
+    }
 
     @GetMapping("/hello")
     public String apiHello() {
