@@ -93,18 +93,21 @@ public abstract class AbstractSentinelInterceptor implements AsyncHandlerInterce
             if (StringUtil.isEmpty(resourceName)) {
                 return true;
             }
-            
-            if (increaseReferece(request, this.baseWebMvcConfig.getRequestRefName(), 1) != 1) {
+
+            Object lockObj = acquireLockObjectInRequest(request);
+            synchronized (lockObj){
+                if (increaseReferece(request, this.baseWebMvcConfig.getRequestRefName(), 1) != 1) {
+                    return true;
+                }
+
+                // Parse the request origin using registered origin parser.
+                String origin = parseOrigin(request);
+                String contextName = getContextName(request);
+                ContextUtil.enter(contextName, origin);
+                Entry entry = SphU.entry(resourceName, ResourceTypeConstants.COMMON_WEB, EntryType.IN);
+                request.setAttribute(baseWebMvcConfig.getRequestAttributeName(), entry);
                 return true;
             }
-            
-            // Parse the request origin using registered origin parser.
-            String origin = parseOrigin(request);
-            String contextName = getContextName(request);
-            ContextUtil.enter(contextName, origin);
-            Entry entry = SphU.entry(resourceName, ResourceTypeConstants.COMMON_WEB, EntryType.IN);
-            request.setAttribute(baseWebMvcConfig.getRequestAttributeName(), entry);
-            return true;
         } catch (BlockException e) {
             try {
                 handleBlockException(request, response, e);
@@ -113,6 +116,16 @@ public abstract class AbstractSentinelInterceptor implements AsyncHandlerInterce
             }
             return false;
         }
+    }
+
+    protected Object acquireLockObjectInRequest(HttpServletRequest request) {
+        Object lockObj = request.getAttribute(this.baseWebMvcConfig.getRequestRefLock());
+        if (lockObj == null) {
+            // first time init
+            lockObj = new Object();
+            request.setAttribute(this.baseWebMvcConfig.getRequestRefLock(), lockObj);
+        }
+        return lockObj;
     }
 
     /**
@@ -136,21 +149,31 @@ public abstract class AbstractSentinelInterceptor implements AsyncHandlerInterce
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
                                 Object handler, Exception ex) throws Exception {
-        if (increaseReferece(request, this.baseWebMvcConfig.getRequestRefName(), -1) != 0) {
-            return;
-        }
-        
-        Entry entry = getEntryInRequest(request, baseWebMvcConfig.getRequestAttributeName());
-        if (entry == null) {
+        Object lockObj = acquireLockObjectInRequest(request);
+        if (lockObj == null){
             // should not happen
-            RecordLog.warn("[{}] No entry found in request, key: {}",
-                    getClass().getSimpleName(), baseWebMvcConfig.getRequestAttributeName());
-            return;
+            RecordLog.warn("[{}] No request lock found in request, key: {}",
+                    getClass().getSimpleName(), baseWebMvcConfig.getRequestRefLock());
+            lockObj = new Object();
         }
-        
-        traceExceptionAndExit(entry, ex);
-        removeEntryInRequest(request);
-        ContextUtil.exit();
+        synchronized (lockObj){
+            if (increaseReferece(request, this.baseWebMvcConfig.getRequestRefName(), -1) != 0) {
+                return;
+            }
+
+            Entry entry = getEntryInRequest(request, baseWebMvcConfig.getRequestAttributeName());
+            if (entry == null) {
+                // should not happen
+                RecordLog.warn("[{}] No entry found in request, key: {}",
+                        getClass().getSimpleName(), baseWebMvcConfig.getRequestAttributeName());
+                return;
+            }
+
+            traceExceptionAndExit(entry, ex);
+            removeEntryInRequest(request);
+            ContextUtil.exit();
+        }
+
     }
 
     @Override
