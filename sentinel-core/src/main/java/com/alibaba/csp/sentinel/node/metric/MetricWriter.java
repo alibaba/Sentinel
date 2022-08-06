@@ -92,9 +92,8 @@ public class MetricWriter {
         if (singleFileSize <= 0 || totalFileCount <= 0) {
             throw new IllegalArgumentException();
         }
-        RecordLog.info(
-            "[MetricWriter] Creating new MetricWriter, singleFileSize=" + singleFileSize + ", totalFileCount="
-                + totalFileCount);
+        RecordLog.info("[MetricWriter] Creating new MetricWriter, singleFileSize={}, totalFileCount={}",
+            singleFileSize, totalFileCount);
         this.baseDir = METRIC_BASE_DIR;
         File dir = new File(baseDir);
         if (!dir.exists()) {
@@ -328,9 +327,9 @@ public class MetricWriter {
             String fileName = list.get(i);
             String indexFile = formIndexFileName(fileName);
             new File(fileName).delete();
-            RecordLog.info("[MetricWriter] Removing metric file: " + fileName);
+            RecordLog.info("[MetricWriter] Removing metric file: {}", fileName);
             new File(indexFile).delete();
-            RecordLog.info("[MetricWriter] Removing metric index file: " + indexFile);
+            RecordLog.info("[MetricWriter] Removing metric index file: {}", indexFile);
         }
     }
 
@@ -348,8 +347,8 @@ public class MetricWriter {
         String idxFile = formIndexFileName(fileName);
         curMetricIndexFile = new File(idxFile);
         outIndex = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(idxFile, append)));
-        RecordLog.info("[MetricWriter] New metric file created: " + fileName);
-        RecordLog.info("[MetricWriter] New metric index file created: " + idxFile);
+        RecordLog.info("[MetricWriter] New metric file created: {}", fileName);
+        RecordLog.info("[MetricWriter] New metric index file created: {}", idxFile);
     }
 
     private boolean validSize() throws Exception {

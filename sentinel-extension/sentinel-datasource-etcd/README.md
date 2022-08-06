@@ -3,8 +3,6 @@
 Sentinel DataSource Etcd provides integration with etcd so that etcd
 can be the dynamic rule data source of Sentinel. The data source uses push model (watcher).
 
-> **NOTE**: This module requires JDK 1.8 or later.
-
 To use Sentinel DataSource Etcd, you should add the following dependency:
 
 ```xml

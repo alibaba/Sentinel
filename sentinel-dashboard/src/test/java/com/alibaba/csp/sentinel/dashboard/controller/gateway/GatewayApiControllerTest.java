@@ -15,9 +15,8 @@
  */
 package com.alibaba.csp.sentinel.dashboard.controller.gateway;
 
-import com.alibaba.csp.sentinel.dashboard.auth.AuthorizationInterceptor;
-import com.alibaba.csp.sentinel.dashboard.auth.FakeAuthServiceImpl;
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
+import com.alibaba.csp.sentinel.dashboard.config.NoAuthConfigurationTest;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.ApiDefinitionEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.ApiPredicateItemEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
@@ -30,7 +29,7 @@ import com.alibaba.csp.sentinel.dashboard.repository.gateway.InMemApiDefinitionS
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
-import org.apache.commons.lang3.time.DateUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,12 +46,25 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-import static com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants.*;
-import static org.junit.Assert.*;
-import static org.mockito.BDDMockito.*;
+import static com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants.URL_MATCH_STRATEGY_EXACT;
+import static com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants.URL_MATCH_STRATEGY_PREFIX;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.BDDMockito.any;
+import static org.mockito.BDDMockito.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.mock;
+import static org.mockito.BDDMockito.verify;
 
 /**
  * Test cases for {@link GatewayApiController}.
@@ -61,7 +73,7 @@ import static org.mockito.BDDMockito.*;
  */
 @RunWith(SpringRunner.class)
 @WebMvcTest(GatewayApiController.class)
-@Import({FakeAuthServiceImpl.class, InMemApiDefinitionStore.class, AppManagement.class, SimpleMachineDiscovery.class, AuthorizationInterceptor.class})
+@Import({NoAuthConfigurationTest.class, InMemApiDefinitionStore.class, AppManagement.class, SimpleMachineDiscovery.class})
 public class GatewayApiControllerTest {
 
     private static final String TEST_APP = "test_app";

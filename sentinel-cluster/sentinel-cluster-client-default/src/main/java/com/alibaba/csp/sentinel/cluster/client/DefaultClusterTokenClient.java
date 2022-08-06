@@ -79,7 +79,7 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
         try {
             this.transportClient = new NettyTransportClient(host, port);
             this.serverDescriptor = new TokenServerDescriptor(host, port);
-            RecordLog.info("[DefaultClusterTokenClient] New client created: " + serverDescriptor);
+            RecordLog.info("[DefaultClusterTokenClient] New client created: {}", serverDescriptor);
         } catch (Exception ex) {
             RecordLog.warn("[DefaultClusterTokenClient] Failed to initialize new token client", ex);
         }
@@ -97,7 +97,7 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
             this.transportClient = new NettyTransportClient(config.getServerHost(), config.getServerPort());
             this.serverDescriptor = new TokenServerDescriptor(config.getServerHost(), config.getServerPort());
             startClientIfScheduled();
-            RecordLog.info("[DefaultClusterTokenClient] New client created: " + serverDescriptor);
+            RecordLog.info("[DefaultClusterTokenClient] New client created: {}", serverDescriptor);
         } catch (Exception ex) {
             RecordLog.warn("[DefaultClusterTokenClient] Failed to change remote token server", ex);
         }
@@ -180,6 +180,15 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
             ClusterClientStatLogUtil.log(ex.getMessage());
             return new TokenResult(TokenResultStatus.FAIL);
         }
+    }
+
+    @Override
+    public TokenResult requestConcurrentToken(String clientAddress, Long ruleId, int acquireCount) {
+        return null;
+    }
+
+    @Override
+    public void releaseConcurrentToken(Long tokenId) {
     }
 
     private void logForResult(TokenResult result) {

@@ -15,9 +15,8 @@
  */
 package com.alibaba.csp.sentinel.dashboard.controller.gateway;
 
-import com.alibaba.csp.sentinel.dashboard.auth.AuthorizationInterceptor;
-import com.alibaba.csp.sentinel.dashboard.auth.FakeAuthServiceImpl;
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
+import com.alibaba.csp.sentinel.dashboard.config.NoAuthConfigurationTest;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayFlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayParamFlowItemEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
@@ -30,7 +29,7 @@ import com.alibaba.csp.sentinel.dashboard.repository.gateway.InMemGatewayFlowRul
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
-import org.apache.commons.lang3.time.DateUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,10 +51,22 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import static com.alibaba.csp.sentinel.slots.block.RuleConstant.*;
-import static com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants.*;
-import static org.junit.Assert.*;
-import static org.mockito.BDDMockito.*;
+import static com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants.PARAM_PARSE_STRATEGY_CLIENT_IP;
+import static com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants.PARAM_PARSE_STRATEGY_URL_PARAM;
+import static com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants.RESOURCE_MODE_CUSTOM_API_NAME;
+import static com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants.RESOURCE_MODE_ROUTE_ID;
+import static com.alibaba.csp.sentinel.slots.block.RuleConstant.CONTROL_BEHAVIOR_DEFAULT;
+import static com.alibaba.csp.sentinel.slots.block.RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER;
+import static com.alibaba.csp.sentinel.slots.block.RuleConstant.FLOW_GRADE_QPS;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.BDDMockito.any;
+import static org.mockito.BDDMockito.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.mock;
+import static org.mockito.BDDMockito.verify;
 
 /**
  * Test cases for {@link GatewayFlowRuleController}.
@@ -64,8 +75,7 @@ import static org.mockito.BDDMockito.*;
  */
 @RunWith(SpringRunner.class)
 @WebMvcTest(GatewayFlowRuleController.class)
-@Import({FakeAuthServiceImpl.class, InMemGatewayFlowRuleStore.class, AppManagement.class, SimpleMachineDiscovery.class,
-        AuthorizationInterceptor.class })
+@Import({NoAuthConfigurationTest.class, InMemGatewayFlowRuleStore.class, AppManagement.class, SimpleMachineDiscovery.class})
 public class GatewayFlowRuleControllerTest {
 
     private static final String TEST_APP = "test_app";

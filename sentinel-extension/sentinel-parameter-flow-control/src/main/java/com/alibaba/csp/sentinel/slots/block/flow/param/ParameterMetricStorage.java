@@ -54,7 +54,7 @@ public final class ParameterMetricStorage {
                 if ((metric = metricsMap.get(resourceName)) == null) {
                     metric = new ParameterMetric();
                     metricsMap.put(resourceWrapper.getName(), metric);
-                    RecordLog.info("[ParameterMetricStorage] Creating parameter metric for: " + resourceWrapper.getName());
+                    RecordLog.info("[ParameterMetricStorage] Creating parameter metric for: {}", resourceWrapper.getName());
                 }
             }
         }
@@ -80,7 +80,7 @@ public final class ParameterMetricStorage {
             return;
         }
         metricsMap.remove(resourceName);
-        RecordLog.info("[ParameterMetricStorage] Clearing parameter metric for: " + resourceName);
+        RecordLog.info("[ParameterMetricStorage] Clearing parameter metric for: {}", resourceName);
     }
 
     static Map<String, ParameterMetric> getMetricsMap() {

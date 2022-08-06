@@ -89,7 +89,7 @@ public class MetricFetcher {
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private ScheduledExecutorService fetchScheduleService = Executors.newScheduledThreadPool(1,
-        new NamedThreadFactory("sentinel-dashboard-metrics-fetch-task"));
+        new NamedThreadFactory("sentinel-dashboard-metrics-fetch-task", true));
     private ExecutorService fetchService;
     private ExecutorService fetchWorker;
 
@@ -100,10 +100,10 @@ public class MetricFetcher {
         RejectedExecutionHandler handler = new DiscardPolicy();
         fetchService = new ThreadPoolExecutor(cores, cores,
             keepAliveTime, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(queueSize),
-            new NamedThreadFactory("sentinel-dashboard-metrics-fetchService"), handler);
+            new NamedThreadFactory("sentinel-dashboard-metrics-fetchService", true), handler);
         fetchWorker = new ThreadPoolExecutor(cores, cores,
             keepAliveTime, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(queueSize),
-            new NamedThreadFactory("sentinel-dashboard-metrics-fetchWorker"), handler);
+            new NamedThreadFactory("sentinel-dashboard-metrics-fetchWorker",true), handler);
         IOReactorConfig ioConfig = IOReactorConfig.custom()
             .setConnectTimeout(3000)
             .setSoTimeout(3000)
@@ -251,7 +251,7 @@ public class MetricFetcher {
         } catch (Exception e) {
             logger.info(msg + " metric, wait http client error:", e);
         }
-        long cost = System.currentTimeMillis() - start;
+        //long cost = System.currentTimeMillis() - start;
         //logger.info("finished " + msg + " metric for " + app + ", time intervalMs [" + startTime + ", " + endTime
         //    + "], total machines=" + machines.size() + ", dead=" + dead + ", fetch success="
         //    + success + ", fetch fail=" + fail + ", time cost=" + cost + " ms");
@@ -268,7 +268,7 @@ public class MetricFetcher {
         lastFetchMs = lastFetchMs / 1000 * 1000;
         long endTime = lastFetchMs + FETCH_INTERVAL_SECOND * 1000;
         if (endTime > now - 1000 * 2) {
-            // to near
+            // too near
             return;
         }
         // update last_fetch in advance.
@@ -331,25 +331,24 @@ public class MetricFetcher {
                  * aggregation metrics by app_resource_timeSecond, ignore ip and port.
                  */
                 String key = buildMetricKey(machine.getApp(), node.getResource(), node.getTimestamp());
-                MetricEntity entity = map.get(key);
-                if (entity != null) {
-                    entity.addPassQps(node.getPassQps());
-                    entity.addBlockQps(node.getBlockQps());
-                    entity.addRtAndSuccessQps(node.getRt(), node.getSuccessQps());
-                    entity.addExceptionQps(node.getExceptionQps());
-                    entity.addCount(1);
-                } else {
-                    entity = new MetricEntity();
-                    entity.setApp(machine.getApp());
-                    entity.setTimestamp(new Date(node.getTimestamp()));
-                    entity.setPassQps(node.getPassQps());
-                    entity.setBlockQps(node.getBlockQps());
-                    entity.setRtAndSuccessQps(node.getRt(), node.getSuccessQps());
-                    entity.setExceptionQps(node.getExceptionQps());
-                    entity.setCount(1);
-                    entity.setResource(node.getResource());
-                    map.put(key, entity);
-                }
+
+                MetricEntity metricEntity = map.computeIfAbsent(key, s -> {
+                    MetricEntity initMetricEntity = new MetricEntity();
+                    initMetricEntity.setApp(machine.getApp());
+                    initMetricEntity.setTimestamp(new Date(node.getTimestamp()));
+                    initMetricEntity.setPassQps(0L);
+                    initMetricEntity.setBlockQps(0L);
+                    initMetricEntity.setRtAndSuccessQps(0, 0L);
+                    initMetricEntity.setExceptionQps(0L);
+                    initMetricEntity.setCount(0);
+                    initMetricEntity.setResource(node.getResource());
+                    return initMetricEntity;
+                });
+                metricEntity.addPassQps(node.getPassQps());
+                metricEntity.addBlockQps(node.getBlockQps());
+                metricEntity.addRtAndSuccessQps(node.getRt(), node.getSuccessQps());
+                metricEntity.addExceptionQps(node.getExceptionQps());
+                metricEntity.addCount(1);
             } catch (Exception e) {
                 logger.warn("handleBody line exception, machine: {}, line: {}", machine.toLogString(), line);
             }

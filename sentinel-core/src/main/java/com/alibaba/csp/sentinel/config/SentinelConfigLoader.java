@@ -62,7 +62,7 @@ public final class SentinelConfigLoader {
 
         Properties p = ConfigUtil.loadProperties(fileName);
         if (p != null && !p.isEmpty()) {
-            RecordLog.info("[SentinelConfigLoader] Loading Sentinel config from " + fileName);
+            RecordLog.info("[SentinelConfigLoader] Loading Sentinel config from {}", fileName);
             properties.putAll(p);
         }
 

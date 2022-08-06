@@ -2,7 +2,7 @@ version: 2
 jobs:
   integration-test:
     docker:
-      - image: circleci/openjdk:8-jdk
+      - image: cimg/openjdk:8.0
     working_directory: ~/sentinel
     environment:
       MAVEN_OPTS: -Xmx3200m

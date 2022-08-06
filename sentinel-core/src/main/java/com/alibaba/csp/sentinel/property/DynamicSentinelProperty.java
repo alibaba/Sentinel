@@ -15,15 +15,14 @@
  */
 package com.alibaba.csp.sentinel.property;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
 import com.alibaba.csp.sentinel.log.RecordLog;
+
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 public class DynamicSentinelProperty<T> implements SentinelProperty<T> {
 
-    protected Set<PropertyListener<T>> listeners = Collections.synchronizedSet(new HashSet<PropertyListener<T>>());
+    protected Set<PropertyListener<T>> listeners = new CopyOnWriteArraySet<>();
     private T value = null;
 
     public DynamicSentinelProperty() {
@@ -50,7 +49,7 @@ public class DynamicSentinelProperty<T> implements SentinelProperty<T> {
         if (isEqual(value, newValue)) {
             return false;
         }
-        RecordLog.info("[DynamicSentinelProperty] Config will be updated to: " + newValue);
+        RecordLog.info("[DynamicSentinelProperty] Config will be updated to: {}", newValue);
 
         value = newValue;
         for (PropertyListener<T> listener : listeners) {
