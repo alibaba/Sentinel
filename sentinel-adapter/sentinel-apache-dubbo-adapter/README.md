@@ -1,9 +1,9 @@
 # Sentinel Apache Dubbo Adapter (for 2.7.x+)
 
-> Note: 中文文档请见[此处](https://github.com/alibaba/Sentinel/wiki/主流框架的适配#dubbo)。
+> Note: 中文文档请见[此处](https://sentinelguard.io/zh-cn/docs/open-source-framework-integrations.html)。
 
 Sentinel Dubbo Adapter provides service consumer filter and provider filter
-for [Apache Dubbo](https://dubbo.apache.org/en-us/) services.
+for [Apache Dubbo](https://dubbo.apache.org/en/) services.
 
 **Note: This adapter only supports Apache Dubbo 2.7.x and above.** For legacy `com.alibaba:dubbo` 2.6.x,
 please use `sentinel-dubbo-adapter` module instead.
@@ -51,7 +51,7 @@ and will bring the caller's name when doing resource protection.
 If `limitApp` of flow rules is not configured (`default`), flow control will take effects on all callers.
 If `limitApp` of a flow rule is configured with a caller, then the corresponding flow rule will only take effect on the specific caller.
 
-> Note: Dubbo consumer does not provide its Dubbo application name when doing RPC,
+> Note: Earlier Dubbo 2.7.x consumer does not provide its Dubbo application name when doing RPC,
 > so developers should manually put the application name into *attachment* at consumer side,
 > then extract it at provider side. Sentinel Dubbo Adapter has implemented a filter (`DubboAppContextFilter`)
 > where consumer can carry application name information to provider automatically.
