@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.demo.spring.webmvc.controller;
 
 import java.util.Random;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,6 +30,73 @@ import org.springframework.web.servlet.ModelAndView;
  */
 @Controller
 public class WebMvcTestController {
+
+    @GetMapping("/async")
+    @ResponseBody
+    public Callable<String> apiAsync(){
+        return ()->{
+            TimeUnit.MILLISECONDS.sleep(500);
+            return "apiAsync!";
+        };
+    }
+
+    @GetMapping("/nestedAsync")
+    public Callable<String> apiNestedAsync(){
+        return ()->{
+            TimeUnit.MILLISECONDS.sleep(500);
+            return "async";
+        };
+    }
+
+    @GetMapping("/async2Sync")
+    public Callable<String> apiAsync2Sync(){
+        return ()->{
+            TimeUnit.MILLISECONDS.sleep(500);
+            return "sync";
+        };
+    }
+
+    @GetMapping("/async2Sync2Async")
+    public Callable<String> apiAsync2Sync2Async(){
+        return ()->{
+            TimeUnit.MILLISECONDS.sleep(500);
+            return "sync2Async";
+        };
+    }
+
+    @GetMapping("/sync")
+    @ResponseBody
+    public String apiSync() throws InterruptedException {
+        TimeUnit.MILLISECONDS.sleep(500);
+        return "sync!";
+    }
+
+    @GetMapping("/sync2Async")
+    public String apiSync2Async() throws InterruptedException {
+        TimeUnit.MILLISECONDS.sleep(500);
+        return "async";
+    }
+
+    @GetMapping("/sync2Exception")
+    public String apiSync2Exception() throws InterruptedException {
+        TimeUnit.MILLISECONDS.sleep(500);
+        return "exception";
+    }
+
+    @GetMapping("/async2Exception")
+    public Callable<String> apiAsync2Exception() {
+        return ()->{
+            TimeUnit.MILLISECONDS.sleep(500);
+            return "exception";
+        };
+    }
+
+    @GetMapping("/exception")
+    @ResponseBody
+    public String apiException() {
+        int a = 1 / 0;
+        return "successful!";
+    }
 
     @GetMapping("/hello")
     @ResponseBody
