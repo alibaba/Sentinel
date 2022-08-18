@@ -68,7 +68,7 @@ public class SentinelSpringMvcIntegrationTest {
 
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
         assertNotNull(cn);
-        assertEquals(1, cn.passQps(), 0.01);
+        assertEquals(1, cn.successQps(), 0.01);
     }
 
     @Test
@@ -94,7 +94,7 @@ public class SentinelSpringMvcIntegrationTest {
                 .andExpect(content().string("apiAsync!"));
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
         assertNotNull(cn);
-        assertEquals(1, cn.passQps(), 0.01);
+        assertEquals(1, cn.successQps(), 0.01);
     }
 
     @Test
@@ -115,7 +115,7 @@ public class SentinelSpringMvcIntegrationTest {
 
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
         assertNotNull(cn);
-        assertEquals(1, cn.passQps(), 0.01);
+        assertEquals(1, cn.successQps(), 0.01);
     }
 
     @Test
@@ -145,7 +145,7 @@ public class SentinelSpringMvcIntegrationTest {
 
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
         assertNotNull(cn);
-        assertEquals(1, cn.passQps(), 0.01);
+        assertEquals(1, cn.successQps(), 0.01);
     }
 
 
@@ -166,7 +166,7 @@ public class SentinelSpringMvcIntegrationTest {
                 .andExpect(content().string("apiAsync!"));
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
         assertNotNull(cn);
-        assertEquals(1, cn.passQps(), 0.01);
+        assertEquals(1, cn.successQps(), 0.01);
     }
 
 
@@ -185,7 +185,7 @@ public class SentinelSpringMvcIntegrationTest {
 
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
         assertNotNull(cn);
-        assertEquals(1, cn.passQps(), 0.01);
+        assertEquals(1, cn.successQps(), 0.01);
     }
 
     @Test
@@ -206,7 +206,7 @@ public class SentinelSpringMvcIntegrationTest {
 
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
         assertNotNull(cn);
-        assertEquals(1, cn.passQps(), 0.01);
+        assertEquals(1, cn.successQps(), 0.01);
     }
 
 
