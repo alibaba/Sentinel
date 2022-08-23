@@ -25,6 +25,7 @@
         <module>sentinel-datasource-eureka</module>
         <module>sentinel-annotation-cdi-interceptor</module>
         <module>sentinel-metric-exporter</module>
+        <module>sentinel-datasource-opensergo</module>
     </modules>
 
 </project>
