@@ -229,9 +229,6 @@ public class FlowControllerV1 {
         }
         if (clusterMode) {
             ClusterFlowConfig clusterFlowConfig = new ClusterFlowConfig();
-//            if (flowId != null) {
-//                clusterFlowConfig.setFlowId(flowId);
-//            }
             if (thresholdType != null) {
                 clusterFlowConfig.setThresholdType(thresholdType);
             }
