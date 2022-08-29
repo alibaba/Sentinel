@@ -40,7 +40,12 @@ public class EagleEyeLogUtil {
             .buildSingleton();
     }
 
+    //TEST
     public static void log(String resource, String exceptionName, String ruleLimitApp, String origin, int count) {
         statLogger.stat(resource, exceptionName, ruleLimitApp, origin).count(count);
+    }
+
+    public static void log(Long ruleId, String resource, String exceptionName, String ruleLimitApp, String origin, int count) {
+        statLogger.stat(String.valueOf(ruleId), resource, exceptionName, ruleLimitApp, origin).count(count);
     }
 }
