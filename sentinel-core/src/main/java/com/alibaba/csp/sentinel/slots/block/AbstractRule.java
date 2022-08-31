@@ -24,6 +24,11 @@ package com.alibaba.csp.sentinel.slots.block;
 public abstract class AbstractRule implements Rule {
 
     /**
+     * rule id.
+     */
+    private Long id;
+
+    /**
      * Resource name.
      */
     private String resource;
@@ -38,6 +43,15 @@ public abstract class AbstractRule implements Rule {
      * </p>
      */
     private String limitApp;
+
+    public Long getId() {
+        return id;
+    }
+
+    public AbstractRule setId(Long id) {
+        this.id = id;
+        return this;
+    }
 
     @Override
     public String getResource() {
