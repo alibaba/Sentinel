@@ -15,7 +15,6 @@
  */
 package com.alibaba.csp.sentinel.cluster.client.handler;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,36 +28,33 @@ import io.netty.channel.ChannelPromise;
  */
 public final class TokenClientPromiseHolder {
 
-    private static final Map<Integer, SimpleEntry<ChannelPromise, ClusterResponse>> PROMISE_MAP = new ConcurrentHashMap<>();
+    private static final Map<Integer, TokenPromise> PROMISE_MAP = new ConcurrentHashMap<>();
 
-    public static void putPromise(int xid, ChannelPromise promise) {
-        PROMISE_MAP.put(xid, new SimpleEntry<ChannelPromise, ClusterResponse>(promise, null));
-    }
-
-    public static SimpleEntry<ChannelPromise, ClusterResponse> getEntry(int xid) {
-        return PROMISE_MAP.get(xid);
+    public static void putPromise(int xid, TokenPromise promise) {
+        PROMISE_MAP.put(xid, promise);
     }
 
     public static void remove(int xid) {
         PROMISE_MAP.remove(xid);
     }
 
-    public static <T> boolean completePromise(int xid, ClusterResponse<T> response) {
-        if (!PROMISE_MAP.containsKey(xid)) {
+    public static <T> boolean completePromise(int xid, ClusterResponse<T> response) throws InterruptedException {
+        TokenPromise tokenPromise = PROMISE_MAP.get(xid);
+        if (tokenPromise == null) {
+            // should not reach here
             return false;
         }
-        SimpleEntry<ChannelPromise, ClusterResponse> entry = PROMISE_MAP.get(xid);
-        if (entry != null) {
-            ChannelPromise promise = entry.getKey();
-            if (promise.isDone() || promise.isCancelled()) {
-                return false;
-            }
-            entry.setValue(response);
-            promise.setSuccess();
-            return true;
+        ChannelPromise promise = tokenPromise.getPromiseValue();
+        if (promise == null) {
+            return false;
         }
-        return false;
+        if (promise.isDone() || promise.isCancelled()) {
+            return false;
+        }
+        promise.setSuccess();
+        return tokenPromise.setResponseValue(response);
     }
 
-    private TokenClientPromiseHolder() {}
+    private TokenClientPromiseHolder() {
+    }
 }

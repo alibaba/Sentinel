@@ -15,7 +15,6 @@
  */
 package com.alibaba.csp.sentinel.cluster.client;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -29,6 +28,7 @@ import com.alibaba.csp.sentinel.cluster.client.codec.netty.NettyResponseDecoder;
 import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfigManager;
 import com.alibaba.csp.sentinel.cluster.client.handler.TokenClientHandler;
 import com.alibaba.csp.sentinel.cluster.client.handler.TokenClientPromiseHolder;
+import com.alibaba.csp.sentinel.cluster.client.handler.TokenPromise;
 import com.alibaba.csp.sentinel.cluster.exception.SentinelClusterException;
 import com.alibaba.csp.sentinel.cluster.request.ClusterRequest;
 import com.alibaba.csp.sentinel.cluster.request.Request;
@@ -44,7 +44,6 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.ChannelPromise;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -216,21 +215,21 @@ public class NettyTransportClient implements ClusterTransportClient {
         try {
             request.setId(xid);
 
-            channel.writeAndFlush(request);
-
-            ChannelPromise promise = channel.newPromise();
+            TokenPromise promise = new TokenPromise();
             TokenClientPromiseHolder.putPromise(xid, promise);
 
-            if (!promise.await(ClusterClientConfigManager.getRequestTimeout())) {
+            channel.writeAndFlush(request);
+
+            if (!promise.setPromiseValue(channel.newPromise())) {
                 throw new SentinelClusterException(ClusterErrorMessages.REQUEST_TIME_OUT);
             }
 
-            SimpleEntry<ChannelPromise, ClusterResponse> entry = TokenClientPromiseHolder.getEntry(xid);
-            if (entry == null || entry.getValue() == null) {
-                // Should not go through here.
-                throw new SentinelClusterException(ClusterErrorMessages.UNEXPECTED_STATUS);
+            ClusterResponse response = promise.getResponseValue();
+
+            if (response == null) {
+                throw new SentinelClusterException(ClusterErrorMessages.REQUEST_TIME_OUT);
             }
-            return entry.getValue();
+            return response;
         } finally {
             TokenClientPromiseHolder.remove(xid);
         }
