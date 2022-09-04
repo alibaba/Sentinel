@@ -11,40 +11,35 @@ import io.netty.channel.ChannelPromise;
  */
 public class TokenPromise {
 
-    private volatile long waiting = ClusterClientConfigManager.getRequestTimeout();
+    private final long startTime = System.currentTimeMillis();
     private SynchronousQueue<Object> channel = new SynchronousQueue<>();
 
     public boolean setPromiseValue(ChannelPromise promise) throws InterruptedException {
-        long nanoTime = System.nanoTime();
-        boolean offered = channel.offer(promise, this.waiting, TimeUnit.MILLISECONDS);
-        if (!offered) {
-            this.waiting = 0;
-        } else {
-            this.waiting -= TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - nanoTime);
-        }
-        return offered;
+        return channel.offer(promise, remaining(), TimeUnit.MILLISECONDS);
     }
 
     public ClusterResponse getResponseValue() throws InterruptedException {
-        if (this.waiting <= 0) {
-            return null;
-        }
-        Object promise = channel.poll(this.waiting, TimeUnit.MILLISECONDS);
-        if (promise != null) {
-            return (ClusterResponse) promise;
+        Object response = channel.poll(remaining(), TimeUnit.MILLISECONDS);
+        if (response != null) {
+            return (ClusterResponse) response;
         }
         return null;
     }
 
     public ChannelPromise getPromiseValue() throws InterruptedException {
-        if (this.waiting <= 0) {
-            return null;
+        Object promise = channel.poll(remaining(), TimeUnit.MILLISECONDS);
+        if (promise != null) {
+            return (ChannelPromise) promise;
         }
-        return (ChannelPromise) channel.poll(this.waiting, TimeUnit.MILLISECONDS);
+        return null;
     }
 
     public boolean setResponseValue(ClusterResponse response) throws InterruptedException {
-        return channel.offer(response, this.waiting, TimeUnit.MILLISECONDS);
+        return channel.offer(response, remaining(), TimeUnit.MILLISECONDS);
     }
 
+    private long remaining() {
+        long remaining = ClusterClientConfigManager.getRequestTimeout() - (System.currentTimeMillis() - startTime);
+        return remaining < 0 ? 0 : remaining;
+    }
 }

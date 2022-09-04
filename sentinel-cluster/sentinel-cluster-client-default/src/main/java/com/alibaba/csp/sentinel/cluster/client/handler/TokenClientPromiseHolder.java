@@ -17,6 +17,8 @@ package com.alibaba.csp.sentinel.cluster.client.handler;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
 
@@ -29,6 +31,8 @@ import io.netty.channel.ChannelPromise;
 public final class TokenClientPromiseHolder {
 
     private static final Map<Integer, TokenPromise> PROMISE_MAP = new ConcurrentHashMap<>();
+    private static final ExecutorService executor = Executors
+            .newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     public static void putPromise(int xid, TokenPromise promise) {
         PROMISE_MAP.put(xid, promise);
@@ -38,21 +42,26 @@ public final class TokenClientPromiseHolder {
         PROMISE_MAP.remove(xid);
     }
 
-    public static <T> boolean completePromise(int xid, ClusterResponse<T> response) throws InterruptedException {
-        TokenPromise tokenPromise = PROMISE_MAP.get(xid);
+    public static <T> void completePromise(int xid, ClusterResponse<T> response) {
+        final TokenPromise tokenPromise = PROMISE_MAP.get(xid);
         if (tokenPromise == null) {
-            // should not reach here
-            return false;
+            // timeout
+            return;
         }
-        ChannelPromise promise = tokenPromise.getPromiseValue();
-        if (promise == null) {
-            return false;
-        }
-        if (promise.isDone() || promise.isCancelled()) {
-            return false;
-        }
-        promise.setSuccess();
-        return tokenPromise.setResponseValue(response);
+        executor.submit(() -> {
+            try {
+                ChannelPromise promise = tokenPromise.getPromiseValue();
+                if (promise == null) {
+                    return;
+                }
+                if (promise.isDone() || promise.isCancelled()) {
+                    return;
+                }
+                tokenPromise.setResponseValue(response);
+                promise.setSuccess();
+            } catch (InterruptedException e) {
+            }
+        });
     }
 
     private TokenClientPromiseHolder() {
