@@ -17,8 +17,9 @@ package com.alibaba.csp.sentinel.cluster.client.handler;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
 
@@ -31,8 +32,9 @@ import io.netty.channel.ChannelPromise;
 public final class TokenClientPromiseHolder {
 
     private static final Map<Integer, TokenPromise> PROMISE_MAP = new ConcurrentHashMap<>();
-    private static final ExecutorService executor = Executors
-            .newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    private static final int CPU_SIZE = Runtime.getRuntime().availableProcessors();
+    private static final ThreadPoolExecutor EXECUTOR = new ThreadPoolExecutor(CPU_SIZE, CPU_SIZE, 0L,
+            TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 
     public static void putPromise(int xid, TokenPromise promise) {
         PROMISE_MAP.put(xid, promise);
@@ -48,7 +50,7 @@ public final class TokenClientPromiseHolder {
             // timeout
             return;
         }
-        executor.submit(() -> {
+        EXECUTOR.submit(() -> {
             try {
                 ChannelPromise promise = tokenPromise.getPromiseValue();
                 if (promise == null) {
