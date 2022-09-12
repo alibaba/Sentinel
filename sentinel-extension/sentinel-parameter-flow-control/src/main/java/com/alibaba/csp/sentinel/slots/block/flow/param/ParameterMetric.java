@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
+import com.alibaba.csp.sentinel.slots.statistic.cache.CaffeineCacheMapWrapper;
 import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
 
 /**
@@ -93,11 +94,15 @@ public class ParameterMetric {
     }
 
     public void initialize(ParamFlowRule rule) {
+        initialize(rule, true);
+    }
+
+    public void initialize(ParamFlowRule rule, boolean useCaffeine) {
         if (!ruleTimeCounters.containsKey(rule)) {
             synchronized (lock) {
                 if (ruleTimeCounters.get(rule) == null) {
                     long size = Math.min(BASE_PARAM_MAX_CAPACITY * rule.getDurationInSec(), TOTAL_MAX_CAPACITY);
-                    ruleTimeCounters.put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(size));
+                    ruleTimeCounters.put(rule, useCaffeine ? new CaffeineCacheMapWrapper<>(size) : new ConcurrentLinkedHashMapWrapper<>(size));
                 }
             }
         }
@@ -106,7 +111,7 @@ public class ParameterMetric {
             synchronized (lock) {
                 if (ruleTokenCounter.get(rule) == null) {
                     long size = Math.min(BASE_PARAM_MAX_CAPACITY * rule.getDurationInSec(), TOTAL_MAX_CAPACITY);
-                    ruleTokenCounter.put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(size));
+                    ruleTokenCounter.put(rule, useCaffeine ? new CaffeineCacheMapWrapper<>(size) : new ConcurrentLinkedHashMapWrapper<>(size));
                 }
             }
         }
@@ -115,7 +120,7 @@ public class ParameterMetric {
             synchronized (lock) {
                 if (threadCountMap.get(rule.getParamIdx()) == null) {
                     threadCountMap.put(rule.getParamIdx(),
-                        new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(THREAD_COUNT_MAX_CAPACITY));
+                            useCaffeine ? new CaffeineCacheMapWrapper<>(THREAD_COUNT_MAX_CAPACITY) : new ConcurrentLinkedHashMapWrapper<>(THREAD_COUNT_MAX_CAPACITY));
                 }
             }
         }
