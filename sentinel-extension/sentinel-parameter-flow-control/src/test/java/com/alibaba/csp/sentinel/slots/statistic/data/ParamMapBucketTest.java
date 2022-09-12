@@ -19,6 +19,10 @@ import com.alibaba.csp.sentinel.slots.block.flow.param.RollingParamEvent;
 
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
 import static org.junit.Assert.*;
 
 /**
@@ -37,7 +41,7 @@ public class ParamMapBucketTest {
         }
         String lastParam = "param-end";
         bucket.add(RollingParamEvent.REQUEST_PASSED, 1, lastParam);
-        assertEquals(0, bucket.get(RollingParamEvent.REQUEST_PASSED, "param-0"));
+        assertEquals(0, bucket.get(RollingParamEvent.REQUEST_PASSED, "param-00"));
         assertEquals(1, bucket.get(RollingParamEvent.REQUEST_PASSED, "param-1"));
         assertEquals(1, bucket.get(RollingParamEvent.REQUEST_PASSED, lastParam));
     }
@@ -73,5 +77,28 @@ public class ParamMapBucketTest {
         assertEquals(0, bucket.get(RollingParamEvent.REQUEST_PASSED, paramA));
         assertEquals(0, bucket.get(RollingParamEvent.REQUEST_PASSED, paramB));
         assertEquals(0, bucket.get(RollingParamEvent.REQUEST_PASSED, paramC));
+    }
+
+    @Test
+    public void testOrder() {
+        ParamMapBucket bucket = new ParamMapBucket();
+        double paramA = 1.1d;
+        double paramB = 2.2d;
+        double paramC = -3.2d;
+        bucket.add(RollingParamEvent.REQUEST_PASSED, 3, paramA);
+        bucket.add(RollingParamEvent.REQUEST_PASSED, 1, paramB);
+        bucket.add(RollingParamEvent.REQUEST_PASSED, 1, paramC);
+        Set<Object> ascSet = bucket.ascendingKeySet(RollingParamEvent.REQUEST_PASSED);
+        List<Double> ascList = Arrays.asList(paramC, paramA, paramB);
+        int i = 0;
+        for(Object o : ascSet) {
+            assertEquals(ascList.get(i++), o);
+        }
+        List<Double> descList = Arrays.asList(paramB, paramA, paramC);
+        Set<Object> descSet = bucket.descendingKeySet(RollingParamEvent.REQUEST_PASSED);
+        i = 0;
+        for(Object o : descSet) {
+            assertEquals(descList.get(i++), o);
+        }
     }
 }
