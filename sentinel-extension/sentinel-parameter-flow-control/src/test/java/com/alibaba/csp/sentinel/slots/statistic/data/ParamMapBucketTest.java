@@ -22,6 +22,7 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
@@ -34,14 +35,15 @@ import static org.junit.Assert.*;
 public class ParamMapBucketTest {
 
     @Test
-    public void testAddEviction() {
+    public void testAddEviction() throws InterruptedException {
         ParamMapBucket bucket = new ParamMapBucket();
         for (int i = 0; i < ParamMapBucket.DEFAULT_MAX_CAPACITY; i++) {
             bucket.add(RollingParamEvent.REQUEST_PASSED, 1, "param-" + i);
         }
         String lastParam = "param-end";
         bucket.add(RollingParamEvent.REQUEST_PASSED, 1, lastParam);
-        assertEquals(0, bucket.get(RollingParamEvent.REQUEST_PASSED, "param-00"));
+        TimeUnit.MILLISECONDS.sleep(10L);
+        assertEquals(0, bucket.get(RollingParamEvent.REQUEST_PASSED, "param-0"));
         assertEquals(1, bucket.get(RollingParamEvent.REQUEST_PASSED, "param-1"));
         assertEquals(1, bucket.get(RollingParamEvent.REQUEST_PASSED, lastParam));
     }
