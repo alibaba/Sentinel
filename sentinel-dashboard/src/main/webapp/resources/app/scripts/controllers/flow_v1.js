@@ -88,7 +88,8 @@ app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', '
         limitApp: 'default',
         clusterMode: false,
         clusterConfig: {
-          thresholdType: 0
+          thresholdType: 0,
+          fallbackToLocalWhenFail : true
         }
       };
       $scope.flowRuleDialog = {

@@ -49,6 +49,9 @@ app.service('FlowServiceV1', ['$http', function ($http) {
             controlBehavior: rule.controlBehavior,
             warmUpPeriodSec: rule.warmUpPeriodSec,
             maxQueueingTimeMs: rule.maxQueueingTimeMs,
+            clusterMode: rule.clusterMode,
+            thresholdType: rule.clusterMode ? rule.clusterConfig.thresholdType : undefined,
+            fallbackToLocalWhenFail: rule.clusterMode ? rule.clusterConfig.fallbackToLocalWhenFail :undefined
         };
 
         return $http({
@@ -110,7 +113,7 @@ app.service('FlowServiceV1', ['$http', function ($http) {
             alert('排队超时时间必须大于 0');
             return false;
         }
-        if (rule.clusterMode && (rule.clusterConfig === undefined || rule.clusterConfig.thresholdType === undefined)) {
+        if (rule.clusterMode && (rule.clusterConfig === undefined || null === rule.clusterConfig || rule.clusterConfig.thresholdType === undefined)) {
             alert('集群限流配置不正确');
             return false;
         }

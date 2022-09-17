@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
+import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
@@ -164,7 +165,8 @@ public class FlowControllerV1 {
                                                   String limitApp, String resource, Integer grade,
                                                   Double count, Integer strategy, String refResource,
                                                   Integer controlBehavior, Integer warmUpPeriodSec,
-                                                  Integer maxQueueingTimeMs) {
+                                                  Integer maxQueueingTimeMs, Boolean clusterMode,
+                                                  Integer thresholdType, Boolean fallbackToLocalWhenFail) {
         if (id == null) {
             return Result.ofFail(-1, "id can't be null");
         }
@@ -222,6 +224,19 @@ public class FlowControllerV1 {
         }
         Date date = new Date();
         entity.setGmtModified(date);
+        if (clusterMode != null) {
+            entity.setClusterMode(clusterMode);
+        }
+        if (clusterMode) {
+            ClusterFlowConfig clusterFlowConfig = new ClusterFlowConfig();
+            if (thresholdType != null) {
+                clusterFlowConfig.setThresholdType(thresholdType);
+            }
+            if (fallbackToLocalWhenFail != null) {
+                clusterFlowConfig.setFallbackToLocalWhenFail(fallbackToLocalWhenFail);
+            }
+            entity.setClusterConfig(clusterFlowConfig);
+        }
         try {
             entity = repository.save(entity);
             if (entity == null) {
