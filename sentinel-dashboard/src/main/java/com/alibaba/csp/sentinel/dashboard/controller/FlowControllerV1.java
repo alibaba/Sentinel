@@ -15,33 +15,26 @@
  */
 package com.alibaba.csp.sentinel.dashboard.controller;
 
+import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
+import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
+import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
+import com.alibaba.csp.sentinel.dashboard.config.DashboardConfig;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
+import com.alibaba.csp.sentinel.dashboard.domain.Result;
+import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
+import com.alibaba.csp.sentinel.util.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-
-import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
-import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
-import com.alibaba.csp.sentinel.util.StringUtil;
-
-import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
-import com.alibaba.csp.sentinel.dashboard.domain.Result;
-import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Flow rule controller.
@@ -78,6 +71,16 @@ public class FlowControllerV1 {
         }
         try {
             List<FlowRuleEntity> rules = sentinelApiClient.fetchFlowRuleOfMachine(app, ip, port);
+            if (!CollectionUtils.isEmpty(rules)) {
+                String appType = DashboardConfig.concatAppAndType(app, DashboardConfig.FLOW_RULE_TYPE);
+                if (DashboardConfig.initFlag(appType)) {
+                    rules.forEach(rule -> rule.setId(null));
+                    rules = repository.saveAll(rules);
+                    publishRules(app, null, null);
+                    DashboardConfig.THIRD_PARTY_PERSISTENCE_LIST.add(appType);
+                    return Result.ofSuccess(rules);
+                }
+            }
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
@@ -161,10 +164,10 @@ public class FlowControllerV1 {
     @PutMapping("/save.json")
     @AuthAction(PrivilegeType.WRITE_RULE)
     public Result<FlowRuleEntity> apiUpdateFlowRule(Long id, String app,
-                                                  String limitApp, String resource, Integer grade,
-                                                  Double count, Integer strategy, String refResource,
-                                                  Integer controlBehavior, Integer warmUpPeriodSec,
-                                                  Integer maxQueueingTimeMs) {
+                                                    String limitApp, String resource, Integer grade,
+                                                    Double count, Integer strategy, String refResource,
+                                                    Integer controlBehavior, Integer warmUpPeriodSec,
+                                                    Integer maxQueueingTimeMs) {
         if (id == null) {
             return Result.ofFail(-1, "id can't be null");
         }
@@ -233,7 +236,7 @@ public class FlowControllerV1 {
         } catch (Throwable t) {
             Throwable e = t instanceof ExecutionException ? t.getCause() : t;
             logger.error("Error when updating flow rules, app={}, ip={}, ruleId={}", entity.getApp(),
-                entity.getIp(), id, e);
+                    entity.getIp(), id, e);
             return Result.ofFail(-1, e.getMessage());
         }
     }
@@ -261,7 +264,7 @@ public class FlowControllerV1 {
         } catch (Throwable t) {
             Throwable e = t instanceof ExecutionException ? t.getCause() : t;
             logger.error("Error when deleting flow rules, app={}, ip={}, id={}", oldEntity.getApp(),
-                oldEntity.getIp(), id, e);
+                    oldEntity.getIp(), id, e);
             return Result.ofFail(-1, e.getMessage());
         }
     }
