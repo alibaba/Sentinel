@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway;
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayFlowRule;
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayParamFlowItem;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
+import com.alibaba.csp.sentinel.dashboard.rule.GatewayParamFlowRule;
 import com.alibaba.csp.sentinel.slots.block.Rule;
 
 import java.util.Date;
@@ -28,6 +29,8 @@ import java.util.Objects;
  *
  * @author cdfive
  * @since 1.7.0
+ * @author pan Wu
+ * @since 1.8.0
  */
 public class GatewayFlowRuleEntity implements RuleEntity {
 
@@ -211,7 +214,24 @@ public class GatewayFlowRuleEntity implements RuleEntity {
 
     @Override
     public Rule toRule() {
-        return null;
+        GatewayParamFlowRule paramFlowRule = new GatewayParamFlowRule();
+        paramFlowRule.setResource(this.getResource());
+        paramFlowRule.setResourceMode(this.getResourceMode());
+        paramFlowRule.setGrade(this.getGrade());
+        paramFlowRule.setCount(this.getCount());
+        paramFlowRule.setDurationInSec(calIntervalSec(this.getInterval(), this.getIntervalUnit()));
+        paramFlowRule.setIntervalSec(paramFlowRule.getDurationInSec());
+        paramFlowRule.setControlBehavior(this.getControlBehavior());
+        paramFlowRule.setBurst(this.getBurst());
+        paramFlowRule.setBurstCount(this.getBurst());
+        if (this.getMaxQueueingTimeoutMs() != null) {
+            paramFlowRule.setMaxQueueingTimeMs(this.getMaxQueueingTimeoutMs());
+        }
+
+        GatewayParamFlowItemEntity gatewayItem = this.getParamItem();
+        paramFlowRule.setParamItem(gatewayItem);
+        paramFlowRule.setParamIdx(0);
+        return paramFlowRule;
     }
 
     public Date getGmtModified() {

@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.adapter.gateway.common.api.ApiDefinition;
 import com.alibaba.csp.sentinel.adapter.gateway.common.api.ApiPathPredicateItem;
 import com.alibaba.csp.sentinel.adapter.gateway.common.api.ApiPredicateItem;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
+import com.alibaba.csp.sentinel.dashboard.rule.GatewayApiRule;
 import com.alibaba.csp.sentinel.slots.block.Rule;
 
 import java.util.Date;
@@ -31,6 +32,8 @@ import java.util.Set;
  *
  * @author cdfive
  * @since 1.7.0
+ * @author pan Wu
+ * @since 1.8.0
  */
 public class ApiDefinitionEntity implements RuleEntity {
 
@@ -169,7 +172,10 @@ public class ApiDefinitionEntity implements RuleEntity {
 
     @Override
     public Rule toRule() {
-        return null;
+        GatewayApiRule gatewayApiRule = new GatewayApiRule();
+        gatewayApiRule.setApiName(this.getApiName());
+        gatewayApiRule.setPredicateItems(this.getPredicateItems());
+        return gatewayApiRule;
     }
 
     @Override
