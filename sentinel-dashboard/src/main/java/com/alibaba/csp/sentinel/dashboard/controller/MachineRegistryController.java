@@ -68,21 +68,16 @@ public class MachineRegistryController {
         String sentinelVersion = StringUtil.isBlank(v) ? "unknown" : v;
 
         version = version == null ? System.currentTimeMillis() : version;
-        try {
-            MachineInfo machineInfo = new MachineInfo();
-            machineInfo.setApp(app);
-            machineInfo.setAppType(appType);
-            machineInfo.setHostname(hostname);
-            machineInfo.setIp(ip);
-            machineInfo.setPort(port);
-            machineInfo.setHeartbeatVersion(version);
-            machineInfo.setLastHeartbeat(System.currentTimeMillis());
-            machineInfo.setVersion(sentinelVersion);
-            appManagement.addMachine(machineInfo);
-            return Result.ofSuccessMsg("success");
-        } catch (Exception e) {
-            logger.error("Receive heartbeat error", e);
-            return Result.ofFail(-1, e.getMessage());
-        }
+        MachineInfo machineInfo = new MachineInfo();
+        machineInfo.setApp(app);
+        machineInfo.setAppType(appType);
+        machineInfo.setHostname(hostname);
+        machineInfo.setIp(ip);
+        machineInfo.setPort(port);
+        machineInfo.setHeartbeatVersion(version);
+        machineInfo.setLastHeartbeat(System.currentTimeMillis());
+        machineInfo.setVersion(sentinelVersion);
+        appManagement.addMachine(machineInfo);
+        return Result.ofSuccessMsg("success");
     }
 }

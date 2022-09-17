@@ -71,14 +71,9 @@ public class AuthorityRuleController {
         if (port == null || port <= 0) {
             return Result.ofFail(-1, "Invalid parameter: port");
         }
-        try {
-            List<AuthorityRuleEntity> rules = sentinelApiClient.fetchAuthorityRulesOfMachine(app, ip, port);
-            rules = repository.saveAll(rules);
-            return Result.ofSuccess(rules);
-        } catch (Throwable throwable) {
-            logger.error("Error when querying authority rules", throwable);
-            return Result.ofFail(-1, throwable.getMessage());
-        }
+        List<AuthorityRuleEntity> rules = sentinelApiClient.fetchAuthorityRulesOfMachine(app, ip, port);
+        rules = repository.saveAll(rules);
+        return Result.ofSuccess(rules);
     }
 
     private <R> Result<R> checkEntityInternal(AuthorityRuleEntity entity) {
@@ -121,12 +116,7 @@ public class AuthorityRuleController {
         Date date = new Date();
         entity.setGmtCreate(date);
         entity.setGmtModified(date);
-        try {
-            entity = repository.save(entity);
-        } catch (Throwable throwable) {
-            logger.error("Failed to add authority rule", throwable);
-            return Result.ofThrowable(-1, throwable);
-        }
+        entity = repository.save(entity);
         if (!publishRules(entity.getApp(), entity.getIp(), entity.getPort())) {
             logger.info("Publish authority rules failed after rule add");
         }
@@ -148,14 +138,9 @@ public class AuthorityRuleController {
         Date date = new Date();
         entity.setGmtCreate(null);
         entity.setGmtModified(date);
-        try {
-            entity = repository.save(entity);
-            if (entity == null) {
-                return Result.ofFail(-1, "Failed to save authority rule");
-            }
-        } catch (Throwable throwable) {
-            logger.error("Failed to save authority rule", throwable);
-            return Result.ofThrowable(-1, throwable);
+        entity = repository.save(entity);
+        if (entity == null) {
+            return Result.ofFail(-1, "Failed to save authority rule");
         }
         if (!publishRules(entity.getApp(), entity.getIp(), entity.getPort())) {
             logger.info("Publish authority rules failed after rule update");
@@ -173,11 +158,7 @@ public class AuthorityRuleController {
         if (oldEntity == null) {
             return Result.ofSuccess(null);
         }
-        try {
-            repository.delete(id);
-        } catch (Exception e) {
-            return Result.ofFail(-1, e.getMessage());
-        }
+        repository.delete(id);
         if (!publishRules(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort())) {
             logger.error("Publish authority rules failed after rule delete");
         }

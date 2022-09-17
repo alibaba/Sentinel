@@ -71,14 +71,9 @@ public class DegradeController {
         if (port == null) {
             return Result.ofFail(-1, "port can't be null");
         }
-        try {
-            List<DegradeRuleEntity> rules = sentinelApiClient.fetchDegradeRuleOfMachine(app, ip, port);
-            rules = repository.saveAll(rules);
-            return Result.ofSuccess(rules);
-        } catch (Throwable throwable) {
-            logger.error("queryApps error:", throwable);
-            return Result.ofThrowable(-1, throwable);
-        }
+        List<DegradeRuleEntity> rules = sentinelApiClient.fetchDegradeRuleOfMachine(app, ip, port);
+        rules = repository.saveAll(rules);
+        return Result.ofSuccess(rules);
     }
 
     @PostMapping("/rule")
@@ -91,12 +86,8 @@ public class DegradeController {
         Date date = new Date();
         entity.setGmtCreate(date);
         entity.setGmtModified(date);
-        try {
-            entity = repository.save(entity);
-        } catch (Throwable t) {
-            logger.error("Failed to add new degrade rule, app={}, ip={}", entity.getApp(), entity.getIp(), t);
-            return Result.ofThrowable(-1, t);
-        }
+        entity = repository.save(entity);
+        
         if (!publishRules(entity.getApp(), entity.getIp(), entity.getPort())) {
             logger.warn("Publish degrade rules failed, app={}", entity.getApp());
         }
@@ -125,12 +116,8 @@ public class DegradeController {
 
         entity.setGmtCreate(oldEntity.getGmtCreate());
         entity.setGmtModified(new Date());
-        try {
-            entity = repository.save(entity);
-        } catch (Throwable t) {
-            logger.error("Failed to save degrade rule, id={}, rule={}", id, entity, t);
-            return Result.ofThrowable(-1, t);
-        }
+        entity = repository.save(entity);
+        
         if (!publishRules(entity.getApp(), entity.getIp(), entity.getPort())) {
             logger.warn("Publish degrade rules failed, app={}", entity.getApp());
         }
@@ -148,13 +135,7 @@ public class DegradeController {
         if (oldEntity == null) {
             return Result.ofSuccess(null);
         }
-
-        try {
-            repository.delete(id);
-        } catch (Throwable throwable) {
-            logger.error("Failed to delete degrade rule, id={}", id, throwable);
-            return Result.ofThrowable(-1, throwable);
-        }
+        repository.delete(id);
         if (!publishRules(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort())) {
             logger.warn("Publish degrade rules failed, app={}", oldEntity.getApp());
         }

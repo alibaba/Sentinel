@@ -68,44 +68,37 @@ public class ClusterConfigController {
     private ClusterConfigService clusterConfigService;
 
     @PostMapping("/config/modify_single")
-    public Result<Boolean> apiModifyClusterConfig(@RequestBody String payload) {
+    public Result<Boolean> apiModifyClusterConfig(@RequestBody String payload)
+            throws ExecutionException, InterruptedException {
         if (StringUtil.isBlank(payload)) {
             return Result.ofFail(-1, "empty request body");
         }
-        try {
-            JSONObject body = JSON.parseObject(payload);
-            if (body.containsKey(KEY_MODE)) {
-                int mode = body.getInteger(KEY_MODE);
-                switch (mode) {
-                    case ClusterStateManager.CLUSTER_CLIENT:
-                        ClusterClientModifyRequest data = JSON.parseObject(payload, ClusterClientModifyRequest.class);
-                        Result<Boolean> res = checkValidRequest(data);
-                        if (res != null) {
-                            return res;
-                        }
-                        clusterConfigService.modifyClusterClientConfig(data).get();
-                        return Result.ofSuccess(true);
-                    case ClusterStateManager.CLUSTER_SERVER:
-                        ClusterServerModifyRequest d = JSON.parseObject(payload, ClusterServerModifyRequest.class);
-                        Result<Boolean> r = checkValidRequest(d);
-                        if (r != null) {
-                            return r;
-                        }
-                        // TODO: bad design here, should refactor!
-                        clusterConfigService.modifyClusterServerConfig(d).get();
-                        return Result.ofSuccess(true);
-                    default:
-                        return Result.ofFail(-1, "invalid mode");
-                }
+        JSONObject body = JSON.parseObject(payload);
+        if (body.containsKey(KEY_MODE)) {
+            int mode = body.getInteger(KEY_MODE);
+            switch (mode) {
+                case ClusterStateManager.CLUSTER_CLIENT:
+                    ClusterClientModifyRequest data = JSON.parseObject(payload, ClusterClientModifyRequest.class);
+                    Result<Boolean> res = checkValidRequest(data);
+                    if (res != null) {
+                        return res;
+                    }
+                    clusterConfigService.modifyClusterClientConfig(data).get();
+                    return Result.ofSuccess(true);
+                case ClusterStateManager.CLUSTER_SERVER:
+                    ClusterServerModifyRequest d = JSON.parseObject(payload, ClusterServerModifyRequest.class);
+                    Result<Boolean> r = checkValidRequest(d);
+                    if (r != null) {
+                        return r;
+                    }
+                    // TODO: bad design here, should refactor!
+                    clusterConfigService.modifyClusterServerConfig(d).get();
+                    return Result.ofSuccess(true);
+                default:
+                    return Result.ofFail(-1, "invalid mode");
             }
-            return Result.ofFail(-1, "invalid parameter");
-        } catch (ExecutionException ex) {
-            logger.error("Error when modifying cluster config", ex.getCause());
-            return errorResponse(ex);
-        } catch (Throwable ex) {
-            logger.error("Error when modifying cluster config", ex);
-            return Result.ofFail(-1, ex.getMessage());
         }
+        return Result.ofFail(-1, "invalid parameter");
     }
 
     private <T> Result<T> errorResponse(ExecutionException ex) {
@@ -119,7 +112,8 @@ public class ClusterConfigController {
     @GetMapping("/state_single")
     public Result<ClusterUniversalStateVO> apiGetClusterState(@RequestParam String app,
                                                               @RequestParam String ip,
-                                                              @RequestParam Integer port) {
+                                                              @RequestParam Integer port)
+            throws ExecutionException, InterruptedException {
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app cannot be null or empty");
         }
@@ -132,73 +126,44 @@ public class ClusterConfigController {
         if (!checkIfSupported(app, ip, port)) {
             return unsupportedVersion();
         }
-        try {
-            return clusterConfigService.getClusterUniversalState(app, ip, port)
+        return clusterConfigService.getClusterUniversalState(app, ip, port)
                 .thenApply(Result::ofSuccess)
                 .get();
-        } catch (ExecutionException ex) {
-            logger.error("Error when fetching cluster state", ex.getCause());
-            return errorResponse(ex);
-        } catch (Throwable throwable) {
-            logger.error("Error when fetching cluster state", throwable);
-            return Result.ofFail(-1, throwable.getMessage());
-        }
     }
 
     @GetMapping("/server_state/{app}")
-    public Result<List<AppClusterServerStateWrapVO>> apiGetClusterServerStateOfApp(@PathVariable String app) {
+    public Result<List<AppClusterServerStateWrapVO>> apiGetClusterServerStateOfApp(@PathVariable String app)
+            throws ExecutionException, InterruptedException {
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app cannot be null or empty");
         }
-        try {
-            return clusterConfigService.getClusterUniversalState(app)
+        return clusterConfigService.getClusterUniversalState(app)
                 .thenApply(ClusterEntityUtils::wrapToAppClusterServerState)
                 .thenApply(Result::ofSuccess)
                 .get();
-        } catch (ExecutionException ex) {
-            logger.error("Error when fetching cluster server state of app: " + app, ex.getCause());
-            return errorResponse(ex);
-        } catch (Throwable throwable) {
-            logger.error("Error when fetching cluster server state of app: " + app, throwable);
-            return Result.ofFail(-1, throwable.getMessage());
-        }
     }
 
     @GetMapping("/client_state/{app}")
-    public Result<List<AppClusterClientStateWrapVO>> apiGetClusterClientStateOfApp(@PathVariable String app) {
+    public Result<List<AppClusterClientStateWrapVO>> apiGetClusterClientStateOfApp(@PathVariable String app)
+            throws ExecutionException, InterruptedException {
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app cannot be null or empty");
         }
-        try {
-            return clusterConfigService.getClusterUniversalState(app)
+        return clusterConfigService.getClusterUniversalState(app)
                 .thenApply(ClusterEntityUtils::wrapToAppClusterClientState)
                 .thenApply(Result::ofSuccess)
                 .get();
-        } catch (ExecutionException ex) {
-            logger.error("Error when fetching cluster token client state of app: " + app, ex.getCause());
-            return errorResponse(ex);
-        } catch (Throwable throwable) {
-            logger.error("Error when fetching cluster token client state of app: " + app, throwable);
-            return Result.ofFail(-1, throwable.getMessage());
-        }
     }
 
     @GetMapping("/state/{app}")
-    public Result<List<ClusterUniversalStatePairVO>> apiGetClusterStateOfApp(@PathVariable String app) {
+    public Result<List<ClusterUniversalStatePairVO>> apiGetClusterStateOfApp(@PathVariable String app)
+            throws ExecutionException, InterruptedException {
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app cannot be null or empty");
         }
-        try {
-            return clusterConfigService.getClusterUniversalState(app)
+        return clusterConfigService.getClusterUniversalState(app)
                 .thenApply(Result::ofSuccess)
                 .get();
-        } catch (ExecutionException ex) {
-            logger.error("Error when fetching cluster state of app: " + app, ex.getCause());
-            return errorResponse(ex);
-        } catch (Throwable throwable) {
-            logger.error("Error when fetching cluster state of app: " + app, throwable);
-            return Result.ofFail(-1, throwable.getMessage());
-        }
     }
 
     private boolean isNotSupported(Throwable ex) {
