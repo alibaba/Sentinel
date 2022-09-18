@@ -24,9 +24,9 @@ package() {
 
 build_docker() {
     package
-    echo '镜像构建开发'
+    echo '镜像构建开始 ${VERSION}'
     export DOCKER_SCAN_SUGGEST=false
-    docker build -t fengjx/sentinel-dashboard:${VERSION} .
+    sudo docker build -t fengjx/sentinel-dashboard:${VERSION} .
     echo '镜像构建结束'
 }
 
