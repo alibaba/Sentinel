@@ -1,4 +1,5 @@
 FROM openjdk:8-jdk-alpine
+LABEL maintainer="fengjx<https://github.com/fengjx>"
 
 ENV TZ=Asia/Shanghai
 ENV WORK_DIR=/sentinel-dashboard
