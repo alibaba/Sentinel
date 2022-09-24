@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sentinel-rule-cm
+data:
+  rule-yaml: |-
+    domain: foo
+    descriptors:
+      - resources:
+        - key: "destination_cluster"
+          value: "service_httpbin"
+        count: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sentinel-rls-server
+  labels:
+    app: sentinel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sentinel
+  template:
+    metadata:
+      labels:
+        app: sentinel
+    spec:
+      containers:
+        - name: sentinelserver
+          # You could replace the image with your own image here
+          image: "registry.cn-hangzhou.aliyuncs.com/sentinel-docker-repo/sentinel-envoy-rls-server:latest"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 10245
+            - containerPort: 8719
+          volumeMounts:
+            - name: sentinel-rule-config
+              mountPath: /tmp/sentinel
+          env:
+            - name: SENTINEL_RLS_RULE_FILE_PATH
+              value: "/tmp/sentinel/rule.yaml"
+      volumes:
+        - name: sentinel-rule-config
+          configMap:
+            name: sentinel-rule-cm
+            items:
+              - key: rule-yaml
+                path: rule.yaml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sentinel-rls-service
+  labels:
+    name: sentinel-rls-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8719
+      targetPort: 8719
+      name: sentinel-command
+    - port: 10245
+      targetPort: 10245
+      name: sentinel-grpc
+  selector:
+    app: sentinel

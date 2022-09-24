@@ -25,8 +25,8 @@ import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.alibaba.csp.sentinel.log.CommandCenterLog;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.transport.endpoint.Endpoint;
 
 /**
  * <p>
@@ -48,6 +48,7 @@ import com.alibaba.csp.sentinel.log.RecordLog;
  * </p>
  *
  * @author leyou
+ * @author Leo Li
  */
 public class SimpleHttpClient {
 
@@ -62,7 +63,7 @@ public class SimpleHttpClient {
         if (request == null) {
             return null;
         }
-        return request(request.getSocketAddress(),
+        return request(request.getEndpoint(),
             RequestMethod.GET, request.getRequestPath(), request.getParams(),
             request.getCharset(), request.getSoTimeout());
     }
@@ -78,20 +79,21 @@ public class SimpleHttpClient {
         if (request == null) {
             return null;
         }
-        return request(request.getSocketAddress(),
+        return request(request.getEndpoint(),
             RequestMethod.POST, request.getRequestPath(),
             request.getParams(), request.getCharset(),
             request.getSoTimeout());
     }
 
-    private SimpleHttpResponse request(InetSocketAddress socketAddress,
+    private SimpleHttpResponse request(Endpoint endpoint,
                                        RequestMethod type, String requestPath,
                                        Map<String, String> paramsMap, Charset charset, int soTimeout)
         throws IOException {
         Socket socket = null;
         BufferedWriter writer;
+        InetSocketAddress socketAddress = new InetSocketAddress(endpoint.getHost(), endpoint.getPort());
         try {
-            socket = new Socket();
+            socket = SocketFactory.getSocket(endpoint.getProtocol());
             socket.setSoTimeout(soTimeout);
             socket.connect(socketAddress, soTimeout);
 
@@ -125,7 +127,7 @@ public class SimpleHttpClient {
                 try {
                     socket.close();
                 } catch (Exception ex) {
-                    CommandCenterLog.info("Error when closing " + type + " request to " + socketAddress + ": ", ex);
+                    RecordLog.warn("Error when closing {} request to {} in SimpleHttpClient", type, socketAddress, ex);
                 }
             }
         }
@@ -157,6 +159,9 @@ public class SimpleHttpClient {
      * @return encoded request parameters, or empty string ("") if no parameters are provided
      */
     private String encodeRequestParams(Map<String, String> paramsMap, Charset charset) {
+        if (charset == null) {
+            throw new IllegalArgumentException("charset is not allowed to be null");
+        }
         if (paramsMap == null || paramsMap.isEmpty()) {
             return "";
         }
@@ -177,7 +182,7 @@ public class SimpleHttpClient {
             }
             return paramsBuilder.toString();
         } catch (Throwable e) {
-            RecordLog.info("Encode request params fail", e);
+            RecordLog.warn("Encode request params fail", e);
             return "";
         }
     }

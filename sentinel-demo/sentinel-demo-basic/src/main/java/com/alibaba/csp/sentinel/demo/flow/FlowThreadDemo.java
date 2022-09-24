@@ -46,8 +46,8 @@ public class FlowThreadDemo {
 
     public static void main(String[] args) throws Exception {
         System.out.println(
-            "MethodA will call methodB. After running for a while, methodB becomes slow, "
-                + "which make methodA also becomes slow ");
+            "MethodA will call methodB. After running for a while, methodB becomes fast, "
+                + "which make methodA also become fast ");
         tick();
         initFlowRule();
 

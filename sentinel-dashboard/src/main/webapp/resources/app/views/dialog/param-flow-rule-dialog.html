@@ -1,0 +1,166 @@
+<div>
+	<span class="brand" style="font-weight:bold;">{{paramFlowRuleDialog.title}}</span>
+	<div class="card" style="margin-top: 20px;margin-bottom: 10px;">
+		<div class="panel-body">
+			<div class="clearfix">
+				<form role="form" class="form-horizontal">
+					<div class="form-group">
+						<label class="col-sm-2 control-label">资源名</label>
+						<div class="col-sm-9">
+							<input type="text" ng-if="paramFlowRuleDialog.type == 'edit'" class="form-control" placeholder="资源名" ng-model='currentRule.rule.resource' disabled="" />
+							<input type="text" ng-if="paramFlowRuleDialog.type == 'add'" class="form-control highlight-border" placeholder="资源名" ng-model='currentRule.rule.resource' required />
+						</div>
+                    </div>
+                    
+                    <div class="form-group">
+						<label class="col-sm-2 control-label">限流模式</label>
+						<p class="col-sm-9 control-label" style="text-align: left; font-weight: normal;">QPS 模式</p>
+					</div>
+
+					<div class="form-group">
+						<label class="col-sm-2 control-label">参数索引</label>
+						<div class="col-sm-9">
+							<input type="number" class="form-control highlight-border" ng-model='currentRule.rule.paramIdx' placeholder='请填入传入的热点参数的索引（从 0 开始）' />
+						</div>
+                    </div>
+                    
+                    <div class="form-group">
+						<div ng-if="!currentRule.rule.clusterMode">
+							<label class="col-sm-2 control-label">单机阈值</label>
+							<div class="col-sm-3">
+								<input type="number" class="form-control highlight-border" ng-model='currentRule.rule.count' placeholder='单机阈值' />
+							</div>
+							<label class="col-sm-3 control-label" title="统计窗口时间长度，单位为 s">统计窗口时长</label>
+							<div class="input-group col-sm-3">
+								<input type="number" class="form-control highlight-border"
+									   ng-model='currentRule.rule.durationInSec' min="1"
+									   placeholder='请填入统计窗口时长（单位为 秒）' />
+								<span class="input-group-addon">秒</span>
+							</div>
+						</div>
+						<div ng-if="currentRule.rule.clusterMode && currentRule.rule.clusterConfig.thresholdType == 0">
+							<label class="col-sm-2 control-label">均摊阈值</label>
+							<div class="col-sm-9">
+								<input type="number" class="form-control highlight-border" ng-model='currentRule.rule.count' placeholder='集群均摊阈值' />
+							</div>
+						</div>
+						<div ng-if="currentRule.rule.clusterMode && currentRule.rule.clusterConfig.thresholdType == 1">
+							<label class="col-sm-2 control-label">集群阈值</label>
+							<div class="col-sm-9">
+								<input type="number" class="form-control highlight-border" ng-model='currentRule.rule.count' placeholder='集群总体阈值' />
+							</div>
+						</div>
+                    </div>
+
+					<div class="form-group">
+						<label class="col-sm-2 control-label">是否集群</label>
+						<div class="col-sm-2">
+							<input type="checkbox" name="clusterMode" ng-model="currentRule.rule.clusterMode">
+						</div>
+						<div ng-if="currentRule.rule.clusterMode">
+							<label class="col-sm-3 control-label">集群阈值模式</label>
+							<div class="col-sm-4">
+								<div class="form-control highlight-border" align="center">
+									<input type="radio" name="clusterThresholdType" value="0" ng-model='currentRule.rule.clusterConfig.thresholdType' />&nbsp;单机均摊&nbsp;&nbsp;
+									<input type="radio" name="clusterThresholdType" value="1" ng-model='currentRule.rule.clusterConfig.thresholdType' />&nbsp;总体阈值
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="form-group" ng-if="currentRule.rule.clusterMode">
+						<label class="col-sm-2 control-label">失败退化</label>
+						<div class="col-sm-8">
+							<div class="checkbox-inline">
+								<input type="checkbox" name="fallbackToLocalWhenFail"
+									   ng-model="currentRule.rule.clusterConfig.fallbackToLocalWhenFail">
+								<i class="glyphicon glyphicon-info-sign"></i>&nbsp;若选择，则 Token Server 不可用时将退化到单机限流
+							</div>
+						</div>
+					</div>
+
+                    <!-- exclusion item part start -->
+					<div ng-if="!paramFlowRuleDialog.showAdvanceButton">
+						<hr />
+						<div class="form-group">
+							<div class="form-group" style="text-align: center">
+								<label class="control-label">参数例外项</label>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-2 control-label">参数类型</label>
+								<div class="col-md-9">
+									<select ng-model="curExItem.classType" ng-options="classType for classType in paramItemClassTypeList" class="form-control" placeholder="请选择参数类型">
+									</select>
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-2 control-label">参数值</label>
+								<div class="col-md-3">
+									<input ng-model="curExItem.object" type="text" class="form-control" placeholder="例外项参数值">
+								</div>
+
+								<label class="col-sm-2 control-label">限流阈值</label>
+								<div class="col-md-3">
+									<input type="number" ng-model="curExItem.count" class="form-control" placeholder="限流阈值">
+								</div>
+
+								<div class="col-md-2">
+									<button type="button" class="btn btn-success"
+											ng-disabled="notValidParamItem(curExItem)"
+											ng-click="addParamItem()">
+										<span class="fa fa-plus">&nbsp;添加</span>
+									</button>
+								</div>
+							</div>
+
+							<div>
+								<div class="col-md-12">
+									<table class="table table-condensed table-hover">
+										<thead>
+										<th>参数值</th>
+										<th>参数类型</th>
+										<th>限流阈值</th>
+										<th>操作</th>
+										</thead>
+										<tbody>
+										<tr ng-repeat="paramItem in currentRule.rule.paramFlowItemList">
+											<td><input ng-model="paramItem.object" type="text" class="form-control" placeholder="例外项参数"></td>
+											<td>
+												<p>{{paramItem.classType}}</p>
+											</td>
+											<td>
+												<input type="number" ng-model="paramItem.count" class="form-control" placeholder="限流阈值">
+											</td>
+											<td>
+												<button type="button" class="btn btn-danger"
+														ng-click="removeParamItem(paramItem.object, paramItem.classType)"><span
+														class="fa fa-trash-o">&nbsp;删除</span></button>
+											</td>
+										</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+
+						</div>
+					</div>
+
+					<!-- exclusion item part end -->
+					<div class="form-group text-center" ng-if="paramFlowRuleDialog.supportAdvanced">
+						<a ng-click="onOpenAdvanceClick()" ng-if="paramFlowRuleDialog.showAdvanceButton" style="cursor: pointer;">高级选项</a>
+						<a ng-click="onCloseAdvanceClick()" ng-if="!paramFlowRuleDialog.showAdvanceButton" style="cursor: pointer;">关闭高级选项</a>
+					</div>
+				</form>
+			</div>
+			<div class="separator"></div>
+			<div clss="row" style="margin-top: 20px;">
+				<button class="btn btn-outline-danger" style="float:right; height: 30px;font-size: 12px;margin-left: 10px;" ng-click="closeThisDialog()">取消</button>
+				<button class="btn btn-outline-success" style="float:right; height: 30px;font-size: 12px;margin-left: 10px;" ng-click="saveRule()">{{paramFlowRuleDialog.confirmBtnText}}</button>
+				<button ng-if="paramFlowRuleDialog.saveAndContinueBtnText" class="btn btn-default" style="float:right; height: 30px;font-size: 12px;"
+				 ng-click="saveRuleAndContinue()">{{paramFlowRuleDialog.saveAndContinueBtnText}}</button>
+			</div>
+		</div>
+	</div>
+</div>

@@ -21,6 +21,7 @@ import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.spi.SpiLoader;
 
 /**
  * Load registered init functions and execute in order.
@@ -42,21 +43,23 @@ public final class InitExecutor {
             return;
         }
         try {
-            ServiceLoader<InitFunc> loader = ServiceLoader.load(InitFunc.class);
+            List<InitFunc> initFuncs = SpiLoader.of(InitFunc.class).loadInstanceListSorted();
             List<OrderWrapper> initList = new ArrayList<OrderWrapper>();
-            for (InitFunc initFunc : loader) {
-                RecordLog.info("[Sentinel InitExecutor] Found init func: " + initFunc.getClass().getCanonicalName());
+            for (InitFunc initFunc : initFuncs) {
+                RecordLog.info("[InitExecutor] Found init func: {}", initFunc.getClass().getCanonicalName());
                 insertSorted(initList, initFunc);
             }
             for (OrderWrapper w : initList) {
                 w.func.init();
-                RecordLog.info(String.format("[Sentinel InitExecutor] Initialized: %s with order %d",
-                    w.func.getClass().getCanonicalName(), w.order));
+                RecordLog.info("[InitExecutor] Executing {} with order {}",
+                    w.func.getClass().getCanonicalName(), w.order);
             }
         } catch (Exception ex) {
-            RecordLog.info("[Sentinel InitExecutor] Init failed", ex);
+            RecordLog.warn("[InitExecutor] WARN: Initialization failed", ex);
             ex.printStackTrace();
-            System.exit(-1);
+        } catch (Error error) {
+            RecordLog.warn("[InitExecutor] ERROR: Initialization failed with fatal error", error);
+            error.printStackTrace();
         }
     }
 

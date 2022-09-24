@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.command.handler;
 
+import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
@@ -24,11 +25,11 @@ import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
  * @author jialiang.linjl
  * @author Eric Zhao
  */
-@CommandMapping(name = "version")
+@CommandMapping(name = "version", desc = "get sentinel version")
 public class VersionCommandHandler implements CommandHandler<String> {
 
     @Override
     public CommandResponse<String> handle(CommandRequest request) {
-        return CommandResponse.ofSuccess("0.2.0");
+        return CommandResponse.ofSuccess(Constants.SENTINEL_VERSION);
     }
 }

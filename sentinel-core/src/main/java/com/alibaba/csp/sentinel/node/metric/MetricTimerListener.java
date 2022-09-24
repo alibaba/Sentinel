@@ -21,12 +21,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 
+/**
+ * @author jialiang.linjl
+ */
 public class MetricTimerListener implements Runnable {
 
     private static final MetricWriter metricWriter = new MetricWriter(SentinelConfig.singleMetricFileSize(),
@@ -34,35 +38,34 @@ public class MetricTimerListener implements Runnable {
 
     @Override
     public void run() {
-        Map<Long, List<MetricNode>> maps = new TreeMap<Long, List<MetricNode>>();
-
-        // 每5秒打印一次,把丢弃的seconds都给丢掉。
+        Map<Long, List<MetricNode>> maps = new TreeMap<>();
         for (Entry<ResourceWrapper, ClusterNode> e : ClusterBuilderSlot.getClusterNodeMap().entrySet()) {
-            String name = e.getKey().getName();
             ClusterNode node = e.getValue();
             Map<Long, MetricNode> metrics = node.metrics();
-
-            for (Entry<Long, MetricNode> entry : metrics.entrySet()) {
-                long time = entry.getKey();
-                MetricNode metricNode = entry.getValue();
-                metricNode.setResource(name);
-                if (maps.get(time) == null) {
-                    maps.put(time, new ArrayList<MetricNode>());
-                }
-                List<MetricNode> nodes = maps.get(time);
-                nodes.add(entry.getValue());
-            }
+            aggregate(maps, metrics, node);
         }
+        aggregate(maps, Constants.ENTRY_NODE.metrics(), Constants.ENTRY_NODE);
         if (!maps.isEmpty()) {
             for (Entry<Long, List<MetricNode>> entry : maps.entrySet()) {
                 try {
                     metricWriter.write(entry.getKey(), entry.getValue());
                 } catch (Exception e) {
-                    RecordLog.info("write metric error: ", e);
+                    RecordLog.warn("[MetricTimerListener] Write metric error", e);
                 }
             }
         }
+    }
 
+    private void aggregate(Map<Long, List<MetricNode>> maps, Map<Long, MetricNode> metrics, ClusterNode node) {
+        for (Entry<Long, MetricNode> entry : metrics.entrySet()) {
+            long time = entry.getKey();
+            MetricNode metricNode = entry.getValue();
+            metricNode.setResource(node.getName());
+            metricNode.setClassification(node.getResourceType());
+            maps.computeIfAbsent(time, k -> new ArrayList<MetricNode>());
+            List<MetricNode> nodes = maps.get(time);
+            nodes.add(entry.getValue());
+        }
     }
 
 }

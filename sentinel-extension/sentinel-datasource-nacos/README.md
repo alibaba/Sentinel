@@ -19,7 +19,7 @@ For instance:
 ```java
 // remoteAddress is the address of Nacos
 // groupId and dataId are concepts of Nacos
-DataSource<String, List<FlowRule>> flowRuleDataSource = new NacosDataSource<>(remoteAddress, groupId, dataId,
+ReadableDataSource<String, List<FlowRule>> flowRuleDataSource = new NacosDataSource<>(remoteAddress, groupId, dataId,
     source -> JSON.parseObject(source, new TypeReference<List<FlowRule>>() {}));
 FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
 ```

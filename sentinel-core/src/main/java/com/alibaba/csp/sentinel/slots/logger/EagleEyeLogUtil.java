@@ -15,34 +15,37 @@
  */
 package com.alibaba.csp.sentinel.slots.logger;
 
-import java.io.File;
-
 import com.alibaba.csp.sentinel.eagleeye.EagleEye;
 import com.alibaba.csp.sentinel.eagleeye.StatLogger;
+import com.alibaba.csp.sentinel.log.LogBase;
+import com.alibaba.csp.sentinel.util.StringUtil;
 
 public class EagleEyeLogUtil {
 
-    private static final String DIR_NAME = "csp";
-    private static final String FILE_NAME = "sentinel-block.log";
+    public static final String FILE_NAME = "sentinel-block.log";
 
     private static StatLogger statLogger;
 
     static {
-        String path = DIR_NAME + File.separator + FILE_NAME;
+        String path = LogBase.getLogBaseDir() + FILE_NAME;
 
-        statLogger = EagleEye.statLoggerBuilder("sentinel-block-record")
+        statLogger = EagleEye.statLoggerBuilder("sentinel-block-log")
             .intervalSeconds(1)
             .entryDelimiter('|')
             .keyDelimiter(',')
             .valueDelimiter(',')
             .maxEntryCount(6000)
-            .baseLogFilePath(path)
+            .configLogFilePath(path)
             .maxFileSizeMB(300)
             .maxBackupIndex(3)
             .buildSingleton();
     }
 
-    public static void log(String resource, String exceptionName, String ruleLimitApp, String origin, int count) {
-        statLogger.stat(resource, exceptionName, ruleLimitApp, origin).count(count);
+    public static void log(String resource, String exceptionName, String ruleLimitApp, String origin, Long ruleId, int count) {
+        String ruleIdString = StringUtil.EMPTY;
+        if (ruleId != null) {
+            ruleIdString = String.valueOf(ruleId);
+        }
+        statLogger.stat(resource, exceptionName, ruleLimitApp, origin, ruleIdString).count(count);
     }
 }

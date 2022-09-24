@@ -27,18 +27,21 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 /**
  * Util class for web servlet filter.
  *
+ * @author zhaoyuguang
  * @author youji.zj
  * @author Eric Zhao
  */
 public final class FilterUtil {
 
+    private static final String PATH_SPLIT = "/";
+
     public static String filterTarget(HttpServletRequest request) {
         String pathInfo = getResourcePath(request);
-        if (!pathInfo.startsWith("/")) {
-            pathInfo = "/" + pathInfo;
+        if (!pathInfo.startsWith(PATH_SPLIT)) {
+            pathInfo = PATH_SPLIT + pathInfo;
         }
 
-        if ("/".equals(pathInfo)) {
+        if (PATH_SPLIT.equals(pathInfo)) {
             return pathInfo;
         }
 
@@ -49,7 +52,7 @@ public final class FilterUtil {
             pathInfo = pathInfo.substring(0, lastSlashIndex) + "/"
                 + StringUtil.trim(pathInfo.substring(lastSlashIndex + 1));
         } else {
-            pathInfo = "/" + StringUtil.trim(pathInfo);
+            pathInfo = PATH_SPLIT + StringUtil.trim(pathInfo);
         }
 
         return pathInfo;
@@ -62,8 +65,8 @@ public final class FilterUtil {
             url.append("?").append(request.getQueryString());
         }
 
-        if (StringUtil.isEmpty(WebServletConfig.getBlockPage())) {
-            writeDefaultBlockedPage(response);
+        if (StringUtil.isBlank(WebServletConfig.getBlockPage())) {
+            writeDefaultBlockedPage(response, WebServletConfig.getBlockPageHttpStatus());
         } else {
             String redirectUrl = WebServletConfig.getBlockPage() + "?http_referer=" + url.toString();
             // Redirect to the customized block page.
@@ -71,9 +74,10 @@ public final class FilterUtil {
         }
     }
 
-    private static void writeDefaultBlockedPage(HttpServletResponse response) throws IOException {
+    private static void writeDefaultBlockedPage(HttpServletResponse response, int httpStatus) throws IOException {
+        response.setStatus(httpStatus);
         PrintWriter out = response.getWriter();
-        out.println("Blocked by Sentinel (flow limiting)");
+        out.print(DEFAULT_BLOCK_MSG);
         out.flush();
         out.close();
     }
@@ -102,8 +106,8 @@ public final class FilterUtil {
             char firstChar = pathChars[0];
             char lastChar = pathChars[length - 1];
 
-            startsWithSlash = firstChar == '/' || firstChar == '\\';
-            endsWithSlash = lastChar == '/' || lastChar == '\\';
+            startsWithSlash = firstChar == PATH_SPLIT.charAt(0) || firstChar == '\\';
+            endsWithSlash = lastChar == PATH_SPLIT.charAt(0) || lastChar == '\\';
         }
 
         StringBuilder buf = new StringBuilder(length);
@@ -112,7 +116,7 @@ public final class FilterUtil {
         int level = 0;
 
         if (isAbsolutePath) {
-            buf.append("/");
+            buf.append(PATH_SPLIT);
         }
 
         while (index < length) {
@@ -138,7 +142,7 @@ public final class FilterUtil {
                     if (isAbsolutePath) {
                         throw new IllegalStateException(path);
                     } else {
-                        buf.append("../");
+                        buf.append("..").append(PATH_SPLIT);
                     }
                 } else {
                     buf.setLength(pathChars[--level]);
@@ -148,7 +152,7 @@ public final class FilterUtil {
             }
 
             pathChars[level++] = (char)buf.length();
-            buf.append(element).append('/');
+            buf.append(element).append(PATH_SPLIT);
         }
 
         // remove the last "/"
@@ -168,11 +172,11 @@ public final class FilterUtil {
             char ch = chars[i];
 
             if (slash) {
-                if (ch == '/' || ch == '\\') {
+                if (ch == PATH_SPLIT.charAt(0) || ch == '\\') {
                     break; // if a slash
                 }
             } else {
-                if (ch != '/' && ch != '\\') {
+                if (ch != PATH_SPLIT.charAt(0) && ch != '\\') {
                     break; // if not a slash
                 }
             }
@@ -180,6 +184,8 @@ public final class FilterUtil {
 
         return i;
     }
+
+    public static final String DEFAULT_BLOCK_MSG = "Blocked by Sentinel (flow limiting)";
 
     private FilterUtil() {}
 }

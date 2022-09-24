@@ -15,28 +15,39 @@
  */
 package com.alibaba.csp.sentinel.transport.heartbeat;
 
-import com.alibaba.csp.sentinel.transport.config.TransportConfig;
+import com.alibaba.csp.sentinel.Constants;
+import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.spi.Spi;
+import com.alibaba.csp.sentinel.transport.HeartbeatSender;
+import com.alibaba.csp.sentinel.transport.config.TransportConfig;
+import com.alibaba.csp.sentinel.transport.endpoint.Protocol;
+import com.alibaba.csp.sentinel.transport.heartbeat.client.HttpClientsFactory;
 import com.alibaba.csp.sentinel.util.AppNameUtil;
 import com.alibaba.csp.sentinel.util.HostNameUtil;
-import com.alibaba.csp.sentinel.transport.HeartbeatSender;
 import com.alibaba.csp.sentinel.util.PidUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
+import com.alibaba.csp.sentinel.transport.endpoint.Endpoint;
 
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+
+import java.util.List;
 
 /**
  * @author Eric Zhao
- * @author leyou
+ * @author Carpenter Lee
+ * @author Leo Li
  */
+@Spi(order = Spi.ORDER_LOWEST - 100)
 public class HttpHeartbeatSender implements HeartbeatSender {
 
     private final CloseableHttpClient client;
+
+    private static final int OK_STATUS = 200;
 
     private final int timeoutMs = 3000;
     private final RequestConfig requestConfig = RequestConfig.custom()
@@ -45,29 +56,24 @@ public class HttpHeartbeatSender implements HeartbeatSender {
         .setSocketTimeout(timeoutMs)
         .build();
 
-    private String consoleHost;
-    private int consolePort;
+    private final Protocol consoleProtocol;
+    private final String consoleHost;
+    private final int consolePort;
 
     public HttpHeartbeatSender() {
-        this.client = HttpClients.createDefault();
-        String consoleServer = TransportConfig.getConsoleServer();
-        if (StringUtil.isEmpty(consoleServer)) {
-            RecordLog.info("[Heartbeat] Console server address is not configured!");
+        List<Endpoint> dashboardList = TransportConfig.getConsoleServerList();
+        if (dashboardList == null || dashboardList.isEmpty()) {
+            RecordLog.info("[NettyHttpHeartbeatSender] No dashboard server available");
+            consoleProtocol = Protocol.HTTP;
+            consoleHost = null;
+            consolePort = -1;
         } else {
-            String consoleHost = consoleServer;
-            int consolePort = 80;
-            if (consoleServer.contains(",")) {
-                consoleHost = consoleServer.split(",")[0];
-            }
-            if (consoleHost.contains(":")) {
-                String[] strs = consoleServer.split(":");
-                consoleHost = strs[0];
-                consolePort = Integer.parseInt(strs[1]);
-            }
-            this.consoleHost = consoleHost;
-            this.consolePort = consolePort;
+            consoleProtocol = dashboardList.get(0).getProtocol();
+            consoleHost = dashboardList.get(0).getHost();
+            consolePort = dashboardList.get(0).getPort();
+            RecordLog.info("[NettyHttpHeartbeatSender] Dashboard address parsed: <{}:{}>", consoleHost, consolePort);
         }
-
+        this.client = HttpClientsFactory.getHttpClientsByProtocol(consoleProtocol);
     }
 
     @Override
@@ -75,15 +81,15 @@ public class HttpHeartbeatSender implements HeartbeatSender {
         if (StringUtil.isEmpty(consoleHost)) {
             return false;
         }
-        RecordLog.info(String.format("[Heartbeat] Sending heartbeat to %s:%d", consoleHost, consolePort));
-
         URIBuilder uriBuilder = new URIBuilder();
-        uriBuilder.setScheme("http").setHost(consoleHost).setPort(consolePort)
-            .setPath("/registry/machine")
+        uriBuilder.setScheme(consoleProtocol.getProtocol()).setHost(consoleHost).setPort(consolePort)
+            .setPath(TransportConfig.getHeartbeatApiPath())
             .setParameter("app", AppNameUtil.getAppName())
+            .setParameter("app_type", String.valueOf(SentinelConfig.getAppType()))
+            .setParameter("v", Constants.SENTINEL_VERSION)
             .setParameter("version", String.valueOf(System.currentTimeMillis()))
             .setParameter("hostname", HostNameUtil.getHostName())
-            .setParameter("ip", HostNameUtil.getIp())
+            .setParameter("ip", TransportConfig.getHeartbeatClientIp())
             .setParameter("port", TransportConfig.getPort())
             .setParameter("pid", String.valueOf(PidUtil.getPid()));
 
@@ -92,11 +98,27 @@ public class HttpHeartbeatSender implements HeartbeatSender {
         // Send heartbeat request.
         CloseableHttpResponse response = client.execute(request);
         response.close();
-        return true;
+        int statusCode = response.getStatusLine().getStatusCode();
+        if (statusCode == OK_STATUS) {
+            return true;
+        } else if (clientErrorCode(statusCode) || serverErrorCode(statusCode)) {
+            RecordLog.warn("[HttpHeartbeatSender] Failed to send heartbeat to "
+                + consoleHost + ":" + consolePort + ", http status code: " + statusCode);
+        }
+
+        return false;
     }
 
     @Override
     public long intervalMs() {
         return 5000;
+    }
+
+    private boolean clientErrorCode(int code) {
+        return code > 399 && code < 500;
+    }
+
+    private boolean serverErrorCode(int code) {
+        return code > 499 && code < 600;
     }
 }

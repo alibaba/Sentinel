@@ -1,18 +1,13 @@
 var app = angular.module('sentinelDashboardApp');
 
 app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
-  'ngDialog', 'FlowService', 'DegradeService', 'MachineService',
+  'ngDialog', 'FlowServiceV1', 'DegradeService', 'AuthorityRuleService', 'ParamFlowService', 'MachineService',
   '$interval', '$location', '$timeout',
   function ($scope, $stateParams, IdentityService, ngDialog,
-    FlowService, DegradeService, MachineService, $interval, $location, $timeout) {
+    FlowService, DegradeService, AuthorityRuleService, ParamFlowService, MachineService, $interval, $location, $timeout) {
 
     $scope.app = $stateParams.app;
-    // $scope.rulesPageConfig = {
-    // pageSize : 10,
-    // currentPageIndex : 1,
-    // totalPage : 1,
-    // totalCount: 0,
-    // };
+
     $scope.currentPage = 1;
     $scope.pageSize = 16;
     $scope.totalPage = 1;
@@ -57,6 +52,10 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
         controlBehavior: 0,
         resource: resource,
         limitApp: 'default',
+        clusterMode: false,
+        clusterConfig: {
+            thresholdType: 0
+        },
         app: $scope.app,
         ip: mac[0],
         port: mac[1]
@@ -90,23 +89,31 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
     };
 
     function saveFlowRule() {
+      if (!FlowService.checkRuleValid(flowRuleDialogScope.currentRule)) {
+        return;
+      }
       FlowService.newRule(flowRuleDialogScope.currentRule).success(function (data) {
-        if (data.code == 0) {
+        if (data.code === 0) {
           flowRuleDialog.close();
-          var url = '/dashboard/flow/' + $scope.app;
+          let url = '/dashboard/flow/' + $scope.app;
           $location.path(url);
         } else {
-          alert('失败!');
+          alert('失败：' + data.msg);
         }
+      }).error((data, header, config, status) => {
+          alert('未知错误');
       });
     }
 
     function saveFlowRuleAndContinue() {
+        if (!FlowService.checkRuleValid(flowRuleDialogScope.currentRule)) {
+            return;
+        }
       FlowService.newRule(flowRuleDialogScope.currentRule).success(function (data) {
-        if (data.code == 0) {
+        if (data.code === 0) {
           flowRuleDialog.close();
         } else {
-          alert('失败!');
+            alert('失败：' + data.msg);
         }
       });
     }
@@ -125,13 +132,15 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
         strategy: 0,
         resource: resource,
         limitApp: 'default',
+        minRequestAmount: 5,
+        statIntervalMs: 1000,
         app: $scope.app,
         ip: mac[0],
         port: mac[1]
       };
 
       degradeRuleDialogScope.degradeRuleDialog = {
-        title: '新增降级规则',
+        title: '新增熔断规则',
         type: 'add',
         confirmBtnText: '新增',
         saveAndContinueBtnText: '新增并继续添加'
@@ -148,30 +157,212 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
     };
 
     function saveDegradeRule() {
+        if (!DegradeService.checkRuleValid(degradeRuleDialogScope.currentRule)) {
+            return;
+        }
       DegradeService.newRule(degradeRuleDialogScope.currentRule).success(function (data) {
-        if (data.code == 0) {
+        if (data.code === 0) {
           degradeRuleDialog.close();
           var url = '/dashboard/degrade/' + $scope.app;
           $location.path(url);
         } else {
-          alert('失败!');
+          alert('失败：' + data.msg);
         }
       });
     }
 
     function saveDegradeRuleAndContinue() {
+        if (!DegradeService.checkRuleValid(degradeRuleDialogScope.currentRule)) {
+            return;
+        }
       DegradeService.newRule(degradeRuleDialogScope.currentRule).success(function (data) {
-        if (data.code == 0) {
+        if (data.code === 0) {
           degradeRuleDialog.close();
         } else {
-          alert('失败!');
+            alert('失败：' + data.msg);
         }
       });
     }
 
+      let authorityRuleDialog;
+      let authorityRuleDialogScope;
+
+      function saveAuthorityRule() {
+          let ruleEntity = authorityRuleDialogScope.currentRule;
+          if (!AuthorityRuleService.checkRuleValid(ruleEntity.rule)) {
+              return;
+          }
+          AuthorityRuleService.addNewRule(ruleEntity).success((data) => {
+              if (data.success) {
+                  authorityRuleDialog.close();
+                  let url = '/dashboard/authority/' + $scope.app;
+                  $location.path(url);
+              } else {
+                  alert('添加规则失败：' + data.msg);
+              }
+          }).error((data) => {
+              if (data) {
+                  alert('添加规则失败：' + data.msg);
+              } else {
+                  alert("添加规则失败：未知错误");
+              }
+          });
+      }
+
+      function saveAuthorityRuleAndContinue() {
+          let ruleEntity = authorityRuleDialogScope.currentRule;
+          if (!AuthorityRuleService.checkRuleValid(ruleEntity.rule)) {
+              return;
+          }
+          AuthorityRuleService.addNewRule(ruleEntity).success((data) => {
+              if (data.success) {
+                  authorityRuleDialog.close();
+              } else {
+                  alert('添加规则失败：' + data.msg);
+              }
+          }).error((data) => {
+              if (data) {
+                  alert('添加规则失败：' + data.msg);
+              } else {
+                  alert("添加规则失败：未知错误");
+              }
+          });
+      }
+
+      $scope.addNewAuthorityRule = function (resource) {
+          if (!$scope.macInputModel) {
+              return;
+          }
+          let mac = $scope.macInputModel.split(':');
+          authorityRuleDialogScope = $scope.$new(true);
+          authorityRuleDialogScope.currentRule = {
+              app: $scope.app,
+              ip: mac[0],
+              port: mac[1],
+              rule: {
+                  resource: resource,
+                  strategy: 0,
+                  limitApp: '',
+              }
+          };
+
+          authorityRuleDialogScope.authorityRuleDialog = {
+              title: '新增授权规则',
+              type: 'add',
+              confirmBtnText: '新增',
+              saveAndContinueBtnText: '新增并继续添加'
+          };
+          authorityRuleDialogScope.saveRule = saveAuthorityRule;
+          authorityRuleDialogScope.saveRuleAndContinue = saveAuthorityRuleAndContinue;
+
+          authorityRuleDialog = ngDialog.open({
+              template: '/app/views/dialog/authority-rule-dialog.html',
+              width: 680,
+              overlay: true,
+              scope: authorityRuleDialogScope
+          });
+      };
+
+      let paramFlowRuleDialog;
+      let paramFlowRuleDialogScope;
+
+      function saveParamFlowRule() {
+          let ruleEntity = paramFlowRuleDialogScope.currentRule;
+          if (!ParamFlowService.checkRuleValid(ruleEntity.rule)) {
+              return;
+          }
+          ParamFlowService.addNewRule(ruleEntity).success((data) => {
+              if (data.success) {
+                  paramFlowRuleDialog.close();
+                  let url = '/dashboard/paramFlow/' + $scope.app;
+                  $location.path(url);
+              } else {
+                  alert('添加热点规则失败：' + data.msg);
+              }
+          }).error((data) => {
+              if (data) {
+                  alert('添加热点规则失败：' + data.msg);
+              } else {
+                  alert("添加热点规则失败：未知错误");
+              }
+          });
+      }
+
+      function saveParamFlowRuleAndContinue() {
+          let ruleEntity = paramFlowRuleDialogScope.currentRule;
+          if (!ParamFlowService.checkRuleValid(ruleEntity.rule)) {
+              return;
+          }
+          ParamFlowService.addNewRule(ruleEntity).success((data) => {
+              if (data.success) {
+                  paramFlowRuleDialog.close();
+              } else {
+                  alert('添加热点规则失败：' + data.msg);
+              }
+          }).error((data) => {
+              if (data) {
+                  alert('添加热点规则失败：' + data.msg);
+              } else {
+                  alert("添加热点规则失败：未知错误");
+              }
+          });
+      }
+
+      $scope.addNewParamFlowRule = function (resource) {
+          if (!$scope.macInputModel) {
+              return;
+          }
+          let mac = $scope.macInputModel.split(':');
+          paramFlowRuleDialogScope = $scope.$new(true);
+          paramFlowRuleDialogScope.currentRule = {
+              app: $scope.app,
+              ip: mac[0],
+              port: mac[1],
+              rule: {
+                  resource: resource,
+                  grade: 1,
+                  paramFlowItemList: [],
+                  count: 0,
+                  limitApp: 'default',
+                  controlBehavior: 0,
+                  durationInSec: 1,
+                  burstCount: 0,
+                  maxQueueingTimeMs: 0,
+                  clusterMode: false,
+                  clusterConfig: {
+                      thresholdType: 0,
+                      fallbackToLocalWhenFail: true,
+                  }
+              }
+          };
+
+          paramFlowRuleDialogScope.paramFlowRuleDialog = {
+              title: '新增热点规则',
+              type: 'add',
+              confirmBtnText: '新增',
+              saveAndContinueBtnText: '新增并继续添加',
+              supportAdvanced: false,
+              showAdvanceButton: true
+          };
+          paramFlowRuleDialogScope.saveRule = saveParamFlowRule;
+          paramFlowRuleDialogScope.saveRuleAndContinue = saveParamFlowRuleAndContinue;
+          // paramFlowRuleDialogScope.onOpenAdvanceClick = function () {
+          //     paramFlowRuleDialogScope.paramFlowRuleDialog.showAdvanceButton = false;
+          // };
+          // paramFlowRuleDialogScope.onCloseAdvanceClick = function () {
+          //     paramFlowRuleDialogScope.paramFlowRuleDialog.showAdvanceButton = true;
+          // };
+
+          paramFlowRuleDialog = ngDialog.open({
+              template: '/app/views/dialog/param-flow-rule-dialog.html',
+              width: 680,
+              overlay: true,
+              scope: paramFlowRuleDialogScope
+          });
+      };
+
     var searchHandler;
     $scope.searchChange = function (searchKey) {
-      // console.info('searchKey=', searchKey);
       $timeout.cancel(searchHandler);
       searchHandler = $timeout(function () {
         $scope.searchKey = searchKey;
@@ -180,14 +371,14 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
         reInitIdentityDatas();
         $scope.firstExpandAll = false;
       }, 600);
-    }
+    };
 
     $scope.initTreeTable = function () {
       // if (!$scope.table) {
         com_github_culmat_jsTreeTable.register(window);
         $scope.table = window.treeTable($('#identities'));
       // }
-    }
+    };
 
     $scope.expandAll = function () {
       $scope.isExpand = true;
@@ -198,23 +389,21 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
     $scope.treeView = function () {
       $scope.isTreeView = true;
       queryIdentities();
-    }
+    };
     $scope.listView = function () {
       $scope.isTreeView = false;
       queryIdentities();
-    }
+    };
 
-    queryAppMachines();
     function queryAppMachines() {
       MachineService.getAppMachines($scope.app).success(
         function (data) {
-          if (data.code == 0) {
-            // $scope.machines = data.data;
+          if (data.code === 0) {
             if (data.data) {
               $scope.machines = [];
               $scope.macsInputOptions = [];
               data.data.forEach(function (item) {
-                if (item.health) {
+                if (item.healthy) {
                   $scope.macsInputOptions.push({
                     text: item.ip + ':' + item.port,
                     value: item.ip + ':' + item.port
@@ -230,7 +419,10 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
           }
         }
       );
-    };
+    }
+
+    // Fetch all machines by current app name.
+    queryAppMachines();
 
     $scope.$watch('macInputModel', function () {
       if ($scope.macInputModel) {

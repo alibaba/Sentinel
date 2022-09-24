@@ -19,65 +19,65 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.node.Node;
-import com.alibaba.csp.sentinel.slots.block.flow.Controller;
+import com.alibaba.csp.sentinel.slots.block.flow.TrafficShapingController;
 
 /**
- * The principle idea comes from guava. However, the calculation of guava is
- * rate-based, which means that we need to translate rate to qps.
+ * <p>
+ * The principle idea comes from Guava. However, the calculation of Guava is
+ * rate-based, which means that we need to translate rate to QPS.
+ * </p>
  *
- * https://github.com/google/guava/blob/master/guava/src/com/google/common/util/concurrent/SmoothRateLimiter.java
- *
+ * <p>
  * Requests arriving at the pulse may drag down long idle systems even though it
  * has a much larger handling capability in stable period. It usually happens in
- * scenarios that require extra time for initialization, for example, db
- * establishes a connection; connects to a remote service, and so on.
+ * scenarios that require extra time for initialization, e.g. DB establishes a connection,
+ * connects to a remote service, and so on. That’s why we need “warm up”.
+ * </p>
  *
- * That’s why we need “warm up”.
+ * <p>
+ * Sentinel's "warm-up" implementation is based on the Guava's algorithm.
+ * However, Guava’s implementation focuses on adjusting the request interval,
+ * which is similar to leaky bucket. Sentinel pays more attention to
+ * controlling the count of incoming requests per second without calculating its interval,
+ * which resembles token bucket algorithm.
+ * </p>
  *
- * Sentinel’s “warm up” implementation is based on Guava's algorithm. However,
- * unlike Guava's scenario, which is a “leaky bucket”, and is mainly used to
- * adjust the request interval, Sentinel is more focus on controlling the count
- * of incoming requests per second without calculating its interval.
- *
- * Sentinel's "warm-up" implementation is based on the guava-based algorithm.
- * However, Guava’s implementation focus on adjusting the request interval, in
- * other words, a Leaky bucket. Sentinel pays more attention to controlling the
- * count of incoming requests per second without calculating its interval, it is
- * more like a “Token bucket.”
- *
- *
+ * <p>
  * The remaining tokens in the bucket is used to measure the system utility.
  * Suppose a system can handle b requests per second. Every second b tokens will
  * be added into the bucket until the bucket is full. And when system processes
  * a request, it takes a token from the bucket. The more tokens left in the
  * bucket, the lower the utilization of the system; when the token in the token
  * bucket is above a certain threshold, we call it in a "saturation" state.
+ * </p>
  *
+ * <p>
  * Base on Guava’s theory, there is a linear equation we can write this in the
  * form y = m * x + b where y (a.k.a y(x)), or qps(q)), is our expected QPS
  * given a saturated period (e.g. 3 minutes in), m is the rate of change from
  * our cold (minimum) rate to our stable (maximum) rate, x (or q) is the
  * occupied token.
+ * </p>
  *
  * @author jialiang.linjl
  */
-public class WarmUpController implements Controller {
+public class WarmUpController implements TrafficShapingController {
 
-    private double count;
+    protected double count;
     private int coldFactor;
-    private int warningToken = 0;
+    protected int warningToken = 0;
     private int maxToken;
-    private double slope;
+    protected double slope;
 
-    private AtomicLong storedTokens = new AtomicLong(0);
-    private AtomicLong lastFilledTime = new AtomicLong(0);
+    protected AtomicLong storedTokens = new AtomicLong(0);
+    protected AtomicLong lastFilledTime = new AtomicLong(0);
 
-    public WarmUpController(double count, int warmupPeriodInSec, int coldFactor) {
-        construct(count, warmupPeriodInSec, coldFactor);
+    public WarmUpController(double count, int warmUpPeriodInSec, int coldFactor) {
+        construct(count, warmUpPeriodInSec, coldFactor);
     }
 
-    public WarmUpController(double count, int warmUpPeriodInMic) {
-        construct(count, warmUpPeriodInMic, 3);
+    public WarmUpController(double count, int warmUpPeriodInSec) {
+        construct(count, warmUpPeriodInSec, 3);
     }
 
     private void construct(double count, int warmUpPeriodInSec, int coldFactor) {
@@ -107,9 +107,14 @@ public class WarmUpController implements Controller {
 
     @Override
     public boolean canPass(Node node, int acquireCount) {
-        long passQps = node.passQps();
+        return canPass(node, acquireCount, false);
+    }
 
-        long previousQps = node.previousPassQps();
+    @Override
+    public boolean canPass(Node node, int acquireCount, boolean prioritized) {
+        long passQps = (long) node.passQps();
+
+        long previousQps = (long) node.previousPassQps();
         syncToken(previousQps);
 
         // 开始计算它的斜率
@@ -132,7 +137,7 @@ public class WarmUpController implements Controller {
         return false;
     }
 
-    private void syncToken(long passQps) {
+    protected void syncToken(long passQps) {
         long currentTime = TimeUtil.currentTimeMillis();
         currentTime = currentTime - currentTime % 1000;
         long oldLastFillTime = lastFilledTime.get();

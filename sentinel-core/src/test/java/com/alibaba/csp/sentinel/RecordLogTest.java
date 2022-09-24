@@ -15,9 +15,15 @@
  */
 package com.alibaba.csp.sentinel;
 
+import com.alibaba.csp.sentinel.log.LogBase;
 import com.alibaba.csp.sentinel.log.RecordLog;
-
+import com.alibaba.csp.sentinel.util.PidUtil;
+import org.junit.Assert;
 import org.junit.Test;
+
+import java.io.File;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author xuyue
@@ -38,4 +44,77 @@ public class RecordLogTest {
         }
     }
 
+    //Change LogBase It is not not work when integration Testing
+    //Because LogBase.LOG_DIR can be just static init for once and it will not be changed
+    //@Test
+    public void testChangeLogBase() {
+
+        String userHome = System.getProperty("user.home");
+        String newLogBase = userHome + File.separator + "tmpLogDir" + System.currentTimeMillis();
+        System.setProperty(LogBase.LOG_DIR, newLogBase);
+
+        RecordLog.info("testChangeLogBase");
+        String logFileName = LogBase.getLogBaseDir();
+        Assert.assertTrue(newLogBase.equals(logFileName));
+        File[] files = new File(logFileName).listFiles();
+        assertTrue(files != null && files.length > 0);
+        deleteLogDir(new File(newLogBase));
+
+
+    }
+
+    @Test
+    public void testLogBaseDir() {
+        assertTrue(LogBase.getLogBaseDir().startsWith(System.getProperty("user.home")));
+    }
+
+    public void testLogNameNotUsePid() {
+        String userHome = System.getProperty("user.home");
+        String newLogBase = userHome + File.separator + "tmpLogDir" + System.currentTimeMillis();
+        System.setProperty(LogBase.LOG_DIR, newLogBase);
+        RecordLog.info("testLogNameNotUsePid");
+        File[] files = new File(newLogBase).listFiles();
+        assertTrue(files != null && files.length > 0);
+        for (File f : files) {
+            assertTrue(!f.getName().contains("pid" + PidUtil.getPid()));
+        }
+    }
+
+    public void testLogNameUsePid() {
+        String userHome = System.getProperty("user.home");
+        String newLogBase = userHome + File.separator + "tmpLogDir" + System.currentTimeMillis();
+        System.setProperty(LogBase.LOG_DIR, newLogBase);
+        System.setProperty(LogBase.LOG_NAME_USE_PID, "true");
+
+        RecordLog.info("testLogNameUsePid");
+        File[] files = new File(newLogBase).listFiles();
+        assertTrue(files != null && files.length > 0);
+        for (File f : files) {
+            assertTrue(f.getName().contains("pid" + PidUtil.getPid()));
+        }
+    }
+
+    private void deleteLogDir(File logDirFile) {
+        if (logDirFile != null && logDirFile.isDirectory()) {
+            if (logDirFile.listFiles() != null) {
+                for (File file : logDirFile.listFiles()) {
+                    file.delete();
+                }
+            }
+            logDirFile.delete();
+        }
+    }
+
+
+
+    // Because log only writes into the file,
+    // can't read the log(file conflict), so no assertion in this unit test.
+    @Test
+    public void testMessageFormatter() {
+        RecordLog.info("1 2 {} 4 {} 6", "3", "5");
+        RecordLog.info("1 2 {} 4 {} 6", "3");
+        RecordLog.info("1 2 {} 4 {} 6");
+
+        RecordLog.info("1 2 \\{} 4 {} 6", "5");
+    }
 }
