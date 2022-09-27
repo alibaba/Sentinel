@@ -24,12 +24,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.googlecode.concurrentlinkedhashmap</groupId>
-            <artifactId>concurrentlinkedhashmap-lru</artifactId>
-            <version>1.4.2</version>
-        </dependency>
-
-        <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
         </dependency>
