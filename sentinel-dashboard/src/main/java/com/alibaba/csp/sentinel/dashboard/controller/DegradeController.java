@@ -20,6 +20,7 @@ import java.util.List;
 
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
+import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.RuleRepository;
@@ -58,6 +59,8 @@ public class DegradeController {
     private RuleRepository<DegradeRuleEntity, Long> repository;
     @Autowired
     private SentinelApiClient sentinelApiClient;
+    @Autowired
+    private AppManagement appManagement;
 
     @GetMapping("/rules.json")
     @AuthAction(PrivilegeType.READ_RULE)
@@ -70,6 +73,9 @@ public class DegradeController {
         }
         if (port == null) {
             return Result.ofFail(-1, "port can't be null");
+        }
+        if (!appManagement.isValidMachineOfApp(app, ip)) {
+            return Result.ofFail(-1, "given ip does not belong to given app");
         }
         try {
             List<DegradeRuleEntity> rules = sentinelApiClient.fetchDegradeRuleOfMachine(app, ip, port);
@@ -172,6 +178,9 @@ public class DegradeController {
         }
         if (StringUtil.isBlank(entity.getIp())) {
             return Result.ofFail(-1, "ip can't be null or empty");
+        }
+        if (!appManagement.isValidMachineOfApp(entity.getApp(), entity.getIp())) {
+            return Result.ofFail(-1, "given ip does not belong to given app");
         }
         if (entity.getPort() == null || entity.getPort() <= 0) {
             return Result.ofFail(-1, "invalid port: " + entity.getPort());
