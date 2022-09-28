@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-parent</artifactId>
-        <version>1.8.4</version>
+        <version>1.8.5</version>
     </parent>
 
     <artifactId>sentinel-dashboard</artifactId>
@@ -46,6 +46,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <version>${spring.boot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
             <version>${spring.boot.version}</version>
         </dependency>
         <dependency>
@@ -107,8 +112,7 @@
         <dependency>
             <groupId>com.ctrip.framework.apollo</groupId>
             <artifactId>apollo-openapi</artifactId>
-            <version>1.2.0</version>
-            <scope>test</scope>
+            <version>2.0.1</version>
         </dependency>
 
         <!--for Zookeeper rule publisher sample-->
@@ -138,7 +142,7 @@
     </dependencies>
 
     <build>
-        <finalName>sentinel-dashboard</finalName>
+        <finalName>sentinel-dashboard-apollo-${project.version}</finalName>
         <pluginManagement>
             <plugins>
                 <plugin>
