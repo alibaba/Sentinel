@@ -39,7 +39,7 @@ class MetricsReader {
     }
 
     /**
-     * @return if should continue read, return true, else false.
+     * @return if it should continue read, return true, else false.
      */
     boolean readMetricsInOneFileByEndTime(List<MetricNode> list, String fileName, long offset,
                                           long beginTimeMs, long endTimeMs, String identity) throws Exception {
