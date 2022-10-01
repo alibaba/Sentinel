@@ -6,6 +6,8 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.data.Stat;
 
+import static org.apache.curator.framework.CuratorFrameworkFactory.newClient;
+
 /**
  * Zookeeper config sender for demo
  *
@@ -31,22 +33,21 @@ public class ZookeeperConfigSender {
                 + "  }\n"
                 + "]";
 
-        CuratorFramework zkClient = CuratorFrameworkFactory.newClient(remoteAddress, new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES));
-        zkClient.start();
-        String path = getPath(groupId, dataId);
-        Stat stat = zkClient.checkExists().forPath(path);
-        if (stat == null) {
-            zkClient.create().creatingParentContainersIfNeeded().withMode(CreateMode.PERSISTENT).forPath(path, null);
-        }
-        zkClient.setData().forPath(path, rule.getBytes());
+        try(CuratorFramework zkClient = newClient(remoteAddress, new ExponentialBackoffRetry(SLEEP_TIME, RETRY_TIMES))) {
+            zkClient.start();
+            String path = getPath(groupId, dataId);
+            Stat stat = zkClient.checkExists().forPath(path);
+            if (stat == null) {
+                zkClient.create().creatingParentContainersIfNeeded().withMode(CreateMode.PERSISTENT).forPath(path, null);
+            }
+            zkClient.setData().forPath(path, rule.getBytes());
 
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
-
-        zkClient.close();
     }
 
     private static String getPath(String groupId, String dataId) {
