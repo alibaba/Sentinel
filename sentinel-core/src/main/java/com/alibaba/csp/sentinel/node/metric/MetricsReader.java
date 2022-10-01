@@ -43,11 +43,9 @@ class MetricsReader {
      */
     boolean readMetricsInOneFileByEndTime(List<MetricNode> list, String fileName, long offset,
                                           long beginTimeMs, long endTimeMs, String identity) throws Exception {
-        FileInputStream in = null;
         long beginSecond = beginTimeMs / 1000;
         long endSecond = endTimeMs / 1000;
-        try {
-            in = new FileInputStream(fileName);
+        try (FileInputStream in = new FileInputStream(fileName)) {
             in.getChannel().position(offset);
             BufferedReader reader = new BufferedReader(new InputStreamReader(in, charset));
             String line;
@@ -71,10 +69,6 @@ class MetricsReader {
                 if (list.size() >= MAX_LINES_RETURN) {
                     return false;
                 }
-            }
-        } finally {
-            if (in != null) {
-                in.close();
             }
         }
         return true;

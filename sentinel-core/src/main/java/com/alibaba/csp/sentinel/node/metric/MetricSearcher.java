@@ -64,10 +64,11 @@ public class MetricSearcher {
         if (charset == null) {
             throw new IllegalArgumentException("charset can't be null");
         }
-        this.baseDir = baseDir;
+        String baseDirContainer = baseDir;
         if (!baseDir.endsWith(File.separator)) {
-            this.baseDir += File.separator;
+            baseDirContainer += File.separator;
         }
+        this.baseDir = baseDirContainer;
         this.baseFileName = baseFileName;
         metricsReader = new MetricsReader(charset);
     }
