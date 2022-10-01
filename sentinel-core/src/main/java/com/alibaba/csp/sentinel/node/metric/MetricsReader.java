@@ -83,9 +83,7 @@ class MetricsReader {
         if (list.size() > 0) {
             lastSecond = list.get(list.size() - 1).getTimestamp() / 1000;
         }
-        FileInputStream in = null;
-        try {
-            in = new FileInputStream(fileName);
+        try (FileInputStream in = new FileInputStream(fileName)) {
             in.getChannel().position(offset);
             BufferedReader reader = new BufferedReader(new InputStreamReader(in, charset));
             String line;
@@ -101,10 +99,6 @@ class MetricsReader {
                     break;
                 }
                 lastSecond = currentSecond;
-            }
-        } finally {
-            if (in != null) {
-                in.close();
             }
         }
     }
