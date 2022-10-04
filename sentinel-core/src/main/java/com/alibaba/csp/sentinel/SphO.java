@@ -28,7 +28,7 @@ import com.alibaba.csp.sentinel.slots.system.SystemRule;
 import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 
 /**
- * Conceptually, physical or logical resource that need protection should be
+ * Conceptually, physical or logical resources that need protection should be
  * surrounded by an entry. The requests to this resource will be blocked if any
  * criteria is met, eg. when any {@link Rule}'s threshold is exceeded. Once blocked,
  * {@link SphO}#entry() will return false.
