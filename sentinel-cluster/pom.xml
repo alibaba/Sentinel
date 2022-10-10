@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>sentinel-parent</artifactId>
         <groupId>com.alibaba.csp</groupId>
@@ -13,7 +11,7 @@
     <description>The parent module of Sentinel cluster server</description>
 
     <properties>
-        <netty.version>4.1.48.Final</netty.version>
+        <netty.version>4.1.44.Final</netty.version>
     </properties>
 
     <modules>
