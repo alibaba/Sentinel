@@ -15,13 +15,9 @@
  */
 package com.alibaba.csp.sentinel.util;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.LongAdder;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.slots.statistic.base.LeapArray;
-import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 import com.alibaba.csp.sentinel.util.function.Tuple2;
 
 /**
@@ -50,25 +46,13 @@ public final class TimeUtil implements Runnable {
         RUNNING;
     }
 
-    private static class Statistic {
-        private final LongAdder writes = new LongAdder();
-        private final LongAdder reads = new LongAdder();
-
-        public LongAdder getWrites() {
-            return writes;
-        }
-
-        public LongAdder getReads() {
-            return reads;
-        }
-    }
-
     private static TimeUtil INSTANCE;
 
     private volatile long currentTimeMillis;
     private volatile STATE state = STATE.IDLE;
 
-    private LeapArray<Statistic> statistics;
+    private long reads = 0;
+    private long writes = 0;
 
     /**
      * thread private variables
@@ -80,22 +64,6 @@ public final class TimeUtil implements Runnable {
     }
 
     public TimeUtil() {
-        this.statistics = new LeapArray<TimeUtil.Statistic>(3, 3000) {
-
-            @Override
-            public Statistic newEmptyBucket(long timeMillis) {
-                return new Statistic();
-            }
-
-            @Override
-            protected WindowWrap<Statistic> resetWindowTo(WindowWrap<Statistic> windowWrap, long startTime) {
-                Statistic val = windowWrap.value();
-                val.getReads().reset();
-                val.getWrites().reset();
-                windowWrap.resetTo(startTime);
-                return windowWrap;
-            }
-        };
         this.currentTimeMillis = System.currentTimeMillis();
         this.lastCheck = this.currentTimeMillis;
         Thread daemon = new Thread(this);
@@ -111,7 +79,7 @@ public final class TimeUtil implements Runnable {
             this.check();
             if (this.state == STATE.RUNNING) {
                 this.currentTimeMillis = System.currentTimeMillis();
-                this.statistics.currentWindow(this.currentTimeMillis).value().getWrites().increment();
+                writes++;
                 try {
                     TimeUnit.MILLISECONDS.sleep(1);
                 } catch (Throwable e) {
@@ -151,22 +119,11 @@ public final class TimeUtil implements Runnable {
      * @return
      */
     public Tuple2<Long, Long> currentQps(long now) {
-        List<WindowWrap<Statistic>> list = this.statistics.listAll();
-        long reads = 0;
-        long writes = 0;
-        int cnt = 0;
-        for (WindowWrap<Statistic> windowWrap : list) {
-            if (windowWrap.isTimeInWindow(now)) {
-                continue;
-            }
-            cnt++;
-            reads += windowWrap.value().getReads().longValue();
-            writes += windowWrap.value().getWrites().longValue();
-        }
-        if (cnt < 1) {
-            return new Tuple2<Long, Long>(0L, 0L);
-        }
-        return new Tuple2<Long, Long>(reads / cnt, writes / cnt);
+        long reads = this.reads;
+        long writes = this.writes;
+        this.reads = 0;
+        this.writes = 0;
+        return new Tuple2<Long, Long>(reads, writes);
     }
 
     /**
@@ -192,15 +149,14 @@ public final class TimeUtil implements Runnable {
 
     private long currentTime(boolean innerCall) {
         long now = this.currentTimeMillis;
-        Statistic val = this.statistics.currentWindow(now).value();
         if (!innerCall) {
-            val.getReads().increment();
+            this.reads ++;
         }
         if (this.state == STATE.IDLE || this.state == STATE.PREPARE) {
             now = System.currentTimeMillis();
             this.currentTimeMillis = now;
             if (!innerCall) {
-                val.getWrites().increment();
+                this.writes ++;
             }
         }
         return now;
