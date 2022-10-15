@@ -39,6 +39,7 @@ public final class InitExecutor {
      * The initialization will be executed only once.
      */
     public static void doInit() {
+        if(initialized.get()) return;
         if (!initialized.compareAndSet(false, true)) {
             return;
         }
