@@ -505,7 +505,7 @@ public final class SpiLoader<S> {
             try {
                 closeable.close();
             } catch (Exception e) {
-                if (firstException != null) {
+                if (firstException == null) {
                     firstException = e;
                 }
             }
