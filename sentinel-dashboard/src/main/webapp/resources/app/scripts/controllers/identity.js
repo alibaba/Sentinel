@@ -332,6 +332,7 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
                   clusterConfig: {
                       thresholdType: 0,
                       fallbackToLocalWhenFail: true,
+                      localCount:0,
                   }
               }
           };

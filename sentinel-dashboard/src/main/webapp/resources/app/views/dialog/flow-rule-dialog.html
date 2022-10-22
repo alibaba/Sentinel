@@ -78,6 +78,14 @@
             </div>
           </div>
 
+          <div class="form-group" ng-if="currentRule.clusterMode && currentRule.clusterConfig.fallbackToLocalWhenFail">
+            <label class="col-sm-2 control-label">限流阈值</label>
+            <div class="col-sm-3">
+              <input type='number' min="0" class="form-control highlight-border"
+                     ng-model='currentRule.clusterConfig.localCount' placeholder="退化后单机限流阈值"/>
+            </div>
+          </div>
+
           <div ng-if="!flowRuleDialog.showAdvanceButton && !currentRule.clusterMode">
             <div class="form-group">
               <label class="col-sm-2 control-label" title="调用关系流控模式">流控模式</label>

@@ -34,6 +34,12 @@ public class ClusterFlowConfig {
     private Long flowId;
 
     /**
+     * Local Flow control threshold count.
+     * Used when cluster flow restriction degenerate to local flow restriction.
+     */
+    private Double localCount;
+
+    /**
      * Threshold type (average by local value or global value).
      */
     private int thresholdType = ClusterRuleConstant.FLOW_THRESHOLD_AVG_LOCAL;
@@ -107,6 +113,14 @@ public class ClusterFlowConfig {
 
     public Long getFlowId() {
         return flowId;
+    }
+
+    public Double getLocalCount() {
+        return localCount;
+    }
+
+    public void setLocalCount(double localCount) {
+        this.localCount = localCount;
     }
 
     public ClusterFlowConfig setFlowId(Long flowId) {
@@ -197,6 +211,9 @@ public class ClusterFlowConfig {
         if (acquireRefuseStrategy != that.acquireRefuseStrategy) {
             return false;
         }
+        if (!Objects.equals(localCount, that.localCount)){
+            return false;
+        }
         return Objects.equals(flowId, that.flowId);
     }
 
@@ -212,6 +229,7 @@ public class ClusterFlowConfig {
         result = (int) (31 * result + clientOfflineTime);
         result = 31 * result + resourceTimeoutStrategy;
         result = 31 * result + acquireRefuseStrategy;
+        result = (int) (31 * result + localCount);
         return result;
     }
 
@@ -228,6 +246,7 @@ public class ClusterFlowConfig {
                 ", resourceTimeoutStrategy=" + resourceTimeoutStrategy +
                 ", acquireRefuseStrategy=" + acquireRefuseStrategy +
                 ", clientOfflineTime=" + clientOfflineTime +
+                ", localCount=" + localCount +
                 '}';
     }
 }

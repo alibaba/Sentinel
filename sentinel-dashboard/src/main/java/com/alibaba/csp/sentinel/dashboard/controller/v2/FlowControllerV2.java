@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.dashboard.controller.v2;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
@@ -130,6 +131,10 @@ public class FlowControllerV2 {
         }
         if (entity.isClusterMode() && entity.getClusterConfig() == null) {
             return Result.ofFail(-1, "cluster config should be valid");
+        }
+        if (entity.isClusterMode() && entity.getClusterConfig().getLocalCount() == null) {
+            entity.getClusterConfig().setLocalCount(entity.getCount());
+            logger.info("clusterConfig.localCount has been set default value same to count");
         }
         return null;
     }

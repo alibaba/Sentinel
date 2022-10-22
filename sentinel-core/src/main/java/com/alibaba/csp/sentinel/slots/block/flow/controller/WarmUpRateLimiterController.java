@@ -40,9 +40,19 @@ public class WarmUpRateLimiterController extends WarmUpController {
     }
 
     @Override
+    public boolean canPassLocal(Node node, int acquireCount, boolean prioritized, double localCount) {
+        construct(localCount, warmUpPeriodInSec, coldFactor);
+        return canPass(node, acquireCount, prioritized, localCount);
+    }
+    @Override
     public boolean canPass(Node node, int acquireCount, boolean prioritized) {
+        construct(count, warmUpPeriodInSec, coldFactor);
+        return canPass(node, acquireCount, prioritized, count);
+    }
+
+    private boolean canPass(Node node, int acquireCount, boolean prioritized, double count) {
         long previousQps = (long) node.previousPassQps();
-        syncToken(previousQps);
+        syncToken(previousQps, count);
 
         long currentTime = TimeUtil.currentTimeMillis();
 
@@ -85,4 +95,5 @@ public class WarmUpRateLimiterController extends WarmUpController {
         }
         return false;
     }
+
 }

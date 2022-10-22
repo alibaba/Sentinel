@@ -46,14 +46,23 @@ public class DefaultController implements TrafficShapingController {
     }
 
     @Override
+    public boolean canPassLocal(Node node, int acquireCount, boolean prioritized, double localCount) {
+        return canPass(node, acquireCount, prioritized, localCount);
+    }
+
+    @Override
     public boolean canPass(Node node, int acquireCount, boolean prioritized) {
+        return canPass(node, acquireCount, prioritized, count);
+    }
+
+    private boolean canPass(Node node, int acquireCount, boolean prioritized, Double totalCount) {
         int curCount = avgUsedTokens(node);
-        if (curCount + acquireCount > count) {
+        if (curCount + acquireCount > totalCount) {
             if (prioritized && grade == RuleConstant.FLOW_GRADE_QPS) {
                 long currentTime;
                 long waitInMs;
                 currentTime = TimeUtil.currentTimeMillis();
-                waitInMs = node.tryOccupyNext(currentTime, acquireCount, count);
+                waitInMs = node.tryOccupyNext(currentTime, acquireCount, totalCount);
                 if (waitInMs < OccupyTimeoutProperty.getOccupyTimeout()) {
                     node.addWaitingRequest(currentTime + waitInMs, acquireCount);
                     node.addOccupiedPass(acquireCount);
