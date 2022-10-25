@@ -15,7 +15,7 @@
         <java.source.version>1.8</java.source.version>
         <java.target.version>1.8</java.target.version>
 
-        <opensergo.sdk.version>0.1.0-SNAPSHOT</opensergo.sdk.version>
+        <opensergo.sdk.version>0.1.0-beta1</opensergo.sdk.version>
     </properties>
 
     <dependencies>
