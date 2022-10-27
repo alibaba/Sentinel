@@ -71,6 +71,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.concurrent.FutureCallback;
+import org.apache.http.conn.util.InetAddressUtils;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
@@ -280,6 +281,14 @@ public class SentinelApiClient {
         CompletableFuture<String> future = new CompletableFuture<>();
         if (StringUtil.isBlank(ip) || StringUtil.isBlank(api)) {
             future.completeExceptionally(new IllegalArgumentException("Bad URL or command name"));
+            return future;
+        }
+        if (!InetAddressUtils.isIPv4Address(ip) && !InetAddressUtils.isIPv6Address(ip)) {
+            future.completeExceptionally(new IllegalArgumentException("Bad IP"));
+            return future;
+        }
+        if (!StringUtil.isEmpty(app) && !appManagement.isValidMachineOfApp(app, ip)) {
+            future.completeExceptionally(new IllegalArgumentException("Given ip does not belong to given app"));
             return future;
         }
         StringBuilder urlBuilder = new StringBuilder();

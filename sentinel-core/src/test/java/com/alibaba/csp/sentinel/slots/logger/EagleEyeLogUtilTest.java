@@ -19,7 +19,7 @@ public class EagleEyeLogUtilTest {
 
     @Test
     public void testWriteLog() throws Exception {
-        EagleEyeLogUtil.log("resourceName", "BlockException", "app1", "origin", 1);
+        EagleEyeLogUtil.log("resourceName", "BlockException", "app1", "origin", 1L,1);
 
         final File file = new File(LogBase.getLogBaseDir() + EagleEyeLogUtil.FILE_NAME);
         await().timeout(2, TimeUnit.SECONDS)
@@ -39,7 +39,7 @@ public class EagleEyeLogUtilTest {
         String newLogBase = userHome + File.separator + "tmpLogDir" + System.currentTimeMillis();
         System.setProperty(LogBase.LOG_DIR, newLogBase);
 
-        EagleEyeLogUtil.log("resourceName", "BlockException", "app1", "origin", 1);
+        EagleEyeLogUtil.log("resourceName", "BlockException", "app1", "origin", 2L,1);
 
 
         final File file = new File(LogBase.getLogBaseDir() + EagleEyeLogUtil.FILE_NAME);

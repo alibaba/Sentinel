@@ -5,7 +5,7 @@
 
     <groupId>com.alibaba.csp</groupId>
     <artifactId>sentinel-parent</artifactId>
-    <version>1.8.5</version>
+    <version>1.8.6</version>
     <packaging>pom</packaging>
 
     <name>${project.artifactId}</name>
