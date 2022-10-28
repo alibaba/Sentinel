@@ -111,7 +111,7 @@ public class RedisDataSource<T> extends AbstractDataSource<String, T> {
 
     private RedisClusterClient getRedisClusterClient(RedisConnectionConfig connectionConfig) {
         char[] password = connectionConfig.getPassword();
-        String clientName = connectionConfig.getClientName();
+        // String clientName = connectionConfig.getClientName();
 
         //If any uri is successful for connection, the others are not tried anymore
         List<RedisURI> redisUris = new ArrayList<>();

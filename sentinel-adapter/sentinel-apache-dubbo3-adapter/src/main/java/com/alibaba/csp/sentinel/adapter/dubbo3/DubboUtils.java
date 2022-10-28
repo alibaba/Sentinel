@@ -88,7 +88,7 @@ public final class DubboUtils {
     }
 
     public static String getInterfaceName(Invoker<?> invoker, Boolean useGroupAndVersion) {
-        StringBuilder buf = new StringBuilder(64);
+        // StringBuilder buf = new StringBuilder(64);
         return useGroupAndVersion ? invoker.getUrl().getColonSeparatedKey() : invoker.getInterface().getName();
     }
 
