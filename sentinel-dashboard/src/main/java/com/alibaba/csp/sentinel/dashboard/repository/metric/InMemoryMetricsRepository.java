@@ -42,7 +42,7 @@ public class InMemoryMetricsRepository implements MetricsExtRepository<MetricEnt
      * {@code app -> resource -> timestamp -> metric}
      */
     private Map<String, Map<String, LinkedHashMap<Long, MetricEntity>>> allMetrics = new ConcurrentHashMap<>();
-    private Map<String, Map<String, LinkedHashMap<Long, MetricEntity>>> metricsOfMin5 = new ConcurrentHashMap<>();
+    private Map<String, Map<String, LinkedHashMap<Long, MetricEntity>>> metricsOfFiveMinutes = new ConcurrentHashMap<>();
 
     private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
@@ -65,7 +65,7 @@ public class InMemoryMetricsRepository implements MetricsExtRepository<MetricEnt
         this.allMetrics.get(entity.getApp()).get(entity.getResource()).put(entity.getTimestamp().getTime(), entity);
 
         LinkedHashMap<Long, MetricEntity> longMetricEntityLinkedHashMap =
-                this.metricsOfMin5.get(entity.getApp()).get(entity.getResource());
+                this.metricsOfFiveMinutes.get(entity.getApp()).get(entity.getResource());
 
         long diff = entity.getTimestamp().getTime() % 300000;
         long key = entity.getTimestamp().getTime() - diff;
@@ -86,12 +86,12 @@ public class InMemoryMetricsRepository implements MetricsExtRepository<MetricEnt
                     }
                 });
 
-        this.metricsOfMin5.computeIfAbsent(entity.getApp(), e -> new HashMap<>(16))
+        this.metricsOfFiveMinutes.computeIfAbsent(entity.getApp(), e -> new HashMap<>(16))
                 .computeIfAbsent(entity.getResource(), e -> new LinkedHashMap<Long, MetricEntity>() {
                     @Override
                     protected boolean removeEldestEntry(Entry<Long, MetricEntity> eldest) {
                         // Metric older than {@link #MAX_METRIC_LIVE_TIME_MS_OF_MIN5} will be removed.
-                        return eldest.getKey() < TimeUtil.currentTimeMillis() - DashboardConfig.getMaxMetricLiveTimeMsOfMin5();
+                        return eldest.getKey() < TimeUtil.currentTimeMillis() - DashboardConfig.getMaxMetricLiveTimeMsOfFiveMinutes();
                     }
                 });
     }
@@ -123,7 +123,7 @@ public class InMemoryMetricsRepository implements MetricsExtRepository<MetricEnt
         }
         Map<String, LinkedHashMap<Long, MetricEntity>> resourceMap = null;
         if(Objects.nonNull(cycle) && cycle == 300) {
-            resourceMap = metricsOfMin5.get(app);
+            resourceMap = metricsOfFiveMinutes.get(app);
         } else {
             resourceMap = allMetrics.get(app);
         }

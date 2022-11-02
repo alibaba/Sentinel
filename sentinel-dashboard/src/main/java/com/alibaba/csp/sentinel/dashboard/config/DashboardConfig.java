@@ -68,7 +68,7 @@ public class DashboardConfig {
      * The ttl of metric data in the Memory
      * default 1 day
      */
-    public static final String MAX_METRIC_LIVE_TIME_MS_OF_MIN5 = "sentinel.dashboard.store.maxMetricLiveTimeOfMin5";
+    public static final String MAX_METRIC_LIVE_TIME_MS_OF_FIVE_MINUTES = "sentinel.dashboard.store.maxMetricLiveTimeOfFiveMinutes";
 
     private static final ConcurrentMap<String, Object> cacheMap = new ConcurrentHashMap<>();
     
@@ -133,8 +133,8 @@ public class DashboardConfig {
     }
 
 
-    public static int getMaxMetricLiveTimeMsOfMin5() {
-        return getConfigInt(MAX_METRIC_LIVE_TIME_MS_OF_MIN5, 86400000, 300000);
+    public static int getMaxMetricLiveTimeMsOfFiveMinutes() {
+        return getConfigInt(MAX_METRIC_LIVE_TIME_MS_OF_FIVE_MINUTES, 86400000, 300000);
     }
 
 
