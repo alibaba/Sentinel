@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.dashboard.repository.metric;
 
+import com.alibaba.csp.sentinel.dashboard.config.DashboardConfig;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.MetricEntity;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.util.TimeUtil;
@@ -36,7 +37,6 @@ import java.util.stream.Collectors;
 public class InMemoryMetricsRepository implements MetricsExtRepository<MetricEntity, Integer> {
 
     private static final long MAX_METRIC_LIVE_TIME_MS = 1000 * 60 * 5;
-    private static final long MAX_METRIC_LIVE_TIME_MS_OF_MIN5 = 1000 * 60 * 5 * 60;
 
     /**
      * {@code app -> resource -> timestamp -> metric}
@@ -45,7 +45,6 @@ public class InMemoryMetricsRepository implements MetricsExtRepository<MetricEnt
     private Map<String, Map<String, LinkedHashMap<Long, MetricEntity>>> metricsOfMin5 = new ConcurrentHashMap<>();
 
     private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-    private boolean enableStore24H =  true;
 
     @Override
     public void save(MetricEntity entity) {
@@ -65,18 +64,16 @@ public class InMemoryMetricsRepository implements MetricsExtRepository<MetricEnt
     private void doSave(MetricEntity entity) {
         this.allMetrics.get(entity.getApp()).get(entity.getResource()).put(entity.getTimestamp().getTime(), entity);
 
-        if(enableStore24H) {
-            LinkedHashMap<Long, MetricEntity> longMetricEntityLinkedHashMap =
-                    this.metricsOfMin5.get(entity.getApp()).get(entity.getResource());
+        LinkedHashMap<Long, MetricEntity> longMetricEntityLinkedHashMap =
+                this.metricsOfMin5.get(entity.getApp()).get(entity.getResource());
 
-            long diff = entity.getTimestamp().getTime() % 300000;
-            long key = entity.getTimestamp().getTime() - diff;
-            MetricEntity metricEntity = longMetricEntityLinkedHashMap.computeIfAbsent(key, e -> new MetricEntity());
-            metricEntity.merge(entity);
-            metricEntity.setTimestamp(new Date(key));
+        long diff = entity.getTimestamp().getTime() % 300000;
+        long key = entity.getTimestamp().getTime() - diff;
+        MetricEntity metricEntity = longMetricEntityLinkedHashMap.computeIfAbsent(key, e -> new MetricEntity());
+        metricEntity.merge(entity);
+        metricEntity.setTimestamp(new Date(key));
 
-            longMetricEntityLinkedHashMap.put(key, metricEntity);
-        }
+        longMetricEntityLinkedHashMap.put(key, metricEntity);
     }
 
     private void init(MetricEntity entity) {
@@ -89,16 +86,14 @@ public class InMemoryMetricsRepository implements MetricsExtRepository<MetricEnt
                     }
                 });
 
-        if(enableStore24H) {
-            this.metricsOfMin5.computeIfAbsent(entity.getApp(), e -> new HashMap<>(16))
-                    .computeIfAbsent(entity.getResource(), e -> new LinkedHashMap<Long, MetricEntity>() {
-                        @Override
-                        protected boolean removeEldestEntry(Entry<Long, MetricEntity> eldest) {
-                            // Metric older than {@link #MAX_METRIC_LIVE_TIME_MS_OF_MIN5} will be removed.
-                            return eldest.getKey() < TimeUtil.currentTimeMillis() - MAX_METRIC_LIVE_TIME_MS_OF_MIN5;
-                        }
-                    });
-        }
+        this.metricsOfMin5.computeIfAbsent(entity.getApp(), e -> new HashMap<>(16))
+                .computeIfAbsent(entity.getResource(), e -> new LinkedHashMap<Long, MetricEntity>() {
+                    @Override
+                    protected boolean removeEldestEntry(Entry<Long, MetricEntity> eldest) {
+                        // Metric older than {@link #MAX_METRIC_LIVE_TIME_MS_OF_MIN5} will be removed.
+                        return eldest.getKey() < TimeUtil.currentTimeMillis() - DashboardConfig.getMaxMetricLiveTimeMsOfMin5();
+                    }
+                });
     }
 
     @Override
