@@ -288,6 +288,7 @@ public class MetricController {
             }
         });
 
+        // 偶数都为倒序
         if(summaryOrderBy % 2 == 0) {
             Collections.reverse(resourceArray);
         }
