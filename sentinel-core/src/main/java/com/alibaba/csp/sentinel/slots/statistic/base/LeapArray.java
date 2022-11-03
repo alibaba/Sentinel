@@ -127,7 +127,7 @@ public abstract class LeapArray<T> {
          *
          * (1) Bucket is absent, then just create a new bucket and CAS update to circular array.
          * (2) Bucket is up-to-date, then just return the bucket.
-         * (3) Bucket is deprecated, then reset current bucket and clean all deprecated buckets.
+         * (3) Bucket is deprecated, then reset current bucket.
          */
         while (true) {
             WindowWrap<T> old = array.get(idx);
