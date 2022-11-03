@@ -22,14 +22,18 @@ You can also add to [sentinel-group/sentinel-awesome](https://github.com/sentine
 - Sentinel 1.6.0 网关流控新特性介绍-Eric Zhao (Dubbo Tech Day-201905-Beijing): [PDF](https://github.com/sentinel-group/sentinel-awesome/blob/master/slides/Sentinel%201.6.0%20网关流控新特性介绍-Eric%20Zhao-DTED-201905.pdf)
 - Sentinel 微服务流控降级实践-Eric Zhao (Dubbo Tech Day-201907-Shenzhen): [PDF](https://github.com/sentinel-group/sentinel-awesome/blob/master/slides/Sentinel%20微服务流控降级实践-Eric%20Zhao-DTED-201907.pdf)
 - Sentinel 1.7.0 新特性展望-Eric Zhao (Dubbo Tech Day-201910-Chengdu): [PDF](https://github.com/sentinel-group/sentinel-awesome/blob/master/slides/Sentinel%201.7.0%20新特性展望-Eric%20Zhao-DTED-201910.pdf)
+- 《微服务容易挂？Sentinel Go 让微服务稳如磐石》-Eric Zhao (Spring Cloud Alibaba Meetup 1205 杭州站): [PDF](https://github.com/sentinel-group/sentinel-awesome/blob/master/slides/SCA%20Meetup%20Hangzhou-20201205-Sentinel%20Go-Eric%20Zhao.pdf)
+- Sentinel 2.0 流量治理全面升级-Eric Zhao (2022中间件开发者大会): [PDF](https://github.com/mse-group/Slides/blob/main/中间件开发者大会/10%20-%20赵奕豪(宿何)%20-Sentinel%202.0%20流量治理全面升级.pdf)
 
-## Tutorials
+## Tutorials/Samples
 
 - [Sentinel Guides](https://github.com/sentinel-group/sentinel-guides)
 
-## Demos
+## Polyglot Support
 
-- [sentinel-zuul-example](https://github.com/tigerMoon/sentinel-zuul-sample): A simple project integration Sentinel to Spring Cloud Zuul which provides Service and API Path level flow control management by [tiger](https://github.com/tigerMoon)
+- <img src="https://raw.githubusercontent.com/sentinel-group/sentinel-awesome/master/sentinel_favicon.ico" title="Sentinel official" height="16px"> [Sentinel Go](https://github.com/alibaba/sentinel-golang)
+- <img src="https://raw.githubusercontent.com/sentinel-group/sentinel-awesome/master/sentinel_favicon.ico" title="Sentinel official" height="16px"> [Sentinel C++](https://github.com/alibaba/sentinel-cpp)
+- <img src="https://raw.githubusercontent.com/sentinel-group/sentinel-awesome/master/sentinel_favicon.ico" title="Sentinel official" height="16px"> [Sentinel Rust](https://github.com/sentinel-group/sentinel-rust)
 
 ## Extensions / Integrations
 
@@ -72,5 +76,8 @@ You can also add to [sentinel-group/sentinel-awesome](https://github.com/sentine
   - [Sentinel 深入浅出之原理篇 DegradeSlot](https://www.jianshu.com/p/e910d4840e4a)
 - [Alibaba Sentinel RESTful 接口流控处理优化](https://www.jianshu.com/p/96f5980d9798) by [luanlouis](https://github.com/luanlouis)
 - [Sentinel 控制台前端开发环境搭建](https://www.cnblogs.com/cdfive2018/p/11084001.html) by [cdfive](https://github.com/cdfive)
+- [Sentinel 如何接入 OpenTracing](https://juejin.im/post/5de32fe46fb9a071a828feeb) by [Zhang Shun](https://github.com/ZShUn)
 - [阿里 Sentinel 源码解析](https://www.javadoop.com/post/sentinel) by [Javadoop](https://www.javadoop.com)
+- [阿里巴巴开源限流降级神器 Sentinel 大规模生产级应用实践](https://mp.weixin.qq.com/s/AjHCUmygTr78yo9yMxMEyg) by 步崖
 - [Introduction to Alibaba Sentinel](https://www.baeldung.com/java-sentinel-intro) by [Amit Bhave](https://github.com/Amitbhave)
+- [Sentinel Go 毫秒级统计数据结构揭秘](https://sentinelguard.io/zh-cn/blog/sentinel-go-internal-data-structure.html) by [Binbin Zhang](https://github.com/binbin0325)
