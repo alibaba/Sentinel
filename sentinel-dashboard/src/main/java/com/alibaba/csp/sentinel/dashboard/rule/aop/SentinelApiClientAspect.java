@@ -37,7 +37,7 @@ import java.util.concurrent.Executors;
 
 /**
  * @author FengJianxin
- * @since 2022/7/29
+ * @since 1.8.4
  */
 @Aspect
 @Component
@@ -87,7 +87,7 @@ public class SentinelApiClientAspect {
     }
 
     /**
-     * 拉取网关流控规则配置
+     * 拉取 api 分组规则配置
      */
     @Around("fetchApisPointcut()")
     public Object fetchApis(final ProceedingJoinPoint pjp) throws Throwable {
@@ -95,7 +95,7 @@ public class SentinelApiClientAspect {
     }
 
     /**
-     * 推送网关流控规则配置
+     * 推送 api 分组规则配置
      */
     @Around("modifyApisPointcut()")
     public Object modifyApis(final ProceedingJoinPoint pjp) throws Throwable {
@@ -138,7 +138,7 @@ public class SentinelApiClientAspect {
     }
 
     /**
-     * 拉取流控规则配置
+     * 拉取熔断规则配置
      */
     @Around("fetchDegradeRuleOfMachinePointcut()")
     public Object fetchDegradeRuleOfMachine(final ProceedingJoinPoint pjp) throws Throwable {
@@ -146,7 +146,7 @@ public class SentinelApiClientAspect {
     }
 
     /**
-     * 推送流控规则配置
+     * 推送熔断规则配置
      */
     @Around("setDegradeRuleOfMachinePointcut()")
     public Object setDegradeRuleOfMachine(final ProceedingJoinPoint pjp) throws Throwable {
@@ -163,7 +163,7 @@ public class SentinelApiClientAspect {
     }
 
     /**
-     * 拉取流控规则配置
+     * 拉取热点规则配置
      */
     @Around("fetchParamFlowRulesOfMachinePointcut()")
     public Object fetchParamFlowRulesOfMachine(final ProceedingJoinPoint pjp) throws Throwable {
@@ -171,7 +171,7 @@ public class SentinelApiClientAspect {
     }
 
     /**
-     * 推送流控规则配置
+     * 推送热点规则配置
      */
     @Around("setParamFlowRuleOfMachinePointcut()")
     public Object setParamFlowRuleOfMachine(final ProceedingJoinPoint pjp) throws Throwable {
@@ -188,7 +188,7 @@ public class SentinelApiClientAspect {
     }
 
     /**
-     * 拉取流控规则配置
+     * 拉取系统规则配置
      */
     @Around("fetchSystemRuleOfMachinePointcut()")
     public Object fetchSystemRuleOfMachine(final ProceedingJoinPoint pjp) throws Throwable {
@@ -196,7 +196,7 @@ public class SentinelApiClientAspect {
     }
 
     /**
-     * 推送流控规则配置
+     * 推送系统规则配置
      */
     @Around("setSystemRuleOfMachinePointcut()")
     public Object setSystemRuleOfMachine(final ProceedingJoinPoint pjp) throws Throwable {
@@ -213,19 +213,19 @@ public class SentinelApiClientAspect {
     }
 
     /**
-     * 拉取流控规则配置
+     * 拉取授权规则规则配置
      */
     @Around("fetchAuthorityRulesOfMachinePointcut()")
     public Object fetchAuthorityRulesOfMachine(final ProceedingJoinPoint pjp) throws Throwable {
-        return fetchRules(pjp, RuleType.SYSTEM);
+        return fetchRules(pjp, RuleType.AUTHORITY);
     }
 
     /**
-     * 推送流控规则配置
+     * 推送授权规则配置
      */
     @Around("setAuthorityRuleOfMachinePointcut()")
     public Object setAuthorityRuleOfMachine(final ProceedingJoinPoint pjp) throws Throwable {
-        return publishRules(pjp, RuleType.SYSTEM);
+        return publishRules(pjp, RuleType.AUTHORITY);
     }
 
     private Object fetchRules(ProceedingJoinPoint pjp, RuleType ruleType) throws Throwable {
@@ -260,7 +260,7 @@ public class SentinelApiClientAspect {
             return true;
         } catch (Exception e) {
             LOG.error("publish rules error", e);
-            return true;
+            return false;
         }
     }
 
