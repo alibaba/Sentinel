@@ -30,6 +30,14 @@ build_docker() {
     echo '镜像构建结束'
 }
 
+build_docker_dev() {
+    package
+    echo '镜像构建开始 ${VERSION}'
+    export DOCKER_SCAN_SUGGEST=false
+    sudo docker build -t fengjx/sentinel-dashboard-apollo:dev .
+    echo '镜像构建结束'
+}
+
 case_opt=$1
 shift
 
@@ -39,5 +47,8 @@ package)
     ;;
 build_docker)
     build_docker "$@"
+    ;;
+build_docker_dev)
+    build_docker_dev "$@"
     ;;
 esac

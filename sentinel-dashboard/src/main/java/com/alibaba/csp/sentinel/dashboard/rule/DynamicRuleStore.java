@@ -22,7 +22,7 @@ import java.util.List;
 
 /**
  * @author FengJianxin
- * @since 2022/7/29
+ * @since 1.8.4
  */
 public abstract class DynamicRuleStore<T extends RuleEntity> implements DynamicRuleProvider<List<T>>,
         DynamicRulePublisher<List<T>> {

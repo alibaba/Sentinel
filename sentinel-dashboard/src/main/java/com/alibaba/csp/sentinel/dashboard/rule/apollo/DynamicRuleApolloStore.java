@@ -43,19 +43,20 @@ public class DynamicRuleApolloStore<T extends RuleEntity> extends DynamicRuleSto
     private static final Logger LOG = LoggerFactory.getLogger(SentinelApiClientAspect.class);
 
     private final ApolloProperties apolloProperties;
-    private final ApolloOpenApiClient apolloOpenApiClient;
+    private final ApolloOpenApiClientProvider openApiClientProvider;
 
     public DynamicRuleApolloStore(final RuleType ruleType,
                                   final ApolloProperties apolloProperties,
-                                  final ApolloOpenApiClient apolloOpenApiClient) {
+                                  final ApolloOpenApiClientProvider openApiClientProvider) {
         super.ruleType = ruleType;
         this.apolloProperties = apolloProperties;
-        this.apolloOpenApiClient = apolloOpenApiClient;
+        this.openApiClientProvider = openApiClientProvider;
     }
 
 
     @Override
     public List<T> getRules(final String appName) throws Exception {
+        ApolloOpenApiClient apolloOpenApiClient = openApiClientProvider.get();
         String appId = apolloProperties.getAppId();
         String env = apolloProperties.getEnv();
         String clusterName = apolloProperties.getClusterName();
@@ -84,6 +85,7 @@ public class DynamicRuleApolloStore<T extends RuleEntity> extends DynamicRuleSto
             return;
         }
 
+        ApolloOpenApiClient apolloOpenApiClient = openApiClientProvider.get();
         String appId = apolloProperties.getAppId();
         String env = apolloProperties.getEnv();
         String clusterName = apolloProperties.getClusterName();
@@ -107,4 +109,6 @@ public class DynamicRuleApolloStore<T extends RuleEntity> extends DynamicRuleSto
         apolloOpenApiClient.publishNamespace(appId, env, clusterName, namespace, namespaceReleaseDTO);
         LOG.info("publish rule success - app: {}, type: {}, value: {}", app, ruleType.getName(), value);
     }
+
+
 }
