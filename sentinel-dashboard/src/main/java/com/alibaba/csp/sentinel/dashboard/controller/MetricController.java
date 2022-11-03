@@ -140,7 +140,19 @@ public class MetricController {
     }
 
 
-
+    /**
+     *
+     * @param app
+     * @param pageIndex
+     * @param pageSize
+     * @param desc
+     * @param timeRange  minutes of search range, 0 means all
+     * @param summaryOrderBy
+     * @param startTime
+     * @param endTime
+     * @param searchKey
+     * @return
+     */
     @ResponseBody
     @RequestMapping("/queryResourceSummary.json")
     public Result<?> queryResourceSummary(final String app,
@@ -175,8 +187,8 @@ public class MetricController {
             startTime = endTime - (minute1 * timeRange);
         }
 
-
-        List<String> resources = metricStore.listResourcesOfApp(app, (int) (timeRange * minute1));
+        int resourcesTimeLimit = timeRange == 0 ? Integer.MAX_VALUE : (int) (timeRange * minute1);
+        List<String> resources = metricStore.listResourcesOfApp(app, resourcesTimeLimit);
         logger.debug("queryResourceSummary(), resources.size()={}", resources.size());
 
         if (resources == null || resources.isEmpty()) {
