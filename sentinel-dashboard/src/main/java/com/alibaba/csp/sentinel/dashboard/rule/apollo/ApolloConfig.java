@@ -25,7 +25,6 @@ import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEn
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.SystemRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleStore;
 import com.alibaba.csp.sentinel.dashboard.rule.RuleType;
-import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,82 +43,78 @@ public class ApolloConfig {
     private ApolloProperties apolloProperties;
 
     @Bean
-    public ApolloOpenApiClient apolloOpenApiClient() {
-        return ApolloOpenApiClient.newBuilder()
-                .withPortalUrl(apolloProperties.getPortalUrl())
-                .withToken(apolloProperties.getToken())
-                .build();
-
+    public ApolloOpenApiClientProvider apolloOpenApiClientProvider() {
+        return new ApolloOpenApiClientProvider(apolloProperties.getPortalUrl(), apolloProperties.getToken());
     }
 
 
     @Bean
     public DynamicRuleStore<FlowRuleEntity> flowRuleDynamicRuleStore(ApolloProperties apolloProperties,
-                                                                     ApolloOpenApiClient apolloOpenApiClient) {
+                                                                     ApolloOpenApiClientProvider apolloOpenApiClientProvider) {
         return new DynamicRuleApolloStore<>(
                 RuleType.FLOW,
                 apolloProperties,
-                apolloOpenApiClient
+                apolloOpenApiClientProvider
         );
     }
 
     @Bean
     public DynamicRuleStore<DegradeRuleEntity> degradeRuleDynamicRuleStore(ApolloProperties apolloProperties,
-                                                                           ApolloOpenApiClient apolloOpenApiClient) {
+                                                                           ApolloOpenApiClientProvider apolloOpenApiClientProvider) {
         return new DynamicRuleApolloStore<>(
                 RuleType.DEGRADE,
                 apolloProperties,
-                apolloOpenApiClient
+                apolloOpenApiClientProvider
         );
     }
 
     @Bean
     public DynamicRuleStore<ParamFlowRuleEntity> paramFlowRuleDynamicRuleStore(ApolloProperties apolloProperties,
-                                                                               ApolloOpenApiClient apolloOpenApiClient) {
+                                                                               ApolloOpenApiClientProvider apolloOpenApiClientProvider) {
         return new DynamicRuleApolloStore<>(
                 RuleType.PARAM_FLOW,
                 apolloProperties,
-                apolloOpenApiClient
+                apolloOpenApiClientProvider
         );
     }
 
     @Bean
     public DynamicRuleStore<SystemRuleEntity> systemRuleDynamicRuleStore(ApolloProperties apolloProperties,
-                                                                         ApolloOpenApiClient apolloOpenApiClient) {
+                                                                         ApolloOpenApiClientProvider apolloOpenApiClientProvider) {
         return new DynamicRuleApolloStore<>(
                 RuleType.SYSTEM,
                 apolloProperties,
-                apolloOpenApiClient
+                apolloOpenApiClientProvider
         );
     }
 
     @Bean
     public DynamicRuleStore<AuthorityRuleEntity> authorityRuleDynamicRuleStore(ApolloProperties apolloProperties,
-                                                                               ApolloOpenApiClient apolloOpenApiClient) {
+                                                                               ApolloOpenApiClientProvider apolloOpenApiClientProvider) {
         return new DynamicRuleApolloStore<>(
                 RuleType.AUTHORITY,
                 apolloProperties,
-                apolloOpenApiClient
+                apolloOpenApiClientProvider
         );
     }
 
     @Bean
     public DynamicRuleStore<GatewayFlowRuleEntity> gatewayFlowRuleDynamicRuleStore(ApolloProperties apolloProperties,
-                                                                                   ApolloOpenApiClient apolloOpenApiClient) {
+                                                                                   ApolloOpenApiClientProvider apolloOpenApiClientProvider) {
         return new DynamicRuleApolloStore<>(
                 RuleType.GW_FLOW,
                 apolloProperties,
-                apolloOpenApiClient
+                apolloOpenApiClientProvider
         );
     }
 
     @Bean
     public DynamicRuleStore<ApiDefinitionEntity> apiDefinitionDynamicRuleStore(ApolloProperties apolloProperties,
-                                                                               ApolloOpenApiClient apolloOpenApiClient) {
+                                                                               ApolloOpenApiClientProvider apolloOpenApiClientProvider) {
         return new DynamicRuleApolloStore<>(
                 RuleType.GW_API_GROUP,
                 apolloProperties,
-                apolloOpenApiClient
+                apolloOpenApiClientProvider
         );
     }
 
