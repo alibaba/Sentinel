@@ -261,6 +261,7 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
 
       MetricService.querySortedSummary(params).success(function (data) {
         $scope.emptyObjsOfSummary = [];
+        $scope.sortedSummaryData = [];
 
         if (data.code === 0 && data.data) {
           var metricsObj = data.data.metric;
