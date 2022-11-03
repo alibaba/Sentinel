@@ -148,12 +148,7 @@ public class InMemoryMetricsRepository implements MetricsExtRepository<MetricEnt
     }
 
     @Override
-    public List<String> listResourcesOfApp(String app, Integer extParams) {
-        return this.listResourcesOfApp(app);
-    }
-
-    @Override
-    public List<String> listResourcesOfApp(String app) {
+    public List<String> listResourcesOfApp(String app, Integer activeTimeFilter) {
         List<String> results = new ArrayList<>();
         if (StringUtil.isBlank(app)) {
             return results;
@@ -163,8 +158,8 @@ public class InMemoryMetricsRepository implements MetricsExtRepository<MetricEnt
         if (resourceMap == null) {
             return results;
         }
-        final long minTimeMs = System.currentTimeMillis() - 1000 * 60;
         Map<String, MetricEntity> resourceCount = new ConcurrentHashMap<>(32);
+        final long minTimeMs = System.currentTimeMillis() - activeTimeFilter;
 
         readWriteLock.readLock().lock();
         try {
@@ -203,5 +198,10 @@ public class InMemoryMetricsRepository implements MetricsExtRepository<MetricEnt
         } finally {
             readWriteLock.readLock().unlock();
         }
+    }
+
+    @Override
+    public List<String> listResourcesOfApp(String app) {
+        return this.listResourcesOfApp(app, 60000);
     }
 }

@@ -176,7 +176,7 @@ public class MetricController {
         }
 
 
-        List<String> resources = metricStore.listResourcesOfApp(app);
+        List<String> resources = metricStore.listResourcesOfApp(app, (int) (timeRange * minute1));
         logger.debug("queryResourceSummary(), resources.size()={}", resources.size());
 
         if (resources == null || resources.isEmpty()) {
