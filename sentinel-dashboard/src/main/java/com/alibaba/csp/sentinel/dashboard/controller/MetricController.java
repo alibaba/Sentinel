@@ -219,7 +219,9 @@ public class MetricController {
             List<MetricEntity> entities = metricStore.queryByAppAndResourceBetween(
                     app, resource, startTime, endTime, 300);
             logger.debug("resource={}, entities.size()={}", resource, entities == null ? "null" : entities.size());
-            if(entities.size() == 0) continue;
+            if(entities.size() == 0) {
+                continue;
+            }
 
             MetricEntity metricEntity = new MetricEntity();
             entities.forEach(entity -> metricEntity.merge(entity));
