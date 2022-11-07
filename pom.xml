@@ -111,6 +111,11 @@
             </dependency>
             <dependency>
                 <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-parameter-degrade</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
                 <artifactId>sentinel-datasource-extension</artifactId>
                 <version>${project.version}</version>
             </dependency>
