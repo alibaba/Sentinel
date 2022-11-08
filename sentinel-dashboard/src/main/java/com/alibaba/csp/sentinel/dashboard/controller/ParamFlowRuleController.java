@@ -93,6 +93,9 @@ public class ParamFlowRuleController {
         if (port == null || port <= 0) {
             return Result.ofFail(-1, "Invalid parameter: port");
         }
+        if (!appManagement.isValidMachineOfApp(app, ip)) {
+            return Result.ofFail(-1, "given ip does not belong to given app");
+        }
         if (!checkIfSupported(app, ip, port)) {
             return unsupportedVersion();
         }
