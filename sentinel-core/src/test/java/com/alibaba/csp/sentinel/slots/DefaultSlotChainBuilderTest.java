@@ -18,7 +18,7 @@ package com.alibaba.csp.sentinel.slots;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlotChain;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthoritySlot;
-import com.alibaba.csp.sentinel.slots.block.degrade.DefaultDegradeSlot;
+import com.alibaba.csp.sentinel.slots.block.degrade.DefaultCircuitBreakerSlot;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeSlot;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowSlot;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
@@ -69,10 +69,10 @@ public class DefaultSlotChainBuilderTest {
         assertTrue(next instanceof FlowSlot);
 
         next = next.getNext();
-        assertTrue(next instanceof DegradeSlot);
+        assertTrue(next instanceof DefaultCircuitBreakerSlot);
 
         next = next.getNext();
-        assertTrue(next instanceof DefaultDegradeSlot);
+        assertTrue(next instanceof DegradeSlot);
 
         next = next.getNext();
         assertNull(next);
