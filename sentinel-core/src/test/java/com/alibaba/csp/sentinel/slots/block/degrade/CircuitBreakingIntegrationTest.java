@@ -50,7 +50,7 @@ public class CircuitBreakingIntegrationTest extends AbstractTimeBasedTest {
     @After
     public void tearDown() {
         DegradeRuleManager.loadRules(new ArrayList<>());
-        DefaultDegradeRuleManager.loadRules(new ArrayList<>());
+        DefaultCircuitBreakerRuleManager.loadRules(new ArrayList<>());
     }
 
     @Test
@@ -126,8 +126,8 @@ public class CircuitBreakingIntegrationTest extends AbstractTimeBasedTest {
         String res = "CircuitBreakingIntegrationTest_testSlowRequestModeUseDefaultRule";
         EventObserverRegistry.getInstance().addStateChangeObserver(res, observer);
 
-        DefaultDegradeRuleManager.loadRules(Arrays.asList(
-                new DegradeRule(DefaultDegradeRuleManager.DEFAULT_KEY).setTimeWindow(retryTimeoutSec).setCount(maxRt)
+        DefaultCircuitBreakerRuleManager.loadRules(Arrays.asList(
+                new DegradeRule(DefaultCircuitBreakerRuleManager.DEFAULT_KEY).setTimeWindow(retryTimeoutSec).setCount(maxRt)
                         .setStatIntervalMs(statIntervalMs).setMinRequestAmount(minRequestAmount)
                         .setSlowRatioThreshold(0.8d).setGrade(0)));
 
@@ -150,7 +150,7 @@ public class CircuitBreakingIntegrationTest extends AbstractTimeBasedTest {
         // Circuit breaker has transformed to OPEN since here.
         verify(observer)
                 .onStateChange(eq(State.CLOSED), eq(State.OPEN), any(DegradeRule.class), anyDouble());
-        assertEquals(State.OPEN, DefaultDegradeRuleManager.getDefaultCircuitBreakers(res).get(0).currentState());
+        assertEquals(State.OPEN, DefaultCircuitBreakerRuleManager.getDefaultCircuitBreakers(res).get(0).currentState());
         assertFalse(entryAndSleepFor(res, 1));
 
         sleepSecond(1);
