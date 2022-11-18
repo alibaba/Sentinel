@@ -195,14 +195,15 @@ public class MetricWriter {
         String dateStr = fileNameDf.format(new Date(time));
         String fileNameModel = baseFileName + "." + dateStr;
         File[] listFiles = baseFile.listFiles();
-        if (listFiles != null) {
-            for (File file : listFiles) {
-                String fileName = file.getName();
-                if (fileName.contains(fileNameModel) &&
-                        !fileName.endsWith(METRIC_FILE_INDEX_SUFFIX) &&
-                        !fileName.endsWith(".lck")) {
-                    list.add(file.getAbsolutePath());
-                }
+        if (listFiles == null) {
+            return baseDir + fileNameModel;
+        }
+        for (File file : listFiles) {
+            String fileName = file.getName();
+            if (fileName.contains(fileNameModel)
+                && !fileName.endsWith(METRIC_FILE_INDEX_SUFFIX)
+                && !fileName.endsWith(".lck")) {
+                list.add(file.getAbsolutePath());
             }
         }
         Collections.sort(list, METRIC_FILE_NAME_CMP);
