@@ -15,13 +15,11 @@
  */
 package com.alibaba.csp.sentinel.init;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ServiceLoader;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.spi.SpiLoader;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Load registered init functions and execute in order.
@@ -30,37 +28,42 @@ import com.alibaba.csp.sentinel.spi.SpiLoader;
  */
 public final class InitExecutor {
 
-    private static AtomicBoolean initialized = new AtomicBoolean(false);
+    private static volatile boolean initialized = false;
 
     /**
      * If one {@link InitFunc} throws an exception, the init process
      * will immediately be interrupted and the application will exit.
-     *
+     * <p>
      * The initialization will be executed only once.
      */
     public static void doInit() {
-        if(initialized.get()) return;
-        if (!initialized.compareAndSet(false, true)) {
-            return;
-        }
-        try {
-            List<InitFunc> initFuncs = SpiLoader.of(InitFunc.class).loadInstanceListSorted();
-            List<OrderWrapper> initList = new ArrayList<OrderWrapper>();
-            for (InitFunc initFunc : initFuncs) {
-                RecordLog.info("[InitExecutor] Found init func: {}", initFunc.getClass().getCanonicalName());
-                insertSorted(initList, initFunc);
+        //If initialized has already  return
+        if (initialized) return;
+        //lock for initialize
+        synchronized (InitExecutor.class) {
+            //check again，this place is thread-safe
+            if (initialized) return;
+            try {
+                List<InitFunc> initFuncs = SpiLoader.of(InitFunc.class).loadInstanceListSorted();
+                List<OrderWrapper> initList = new ArrayList<OrderWrapper>();
+                for (InitFunc initFunc : initFuncs) {
+                    RecordLog.info("[InitExecutor] Found init func: {}", initFunc.getClass().getCanonicalName());
+                    insertSorted(initList, initFunc);
+                }
+                for (OrderWrapper w : initList) {
+                    w.func.init();
+                    RecordLog.info("[InitExecutor] Executing {} with order {}",
+                            w.func.getClass().getCanonicalName(), w.order);
+                }
+                //initialize success
+                initialized = true;
+            } catch (Exception ex) {
+                RecordLog.warn("[InitExecutor] WARN: Initialization failed", ex);
+                ex.printStackTrace();
+            } catch (Error error) {
+                RecordLog.warn("[InitExecutor] ERROR: Initialization failed with fatal error", error);
+                error.printStackTrace();
             }
-            for (OrderWrapper w : initList) {
-                w.func.init();
-                RecordLog.info("[InitExecutor] Executing {} with order {}",
-                    w.func.getClass().getCanonicalName(), w.order);
-            }
-        } catch (Exception ex) {
-            RecordLog.warn("[InitExecutor] WARN: Initialization failed", ex);
-            ex.printStackTrace();
-        } catch (Error error) {
-            RecordLog.warn("[InitExecutor] ERROR: Initialization failed with fatal error", error);
-            error.printStackTrace();
         }
     }
 
@@ -83,7 +86,8 @@ public final class InitExecutor {
         }
     }
 
-    private InitExecutor() {}
+    private InitExecutor() {
+    }
 
     private static class OrderWrapper {
         private final int order;
