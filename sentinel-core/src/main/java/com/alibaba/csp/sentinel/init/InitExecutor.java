@@ -20,6 +20,7 @@ import com.alibaba.csp.sentinel.spi.SpiLoader;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Load registered init functions and execute in order.
@@ -28,21 +29,21 @@ import java.util.List;
  */
 public final class InitExecutor {
 
-    private static volatile boolean initialized = false;
+    private static AtomicBoolean initialized = new AtomicBoolean(false);
 
     /**
      * If one {@link InitFunc} throws an exception, the init process
      * will immediately be interrupted and the application will exit.
-     * <p>
+     *
      * The initialization will be executed only once.
      */
     public static void doInit() {
         //If initialized has already  return
-        if (initialized) return;
+        if (initialized.get()) return;
         //lock for initialize
         synchronized (InitExecutor.class) {
             //check again，this place is thread-safe
-            if (initialized) return;
+            if (initialized.get()) return;
             try {
                 List<InitFunc> initFuncs = SpiLoader.of(InitFunc.class).loadInstanceListSorted();
                 List<OrderWrapper> initList = new ArrayList<OrderWrapper>();
@@ -56,7 +57,7 @@ public final class InitExecutor {
                             w.func.getClass().getCanonicalName(), w.order);
                 }
                 //initialize success
-                initialized = true;
+                initialized.set(true);
             } catch (Exception ex) {
                 RecordLog.warn("[InitExecutor] WARN: Initialization failed", ex);
                 ex.printStackTrace();
@@ -86,8 +87,7 @@ public final class InitExecutor {
         }
     }
 
-    private InitExecutor() {
-    }
+    private InitExecutor() {}
 
     private static class OrderWrapper {
         private final int order;
