@@ -32,12 +32,12 @@ public class WindowWrap<T> {
     /**
      * Start timestamp of the window in milliseconds.
      */
-    private long windowStart;
+    private volatile long windowStart;
 
     /**
      * Statistic data.
      */
-    private T value;
+    private volatile T value;
 
     /**
      * @param windowLengthInMs a single window bucket's time length in milliseconds.

@@ -16,7 +16,6 @@
 package com.alibaba.csp.sentinel.cluster.flow.statistic.metric;
 
 import com.alibaba.csp.sentinel.slots.statistic.base.LeapArray;
-import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
 import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
 import com.alibaba.csp.sentinel.util.AssertUtil;
@@ -42,10 +41,8 @@ public class ClusterParameterLeapArray<C> extends LeapArray<CacheMap<Object, C>>
     }
 
     @Override
-    protected WindowWrap<CacheMap<Object, C>> resetWindowTo(WindowWrap<CacheMap<Object, C>> w, long startTime) {
-        w.resetTo(startTime);
-        w.value().clear();
-        return w;
+    protected void resetWindowValue(CacheMap<Object, C> windowValue, long startTime) {
+        windowValue.clear();
     }
 
 }
