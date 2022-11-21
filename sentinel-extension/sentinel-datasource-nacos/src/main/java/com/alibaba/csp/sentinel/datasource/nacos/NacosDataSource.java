@@ -145,6 +145,7 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
     public void close() {
         if (configService != null) {
             configService.removeListener(dataId, groupId, configListener);
+            configService.shutDown();
         }
         pool.shutdownNow();
     }
