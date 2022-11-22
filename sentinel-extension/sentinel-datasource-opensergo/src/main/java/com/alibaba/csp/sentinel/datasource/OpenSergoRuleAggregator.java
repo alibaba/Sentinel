@@ -209,7 +209,7 @@ public class OpenSergoRuleAggregator {
                 for (ConcurrencyLimitStrategy strategy : strategies) {
                     FlowRule flowRule = new FlowRule(resourceName);
                     try {
-                        flowRule =fillFlowRuleWithConcurrencyLimitStrategy(flowRule, strategy);
+                        flowRule = fillFlowRuleWithConcurrencyLimitStrategy(flowRule, strategy);
                         if (flowRule != null) {
                             rules.add(flowRule);
                         }
@@ -309,7 +309,7 @@ public class OpenSergoRuleAggregator {
             return rule;
         }
         rule.setCount(strategy.getMaxConcurrency());
-        rule.setGrade(RuleConstant.FLOW_GRADE_QPS);
+        rule.setGrade(RuleConstant.FLOW_GRADE_THREAD);
         rule.setClusterMode(false);
         rule.setStrategy(RuleConstant.STRATEGY_DIRECT);
         rule.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_DEFAULT);
