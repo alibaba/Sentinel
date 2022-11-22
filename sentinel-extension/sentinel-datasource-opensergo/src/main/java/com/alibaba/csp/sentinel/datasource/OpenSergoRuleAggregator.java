@@ -114,6 +114,16 @@ public class OpenSergoRuleAggregator {
         return handleCircuitBreakerRuleUpdate();
     }
 
+    public synchronized boolean updateConcurrencyLimitStrategy(List<ConcurrencyLimitStrategy> strategies) {
+        Map<String, ConcurrencyLimitStrategy> map = new HashMap<>(4);
+        if (strategies != null && !strategies.isEmpty()) {
+            strategies.forEach(s -> map.put(s.getName(), s));
+        }
+        this.concurrencyLimitStrategyMap = map;
+
+        return handleFlowRuleUpdate();
+    }
+
     private boolean handleFlowRuleUpdate() {
         List<FlowRule> rules = new ArrayList<>();
 
@@ -121,9 +131,12 @@ public class OpenSergoRuleAggregator {
             ftRuleMapByStrategyKind.get(ConfigKind.RATE_LIMIT_STRATEGY.getSimpleKindName()), rateLimitStrategyMap);
         List<FlowRule> rulesFromThrottlingStrategies = assembleFlowRulesFromThrottlingStrategies(
             ftRuleMapByStrategyKind.get(ConfigKind.THROTTLING_STRATEGY.getSimpleKindName()), throttlingStrategyMap);
+        List<FlowRule> rulesConcurrencyLimitStrategies = assembleFlowRulesFromConcurrencyLimitStrategies(
+            ftRuleMapByStrategyKind.get(ConfigKind.CONCURRENCY_LIMIT_STRATEGY.getSimpleKindName()), concurrencyLimitStrategyMap);
 
         rules.addAll(rulesFromRateLimitStrategies);
         rules.addAll(rulesFromThrottlingStrategies);
+        rules.addAll(rulesConcurrencyLimitStrategies);
 
         // Update rules to upstream data-source.
         return dataSourceMap.get(OpenSergoSentinelConstants.KIND_FLOW_RULE).updateValue(rules);
@@ -166,6 +179,42 @@ public class OpenSergoRuleAggregator {
                         }
                     } catch (Exception ex) {
                         RecordLog.warn("Ignoring OpenSergo RateLimitStrategy due to covert failure, "
+                            + "resourceName={}, strategy={}", resourceName, strategy);
+                    }
+                }
+            }
+        }
+        return rules;
+    }
+
+    private List<FlowRule> assembleFlowRulesFromConcurrencyLimitStrategies(List<FaultToleranceRule> ftRules,
+                                                                    Map<String, ConcurrencyLimitStrategy> concurrencyLimitStrategyMap) {
+        List<FlowRule> rules = new ArrayList<>();
+        if (ftRules == null || ftRules.isEmpty()) {
+            return rules;
+        }
+        for (FaultToleranceRule ftRule : ftRules) {
+            List<ConcurrencyLimitStrategy> strategies = ftRule.getStrategiesList().stream()
+                .filter(e -> e.getKind().equals(ConfigKind.CONCURRENCY_LIMIT_STRATEGY.getSimpleKindName()))
+                .map(e -> concurrencyLimitStrategyMap.get(e.getName()))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+            if (strategies.isEmpty()) {
+                continue;
+            }
+
+            for (FaultToleranceRuleTargetRef targetRef : ftRule.getTargetsList()) {
+                String resourceName = targetRef.getTargetResourceName();
+
+                for (ConcurrencyLimitStrategy strategy : strategies) {
+                    FlowRule flowRule = new FlowRule(resourceName);
+                    try {
+                        flowRule =fillFlowRuleWithConcurrencyLimitStrategy(flowRule, strategy);
+                        if (flowRule != null) {
+                            rules.add(flowRule);
+                        }
+                    } catch (Exception ex) {
+                        RecordLog.warn("Ignoring OpenSergo ConcurrencyLimitStrategy due to covert failure, "
                             + "resourceName={}, strategy={}", resourceName, strategy);
                     }
                 }
@@ -250,6 +299,19 @@ public class OpenSergoRuleAggregator {
         // Relation strategy.
         rule.setStrategy(RuleConstant.STRATEGY_DIRECT);
         // Control behavior.
+        rule.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_DEFAULT);
+
+        return rule;
+    }
+
+    private FlowRule fillFlowRuleWithConcurrencyLimitStrategy(FlowRule rule, ConcurrencyLimitStrategy strategy) {
+        if (rule == null || strategy == null) {
+            return rule;
+        }
+        rule.setCount(strategy.getMaxConcurrency());
+        rule.setGrade(RuleConstant.FLOW_GRADE_QPS);
+        rule.setClusterMode(false);
+        rule.setStrategy(RuleConstant.STRATEGY_DIRECT);
         rule.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_DEFAULT);
 
         return rule;
