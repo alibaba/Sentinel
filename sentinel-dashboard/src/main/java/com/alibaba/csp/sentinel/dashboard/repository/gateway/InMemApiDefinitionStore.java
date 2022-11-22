@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.ApiDefinitio
 import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
 import org.springframework.stereotype.Component;
 
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -34,6 +35,6 @@ public class InMemApiDefinitionStore extends InMemoryRuleRepositoryAdapter<ApiDe
 
     @Override
     protected long nextId() {
-        return ids.incrementAndGet();
+        return Long.valueOf(System.currentTimeMillis() + String.valueOf(new Random().nextInt(1000)) + ids.incrementAndGet());
     }
 }
