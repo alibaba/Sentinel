@@ -14,7 +14,6 @@
 
     <properties>
         <curator.version>5.1.0</curator.version>
-        <curator.test.version>2.12.0</curator.test.version>
     </properties>
 
     <dependencies>
