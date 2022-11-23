@@ -140,6 +140,12 @@ Sentinel also provides a simple dashboard application, on which you can monitor 
 
 For details please refer to [Dashboard](https://github.com/alibaba/Sentinel/wiki/Dashboard).
 
+### 6. Build Docker Image for Dashboard
+
+```
+docker build --build-arg SENTINEL_VERSION=1.8.6 -t ${REGISTRY}/sentinel-dashboard:v1.8.6 .
+```
+
 ## Trouble Shooting and Logs
 
 Sentinel will generate logs for troubleshooting and real-time monitoring.
