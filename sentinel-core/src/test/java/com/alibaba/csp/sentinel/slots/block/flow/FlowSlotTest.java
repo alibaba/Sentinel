@@ -20,7 +20,9 @@ import java.util.Collections;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.context.ContextTestUtil;
+import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.DefaultNode;
+import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
 import com.alibaba.csp.sentinel.util.function.Function;
@@ -92,5 +94,30 @@ public class FlowSlotTest {
             .thenReturn(false);
 
         flowSlot.checkFlow(new StringResourceWrapper(resA, EntryType.IN), context, node, 1, false);
+    }
+
+    @Test(expected = FlowException.class)
+    public void testClusterFallbackToLocalCount() throws Exception{
+        FlowRuleChecker checker = mock(FlowRuleChecker.class);
+        FlowSlot flowSlot = new FlowSlot(checker);
+        Context context = mock(Context.class);
+        DefaultNode node = mock(DefaultNode.class);
+        when(node.getClusterNode()).thenReturn(mock(ClusterNode.class));
+        doCallRealMethod().when(checker).checkFlow(any(Function.class), any(ResourceWrapper.class), any(Context.class),
+                any(DefaultNode.class), anyInt(), anyBoolean());
+
+        String resA = "resAK";
+        FlowRule rule = new FlowRule(resA).setCount(10);
+        rule.setClusterMode(true);
+        ClusterFlowConfig clusterFlowConfig = new ClusterFlowConfig();
+        clusterFlowConfig.setLocalCount(5);
+        clusterFlowConfig.setFallbackToLocalWhenFail(true);
+        clusterFlowConfig.setFlowId(111L);
+        clusterFlowConfig.setThresholdType(1);
+        rule.setClusterConfig(clusterFlowConfig);
+        FlowRuleManager.loadRules(Collections.singletonList(rule));
+
+        doCallRealMethod().when(checker).canPassCheck(any(FlowRule.class), any(Context.class), any(DefaultNode.class), any(int.class), any(boolean.class));
+        flowSlot.checkFlow(new StringResourceWrapper(resA, EntryType.IN), context, node, 6, false);
     }
 }

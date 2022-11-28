@@ -43,7 +43,16 @@ public class RateLimiterController implements TrafficShapingController {
     }
 
     @Override
+    public boolean canPassLocal(Node node, int acquireCount, boolean prioritized, double localCount) {
+        return canPass(node, acquireCount, prioritized, localCount);
+    }
+
+    @Override
     public boolean canPass(Node node, int acquireCount, boolean prioritized) {
+        return canPass(node, acquireCount, prioritized, count);
+    }
+
+    private boolean canPass(Node node, int acquireCount, boolean prioritized, double count) {
         // Pass when acquire count is less or equal than 0.
         if (acquireCount <= 0) {
             return true;

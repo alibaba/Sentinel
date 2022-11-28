@@ -49,7 +49,8 @@ public class FlowRuleChecker {
         Collection<FlowRule> rules = ruleProvider.apply(resource.getName());
         if (rules != null) {
             for (FlowRule rule : rules) {
-                if (!canPassCheck(rule, context, node, count, prioritized)) {
+                boolean result = !canPassCheck(rule, context, node, count, prioritized);
+                if (result) {
                     throw new FlowException(rule.getLimitApp(), rule);
                 }
             }
@@ -83,6 +84,16 @@ public class FlowRuleChecker {
         }
 
         return rule.getRater().canPass(selectedNode, acquireCount, prioritized);
+    }
+
+    private static boolean passLocalCheck(FlowRule rule, Context context, DefaultNode node, int acquireCount,
+                                          boolean prioritized, double localCount) {
+        Node selectedNode = selectNodeByRequesterAndStrategy(rule, context, node);
+        if (selectedNode == null) {
+            return true;
+        }
+
+        return rule.getRater().canPassLocal(selectedNode, acquireCount, prioritized, localCount);
     }
 
     static Node selectReferenceNode(FlowRule rule, Context context, DefaultNode node) {
@@ -166,7 +177,7 @@ public class FlowRuleChecker {
     private static boolean fallbackToLocalOrPass(FlowRule rule, Context context, DefaultNode node, int acquireCount,
                                                  boolean prioritized) {
         if (rule.getClusterConfig().isFallbackToLocalWhenFail()) {
-            return passLocalCheck(rule, context, node, acquireCount, prioritized);
+            return passLocalCheck(rule, context, node, acquireCount, prioritized, rule.getClusterConfig().getLocalCount());
         } else {
             // The rule won't be activated, just pass.
             return true;

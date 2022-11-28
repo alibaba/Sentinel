@@ -64,10 +64,11 @@ import com.alibaba.csp.sentinel.slots.block.flow.TrafficShapingController;
 public class WarmUpController implements TrafficShapingController {
 
     protected double count;
-    private int coldFactor;
+    protected int coldFactor;
     protected int warningToken = 0;
     private int maxToken;
     protected double slope;
+    protected int warmUpPeriodInSec;
 
     protected AtomicLong storedTokens = new AtomicLong(0);
     protected AtomicLong lastFilledTime = new AtomicLong(0);
@@ -80,7 +81,7 @@ public class WarmUpController implements TrafficShapingController {
         construct(count, warmUpPeriodInSec, 3);
     }
 
-    private void construct(double count, int warmUpPeriodInSec, int coldFactor) {
+    protected void construct(double count, int warmUpPeriodInSec, int coldFactor) {
 
         if (coldFactor <= 1) {
             throw new IllegalArgumentException("Cold factor should be larger than 1");
@@ -89,6 +90,8 @@ public class WarmUpController implements TrafficShapingController {
         this.count = count;
 
         this.coldFactor = coldFactor;
+
+        this.warmUpPeriodInSec = warmUpPeriodInSec;
 
         // thresholdPermits = 0.5 * warmupPeriod / stableInterval.
         // warningToken = 100;
@@ -111,11 +114,22 @@ public class WarmUpController implements TrafficShapingController {
     }
 
     @Override
+    public boolean canPassLocal(Node node, int acquireCount, boolean prioritized, double localCount) {
+        construct(localCount, warmUpPeriodInSec, coldFactor);
+        return canPass(node, acquireCount, prioritized, localCount);
+    }
+
+    @Override
     public boolean canPass(Node node, int acquireCount, boolean prioritized) {
+        construct(count, warmUpPeriodInSec, coldFactor);
+        return canPass(node, acquireCount, prioritized, count);
+    }
+
+    private boolean canPass(Node node, int acquireCount, boolean prioritized, double count) {
         long passQps = (long) node.passQps();
 
         long previousQps = (long) node.previousPassQps();
-        syncToken(previousQps);
+        syncToken(previousQps, count);
 
         // 开始计算它的斜率
         // 如果进入了警戒线，开始调整他的qps
@@ -137,7 +151,9 @@ public class WarmUpController implements TrafficShapingController {
         return false;
     }
 
-    protected void syncToken(long passQps) {
+
+
+    protected void syncToken(long passQps, double count) {
         long currentTime = TimeUtil.currentTimeMillis();
         currentTime = currentTime - currentTime % 1000;
         long oldLastFillTime = lastFilledTime.get();
@@ -146,7 +162,7 @@ public class WarmUpController implements TrafficShapingController {
         }
 
         long oldValue = storedTokens.get();
-        long newValue = coolDownTokens(currentTime, passQps);
+        long newValue = coolDownTokens(currentTime, passQps, count);
 
         if (storedTokens.compareAndSet(oldValue, newValue)) {
             long currentValue = storedTokens.addAndGet(0 - passQps);
@@ -158,7 +174,7 @@ public class WarmUpController implements TrafficShapingController {
 
     }
 
-    private long coolDownTokens(long currentTime, long passQps) {
+    private long coolDownTokens(long currentTime, long passQps, double count) {
         long oldValue = storedTokens.get();
         long newValue = oldValue;
 
