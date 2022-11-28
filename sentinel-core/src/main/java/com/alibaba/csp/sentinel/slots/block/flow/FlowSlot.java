@@ -173,6 +173,7 @@ public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
     public void exit(Context context, ResourceWrapper resourceWrapper, int count, Object... args) {
+        checker.cleanUpEffect(resourceWrapper, context, count);
         fireExit(context, resourceWrapper, count, args);
     }
 

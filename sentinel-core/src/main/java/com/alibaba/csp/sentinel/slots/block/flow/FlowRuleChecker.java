@@ -15,7 +15,9 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
 import com.alibaba.csp.sentinel.cluster.server.EmbeddedClusterTokenServerProvider;
@@ -41,6 +43,8 @@ import com.alibaba.csp.sentinel.util.function.Function;
  */
 public class FlowRuleChecker {
 
+    private static ThreadLocal<List<FlowRuleWrapper>> threadContext = ThreadLocal.withInitial(ArrayList::new);
+    
     public void checkFlow(Function<String, Collection<FlowRule>> ruleProvider, ResourceWrapper resource,
                           Context context, DefaultNode node, int count, boolean prioritized) throws BlockException {
         if (ruleProvider == null || resource == null) {
@@ -82,6 +86,7 @@ public class FlowRuleChecker {
             return true;
         }
 
+        threadContext.get().add(new FlowRuleWrapper(rule, selectedNode, acquireCount, prioritized));
         return rule.getRater().canPass(selectedNode, acquireCount, prioritized);
     }
 
@@ -182,6 +187,17 @@ public class FlowRuleChecker {
         }
         return null;
     }
+    
+    public void cleanUpEffect(ResourceWrapper resourceWrapper, Context context, int count) {
+        List<FlowRuleWrapper> wrappers = threadContext.get();
+        try {
+            for (FlowRuleWrapper wrapper: wrappers) {
+                wrapper.getRule().getRater().cleanUpEffect(wrapper.getNode(), wrapper.getAcquireCount(), wrapper.isPrioritized());
+            }
+        } finally {
+            wrappers.clear();
+        }
+    }
 
     private static boolean applyTokenResult(/*@NonNull*/ TokenResult result, FlowRule rule, Context context,
                                                          DefaultNode node,
@@ -207,4 +223,35 @@ public class FlowRuleChecker {
                 return false;
         }
     }
+    
+    private static class FlowRuleWrapper {
+        final FlowRule rule;
+        final Node node;
+        final int acquireCount;
+        final boolean prioritized;
+        
+        public FlowRuleWrapper(FlowRule rule, Node node, int acquireCount, boolean prioritized) {
+            this.rule = rule;
+            this.node = node;
+            this.acquireCount = acquireCount;
+            this.prioritized = prioritized;
+        }
+
+        FlowRule getRule() {
+            return rule;
+        }
+
+        Node getNode() {
+            return node;
+        }
+
+        int getAcquireCount() {
+            return acquireCount;
+        }
+        
+        boolean isPrioritized() {
+            return prioritized;
+        }
+    }
+    
 }

@@ -173,5 +173,15 @@ public class WarmUpController implements TrafficShapingController {
         }
         return Math.min(newValue, maxToken);
     }
+    
+    @Override
+    public void cleanUpEffect(Node node, int acquireCount) {
+        cleanUpEffect(node, acquireCount, false);
+    }
+
+    @Override
+    public void cleanUpEffect(Node node, int acquireCount, boolean prioritized) {
+        // nothing
+    }
 
 }
