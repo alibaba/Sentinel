@@ -60,13 +60,17 @@ public final class TokenResultStatus {
      */
     public static final int NOT_AVAILABLE = 5;
     /**
-     * Token is successfully released.
      */
     public static final int RELEASE_OK = 6;
     /**
      * Token already is released before the request arrives.
      */
     public static final int ALREADY_RELEASE=7;
+
+    /**
+     * Alive instance not enough so downgraded
+     * */
+    public static final int NOT_ENOUGH_CLIENT=8;
 
     private TokenResultStatus() {
     }

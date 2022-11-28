@@ -60,4 +60,9 @@ public interface TokenService {
      * @param tokenId the unique token ID
      */
     void releaseConcurrentToken(Long tokenId);
+
+    /**
+     * Request tokens from remote token server under calculation of alive instance
+     * */
+    TokenResult requestToken(Long ruleId, int acquireCount, int aliveClientCount, boolean prioritized);
 }

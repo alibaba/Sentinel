@@ -58,7 +58,7 @@ public class FlowRule extends AbstractRule {
 
     /**
      * Flow control strategy based on invocation chain.
-     *
+     * <p>
      * {@link RuleConstant#STRATEGY_DIRECT} for direct flow control (by origin);
      * {@link RuleConstant#STRATEGY_RELATE} for relevant flow control (with relevant resource);
      * {@link RuleConstant#STRATEGY_CHAIN} for chain flow control (by entrance resource).
@@ -93,6 +93,26 @@ public class FlowRule extends AbstractRule {
      * The traffic shaping (throttling) controller.
      */
     private TrafficShapingController controller;
+
+    private double clusterLocalCountWhenError;
+
+    private int mustAliveClientCount;
+
+    public double getClusterLocalCountWhenError() {
+        return clusterLocalCountWhenError;
+    }
+
+    public void setClusterLocalCountWhenError(double clusterLocalCountWhenError) {
+        this.clusterLocalCountWhenError = clusterLocalCountWhenError;
+    }
+
+    public int getMustAliveClientCount() {
+        return mustAliveClientCount;
+    }
+
+    public void setMustAliveClientCount(int mustAliveClientCount) {
+        this.mustAliveClientCount = mustAliveClientCount;
+    }
 
     public int getControlBehavior() {
         return controlBehavior;
@@ -186,20 +206,48 @@ public class FlowRule extends AbstractRule {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) { return true; }
-        if (o == null || getClass() != o.getClass()) { return false; }
-        if (!super.equals(o)) { return false; }
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
 
-        FlowRule rule = (FlowRule)o;
+        FlowRule rule = (FlowRule) o;
 
-        if (grade != rule.grade) { return false; }
-        if (Double.compare(rule.count, count) != 0) { return false; }
-        if (strategy != rule.strategy) { return false; }
-        if (controlBehavior != rule.controlBehavior) { return false; }
-        if (warmUpPeriodSec != rule.warmUpPeriodSec) { return false; }
-        if (maxQueueingTimeMs != rule.maxQueueingTimeMs) { return false; }
-        if (clusterMode != rule.clusterMode) { return false; }
-        if (refResource != null ? !refResource.equals(rule.refResource) : rule.refResource != null) { return false; }
+        if (grade != rule.grade) {
+            return false;
+        }
+        if (mustAliveClientCount != rule.mustAliveClientCount) {
+            return false;
+        }
+        if (clusterLocalCountWhenError != rule.clusterLocalCountWhenError) {
+            return false;
+        }
+        if (Double.compare(rule.count, count) != 0) {
+            return false;
+        }
+        if (strategy != rule.strategy) {
+            return false;
+        }
+        if (controlBehavior != rule.controlBehavior) {
+            return false;
+        }
+        if (warmUpPeriodSec != rule.warmUpPeriodSec) {
+            return false;
+        }
+        if (maxQueueingTimeMs != rule.maxQueueingTimeMs) {
+            return false;
+        }
+        if (clusterMode != rule.clusterMode) {
+            return false;
+        }
+        if (refResource != null ? !refResource.equals(rule.refResource) : rule.refResource != null) {
+            return false;
+        }
         return clusterConfig != null ? clusterConfig.equals(rule.clusterConfig) : rule.clusterConfig == null;
     }
 
@@ -208,8 +256,10 @@ public class FlowRule extends AbstractRule {
         int result = super.hashCode();
         long temp;
         result = 31 * result + grade;
+        result = 31 * result + mustAliveClientCount;
+        result = (int) (31 * result + clusterLocalCountWhenError);
         temp = Double.doubleToLongBits(count);
-        result = 31 * result + (int)(temp ^ (temp >>> 32));
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
         result = 31 * result + strategy;
         result = 31 * result + (refResource != null ? refResource.hashCode() : 0);
         result = 31 * result + controlBehavior;
@@ -223,18 +273,20 @@ public class FlowRule extends AbstractRule {
     @Override
     public String toString() {
         return "FlowRule{" +
-            "resource=" + getResource() +
-            ", limitApp=" + getLimitApp() +
-            ", grade=" + grade +
-            ", count=" + count +
-            ", strategy=" + strategy +
-            ", refResource=" + refResource +
-            ", controlBehavior=" + controlBehavior +
-            ", warmUpPeriodSec=" + warmUpPeriodSec +
-            ", maxQueueingTimeMs=" + maxQueueingTimeMs +
-            ", clusterMode=" + clusterMode +
-            ", clusterConfig=" + clusterConfig +
-            ", controller=" + controller +
-            '}';
+                "resource=" + getResource() +
+                ", limitApp=" + getLimitApp() +
+                ", grade=" + grade +
+                ", count=" + count +
+                ", strategy=" + strategy +
+                ", refResource=" + refResource +
+                ", controlBehavior=" + controlBehavior +
+                ", warmUpPeriodSec=" + warmUpPeriodSec +
+                ", maxQueueingTimeMs=" + maxQueueingTimeMs +
+                ", clusterMode=" + clusterMode +
+                ", clusterConfig=" + clusterConfig +
+                ", controller=" + controller +
+                ", clusterLocalCountWhenError=" + clusterLocalCountWhenError +
+                ", mustAliveClientCount=" + mustAliveClientCount +
+                '}';
     }
 }

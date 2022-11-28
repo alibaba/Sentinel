@@ -15,15 +15,7 @@
  */
 package com.alibaba.csp.sentinel.cluster.client;
 
-import java.util.Collection;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import com.alibaba.csp.sentinel.cluster.ClusterConstants;
-import com.alibaba.csp.sentinel.cluster.ClusterErrorMessages;
-import com.alibaba.csp.sentinel.cluster.ClusterTransportClient;
-import com.alibaba.csp.sentinel.cluster.TokenResult;
-import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
-import com.alibaba.csp.sentinel.cluster.TokenServerDescriptor;
+import com.alibaba.csp.sentinel.cluster.*;
 import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientAssignConfig;
 import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfigManager;
 import com.alibaba.csp.sentinel.cluster.client.config.ServerChangeObserver;
@@ -35,6 +27,9 @@ import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
 import com.alibaba.csp.sentinel.cluster.response.data.FlowTokenResponseData;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
+
+import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Default implementation of {@link ClusterTokenClient}.
@@ -184,6 +179,11 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
 
     @Override
     public TokenResult requestConcurrentToken(String clientAddress, Long ruleId, int acquireCount) {
+        return null;
+    }
+
+    @Override
+    public TokenResult requestToken(Long ruleId, int acquireCount, int aliveClientCount, boolean prioritized) {
         return null;
     }
 

@@ -45,10 +45,7 @@ public class DefaultEmbeddedTokenServer implements EmbeddedClusterTokenServer {
 
     @Override
     public TokenResult requestToken(Long ruleId, int acquireCount, boolean prioritized) {
-        if (tokenService != null) {
-            return tokenService.requestToken(ruleId, acquireCount, prioritized);
-        }
-        return new TokenResult(TokenResultStatus.FAIL);
+        return requestToken(ruleId, acquireCount, clientCount(), prioritized);
     }
 
     @Override
@@ -65,6 +62,17 @@ public class DefaultEmbeddedTokenServer implements EmbeddedClusterTokenServer {
     }
 
     @Override
+    public TokenResult requestToken(Long ruleId, int acquireCount, int aliveClientCount, boolean prioritized) {
+        if (tokenService != null) {
+            return tokenService.requestToken(ruleId, acquireCount, aliveClientCount, prioritized);
+        }
+        return new TokenResult(TokenResultStatus.FAIL);
+    }
+    @Override
     public void releaseConcurrentToken(Long tokenId) {
+    }
+
+    public int clientCount() {
+        return ((SentinelDefaultTokenServer) server).clientCount();
     }
 }

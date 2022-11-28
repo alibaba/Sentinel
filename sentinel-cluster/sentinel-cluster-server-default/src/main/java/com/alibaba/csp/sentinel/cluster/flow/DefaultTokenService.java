@@ -84,6 +84,25 @@ public class DefaultTokenService implements TokenService {
         ConcurrentClusterFlowChecker.releaseConcurrentToken(tokenId);
     }
 
+    @Override
+    public TokenResult requestToken(Long ruleId, int acquireCount, int aliveClientCount, boolean prioritized) {
+        if (notValidRequest(ruleId, acquireCount)) {
+            return badRequest();
+        }
+        // The rule should be valid.
+        FlowRule rule = ClusterFlowRuleManager.getFlowRuleById(ruleId);
+        int mustAliveClientCount = rule.getMustAliveClientCount();
+        if (mustAliveClientCount > 0 && mustAliveClientCount > (aliveClientCount+1)) {
+            return new TokenResult(TokenResultStatus.NOT_ENOUGH_CLIENT);
+        }
+        if (rule == null) {
+            return new TokenResult(TokenResultStatus.NO_RULE_EXISTS);
+        }
+
+        return ClusterFlowChecker.acquireClusterToken(rule, acquireCount, prioritized);
+
+    }
+
     private boolean notValidRequest(Long id, int count) {
         return id == null || id <= 0 || count <= 0;
     }
