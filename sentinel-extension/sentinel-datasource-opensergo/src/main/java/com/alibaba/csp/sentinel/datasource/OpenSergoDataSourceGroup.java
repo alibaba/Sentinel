@@ -31,6 +31,7 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
 import io.opensergo.ConfigKind;
 import io.opensergo.OpenSergoClient;
 import io.opensergo.proto.fault_tolerance.v1.CircuitBreakerStrategy;
+import io.opensergo.proto.fault_tolerance.v1.ConcurrencyLimitStrategy;
 import io.opensergo.proto.fault_tolerance.v1.FaultToleranceRule;
 import io.opensergo.proto.fault_tolerance.v1.RateLimitStrategy;
 import io.opensergo.proto.fault_tolerance.v1.ThrottlingStrategy;
@@ -270,8 +271,7 @@ public class OpenSergoDataSourceGroup {
                 case THROTTLING_STRATEGY:
                     return ruleAggregator.updateThrottlingStrategy((List<ThrottlingStrategy>) data);
                 case CONCURRENCY_LIMIT_STRATEGY:
-                    // TODO
-                    return false;
+                    return ruleAggregator.updateConcurrencyLimitStrategy((List<ConcurrencyLimitStrategy>) data);
                 default:
                     // Type mismatch
                     return false;
