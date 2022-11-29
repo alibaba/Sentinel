@@ -68,9 +68,8 @@ public class MetricBeanWriter {
         long version = System.currentTimeMillis();
         // set or update the new value
         for (MetricNode metricNode : map.values()) {
-            final String mBeanName = "Sentinel:type=metric,resource=" + metricNode.getResource()
-                    +",classification=" + metricNode.getClassification()
-                    +",appName=" + appName;
+            final String mBeanName = "Sentinel:type=" + appName + ",name=\"" + metricNode.getResource()
+                    +"\",classification=\"" + metricNode.getClassification() +"\"";
             MetricBean metricBean = mBeanRegistry.findMBean(mBeanName);
             if (metricBean != null) {
                 metricBean.setValueFromNode(metricNode);
