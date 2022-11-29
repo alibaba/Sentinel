@@ -68,7 +68,7 @@ public class MetricBeanWriter {
         long version = System.currentTimeMillis();
         // set or update the new metric value
         for (MetricNode metricNode : map.values()) {
-            final String mBeanName = "Sentinel:type=metric,resource=" + metricNode.getResource()
+            final String mBeanName = "Sentinel:type=Metric,resource=" + metricNode.getResource()
                     +",classification=" + metricNode.getClassification()
                     +",appName=" + appName;
             MetricBean metricBean = mBeanRegistry.findMBean(mBeanName);
