@@ -38,7 +38,6 @@ public class CommandCenterInitFunc implements InitFunc {
 
         commandCenter.beforeStart();
         commandCenter.start();
-        RecordLog.info("[CommandCenterInit] Starting command center: "
-                + commandCenter.getClass().getCanonicalName());
+        RecordLog.info("[CommandCenterInit] Starting command center: {}", commandCenter.getClass().getCanonicalName());
     }
 }
