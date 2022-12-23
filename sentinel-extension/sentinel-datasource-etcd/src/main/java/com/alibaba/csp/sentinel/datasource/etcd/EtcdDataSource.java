@@ -88,7 +88,7 @@ public class EtcdDataSource<T> extends AbstractDataSource<String, T> {
                 WatchEvent.EventType eventType = watchEvent.getEventType();
                 if (eventType == WatchEvent.EventType.PUT) {
                     try {
-                        String newValueJson = watchEvent.getKeyValue().getValue().toString();
+                        String newValueJson = watchEvent.getKeyValue().getValue().toString(charset);
                         T newValue = parser.convert(newValueJson);
                         getProperty().updateValue(newValue);
                     } catch (Exception e) {
