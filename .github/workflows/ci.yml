@@ -14,12 +14,13 @@ jobs:
         java: [8, 11]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Java
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
           java-version: ${{ matrix.java }}
+          distribution: 'adopt'
           architecture: x64
 
       - name: Test with Maven

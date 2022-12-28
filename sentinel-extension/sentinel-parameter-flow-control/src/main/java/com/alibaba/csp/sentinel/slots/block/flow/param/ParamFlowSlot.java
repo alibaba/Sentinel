@@ -82,6 +82,10 @@ public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 String triggeredParam = "";
                 if (args.length > rule.getParamIdx()) {
                     Object value = args[rule.getParamIdx()];
+                    // Assign actual value with the result of paramFlowKey method
+                    if (value instanceof ParamFlowArgument) {
+                        value = ((ParamFlowArgument) value).paramFlowKey();
+                    }
                     triggeredParam = String.valueOf(value);
                 }
                 throw new ParamFlowException(resourceWrapper.getName(), triggeredParam, rule);

@@ -11,32 +11,36 @@
 ## Introduction
 
 As distributed systems become increasingly popular, the reliability between services is becoming more important than ever before.
-Sentinel takes "flow" as breakthrough point, and works on multiple fields including **flow control**,
-**traffic shaping**, **circuit breaking** and **system adaptive protection**, to guarantee reliability and resilience for microservices.
+Sentinel takes "flow" as breakthrough point, and works on multiple fields including **flow control**, **traffic shaping**,
+**concurrency limiting**, **circuit breaking** and **system adaptive overload protection**,
+to guarantee reliability and resilience for microservices.
 
 Sentinel has the following features:
 
 - **Rich applicable scenarios**: Sentinel has been wildly used in Alibaba, and has covered almost all the core-scenarios in Double-11 (11.11) Shopping Festivals in the past 10 years, such as “Second Kill” which needs to limit burst flow traffic to meet the system capacity, message peak clipping and valley fills, circuit breaking for unreliable downstream services, cluster flow control, etc.
 - **Real-time monitoring**: Sentinel also provides real-time monitoring ability. You can see the runtime information of a single machine in real-time, and the aggregated runtime info of a cluster with less than 500 nodes.
-- **Widespread open-source ecosystem**: Sentinel provides out-of-box integrations with commonly-used frameworks and libraries such as Spring Cloud, Dubbo and gRPC. You can easily use Sentinel by simply add the adapter dependency to your services.
-- **Polyglot support**: Sentinel has provided native support for Java, [Go](https://github.com/alibaba/sentinel-golang) and [C++](https://github.com/alibaba/sentinel-cpp).
+- **Widespread open-source ecosystem**: Sentinel provides out-of-box integrations with commonly-used frameworks and libraries such as Spring Cloud, gRPC, Apache Dubbo and Quarkus. You can easily use Sentinel by simply add the adapter dependency to your services.
+- **Polyglot support**: Sentinel has provided native support for Java, [Go](https://github.com/alibaba/sentinel-golang), [C++](https://github.com/alibaba/sentinel-cpp) and [Rust](https://github.com/sentinel-group/sentinel-rust).
 - **Various SPI extensions**: Sentinel provides easy-to-use SPI extension interfaces that allow you to quickly customize your logic, for example, custom rule management, adapting data sources, and so on.
 
 Features overview:
 
 ![features-of-sentinel](./doc/image/sentinel-features-overview-en.png)
 
+The community is also working on **the specification of traffic governance and fault-tolerance**.
+Please refer to [OpenSergo](https://opensergo.io/) for details.
+
 ## Documentation
 
-See the [Sentinel](https://sentinelguard.io/) for the document website.
+See the [Sentinel Website](https://sentinelguard.io/) for the official website of Sentinel.
 
-See the [中文文档](https://github.com/alibaba/Sentinel/wiki/%E4%BB%8B%E7%BB%8D) for document in Chinese.
+See the [中文文档](https://sentinelguard.io/zh-cn/docs/introduction.html) for document in Chinese.
 
 See the [Wiki](https://github.com/alibaba/Sentinel/wiki) for full documentation, examples, blog posts, operational details and other information.
 
 Sentinel provides integration modules for various open-source frameworks
-(e.g. Spring Cloud, Apache Dubbo, gRPC, Spring WebFlux, Reactor) and service mesh.
-You can refer to [the document](https://github.com/alibaba/Sentinel/wiki/Adapters-to-Popular-Framework) for more information.
+(e.g. Spring Cloud, Apache Dubbo, gRPC, Quarkus, Spring WebFlux, Reactor) and service mesh.
+You can refer to [the document](https://sentinelguard.io/en-us/docs/open-source-framework-integrations.html) for more information.
 
 If you are using Sentinel, please [**leave a comment here**](https://github.com/alibaba/Sentinel/issues/18) to tell us your scenario to make Sentinel better.
 It's also encouraged to add the link of your blog post, tutorial, demo or customized components to [**Awesome Sentinel**](./doc/awesome-sentinel.md).
@@ -60,7 +64,7 @@ If you're using Maven, just add the following dependency in `pom.xml`.
 <dependency>
     <groupId>com.alibaba.csp</groupId>
     <artifactId>sentinel-core</artifactId>
-    <version>1.8.4</version>
+    <version>1.8.6</version>
 </dependency>
 ```
 
@@ -100,7 +104,7 @@ rules.add(rule);
 FlowRuleManager.loadRules(rules);
 ```
 
-For more information, please refer to [How To Use](https://github.com/alibaba/Sentinel/wiki/How-to-Use).
+For more information, please refer to [How To Use](https://sentinelguard.io/en-us/docs/basic-api-resource-rule.html).
 
 ### 4. Check the Result
 
@@ -120,9 +124,9 @@ p stands for incoming request, block for blocked by rules, s for success handled
 
 This shows that the demo can print "hello world" 20 times per second.
 
-More examples and information can be found in the [How To Use](https://github.com/alibaba/Sentinel/wiki/How-to-Use) section.
+More examples and information can be found in the [How To Use](https://sentinelguard.io/en-us/docs/basic-api-resource-rule.html) section.
 
-The working principles of Sentinel can be found in [How it works](https://github.com/alibaba/Sentinel/wiki/How-it-works) section.
+The working principles of Sentinel can be found in [How it works](https://sentinelguard.io/en-us/docs/basic-implementation.html) section.
 
 Samples can be found in the [sentinel-demo](https://github.com/alibaba/Sentinel/tree/master/sentinel-demo) module.
 
@@ -139,7 +143,7 @@ For details please refer to [Dashboard](https://github.com/alibaba/Sentinel/wiki
 ## Trouble Shooting and Logs
 
 Sentinel will generate logs for troubleshooting and real-time monitoring.
-All the information can be found in [logs](https://github.com/alibaba/Sentinel/wiki/Logs).
+All the information can be found in [logs](https://sentinelguard.io/en-us/docs/logs.html).
 
 ## Bugs and Feedback
 
