@@ -22,39 +22,40 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+
 /**
- * @deprecated use {@link AbstractReadableAutoRefreshDataSource} instead since 1.8.4.
+ * The abstract readable data source provides a {@link ReadableDataSource} automatically fetches the backend data.
  *
- * A {@link ReadableDataSource} automatically fetches the backend data.
+ * @param <D> data type for DataSource
+ * @param <S> data type for Sentinel
  *
- * @param <S> source data type
- * @param <T> target data type
  * @author Carpenter Lee
+ * @author Jiajiangnan
  */
-@Deprecated
-public abstract class AutoRefreshDataSource<S, T> extends AbstractDataSource<S, T> {
+public abstract class AbstractReadableAutoRefreshDataSource<D, S> extends AbstractReadableDataSource<D, S> {
+
+    private static final long DEFAULT_REFRESH_MS = 3000;
 
     private ScheduledExecutorService service;
-    protected long recommendRefreshMs = 3000;
+    protected long refreshMs;
 
-    public AutoRefreshDataSource(Converter<S, T> configParser) {
-        super(configParser);
-        startTimerService();
+    public AbstractReadableAutoRefreshDataSource(final AbstractDataSourceContext<D, S> context) {
+        this(context, DEFAULT_REFRESH_MS);
     }
 
-    public AutoRefreshDataSource(Converter<S, T> configParser, final long recommendRefreshMs) {
-        super(configParser);
-        if (recommendRefreshMs <= 0) {
-            throw new IllegalArgumentException("recommendRefreshMs must > 0, but " + recommendRefreshMs + " get");
+    public AbstractReadableAutoRefreshDataSource(final AbstractDataSourceContext<D, S> context, final long refreshMs) {
+        super(context);
+        if (refreshMs <= 0) {
+            throw new IllegalArgumentException("recommendRefreshMs must > 0, but " + refreshMs + " get");
         }
-        this.recommendRefreshMs = recommendRefreshMs;
+        this.refreshMs = refreshMs;
         startTimerService();
     }
+
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private void startTimerService() {
-        service = Executors.newScheduledThreadPool(1,
-            new NamedThreadFactory("sentinel-datasource-auto-refresh-task", true));
+        service = Executors.newScheduledThreadPool(1, new NamedThreadFactory("sentinel-datasource-auto-refresh-task", true));
         service.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
@@ -62,13 +63,13 @@ public abstract class AutoRefreshDataSource<S, T> extends AbstractDataSource<S, 
                     if (!isModified()) {
                         return;
                     }
-                    T newValue = loadConfig();
+                    S newValue = loadConfig();
                     getProperty().updateValue(newValue);
                 } catch (Throwable e) {
                     RecordLog.info("loadConfig exception", e);
                 }
             }
-        }, recommendRefreshMs, recommendRefreshMs, TimeUnit.MILLISECONDS);
+        }, refreshMs, refreshMs, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -82,4 +83,5 @@ public abstract class AutoRefreshDataSource<S, T> extends AbstractDataSource<S, 
     protected boolean isModified() {
         return true;
     }
+
 }

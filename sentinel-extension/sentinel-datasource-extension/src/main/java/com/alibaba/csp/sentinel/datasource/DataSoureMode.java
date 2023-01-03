@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright 1999-2020 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,23 +15,16 @@
  */
 package com.alibaba.csp.sentinel.datasource;
 
-import com.alibaba.csp.sentinel.datasource.converter.SentinelConverter;
-
 /**
- * @deprecated use {@link SentinelConverter} instead since 1.8.4.
- * Convert an object from source type {@code S} to target type {@code T}.
+ * defined mode of DataSource
  *
- * @author leyou
- * @author Eric Zhao
+ * @author Jiajiangnan
  */
-@Deprecated
-public interface Converter<S, T> {
+public enum DataSoureMode {
 
-    /**
-     * Convert {@code source} to the target type.
-     *
-     * @param source the source object
-     * @return the target object
-     */
-    T convert(S source);
+    ALL,
+    READABLE,
+    WRITABLE
+    ;
+
 }

@@ -15,13 +15,13 @@
  */
 package com.alibaba.csp.sentinel.datasource;
 
+import com.alibaba.csp.sentinel.log.RecordLog;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.charset.Charset;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import com.alibaba.csp.sentinel.log.RecordLog;
 
 /**
  * A {@link WritableDataSource} based on file.

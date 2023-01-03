@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright 1999-2020 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,50 +15,69 @@
  */
 package com.alibaba.csp.sentinel.datasource.nacos;
 
-import java.util.Properties;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
-import com.alibaba.csp.sentinel.datasource.AbstractDataSource;
-import com.alibaba.csp.sentinel.datasource.Converter;
-import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.datasource.*;
+import com.alibaba.csp.sentinel.datasource.converter.SentinelConverter;
 import com.alibaba.csp.sentinel.util.AssertUtil;
-import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigService;
-import com.alibaba.nacos.api.config.listener.Listener;
+import com.alibaba.nacos.api.exception.NacosException;
+import org.slf4j.LoggerFactory;
+
+import java.util.Properties;
 
 /**
- * A read-only {@code DataSource} with Nacos backend. When the data in Nacos backend has been modified,
- * Nacos will automatically push the new value so that the dynamic configuration can be real-time.
+ * NacosDataSource who provides a reader to read config from nacos, and provides a writer to publish config to nacos.
  *
  * @author Eric Zhao
+ * @author Jiajiangnan
  */
-public class NacosDataSource<T> extends AbstractDataSource<String, T> {
+public class NacosDataSource<T> extends SentinelDataSource {
 
-    private static final int DEFAULT_TIMEOUT = 3000;
+    private final org.slf4j.Logger logger = LoggerFactory.getLogger(NacosDataSource.class);
 
-    /**
-     * Single-thread pool. Once the thread pool is blocked, we throw up the old task.
-     */
-    private final ExecutorService pool = new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS,
-        new ArrayBlockingQueue<Runnable>(1), new NamedThreadFactory("sentinel-nacos-ds-update", true),
-        new ThreadPoolExecutor.DiscardOldestPolicy());
-
-    private final Listener configListener;
-    private final String groupId;
-    private final String dataId;
-    private final Properties properties;
+    private ReadableDataSource reader;
+    private WritableDataSource writer;
+    private final NacosDataSourceContext<T> context;
 
     /**
-     * Note: The Nacos config might be null if its initialization failed.
+     * @deprecated since 1.8.4.
+     * Only for compatible with older versions < 1.8.4
+     * Constructs an read-only DataSource with Nacos backend.
+     *
+     * @param serverAddr server address of Nacos, cannot be empty
+     * @param groupId    group ID, cannot be empty
+     * @param dataId     data ID, cannot be empty
+     * @param converter     customized data parser, cannot be empty
      */
-    private ConfigService configService = null;
+    @Deprecated
+    public NacosDataSource(final String serverAddr, final String groupId, final String dataId, final Converter<String, T> converter) {
+        this(serverAddr, groupId, dataId, new SentinelConverter<String, T>() {
+            @Override
+            public T toSentinel(String source) {
+                return converter.convert(source);
+            }
+        });
+    }
+
+    /**
+     * @deprecated since 1.8.4.
+     * Only for compatible with older versions < 1.8.4
+     *
+     * @param properties properties for construct {@link ConfigService} using {@link NacosFactory#createConfigService(Properties)}
+     * @param groupId    group ID, cannot be empty
+     * @param dataId     data ID, cannot be empty
+     * @param converter     customized data parser, cannot be empty
+     */
+    @Deprecated
+    public NacosDataSource(final Properties properties, final String groupId, final String dataId, final Converter<String, T> converter) {
+        this(properties, groupId, dataId, new SentinelConverter<String, T>() {
+            @Override
+            public T toSentinel(String source) {
+                return converter.convert(source);
+            }
+        });
+    }
 
     /**
      * Constructs an read-only DataSource with Nacos backend.
@@ -66,11 +85,14 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
      * @param serverAddr server address of Nacos, cannot be empty
      * @param groupId    group ID, cannot be empty
      * @param dataId     data ID, cannot be empty
-     * @param parser     customized data parser, cannot be empty
+     * @param converter     customized data parser, cannot be empty
      */
-    public NacosDataSource(final String serverAddr, final String groupId, final String dataId,
-                           Converter<String, T> parser) {
-        this(NacosDataSource.buildProperties(serverAddr), groupId, dataId, parser);
+    public NacosDataSource(final String serverAddr, final String groupId, final String dataId, final SentinelConverter<String, T> converter) {
+        this(serverAddr, groupId, dataId, converter, DataSoureMode.READABLE);
+    }
+
+    public NacosDataSource(final String serverAddr, final String groupId, final String dataId, final SentinelConverter<String, T> converter, final DataSoureMode dataSoureMode) {
+        this(NacosDataSource.buildProperties(serverAddr), groupId, dataId, converter, dataSoureMode);
     }
 
     /**
@@ -78,75 +100,74 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
      * @param properties properties for construct {@link ConfigService} using {@link NacosFactory#createConfigService(Properties)}
      * @param groupId    group ID, cannot be empty
      * @param dataId     data ID, cannot be empty
-     * @param parser     customized data parser, cannot be empty
+     * @param converter     customized data parser, cannot be empty
      */
-    public NacosDataSource(final Properties properties, final String groupId, final String dataId,
-                           Converter<String, T> parser) {
-        super(parser);
-        if (StringUtil.isBlank(groupId) || StringUtil.isBlank(dataId)) {
-            throw new IllegalArgumentException(String.format("Bad argument: groupId=[%s], dataId=[%s]",
-                groupId, dataId));
-        }
-        AssertUtil.notNull(properties, "Nacos properties must not be null, you could put some keys from PropertyKeyConst");
-        this.groupId = groupId;
-        this.dataId = dataId;
-        this.properties = properties;
-        this.configListener = new Listener() {
-            @Override
-            public Executor getExecutor() {
-                return pool;
-            }
-
-            @Override
-            public void receiveConfigInfo(final String configInfo) {
-                RecordLog.info("[NacosDataSource] New property value received for (properties: {}) (dataId: {}, groupId: {}): {}",
-                    properties, dataId, groupId, configInfo);
-                T newValue = NacosDataSource.this.parser.convert(configInfo);
-                // Update the new value to the property.
-                getProperty().updateValue(newValue);
-            }
-        };
-        initNacosListener();
-        loadInitialConfig();
+    public NacosDataSource(final Properties properties, final String groupId, final String dataId, final SentinelConverter<String, T> converter) {
+        this(properties, groupId, dataId, converter, DataSoureMode.READABLE);
     }
 
-    private void loadInitialConfig() {
-        try {
-            T newValue = loadConfig();
-            if (newValue == null) {
-                RecordLog.warn("[NacosDataSource] WARN: initial config is null, you may have to check your data source");
-            }
-            getProperty().updateValue(newValue);
-        } catch (Exception ex) {
-            RecordLog.warn("[NacosDataSource] Error when loading initial config", ex);
-        }
+    /**
+     *
+     * @param properties properties for construct {@link ConfigService} using {@link NacosFactory#createConfigService(Properties)}
+     * @param groupId    group ID, cannot be empty
+     * @param dataId     data ID, cannot be empty
+     * @param converter  customized data parser, cannot be empty
+     * @param dataSoureMode  datasource mode, for example: readable,writable, all
+     */
+    public NacosDataSource(final Properties properties, final String groupId, final String dataId, final SentinelConverter<String, T> converter, final DataSoureMode dataSoureMode) {
+        // init DataSourceClient
+        ConfigService dataSourceClient = getDataSourceClient(properties);
+        // init DataSourceContext
+        this.context = new NacosDataSourceContext(dataSourceClient, properties, groupId, dataId, converter, dataSoureMode);
+        // init DataSource
+        initDataSource();
     }
 
-    private void initNacosListener() {
+    private ConfigService getDataSourceClient(Properties properties) {
         try {
-            this.configService = NacosFactory.createConfigService(this.properties);
-            // Add config listener.
-            configService.addListener(dataId, groupId, configListener);
-        } catch (Exception e) {
-            RecordLog.warn("[NacosDataSource] Error occurred when initializing Nacos data source", e);
+            AssertUtil.notNull(properties, "Nacos properties must not be null, you could put some keys from PropertyKeyConst");
+            return NacosFactory.createConfigService(properties);
+        } catch (NacosException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
-    @Override
-    public String readSource() throws Exception {
-        if (configService == null) {
+    private void initDataSource() {
+        ConfigService dataSourceClient = context.getClient() == null ? null : (ConfigService) context.getClient();
+        if(dataSourceClient == null) {
             throw new IllegalStateException("Nacos config service has not been initialized or error occurred");
         }
-        return configService.getConfig(dataId, groupId, DEFAULT_TIMEOUT);
+        DataSoureMode dataSoureMode = context.getDataSourceMode();
+        if(DataSoureMode.ALL == dataSoureMode || DataSoureMode.READABLE == dataSoureMode) {
+            reader = new NacosReadableDataSource(this.context);
+        }
+
+        if(DataSoureMode.ALL == dataSoureMode || DataSoureMode.WRITABLE == dataSoureMode) {
+            writer = new NacosWritableDataSource(this.context);
+        }
     }
 
     @Override
-    public void close() {
-        if (configService != null) {
-            configService.removeListener(dataId, groupId, configListener);
+    public ReadableDataSource getReader() {
+        return this.reader;
+    }
+
+    @Override
+    public WritableDataSource getWriter() {
+        return this.writer;
+    }
+
+    @Override
+    protected void postDataSourceClose() {
+        ConfigService dataSourceClient = context.getClient() == null ? null : (ConfigService) context.getClient();
+        if(dataSourceClient != null) {
+            try {
+                dataSourceClient.shutDown();
+            } catch (NacosException e) {
+                logger.error(e.getErrMsg(), e);
+            }
         }
-        pool.shutdownNow();
     }
 
     private static Properties buildProperties(String serverAddr) {
@@ -154,4 +175,5 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
         properties.setProperty(PropertyKeyConst.SERVER_ADDR, serverAddr);
         return properties;
     }
+
 }

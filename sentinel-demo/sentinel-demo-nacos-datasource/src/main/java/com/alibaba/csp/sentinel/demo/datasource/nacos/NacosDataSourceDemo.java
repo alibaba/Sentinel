@@ -15,16 +15,16 @@
  */
 package com.alibaba.csp.sentinel.demo.datasource.nacos;
 
-import java.util.List;
-import java.util.Properties;
-
-import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
+import com.alibaba.csp.sentinel.datasource.DataSoureMode;
+import com.alibaba.csp.sentinel.datasource.converter.JsonStringCollectionConverter;
 import com.alibaba.csp.sentinel.datasource.nacos.NacosDataSource;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
 import com.alibaba.nacos.api.PropertyKeyConst;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * This demo demonstrates how to use Nacos as the data source of Sentinel rules.
@@ -48,6 +48,7 @@ public class NacosDataSourceDemo {
     private static final String NACOS_NAMESPACE_ID = "${namespace}";
 
     public static void main(String[] args) {
+        publishRules();
         if (isDemoNamespace) {
             loadMyNamespaceRules();
         } else {
@@ -61,10 +62,8 @@ public class NacosDataSourceDemo {
     }
 
     private static void loadRules() {
-        ReadableDataSource<String, List<FlowRule>> flowRuleDataSource = new NacosDataSource<>(remoteAddress, groupId, dataId,
-                source -> JSON.parseObject(source, new TypeReference<List<FlowRule>>() {
-                }));
-        FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
+        NacosDataSource<List<FlowRule>> flowRuleDataSource = new NacosDataSource(remoteAddress, groupId, dataId, new JsonStringCollectionConverter(FlowRule.class));
+        FlowRuleManager.register2Property(flowRuleDataSource.getReader().getProperty());
     }
 
     private static void loadMyNamespaceRules() {
@@ -72,10 +71,23 @@ public class NacosDataSourceDemo {
         properties.put(PropertyKeyConst.SERVER_ADDR, remoteAddress);
         properties.put(PropertyKeyConst.NAMESPACE, NACOS_NAMESPACE_ID);
 
-        ReadableDataSource<String, List<FlowRule>> flowRuleDataSource = new NacosDataSource<>(properties, groupId, dataId,
-                source -> JSON.parseObject(source, new TypeReference<List<FlowRule>>() {
-                }));
-        FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
+        NacosDataSource<List<FlowRule>> flowRuleDataSource = new NacosDataSource(properties, groupId, dataId, new JsonStringCollectionConverter(FlowRule.class));
+        FlowRuleManager.register2Property(flowRuleDataSource.getReader().getProperty());
+    }
+
+    private static void publishRules() {
+        List<FlowRule> list = new ArrayList<>();
+        FlowRule flowRule = new FlowRule();
+        flowRule.setResource("/dsnacos/test");
+        flowRule.setCount(5);
+        list.add(flowRule);
+
+        NacosDataSource<List<FlowRule>> flowRuleDataSource = new NacosDataSource(remoteAddress, groupId, dataId, new JsonStringCollectionConverter(FlowRule.class), DataSoureMode.WRITABLE);
+        try {
+            flowRuleDataSource.getWriter().write(list);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }
