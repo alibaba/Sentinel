@@ -20,6 +20,7 @@ package com.alibaba.csp.sentinel.slots.block;
  * circuit breaking or system protection triggered.
  *
  * @author youji.zj
+ * @author kaizi2009
  */
 public abstract class BlockException extends Exception {
 
@@ -114,10 +115,7 @@ public abstract class BlockException extends Exception {
         int counter = 0;
         Throwable cause = t;
         while (cause != null && counter++ < MAX_SEARCH_DEPTH) {
-            if (cause instanceof BlockException) {
-                return true;
-            }
-            if (cause.getMessage() != null && cause.getMessage().startsWith(BLOCK_EXCEPTION_FLAG)) {
+            if (isBlockThrowable(cause)) {
                 return true;
             }
             cause = cause.getCause();
@@ -126,7 +124,46 @@ public abstract class BlockException extends Exception {
         return false;
     }
 
+    /**
+     * Get sentinel blocked exception. One exception is sentinel blocked
+     * exception only when:
+     * <ul>
+     * <li>the exception or its (sub-)cause is {@link BlockException}, or</li>
+     * <li>the exception's message is or any of its sub-cause's message equals to {@link #BLOCK_EXCEPTION_FLAG}</li>
+     * </ul>
+     *
+     * @param t the exception.
+     * @return return sentinel blocked exception.
+     */
+    public static BlockException getBlockException(Throwable t) {
+        if (null == t) {
+            return null;
+        }
+
+        int counter = 0;
+        Throwable cause = t;
+        while (cause != null && counter++ < MAX_SEARCH_DEPTH) {
+            if (isBlockThrowable(cause)) {
+                return (BlockException) cause;
+            }
+            cause = cause.getCause();
+        }
+
+        return null;
+    }
+
+    private static boolean isBlockThrowable(Throwable cause) {
+        if (cause instanceof BlockException) {
+            return true;
+        }
+        if (cause.getMessage() != null && cause.getMessage().startsWith(BLOCK_EXCEPTION_FLAG)) {
+            return true;
+        }
+        return false;
+    }
+
     public AbstractRule getRule() {
         return rule;
     }
+
 }
