@@ -1,0 +1,27 @@
+# Apply this in your K8s cluster.
+# Note: be sure to install OpenSergo CRD first.
+
+apiVersion: fault-tolerance.opensergo.io/v1alpha1
+kind: RateLimitStrategy
+metadata:
+  name: rate-limit-foo
+  labels:
+    app: foo-app
+spec:
+  metricType: RequestAmount
+  limitMode: Local
+  threshold: 2
+  statDurationSeconds: 1
+---
+apiVersion: fault-tolerance.opensergo.io/v1alpha1
+kind: FaultToleranceRule
+metadata:
+  name: my-opensergo-rule-1
+  labels:
+    app: foo-app
+spec:
+  targets:
+    - targetResourceName: 'GET:/foo/{id}'
+  strategies:
+    - name: rate-limit-foo
+      kind: RateLimitStrategy
