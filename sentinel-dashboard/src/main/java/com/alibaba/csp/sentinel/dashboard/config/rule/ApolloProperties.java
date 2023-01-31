@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package com.alibaba.csp.sentinel.dashboard.rule.apollo;
+package com.alibaba.csp.sentinel.dashboard.config.rule;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * @author FengJianxin
- * @since 1.8.4
+ * @since 1.8.6.1
  */
 @ConfigurationProperties(prefix = "apollo.sentinel")
 public class ApolloProperties {
-
 
     private String portalUrl;
 

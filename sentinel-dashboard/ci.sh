@@ -42,7 +42,7 @@ push_docker() {
     package
     echo "镜像构建并推送开始 ${VERSION}"
     sudo docker buildx build --platform linux/amd64,linux/arm64 -t fengjx/sentinel-dashboard-apollo:${VERSION} --push .
-    echo "镜像构建并推送开始 ${VERSION}"
+    echo "镜像构建并推送结束 ${VERSION}"
 }
 
 case_opt=$1
