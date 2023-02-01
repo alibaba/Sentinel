@@ -92,12 +92,14 @@ public class RedisMetricsRepository implements MetricsRepository<MetricEntity> {
         final String id = genId();
         connection.multi();
 
+        final long expireTime = metricsProperties.getMaxLiveTime().toMillis() / 1000 + 3;
         final byte[] dataKey = stringRedisSerializer.serialize(buildDataHashKey(app, res));
         connection.hSet(
                 dataKey,
                 stringRedisSerializer.serialize(id),
                 metricSerializer.serialize(metric)
         );
+        connection.expire(dataKey, expireTime);
 
         final byte[] tsKey = stringRedisSerializer.serialize(buildTsKey(app, res));
         connection.zAdd(
@@ -105,6 +107,7 @@ public class RedisMetricsRepository implements MetricsRepository<MetricEntity> {
                 metric.getTimestamp().getTime(),
                 stringRedisSerializer.serialize(id)
         );
+        connection.expire(tsKey, expireTime);
 
         final byte[] resKey = stringRedisSerializer.serialize(buildResHashKey(app));
         connection.zAdd(
@@ -112,11 +115,12 @@ public class RedisMetricsRepository implements MetricsRepository<MetricEntity> {
                 metric.getTimestamp().getTime(),
                 stringRedisSerializer.serialize(metric.getResource())
         );
+        connection.expire(resKey, expireTime);
 
         final byte[] resMetricLastKey = stringRedisSerializer.serialize(lastMetricKey);
         final byte[] resMetricLastValue = metricSerializer.serialize(oldMetric);
         connection.set(resMetricLastKey, resMetricLastValue);
-        connection.expire(resMetricLastKey, metricsProperties.getMaxLiveTime().toMillis() / 1000 + 3);
+        connection.expire(resMetricLastKey, expireTime);
         connection.exec();
     }
 
