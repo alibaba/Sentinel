@@ -1,11 +1,11 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright 1999-2022 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,26 +15,26 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow.controller;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.alibaba.csp.sentinel.node.Node;
+import com.alibaba.csp.sentinel.util.TimeUtil;
+
 import org.junit.Test;
 
-import com.alibaba.csp.sentinel.util.TimeUtil;
-import com.alibaba.csp.sentinel.node.Node;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
 
 /**
+ * @author Eric Zhao
  * @author jialiang.linjl
  */
-public class RateLimiterControllerTest {
+public class ThrottlingControllerTest {
 
     @Test
-    public void testPaceController_normal() throws InterruptedException {
-        RateLimiterController paceController = new RateLimiterController(500, 10d);
+    public void testThrottlingControllerNormal() throws InterruptedException {
+        ThrottlingController paceController = new ThrottlingController(500, 10d);
         Node node = mock(Node.class);
 
         long start = TimeUtil.currentTimeMillis();
@@ -46,12 +46,12 @@ public class RateLimiterControllerTest {
     }
 
     @Test
-    public void testPaceController_timeout() throws InterruptedException {
-        final RateLimiterController paceController = new RateLimiterController(500, 10d);
+    public void testThrottlingControllerQueueTimeout() throws InterruptedException {
+        final ThrottlingController paceController = new ThrottlingController(500, 10d);
         final Node node = mock(Node.class);
 
-        final AtomicInteger passcount = new AtomicInteger();
-        final AtomicInteger blockcount = new AtomicInteger();
+        final AtomicInteger passCount = new AtomicInteger();
+        final AtomicInteger blockCount = new AtomicInteger();
         final CountDownLatch countDown = new CountDownLatch(1);
 
         final AtomicInteger done = new AtomicInteger();
@@ -62,9 +62,9 @@ public class RateLimiterControllerTest {
                     boolean pass = paceController.canPass(node, 1);
 
                     if (pass) {
-                        passcount.incrementAndGet();
+                        passCount.incrementAndGet();
                     } else {
-                        blockcount.incrementAndGet();
+                        blockCount.incrementAndGet();
                     }
                     done.incrementAndGet();
 
@@ -73,21 +73,20 @@ public class RateLimiterControllerTest {
                     }
                 }
 
-            }, "Thread " + i);
+            }, "Thread-TestThrottlingControllerQueueTimeout-" + i);
             thread.start();
         }
-
         countDown.await();
-        System.out.println("pass:" + passcount.get());
-        System.out.println("block" + blockcount.get());
-        System.out.println("done" + done.get());
-        assertTrue(blockcount.get() > 0);
 
+        System.out.println("pass: " + passCount.get());
+        System.out.println("block: " + blockCount.get());
+        System.out.println("done: " + done.get());
+        assertTrue(blockCount.get() > 0);
     }
 
     @Test
-    public void testPaceController_zeroattack() throws InterruptedException {
-        RateLimiterController paceController = new RateLimiterController(500, 0d);
+    public void testThrottlingControllerZeroThreshold() throws InterruptedException {
+        ThrottlingController paceController = new ThrottlingController(500, 0d);
         Node node = mock(Node.class);
 
         for (int i = 0; i < 2; i++) {
