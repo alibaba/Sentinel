@@ -1,20 +1,4 @@
-/*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-package com.alibaba.csp.sentinel.dashboard.rule.apollo;
+package com.alibaba.csp.sentinel.dashboard.config.rule;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.ApiDefinitionEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayFlowRuleEntity;
@@ -25,6 +9,10 @@ import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEn
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.SystemRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleStore;
 import com.alibaba.csp.sentinel.dashboard.rule.RuleType;
+import com.alibaba.csp.sentinel.dashboard.rule.aop.SentinelApiClientAspect;
+import com.alibaba.csp.sentinel.dashboard.rule.apollo.ApolloOpenApiClientProvider;
+import com.alibaba.csp.sentinel.dashboard.rule.apollo.DynamicRuleApolloStore;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,12 +20,13 @@ import org.springframework.context.annotation.Configuration;
 import javax.annotation.Resource;
 
 /**
- * @author hantianwei@gmail.com
- * @since 1.5.0
+ * @author FengJianxin
+ * @since 1.8.6.1
  */
 @Configuration
+@ConditionalOnProperty(prefix = "rule.store", name = "type", havingValue = "apollo")
 @EnableConfigurationProperties(ApolloProperties.class)
-public class ApolloConfig {
+public class ApolloRuleConfiguration {
 
     @Resource
     private ApolloProperties apolloProperties;
@@ -49,8 +38,7 @@ public class ApolloConfig {
 
 
     @Bean
-    public DynamicRuleStore<FlowRuleEntity> flowRuleDynamicRuleStore(ApolloProperties apolloProperties,
-                                                                     ApolloOpenApiClientProvider apolloOpenApiClientProvider) {
+    public DynamicRuleStore<FlowRuleEntity> flowRuleDynamicRuleStore(ApolloOpenApiClientProvider apolloOpenApiClientProvider) {
         return new DynamicRuleApolloStore<>(
                 RuleType.FLOW,
                 apolloProperties,
@@ -59,8 +47,7 @@ public class ApolloConfig {
     }
 
     @Bean
-    public DynamicRuleStore<DegradeRuleEntity> degradeRuleDynamicRuleStore(ApolloProperties apolloProperties,
-                                                                           ApolloOpenApiClientProvider apolloOpenApiClientProvider) {
+    public DynamicRuleStore<DegradeRuleEntity> degradeRuleDynamicRuleStore(ApolloOpenApiClientProvider apolloOpenApiClientProvider) {
         return new DynamicRuleApolloStore<>(
                 RuleType.DEGRADE,
                 apolloProperties,
@@ -69,8 +56,7 @@ public class ApolloConfig {
     }
 
     @Bean
-    public DynamicRuleStore<ParamFlowRuleEntity> paramFlowRuleDynamicRuleStore(ApolloProperties apolloProperties,
-                                                                               ApolloOpenApiClientProvider apolloOpenApiClientProvider) {
+    public DynamicRuleStore<ParamFlowRuleEntity> paramFlowRuleDynamicRuleStore(ApolloOpenApiClientProvider apolloOpenApiClientProvider) {
         return new DynamicRuleApolloStore<>(
                 RuleType.PARAM_FLOW,
                 apolloProperties,
@@ -79,8 +65,7 @@ public class ApolloConfig {
     }
 
     @Bean
-    public DynamicRuleStore<SystemRuleEntity> systemRuleDynamicRuleStore(ApolloProperties apolloProperties,
-                                                                         ApolloOpenApiClientProvider apolloOpenApiClientProvider) {
+    public DynamicRuleStore<SystemRuleEntity> systemRuleDynamicRuleStore(ApolloOpenApiClientProvider apolloOpenApiClientProvider) {
         return new DynamicRuleApolloStore<>(
                 RuleType.SYSTEM,
                 apolloProperties,
@@ -89,8 +74,7 @@ public class ApolloConfig {
     }
 
     @Bean
-    public DynamicRuleStore<AuthorityRuleEntity> authorityRuleDynamicRuleStore(ApolloProperties apolloProperties,
-                                                                               ApolloOpenApiClientProvider apolloOpenApiClientProvider) {
+    public DynamicRuleStore<AuthorityRuleEntity> authorityRuleDynamicRuleStore(ApolloOpenApiClientProvider apolloOpenApiClientProvider) {
         return new DynamicRuleApolloStore<>(
                 RuleType.AUTHORITY,
                 apolloProperties,
@@ -99,8 +83,7 @@ public class ApolloConfig {
     }
 
     @Bean
-    public DynamicRuleStore<GatewayFlowRuleEntity> gatewayFlowRuleDynamicRuleStore(ApolloProperties apolloProperties,
-                                                                                   ApolloOpenApiClientProvider apolloOpenApiClientProvider) {
+    public DynamicRuleStore<GatewayFlowRuleEntity> gatewayFlowRuleDynamicRuleStore(ApolloOpenApiClientProvider apolloOpenApiClientProvider) {
         return new DynamicRuleApolloStore<>(
                 RuleType.GW_FLOW,
                 apolloProperties,
@@ -109,8 +92,7 @@ public class ApolloConfig {
     }
 
     @Bean
-    public DynamicRuleStore<ApiDefinitionEntity> apiDefinitionDynamicRuleStore(ApolloProperties apolloProperties,
-                                                                               ApolloOpenApiClientProvider apolloOpenApiClientProvider) {
+    public DynamicRuleStore<ApiDefinitionEntity> apiDefinitionDynamicRuleStore(ApolloOpenApiClientProvider apolloOpenApiClientProvider) {
         return new DynamicRuleApolloStore<>(
                 RuleType.GW_API_GROUP,
                 apolloProperties,
@@ -118,5 +100,10 @@ public class ApolloConfig {
         );
     }
 
+    @Bean
+    public SentinelApiClientAspect sentinelApiClientAspect() {
+        return new SentinelApiClientAspect();
+    }
 
 }
+

@@ -27,7 +27,6 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -40,7 +39,6 @@ import java.util.concurrent.Executors;
  * @since 1.8.4
  */
 @Aspect
-@Component
 public class SentinelApiClientAspect {
 
     private static final Logger LOG = LoggerFactory.getLogger(SentinelApiClientAspect.class);

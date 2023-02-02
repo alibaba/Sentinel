@@ -16,6 +16,7 @@
 
 package com.alibaba.csp.sentinel.dashboard.rule.apollo;
 
+import com.alibaba.csp.sentinel.dashboard.config.rule.ApolloProperties;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleStore;
 import com.alibaba.csp.sentinel.dashboard.rule.RuleConfigUtil;
