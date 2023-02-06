@@ -46,10 +46,9 @@
 
         <!-- Test libs -->
         <junit.version>4.12</junit.version>
-        <mockito.version>2.28.2</mockito.version>
+        <mockito.version>4.11.0</mockito.version>
         <assertj.version>3.12.1</assertj.version>
         <awaitility.version>3.1.5</awaitility.version>
-        <powermock.version>2.0.0</powermock.version>
 
         <!-- Build -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -190,6 +189,12 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-inline</artifactId>
+                <version>${mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
                 <version>${assertj.version}</version>
@@ -205,18 +210,6 @@
                 <groupId>org.hamcrest</groupId>
                 <artifactId>java-hamcrest</artifactId>
                 <version>2.0.0.0</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.powermock</groupId>
-                <artifactId>powermock-module-junit4</artifactId>
-                <version>${powermock.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.powermock</groupId>
-                <artifactId>powermock-api-mockito2</artifactId>
-                <version>${powermock.version}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>

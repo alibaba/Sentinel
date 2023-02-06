@@ -12,7 +12,7 @@
     <artifactId>sentinel-demo-annotation-cdi-interceptor</artifactId>
 
     <properties>
-        <weld-se-shaded.version>3.1.4.Final</weld-se-shaded.version>
+        <weld-se-shaded.version>3.1.9.Final</weld-se-shaded.version>
     </properties>
 
     <dependencies>

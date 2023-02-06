@@ -16,37 +16,42 @@
 package com.alibaba.csp.sentinel.cluster.test;
 
 import com.alibaba.csp.sentinel.util.TimeUtil;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 /**
  * Mock support for {@link TimeUtil}.
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({TimeUtil.class})
 public abstract class AbstractTimeBasedTest {
 
-    private long currentMillis = 0;
+    private static long currentMillis = 0;
+    static MockedStatic<?> mockedStatic;
 
-    {
-        PowerMockito.mockStatic(TimeUtil.class);
-        PowerMockito.when(TimeUtil.currentTimeMillis()).thenReturn(currentMillis);
+    @BeforeClass
+    public static void beforeClass() {
+        mockedStatic = Mockito.mockStatic(TimeUtil.class);
+        Mockito.when(TimeUtil.currentTimeMillis()).thenReturn(currentMillis);
+    }
+
+    @AfterClass
+    public static void afterClass() {
+        mockedStatic.close();
     }
 
     protected final void useActualTime() {
-        PowerMockito.when(TimeUtil.currentTimeMillis()).thenCallRealMethod();
+        Mockito.when(TimeUtil.currentTimeMillis()).thenCallRealMethod();
     }
 
     protected final void setCurrentMillis(long cur) {
         currentMillis = cur;
-        PowerMockito.when(TimeUtil.currentTimeMillis()).thenReturn(currentMillis);
+        Mockito.when(TimeUtil.currentTimeMillis()).thenReturn(currentMillis);
     }
 
     protected final void sleep(int t) {
         currentMillis += t;
-        PowerMockito.when(TimeUtil.currentTimeMillis()).thenReturn(currentMillis);
+        Mockito.when(TimeUtil.currentTimeMillis()).thenReturn(currentMillis);
     }
 
     protected final void sleepSecond(int timeSec) {
