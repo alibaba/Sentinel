@@ -16,6 +16,7 @@
         <resource.delimiter>@</resource.delimiter>
         <spring.boot.version>2.5.12</spring.boot.version>
         <curator.version>4.0.1</curator.version>
+        <build.version>1.8.6.2</build.version>
     </properties>
 
     <dependencies>
@@ -147,7 +148,7 @@
     </dependencies>
 
     <build>
-        <finalName>sentinel-dashboard-apollo-${project.version}</finalName>
+        <finalName>sentinel-dashboard-apollo-${build.version}</finalName>
         <pluginManagement>
             <plugins>
                 <plugin>

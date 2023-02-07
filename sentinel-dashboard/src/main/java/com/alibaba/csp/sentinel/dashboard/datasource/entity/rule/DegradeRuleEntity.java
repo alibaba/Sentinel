@@ -15,9 +15,11 @@
  */
 package com.alibaba.csp.sentinel.dashboard.datasource.entity.rule;
 
-import java.util.Date;
-
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+
+import java.util.Date;
 
 /**
  * @author leyou
@@ -77,6 +79,7 @@ public class DegradeRuleEntity implements RuleEntity {
     }
 
     @Override
+    @JsonSerialize(using= ToStringSerializer.class)
     public Long getId() {
         return id;
     }

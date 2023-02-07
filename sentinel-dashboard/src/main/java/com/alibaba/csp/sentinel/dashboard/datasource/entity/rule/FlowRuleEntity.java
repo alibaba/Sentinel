@@ -15,10 +15,12 @@
  */
 package com.alibaba.csp.sentinel.dashboard.datasource.entity.rule;
 
-import java.util.Date;
-
 import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+
+import java.util.Date;
 
 /**
  * @author leyou
@@ -107,6 +109,7 @@ public class FlowRuleEntity implements RuleEntity {
     }
 
     @Override
+    @JsonSerialize(using= ToStringSerializer.class)
     public Long getId() {
         return id;
     }

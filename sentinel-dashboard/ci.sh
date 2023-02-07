@@ -23,7 +23,6 @@ package() {
 }
 
 build_docker() {
-    package
     echo "镜像构建开始 ${VERSION}"
     export DOCKER_SCAN_SUGGEST=false
     sudo docker build -t fengjx/sentinel-dashboard-apollo:${VERSION} .
@@ -39,7 +38,6 @@ build_docker_dev() {
 }
 
 push_docker() {
-    package
     echo "镜像构建并推送开始 ${VERSION}"
     sudo docker buildx build --platform linux/amd64,linux/arm64 -t fengjx/sentinel-dashboard-apollo:${VERSION} --push .
     echo "镜像构建并推送结束 ${VERSION}"
