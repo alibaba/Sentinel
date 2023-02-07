@@ -16,7 +16,6 @@
         <resource.delimiter>@</resource.delimiter>
         <spring.boot.version>2.5.12</spring.boot.version>
         <curator.version>4.0.1</curator.version>
-        <build.version>${project.version}</build.version>
     </properties>
 
     <dependencies>
@@ -51,17 +50,7 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-aop</artifactId>
-            <version>${spring.boot.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-logging</artifactId>
-            <version>${spring.boot.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
             <version>${spring.boot.version}</version>
         </dependency>
         <dependency>
@@ -118,7 +107,8 @@
         <dependency>
             <groupId>com.ctrip.framework.apollo</groupId>
             <artifactId>apollo-openapi</artifactId>
-            <version>2.0.1</version>
+            <version>1.2.0</version>
+            <scope>test</scope>
         </dependency>
 
         <!--for Zookeeper rule publisher sample-->
@@ -140,15 +130,15 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.stefanbirkner</groupId>
-            <artifactId>system-rules</artifactId>
-            <version>1.16.1</version>
-            <scope>test</scope>
+        	<groupId>com.github.stefanbirkner</groupId>
+        	<artifactId>system-rules</artifactId>
+        	<version>1.16.1</version>
+        	<scope>test</scope>
         </dependency>
     </dependencies>
 
     <build>
-        <finalName>sentinel-dashboard-apollo-${build.version}</finalName>
+        <finalName>sentinel-dashboard</finalName>
         <pluginManagement>
             <plugins>
                 <plugin>

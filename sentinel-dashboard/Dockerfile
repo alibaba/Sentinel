@@ -1,25 +1,20 @@
-FROM buildpack-deps:buster-curl as installer
+FROM amd64/buildpack-deps:buster-curl as installer
 
-ARG SENTINEL_VERSION=1.8.6.2
+ARG SENTINEL_VERSION=1.8.6
 
 RUN set -x \
-    && curl -SL --output /home/sentinel-dashboard-apollo.jar \
-    https://github.com/fengjx/Sentinel/releases/download/dashboard%2Fapollo%2Fv${SENTINEL_VERSION}/sentinel-dashboard-apollo-${SENTINEL_VERSION}.jar
+    && curl -SL --output /home/sentinel-dashboard.jar https://github.com/alibaba/Sentinel/releases/download/${SENTINEL_VERSION}/sentinel-dashboard-${SENTINEL_VERSION}.jar
 
-FROM openjdk:8-jdk-alpine
-LABEL maintainer="fengjx<https://github.com/fengjx>"
-
-ENV TZ=Asia/Shanghai
-ENV WORK_DIR=/sentinel-dashboard
-ENV JAVA_OPTS=${JAVA_OPTS}
-
-RUN mkdir -p ${WORK_DIR}
-WORKDIR ${WORK_DIR}
+FROM openjdk:8-jre-slim
 
 # copy sentinel jar
-COPY --from=installer ["/home/sentinel-dashboard-apollo.jar", "${WORK_DIR}/app.jar"]
-COPY ["./script/run.sh", "${WORK_DIR}"]
-RUN chmod 755 ${WORK_DIR}/*.sh
+COPY --from=installer ["/home/sentinel-dashboard.jar", "/home/sentinel-dashboard.jar"]
+
+ENV JAVA_OPTS '-Dserver.port=8080 -Dcsp.sentinel.dashboard.server=localhost:8080'
+
+RUN chmod -R +x /home/sentinel-dashboard.jar
 
 EXPOSE 8080
-ENTRYPOINT ["sh", "-c", "./run.sh"]
+
+CMD java ${JAVA_OPTS} -jar /home/sentinel-dashboard.jar
+

@@ -16,10 +16,6 @@ Sentinel takes "flow" as breakthrough point, and works on multiple fields includ
 **concurrency limiting**, **circuit breaking** and **system adaptive overload protection**,
 to guarantee reliability and resilience for microservices.
 
-<img width="569" alt="image" src="https://user-images.githubusercontent.com/4881720/188255192-3b3a57f5-e9a6-47d9-b0f9-42409ac562ab.png">
-
-
-
 Sentinel has the following features:
 
 - **Rich applicable scenarios**: Sentinel has been wildly used in Alibaba, and has covered almost all the core-scenarios in Double-11 (11.11) Shopping Festivals in the past 10 years, such as “Second Kill” which needs to limit burst flow traffic to meet the system capacity, message peak clipping and valley fills, circuit breaking for unreliable downstream services, cluster flow control, etc.
