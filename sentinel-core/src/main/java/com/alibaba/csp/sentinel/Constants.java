@@ -31,7 +31,7 @@ import com.alibaba.csp.sentinel.util.VersionUtil;
  */
 public final class Constants {
 
-    public static final String SENTINEL_VERSION = VersionUtil.getVersion("1.8.6");
+    public static final String SENTINEL_VERSION = VersionUtil.getVersion("2.0.0");
 
     public final static int MAX_CONTEXT_NAME_SIZE = 2000;
     public final static int MAX_SLOT_CHAIN_SIZE = 6000;
@@ -80,6 +80,7 @@ public final class Constants {
     public static final int ORDER_AUTHORITY_SLOT = -6000;
     public static final int ORDER_SYSTEM_SLOT = -5000;
     public static final int ORDER_FLOW_SLOT = -2000;
+    public static final int ORDER_DEFAULT_CIRCUIT_BREAKER_SLOT = -1500;
     public static final int ORDER_DEGRADE_SLOT = -1000;
 
     private Constants() {}
