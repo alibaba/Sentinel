@@ -158,6 +158,12 @@ Contributions are always welcomed! Please refer to [CONTRIBUTING](./CONTRIBUTING
 
 You can start with the issues labeled with [`good first issue`](https://github.com/alibaba/Sentinel/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
 
+## Enterprise Service
+
+If you need Sentinel enterprise service support (Sentinel 企业版), or purchase cloud product services,
+you can join the discussion by the DingTalk group (34754806). It can also be directly activated
+and used through the [microservice engine (MSE 微服务引擎) provided by Alibaba Cloud](https://cn.aliyun.com/product/aliware/mse?spm=sentinel-github.index.0.0.0).
+
 ## Credits
 
 Thanks [Guava](https://github.com/google/guava), which provides some inspiration on rate limiting.
