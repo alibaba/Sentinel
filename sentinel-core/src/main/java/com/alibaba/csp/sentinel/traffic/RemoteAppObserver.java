@@ -1,11 +1,11 @@
 /*
- * Copyright 1999-2022 Alibaba Group Holding Ltd.
+ * Copyright 1999-2018 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,18 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.datasource;
+package com.alibaba.csp.sentinel.traffic;
 
 /**
- * @author Eric Zhao
+ * The observer for remote provider app change event.
+ * @author panxiaojun233
  */
-public final class OpenSergoSentinelConstants {
+public interface RemoteAppObserver {
 
-	public static final String KIND_FLOW_RULE = "FlowRule";
-	public static final String KIND_CIRCUIT_BREAKER_RULE = "DegradeRule";
-	public static final String KIND_SYSTEM_ADAPTIVE_RULE = "SystemRule";
-	public static final String KIND_PARAM_FLOW_RULE = "ParamFlowRule";
+	void onRemoteAppAppears(String app);
 
-	private OpenSergoSentinelConstants() {
-	}
+	void onRemoteAppDisappears(String app);
 }
