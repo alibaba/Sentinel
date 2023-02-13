@@ -20,11 +20,11 @@ package com.alibaba.csp.sentinel.datasource;
  */
 public final class OpenSergoSentinelConstants {
 
-	public static final String KIND_FLOW_RULE = "FlowRule";
-	public static final String KIND_CIRCUIT_BREAKER_RULE = "DegradeRule";
-	public static final String KIND_SYSTEM_ADAPTIVE_RULE = "SystemRule";
-	public static final String KIND_PARAM_FLOW_RULE = "ParamFlowRule";
+    public static final String KIND_FLOW_RULE = "FlowRule";
+    public static final String KIND_CIRCUIT_BREAKER_RULE = "DegradeRule";
+    public static final String KIND_SYSTEM_ADAPTIVE_RULE = "SystemRule";
+    public static final String KIND_PARAM_FLOW_RULE = "ParamFlowRule";
 
-	private OpenSergoSentinelConstants() {
-	}
+    private OpenSergoSentinelConstants() {
+    }
 }

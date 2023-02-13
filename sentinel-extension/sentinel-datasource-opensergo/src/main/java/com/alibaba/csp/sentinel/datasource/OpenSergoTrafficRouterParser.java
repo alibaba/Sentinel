@@ -41,143 +41,143 @@ import io.envoyproxy.envoy.config.route.v3.VirtualHost;
 
 /**
  * The rule parser for OpenSergo TrafficRouter.
+ *
  * @author panxiaojun233
  */
 public class OpenSergoTrafficRouterParser {
 
-	private final static String SUBSET_KEY = "subset";
+    private final static String SUBSET_KEY = "subset";
 
-	public OpenSergoTrafficRouterParser() {
-	}
+    public OpenSergoTrafficRouterParser() {
+    }
 
-	/**
-	 * Parse RDS's {@link RouteConfiguration} to Sentinel2.0's {@link TrafficRoutingRuleGroup}
-	 *
-	 * @param routeConfigurations the Rule from OpenSergo control plane.
-	 * @return {@link TrafficRoutingRuleGroup} the traffic rule for {@link TrafficRouterFilter}.
-	 * @throws InvalidProtocolBufferException
-	 */
-	public TrafficRoutingRuleGroup resolveLabelRouting(List<RouteConfiguration> routeConfigurations) throws InvalidProtocolBufferException {
+    /**
+     * Parse RDS's {@link RouteConfiguration} to Sentinel2.0's {@link TrafficRoutingRuleGroup}
+     *
+     * @param routeConfigurations the Rule from OpenSergo control plane.
+     * @return {@link TrafficRoutingRuleGroup} the traffic rule for {@link TrafficRouterFilter}.
+     * @throws InvalidProtocolBufferException
+     */
+    public TrafficRoutingRuleGroup resolveLabelRouting(List<RouteConfiguration> routeConfigurations) throws InvalidProtocolBufferException {
 
-		TrafficRoutingRuleGroup trafficRoutingRuleGroup = new TrafficRoutingRuleGroup();
+        TrafficRoutingRuleGroup trafficRoutingRuleGroup = new TrafficRoutingRuleGroup();
 
-		List<TrafficRouter> trafficRouters = new ArrayList<>();
-		trafficRoutingRuleGroup.setTrafficRouterRuleList(trafficRouters);
+        List<TrafficRouter> trafficRouters = new ArrayList<>();
+        trafficRoutingRuleGroup.setTrafficRouterRuleList(trafficRouters);
 
-		List<VirtualWorkload> workloads = new ArrayList<>();
-		trafficRoutingRuleGroup.setVirtualWorkloadRuleList(workloads);
+        List<VirtualWorkload> workloads = new ArrayList<>();
+        trafficRoutingRuleGroup.setVirtualWorkloadRuleList(workloads);
 
-		for (RouteConfiguration routeConfiguration : routeConfigurations) {
-			List<VirtualHost> virtualHosts = routeConfiguration.getVirtualHostsList();
-			for (VirtualHost virtualHost : virtualHosts) {
-				TrafficRouter trafficRouter = new TrafficRouter();
-				trafficRouters.add(trafficRouter);
-				//todo 怎么知道是rpc/http?
-				String remoteAppName = "";
-				String[] serviceAndPort = virtualHost.getName().split(":");
-				if (serviceAndPort.length > 0) {
-					remoteAppName = serviceAndPort[0].split("\\.")[0];
-				}
-				List<String> hosts = new ArrayList<>();
-				hosts.add(remoteAppName);
-				trafficRouter.setHosts(hosts);
+        for (RouteConfiguration routeConfiguration : routeConfigurations) {
+            List<VirtualHost> virtualHosts = routeConfiguration.getVirtualHostsList();
+            for (VirtualHost virtualHost : virtualHosts) {
+                TrafficRouter trafficRouter = new TrafficRouter();
+                trafficRouters.add(trafficRouter);
+                //todo 怎么知道是rpc/http?
+                String remoteAppName = "";
+                String[] serviceAndPort = virtualHost.getName().split(":");
+                if (serviceAndPort.length > 0) {
+                    remoteAppName = serviceAndPort[0].split("\\.")[0];
+                }
+                List<String> hosts = new ArrayList<>();
+                hosts.add(remoteAppName);
+                trafficRouter.setHosts(hosts);
 
-				List<Route> routes = virtualHost.getRoutesList();
-				List<com.alibaba.csp.sentinel.traffic.rule.router.Route> http = new ArrayList<>();
-				trafficRouter.setHttp(http);
+                List<Route> routes = virtualHost.getRoutesList();
+                List<com.alibaba.csp.sentinel.traffic.rule.router.Route> http = new ArrayList<>();
+                trafficRouter.setHttp(http);
 
-				// todo fallback
-				for (Route route : routes) {
-					com.alibaba.csp.sentinel.traffic.rule.router.Route routeRule = new com.alibaba.csp.sentinel.traffic.rule.router.Route();
-					http.add(routeRule);
+                // todo fallback
+                for (Route route : routes) {
+                    com.alibaba.csp.sentinel.traffic.rule.router.Route routeRule = new com.alibaba.csp.sentinel.traffic.rule.router.Route();
+                    http.add(routeRule);
 
-					StringMatch cluster = new StringMatch();
-					cluster.setExact(remoteAppName);
+                    StringMatch cluster = new StringMatch();
+                    cluster.setExact(remoteAppName);
 
-					List<RouteDetail> routeDetails = new ArrayList<>();
-					routeRule.setRouteDetail(routeDetails);
+                    List<RouteDetail> routeDetails = new ArrayList<>();
+                    routeRule.setRouteDetail(routeDetails);
 
-					RouteDetail routeDetail = new RouteDetail();
-					routeDetails.add(routeDetail);
+                    RouteDetail routeDetail = new RouteDetail();
+                    routeDetails.add(routeDetail);
 
-					List<RequestMatch> match = new ArrayList<>();
-					routeDetail.setMatch(match);
+                    List<RequestMatch> match = new ArrayList<>();
+                    routeDetail.setMatch(match);
 
-					List<RequestMatch> requestMatches = match2RouteRules(route.getMatch());
-					routeDetail.setMatch(requestMatches);
+                    List<RequestMatch> requestMatches = match2RouteRules(route.getMatch());
+                    routeDetail.setMatch(requestMatches);
 
-					List<RouteDestination> routeDestinations = new ArrayList<>();
-					routeDetail.setRoute(routeDestinations);
+                    List<RouteDestination> routeDestinations = new ArrayList<>();
+                    routeDetail.setRoute(routeDestinations);
 
-					RouteDestination routeDestination = new RouteDestination();
-					routeDestinations.add(routeDestination);
+                    RouteDestination routeDestination = new RouteDestination();
+                    routeDestinations.add(routeDestination);
 
-					Destination destination = new Destination();
-					routeDestination.setDestination(destination);
+                    Destination destination = new Destination();
+                    routeDestination.setDestination(destination);
 
-					destination.setHost(remoteAppName);
-					destination.setSubset(getSubset(route, route.getRoute().getCluster()));
+                    destination.setHost(remoteAppName);
+                    destination.setSubset(getSubset(route, route.getRoute().getCluster()));
 
-					VirtualWorkload virtualWorkload = new VirtualWorkload();
-					virtualWorkload.setHost(remoteAppName);
+                    VirtualWorkload virtualWorkload = new VirtualWorkload();
+                    virtualWorkload.setHost(remoteAppName);
 
-					List<Subset> subsets = new ArrayList<>();
-					Subset subset = new Subset();
-					subsets.add(subset);
+                    List<Subset> subsets = new ArrayList<>();
+                    Subset subset = new Subset();
+                    subsets.add(subset);
 
-					subset.setName(getSubset(route, route.getRoute().getCluster()));
-					Map<String, String> labels = new HashMap<String, String>();
-					labels.put(SUBSET_KEY, subset.getName());
-					subset.setLabels(labels);
+                    subset.setName(getSubset(route, route.getRoute().getCluster()));
+                    Map<String, String> labels = new HashMap<String, String>();
+                    labels.put(SUBSET_KEY, subset.getName());
+                    subset.setLabels(labels);
 
-					virtualWorkload.setSubsets(subsets);
-					workloads.add(virtualWorkload);
-				}
-			}
-		}
+                    virtualWorkload.setSubsets(subsets);
+                    workloads.add(virtualWorkload);
+                }
+            }
+        }
 
-		return trafficRoutingRuleGroup;
-	}
+        return trafficRoutingRuleGroup;
+    }
 
-	private RequestMatch headerMatcher2HeaderRule(HeaderMatcher headerMatcher) {
-		StringMatch stringMatcher = Utils
-				.convStringMatcher(Utils.headerMatch2StringMatch(headerMatcher));
-		if (stringMatcher != null) {
-			RequestMatch requestMatch = new RequestMatch();
-			MethodMatch method = new MethodMatch();
-			requestMatch.setMethod(method);
+    private RequestMatch headerMatcher2HeaderRule(HeaderMatcher headerMatcher) {
+        StringMatch stringMatcher = Utils
+                .convStringMatcher(Utils.headerMatch2StringMatch(headerMatcher));
+        if (stringMatcher != null) {
+            RequestMatch requestMatch = new RequestMatch();
+            MethodMatch method = new MethodMatch();
+            requestMatch.setMethod(method);
 
-			Map<String, StringMatch> headers = new HashMap<>();
-			headers.put(headerMatcher.getName(), stringMatcher);
-			method.setHeaders(headers);
+            Map<String, StringMatch> headers = new HashMap<>();
+            headers.put(headerMatcher.getName(), stringMatcher);
+            method.setHeaders(headers);
 
-			return requestMatch;
-		}
-		return null;
-	}
+            return requestMatch;
+        }
+        return null;
+    }
 
 
-	private List<RequestMatch> match2RouteRules(RouteMatch routeMatch) {
-		List<RequestMatch> requestMatches = new ArrayList<>();
-		for (HeaderMatcher headerMatcher : routeMatch.getHeadersList()) {
-			RequestMatch requestMatch = headerMatcher2HeaderRule(headerMatcher);
-			if (requestMatch != null) {
-				requestMatches.add(requestMatch);
-			}
-		}
+    private List<RequestMatch> match2RouteRules(RouteMatch routeMatch) {
+        List<RequestMatch> requestMatches = new ArrayList<>();
+        for (HeaderMatcher headerMatcher : routeMatch.getHeadersList()) {
+            RequestMatch requestMatch = headerMatcher2HeaderRule(headerMatcher);
+            if (requestMatch != null) {
+                requestMatches.add(requestMatch);
+            }
+        }
 
-		return requestMatches;
-	}
+        return requestMatches;
+    }
 
-	private String getSubset(Route route, String cluster) {
-		String version = "";
-		try {
-			String[] info = cluster.split("\\|");
-			version = info[2];
-		}
-		catch (Exception e) {
-			RecordLog.error("invalid cluster info for route {}", route.getName());
-		}
-		return version;
-	}
+    private String getSubset(Route route, String cluster) {
+        String version = "";
+        try {
+            String[] info = cluster.split("\\|");
+            version = info[2];
+        } catch (Exception e) {
+            RecordLog.error("invalid cluster info for route {}", route.getName());
+        }
+        return version;
+    }
 }

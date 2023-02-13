@@ -23,13 +23,13 @@ import java.util.Map;
  * @author panxiaojun233
  */
 public class OpenSergoDataSourceGroupManager {
-	private static Map<String, OpenSergoDataSourceGroup> openSergoDataSourceGroupMap = new HashMap<>();
+    private static Map<String, OpenSergoDataSourceGroup> openSergoDataSourceGroupMap = new HashMap<>();
 
-	public static void addGroup(String endpoint, OpenSergoDataSourceGroup openSergoDataSourceGroup) {
-		openSergoDataSourceGroupMap.put(endpoint, openSergoDataSourceGroup);
-	}
+    public static void addGroup(String endpoint, OpenSergoDataSourceGroup openSergoDataSourceGroup) {
+        openSergoDataSourceGroupMap.put(endpoint, openSergoDataSourceGroup);
+    }
 
-	public static Collection<OpenSergoDataSourceGroup> getGroups() {
-		return openSergoDataSourceGroupMap.values();
-	}
+    public static Collection<OpenSergoDataSourceGroup> getGroups() {
+        return openSergoDataSourceGroupMap.values();
+    }
 }

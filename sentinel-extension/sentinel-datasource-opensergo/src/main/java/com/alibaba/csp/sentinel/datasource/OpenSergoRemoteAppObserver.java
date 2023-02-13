@@ -19,26 +19,27 @@ import com.alibaba.csp.sentinel.traffic.RemoteAppObserver;
 
 /**
  * The subscriber of OpenSergo traffic rule.
+ *
  * @author panxiaojun233
  */
 public class OpenSergoRemoteAppObserver implements RemoteAppObserver {
 
-	private static final String DEFAULT_SUBSCRIBE_NAMESPACE = "default";
+    private static final String DEFAULT_SUBSCRIBE_NAMESPACE = "default";
 
-	public OpenSergoRemoteAppObserver() {
-	}
+    public OpenSergoRemoteAppObserver() {
+    }
 
-	@Override
-	public void onRemoteAppAppears(String app) {
-		for (OpenSergoDataSourceGroup dataSourceGroup : OpenSergoDataSourceGroupManager.getGroups()) {
-			dataSourceGroup.subscribeTrafficRouterConfig(DEFAULT_SUBSCRIBE_NAMESPACE, app);
-		}
-	}
+    @Override
+    public void onRemoteAppAppears(String app) {
+        for (OpenSergoDataSourceGroup dataSourceGroup : OpenSergoDataSourceGroupManager.getGroups()) {
+            dataSourceGroup.subscribeTrafficRouterConfig(DEFAULT_SUBSCRIBE_NAMESPACE, app);
+        }
+    }
 
-	@Override
-	public void onRemoteAppDisappears(String app) {
-		for (OpenSergoDataSourceGroup dataSourceGroup : OpenSergoDataSourceGroupManager.getGroups()) {
-			dataSourceGroup.unSubscribeTrafficRouterConfig(DEFAULT_SUBSCRIBE_NAMESPACE, app);
-		}
-	}
+    @Override
+    public void onRemoteAppDisappears(String app) {
+        for (OpenSergoDataSourceGroup dataSourceGroup : OpenSergoDataSourceGroupManager.getGroups()) {
+            dataSourceGroup.unSubscribeTrafficRouterConfig(DEFAULT_SUBSCRIBE_NAMESPACE, app);
+        }
+    }
 }
