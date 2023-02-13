@@ -22,12 +22,13 @@ import java.util.List;
  */
 public interface LoadBalancer {
 
-	/**
-	 * select one instance in list.
-	 * @param instances instance list.
-	 * @param trafficContext traffic context.
-	 * @return selected instance.
-	 * @throws TrafficException
-	 */
-	Instance select(List<Instance> instances, TrafficContext trafficContext) throws TrafficException;
+    /**
+     * select one instance in list.
+     *
+     * @param instances      instance list.
+     * @param trafficContext traffic context.
+     * @return selected instance.
+     * @throws TrafficException
+     */
+    Instance select(List<Instance> instances, TrafficContext trafficContext) throws TrafficException;
 }

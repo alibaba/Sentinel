@@ -22,9 +22,10 @@ import java.util.List;
  */
 public interface InstanceListener {
 
-	/**
-	 * Notify the {@link ClusterManager} the instance list. Instance list may change from time to time.
-	 * @param instances instance list.
-	 */
-	void notify(List<Instance> instances);
+    /**
+     * Notify the {@link ClusterManager} the instance list. Instance list may change from time to time.
+     *
+     * @param instances instance list.
+     */
+    void notify(List<Instance> instances);
 }

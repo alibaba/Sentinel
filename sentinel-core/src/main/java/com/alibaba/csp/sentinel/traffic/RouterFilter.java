@@ -22,14 +22,14 @@ import java.util.List;
  */
 public interface RouterFilter {
 
-	/**
-	 * Filter instanceList with current routing rule and only return the instances that comply with the rule.
-	 *
-	 * @param instanceList instance List
-	 * @param context traffic context
-	 * @return result instance List
-	 * @throws TrafficException
-	 */
-	List<Instance> filter(List<Instance> instanceList, TrafficContext context) throws TrafficException;
+    /**
+     * Filter instanceList with current routing rule and only return the instances that comply with the rule.
+     *
+     * @param instanceList instance List
+     * @param context      traffic context
+     * @return result instance List
+     * @throws TrafficException
+     */
+    List<Instance> filter(List<Instance> instanceList, TrafficContext context) throws TrafficException;
 
 }

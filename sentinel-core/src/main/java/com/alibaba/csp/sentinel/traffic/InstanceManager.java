@@ -22,11 +22,12 @@ import java.util.List;
  */
 public interface InstanceManager {
 
-	/**
-	 * store the instance list from {@link InstanceListener#notify(List)}.
-	 * @param instances
-	 */
-	void storeInstances(List<Instance> instances);
+    /**
+     * store the instance list from {@link InstanceListener#notify(List)}.
+     *
+     * @param instances
+     */
+    void storeInstances(List<Instance> instances);
 
-	List<Instance> getInstances();
+    List<Instance> getInstances();
 }

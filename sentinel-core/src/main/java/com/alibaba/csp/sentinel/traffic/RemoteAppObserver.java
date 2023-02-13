@@ -17,11 +17,12 @@ package com.alibaba.csp.sentinel.traffic;
 
 /**
  * The observer for remote provider app change event.
+ *
  * @author panxiaojun233
  */
 public interface RemoteAppObserver {
 
-	void onRemoteAppAppears(String app);
+    void onRemoteAppAppears(String app);
 
-	void onRemoteAppDisappears(String app);
+    void onRemoteAppDisappears(String app);
 }
