@@ -22,14 +22,14 @@ import java.util.List;
  */
 public class DefaultInstanceListener implements InstanceListener {
 
-	private InstanceManager instanceManager;
+    private InstanceManager instanceManager;
 
-	public DefaultInstanceListener(InstanceManager instanceManager) {
-		this.instanceManager = instanceManager;
-	}
+    public DefaultInstanceListener(InstanceManager instanceManager) {
+        this.instanceManager = instanceManager;
+    }
 
-	@Override
-	public void notify(List<Instance> instances) {
-		instanceManager.storeInstances(instances);
-	}
+    @Override
+    public void notify(List<Instance> instances) {
+        instanceManager.storeInstances(instances);
+    }
 }

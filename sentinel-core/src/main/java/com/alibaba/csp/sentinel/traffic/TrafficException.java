@@ -20,23 +20,23 @@ package com.alibaba.csp.sentinel.traffic;
  */
 public class TrafficException extends RuntimeException {
 
-	public TrafficException() {
-		super();
-	}
+    public TrafficException() {
+        super();
+    }
 
-	public TrafficException(String message) {
-		super(message);
-	}
+    public TrafficException(String message) {
+        super(message);
+    }
 
-	public TrafficException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    public TrafficException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-	public TrafficException(Throwable cause) {
-		super(cause);
-	}
+    public TrafficException(Throwable cause) {
+        super(cause);
+    }
 
-	protected TrafficException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
-	}
+    protected TrafficException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
 }

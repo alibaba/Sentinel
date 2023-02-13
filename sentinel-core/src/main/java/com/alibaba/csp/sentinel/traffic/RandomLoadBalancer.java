@@ -23,11 +23,11 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class RandomLoadBalancer extends AbstractLoadBalancer {
 
-	@Override
-	protected Instance doSelect(List<Instance> instances, TrafficContext trafficContext) {
-		// Number of invokers
-		int length = instances.size();
-		// If all invokers have the same weight value or totalWeight=0, return evenly.
-		return instances.get(ThreadLocalRandom.current().nextInt(length));
-	}
+    @Override
+    protected Instance doSelect(List<Instance> instances, TrafficContext trafficContext) {
+        // Number of invokers
+        int length = instances.size();
+        // If all invokers have the same weight value or totalWeight=0, return evenly.
+        return instances.get(ThreadLocalRandom.current().nextInt(length));
+    }
 }

@@ -24,18 +24,18 @@ import java.util.List;
  */
 public class DefaultInstanceManager implements InstanceManager {
 
-	private volatile List<Instance> instanceList = Collections.emptyList();
+    private volatile List<Instance> instanceList = Collections.emptyList();
 
-	@Override
-	public void storeInstances(List<Instance> instances) {
-		if (instances == null || instances.size() == 0) {
-			return;
-		}
-		instanceList = new ArrayList<>(instances);
-	}
+    @Override
+    public void storeInstances(List<Instance> instances) {
+        if (instances == null || instances.size() == 0) {
+            return;
+        }
+        instanceList = new ArrayList<>(instances);
+    }
 
-	@Override
-	public List<Instance> getInstances() {
-		return instanceList;
-	}
+    @Override
+    public List<Instance> getInstances() {
+        return instanceList;
+    }
 }

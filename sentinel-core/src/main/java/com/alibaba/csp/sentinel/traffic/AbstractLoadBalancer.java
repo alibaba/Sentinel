@@ -21,16 +21,16 @@ import java.util.List;
  * @author panxiaojun233
  */
 public abstract class AbstractLoadBalancer implements LoadBalancer {
-	@Override
-	public Instance select(List<Instance> instances, TrafficContext trafficContext) throws TrafficException {
-		if (instances == null || instances.size() == 0) {
-			return null;
-		}
-		if (instances.size() == 1) {
-			return instances.get(0);
-		}
-		return doSelect(instances, trafficContext);
-	}
+    @Override
+    public Instance select(List<Instance> instances, TrafficContext trafficContext) throws TrafficException {
+        if (instances == null || instances.size() == 0) {
+            return null;
+        }
+        if (instances.size() == 1) {
+            return instances.get(0);
+        }
+        return doSelect(instances, trafficContext);
+    }
 
-	protected abstract Instance doSelect(List<Instance> instances, TrafficContext trafficContext);
+    protected abstract Instance doSelect(List<Instance> instances, TrafficContext trafficContext);
 }

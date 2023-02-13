@@ -26,101 +26,104 @@ import com.alibaba.csp.sentinel.traffic.rule.router.TrafficRouterRuleManager;
  * @author panxiaojun233
  */
 public class ClusterManager implements InstanceListener {
-	private List<RouterFilter> routerFilterList;
-	private LoadBalancer loadBalancer;
-	private InstanceManager instanceManager;
-	private volatile Set<String> remoteAppName = Collections.emptySet();
+    private List<RouterFilter> routerFilterList;
+    private LoadBalancer loadBalancer;
+    private InstanceManager instanceManager;
+    private volatile Set<String> remoteAppName = Collections.emptySet();
 
-	public ClusterManager(List<RouterFilter> routerFilterList, LoadBalancer loadBalancer, InstanceManager instanceManager) {
-		this.routerFilterList = routerFilterList;
-		this.loadBalancer = loadBalancer;
-		this.instanceManager = instanceManager;
-	}
+    public ClusterManager(List<RouterFilter> routerFilterList, LoadBalancer loadBalancer, InstanceManager instanceManager) {
+        this.routerFilterList = routerFilterList;
+        this.loadBalancer = loadBalancer;
+        this.instanceManager = instanceManager;
+    }
 
-	public Set<String> getRemoteAppName() {
-		return remoteAppName;
-	}
+    public Set<String> getRemoteAppName() {
+        return remoteAppName;
+    }
 
-	public ClusterManager(List<RouterFilter> routerFilterList) {
-		this.routerFilterList = routerFilterList;
-	}
+    public ClusterManager(List<RouterFilter> routerFilterList) {
+        this.routerFilterList = routerFilterList;
+    }
 
-	public ClusterManager(InstanceManager instanceManager) {
-		this.instanceManager = instanceManager;
-	}
+    public ClusterManager(InstanceManager instanceManager) {
+        this.instanceManager = instanceManager;
+    }
 
-	/**
-	 * Select one invoker in list, routing first, then load balancing.
-	 * @param context traffic context.
-	 * @return selected instance.
-	 */
-	public Instance selectOneInstance(TrafficContext context) {
-		return loadBalancer.select(route(context), context);
-	}
+    /**
+     * Select one invoker in list, routing first, then load balancing.
+     *
+     * @param context traffic context.
+     * @return selected instance.
+     */
+    public Instance selectOneInstance(TrafficContext context) {
+        return loadBalancer.select(route(context), context);
+    }
 
-	/**
-	 * Select one invoker in list.
-	 * @param context traffic context.
-	 * @param instances instance List.
-	 * @return selected instance.
-	 */
-	public Instance loadBalance(TrafficContext context, List<Instance> instances) {
-		return loadBalancer.select(instances, context);
-	}
+    /**
+     * Select one invoker in list.
+     *
+     * @param context   traffic context.
+     * @param instances instance List.
+     * @return selected instance.
+     */
+    public Instance loadBalance(TrafficContext context, List<Instance> instances) {
+        return loadBalancer.select(instances, context);
+    }
 
-	public Instance loadBalance(TrafficContext context) {
-		return loadBalancer.select(instanceManager.getInstances(), context);
-	}
+    public Instance loadBalance(TrafficContext context) {
+        return loadBalancer.select(instanceManager.getInstances(), context);
+    }
 
-	/**
-	 * Filter instances form instanceManager by current routing rule and traffic context.
-	 *
-	 * @param context traffic context
-	 * @return instance List
-	 */
-	public List<Instance> route(TrafficContext context) {
-		List<Instance> instances = instanceManager.getInstances();
-		for (RouterFilter routerFilter : routerFilterList) {
-			instances = routerFilter.filter(instances, context);
-		}
-		return instances;
-	}
+    /**
+     * Filter instances form instanceManager by current routing rule and traffic context.
+     *
+     * @param context traffic context
+     * @return instance List
+     */
+    public List<Instance> route(TrafficContext context) {
+        List<Instance> instances = instanceManager.getInstances();
+        for (RouterFilter routerFilter : routerFilterList) {
+            instances = routerFilter.filter(instances, context);
+        }
+        return instances;
+    }
 
-	/**
-	 * Register the application in the instance List.
-	 * @param instances instance List
-	 */
-	private void registerAppRule(List<Instance> instances) {
-		Set<String> currentApplication = new HashSet<>();
-		if (instances != null && instances.size() > 0) {
-			for (Instance instance : instances) {
-				String applicationName = instance.getAppName();
-				if (applicationName != null && applicationName.length() > 0) {
-					currentApplication.add(applicationName);
-				}
-			}
-		}
+    /**
+     * Register the application in the instance List.
+     *
+     * @param instances instance List
+     */
+    private void registerAppRule(List<Instance> instances) {
+        Set<String> currentApplication = new HashSet<>();
+        if (instances != null && instances.size() > 0) {
+            for (Instance instance : instances) {
+                String applicationName = instance.getAppName();
+                if (applicationName != null && applicationName.length() > 0) {
+                    currentApplication.add(applicationName);
+                }
+            }
+        }
 
-		if (!remoteAppName.equals(currentApplication)) {
-			synchronized (this) {
-				Set<String> current = new HashSet<>(currentApplication);
-				Set<String> previous = new HashSet<>(remoteAppName);
-				previous.removeAll(currentApplication);
-				current.removeAll(remoteAppName);
-				for (String app : current) {
-					TrafficRouterRuleManager.register(app);
-				}
-				for (String app : previous) {
-					TrafficRouterRuleManager.unregister(app);
-				}
-				remoteAppName = currentApplication;
-			}
-		}
-	}
+        if (!remoteAppName.equals(currentApplication)) {
+            synchronized (this) {
+                Set<String> current = new HashSet<>(currentApplication);
+                Set<String> previous = new HashSet<>(remoteAppName);
+                previous.removeAll(currentApplication);
+                current.removeAll(remoteAppName);
+                for (String app : current) {
+                    TrafficRouterRuleManager.register(app);
+                }
+                for (String app : previous) {
+                    TrafficRouterRuleManager.unregister(app);
+                }
+                remoteAppName = currentApplication;
+            }
+        }
+    }
 
-	@Override
-	public void notify(List<Instance> instances) {
-		registerAppRule(instances);
-		instanceManager.storeInstances(instances);
-	}
+    @Override
+    public void notify(List<Instance> instances) {
+        registerAppRule(instances);
+        instanceManager.storeInstances(instances);
+    }
 }

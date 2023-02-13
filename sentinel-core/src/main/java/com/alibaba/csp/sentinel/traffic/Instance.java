@@ -21,60 +21,60 @@ import java.util.Map;
  * @author panxiaojun233
  */
 public class Instance {
-	private String appName;
-	private String host;
-	private Integer port;
-	private Map<String, String> metadata;
-	private Object targetInstance;
+    private String appName;
+    private String host;
+    private Integer port;
+    private Map<String, String> metadata;
+    private Object targetInstance;
 
-	public String getAppName() {
-		return appName;
-	}
+    public String getAppName() {
+        return appName;
+    }
 
-	public void setAppName(String appName) {
-		this.appName = appName;
-	}
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
 
-	public Object getTargetInstance() {
-		return targetInstance;
-	}
+    public Object getTargetInstance() {
+        return targetInstance;
+    }
 
-	public void setTargetInstance(Object targetInstance) {
-		this.targetInstance = targetInstance;
-	}
+    public void setTargetInstance(Object targetInstance) {
+        this.targetInstance = targetInstance;
+    }
 
-	public String getHost() {
-		return host;
-	}
+    public String getHost() {
+        return host;
+    }
 
-	public void setHost(String host) {
-		this.host = host;
-	}
+    public void setHost(String host) {
+        this.host = host;
+    }
 
-	public Integer getPort() {
-		return port;
-	}
+    public Integer getPort() {
+        return port;
+    }
 
-	public void setPort(Integer port) {
-		this.port = port;
-	}
+    public void setPort(Integer port) {
+        this.port = port;
+    }
 
-	public Map<String, String> getMetadata() {
-		return metadata;
-	}
+    public Map<String, String> getMetadata() {
+        return metadata;
+    }
 
-	public void setMetadata(Map<String, String> metadata) {
-		this.metadata = metadata;
-	}
+    public void setMetadata(Map<String, String> metadata) {
+        this.metadata = metadata;
+    }
 
-	@Override
-	public String toString() {
-		return "Instance{" +
-				"appName='" + appName + '\'' +
-				", host='" + host + '\'' +
-				", port=" + port +
-				", metadata=" + metadata +
-				", targetInstance=" + targetInstance +
-				'}';
-	}
+    @Override
+    public String toString() {
+        return "Instance{" +
+                "appName='" + appName + '\'' +
+                ", host='" + host + '\'' +
+                ", port=" + port +
+                ", metadata=" + metadata +
+                ", targetInstance=" + targetInstance +
+                '}';
+    }
 }
