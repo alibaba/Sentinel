@@ -34,8 +34,7 @@ import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 import com.alibaba.csp.sentinel.slots.system.SystemRule;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson2.JSON;
 
 import static com.alibaba.csp.sentinel.transport.util.WritableDataSourceRegistry.*;
 
@@ -73,28 +72,28 @@ public class ModifyRulesCommandHandler implements CommandHandler<String> {
         String result = "success";
 
         if (FLOW_RULE_TYPE.equalsIgnoreCase(type)) {
-            List<FlowRule> flowRules = JSONArray.parseArray(data, FlowRule.class);
+            List<FlowRule> flowRules = JSON.parseArray(data, FlowRule.class);
             FlowRuleManager.loadRules(flowRules);
             if (!writeToDataSource(getFlowDataSource(), flowRules)) {
                 result = WRITE_DS_FAILURE_MSG;
             }
             return CommandResponse.ofSuccess(result);
         } else if (AUTHORITY_RULE_TYPE.equalsIgnoreCase(type)) {
-            List<AuthorityRule> rules = JSONArray.parseArray(data, AuthorityRule.class);
+            List<AuthorityRule> rules = JSON.parseArray(data, AuthorityRule.class);
             AuthorityRuleManager.loadRules(rules);
             if (!writeToDataSource(getAuthorityDataSource(), rules)) {
                 result = WRITE_DS_FAILURE_MSG;
             }
             return CommandResponse.ofSuccess(result);
         } else if (DEGRADE_RULE_TYPE.equalsIgnoreCase(type)) {
-            List<DegradeRule> rules = JSONArray.parseArray(data, DegradeRule.class);
+            List<DegradeRule> rules = JSON.parseArray(data, DegradeRule.class);
             DegradeRuleManager.loadRules(rules);
             if (!writeToDataSource(getDegradeDataSource(), rules)) {
                 result = WRITE_DS_FAILURE_MSG;
             }
             return CommandResponse.ofSuccess(result);
         } else if (SYSTEM_RULE_TYPE.equalsIgnoreCase(type)) {
-            List<SystemRule> rules = JSONArray.parseArray(data, SystemRule.class);
+            List<SystemRule> rules = JSON.parseArray(data, SystemRule.class);
             SystemRuleManager.loadRules(rules);
             if (!writeToDataSource(getSystemSource(), rules)) {
                 result = WRITE_DS_FAILURE_MSG;

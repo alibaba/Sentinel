@@ -21,8 +21,8 @@ import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
 import com.alibaba.csp.sentinel.slots.system.SystemRule;
-import com.alibaba.fastjson.parser.ParserConfig;
-import com.alibaba.fastjson.serializer.SerializeConfig;
+//import com.alibaba.fastjson.parser.ParserConfig;
+//import com.alibaba.fastjson.serializer.SerializeConfig;
 import io.quarkus.runtime.annotations.Recorder;
 
 /**
@@ -35,18 +35,18 @@ public class SentinelRecorder {
      * register fastjson serializer deserializer class info
      */
     public void init() {
-        SerializeConfig.getGlobalInstance().getObjectWriter(NodeVo.class);
-        SerializeConfig.getGlobalInstance().getObjectWriter(FlowRule.class);
-        SerializeConfig.getGlobalInstance().getObjectWriter(SystemRule.class);
-        SerializeConfig.getGlobalInstance().getObjectWriter(DegradeRule.class);
-        SerializeConfig.getGlobalInstance().getObjectWriter(AuthorityRule.class);
-        SerializeConfig.getGlobalInstance().getObjectWriter(ParamFlowRule.class);
-
-        ParserConfig.getGlobalInstance().getDeserializer(NodeVo.class);
-        ParserConfig.getGlobalInstance().getDeserializer(FlowRule.class);
-        ParserConfig.getGlobalInstance().getDeserializer(SystemRule.class);
-        ParserConfig.getGlobalInstance().getDeserializer(DegradeRule.class);
-        ParserConfig.getGlobalInstance().getDeserializer(AuthorityRule.class);
-        ParserConfig.getGlobalInstance().getDeserializer(ParamFlowRule.class);
+//        SerializeConfig.getGlobalInstance().getObjectWriter(NodeVo.class);
+//        SerializeConfig.getGlobalInstance().getObjectWriter(FlowRule.class);
+//        SerializeConfig.getGlobalInstance().getObjectWriter(SystemRule.class);
+//        SerializeConfig.getGlobalInstance().getObjectWriter(DegradeRule.class);
+//        SerializeConfig.getGlobalInstance().getObjectWriter(AuthorityRule.class);
+//        SerializeConfig.getGlobalInstance().getObjectWriter(ParamFlowRule.class);
+//
+//        ParserConfig.getGlobalInstance().getDeserializer(NodeVo.class);
+//        ParserConfig.getGlobalInstance().getDeserializer(FlowRule.class);
+//        ParserConfig.getGlobalInstance().getDeserializer(SystemRule.class);
+//        ParserConfig.getGlobalInstance().getDeserializer(DegradeRule.class);
+//        ParserConfig.getGlobalInstance().getDeserializer(AuthorityRule.class);
+//        ParserConfig.getGlobalInstance().getDeserializer(ParamFlowRule.class);
     }
 }

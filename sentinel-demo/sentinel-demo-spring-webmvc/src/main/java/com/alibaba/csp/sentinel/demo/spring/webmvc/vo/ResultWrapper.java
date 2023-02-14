@@ -15,7 +15,7 @@
  */
 package com.alibaba.csp.sentinel.demo.spring.webmvc.vo;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 
 /**
  * @author kaizi2009
