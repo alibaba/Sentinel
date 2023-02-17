@@ -26,10 +26,15 @@ import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
+import com.alibaba.csp.sentinel.traffic.rule.TrafficRoutingRuleGroup;
+import com.alibaba.csp.sentinel.traffic.rule.router.TrafficRouterRuleManager;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+import io.envoyproxy.envoy.config.route.v3.RouteConfiguration;
 import io.opensergo.ConfigKind;
 import io.opensergo.OpenSergoClient;
+import io.opensergo.OpenSergoClientManager;
 import io.opensergo.proto.fault_tolerance.v1.CircuitBreakerStrategy;
 import io.opensergo.proto.fault_tolerance.v1.ConcurrencyLimitStrategy;
 import io.opensergo.proto.fault_tolerance.v1.FaultToleranceRule;
@@ -60,6 +65,8 @@ public class OpenSergoDataSourceGroup {
 
     private final OpenSergoRuleAggregator ruleAggregator;
 
+    private final OpenSergoTrafficRouterParser trafficRouterParser;
+
     private final AtomicBoolean started = new AtomicBoolean(false);
 
     /**
@@ -71,18 +78,51 @@ public class OpenSergoDataSourceGroup {
     public OpenSergoDataSourceGroup(String host, int port, String namespace, String app) {
         AssertUtil.notEmpty(namespace, "namespace cannot be empty");
         AssertUtil.notEmpty(app, "app cannot be empty");
-        this.openSergoClient = new OpenSergoClient(host, port);
+        this.openSergoClient = OpenSergoClientManager.get().getOrCreateClient(host, port);
         this.namespace = namespace;
         this.app = app;
         this.ruleAggregator = new OpenSergoRuleAggregator(dataSourceMap);
+        this.trafficRouterParser = new OpenSergoTrafficRouterParser();
 
         initializeDataSourceMap();
+        OpenSergoDataSourceGroupManager.addGroup(host + ":" + port, this);
     }
 
     private void initializeDataSourceMap() {
         dataSourceMap.put(OpenSergoSentinelConstants.KIND_FLOW_RULE, new DynamicSentinelProperty<List<FlowRule>>());
         dataSourceMap.put(OpenSergoSentinelConstants.KIND_CIRCUIT_BREAKER_RULE,
-            new DynamicSentinelProperty<List<DegradeRule>>());
+                new DynamicSentinelProperty<List<DegradeRule>>());
+    }
+
+    public void unSubscribeTrafficRouterConfig(String namespace, String appName) {
+        SubscribeKey key = new SubscribeKey(namespace, appName, ConfigKind.TRAFFIC_ROUTER_STRATEGY);
+        openSergoClient.unsubscribeConfig(key);
+    }
+
+    /**
+     * <p>Subscribe Sentinel traffic rules from OpenSergo control plane.</p>
+     */
+    public void subscribeTrafficRouterConfig(String namespace, String appName) {
+        SubscribeKey key = new SubscribeKey(namespace, appName, ConfigKind.TRAFFIC_ROUTER_STRATEGY);
+        openSergoClient.subscribeConfig(key, new OpenSergoConfigSubscriber() {
+
+            @Override
+            public boolean onConfigUpdate(SubscribeKey subscribeKey, Object dataList) {
+                try {
+                    TrafficRoutingRuleGroup trafficRoutingRuleGroup = trafficRouterParser
+                            .resolveLabelRouting((List<RouteConfiguration>) dataList);
+                    TrafficRouterRuleManager.updateTrafficRouter(trafficRoutingRuleGroup);
+                    return true;
+                } catch (InvalidProtocolBufferException e) {
+                    RecordLog.error("Subscribing OpenSergo config subscribeKey: {} enhance error: {}", subscribeKey, e);
+                }
+
+                return false;
+            }
+        });
+        subscribeKeyMap.put(ConfigKind.TRAFFIC_ROUTER_STRATEGY, key);
+
+        RecordLog.info("Subscribing OpenSergo base traffic-router rules for target <{}, {}>", namespace, app);
     }
 
     public void start() throws Exception {
@@ -170,14 +210,14 @@ public class OpenSergoDataSourceGroup {
 
         boolean subscribed = hasSubscribedFor(OpenSergoSentinelConstants.KIND_CIRCUIT_BREAKER_RULE);
         SentinelProperty<List<DegradeRule>> property = dataSourceMap.get(
-            OpenSergoSentinelConstants.KIND_CIRCUIT_BREAKER_RULE);
+                OpenSergoSentinelConstants.KIND_CIRCUIT_BREAKER_RULE);
         if (subscribed) {
             return property;
         }
 
         SubscribeKey subscribeKey = new SubscribeKey(namespace, app, ConfigKind.CIRCUIT_BREAKER_STRATEGY);
         openSergoClient.subscribeConfig(subscribeKey,
-            new OpenSergoSentinelCircuitBreakerRuleSubscriber(ruleAggregator));
+                new OpenSergoSentinelCircuitBreakerRuleSubscriber(ruleAggregator));
         subscribeKeyMap.put(ConfigKind.CIRCUIT_BREAKER_STRATEGY, subscribeKey);
         RecordLog.info("Subscribing OpenSergo config for target: {}", subscribeKey);
 

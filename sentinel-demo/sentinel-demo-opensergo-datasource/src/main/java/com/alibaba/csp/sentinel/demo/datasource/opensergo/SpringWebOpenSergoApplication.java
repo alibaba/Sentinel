@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,18 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.datasource;
+package com.alibaba.csp.sentinel.demo.datasource.opensergo;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
+ * <p>Add the JVM parameter to connect to the dashboard:</p>
+ * {@code -Dcsp.sentinel.dashboard.server=127.0.0.1:8080 -Dproject.name=foo-app}
+ *
  * @author Eric Zhao
  */
-public final class OpenSergoSentinelConstants {
+@SpringBootApplication
+public class SpringWebOpenSergoApplication {
 
-    public static final String KIND_FLOW_RULE = "FlowRule";
-    public static final String KIND_CIRCUIT_BREAKER_RULE = "DegradeRule";
-    public static final String KIND_SYSTEM_ADAPTIVE_RULE = "SystemRule";
-    public static final String KIND_PARAM_FLOW_RULE = "ParamFlowRule";
-
-    private OpenSergoSentinelConstants() {
+    public static void main(String[] args) {
+        SpringApplication.run(SpringWebOpenSergoApplication.class);
     }
 }
