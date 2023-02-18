@@ -32,7 +32,7 @@ import java.util.Objects;
  */
 public class OperatingSystemBeanManager {
 
-    private OperatingSystemBeanManager() {}
+    private OperatingSystemBeanManager() { }
 
     /**
      * com.ibm for J9
