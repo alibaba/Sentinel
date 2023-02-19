@@ -146,8 +146,11 @@ public class AsyncFileWriter extends Writer {
     public void close() throws IOException {
         if(asyncFile != null) {
             currentPosition.whenComplete((res, ex) ->
-                    AsyncFiles.closeAfc(asyncFile)
-            );
+            try {
+                asyncFile.close();
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            });
         }
     }
 }
