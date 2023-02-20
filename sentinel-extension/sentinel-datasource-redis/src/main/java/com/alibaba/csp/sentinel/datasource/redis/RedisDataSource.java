@@ -111,13 +111,13 @@ public class RedisDataSource<T> extends AbstractDataSource<String, T> {
 
         if (connectionConfig.getTrustedCertificatesPath() != null){
             if (connectionConfig.getTrustedCertificatesPath().endsWith(".jks")){
-                // if the value is end with .jks，think it is java key store format，to invoke truststore mthod
+                // if the value is end with .jks，think it is java key store format，to invoke truststore method
                 sslOptionsBuilder.truststore(
                         new File(connectionConfig.getTrustedCertificatesPath()),
                         connectionConfig.getTrustedCertificatesJksPassword()
                 );
             } else {
-                // if the value is not end with .jks，think it is pem format，to invoke trustManager mthod
+                // if the value is not end with .jks，think it is pem format，to invoke trustManager method
                 sslOptionsBuilder.trustManager(new File(connectionConfig.getTrustedCertificatesPath()));
             }
         }
