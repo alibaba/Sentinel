@@ -207,7 +207,8 @@ public class MetricFetcher {
                 unhealthy.incrementAndGet();
                 continue;
             }
-            final String url = "http://" + machine.getIp() + ":" + machine.getPort() + "/" + METRIC_URL_PATH
+            String contextPath = machine.getContextPath()  != null ? machine.getContextPath() : "";
+            final String url = "http://" + machine.getIp() + ":" + machine.getPort() + contextPath + "/" + METRIC_URL_PATH
                 + "?startTime=" + startTime + "&endTime=" + endTime + "&refetch=" + false;
             final HttpGet httpGet = new HttpGet(url);
             httpGet.setHeader(HTTP.CONN_DIRECTIVE, HTTP.CONN_CLOSE);

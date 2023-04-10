@@ -90,7 +90,8 @@ public class SpringMvcHttpHeartbeatSender implements HeartbeatSender {
             .setParameter("hostname", HostNameUtil.getHostName())
             .setParameter("ip", TransportConfig.getHeartbeatClientIp())
             .setParameter("port", TransportConfig.getPort())
-            .setParameter("pid", String.valueOf(PidUtil.getPid()));
+            .setParameter("pid", String.valueOf(PidUtil.getPid()))
+            .setParameter("context_path",TransportConfig.getServletPath());
 
         HttpGet request = new HttpGet(uriBuilder.build());
         request.setConfig(requestConfig);
