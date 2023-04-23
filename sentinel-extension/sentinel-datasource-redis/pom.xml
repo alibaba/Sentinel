@@ -15,7 +15,7 @@
     <properties>
         <java.source.version>1.8</java.source.version>
         <java.target.version>1.8</java.target.version>
-        <lettuce.version>5.0.1.RELEASE</lettuce.version>
+        <lettuce.version>5.3.1.RELEASE</lettuce.version>
         <redis.mock.version>0.1.6</redis.mock.version>
     </properties>
 
