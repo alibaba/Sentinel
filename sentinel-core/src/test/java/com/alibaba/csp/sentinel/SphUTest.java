@@ -164,6 +164,7 @@ public class SphUTest {
         int batchCount = 3;
         Entry e = SphU.entry("testEntryExitAutomation", EntryType.IN, 3, args);
         e.exit();
+        // The number of success is automatically updated based on batchCount when exit
         assertEquals(batchCount, e.getCurNode().totalSuccess());
     }
 }
