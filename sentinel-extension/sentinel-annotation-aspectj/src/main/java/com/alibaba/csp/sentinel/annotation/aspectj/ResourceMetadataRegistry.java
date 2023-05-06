@@ -106,4 +106,11 @@ final class ResourceMetadataRegistry {
     static void clearBlockHandlerMap() {
         BLOCK_HANDLER_MAP.clear();
     }
+
+    /**
+     * Only for internal test.
+     */
+    static void clearGlobalHandlerMap(){
+        GLOBAL_FALLBACK_MAP.clear();
+    }
 }

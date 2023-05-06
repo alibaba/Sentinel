@@ -3,9 +3,9 @@ package com.alibaba.csp.sentinel.fallback;
 import java.lang.reflect.Method;
 
 /**
+ * Default global fallback
+ *
  * @author luffy
- * @version 1.0
- * @date 2023/5/5 11:02 下午
  */
 public class DefaultGlobalFallback implements IGlobalFallback {
 
