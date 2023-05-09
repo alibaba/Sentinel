@@ -79,6 +79,13 @@ public @interface SentinelResource {
      */
     String defaultFallback() default "";
 
+
+    /**
+     * The {@code globalFallback} is used as the global fallback handler class.
+     * The returned class should implement the {@link IGlobalFallback} interface.
+     * If no specific global fallback handler is provided, the default {@link DefaultGlobalFallback} class will be used.
+     * @return The class that serves as the global fallback handler.
+     */
     Class<? extends IGlobalFallback> globalFallback() default DefaultGlobalFallback.class;
 
 
