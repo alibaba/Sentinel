@@ -170,12 +170,10 @@ public class TokenBucketTest extends AbstractTimeBasedTest {
     @Test
     public void testForOptimisticTokenBucketCheckQpsMultipleThreads() throws InterruptedException {
         useActualTime();
-
         long unitProduceNum = 1;
         long maxTokenNum = 100;
         long intervalInMs = 10;
         final int n = 64;
-
         final AtomicLong passNum = new AtomicLong();
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         final AtomicBoolean flag = new AtomicBoolean(true);
