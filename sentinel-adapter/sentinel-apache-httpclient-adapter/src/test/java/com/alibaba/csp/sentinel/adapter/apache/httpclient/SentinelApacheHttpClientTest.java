@@ -46,7 +46,7 @@ import static org.junit.Assert.assertNotNull;
 @SpringBootTest(classes = TestApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
         properties = {
-                "server.port=8084"
+                "server.port=8184"
         })
 public class SentinelApacheHttpClientTest {
 
