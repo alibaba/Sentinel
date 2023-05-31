@@ -91,6 +91,7 @@ public abstract class AbstractSentinelAspectSupport {
                                           Throwable ex) throws Throwable {
         Object[] originArgs = pjp.getArgs();
         Method originMethod = resolveMethod(pjp);
+        //look up or create global handler
         IGlobalFallback globalFallback = ResourceMetadataRegistry.lookupGlobalHandler(globalFallbackClazz);
         if(globalFallback == null){
             globalFallback = ResourceMetadataRegistry.updateGlobalFallBackFor(globalFallbackClazz);
