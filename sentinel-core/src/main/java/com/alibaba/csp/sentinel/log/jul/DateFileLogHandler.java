@@ -20,6 +20,9 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
@@ -33,6 +36,8 @@ class DateFileLogHandler extends Handler {
             return new SimpleDateFormat("yyyy-MM-dd");
         }
     };
+
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private volatile FileHandler handler;
 
@@ -59,6 +64,12 @@ class DateFileLogHandler extends Handler {
 
     @Override
     public void close() throws SecurityException {
+        executor.shutdown();
+        try {
+            executor.awaitTermination(3, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
         handler.close();
     }
 
@@ -80,7 +91,9 @@ class DateFileLogHandler extends Handler {
             String msg = record.getMessage();
             record.setMessage("missed file rolling at: " + new Date(endDate) + "\n" + msg);
         }
-        handler.publish(record);
+        executor.execute(() -> {
+            handler.publish(record);
+        });
     }
 
     private boolean shouldRotate(LogRecord record) {

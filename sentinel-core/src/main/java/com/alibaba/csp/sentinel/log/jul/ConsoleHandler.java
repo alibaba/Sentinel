@@ -17,6 +17,9 @@ package com.alibaba.csp.sentinel.log.jul;
 
 import java.io.UnsupportedEncodingException;
 import java.util.logging.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This Handler publishes log records to console by using {@link java.util.logging.StreamHandler}.
@@ -43,6 +46,8 @@ class ConsoleHandler extends Handler {
      */
     private StreamHandler stderrHandler;
 
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+
     public ConsoleHandler() {
         this.stdoutHandler = new StreamHandler(System.out, new CspFormatter());
         this.stderrHandler = new StreamHandler(System.err, new CspFormatter());
@@ -62,13 +67,15 @@ class ConsoleHandler extends Handler {
 
     @Override
     public void publish(LogRecord record) {
-        if (record.getLevel().intValue() >= Level.WARNING.intValue()) {
-            stderrHandler.publish(record);
-            stderrHandler.flush();
-        } else {
-            stdoutHandler.publish(record);
-            stdoutHandler.flush();
-        }
+        executor.execute(() -> {
+            if (record.getLevel().intValue() >= Level.WARNING.intValue()) {
+                stderrHandler.publish(record);
+                stderrHandler.flush();
+            } else {
+                stdoutHandler.publish(record);
+                stdoutHandler.flush();
+            }
+        });
     }
 
     @Override
@@ -79,6 +86,12 @@ class ConsoleHandler extends Handler {
 
     @Override
     public void close() throws SecurityException {
+        executor.shutdown();
+        try {
+            executor.awaitTermination(3, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
         stdoutHandler.close();
         stderrHandler.close();
     }
