@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.log.jul;
 
+import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -37,7 +39,9 @@ class DateFileLogHandler extends Handler {
         }
     };
 
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    @SuppressWarnings("PMD.ThreadPoolCreationRule")
+    private final ExecutorService executor = Executors.newSingleThreadExecutor(
+            new NamedThreadFactory("sentinel-log-executor", true));
 
     private volatile FileHandler handler;
 

@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.log.jul;
 
+import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
+
 import java.io.UnsupportedEncodingException;
 import java.util.logging.*;
 import java.util.concurrent.ExecutorService;
@@ -45,8 +47,9 @@ class ConsoleHandler extends Handler {
      * A Handler which publishes log records to System.err.
      */
     private StreamHandler stderrHandler;
-
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    @SuppressWarnings("PMD.ThreadPoolCreationRule")
+    private final ExecutorService executor = Executors.newSingleThreadExecutor(
+            new NamedThreadFactory("sentinel-log-executor", true));
 
     public ConsoleHandler() {
         this.stdoutHandler = new StreamHandler(System.out, new CspFormatter());
