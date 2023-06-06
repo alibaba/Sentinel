@@ -23,7 +23,9 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
@@ -39,9 +41,7 @@ class DateFileLogHandler extends Handler {
         }
     };
 
-    @SuppressWarnings("PMD.ThreadPoolCreationRule")
-    private final ExecutorService executor = Executors.newSingleThreadExecutor(
-            new NamedThreadFactory("sentinel-log-executor", true));
+    private ExecutorService executor;
 
     private volatile FileHandler handler;
 
@@ -64,13 +64,23 @@ class DateFileLogHandler extends Handler {
         this.append = append;
         rotateDate();
         this.initialized = true;
+
+        int corePoolSize = 1;
+        int maximumPoolSize = 1;
+        long keepAliveTime = 0;
+        /**insure the log can be recorded*/
+        int queueSize = 1024;
+        RejectedExecutionHandler handler = new ThreadPoolExecutor.DiscardPolicy();
+        executor = new ThreadPoolExecutor(corePoolSize, maximumPoolSize,
+                keepAliveTime, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(queueSize),
+                new NamedThreadFactory("sentinel-datafile-log-executor", true), handler);
     }
 
     @Override
     public void close() throws SecurityException {
         executor.shutdown();
         try {
-            executor.awaitTermination(3, TimeUnit.SECONDS);
+            executor.awaitTermination(1, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }

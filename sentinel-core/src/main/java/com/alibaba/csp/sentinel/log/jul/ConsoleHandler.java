@@ -18,10 +18,12 @@ package com.alibaba.csp.sentinel.log.jul;
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 
 import java.io.UnsupportedEncodingException;
-import java.util.logging.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.*;
 
 /**
  * This Handler publishes log records to console by using {@link java.util.logging.StreamHandler}.
@@ -47,13 +49,22 @@ class ConsoleHandler extends Handler {
      * A Handler which publishes log records to System.err.
      */
     private StreamHandler stderrHandler;
-    @SuppressWarnings("PMD.ThreadPoolCreationRule")
-    private final ExecutorService executor = Executors.newSingleThreadExecutor(
-            new NamedThreadFactory("sentinel-log-executor", true));
+
+    private ExecutorService executor;
 
     public ConsoleHandler() {
         this.stdoutHandler = new StreamHandler(System.out, new CspFormatter());
         this.stderrHandler = new StreamHandler(System.err, new CspFormatter());
+
+        int corePoolSize = 1;
+        int maximumPoolSize = 1;
+        long keepAliveTime = 0;
+        /**insure the log can be recorded*/
+        int queueSize = 1024;
+        RejectedExecutionHandler handler = new ThreadPoolExecutor.DiscardPolicy();
+        executor = new ThreadPoolExecutor(corePoolSize, maximumPoolSize,
+                keepAliveTime, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(queueSize),
+                new NamedThreadFactory("sentinel-console-log-executor", true), handler);
     }
 
     @Override
@@ -89,13 +100,13 @@ class ConsoleHandler extends Handler {
 
     @Override
     public void close() throws SecurityException {
+        /**not need to record log if process is killed.*/
         executor.shutdown();
-        try {
-            executor.awaitTermination(3, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
         stdoutHandler.close();
         stderrHandler.close();
+    }
+
+    public ExecutorService getExecutor() {
+        return executor;
     }
 }

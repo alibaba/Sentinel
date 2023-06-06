@@ -19,6 +19,7 @@ import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
@@ -50,6 +51,12 @@ public class ConsoleHandlerTest {
         // Test INFO level, should log to stdout
         logRecord = new LogRecord(Level.INFO, "test info message");
         consoleHandler.publish(logRecord);
+        try {
+            consoleHandler.getExecutor().shutdown();
+            consoleHandler.getExecutor().awaitTermination(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
         consoleHandler.close();
         assertEquals(cspFormatter.format(logRecord), baosOut.toString());
         assertEquals("", baosErr.toString());
@@ -73,6 +80,12 @@ public class ConsoleHandlerTest {
         // Test INFO level, should log to stderr
         logRecord = new LogRecord(Level.WARNING, "test warning message");
         consoleHandler.publish(logRecord);
+        try {
+            consoleHandler.getExecutor().shutdown();
+            consoleHandler.getExecutor().awaitTermination(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
         consoleHandler.close();
         assertEquals(cspFormatter.format(logRecord), baosErr.toString());
         assertEquals("", baosOut.toString());
@@ -98,6 +111,12 @@ public class ConsoleHandlerTest {
         // java.util.logging.StreamHandler.level=FINE
         logRecord = new LogRecord(Level.FINE, "test fine message");
         consoleHandler.publish(logRecord);
+        try {
+            consoleHandler.getExecutor().shutdown();
+            consoleHandler.getExecutor().awaitTermination(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
         consoleHandler.close();
         assertEquals("", baosOut.toString());
         assertEquals("", baosErr.toString());
@@ -120,6 +139,12 @@ public class ConsoleHandlerTest {
         // Test SEVERE level, should log to stderr
         logRecord = new LogRecord(Level.SEVERE, "test severe message");
         consoleHandler.publish(logRecord);
+        try {
+            consoleHandler.getExecutor().shutdown();
+            consoleHandler.getExecutor().awaitTermination(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
         consoleHandler.close();
         assertEquals(cspFormatter.format(logRecord), baosErr.toString());
         assertEquals("", baosOut.toString());
