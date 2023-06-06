@@ -78,12 +78,8 @@ class DateFileLogHandler extends Handler {
 
     @Override
     public void close() throws SecurityException {
+        /**not need to record log if process is killed.*/
         executor.shutdown();
-        try {
-            executor.awaitTermination(1, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
         handler.close();
     }
 
