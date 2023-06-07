@@ -61,7 +61,7 @@ class ConsoleHandler extends Handler {
         long keepAliveTime = 0;
         /**insure the log can be recorded*/
         int queueSize = 1024;
-        RejectedExecutionHandler handler = new ThreadPoolExecutor.DiscardPolicy();
+        RejectedExecutionHandler handler = new LogRejectedExecutionHandler();
         executor = new ThreadPoolExecutor(corePoolSize, maximumPoolSize,
                 keepAliveTime, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(queueSize),
                 new NamedThreadFactory("sentinel-console-log-executor", true), handler);
@@ -81,15 +81,7 @@ class ConsoleHandler extends Handler {
 
     @Override
     public void publish(LogRecord record) {
-        executor.execute(() -> {
-            if (record.getLevel().intValue() >= Level.WARNING.intValue()) {
-                stderrHandler.publish(record);
-                stderrHandler.flush();
-            } else {
-                stdoutHandler.publish(record);
-                stdoutHandler.flush();
-            }
-        });
+        executor.execute(new LogTask(record,stdoutHandler,stderrHandler));
     }
 
     @Override
@@ -109,4 +101,38 @@ class ConsoleHandler extends Handler {
     public ExecutorService getExecutor() {
         return executor;
     }
+
+    static class LogRejectedExecutionHandler implements RejectedExecutionHandler {
+        public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+            System.err.println("Failed to log record: " + ((DateFileLogHandler.LogTask) r).getRecord() + " with console, rejected");
+        }
+    }
+
+    static class LogTask implements Runnable {
+        private final LogRecord record;
+        private final StreamHandler stdoutHandler;
+        private final StreamHandler stderrHandler;
+
+        public LogTask(LogRecord record,StreamHandler stdoutHandler,StreamHandler stderrHandler) {
+            this.record = record;
+            this.stdoutHandler = stdoutHandler;
+            this.stderrHandler = stderrHandler;
+        }
+
+        public void run() {
+            if (record.getLevel().intValue() >= Level.WARNING.intValue()) {
+                stderrHandler.publish(record);
+                stderrHandler.flush();
+            } else {
+                stdoutHandler.publish(record);
+                stdoutHandler.flush();
+            }
+        }
+
+        public LogRecord getRecord() {
+            return record;
+        }
+
+    }
+
 }

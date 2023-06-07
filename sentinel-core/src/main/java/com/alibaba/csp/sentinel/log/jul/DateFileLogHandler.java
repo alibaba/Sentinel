@@ -70,7 +70,7 @@ class DateFileLogHandler extends Handler {
         long keepAliveTime = 0;
         /**insure the log can be recorded*/
         int queueSize = 1024;
-        RejectedExecutionHandler handler = new ThreadPoolExecutor.DiscardPolicy();
+        RejectedExecutionHandler handler = new LogRejectedExecutionHandler();
         executor = new ThreadPoolExecutor(corePoolSize, maximumPoolSize,
                 keepAliveTime, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(queueSize),
                 new NamedThreadFactory("sentinel-datafile-log-executor", true), handler);
@@ -101,9 +101,8 @@ class DateFileLogHandler extends Handler {
             String msg = record.getMessage();
             record.setMessage("missed file rolling at: " + new Date(endDate) + "\n" + msg);
         }
-        executor.execute(() -> {
-            handler.publish(record);
-        });
+
+        executor.execute(new LogTask(record,handler));
     }
 
     private boolean shouldRotate(LogRecord record) {
@@ -166,6 +165,31 @@ class DateFileLogHandler extends Handler {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    static class LogRejectedExecutionHandler implements RejectedExecutionHandler {
+        public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+            System.err.println("Failed to log record: " + ((LogTask) r).getRecord() + " with datafile, rejected");
+        }
+    }
+
+    static class LogTask implements Runnable {
+        private final LogRecord record;
+        private final FileHandler handler;
+
+        public LogTask(LogRecord record,FileHandler handler) {
+            this.record = record;
+            this.handler = handler;
+        }
+
+        public void run() {
+            handler.publish(record);
+        }
+
+        public LogRecord getRecord() {
+            return record;
+        }
+
     }
 
 }
