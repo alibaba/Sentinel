@@ -169,7 +169,7 @@ class DateFileLogHandler extends Handler {
 
     static class LogRejectedExecutionHandler implements RejectedExecutionHandler {
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-            System.err.println("Failed to log record: " + ((LogTask) r).getRecord() + " with datafile, rejected");
+            System.err.println("Failed to log sentinel record: " + ((LogTask) r).getRecord() + " with datafile, rejected");
         }
     }
 

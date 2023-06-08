@@ -104,7 +104,7 @@ class ConsoleHandler extends Handler {
 
     static class LogRejectedExecutionHandler implements RejectedExecutionHandler {
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-            System.err.println("Failed to log record: " + ((DateFileLogHandler.LogTask) r).getRecord() + " with console, rejected");
+            System.err.println("Failed to log sentinel record: " + ((DateFileLogHandler.LogTask) r).getRecord() + " with console, rejected");
         }
     }
 
