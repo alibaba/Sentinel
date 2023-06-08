@@ -35,12 +35,14 @@ public class ResourceMetadataRegistryTest {
     public void setUp() throws Exception {
         ResourceMetadataRegistry.clearBlockHandlerMap();
         ResourceMetadataRegistry.clearFallbackMap();
+        ResourceMetadataRegistry.clearGlobalHandlerMap();
     }
 
     @After
     public void tearDown() throws Exception {
         ResourceMetadataRegistry.clearBlockHandlerMap();
         ResourceMetadataRegistry.clearFallbackMap();
+        ResourceMetadataRegistry.clearGlobalHandlerMap();
     }
 
     @Test
