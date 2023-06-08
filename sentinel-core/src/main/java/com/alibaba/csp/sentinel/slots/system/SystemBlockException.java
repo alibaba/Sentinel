@@ -29,8 +29,8 @@ public class SystemBlockException extends BlockException {
         this.resourceName = resourceName;
     }
 
-    public SystemBlockException(String resourceName, String limitType) {
-        super(limitType);
+    public SystemBlockException(String resourceName, String limitType, SystemRule systemRule) {
+        super(limitType, systemRule);
         this.resourceName = resourceName;
     }
 

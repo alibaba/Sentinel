@@ -15,13 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.system;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
@@ -31,6 +24,15 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.property.SimplePropertyListener;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * <p>
@@ -87,6 +89,8 @@ public final class SystemRuleManager {
     private static SystemStatusListener statusListener = null;
     private final static SystemPropertyListener listener = new SystemPropertyListener();
     private static SentinelProperty<List<SystemRule>> currentProperty = new DynamicSentinelProperty<List<SystemRule>>();
+
+    private static final Map<String, SystemRule> ruleMap = new HashMap<>();
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private final static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1,
@@ -247,6 +251,7 @@ public final class SystemRuleManager {
             highestSystemLoad = Math.min(highestSystemLoad, rule.getHighestSystemLoad());
             highestSystemLoadIsSet = true;
             checkStatus = true;
+            ruleMap.put("load", rule);
         }
 
         if (rule.getHighestCpuUsage() >= 0) {
@@ -257,6 +262,7 @@ public final class SystemRuleManager {
                 highestCpuUsage = Math.min(highestCpuUsage, rule.getHighestCpuUsage());
                 highestCpuUsageIsSet = true;
                 checkStatus = true;
+                ruleMap.put("cpu", rule);
             }
         }
 
@@ -264,17 +270,20 @@ public final class SystemRuleManager {
             maxRt = Math.min(maxRt, rule.getAvgRt());
             maxRtIsSet = true;
             checkStatus = true;
+            ruleMap.put("rt", rule);
         }
         if (rule.getMaxThread() >= 0) {
             maxThread = Math.min(maxThread, rule.getMaxThread());
             maxThreadIsSet = true;
             checkStatus = true;
+            ruleMap.put("thread", rule);
         }
 
         if (rule.getQps() >= 0) {
             qps = Math.min(qps, rule.getQps());
             qpsIsSet = true;
             checkStatus = true;
+            ruleMap.put("qps", rule);
         }
 
         checkSystemStatus.set(checkStatus);
@@ -304,30 +313,30 @@ public final class SystemRuleManager {
         // total qps
         double currentQps = Constants.ENTRY_NODE.passQps();
         if (currentQps + count > qps) {
-            throw new SystemBlockException(resourceWrapper.getName(), "qps");
+            throw new SystemBlockException(resourceWrapper.getName(), "qps", ruleMap.get("qps"));
         }
 
         // total thread
         int currentThread = Constants.ENTRY_NODE.curThreadNum();
         if (currentThread > maxThread) {
-            throw new SystemBlockException(resourceWrapper.getName(), "thread");
+            throw new SystemBlockException(resourceWrapper.getName(), "thread", ruleMap.get("thread"));
         }
 
         double rt = Constants.ENTRY_NODE.avgRt();
         if (rt > maxRt) {
-            throw new SystemBlockException(resourceWrapper.getName(), "rt");
+            throw new SystemBlockException(resourceWrapper.getName(), "rt", ruleMap.get("rt"));
         }
 
         // load. BBR algorithm.
         if (highestSystemLoadIsSet && getCurrentSystemAvgLoad() > highestSystemLoad) {
             if (!checkBbr(currentThread)) {
-                throw new SystemBlockException(resourceWrapper.getName(), "load");
+                throw new SystemBlockException(resourceWrapper.getName(), "load", ruleMap.get("load"));
             }
         }
 
         // cpu usage
         if (highestCpuUsageIsSet && getCurrentCpuUsage() > highestCpuUsage) {
-            throw new SystemBlockException(resourceWrapper.getName(), "cpu");
+            throw new SystemBlockException(resourceWrapper.getName(), "cpu", ruleMap.get("cpu"));
         }
     }
 
