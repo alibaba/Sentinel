@@ -51,6 +51,23 @@ public class FooService {
         return "Hello for " + i;
     }
 
+    @SentinelResourceBinding(value = "apiFooWithFallback", globalFallback = InterceptorGlobalFallback.class,
+            exceptionsToTrace = {IllegalArgumentException.class})
+    public String fooWithInterceptorGlobalFallback(int i) throws Exception {
+        if (i == 5758) {
+            throw new IllegalAccessException();
+        }
+        return "Hello for " + i;
+    }
+
+    @SentinelResourceBinding(value = "apiFooWithDefaultFallback",exceptionsToTrace = {IllegalArgumentException.class})
+    public String fooWithDefaultGlobalFallback(int i) throws Exception {
+        if (i == 5758) {
+            throw new IllegalAccessException();
+        }
+        return "Hello for " + i;
+    }
+
     @SentinelResourceBinding(value = "apiAnotherFooWithDefaultFallback", defaultFallback = "globalDefaultFallback",
         fallbackClass = {FooUtil.class})
     public String anotherFoo(int i) {

@@ -63,8 +63,8 @@ public class SentinelResourceInterceptor extends AbstractSentinelInterceptorSupp
                 return handleFallback(ctx, annotation, ex);
             }
 
-            // No fallback function can handle the exception, so throw it out.
-            throw ex;
+            //  Global fallback function handle the exception. If no global fallback handler is configured, the default handler will throw it.
+            return handleGlobalFallback(ctx,annotation,ex);
         } finally {
             if (entry != null) {
                 entry.exit(1, ctx.getParameters());
