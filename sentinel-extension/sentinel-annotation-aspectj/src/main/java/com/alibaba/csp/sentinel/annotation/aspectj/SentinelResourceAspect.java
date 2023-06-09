@@ -68,7 +68,7 @@ public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
                 return handleFallback(pjp, annotation, ex);
             }
 
-            //  Handle global exceptions based on the globalFallback in annotations.
+            //  Global fallback function handle the exception. If no global fallback handler is configured, the default handler will throw it.
             return handleGlobalFallback(pjp,annotation.globalFallback(),ex);
         } finally {
             if (entry != null) {
