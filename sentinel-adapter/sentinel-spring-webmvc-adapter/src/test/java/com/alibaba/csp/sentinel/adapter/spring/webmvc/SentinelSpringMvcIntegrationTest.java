@@ -23,6 +23,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
@@ -107,13 +109,16 @@ public class SentinelSpringMvcIntegrationTest {
     @Test
     public void testRuntimeException() throws Exception {
         String url = "/runtimeException";
-        configureExceptionRulesFor(url, 3, null);
-        int repeat = 3;
+
+        configureExceptionRulesFor(url, 4.2, null);
+        int repeat = 5;
+
         for (int i = 0; i < repeat; i++) {
             this.mvc.perform(get(url))
                     .andExpect(status().isOk())
                     .andExpect(content().string(ResultWrapper.error().toJsonString()));
             ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
+
             assertNotNull(cn);
             assertEquals(i + 1, cn.passQps(), 0.01);
         }
@@ -139,15 +144,16 @@ public class SentinelSpringMvcIntegrationTest {
         FlowRuleManager.loadRules(Collections.singletonList(rule));
     }
 
-    private void configureExceptionRulesFor(String resource, int count, String limitApp) {
-        FlowRule rule = new FlowRule()
+    private void configureExceptionRulesFor(String resource, double count, String limitApp) {
+        DegradeRule rule = new DegradeRule()
                 .setCount(count)
-                .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO);
+                .setTimeWindow(1)
+                .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT);
         rule.setResource(resource);
         if (StringUtil.isNotBlank(limitApp)) {
             rule.setLimitApp(limitApp);
         }
-        FlowRuleManager.loadRules(Collections.singletonList(rule));
+        DegradeRuleManager.loadRules(Collections.singletonList(rule));
     }
 
     @After
