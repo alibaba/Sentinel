@@ -119,8 +119,8 @@ class ConsoleHandler extends Handler {
         private final Queue<Long> recordTimestamp;
 
         public LogRejectedExecutionHandler() {
-            String DEFAULT_REJECTED_RECORD_MAX_NUM = "5";
-            String DEFAULT_REJECTED_RECORD_PERIOD = "30000";
+            String DEFAULT_REJECTED_RECORD_MAX_NUM = "1";
+            String DEFAULT_REJECTED_RECORD_PERIOD = "60000";
             String REJECTED_RECORD_MAX_NUM_KEY = "sentinel.rejected.record.max.num";
             String REJECTED_RECORD_PERIOD_KEY = "sentinel.rejected.record.period";
 
