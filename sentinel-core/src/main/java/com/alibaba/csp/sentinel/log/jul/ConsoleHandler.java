@@ -121,11 +121,11 @@ class ConsoleHandler extends Handler {
         public LogRejectedExecutionHandler() {
             String DEFAULT_REJECTED_RECORD_MAX_NUM = "5";
             String DEFAULT_REJECTED_RECORD_PERIOD = "30000";
-            String DEFAULT_REJECTED_RECORD_MAX_NUM_KEY = "sentinel.rejected.record.max.num";
-            String DEFAULT_REJECTED_RECORD_PERIOD_KEY = "sentinel.rejected.record.period";
+            String REJECTED_RECORD_MAX_NUM_KEY = "sentinel.rejected.record.max.num";
+            String REJECTED_RECORD_PERIOD_KEY = "sentinel.rejected.record.period";
 
-            maxRecordNum = Integer.parseInt(System.getProperty(DEFAULT_REJECTED_RECORD_MAX_NUM_KEY, DEFAULT_REJECTED_RECORD_MAX_NUM));
-            recordPeriod = Integer.parseInt(System.getProperty(DEFAULT_REJECTED_RECORD_PERIOD_KEY, DEFAULT_REJECTED_RECORD_PERIOD));
+            maxRecordNum = Integer.parseInt(System.getProperty(REJECTED_RECORD_MAX_NUM_KEY, DEFAULT_REJECTED_RECORD_MAX_NUM));
+            recordPeriod = Integer.parseInt(System.getProperty(REJECTED_RECORD_PERIOD_KEY, DEFAULT_REJECTED_RECORD_PERIOD));
 
             recordTimestamp = new ArrayDeque<>(2 * maxRecordNum);
         }
