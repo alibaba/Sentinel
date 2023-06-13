@@ -192,13 +192,13 @@ class DateFileLogHandler extends Handler {
             maxRecordNum = Integer.parseInt(System.getProperty(REJECTED_RECORD_MAX_NUM_KEY, DEFAULT_REJECTED_RECORD_MAX_NUM));
             recordPeriod = Integer.parseInt(System.getProperty(REJECTED_RECORD_PERIOD_KEY, DEFAULT_REJECTED_RECORD_PERIOD));
 
-            recordTimestamp = new ArrayDeque<>(2*maxRecordNum);
+            recordTimestamp = new ArrayDeque<>(2 * maxRecordNum);
         }
 
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
             long currentTimestamp = System.currentTimeMillis();
             int recordNum = recordedNumber(currentTimestamp);
-            if(recordNum <= maxRecordNum) {
+            if (recordNum <= maxRecordNum) {
                 System.err.println("Failed to log sentinel record: " + ((DateFileLogHandler.LogTask) r).getRecord() + " with datafile, rejected");
             }
         }
@@ -206,7 +206,7 @@ class DateFileLogHandler extends Handler {
         public int recordedNumber(long currentTimestamp) {
             recordTimestamp.add(currentTimestamp);
             long start = currentTimestamp - recordPeriod;
-            while(recordTimestamp.peek() != null && recordTimestamp.peek() < start){
+            while (recordTimestamp.peek() != null && recordTimestamp.peek() < start) {
                 recordTimestamp.poll();
             }
             return recordTimestamp.size();
