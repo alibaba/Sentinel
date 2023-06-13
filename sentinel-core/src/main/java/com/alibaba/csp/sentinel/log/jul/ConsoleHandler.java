@@ -18,6 +18,8 @@ package com.alibaba.csp.sentinel.log.jul;
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayDeque;
+import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.RejectedExecutionHandler;
@@ -103,8 +105,46 @@ class ConsoleHandler extends Handler {
     }
 
     static class LogRejectedExecutionHandler implements RejectedExecutionHandler {
+
+        /**
+         * Max number to log rejected records in given period.
+         */
+        private final Integer maxRecordNum;
+
+        /**
+         * The period of logged rejected records.
+         */
+        private final Integer recordPeriod;
+
+        private final Queue<Long> recordTimestamp;
+
+        public LogRejectedExecutionHandler() {
+            String DEFAULT_REJECTED_RECORD_MAX_NUM = "5";
+            String DEFAULT_REJECTED_RECORD_PERIOD = "30000";
+            String DEFAULT_REJECTED_RECORD_MAX_NUM_KEY = "sentinel.rejected.record.max.num";
+            String DEFAULT_REJECTED_RECORD_PERIOD_KEY = "sentinel.rejected.record.period";
+
+            maxRecordNum = Integer.parseInt(System.getProperty(DEFAULT_REJECTED_RECORD_MAX_NUM_KEY, DEFAULT_REJECTED_RECORD_MAX_NUM));
+            recordPeriod = Integer.parseInt(System.getProperty(DEFAULT_REJECTED_RECORD_PERIOD_KEY, DEFAULT_REJECTED_RECORD_PERIOD));
+
+            recordTimestamp = new ArrayDeque<>(2 * maxRecordNum);
+        }
+
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-            System.err.println("Failed to log sentinel record: " + ((DateFileLogHandler.LogTask) r).getRecord() + " with console, rejected");
+            long currentTimestamp = System.currentTimeMillis();
+            int recordNum = recordedNumber(currentTimestamp);
+            if (recordNum <= maxRecordNum) {
+                System.err.println("Failed to log sentinel record: " + ((DateFileLogHandler.LogTask) r).getRecord() + " with console, rejected");
+            }
+        }
+
+        public int recordedNumber(long currentTimestamp) {
+            recordTimestamp.add(currentTimestamp);
+            long start = currentTimestamp - recordPeriod;
+            while (recordTimestamp.peek() != null && recordTimestamp.peek() < start) {
+                recordTimestamp.poll();
+            }
+            return recordTimestamp.size();
         }
     }
 
