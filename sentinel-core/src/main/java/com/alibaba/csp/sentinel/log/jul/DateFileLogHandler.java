@@ -170,46 +170,26 @@ class DateFileLogHandler extends Handler {
     }
 
     static class LogRejectedExecutionHandler implements RejectedExecutionHandler {
-
-        /**
-         * Max number to log rejected records in given period.
-         */
-        private final Integer maxRecordNum;
-
         /**
          * The period of logged rejected records.
          */
-        private final Integer recordPeriod;
+        private final long recordPeriod;
 
-        private final Queue<Long> recordTimestamp;
+        private Long lastRecordTime;
 
         public LogRejectedExecutionHandler() {
-            String DEFAULT_REJECTED_RECORD_MAX_NUM = "1";
             String DEFAULT_REJECTED_RECORD_PERIOD = "60000";
-            String REJECTED_RECORD_MAX_NUM_KEY = "sentinel.rejected.record.max.num";
             String REJECTED_RECORD_PERIOD_KEY = "sentinel.rejected.record.period";
-
-            maxRecordNum = Integer.parseInt(System.getProperty(REJECTED_RECORD_MAX_NUM_KEY, DEFAULT_REJECTED_RECORD_MAX_NUM));
-            recordPeriod = Integer.parseInt(System.getProperty(REJECTED_RECORD_PERIOD_KEY, DEFAULT_REJECTED_RECORD_PERIOD));
-
-            recordTimestamp = new ArrayDeque<>(2 * maxRecordNum);
+            lastRecordTime = null;
+            recordPeriod = Long.parseLong(System.getProperty(REJECTED_RECORD_PERIOD_KEY, DEFAULT_REJECTED_RECORD_PERIOD));
         }
 
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
             long currentTimestamp = System.currentTimeMillis();
-            int recordNum = recordedNumber(currentTimestamp);
-            if (recordNum <= maxRecordNum) {
-                System.err.println("Failed to log sentinel record: " + ((DateFileLogHandler.LogTask) r).getRecord() + " with datafile, rejected");
+            if (lastRecordTime == null || currentTimestamp - lastRecordTime > recordPeriod) {
+                System.err.println("Failed to log sentinel record with datafile, rejected");
+                lastRecordTime = currentTimestamp;
             }
-        }
-
-        public int recordedNumber(long currentTimestamp) {
-            recordTimestamp.add(currentTimestamp);
-            long start = currentTimestamp - recordPeriod;
-            while (recordTimestamp.peek() != null && recordTimestamp.peek() < start) {
-                recordTimestamp.poll();
-            }
-            return recordTimestamp.size();
         }
     }
 
