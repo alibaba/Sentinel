@@ -16,8 +16,6 @@
 package com.alibaba.csp.sentinel.annotation;
 
 import com.alibaba.csp.sentinel.EntryType;
-import com.alibaba.csp.sentinel.fallback.DefaultGlobalFallback;
-import com.alibaba.csp.sentinel.fallback.IGlobalFallback;
 
 import java.lang.annotation.*;
 
@@ -78,16 +76,6 @@ public @interface SentinelResource {
      * @since 1.6.0
      */
     String defaultFallback() default "";
-
-
-    /**
-     * The {@code globalFallback} is used as the global fallback handler class.
-     * The returned class should implement the {@link IGlobalFallback} interface.
-     * If no specific global fallback handler is provided, the default {@link DefaultGlobalFallback} class will be used.
-     * @return The class that serves as the global fallback handler.
-     */
-    Class<? extends IGlobalFallback> globalFallback() default DefaultGlobalFallback.class;
-
 
     /**
      * The {@code fallback} is located in the same class with the original method by default.

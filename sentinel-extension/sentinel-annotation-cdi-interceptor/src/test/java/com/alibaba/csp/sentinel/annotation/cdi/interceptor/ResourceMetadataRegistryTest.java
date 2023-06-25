@@ -16,7 +16,6 @@
 package com.alibaba.csp.sentinel.annotation.cdi.interceptor;
 
 import com.alibaba.csp.sentinel.annotation.cdi.interceptor.integration.service.FooService;
-import com.alibaba.csp.sentinel.annotation.cdi.interceptor.integration.service.InterceptorGlobalFallback;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,14 +34,12 @@ public class ResourceMetadataRegistryTest {
     public void setUp() throws Exception {
         ResourceMetadataRegistry.clearBlockHandlerMap();
         ResourceMetadataRegistry.clearFallbackMap();
-        ResourceMetadataRegistry.clearGlobalHandlerMap();
     }
 
     @After
     public void tearDown() throws Exception {
         ResourceMetadataRegistry.clearBlockHandlerMap();
         ResourceMetadataRegistry.clearFallbackMap();
-        ResourceMetadataRegistry.clearGlobalHandlerMap();
     }
 
     @Test
@@ -85,15 +82,5 @@ public class ResourceMetadataRegistryTest {
     @Test(expected = IllegalArgumentException.class)
     public void testUpdateFallbackBadArgument() {
         ResourceMetadataRegistry.updateBlockHandlerFor(String.class, "", String.class.getMethods()[0]);
-    }
-
-    @Test
-    public void testUpdateThenLookupGlobalFallback() {
-        Class clazz = InterceptorGlobalFallback.class;
-        assertThat(ResourceMetadataRegistry.lookupGlobalHandler(clazz)).isNull();
-
-        ResourceMetadataRegistry.updateGlobalFallBackFor(clazz);
-        assertThat(ResourceMetadataRegistry.lookupGlobalHandler(clazz)).isNotNull();
-
     }
 }

@@ -18,8 +18,6 @@ package com.alibaba.csp.sentinel.annotation.aspectj;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import com.alibaba.csp.sentinel.fallback.IGlobalFallback;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
@@ -33,8 +31,6 @@ final class ResourceMetadataRegistry {
     private static final Map<String, MethodWrapper> DEFAULT_FALLBACK_MAP = new ConcurrentHashMap<>();
     private static final Map<String, MethodWrapper> BLOCK_HANDLER_MAP = new ConcurrentHashMap<>();
 
-    private static final Map<String, IGlobalFallback> GLOBAL_FALLBACK_MAP = new ConcurrentHashMap<>();
-
 
     static MethodWrapper lookupFallback(Class<?> clazz, String name) {
         return FALLBACK_MAP.get(getKey(clazz, name));
@@ -46,10 +42,6 @@ final class ResourceMetadataRegistry {
 
     static MethodWrapper lookupBlockHandler(Class<?> clazz, String name) {
         return BLOCK_HANDLER_MAP.get(getKey(clazz, name));
-    }
-
-    static IGlobalFallback lookupGlobalHandler(Class<?> clazz){
-        return GLOBAL_FALLBACK_MAP.get(clazz.getCanonicalName());
     }
 
     static void updateFallbackFor(Class<?> clazz, String name, Method method) {
@@ -73,21 +65,6 @@ final class ResourceMetadataRegistry {
         BLOCK_HANDLER_MAP.put(getKey(clazz, name), MethodWrapper.wrap(method));
     }
 
-    static IGlobalFallback updateGlobalFallBackFor(Class<? extends IGlobalFallback> clazz){
-        if(clazz==null){
-            throw new IllegalArgumentException("Bad argument");
-        }
-        IGlobalFallback instance  = null;
-        try{
-            instance = clazz.newInstance();
-        } catch (IllegalAccessException e) {
-            throw new IllegalArgumentException("Bad argument");
-        } catch (InstantiationException e) {
-            throw new IllegalArgumentException("Bad argument");
-        }
-        GLOBAL_FALLBACK_MAP.put(clazz.getCanonicalName(),instance);
-        return instance;
-    }
 
     private static String getKey(Class<?> clazz, String name) {
         return String.format("%s:%s", clazz.getCanonicalName(), name);
@@ -105,12 +82,5 @@ final class ResourceMetadataRegistry {
      */
     static void clearBlockHandlerMap() {
         BLOCK_HANDLER_MAP.clear();
-    }
-
-    /**
-     * Only for internal test.
-     */
-    static void clearGlobalHandlerMap(){
-        GLOBAL_FALLBACK_MAP.clear();
     }
 }

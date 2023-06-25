@@ -18,11 +18,11 @@ package com.alibaba.csp.sentinel.fallback;
 import java.lang.reflect.Method;
 
 /**
- * Global fallback interface
+ * Annotation global fallback interface
  *
  * @author luffy
  */
-public interface IGlobalFallback {
+public interface SentinelAnnotationGlobalFallback {
 
      /**
       *

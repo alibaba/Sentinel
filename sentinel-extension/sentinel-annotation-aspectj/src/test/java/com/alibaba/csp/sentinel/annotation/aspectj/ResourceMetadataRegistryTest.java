@@ -15,7 +15,7 @@
  */
 package com.alibaba.csp.sentinel.annotation.aspectj;
 
-import com.alibaba.csp.sentinel.annotation.aspectj.integration.fallback.AnnotationGlobalFallback;
+
 import com.alibaba.csp.sentinel.annotation.aspectj.integration.service.FooService;
 import org.junit.After;
 import org.junit.Before;
@@ -34,14 +34,12 @@ public class ResourceMetadataRegistryTest {
     public void setUp() throws Exception {
         ResourceMetadataRegistry.clearBlockHandlerMap();
         ResourceMetadataRegistry.clearFallbackMap();
-        ResourceMetadataRegistry.clearGlobalHandlerMap();
     }
 
     @After
     public void tearDown() throws Exception {
         ResourceMetadataRegistry.clearBlockHandlerMap();
         ResourceMetadataRegistry.clearFallbackMap();
-        ResourceMetadataRegistry.clearGlobalHandlerMap();
     }
 
     @Test
@@ -76,15 +74,6 @@ public class ResourceMetadataRegistryTest {
         assertThat(wrapper.getMethod()).isSameAs(method);
     }
 
-    @Test
-    public void testUpdateThenLookupGlobalFallback() {
-        Class clazz = AnnotationGlobalFallback.class;
-        assertThat(ResourceMetadataRegistry.lookupGlobalHandler(clazz)).isNull();
-
-        ResourceMetadataRegistry.updateGlobalFallBackFor(clazz);
-        assertThat(ResourceMetadataRegistry.lookupGlobalHandler(clazz)).isNotNull();
-
-    }
 
     @Test(expected = IllegalArgumentException.class)
     public void testUpdateBlockHandlerBadArgument() {

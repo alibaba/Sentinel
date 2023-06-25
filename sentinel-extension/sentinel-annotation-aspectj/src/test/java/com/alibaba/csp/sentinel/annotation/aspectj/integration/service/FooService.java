@@ -53,8 +53,7 @@ public class FooService {
         return "Hello for " + i;
     }
 
-    @SentinelResource(value = "apiFooWithFallback", globalFallback = AnnotationGlobalFallback.class,
-            exceptionsToTrace = {IllegalArgumentException.class})
+    @SentinelResource(value = "apiFooWithFallback",  exceptionsToTrace = {IllegalArgumentException.class})
     public String fooWithAnnotationGlobalFallback(int i) throws Exception {
         if (i == 5758) {
             throw new IllegalAccessException();

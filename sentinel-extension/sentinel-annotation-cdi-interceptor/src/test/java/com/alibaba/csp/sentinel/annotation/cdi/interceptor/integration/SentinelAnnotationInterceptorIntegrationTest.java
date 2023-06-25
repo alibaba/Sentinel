@@ -192,17 +192,4 @@ public class SentinelAnnotationInterceptorIntegrationTest {
         assertThat(fooService.foo(1121)).isEqualTo("Oops, 1121");
         assertThat(cn.blockQps()).isPositive();
     }
-
-    @Test
-    public void testAnnotationGlobalFallback() throws Exception {
-        assertThat(fooService.fooWithInterceptorGlobalFallback(1)).isEqualTo("Hello for 1");
-        // Fallback should take effect.
-        assertThat(fooService.fooWithInterceptorGlobalFallback(5758)).isEqualTo("InterceptorGlobalFallback");
-
-    }
-
-    @Test(expected = IllegalAccessException.class)
-    public void testDefaultGlobalFallback() throws Exception {
-        fooService.fooWithDefaultGlobalFallback(5758);
-    }
 }

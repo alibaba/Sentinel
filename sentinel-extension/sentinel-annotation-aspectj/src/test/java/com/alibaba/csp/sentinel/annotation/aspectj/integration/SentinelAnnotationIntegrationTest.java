@@ -230,19 +230,6 @@ public class SentinelAnnotationIntegrationTest extends AbstractJUnit4SpringConte
         assertThat(fooService.fooWithPrivateFallback(2221)).isEqualTo("Oops, 2221");
     }
 
-    @Test
-    public void testAnnotationGlobalFallback() throws Exception {
-        assertThat(fooService.fooWithAnnotationGlobalFallback(1)).isEqualTo("Hello for 1");
-        // Fallback should take effect.
-        assertThat(fooService.fooWithAnnotationGlobalFallback(5758)).isEqualTo("AnnotationGlobalFallback");
-
-    }
-
-    @Test(expected = IllegalAccessException.class)
-    public void testDefaultGlobalFallback() throws Exception {
-        fooService.fooWithDefaultGlobalFallback(5758);
-    }
-
     @Before
     public void setUp() throws Exception {
         FlowRuleManager.loadRules(new ArrayList<FlowRule>());

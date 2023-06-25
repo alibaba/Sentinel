@@ -17,7 +17,6 @@ package com.alibaba.csp.sentinel.annotation.cdi.interceptor;
 
 import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
-import com.alibaba.csp.sentinel.fallback.IGlobalFallback;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.MethodUtil;
@@ -139,19 +138,6 @@ public abstract class AbstractSentinelInterceptorSupport {
         throw ex;
     }
 
-
-    protected Object handleGlobalFallback(InvocationContext ctx,
-                                          SentinelResourceBinding annotation,
-                                          Throwable ex) throws Throwable {
-        Object[] originArgs = ctx.getParameters();
-        Method originMethod = ctx.getMethod();
-        Class globalFallbackClazz = annotation.globalFallback();
-        IGlobalFallback globalFallback = ResourceMetadataRegistry.lookupGlobalHandler(globalFallbackClazz);
-        if(globalFallback == null){
-            globalFallback = ResourceMetadataRegistry.updateGlobalFallBackFor(globalFallbackClazz);
-        }
-        return globalFallback.handle(originMethod,originArgs,ex);
-    }
 
     protected Object handleBlockException(InvocationContext ctx, SentinelResourceBinding annotation, BlockException ex)
         throws Throwable {
