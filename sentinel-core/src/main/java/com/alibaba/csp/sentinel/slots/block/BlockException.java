@@ -76,6 +76,11 @@ public abstract class BlockException extends Exception {
         this.rule = rule;
     }
 
+    public BlockException(AbstractRule rule) {
+        super();
+        this.rule = rule;
+    }
+
     @Override
     public Throwable fillInStackTrace() {
         return this;
