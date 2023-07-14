@@ -11,6 +11,7 @@ import io.prometheus.client.Collector;
 import com.alibaba.csp.sentinel.prom.metrics.GaugeMetricFamily;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,11 +31,24 @@ public class SentinelCollector extends Collector {
 
     private volatile String appName;
 
+    private volatile String[] types;
+
+    private volatile String identify;
+
+    private volatile int fetchSize;
+
+    private volatile int delayTime;
+
     @Override
     public List<MetricFamilySamples> collect() {
         int ONE_SECOND = 1000;
         if (searcher == null) {
             synchronized (lock) {
+                fetchSize = Integer.parseInt(System.getProperty("sentinel.prometheus.size","1024"));
+                delayTime = Integer.parseInt(System.getProperty("sentinel.prometheus.delay","0"));
+                identify = System.getProperty("sentinel.prometheus.identify",null);
+                String typeStr = System.getProperty("sentinel.prometheus.types","passQps|blockQps|exceptionQps|rt|concurrency");
+                types = typeStr.split("\\|");
                 appName = System.getProperty("sentinel.prometheus.app",SentinelConfig.getAppName());
                 if (appName == null) {
                     appName = "SENTINEL_APP";
@@ -51,28 +65,56 @@ public class SentinelCollector extends Collector {
 
         List<MetricFamilySamples> list = new ArrayList<>();
 
-        long curTime = System.currentTimeMillis() / ONE_SECOND * ONE_SECOND;
+        long endTime = System.currentTimeMillis() / ONE_SECOND * ONE_SECOND - (long) delayTime * ONE_SECOND;
         try {
-            List<MetricNode> nodes = searcher.findByTimeAndResource(lastFetchTime, curTime, null);
+            List<MetricNode> nodes = searcher.findByTimeAndResource(lastFetchTime, endTime, identify);
             if(nodes == null){
-                lastFetchTime = curTime + ONE_SECOND;
+                lastFetchTime = endTime + ONE_SECOND;
                 return list;
             }
+            if(nodes.size() > fetchSize){
+                nodes = nodes.subList(0,fetchSize);
+            }
             GaugeMetricFamily exampleGaugeMetricFamily = new GaugeMetricFamily(appName,
-                    "sentinel_metrics", Collections.singletonList("type"));
+                    "sentinel_metrics", Arrays.asList("resource","classification","type"));
             for (MetricNode node : nodes) {
                 long recordTime = node.getTimestamp();
-                exampleGaugeMetricFamily.addMetric(Collections.singletonList("pass"), node.getPassQps(),recordTime);
-                exampleGaugeMetricFamily.addMetric(Collections.singletonList("rt"), node.getRt(),recordTime);
-                exampleGaugeMetricFamily.addMetric(Collections.singletonList("block"), node.getBlockQps(),recordTime);
-                exampleGaugeMetricFamily.addMetric(Collections.singletonList("concurrency"), node.getConcurrency(),recordTime);
+                for (String type : types) {
+                    double val = getTypeVal(node,type);
+                    exampleGaugeMetricFamily.addMetric(Arrays.asList(node.getResource(), String.valueOf(node.getClassification()),type), val,recordTime);
+                }
             }
             list.add(exampleGaugeMetricFamily);
-            lastFetchTime = curTime + ONE_SECOND;
+            lastFetchTime = endTime + ONE_SECOND;
         } catch (Exception e) {
             RecordLog.warn("[SentinelCollector] failed to fetch sentinel metrics with exception:", e);
         }
 
         return list;
+    }
+
+    public double getTypeVal(MetricNode node,String type){
+        if("passQps".equals(type)){
+            return node.getPassQps();
+        }
+        if("blockQps".equals(type)){
+            return node.getBlockQps();
+        }
+        if("successQps".equals(type)){
+            return node.getSuccessQps();
+        }
+        if("exceptionQps".equals(type)){
+            return node.getExceptionQps();
+        }
+        if("rt".equals(type)){
+            return node.getRt();
+        }
+        if("occupiedPassQps".equals(type)){
+            return node.getOccupiedPassQps();
+        }
+        if("concurrency".equals(type)){
+            return node.getConcurrency();
+        }
+        return -1.0;
     }
 }
