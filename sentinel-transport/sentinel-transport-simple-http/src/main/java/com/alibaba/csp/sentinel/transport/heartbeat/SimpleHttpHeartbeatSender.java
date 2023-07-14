@@ -89,7 +89,7 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
         return DEFAULT_INTERVAL;
     }
 
-    private Endpoint getAvailableAddress() {
+    protected Endpoint getAvailableAddress() {
         if (addressList == null || addressList.isEmpty()) {
             return null;
         }
