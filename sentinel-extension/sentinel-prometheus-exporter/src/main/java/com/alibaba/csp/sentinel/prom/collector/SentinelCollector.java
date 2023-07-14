@@ -12,7 +12,6 @@ import com.alibaba.csp.sentinel.prom.metrics.GaugeMetricFamily;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
