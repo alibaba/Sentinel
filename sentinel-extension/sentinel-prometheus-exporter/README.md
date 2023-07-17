@@ -80,14 +80,13 @@ set the resource which need to fetch,default null,fetch all resources
 
 the types need to fetch,such as passQps,concurrency
 
-format: "xx|xx|xx" 
+format: "xx|xx|xx"
 
 default: "passQps|blockQps|exceptionQps|rt|concurrency"
 
 you can reset the types as you need to,exm: "passQps|rt|concurrency|occupiedPassQps"
 
-the type is same as the MetricNode class variables, with range: 
-
+the type is same as the MetricNode class variables, with range:
 {"passQps","blockQps","successQps","exceptionQps","rt","occupiedPassQps","concurrency"}
 
 ## how it looks
