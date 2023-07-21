@@ -10,15 +10,10 @@ package com.alibaba.csp.sentinel.metric.prom;
 import com.alibaba.csp.sentinel.init.InitFunc;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.metric.prom.collector.SentinelCollector;
+import com.alibaba.csp.sentinel.metric.prom.config.PrometheusGlobalConfig;
 import io.prometheus.client.exporter.HTTPServer;
 
 public class PromExporterInit implements InitFunc {
-
-    private static final int promPort;
-
-    static {
-        promPort = Integer.parseInt(System.getProperty("sentinel.prometheus.port","20001"));
-    }
 
     @Override
     public void init() throws Exception {
@@ -27,6 +22,7 @@ public class PromExporterInit implements InitFunc {
             new SentinelCollector().register();
             // 开启http服务供prometheus调用
             // 默认只提供一个接口 http://ip:port/metrics，返回所有指标
+            int promPort = PrometheusGlobalConfig.getPromFetchPort();
             server = new HTTPServer(promPort);
         } catch (Throwable e) {
             RecordLog.warn("[PromExporterInit] failed to init prometheus exporter with exception:", e);

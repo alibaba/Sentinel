@@ -5,6 +5,9 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 
 public class PrometheusGlobalConfig {
 
+    public static final String PROM_FETCH_PORT = "csp.sentinel.prometheus.fetch.port";
+    public static final String DEFAULT_PROM_FETCH_PORT = "20001";
+
     public static final String PROM_FETCH_SIZE = "csp.sentinel.prometheus.fetch.size";
     public static final String DEFAULT_PROM_FETCH_SIZE = "1024";
 
@@ -18,6 +21,12 @@ public class PrometheusGlobalConfig {
 
     public static final String PROM_APP = "csp.sentinel.prometheus.app";
     public static final String DEFAULT_PROM_APP = "SENTINEL_APP";
+
+    public static int getPromFetchPort() {
+        String config = SentinelConfig.getConfig(PROM_FETCH_PORT);
+        config = StringUtil.isNotBlank(config) ? config : DEFAULT_PROM_FETCH_PORT;
+        return Integer.parseInt(config);
+    }
 
     public static int getPromFetchSize() {
         String config = SentinelConfig.getConfig(PROM_FETCH_SIZE);
