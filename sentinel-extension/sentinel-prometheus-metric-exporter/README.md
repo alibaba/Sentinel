@@ -18,7 +18,7 @@ To use Sentinel Prometheus Exporter, you should add the following dependency:
 ```xml
 <dependency>
     <groupId>com.alibaba.csp</groupId>
-    <artifactId>sentinel-prometheus-exporter</artifactId>
+    <artifactId>sentinel-prometheus-metric-exporter</artifactId>
     <version>x.y.z</version>
 </dependency>
 ```
@@ -54,15 +54,15 @@ scrape_configs:
 
 you can set system params to control the exporter behavior
 
-### 1.sentinel.prometheus.port
+### 1.csp.sentinel.prometheus.fetch.port
 
 the port for prometheus exporter,default 20001
 
-### 2.sentinel.prometheus.size
+### 2.csp.sentinel.prometheus.fetch.size
 
 the max fetch nums for prometheus exporter,in case the memory is not enough,default 1024
 
-### 3.sentinel.prometheus.delay
+### 3.csp.sentinel.prometheus.fetch.delay
 
 the delay time for fetching , may be it is still do some statistics work according to the sliding window size when fetching,
 
@@ -72,11 +72,11 @@ unit: second
 
 default: 0
 
-### 4.sentinel.prometheus.identify
+### 4.csp.sentinel.prometheus.fetch.identify
 
 set the resource which need to fetch,default null,fetch all resources
 
-### 5.sentinel.prometheus.types
+### 5.csp.sentinel.prometheus.fetch.types
 
 the types need to fetch,such as passQps,concurrency
 
@@ -88,6 +88,12 @@ you can reset the types as you need to,exm: "passQps|rt|concurrency|occupiedPass
 
 the type is same as the MetricNode class variables, with range:
 {"passQps","blockQps","successQps","exceptionQps","rt","occupiedPassQps","concurrency"}
+
+
+### 6.csp.sentinel.prometheus.app
+
+set the appName when do PromSQL
+
 
 ## how it looks
 

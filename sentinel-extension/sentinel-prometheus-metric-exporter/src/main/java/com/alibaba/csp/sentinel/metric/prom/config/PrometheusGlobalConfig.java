@@ -1,5 +1,12 @@
 package com.alibaba.csp.sentinel.metric.prom.config;
 
+/**
+ * The config for prometheus exporter.
+ *
+ * @author karl-sy
+ * @date 2023-07-13 21:15
+ * @since 2.0.0
+ */
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
