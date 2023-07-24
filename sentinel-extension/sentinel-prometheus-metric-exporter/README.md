@@ -89,11 +89,9 @@ you can reset the types as you need to,exm: "passQps|rt|concurrency|occupiedPass
 the type is same as the MetricNode class variables, with range:
 {"passQps","blockQps","successQps","exceptionQps","rt","occupiedPassQps","concurrency"}
 
-
 ### 6.csp.sentinel.prometheus.app
 
 set the appName when do PromSQL
-
 
 ## how it looks
 
