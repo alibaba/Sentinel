@@ -21,10 +21,10 @@ public class GaugeMetricFamily extends Collector.MetricFamilySamples {
         super(name, Collector.Type.GAUGE, help, new ArrayList<Sample>());
         labelNames = Collections.emptyList();
         samples.add(new Sample(
-                        name,
-                        labelNames,
-                        Collections.<String>emptyList(),
-                        value));
+                name,
+                labelNames,
+                Collections.<String>emptyList(),
+                value));
     }
 
     public GaugeMetricFamily(String name, String help, List<String> labelNames) {
@@ -36,7 +36,7 @@ public class GaugeMetricFamily extends Collector.MetricFamilySamples {
         if (labelValues.size() != labelNames.size()) {
             throw new IllegalArgumentException("Incorrect number of labels.");
         }
-        samples.add(new Sample(name, labelNames, labelValues, value,timestampMs));
+        samples.add(new Sample(name, labelNames, labelValues, value, timestampMs));
         return this;
     }
 }
