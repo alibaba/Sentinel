@@ -71,6 +71,7 @@ public class PrometheusGlobalConfig {
             appName = DEFAULT_PROM_APP;
         }
         appName = appName.replaceAll("\\.","_");
+        appName = appName.replaceAll("-","_");
         return appName;
     }
 
