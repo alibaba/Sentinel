@@ -93,7 +93,7 @@ public abstract class AbstractSentinelInterceptorSupport {
         Method fallbackMethod = extractFallbackMethod(ctx, fallback, fallbackClass);
         if (fallbackMethod != null) {
             // Construct args.
-            int paramCount = fallbackMethod.getParameterTypes().length;
+            int paramCount = fallbackMethod.getParameterCount();
             Object[] args;
             if (paramCount == originArgs.length) {
                 args = originArgs;
@@ -122,7 +122,7 @@ public abstract class AbstractSentinelInterceptorSupport {
         Method fallbackMethod = extractDefaultFallbackMethod(ctx, defaultFallback, fallbackClass);
         if (fallbackMethod != null) {
             // Construct args.
-            Object[] args = fallbackMethod.getParameterTypes().length == 0 ? new Object[0] : new Object[] {ex};
+            Object[] args = fallbackMethod.getParameterCount() == 0 ? new Object[0] : new Object[] {ex};
             try {
                 if (isStatic(fallbackMethod)) {
                     return fallbackMethod.invoke(null, args);
