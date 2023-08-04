@@ -50,6 +50,7 @@ public final class RuleConstant {
     public static final int CONTROL_BEHAVIOR_WARM_UP = 1;
     public static final int CONTROL_BEHAVIOR_RATE_LIMITER = 2;
     public static final int CONTROL_BEHAVIOR_WARM_UP_RATE_LIMITER = 3;
+    public static final int CONTROL_BEHAVIOR_CUSTOM = 4;
 
     public static final int DEFAULT_BLOCK_STRATEGY = 0;
     public static final int TRY_AGAIN_BLOCK_STRATEGY = 1;

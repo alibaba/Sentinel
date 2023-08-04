@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.slots.block.flow;
 
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
  * <p>
@@ -112,6 +113,11 @@ public class FlowRule extends AbstractRule {
         return this;
     }
 
+    public void setBehaviorController(TrafficShapingController rate) {
+        AssertUtil.assertIntEquals("controlBehavior is not support,",controlBehavior, RuleConstant.CONTROL_BEHAVIOR_CUSTOM);
+        setRater(rate);
+    }
+
     FlowRule setRater(TrafficShapingController rater) {
         this.controller = rater;
         return this;
@@ -200,6 +206,7 @@ public class FlowRule extends AbstractRule {
         if (maxQueueingTimeMs != rule.maxQueueingTimeMs) { return false; }
         if (clusterMode != rule.clusterMode) { return false; }
         if (refResource != null ? !refResource.equals(rule.refResource) : rule.refResource != null) { return false; }
+        if (controller != null ? !controller.equals(rule.controller) : rule.controller != null) { return false; }
         return clusterConfig != null ? clusterConfig.equals(rule.clusterConfig) : rule.clusterConfig == null;
     }
 
@@ -217,6 +224,7 @@ public class FlowRule extends AbstractRule {
         result = 31 * result + maxQueueingTimeMs;
         result = 31 * result + (clusterMode ? 1 : 0);
         result = 31 * result + (clusterConfig != null ? clusterConfig.hashCode() : 0);
+        result = 31 * result + (controller != null ? controller.hashCode() : 0);
         return result;
     }
 
