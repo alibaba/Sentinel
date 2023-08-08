@@ -9,6 +9,7 @@ package com.alibaba.csp.sentinel.metric.prom.collector;
  */
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.metric.prom.MetricTypeConstants;
 import com.alibaba.csp.sentinel.metric.prom.config.PrometheusGlobalConfig;
 import com.alibaba.csp.sentinel.metric.prom.types.GaugeMetricFamily;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
@@ -84,25 +85,25 @@ public class SentinelCollector extends Collector {
     }
 
     public double getTypeVal(MetricNode node,String type){
-        if("passQps".equals(type)){
+        if(MetricTypeConstants.PASS_QPS.equals(type)){
             return node.getPassQps();
         }
-        if("blockQps".equals(type)){
+        if(MetricTypeConstants.BLOCK_QPS.equals(type)){
             return node.getBlockQps();
         }
-        if("successQps".equals(type)){
+        if(MetricTypeConstants.SUCCESS_QPS.equals(type)){
             return node.getSuccessQps();
         }
-        if("exceptionQps".equals(type)){
+        if(MetricTypeConstants.EXCEPTION_QPS.equals(type)){
             return node.getExceptionQps();
         }
-        if("rt".equals(type)){
+        if(MetricTypeConstants.RT.equals(type)){
             return node.getRt();
         }
-        if("occupiedPassQps".equals(type)){
+        if(MetricTypeConstants.OCC_PASS_QPS.equals(type)){
             return node.getOccupiedPassQps();
         }
-        if("concurrency".equals(type)){
+        if(MetricTypeConstants.CONCURRENCY.equals(type)){
             return node.getConcurrency();
         }
         return -1.0;
