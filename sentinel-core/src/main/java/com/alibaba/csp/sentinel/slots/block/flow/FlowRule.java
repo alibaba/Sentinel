@@ -206,7 +206,12 @@ public class FlowRule extends AbstractRule {
         if (maxQueueingTimeMs != rule.maxQueueingTimeMs) { return false; }
         if (clusterMode != rule.clusterMode) { return false; }
         if (refResource != null ? !refResource.equals(rule.refResource) : rule.refResource != null) { return false; }
-        if (controller != null ? !controller.equals(rule.controller) : rule.controller != null) { return false; }
+        if (controlBehavior == RuleConstant.CONTROL_BEHAVIOR_CUSTOM) {
+            if (controller != null ? !controller.equals(rule.controller)
+                : rule.controller != null) {
+                return false;
+            }
+        }
         return clusterConfig != null ? clusterConfig.equals(rule.clusterConfig) : rule.clusterConfig == null;
     }
 
@@ -220,11 +225,13 @@ public class FlowRule extends AbstractRule {
         result = 31 * result + strategy;
         result = 31 * result + (refResource != null ? refResource.hashCode() : 0);
         result = 31 * result + controlBehavior;
+        if (controlBehavior == RuleConstant.CONTROL_BEHAVIOR_CUSTOM) {
+            result = 31 * result + (controller != null ? controller.hashCode() : 0);
+        }
         result = 31 * result + warmUpPeriodSec;
         result = 31 * result + maxQueueingTimeMs;
         result = 31 * result + (clusterMode ? 1 : 0);
         result = 31 * result + (clusterConfig != null ? clusterConfig.hashCode() : 0);
-        result = 31 * result + (controller != null ? controller.hashCode() : 0);
         return result;
     }
 
