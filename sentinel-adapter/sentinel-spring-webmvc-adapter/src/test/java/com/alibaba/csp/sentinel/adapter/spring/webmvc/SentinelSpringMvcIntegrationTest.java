@@ -53,6 +53,21 @@ public class SentinelSpringMvcIntegrationTest {
     private MockMvc mvc;
 
     @Test
+    public void testAntPathMather() throws Exception {
+        String url = "/antPathMather/**";
+        String totalTarget = "my_spring_mvc_total_url_request";
+        configureRulesFor(url, 1, "default");
+        for (int i = 0; i < 3; i++) {
+            this.mvc.perform(get("/antPathMather/" + i))
+                    .andExpect(status().isOk());
+        }
+
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode(totalTarget);
+        assertNotNull(cn);
+        assertEquals(1, cn.passQps(), 0.01);
+    }
+
+    @Test
     public void testBase() throws Exception {
         String url = "/hello";
         this.mvc.perform(get(url))

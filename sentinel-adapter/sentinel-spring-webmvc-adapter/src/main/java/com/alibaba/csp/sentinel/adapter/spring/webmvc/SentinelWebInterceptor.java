@@ -20,8 +20,18 @@ import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.UrlCleaner;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.alibaba.csp.sentinel.slots.block.AbstractRule;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
+import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRuleManager;
+import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 import com.alibaba.csp.sentinel.util.StringUtil;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.servlet.HandlerMapping;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Spring Web MVC interceptor that integrates with Sentinel.
@@ -55,6 +65,9 @@ public class SentinelWebInterceptor extends AbstractSentinelInterceptor {
             return null;
         }
         String resourceName = (String) resourceNameObject;
+        if (config.isAntPathSupport()) {
+            resourceName = resourceMatcher(resourceName);
+        }
         UrlCleaner urlCleaner = config.getUrlCleaner();
         if (urlCleaner != null) {
             resourceName = urlCleaner.clean(resourceName);
@@ -73,5 +86,38 @@ public class SentinelWebInterceptor extends AbstractSentinelInterceptor {
         }
 
         return getResourceName(request);
+    }
+
+    private String resourceMatcher(String originUrl) {
+        List<String> urls = new ArrayList<>();
+        urls.addAll(getUrl(SystemRuleManager.getRules()));
+        urls.addAll(getUrl(FlowRuleManager.getRules()));
+        urls.addAll(getUrl(DegradeRuleManager.getRules()));
+        urls.addAll(getUrl(ParamFlowRuleManager.getRules()));
+        for (String url : urls) {
+            if (new AntPathMatcher().match(url, originUrl)) {
+                return url;
+            }
+        }
+        return originUrl;
+    }
+
+    private static List<String> getUrl(List rules) {
+        List<String> urls = new ArrayList<>();
+        if (rules == null || rules.size() == 0) {
+            return urls;
+        }
+        for (Object ruleObject : rules) {
+            if (!(ruleObject instanceof AbstractRule)) {
+                continue;
+            }
+            AbstractRule rule = (AbstractRule) ruleObject;
+            if (null == rule.getResource()) {
+                continue;
+            }
+            urls.add(rule.getResource());
+        }
+        Collections.sort(urls);
+        return urls;
     }
 }
