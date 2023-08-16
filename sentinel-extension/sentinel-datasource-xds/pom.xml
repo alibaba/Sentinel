@@ -32,7 +32,7 @@
 
         <bouncycastle_version>1.70</bouncycastle_version>
         <com.google.protobuf.version>3.14.0</com.google.protobuf.version>
-        <jose4j.version>0.8.0</jose4j.version>
+        <jose4j.version>0.9.3</jose4j.version>
         <httpclient.version>4.5.13</httpclient.version>
     </properties>
 
