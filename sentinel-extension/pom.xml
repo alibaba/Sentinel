@@ -26,6 +26,7 @@
         <module>sentinel-annotation-cdi-interceptor</module>
         <module>sentinel-metric-exporter</module>
         <module>sentinel-datasource-opensergo</module>
+        <module>sentinel-datasource-xds</module>
     </modules>
 
 </project>
