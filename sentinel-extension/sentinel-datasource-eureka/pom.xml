@@ -12,7 +12,7 @@
     <artifactId>sentinel-datasource-eureka</artifactId>
 
     <properties>
-        <spring.cloud.version>2.1.2.RELEASE</spring.cloud.version>
+        <spring.cloud.version>2.2.10.RELEASE</spring.cloud.version>
     </properties>
 
 
@@ -42,7 +42,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <version>${spring.cloud.version}</version>
+            <version>2.3.6.RELEASE</version>
             <scope>test</scope>
         </dependency>
 

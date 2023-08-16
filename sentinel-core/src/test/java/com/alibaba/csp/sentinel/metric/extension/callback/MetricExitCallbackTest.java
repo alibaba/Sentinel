@@ -25,8 +25,8 @@ import com.alibaba.csp.sentinel.test.AbstractTimeBasedTest;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Carpenter Lee
