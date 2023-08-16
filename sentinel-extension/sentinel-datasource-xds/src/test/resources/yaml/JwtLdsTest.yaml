@@ -1,0 +1,21 @@
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: jwt
+spec:
+  jwtRules:
+    - issuer: "issuer-foo"
+      jwksUri: https://raw.githubusercontent.com/istio/istio/release-1.18/security/tools/jwt/samples/jwks.json
+      fromHeaders:
+        - name: header1
+          prefix: "pre1"
+        - name: header2
+          prefix: "pre2"
+      audiences:
+        - bookstore_android.apps.example.com
+        - bookstore_web.apps.example.com
+      fromParams:
+        - "parmas1"
+        - "parmas2"
+    - issuer: "issuer-foo1"
+      jwksUri: https://raw.githubusercontent.com/istio/istio/release-1.18/security/tools/jwt/samples/jwks.json
