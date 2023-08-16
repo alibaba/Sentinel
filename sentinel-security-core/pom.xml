@@ -13,7 +13,7 @@
     <description>The security core of Sentinel</description>
 
     <properties>
-        <jose4j.version>0.8.0</jose4j.version>
+        <jose4j.version>0.9.3</jose4j.version>
     </properties>
 
     <dependencies>
