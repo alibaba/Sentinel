@@ -22,7 +22,7 @@ import com.alibaba.dubbo.rpc.Invocation;
  */
 public final class DubboUtils {
 
-    public static final String DUBBO_APPLICATION_KEY = "dubboApplication";
+    public static final String DUBBO_APPLICATION_KEY = "remote.application";
 
     public static String getApplication(Invocation invocation, String defaultValue) {
         if (invocation == null || invocation.getAttachments() == null) {
