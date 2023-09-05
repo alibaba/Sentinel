@@ -15,9 +15,6 @@
  */
 package com.alibaba.csp.sentinel.cluster.client;
 
-import java.util.Collection;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.alibaba.csp.sentinel.cluster.ClusterConstants;
 import com.alibaba.csp.sentinel.cluster.ClusterErrorMessages;
 import com.alibaba.csp.sentinel.cluster.ClusterTransportClient;
@@ -26,7 +23,6 @@ import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
 import com.alibaba.csp.sentinel.cluster.TokenServerDescriptor;
 import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientAssignConfig;
 import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfigManager;
-import com.alibaba.csp.sentinel.cluster.client.config.ServerChangeObserver;
 import com.alibaba.csp.sentinel.cluster.log.ClusterClientStatLogUtil;
 import com.alibaba.csp.sentinel.cluster.request.ClusterRequest;
 import com.alibaba.csp.sentinel.cluster.request.data.FlowRequestData;
@@ -35,6 +31,9 @@ import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
 import com.alibaba.csp.sentinel.cluster.response.data.FlowTokenResponseData;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
+
+import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Default implementation of {@link ClusterTokenClient}.
@@ -50,12 +49,7 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
     private final AtomicBoolean shouldStart = new AtomicBoolean(false);
 
     public DefaultClusterTokenClient() {
-        ClusterClientConfigManager.addServerChangeObserver(new ServerChangeObserver() {
-            @Override
-            public void onRemoteServerChange(ClusterClientAssignConfig assignConfig) {
-                changeServer(assignConfig);
-            }
-        });
+        ClusterClientConfigManager.addServerChangeObserver(this::changeServer);
         initNewConnection();
     }
 
@@ -117,6 +111,8 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
         if (shouldStart.compareAndSet(true, false)) {
             if (transportClient != null) {
                 transportClient.stop();
+            }else {
+                RecordLog.warn("[DefaultClusterTokenClient] Cannot stop transport client: client not closed");
             }
         }
     }
@@ -189,6 +185,7 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
 
     @Override
     public void releaseConcurrentToken(Long tokenId) {
+        throw new UnsupportedOperationException();
     }
 
     private void logForResult(TokenResult result) {
@@ -203,13 +200,13 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
         }
     }
 
-    private TokenResult sendTokenRequest(ClusterRequest request) throws Exception {
+    private TokenResult sendTokenRequest(ClusterRequest<?> request) throws Exception {
         if (transportClient == null) {
             RecordLog.warn(
                 "[DefaultClusterTokenClient] Client not created, please check your config for cluster client");
             return clientFail();
         }
-        ClusterResponse response = transportClient.sendRequest(request);
+        ClusterResponse<?> response = transportClient.sendRequest(request);
         TokenResult result = new TokenResult(response.getStatus());
         if (response.getData() != null) {
             FlowTokenResponseData responseData = (FlowTokenResponseData)response.getData();
