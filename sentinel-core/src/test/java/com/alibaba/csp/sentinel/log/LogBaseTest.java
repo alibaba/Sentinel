@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.log;
 
 import org.junit.Assert;
+import org.junit.Test;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -37,7 +38,7 @@ public class LogBaseTest {
     //-Dcsp.sentinel.config.file=log-propertiesTest.properties
     //-Dcsp.sentinel.log.charset="utf-8"
     //-Dcsp.sentinel.log.output.type="file"
-    //@Test
+    @Test
     public void testLoadProperties() throws IOException {
 
         File file = null;
@@ -60,7 +61,8 @@ public class LogBaseTest {
 
             //test will make dir
             //Assert.assertTrue(LogBase.getLogBaseDir().equals("/data/logs/"));
-            Assert.assertTrue(LogBase.isLogNameUsePid());
+            System.setProperty("csp.sentinel.log.level","ERRORS");
+            Assert.assertFalse(LogBase.isLogNameUsePid());
             Assert.assertTrue(LogBase.getLogOutputType().equals("file"));
             Assert.assertTrue(LogBase.getLogCharset().equals("utf-8"));
         } finally {
