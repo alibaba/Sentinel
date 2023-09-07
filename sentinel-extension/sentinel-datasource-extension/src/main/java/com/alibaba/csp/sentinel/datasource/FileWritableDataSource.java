@@ -13,15 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.alibaba.csp.sentinel.datasource;
+
+import com.alibaba.csp.sentinel.log.RecordLog;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import com.alibaba.csp.sentinel.log.RecordLog;
 
 /**
  * A {@link WritableDataSource} based on file.
@@ -32,7 +35,7 @@ import com.alibaba.csp.sentinel.log.RecordLog;
  */
 public class FileWritableDataSource<T> implements WritableDataSource<T> {
 
-    private static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
+    private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
     private final Converter<T, String> configEncoder;
     private final File file;
@@ -46,6 +49,10 @@ public class FileWritableDataSource<T> implements WritableDataSource<T> {
 
     public FileWritableDataSource(File file, Converter<T, String> configEncoder) {
         this(file, configEncoder, DEFAULT_CHARSET);
+        File dir = file.getParentFile();
+        if (!Files.exists(dir.toPath())) {
+            dir.mkdirs();
+        }
     }
 
     public FileWritableDataSource(File file, Converter<T, String> configEncoder, Charset charset) {
@@ -66,25 +73,12 @@ public class FileWritableDataSource<T> implements WritableDataSource<T> {
     @Override
     public void write(T value) throws Exception {
         lock.lock();
-        try {
+        try (FileOutputStream outputStream = new FileOutputStream(file)) {
             String convertResult = configEncoder.convert(value);
-            FileOutputStream outputStream = null;
-            try {
-                outputStream = new FileOutputStream(file);
-                byte[] bytesArray = convertResult.getBytes(charset);
-
-                RecordLog.info("[FileWritableDataSource] Writing to file {}: {}", file, convertResult);
-                outputStream.write(bytesArray);
-                outputStream.flush();
-            } finally {
-                if (outputStream != null) {
-                    try {
-                        outputStream.close();
-                    } catch (Exception ignore) {
-                        // nothing
-                    }
-                }
-            }
+            byte[] bytesArray = convertResult.getBytes(charset);
+            RecordLog.info("[FileWritableDataSource] Writing to file {}: {}", file, convertResult);
+            outputStream.write(bytesArray);
+            outputStream.flush();
         } finally {
             lock.unlock();
         }

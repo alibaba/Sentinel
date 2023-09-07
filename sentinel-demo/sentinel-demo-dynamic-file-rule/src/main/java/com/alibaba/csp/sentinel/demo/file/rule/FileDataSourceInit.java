@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.demo.file.rule;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.alibaba.csp.sentinel.datasource.FileRefreshableDataSource;
@@ -23,10 +24,12 @@ import com.alibaba.csp.sentinel.datasource.FileWritableDataSource;
 import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
 import com.alibaba.csp.sentinel.datasource.WritableDataSource;
 import com.alibaba.csp.sentinel.init.InitFunc;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.transport.util.WritableDataSourceRegistry;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.TypeReference;
 
 /**
@@ -64,5 +67,23 @@ public class FileDataSourceInit implements InitFunc {
 
     private <T> String encodeJson(T t) {
         return JSON.toJSONString(t);
+    }
+
+    public static void main(String[] args) {
+        try {
+            new FileDataSourceInit().init();
+            WritableDataSource<List<FlowRule>> flowDataSource = WritableDataSourceRegistry.getFlowDataSource();
+            List<FlowRule> flowRules = new ArrayList<>();
+            FlowRule flowRule = new FlowRule();
+            flowRule.setResource("test-flow-rule");
+            flowRule.setGrade(RuleConstant.FLOW_GRADE_QPS);
+            flowRule.setCount(3.0);
+            flowRules.add(flowRule);
+            flowRule.setLimitApp("default");
+            flowRule.setStrategy(0);
+            flowDataSource.write(flowRules);
+        } catch (Exception e) {
+           e.printStackTrace();
+        }
     }
 }
