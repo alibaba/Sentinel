@@ -78,9 +78,9 @@ public class FileDataSourceInit implements InitFunc {
             flowRule.setResource("test-flow-rule");
             flowRule.setGrade(RuleConstant.FLOW_GRADE_QPS);
             flowRule.setCount(3.0);
-            flowRules.add(flowRule);
             flowRule.setLimitApp("default");
             flowRule.setStrategy(0);
+            flowRules.add(flowRule);
             flowDataSource.write(flowRules);
         } catch (Exception e) {
            e.printStackTrace();
