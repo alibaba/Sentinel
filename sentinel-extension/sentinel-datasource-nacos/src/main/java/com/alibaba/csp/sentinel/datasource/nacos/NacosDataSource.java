@@ -47,7 +47,7 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
      * Single-thread pool. Once the thread pool is blocked, we throw up the old task.
      */
     private final ExecutorService pool = new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS,
-        new ArrayBlockingQueue<Runnable>(1), new NamedThreadFactory("sentinel-nacos-ds-update"),
+        new ArrayBlockingQueue<Runnable>(1), new NamedThreadFactory("sentinel-nacos-ds-update", true),
         new ThreadPoolExecutor.DiscardOldestPolicy());
 
     private final Listener configListener;
@@ -99,8 +99,8 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
 
             @Override
             public void receiveConfigInfo(final String configInfo) {
-                RecordLog.info(String.format("[NacosDataSource] New property value received for (properties: %s) (dataId: %s, groupId: %s): %s",
-                    properties, dataId, groupId, configInfo));
+                RecordLog.info("[NacosDataSource] New property value received for (properties: {}) (dataId: {}, groupId: {}): {}",
+                    properties, dataId, groupId, configInfo);
                 T newValue = NacosDataSource.this.parser.convert(configInfo);
                 // Update the new value to the property.
                 getProperty().updateValue(newValue);
@@ -145,6 +145,12 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
     public void close() {
         if (configService != null) {
             configService.removeListener(dataId, groupId, configListener);
+            try {
+                configService.shutDown();
+            } catch (Exception e) {
+                RecordLog.warn("[NacosDataSource] Error occurred when closing Nacos data source", e);
+                e.printStackTrace();
+            }
         }
         pool.shutdownNow();
     }

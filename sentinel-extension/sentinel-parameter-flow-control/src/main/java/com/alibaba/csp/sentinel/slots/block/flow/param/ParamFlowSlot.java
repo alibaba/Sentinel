@@ -20,7 +20,7 @@ import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.csp.sentinel.spi.SpiOrder;
+import com.alibaba.csp.sentinel.spi.Spi;
 
 import java.util.List;
 
@@ -31,7 +31,7 @@ import java.util.List;
  * @author Eric Zhao
  * @since 0.2.0
  */
-@SpiOrder(-3000)
+@Spi(order = -3000)
 public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
@@ -82,6 +82,10 @@ public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 String triggeredParam = "";
                 if (args.length > rule.getParamIdx()) {
                     Object value = args[rule.getParamIdx()];
+                    // Assign actual value with the result of paramFlowKey method
+                    if (value instanceof ParamFlowArgument) {
+                        value = ((ParamFlowArgument) value).paramFlowKey();
+                    }
                     triggeredParam = String.valueOf(value);
                 }
                 throw new ParamFlowException(resourceWrapper.getName(), triggeredParam, rule);

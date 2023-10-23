@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.web.auth;
+package com.alibaba.csp.sentinel.dashboard.auth;
 
-import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -25,8 +26,13 @@ import javax.servlet.http.HttpServletRequest;
  * @author Carpenter Lee
  * @since 1.5.0
  */
-@Component
 public class FakeAuthServiceImpl implements AuthService<HttpServletRequest> {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    public FakeAuthServiceImpl() {
+        this.logger.warn("there is no auth, use {} by implementation {}", AuthService.class, this.getClass());
+    }
 
     @Override
     public AuthUser getAuthUser(HttpServletRequest request) {

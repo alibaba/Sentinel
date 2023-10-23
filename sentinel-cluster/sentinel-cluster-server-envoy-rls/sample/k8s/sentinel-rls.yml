@@ -11,7 +11,7 @@ data:
           value: "service_httpbin"
         count: 1
 ---
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: sentinel-rls-server

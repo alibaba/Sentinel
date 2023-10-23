@@ -53,7 +53,7 @@ public class ApolloDataSource<T> extends AbstractDataSource<String, T> {
 
         initialize();
 
-        RecordLog.info(String.format("Initialized rule for namespace: %s, rule key: %s", namespaceName, ruleKey));
+        RecordLog.info("Initialized rule for namespace: {}, rule key: {}", namespaceName, ruleKey);
     }
 
     private void initialize() {
@@ -80,7 +80,7 @@ public class ApolloDataSource<T> extends AbstractDataSource<String, T> {
                 ConfigChange change = changeEvent.getChange(ruleKey);
                 //change is never null because the listener will only notify for this key
                 if (change != null) {
-                    RecordLog.info("[ApolloDataSource] Received config changes: " + change.toString());
+                    RecordLog.info("[ApolloDataSource] Received config changes: {}", change);
                 }
                 loadAndUpdateRules();
             }

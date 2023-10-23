@@ -51,7 +51,7 @@ public class UpdateGatewayRuleCommandHandler implements CommandHandler<String> {
             return CommandResponse.ofFailure(e, "decode gateway rule data error");
         }
 
-        RecordLog.info(String.format("[API Server] Receiving rule change (type: gateway rule): %s", data));
+        RecordLog.info("[API Server] Receiving rule change (type: gateway rule): {}", data);
 
         String result = SUCCESS_MSG;
 	    Set<GatewayFlowRule> flowRules = JSON.parseObject(data, new TypeReference<Set<GatewayFlowRule>>() {

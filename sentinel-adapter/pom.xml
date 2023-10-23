@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-parent</artifactId>
-        <version>1.8.1-SNAPSHOT</version>
+        <version>2.0.0-alpha2-SNAPSHOT</version>
     </parent>
     <artifactId>sentinel-adapter</artifactId>
     <packaging>pom</packaging>
@@ -18,6 +18,7 @@
         <module>sentinel-web-servlet</module>
         <module>sentinel-dubbo-adapter</module>
         <module>sentinel-apache-dubbo-adapter</module>
+        <module>sentinel-apache-dubbo3-adapter</module>
         <module>sentinel-apache-httpclient-adapter</module>
         <module>sentinel-sofa-rpc-adapter</module>
         <module>sentinel-grpc-adapter</module>
@@ -31,6 +32,7 @@
         <module>sentinel-okhttp-adapter</module>
         <module>sentinel-jax-rs-adapter</module>
         <module>sentinel-quarkus-adapter</module>
+        <module>sentinel-motan-adapter</module>
     </modules>
 
     <dependencyManagement>
@@ -38,6 +40,11 @@
             <dependency>
                 <groupId>com.alibaba.csp</groupId>
                 <artifactId>sentinel-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-security-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

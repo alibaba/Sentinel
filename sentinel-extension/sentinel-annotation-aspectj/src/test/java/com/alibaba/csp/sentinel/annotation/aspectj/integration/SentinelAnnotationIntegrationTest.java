@@ -208,6 +208,28 @@ public class SentinelAnnotationIntegrationTest extends AbstractJUnit4SpringConte
         assertThat(cn1.blockQps()).isZero();
     }
 
+    @Test
+    public void testFallBackPrivateMethod() throws Exception {
+        String resourceName = "apiFooWithFallback";
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode(resourceName);
+
+        try {
+            fooService.fooWithPrivateFallback(5758);
+            fail("should not reach here");
+        } catch (Exception ex) {
+            // Should not be traced.
+            assertThat(cn.exceptionQps()).isZero();
+        }
+
+        assertThat(fooService.fooWithPrivateFallback(5763)).isEqualTo("EEE...");
+
+        // Test for blockHandler
+        FlowRuleManager.loadRules(Collections.singletonList(
+                new FlowRule(resourceName).setCount(0)
+        ));
+        assertThat(fooService.fooWithPrivateFallback(2221)).isEqualTo("Oops, 2221");
+    }
+
     @Before
     public void setUp() throws Exception {
         FlowRuleManager.loadRules(new ArrayList<FlowRule>());

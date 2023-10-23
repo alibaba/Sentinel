@@ -44,7 +44,7 @@ public class ModifyClusterClientConfigHandler implements CommandHandler<String> 
         }
         try {
             data = URLDecoder.decode(data, "utf-8");
-            RecordLog.info("[ModifyClusterClientConfigHandler] Receiving cluster client config: " + data);
+            RecordLog.info("[ModifyClusterClientConfigHandler] Receiving cluster client config: {}", data);
             ClusterClientStateEntity entity = JSON.parseObject(data, ClusterClientStateEntity.class);
 
             ClusterClientConfigManager.applyNewConfig(entity.toClientConfig());

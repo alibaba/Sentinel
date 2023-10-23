@@ -35,6 +35,7 @@ public class RedisConnectionConfigTest {
         Assert.assertEquals(host, redisConnectionConfig.getHost());
         Assert.assertEquals(RedisConnectionConfig.DEFAULT_REDIS_PORT, redisConnectionConfig.getPort());
         Assert.assertEquals(RedisConnectionConfig.DEFAULT_TIMEOUT_MILLISECONDS, redisConnectionConfig.getTimeout());
+        Assert.assertFalse(redisConnectionConfig.isSslEnable());
     }
 
     @Test
@@ -93,5 +94,72 @@ public class RedisConnectionConfigTest {
             .build();
         Assert.assertNull(redisConnectionConfig.getHost());
         Assert.assertEquals(3, redisConnectionConfig.getRedisSentinels().size());
+    }
+
+    @Test
+    public void testRedisClusterDefaultPortSuccess() {
+        String host = "localhost";
+        RedisConnectionConfig redisConnectionConfig = RedisConnectionConfig.Builder.redisCluster(host)
+                .withPassword("211233")
+                .build();
+        Assert.assertNull(redisConnectionConfig.getHost());
+        Assert.assertEquals(1, redisConnectionConfig.getRedisClusters().size());
+        Assert.assertEquals(RedisConnectionConfig.DEFAULT_CLUSTER_PORT,
+                redisConnectionConfig.getRedisClusters().get(0).getPort());
+    }
+
+    @Test
+    public void testRedisClusterMoreThanOneServerSuccess() {
+        String host = "localhost";
+        String host2 = "server2";
+        int port1 = 1879;
+        int port2 = 1880;
+        RedisConnectionConfig redisConnectionConfig = RedisConnectionConfig.Builder.redisCluster(host, port1)
+                .withRedisCluster(host2, port2)
+                .build();
+        Assert.assertNull(redisConnectionConfig.getHost());
+        Assert.assertEquals(2, redisConnectionConfig.getRedisClusters().size());
+    }
+
+    @Test
+    public void testRedisClusterMoreThanOneDuplicateServerSuccess() {
+        String host = "localhost";
+        String host2 = "server2";
+        int port2 = 1879;
+        RedisConnectionConfig redisConnectionConfig = RedisConnectionConfig.Builder.redisCluster(host)
+                .withRedisCluster(host2, port2)
+                .withRedisCluster(host2, port2)
+                .withPassword("211233")
+                .build();
+        Assert.assertNull(redisConnectionConfig.getHost());
+        Assert.assertEquals(3, redisConnectionConfig.getRedisClusters().size());
+    }
+
+    @Test
+    public void testRedisSsl() throws Exception {
+        String host = "localhost";
+        int port = 1879;
+        String trustedCertificatesPath = "trustedCertificatesPath";
+        String trustedCertificatesJksPassword = "trustedCertificatesJksPassword";
+        String keyCertChainFilePath = "keyCertChainFilePath";
+        String keyFilePath = "keyFilePath";
+        String keyFilePassword = "keyFilePassword";
+        RedisConnectionConfig redisConnectionConfig = RedisConnectionConfig.Builder.redis(host)
+                .withHost(host)
+                .withPort(port)
+                .withSslEnable(true)
+                .withTrustedCertificatesPath(trustedCertificatesPath)
+                .withTrustedCertificatesJksPassword(trustedCertificatesJksPassword)
+                .withKeyCertChainFilePath(keyCertChainFilePath)
+                .withKeyFilePath(keyFilePath)
+                .withKeyFilePassword(keyFilePassword)
+                .build();
+
+        Assert.assertTrue(redisConnectionConfig.isSslEnable());
+        Assert.assertEquals(redisConnectionConfig.getTrustedCertificatesPath(), trustedCertificatesPath);
+        Assert.assertEquals(redisConnectionConfig.getTrustedCertificatesJksPassword(), trustedCertificatesJksPassword);
+        Assert.assertEquals(redisConnectionConfig.getKeyCertChainFilePath(), keyCertChainFilePath);
+        Assert.assertEquals(redisConnectionConfig.getKeyFilePath(), keyFilePath);
+        Assert.assertEquals(redisConnectionConfig.getKeyFilePassword(), keyFilePassword);
     }
 }

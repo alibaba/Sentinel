@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2020 Alibaba Group Holding Ltd.
+ * Copyright 1999-2018 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,24 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.web.controller.gateway;
+package com.alibaba.csp.sentinel.dashboard.controller.gateway;
 
-import com.alibaba.csp.sentinel.dashboard.entity.discovery.AppManagement;
-import com.alibaba.csp.sentinel.dashboard.entity.discovery.SimpleMachineDiscovery;
-import com.alibaba.csp.sentinel.dashboard.entity.gateway.GatewayFlowRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.entity.gateway.GatewayParamFlowItemEntity;
-import com.alibaba.csp.sentinel.dashboard.web.auth.AuthorizationInterceptor;
-import com.alibaba.csp.sentinel.dashboard.web.auth.FakeAuthServiceImpl;
-import com.alibaba.csp.sentinel.dashboard.web.client.SentinelApiClient;
-import com.alibaba.csp.sentinel.dashboard.web.domain.Result;
-import com.alibaba.csp.sentinel.dashboard.web.domain.vo.gateway.rule.AddFlowRuleReqVo;
-import com.alibaba.csp.sentinel.dashboard.web.domain.vo.gateway.rule.GatewayParamFlowItemVo;
-import com.alibaba.csp.sentinel.dashboard.web.domain.vo.gateway.rule.UpdateFlowRuleReqVo;
-import com.alibaba.csp.sentinel.dashboard.web.repository.gateway.InMemGatewayFlowRuleStore;
+import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
+import com.alibaba.csp.sentinel.dashboard.config.NoAuthConfigurationTest;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayFlowRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayParamFlowItemEntity;
+import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
+import com.alibaba.csp.sentinel.dashboard.discovery.SimpleMachineDiscovery;
+import com.alibaba.csp.sentinel.dashboard.domain.Result;
+import com.alibaba.csp.sentinel.dashboard.domain.vo.gateway.rule.AddFlowRuleReqVo;
+import com.alibaba.csp.sentinel.dashboard.domain.vo.gateway.rule.GatewayParamFlowItemVo;
+import com.alibaba.csp.sentinel.dashboard.domain.vo.gateway.rule.UpdateFlowRuleReqVo;
+import com.alibaba.csp.sentinel.dashboard.repository.gateway.InMemGatewayFlowRuleStore;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
-import org.apache.commons.lang3.time.DateUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,10 +51,22 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import static com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants.*;
-import static com.alibaba.csp.sentinel.slots.block.RuleConstant.*;
-import static org.junit.Assert.*;
-import static org.mockito.BDDMockito.*;
+import static com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants.PARAM_PARSE_STRATEGY_CLIENT_IP;
+import static com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants.PARAM_PARSE_STRATEGY_URL_PARAM;
+import static com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants.RESOURCE_MODE_CUSTOM_API_NAME;
+import static com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants.RESOURCE_MODE_ROUTE_ID;
+import static com.alibaba.csp.sentinel.slots.block.RuleConstant.CONTROL_BEHAVIOR_DEFAULT;
+import static com.alibaba.csp.sentinel.slots.block.RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER;
+import static com.alibaba.csp.sentinel.slots.block.RuleConstant.FLOW_GRADE_QPS;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.BDDMockito.any;
+import static org.mockito.BDDMockito.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.mock;
+import static org.mockito.BDDMockito.verify;
 
 /**
  * Test cases for {@link GatewayFlowRuleController}.
@@ -64,8 +75,7 @@ import static org.mockito.BDDMockito.*;
  */
 @RunWith(SpringRunner.class)
 @WebMvcTest(GatewayFlowRuleController.class)
-@Import({FakeAuthServiceImpl.class, InMemGatewayFlowRuleStore.class, AppManagement.class, SimpleMachineDiscovery.class,
-        AuthorizationInterceptor.class })
+@Import({NoAuthConfigurationTest.class, InMemGatewayFlowRuleStore.class, AppManagement.class, SimpleMachineDiscovery.class})
 public class GatewayFlowRuleControllerTest {
 
     private static final String TEST_APP = "test_app";
