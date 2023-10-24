@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.dashboard.repository.apollo;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -40,8 +41,9 @@ public class ApolloProperties {
     private String token;
 
     public void logInfo() {
-        LOGGER.info("Apollo info: ");
-        LOGGER.info("portalUrl={}", portalUrl != null ? portalUrl : DEFAULT_PORTAL_URL + "(default)");
+        LOGGER.info(StringUtils.center("Use Apollo Repository", 50, "-"));
+        LOGGER.info("Apollo Info: ");
+        LOGGER.info("portalUrl={}", portalUrl != null ? portalUrl : DEFAULT_PORTAL_URL);
         LOGGER.info("token={}", token);
     }
 

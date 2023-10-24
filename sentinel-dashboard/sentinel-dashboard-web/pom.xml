@@ -6,7 +6,7 @@
     <parent>
         <artifactId>sentinel-dashboard</artifactId>
         <groupId>com.alibaba.csp</groupId>
-        <version>1.8.1-SNAPSHOT</version>
+        <version>2.0.0-alpha2-SNAPSHOT</version>
     </parent>
     <artifactId>sentinel-dashboard-web</artifactId>
     <packaging>jar</packaging>
@@ -48,6 +48,13 @@
         <dependency>
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-dashboard-service</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- sentinel-datasource-nacos -->
+        <dependency>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-datasource-nacos</artifactId>
             <version>${project.version}</version>
         </dependency>
 

@@ -13,14 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.controller;
+package com.alibaba.csp.sentinel.dashboard.web.controller;
 
-import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
+import com.alibaba.csp.sentinel.dashboard.entity.discovery.AppManagement;
+import com.alibaba.csp.sentinel.dashboard.entity.discovery.MachineInfo;
+import com.alibaba.csp.sentinel.dashboard.web.domain.Result;
 import com.alibaba.csp.sentinel.util.StringUtil;
-
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
-import com.alibaba.csp.sentinel.dashboard.domain.Result;
-
 import org.apache.http.conn.util.InetAddressUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +42,7 @@ public class MachineRegistryController {
     @RequestMapping("/machine")
     public Result<?> receiveHeartBeat(String app,
                                       @RequestParam(value = "app_type", required = false, defaultValue = "0")
-                                          Integer appType, Long version, String v, String hostname, String ip,
+                                              Integer appType, Long version, String v, String hostname, String ip,
                                       Integer port) {
         if (StringUtil.isBlank(app) || app.length() > 256) {
             return Result.ofFail(-1, "invalid appName");

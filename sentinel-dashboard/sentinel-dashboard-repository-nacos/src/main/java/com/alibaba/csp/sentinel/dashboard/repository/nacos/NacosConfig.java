@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigFactory;
 import com.alibaba.nacos.api.config.ConfigService;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +60,12 @@ public class NacosConfig {
 
         Properties properties = new Properties();
         properties.setProperty(PropertyKeyConst.SERVER_ADDR, serverAddr);
+
+        String namespace = nacosProperties.getNamespace();
+        if (StringUtils.isNotBlank(namespace)) {
+            properties.put(PropertyKeyConst.NAMESPACE, namespace);
+        }
+
         try {
             ConfigService configService = ConfigFactory.createConfigService(properties);
             LOGGER.info("Nacos ConfigService init success");

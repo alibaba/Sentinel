@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.controller.gateway;
+package com.alibaba.csp.sentinel.dashboard.web.controller.gateway;
 
-import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
-import com.alibaba.csp.sentinel.dashboard.config.NoAuthConfigurationTest;
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.ApiDefinitionEntity;
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.ApiPredicateItemEntity;
-import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
-import com.alibaba.csp.sentinel.dashboard.discovery.SimpleMachineDiscovery;
-import com.alibaba.csp.sentinel.dashboard.domain.Result;
-import com.alibaba.csp.sentinel.dashboard.domain.vo.gateway.api.AddApiReqVo;
-import com.alibaba.csp.sentinel.dashboard.domain.vo.gateway.api.ApiPredicateItemVo;
-import com.alibaba.csp.sentinel.dashboard.domain.vo.gateway.api.UpdateApiReqVo;
-import com.alibaba.csp.sentinel.dashboard.repository.gateway.InMemApiDefinitionStore;
+import com.alibaba.csp.sentinel.dashboard.web.client.SentinelApiClient;
+import com.alibaba.csp.sentinel.dashboard.web.config.NoAuthConfigurationTest;
+import com.alibaba.csp.sentinel.dashboard.entity.gateway.ApiDefinitionEntity;
+import com.alibaba.csp.sentinel.dashboard.entity.gateway.ApiPredicateItemEntity;
+import com.alibaba.csp.sentinel.dashboard.entity.discovery.AppManagement;
+import com.alibaba.csp.sentinel.dashboard.entity.discovery.SimpleMachineDiscovery;
+import com.alibaba.csp.sentinel.dashboard.web.domain.Result;
+import com.alibaba.csp.sentinel.dashboard.web.domain.vo.gateway.api.AddApiReqVo;
+import com.alibaba.csp.sentinel.dashboard.web.domain.vo.gateway.api.ApiPredicateItemVo;
+import com.alibaba.csp.sentinel.dashboard.web.domain.vo.gateway.api.UpdateApiReqVo;
+import com.alibaba.csp.sentinel.dashboard.web.repository.gateway.InMemApiDefinitionStore;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;

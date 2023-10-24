@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.dashboard.repository.redis;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -37,6 +38,8 @@ public class RedisProperties {
 
     private static final Integer DEFAULT_PORT = 6379;
 
+    private static final Integer DEFAULT_DATABASE = 0;
+
     private static final Long DEFAULT_TIMEOUT_MS = 60000L;
 
     private static final String DEFAULT_CHANNEL_SUFFIX = "";
@@ -54,13 +57,14 @@ public class RedisProperties {
     private String channelSuffix;
 
     public void logInfo() {
-        LOGGER.info("Redis info: ");
-        LOGGER.info("host={}", host != null ? host : DEFAULT_HOST + "(default)");
-        LOGGER.info("port={}", port != null ? port : DEFAULT_PORT + "(default)");
+        LOGGER.info(StringUtils.center("Use Redis Repository", 50, "-"));
+        LOGGER.info("Redis Info: ");
+        LOGGER.info("host={}", host != null ? host : DEFAULT_HOST);
+        LOGGER.info("port={}", port != null ? port : DEFAULT_PORT);
         LOGGER.info("password={}", password);
-        LOGGER.info("database={}", database);
-        LOGGER.info("timeoutMs={}", timeoutMs != null ? timeoutMs : DEFAULT_TIMEOUT_MS + "(default)");
-        LOGGER.info("channelSuffix={}", channelSuffix != null ? channelSuffix : DEFAULT_CHANNEL_SUFFIX + "(default)");
+        LOGGER.info("database={}", database != null ? database : DEFAULT_DATABASE);
+        LOGGER.info("timeoutMs={}", timeoutMs != null ? timeoutMs : DEFAULT_TIMEOUT_MS);
+        LOGGER.info("channelSuffix={}", channelSuffix != null ? channelSuffix : DEFAULT_CHANNEL_SUFFIX);
     }
 
     public String getHost() {
@@ -88,7 +92,7 @@ public class RedisProperties {
     }
 
     public Integer getDatabase() {
-        return database;
+        return database != null ? database : DEFAULT_DATABASE;
     }
 
     public void setDatabase(Integer database) {

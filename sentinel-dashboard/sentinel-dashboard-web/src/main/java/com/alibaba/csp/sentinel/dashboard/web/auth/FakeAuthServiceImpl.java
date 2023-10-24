@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.auth;
+package com.alibaba.csp.sentinel.dashboard.web.auth;
 
+import com.alibaba.csp.sentinel.dashboard.web.auth.AuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

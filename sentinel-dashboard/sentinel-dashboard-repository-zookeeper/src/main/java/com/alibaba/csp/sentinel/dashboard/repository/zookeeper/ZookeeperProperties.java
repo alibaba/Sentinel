@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.dashboard.repository.zookeeper;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -46,10 +47,11 @@ public class ZookeeperProperties {
     private Integer maxRetries;
 
     public void logInfo() {
-        LOGGER.info("Zookeeper info: ");
-        LOGGER.info("connectString={}", connectString != null ? connectString : DEFAULT_CONNECT_STRING + "(default)");
-        LOGGER.info("baseSleepTimeMs={}", baseSleepTimeMs != null ? baseSleepTimeMs : DEFAULT_BASE_SLEEP_TIME_MS + "(default)");
-        LOGGER.info("maxRetries={}", maxRetries != null ? maxRetries : DEFAULT_MAX_RETRIES + "(default)");
+        LOGGER.info(StringUtils.center("Use Zookeeper Repository", 50, "-"));
+        LOGGER.info("Zookeeper Info: ");
+        LOGGER.info("connectString={}", connectString != null ? connectString : DEFAULT_CONNECT_STRING);
+        LOGGER.info("baseSleepTimeMs={}", baseSleepTimeMs != null ? baseSleepTimeMs : DEFAULT_BASE_SLEEP_TIME_MS);
+        LOGGER.info("maxRetries={}", maxRetries != null ? maxRetries : DEFAULT_MAX_RETRIES);
     }
 
     public String getConnectString() {

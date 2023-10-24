@@ -23,6 +23,9 @@ package com.alibaba.csp.sentinel.slots.block;
  */
 public abstract class AbstractRule implements Rule {
 
+    /**
+     * Rule id
+     */
     private Long id;
 
     private String app;

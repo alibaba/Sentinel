@@ -493,21 +493,21 @@ public class SentinelApiClient {
      * @return all retrieved parameter flow rules
      * @since 0.2.1
      */
-    public CompletableFuture<List<ParamFlowRuleEntity>> fetchParamFlowRulesOfMachine(String app, String ip, int port) {
-        try {
-            AssertUtil.notEmpty(app, "Bad app name");
-            AssertUtil.notEmpty(ip, "Bad machine IP");
-            AssertUtil.isTrue(port > 0, "Bad machine port");
-            return fetchItemsAsync(ip, port, GET_PARAM_RULE_PATH, null, ParamFlowRule.class)
-                .thenApply(rules -> rules.stream()
-                    .map(e -> ParamFlowRuleEntity.fromParamFlowRule(app, ip, port, e))
-                    .collect(Collectors.toList())
-                );
-        } catch (Exception e) {
-            logger.error("Error when fetching parameter flow rules", e);
-            return AsyncUtils.newFailedFuture(e);
-        }
-    }
+//    public CompletableFuture<List<ParamFlowRuleEntity>> fetchParamFlowRulesOfMachine(String app, String ip, int port) {
+//        try {
+//            AssertUtil.notEmpty(app, "Bad app name");
+//            AssertUtil.notEmpty(ip, "Bad machine IP");
+//            AssertUtil.isTrue(port > 0, "Bad machine port");
+//            return fetchItemsAsync(ip, port, GET_PARAM_RULE_PATH, null, ParamFlowRule.class)
+//                .thenApply(rules -> rules.stream()
+//                    .map(e -> ParamFlowRuleEntity.fromParamFlowRule(app, ip, port, e))
+//                    .collect(Collectors.toList())
+//                );
+//        } catch (Exception e) {
+//            logger.error("Error when fetching parameter flow rules", e);
+//            return AsyncUtils.newFailedFuture(e);
+//        }
+//    }
 
     /**
      * Fetch all authority rules from provided machine.

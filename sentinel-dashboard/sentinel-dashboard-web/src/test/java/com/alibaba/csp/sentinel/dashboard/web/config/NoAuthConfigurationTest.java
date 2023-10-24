@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.config;
+package com.alibaba.csp.sentinel.dashboard.web.config;
 
-import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
-import com.alibaba.csp.sentinel.dashboard.auth.FakeAuthServiceImpl;
+import com.alibaba.csp.sentinel.dashboard.web.auth.AuthService;
+import com.alibaba.csp.sentinel.dashboard.web.auth.FakeAuthServiceImpl;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;

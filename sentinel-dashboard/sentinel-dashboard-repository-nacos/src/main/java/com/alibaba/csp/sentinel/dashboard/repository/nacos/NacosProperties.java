@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.dashboard.repository.nacos;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -35,21 +36,27 @@ public class NacosProperties {
 
     private final static String DEFAULT_SERVER_ADDR = "localhost";
 
+    private final static String DEFAULT_NAMESPACE = "public";
+
     private final static String DEFAULT_SENTINEL_GROUP = "SENTINEL_GROUP";
 
-    private final static Long DEFAULT_READ_TIMEOUT_MS = 3000L;
+    private final static Long DEFAULT_READ_TIMEOUT_MS = 3_000L;
 
     private String serverAddr;
+
+    private String namespace;
 
     private String sentinelGroup;
 
     private Long readTimeoutMs;
 
     public void logInfo() {
-        LOGGER.info("Nacos info: ");
-        LOGGER.info("serverAddr={}", serverAddr != null ? serverAddr : DEFAULT_SERVER_ADDR + "(default)");
-        LOGGER.info("sentinelGroup={}", sentinelGroup != null ? sentinelGroup : DEFAULT_SENTINEL_GROUP + "(default)");
-        LOGGER.info("readTimeoutMs={}", readTimeoutMs != null ? readTimeoutMs : DEFAULT_READ_TIMEOUT_MS + "(default)");
+        LOGGER.info(StringUtils.center("Use Nacos Repository", 50, "-"));
+        LOGGER.info("Nacos Info: ");
+        LOGGER.info("serverAddr={}", serverAddr != null ? serverAddr : DEFAULT_SERVER_ADDR);
+        LOGGER.info("namespace={}", namespace != null ? namespace : DEFAULT_NAMESPACE);
+        LOGGER.info("sentinelGroup={}", sentinelGroup != null ? sentinelGroup : DEFAULT_SENTINEL_GROUP);
+        LOGGER.info("readTimeoutMs={}", readTimeoutMs != null ? readTimeoutMs : DEFAULT_READ_TIMEOUT_MS);
     }
 
     public String getServerAddr() {
@@ -60,8 +67,16 @@ public class NacosProperties {
         this.serverAddr = serverAddr;
     }
 
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
+    }
+
     public String getSentinelGroup() {
-        return sentinelGroup != null ? sentinelGroup: DEFAULT_SENTINEL_GROUP;
+        return sentinelGroup != null ? sentinelGroup : DEFAULT_SENTINEL_GROUP;
     }
 
     public void setSentinelGroup(String sentinelGroup) {

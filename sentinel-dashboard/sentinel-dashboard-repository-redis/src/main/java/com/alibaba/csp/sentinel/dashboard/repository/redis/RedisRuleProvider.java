@@ -28,17 +28,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RedisRuleProvider<T extends RuleEntity> extends AbstractRuleProvider<T> {
 
     @Autowired
-    private RedisConfig redisConfig;
+    private RedisClient redisClient;
 
     @Override
     protected String fetchRules(String app, String ip, Integer port) throws Exception {
-        RedisClient redisClient = redisConfig.createRedisClient();
         StatefulRedisConnection<String, String> connection = redisClient.connect();
         RedisCommands<String, String> syncCommands = connection.sync();
         String ruleKey = buildRuleKey(app, ip, port);
         String rules = syncCommands.get(ruleKey);
         connection.close();
-        redisClient.shutdown();
         return rules;
     }
 }

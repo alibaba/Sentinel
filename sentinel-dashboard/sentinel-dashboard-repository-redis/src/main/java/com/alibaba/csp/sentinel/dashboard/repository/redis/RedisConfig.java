@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
@@ -49,7 +50,8 @@ public class RedisConfig {
         redisProperties.logInfo();
     }
 
-    public RedisClient createRedisClient() {
+    @Bean
+    public RedisClient redisClient() {
         String host = redisProperties.getHost();
         AssertUtil.assertNotBlank(host, "RedisClient init failed, host can't be blank");
 
@@ -58,7 +60,7 @@ public class RedisConfig {
 
         RedisURI.Builder redisURIBuilder = RedisURI.builder();
         redisURIBuilder.withHost(host)
-                       .withPort(port);
+                .withPort(port);
 
         String password = redisProperties.getPassword();
         if (StringUtil.isNotBlank(password)) {

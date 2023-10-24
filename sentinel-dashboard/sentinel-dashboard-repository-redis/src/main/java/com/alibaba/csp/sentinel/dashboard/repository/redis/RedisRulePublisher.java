@@ -28,7 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RedisRulePublisher<T extends RuleEntity> extends AbstractRulePublisher<T> {
 
     @Autowired
-    private RedisConfig redisConfig;
+    private RedisClient redisClient;
 
     @Autowired
     private RedisProperties redisProperties;
@@ -36,6 +36,12 @@ public class RedisRulePublisher<T extends RuleEntity> extends AbstractRulePublis
     @Override
     protected void publishRules(String app, String ip, Integer port, String rules) throws Exception {
         String ruleKey = buildRuleKey(app, ip, port);
+
+        StatefulRedisPubSubConnection<String, String> connection = redisClient.connectPubSub();
+
+        RedisPubSubCommands<String, String> subCommands = connection.sync();
+        subCommands.set(ruleKey, rules);
+
         /**
          * Note:
          * By default channelSuffix is "", channel is same as ruleKey.
@@ -43,16 +49,8 @@ public class RedisRulePublisher<T extends RuleEntity> extends AbstractRulePublis
          * ruleKey and channel should be same in this case.
          */
         String channel = ruleKey + redisProperties.getChannelSuffix();
-
-        RedisClient redisClient = redisConfig.createRedisClient();
-
-        StatefulRedisPubSubConnection<String, String> connection = redisClient.connectPubSub();
-        RedisPubSubCommands<String, String> subCommands = connection.sync();
-
-        subCommands.set(ruleKey, rules);
         subCommands.publish(channel, rules);
 
         connection.close();
-        redisClient.shutdown();
     }
 }

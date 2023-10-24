@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.auth;
+package com.alibaba.csp.sentinel.dashboard.web.auth;
 
-import com.alibaba.csp.sentinel.dashboard.domain.Result;
+import com.alibaba.csp.sentinel.dashboard.web.domain.Result;
 import com.alibaba.fastjson.JSON;
 import org.springframework.web.method.HandlerMethod;
 
