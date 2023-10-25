@@ -44,6 +44,13 @@
             <version>2.9.6</version>
         </dependency>
 
+        <!-- workaround for compile in JDK 11 -->
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>${javax.annotation-api.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
