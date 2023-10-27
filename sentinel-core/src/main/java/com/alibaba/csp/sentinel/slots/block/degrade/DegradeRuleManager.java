@@ -21,12 +21,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.RuleManager;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreaker;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.ExceptionCircuitBreaker;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.ResponseTimeCircuitBreaker;
@@ -42,8 +44,8 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  */
 public final class DegradeRuleManager {
 
-    private static volatile Map<String, List<CircuitBreaker>> circuitBreakers = new HashMap<>();
-    private static volatile Map<String, Set<DegradeRule>> ruleMap = new HashMap<>();
+    private static volatile RuleManager<CircuitBreaker> circuitBreakers = new RuleManager<>(DegradeRuleManager::generateCbs, cb -> cb.getRule().isRegex());
+    private static volatile RuleManager<DegradeRule> ruleMap = new RuleManager<>();
 
     private static final RulePropertyListener LISTENER = new RulePropertyListener();
     private static SentinelProperty<List<DegradeRule>> currentProperty
@@ -70,14 +72,11 @@ public final class DegradeRuleManager {
     }
 
     static List<CircuitBreaker> getCircuitBreakers(String resourceName) {
-        return circuitBreakers.get(resourceName);
+        return circuitBreakers.getRules(resourceName);
     }
 
     public static boolean hasConfig(String resource) {
-        if (resource == null) {
-            return false;
-        }
-        return circuitBreakers.containsKey(resource);
+       return circuitBreakers.hasConfig(resource);
     }
 
     /**
@@ -88,16 +87,11 @@ public final class DegradeRuleManager {
      * @return list of existing circuit breaking rules, or empty list if no rules were loaded
      */
     public static List<DegradeRule> getRules() {
-        List<DegradeRule> rules = new ArrayList<>();
-        for (Map.Entry<String, Set<DegradeRule>> entry : ruleMap.entrySet()) {
-            rules.addAll(entry.getValue());
-        }
-        return rules;
+        return ruleMap.getRules();
     }
-
     public static Set<DegradeRule> getRulesOfResource(String resource) {
         AssertUtil.assertNotBlank(resource, "resource name cannot be blank");
-        return ruleMap.get(resource);
+        return new HashSet<>(ruleMap.getRules(resource));
     }
 
     /**
@@ -124,7 +118,7 @@ public final class DegradeRuleManager {
     public static boolean setRulesForResource(String resourceName, Set<DegradeRule> rules) {
         AssertUtil.notEmpty(resourceName, "resourceName cannot be empty");
         try {
-            Map<String, Set<DegradeRule>> newRuleMap = new HashMap<>(ruleMap);
+            Map<String, List<DegradeRule>> newRuleMap = ruleMap.getOriginalRules();
             if (rules == null) {
                 newRuleMap.remove(resourceName);
             } else {
@@ -134,10 +128,10 @@ public final class DegradeRuleManager {
                         newSet.add(rule);
                     }
                 }
-                newRuleMap.put(resourceName, newSet);
+                newRuleMap.put(resourceName, new ArrayList<>(newSet));
             }
             List<DegradeRule> allRules = new ArrayList<>();
-            for (Set<DegradeRule> set : newRuleMap.values()) {
+            for (List<DegradeRule> set : newRuleMap.values()) {
                 allRules.addAll(set);
             }
             return currentProperty.updateValue(allRules);
@@ -189,6 +183,9 @@ public final class DegradeRuleManager {
         if (rule.getMinRequestAmount() <= 0 || rule.getStatIntervalMs() <= 0) {
             return false;
         }
+        if (!RuleManager.checkRegexResourceField(rule)) {
+            return false;
+        }
         switch (rule.getGrade()) {
             case RuleConstant.DEGRADE_GRADE_RT:
                 return rule.getSlowRatioThreshold() >= 0 && rule.getSlowRatioThreshold() <= 1;
@@ -201,24 +198,17 @@ public final class DegradeRuleManager {
         }
     }
 
+    private static List<CircuitBreaker> generateCbs(List<CircuitBreaker> cbs) {
+        return cbs.stream().map(cb -> newCircuitBreakerFrom(cb.getRule())).collect(Collectors.toList());
+    }
+
     private static class RulePropertyListener implements PropertyListener<List<DegradeRule>> {
 
         private synchronized void reloadFrom(List<DegradeRule> list) {
             Map<String, List<CircuitBreaker>> cbs = buildCircuitBreakers(list);
-            Map<String, Set<DegradeRule>> rm = new HashMap<>(cbs.size());
-
-            for (Map.Entry<String, List<CircuitBreaker>> e : cbs.entrySet()) {
-                assert e.getValue() != null && !e.getValue().isEmpty();
-
-                Set<DegradeRule> rules = new HashSet<>(e.getValue().size());
-                for (CircuitBreaker cb : e.getValue()) {
-                    rules.add(cb.getRule());
-                }
-                rm.put(e.getKey(), rules);
-            }
-
-            DegradeRuleManager.circuitBreakers = cbs;
-            DegradeRuleManager.ruleMap = rm;
+            Map<String, List<DegradeRule>> rules = buildCircuitBreakerRules(cbs);
+            circuitBreakers.updateRules(cbs);
+            ruleMap.updateRules(rules);
         }
 
         @Override
@@ -231,6 +221,16 @@ public final class DegradeRuleManager {
         public void configLoad(List<DegradeRule> conf) {
             reloadFrom(conf);
             RecordLog.info("[DegradeRuleManager] Degrade rules loaded: {}", ruleMap);
+        }
+
+        private Map<String, List<DegradeRule>> buildCircuitBreakerRules(Map<String, List<CircuitBreaker>> cbs) {
+            Map<String, List<DegradeRule>> result = new HashMap<>(cbs.size());
+            for (Map.Entry<String, List<CircuitBreaker>> entry : cbs.entrySet()) {
+                String resource = entry.getKey();
+                Set<DegradeRule> rules = entry.getValue().stream().map(CircuitBreaker::getRule).collect(Collectors.toSet());
+                result.put(resource, new ArrayList<>(rules));
+            }
+            return result;
         }
 
         private Map<String, List<CircuitBreaker>> buildCircuitBreakers(List<DegradeRule> list) {

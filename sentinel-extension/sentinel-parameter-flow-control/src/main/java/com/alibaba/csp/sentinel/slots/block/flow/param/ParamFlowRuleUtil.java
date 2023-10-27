@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.RuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleUtil;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -48,7 +49,7 @@ public final class ParamFlowRuleUtil {
             && rule.getGrade() >= 0 && rule.getParamIdx() != null
             && rule.getBurstCount() >= 0 && rule.getControlBehavior() >= 0
             && rule.getDurationInSec() > 0 && rule.getMaxQueueingTimeMs() >= 0
-            && checkCluster(rule);
+            && checkCluster(rule) & checkRegexField(rule);
     }
 
     private static boolean checkCluster(/*@PreChecked*/ ParamFlowRule rule) {
@@ -63,6 +64,16 @@ public final class ParamFlowRuleUtil {
             return false;
         }
         return validClusterRuleId(clusterConfig.getFlowId());
+    }
+
+    private static boolean checkRegexField(ParamFlowRule rule) {
+        if (!RuleManager.checkRegexResourceField(rule)) {
+            return false;
+        }
+        if (rule.isRegex()) {
+            return !rule.isClusterMode() && rule.getControlBehavior() == RuleConstant.CONTROL_BEHAVIOR_DEFAULT;
+        }
+        return true;
     }
 
     public static boolean validClusterRuleId(Long id) {
