@@ -29,14 +29,14 @@ public class AdaptiveRuleManager {
 
     private static SentinelProperty<List<AdaptiveRule>> currentProperty = new DynamicSentinelProperty<>();
 
-    private static AdaptiveListener adaptiveListener = null;
+    private static AdaptiveTask adaptiveTask = null;
 
     private final static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1,
             new NamedThreadFactory("sentinel-adaptive-limiter-task", true));
 
     static {
-        adaptiveListener = new AdaptiveListener();
-        scheduler.scheduleAtFixedRate(adaptiveListener, 0, 1, TimeUnit.SECONDS);
+        adaptiveTask = new AdaptiveTask();
+        scheduler.scheduleAtFixedRate(adaptiveTask, 0, 1, TimeUnit.SECONDS);
         currentProperty.addListener(LISTENER);
     }
 

@@ -1,5 +1,7 @@
 package com.alibaba.csp.sentinel.slots.adaptive.algorithm;
 
+import com.alibaba.csp.sentinel.node.StatisticNode;
+import com.alibaba.csp.sentinel.slots.adaptive.AdaptiveRule;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
 import java.util.Queue;
@@ -26,7 +28,10 @@ public class GradientLimit extends AbstractLimit {
     private double tolerance = 0.4;
 
     @Override
-    public int update(Queue<Integer> oldLimits, double minRt, double rt, double passQps) {
+    public int update(AdaptiveRule rule, StatisticNode node) {
+        Queue<Integer> oldLimits = rule.getOldCounts();
+        double minRt = node.minRt();
+        double rt = node.avgRt();
         double estimatedQps = 20;
         for (Integer oldLimit : oldLimits) {
             estimatedQps = oldLimit;

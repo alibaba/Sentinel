@@ -1,5 +1,8 @@
 package com.alibaba.csp.sentinel.slots.adaptive.algorithm;
 
+import com.alibaba.csp.sentinel.node.StatisticNode;
+import com.alibaba.csp.sentinel.slots.adaptive.AdaptiveRule;
+
 import java.util.Map;
 import java.util.Queue;
 
@@ -27,7 +30,10 @@ public class BRPCLimit extends AbstractLimit {
     double explore_ratio = 1;
 
     @Override
-    public int update(Queue<Integer> oldLimits, double minRt, double rt, double passQps) {
+    public int update(AdaptiveRule rule, StatisticNode node) {
+        double minRt = node.minRt();
+        double rt = node.avgRt();
+        double passQps = node.passQps();
         double emaFactor = alpha / 10;
         if (passQps >= maxQps) {
             maxQps = passQps;

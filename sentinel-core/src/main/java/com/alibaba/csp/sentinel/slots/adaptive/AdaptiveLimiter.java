@@ -32,23 +32,22 @@ public class AdaptiveLimiter {
         if (rt == 0 || minRt == 1) {
             return;
         }
-        double passQps = node.passQps();
-        Queue<Integer> oldCounts = rule.getOldCounts();
-        int newLimit = rule.getLimiter().update(oldCounts, minRt, rt, passQps);
+        int newLimit = rule.getLimiter().update(rule, node);
         rule.setCount(newLimit);
-        updateFlowQpsRule(rule.getResource(), newLimit);
+        updateFlowQpsRule(rule.getFlowId(), rule.getResource(), newLimit);
         rule.addCount(newLimit);
         rule.setTimes(0);
     }
 
-    private static void updateFlowQpsRule(String key, int newLimit) {
-        List<FlowRule> rules = new ArrayList<>();
-        FlowRule rule1 = new FlowRule();
-        rule1.setResource(key);
-        rule1.setCount(newLimit);
-        rule1.setGrade(RuleConstant.FLOW_GRADE_QPS);
-        rule1.setLimitApp("default");
-        rules.add(rule1);
-        FlowRuleManager.loadRules(rules);
+    private static void updateFlowQpsRule(long flowId, String key, int newLimit) {
+        FlowRule updateFlow = new FlowRule();
+        updateFlow.setId(flowId);
+        updateFlow.setResource(key);
+        updateFlow.setCount(newLimit);
+        updateFlow.setGrade(RuleConstant.FLOW_GRADE_QPS);
+        updateFlow.setLimitApp("default");
+        List<FlowRule> updateFlows = new ArrayList<>();
+        updateFlows.add(updateFlow);
+        FlowRuleManager.loadRules(updateFlows);
     }
 }

@@ -2,6 +2,7 @@ package com.alibaba.csp.sentinel.slots.adaptive;
 
 
 import com.alibaba.csp.sentinel.slots.adaptive.algorithm.AbstractLimit;
+import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
 import java.util.List;
@@ -14,9 +15,19 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @name AdaptiveRule
  * @date 2023/8/2 13:35
  */
-public class AdaptiveRule {
+public class AdaptiveRule extends AbstractRule {
     private int strategy;
-    private String refResource;
+
+    private long flowId;
+
+    public long getFlowId() {
+        return flowId;
+    }
+
+    public AdaptiveRule setFlowId(int flowId) {
+        this.flowId = flowId;
+        return this;
+    }
 
     private int count;
 
@@ -26,15 +37,6 @@ public class AdaptiveRule {
 
     public AdaptiveRule setStrategy(int strategy) {
         this.strategy = strategy;
-        return this;
-    }
-
-    public String getResource() {
-        return refResource;
-    }
-
-    public AdaptiveRule setResource(String refResource) {
-        this.refResource = refResource;
         return this;
     }
 
@@ -49,7 +51,7 @@ public class AdaptiveRule {
 
     private AbstractLimit limiter;
 
-    private Queue<Integer> oldCounts = new ConcurrentLinkedQueue();
+    private Queue<Integer> oldCounts = new ConcurrentLinkedQueue<>();
 
     private final int oldCountsMaxSize = RuleConstant.OLD_COUNTS_MAX_SIZE;
 
