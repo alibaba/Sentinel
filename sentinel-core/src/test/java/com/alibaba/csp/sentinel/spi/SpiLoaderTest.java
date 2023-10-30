@@ -21,6 +21,7 @@ import com.alibaba.csp.sentinel.metric.extension.MetricCallbackInit;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.SlotChainBuilder;
 import com.alibaba.csp.sentinel.slots.DefaultSlotChainBuilder;
+import com.alibaba.csp.sentinel.slots.adaptive.AdaptiveSlot;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthoritySlot;
 import com.alibaba.csp.sentinel.slots.block.degrade.DefaultCircuitBreakerSlot;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeSlot;
@@ -100,11 +101,12 @@ public class SpiLoaderTest {
         prototypeSlotClasses.add(NodeSelectorSlot.class);
         prototypeSlotClasses.add(ClusterBuilderSlot.class);
 
-        List<Class<? extends ProcessorSlot>> singletonSlotClasses = new ArrayList<>(7);
+        List<Class<? extends ProcessorSlot>> singletonSlotClasses = new ArrayList<>(8);
         singletonSlotClasses.add(LogSlot.class);
         singletonSlotClasses.add(StatisticSlot.class);
         singletonSlotClasses.add(AuthoritySlot.class);
         singletonSlotClasses.add(SystemSlot.class);
+        singletonSlotClasses.add(AdaptiveSlot.class);
         singletonSlotClasses.add(FlowSlot.class);
         singletonSlotClasses.add(DegradeSlot.class);
         singletonSlotClasses.add(DefaultCircuitBreakerSlot.class);
@@ -151,7 +153,7 @@ public class SpiLoaderTest {
         assertNotNull(sortedSlots);
 
         // Total 8 default slot in sentinel-core
-        assertEquals(9, sortedSlots.size());
+        assertEquals(10, sortedSlots.size());
 
         // Verify the order of slot
         int index = 0;
@@ -161,6 +163,7 @@ public class SpiLoaderTest {
         assertTrue(sortedSlots.get(index++) instanceof StatisticSlot);
         assertTrue(sortedSlots.get(index++) instanceof AuthoritySlot);
         assertTrue(sortedSlots.get(index++) instanceof SystemSlot);
+        assertTrue(sortedSlots.get(index++) instanceof AdaptiveSlot);
         assertTrue(sortedSlots.get(index++) instanceof FlowSlot);
         assertTrue(sortedSlots.get(index++) instanceof DefaultCircuitBreakerSlot);
         assertTrue(sortedSlots.get(index++) instanceof DegradeSlot);

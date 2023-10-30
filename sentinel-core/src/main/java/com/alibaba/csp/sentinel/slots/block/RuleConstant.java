@@ -65,5 +65,18 @@ public final class RuleConstant {
     public static final int DEFAULT_SAMPLE_COUNT = 2;
     public static final int DEFAULT_WINDOW_INTERVAL_MS = 1000;
 
-    private RuleConstant() {}
+    public static final int ADAPTIVE_VEGAS = 0;
+
+    public static final int ADAPTIVE_GRADIENT = 1;
+
+    public static final int ADAPTIVE_BRPC = 2;
+
+    public static final double ADAPTIVE_LIMIT_SMOOTHING = 0.6;
+
+    public static final int ADAPTIVE_LIMIT_THRESHOLD = 1000;
+
+    public static final int OLD_COUNTS_MAX_SIZE = 10;
+
+    private RuleConstant() {
+    }
 }
