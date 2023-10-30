@@ -45,7 +45,7 @@ public class AdaptiveRuleManager {
     }
 
     public static void adaptiveLimit(ResourceWrapper resourceWrapper, DefaultNode node, int count, boolean prioritized) {
-        if (resourceWrapper == null) {
+        if (resourceWrapper == null || resourceWrapper.getName() == null || !adaptiveRules.containsKey(resourceWrapper.getName())) {
             return;
         }
         if (resourceWrapper.getEntryType() != EntryType.IN) {
