@@ -58,6 +58,7 @@ public class DefaultController implements TrafficShapingController {
                     node.addWaitingRequest(currentTime + waitInMs, acquireCount);
                     node.addOccupiedPass(acquireCount);
                     sleep(waitInMs);
+                    return true;
                 }
             }
             return false;
