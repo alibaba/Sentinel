@@ -58,9 +58,6 @@ public class DefaultController implements TrafficShapingController {
                     node.addWaitingRequest(currentTime + waitInMs, acquireCount);
                     node.addOccupiedPass(acquireCount);
                     sleep(waitInMs);
-
-                    // PriorityWaitException indicates that the request will pass after waiting for {@link @waitInMs}.
-                    throw new PriorityWaitException(waitInMs);
                 }
             }
             return false;
