@@ -73,12 +73,10 @@ public class ThrottlingController implements TrafficShapingController {
         // Calculate the interval between every two requests.
         final long costTimeNs = Math.round(1.0d * MS_TO_NS_OFFSET * statDurationMs * acquireCount / maxCountPerStat);
 
+        long latestPassedTimeSample = latestPassedTime.get();
         // Expected pass time of this request.
-        long expectedTime = costTimeNs + latestPassedTime.get();
-
-        if (expectedTime <= currentTime) {
-            // Contention may exist here, but it's okay.
-            latestPassedTime.set(currentTime);
+        long expectedTime = costTimeNs + latestPassedTimeSample;
+        if (expectedTime <= currentTime && latestPassedTime.compareAndSet(latestPassedTimeSample, currentTime)) {
             return true;
         } else {
             final long curNanos = System.nanoTime();
@@ -107,12 +105,10 @@ public class ThrottlingController implements TrafficShapingController {
         // Calculate the interval between every two requests.
         long costTime = Math.round(1.0d * statDurationMs * acquireCount / maxCountPerStat);
 
+        long latestPassedTimeSample = latestPassedTime.get();
         // Expected pass time of this request.
-        long expectedTime = costTime + latestPassedTime.get();
-
-        if (expectedTime <= currentTime) {
-            // Contention may exist here, but it's okay.
-            latestPassedTime.set(currentTime);
+        long expectedTime = costTime + latestPassedTimeSample;
+        if (expectedTime <= currentTime && latestPassedTime.compareAndSet(latestPassedTimeSample, currentTime)) {
             return true;
         } else {
             // Calculate the time to wait.
