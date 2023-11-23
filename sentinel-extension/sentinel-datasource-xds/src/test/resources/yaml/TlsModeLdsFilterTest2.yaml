@@ -1,0 +1,15 @@
+apiVersion: "security.istio.io/v1beta1"
+kind: "PeerAuthentication"
+metadata:
+  name: "example-policy"
+spec:
+  selector:
+    matchLabels:
+      app: details
+  mtls:
+    mode: PERMISSIVE
+  portLevelMtls:
+    8080:
+      mode: DISABLE
+    9999:
+      mode: STRICT

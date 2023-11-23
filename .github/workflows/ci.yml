@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         java: [8, 11]
@@ -20,11 +20,11 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: ${{ matrix.java }}
-          distribution: 'adopt'
+          distribution: 'temurin'
           architecture: x64
 
       - name: Test with Maven
-        run: mvn test
+        run: mvn --batch-mode test
 
       - name: Build with Maven
         run: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -DminimumPriority=1

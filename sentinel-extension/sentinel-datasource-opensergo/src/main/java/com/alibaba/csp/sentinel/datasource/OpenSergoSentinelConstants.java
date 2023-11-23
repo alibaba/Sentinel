@@ -25,5 +25,6 @@ public final class OpenSergoSentinelConstants {
     public static final String KIND_SYSTEM_ADAPTIVE_RULE = "SystemRule";
     public static final String KIND_PARAM_FLOW_RULE = "ParamFlowRule";
 
-    private OpenSergoSentinelConstants() {}
+    private OpenSergoSentinelConstants() {
+    }
 }

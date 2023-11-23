@@ -7,6 +7,7 @@
 [![Maven Central](https://img.shields.io/maven-central/v/com.alibaba.csp/sentinel-core.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:com.alibaba.csp%20AND%20a:sentinel-core)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![Gitter](https://badges.gitter.im/alibaba/Sentinel.svg)](https://gitter.im/alibaba/Sentinel)
+[![Leaderboard](https://img.shields.io/badge/Sentinel-Check%20Your%20Contribution-orange)](https://opensource.alibaba.com/contribution_leaderboard/details?projectValue=sentinel)
 
 ## Introduction
 
@@ -156,6 +157,12 @@ Contact us via [Gitter](https://gitter.im/alibaba/Sentinel) or [Email](mailto:se
 Contributions are always welcomed! Please refer to [CONTRIBUTING](./CONTRIBUTING.md) for detailed guidelines.
 
 You can start with the issues labeled with [`good first issue`](https://github.com/alibaba/Sentinel/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
+
+## Enterprise Service
+
+If you need Sentinel enterprise service support (Sentinel 企业版), or purchase cloud product services,
+you can join the discussion by the DingTalk group (34754806). It can also be directly activated
+and used through the [microservice engine (MSE 微服务引擎) provided by Alibaba Cloud](https://cn.aliyun.com/product/aliware/mse?spm=sentinel-github.index.0.0.0).
 
 ## Credits
 

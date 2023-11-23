@@ -221,6 +221,6 @@ public class SphO {
     }
 
     public static void exit() {
-        exit(1, OBJECTS0);
+        ContextUtil.getContext().getCurEntry().exit();
     }
 }
