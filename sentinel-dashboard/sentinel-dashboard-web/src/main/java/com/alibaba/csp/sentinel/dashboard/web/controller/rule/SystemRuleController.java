@@ -43,7 +43,7 @@ public class SystemRuleController {
 
     @GetMapping("/rules")
     @AuthAction(AuthService.PrivilegeType.READ_RULE)
-    public Result<List<QuerySystemRuleListRespVo>> querySyetemRuleList(MachineReqVo reqVo) throws Exception {
+    public Result<List<QuerySystemRuleListRespVo>> querySystemRuleList(MachineReqVo reqVo) throws Exception {
         List<QuerySystemRuleListRespVo> rules = systemRuleService.querySystemRuleList(reqVo);
         return Result.ofSuccess(rules);
     }
