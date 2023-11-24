@@ -74,13 +74,6 @@ public final class SystemRuleManager {
     private static volatile long maxRt = Long.MAX_VALUE;
     private static volatile long maxThread = Long.MAX_VALUE;
 
-
-    private static volatile MachineVo highestSystemLoadMachineVo = new MachineVo();
-    private static volatile MachineVo highestCpuUsageMachineVo = new MachineVo();
-    private static volatile MachineVo qpsMachineVo = new MachineVo();
-    private static volatile MachineVo maxRtMachineVo = new MachineVo();
-    private static volatile MachineVo maxThreadMachineVo = new MachineVo();
-
     /**
      * mark whether the threshold are set by user.
      */
@@ -89,6 +82,12 @@ public final class SystemRuleManager {
     private static volatile boolean qpsIsSet = false;
     private static volatile boolean maxRtIsSet = false;
     private static volatile boolean maxThreadIsSet = false;
+
+    private static Long highestSystemLoadId = null;
+    private static Long highestCpuUsageId = null;
+    private static Long qpsId = null;
+    private static Long maxRtId = null;
+    private static Long maxThreadId = null;
 
     private static AtomicBoolean checkSystemStatus = new AtomicBoolean(false);
 
@@ -145,35 +144,35 @@ public final class SystemRuleManager {
         if (highestSystemLoadIsSet) {
             SystemRule loadRule = new SystemRule();
             loadRule.setHighestSystemLoad(highestSystemLoad);
-            assignValue(loadRule, highestSystemLoadMachineVo);
+            loadRule.setId(highestSystemLoadId);
             result.add(loadRule);
         }
 
         if (highestCpuUsageIsSet) {
             SystemRule usageRule = new SystemRule();
             usageRule.setHighestCpuUsage(highestCpuUsage);
-            assignValue(usageRule, highestCpuUsageMachineVo);
+            usageRule.setId(highestCpuUsageId);
             result.add(usageRule);
         }
 
         if (maxRtIsSet) {
             SystemRule rtRule = new SystemRule();
             rtRule.setAvgRt(maxRt);
-            assignValue(rtRule, maxRtMachineVo);
+            rtRule.setId(maxRtId);
             result.add(rtRule);
         }
 
         if (maxThreadIsSet) {
             SystemRule threadRule = new SystemRule();
             threadRule.setMaxThread(maxThread);
-            assignValue(threadRule, maxThreadMachineVo);
+            threadRule.setId(maxThreadId);
             result.add(threadRule);
         }
 
         if (qpsIsSet) {
             SystemRule qpsRule = new SystemRule();
             qpsRule.setQps(qps);
-            assignValue(qpsRule, qpsMachineVo);
+            qpsRule.setId(qpsId);
             result.add(qpsRule);
         }
 
@@ -258,7 +257,7 @@ public final class SystemRuleManager {
         if (rule.getHighestSystemLoad() >= 0) {
             highestSystemLoad = Math.min(highestSystemLoad, rule.getHighestSystemLoad());
             highestSystemLoadIsSet = true;
-            assignValue(highestSystemLoadMachineVo, rule);
+            highestSystemLoadId = rule.getId();
             checkStatus = true;
         }
 
@@ -269,7 +268,7 @@ public final class SystemRuleManager {
             } else {
                 highestCpuUsage = Math.min(highestCpuUsage, rule.getHighestCpuUsage());
                 highestCpuUsageIsSet = true;
-                assignValue(highestCpuUsageMachineVo, rule);
+                highestCpuUsageId = rule.getId();
                 checkStatus = true;
             }
         }
@@ -277,20 +276,20 @@ public final class SystemRuleManager {
         if (rule.getAvgRt() >= 0) {
             maxRt = Math.min(maxRt, rule.getAvgRt());
             maxRtIsSet = true;
-            assignValue(maxRtMachineVo, rule);
+            maxRtId = rule.getId();
             checkStatus = true;
         }
         if (rule.getMaxThread() >= 0) {
             maxThread = Math.min(maxThread, rule.getMaxThread());
             maxThreadIsSet = true;
-            assignValue(maxThreadMachineVo, rule);
+            maxThreadId = rule.getId();
             checkStatus = true;
         }
 
         if (rule.getQps() >= 0) {
             qps = Math.min(qps, rule.getQps());
             qpsIsSet = true;
-            assignValue(qpsMachineVo, rule);
+            qpsId = rule.getId();
             checkStatus = true;
         }
 
@@ -361,20 +360,6 @@ public final class SystemRuleManager {
 
     public static double getCurrentCpuUsage() {
         return statusListener.getCpuUsage();
-    }
-
-    public static void assignValue(MachineVo machineVo, SystemRule systemRule) {
-        machineVo.setId(systemRule.getId());
-        machineVo.setApp(systemRule.getApp());
-        machineVo.setIp(systemRule.getIp());
-        machineVo.setPort(systemRule.getPort());
-    }
-
-    public static void assignValue(SystemRule systemRule, MachineVo machineVo) {
-        systemRule.setId(machineVo.getId());
-        systemRule.setApp(machineVo.getApp());
-        systemRule.setIp(machineVo.getIp());
-        systemRule.setPort(machineVo.getPort());
     }
 
     private static class MachineVo {

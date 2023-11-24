@@ -46,6 +46,10 @@ public class AbstractRuleService<T extends RuleEntity> {
         List<T> rules = fetchRules(reqVo);
 
         rules.forEach(rule -> {
+            if (StringUtil.isBlank(rule.getApp())) {
+                rule.setApp(reqVo.getApp());
+            }
+
             if (isOperateApp(reqVo)) {
                 rule.setIp(null);
                 rule.setPort(null);

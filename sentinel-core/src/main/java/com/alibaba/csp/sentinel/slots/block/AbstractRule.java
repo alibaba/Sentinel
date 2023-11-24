@@ -28,12 +28,6 @@ public abstract class AbstractRule implements Rule {
      */
     private Long id;
 
-    private String app;
-
-    private String ip;
-
-    private Integer port;
-
     /**
      * Resource name.
      */
@@ -56,30 +50,6 @@ public abstract class AbstractRule implements Rule {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getApp() {
-        return app;
-    }
-
-    public void setApp(String app) {
-        this.app = app;
-    }
-
-    public String getIp() {
-        return ip;
-    }
-
-    public void setIp(String ip) {
-        this.ip = ip;
-    }
-
-    public Integer getPort() {
-        return port;
-    }
-
-    public void setPort(Integer port) {
-        this.port = port;
     }
 
     @Override
