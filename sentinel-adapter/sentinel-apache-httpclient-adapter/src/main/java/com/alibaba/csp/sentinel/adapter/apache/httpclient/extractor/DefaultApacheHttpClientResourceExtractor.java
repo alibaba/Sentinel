@@ -24,6 +24,6 @@ public class DefaultApacheHttpClientResourceExtractor implements ApacheHttpClien
 
     @Override
     public String extractor(HttpRequestWrapper request) {
-        return request.getRequestLine().getUri();
+        return request.getURI().getPath();
     }
 }
