@@ -51,7 +51,7 @@ public class ExceptionCircuitBreaker extends AbstractCircuitBreaker {
         boolean modeOk = strategy == DEGRADE_GRADE_EXCEPTION_RATIO || strategy == DEGRADE_GRADE_EXCEPTION_COUNT;
         AssertUtil.isTrue(modeOk, "rule strategy should be error-ratio or error-count");
         AssertUtil.isTrue(strategy == DEGRADE_GRADE_EXCEPTION_RATIO
-                ? this.threshold <= Double.POSITIVE_INFINITY : this.threshold >= Double.POSITIVE_INFINITY,
+                ? this.threshold <= 1.0 : this.threshold >= 1.0,
             "threshold should be adjusted");
         AssertUtil.notNull(stat, "stat cannot be null");
         this.minRequestAmount = rule.getMinRequestAmount();
