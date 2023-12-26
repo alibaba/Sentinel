@@ -17,7 +17,7 @@ package com.alibaba.csp.sentinel.metric.prom.collector;
 
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.metric.prom.MetricTypeConstants;
+import com.alibaba.csp.sentinel.metric.prom.MetricConstants;
 import com.alibaba.csp.sentinel.metric.prom.config.PrometheusGlobalConfig;
 import com.alibaba.csp.sentinel.metric.prom.types.GaugeMetricFamily;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
@@ -80,8 +80,9 @@ public class SentinelCollector extends Collector {
             if(nodes.size() > fetchSize){
                 nodes = nodes.subList(0,fetchSize);
             }
-            GaugeMetricFamily metricFamily = new GaugeMetricFamily(appName,
-                    "sentinel_metrics", Arrays.asList("resource","classification","type"));
+            GaugeMetricFamily metricFamily = new GaugeMetricFamily(appName, MetricConstants.METRIC_HELP,
+                    Arrays.asList(MetricConstants.RESOURCE, MetricConstants.CLASSIFICATION,
+                            MetricConstants.METRIC_TYPE));
             for (MetricNode node : nodes) {
                 long recordTime = node.getTimestamp();
                 for (String type : types) {
@@ -100,25 +101,25 @@ public class SentinelCollector extends Collector {
     }
 
     public double getTypeVal(MetricNode node,String type){
-        if(MetricTypeConstants.PASS_QPS.equals(type)){
+        if(MetricConstants.PASS_QPS.equals(type)){
             return node.getPassQps();
         }
-        if(MetricTypeConstants.BLOCK_QPS.equals(type)){
+        if(MetricConstants.BLOCK_QPS.equals(type)){
             return node.getBlockQps();
         }
-        if(MetricTypeConstants.SUCCESS_QPS.equals(type)){
+        if(MetricConstants.SUCCESS_QPS.equals(type)){
             return node.getSuccessQps();
         }
-        if(MetricTypeConstants.EXCEPTION_QPS.equals(type)){
+        if(MetricConstants.EXCEPTION_QPS.equals(type)){
             return node.getExceptionQps();
         }
-        if(MetricTypeConstants.RT.equals(type)){
+        if(MetricConstants.RT.equals(type)){
             return node.getRt();
         }
-        if(MetricTypeConstants.OCC_PASS_QPS.equals(type)){
+        if(MetricConstants.OCC_PASS_QPS.equals(type)){
             return node.getOccupiedPassQps();
         }
-        if(MetricTypeConstants.CONCURRENCY.equals(type)){
+        if(MetricConstants.CONCURRENCY.equals(type)){
             return node.getConcurrency();
         }
         return -1.0;

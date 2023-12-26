@@ -22,15 +22,30 @@ package com.alibaba.csp.sentinel.metric.prom;
  * @date 2023-08-08 09:30
  * @since 2.0.0
  */
-public final class MetricTypeConstants {
+public final class MetricConstants {
+
+    public static final String METRIC_HELP = "sentinel_metrics";
+
+    public static final String RESOURCE = "resource";
+
+    public static final String CLASSIFICATION = "classification";
+
+    public static final String METRIC_TYPE = "type";
 
     public static final String PASS_QPS = "passQps";
+
     public static final String BLOCK_QPS = "blockQps";
+
     public static final String SUCCESS_QPS = "successQps";
+
     public static final String EXCEPTION_QPS = "exceptionQps";
+
     public static final String RT = "rt";
+
     public static final String OCC_PASS_QPS = "occupiedPassQps";
+
     public static final String CONCURRENCY = "concurrency";
 
-    private MetricTypeConstants() {}
+    private MetricConstants() {
+    }
 }
