@@ -19,10 +19,10 @@ import com.alibaba.csp.sentinel.*;
 import com.alibaba.csp.sentinel.adapter.jaxrs.config.SentinelJaxRsConfig;
 import com.alibaba.csp.sentinel.adapter.jaxrs.future.FutureWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.csp.sentinel.util.function.Supplier;
 
 import javax.ws.rs.core.Response;
 import java.util.concurrent.Future;
+import java.util.function.Supplier;
 
 
 /**

@@ -15,22 +15,18 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow.param;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleUtil;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.csp.sentinel.util.function.Function;
 import com.alibaba.csp.sentinel.util.function.Predicate;
+
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
  * @author Eric Zhao
@@ -239,12 +235,7 @@ public final class ParamFlowRuleUtil {
         return value;
     }
 
-    private static final Function<ParamFlowRule, String> EXTRACT_RESOURCE = new Function<ParamFlowRule, String>() {
-        @Override
-        public String apply(ParamFlowRule rule) {
-            return rule.getResource();
-        }
-    };
+    private static final Function<ParamFlowRule, String> EXTRACT_RESOURCE = AbstractRule::getResource;
 
     private ParamFlowRuleUtil() {}
 }

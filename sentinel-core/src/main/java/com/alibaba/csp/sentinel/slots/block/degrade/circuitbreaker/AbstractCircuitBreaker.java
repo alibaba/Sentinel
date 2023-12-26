@@ -15,16 +15,14 @@
  */
 package com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.context.Context;
-import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.TimeUtil;
-import com.alibaba.csp.sentinel.util.function.BiConsumer;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Eric Zhao
@@ -105,17 +103,14 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
         if (currentState.compareAndSet(State.OPEN, State.HALF_OPEN)) {
             notifyObservers(State.OPEN, State.HALF_OPEN, null);
             Entry entry = context.getCurEntry();
-            entry.whenTerminate(new BiConsumer<Context, Entry>() {
-                @Override
-                public void accept(Context context, Entry entry) {
-                    // Note: This works as a temporary workaround for https://github.com/alibaba/Sentinel/issues/1638
-                    // Without the hook, the circuit breaker won't recover from half-open state in some circumstances
-                    // when the request is actually blocked by upcoming rules (not only degrade rules).
-                    if (entry.getBlockError() != null) {
-                        // Fallback to OPEN due to detecting request is blocked
-                        currentState.compareAndSet(State.HALF_OPEN, State.OPEN);
-                        notifyObservers(State.HALF_OPEN, State.OPEN, 1.0d);
-                    }
+            entry.whenTerminate((ctx, e) -> {
+                // Note: This works as a temporary workaround for https://github.com/alibaba/Sentinel/issues/1638
+                // Without the hook, the circuit breaker won't recover from half-open state in some circumstances
+                // when the request is actually blocked by upcoming rules (not only degrade rules).
+                if (e.getBlockError() != null) {
+                    // Fallback to OPEN due to detecting request is blocked
+                    currentState.compareAndSet(State.HALF_OPEN, State.OPEN);
+                    notifyObservers(State.HALF_OPEN, State.OPEN, 1.0d);
                 }
             });
             return true;

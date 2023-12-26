@@ -15,13 +15,6 @@
  */
 package com.alibaba.csp.sentinel.cluster.flow.rule;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.alibaba.csp.sentinel.cluster.flow.statistic.ClusterParamMetricStatistics;
 import com.alibaba.csp.sentinel.cluster.flow.statistic.metric.ClusterParamMetric;
 import com.alibaba.csp.sentinel.cluster.server.ServerConstants;
@@ -37,8 +30,11 @@ import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRuleUtil;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.csp.sentinel.util.function.Function;
 import com.alibaba.csp.sentinel.util.function.Predicate;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
  * Manager for cluster parameter flow rules.
@@ -53,12 +49,7 @@ public final class ClusterParamFlowRuleManager {
      * dynamic property for a specific namespace to manually do rule management.
      */
     public static final Function<String, SentinelProperty<List<ParamFlowRule>>> DEFAULT_PROPERTY_SUPPLIER =
-        new Function<String, SentinelProperty<List<ParamFlowRule>>>() {
-            @Override
-            public SentinelProperty<List<ParamFlowRule>> apply(String namespace) {
-                return new DynamicSentinelProperty<>();
-            }
-        };
+            namespace -> new DynamicSentinelProperty<>();
 
     /**
      * (id, clusterParamRule)

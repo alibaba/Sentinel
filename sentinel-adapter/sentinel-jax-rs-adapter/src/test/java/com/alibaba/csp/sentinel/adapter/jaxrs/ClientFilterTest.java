@@ -29,7 +29,6 @@ import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.csp.sentinel.util.function.Supplier;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -43,13 +42,11 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.concurrent.*;
 
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertNull;
 
 /**
  * @author sea
@@ -113,14 +110,7 @@ public class ClientFilterTest {
     public void testClientGetHello() {
         final String url = "/test/hello";
         String resourceName = "GET:" + url;
-        Response response = SentinelJaxRsClientTemplate.execute(resourceName, new Supplier<Response>() {
-
-            @Override
-            public Response get() {
-                return client.target(host).path(url).request()
-                        .get();
-            }
-        });
+        Response response = SentinelJaxRsClientTemplate.execute(resourceName, () -> client.target(host).path(url).request().get());
         assertEquals(200, response.getStatus());
         assertEquals(HELLO_STR, response.readEntity(String.class));
 
@@ -145,14 +135,9 @@ public class ClientFilterTest {
         final String url = "/test/async-hello";
         final String resourceName = "GET:" + url;
 
-        Future<Response> future = SentinelJaxRsClientTemplate.executeAsync(resourceName, new Supplier<Future<Response>>() {
-            @Override
-            public Future<Response> get() {
-                return client.target(host).path(url).request()
-                        .async()
-                        .get();
-            }
-        });
+        Future<Response> future = SentinelJaxRsClientTemplate.executeAsync(resourceName,
+                () -> client.target(host).path(url).request().async().get()
+        );
 
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(resourceName);
         assertNotNull(cn);
@@ -168,29 +153,19 @@ public class ClientFilterTest {
         final String url = "/test/hello/{name}";
         final String resourceName = "GET:" + url;
 
-        Response response1 = SentinelJaxRsClientTemplate.execute(resourceName, new Supplier<Response>() {
-            @Override
-            public Response get() {
-                return client.target(host)
-                        .path(url)
-                        .resolveTemplate("name", "abc")
-                        .request()
-                        .get();
-            }
-        });
+        Response response1 = SentinelJaxRsClientTemplate.execute(resourceName, () -> client.target(host)
+                .path(url)
+                .resolveTemplate("name", "abc")
+                .request()
+                .get());
         assertEquals(200, response1.getStatus());
         assertEquals("Hello abc !", response1.readEntity(String.class));
 
-        Response response2 = SentinelJaxRsClientTemplate.execute(resourceName, new Supplier<Response>() {
-            @Override
-            public Response get() {
-                return client.target(host)
-                        .path(url)
-                        .resolveTemplate("name", "def")
-                        .request()
-                        .get();
-            }
-        });
+        Response response2 = SentinelJaxRsClientTemplate.execute(resourceName, () -> client.target(host)
+                .path(url)
+                .resolveTemplate("name", "def")
+                .request()
+                .get());
         assertEquals(javax.ws.rs.core.Response.Status.OK.getStatusCode(), response2.getStatus());
         assertEquals("Hello def !", response2.readEntity(String.class));
 
@@ -208,13 +183,9 @@ public class ClientFilterTest {
         final String resourceName = "GET:" + url;
         configureRulesFor(resourceName, 0);
 
-        Response response = SentinelJaxRsClientTemplate.execute(resourceName, new Supplier<Response>() {
-            @Override
-            public Response get() {
-                return client.target(host).path(url).request()
-                        .get();
-            }
-        });
+        Response response = SentinelJaxRsClientTemplate.execute(resourceName,
+                () -> client.target(host).path(url).request().get()
+        );
         assertEquals(javax.ws.rs.core.Response.Status.TOO_MANY_REQUESTS.getStatusCode(), response.getStatus());
         assertEquals("Blocked by Sentinel (flow limiting)", response.readEntity(String.class));
 
@@ -250,13 +221,8 @@ public class ClientFilterTest {
             }
         });
 
-        Response response = SentinelJaxRsClientTemplate.execute(resourceName, new Supplier<Response>() {
-            @Override
-            public Response get() {
-                return client.target(host).path(url).request()
-                        .get();
-            }
-        });
+        Response response = SentinelJaxRsClientTemplate.execute(resourceName, () -> client.target(host).path(url).request()
+                .get());
         assertEquals(javax.ws.rs.core.Response.Status.OK.getStatusCode(), response.getStatus());
         assertEquals("Blocked by Sentinel (flow limiting)", response.readEntity(String.class));
 
@@ -270,13 +236,7 @@ public class ClientFilterTest {
     public void testServerReturn400() {
         final String url = "/test/400";
         final String resourceName = "GET:" + url;
-        Response response = SentinelJaxRsClientTemplate.execute(resourceName, new Supplier<Response>() {
-            @Override
-            public Response get() {
-                return client.target(host).path(url).request()
-                        .get();
-            }
-        });
+        Response response = SentinelJaxRsClientTemplate.execute(resourceName, () -> client.target(host).path(url).request().get());
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         assertEquals("test return 400", response.readEntity(String.class));
 
@@ -290,13 +250,7 @@ public class ClientFilterTest {
     public void testServerReturn500() {
         final String url = "/test/ex";
         final String resourceName = "GET:" + url;
-        Response response = SentinelJaxRsClientTemplate.execute(resourceName, new Supplier<Response>() {
-            @Override
-            public Response get() {
-                return client.target(host).path(url).request()
-                        .get();
-            }
-        });
+        Response response = SentinelJaxRsClientTemplate.execute(resourceName, () -> client.target(host).path(url).request().get());
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         assertEquals("test exception mapper", response.readEntity(String.class));
 
@@ -311,13 +265,7 @@ public class ClientFilterTest {
         final String url = "/test/delay/10";
         final String resourceName = "GET:/test/delay/{seconds}";
         try {
-            SentinelJaxRsClientTemplate.execute(resourceName, new Supplier<Response>() {
-                @Override
-                public Response get() {
-                    return client.target(host).path(url).request()
-                            .get();
-                }
-            });
+            SentinelJaxRsClientTemplate.execute(resourceName, () -> client.target(host).path(url).request().get());
         } catch (ProcessingException e) {
             //ignore
         }
@@ -332,14 +280,11 @@ public class ClientFilterTest {
         final String url = "/test/delay/10";
         final String resourceName = "GET:/test/delay/{seconds}";
         try {
-            Future<Response> future = SentinelJaxRsClientTemplate.executeAsync(resourceName, new Supplier<Future<Response>>() {
-                @Override
-                public Future<Response> get() {
-                    return client.target(host).path(url).request()
-                            .async()
-                            .get();
-                }
-            });
+            Future<Response> future = SentinelJaxRsClientTemplate.executeAsync(resourceName,
+                    () -> client.target(host).path(url).request()
+                    .async()
+                    .get()
+            );
             future.get();
         } catch (Exception e) {
             //ignore
@@ -355,14 +300,11 @@ public class ClientFilterTest {
         final String url = "/test/delay/10";
         final String resourceName = "GET:/test/delay/{seconds}";
         try {
-            Future<Response> future = SentinelJaxRsClientTemplate.executeAsync(resourceName, new Supplier<Future<Response>>() {
-                @Override
-                public Future<Response> get() {
-                    return client.target(host).path(url).request()
-                            .async()
-                            .get();
-                }
-            });
+            Future<Response> future = SentinelJaxRsClientTemplate.executeAsync(resourceName,
+                    () -> client.target(host).path(url).request()
+                    .async()
+                    .get()
+            );
             future.get(1, TimeUnit.SECONDS);
         } catch (Exception e) {
             //ignore
@@ -378,14 +320,11 @@ public class ClientFilterTest {
         final String url = "/test/delay/10";
         final String resourceName = "GET:/test/delay/{seconds}";
         try {
-            Future<Response> future = SentinelJaxRsClientTemplate.executeAsync(resourceName, new Supplier<Future<Response>>() {
-                @Override
-                public Future<Response> get() {
-                    return client.target(host).path(url).request()
-                            .async()
-                            .get();
-                }
-            });
+            Future<Response> future = SentinelJaxRsClientTemplate.executeAsync(resourceName,
+                    () -> client.target(host).path(url).request()
+                    .async()
+                    .get()
+            );
             future.cancel(false);
         } catch (Exception e) {
             //ignore
