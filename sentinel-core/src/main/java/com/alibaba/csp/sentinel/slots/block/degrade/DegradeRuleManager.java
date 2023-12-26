@@ -15,13 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.block.degrade;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
@@ -33,6 +26,20 @@ import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.ResponseTimeC
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import static com.alibaba.csp.sentinel.util.AtomicUtil.atomicUpdate;
+
 /**
  * The rule manager for circuit breaking rules ({@link DegradeRule}).
  *
@@ -42,12 +49,20 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  */
 public final class DegradeRuleManager {
 
+    private static final RulePropertyListener LISTENER = new RulePropertyListener();
     private static volatile Map<String, List<CircuitBreaker>> circuitBreakers = new HashMap<>();
     private static volatile Map<String, Set<DegradeRule>> ruleMap = new HashMap<>();
+    private static volatile SentinelProperty<List<DegradeRule>> currentProperty = new DynamicSentinelProperty<>();
+    private static volatile AtomicLong postLock = new AtomicLong(System.currentTimeMillis());
+    private static Comparator<DegradeRule> comparator = (o1, o2) -> {
+        if (o1 == o2)
+            return 0;
+        if (o1 == null || o2 == null)
+            return -1;
+        return o1.getResource().equals(o2.getResource()) && (Optional.ofNullable(o1.getLimitApp()).orElse(RuleConstant.LIMIT_APP_DEFAULT).equals(Optional.ofNullable(o2.getLimitApp()).orElse(RuleConstant.LIMIT_APP_DEFAULT))) ? 0 : -1;
 
-    private static final RulePropertyListener LISTENER = new RulePropertyListener();
-    private static SentinelProperty<List<DegradeRule>> currentProperty
-        = new DynamicSentinelProperty<>();
+
+    };
 
     static {
         currentProperty.addListener(LISTENER);
@@ -102,14 +117,77 @@ public final class DegradeRuleManager {
 
     /**
      * Load {@link DegradeRule}s, former rules will be replaced.
+     * when method was called, the postLock will changed.
      *
      * @param rules new rules to load.
      */
     public static void loadRules(List<DegradeRule> rules) {
         try {
-            currentProperty.updateValue(rules);
+            postLock.updateAndGet(fn -> {
+                currentProperty.updateValue(rules);
+                return System.currentTimeMillis();
+            });
+
+
         } catch (Throwable e) {
             RecordLog.error("[DegradeRuleManager] Unexpected error when loading degrade rules", e);
+        }
+    }
+
+    /**
+     * append {@link DegradeRule}s, former rules will be reserve.
+     * same resource name will be replaced
+     *
+     * @param degradeRules degradeRules to be append or replace
+     */
+    public static boolean appendAndReplaceRules(List<DegradeRule> degradeRules) {
+        List<DegradeRule> tmp = degradeRules.stream()
+                .filter(DegradeRuleManager::isValidRule)
+                .collect(Collectors.toList());
+        if (tmp.isEmpty()) {
+            //if all input is not valid, return true
+            return true;
+        }
+        Supplier<List<DegradeRule>> supplier = () -> {
+            List<DegradeRule> oldRules = getRules();
+            //remove all same resource rules
+            oldRules.removeIf(item -> tmp.stream().anyMatch(finder -> comparator.compare(item, finder) == 0));
+            //append and replace
+            oldRules.addAll(tmp);
+            loadRules(oldRules);
+            return oldRules;
+        };
+        synchronized (DegradeRuleManager.class) {
+            return atomicUpdate(postLock, supplier);
+        }
+
+
+    }
+
+    /**
+     * delete {@link DegradeRule}s which resource name was same,
+     * other rules will reserve
+     * will be reserve.
+     *
+     * @param degradeRules degradeRules to be delete
+     */
+    public static boolean deleteRules(List<DegradeRule> degradeRules) {
+        List<DegradeRule> tmp = degradeRules.stream()
+                .filter(DegradeRuleManager::isValidRule)
+                .collect(Collectors.toList());
+        if (tmp.isEmpty()) {
+            //if all input is not valid, return true
+            return true;
+        }
+        Supplier<List<DegradeRule>> supplier = () -> {
+            List<DegradeRule> oldRules = getRules();
+            //remove all rule which resource and limit app is same
+            oldRules.removeIf(item -> tmp.stream().anyMatch(finder -> comparator.compare(item, finder) == 0));
+            loadRules(oldRules);
+            return oldRules;
+        };
+        synchronized (DegradeRuleManager.class){
+            return atomicUpdate(postLock, supplier);
         }
     }
 
@@ -142,8 +220,7 @@ public final class DegradeRuleManager {
             }
             return currentProperty.updateValue(allRules);
         } catch (Throwable e) {
-            RecordLog.error("[DegradeRuleManager] Unexpected error when setting circuit breaking"
-                + " rules for resource: " + resourceName, e);
+            RecordLog.error("[DegradeRuleManager] Unexpected error when setting circuit breaking" + " rules for resource: " + resourceName, e);
             return false;
         }
     }
@@ -181,8 +258,7 @@ public final class DegradeRuleManager {
     }
 
     public static boolean isValidRule(DegradeRule rule) {
-        boolean baseValid = rule != null && !StringUtil.isBlank(rule.getResource())
-            && rule.getCount() >= 0 && rule.getTimeWindow() > 0;
+        boolean baseValid = rule != null && !StringUtil.isBlank(rule.getResource()) && rule.getCount() >= 0 && rule.getTimeWindow() > 0;
         if (!baseValid) {
             return false;
         }

@@ -22,16 +22,24 @@ import com.alibaba.csp.sentinel.node.metric.MetricTimerListener;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import static com.alibaba.csp.sentinel.util.AtomicUtil.atomicUpdate;
 
 /**
  * <p>
@@ -48,15 +56,24 @@ import java.util.concurrent.TimeUnit;
  */
 public class FlowRuleManager {
 
-    private static volatile Map<String, List<FlowRule>> flowRules = new HashMap<>();
-
     private static final FlowPropertyListener LISTENER = new FlowPropertyListener();
-    private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
-
-    /** the corePool size of SCHEDULER must be set at 1, so the two task ({@link #startMetricTimerListener()} can run orderly by the SCHEDULER **/
+    /**
+     * the corePool size of SCHEDULER must be set at 1, so the two task ({@link #startMetricTimerListener()} can run orderly by the SCHEDULER
+     **/
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
-    private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1,
-        new NamedThreadFactory("sentinel-metrics-record-task", true));
+    private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1, new NamedThreadFactory("sentinel-metrics-record-task", true));
+    private static volatile Map<String, List<FlowRule>> flowRules = new HashMap<>();
+    private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
+    private static volatile AtomicLong postLock = new AtomicLong(System.currentTimeMillis());
+    private static Comparator<FlowRule> comparator = (o1, o2) -> {
+        if (o1 == o2)
+            return 0;
+        if (o1 == null || o2 == null)
+            return -1;
+        return o1.getResource().equals(o2.getResource()) && (Optional.ofNullable(o1.getLimitApp()).orElse(RuleConstant.LIMIT_APP_DEFAULT).equals(Optional.ofNullable(o2.getLimitApp()).orElse(RuleConstant.LIMIT_APP_DEFAULT))) ? 0 : -1;
+
+
+    };
 
     static {
         currentProperty.addListener(LISTENER);
@@ -75,9 +92,7 @@ public class FlowRuleManager {
     private static void startMetricTimerListener() {
         long flushInterval = SentinelConfig.metricLogFlushIntervalSec();
         if (flushInterval <= 0) {
-            RecordLog.info("[FlowRuleManager] The MetricTimerListener isn't started. If you want to start it, "
-                    + "please change the value(current: {}) of config({}) more than 0 to start it.", flushInterval,
-                SentinelConfig.METRIC_FLUSH_INTERVAL);
+            RecordLog.info("[FlowRuleManager] The MetricTimerListener isn't started. If you want to start it, " + "please change the value(current: {}) of config({}) more than 0 to start it.", flushInterval, SentinelConfig.METRIC_FLUSH_INTERVAL);
             return;
         }
         SCHEDULER.scheduleAtFixedRate(new MetricTimerListener(), 0, flushInterval, TimeUnit.SECONDS);
@@ -118,7 +133,10 @@ public class FlowRuleManager {
      * @param rules new rules to load.
      */
     public static void loadRules(List<FlowRule> rules) {
-        currentProperty.updateValue(rules);
+        postLock.updateAndGet(fn -> {
+            currentProperty.updateValue(rules);
+            return System.currentTimeMillis();
+        });
     }
 
     static Map<String, List<FlowRule>> getFlowRuleMap() {
@@ -145,6 +163,60 @@ public class FlowRuleManager {
         }
 
         return true;
+    }
+
+    /**
+     * append {@link FlowRule}s, former rules will be reserve.
+     * same resource name will be replaced
+     *
+     * @param degradeRules degradeRules to be append or replace
+     */
+    public static boolean appendAndReplaceRules(List<FlowRule> degradeRules) {
+
+        List<FlowRule> tmp = degradeRules.stream().filter(FlowRuleUtil::isValidRule).collect(Collectors.toList());
+        if (tmp.isEmpty()) {
+            //if all input is not valid, return true
+            return true;
+        }
+        Supplier<List<FlowRule>> supplier = () -> {
+            List<FlowRule> oldRules = getRules();
+            //remove all same resource rules
+            oldRules.removeIf(item -> tmp.stream().anyMatch(finder -> comparator.compare(finder, item) == 0));
+            //append and replace
+            oldRules.addAll(tmp);
+            currentProperty.updateValue(oldRules);
+            return oldRules;
+        };
+        synchronized (FlowRuleManager.class) {
+            return atomicUpdate(postLock, supplier);
+        }
+
+
+    }
+
+    /**
+     * delete {@link FlowRule}s which resource name was same,
+     * other rules will reserve
+     * will be reserve.
+     *
+     * @param degradeRules degradeRules to be delete
+     */
+    public static boolean deleteRules(List<FlowRule> degradeRules) {
+        List<FlowRule> tmp = degradeRules.stream().filter(FlowRuleUtil::isValidRule).collect(Collectors.toList());
+        if (tmp.isEmpty()) {
+            //if all input is not valid, return true
+            return true;
+        }
+        Supplier<List<FlowRule>> supplier = () -> {
+            List<FlowRule> oldRules = getRules();
+            //remove all rule which resource and limit app is same
+            oldRules.removeIf(item -> tmp.stream().anyMatch(finder -> comparator.compare(finder, item) == 0));
+            currentProperty.updateValue(oldRules);
+            return oldRules;
+        };
+        synchronized (FlowRuleManager.class) {
+            return atomicUpdate(postLock, supplier);
+        }
     }
 
     private static final class FlowPropertyListener implements PropertyListener<List<FlowRule>> {

@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.slots.block.degrade;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreaker;
@@ -100,5 +101,94 @@ public class DegradeRuleManagerTest {
         assertFalse(DegradeRuleManager.isValidRule(rule5));
         assertFalse(DegradeRuleManager.isValidRule(rule6));
         assertFalse(DegradeRuleManager.isValidRule(rule7));
+    }
+
+    @Test
+    public void appendAndReplaceRules(){
+
+        String resource = "appendAndReplaceRules";
+        DegradeRule rule = new DegradeRule(resource)
+                .setCount(100)
+                .setSlowRatioThreshold(0.9d)
+                .setTimeWindow(20)
+                .setStatIntervalMs(20000);
+        DegradeRuleManager.loadRules(Arrays.asList(rule));
+
+        //append new rule
+        DegradeRule appendRules = new DegradeRule("xx")
+                .setCount(1d)
+                .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO)
+                .setTimeWindow(2);
+
+        List<DegradeRule> list = new ArrayList<>();
+
+        list.add(appendRules);
+
+        DegradeRuleManager.appendAndReplaceRules(list);
+        List<DegradeRule> allRules = DegradeRuleManager.getRules();
+        assertEquals(2, allRules.size());
+        // replace same resource rule
+        list.add(new DegradeRule("appendAndReplaceRules")
+                .setCount(1)
+                .setSlowRatioThreshold(0.9d)
+                .setTimeWindow(20)
+                .setStatIntervalMs(20000));
+
+        DegradeRuleManager.appendAndReplaceRules(list);
+        allRules = DegradeRuleManager.getRules();
+        assertEquals(2, allRules.size());
+
+        //append rule with same resource but different limit app
+        DegradeRule diff_limit_app_rule = new DegradeRule(
+                "appendAndReplaceRules")
+                .setCount(1)
+                .setSlowRatioThreshold(0.9d)
+                .setTimeWindow(20)
+
+                .setStatIntervalMs(20000);
+        diff_limit_app_rule.setLimitApp("diffapp");
+
+        list.add(diff_limit_app_rule);
+        DegradeRuleManager.appendAndReplaceRules(list);
+        allRules = DegradeRuleManager.getRules();
+        assertEquals(3, allRules.size());
+    }
+    @Test
+    public void deleteRules(){
+        String resource = "deleteRulesTest";
+        DegradeRule rule = new DegradeRule(resource)
+                .setCount(100)
+                .setSlowRatioThreshold(0.9d)
+                .setTimeWindow(20)
+                .setStatIntervalMs(20000);
+        DegradeRuleManager.loadRules(Arrays.asList(rule));
+
+
+        DegradeRule appendRules = new DegradeRule("xx")
+                .setCount(1d)
+                .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO)
+                .setTimeWindow(2);
+
+        List<DegradeRule> list = new ArrayList<>();
+
+        list.add(appendRules);
+
+        //delete not exists
+        boolean isNotExistSuccess = DegradeRuleManager.deleteRules(list);
+
+
+        list.add(new DegradeRule(resource)
+                .setCount(1)
+                .setSlowRatioThreshold(0.9d)
+                .setTimeWindow(20)
+                .setStatIntervalMs(20000));
+        //delete exists
+        boolean isSuccess = DegradeRuleManager.deleteRules(list);
+        List<DegradeRule> allRules = DegradeRuleManager.getRules();
+        assertTrue(isNotExistSuccess);
+        assertTrue(isSuccess);
+        assertTrue(allRules.isEmpty());
+
+
     }
 }

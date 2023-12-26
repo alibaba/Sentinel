@@ -18,11 +18,18 @@ package com.alibaba.csp.sentinel.slots.block.flow;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Weihua
@@ -76,4 +83,70 @@ public class FlowRuleManagerTest {
         }
         latchEnd.await(10, TimeUnit.SECONDS);
     }
+    @Test
+    public void appendAndReplaceRules(){
+        FlowRuleManager.loadRules(STATIC_RULES_1);
+        //replace
+        FlowRuleManager.appendAndReplaceRules(STATIC_RULES_2);
+        assertEquals(1, FlowRuleManager.getRules().size());
+        //append
+        FlowRuleManager.appendAndReplaceRules(Collections.singletonList(new FlowRule("test")
+        .setCount(10d)
+        ));
+        assertEquals(2, FlowRuleManager.getRules().size());
+
+        FlowRule diff_limit_app_rule = new FlowRule("test")
+                .setCount(10d);
+        diff_limit_app_rule.setLimitApp("testapp");
+        FlowRuleManager.appendAndReplaceRules(Collections.singletonList(diff_limit_app_rule));
+        assertEquals(3, FlowRuleManager.getRules().size());
+
+    }
+    @Test
+    public void deleteRules(){
+        FlowRuleManager.loadRules(STATIC_RULES_1);
+        //delete not exists
+        FlowRuleManager.deleteRules(Collections.singletonList(new FlowRule(
+                "not_exist")));
+        assertEquals(1, FlowRuleManager.getRules().size());
+        FlowRule diff_limit_app_rule = new FlowRule(STATIC_RULES_1.get(0).getResource())
+                .setCount(10d);
+        diff_limit_app_rule.setLimitApp("different");
+        FlowRuleManager.deleteRules(Collections.singletonList(diff_limit_app_rule));
+        assertEquals(1, FlowRuleManager.getRules().size());
+        FlowRuleManager.deleteRules(STATIC_RULES_1);
+        assertEquals(0, FlowRuleManager.getRules().size());
+    }
+    @Test
+    public void multiChangeRules() throws InterruptedException, ExecutionException, TimeoutException {
+        FlowRuleManager.loadRules(STATIC_RULES_1);
+        AtomicBoolean isMeet = new AtomicBoolean(true);
+        int  times = 1000;
+        int singleTimes = 1;
+        CompletableFuture cf1 = CompletableFuture.runAsync(()->{
+
+            for(int i = 0; i < times; i++){
+                FlowRuleManager.appendAndReplaceRules(STATIC_RULES_1);
+            }
+        });
+        CompletableFuture cf2 = CompletableFuture.runAsync(()->{
+            boolean tmpMatch = true;
+
+            for(int i = 0; i < times; i++){
+                tmpMatch &= FlowRuleManager.appendAndReplaceRules(Collections.singletonList(new FlowRule("test"+i)));
+            }
+            if(!tmpMatch){
+                isMeet.set(tmpMatch);
+            }
+
+
+        });
+
+        CompletableFuture all = CompletableFuture.allOf(cf1,cf2);
+        all.get(10,TimeUnit.MINUTES);
+        assertEquals(times+singleTimes,FlowRuleManager.getRules().size());
+//        assertTrue(!isMeet.get());
+
+    }
+
 }

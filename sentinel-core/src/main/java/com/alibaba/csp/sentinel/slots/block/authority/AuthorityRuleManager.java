@@ -15,20 +15,25 @@
  */
 package com.alibaba.csp.sentinel.slots.block.authority;
 
+import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
+import com.alibaba.csp.sentinel.property.PropertyListener;
+import com.alibaba.csp.sentinel.property.SentinelProperty;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.util.AssertUtil;
+import com.alibaba.csp.sentinel.util.StringUtil;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
-import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import com.alibaba.csp.sentinel.util.AssertUtil;
-import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
-import com.alibaba.csp.sentinel.property.PropertyListener;
-import com.alibaba.csp.sentinel.property.SentinelProperty;
+import static com.alibaba.csp.sentinel.util.AtomicUtil.atomicUpdate;
 
 /**
  * Manager for authority rules.
@@ -39,10 +44,10 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
  */
 public final class AuthorityRuleManager {
 
-    private static volatile Map<String, Set<AuthorityRule>> authorityRules = new ConcurrentHashMap<>();
-
     private static final RulePropertyListener LISTENER = new RulePropertyListener();
+    private static Map<String, Set<AuthorityRule>> authorityRules = new ConcurrentHashMap<>();
     private static SentinelProperty<List<AuthorityRule>> currentProperty = new DynamicSentinelProperty<>();
+    private static AtomicLong postLock = new AtomicLong(System.currentTimeMillis());
 
     static {
         currentProperty.addListener(LISTENER);
@@ -66,7 +71,10 @@ public final class AuthorityRuleManager {
      * @param rules list of authority rules
      */
     public static void loadRules(List<AuthorityRule> rules) {
-        currentProperty.updateValue(rules);
+        postLock.updateAndGet(fn -> {
+            currentProperty.updateValue(rules);
+            return System.currentTimeMillis();
+        });
     }
 
     public static boolean hasConfig(String resource) {
@@ -89,6 +97,69 @@ public final class AuthorityRuleManager {
         return rules;
     }
 
+    /**
+     * append {@link AuthorityRule}s, former rules will be reserve.
+     * same resource name and limitapp will be replaced
+     *
+     * @param authorityRules authorityRules to be append or replace
+     */
+    public static boolean appendAndReplaceRules(List<AuthorityRule> authorityRules) {
+        List<AuthorityRule> tmp = authorityRules.stream()
+                .filter(AuthorityRuleManager::isValidRule)
+                .collect(Collectors.toList());
+        if (tmp.isEmpty()) {
+            return true;
+        }
+        Supplier<List<AuthorityRule>> supplier = () -> {
+            List<AuthorityRule> oldRules = getRules();
+            //remove all rule which resource was same
+            oldRules.removeIf(item -> tmp.stream().anyMatch(finder -> finder.getResource().equals(item.getResource())));
+            //append and replace
+            oldRules.addAll(tmp);
+            loadRules(oldRules);
+            return oldRules;
+        };
+        synchronized (AuthorityRuleManager.class) {
+            return atomicUpdate(postLock, supplier);
+        }
+
+
+    }
+
+    /**
+     * delete {@link AuthorityRule}s which resource name and limit app was same,
+     * other rules will reserve
+     * will be reserve.
+     *
+     * @param authorityRules authorityRules to be removed
+     */
+    public static boolean deleteRules(List<AuthorityRule> authorityRules) {
+        List<AuthorityRule> tmp = authorityRules.stream()
+                .filter(AuthorityRuleManager::isValidRule)
+                .collect(Collectors.toList());
+        if (tmp.isEmpty()) {
+            return true;
+        }
+        Supplier<List<AuthorityRule>> supplier = () -> {
+            List<AuthorityRule> oldRules = getRules();
+            //remove all rule which resource was same
+            oldRules.removeIf(item -> tmp.stream().anyMatch(finder -> finder.getResource().equals(item.getResource())));
+            loadRules(oldRules);
+            return oldRules;
+        };
+        synchronized (AuthorityRuleManager.class) {
+            return atomicUpdate(postLock, supplier);
+        }
+    }
+
+    static Map<String, Set<AuthorityRule>> getAuthorityRules() {
+        return authorityRules;
+    }
+
+    public static boolean isValidRule(AuthorityRule rule) {
+        return rule != null && !StringUtil.isBlank(rule.getResource()) && rule.getStrategy() >= 0 && StringUtil.isNotBlank(rule.getLimitApp());
+    }
+
     private static class RulePropertyListener implements PropertyListener<List<AuthorityRule>> {
 
         @Override
@@ -101,7 +172,7 @@ public final class AuthorityRuleManager {
         @Override
         public synchronized void configUpdate(List<AuthorityRule> conf) {
             authorityRules = loadAuthorityConf(conf);
-            
+
             RecordLog.info("[AuthorityRuleManager] Authority rules received: {}", authorityRules);
         }
 
@@ -138,14 +209,5 @@ public final class AuthorityRuleManager {
             return newRuleMap;
         }
 
-    }
-
-    static Map<String, Set<AuthorityRule>> getAuthorityRules() {
-        return authorityRules;
-    }
-
-    public static boolean isValidRule(AuthorityRule rule) {
-        return rule != null && !StringUtil.isBlank(rule.getResource())
-            && rule.getStrategy() >= 0 && StringUtil.isNotBlank(rule.getLimitApp());
     }
 }
