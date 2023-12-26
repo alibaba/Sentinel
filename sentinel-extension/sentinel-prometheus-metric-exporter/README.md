@@ -49,6 +49,8 @@ scrape_configs:
   static_configs:
     - targets: ['localhost:20001']
 ```
+tips: the port needs to be the same as the value 
+in the configuration (csp.sentinel.prometheus.fetch.port)
 
 ## Params for exporter
 
