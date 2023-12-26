@@ -47,7 +47,7 @@ To use Sentinel Prometheus Exporter, you should add the following dependency:
 scrape_configs:
 - job_name: 'sentinelMetrics'
   static_configs:
-    - targets: ['localhost:20001']
+    - targets: ['localhost:9092']
 ```
 tips: the port needs to be the same as the value 
 in the configuration (csp.sentinel.prometheus.fetch.port)
@@ -58,7 +58,7 @@ you can set system params to control the exporter behavior
 
 ### 1.csp.sentinel.prometheus.fetch.port
 
-the port for prometheus exporter,default 20001
+the port for prometheus exporter,default 9092
 
 ### 2.csp.sentinel.prometheus.fetch.size
 

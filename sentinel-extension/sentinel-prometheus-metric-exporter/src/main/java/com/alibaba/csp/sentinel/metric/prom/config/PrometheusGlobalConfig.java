@@ -28,7 +28,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 public class PrometheusGlobalConfig {
 
     public static final String PROM_FETCH_PORT = "csp.sentinel.prometheus.fetch.port";
-    public static final String DEFAULT_PROM_FETCH_PORT = "20001";
+    public static final String DEFAULT_PROM_FETCH_PORT = "9092";
 
     public static final String PROM_FETCH_SIZE = "csp.sentinel.prometheus.fetch.size";
     public static final String DEFAULT_PROM_FETCH_SIZE = "1024";
