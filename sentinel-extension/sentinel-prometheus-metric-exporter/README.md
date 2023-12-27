@@ -51,7 +51,7 @@ scrape_configs:
 ```
 
 ```yaml
-Tips: the port needs to be the same as the value in the configuration (csp.sentinel.prometheus.fetch.port)
+Note: the port needs to be the same as the value in the configuration (csp.sentinel.prometheus.fetch.port)
 ```
 
 ## Params for exporter
