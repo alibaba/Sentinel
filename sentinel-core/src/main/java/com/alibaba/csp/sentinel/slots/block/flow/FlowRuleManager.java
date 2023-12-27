@@ -22,6 +22,7 @@ import com.alibaba.csp.sentinel.node.metric.MetricTimerListener;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
+import com.alibaba.csp.sentinel.slots.block.RuleManager;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
@@ -48,7 +49,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class FlowRuleManager {
 
-    private static volatile Map<String, List<FlowRule>> flowRules = new HashMap<>();
+    private static volatile RuleManager<FlowRule> flowRules = new RuleManager<>();
 
     private static final FlowPropertyListener LISTENER = new FlowPropertyListener();
     private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
@@ -105,11 +106,7 @@ public class FlowRuleManager {
      * @return a new copy of the rules.
      */
     public static List<FlowRule> getRules() {
-        List<FlowRule> rules = new ArrayList<FlowRule>();
-        for (Map.Entry<String, List<FlowRule>> entry : flowRules.entrySet()) {
-            rules.addAll(entry.getValue());
-        }
-        return rules;
+        return flowRules.getRules();
     }
 
     /**
@@ -121,12 +118,12 @@ public class FlowRuleManager {
         currentProperty.updateValue(rules);
     }
 
-    static Map<String, List<FlowRule>> getFlowRuleMap() {
-        return flowRules;
+    static List<FlowRule> getFlowRules(String resource) {
+        return flowRules.getRules(resource);
     }
 
     public static boolean hasConfig(String resource) {
-        return flowRules.containsKey(resource);
+        return flowRules.hasConfig(resource);
     }
 
     public static boolean isOtherOrigin(String origin, String resourceName) {
@@ -134,7 +131,7 @@ public class FlowRuleManager {
             return false;
         }
 
-        List<FlowRule> rules = flowRules.get(resourceName);
+        List<FlowRule> rules = flowRules.getRules(resourceName);
 
         if (rules != null) {
             for (FlowRule rule : rules) {
@@ -152,18 +149,14 @@ public class FlowRuleManager {
         @Override
         public synchronized void configUpdate(List<FlowRule> value) {
             Map<String, List<FlowRule>> rules = FlowRuleUtil.buildFlowRuleMap(value);
-            if (rules != null) {
-                flowRules = rules;
-            }
+            flowRules.updateRules(rules);
             RecordLog.info("[FlowRuleManager] Flow rules received: {}", rules);
         }
 
         @Override
         public synchronized void configLoad(List<FlowRule> conf) {
             Map<String, List<FlowRule>> rules = FlowRuleUtil.buildFlowRuleMap(conf);
-            if (rules != null) {
-                flowRules = rules;
-            }
+            flowRules.updateRules(rules);
             RecordLog.info("[FlowRuleManager] Flow rules loaded: {}", rules);
         }
     }
