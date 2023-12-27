@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.RuleManager;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
@@ -39,7 +40,7 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
  */
 public final class AuthorityRuleManager {
 
-    private static volatile Map<String, Set<AuthorityRule>> authorityRules = new ConcurrentHashMap<>();
+    private static volatile RuleManager<AuthorityRule> authorityRules = new RuleManager<>();
 
     private static final RulePropertyListener LISTENER = new RulePropertyListener();
     private static SentinelProperty<List<AuthorityRule>> currentProperty = new DynamicSentinelProperty<>();
@@ -70,7 +71,7 @@ public final class AuthorityRuleManager {
     }
 
     public static boolean hasConfig(String resource) {
-        return authorityRules.containsKey(resource);
+        return authorityRules.hasConfig(resource);
     }
 
     /**
@@ -79,34 +80,27 @@ public final class AuthorityRuleManager {
      * @return a new copy of the rules.
      */
     public static List<AuthorityRule> getRules() {
-        List<AuthorityRule> rules = new ArrayList<>();
-        if (authorityRules == null) {
-            return rules;
-        }
-        for (Map.Entry<String, Set<AuthorityRule>> entry : authorityRules.entrySet()) {
-            rules.addAll(entry.getValue());
-        }
-        return rules;
+        return authorityRules.getRules();
     }
 
     private static class RulePropertyListener implements PropertyListener<List<AuthorityRule>> {
 
         @Override
         public synchronized void configLoad(List<AuthorityRule> value) {
-            authorityRules = loadAuthorityConf(value);
+            authorityRules.updateRules(loadAuthorityConf(value));
 
             RecordLog.info("[AuthorityRuleManager] Authority rules loaded: {}", authorityRules);
         }
 
         @Override
         public synchronized void configUpdate(List<AuthorityRule> conf) {
-            authorityRules = loadAuthorityConf(conf);
-            
+            authorityRules.updateRules(loadAuthorityConf(conf));
+
             RecordLog.info("[AuthorityRuleManager] Authority rules received: {}", authorityRules);
         }
 
-        private Map<String, Set<AuthorityRule>> loadAuthorityConf(List<AuthorityRule> list) {
-            Map<String, Set<AuthorityRule>> newRuleMap = new ConcurrentHashMap<>();
+        private Map<String, List<AuthorityRule>> loadAuthorityConf(List<AuthorityRule> list) {
+            Map<String, List<AuthorityRule>> newRuleMap = new ConcurrentHashMap<>();
 
             if (list == null || list.isEmpty()) {
                 return newRuleMap;
@@ -123,10 +117,10 @@ public final class AuthorityRuleManager {
                 }
 
                 String identity = rule.getResource();
-                Set<AuthorityRule> ruleSet = newRuleMap.get(identity);
+                List<AuthorityRule> ruleSet = newRuleMap.get(identity);
                 // putIfAbsent
                 if (ruleSet == null) {
-                    ruleSet = new HashSet<>();
+                    ruleSet = new ArrayList<>();
                     ruleSet.add(rule);
                     newRuleMap.put(identity, ruleSet);
                 } else {
@@ -140,12 +134,12 @@ public final class AuthorityRuleManager {
 
     }
 
-    static Map<String, Set<AuthorityRule>> getAuthorityRules() {
-        return authorityRules;
+    static List<AuthorityRule> getRules(String resource) {
+        return authorityRules.getRules(resource);
     }
 
     public static boolean isValidRule(AuthorityRule rule) {
         return rule != null && !StringUtil.isBlank(rule.getResource())
-            && rule.getStrategy() >= 0 && StringUtil.isNotBlank(rule.getLimitApp());
+                && rule.getStrategy() >= 0 && StringUtil.isNotBlank(rule.getLimitApp()) && RuleManager.checkRegexResourceField(rule);
     }
 }

@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.slots.block.flow;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.ClusterRuleConstant;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.RuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.controller.DefaultController;
 import com.alibaba.csp.sentinel.slots.block.flow.controller.ThrottlingController;
 import com.alibaba.csp.sentinel.slots.block.flow.controller.WarmUpController;
@@ -170,6 +171,9 @@ public final class FlowRuleUtil {
         if (!baseValid) {
             return false;
         }
+        if (!checkRegexField(rule)) {
+            return false;
+        }
         if (rule.getGrade() == RuleConstant.FLOW_GRADE_QPS) {
             // Check strategy and control (shaping) behavior.
             return checkClusterField(rule) && checkStrategyField(rule) && checkControlBehaviorField(rule);
@@ -233,6 +237,16 @@ public final class FlowRuleUtil {
     private static boolean checkStrategyField(/*@NonNull*/ FlowRule rule) {
         if (rule.getStrategy() == RuleConstant.STRATEGY_RELATE || rule.getStrategy() == RuleConstant.STRATEGY_CHAIN) {
             return StringUtil.isNotBlank(rule.getRefResource());
+        }
+        return true;
+    }
+
+    private static boolean checkRegexField(FlowRule rule) {
+        if (!RuleManager.checkRegexResourceField(rule)) {
+            return false;
+        }
+        if (rule.isRegex()) {
+            return !rule.isClusterMode() && rule.getControlBehavior() == RuleConstant.CONTROL_BEHAVIOR_DEFAULT;
         }
         return true;
     }
