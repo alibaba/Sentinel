@@ -26,7 +26,7 @@ import java.util.Objects;
 public abstract class AbstractRule implements Rule {
 
     /**
-     * rule id.
+     * Rule id
      */
     private Long id;
 
@@ -55,9 +55,8 @@ public abstract class AbstractRule implements Rule {
         return id;
     }
 
-    public AbstractRule setId(Long id) {
+    public void setId(Long id) {
         this.id = id;
-        return this;
     }
 
     @Override

@@ -17,6 +17,7 @@
         <module>sentinel-demo-dynamic-file-rule</module>
         <module>sentinel-demo-rocketmq</module>
         <module>sentinel-demo-dubbo</module>
+        <module>sentinel-demo-redis-datasource</module>
         <module>sentinel-demo-nacos-datasource</module>
         <module>sentinel-demo-zookeeper-datasource</module>
         <module>sentinel-demo-apollo-datasource</module>

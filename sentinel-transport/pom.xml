@@ -13,9 +13,9 @@
 
     <modules>
         <module>sentinel-transport-common</module>
-
         <module>sentinel-transport-simple-http</module>
         <module>sentinel-transport-netty-http</module>
         <module>sentinel-transport-spring-mvc</module>
+        <module>sentinel-transport-client</module>
     </modules>
 </project>

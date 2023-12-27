@@ -46,6 +46,14 @@ java -Dserver.port=8080 \
 - `-Dsentinel.dashboard.auth.password=123456` 用于指定控制台的登录密码为 `123456`；如果省略这两个参数，默认用户和密码均为 `sentinel`；
 - `-Dserver.servlet.session.timeout=7200` 用于指定 Spring Boot 服务端 session 的过期时间，如 `7200` 表示 7200 秒；`60m` 表示 60 分钟，默认为 30 分钟；
 
+从 Sentinel 1.8.0 开始，Sentinel 控制台支持规则持久化配置，用户可以通过如下参数进行配置：
+
+- `-Drule.repository.type=xxx` xxx用于指定规则存储的类型，目前支持的类型有：memory、redis、naocs、zookeeper、apollo，不指定默认为memory。
+
+除了memory，另外四种存储可通过`xxx.properties`配置文件对存储的相关参数进行配置，配置文件与 sentinel-dashboard.jar 在同级目录。
+
+注：如果存储跟 sentinel-dashboard.jar 在同一台机器且全部使用默认配置，可省略`xxx.properties`文件。
+
 ## 2. 客户端接入
 
 选择合适的方式接入 Sentinel，然后在应用启动时加入 JVM 参数 `-Dcsp.sentinel.dashboard.server=consoleIp:port` 指定控制台地址和端口。

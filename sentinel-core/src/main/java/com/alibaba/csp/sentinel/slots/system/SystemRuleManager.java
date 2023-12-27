@@ -73,6 +73,7 @@ public final class SystemRuleManager {
     private static volatile double qps = Double.MAX_VALUE;
     private static volatile long maxRt = Long.MAX_VALUE;
     private static volatile long maxThread = Long.MAX_VALUE;
+
     /**
      * mark whether the threshold are set by user.
      */
@@ -81,6 +82,12 @@ public final class SystemRuleManager {
     private static volatile boolean qpsIsSet = false;
     private static volatile boolean maxRtIsSet = false;
     private static volatile boolean maxThreadIsSet = false;
+
+    private static Long highestSystemLoadId = null;
+    private static Long highestCpuUsageId = null;
+    private static Long qpsId = null;
+    private static Long maxRtId = null;
+    private static Long maxThreadId = null;
 
     private static AtomicBoolean checkSystemStatus = new AtomicBoolean(false);
 
@@ -129,7 +136,6 @@ public final class SystemRuleManager {
      * @return a new copy of the rules.
      */
     public static List<SystemRule> getRules() {
-
         List<SystemRule> result = new ArrayList<SystemRule>();
         if (!checkSystemStatus.get()) {
             return result;
@@ -138,30 +144,35 @@ public final class SystemRuleManager {
         if (highestSystemLoadIsSet) {
             SystemRule loadRule = new SystemRule();
             loadRule.setHighestSystemLoad(highestSystemLoad);
+            loadRule.setId(highestSystemLoadId);
             result.add(loadRule);
         }
 
         if (highestCpuUsageIsSet) {
-            SystemRule rule = new SystemRule();
-            rule.setHighestCpuUsage(highestCpuUsage);
-            result.add(rule);
+            SystemRule usageRule = new SystemRule();
+            usageRule.setHighestCpuUsage(highestCpuUsage);
+            usageRule.setId(highestCpuUsageId);
+            result.add(usageRule);
         }
 
         if (maxRtIsSet) {
             SystemRule rtRule = new SystemRule();
             rtRule.setAvgRt(maxRt);
+            rtRule.setId(maxRtId);
             result.add(rtRule);
         }
 
         if (maxThreadIsSet) {
             SystemRule threadRule = new SystemRule();
             threadRule.setMaxThread(maxThread);
+            threadRule.setId(maxThreadId);
             result.add(threadRule);
         }
 
         if (qpsIsSet) {
             SystemRule qpsRule = new SystemRule();
             qpsRule.setQps(qps);
+            qpsRule.setId(qpsId);
             result.add(qpsRule);
         }
 
@@ -246,6 +257,7 @@ public final class SystemRuleManager {
         if (rule.getHighestSystemLoad() >= 0) {
             highestSystemLoad = Math.min(highestSystemLoad, rule.getHighestSystemLoad());
             highestSystemLoadIsSet = true;
+            highestSystemLoadId = rule.getId();
             checkStatus = true;
         }
 
@@ -256,6 +268,7 @@ public final class SystemRuleManager {
             } else {
                 highestCpuUsage = Math.min(highestCpuUsage, rule.getHighestCpuUsage());
                 highestCpuUsageIsSet = true;
+                highestCpuUsageId = rule.getId();
                 checkStatus = true;
             }
         }
@@ -263,22 +276,24 @@ public final class SystemRuleManager {
         if (rule.getAvgRt() >= 0) {
             maxRt = Math.min(maxRt, rule.getAvgRt());
             maxRtIsSet = true;
+            maxRtId = rule.getId();
             checkStatus = true;
         }
         if (rule.getMaxThread() >= 0) {
             maxThread = Math.min(maxThread, rule.getMaxThread());
             maxThreadIsSet = true;
+            maxThreadId = rule.getId();
             checkStatus = true;
         }
 
         if (rule.getQps() >= 0) {
             qps = Math.min(qps, rule.getQps());
             qpsIsSet = true;
+            qpsId = rule.getId();
             checkStatus = true;
         }
 
         checkSystemStatus.set(checkStatus);
-
     }
 
     /**
@@ -345,5 +360,48 @@ public final class SystemRuleManager {
 
     public static double getCurrentCpuUsage() {
         return statusListener.getCpuUsage();
+    }
+
+    private static class MachineVo {
+        private Long id;
+        private String app;
+        private String ip;
+        private Integer port;
+
+        public MachineVo() {
+
+        }
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public String getApp() {
+            return app;
+        }
+
+        public void setApp(String app) {
+            this.app = app;
+        }
+
+        public String getIp() {
+            return ip;
+        }
+
+        public void setIp(String ip) {
+            this.ip = ip;
+        }
+
+        public Integer getPort() {
+            return port;
+        }
+
+        public void setPort(Integer port) {
+            this.port = port;
+        }
     }
 }
