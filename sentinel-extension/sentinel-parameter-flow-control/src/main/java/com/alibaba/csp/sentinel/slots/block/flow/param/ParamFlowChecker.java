@@ -15,16 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow.param;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-
 import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
 import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
@@ -36,6 +26,15 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
 import com.alibaba.csp.sentinel.util.TimeUtil;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Rule checker for parameter flow control.
@@ -153,7 +152,8 @@ public final class ParamFlowChecker {
         while (true) {
             long currentTime = TimeUtil.currentTimeMillis();
 
-            AtomicLong lastAddTokenTime = timeCounters.putIfAbsent(value, new AtomicLong(currentTime));
+            long startTime = currentTime - currentTime % 1000;
+            AtomicLong lastAddTokenTime = timeCounters.putIfAbsent(value, new AtomicLong(startTime));
             if (lastAddTokenTime == null) {
                 // Token never added, just replenish the tokens and consume {@code acquireCount} immediately.
                 tokenCounters.putIfAbsent(value, new AtomicLong(maxCount - acquireCount));
@@ -167,7 +167,7 @@ public final class ParamFlowChecker {
                 AtomicLong oldQps = tokenCounters.putIfAbsent(value, new AtomicLong(maxCount - acquireCount));
                 if (oldQps == null) {
                     // Might not be accurate here.
-                    lastAddTokenTime.set(currentTime);
+                    lastAddTokenTime.set(startTime);
                     return true;
                 } else {
                     long restQps = oldQps.get();
@@ -179,7 +179,7 @@ public final class ParamFlowChecker {
                         return false;
                     }
                     if (oldQps.compareAndSet(restQps, newQps)) {
-                        lastAddTokenTime.set(currentTime);
+                        lastAddTokenTime.set(startTime);
                         return true;
                     }
                     Thread.yield();
@@ -223,9 +223,14 @@ public final class ParamFlowChecker {
         long costTime = Math.round(1.0 * 1000 * acquireCount * rule.getDurationInSec() / tokenCount);
         while (true) {
             long currentTime = TimeUtil.currentTimeMillis();
-            AtomicLong timeRecorder = timeRecorderMap.putIfAbsent(value, new AtomicLong(currentTime));
+            AtomicLong timeRecorder = timeRecorderMap.get(value);
             if (timeRecorder == null) {
-                return true;
+                // 类似双重检测锁
+                long flagTime = currentFlagTime(currentTime, costTime);
+                timeRecorder = timeRecorderMap.putIfAbsent(value, new AtomicLong(flagTime));
+                if (timeRecorder == null) {
+                    return true;
+                }
             }
             //AtomicLong timeRecorder = timeRecorderMap.get(value);
             long lastPassTime = timeRecorder.get();
@@ -251,6 +256,33 @@ public final class ParamFlowChecker {
                 return false;
             }
         }
+    }
+
+    /**
+     * 计算某个资源在首次访问时，将被计在哪一个时刻的毫秒值上面。
+     * 假如：允许1 秒匀速通过5 个，则每两个之间的间隔时间为200 ms
+     * 该资源首次请求落在了某秒的888 ms 这个时刻上面，则将这一次计在800ms 时刻
+     * 下一次通过的时刻将会在1000 ms 处
+     * 再下一次通过的时刻将会在1200 ms 处
+     * 依此类推
+     *
+     * <pre>
+     *                            REQ1 REQ2
+     * ||_______|_______|_______|_______|_______||___
+     * 200     400     600     800     1000    1200  timestamp
+     *                             ^
+     *  1st pass                time=888
+     *                                  ^
+     *  2st pass                     time=1000
+     *
+     * @param currentTime current timestamp
+     * @param costTime cost time
+     * @return timestamp
+     */
+    private static long currentFlagTime(long currentTime, long costTime) {
+        long secondMs = currentTime % 1000;
+        long costMs = secondMs - secondMs % costTime;
+        return currentTime - secondMs + costMs;
     }
 
     private static ParameterMetric getParameterMetric(ResourceWrapper resourceWrapper) {

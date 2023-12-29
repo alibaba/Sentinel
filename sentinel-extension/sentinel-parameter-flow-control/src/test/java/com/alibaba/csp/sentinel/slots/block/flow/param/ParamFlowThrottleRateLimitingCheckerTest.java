@@ -15,22 +15,21 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow.param;
 
-import java.util.Random;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
 import com.alibaba.csp.sentinel.util.TimeUtil;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.Random;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.Assert.assertEquals;
 
@@ -60,7 +59,14 @@ public class ParamFlowThrottleRateLimitingCheckerTest {
         metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 
         long currentTime = TimeUtil.currentTimeMillis();
-        long endTime = currentTime + rule.getDurationInSec() * 1000;
+        long surplusMs = 1000 - currentTime % 1000 + 10;
+        // 调整测试开始时刻为整秒精度(yyyy-MM-dd HH:mm:ss.000)，但由于精度问题，我们多加10 ms，
+        System.out.println("testSingleValueThrottleCheckQps: sleep for " + surplusMs + " milli seconds");
+        TimeUnit.MILLISECONDS.sleep(surplusMs);
+
+        currentTime = TimeUtil.currentTimeMillis();
+        long startTime = currentTime - currentTime % 1000;
+        long endTime = startTime + rule.getDurationInSec() * 1000;
         int successCount = 0;
         while (currentTime <= endTime - 10) {
             if (ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA)) {
@@ -70,11 +76,16 @@ public class ParamFlowThrottleRateLimitingCheckerTest {
         }
         assertEquals(successCount, threshold);
 
-        System.out.println("testSingleValueThrottleCheckQps: sleep for 3 seconds");
-        TimeUnit.SECONDS.sleep(3);
+        currentTime = TimeUtil.currentTimeMillis();
+        surplusMs = 1000 - currentTime % 1000;
+        // 调整测试开始时刻为整秒精度(yyyy-MM-dd HH:mm:ss.000)，但由于精度问题，我们多加10 ms，
+        long sleepMilliSecond = 3_000 + surplusMs + 10;
+        System.out.println("testSingleValueThrottleCheckQps: sleep for " + sleepMilliSecond + " milli seconds");
+        TimeUnit.MILLISECONDS.sleep(sleepMilliSecond);
 
         currentTime = TimeUtil.currentTimeMillis();
-        endTime = currentTime + rule.getDurationInSec() * 1000;
+        startTime = currentTime - currentTime % 1000;
+        endTime = startTime + rule.getDurationInSec() * 1000;
         successCount = 0;
         while (currentTime <= endTime - 10) {
             if (ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueA)) {

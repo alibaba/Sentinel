@@ -31,7 +31,7 @@ public final class EmbeddedClusterTokenServerProvider {
     }
 
     private static void resolveInstance() {
-        EmbeddedClusterTokenServer s = SpiLoader.of(EmbeddedClusterTokenServer.class).loadFirstInstance();
+        EmbeddedClusterTokenServer s = SpiLoader.of(EmbeddedClusterTokenServer.class).loadHighestPriorityInstance();
         if (s == null) {
             RecordLog.warn("[EmbeddedClusterTokenServerProvider] No existing cluster token server, cluster server mode will not be activated");
         } else {

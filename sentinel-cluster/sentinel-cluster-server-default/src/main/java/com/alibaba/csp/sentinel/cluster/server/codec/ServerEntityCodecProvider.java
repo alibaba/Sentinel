@@ -34,7 +34,7 @@ public final class ServerEntityCodecProvider {
     }
 
     private static void resolveInstance() {
-        ResponseEntityWriter writer = SpiLoader.of(ResponseEntityWriter.class).loadFirstInstance();
+        ResponseEntityWriter writer = SpiLoader.of(ResponseEntityWriter.class).loadHighestPriorityInstance();
         if (writer == null) {
             RecordLog.warn("[ServerEntityCodecProvider] No existing response entity writer, resolve failed");
         } else {
@@ -42,7 +42,7 @@ public final class ServerEntityCodecProvider {
             RecordLog.info("[ServerEntityCodecProvider] Response entity writer resolved: {}",
                 responseEntityWriter.getClass().getCanonicalName());
         }
-        RequestEntityDecoder decoder = SpiLoader.of(RequestEntityDecoder.class).loadFirstInstance();
+        RequestEntityDecoder decoder = SpiLoader.of(RequestEntityDecoder.class).loadHighestPriorityInstance();
         if (decoder == null) {
             RecordLog.warn("[ServerEntityCodecProvider] No existing request entity decoder, resolve failed");
         } else {
