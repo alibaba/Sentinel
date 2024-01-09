@@ -173,12 +173,12 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
         if (entry == null) {
             return;
         }
-        if (ex == null) {
-            HttpServletRequest httpServletRequest = getHttpServletRequest();
-            if (httpServletRequest == null) {
-                return;
-            }
-            ex = (Exception) httpServletRequest.getAttribute(BaseWebMvcConfig.REQUEST_REF_EXCEPTION_NAME);
+        HttpServletRequest request = getHttpServletRequest();
+        if (request != null
+                && ex == null
+                && increaseReference(request, this.baseWebMvcConfig.getRequestRefName() + ":" + BaseWebMvcConfig.REQUEST_REF_EXCEPTION_NAME, 1) == 1) {
+            //Each interceptor can only catch exception once
+            ex = (Exception) request.getAttribute(BaseWebMvcConfig.REQUEST_REF_EXCEPTION_NAME);
         }
 
         if (ex != null) {

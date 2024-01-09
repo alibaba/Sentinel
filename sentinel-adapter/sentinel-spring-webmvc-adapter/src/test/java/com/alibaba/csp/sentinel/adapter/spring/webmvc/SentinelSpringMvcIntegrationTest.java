@@ -109,16 +109,39 @@ public class SentinelSpringMvcIntegrationTest {
     @Test
     public void testRuntimeException() throws Exception {
         String url = "/runtimeException";
-
-        configureExceptionRulesFor(url, 4.2, null);
-        int repeat = 5;
-
+        configureExceptionRulesFor(url, 3, null);
+        int repeat = 3;
         for (int i = 0; i < repeat; i++) {
             this.mvc.perform(get(url))
                     .andExpect(status().isOk())
                     .andExpect(content().string(ResultWrapper.error().toJsonString()));
             ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
+            assertNotNull(cn);
+            assertEquals(i + 1, cn.passQps(), 0.01);
+        }
 
+        // This will be blocked and response json.
+        this.mvc.perform(get(url))
+                .andExpect(status().isOk())
+                .andExpect(content().string(ResultWrapper.blocked().toJsonString()));
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
+        assertNotNull(cn);
+        assertEquals(repeat, cn.passQps(), 0.01);
+        assertEquals(1, cn.blockRequest(), 1);
+    }
+
+
+    @Test
+    public void testExceptionPerception() throws Exception {
+        String url = "/bizException";
+        configureExceptionDegradeRulesFor(url, 2.6, null);
+        int repeat = 3;
+        for (int i = 0; i < repeat; i++) {
+            this.mvc.perform(get(url))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(new ResultWrapper(-1, "Biz error").toJsonString()));
+
+            ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
             assertNotNull(cn);
             assertEquals(i + 1, cn.passQps(), 0.01);
         }
@@ -144,10 +167,23 @@ public class SentinelSpringMvcIntegrationTest {
         FlowRuleManager.loadRules(Collections.singletonList(rule));
     }
 
-    private void configureExceptionRulesFor(String resource, double count, String limitApp) {
+    private void configureExceptionRulesFor(String resource, int count, String limitApp) {
+        FlowRule rule = new FlowRule()
+                .setCount(count)
+                .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO);
+        rule.setResource(resource);
+        if (StringUtil.isNotBlank(limitApp)) {
+            rule.setLimitApp(limitApp);
+        }
+        FlowRuleManager.loadRules(Collections.singletonList(rule));
+    }
+
+    private void configureExceptionDegradeRulesFor(String resource, double count, String limitApp) {
         DegradeRule rule = new DegradeRule()
                 .setCount(count)
-                .setTimeWindow(1)
+                .setStatIntervalMs(1000)
+                .setMinRequestAmount(1)
+                .setTimeWindow(5)
                 .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT);
         rule.setResource(resource);
         if (StringUtil.isNotBlank(limitApp)) {
