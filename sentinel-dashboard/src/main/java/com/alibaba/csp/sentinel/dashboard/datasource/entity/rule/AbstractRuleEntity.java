@@ -37,7 +37,7 @@ public abstract class AbstractRuleEntity<T extends AbstractRule> implements Rule
     /**
      * Whether to match resource names according to regular rules
      */
-    private boolean regex = true;
+    private boolean regex = false;
 
     private Date gmtCreate;
     private Date gmtModified;

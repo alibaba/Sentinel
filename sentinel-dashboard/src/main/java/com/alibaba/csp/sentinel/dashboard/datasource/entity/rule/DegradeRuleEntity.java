@@ -41,7 +41,7 @@ public class DegradeRuleEntity implements RuleEntity {
     /**
      * Whether to match resource names according to regular rules
      */
-    private boolean regex = true;
+    private boolean regex = false;
 
     private Date gmtCreate;
     private Date gmtModified;
