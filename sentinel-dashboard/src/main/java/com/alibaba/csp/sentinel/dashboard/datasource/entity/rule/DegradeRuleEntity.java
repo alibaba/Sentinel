@@ -38,6 +38,10 @@ public class DegradeRuleEntity implements RuleEntity {
     private Integer minRequestAmount;
     private Double slowRatioThreshold;
     private Integer statIntervalMs;
+    /**
+     * Whether to match resource names according to regular rules
+     */
+    private boolean regex = true;
 
     private Date gmtCreate;
     private Date gmtModified;
@@ -55,6 +59,7 @@ public class DegradeRuleEntity implements RuleEntity {
         entity.setMinRequestAmount(rule.getMinRequestAmount());
         entity.setSlowRatioThreshold(rule.getSlowRatioThreshold());
         entity.setStatIntervalMs(rule.getStatIntervalMs());
+        entity.setRegex(rule.isRegex());
         return entity;
     }
 
@@ -162,6 +167,14 @@ public class DegradeRuleEntity implements RuleEntity {
         return this;
     }
 
+    public boolean isRegex() {
+        return regex;
+    }
+
+    public void setRegex(boolean regex) {
+        this.regex = regex;
+    }
+
     @Override
     public Date getGmtCreate() {
         return gmtCreate;
@@ -196,6 +209,7 @@ public class DegradeRuleEntity implements RuleEntity {
         if (statIntervalMs != null) {
             rule.setStatIntervalMs(statIntervalMs);
         }
+        rule.setRegex(regex);
 
         return rule;
     }

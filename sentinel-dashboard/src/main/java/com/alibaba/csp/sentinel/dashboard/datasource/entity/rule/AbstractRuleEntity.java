@@ -34,6 +34,11 @@ public abstract class AbstractRuleEntity<T extends AbstractRule> implements Rule
 
     protected T rule;
 
+    /**
+     * Whether to match resource names according to regular rules
+     */
+    private boolean regex = true;
+
     private Date gmtCreate;
     private Date gmtModified;
 
@@ -103,6 +108,14 @@ public abstract class AbstractRuleEntity<T extends AbstractRule> implements Rule
     public AbstractRuleEntity<T> setGmtModified(Date gmtModified) {
         this.gmtModified = gmtModified;
         return this;
+    }
+
+    public boolean isRegex() {
+        return regex;
+    }
+
+    public void setRegex(boolean regex) {
+        this.regex = regex;
     }
 
     @Override
