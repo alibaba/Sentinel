@@ -114,8 +114,9 @@ public abstract class AbstractRuleEntity<T extends AbstractRule> implements Rule
         return regex;
     }
 
-    public void setRegex(boolean regex) {
+    public AbstractRuleEntity<T> setRegex(boolean regex) {
         this.regex = regex;
+        return this;
     }
 
     @Override
