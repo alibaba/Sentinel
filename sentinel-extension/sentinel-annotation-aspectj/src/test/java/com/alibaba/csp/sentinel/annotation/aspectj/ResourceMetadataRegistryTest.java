@@ -15,7 +15,6 @@
  */
 package com.alibaba.csp.sentinel.annotation.aspectj;
 
-
 import com.alibaba.csp.sentinel.annotation.aspectj.integration.service.FooService;
 import org.junit.After;
 import org.junit.Before;

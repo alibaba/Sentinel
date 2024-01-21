@@ -16,11 +16,8 @@
 package com.alibaba.csp.sentinel.annotation.cdi.interceptor;
 
 import com.alibaba.csp.sentinel.EntryType;
-import com.alibaba.csp.sentinel.fallback.SentinelAnnotationGlobalFallback;
-
 import javax.enterprise.util.Nonbinding;
 import javax.interceptor.InterceptorBinding;
-
 import java.lang.annotation.*;
 
 /**
