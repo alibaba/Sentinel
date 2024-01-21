@@ -86,7 +86,7 @@ public class CtSph implements Sph {
             return asyncEntryWithNoChain(resourceWrapper, context);
         }
 
-        AsyncEntry asyncEntry = new AsyncEntry(resourceWrapper, chain, context);
+        AsyncEntry asyncEntry = new AsyncEntry(resourceWrapper, chain, context, count, args);
         try {
             chain.entry(context, resourceWrapper, null, count, prioritized, args);
             // Initiate the async context only when the entry successfully passed the slot chain.
@@ -143,7 +143,7 @@ public class CtSph implements Sph {
             return new CtEntry(resourceWrapper, null, context);
         }
 
-        Entry e = new CtEntry(resourceWrapper, chain, context);
+        Entry e = new CtEntry(resourceWrapper, chain, context, count, args);
         try {
             chain.entry(context, resourceWrapper, null, count, prioritized, args);
         } catch (BlockException e1) {

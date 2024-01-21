@@ -24,6 +24,7 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
+import com.alibaba.csp.sentinel.slots.block.RuleManager;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
@@ -35,8 +36,7 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
  */
 public final class ParamFlowRuleManager {
 
-    private static final Map<String, List<ParamFlowRule>> PARAM_FLOW_RULES = new ConcurrentHashMap<>();
-
+    private static final RuleManager<ParamFlowRule> PARAM_FLOW_RULES = new RuleManager<>();
     private final static RulePropertyListener PROPERTY_LISTENER = new RulePropertyListener();
     private static SentinelProperty<List<ParamFlowRule>> currentProperty = new DynamicSentinelProperty<>();
 
@@ -75,12 +75,11 @@ public final class ParamFlowRuleManager {
     }
 
     public static List<ParamFlowRule> getRulesOfResource(String resourceName) {
-        return new ArrayList<>(PARAM_FLOW_RULES.get(resourceName));
+        return new ArrayList<>(PARAM_FLOW_RULES.getRules(resourceName));
     }
 
     public static boolean hasRules(String resourceName) {
-        List<ParamFlowRule> rules = PARAM_FLOW_RULES.get(resourceName);
-        return rules != null && !rules.isEmpty();
+        return PARAM_FLOW_RULES.hasConfig(resourceName);
     }
 
     /**
@@ -89,11 +88,7 @@ public final class ParamFlowRuleManager {
      * @return a new copy of the rules.
      */
     public static List<ParamFlowRule> getRules() {
-        List<ParamFlowRule> rules = new ArrayList<>();
-        for (Map.Entry<String, List<ParamFlowRule>> entry : PARAM_FLOW_RULES.entrySet()) {
-            rules.addAll(entry.getValue());
-        }
-        return rules;
+        return PARAM_FLOW_RULES.getRules();
     }
 
     static class RulePropertyListener implements PropertyListener<List<ParamFlowRule>> {
@@ -101,20 +96,14 @@ public final class ParamFlowRuleManager {
         @Override
         public void configUpdate(List<ParamFlowRule> list) {
             Map<String, List<ParamFlowRule>> rules = aggregateAndPrepareParamRules(list);
-            if (rules != null) {
-                PARAM_FLOW_RULES.clear();
-                PARAM_FLOW_RULES.putAll(rules);
-            }
+            PARAM_FLOW_RULES.updateRules(rules);
             RecordLog.info("[ParamFlowRuleManager] Parameter flow rules received: {}", PARAM_FLOW_RULES);
         }
 
         @Override
         public void configLoad(List<ParamFlowRule> list) {
             Map<String, List<ParamFlowRule>> rules = aggregateAndPrepareParamRules(list);
-            if (rules != null) {
-                PARAM_FLOW_RULES.clear();
-                PARAM_FLOW_RULES.putAll(rules);
-            }
+            PARAM_FLOW_RULES.updateRules(rules);
             RecordLog.info("[ParamFlowRuleManager] Parameter flow rules received: {}", PARAM_FLOW_RULES);
         }
 
@@ -128,7 +117,7 @@ public final class ParamFlowRuleManager {
             }
 
             // Clear unused parameter metrics.
-            for (Map.Entry<String, List<ParamFlowRule>> entry : PARAM_FLOW_RULES.entrySet()) {
+            for (Map.Entry<String, List<ParamFlowRule>> entry : PARAM_FLOW_RULES.getOriginalRules().entrySet()) {
                 String resource = entry.getKey();
                 if (!newRuleMap.containsKey(resource)) {
                     ParameterMetricStorage.clearParamMetricForResource(resource);
