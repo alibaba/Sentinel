@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-parent</artifactId>
-        <version>2.0.0-SNAPSHOT</version>
+        <version>2.0.0-alpha2-SNAPSHOT</version>
     </parent>
     <artifactId>sentinel-extension</artifactId>
     <packaging>pom</packaging>
@@ -25,7 +25,9 @@
         <module>sentinel-datasource-eureka</module>
         <module>sentinel-annotation-cdi-interceptor</module>
         <module>sentinel-metric-exporter</module>
+        <module>sentinel-prometheus-metric-exporter</module>
         <module>sentinel-datasource-opensergo</module>
+        <module>sentinel-datasource-xds</module>
     </modules>
 
 </project>

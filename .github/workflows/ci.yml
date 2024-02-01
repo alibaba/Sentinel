@@ -8,22 +8,23 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         java: [8, 11]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Java
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
           java-version: ${{ matrix.java }}
+          distribution: 'temurin'
           architecture: x64
 
       - name: Test with Maven
-        run: mvn test
+        run: mvn --batch-mode test
 
       - name: Build with Maven
         run: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -DminimumPriority=1

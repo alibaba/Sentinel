@@ -5,14 +5,15 @@
     <parent>
         <artifactId>sentinel-adapter</artifactId>
         <groupId>com.alibaba.csp</groupId>
-        <version>2.0.0-SNAPSHOT</version>
+        <version>2.0.0-alpha2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>sentinel-grpc-adapter</artifactId>
     <packaging>jar</packaging>
 
     <properties>
-        <grpc.version>1.30.2</grpc.version>
+        <protobuf.version>3.21.9</protobuf.version>
+        <grpc.version>1.51.0</grpc.version>
     </properties>
 
     <dependencies>
@@ -79,7 +80,7 @@
                 <artifactId>protobuf-maven-plugin</artifactId>
                 <version>0.5.1</version>
                 <configuration>
-                    <protocArtifact>com.google.protobuf:protoc:3.5.1-1:exe:${os.detected.classifier}</protocArtifact>
+                    <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
                     <pluginId>grpc-java</pluginId>
                     <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}
                     </pluginArtifact>
