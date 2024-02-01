@@ -15,8 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow;
 
-import java.util.Collections;
-
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.context.ContextTestUtil;
@@ -28,11 +26,15 @@ import com.alibaba.csp.sentinel.util.function.Function;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InOrder;
+
+import java.util.Collections;
 
 import static org.mockito.Mockito.*;
 
 /**
  * @author Eric Zhao
+ * @author cdfive
  */
 public class FlowSlotTest {
 
@@ -46,6 +48,58 @@ public class FlowSlotTest {
     public void tearDown() {
         ContextTestUtil.cleanUpContext();
         FlowRuleManager.loadRules(null);
+    }
+
+    @Test
+    public void testFireEntry() throws Throwable {
+        FlowSlot slot = mock(FlowSlot.class);
+
+        Context context = mock(Context.class);
+        ResourceWrapper resourceWrapper = mock(ResourceWrapper.class);
+        DefaultNode node = mock(DefaultNode.class);
+
+        doCallRealMethod().when(slot).entry(context, resourceWrapper, node, 1, false);
+        slot.entry(context, resourceWrapper, node, 1, false);
+
+        verify(slot).entry(context, resourceWrapper, node, 1, false);
+        verify(slot).checkFlow(resourceWrapper, context, node, 1, false);
+        // Verify fireEntry method has been called, and only once
+        verify(slot).fireEntry(context, resourceWrapper, node, 1, false);
+        verifyNoMoreInteractions(slot);
+    }
+
+    @Test
+    public void testFireExit() throws Throwable {
+        FlowSlot slot = mock(FlowSlot.class);
+
+        Context context = mock(Context.class);
+        ResourceWrapper resourceWrapper = mock(ResourceWrapper.class);
+
+        doCallRealMethod().when(slot).exit(context, resourceWrapper, 1);
+        slot.exit(context, resourceWrapper, 1);
+
+        verify(slot).exit(context, resourceWrapper, 1);
+        // Verify fireExit method has been called, and only once
+        verify(slot).fireExit(context, resourceWrapper, 1);
+        verifyNoMoreInteractions(slot);
+    }
+
+    @Test
+    public void testEntry() throws Throwable {
+        FlowSlot slot = mock(FlowSlot.class);
+
+        Context context = mock(Context.class);
+        ResourceWrapper resourceWrapper = mock(ResourceWrapper.class);
+        DefaultNode node = mock(DefaultNode.class);
+
+        doCallRealMethod().when(slot).entry(context, resourceWrapper, node, 1, false);
+        slot.entry(context, resourceWrapper, node, 1, false);
+
+        // Verify checkFlow firstly, then fireEntry, and both are called, and only once
+        InOrder inOrder = inOrder(slot);
+        inOrder.verify(slot).checkFlow(resourceWrapper, context, node, 1, false);
+        inOrder.verify(slot).fireEntry(context, resourceWrapper, node, 1, false);
+        inOrder.verifyNoMoreInteractions();
     }
 
     @Test
