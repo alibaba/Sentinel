@@ -18,7 +18,6 @@ package com.alibaba.csp.sentinel.annotation.aspectj;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
@@ -31,6 +30,7 @@ final class ResourceMetadataRegistry {
     private static final Map<String, MethodWrapper> FALLBACK_MAP = new ConcurrentHashMap<>();
     private static final Map<String, MethodWrapper> DEFAULT_FALLBACK_MAP = new ConcurrentHashMap<>();
     private static final Map<String, MethodWrapper> BLOCK_HANDLER_MAP = new ConcurrentHashMap<>();
+
 
     static MethodWrapper lookupFallback(Class<?> clazz, String name) {
         return FALLBACK_MAP.get(getKey(clazz, name));
@@ -64,6 +64,7 @@ final class ResourceMetadataRegistry {
         }
         BLOCK_HANDLER_MAP.put(getKey(clazz, name), MethodWrapper.wrap(method));
     }
+
 
     private static String getKey(Class<?> clazz, String name) {
         return String.format("%s:%s", clazz.getCanonicalName(), name);

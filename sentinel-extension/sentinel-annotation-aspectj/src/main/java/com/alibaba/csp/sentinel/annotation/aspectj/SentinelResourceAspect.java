@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.alibaba.csp.sentinel.fallback.SentinelAnnotationGlobalFallback;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -35,12 +36,42 @@ import java.lang.reflect.Method;
 @Aspect
 public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
 
+    private final SentinelAnnotationGlobalFallback globalFallback;
+
+    public SentinelResourceAspect() {
+        this.globalFallback = new SentinelAnnotationGlobalFallback() {
+            @Override
+            public Object handle(Method originalMethod, Object[] args, Throwable t) throws Throwable {
+                throw t;
+            }
+        };
+    }
+
+
+
+
+    public SentinelResourceAspect(SentinelAnnotationGlobalFallback globalFallback) {
+        if(globalFallback==null){
+            this.globalFallback = new SentinelAnnotationGlobalFallback() {
+                @Override
+                public Object handle(Method originalMethod, Object[] args, Throwable t) throws Throwable {
+                    throw t;
+                }
+            };
+        }else{
+            this.globalFallback = globalFallback;
+        }
+
+    }
+
+
     @Pointcut("@annotation(com.alibaba.csp.sentinel.annotation.SentinelResource)")
     public void sentinelResourceAnnotationPointcut() {
     }
 
     @Around("sentinelResourceAnnotationPointcut()")
     public Object invokeResourceWithSentinel(ProceedingJoinPoint pjp) throws Throwable {
+
         Method originMethod = resolveMethod(pjp);
 
         SentinelResource annotation = originMethod.getAnnotation(SentinelResource.class);
@@ -56,7 +87,7 @@ public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
             entry = SphU.entry(resourceName, resourceType, entryType, pjp.getArgs());
             return pjp.proceed();
         } catch (BlockException ex) {
-            return handleBlockException(pjp, annotation, ex);
+            return handleBlockException(pjp, annotation, globalFallback, ex);
         } catch (Throwable ex) {
             Class<? extends Throwable>[] exceptionsToIgnore = annotation.exceptionsToIgnore();
             // The ignore list will be checked first.
@@ -65,11 +96,11 @@ public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
             }
             if (exceptionBelongsTo(ex, annotation.exceptionsToTrace())) {
                 traceException(ex);
-                return handleFallback(pjp, annotation, ex);
+                return handleFallback(pjp, annotation, globalFallback, ex);
             }
 
-            // No fallback function can handle the exception, so throw it out.
-            throw ex;
+            //  Global fallback function handle the exception. If no global fallback handler is configured, the default handler will throw it.
+            return globalFallback.handle(originMethod, pjp.getArgs(), ex);
         } finally {
             if (entry != null) {
                 entry.exit(1, pjp.getArgs());

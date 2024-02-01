@@ -73,6 +73,7 @@ public class ResourceMetadataRegistryTest {
         assertThat(wrapper.getMethod()).isSameAs(method);
     }
 
+
     @Test(expected = IllegalArgumentException.class)
     public void testUpdateBlockHandlerBadArgument() {
         ResourceMetadataRegistry.updateBlockHandlerFor(null, "sxs", String.class.getMethods()[0]);

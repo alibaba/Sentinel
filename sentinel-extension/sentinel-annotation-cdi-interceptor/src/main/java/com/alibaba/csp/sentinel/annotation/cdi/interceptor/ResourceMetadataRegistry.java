@@ -82,4 +82,5 @@ final class ResourceMetadataRegistry {
     static void clearBlockHandlerMap() {
         BLOCK_HANDLER_MAP.clear();
     }
+
 }

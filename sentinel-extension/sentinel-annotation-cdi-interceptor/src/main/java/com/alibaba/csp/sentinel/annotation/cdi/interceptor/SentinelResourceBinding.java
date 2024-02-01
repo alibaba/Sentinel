@@ -16,10 +16,8 @@
 package com.alibaba.csp.sentinel.annotation.cdi.interceptor;
 
 import com.alibaba.csp.sentinel.EntryType;
-
 import javax.enterprise.util.Nonbinding;
 import javax.interceptor.InterceptorBinding;
-
 import java.lang.annotation.*;
 
 /**
@@ -85,6 +83,7 @@ public @interface SentinelResourceBinding {
      */
     @Nonbinding
     String defaultFallback() default "";
+
 
     /**
      * The {@code fallback} is located in the same class with the original method by default.

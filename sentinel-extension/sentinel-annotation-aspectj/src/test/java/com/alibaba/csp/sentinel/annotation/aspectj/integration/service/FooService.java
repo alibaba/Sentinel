@@ -16,8 +16,8 @@
 package com.alibaba.csp.sentinel.annotation.aspectj.integration.service;
 
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.alibaba.csp.sentinel.annotation.aspectj.integration.fallback.AnnotationGlobalFallback;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.csp.sentinel.slots.block.degrade.DegradeException;
 
 import org.springframework.stereotype.Service;
 
@@ -52,6 +52,24 @@ public class FooService {
         }
         return "Hello for " + i;
     }
+
+    @SentinelResource(value = "apiFooWithFallback",  exceptionsToTrace = {IllegalArgumentException.class})
+    public String fooWithAnnotationGlobalFallback(int i) throws Exception {
+        if (i == 5758) {
+            throw new IllegalAccessException();
+        }
+        return "Hello for " + i;
+    }
+
+    @SentinelResource(value = "apiFooWithDefaultFallback",exceptionsToTrace = {IllegalArgumentException.class})
+    public String fooWithDefaultGlobalFallback(int i) throws Exception {
+        if (i == 5758) {
+            throw new IllegalAccessException();
+        }
+        return "Hello for " + i;
+    }
+
+
 
     @SentinelResource(value = "apiAnotherFooWithDefaultFallback", defaultFallback = "globalDefaultFallback",
         fallbackClass = {FooUtil.class})

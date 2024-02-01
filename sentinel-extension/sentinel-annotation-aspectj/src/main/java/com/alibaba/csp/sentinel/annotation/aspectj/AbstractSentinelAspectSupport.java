@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.annotation.aspectj;
 
 import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.alibaba.csp.sentinel.fallback.SentinelAnnotationGlobalFallback;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.MethodUtil;
@@ -80,13 +81,15 @@ public abstract class AbstractSentinelAspectSupport {
         return MethodUtil.resolveMethodName(method);
     }
 
-    protected Object handleFallback(ProceedingJoinPoint pjp, SentinelResource annotation, Throwable ex)
+    protected Object handleFallback(ProceedingJoinPoint pjp, SentinelResource annotation,SentinelAnnotationGlobalFallback globalFallback, Throwable ex)
         throws Throwable {
-        return handleFallback(pjp, annotation.fallback(), annotation.defaultFallback(), annotation.fallbackClass(), ex);
+        return handleFallback(pjp, annotation.fallback(), annotation.defaultFallback(), annotation.fallbackClass(), globalFallback, ex);
     }
 
+
+
     protected Object handleFallback(ProceedingJoinPoint pjp, String fallback, String defaultFallback,
-                                    Class<?>[] fallbackClass, Throwable ex) throws Throwable {
+                                    Class<?>[] fallbackClass, SentinelAnnotationGlobalFallback globalFallback, Throwable ex) throws Throwable {
         Object[] originArgs = pjp.getArgs();
 
         // Execute fallback function if configured.
@@ -105,11 +108,12 @@ public abstract class AbstractSentinelAspectSupport {
             return invoke(pjp, fallbackMethod, args);
         }
         // If fallback is absent, we'll try the defaultFallback if provided.
-        return handleDefaultFallback(pjp, defaultFallback, fallbackClass, ex);
+        return handleDefaultFallback(pjp, defaultFallback, fallbackClass,globalFallback, ex);
     }
 
     protected Object handleDefaultFallback(ProceedingJoinPoint pjp, String defaultFallback,
-                                           Class<?>[] fallbackClass, Throwable ex) throws Throwable {
+                                           Class<?>[] fallbackClass, SentinelAnnotationGlobalFallback globalFallback,
+                                           Throwable ex) throws Throwable {
         // Execute the default fallback function if configured.
         Method fallbackMethod = extractDefaultFallbackMethod(pjp, defaultFallback, fallbackClass);
         if (fallbackMethod != null) {
@@ -118,11 +122,19 @@ public abstract class AbstractSentinelAspectSupport {
             return invoke(pjp, fallbackMethod, args);
         }
 
-        // If no any fallback is present, then directly throw the exception.
-        throw ex;
+        // If no any fallback is present, we'll try the globalFallback.
+        return handleGlobalFallback(pjp,globalFallback,ex);
     }
 
-    protected Object handleBlockException(ProceedingJoinPoint pjp, SentinelResource annotation, BlockException ex)
+    protected Object handleGlobalFallback(ProceedingJoinPoint pjp,
+                                          SentinelAnnotationGlobalFallback globalFallback,
+                                          Throwable ex) throws Throwable {
+        Object[] originArgs = pjp.getArgs();
+        Method originMethod = resolveMethod(pjp);
+        return globalFallback.handle(originMethod,originArgs,ex);
+    }
+
+    protected Object handleBlockException(ProceedingJoinPoint pjp, SentinelResource annotation, SentinelAnnotationGlobalFallback globalFallback,BlockException ex)
         throws Throwable {
 
         // Execute block handler if configured.
@@ -137,7 +149,7 @@ public abstract class AbstractSentinelAspectSupport {
         }
 
         // If no block handler is present, then go to fallback.
-        return handleFallback(pjp, annotation, ex);
+        return handleFallback(pjp, annotation,globalFallback, ex);
     }
 
     private Object invoke(ProceedingJoinPoint pjp, Method method, Object[] args) throws Throwable {

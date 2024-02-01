@@ -138,6 +138,7 @@ public abstract class AbstractSentinelInterceptorSupport {
         throw ex;
     }
 
+
     protected Object handleBlockException(InvocationContext ctx, SentinelResourceBinding annotation, BlockException ex)
         throws Throwable {
 
