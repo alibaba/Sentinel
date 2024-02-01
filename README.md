@@ -65,7 +65,7 @@ If you're using Maven, just add the following dependency in `pom.xml`.
 <dependency>
     <groupId>com.alibaba.csp</groupId>
     <artifactId>sentinel-core</artifactId>
-    <version>1.8.7</version>
+    <version>2.0.0-alpha2-SNAPSHOT</version>
 </dependency>
 ```
 
