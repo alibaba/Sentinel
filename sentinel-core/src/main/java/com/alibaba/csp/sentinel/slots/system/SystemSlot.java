@@ -21,13 +21,17 @@ import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.spi.Spi;
+
+import java.util.List;
 
 /**
  * A {@link ProcessorSlot} that dedicates to {@link SystemRule} checking.
  *
  * @author jialiang.linjl
  * @author leyou
+ * @author guozhong.huang
  */
 @Spi(order = Constants.ORDER_SYSTEM_SLOT)
 public class SystemSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
@@ -35,13 +39,19 @@ public class SystemSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
                       boolean prioritized, Object... args) throws Throwable {
-        SystemRuleManager.checkSystem(resourceWrapper, count);
+        checkSystem(resourceWrapper, count);
         fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }
 
     @Override
     public void exit(Context context, ResourceWrapper resourceWrapper, int count, Object... args) {
         fireExit(context, resourceWrapper, count, args);
+    }
+
+
+    private void checkSystem(ResourceWrapper resourceWrapper, int count) throws BlockException {
+        List<SystemRule> rules = SystemRuleManager.getRules();
+        SystemRuleChecker.checkSystem(rules, resourceWrapper, count);
     }
 
 }

@@ -15,12 +15,14 @@
  */
 package com.alibaba.csp.sentinel.dashboard.datasource.entity.rule;
 
+import com.alibaba.csp.sentinel.slots.system.SystemMetricType;
 import com.alibaba.csp.sentinel.slots.system.SystemRule;
 
 import java.util.Date;
 
 /**
  * @author leyou
+ * @author guozhong.huang
  */
 public class SystemRuleEntity implements RuleEntity {
 
@@ -43,11 +45,26 @@ public class SystemRuleEntity implements RuleEntity {
         entity.setApp(app);
         entity.setIp(ip);
         entity.setPort(port);
-        entity.setHighestSystemLoad(rule.getHighestSystemLoad());
-        entity.setHighestCpuUsage(rule.getHighestCpuUsage());
-        entity.setAvgRt(rule.getAvgRt());
-        entity.setMaxThread(rule.getMaxThread());
-        entity.setQps(rule.getQps());
+
+        switch (rule.getSystemMetricType()) {
+            case CPU_USAGE:
+                entity.setHighestCpuUsage(rule.getTriggerCount());
+                break;
+            case LOAD:
+                entity.setHighestSystemLoad(rule.getTriggerCount());
+                break;
+            case AVG_RT:
+                entity.setAvgRt((long) rule.getTriggerCount());
+                break;
+            case CONCURRENCY:
+                entity.setMaxThread((long) rule.getTriggerCount());
+                break;
+            case INBOUND_QPS:
+                entity.setQps(rule.getTriggerCount());
+                break;
+            default:
+                break;
+        }
         return entity;
     }
 
@@ -148,11 +165,36 @@ public class SystemRuleEntity implements RuleEntity {
     @Override
     public SystemRule toRule() {
         SystemRule rule = new SystemRule();
-        rule.setHighestSystemLoad(highestSystemLoad);
-        rule.setAvgRt(avgRt);
-        rule.setMaxThread(maxThread);
-        rule.setQps(qps);
-        rule.setHighestCpuUsage(highestCpuUsage);
+        if (this.highestSystemLoad != null && this.highestSystemLoad <= 0) {
+            rule.setTriggerCount(this.highestSystemLoad);
+            rule.setSystemMetricType(SystemMetricType.LOAD);
+            return rule;
+        }
+
+        if (this.highestCpuUsage != null && this.highestCpuUsage <= 0) {
+            rule.setTriggerCount(this.highestCpuUsage);
+            rule.setSystemMetricType(SystemMetricType.CPU_USAGE);
+            return rule;
+        }
+
+        if (this.avgRt != null && this.avgRt > 0) {
+            rule.setTriggerCount(this.avgRt);
+            rule.setSystemMetricType(SystemMetricType.AVG_RT);
+            return rule;
+        }
+
+        if (this.maxThread != null && this.maxThread > 0) {
+            rule.setTriggerCount(this.maxThread);
+            rule.setSystemMetricType(SystemMetricType.CONCURRENCY);
+            return rule;
+
+        }
+
+        if (this.qps != null && this.qps > 0) {
+            rule.setTriggerCount(this.qps);
+            rule.setSystemMetricType(SystemMetricType.INBOUND_QPS);
+            return rule;
+        }
         return rule;
     }
 }

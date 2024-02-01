@@ -15,9 +15,6 @@
  */
 package com.alibaba.csp.sentinel.command.handler;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
@@ -27,10 +24,13 @@ import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
 import com.alibaba.csp.sentinel.node.metric.MetricSearcher;
 import com.alibaba.csp.sentinel.node.metric.MetricWriter;
-import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
+import com.alibaba.csp.sentinel.slots.system.SystemRuleChecker;
 import com.alibaba.csp.sentinel.util.PidUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.util.TimeUtil;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Retrieve and aggregate {@link MetricNode} metrics.
@@ -108,8 +108,8 @@ public class SendMetricCommandHandler implements CommandHandler<String> {
      */
     private void addCpuUsageAndLoad(List<MetricNode> list) {
         long time = TimeUtil.currentTimeMillis() / 1000 * 1000;
-        double load = SystemRuleManager.getCurrentSystemAvgLoad();
-        double usage = SystemRuleManager.getCurrentCpuUsage();
+        double load = SystemRuleChecker.getCurrentSystemAvgLoad();
+        double usage = SystemRuleChecker.getCurrentCpuUsage();
         if (load > 0) {
             MetricNode loadNode = toNode(load, time, Constants.SYSTEM_LOAD_RESOURCE_NAME);
             list.add(loadNode);
