@@ -26,6 +26,19 @@ public class AssertUtil {
 
     private AssertUtil() {}
 
+    public static void assertIntEquals(String message, Integer expected,
+        Integer actual) {
+        if (expected == null && actual == null) {
+            return ;
+        }
+        if (expected == null || actual == null) {
+            throw new IllegalArgumentException(message);
+        }
+        if (!expected.equals(actual)) {
+            throw new IllegalArgumentException(message);
+        }
+
+    }
     public static void assertNotNull(Object object, String message) {
         if (object == null) {
             throw new IllegalArgumentException(message);
