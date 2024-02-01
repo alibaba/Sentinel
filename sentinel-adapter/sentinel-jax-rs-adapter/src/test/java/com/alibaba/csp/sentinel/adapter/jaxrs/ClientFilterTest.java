@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.adapter.jaxrs;
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.CtSph;
 import com.alibaba.csp.sentinel.adapter.jaxrs.config.SentinelJaxRsConfig;
+import com.alibaba.csp.sentinel.adapter.jaxrs.fallback.DefaultSentinelJaxRsFallback;
 import com.alibaba.csp.sentinel.adapter.jaxrs.fallback.SentinelJaxRsFallback;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.context.ContextUtil;
@@ -107,6 +108,7 @@ public class ClientFilterTest {
     public void cleanUp() {
         FlowRuleManager.loadRules(null);
         ClusterBuilderSlot.resetClusterNodes();
+        SentinelJaxRsConfig.setJaxRsFallback(new DefaultSentinelJaxRsFallback());
     }
 
     @Test
