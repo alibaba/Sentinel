@@ -57,6 +57,11 @@ public class FlowRuleEntity implements RuleEntity {
      */
     private ClusterFlowConfig clusterConfig;
 
+    /**
+     * Whether to match resource names according to regular rules
+     */
+    private boolean regex = false;
+
     private Date gmtCreate;
     private Date gmtModified;
 
@@ -76,6 +81,7 @@ public class FlowRuleEntity implements RuleEntity {
         entity.setMaxQueueingTimeMs(rule.getMaxQueueingTimeMs());
         entity.setClusterMode(rule.isClusterMode());
         entity.setClusterConfig(rule.getClusterConfig());
+        entity.setRegex(rule.isRegex());
         return entity;
     }
 
@@ -206,6 +212,14 @@ public class FlowRuleEntity implements RuleEntity {
         return this;
     }
 
+    public boolean isRegex() {
+        return regex;
+    }
+
+    public void setRegex(boolean regex) {
+        this.regex = regex;
+    }
+
     @Override
     public Date getGmtCreate() {
         return gmtCreate;
@@ -243,6 +257,7 @@ public class FlowRuleEntity implements RuleEntity {
         }
         flowRule.setClusterMode(clusterMode);
         flowRule.setClusterConfig(clusterConfig);
+        flowRule.setRegex(regex);
         return flowRule;
     }
 
