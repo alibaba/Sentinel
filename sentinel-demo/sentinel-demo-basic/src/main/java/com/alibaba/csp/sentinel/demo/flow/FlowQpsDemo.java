@@ -46,6 +46,8 @@ public class FlowQpsDemo {
 
     private static int seconds = 60 + 40;
 
+    private static String test = "test";
+
     public static void main(String[] args) throws Exception {
         initFlowQpsRule();
 
