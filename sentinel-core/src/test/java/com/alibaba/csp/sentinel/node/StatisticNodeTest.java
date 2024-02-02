@@ -16,16 +16,13 @@
 package com.alibaba.csp.sentinel.node;
 
 import com.alibaba.csp.sentinel.config.SentinelConfig;
+import com.alibaba.csp.sentinel.node.metric.MetricNode;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -324,5 +321,46 @@ public class StatisticNodeTest {
         }
     }
 
+
+    /**
+     * A simple test for aggregating metric within flush interval by using StatisticNode
+     *
+     * <p>
+     *  Simulate qps in 10 seconds. Flush interval is 5 seconds.
+     * </p>
+     *
+     * <p>
+     *  Verify the metrics is within 5 seconds
+     * </p>
+     *
+     */
+    @Test
+    public void testMetrics() {
+        // prepare
+        final long flushIntervalSec = 5L;
+        System.setProperty(SentinelConfig.METRIC_FLUSH_INTERVAL, String.valueOf(flushIntervalSec));
+        StatisticNode statisticNode = new StatisticNode();
+        simulateQps(statisticNode, 100);
+        final long current = TimeUtil.currentTimeMillis();
+        final long startTime = current - current % 1000 - flushIntervalSec * 1000;
+        // run
+        Map<Long, MetricNode> metricNodeMap = statisticNode.metrics();
+        // assert
+        Optional<Long> anyInvalidMetric = metricNodeMap.keySet().stream()
+                .filter(time -> time < startTime).findAny();
+        Assert.assertFalse(anyInvalidMetric.isPresent());
+    }
+
+    private void simulateQps(StatisticNode statisticNode, int iterateNum) {
+        for (int i = 0; i < iterateNum; i++) {
+            statisticNode.addPassRequest(new Random().nextInt(10));
+            statisticNode.addRtAndSuccess(20, 10);
+            try {
+                TimeUnit.MILLISECONDS.sleep(new Random().nextInt(20) + 80);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
 }
