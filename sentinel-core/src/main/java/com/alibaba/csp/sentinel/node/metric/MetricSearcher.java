@@ -36,8 +36,8 @@ public class MetricSearcher {
     private static final Charset defaultCharset = Charset.forName(SentinelConfig.charset());
     private final MetricsReader metricsReader;
 
-    private String baseDir;
-    private String baseFileName;
+    private final String baseDir;
+    private final String baseFileName;
 
     private Position lastPosition = new Position();
 
@@ -64,10 +64,11 @@ public class MetricSearcher {
         if (charset == null) {
             throw new IllegalArgumentException("charset can't be null");
         }
-        this.baseDir = baseDir;
+        String baseDirContainer = baseDir;
         if (!baseDir.endsWith(File.separator)) {
-            this.baseDir += File.separator;
+            baseDirContainer += File.separator;
         }
+        this.baseDir = baseDirContainer;
         this.baseFileName = baseFileName;
         metricsReader = new MetricsReader(charset);
     }
@@ -117,6 +118,7 @@ public class MetricSearcher {
         //    + "], " + identity + ")");
         int i = 0;
         long offsetInIndex = 0;
+        //noinspection StatementWithEmptyBody
         if (validPosition(beginTimeMs)) {
             i = fileNames.indexOf(lastPosition.metricFileName);
             if (i == -1) {
@@ -171,22 +173,13 @@ public class MetricSearcher {
         if (!new File(lastPosition.indexFileName).exists()) {
             return false;
         }
-        FileInputStream in = null;
-        try {
-            in = new FileInputStream(lastPosition.indexFileName);
+        try (FileInputStream in = new FileInputStream(lastPosition.indexFileName)) {
             in.getChannel().position(lastPosition.offsetInIndex);
             DataInputStream indexIn = new DataInputStream(in);
             // timestamp(second) in the specific position == that we cached
             return indexIn.readLong() == lastPosition.second;
         } catch (Exception e) {
             return false;
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (Exception ignore) {
-                }
-            }
         }
     }
 
@@ -200,13 +193,12 @@ public class MetricSearcher {
         long beginSecond = beginTime / 1000;
         FileInputStream in = new FileInputStream(idxFileName);
         in.getChannel().position(offsetInIndex);
-        DataInputStream indexIn = new DataInputStream(in);
-        long offset;
-        try {
+        try (DataInputStream indexIn = new DataInputStream(in)) {
+            long offset;
             long second;
             lastPosition.offsetInIndex = in.getChannel().position();
             while ((second = indexIn.readLong()) < beginSecond) {
-                offset = indexIn.readLong();
+                indexIn.readLong();
                 lastPosition.offsetInIndex = in.getChannel().position();
             }
             offset = indexIn.readLong();
@@ -216,8 +208,6 @@ public class MetricSearcher {
             return offset;
         } catch (EOFException ignore) {
             return -1;
-        } finally {
-            indexIn.close();
         }
     }
 }
