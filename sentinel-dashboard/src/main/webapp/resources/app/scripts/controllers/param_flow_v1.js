@@ -3,10 +3,10 @@
  * 
  * @author Eric Zhao
  */
-angular.module('sentinelDashboardApp').controller('ParamFlowController', ['$scope', '$stateParams', 'ParamFlowService', 'ngDialog',
+angular.module('sentinelDashboardApp').controller('ParamFlowControllerV1', ['$scope', '$stateParams', 'ParamFlowService', 'ngDialog',
   'MachineService',
   function ($scope, $stateParams, ParamFlowService, ngDialog,
-    MachineService) {
+            MachineService) {
     const UNSUPPORTED_CODE = 4041;
     $scope.app = $stateParams.app;
     $scope.curExItem = {};
