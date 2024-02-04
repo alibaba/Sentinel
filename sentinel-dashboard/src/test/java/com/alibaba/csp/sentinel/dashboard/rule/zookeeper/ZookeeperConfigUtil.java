@@ -33,7 +33,7 @@ public class ZookeeperConfigUtil {
         if (appName.startsWith("/")) {
             stringBuilder.append(appName);
         } else {
-            stringBuilder.append("/")
+            stringBuilder.append('/')
                     .append(appName);
         }
         return stringBuilder.toString();

@@ -35,21 +35,21 @@ public class SofaRpcUtils {
     public static String getMethodResourceName(SofaRequest request) {
         StringBuilder buf = new StringBuilder(64);
         buf.append(request.getInterfaceName())
-                .append("#")
+                .append('#')
                 .append(request.getMethodName())
-                .append("(");
+                .append('(');
 
         boolean isFirst = true;
         for (String methodArgSig : request.getMethodArgSigs()) {
             if (!isFirst) {
-                buf.append(",");
+                buf.append(',');
             } else {
                 isFirst = false;
             }
 
             buf.append(methodArgSig);
         }
-        buf.append(")");
+        buf.append(')');
         return buf.toString();
     }
 
