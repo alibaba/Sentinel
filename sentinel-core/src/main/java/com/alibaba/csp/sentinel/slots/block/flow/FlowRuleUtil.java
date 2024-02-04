@@ -29,7 +29,6 @@ import com.alibaba.csp.sentinel.util.function.Predicate;
 
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Eric Zhao
@@ -83,11 +82,11 @@ public final class FlowRuleUtil {
      */
     public static <K> Map<K, List<FlowRule>> buildFlowRuleMap(List<FlowRule> list, Function<FlowRule, K> groupFunction,
                                                               Predicate<FlowRule> filter, boolean shouldSort) {
-        Map<K, List<FlowRule>> newRuleMap = new ConcurrentHashMap<>();
+        Map<K, List<FlowRule>> newRuleMap = new HashMap<>();
         if (list == null || list.isEmpty()) {
             return newRuleMap;
         }
-        Map<K, Set<FlowRule>> tmpMap = new ConcurrentHashMap<>();
+        Map<K, Set<FlowRule>> tmpMap = new HashMap<>();
 
         for (FlowRule rule : list) {
             if (!isValidRule(rule)) {
