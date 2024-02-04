@@ -254,11 +254,11 @@ public final class FlowRuleUtil {
     private static boolean checkControlBehaviorField(/*@NonNull*/ FlowRule rule) {
         switch (rule.getControlBehavior()) {
             case RuleConstant.CONTROL_BEHAVIOR_WARM_UP:
-                return rule.getWarmUpPeriodSec() > 0;
+                return rule.getWarmUpPeriodSec() > 0 && rule.getGrade() == RuleConstant.FLOW_GRADE_QPS;
             case RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER:
-                return rule.getMaxQueueingTimeMs() > 0;
+                return rule.getMaxQueueingTimeMs() > 0 && rule.getGrade() == RuleConstant.FLOW_GRADE_QPS;
             case RuleConstant.CONTROL_BEHAVIOR_WARM_UP_RATE_LIMITER:
-                return rule.getWarmUpPeriodSec() > 0 && rule.getMaxQueueingTimeMs() > 0;
+                return rule.getWarmUpPeriodSec() > 0 && rule.getMaxQueueingTimeMs() > 0 && rule.getGrade() == RuleConstant.FLOW_GRADE_QPS;
             default:
                 return true;
         }
