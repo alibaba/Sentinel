@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.alibaba.csp.sentinel.log;
 
 
@@ -89,10 +90,10 @@ public class LogBase {
         if (!LOG_OUTPUT_TYPE_FILE.equalsIgnoreCase(logOutputType) && !LOG_OUTPUT_TYPE_CONSOLE.equalsIgnoreCase(logOutputType)) {
             logOutputType = LOG_OUTPUT_TYPE_FILE;
         }
-        System.out.println("INFO: Sentinel log output type is: " + logOutputType);
+        System.out.printf("INFO: Sentinel log output type is: %s%n", logOutputType);
 
         logCharSet = properties.getProperty(LOG_CHARSET) == null ? logCharSet : properties.getProperty(LOG_CHARSET);
-        System.out.println("INFO: Sentinel log charset is: " + logCharSet);
+        System.out.printf("INFO: Sentinel log charset is: %s%n", logCharSet);
 
 
         logBaseDir = properties.getProperty(LOG_DIR) == null ? logBaseDir : properties.getProperty(LOG_DIR);
@@ -100,14 +101,14 @@ public class LogBase {
         File dir = new File(logBaseDir);
         if (!dir.exists()) {
             if (!dir.mkdirs()) {
-                System.err.println("ERROR: create Sentinel log base directory error: " + logBaseDir);
+                System.err.printf("ERROR: create Sentinel log base directory error: %s%n", logBaseDir);
             }
         }
-        System.out.println("INFO: Sentinel log base directory is: " + logBaseDir);
+        System.out.printf("INFO: Sentinel log base directory is: %n", logBaseDir);
 
         String usePid = properties.getProperty(LOG_NAME_USE_PID);
         logNameUsePid = "true".equalsIgnoreCase(usePid);
-        System.out.println("INFO: Sentinel log name use pid is: " + logNameUsePid);
+        System.out.printf("INFO: Sentinel log name use pid is: %s%n", logNameUsePid);
 
         // load log level
         String logLevelString = properties.getProperty(LOG_LEVEL);
@@ -115,10 +116,10 @@ public class LogBase {
             try {
                 logLevel = Level.parse(logLevelString);
             } catch (IllegalArgumentException e) {
-                System.out.println("Log level : " + logLevel + " is invalid. Use default : " + LOG_DEFAULT_LEVEL.toString());
+                System.out.printf("Log level : %s is invalid. Use default : %s%n", logLevelString, logLevel);
             }
         }
-        System.out.println("INFO: Sentinel log level is: " + logLevel);
+        System.out.printf("INFO: Sentinel log level is: %s%n", logLevel);
     }
 
 
@@ -160,5 +161,8 @@ public class LogBase {
 
     public static Level getLogLevel() {
         return logLevel;
+    }
+
+    private LogBase() {
     }
 }
