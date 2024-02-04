@@ -32,9 +32,7 @@ public class UnaryLeapArray extends LeapArray<LongAdder> {
     }
 
     @Override
-    protected WindowWrap<LongAdder> resetWindowTo(WindowWrap<LongAdder> windowWrap, long startTime) {
-        windowWrap.resetTo(startTime);
-        windowWrap.value().reset();
-        return windowWrap;
+    protected void resetWindowValue(LongAdder windowValue, long startTime) {
+        windowValue.reset();
     }
 }

@@ -15,13 +15,12 @@
  */
 package com.alibaba.csp.sentinel.slots.statistic.base;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
+import com.alibaba.csp.sentinel.test.AbstractTimeBasedTest;
 import org.junit.Test;
 
-import com.alibaba.csp.sentinel.test.AbstractTimeBasedTest;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertSame;
 
 /**
  * @author Eric Zhao
@@ -40,10 +39,8 @@ public class LeapArrayTest extends AbstractTimeBasedTest {
             }
 
             @Override
-            protected WindowWrap<AtomicInteger> resetWindowTo(WindowWrap<AtomicInteger> windowWrap, long startTime) {
-                windowWrap.resetTo(startTime);
-                windowWrap.value().set(0);
-                return windowWrap;
+            protected void resetWindowValue(AtomicInteger windowValue, long startTime) {
+                windowValue.set(0);
             }
         };
         
