@@ -124,7 +124,7 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
     }
     
     private void notifyObservers(CircuitBreaker.State prevState, CircuitBreaker.State newState, Double snapshotValue) {
-        for (CircuitBreakerStateChangeObserver observer : observerRegistry.getStateChangeObservers()) {
+        for (CircuitBreakerStateChangeObserver observer : observerRegistry.getStateChangeObservers(rule.getResource())) {
             observer.onStateChange(prevState, newState, rule, snapshotValue);
         }
     }
