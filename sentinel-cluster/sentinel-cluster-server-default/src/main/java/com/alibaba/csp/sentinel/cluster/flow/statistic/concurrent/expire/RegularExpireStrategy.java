@@ -21,8 +21,8 @@ import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.TokenCacheNode
 import com.alibaba.csp.sentinel.cluster.server.connection.ConnectionManager;
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
 import com.alibaba.csp.sentinel.util.AssertUtil;
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,14 +62,14 @@ public class RegularExpireStrategy implements ExpireStrategy {
     /**
      * the local cache of tokenId
      */
-    private ConcurrentLinkedHashMap<Long, TokenCacheNode> localCache;
+    private ConcurrentLinkedHashMapWrapper<Long, TokenCacheNode> localCache;
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private static ScheduledExecutorService executor = Executors.newScheduledThreadPool(1,
             new NamedThreadFactory("regular clear expired token thread", true));
 
 
-    public RegularExpireStrategy(ConcurrentLinkedHashMap<Long, TokenCacheNode> localCache) {
+    public RegularExpireStrategy(ConcurrentLinkedHashMapWrapper<Long, TokenCacheNode> localCache) {
         AssertUtil.isTrue(localCache != null, " local cache can't be null");
         this.localCache = localCache;
     }
