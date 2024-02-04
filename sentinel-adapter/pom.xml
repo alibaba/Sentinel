@@ -33,6 +33,7 @@
         <module>sentinel-jax-rs-adapter</module>
         <module>sentinel-quarkus-adapter</module>
         <module>sentinel-motan-adapter</module>
+        <module>sentinel-jdbc-adapter</module>
     </modules>
 
     <dependencyManagement>
