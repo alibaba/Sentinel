@@ -32,7 +32,7 @@ import org.springframework.stereotype.Component;
 /**
  * @author Eric Zhao
  */
-@Component("flowRuleDefaultProvider")
+
 public class FlowRuleApiProvider implements DynamicRuleProvider<List<FlowRuleEntity>> {
 
     @Autowired
