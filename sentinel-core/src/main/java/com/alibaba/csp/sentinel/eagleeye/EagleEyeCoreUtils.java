@@ -117,7 +117,7 @@ final class EagleEyeCoreUtils {
 
     public static StringBuilder appendWithNullCheck(Object obj, String defaultValue, StringBuilder appender) {
         if (obj != null) {
-            appender.append(obj.toString());
+            appender.append(obj);
         } else {
             appender.append(defaultValue);
         }
