@@ -29,6 +29,7 @@ import com.alibaba.csp.sentinel.dashboard.repository.metric.MetricsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,6 +50,9 @@ public class MetricController {
     private static Logger logger = LoggerFactory.getLogger(MetricController.class);
 
     private static final long maxQueryIntervalMs = 1000 * 60 * 60;
+
+    @Value("${metric.time.period.ms}")
+    private long metricTimePeriod;
 
     @Autowired
     private MetricsRepository<MetricEntity> metricStore;
@@ -79,7 +83,7 @@ public class MetricController {
             endTime = System.currentTimeMillis();
         }
         if (startTime == null) {
-            startTime = endTime - 1000 * 60 * 5;
+            startTime = endTime - metricTimePeriod;
         }
         if (endTime - startTime > maxQueryIntervalMs) {
             return Result.ofFail(-1, "time intervalMs is too big, must <= 1h");
