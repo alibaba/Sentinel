@@ -70,7 +70,8 @@ public class SentinelDubboProviderFilter extends AbstractDubboFilter implements 
                 EntryType.IN, invocation.getArguments());
 
             Result result = invoker.invoke(invocation);
-            if (result.hasException()) {
+            // Non-BlockException,Non-wrapped-BlockException (business exception) is recorded.
+            if (result.hasException() && !BlockException.isBlockException(result.getException())) {
                 Throwable e = result.getException();
                 // Record common exception.
                 Tracer.traceEntry(e, interfaceEntry);
