@@ -18,7 +18,6 @@ package com.alibaba.csp.sentinel.dashboard.repository.metric;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.MetricEntity;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.util.TimeUtil;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,7 +27,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.stream.Collectors;
 
 /**
  * Caches metrics data in a period of time in memory.
@@ -36,7 +34,6 @@ import java.util.stream.Collectors;
  * @author Carpenter Lee
  * @author Eric Zhao
  */
-@Component
 public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity> {
 
     private static final long MAX_METRIC_LIVE_TIME_MS = 1000 * 60 * 5;
@@ -146,19 +143,7 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
                 }
             }
             // Order by last minute b_qps DESC.
-            return resourceCount.entrySet()
-                    .stream()
-                    .sorted((o1, o2) -> {
-                        MetricEntity e1 = o1.getValue();
-                        MetricEntity e2 = o2.getValue();
-                        int t = e2.getBlockQps().compareTo(e1.getBlockQps());
-                        if (t != 0) {
-                            return t;
-                        }
-                        return e2.getPassQps().compareTo(e1.getPassQps());
-                    })
-                    .map(Entry::getKey)
-                    .collect(Collectors.toList());
+            return listResourcesSorted(resourceCount);
         } finally {
             readWriteLock.readLock().unlock();
         }

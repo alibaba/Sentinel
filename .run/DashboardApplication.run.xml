@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="DashboardApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <module name="sentinel-dashboard" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="com.alibaba.csp.sentinel.dashboard.DashboardApplication" />
+    <option name="VM_PARAMETERS" value="-Dserver.port=8082 -Dcsp.sentinel.dashboard.server=localhost:8082 -Dproject.name=sentinel-dashboard " />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
