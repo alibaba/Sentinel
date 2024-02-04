@@ -100,11 +100,11 @@ public class SpringMvcHttpHeartbeatSender implements HeartbeatSender {
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode == OK_STATUS) {
             return true;
-        } else if (clientErrorCode(statusCode) || serverErrorCode(statusCode)) {
+        }
+        if (clientErrorCode(statusCode) || serverErrorCode(statusCode)) {
             RecordLog.warn("[HttpHeartbeatSender] Failed to send heartbeat to "
                 + consoleHost + ":" + consolePort + ", http status code: " + statusCode);
         }
-
         return false;
     }
 

@@ -27,7 +27,6 @@ public class SentinelWebMvcTotalConfig extends BaseWebMvcConfig {
     private String totalResourceName = DEFAULT_TOTAL_RESOURCE_NAME;
 
     public SentinelWebMvcTotalConfig() {
-        super();
         setRequestAttributeName(DEFAULT_REQUEST_ATTRIBUTE_NAME);
     }
 

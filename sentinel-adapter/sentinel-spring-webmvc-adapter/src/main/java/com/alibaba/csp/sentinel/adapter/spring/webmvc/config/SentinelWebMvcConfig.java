@@ -43,7 +43,6 @@ public class SentinelWebMvcConfig extends BaseWebMvcConfig {
     private boolean webContextUnify = true;
 
     public SentinelWebMvcConfig() {
-        super();
         setRequestAttributeName(DEFAULT_REQUEST_ATTRIBUTE_NAME);
     }
 

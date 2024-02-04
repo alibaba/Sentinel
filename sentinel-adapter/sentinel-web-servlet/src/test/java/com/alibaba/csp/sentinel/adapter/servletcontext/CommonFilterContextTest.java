@@ -55,21 +55,6 @@ public class CommonFilterContextTest {
     @Autowired
     private MockMvc mvc;
 
-    private void configureRulesFor(String resource, int count) {
-        configureRulesFor(resource, count, "default");
-    }
-
-    private void configureRulesFor(String resource, int count, String limitApp) {
-        FlowRule rule = new FlowRule()
-                .setCount(count)
-                .setGrade(RuleConstant.FLOW_GRADE_QPS);
-        rule.setResource(resource);
-        if (StringUtil.isNotBlank(limitApp)) {
-            rule.setLimitApp(limitApp);
-        }
-        FlowRuleManager.loadRules(Collections.singletonList(rule));
-    }
-
     @Test
     public void testCommonFilterMiscellaneous() throws Exception {
         String url = "/hello";

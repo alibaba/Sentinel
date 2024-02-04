@@ -67,7 +67,7 @@ public class TransportConfig {
      */
     public static List<Endpoint> getConsoleServerList() {
         String config = SentinelConfig.getConfig(CONSOLE_SERVER);
-        List<Endpoint> list = new ArrayList<Endpoint>();
+        List<Endpoint> list = new ArrayList<>();
         if (StringUtil.isBlank(config)) {
             return list;
         }

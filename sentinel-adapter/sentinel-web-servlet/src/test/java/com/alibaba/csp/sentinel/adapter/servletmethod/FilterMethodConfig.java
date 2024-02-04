@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * @author: Roger Law
+ * @author Roger Law
  **/
 @Configuration
 public class FilterMethodConfig {
