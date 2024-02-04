@@ -21,7 +21,7 @@ import java.util.UUID;
 
 /**
  * We use TokenCacheNodeManager to store the tokenId, whose the underlying storage structure
- * is ConcurrentLinkedHashMap, Its storage node is TokenCacheNode. In order to operate the nowCalls value when
+ * is Caffeine, Its storage node is TokenCacheNode. In order to operate the nowCalls value when
  * the expired tokenId is deleted regularly, we need to store the flowId in TokenCacheNode.
  *
  * @author yunfeiyanggzq

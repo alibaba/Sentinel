@@ -16,8 +16,6 @@
 package com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent;
 
 import com.alibaba.csp.sentinel.cluster.flow.rule.ClusterFlowRuleManager;
-import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.TokenCacheNode;
-import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.TokenCacheNodeManager;
 import com.alibaba.csp.sentinel.slots.block.ClusterRuleConstant;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
