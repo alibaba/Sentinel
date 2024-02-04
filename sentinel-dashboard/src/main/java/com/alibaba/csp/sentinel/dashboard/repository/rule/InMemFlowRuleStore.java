@@ -38,6 +38,16 @@ public class InMemFlowRuleStore extends InMemoryRuleRepositoryAdapter<FlowRuleEn
     }
 
     @Override
+    protected long lastId() {
+        return ids.get();
+    }
+
+    @Override
+    protected void setLastId(Long id) {
+        ids.set(id);
+    }
+
+    @Override
     protected FlowRuleEntity preProcess(FlowRuleEntity entity) {
         if (entity != null && entity.isClusterMode()) {
             ClusterFlowConfig config = entity.getClusterConfig();
