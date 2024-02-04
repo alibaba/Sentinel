@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.dashboard.repository.rule;
 
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.AuthorityRuleEntity;
@@ -34,6 +35,6 @@ public class InMemAuthorityRuleStore extends InMemoryRuleRepositoryAdapter<Autho
 
     @Override
     protected long nextId() {
-        return ids.incrementAndGet();
+        return Long.valueOf(System.currentTimeMillis() + String.valueOf(new Random().nextInt(1000)) + ids.incrementAndGet());
     }
 }
