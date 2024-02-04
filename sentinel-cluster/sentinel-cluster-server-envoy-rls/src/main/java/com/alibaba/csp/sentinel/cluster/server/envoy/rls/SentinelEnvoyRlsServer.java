@@ -60,12 +60,12 @@ public class SentinelEnvoyRlsServer {
         try {
             int port = Integer.parseInt(portStr);
             if (port <= 0 || port > 65535) {
-                RecordLog.warn("[SentinelEnvoyRlsServer] Invalid port <" + portStr + ">, using default" + defaultPort);
+                RecordLog.warn("[SentinelEnvoyRlsServer] Invalid port <{}>, using default {}", portStr, defaultPort);
                 return defaultPort;
             }
             return port;
         } catch (Exception ex) {
-            RecordLog.warn("[SentinelEnvoyRlsServer] Failed to resolve port, using default " + defaultPort);
+            RecordLog.warn("[SentinelEnvoyRlsServer] Failed to resolve port, using default {}", defaultPort);
             System.err.println("[SentinelEnvoyRlsServer] Failed to resolve port, using default " + defaultPort);
             return defaultPort;
         }

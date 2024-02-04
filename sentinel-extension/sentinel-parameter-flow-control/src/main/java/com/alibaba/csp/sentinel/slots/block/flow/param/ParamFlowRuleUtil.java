@@ -159,7 +159,7 @@ public final class ParamFlowRuleUtil {
 
         for (ParamFlowRule rule : list) {
             if (!ParamFlowRuleUtil.isValidRule(rule)) {
-                RecordLog.warn("[ParamFlowRuleManager] Ignoring invalid rule when loading new rules: " + rule);
+                RecordLog.warn("[ParamFlowRuleManager] Ignoring invalid rule when loading new rules: {}", rule);
                 continue;
             }
             if (filter != null && !filter.test(rule)) {
@@ -211,7 +211,7 @@ public final class ParamFlowRuleUtil {
                 continue;
             }
             if (item.getCount() == null || item.getCount() < 0 || value == null) {
-                RecordLog.warn("[ParamFlowRuleUtil] Ignoring invalid exclusion parameter item: " + item);
+                RecordLog.warn("[ParamFlowRuleUtil] Ignoring invalid exclusion parameter item: {}", item);
                 continue;
             }
             itemMap.put(value, item.getCount());

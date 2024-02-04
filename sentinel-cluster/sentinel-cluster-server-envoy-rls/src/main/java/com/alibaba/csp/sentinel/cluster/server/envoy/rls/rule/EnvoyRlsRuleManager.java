@@ -104,11 +104,11 @@ public final class EnvoyRlsRuleManager {
             Map<String, EnvoyRlsRule> map = new HashMap<>(conf.size());
             for (EnvoyRlsRule rule : conf) {
                 if (!isValidRule(rule)) {
-                    RecordLog.warn("[EnvoyRlsRuleManager] Ignoring invalid rule when loading new RLS rules: " + rule);
+                    RecordLog.warn("[EnvoyRlsRuleManager] Ignoring invalid rule when loading new RLS rules: {}", rule);
                     continue;
                 }
                 if (map.containsKey(rule.getDomain())) {
-                    RecordLog.warn("[EnvoyRlsRuleManager] Ignoring duplicate RLS rule for specific domain: " + rule);
+                    RecordLog.warn("[EnvoyRlsRuleManager] Ignoring duplicate RLS rule for specific domain: {}", rule);
                     continue;
                 }
                 map.put(rule.getDomain(), rule);

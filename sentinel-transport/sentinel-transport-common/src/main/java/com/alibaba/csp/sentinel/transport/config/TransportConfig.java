@@ -52,7 +52,7 @@ public class TransportConfig {
         try {
             return interval == null ? null : Long.parseLong(interval);
         } catch (Exception ex) {
-            RecordLog.warn("[TransportConfig] Failed to parse heartbeat interval: " + interval);
+            RecordLog.warn("[TransportConfig] Failed to parse heartbeat interval:{}", interval);
             return null;
         }
     }

@@ -333,7 +333,7 @@ public final class SpiLoader<S> {
         }
 
         if (urls == null || !urls.hasMoreElements()) {
-            RecordLog.warn("No SPI configuration file, filename=" + fullFileName + ", classloader=" + classLoader);
+            RecordLog.warn("No SPI configuration file, filename={}, classloader={}", fullFileName, classLoader);
             return;
         }
 

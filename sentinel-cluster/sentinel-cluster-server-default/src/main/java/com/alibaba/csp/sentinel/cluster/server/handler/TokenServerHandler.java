@@ -72,7 +72,7 @@ public class TokenServerHandler extends ChannelInboundHandlerAdapter {
             // Pick request processor for request type.
             RequestProcessor<?, ?> processor = RequestProcessorProvider.getProcessor(request.getType());
             if (processor == null) {
-                RecordLog.warn("[TokenServerHandler] No processor for request type: " + request.getType());
+                RecordLog.warn("[TokenServerHandler] No processor for request type: {}", request.getType());
                 writeBadResponse(ctx, request);
             } else {
                 ClusterResponse<?> response = processor.processRequest(request);
