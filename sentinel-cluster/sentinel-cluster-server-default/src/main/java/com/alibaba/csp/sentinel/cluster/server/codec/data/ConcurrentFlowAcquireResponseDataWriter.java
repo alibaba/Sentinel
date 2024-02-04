@@ -13,24 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.cluster.client;
+package com.alibaba.csp.sentinel.cluster.server.codec.data;
+
+import com.alibaba.csp.sentinel.cluster.codec.EntityWriter;
+import com.alibaba.csp.sentinel.cluster.response.data.ConcurrentFlowAcquireResponseData;
+import io.netty.buffer.ByteBuf;
 
 /**
- * @author Eric Zhao
- * @since 1.4.0
+ * @author yunfeiyanggzq
  */
-public final class ClientConstants {
-
-    public static final int TYPE_PING = 0;
-    public static final int TYPE_FLOW = 1;
-    public static final int TYPE_PARAM_FLOW = 2;
-    public static final int TYPE_CONCURRENT_FLOW_ACQUIRE = 3;
-    public static final int TYPE_CONCURRENT_FLOW_RELEASE = 4;
-
-    public static final int CLIENT_STATUS_OFF = 0;
-    public static final int CLIENT_STATUS_PENDING = 1;
-    public static final int CLIENT_STATUS_STARTED = 2;
-
-    private ClientConstants() {
+public class ConcurrentFlowAcquireResponseDataWriter implements EntityWriter<ConcurrentFlowAcquireResponseData, ByteBuf> {
+    @Override
+    public void writeTo(ConcurrentFlowAcquireResponseData entity, ByteBuf out) {
+        if (entity == null || out == null) {
+            return;
+        }
+        out.writeLong(entity.getTokenId());
     }
 }

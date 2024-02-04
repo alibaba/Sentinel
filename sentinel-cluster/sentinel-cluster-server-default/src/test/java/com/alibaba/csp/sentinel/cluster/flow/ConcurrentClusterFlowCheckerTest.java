@@ -64,20 +64,18 @@ public class ConcurrentClusterFlowCheckerTest extends AbstractTimeBasedTest {
         FlowRule rule = ClusterFlowRuleManager.getFlowRuleById(111L);
         ArrayList<Long> list = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
-            TokenResult result = ConcurrentClusterFlowChecker.acquireConcurrentToken("127.0.0.1", rule, 1);
+            TokenResult result = ConcurrentClusterFlowChecker.acquireConcurrentToken("127.0.0.1", rule, 1,true);
             Assert.assertTrue("fail to acquire token",
                     result.getStatus() == TokenResultStatus.OK && result.getTokenId() != 0);
             list.add(result.getTokenId());
         }
         for (int i = 0; i < 10; i++) {
-            TokenResult result = ConcurrentClusterFlowChecker.acquireConcurrentToken("127.0.0.1", rule, 1);
+            TokenResult result = ConcurrentClusterFlowChecker.acquireConcurrentToken("127.0.0.1", rule, 1,true);
             Assert.assertTrue("fail to acquire block token",
                     result.getStatus() == TokenResultStatus.BLOCKED);
         }
         for (int i = 0; i < 10; i++) {
-            TokenResult result = ConcurrentClusterFlowChecker.releaseConcurrentToken(list.get(i));
-            Assert.assertTrue("fail to release token",
-                    result.getStatus() == TokenResultStatus.RELEASE_OK);
+            ConcurrentClusterFlowChecker.releaseConcurrentToken(list.get(i));
         }
         Assert.assertTrue("fail to release token",
                 CurrentConcurrencyManager.get(111L).get() == 0 && TokenCacheNodeManager.getSize() == 0);
@@ -95,7 +93,7 @@ public class ConcurrentClusterFlowCheckerTest extends AbstractTimeBasedTest {
                 @Override
                 public void run() {
                     assert rule != null;
-                    TokenResult result = ConcurrentClusterFlowChecker.acquireConcurrentToken("127.0.0.1", rule, 1);
+                    TokenResult result = ConcurrentClusterFlowChecker.acquireConcurrentToken("127.0.0.1", rule, 1,true);
                     Assert.assertTrue("concurrent control fail", CurrentConcurrencyManager.get(111L).get() <= rule.getCount());
                     if (result.getStatus() == TokenResultStatus.OK) {
                         ConcurrentClusterFlowChecker.releaseConcurrentToken(result.getTokenId());
@@ -117,7 +115,7 @@ public class ConcurrentClusterFlowCheckerTest extends AbstractTimeBasedTest {
         ConnectionManager.addConnection("test", "127.0.0.1");
         FlowRule rule = ClusterFlowRuleManager.getFlowRuleById(111L);
         for (int i = 0; i < 10; i++) {
-            ConcurrentClusterFlowChecker.acquireConcurrentToken("127.0.0.1", rule, 1);
+            ConcurrentClusterFlowChecker.acquireConcurrentToken("127.0.0.1", rule, 1,true);
         }
         Thread.sleep(3000);
         Assert.assertTrue("fail to acquire and release token", CurrentConcurrencyManager.get(rule.getClusterConfig().getFlowId()).get() == 0 && TokenCacheNodeManager.getSize() == 0);

@@ -64,7 +64,7 @@ public class DefaultTokenService implements TokenService {
     }
 
     @Override
-    public TokenResult requestConcurrentToken(String clientAddress, Long ruleId, int acquireCount) {
+    public TokenResult requestConcurrentToken(String clientAddress, Long ruleId, int acquireCount,boolean prioritized) {
         if (notValidRequest(clientAddress, ruleId, acquireCount)) {
             return badRequest();
         }
@@ -73,7 +73,7 @@ public class DefaultTokenService implements TokenService {
         if (rule == null) {
             return new TokenResult(TokenResultStatus.NO_RULE_EXISTS);
         }
-        return ConcurrentClusterFlowChecker.acquireConcurrentToken(clientAddress, rule, acquireCount);
+        return ConcurrentClusterFlowChecker.acquireConcurrentToken(clientAddress, rule, acquireCount,prioritized);
     }
 
     @Override

@@ -20,38 +20,42 @@ import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.TokenService;
 import com.alibaba.csp.sentinel.cluster.annotation.RequestType;
 import com.alibaba.csp.sentinel.cluster.request.ClusterRequest;
-import com.alibaba.csp.sentinel.cluster.request.data.ParamFlowRequestData;
+import com.alibaba.csp.sentinel.cluster.request.data.ConcurrentFlowAcquireRequestData;
 import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
-import com.alibaba.csp.sentinel.cluster.response.data.FlowTokenResponseData;
+import com.alibaba.csp.sentinel.cluster.response.data.ConcurrentFlowAcquireResponseData;
 import com.alibaba.csp.sentinel.cluster.server.TokenServiceProvider;
 import io.netty.channel.ChannelHandlerContext;
 
-import java.util.Collection;
+import java.net.InetSocketAddress;
 
 /**
- * @author Eric Zhao
- * @since 1.4.0
+ * @author yunfeiyanggzq
  */
-@RequestType(ClusterConstants.MSG_TYPE_PARAM_FLOW)
-public class ParamFlowRequestProcessor implements RequestProcessor<ParamFlowRequestData, FlowTokenResponseData> {
-
+@RequestType(ClusterConstants.MSG_TYPE_CONCURRENT_FLOW_ACQUIRE)
+public class ConcurrentFlowRequestAcquireProcessor implements RequestProcessor<ConcurrentFlowAcquireRequestData, ConcurrentFlowAcquireResponseData> {
     @Override
-    public ClusterResponse<FlowTokenResponseData> processRequest(ChannelHandlerContext ctx, ClusterRequest<ParamFlowRequestData> request) {
-        TokenService tokenService = TokenServiceProvider.getService();
+    public ClusterResponse processRequest(ChannelHandlerContext ctx, ClusterRequest<ConcurrentFlowAcquireRequestData> request) {
 
+        TokenService tokenService = TokenServiceProvider.getService();
         long flowId = request.getData().getFlowId();
         int count = request.getData().getCount();
-        Collection<Object> args = request.getData().getParams();
-
-        TokenResult result = tokenService.requestParamToken(flowId, count, args);
+        boolean prioritized = request.getData().isPrioritized();
+        String clientAddress = getRemoteAddress(ctx);
+        TokenResult result = tokenService.requestConcurrentToken(clientAddress, flowId, count, prioritized);
         return toResponse(result, request);
     }
 
-    private ClusterResponse<FlowTokenResponseData> toResponse(TokenResult result, ClusterRequest request) {
+    private ClusterResponse<ConcurrentFlowAcquireResponseData> toResponse(TokenResult result, ClusterRequest request) {
         return new ClusterResponse<>(request.getId(), request.getType(), result.getStatus(),
-                new FlowTokenResponseData()
-                        .setRemainingCount(result.getRemaining())
-                        .setWaitInMs(0)
+                new ConcurrentFlowAcquireResponseData().setTokenId(result.getTokenId())
         );
+    }
+
+    private String getRemoteAddress(ChannelHandlerContext ctx) {
+        if (ctx.channel().remoteAddress() == null) {
+            return null;
+        }
+        InetSocketAddress inetAddress = (InetSocketAddress) ctx.channel().remoteAddress();
+        return inetAddress.getAddress().getHostAddress() + ":" + inetAddress.getPort();
     }
 }
