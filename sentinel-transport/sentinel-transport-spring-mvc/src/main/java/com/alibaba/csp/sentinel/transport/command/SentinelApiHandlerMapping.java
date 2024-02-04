@@ -22,6 +22,7 @@ import com.alibaba.csp.sentinel.transport.log.CommandCenterLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.Ordered;
@@ -60,7 +61,7 @@ public class SentinelApiHandlerMapping extends AbstractHandlerMapping implements
 
     @Override
     protected Object getHandlerInternal(HttpServletRequest request) throws Exception {
-        String commandName = request.getRequestURI();
+        String commandName = request.getServletPath();
         if (commandName.startsWith("/")) {
             commandName = commandName.substring(1);
         }
@@ -102,15 +103,23 @@ public class SentinelApiHandlerMapping extends AbstractHandlerMapping implements
     public void onApplicationEvent(ApplicationEvent applicationEvent) {
         if (webServerInitializedEventClass != null && webServerInitializedEventClass.isAssignableFrom(applicationEvent.getClass())) {
             Integer port = null;
+            String servletContextPath = null;
             try {
                 BeanWrapper beanWrapper = new BeanWrapperImpl(applicationEvent);
                 port = (Integer) beanWrapper.getPropertyValue("webServer.port");
+                ApplicationContext applicationContext =(ApplicationContext) beanWrapper.getPropertyValue("applicationContext");
+                servletContextPath = applicationContext.getEnvironment().getProperty("server.servlet.context-path");
+
             } catch (Exception e) {
                 RecordLog.warn("[SentinelApiHandlerMapping] resolve port from event " + applicationEvent + " fail", e);
             }
             if (port != null && TransportConfig.getPort() == null) {
                 RecordLog.info("[SentinelApiHandlerMapping] resolve port {} from event {}", port, applicationEvent);
                 TransportConfig.setRuntimePort(port);
+            }
+            if (servletContextPath !=null && !servletContextPath.isEmpty() ){
+                RecordLog.info("[SentinelApiHandlerMapping] resolve servletContextPath {} from event {}", servletContextPath, applicationEvent);
+                TransportConfig.setRuntimeServletPath(servletContextPath);
             }
         }
     }
