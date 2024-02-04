@@ -8,19 +8,35 @@
 <div class="container-fluid">
   <div class="row" style="margin-top: 20px; margin-bottom: 20px;">
     <div class="col-md-12">
-      <div class="card">
-        <div class="inputs-header">
-          <span class="brand" style="font-size: 13px;">
-            <i class="fa fa-sort-amount-asc" aria-hidden="true" ng-show="!isDescOrder"></i>
-            <i class="fa fa-sort-amount-desc" aria-hidden="true" ng-show="isDescOrder"></i>
-            {{metricTypeDesc}}&nbsp;实时监控
-          </span>
-          <button class="btn btn-outline-primary" style="float: right;margin-right: 10px;height: 30px;font-size: 12px;" ng-click="setDescOrder()"
-            ng-if="!isDescOrder">降序</button>
-          <button class="btn btn-outline-primary" style="float: right;margin-right: 10px;height: 30px;font-size: 12px;" ng-click="setAscOrder()"
-            ng-if="isDescOrder">升序</button>
+      <ul class="nav nav-tabs">
+        <li role="presentation" ng-class="{'active': tabIndex == 1}" ng-click="changeTabs(1)"><a href="javascript:void(0)">
+                 <span class="brand" style="font-size: 13px;">
+                <i class="fa fa-sort-amount-asc" aria-hidden="true" ng-show="!isDescOrder"></i>
+                <i class="fa fa-sort-amount-desc" aria-hidden="true" ng-show="isDescOrder"></i>
+                {{metricTypeDesc}}&nbsp;实时监控
+              </span>
+        </a></li>
+        <li role="presentation"  ng-class="{'active': tabIndex == 2}" ng-click="changeTabs(2)">
+          <a href="javascript:void(0)" title="流量汇总"><span class="brand" style="font-size: 13px;">&nbsp;
+             <i class="glyphicon glyphicon-stats" aria-hidden="true" ></i>
+            流量汇总</span></a>
+        </li>
 
-          <input class="form-control witdh-200" placeholder="关键字" ng-model="serviceQuery" ng-change="searchService()" style="margin-right: 20px;">
+      </ul>
+      <div class="card" ng-show="tabIndex == 1">
+        <div class="inputs-header" style="text-align: right">
+
+          <ol class="breadcrumb" style="display: inline-block;background: none">
+            周期：
+            <li ng-click="changeCycle(1)"  ng-class="{'inactive': cycle != 1}"  ><a href="javascript:void(0)">1秒</a></li>
+            <li ng-click="changeCycle(300)"  ng-class="{'inactive': cycle != 300}" ><a href="javascript:void(0)" >5分钟</a></li>
+          </ol>
+
+          <input class="form-control witdh-200" placeholder="关键字" ng-model="serviceQuery" ng-change="searchService()" style="margin-right: 20px;float: none;display: inline-block">
+          <button class="btn btn-outline-primary" style="margin-right: 10px;height: 30px;font-size: 12px;" ng-click="setDescOrder()"
+            ng-if="!isDescOrder" title="按资源名称降序">降序</button>
+          <button class="btn btn-outline-primary" style="margin-right: 10px;height: 30px;font-size: 12px;" ng-click="setAscOrder()"
+            ng-if="isDescOrder" title="按资源名称升序">升序</button>
         </div>
         <!--.tools-header -->
         <!--<div id="g2container"></div>-->
@@ -110,8 +126,113 @@
         <div class="row" style="margin-bottom:20px"></div>
       </div>
       <!-- .card -->
-    </div>
+
+
+      <div class="card" ng-show="tabIndex == 2">
+        <div class="inputs-header" style="text-align: right">
+          <ol class="breadcrumb" style="display: inline-block;background: none">
+            范围：
+            <li ng-click="changeTimeRange(0)"  ng-class="{'inactive': timeRange != 0}"  ><a href="javascript:void(0)">全部</a></li>
+            <li ng-click="changeTimeRange(5)"  ng-class="{'inactive': timeRange != 5}" ><a href="javascript:void(0)" >近5分钟</a></li>
+            <li ng-click="changeTimeRange(15)"  ng-class="{'inactive': timeRange != 15}" ><a href="javascript:void(0)" >近15分钟</a></li>
+            <li ng-click="changeTimeRange(30)"  ng-class="{'inactive': timeRange != 30}" ><a href="javascript:void(0)" >近30分钟</a></li>
+            <li ng-click="changeTimeRange(60)"  ng-class="{'inactive': timeRange != 60}" ><a href="javascript:void(0)" >近1小时</a></li>
+            <li ng-click="changeTimeRange(360)"  ng-class="{'inactive': timeRange != 360}" ><a href="javascript:void(0)" >近6小时</a></li>
+            <li ng-click="changeTimeRange(720)"  ng-class="{'inactive': timeRange != 720}" ><a href="javascript:void(0)" >近12小时</a></li>
+            <li ng-click="changeTimeRange(1440)"  ng-class="{'inactive': timeRange != 1440}" ><a href="javascript:void(0)" >近24小时</a></li>
+          </ol>
+
+          <input class="form-control witdh-200" placeholder="资源名称过滤" ng-model="serviceQueryOfSummary" ng-change="searchServiceOfSummary()" style="margin-right: 20px;float: none;display: inline-block">
+        </div>
+        <!--.tools-header -->
+        <!--<div id="g2container"></div>-->
+        <div class="card-body">
+          <div class="row" style="margin-left: 3px;margin-right: 3px;">
+            <div class="col-md-12">
+              <table class="table table-hover table-striped table-bordered">
+                <thead>
+                <tr style="font-size: 13px;text-align:center;font-weight: bold;">
+                  <td style="word-wrap:break-word;word-break:break-all;">资源名称</td>
+                  <td style="word-wrap:break-word;word-break:break-all;" title="通过 QPS (pass qps)">
+                    <i class="  " aria-hidden="true"
+                       ng-class="{'fa fa-sort-amount-asc': summaryOrderBy == 1,
+                    'fa fa-sort-amount-desc':summaryOrderBy==2,
+                    'glyphicon glyphicon-sort':summaryOrderBy!=1 && summaryOrderBy!=2}"  ng-click="changeSummaryOrder(1)"></i>
+                    通过 QPS
+                  </td>
+                  <td style="word-wrap:break-word;word-break:break-all;" title="拒绝 QPS (blocked qps)">
+                    <i class=" " aria-hidden="true"
+                       ng-class="{'fa fa-sort-amount-asc': summaryOrderBy == 3,
+                       'fa fa-sort-amount-desc':summaryOrderBy==4,
+                       'glyphicon glyphicon-sort':summaryOrderBy!=3 && summaryOrderBy!=4}"  ng-click="changeSummaryOrder(2)"></i>
+                    拒绝QPS
+                  </td>
+                  <td style="word-wrap:break-word;word-break:break-all;" title="成功 QPS (success qps)">
+                    成功 QPS
+                  </td>
+                  <td style="word-wrap:break-word;word-break:break-all;" title="异常 QPS (exception qps)">
+                    <i class=" " aria-hidden="true"
+                       ng-class="{'fa fa-sort-amount-asc': summaryOrderBy == 5,
+                       'fa fa-sort-amount-desc':summaryOrderBy==6,
+                       'glyphicon glyphicon-sort':summaryOrderBy!=5 && summaryOrderBy!=6}"  ng-click="changeSummaryOrder(3)"></i>
+                    异常 QPS
+                  </td>
+                  <td style="word-wrap:break-word;word-break:break-all;" title="RT: 平均响应时间（毫秒）">响应时间（ms）</td>
+                </tr>
+                </thead>
+                <!-- thead -->
+                <tbody>
+                <tr style="font-size: 12px;text-align:center;" ng-repeat="tableObj in sortedSummaryData">
+                  <td style="word-wrap:break-word;word-break:break-all; ">{{tableObj.resource }}</td>
+                  <td style="word-wrap:break-word;word-break:break-all; ">{{tableObj.passQps | number : 1}}</td>
+                  <td style="word-wrap:break-word;word-break:break-all; ">{{tableObj.blockQps | number : 1}}</td>
+                  <td style="word-wrap:break-word;word-break:break-all; ">{{tableObj.successQps | number : 1}}</td>
+                  <td style="word-wrap:break-word;word-break:break-all; ">{{tableObj.exceptionQps | number : 1}}</td>
+                  <td style="word-wrap:break-word;word-break:break-all;">{{tableObj.rt | number : 1}}</td>
+                </tr>
+                <tr style="font-size: 12px;text-align:center;" ng-repeat="_tr in [] | range : (6 - sortedSummaryData.length)">
+                  <td ng-repeat="_td in [] | range : 6">-</td>
+                </tr>
+                </tbody>
+                <!-- tbody -->
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:none;">
+          <li dir-paginate="empty in emptyObjsOfSummary| itemsPerPage : summaryPageConfig.pageSize" current-page="summaryPageConfig.currentPageIndex"
+              pagination-id="paginationOfSummary"></li>
+        </div>
+
+        <div class="pagination-footer" style="margin-top:5px;">
+          <dir-pagination-controls boundary-links="true" template-url="app/views/pagination.tpl.html" pagination-id="paginationOfSummary"
+                                   on-page-change="pageChangedOfSummary(newPageNumber)">
+          </dir-pagination-controls>
+          <div class="tools" style="">
+            <span>共 {{summaryPageConfig.totalCount}} 条记录, </span>
+            <span>
+              每页 {{summaryPageConfig.pageSize}} 条记录
+              <!--每页-->
+              <!--<input class="form-control" ng-model="servicePageConfig.pageSize" ng-change="pageSizeChanged()">-->
+              <!--条记录,-->
+            </span>
+            <span>第 {{summaryPageConfig.currentPageIndex}} / {{summaryPageConfig.totalPage}} 页</span>
+          </div>
+          <!-- .tools -->
+        </div>
+        <!-- pagination-footer -->
+        <div class="row" style="margin-bottom:20px"></div>
+      </div>
+      </div>
     <!-- .col-md-12 -->
   </div>
   <!-- -->
 </div>
+
+<style>
+
+  .inactive a {
+      color: #666666 !important;
+  }
+</style>

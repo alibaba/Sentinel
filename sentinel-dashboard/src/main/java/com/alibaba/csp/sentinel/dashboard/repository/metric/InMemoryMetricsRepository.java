@@ -15,16 +15,13 @@
  */
 package com.alibaba.csp.sentinel.dashboard.repository.metric;
 
+import com.alibaba.csp.sentinel.dashboard.config.DashboardConfig;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.MetricEntity;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -37,7 +34,7 @@ import java.util.stream.Collectors;
  * @author Eric Zhao
  */
 @Component
-public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity> {
+public class InMemoryMetricsRepository implements MetricsExtRepository<MetricEntity, Integer> {
 
     private static final long MAX_METRIC_LIVE_TIME_MS = 1000 * 60 * 5;
 
@@ -45,9 +42,9 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
      * {@code app -> resource -> timestamp -> metric}
      */
     private Map<String, Map<String, LinkedHashMap<Long, MetricEntity>>> allMetrics = new ConcurrentHashMap<>();
+    private Map<String, Map<String, LinkedHashMap<Long, MetricEntity>>> metricsOfFiveMinutes = new ConcurrentHashMap<>();
 
     private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-
 
     @Override
     public void save(MetricEntity entity) {
@@ -56,18 +53,47 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
         }
         readWriteLock.writeLock().lock();
         try {
-            allMetrics.computeIfAbsent(entity.getApp(), e -> new HashMap<>(16))
-                    .computeIfAbsent(entity.getResource(), e -> new LinkedHashMap<Long, MetricEntity>() {
-                        @Override
-                        protected boolean removeEldestEntry(Entry<Long, MetricEntity> eldest) {
-                            // Metric older than {@link #MAX_METRIC_LIVE_TIME_MS} will be removed.
-                            return eldest.getKey() < TimeUtil.currentTimeMillis() - MAX_METRIC_LIVE_TIME_MS;
-                        }
-                    }).put(entity.getTimestamp().getTime(), entity);
+            init(entity);
+            doSave(entity);
         } finally {
             readWriteLock.writeLock().unlock();
         }
 
+    }
+
+    private void doSave(MetricEntity entity) {
+        this.allMetrics.get(entity.getApp()).get(entity.getResource()).put(entity.getTimestamp().getTime(), entity);
+
+        LinkedHashMap<Long, MetricEntity> longMetricEntityLinkedHashMap =
+                this.metricsOfFiveMinutes.get(entity.getApp()).get(entity.getResource());
+
+        long diff = entity.getTimestamp().getTime() % 300000;
+        long key = entity.getTimestamp().getTime() - diff;
+        MetricEntity metricEntity = longMetricEntityLinkedHashMap.computeIfAbsent(key, e -> new MetricEntity());
+        metricEntity.merge(entity);
+        metricEntity.setTimestamp(new Date(key));
+
+        longMetricEntityLinkedHashMap.put(key, metricEntity);
+    }
+
+    private void init(MetricEntity entity) {
+        this.allMetrics.computeIfAbsent(entity.getApp(), e -> new HashMap<>(16))
+                .computeIfAbsent(entity.getResource(), e -> new LinkedHashMap<Long, MetricEntity>() {
+                    @Override
+                    protected boolean removeEldestEntry(Entry<Long, MetricEntity> eldest) {
+                        // Metric older than {@link #MAX_METRIC_LIVE_TIME_MS} will be removed.
+                        return eldest.getKey() < TimeUtil.currentTimeMillis() - MAX_METRIC_LIVE_TIME_MS;
+                    }
+                });
+
+        this.metricsOfFiveMinutes.computeIfAbsent(entity.getApp(), e -> new HashMap<>(16))
+                .computeIfAbsent(entity.getResource(), e -> new LinkedHashMap<Long, MetricEntity>() {
+                    @Override
+                    protected boolean removeEldestEntry(Entry<Long, MetricEntity> eldest) {
+                        // Metric older than {@link #MAX_METRIC_LIVE_TIME_MS_OF_MIN5} will be removed.
+                        return eldest.getKey() < TimeUtil.currentTimeMillis() - DashboardConfig.getMaxMetricLiveTimeMsOfFiveMinutes();
+                    }
+                });
     }
 
     @Override
@@ -84,13 +110,23 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
     }
 
     @Override
+    public List<MetricEntity> queryByAppAndResourceBetween(String app, String resource, long startTime, long endTime) {
+        return this.queryByAppAndResourceBetween(app, resource, startTime, endTime, 1);
+    }
+
+    @Override
     public List<MetricEntity> queryByAppAndResourceBetween(String app, String resource,
-                                                           long startTime, long endTime) {
+                                                           long startTime, long endTime, Integer cycle) {
         List<MetricEntity> results = new ArrayList<>();
         if (StringUtil.isBlank(app)) {
             return results;
         }
-        Map<String, LinkedHashMap<Long, MetricEntity>> resourceMap = allMetrics.get(app);
+        Map<String, LinkedHashMap<Long, MetricEntity>> resourceMap = null;
+        if(Objects.nonNull(cycle) && cycle == 300) {
+            resourceMap = metricsOfFiveMinutes.get(app);
+        } else {
+            resourceMap = allMetrics.get(app);
+        }
         if (resourceMap == null) {
             return results;
         }
@@ -112,7 +148,7 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
     }
 
     @Override
-    public List<String> listResourcesOfApp(String app) {
+    public List<String> listResourcesOfApp(String app, Integer activeTimeFilter) {
         List<String> results = new ArrayList<>();
         if (StringUtil.isBlank(app)) {
             return results;
@@ -122,8 +158,8 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
         if (resourceMap == null) {
             return results;
         }
-        final long minTimeMs = System.currentTimeMillis() - 1000 * 60;
         Map<String, MetricEntity> resourceCount = new ConcurrentHashMap<>(32);
+        final long minTimeMs = System.currentTimeMillis() - activeTimeFilter;
 
         readWriteLock.readLock().lock();
         try {
@@ -162,5 +198,10 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
         } finally {
             readWriteLock.readLock().unlock();
         }
+    }
+
+    @Override
+    public List<String> listResourcesOfApp(String app) {
+        return this.listResourcesOfApp(app, 60000);
     }
 }

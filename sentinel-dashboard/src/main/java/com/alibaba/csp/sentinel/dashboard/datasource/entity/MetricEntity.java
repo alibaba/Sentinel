@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.dashboard.datasource.entity;
 
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * @author leyou
@@ -216,4 +217,31 @@ public class MetricEntity {
             '}';
     }
 
+    public void merge(MetricEntity entity) {
+        this.app = entity.app;
+        this.gmtCreate = entity.gmtCreate;
+        this.gmtModified = entity.gmtModified;
+        this.resource = entity.resource;
+        this.resourceCode = entity.resourceCode;
+        this.count +=  entity.count;
+        if(Objects.isNull(this.exceptionQps)) {
+            this.exceptionQps = 0L;
+        }
+        if(Objects.isNull(this.passQps)) {
+            this.passQps = 0L;
+        }
+        if(Objects.isNull(this.successQps)) {
+            this.successQps = 0L;
+        }
+        if(Objects.isNull(this.blockQps)) {
+            this.blockQps = 0L;
+        }
+        this.timestamp = entity.timestamp;
+
+        this.exceptionQps +=  entity.exceptionQps;
+        this.passQps += + entity.passQps;
+        this.successQps += entity.successQps;
+        this.blockQps +=  entity.blockQps;
+        this.rt += entity.rt;
+    }
 }
