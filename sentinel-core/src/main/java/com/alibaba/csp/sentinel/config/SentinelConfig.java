@@ -61,6 +61,7 @@ public final class SentinelConfig {
     public static final String STATISTIC_MAX_RT = "csp.sentinel.statistic.max.rt";
     public static final String SPI_CLASSLOADER = "csp.sentinel.spi.classloader";
     public static final String METRIC_FLUSH_INTERVAL = "csp.sentinel.metric.flush.interval";
+    public static final String METRIC_FILTER = "csp.sentinel.metric.filter";
 
     public static final String DEFAULT_CHARSET = "UTF-8";
     public static final long DEFAULT_SINGLE_METRIC_FILE_SIZE = 1024 * 1024 * 50;
@@ -68,6 +69,7 @@ public final class SentinelConfig {
     public static final int DEFAULT_COLD_FACTOR = 3;
     public static final int DEFAULT_STATISTIC_MAX_RT = 5000;
     public static final long DEFAULT_METRIC_FLUSH_INTERVAL = 1L;
+    public static final boolean DEFAULT_METRIC_FILTER = Boolean.FALSE;
 
     static {
         try {
@@ -208,6 +210,16 @@ public final class SentinelConfig {
             RecordLog.warn("[SentinelConfig] Parse singleMetricFileSize fail, use default value: "
                     + DEFAULT_SINGLE_METRIC_FILE_SIZE, throwable);
             return DEFAULT_SINGLE_METRIC_FILE_SIZE;
+        }
+    }
+
+    public static boolean shouldFilterMetric() {
+        try {
+            return Boolean.parseBoolean(props.get(METRIC_FILTER)) || Boolean.parseBoolean(System.getProperty(METRIC_FILTER));
+        } catch (Throwable throwable) {
+            RecordLog.warn("[SentinelConfig] Parse shouldFilterMetric fail, use default value: "
+                    + DEFAULT_METRIC_FILTER, throwable);
+            return DEFAULT_METRIC_FILTER;
         }
     }
 
