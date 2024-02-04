@@ -185,6 +185,10 @@ public abstract class LeapArray<T> {
                  */
                 if (updateLock.tryLock()) {
                     try {
+                        // double check to avoid repeat reset the bucket
+                        if (windowStart <= old.windowStart()){
+                            continue;
+                        }
                         // Successfully get the update lock, now we reset the bucket.
                         return resetWindowTo(old, windowStart);
                     } finally {
