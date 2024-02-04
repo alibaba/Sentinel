@@ -83,7 +83,7 @@ public final class StatEntry {
             throw new IllegalArgumentException("keys empty or null: " + keys);
         }
         this.statLogger = statLogger;
-        this.keys = keys.toArray(new String[keys.size()]);
+        this.keys = keys.toArray(new String[0]);
     }
 
     public StatEntry(StatLogger statLogger, String[] keys) {
