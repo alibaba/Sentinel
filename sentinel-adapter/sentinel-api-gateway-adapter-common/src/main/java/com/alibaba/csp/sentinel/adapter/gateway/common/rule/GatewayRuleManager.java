@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.adapter.gateway.common.rule;
 
 import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
 import com.alibaba.csp.sentinel.adapter.gateway.common.param.GatewayRegexCache;
+import com.alibaba.csp.sentinel.cluster.flow.rule.ClusterParamFlowRuleManager;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
@@ -26,6 +27,7 @@ import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRuleUtil;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParameterMetric;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParameterMetricStorage;
+import com.alibaba.csp.sentinel.util.AppNameUtil;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
@@ -231,9 +233,20 @@ public final class GatewayRuleManager {
             }
 
             applyToConvertedParamMap(paramFlowRules);
+            loadRulestoClusterParamFlowRuleManager(paramFlowRules);
 
             GATEWAY_RULE_MAP.clear();
             GATEWAY_RULE_MAP.putAll(gatewayRuleMap);
+        }
+
+        /**
+         * 手动注册ClusterParamFlowRuleManager数据源
+         * 将GatewayFlowRule转化成的ParamFlowRule写入到对应的数据源
+         * @param paramFlowRules
+         */
+        private static void loadRulestoClusterParamFlowRuleManager(Set<ParamFlowRule> paramFlowRules) {
+            ClusterParamFlowRuleManager.register2Property(AppNameUtil.getAppName());
+            ClusterParamFlowRuleManager.loadRules(AppNameUtil.getAppName(),new ArrayList<ParamFlowRule>(paramFlowRules));
         }
 
         private void applyToConvertedParamMap(Set<ParamFlowRule> paramFlowRules) {
