@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.adapter.motan;
 
 import com.alibaba.csp.sentinel.adapter.motan.config.MotanAdapterGlobalConfig;
+import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.weibo.api.motan.rpc.Caller;
 import com.weibo.api.motan.rpc.Request;
@@ -50,7 +51,7 @@ public class MotanUtils {
                 isFirst = false;
             }
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            RecordLog.warn("[MotanUtils] Error in getMethodResourceName", e);
         }
         buf.append(")");
         return buf.toString();
