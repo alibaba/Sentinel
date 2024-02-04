@@ -16,10 +16,10 @@
 
 package com.alibaba.csp.sentinel.adapter.gateway.zuul.fallback;
 
+import com.alibaba.csp.sentinel.util.AssertUtil;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
  * This provide fall back class manager.
@@ -28,14 +28,14 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
  */
 public class ZuulBlockFallbackManager {
 
-    private static Map<String, ZuulBlockFallbackProvider> fallbackProviderCache = new HashMap<>();
+    private static Map<String, ZuulBlockFallbackProvider<? extends BlockResponse>> fallbackProviderCache = new HashMap<>();
 
-    private static ZuulBlockFallbackProvider defaultFallbackProvider = new DefaultBlockFallbackProvider();
+    private static ZuulBlockFallbackProvider<? extends BlockResponse> defaultFallbackProvider = new DefaultBlockFallbackProvider();
 
     /**
      * Register special provider for different route.
      */
-    public static synchronized void registerProvider(ZuulBlockFallbackProvider provider) {
+    public static synchronized void registerProvider(ZuulBlockFallbackProvider<? extends BlockResponse> provider) {
         AssertUtil.notNull(provider, "fallback provider cannot be null");
         String route = provider.getRoute();
         if ("*".equals(route) || route == null) {
@@ -45,8 +45,8 @@ public class ZuulBlockFallbackManager {
         }
     }
 
-    public static ZuulBlockFallbackProvider getFallbackProvider(String route) {
-        ZuulBlockFallbackProvider provider = fallbackProviderCache.get(route);
+    public static ZuulBlockFallbackProvider<? extends BlockResponse> getFallbackProvider(String route) {
+        ZuulBlockFallbackProvider<? extends BlockResponse> provider = fallbackProviderCache.get(route);
         if (provider == null) {
             provider = defaultFallbackProvider;
         }
