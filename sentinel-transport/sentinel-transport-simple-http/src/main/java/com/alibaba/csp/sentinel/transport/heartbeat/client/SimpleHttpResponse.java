@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.transport.heartbeat.client;
 
 import com.alibaba.csp.sentinel.config.SentinelConfig;
+import com.alibaba.csp.sentinel.util.StringUtil;
 
 import java.nio.charset.Charset;
 import java.util.Map;
@@ -104,6 +105,9 @@ public class SimpleHttpResponse {
     }
 
     public String getBodyAsString() {
+        if (body == null || body.length == 0) {
+            return null;
+        }
         parseCharset();
         return new String(body, charset);
     }
@@ -119,8 +123,11 @@ public class SimpleHttpResponse {
                         .append("\r\n");
             }
         }
-        buf.append("\r\n");
-        buf.append(getBodyAsString());
+        String bodyAsString = getBodyAsString();
+        if (StringUtil.isNotBlank(bodyAsString)) {
+            buf.append("\r\n");
+            buf.append(bodyAsString);
+        }
         return buf.toString();
     }
 }
