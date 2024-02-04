@@ -30,7 +30,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
-import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.AsyncHandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
@@ -52,7 +52,7 @@ import org.springframework.web.servlet.ModelAndView;
  * @author kaizi2009
  * @since 1.7.1
  */
-public abstract class AbstractSentinelInterceptor implements HandlerInterceptor {
+public abstract class AbstractSentinelInterceptor implements AsyncHandlerInterceptor {
 
     public static final String SENTINEL_SPRING_WEB_CONTEXT_NAME = "sentinel_spring_web_context";
     private static final String EMPTY_ORIGIN = "";
@@ -102,7 +102,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
             String origin = parseOrigin(request);
             String contextName = getContextName(request);
             ContextUtil.enter(contextName, origin);
-            Entry entry = SphU.entry(resourceName, ResourceTypeConstants.COMMON_WEB, EntryType.IN);
+            Entry entry = SphU.asyncEntry(resourceName, ResourceTypeConstants.COMMON_WEB, EntryType.IN);
             request.setAttribute(baseWebMvcConfig.getRequestAttributeName(), entry);
             return true;
         } catch (BlockException e) {
@@ -136,7 +136,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
                                 Object handler, Exception ex) throws Exception {
-        if (increaseReferece(request, this.baseWebMvcConfig.getRequestRefName(), -1) != 0) {
+        if (increaseReferece(request, this.baseWebMvcConfig.getRequestRefName(), calculateDeductionCount(request)) != 0) {
             return;
         }
         
@@ -153,9 +153,30 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
         ContextUtil.exit();
     }
 
+    private int calculateDeductionCount(HttpServletRequest request) {
+        // If asyncRequestCount is not null, the number of deductions is (1 + asyncRequestCount) , if it is null, it is deducted once
+        Integer asyncRequestCount = (Integer) request.getAttribute(baseWebMvcConfig.getRequestAsyncRefName());
+        // Remove asyncRequestCount after calculation is complete
+        request.removeAttribute(baseWebMvcConfig.getRequestAsyncRefName());
+        return asyncRequestCount == null ? -1 : -1 - asyncRequestCount;
+    }
+
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
                            ModelAndView modelAndView) throws Exception {
+    }
+
+    @Override
+    public void afterConcurrentHandlingStarted(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        // Record the number of asynchronous requests
+        Integer asyncRequestCount = (Integer) request.getAttribute(baseWebMvcConfig.getRequestAsyncRefName());
+        if (asyncRequestCount == null){
+            asyncRequestCount = 0;
+        }
+        asyncRequestCount = asyncRequestCount + 1;
+        request.setAttribute(baseWebMvcConfig.getRequestAsyncRefName(), asyncRequestCount);
+        // After the asynchronous thread is started, the current thread context exits
+        ContextUtil.exit();
     }
 
     protected Entry getEntryInRequest(HttpServletRequest request, String attrKey) {
