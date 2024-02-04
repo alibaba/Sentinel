@@ -29,6 +29,7 @@ final class AuthorityRuleChecker {
 
     static boolean passCheck(AuthorityRule rule, Context context) {
         String requester = context.getOrigin();
+        boolean contain = false;
 
         // Empty origin or empty limitApp will pass.
         if (StringUtil.isEmpty(requester) || StringUtil.isEmpty(rule.getLimitApp())) {
@@ -36,33 +37,50 @@ final class AuthorityRuleChecker {
         }
 
         // Do exact match with origin name.
-        int pos = rule.getLimitApp().indexOf(requester);
-        boolean contain = pos > -1;
+        contain = rule.getLimitApp().contains(requester);
 
-        if (contain) {
-            boolean exactlyMatch = false;
-            String[] appArray = rule.getLimitApp().split(",");
-            for (String app : appArray) {
-                if (requester.equals(app)) {
-                    exactlyMatch = true;
-                    break;
+        if (contain){
+            String limitApp = rule.getLimitApp();
+            char[] source =  limitApp.toCharArray();
+            char[] target = requester.toCharArray();
+            int max = limitApp.length() -1;
+
+            for (int i = 0 ; i <= max; i++) {
+                /* Look for first character. */
+                if (source[i] != target[0]) {
+                    while (++i <= max && source[i] != target[0]) {
+                    }
+                }
+                /* Found first character, now look at the rest of v2 */
+                if (i <= max) {
+                    int j = i + 1;
+                    int end = j + target.length - 1;
+                    for (int k = 1; j < end && source[j]
+                            == target[k]; j++, k++) {
+                    }
+                    if (j == end
+                            && ( ++ max == j || ",".equals(String.valueOf(source[j])) )) {
+                        /* Found whole string. */
+                        contain = true;
+                        break;
+                    }
                 }
             }
-
-            contain = exactlyMatch;
         }
 
-        int strategy = rule.getStrategy();
-        if (strategy == RuleConstant.AUTHORITY_BLACK && contain) {
-            return false;
-        }
 
-        if (strategy == RuleConstant.AUTHORITY_WHITE && !contain) {
-            return false;
-        }
+        //The matching result is judged according to the Strategy
+        switch (rule.getStrategy()) {
+            case RuleConstant.AUTHORITY_BLACK:
+                return !contain;
+            case RuleConstant.AUTHORITY_WHITE:
+                return contain;
+            default:
+                return true;
 
-        return true;
+        }
     }
+
 
     private AuthorityRuleChecker() {}
 }

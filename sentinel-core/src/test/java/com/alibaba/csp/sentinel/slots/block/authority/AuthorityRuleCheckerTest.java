@@ -33,16 +33,21 @@ public class AuthorityRuleCheckerTest {
                 .as(AuthorityRule.class)
                 .setStrategy(RuleConstant.AUTHORITY_WHITE);
             AuthorityRule ruleB = new AuthorityRule()
+                    .setResource(resourceName)
+                    .setLimitApp("ap")
+                    .as(AuthorityRule.class)
+                    .setStrategy(RuleConstant.AUTHORITY_WHITE);
+            AuthorityRule ruleC = new AuthorityRule()
                 .setResource(resourceName)
                 .setLimitApp("appB")
                 .as(AuthorityRule.class)
                 .setStrategy(RuleConstant.AUTHORITY_WHITE);
-            AuthorityRule ruleC = new AuthorityRule()
+            AuthorityRule ruleD = new AuthorityRule()
                 .setResource(resourceName)
                 .setLimitApp(origin)
                 .as(AuthorityRule.class)
                 .setStrategy(RuleConstant.AUTHORITY_BLACK);
-            AuthorityRule ruleD = new AuthorityRule()
+            AuthorityRule ruleE = new AuthorityRule()
                 .setResource(resourceName)
                 .setLimitApp("appC")
                 .as(AuthorityRule.class)
@@ -51,7 +56,8 @@ public class AuthorityRuleCheckerTest {
             assertTrue(AuthorityRuleChecker.passCheck(ruleA, ContextUtil.getContext()));
             assertFalse(AuthorityRuleChecker.passCheck(ruleB, ContextUtil.getContext()));
             assertFalse(AuthorityRuleChecker.passCheck(ruleC, ContextUtil.getContext()));
-            assertTrue(AuthorityRuleChecker.passCheck(ruleD, ContextUtil.getContext()));
+            assertFalse(AuthorityRuleChecker.passCheck(ruleD, ContextUtil.getContext()));
+            assertTrue(AuthorityRuleChecker.passCheck(ruleE, ContextUtil.getContext()));
         } finally {
             ContextUtil.exit();
         }
