@@ -32,6 +32,9 @@ jobs:
           java-version: 17
           distribution: 'temurin'
 
+      - run: ls ~/.m2/
+      - run: cat ~/.m2/toolchains.xml
+
       - name: Test with Maven
         run: mvn --batch-mode test
 
