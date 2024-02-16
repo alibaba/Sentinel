@@ -3,9 +3,7 @@ name: Sentinel CI
 on:
   push:
     branches:
-      - master
-      - "1.8"
-      - "2.0"
+      - '*'
   pull_request:
     branches:
       - master
