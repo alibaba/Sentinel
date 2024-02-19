@@ -16,31 +16,35 @@
 package com.alibaba.csp.sentinel.cluster.flow.statistic.metric;
 
 import com.alibaba.csp.sentinel.cluster.flow.statistic.data.ClusterFlowEvent;
-import com.alibaba.csp.sentinel.cluster.test.AbstractTimeBasedTest;
+import com.alibaba.csp.sentinel.cluster.server.AbstractTimeBasedTest;
+import com.alibaba.csp.sentinel.util.TimeUtil;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.MockedStatic;
 
 public class ClusterMetricTest extends AbstractTimeBasedTest {
 
     @Test
     public void testTryOccupyNext() {
-        setCurrentMillis(System.currentTimeMillis());
-        ClusterMetric metric = new ClusterMetric(5, 25);
-        metric.add(ClusterFlowEvent.PASS, 1);
-        metric.add(ClusterFlowEvent.PASS, 2);
-        metric.add(ClusterFlowEvent.PASS, 1);
-        metric.add(ClusterFlowEvent.BLOCK, 1);
-        Assert.assertEquals(4, metric.getSum(ClusterFlowEvent.PASS));
-        Assert.assertEquals(1, metric.getSum(ClusterFlowEvent.BLOCK));
-        Assert.assertEquals(160, metric.getAvg(ClusterFlowEvent.PASS), 0.01);
-        Assert.assertEquals(200, metric.tryOccupyNext(ClusterFlowEvent.PASS, 111, 900));
-        metric.add(ClusterFlowEvent.PASS, 1);
-        metric.add(ClusterFlowEvent.PASS, 2);
-        metric.add(ClusterFlowEvent.PASS, 1);
-        Assert.assertEquals(200, metric.tryOccupyNext(ClusterFlowEvent.PASS, 222, 900));
-        metric.add(ClusterFlowEvent.PASS, 1);
-        metric.add(ClusterFlowEvent.PASS, 2);
-        metric.add(ClusterFlowEvent.PASS, 1);
-        Assert.assertEquals(0, metric.tryOccupyNext(ClusterFlowEvent.PASS, 333, 900));
+        try (MockedStatic<TimeUtil> mocked = super.mockTimeUtil()) {
+            setCurrentMillis(mocked, System.currentTimeMillis());
+            ClusterMetric metric = new ClusterMetric(5, 25);
+            metric.add(ClusterFlowEvent.PASS, 1);
+            metric.add(ClusterFlowEvent.PASS, 2);
+            metric.add(ClusterFlowEvent.PASS, 1);
+            metric.add(ClusterFlowEvent.BLOCK, 1);
+            Assert.assertEquals(4, metric.getSum(ClusterFlowEvent.PASS));
+            Assert.assertEquals(1, metric.getSum(ClusterFlowEvent.BLOCK));
+            Assert.assertEquals(160, metric.getAvg(ClusterFlowEvent.PASS), 0.01);
+            Assert.assertEquals(200, metric.tryOccupyNext(ClusterFlowEvent.PASS, 111, 900));
+            metric.add(ClusterFlowEvent.PASS, 1);
+            metric.add(ClusterFlowEvent.PASS, 2);
+            metric.add(ClusterFlowEvent.PASS, 1);
+            Assert.assertEquals(200, metric.tryOccupyNext(ClusterFlowEvent.PASS, 222, 900));
+            metric.add(ClusterFlowEvent.PASS, 1);
+            metric.add(ClusterFlowEvent.PASS, 2);
+            metric.add(ClusterFlowEvent.PASS, 1);
+            Assert.assertEquals(0, metric.tryOccupyNext(ClusterFlowEvent.PASS, 333, 900));
+        }
     }
 }

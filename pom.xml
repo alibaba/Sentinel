@@ -213,18 +213,6 @@
                 <version>2.0.0.0</version>
                 <scope>test</scope>
             </dependency>
-            <dependency>
-                <groupId>org.powermock</groupId>
-                <artifactId>powermock-module-junit4</artifactId>
-                <version>${powermock.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.powermock</groupId>
-                <artifactId>powermock-api-mockito2</artifactId>
-                <version>${powermock.version}</version>
-                <scope>test</scope>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -281,7 +269,7 @@
                     <execution>
                         <id>default-compile</id>
                         <configuration>
-                            <release>11</release>
+                            <release>17</release>
                         </configuration>
                     </execution>
                     <execution>
