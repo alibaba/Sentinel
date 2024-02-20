@@ -3,9 +3,7 @@ name: Sentinel CI
 on:
   push:
     branches:
-      - master
-      - "1.8"
-      - "2.0"
+      - '*'
   pull_request:
     branches:
       - master
@@ -17,20 +15,26 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [8, 11]
+        java: [8, 11, 17]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Setup Java
-        uses: actions/setup-java@v3
+      - name: Setup Java for test
+        uses: actions/setup-java@v4
         with:
           java-version: ${{ matrix.java }}
           distribution: 'temurin'
-          architecture: x64
+          cache: 'maven'
+
+      - name: Setup Java for mvn
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
 
       - name: Test with Maven
-        run: mvn --batch-mode test
+        run: mvn --batch-mode test -Dsurefire.jdk-toolchain-version=${{ matrix.java }}
 
       - name: Build with Maven
         run: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -DminimumPriority=1

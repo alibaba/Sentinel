@@ -17,9 +17,11 @@ package com.alibaba.csp.sentinel.slots.statistic.base;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.alibaba.csp.sentinel.util.TimeUtil;
 import org.junit.Test;
 
 import com.alibaba.csp.sentinel.test.AbstractTimeBasedTest;
+import org.mockito.MockedStatic;
 
 import static org.junit.Assert.*;
 
@@ -30,36 +32,38 @@ public class LeapArrayTest extends AbstractTimeBasedTest {
     
     @Test
     public void testGetValidHead() {
-        int windowLengthInMs = 100;
-        int intervalInMs = 1000;
-        int sampleCount = intervalInMs / windowLengthInMs;
-        LeapArray<AtomicInteger> leapArray = new LeapArray<AtomicInteger>(sampleCount, intervalInMs) {
-            @Override
-            public AtomicInteger newEmptyBucket(long time) {
-                return new AtomicInteger(0);
+        try (MockedStatic<TimeUtil> mocked = super.mockTimeUtil()) {
+            int windowLengthInMs = 100;
+            int intervalInMs = 1000;
+            int sampleCount = intervalInMs / windowLengthInMs;
+            LeapArray<AtomicInteger> leapArray = new LeapArray<AtomicInteger>(sampleCount, intervalInMs) {
+                @Override
+                public AtomicInteger newEmptyBucket(long time) {
+                    return new AtomicInteger(0);
+                }
+
+                @Override
+                protected WindowWrap<AtomicInteger> resetWindowTo(WindowWrap<AtomicInteger> windowWrap, long startTime) {
+                    windowWrap.resetTo(startTime);
+                    windowWrap.value().set(0);
+                    return windowWrap;
+                }
+            };
+
+            WindowWrap<AtomicInteger> expected1 = leapArray.currentWindow();
+            expected1.value().addAndGet(1);
+            sleep(mocked, windowLengthInMs);
+            WindowWrap<AtomicInteger> expected2 = leapArray.currentWindow();
+            expected2.value().addAndGet(2);
+            for (int i = 0; i < sampleCount - 2; i++) {
+                sleep(mocked, windowLengthInMs);
+                leapArray.currentWindow().value().addAndGet(i + 3);
             }
 
-            @Override
-            protected WindowWrap<AtomicInteger> resetWindowTo(WindowWrap<AtomicInteger> windowWrap, long startTime) {
-                windowWrap.resetTo(startTime);
-                windowWrap.value().set(0);
-                return windowWrap;
-            }
-        };
-        
-        WindowWrap<AtomicInteger> expected1 = leapArray.currentWindow();
-        expected1.value().addAndGet(1);
-        sleep(windowLengthInMs);
-        WindowWrap<AtomicInteger> expected2 = leapArray.currentWindow();
-        expected2.value().addAndGet(2);
-        for (int i = 0; i < sampleCount - 2; i++) {
-            sleep(windowLengthInMs);
-            leapArray.currentWindow().value().addAndGet(i + 3);
+            assertSame(expected1, leapArray.getValidHead());
+            sleep(mocked, windowLengthInMs);
+            assertSame(expected2, leapArray.getValidHead());
         }
-
-        assertSame(expected1, leapArray.getValidHead());
-        sleep(windowLengthInMs);
-        assertSame(expected2, leapArray.getValidHead());
     }
 
 }

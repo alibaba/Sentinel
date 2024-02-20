@@ -17,9 +17,11 @@ package com.alibaba.csp.sentinel.slots.block.flow.tokenbucket;
 
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.test.AbstractTimeBasedTest;
+import com.alibaba.csp.sentinel.util.TimeUtil;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.MockedStatic;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -52,74 +54,78 @@ public class TokenBucketTest extends AbstractTimeBasedTest {
 
     @Test
     public void testForDefaultTokenBucket() throws InterruptedException {
-        long unitProduceNum = 1;
-        long maxTokenNum = 2;
-        long intervalInMs = 1000;
-        long testStart = System.currentTimeMillis();
-        setCurrentMillis(testStart);
+        try (MockedStatic<TimeUtil> mocked = super.mockTimeUtil()) {
+            long unitProduceNum = 1;
+            long maxTokenNum = 2;
+            long intervalInMs = 1000;
+            long testStart = System.currentTimeMillis();
+            setCurrentMillis(mocked, testStart);
 
-        DefaultTokenBucket defaultTokenBucket = new DefaultTokenBucket(unitProduceNum, maxTokenNum, intervalInMs);
+            DefaultTokenBucket defaultTokenBucket = new DefaultTokenBucket(unitProduceNum, maxTokenNum, intervalInMs);
 
-        assertTrue(defaultTokenBucket.tryConsume(1));
-        assertFalse(defaultTokenBucket.tryConsume(1));
+            assertTrue(defaultTokenBucket.tryConsume(1));
+            assertFalse(defaultTokenBucket.tryConsume(1));
 
-        DefaultTokenBucket defaultTokenBucketFullStart = new DefaultTokenBucket(unitProduceNum, maxTokenNum,
-                true, intervalInMs);
+            DefaultTokenBucket defaultTokenBucketFullStart = new DefaultTokenBucket(unitProduceNum, maxTokenNum,
+                    true, intervalInMs);
 
-        assertTrue(defaultTokenBucketFullStart.tryConsume(2));
-        assertFalse(defaultTokenBucketFullStart.tryConsume(1));
+            assertTrue(defaultTokenBucketFullStart.tryConsume(2));
+            assertFalse(defaultTokenBucketFullStart.tryConsume(1));
 
-        sleep(1000);
-        assertTrue(defaultTokenBucket.tryConsume(1));
-        assertFalse(defaultTokenBucket.tryConsume(1));
+            sleep(mocked, 1000);
+            assertTrue(defaultTokenBucket.tryConsume(1));
+            assertFalse(defaultTokenBucket.tryConsume(1));
 
-        sleep(1000);
-        assertTrue(defaultTokenBucketFullStart.tryConsume(2));
-        assertFalse(defaultTokenBucketFullStart.tryConsume(1));
+            sleep(mocked, 1000);
+            assertTrue(defaultTokenBucketFullStart.tryConsume(2));
+            assertFalse(defaultTokenBucketFullStart.tryConsume(1));
+        }
     }
 
     @Test
     public void testForStrictTokenBucket() throws InterruptedException {
-        long unitProduceNum = 5;
-        long maxTokenNum = 10;
-        long intervalInMs = 1000;
-        final int n = 64;
-        long testStart = System.currentTimeMillis();
-        setCurrentMillis(testStart);
+        try (MockedStatic<TimeUtil> mocked = super.mockTimeUtil()) {
+            long unitProduceNum = 5;
+            long maxTokenNum = 10;
+            long intervalInMs = 1000;
+            final int n = 64;
+            long testStart = System.currentTimeMillis();
+            setCurrentMillis(mocked, testStart);
 
-        final AtomicLong passNum = new AtomicLong();
-        final AtomicLong passNumFullStart = new AtomicLong();
-        final CountDownLatch countDownLatch = new CountDownLatch(n);
-        final CountDownLatch countDownLatchFullStart = new CountDownLatch(n);
-        final StrictTokenBucket strictTokenBucket = new StrictTokenBucket(unitProduceNum, maxTokenNum, intervalInMs);
-        final StrictTokenBucket strictTokenBucketFullStart = new StrictTokenBucket(unitProduceNum, maxTokenNum, true,
-                intervalInMs);
+            final AtomicLong passNum = new AtomicLong();
+            final AtomicLong passNumFullStart = new AtomicLong();
+            final CountDownLatch countDownLatch = new CountDownLatch(n);
+            final CountDownLatch countDownLatchFullStart = new CountDownLatch(n);
+            final StrictTokenBucket strictTokenBucket = new StrictTokenBucket(unitProduceNum, maxTokenNum, intervalInMs);
+            final StrictTokenBucket strictTokenBucketFullStart = new StrictTokenBucket(unitProduceNum, maxTokenNum, true,
+                    intervalInMs);
 
-        for (int i = 0; i < n; i++) {
-            threadPoolExecutor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    if (strictTokenBucket.tryConsume(1)) {
-                        passNum.incrementAndGet();
+            for (int i = 0; i < n; i++) {
+                threadPoolExecutor.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (strictTokenBucket.tryConsume(1)) {
+                            passNum.incrementAndGet();
+                        }
+                        countDownLatch.countDown();
                     }
-                    countDownLatch.countDown();
-                }
-            });
-            threadPoolExecutor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    if (strictTokenBucketFullStart.tryConsume(1)) {
-                        passNumFullStart.incrementAndGet();
+                });
+                threadPoolExecutor.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (strictTokenBucketFullStart.tryConsume(1)) {
+                            passNumFullStart.incrementAndGet();
+                        }
+                        countDownLatchFullStart.countDown();
                     }
-                    countDownLatchFullStart.countDown();
-                }
-            });
+                });
+            }
+
+            countDownLatch.await();
+            countDownLatchFullStart.await();
+            assertEquals(5, passNum.longValue());
+            assertEquals(10, passNumFullStart.longValue());
         }
-
-        countDownLatch.await();
-        countDownLatchFullStart.await();
-        assertEquals(5, passNum.longValue());
-        assertEquals(10, passNumFullStart.longValue());
     }
 
 }

@@ -16,10 +16,12 @@
 package com.alibaba.csp.sentinel.cluster.flow.statistic.limit;
 
 import com.alibaba.csp.sentinel.cluster.server.config.ClusterServerConfigManager;
-import com.alibaba.csp.sentinel.cluster.test.AbstractTimeBasedTest;
+import com.alibaba.csp.sentinel.cluster.server.AbstractTimeBasedTest;
+import com.alibaba.csp.sentinel.util.TimeUtil;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.MockedStatic;
 
 public class GlobalRequestLimiterTest extends AbstractTimeBasedTest {
     @Before
@@ -29,21 +31,23 @@ public class GlobalRequestLimiterTest extends AbstractTimeBasedTest {
 
     @Test
     public void testPass() throws InterruptedException {
-        setCurrentMillis(System.currentTimeMillis());
-        GlobalRequestLimiter.initIfAbsent("user");
-        Assert.assertNotNull(GlobalRequestLimiter.getRequestLimiter("user"));
-        Assert.assertEquals(3, GlobalRequestLimiter.getMaxAllowedQps("user"), 0.01);
-        Assert.assertTrue(GlobalRequestLimiter.tryPass("user"));
-        Assert.assertTrue(GlobalRequestLimiter.tryPass("user"));
-        Assert.assertTrue(GlobalRequestLimiter.tryPass("user"));
-        Assert.assertFalse(GlobalRequestLimiter.tryPass("user"));
-        Assert.assertEquals(3, GlobalRequestLimiter.getCurrentQps("user"), 0.01);
+        try (MockedStatic<TimeUtil> mocked = super.mockTimeUtil()) {
+            setCurrentMillis(mocked, System.currentTimeMillis());
+            GlobalRequestLimiter.initIfAbsent("user");
+            Assert.assertNotNull(GlobalRequestLimiter.getRequestLimiter("user"));
+            Assert.assertEquals(3, GlobalRequestLimiter.getMaxAllowedQps("user"), 0.01);
+            Assert.assertTrue(GlobalRequestLimiter.tryPass("user"));
+            Assert.assertTrue(GlobalRequestLimiter.tryPass("user"));
+            Assert.assertTrue(GlobalRequestLimiter.tryPass("user"));
+            Assert.assertFalse(GlobalRequestLimiter.tryPass("user"));
+            Assert.assertEquals(3, GlobalRequestLimiter.getCurrentQps("user"), 0.01);
 
-        // wait a second to refresh the window
-        sleep(1000);
-        Assert.assertTrue(GlobalRequestLimiter.tryPass("user"));
-        Assert.assertTrue(GlobalRequestLimiter.tryPass("user"));
-        Assert.assertEquals(2, GlobalRequestLimiter.getCurrentQps("user"), 0.01);
+            // wait a second to refresh the window
+            sleep(mocked, 1000);
+            Assert.assertTrue(GlobalRequestLimiter.tryPass("user"));
+            Assert.assertTrue(GlobalRequestLimiter.tryPass("user"));
+            Assert.assertEquals(2, GlobalRequestLimiter.getCurrentQps("user"), 0.01);
+        }
     }
 
     @Test

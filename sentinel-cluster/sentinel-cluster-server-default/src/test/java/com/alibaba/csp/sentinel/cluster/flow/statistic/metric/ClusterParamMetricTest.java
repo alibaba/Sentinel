@@ -15,9 +15,11 @@
  */
 package com.alibaba.csp.sentinel.cluster.flow.statistic.metric;
 
-import com.alibaba.csp.sentinel.cluster.test.AbstractTimeBasedTest;
+import com.alibaba.csp.sentinel.cluster.server.AbstractTimeBasedTest;
+import com.alibaba.csp.sentinel.util.TimeUtil;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.MockedStatic;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,26 +28,28 @@ public class ClusterParamMetricTest extends AbstractTimeBasedTest {
 
     @Test
     public void testClusterParamMetric() {
-        setCurrentMillis(System.currentTimeMillis());
-        Map<Object, Double> topMap = new HashMap<Object, Double>();
-        ClusterParamMetric metric = new ClusterParamMetric(5, 25, 100);
-        metric.addValue("e1", -1);
-        metric.addValue("e1", -2);
-        metric.addValue("e2", 100);
-        metric.addValue("e2", 23);
-        metric.addValue("e3", 100);
-        metric.addValue("e3", 230);
-        Assert.assertEquals(-3, metric.getSum("e1"));
-        Assert.assertEquals(-120, metric.getAvg("e1"), 0.01);
-        topMap.put("e3", (double) 13200);
-        Assert.assertEquals(topMap, metric.getTopValues(1));
-        topMap.put("e2", (double) 4920);
-        topMap.put("e1", (double) -120);
-        Assert.assertEquals(topMap, metric.getTopValues(5));
-        metric.addValue("e2", 100);
-        metric.addValue("e2", 23);
-        Assert.assertEquals(246, metric.getSum("e2"));
-        Assert.assertEquals(9840, metric.getAvg("e2"), 0.01);
+        try (MockedStatic<TimeUtil> mocked = super.mockTimeUtil()) {
+            setCurrentMillis(mocked, System.currentTimeMillis());
+            Map<Object, Double> topMap = new HashMap<Object, Double>();
+            ClusterParamMetric metric = new ClusterParamMetric(5, 25, 100);
+            metric.addValue("e1", -1);
+            metric.addValue("e1", -2);
+            metric.addValue("e2", 100);
+            metric.addValue("e2", 23);
+            metric.addValue("e3", 100);
+            metric.addValue("e3", 230);
+            Assert.assertEquals(-3, metric.getSum("e1"));
+            Assert.assertEquals(-120, metric.getAvg("e1"), 0.01);
+            topMap.put("e3", (double) 13200);
+            Assert.assertEquals(topMap, metric.getTopValues(1));
+            topMap.put("e2", (double) 4920);
+            topMap.put("e1", (double) -120);
+            Assert.assertEquals(topMap, metric.getTopValues(5));
+            metric.addValue("e2", 100);
+            metric.addValue("e2", 23);
+            Assert.assertEquals(246, metric.getSum("e2"));
+            Assert.assertEquals(9840, metric.getAvg("e2"), 0.01);
+        }
     }
 
     @Test(expected = IllegalArgumentException.class)

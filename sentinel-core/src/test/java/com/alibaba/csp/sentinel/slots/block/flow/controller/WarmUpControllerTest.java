@@ -20,10 +20,12 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.alibaba.csp.sentinel.util.TimeUtil;
 import org.junit.Test;
 
 import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.test.AbstractTimeBasedTest;
+import org.mockito.MockedStatic;
 
 /**
  * @author jialiang.linjl
@@ -32,32 +34,34 @@ public class WarmUpControllerTest extends AbstractTimeBasedTest {
 
     @Test
     public void testWarmUp() throws InterruptedException {
-        WarmUpController warmupController = new WarmUpController(10, 10, 3);
-        
-        setCurrentMillis(System.currentTimeMillis());
+        try (MockedStatic<TimeUtil> mocked = super.mockTimeUtil()) {
+            WarmUpController warmupController = new WarmUpController(10, 10, 3);
 
-        Node node = mock(Node.class);
+            setCurrentMillis(mocked, System.currentTimeMillis());
 
-        when(node.passQps()).thenReturn(8d);
-        when(node.previousPassQps()).thenReturn(1d);
+            Node node = mock(Node.class);
 
-        assertFalse(warmupController.canPass(node, 1));
+            when(node.passQps()).thenReturn(8d);
+            when(node.previousPassQps()).thenReturn(1d);
 
-        when(node.passQps()).thenReturn(1d);
-        when(node.previousPassQps()).thenReturn(1d);
+            assertFalse(warmupController.canPass(node, 1));
 
-        assertTrue(warmupController.canPass(node, 1));
+            when(node.passQps()).thenReturn(1d);
+            when(node.previousPassQps()).thenReturn(1d);
 
-        when(node.previousPassQps()).thenReturn(10d);
+            assertTrue(warmupController.canPass(node, 1));
 
-        for (int i = 0; i < 100; i++) {
-            sleep(100);
-            warmupController.canPass(node, 1);
+            when(node.previousPassQps()).thenReturn(10d);
+
+            for (int i = 0; i < 100; i++) {
+                sleep(mocked, 100);
+                warmupController.canPass(node, 1);
+            }
+            when(node.passQps()).thenReturn(8d);
+            assertTrue(warmupController.canPass(node, 1));
+
+            when(node.passQps()).thenReturn(10d);
+            assertFalse(warmupController.canPass(node, 1));
         }
-        when(node.passQps()).thenReturn(8d);
-        assertTrue(warmupController.canPass(node, 1));
-
-        when(node.passQps()).thenReturn(10d);
-        assertFalse(warmupController.canPass(node, 1));
     }
 }

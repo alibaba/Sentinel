@@ -13,23 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.test;
+package com.alibaba.csp.sentinel.cluster;
 
-import com.alibaba.csp.sentinel.Entry;
-import com.alibaba.csp.sentinel.SphU;
-import com.alibaba.csp.sentinel.Tracer;
-import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.util.TimeUtil;
 import org.junit.runner.RunWith;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import com.alibaba.csp.sentinel.util.TimeUtil;
-
-import java.util.concurrent.ThreadLocalRandom;
-
 /**
- * Mock support for {@link TimeUtil}.
+ * Mock support for {@link TimeUtil}
  *
  * @author jason
  */
@@ -60,40 +53,5 @@ public abstract class AbstractTimeBasedTest {
 
     protected final void sleepSecond(MockedStatic<TimeUtil> mocked, long timeSec) {
         sleep(mocked, timeSec * 1000);
-    }
-    
-    protected final boolean entryAndSleepFor(MockedStatic<TimeUtil> mocked, String res, int sleepMs) {
-        Entry entry = null;
-        try {
-            entry = SphU.entry(res);
-            sleep(mocked, sleepMs);
-        } catch (BlockException ex) {
-            return false;
-        } catch (Exception ex) {
-            Tracer.traceEntry(ex, entry);
-        } finally {
-            if (entry != null) {
-                entry.exit();
-            }
-        }
-        return true;
-    }
-
-    protected final boolean entryWithErrorIfPresent(MockedStatic<TimeUtil> mocked, String res, Exception ex) {
-        Entry entry = null;
-        try {
-            entry = SphU.entry(res);
-            if (ex != null) {
-                Tracer.traceEntry(ex, entry);
-            }
-            sleep(mocked, ThreadLocalRandom.current().nextInt(5, 10));
-        } catch (BlockException b) {
-            return false;
-        } finally {
-            if (entry != null) {
-                entry.exit();
-            }
-        }
-        return true;
     }
 }
