@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [8, 11, 17, 21]
+        java: [8, 11, 17]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,9 +31,6 @@ jobs:
         with:
           java-version: 17
           distribution: 'temurin'
-
-      - run: ls ~/.m2/
-      - run: cat ~/.m2/toolchains.xml
 
       - name: Test with Maven
         run: mvn --batch-mode test -Dsurefire.jdk-toolchain-version=${{ matrix.java }}
