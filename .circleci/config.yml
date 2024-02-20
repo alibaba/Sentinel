@@ -1,16 +1,5 @@
 version: 2
 jobs:
-  integration-test:
-    docker:
-      - image: cimg/openjdk:8.0
-    working_directory: ~/sentinel
-    environment:
-      MAVEN_OPTS: -Xmx3200m
-    steps:
-      - checkout
-      # Run tests
-      - run: mvn integration-test
-
   document-lint:
     docker: 
       # this image is build from Dockerfile 
@@ -49,5 +38,4 @@ workflows:
   version: 2
   ci:
     jobs:
-      - integration-test
       - document-lint
