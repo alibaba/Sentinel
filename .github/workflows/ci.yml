@@ -25,6 +25,7 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
           distribution: 'temurin'
+          cache: 'maven'
 
       - name: Setup Java for mvn
         uses: actions/setup-java@v4
