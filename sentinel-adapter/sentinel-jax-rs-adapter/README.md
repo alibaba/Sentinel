@@ -55,7 +55,7 @@ As describe in `6.7.1 exceptions` of [jaxrs-2_1-final-spec](https://download.ora
 
 For jax-rs client, we provide `SentinelJaxRsClientTemplate` you can use it like this:
 
-```
+```java
 Response response = SentinelJaxRsClientTemplate.execute(resourceName, new Supplier<Response>() {
     @Override
     public Response get() {
@@ -67,7 +67,7 @@ Response response = SentinelJaxRsClientTemplate.execute(resourceName, new Suppli
 
 or executeAsync like this:
 
-```
+```java
 Future<Response> future = SentinelJaxRsClientTemplate.executeAsync(resourceName, new Supplier<Future<Response>>() {
     @Override
     public Future<Response> get() {

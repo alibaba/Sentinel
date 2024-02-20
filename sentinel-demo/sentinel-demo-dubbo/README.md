@@ -33,13 +33,13 @@ Service Provider 用于向外界提供服务，处理各个消费者的调用请
 
 Demo 1 演示了此限流场景，我们看一下这种模式的限流产生的效果。假设我们已经定义了某个服务接口 `com.alibaba.csp.sentinel.demo.dubbo.FooService`，其中有一个方法 `sayHello(java.lang.String)`，Provider 端该方法设定 QPS 阈值为 10。在 Consumer 端在 1s 之内连续发起 15 次调用，可以通过日志文件看到 Provider 端被限流。拦截日志统一记录在 `~/logs/csp/sentinel-block.log` 中：
 
-```
+```plaintext
 2018-07-24 17:13:43|1|com.alibaba.csp.sentinel.demo.dubbo.FooService:sayHello(java.lang.String),FlowException,default,|5,0
 ```
 
 在 Provider 对应的 metrics 日志中也有记录：
 
-```
+```plaintext
 1532423623000|2018-07-24 17:13:43|com.alibaba.csp.sentinel.demo.dubbo.FooService|15|0|15|0|3
 1532423623000|2018-07-24 17:13:43|com.alibaba.csp.sentinel.demo.dubbo.FooService:sayHello(java.lang.String)|10|5|10|0|0
 ```
@@ -50,7 +50,7 @@ Demo 1 演示了此限流场景，我们看一下这种模式的限流产生的�
 
 在限流日志中会也会记录调用方的名称，如：
 
-```
+```plaintext
 2018-07-25 16:26:48|1|com.alibaba.csp.sentinel.demo.dubbo.FooService:sayHello(java.lang.String),FlowException,default,demo-consumer|5,0
 ```
 

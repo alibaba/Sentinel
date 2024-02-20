@@ -12,19 +12,19 @@
 
 ## Install Packages
 
-```
+```shell
 npm install
 ```
 
 ## Start Development
 
-```
+```shell
 npm start
 ```
 
 ## Build for production
 
-```
+```shell
 npm run build
 ```
 

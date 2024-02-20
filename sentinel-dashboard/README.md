@@ -60,7 +60,7 @@ java -Dserver.port=8080 \
 
 ## 6. 构建Docker镜像
 
-```
+```bash
 docker build --build-arg SENTINEL_VERSION=1.8.7 -t ${REGISTRY}/sentinel-dashboard:v1.8.7 .
 ```
 

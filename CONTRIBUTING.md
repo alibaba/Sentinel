@@ -73,7 +73,7 @@ All code should be well reviewed by one or more committers. Some principles:
 
 #### Mailing list
 
-If you have any questions or advice, please contact sentinel@linux.alibaba.com.
+If you have any questions or advice, please contact <sentinel@linux.alibaba.com>.
 
 #### Gitter
 

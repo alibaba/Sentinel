@@ -28,7 +28,7 @@ We may refer to the the sample `com.alibaba.csp.sentinel.datasource.spring.cloud
 We offer test cases and demo in the package: `com.alibaba.csp.sentinel.datasource.spring.cloud.config.test`.
 When you are running test cases, please follow the steps:
 
-```
+```plaintext
 // First, start the Spring Cloud config server
 com.alibaba.csp.sentinel.datasource.spring.cloud.config.server.ConfigServer
 

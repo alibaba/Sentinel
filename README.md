@@ -1,6 +1,6 @@
-<img src="https://user-images.githubusercontent.com/9434884/43697219-3cb4ef3a-9975-11e8-9a9c-73f4f537442d.png" alt="Sentinel Logo" width="50%">
-
 # Sentinel: The Sentinel of Your Microservices
+
+<img src="https://user-images.githubusercontent.com/9434884/43697219-3cb4ef3a-9975-11e8-9a9c-73f4f537442d.png" alt="Sentinel Logo" width="50%">
 
 [![Sentinel CI](https://github.com/alibaba/Sentinel/actions/workflows/ci.yml/badge.svg)](https://github.com/alibaba/Sentinel/actions/workflows/ci.yml)
 [![Codecov](https://codecov.io/gh/alibaba/Sentinel/branch/master/graph/badge.svg)](https://codecov.io/gh/alibaba/Sentinel)
@@ -111,7 +111,7 @@ For more information, please refer to [How To Use](https://sentinelguard.io/en-u
 
 After running the demo for a while, you can see the following records in `~/logs/csp/${appName}-metrics.log.{date}` (When using the default `DateFileLogHandler`).
 
-```
+```plaintext
 |--timestamp-|------date time----|-resource-|p |block|s |e|rt  |occupied
 1529998904000|2018-06-26 15:41:44|HelloWorld|20|0    |20|0|0   |0
 1529998905000|2018-06-26 15:41:45|HelloWorld|20|5579 |20|0|728 |0

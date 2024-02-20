@@ -47,7 +47,7 @@ public String defaultFallback(Throwable t) {
 According to [9.4. Interceptor enablement and ordering](https://docs.jboss.org/cdi/spec/2.0/cdi-spec.html#enabled_interceptors), to enable the interceptor,
 we may add configuration in `resources/META-INF/beans.xml` like this:
 
-```
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://xmlns.jcp.org/xml/ns/javaee"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"

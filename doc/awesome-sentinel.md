@@ -12,8 +12,8 @@ You can also add to [sentinel-group/sentinel-awesome](https://github.com/sentine
 ## Contents
 
 - [Presentations](#presentations)
-- [Tutorials](#tutorials)
-- [Demos](#demos)
+- [Tutorials](#tutorialssamples)
+- [Demos](../demos)
 - [Extensions / Integrations](#extensions--integrations)
 - [Blog Posts](#blog-posts)
 
@@ -31,9 +31,9 @@ You can also add to [sentinel-group/sentinel-awesome](https://github.com/sentine
 
 ## Polyglot Support
 
-- <img src="https://raw.githubusercontent.com/sentinel-group/sentinel-awesome/master/sentinel_favicon.ico" title="Sentinel official" height="16px"> [Sentinel Go](https://github.com/alibaba/sentinel-golang)
-- <img src="https://raw.githubusercontent.com/sentinel-group/sentinel-awesome/master/sentinel_favicon.ico" title="Sentinel official" height="16px"> [Sentinel C++](https://github.com/alibaba/sentinel-cpp)
-- <img src="https://raw.githubusercontent.com/sentinel-group/sentinel-awesome/master/sentinel_favicon.ico" title="Sentinel official" height="16px"> [Sentinel Rust](https://github.com/sentinel-group/sentinel-rust)
+- <img alt="Sentinel Go" src="https://raw.githubusercontent.com/sentinel-group/sentinel-awesome/master/sentinel_favicon.ico" title="Sentinel official" height="16px"> [Sentinel Go](https://github.com/alibaba/sentinel-golang)
+- <img alt="Sentinel C++" src="https://raw.githubusercontent.com/sentinel-group/sentinel-awesome/master/sentinel_favicon.ico" title="Sentinel official" height="16px"> [Sentinel C++](https://github.com/alibaba/sentinel-cpp)
+- <img alt="Sentinel Rust" src="https://raw.githubusercontent.com/sentinel-group/sentinel-awesome/master/sentinel_favicon.ico" title="Sentinel official" height="16px"> [Sentinel Rust](https://github.com/sentinel-group/sentinel-rust)
 
 ## Extensions / Integrations
 
