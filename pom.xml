@@ -46,10 +46,10 @@
 
         <!-- Test libs -->
         <junit.version>4.12</junit.version>
-        <mockito.version>3.12.4</mockito.version>
+        <mockito.version>4.11.0</mockito.version>
+        <byte-buddy.version>1.14.10</byte-buddy.version>
         <assertj.version>3.12.1</assertj.version>
         <awaitility.version>3.1.5</awaitility.version>
-        <powermock.version>2.0.0</powermock.version>
 
         <!-- Build -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -194,6 +194,16 @@
                 <artifactId>mockito-inline</artifactId>
                 <version>${mockito.version}</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy</artifactId>
+                <version>${byte-buddy.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy-agent</artifactId>
+                <version>${byte-buddy.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.assertj</groupId>
