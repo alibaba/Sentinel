@@ -159,6 +159,13 @@
                 <artifactId>sentinel-cluster-common-default</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-web-adapter-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>com.alibaba.csp</groupId>
                 <artifactId>sentinel-adapter</artifactId>
