@@ -62,7 +62,7 @@
         <maven.javadoc.version>3.0.1</maven.javadoc.version>
         <maven.deploy.version>2.8.2</maven.deploy.version>
         <maven.gpg.version>1.6</maven.gpg.version>
-        <maven.jacoco.version>0.8.3</maven.jacoco.version>
+        <maven.jacoco.version>0.8.11</maven.jacoco.version>
         <maven.jar.version>3.3.0</maven.jar.version>
         <maven.pmd.version>3.8</maven.pmd.version>
     </properties>
@@ -302,12 +302,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven.surefire.version}</version>
-                <configuration>
-                    <!-- CircleCI build workaround -->
-                    <argLine>@{argLine} -Xms1024m -Xmx2048m</argLine>
-                    <argLine>-Dfile.encoding=UTF-8</argLine>
-                    <useSystemClassLoader>false</useSystemClassLoader>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
