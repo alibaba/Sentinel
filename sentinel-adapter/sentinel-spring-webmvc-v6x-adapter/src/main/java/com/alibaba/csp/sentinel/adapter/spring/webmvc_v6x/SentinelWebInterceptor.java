@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2019 Alibaba Group Holding Ltd.
+ * Copyright 1999-2024 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.adapter.spring.webmvc;
+package com.alibaba.csp.sentinel.adapter.spring.webmvc_v6x;
 
-import com.alibaba.csp.sentinel.adapter.spring.webmvc.config.SentinelWebMvcConfig;
-import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.UrlCleaner;
+import com.alibaba.csp.sentinel.adapter.spring.webmvc_v6x.config.SentinelWebMvcConfig;
 
-import javax.servlet.http.HttpServletRequest;
+import com.alibaba.csp.sentinel.adapter.web.common.UrlCleaner;
+import jakarta.servlet.http.HttpServletRequest;
 
-import com.alibaba.csp.sentinel.util.StringUtil;
 import org.springframework.web.servlet.HandlerMapping;
 
 /**
@@ -28,8 +27,7 @@ import org.springframework.web.servlet.HandlerMapping;
  * <p>
  * This will record resource as `${uri}`.
  *
- * @author kaizi2009
- * @since 1.7.1
+ * @since 1.8.8
  */
 public class SentinelWebInterceptor extends AbstractSentinelInterceptor {
 
@@ -61,9 +59,8 @@ public class SentinelWebInterceptor extends AbstractSentinelInterceptor {
         if (urlCleaner != null) {
             resourceName = urlCleaner.clean(resourceName);
         }
-        // Add method specification if necessary
-        if (StringUtil.isNotEmpty(resourceName) && config.isHttpMethodSpecify()) {
-            resourceName = request.getMethod().toUpperCase() + ":" + resourceName;
+        if (config.isContextPathSpecify() && request.getContextPath() != null) {
+            resourceName = request.getContextPath() + resourceName;
         }
         return resourceName;
     }
