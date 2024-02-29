@@ -25,18 +25,15 @@ jobs:
       - name: Setup Java for test
         uses: actions/setup-java@v4
         with:
-          java-version: ${{ matrix.java }}
+          java-version: "${{ matrix.java }}"
           distribution: 'temurin'
           cache: 'maven'
 
       - name: Setup Java for mvn
         uses: actions/setup-java@v4
         with:
-          java-version: 17
+          java-version: "17"
           distribution: 'temurin'
-
-      - name: Build with Maven
-        run: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -DminimumPriority=1
 
       - name: Maven Test With Spring 6.x
         run: mvn --batch-mode test -Dsurefire.jdk-toolchain-version=${{ matrix.java }}
