@@ -1,8 +1,15 @@
 package com.alibaba.csp.sentinel.setting.fallback;
 
+import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
+import com.alibaba.csp.sentinel.property.SentinelProperty;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+/**
+ * @since 1.8.8
+ */
 public class BlockFallbackConfigManager {
 
     /**
@@ -10,6 +17,9 @@ public class BlockFallbackConfigManager {
      */
     private volatile Map<String, Map<Integer, BlockFallbackConfig<BlockFallbackConfig.WebBlockFallbackBehavior>>> webFallbackConfigMap
             = new HashMap<String, Map<Integer, BlockFallbackConfig<BlockFallbackConfig.WebBlockFallbackBehavior>>>();
+
+    private SentinelProperty<List<BlockFallbackConfig<Object>>> currentProperty
+            = new DynamicSentinelProperty<List<BlockFallbackConfig<Object>>>();
 
     private static class InstanceHolder {
         private static final BlockFallbackConfigManager INSTANCE = new BlockFallbackConfigManager();
@@ -19,8 +29,20 @@ public class BlockFallbackConfigManager {
         return BlockFallbackConfigManager.InstanceHolder.INSTANCE;
     }
 
-    public BlockFallbackConfig<BlockFallbackConfig.WebBlockFallbackBehavior> getWebFallbackConfig(String resource,
-                                                                                                  Class<?> exceptionClazz) {
+    /**
+     * Load new block fallback config, which will replace existing config.
+     *
+     * @param configList new config list to load
+     * @return whether the config was actually updated
+     */
+    public boolean loadConfig(List<BlockFallbackConfig<Object>> configList) {
+        return currentProperty.updateValue(configList);
+    }
+
+    public BlockFallbackConfig<BlockFallbackConfig.WebBlockFallbackBehavior> getWebFallbackConfig(
+            String resource,
+            Class<?> exceptionClazz
+    ) {
         if (resource == null || exceptionClazz == null) {
             return null;
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2020 Alibaba Group Holding Ltd.
+ * Copyright 1999-2024 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,11 @@
 package com.alibaba.csp.sentinel.setting.fallback;
 
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.csp.sentinel.slots.system.SystemBlockException;
 
 /**
  * @author Eric Zhao
  * @author guanyu
- * @since 1.8.2
+ * @since 1.8.8
  */
 public final class BlockFallbackUtils {
 
@@ -30,18 +29,13 @@ public final class BlockFallbackUtils {
             return null;
         }
         BlockFallbackConfig<BlockFallbackConfig.WebBlockFallbackBehavior> c;
-        // 系统保护规则特殊处理，取这个约定好的名称
-        if (ex instanceof SystemBlockException) {
-            c = BlockFallbackConfigManager.getInstance().getWebFallbackConfig(BlockFallbackConstants.SYSTEM_RESOURCE,
-                    ex.getClass());
-        } else {
-            c = BlockFallbackConfigManager.getInstance().getWebFallbackConfig(resource, ex.getClass());
-        }
+        c = BlockFallbackConfigManager.getInstance().getWebFallbackConfig(resource, ex.getClass());
         if (c == null) {
             return null;
         }
         return c.getFallbackBehavior();
     }
 
-    private BlockFallbackUtils() {}
+    private BlockFallbackUtils() {
+    }
 }
