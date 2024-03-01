@@ -36,10 +36,10 @@ public class WebFlowRuleManagerTest {
     @Test
     public void testLoadAndGetGatewayRules() {
         Set<WebFlowRule> rules = new HashSet<WebFlowRule>();
-        String ahasRoute = "ahas_route";
-        WebFlowRule rule1 = new WebFlowRule(ahasRoute)
+        String mseRoute = "mse_route";
+        WebFlowRule rule1 = new WebFlowRule(mseRoute)
             .setCount(500d);
-        WebFlowRule rule2 = new WebFlowRule(ahasRoute)
+        WebFlowRule rule2 = new WebFlowRule(mseRoute)
             .setCount(20d)
             .setBurst(5)
             .setParamItem(new WebParamItem()
@@ -58,10 +58,10 @@ public class WebFlowRuleManagerTest {
         rules.add(rule3);
         WebFlowRuleManager.loadRules(rules);
 
-        List<ParamFlowRule> convertedRules = WebFlowRuleManager.getConvertedParamRules(ahasRoute);
+        List<ParamFlowRule> convertedRules = WebFlowRuleManager.getConvertedParamRules(mseRoute);
         assertNotNull(convertedRules);
-        assertTrue(WebFlowRuleManager.getRulesForResource(ahasRoute).contains(rule1));
-        assertTrue(WebFlowRuleManager.getRulesForResource(ahasRoute).contains(rule2));
+        assertTrue(WebFlowRuleManager.getRulesForResource(mseRoute).contains(rule1));
+        assertTrue(WebFlowRuleManager.getRulesForResource(mseRoute).contains(rule2));
     }
 
     @Test

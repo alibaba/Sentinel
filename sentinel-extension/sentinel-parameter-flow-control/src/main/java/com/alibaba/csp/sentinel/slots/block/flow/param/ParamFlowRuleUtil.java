@@ -45,11 +45,15 @@ public final class ParamFlowRuleUtil {
      * @return true if valid, otherwise false
      */
     public static boolean isValidRule(ParamFlowRule rule) {
-        return rule != null && !StringUtil.isBlank(rule.getResource()) && rule.getCount() >= 0
-            && rule.getGrade() >= 0 && rule.getParamIdx() != null
-            && rule.getBurstCount() >= 0 && rule.getControlBehavior() >= 0
-            && rule.getDurationInSec() > 0 && rule.getMaxQueueingTimeMs() >= 0
-            && checkCluster(rule) & checkRegexField(rule);
+        boolean valid = rule != null && !StringUtil.isBlank(rule.getResource()) && rule.getCount() >= 0
+                && rule.getGrade() >= 0
+                && rule.getBurstCount() >= 0 && rule.getControlBehavior() >= 0
+                && rule.getDurationInSec() > 0 && rule.getMaxQueueingTimeMs() >= 0
+                && checkCluster(rule) && checkRegexField(rule);
+        if (valid) {
+            valid = rule.getParamIdx() != null || StringUtil.isNotEmpty(rule.getParamKey());
+        }
+        return valid;
     }
 
     private static boolean checkCluster(/*@PreChecked*/ ParamFlowRule rule) {
