@@ -13,7 +13,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <spring.version>6.0.2</spring.version>
+        <spring.version>6.0.14</spring.version>
         <spring.boot.version>3.0.0</spring.boot.version>
         <servlet.api.version>6.0.0</servlet.api.version>
         <jakarta.xml.bind-api.version>4.0.0</jakarta.xml.bind-api.version>
