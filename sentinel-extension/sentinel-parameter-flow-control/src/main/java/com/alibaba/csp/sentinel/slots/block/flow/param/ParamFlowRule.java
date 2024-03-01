@@ -23,6 +23,7 @@ import java.util.Objects;
 
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.util.function.Tuple2;
 
 /**
  * Rules for "hot-spot" frequent parameter flow control.
@@ -39,6 +40,11 @@ public class ParamFlowRule extends AbstractRule {
         setResource(resourceName);
     }
 
+    public ParamFlowRule(String resourceName, Long id) {
+        setResource(resourceName);
+        setId(id);
+    }
+
     /**
      * The threshold type of flow control (0: thread count, 1: QPS).
      */
@@ -48,6 +54,11 @@ public class ParamFlowRule extends AbstractRule {
      * Parameter index.
      */
     private Integer paramIdx;
+
+    /**
+     * Parameter Key.
+     */
+    private String paramKey;
 
     /**
      * The threshold count.
@@ -136,6 +147,15 @@ public class ParamFlowRule extends AbstractRule {
         return this;
     }
 
+    public String getParamKey() {
+        return paramKey;
+    }
+
+    public ParamFlowRule setParamKey(String paramKey) {
+        this.paramKey = paramKey;
+        return this;
+    }
+
     public double getCount() {
         return count;
     }
@@ -194,7 +214,7 @@ public class ParamFlowRule extends AbstractRule {
         if (o == null || getClass() != o.getClass()) { return false; }
         if (!super.equals(o)) { return false; }
 
-        ParamFlowRule that = (ParamFlowRule)o;
+        ParamFlowRule that = (ParamFlowRule) o;
 
         if (grade != that.grade) { return false; }
         if (Double.compare(that.count, count) != 0) { return false; }
@@ -205,6 +225,7 @@ public class ParamFlowRule extends AbstractRule {
         if (clusterMode != that.clusterMode) { return false; }
         if (!Objects.equals(paramIdx, that.paramIdx)) { return false; }
         if (!Objects.equals(paramFlowItemList, that.paramFlowItemList)) { return false; }
+        if (!Objects.equals(paramKey, that.paramKey)) { return false; }
         return Objects.equals(clusterConfig, that.clusterConfig);
     }
 
@@ -215,13 +236,14 @@ public class ParamFlowRule extends AbstractRule {
         result = 31 * result + grade;
         result = 31 * result + (paramIdx != null ? paramIdx.hashCode() : 0);
         temp = Double.doubleToLongBits(count);
-        result = 31 * result + (int)(temp ^ (temp >>> 32));
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
         result = 31 * result + controlBehavior;
         result = 31 * result + maxQueueingTimeMs;
         result = 31 * result + burstCount;
-        result = 31 * result + (int)(durationInSec ^ (durationInSec >>> 32));
+        result = 31 * result + (int) (durationInSec ^ (durationInSec >>> 32));
         result = 31 * result + (paramFlowItemList != null ? paramFlowItemList.hashCode() : 0);
         result = 31 * result + (clusterMode ? 1 : 0);
+        result = 31 * result + (paramKey != null ? paramKey.hashCode() : 0);
         result = 31 * result + (clusterConfig != null ? clusterConfig.hashCode() : 0);
         return result;
     }
@@ -229,7 +251,8 @@ public class ParamFlowRule extends AbstractRule {
     @Override
     public String toString() {
         return "ParamFlowRule{" +
-            "grade=" + grade +
+            "resource=" + getResource() +
+            ", grade=" + grade +
             ", paramIdx=" + paramIdx +
             ", count=" + count +
             ", controlBehavior=" + controlBehavior +
@@ -239,6 +262,37 @@ public class ParamFlowRule extends AbstractRule {
             ", paramFlowItemList=" + paramFlowItemList +
             ", clusterMode=" + clusterMode +
             ", clusterConfig=" + clusterConfig +
+            ", paramKey=" + paramKey +
             '}';
+    }
+
+    /**
+     * Parsed exclusion items of parameters. Only for internal use.
+     * Pair: (matchObj, (value, fallbackValue))
+     */
+    private Map<Object, Tuple2<Double, Double>> exclusionItems = new HashMap<Object, Tuple2<Double, Double>>();
+
+    Map<Object, Tuple2<Double, Double>> getParsedParamItems() {
+        return exclusionItems;
+    }
+
+    ParamFlowRule setParsedParamItems(Map<Object, Tuple2<Double, Double>> parsedItems) {
+        this.exclusionItems = parsedItems;
+        return this;
+    }
+
+    public Double retrieveThresholdOfItem(Object value, boolean clusterFallback) {
+        if (value == null || exclusionItems == null) {
+            return null;
+        }
+        Tuple2<Double, Double> pair = exclusionItems.get(value);
+        if (pair == null) {
+            return null;
+        }
+        return clusterFallback ? pair.r2 : pair.r1;
+    }
+
+    public Double retrieveThresholdOfItem(Object value) {
+        return retrieveThresholdOfItem(value, false);
     }
 }

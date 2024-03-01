@@ -15,17 +15,27 @@
  */
 package com.alibaba.csp.sentinel.adapter.spring.webmvc_v6x;
 
-import com.alibaba.csp.sentinel.*;
+import com.alibaba.csp.sentinel.webflow.param.WebParamParser;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import com.alibaba.csp.sentinel.Entry;
+import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.ResourceTypeConstants;
+import com.alibaba.csp.sentinel.SphU;
+import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc_v6x.config.BaseWebMvcConfig;
+import com.alibaba.csp.sentinel.adapter.spring.webmvc_v6x.param.HttpServletRequestItemParser;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
+
+import java.util.Map;
 
 /**
  * Since request may be reprocessed in flow if any forwarding or including or other action
@@ -52,10 +62,18 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
 
     private final BaseWebMvcConfig baseWebMvcConfig;
 
+    protected final WebParamParser<HttpServletRequest> webParamParser;
+
     public AbstractSentinelInterceptor(BaseWebMvcConfig config) {
+        this(config, new WebParamParser<HttpServletRequest>(new HttpServletRequestItemParser()));
+    }
+
+    public AbstractSentinelInterceptor(BaseWebMvcConfig config, WebParamParser<HttpServletRequest> webParamParser) {
         AssertUtil.notNull(config, "BaseWebMvcConfig should not be null");
         AssertUtil.assertNotBlank(config.getRequestAttributeName(), "requestAttributeName should not be blank");
+        AssertUtil.assertNotNull(webParamParser, "webParamParser should not be null");
         this.baseWebMvcConfig = config;
+        this.webParamParser = webParamParser;
     }
 
     /**
@@ -80,20 +98,25 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
-        String resourceName = "";
+        String resourceName = getResourceName(request);
+        if (StringUtil.isEmpty(resourceName)) {
+            return true;
+        }
+        if (increaseReference(request, this.baseWebMvcConfig.getRequestRefName(), 1) != 1) {
+            return true;
+        }
         try {
-            resourceName = getResourceName(request);
-            if (StringUtil.isEmpty(resourceName)) {
-                return true;
-            }
-            if (increaseReference(request, this.baseWebMvcConfig.getRequestRefName(), 1) != 1) {
-                return true;
-            }
             // Parse the request origin using registered origin parser.
             String origin = parseOrigin(request);
             String contextName = getContextName(request);
             ContextUtil.enter(contextName, origin);
-            Entry entry = SphU.entry(resourceName, ResourceTypeConstants.COMMON_WEB, EntryType.IN);
+
+//            Map<String, Object> params = webParamParser.parseParameterFor(resourceName, request, null);
+
+            // Note that AsyncEntry is REQUIRED here (for async Servlet scenarios).
+            // TODO: identify whether request is actually ASYNC here.
+            Entry entry = SphU.asyncEntry(resourceName, ResourceTypeConstants.COMMON_WEB, EntryType.IN);
+
             request.setAttribute(baseWebMvcConfig.getRequestAttributeName(), entry);
             return true;
         } catch (BlockException e) {
