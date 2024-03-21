@@ -19,7 +19,9 @@ import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -33,12 +35,9 @@ import java.util.logging.LogRecord;
 
 class DateFileLogHandler extends Handler {
 
-    private final ThreadLocal<SimpleDateFormat> dateFormatThreadLocal = new ThreadLocal<SimpleDateFormat>() {
-        @Override
-        public SimpleDateFormat initialValue() {
-            return new SimpleDateFormat("yyyy-MM-dd");
-        }
-    };
+    private final DateTimeFormatter dateFormat = DateTimeFormatter
+            .ofPattern("yyyy-MM-dd")
+            .withZone(ZoneId.systemDefault());
 
     private static final ThreadPoolExecutor executor = new ThreadPoolExecutor(
             1,
@@ -120,8 +119,7 @@ class DateFileLogHandler extends Handler {
 
     private boolean logFileExits() {
         try {
-            SimpleDateFormat format = dateFormatThreadLocal.get();
-            String fileName = pattern.replace("%d", format.format(new Date()));
+            String fileName = pattern.replace("%d", dateFormat.format(Instant.now()));
             // When file count is not 1, the first log file name will end with ".0"
             if (count != 1) {
                 fileName += ".0";
@@ -139,8 +137,7 @@ class DateFileLogHandler extends Handler {
         if (handler != null) {
             handler.close();
         }
-        SimpleDateFormat format = dateFormatThreadLocal.get();
-        String newPattern = pattern.replace("%d", format.format(new Date()));
+        String newPattern = pattern.replace("%d", dateFormat.format(Instant.now()));
         // Get current date.
         Calendar next = Calendar.getInstance();
         // Begin of next date.
