@@ -32,10 +32,6 @@ import com.alibaba.csp.sentinel.util.function.Tuple2;
  *
  */
 public class TimeUtilTest {
-    @Before
-    public void initLogging() {
-        System.setProperty("csp.sentinel.log.output.type", "console");
-    }
     
     private void waitFor(int step, int seconds) throws InterruptedException {
         for (int i = 0; i < seconds; i ++) {
