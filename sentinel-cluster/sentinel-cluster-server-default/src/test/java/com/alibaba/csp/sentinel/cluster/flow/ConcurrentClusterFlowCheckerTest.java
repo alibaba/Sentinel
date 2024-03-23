@@ -22,6 +22,7 @@ import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.CurrentConcurr
 import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.TokenCacheNodeManager;
 import com.alibaba.csp.sentinel.cluster.server.connection.ConnectionManager;
 import com.alibaba.csp.sentinel.cluster.server.AbstractTimeBasedTest;
+import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.slots.block.ClusterRuleConstant;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
@@ -93,20 +94,20 @@ public class ConcurrentClusterFlowCheckerTest extends AbstractTimeBasedTest {
             setCurrentMillis(mocked, System.currentTimeMillis());
             final FlowRule rule = ClusterFlowRuleManager.getFlowRuleById(111L);
             final CountDownLatch countDownLatch = new CountDownLatch(1000);
-            ExecutorService pool = Executors.newFixedThreadPool(100);
+            ExecutorService pool = Executors.newFixedThreadPool(100,
+                    new NamedThreadFactory("ConcurrentClusterFlowCheckerTest", true)
+            );
 
             for (long i = 0; i < 1000; i++) {
-                Runnable task = new Runnable() {
-                    @Override
-                    public void run() {
-                        assert rule != null;
-                        TokenResult result = ConcurrentClusterFlowChecker.acquireConcurrentToken("127.0.0.1", rule, 1);
-                        Assert.assertTrue("concurrent control fail", CurrentConcurrencyManager.get(111L).get() <= rule.getCount());
-                        if (result.getStatus() == TokenResultStatus.OK) {
-                            ConcurrentClusterFlowChecker.releaseConcurrentToken(result.getTokenId());
-                        }
-                        countDownLatch.countDown();
+                Runnable task = () -> {
+                    Assert.assertNotNull(rule);
+                    TokenResult result = ConcurrentClusterFlowChecker.acquireConcurrentToken("127.0.0.1", rule, 1);
+                    String msg = String.format("concurrent control fail %s<%s", CurrentConcurrencyManager.get(111L).get(), rule.getCount());
+                    Assert.assertTrue(msg, CurrentConcurrencyManager.get(111L).get() <= rule.getCount());
+                    if (result.getStatus() == TokenResultStatus.OK) {
+                        ConcurrentClusterFlowChecker.releaseConcurrentToken(result.getTokenId());
                     }
+                    countDownLatch.countDown();
                 };
                 pool.execute(task);
             }
