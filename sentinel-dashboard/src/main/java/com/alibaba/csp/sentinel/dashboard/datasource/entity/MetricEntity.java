@@ -54,7 +54,6 @@ public class MetricEntity {
         entity.setGmtModified(oldEntity.getGmtModified());
         entity.setApp(oldEntity.getApp());
         entity.setTimestamp(oldEntity.getTimestamp());
-        entity.setResource(oldEntity.getResource());
         entity.setPassQps(oldEntity.getPassQps());
         entity.setBlockQps(oldEntity.getBlockQps());
         entity.setSuccessQps(oldEntity.getSuccessQps());

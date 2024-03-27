@@ -17,46 +17,63 @@
 package com.alibaba.csp.sentinel.adapter.gateway.zuul.fallback;
 
 import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
-
 import org.junit.Assert;
 import org.junit.Test;
 
-/**
- * @author tiger
- */
+import java.util.HashMap;
+import java.util.Map;
+
+/** @author tiger */
 public class ZuulBlockFallbackManagerTest {
 
-    private String ROUTE = "/test";
+  private static final String ROUTE = "/test";
 
-    private String DEFAULT_ROUTE = "*";
+  private static final String DEFAULT_ROUTE = "*";
 
-    class MyNullResponseFallBackProvider implements ZuulBlockFallbackProvider {
-        @Override
-        public String getRoute() {
-            return ROUTE;
-        }
-
-        @Override
-        public BlockResponse fallbackResponse(String route, Throwable cause) {
-            return null;
-        }
+  static class MyNullResponseFallBackProvider implements ZuulBlockFallbackProvider<BlockResponse> {
+    @Override
+    public String getRoute() {
+      return ROUTE;
     }
 
-    @Test
-    public void testRegisterProvider() throws Exception {
-        MyNullResponseFallBackProvider myNullResponseFallBackProvider = new MyNullResponseFallBackProvider();
-        ZuulBlockFallbackManager.registerProvider(myNullResponseFallBackProvider);
-        Assert.assertEquals(myNullResponseFallBackProvider.getRoute(), ROUTE);
-        Assert.assertNull(myNullResponseFallBackProvider.fallbackResponse(ROUTE, new FlowException("flow ex")));
+    @Override
+    public BlockResponse fallbackResponse(String route, Throwable cause) {
+      Map<String, Object> map = new HashMap<>(2);
+      map.put("route", route);
+      map.put("cause", cause);
+      return BlockResponse.ok(map);
     }
+  }
 
-    @Test
-    public void clear() {
-        MyNullResponseFallBackProvider myNullResponseFallBackProvider = new MyNullResponseFallBackProvider();
-        ZuulBlockFallbackManager.registerProvider(myNullResponseFallBackProvider);
-        Assert.assertEquals(myNullResponseFallBackProvider.getRoute(), ROUTE);
-        ZuulBlockFallbackManager.clear();
-        Assert.assertEquals(ZuulBlockFallbackManager.getFallbackProvider(ROUTE).getRoute(), DEFAULT_ROUTE);
-    }
+  @Test
+  public void testRegisterProvider() throws Exception {
+    MyNullResponseFallBackProvider myNullResponseFallBackProvider =
+        new MyNullResponseFallBackProvider();
+    ZuulBlockFallbackManager.registerProvider(myNullResponseFallBackProvider);
+    Assert.assertEquals(myNullResponseFallBackProvider.getRoute(), ROUTE);
+    Assert.assertNotNull(
+        myNullResponseFallBackProvider.fallbackResponse(ROUTE, new FlowException("flow ex")));
+  }
 
+  @Test
+  public void clear() {
+    MyNullResponseFallBackProvider myNullResponseFallBackProvider =
+        new MyNullResponseFallBackProvider();
+    ZuulBlockFallbackManager.registerProvider(myNullResponseFallBackProvider);
+    Assert.assertEquals(myNullResponseFallBackProvider.getRoute(), ROUTE);
+    ZuulBlockFallbackManager.clear();
+    Assert.assertEquals(
+        ZuulBlockFallbackManager.getFallbackProvider(ROUTE).getRoute(), DEFAULT_ROUTE);
+  }
+
+  @Test
+  public void clearCustomize() {
+    MyNullResponseFallBackProvider myNullResponseFallBackProvider =
+        new MyNullResponseFallBackProvider();
+    ZuulBlockFallbackManager.registerProvider(myNullResponseFallBackProvider);
+    Assert.assertEquals(myNullResponseFallBackProvider.getRoute(), ROUTE);
+    ZuulBlockFallbackManager.clear();
+    Assert.assertEquals(
+        ZuulBlockFallbackManager.getFallbackProvider(ROUTE).getRoute(), DEFAULT_ROUTE);
+  }
 }

@@ -23,19 +23,19 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  *
  * @author tiger
  */
-public class DefaultBlockFallbackProvider implements ZuulBlockFallbackProvider {
+public class DefaultBlockFallbackProvider implements ZuulBlockFallbackProvider<BlockResponse> {
 
-    @Override
-    public String getRoute() {
-        return "*";
-    }
+  @Override
+  public String getRoute() {
+    return "*";
+  }
 
-    @Override
-    public BlockResponse fallbackResponse(String route, Throwable cause) {
-        if (cause instanceof BlockException) {
-            return new BlockResponse(429, "Sentinel block exception", route);
-        } else {
-            return new BlockResponse(500, "System Error", route);
-        }
+  @Override
+  public BlockResponse fallbackResponse(String route, Throwable cause) {
+    if (cause instanceof BlockException) {
+      return BlockResponse.blockError(route);
+    } else {
+      return BlockResponse.error("route");
     }
+  }
 }

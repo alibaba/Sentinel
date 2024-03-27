@@ -33,9 +33,9 @@ public class DefaultBlockFallbackProvider implements ZuulBlockFallbackProvider {
     @Override
     public BlockResponse fallbackResponse(String route, Throwable cause) {
         if (cause instanceof BlockException) {
-            return new BlockResponse(429, "SentinelBlockException", route);
+            return BlockResponse.blockError(route);
         } else {
-            return new BlockResponse(500, "System Error", route);
+           return BlockResponse.error(route);
         }
     }
 }

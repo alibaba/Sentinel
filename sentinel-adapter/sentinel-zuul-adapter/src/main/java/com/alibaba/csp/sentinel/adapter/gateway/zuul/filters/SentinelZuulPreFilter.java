@@ -16,11 +16,6 @@
 
 package com.alibaba.csp.sentinel.adapter.gateway.zuul.filters;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.HashSet;
-import java.util.Set;
-
 import com.alibaba.csp.sentinel.AsyncEntry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.ResourceTypeConstants;
@@ -41,12 +36,15 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.util.function.Predicate;
-
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.Set;
 
 import static com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants.*;
 
@@ -133,16 +131,14 @@ public class SentinelZuulPreFilter extends ZuulFilter {
                 doSentinelEntry(apiName, RESOURCE_MODE_CUSTOM_API_NAME, ctx, holders);
             }
         } catch (BlockException ex) {
-            ZuulBlockFallbackProvider zuulBlockFallbackProvider = ZuulBlockFallbackManager.getFallbackProvider(
-                fallBackRoute);
+            ZuulBlockFallbackProvider<?extends BlockResponse> zuulBlockFallbackProvider = ZuulBlockFallbackManager.getFallbackProvider(fallBackRoute);
             BlockResponse blockResponse = zuulBlockFallbackProvider.fallbackResponse(fallBackRoute, ex);
-            // Prevent routing from running
-            ctx.setRouteHost(null);
-            ctx.set(ZuulConstant.SERVICE_ID_KEY, null);
-
             // Set fallback response.
             ctx.setResponseBody(blockResponse.toString());
             ctx.setResponseStatusCode(blockResponse.getCode());
+            // Prevent routing from running
+            ctx.setRouteHost(null);
+            ctx.set(ZuulConstant.SERVICE_ID_KEY, null);
             // Set Response ContentType
             ctx.getResponse().setContentType("application/json; charset=utf-8");
         } finally {
