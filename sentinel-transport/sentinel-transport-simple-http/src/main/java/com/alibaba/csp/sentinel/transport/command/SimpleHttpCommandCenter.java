@@ -57,7 +57,7 @@ public class SimpleHttpCommandCenter implements CommandCenter {
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private ExecutorService executor = Executors.newSingleThreadExecutor(
-        new NamedThreadFactory("sentinel-command-center-executor"));
+        new NamedThreadFactory("sentinel-command-center-executor", true));
     private ExecutorService bizExecutor;
 
     private ServerSocket socketReference;
@@ -75,7 +75,7 @@ public class SimpleHttpCommandCenter implements CommandCenter {
         int nThreads = Runtime.getRuntime().availableProcessors();
         this.bizExecutor = new ThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS,
             new ArrayBlockingQueue<Runnable>(10),
-            new NamedThreadFactory("sentinel-command-center-service-executor"),
+            new NamedThreadFactory("sentinel-command-center-service-executor", true),
             new RejectedExecutionHandler() {
                 @Override
                 public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
@@ -158,7 +158,10 @@ public class SimpleHttpCommandCenter implements CommandCenter {
                 CommandCenterLog.warn("Error when releasing the server socket", e);
             }
         }
-        bizExecutor.shutdownNow();
+
+        if (bizExecutor != null) {
+            bizExecutor.shutdownNow();
+        }
         executor.shutdownNow();
         TransportConfig.setRuntimePort(PORT_UNINITIALIZED);
         handlerMap.clear();

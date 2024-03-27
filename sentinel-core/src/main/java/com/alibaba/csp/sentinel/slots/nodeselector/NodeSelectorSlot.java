@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.slots.nodeselector;
 
+import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.node.ClusterNode;
@@ -22,7 +23,7 @@ import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.node.EntranceNode;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
-import com.alibaba.csp.sentinel.spi.SpiOrder;
+import com.alibaba.csp.sentinel.spi.Spi;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -123,7 +124,7 @@ import java.util.Map;
  * @see EntranceNode
  * @see ContextUtil
  */
-@SpiOrder(-10000)
+@Spi(isSingleton = false, order = Constants.ORDER_NODE_SELECTOR_SLOT)
 public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
 
     /**

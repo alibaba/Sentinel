@@ -287,7 +287,7 @@ public final class SystemRuleManager {
      * @param resourceWrapper the resource.
      * @throws BlockException when any system rule's threshold is exceeded.
      */
-    public static void checkSystem(ResourceWrapper resourceWrapper) throws BlockException {
+    public static void checkSystem(ResourceWrapper resourceWrapper, int count) throws BlockException {
         if (resourceWrapper == null) {
             return;
         }
@@ -302,18 +302,18 @@ public final class SystemRuleManager {
         }
 
         // total qps
-        double currentQps = Constants.ENTRY_NODE == null ? 0.0 : Constants.ENTRY_NODE.successQps();
-        if (currentQps > qps) {
+        double currentQps = Constants.ENTRY_NODE.passQps();
+        if (currentQps + count > qps) {
             throw new SystemBlockException(resourceWrapper.getName(), "qps");
         }
 
         // total thread
-        int currentThread = Constants.ENTRY_NODE == null ? 0 : Constants.ENTRY_NODE.curThreadNum();
+        int currentThread = Constants.ENTRY_NODE.curThreadNum();
         if (currentThread > maxThread) {
             throw new SystemBlockException(resourceWrapper.getName(), "thread");
         }
 
-        double rt = Constants.ENTRY_NODE == null ? 0 : Constants.ENTRY_NODE.avgRt();
+        double rt = Constants.ENTRY_NODE.avgRt();
         if (rt > maxRt) {
             throw new SystemBlockException(resourceWrapper.getName(), "rt");
         }

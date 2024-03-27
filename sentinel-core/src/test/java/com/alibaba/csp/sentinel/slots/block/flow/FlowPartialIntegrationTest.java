@@ -15,9 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,6 +28,8 @@ import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+
+import static org.junit.Assert.*;
 
 /**
  * @author jialiang.linjl
@@ -115,16 +114,32 @@ public class FlowPartialIntegrationTest {
     }
 
     @Test
+    public void testQpsRegex() {
+        FlowRule flowRule = new FlowRule();
+        String resource = ".*";
+        flowRule.setResource(resource);
+        flowRule.setGrade(RuleConstant.FLOW_GRADE_QPS);
+        flowRule.setRegex(true);
+        flowRule.setCount(1);
+        FlowRuleManager.loadRules(Collections.singletonList(flowRule));
+        verifyFlow("testQpsRegex_1", true);
+        verifyFlow("testQpsRegex_2", true);
+        verifyFlow("testQpsRegex_1", false);
+        verifyFlow("testQpsRegex_2", false);
+    }
+
+    @Test
     public void testOriginFlowRule() {
+        String RESOURCE_NAME = "testOriginFlowRule";
         // normal
         FlowRule flowRule = new FlowRule();
-        flowRule.setResource("testOriginFlowRule");
+        flowRule.setResource(RESOURCE_NAME);
         flowRule.setGrade(RuleConstant.FLOW_GRADE_QPS);
         flowRule.setCount(0);
         flowRule.setLimitApp("other");
 
         FlowRule flowRule2 = new FlowRule();
-        flowRule2.setResource("testOriginFlowRule");
+        flowRule2.setResource(RESOURCE_NAME);
         flowRule2.setGrade(RuleConstant.FLOW_GRADE_QPS);
         flowRule2.setCount(1);
         flowRule2.setLimitApp("app2");
@@ -134,7 +149,7 @@ public class FlowPartialIntegrationTest {
         ContextUtil.enter("node1", "app1");
         Entry e = null;
         try {
-            e = SphU.entry("testOriginFlowRule");
+            e = SphU.entry(RESOURCE_NAME);
             fail("Should had failed");
         } catch (BlockException e1) {
             e1.printStackTrace();
@@ -146,7 +161,7 @@ public class FlowPartialIntegrationTest {
         ContextUtil.enter("node1", "app2");
         e = null;
         try {
-            e = SphU.entry("testOriginFlowRule");
+            e = SphU.entry(RESOURCE_NAME);
         } catch (BlockException e1) {
             fail("Should had failed");
         }
@@ -253,5 +268,19 @@ public class FlowPartialIntegrationTest {
         e.exit();
 
         ContextUtil.exit();
+    }
+
+    private void verifyFlow(String resource, boolean shouldPass) {
+        Entry e = null;
+        try {
+            e = SphU.entry(resource);
+            assertTrue(shouldPass);
+        } catch (BlockException e1) {
+            assertFalse(shouldPass);
+        } finally {
+            if (e != null) {
+                e.exit();
+            }
+        }
     }
 }

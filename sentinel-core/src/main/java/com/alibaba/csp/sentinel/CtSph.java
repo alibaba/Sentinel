@@ -86,7 +86,7 @@ public class CtSph implements Sph {
             return asyncEntryWithNoChain(resourceWrapper, context);
         }
 
-        AsyncEntry asyncEntry = new AsyncEntry(resourceWrapper, chain, context);
+        AsyncEntry asyncEntry = new AsyncEntry(resourceWrapper, chain, context, count, args);
         try {
             chain.entry(context, resourceWrapper, null, count, prioritized, args);
             // Initiate the async context only when the entry successfully passed the slot chain.
@@ -143,7 +143,7 @@ public class CtSph implements Sph {
             return new CtEntry(resourceWrapper, null, context);
         }
 
-        Entry e = new CtEntry(resourceWrapper, chain, context);
+        Entry e = new CtEntry(resourceWrapper, chain, context, count, args);
         try {
             chain.entry(context, resourceWrapper, null, count, prioritized, args);
         } catch (BlockException e1) {
@@ -181,7 +181,7 @@ public class CtSph implements Sph {
      * be created if the resource doesn't relate one.
      *
      * <p>Same resource({@link ResourceWrapper#equals(Object)}) will share the same
-     * {@link ProcessorSlotChain} globally, no matter in witch {@link Context}.<p/>
+     * {@link ProcessorSlotChain} globally, no matter in which {@link Context}.<p/>
      *
      * <p>
      * Note that total {@link ProcessorSlot} count must not exceed {@link Constants#MAX_SLOT_CHAIN_SIZE},

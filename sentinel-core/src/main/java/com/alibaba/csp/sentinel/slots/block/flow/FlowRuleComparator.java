@@ -28,7 +28,7 @@ public class FlowRuleComparator implements Comparator<FlowRule> {
 
     @Override
     public int compare(FlowRule o1, FlowRule o2) {
-        // Clustered mode will be on the top.
+        // the FlowRule in Clustered mode will be put at the end.
         if (o1.isClusterMode() && !o2.isClusterMode()) {
             return 1;
         }

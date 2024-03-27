@@ -6,16 +6,11 @@
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-parent</artifactId>
-        <version>1.8.0-SNAPSHOT</version>
+        <version>2.0.0-alpha2-SNAPSHOT</version>
     </parent>
     <artifactId>sentinel-demo</artifactId>
     <packaging>pom</packaging>
     <name>sentinel-demo</name>
-
-    <properties>
-        <java.source.version>1.8</java.source.version>
-        <java.target.version>1.8</java.target.version>
-    </properties>
 
     <modules>
         <module>sentinel-demo-basic</module>
@@ -27,11 +22,13 @@
         <module>sentinel-demo-apollo-datasource</module>
         <module>sentinel-demo-annotation-spring-aop</module>
         <module>sentinel-demo-parameter-flow-control</module>
-        <module>sentinel-demo-slot-chain-spi</module>
+        <module>sentinel-demo-slot-spi</module>
+        <module>sentinel-demo-slotchain-spi</module>
         <module>sentinel-demo-cluster</module>
         <module>sentinel-demo-command-handler</module>
         <module>sentinel-demo-spring-webflux</module>
         <module>sentinel-demo-apache-dubbo</module>
+        <module>sentinel-demo-apache-httpclient</module>
         <module>sentinel-demo-sofa-rpc</module>
         <module>sentinel-demo-spring-cloud-gateway</module>
         <module>sentinel-demo-zuul-gateway</module>
@@ -39,7 +36,13 @@
         <module>sentinel-demo-spring-webmvc</module>
         <module>sentinel-demo-zuul2-gateway</module>
         <module>sentinel-demo-log-logback</module>
+        <module>sentinel-demo-okhttp</module>
         <module>sentinel-demo-jax-rs</module>
+        <module>sentinel-demo-quarkus</module>
+        <module>sentinel-demo-annotation-cdi-interceptor</module>
+        <module>sentinel-demo-motan</module>
+        <module>sentinel-demo-transport-spring-mvc</module>
+        <module>sentinel-demo-opensergo-datasource</module>
     </modules>
 
     <dependencies>

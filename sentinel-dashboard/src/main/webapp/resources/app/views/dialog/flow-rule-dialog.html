@@ -6,11 +6,18 @@
         <form role="form" class="form-horizontal">
           <div class="form-group">
             <label class="col-sm-2 control-label">资源名</label>
-            <div class="col-sm-9">
+            <div class="col-sm-6">
               <input type="text" ng-if="flowRuleDialog.type == 'edit'" class="form-control" placeholder="资源名" ng-model='currentRule.resource'
                 disabled="" />
               <input type="text" ng-if="flowRuleDialog.type == 'add'" class="form-control highlight-border" placeholder="资源名" ng-model='currentRule.resource'
               />
+            </div>
+            <label class="col-sm-2 control-label">是否正则</label>
+            <div class="col-sm-2">
+              <label class="checkbox-inline">
+                <input type="checkbox" ng-if="flowRuleDialog.type == 'add'" name="regex" ng-model="currentRule.regex">
+                <input type="checkbox" ng-if="flowRuleDialog.type == 'edit'" name="regex" ng-model="currentRule.regex" disabled="">
+              </label>
             </div>
           </div>
 
@@ -27,7 +34,7 @@
             <div class="col-sm-4">
               <div class="form-control highlight-border" align="center">
                 <input type="radio" name="grade" value="1" checked ng-model='currentRule.grade' />&nbsp;QPS&nbsp;&nbsp;
-                <input type="radio" name="grade" value="0" ng-model='currentRule.grade' />&nbsp;线程数
+                <input type="radio" name="grade" value="0" ng-model='currentRule.grade' />&nbsp;并发线程数
               </div>
             </div>
             <div ng-if="!currentRule.clusterMode">

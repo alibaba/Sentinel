@@ -25,7 +25,7 @@ import io.netty.buffer.ByteBuf;
  * Decoder for {@link FlowRequestData} from {@code ByteBuf} stream. The layout:
  * </p>
  * <pre>
- * | flow ID (4) | count (4) | priority flag (1) |
+ * | flow ID (8) | count (4) | priority flag (1) |
  * </pre>
  *
  * @author Eric Zhao

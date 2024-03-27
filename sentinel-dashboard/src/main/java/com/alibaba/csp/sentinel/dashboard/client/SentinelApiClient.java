@@ -71,6 +71,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.concurrent.FutureCallback;
+import org.apache.http.conn.util.InetAddressUtils;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
@@ -163,7 +164,7 @@ public class SentinelApiClient {
     }
     
     /**
-     * Check wheter target instance (identified by tuple of app-ip:port)
+     * Check whether target instance (identified by tuple of app-ip:port)
      * supports the form of "xxxxx; xx=xx" in "Content-Type" header.
      * 
      * @param app target app name
@@ -280,6 +281,14 @@ public class SentinelApiClient {
         CompletableFuture<String> future = new CompletableFuture<>();
         if (StringUtil.isBlank(ip) || StringUtil.isBlank(api)) {
             future.completeExceptionally(new IllegalArgumentException("Bad URL or command name"));
+            return future;
+        }
+        if (!InetAddressUtils.isIPv4Address(ip) && !InetAddressUtils.isIPv6Address(ip)) {
+            future.completeExceptionally(new IllegalArgumentException("Bad IP"));
+            return future;
+        }
+        if (!StringUtil.isEmpty(app) && !appManagement.isValidMachineOfApp(app, ip)) {
+            future.completeExceptionally(new IllegalArgumentException("Given ip does not belong to given app"));
             return future;
         }
         StringBuilder urlBuilder = new StringBuilder();
@@ -503,7 +512,7 @@ public class SentinelApiClient {
             AssertUtil.isTrue(port > 0, "Bad machine port");
             return fetchItemsAsync(ip, port, GET_PARAM_RULE_PATH, null, ParamFlowRule.class)
                 .thenApply(rules -> rules.stream()
-                    .map(e -> ParamFlowRuleEntity.fromAuthorityRule(app, ip, port, e))
+                    .map(e -> ParamFlowRuleEntity.fromParamFlowRule(app, ip, port, e))
                     .collect(Collectors.toList())
                 );
         } catch (Exception e) {

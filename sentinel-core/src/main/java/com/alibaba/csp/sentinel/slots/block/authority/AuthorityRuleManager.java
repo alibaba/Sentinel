@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.RuleManager;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
@@ -39,7 +40,7 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
  */
 public final class AuthorityRuleManager {
 
-    private static Map<String, Set<AuthorityRule>> authorityRules = new ConcurrentHashMap<>();
+    private static volatile RuleManager<AuthorityRule> authorityRules = new RuleManager<>();
 
     private static final RulePropertyListener LISTENER = new RulePropertyListener();
     private static SentinelProperty<List<AuthorityRule>> currentProperty = new DynamicSentinelProperty<>();
@@ -70,7 +71,7 @@ public final class AuthorityRuleManager {
     }
 
     public static boolean hasConfig(String resource) {
-        return authorityRules.containsKey(resource);
+        return authorityRules.hasConfig(resource);
     }
 
     /**
@@ -79,31 +80,27 @@ public final class AuthorityRuleManager {
      * @return a new copy of the rules.
      */
     public static List<AuthorityRule> getRules() {
-        List<AuthorityRule> rules = new ArrayList<>();
-        if (authorityRules == null) {
-            return rules;
-        }
-        for (Map.Entry<String, Set<AuthorityRule>> entry : authorityRules.entrySet()) {
-            rules.addAll(entry.getValue());
-        }
-        return rules;
+        return authorityRules.getRules();
     }
 
     private static class RulePropertyListener implements PropertyListener<List<AuthorityRule>> {
 
         @Override
-        public void configUpdate(List<AuthorityRule> conf) {
-            Map<String, Set<AuthorityRule>> rules = loadAuthorityConf(conf);
+        public synchronized void configLoad(List<AuthorityRule> value) {
+            authorityRules.updateRules(loadAuthorityConf(value));
 
-            authorityRules.clear();
-            if (rules != null) {
-                authorityRules.putAll(rules);
-            }
-            RecordLog.info("[AuthorityRuleManager] Authority rules received: " + authorityRules);
+            RecordLog.info("[AuthorityRuleManager] Authority rules loaded: {}", authorityRules);
         }
 
-        private Map<String, Set<AuthorityRule>> loadAuthorityConf(List<AuthorityRule> list) {
-            Map<String, Set<AuthorityRule>> newRuleMap = new ConcurrentHashMap<>();
+        @Override
+        public synchronized void configUpdate(List<AuthorityRule> conf) {
+            authorityRules.updateRules(loadAuthorityConf(conf));
+
+            RecordLog.info("[AuthorityRuleManager] Authority rules received: {}", authorityRules);
+        }
+
+        private Map<String, List<AuthorityRule>> loadAuthorityConf(List<AuthorityRule> list) {
+            Map<String, List<AuthorityRule>> newRuleMap = new ConcurrentHashMap<>();
 
             if (list == null || list.isEmpty()) {
                 return newRuleMap;
@@ -111,7 +108,7 @@ public final class AuthorityRuleManager {
 
             for (AuthorityRule rule : list) {
                 if (!isValidRule(rule)) {
-                    RecordLog.warn("[AuthorityRuleManager] Ignoring invalid authority rule when loading new rules: " + rule);
+                    RecordLog.warn("[AuthorityRuleManager] Ignoring invalid authority rule when loading new rules: {}", rule);
                     continue;
                 }
 
@@ -120,39 +117,29 @@ public final class AuthorityRuleManager {
                 }
 
                 String identity = rule.getResource();
-                Set<AuthorityRule> ruleSet = newRuleMap.get(identity);
+                List<AuthorityRule> ruleSet = newRuleMap.get(identity);
                 // putIfAbsent
                 if (ruleSet == null) {
-                    ruleSet = new HashSet<>();
+                    ruleSet = new ArrayList<>();
                     ruleSet.add(rule);
                     newRuleMap.put(identity, ruleSet);
                 } else {
                     // One resource should only have at most one authority rule, so just ignore redundant rules.
-                    RecordLog.warn("[AuthorityRuleManager] Ignoring redundant rule: " + rule.toString());
+                    RecordLog.warn("[AuthorityRuleManager] Ignoring redundant rule: {}", rule.toString());
                 }
             }
 
             return newRuleMap;
         }
 
-        @Override
-        public void configLoad(List<AuthorityRule> value) {
-            Map<String, Set<AuthorityRule>> rules = loadAuthorityConf(value);
-
-            authorityRules.clear();
-            if (rules != null) {
-                authorityRules.putAll(rules);
-            }
-            RecordLog.info("[AuthorityRuleManager] Load authority rules: " + authorityRules);
-        }
     }
 
-    static Map<String, Set<AuthorityRule>> getAuthorityRules() {
-        return authorityRules;
+    static List<AuthorityRule> getRules(String resource) {
+        return authorityRules.getRules(resource);
     }
 
     public static boolean isValidRule(AuthorityRule rule) {
         return rule != null && !StringUtil.isBlank(rule.getResource())
-            && rule.getStrategy() >= 0 && StringUtil.isNotBlank(rule.getLimitApp());
+                && rule.getStrategy() >= 0 && StringUtil.isNotBlank(rule.getLimitApp()) && RuleManager.checkRegexResourceField(rule);
     }
 }

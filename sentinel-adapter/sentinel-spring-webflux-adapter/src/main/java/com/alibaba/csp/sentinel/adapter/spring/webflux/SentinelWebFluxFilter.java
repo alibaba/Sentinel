@@ -36,6 +36,8 @@ import reactor.core.publisher.Mono;
  */
 public class SentinelWebFluxFilter implements WebFilter {
 
+    public static final String SENTINEL_SPRING_WEBFLUX_CONTEXT_NAME = "sentinel_spring_webflux_context";
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         // Maybe we can get the URL pattern elsewhere via:
@@ -56,7 +58,11 @@ public class SentinelWebFluxFilter implements WebFilter {
             .orElse(EMPTY_ORIGIN);
 
         return new SentinelReactorTransformer<>(new EntryConfig(finalPath, ResourceTypeConstants.COMMON_WEB,
-            EntryType.IN, new ContextConfig(finalPath, origin)));
+            EntryType.IN, new ContextConfig(getContextName(exchange), origin)));
+    }
+
+    protected String getContextName(ServerWebExchange exchange){
+        return SENTINEL_SPRING_WEBFLUX_CONTEXT_NAME;
     }
 
     private static final String EMPTY_ORIGIN = "";

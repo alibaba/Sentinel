@@ -108,7 +108,7 @@ public class DemoController {
                 try {
                     e1 = SphU.entry(name);
 
-                    if (slow == true) {
+                    if (slow) {
                         TimeUnit.MILLISECONDS.sleep(3000);
                     }
 

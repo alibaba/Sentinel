@@ -47,7 +47,7 @@ public interface Encoder<R> {
      * Encode the given object into a byte array with the default charset.
      *
      * @param r the object to encode
-     * @return the encoded byte buffer, witch is already flipped.
+     * @return the encoded byte buffer, which is already flipped.
      * @throws Exception error occurs when encoding the object (e.g. IO fails)
      */
     byte[] encode(R r) throws Exception;

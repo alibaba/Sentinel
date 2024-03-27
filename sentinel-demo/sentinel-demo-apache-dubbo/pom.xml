@@ -5,7 +5,7 @@
     <parent>
         <artifactId>sentinel-demo</artifactId>
         <groupId>com.alibaba.csp</groupId>
-        <version>1.8.0-SNAPSHOT</version>
+        <version>2.0.0-alpha2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -15,7 +15,7 @@
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo</artifactId>
-            <version>2.7.3</version>
+            <version>2.7.18</version>
         </dependency>
 
         <!-- Dubbo provides qos plugin and is enable by default. -->
@@ -24,14 +24,14 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.31.Final</version>
+            <version>4.1.75.Final</version>
         </dependency>
 
         <!-- Dependency for Spring Context -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context-support</artifactId>
-            <version>5.1.5.RELEASE</version>
+            <version>5.3.15</version>
         </dependency>
 
         <!-- Sentinel adapter and transport -->
