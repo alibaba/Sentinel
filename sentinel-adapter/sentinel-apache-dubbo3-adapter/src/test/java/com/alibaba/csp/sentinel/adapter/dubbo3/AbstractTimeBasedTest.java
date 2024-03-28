@@ -38,8 +38,8 @@ public abstract class AbstractTimeBasedTest {
         mocked.when(TimeUtil::currentTimeMillis).thenReturn(currentMillis);
     }
 
-    protected final void sleep(MockedStatic<TimeUtil> mocked, long t) {
-        currentMillis += t;
+    protected final void sleep(MockedStatic<TimeUtil> mocked, long timeInMs) {
+        currentMillis += timeInMs;
         mocked.when(TimeUtil::currentTimeMillis).thenReturn(currentMillis);
     }
 

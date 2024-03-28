@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright 1999-2024 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
-
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.support.RpcUtils;
@@ -96,33 +95,35 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
 
     @Test
     public void testDegradeAsync() throws InterruptedException {
+        try (MockedStatic<TimeUtil> mocked = super.mockTimeUtil()) {
+            setCurrentMillis(mocked, 1740000000000L);
+            Invocation invocation = DubboTestUtil.getDefaultMockInvocationOne();
+            Invoker invoker = DubboTestUtil.getDefaultMockInvoker();
 
-        Invocation invocation = DubboTestUtil.getDefaultMockInvocationOne();
-        Invoker invoker = DubboTestUtil.getDefaultMockInvoker();
+            when(invocation.getAttachment(ASYNC_KEY)).thenReturn(Boolean.TRUE.toString());
+            initDegradeRule(DubboUtils.getInterfaceName(invoker));
 
-        when(invocation.getAttachment(ASYNC_KEY)).thenReturn(Boolean.TRUE.toString());
-        initDegradeRule(DubboUtils.getInterfaceName(invoker));
-
-        Result result = invokeDubboRpc(false, invoker, invocation);
-        verifyInvocationStructureForCallFinish(invoker, invocation);
-        assertEquals("normal", result.getValue());
-
-        // inc the clusterNode's exception to trigger the fallback
-        for (int i = 0; i < 5; i++) {
-            invokeDubboRpc(true, invoker, invocation);
+            Result result = invokeDubboRpc(false, invoker, invocation);
             verifyInvocationStructureForCallFinish(invoker, invocation);
+            assertEquals("normal", result.getValue());
+
+            // inc the clusterNode's exception to trigger the fallback
+            for (int i = 0; i < 5; i++) {
+                invokeDubboRpc(true, invoker, invocation);
+                verifyInvocationStructureForCallFinish(invoker, invocation);
+            }
+
+            Result result2 = invokeDubboRpc(false, invoker, invocation);
+            assertEquals("fallback", result2.getValue());
+
+            // sleeping 1000 ms to reset exception
+            sleep(mocked, 1000);
+            Result result3 = invokeDubboRpc(false, invoker, invocation);
+            assertEquals("normal", result3.getValue());
+
+            Context context = ContextUtil.getContext();
+            assertNull(context);
         }
-
-        Result result2 = invokeDubboRpc(false, invoker, invocation);
-        assertEquals("fallback", result2.getValue());
-
-        // sleeping 1000 ms to reset exception
-        Thread.sleep(1000);
-        Result result3 = invokeDubboRpc(false, invoker, invocation);
-        assertEquals("normal", result3.getValue());
-
-        Context context = ContextUtil.getContext();
-        assertNull(context);
     }
 
     @Test
