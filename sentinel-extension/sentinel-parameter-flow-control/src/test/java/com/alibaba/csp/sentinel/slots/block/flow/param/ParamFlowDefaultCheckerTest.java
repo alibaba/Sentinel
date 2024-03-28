@@ -62,8 +62,7 @@ public class ParamFlowDefaultCheckerTest extends AbstractTimeBasedTest {
             ParameterMetric metric = new ParameterMetric();
             ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
             metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
-            metric.getRuleTokenCounterMap().put(rule,
-                    new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+            metric.getRuleTokenCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<>(4000));
 
             // We mock the time directly to avoid unstable behaviour.
             setCurrentMillis(mocked, System.currentTimeMillis());
@@ -102,8 +101,7 @@ public class ParamFlowDefaultCheckerTest extends AbstractTimeBasedTest {
             ParameterMetric metric = new ParameterMetric();
             ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
             metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
-            metric.getRuleTokenCounterMap().put(rule,
-                    new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+            metric.getRuleTokenCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<>(4000));
 
             // We mock the time directly to avoid unstable behaviour.
             setCurrentMillis(mocked, System.currentTimeMillis());
@@ -144,8 +142,7 @@ public class ParamFlowDefaultCheckerTest extends AbstractTimeBasedTest {
             ParameterMetric metric = new ParameterMetric();
             ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
             metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
-            metric.getRuleTokenCounterMap().put(rule,
-                    new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+            metric.getRuleTokenCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<>(4000));
 
             // We mock the time directly to avoid unstable behaviour.
             setCurrentMillis(mocked, System.currentTimeMillis());
@@ -216,8 +213,7 @@ public class ParamFlowDefaultCheckerTest extends AbstractTimeBasedTest {
             ParameterMetric metric = new ParameterMetric();
             ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
             metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
-            metric.getRuleTokenCounterMap().put(rule,
-                    new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+            metric.getRuleTokenCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<>(4000));
 
             // We mock the time directly to avoid unstable behaviour.
             setCurrentMillis(mocked, System.currentTimeMillis());
@@ -268,8 +264,7 @@ public class ParamFlowDefaultCheckerTest extends AbstractTimeBasedTest {
         ParameterMetric metric = new ParameterMetric();
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
         metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
-        metric.getRuleTokenCounterMap().put(rule,
-                new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTokenCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<>(4000));
         int threadCount = 40;
 
         final CountDownLatch waitLatch = new CountDownLatch(threadCount);

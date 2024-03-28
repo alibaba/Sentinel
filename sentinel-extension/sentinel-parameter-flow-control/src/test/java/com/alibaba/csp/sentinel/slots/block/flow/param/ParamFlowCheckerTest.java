@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -158,7 +159,7 @@ public class ParamFlowCheckerTest {
         ParameterMetric metric = new ParameterMetric();
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
         metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
-        metric.getRuleTokenCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTokenCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<>(4000));
 
         assertTrue(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, list));
         assertFalse(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, list));
@@ -215,7 +216,7 @@ public class ParamFlowCheckerTest {
         ParameterMetric metric = new ParameterMetric();
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
         metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
-        metric.getRuleTokenCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTokenCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<>(4000));
 
         assertTrue(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, args));
         assertFalse(ParamFlowChecker.passCheck(resourceWrapper, rule, 1, args));
