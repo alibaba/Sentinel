@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.slots.block.degrade;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -138,6 +139,44 @@ public final class DegradeRuleManager {
         } catch (Throwable e) {
             RecordLog.error("[DegradeRuleManager] Unexpected error when setting circuit breaking"
                 + " rules for resource: " + resourceName, e);
+            return false;
+        }
+    }
+    
+    /**
+     * Batch set degrade rules for provided resources. Former rules of the resources will be replaced.
+     *
+     * @param resourceToRulesMap new rules to add
+     * @return whether the rules has actually been updated
+     * @since 1.5.0
+     */
+    public static boolean batchSetRulesForResources(Map<String, Set<DegradeRule>> resourceToRulesMap) {
+        AssertUtil.assertNotEmpty((Collection<?>) resourceToRulesMap, "resources cannot be empty");
+        try {
+            Map<String, List<DegradeRule>> newRuleMap = ruleMap.getOriginalRules();
+            for (Map.Entry<String, Set<DegradeRule>> entry : resourceToRulesMap.entrySet()) {
+                String resourceName = entry.getKey();
+                Set<DegradeRule> rules = entry.getValue();
+                if (rules == null) {
+                    newRuleMap.remove(resourceName);
+                } else {
+                    Set<DegradeRule> newSet = new HashSet<>();
+                    for (DegradeRule rule : rules) {
+                        if (isValidRule(rule) && resourceName.equals(rule.getResource())) {
+                            newSet.add(rule);
+                        }
+                    }
+                    newRuleMap.put(resourceName, new ArrayList<>(newSet));
+                }
+            }
+            
+            List<DegradeRule> allRules = new ArrayList<>();
+            for (List<DegradeRule> set : newRuleMap.values()) {
+                allRules.addAll(set);
+            }
+            return currentProperty.updateValue(allRules);
+        } catch (Throwable e) {
+            RecordLog.error("[DegradeRuleManager] Unexpected error when batch setting circuit breaking rules" , e);
             return false;
         }
     }
