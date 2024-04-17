@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright 1999-2024 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow.param;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-
 import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
 import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
@@ -37,6 +27,13 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 
+import java.lang.reflect.Array;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+
 /**
  * Rule checker for parameter flow control.
  *
@@ -46,7 +43,7 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
 public final class ParamFlowChecker {
 
     public static boolean passCheck(ResourceWrapper resourceWrapper, /*@Valid*/ ParamFlowRule rule, /*@Valid*/ int count,
-                             Object... args) {
+                                    Object... args) {
         if (args == null) {
             return true;
         }
@@ -79,7 +76,7 @@ public final class ParamFlowChecker {
                                           Object value) {
         try {
             if (Collection.class.isAssignableFrom(value.getClass())) {
-                for (Object param : ((Collection)value)) {
+                for (Object param : ((Collection) value)) {
                     if (!passSingleValueCheck(resourceWrapper, rule, count, param)) {
                         return false;
                     }
@@ -117,7 +114,7 @@ public final class ParamFlowChecker {
                 int itemThreshold = rule.getParsedHotItems().get(value);
                 return ++threadCount <= itemThreshold;
             }
-            long threshold = (long)rule.getCount();
+            long threshold = (long) rule.getCount();
             return ++threadCount <= threshold;
         }
 
@@ -127,16 +124,16 @@ public final class ParamFlowChecker {
     static boolean passDefaultLocalCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int acquireCount,
                                          Object value) {
         ParameterMetric metric = getParameterMetric(resourceWrapper);
-        CacheMap<Object, AtomicLong> tokenCounters = metric == null ? null : metric.getRuleTokenCounter(rule);
-        CacheMap<Object, AtomicLong> timeCounters = metric == null ? null : metric.getRuleTimeCounter(rule);
+        CacheMap<Object, AtomicReference<TokenUpdateStatus>> tokenCounters = metric == null ? null : metric.getRuleStampedTokenCounter(rule);
 
-        if (tokenCounters == null || timeCounters == null) {
+        DateTimeFormatter dtf = DateTimeFormatter.ISO_DATE_TIME;
+        if (tokenCounters == null) {
             return true;
         }
 
         // Calculate max token count (threshold)
         Set<Object> exclusionItems = rule.getParsedHotItems().keySet();
-        long tokenCount = (long)rule.getCount();
+        long tokenCount = (long) rule.getCount();
         if (exclusionItems.contains(value)) {
             tokenCount = rule.getParsedHotItems().get(value);
         }
@@ -153,49 +150,44 @@ public final class ParamFlowChecker {
         while (true) {
             long currentTime = TimeUtil.currentTimeMillis();
 
-            AtomicLong lastAddTokenTime = timeCounters.putIfAbsent(value, new AtomicLong(currentTime));
-            if (lastAddTokenTime == null) {
+            AtomicReference<TokenUpdateStatus> atomicLastStatus = tokenCounters.putIfAbsent(value, new AtomicReference<>(
+                    new TokenUpdateStatus(currentTime, maxCount - acquireCount)
+            ));
+            if (atomicLastStatus == null) {
                 // Token never added, just replenish the tokens and consume {@code acquireCount} immediately.
-                tokenCounters.putIfAbsent(value, new AtomicLong(maxCount - acquireCount));
                 return true;
             }
 
             // Calculate the time duration since last token was added.
-            long passTime = currentTime - lastAddTokenTime.get();
+            TokenUpdateStatus lastStatus = atomicLastStatus.get();
+            long passTime = currentTime - lastStatus.getLastAddTokenTime();
             // A simplified token bucket algorithm that will replenish the tokens only when statistic window has passed.
+            long newQps;
             if (passTime > rule.getDurationInSec() * 1000) {
-                AtomicLong oldQps = tokenCounters.putIfAbsent(value, new AtomicLong(maxCount - acquireCount));
-                if (oldQps == null) {
-                    // Might not be accurate here.
-                    lastAddTokenTime.set(currentTime);
-                    return true;
-                } else {
-                    long restQps = oldQps.get();
-                    long toAddCount = (passTime * tokenCount) / (rule.getDurationInSec() * 1000);
-                    long newQps = toAddCount + restQps > maxCount ? (maxCount - acquireCount)
+                long restQps = lastStatus.getRestQps();
+                long toAddCount = (passTime * tokenCount) / (rule.getDurationInSec() * 1000);
+                newQps = toAddCount + restQps > maxCount ? (maxCount - acquireCount)
                         : (restQps + toAddCount - acquireCount);
 
-                    if (newQps < 0) {
-                        return false;
-                    }
-                    if (oldQps.compareAndSet(restQps, newQps)) {
-                        lastAddTokenTime.set(currentTime);
+                if (newQps < 0) {
+                    return false;
+                }
+                TokenUpdateStatus newStatus = new TokenUpdateStatus(currentTime, newQps);
+                if (atomicLastStatus.compareAndSet(lastStatus, newStatus)) {
+                    return true;
+                }
+                Thread.yield();
+            } else {
+                newQps = lastStatus.getRestQps() - acquireCount;
+                if (newQps >= 0) {
+                    TokenUpdateStatus newStatus = new TokenUpdateStatus(lastStatus.getLastAddTokenTime(), newQps);
+                    if (atomicLastStatus.compareAndSet(lastStatus, newStatus)) {
                         return true;
                     }
-                    Thread.yield();
+                } else {
+                    return false;
                 }
-            } else {
-                AtomicLong oldQps = tokenCounters.get(value);
-                if (oldQps != null) {
-                    long oldQpsValue = oldQps.get();
-                    if (oldQpsValue - acquireCount >= 0) {
-                        if (oldQps.compareAndSet(oldQpsValue, oldQpsValue - acquireCount)) {
-                            return true;
-                        }
-                    } else {
-                        return false;
-                    }
-                }
+
                 Thread.yield();
             }
         }
@@ -211,7 +203,7 @@ public final class ParamFlowChecker {
 
         // Calculate max token count (threshold)
         Set<Object> exclusionItems = rule.getParsedHotItems().keySet();
-        long tokenCount = (long)rule.getCount();
+        long tokenCount = (long) rule.getCount();
         if (exclusionItems.contains(value)) {
             tokenCount = rule.getParsedHotItems().get(value);
         }
@@ -261,7 +253,7 @@ public final class ParamFlowChecker {
     @SuppressWarnings("unchecked")
     private static Collection<Object> toCollection(Object value) {
         if (value instanceof Collection) {
-            return (Collection<Object>)value;
+            return (Collection<Object>) value;
         } else if (value.getClass().isArray()) {
             List<Object> params = new ArrayList<Object>();
             int length = Array.getLength(value);

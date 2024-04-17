@@ -16,7 +16,6 @@
         <java.source.version>1.8</java.source.version>
         <java.target.version>1.8</java.target.version>
         <consul.version>1.4.5</consul.version>
-        <consul.process.version>2.2.0</consul.process.version>
     </properties>
 
     <dependencies>
@@ -36,9 +35,9 @@
             <version>${consul.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.pszymczyk.consul</groupId>
-            <artifactId>embedded-consul</artifactId>
-            <version>${consul.process.version}</version>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>consul</artifactId>
+            <version>1.19.7</version>
             <scope>test</scope>
         </dependency>
         <dependency>

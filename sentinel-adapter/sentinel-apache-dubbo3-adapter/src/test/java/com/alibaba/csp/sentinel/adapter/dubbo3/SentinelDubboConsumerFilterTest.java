@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright 1999-2024 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,12 +32,15 @@ import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
-
+import com.alibaba.csp.sentinel.util.TimeUtil;
 import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.support.RpcUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.MockedStatic;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.*;
 
@@ -50,6 +53,7 @@ import static org.mockito.Mockito.*;
  * @author cdfive
  * @author lianglin
  */
+@RunWith(MockitoJUnitRunner.class)
 public class SentinelDubboConsumerFilterTest extends BaseTest {
 
     private final SentinelDubboConsumerFilter consumerFilter = new SentinelDubboConsumerFilter();
@@ -91,62 +95,67 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
 
     @Test
     public void testDegradeAsync() throws InterruptedException {
+        try (MockedStatic<TimeUtil> mocked = super.mockTimeUtil()) {
+            setCurrentMillis(mocked, 1740000000000L);
+            Invocation invocation = DubboTestUtil.getDefaultMockInvocationOne();
+            Invoker invoker = DubboTestUtil.getDefaultMockInvoker();
 
-        Invocation invocation = DubboTestUtil.getDefaultMockInvocationOne();
-        Invoker invoker = DubboTestUtil.getDefaultMockInvoker();
+            when(invocation.getAttachment(ASYNC_KEY)).thenReturn(Boolean.TRUE.toString());
+            initDegradeRule(DubboUtils.getInterfaceName(invoker));
 
-        when(invocation.getAttachment(ASYNC_KEY)).thenReturn(Boolean.TRUE.toString());
-        initDegradeRule(DubboUtils.getInterfaceName(invoker));
-
-        Result result = invokeDubboRpc(false, invoker, invocation);
-        verifyInvocationStructureForCallFinish(invoker, invocation);
-        assertEquals("normal", result.getValue());
-
-        // inc the clusterNode's exception to trigger the fallback
-        for (int i = 0; i < 5; i++) {
-            invokeDubboRpc(true, invoker, invocation);
+            Result result = invokeDubboRpc(false, invoker, invocation);
             verifyInvocationStructureForCallFinish(invoker, invocation);
+            assertEquals("normal", result.getValue());
+
+            // inc the clusterNode's exception to trigger the fallback
+            for (int i = 0; i < 5; i++) {
+                invokeDubboRpc(true, invoker, invocation);
+                verifyInvocationStructureForCallFinish(invoker, invocation);
+            }
+
+            Result result2 = invokeDubboRpc(false, invoker, invocation);
+            assertEquals("fallback", result2.getValue());
+
+            // sleeping 1000 ms to reset exception
+            sleep(mocked, 1000);
+            Result result3 = invokeDubboRpc(false, invoker, invocation);
+            assertEquals("normal", result3.getValue());
+
+            Context context = ContextUtil.getContext();
+            assertNull(context);
         }
-
-        Result result2 = invokeDubboRpc(false, invoker, invocation);
-        assertEquals("fallback", result2.getValue());
-
-        // sleeping 1000 ms to reset exception
-        Thread.sleep(1000);
-        Result result3 = invokeDubboRpc(false, invoker, invocation);
-        assertEquals("normal", result3.getValue());
-
-        Context context = ContextUtil.getContext();
-        assertNull(context);
     }
 
     @Test
-    public void testDegradeSync() throws InterruptedException {
+    public void testDegradeSync() {
+        try (MockedStatic<TimeUtil> mocked = super.mockTimeUtil()) {
+            setCurrentMillis(mocked, 1750000000000L);
 
-        Invocation invocation = DubboTestUtil.getDefaultMockInvocationOne();
-        Invoker invoker = DubboTestUtil.getDefaultMockInvoker();
-        initDegradeRule(DubboUtils.getInterfaceName(invoker));
+            Invocation invocation = DubboTestUtil.getDefaultMockInvocationOne();
+            Invoker invoker = DubboTestUtil.getDefaultMockInvoker();
+            initDegradeRule(DubboUtils.getInterfaceName(invoker));
 
-        Result result = invokeDubboRpc(false, invoker, invocation);
-        verifyInvocationStructureForCallFinish(invoker, invocation);
-        assertEquals("normal", result.getValue());
-
-        // inc the clusterNode's exception to trigger the fallback
-        for (int i = 0; i < 5; i++) {
-            invokeDubboRpc(true, invoker, invocation);
+            Result result = invokeDubboRpc(false, invoker, invocation);
             verifyInvocationStructureForCallFinish(invoker, invocation);
+            assertEquals("normal", result.getValue());
+
+            // inc the clusterNode's exception to trigger the fallback
+            for (int i = 0; i < 5; i++) {
+                invokeDubboRpc(true, invoker, invocation);
+                verifyInvocationStructureForCallFinish(invoker, invocation);
+            }
+
+            Result result2 = invokeDubboRpc(false, invoker, invocation);
+            assertEquals("fallback", result2.getValue());
+
+            // sleeping 1000 ms to reset exception
+            sleep(mocked, 1000);
+            Result result3 = invokeDubboRpc(false, invoker, invocation);
+            assertEquals("normal", result3.getValue());
+
+            Context context = ContextUtil.getContext();
+            assertNull(context);
         }
-
-        Result result2 = invokeDubboRpc(false, invoker, invocation);
-        assertEquals("fallback", result2.getValue());
-
-        // sleeping 1000 ms to reset exception
-        Thread.sleep(1000);
-        Result result3 = invokeDubboRpc(false, invoker, invocation);
-        assertEquals("normal", result3.getValue());
-
-        Context context = ContextUtil.getContext();
-        assertNull(context);
     }
 
     @Test
@@ -180,7 +189,6 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
 
         when(invocation.getAttachment(ASYNC_KEY)).thenReturn(Boolean.TRUE.toString());
         final Result result = mock(Result.class);
-        when(result.hasException()).thenReturn(false);
         when(invoker.invoke(invocation)).thenAnswer(invocationOnMock -> {
             verifyInvocationStructureForAsyncCall(invoker, invocation);
             return result;
@@ -200,7 +208,6 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
 
         final Result result = mock(Result.class);
         when(result.hasException()).thenReturn(false);
-        when(result.getException()).thenReturn(new Exception());
         when(invoker.invoke(invocation)).thenAnswer(invocationOnMock -> {
             verifyInvocationStructure(invoker, invocation);
             return result;
@@ -263,7 +270,7 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
         ClusterNode methodClusterNode = methodNode.getClusterNode();
         ClusterNode interfaceClusterNode = interfaceNode.getClusterNode();
         assertNotSame(methodClusterNode,
-            interfaceClusterNode);// Different resource->Different ProcessorSlot->Different ClusterNode
+                interfaceClusterNode);// Different resource->Different ProcessorSlot->Different ClusterNode
 
         // As context origin is "", the StatisticNode should not be created in originCountMap of ClusterNode
         Map<String, StatisticNode> methodOriginCountMap = methodClusterNode.getOriginCountMap();
@@ -315,7 +322,7 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
         ClusterNode methodClusterNode = methodNode.getClusterNode();
         ClusterNode interfaceClusterNode = interfaceNode.getClusterNode();
         assertNotSame(methodClusterNode,
-            interfaceClusterNode);// Different resource->Different ProcessorSlot->Different ClusterNode
+                interfaceClusterNode);// Different resource->Different ProcessorSlot->Different ClusterNode
 
         // As context origin is "", the StatisticNode should not be created in originCountMap of ClusterNode
         Map<String, StatisticNode> methodOriginCountMap = methodClusterNode.getOriginCountMap();
@@ -360,8 +367,8 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
 
     private void initDegradeRule(String resource) {
         DegradeRule degradeRule = new DegradeRule(resource)
-            .setCount(0.5)
-            .setGrade(DEGRADE_GRADE_EXCEPTION_RATIO);
+                .setCount(0.5)
+                .setGrade(DEGRADE_GRADE_EXCEPTION_RATIO);
         List<DegradeRule> degradeRules = new ArrayList<>();
         degradeRules.add(degradeRule);
         degradeRule.setTimeWindow(1);
@@ -382,7 +389,7 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
             result = exception ? new AppResponse(new Exception("error")) : new AppResponse("normal");
         } else {
             result = exception ? AsyncRpcResult.newDefaultAsyncResult(new Exception("error"), invocation)
-                : AsyncRpcResult.newDefaultAsyncResult("normal", invocation);
+                    : AsyncRpcResult.newDefaultAsyncResult("normal", invocation);
         }
         when(invoker.invoke(invocation)).thenReturn(result);
         return consumerFilter.invoke(invoker, invocation);
