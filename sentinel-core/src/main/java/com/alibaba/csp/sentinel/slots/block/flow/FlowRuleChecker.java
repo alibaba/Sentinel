@@ -152,8 +152,15 @@ public class FlowRuleChecker {
                 return fallbackToLocalOrPass(rule, context, node, acquireCount, prioritized);
             }
             long flowId = rule.getClusterConfig().getFlowId();
-            TokenResult result = clusterService.requestToken(flowId, acquireCount, prioritized);
-            return applyTokenResult(result, rule, context, node, acquireCount, prioritized);
+            double ratio = rule.getClusterConfig().getPrefetchCntRatio();
+            int prefetchCnt = (int)(ratio * rule.getCount());
+            if (prefetchCnt > 1) {
+                TokenResult result = clusterService.requestTokenWithCache(flowId, acquireCount, prefetchCnt);
+                return applyTokenResult(result, rule, context, node, acquireCount, prioritized);
+            } else {
+                TokenResult result = clusterService.requestToken(flowId, acquireCount, prioritized);
+                return applyTokenResult(result, rule, context, node, acquireCount, prioritized);
+            }
             // If client is absent, then fallback to local mode.
         } catch (Throwable ex) {
             RecordLog.warn("[FlowRuleChecker] Request cluster token unexpected failed", ex);
@@ -192,6 +199,9 @@ public class FlowRuleChecker {
             case TokenResultStatus.SHOULD_WAIT:
                 // Wait for next tick.
                 try {
+                    if (result.getWaitInMs() > rule.getMaxQueueingTimeMs()) {
+                        return false;
+                    }
                     Thread.sleep(result.getWaitInMs());
                 } catch (InterruptedException e) {
                     e.printStackTrace();

@@ -73,6 +73,26 @@ public class ClusterFlowConfig {
      */
     private long clientOfflineTime = 2000;
 
+    // prefetch ratio if used to calculate prefetch count (ratio * count) for each request, prefetch can be used
+    // to reduce the number of requests to the server and reduce the latency for the request.
+    // 0: disable prefetch.
+    // value should be in the range [0.001 ~ 0.1]
+    // We suggest disable prefetch if the limit count is less than 100,
+    // for count 100~1000, suggest ratio 0.06
+    // for count 1000~10000, suggest ratio 0.04
+    // for count 10000~100000, suggest ratio 0.01
+    // for count 100000~1M, suggest ratio 0.01~0.002
+    // note the prefetch count should less than 50% of the avg count of each client (cluster total count / nums of clients).
+    private double prefetchCntRatio = 0;
+
+    public double getPrefetchCntRatio() {
+        return prefetchCntRatio;
+    }
+
+    public void setPrefetchCntRatio(double prefetchCntRatio) {
+        this.prefetchCntRatio = prefetchCntRatio;
+    }
+
     public long getResourceTimeout() {
         return resourceTimeout;
     }

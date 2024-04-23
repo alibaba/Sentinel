@@ -34,6 +34,8 @@ public class TokenResult {
 
     private Map<String, String> attachments;
 
+    private boolean isFromCached;
+
     public TokenResult() {
     }
 
@@ -85,6 +87,15 @@ public class TokenResult {
         return this;
     }
 
+    public boolean isFromCached() {
+        return isFromCached;
+    }
+
+    public TokenResult setFromCached(boolean fromCached) {
+        isFromCached = fromCached;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "TokenResult{" +
@@ -93,6 +104,7 @@ public class TokenResult {
                 ", waitInMs=" + waitInMs +
                 ", attachments=" + attachments +
                 ", tokenId=" + tokenId +
+                ", isFromCached=" + isFromCached +
                 '}';
     }
 }

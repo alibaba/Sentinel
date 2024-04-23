@@ -36,6 +36,11 @@ import java.util.Collection;
 public class DefaultTokenService implements TokenService {
 
     @Override
+    public TokenResult requestTokenWithCache(Long ruleId, int acquireCount, int prefetchCnt) {
+        return requestToken(ruleId, acquireCount, true);
+    }
+
+    @Override
     public TokenResult requestToken(Long ruleId, int acquireCount, boolean prioritized) {
         if (notValidRequest(ruleId, acquireCount)) {
             return badRequest();
