@@ -149,6 +149,7 @@ public class StatisticNode implements Node {
     @Override
     public void reset() {
         rollingCounterInSecond = new ArrayMetric(SampleCountProperty.SAMPLE_COUNT, IntervalProperty.INTERVAL);
+        rollingCounterInMinute = new ArrayMetric(60, 60 * 1000, false);
     }
 
     @Override
