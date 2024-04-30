@@ -173,6 +173,7 @@ public class FlowRuleChecker {
     private static boolean fallbackToLocalOrPass(FlowRule rule, Context context, DefaultNode node, int acquireCount,
                                                  boolean prioritized) {
         if (rule.getClusterConfig().isFallbackToLocalWhenFail()) {
+            node.increaseFallbackQps(acquireCount);
             return passLocalCheck(rule, context, node, acquireCount, prioritized);
         } else {
             // The rule won't be activated, just pass.

@@ -51,6 +51,13 @@ public interface Metric extends DebugSupport {
     long exception();
 
     /**
+     * Get total fallback count.
+     *
+     * @return fallback count
+     */
+    long fallback();
+
+    /**
      * Get total block count.
      *
      * @return block count
@@ -107,6 +114,13 @@ public interface Metric extends DebugSupport {
      * @param n count to add
      */
     void addException(int n);
+
+    /**
+     * Add current fallback count.
+     *
+     * @param n count to add
+     */
+    void addFallback(int n);
 
     /**
      * Add current block count.

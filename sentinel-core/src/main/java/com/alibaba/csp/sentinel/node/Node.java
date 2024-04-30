@@ -67,6 +67,8 @@ public interface Node extends OccupySupport, DebugSupport {
      * @return total business exception count per minute
      */
     long totalException();
+    
+    long totalFallback();
 
     /**
      * Get pass request per second.
@@ -109,6 +111,8 @@ public interface Node extends OccupySupport, DebugSupport {
      * @return QPS of exception occurs
      */
     double exceptionQps();
+    
+    double fallbackQps();
 
     /**
      * Get average rt per second.
@@ -185,6 +189,8 @@ public interface Node extends OccupySupport, DebugSupport {
      * @param count count to add
      */
     void increaseExceptionQps(int count);
+
+    void increaseFallbackQps(int count);
 
     /**
      * Increase current thread count.

@@ -94,6 +94,17 @@ public class ArrayMetric implements Metric {
     }
 
     @Override
+    public long fallback() {
+        data.currentWindow();
+        long fallback = 0;
+        List<MetricBucket> list = data.values();
+        for (MetricBucket window : list) {
+            fallback += window.fallback();
+        }
+        return fallback;
+    }
+
+    @Override
     public long block() {
         data.currentWindow();
         long block = 0;
@@ -214,6 +225,12 @@ public class ArrayMetric implements Metric {
     public void addException(int count) {
         WindowWrap<MetricBucket> wrap = data.currentWindow();
         wrap.value().addException(count);
+    }
+
+    @Override
+    public void addFallback(int count) {
+        WindowWrap<MetricBucket> wrap = data.currentWindow();
+        wrap.value().addFallback(count);
     }
 
     @Override

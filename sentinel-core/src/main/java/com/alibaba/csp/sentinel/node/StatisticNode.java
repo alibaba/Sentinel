@@ -197,6 +197,16 @@ public class StatisticNode implements Node {
     }
 
     @Override
+    public double fallbackQps() {
+        return rollingCounterInSecond.fallback() / rollingCounterInSecond.getWindowIntervalInSec();
+    }
+
+    @Override
+    public long totalFallback() {
+        return rollingCounterInMinute.fallback();
+    }
+
+    @Override
     public double passQps() {
         return rollingCounterInSecond.pass() / rollingCounterInSecond.getWindowIntervalInSec();
     }
@@ -267,6 +277,12 @@ public class StatisticNode implements Node {
     public void increaseExceptionQps(int count) {
         rollingCounterInSecond.addException(count);
         rollingCounterInMinute.addException(count);
+    }
+
+    @Override
+    public void increaseFallbackQps(int count) {
+        rollingCounterInSecond.addFallback(count);
+        rollingCounterInMinute.addFallback(count);
     }
 
     @Override

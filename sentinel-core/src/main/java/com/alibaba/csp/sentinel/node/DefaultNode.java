@@ -119,6 +119,12 @@ public class DefaultNode extends StatisticNode {
     }
 
     @Override
+    public void increaseFallbackQps(int count) {
+        super.increaseFallbackQps(count);
+        this.clusterNode.increaseFallbackQps(count);
+    }
+
+    @Override
     public void addRtAndSuccess(long rt, int successCount) {
         super.addRtAndSuccess(rt, successCount);
         this.clusterNode.addRtAndSuccess(rt, successCount);

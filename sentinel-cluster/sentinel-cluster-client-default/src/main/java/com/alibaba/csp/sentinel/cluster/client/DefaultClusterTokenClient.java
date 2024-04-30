@@ -71,6 +71,7 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
     private final AtomicBoolean shouldStart = new AtomicBoolean(false);
     private int checkInterval = 2;
     ConcurrentHashMap<Long, CachedTokenData> localPrefetchedTokens = new ConcurrentHashMap<>();
+    @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private final ScheduledExecutorService prefetchScheduler = Executors.newScheduledThreadPool(2,
         new NamedThreadFactory("sentinel-cluster-prefetch-scheduler", true));
 
