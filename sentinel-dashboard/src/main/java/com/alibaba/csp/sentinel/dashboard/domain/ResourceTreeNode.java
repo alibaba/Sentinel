@@ -15,36 +15,23 @@
  */
 package com.alibaba.csp.sentinel.dashboard.domain;
 
+import com.alibaba.csp.sentinel.command.vo.NodeVo;
+import com.alibaba.csp.sentinel.command.vo.TrafficStatistics;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.alibaba.csp.sentinel.command.vo.NodeVo;
-
 /**
  * @author leyou
  */
 public class ResourceTreeNode {
-    private String id;
-    private String parentId;
-    private String resource;
-
-    private Integer threadNum;
-    private Long passQps;
-    private Long blockQps;
-    private Long totalQps;
-    private Long averageRt;
-    private Long successQps;
-    private Long exceptionQps;
-    private Long oneMinutePass;
-    private Long oneMinuteBlock;
-    private Long oneMinuteException;
-    private Long oneMinuteTotal;
 
     private boolean visible = true;
 
     private List<ResourceTreeNode> children = new ArrayList<>();
+    private TrafficStatistics trafficStatistics = new TrafficStatistics(null, null, null, null, null, null, null, null, null, null, null, null, null, null);
 
     public static ResourceTreeNode fromNodeVoList(List<NodeVo> nodeVos) {
         if (nodeVos == null || nodeVos.isEmpty()) {
@@ -54,12 +41,12 @@ public class ResourceTreeNode {
         Map<String, ResourceTreeNode> map = new HashMap<>();
         for (NodeVo vo : nodeVos) {
             ResourceTreeNode node = fromNodeVo(vo);
-            map.put(node.id, node);
+            map.put(node.trafficStatistics.getId(), node);
             // real root
-            if (node.parentId == null || node.parentId.isEmpty()) {
+            if (node.trafficStatistics.getParentId() == null || node.trafficStatistics.getParentId().isEmpty()) {
                 root = node;
-            } else if (map.containsKey(node.parentId)) {
-                map.get(node.parentId).children.add(node);
+            } else if (map.containsKey(node.trafficStatistics.getParentId())) {
+                map.get(node.trafficStatistics.getParentId()).children.add(node);
             } else {
                 // impossible
             }
@@ -69,20 +56,20 @@ public class ResourceTreeNode {
 
     public static ResourceTreeNode fromNodeVo(NodeVo vo) {
         ResourceTreeNode node = new ResourceTreeNode();
-        node.id = vo.getId();
-        node.parentId = vo.getParentId();
-        node.resource = vo.getResource();
-        node.threadNum = vo.getThreadNum();
-        node.passQps = vo.getPassQps();
-        node.blockQps = vo.getBlockQps();
-        node.totalQps = vo.getTotalQps();
-        node.averageRt = vo.getAverageRt();
-        node.successQps = vo.getSuccessQps();
-        node.exceptionQps = vo.getExceptionQps();
-        node.oneMinutePass = vo.getOneMinutePass();
-        node.oneMinuteBlock = vo.getOneMinuteBlock();
-        node.oneMinuteException = vo.getOneMinuteException();
-        node.oneMinuteTotal = vo.getOneMinuteTotal();
+        node.trafficStatistics.setId(vo.getId());
+        node.trafficStatistics.setParentId(vo.getParentId());
+        node.trafficStatistics.setResource(vo.getResource());
+        node.trafficStatistics.setThreadNum(vo.getThreadNum());
+        node.trafficStatistics.setPassQps(vo.getPassQps());
+        node.trafficStatistics.setBlockQps(vo.getBlockQps());
+        node.trafficStatistics.setTotalQps(vo.getTotalQps());
+        node.trafficStatistics.setAverageRt(vo.getAverageRt());
+        node.trafficStatistics.setSuccessQps(vo.getSuccessQps());
+        node.trafficStatistics.setExceptionQps(vo.getExceptionQps());
+        node.trafficStatistics.setOneMinutePass(vo.getOneMinutePass());
+        node.trafficStatistics.setOneMinuteBlock(vo.getOneMinuteBlock());
+        node.trafficStatistics.setOneMinuteException(vo.getOneMinuteException());
+        node.trafficStatistics.setOneMinuteTotal(vo.getOneMinuteTotal());
         return node;
     }
 
@@ -97,7 +84,7 @@ public class ResourceTreeNode {
     private boolean search(ResourceTreeNode node, String searchKey) {
         // empty matches all
         if (searchKey == null || searchKey.isEmpty() ||
-            node.resource.toLowerCase().contains(searchKey.toLowerCase())) {
+                node.trafficStatistics.getResource().toLowerCase().contains(searchKey.toLowerCase())) {
             node.visible = true;
         } else {
             node.visible = false;
@@ -112,115 +99,115 @@ public class ResourceTreeNode {
     }
 
     public String getId() {
-        return id;
+        return trafficStatistics.getId();
     }
 
     public void setId(String id) {
-        this.id = id;
+        this.trafficStatistics.setId(id);
     }
 
     public String getParentId() {
-        return parentId;
+        return trafficStatistics.getParentId();
     }
 
     public void setParentId(String parentId) {
-        this.parentId = parentId;
+        this.trafficStatistics.setParentId(parentId);
     }
 
     public String getResource() {
-        return resource;
+        return trafficStatistics.getResource();
     }
 
     public void setResource(String resource) {
-        this.resource = resource;
+        this.trafficStatistics.setResource(resource);
     }
 
     public Integer getThreadNum() {
-        return threadNum;
+        return trafficStatistics.getThreadNum();
     }
 
     public void setThreadNum(Integer threadNum) {
-        this.threadNum = threadNum;
+        this.trafficStatistics.setThreadNum(threadNum);
     }
 
     public Long getPassQps() {
-        return passQps;
+        return trafficStatistics.getPassQps();
     }
 
     public void setPassQps(Long passQps) {
-        this.passQps = passQps;
+        this.trafficStatistics.setPassQps(passQps);
     }
 
     public Long getBlockQps() {
-        return blockQps;
+        return trafficStatistics.getBlockQps();
     }
 
     public void setBlockQps(Long blockQps) {
-        this.blockQps = blockQps;
+        this.trafficStatistics.setBlockQps(blockQps);
     }
 
     public Long getTotalQps() {
-        return totalQps;
+        return trafficStatistics.getTotalQps();
     }
 
     public void setTotalQps(Long totalQps) {
-        this.totalQps = totalQps;
+        this.trafficStatistics.setTotalQps(totalQps);
     }
 
     public Long getAverageRt() {
-        return averageRt;
+        return trafficStatistics.getAverageRt();
     }
 
     public void setAverageRt(Long averageRt) {
-        this.averageRt = averageRt;
+        this.trafficStatistics.setAverageRt(averageRt);
     }
 
     public Long getSuccessQps() {
-        return successQps;
+        return trafficStatistics.getSuccessQps();
     }
 
     public void setSuccessQps(Long successQps) {
-        this.successQps = successQps;
+        this.trafficStatistics.setSuccessQps(successQps);
     }
 
     public Long getExceptionQps() {
-        return exceptionQps;
+        return trafficStatistics.getExceptionQps();
     }
 
     public void setExceptionQps(Long exceptionQps) {
-        this.exceptionQps = exceptionQps;
+        this.trafficStatistics.setExceptionQps(exceptionQps);
     }
 
     public Long getOneMinutePass() {
-        return oneMinutePass;
+        return trafficStatistics.getOneMinutePass();
     }
 
     public void setOneMinutePass(Long oneMinutePass) {
-        this.oneMinutePass = oneMinutePass;
+        this.trafficStatistics.setOneMinutePass(oneMinutePass);
     }
 
     public Long getOneMinuteBlock() {
-        return oneMinuteBlock;
+        return trafficStatistics.getOneMinuteBlock();
     }
 
     public void setOneMinuteBlock(Long oneMinuteBlock) {
-        this.oneMinuteBlock = oneMinuteBlock;
+        this.trafficStatistics.setOneMinuteBlock(oneMinuteBlock);
     }
 
     public Long getOneMinuteException() {
-        return oneMinuteException;
+        return trafficStatistics.getOneMinuteException();
     }
 
     public void setOneMinuteException(Long oneMinuteException) {
-        this.oneMinuteException = oneMinuteException;
+        this.trafficStatistics.setOneMinuteException(oneMinuteException);
     }
 
     public Long getOneMinuteTotal() {
-        return oneMinuteTotal;
+        return trafficStatistics.getOneMinuteTotal();
     }
 
     public void setOneMinuteTotal(Long oneMinuteTotal) {
-        this.oneMinuteTotal = oneMinuteTotal;
+        this.trafficStatistics.setOneMinuteTotal(oneMinuteTotal);
     }
 
     public boolean isVisible() {

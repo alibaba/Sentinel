@@ -15,11 +15,11 @@
  */
 package com.alibaba.csp.sentinel.command.vo;
 
-import java.util.UUID;
-
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
+
+import java.util.UUID;
 
 /**
  * This class is view object of {@link DefaultNode} or {@link ClusterNode}.
@@ -28,23 +28,8 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
  */
 public class NodeVo {
 
-    private String id;
-    private String parentId;
-    private String resource;
-
-    private Integer threadNum;
-    private Long passQps;
-    private Long blockQps;
-    private Long totalQps;
-    private Long averageRt;
-    private Long successQps;
-    private Long exceptionQps;
-    private Long oneMinutePass;
-    private Long oneMinuteBlock;
-    private Long oneMinuteException;
-    private Long oneMinuteTotal;
-
     private Long timestamp;
+    private TrafficStatistics trafficStatistics = new TrafficStatistics(null, null, null, null, null, null, null, null, null, null, null, null, null, null);
 
     /**
      * {@link DefaultNode} holds statistics of every node in the invoke tree.
@@ -59,20 +44,20 @@ public class NodeVo {
             return null;
         }
         NodeVo vo = new NodeVo();
-        vo.id = UUID.randomUUID().toString();
-        vo.parentId = parentId;
-        vo.resource = node.getId().getShowName();
-        vo.threadNum = node.curThreadNum();
-        vo.passQps = (long) node.passQps();
-        vo.blockQps = (long) node.blockQps();
-        vo.totalQps = (long) node.totalQps();
-        vo.averageRt = (long) node.avgRt();
-        vo.successQps = (long) node.successQps();
-        vo.exceptionQps = (long) node.exceptionQps();
-        vo.oneMinuteException = node.totalException();
-        vo.oneMinutePass = node.totalRequest() - node.blockRequest();
-        vo.oneMinuteBlock = node.blockRequest();
-        vo.oneMinuteTotal = node.totalRequest();
+        vo.trafficStatistics.setId(UUID.randomUUID().toString());
+        vo.trafficStatistics.setParentId(parentId);
+        vo.trafficStatistics.setResource(node.getId().getShowName());
+        vo.trafficStatistics.setThreadNum(node.curThreadNum());
+        vo.trafficStatistics.setPassQps((long) node.passQps());
+        vo.trafficStatistics.setBlockQps((long) node.blockQps());
+        vo.trafficStatistics.setTotalQps((long) node.totalQps());
+        vo.trafficStatistics.setAverageRt((long) node.avgRt());
+        vo.trafficStatistics.setSuccessQps((long) node.successQps());
+        vo.trafficStatistics.setExceptionQps((long) node.exceptionQps());
+        vo.trafficStatistics.setOneMinuteException(node.totalException());
+        vo.trafficStatistics.setOneMinutePass(node.totalRequest() - node.blockRequest());
+        vo.trafficStatistics.setOneMinuteBlock(node.blockRequest());
+        vo.trafficStatistics.setOneMinuteTotal(node.totalRequest());
         vo.timestamp = System.currentTimeMillis();
         return vo;
     }
@@ -100,132 +85,132 @@ public class NodeVo {
             return null;
         }
         NodeVo vo = new NodeVo();
-        vo.resource = name;
-        vo.threadNum = node.curThreadNum();
-        vo.passQps = (long) node.passQps();
-        vo.blockQps = (long) node.blockQps();
-        vo.totalQps = (long) node.totalQps();
-        vo.averageRt = (long) node.avgRt();
-        vo.successQps = (long) node.successQps();
-        vo.exceptionQps = (long) node.exceptionQps();
-        vo.oneMinuteException = node.totalException();
-        vo.oneMinutePass = node.totalRequest() - node.blockRequest();
-        vo.oneMinuteBlock = node.blockRequest();
-        vo.oneMinuteTotal = node.totalRequest();
+        vo.trafficStatistics.setResource(name);
+        vo.trafficStatistics.setThreadNum(node.curThreadNum());
+        vo.trafficStatistics.setPassQps((long) node.passQps());
+        vo.trafficStatistics.setBlockQps((long) node.blockQps());
+        vo.trafficStatistics.setTotalQps((long) node.totalQps());
+        vo.trafficStatistics.setAverageRt((long) node.avgRt());
+        vo.trafficStatistics.setSuccessQps((long) node.successQps());
+        vo.trafficStatistics.setExceptionQps((long) node.exceptionQps());
+        vo.trafficStatistics.setOneMinuteException(node.totalException());
+        vo.trafficStatistics.setOneMinutePass(node.totalRequest() - node.blockRequest());
+        vo.trafficStatistics.setOneMinuteBlock(node.blockRequest());
+        vo.trafficStatistics.setOneMinuteTotal(node.totalRequest());
         vo.timestamp = System.currentTimeMillis();
         return vo;
     }
 
     public String getId() {
-        return id;
+        return trafficStatistics.getId();
     }
 
     public void setId(String id) {
-        this.id = id;
+        this.trafficStatistics.setId(id);
     }
 
     public String getParentId() {
-        return parentId;
+        return trafficStatistics.getParentId();
     }
 
     public void setParentId(String parentId) {
-        this.parentId = parentId;
+        this.trafficStatistics.setParentId(parentId);
     }
 
     public String getResource() {
-        return resource;
+        return trafficStatistics.getResource();
     }
 
     public void setResource(String resource) {
-        this.resource = resource;
+        this.trafficStatistics.setResource(resource);
     }
 
     public Integer getThreadNum() {
-        return threadNum;
+        return trafficStatistics.getThreadNum();
     }
 
     public void setThreadNum(Integer threadNum) {
-        this.threadNum = threadNum;
+        this.trafficStatistics.setThreadNum(threadNum);
     }
 
     public Long getPassQps() {
-        return passQps;
+        return trafficStatistics.getPassQps();
     }
 
     public void setPassQps(Long passQps) {
-        this.passQps = passQps;
+        this.trafficStatistics.setPassQps(passQps);
     }
 
     public Long getBlockQps() {
-        return blockQps;
+        return trafficStatistics.getBlockQps();
     }
 
     public void setBlockQps(Long blockQps) {
-        this.blockQps = blockQps;
+        this.trafficStatistics.setBlockQps(blockQps);
     }
 
     public Long getTotalQps() {
-        return totalQps;
+        return trafficStatistics.getTotalQps();
     }
 
     public void setTotalQps(Long totalQps) {
-        this.totalQps = totalQps;
+        this.trafficStatistics.setTotalQps(totalQps);
     }
 
     public Long getAverageRt() {
-        return averageRt;
+        return trafficStatistics.getAverageRt();
     }
 
     public void setAverageRt(Long averageRt) {
-        this.averageRt = averageRt;
+        this.trafficStatistics.setAverageRt(averageRt);
     }
 
     public Long getSuccessQps() {
-        return successQps;
+        return trafficStatistics.getSuccessQps();
     }
 
     public void setSuccessQps(Long successQps) {
-        this.successQps = successQps;
+        this.trafficStatistics.setSuccessQps(successQps);
     }
 
     public Long getExceptionQps() {
-        return exceptionQps;
+        return trafficStatistics.getExceptionQps();
     }
 
     public void setExceptionQps(Long exceptionQps) {
-        this.exceptionQps = exceptionQps;
+        this.trafficStatistics.setExceptionQps(exceptionQps);
     }
 
     public Long getOneMinuteException() {
-        return oneMinuteException;
+        return trafficStatistics.getOneMinuteException();
     }
 
     public void setOneMinuteException(Long oneMinuteException) {
-        this.oneMinuteException = oneMinuteException;
+        this.trafficStatistics.setOneMinuteException(oneMinuteException);
     }
 
     public Long getOneMinutePass() {
-        return oneMinutePass;
+        return trafficStatistics.getOneMinutePass();
     }
 
     public void setOneMinutePass(Long oneMinutePass) {
-        this.oneMinutePass = oneMinutePass;
+        this.trafficStatistics.setOneMinutePass(oneMinutePass);
     }
 
     public Long getOneMinuteBlock() {
-        return oneMinuteBlock;
+        return trafficStatistics.getOneMinuteBlock();
     }
 
     public void setOneMinuteBlock(Long oneMinuteBlock) {
-        this.oneMinuteBlock = oneMinuteBlock;
+        this.trafficStatistics.setOneMinuteBlock(oneMinuteBlock);
     }
 
     public Long getOneMinuteTotal() {
-        return oneMinuteTotal;
+        return trafficStatistics.getOneMinuteTotal();
     }
 
     public void setOneMinuteTotal(Long oneMinuteTotal) {
-        this.oneMinuteTotal = oneMinuteTotal;
+        this.trafficStatistics.setOneMinuteTotal(oneMinuteTotal);
     }
 
     public Long getTimestamp() {
