@@ -31,14 +31,40 @@ app.controller('GatewayIdentityCtl', ['$scope', '$stateParams', 'IdentityService
       }
     };
     $scope.table = null;
+    function extractIPAndPort(input) {
+    // 假设输入字符串是 9 组的格式，并且我们想要前 8 组作为 IPv6 地址，最后一组作为端口号
+    const parts = input.split(':');
+    if (parts.length === 9) {
+        // 提取前 8 组作为 IPv6 地址
+        const ip = parts.slice(0, 8).join(':');
+        // 尝试将最后一组转换为端口号（这里假设它是有效的端口号）
+        const portStr = parts[8];
+        const port = parseInt(portStr, 10);
 
+        // 验证端口号是否在有效范围内
+        if (port >= 1 && port <= 65535) {
+            // 返回包含 IPv6 地址和端口号的数组
+            return [ip, port];
+        } else {
+            // 端口号无效，返回包含 IPv6 地址和 null 的数组
+            return [ip, null];
+        }
+    } else if(parts.length === 2){
+    	const ip = parts[0];
+        const port = parseInt(parts[1], 10);
+      	return [ip, port];
+    }else {
+        // 输入字符串格式不正确，返回包含两个 null 的数组
+        return [null, null];
+    }
+};
     getApiNames();
     function getApiNames() {
       if (!$scope.macInputModel) {
         return;
       }
 
-      var mac = $scope.macInputModel.split(':');
+      var mac = extractIPAndPort($scope.macInputModel);
       GatewayApiService.queryApis($scope.app, mac[0], mac[1]).success(
         function (data) {
           if (data.code == 0 && data.data) {
@@ -57,7 +83,7 @@ app.controller('GatewayIdentityCtl', ['$scope', '$stateParams', 'IdentityService
       if (!$scope.macInputModel) {
         return;
       }
-      var mac = $scope.macInputModel.split(':');
+      var mac = extractIPAndPort($scope.macInputModel);
       gatewayFlowRuleDialogScope = $scope.$new(true);
 
       gatewayFlowRuleDialogScope.apiNames = $scope.apiNames;
@@ -165,7 +191,7 @@ app.controller('GatewayIdentityCtl', ['$scope', '$stateParams', 'IdentityService
       if (!$scope.macInputModel) {
         return;
       }
-      var mac = $scope.macInputModel.split(':');
+      var mac = extractIPAndPort($scope.macInputModel);
       degradeRuleDialogScope = $scope.$new(true);
       degradeRuleDialogScope.currentRule = {
         enable: false,
@@ -278,7 +304,7 @@ app.controller('GatewayIdentityCtl', ['$scope', '$stateParams', 'IdentityService
     };
 
     function queryIdentities() {
-      var mac = $scope.macInputModel.split(':');
+      var mac = extractIPAndPort($scope.macInputModel);
       if (mac == null || mac.length < 2) {
         return;
       }

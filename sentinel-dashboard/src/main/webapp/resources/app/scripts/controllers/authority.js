@@ -28,11 +28,30 @@ angular.module('sentinelDashboardApp').controller('AuthorityRuleController', ['$
             }
         };
 
+        function extractIPAndPort(input) {
+            // 检查是否包含IPv6地址的方括号
+            if (input.startsWith('[') && input.endsWith(']')) {
+                // 移除方括号
+                const ipv6WithPort = input.slice(1, -1);
+                // 分割IPv6地址和端口
+                const [ipv6, portString] = ipv6WithPort.split(':');
+                // 如果端口存在，将其转换为数字
+                const port = portString ? parseInt(portString, 10) : null;
+                return [ipv6, port];
+            } else {
+                // 假设输入是IPv4地址+端口
+                const [ip, portString] = input.split(':');
+                // 如果端口存在，将其转换为数字
+                const port = portString ? parseInt(portString, 10) : null;
+                return [ip, port];
+            }
+        };
+
         function getMachineRules() {
             if (!$scope.macInputModel) {
                 return;
             }
-            let mac = $scope.macInputModel.split(':');
+            let mac = extractIPAndPort($scope.macInputModel);
             AuthorityRuleService.queryMachineRules($scope.app, mac[0], mac[1])
                 .success(function (data) {
                     if (data.code === 0 && data.data) {
@@ -70,7 +89,7 @@ angular.module('sentinelDashboardApp').controller('AuthorityRuleController', ['$
         };
 
         $scope.addNewRule = function () {
-            var mac = $scope.macInputModel.split(':');
+            var mac = extractIPAndPort($scope.macInputModel);
             $scope.currentRule = {
                 app: $scope.app,
                 ip: mac[0],

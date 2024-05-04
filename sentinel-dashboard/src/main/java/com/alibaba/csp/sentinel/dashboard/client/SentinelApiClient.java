@@ -283,8 +283,11 @@ public class SentinelApiClient {
             future.completeExceptionally(new IllegalArgumentException("Bad URL or command name"));
             return future;
         }
+        if(ip.contains("%")) {
+            ip = ip.split("%")[0];
+        }
         if (!InetAddressUtils.isIPv4Address(ip) && !InetAddressUtils.isIPv6Address(ip)) {
-            future.completeExceptionally(new IllegalArgumentException("Bad IP"));
+            future.completeExceptionally(new IllegalArgumentException("Bad IP:" + ip));
             return future;
         }
         if (!StringUtil.isEmpty(app) && !appManagement.isValidMachineOfApp(app, ip)) {
@@ -293,7 +296,7 @@ public class SentinelApiClient {
         }
         StringBuilder urlBuilder = new StringBuilder();
         urlBuilder.append("http://");
-        urlBuilder.append(ip).append(':').append(port).append('/').append(api);
+        urlBuilder.append(ip.contains(":")?("["+ip+"]"):ip).append(':').append(port).append('/').append(api);
         if (params == null) {
             params = Collections.emptyMap();
         }

@@ -39,11 +39,29 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
 
     var flowRuleDialog;
     var flowRuleDialogScope;
+    function extractIPAndPort(input) {
+          // 检查是否包含IPv6地址的方括号
+          if (input.startsWith('[') && input.endsWith(']')) {
+              // 移除方括号
+              const ipv6WithPort = input.slice(1, -1);
+              // 分割IPv6地址和端口
+              const [ipv6, portString] = ipv6WithPort.split(':');
+              // 如果端口存在，将其转换为数字
+              const port = portString ? parseInt(portString, 10) : null;
+              return [ipv6, port];
+          } else {
+              // 假设输入是IPv4地址+端口
+              const [ip, portString] = input.split(':');
+              // 如果端口存在，将其转换为数字
+              const port = portString ? parseInt(portString, 10) : null;
+              return [ip, port];
+          }
+    };
     $scope.addNewFlowRule = function (resource) {
       if (!$scope.macInputModel) {
         return;
       }
-      var mac = $scope.macInputModel.split(':');
+      var mac = extractIPAndPort($scope.macInputModel);
       flowRuleDialogScope = $scope.$new(true);
       flowRuleDialogScope.currentRule = {
         enable: false,
@@ -124,7 +142,7 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
       if (!$scope.macInputModel) {
         return;
       }
-      var mac = $scope.macInputModel.split(':');
+      var mac = extractIPAndPort($scope.macInputModel);
       degradeRuleDialogScope = $scope.$new(true);
       degradeRuleDialogScope.currentRule = {
         enable: false,
@@ -233,7 +251,7 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
           if (!$scope.macInputModel) {
               return;
           }
-          let mac = $scope.macInputModel.split(':');
+          let mac = extractIPAndPort($scope.macInputModel);
           authorityRuleDialogScope = $scope.$new(true);
           authorityRuleDialogScope.currentRule = {
               app: $scope.app,
@@ -312,7 +330,7 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
           if (!$scope.macInputModel) {
               return;
           }
-          let mac = $scope.macInputModel.split(':');
+          let mac = extractIPAndPort($scope.macInputModel);
           paramFlowRuleDialogScope = $scope.$new(true);
           paramFlowRuleDialogScope.currentRule = {
               app: $scope.app,
@@ -443,8 +461,8 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
       // }, DATA_REFRESH_INTERVAL * 1000);
     };
 
-    function queryIdentities() {
-      var mac = $scope.macInputModel.split(':');
+      function queryIdentities() {
+      var mac = extractIPAndPort($scope.macInputModel);
       if (mac == null || mac.length < 2) {
         return;
       }
