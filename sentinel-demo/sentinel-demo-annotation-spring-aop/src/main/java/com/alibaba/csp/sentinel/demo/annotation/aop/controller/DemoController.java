@@ -33,10 +33,16 @@ public class DemoController {
     private TestService service;
 
     @GetMapping("/foo")
-    public String apiFoo(@RequestParam(required = false) Long t) throws Exception {
+    public String apiFoo(@RequestParam(required = false) Long t) {
         if (t == null) {
             t = System.currentTimeMillis();
         }
+        service.test();
+        return service.hello(t);
+    }
+
+    @GetMapping("/bar")
+    public String apiBar(@RequestParam(required = false) String t) {
         service.test();
         return service.hello(t);
     }
