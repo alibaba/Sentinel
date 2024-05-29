@@ -12,7 +12,7 @@
     <artifactId>sentinel-demo-zookeeper-datasource</artifactId>
 
     <properties>
-        <zookeeper.version>3.4.14</zookeeper.version>
+        <zookeeper.version>3.8.4</zookeeper.version>
         <curator.version>4.0.1</curator.version>
     </properties>
 
