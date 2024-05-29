@@ -15,7 +15,7 @@
     <properties>
         <aspectj.version>1.9.2</aspectj.version>
 
-        <spring.test.version>5.1.5.RELEASE</spring.test.version>
+        <spring.test.version>5.2.21.RELEASE</spring.test.version>
     </properties>
 
     <dependencies>
