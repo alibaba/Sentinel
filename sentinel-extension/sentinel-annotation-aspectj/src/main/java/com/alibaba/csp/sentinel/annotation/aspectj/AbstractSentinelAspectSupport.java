@@ -34,6 +34,7 @@ import java.util.Arrays;
  *
  * @author Eric Zhao
  * @author zhaoyuguang
+ * @author dowenliu-xyz(hawkdowen@hotmail.com)
  */
 public abstract class AbstractSentinelAspectSupport {
 
@@ -177,12 +178,13 @@ public abstract class AbstractSentinelAspectSupport {
         }
         boolean mustStatic = locationClass != null && locationClass.length >= 1;
         Class<?> clazz = mustStatic ? locationClass[0] : pjp.getTarget().getClass();
-        MethodWrapper m = ResourceMetadataRegistry.lookupFallback(clazz, fallbackName);
+        Method originMethod = resolveMethod(pjp);
+        MethodWrapper m = ResourceMetadataRegistry.lookupFallback(clazz, fallbackName, originMethod.getParameterTypes());
         if (m == null) {
             // First time, resolve the fallback.
-            Method method = resolveFallbackInternal(pjp, fallbackName, clazz, mustStatic);
+            Method method = resolveFallbackInternal(originMethod, fallbackName, clazz, mustStatic);
             // Cache the method instance.
-            ResourceMetadataRegistry.updateFallbackFor(clazz, fallbackName, method);
+            ResourceMetadataRegistry.updateFallbackFor(clazz, fallbackName, originMethod.getParameterTypes(), method);
             return method;
         }
         if (!m.isPresent()) {
@@ -232,9 +234,7 @@ public abstract class AbstractSentinelAspectSupport {
         return m.getMethod();
     }
 
-    private Method resolveFallbackInternal(ProceedingJoinPoint pjp, /*@NonNull*/ String name, Class<?> clazz,
-                                           boolean mustStatic) {
-        Method originMethod = resolveMethod(pjp);
+    private Method resolveFallbackInternal(Method originMethod, String name, Class<?> clazz, boolean mustStatic) {
         // Fallback function allows two kinds of parameter list.
         Class<?>[] defaultParamTypes = originMethod.getParameterTypes();
         Class<?>[] paramTypesWithException = Arrays.copyOf(defaultParamTypes, defaultParamTypes.length + 1);
@@ -261,12 +261,13 @@ public abstract class AbstractSentinelAspectSupport {
             // By default current class.
             clazz = pjp.getTarget().getClass();
         }
-        MethodWrapper m = ResourceMetadataRegistry.lookupBlockHandler(clazz, name);
+        Method originMethod = resolveMethod(pjp);
+        MethodWrapper m = ResourceMetadataRegistry.lookupBlockHandler(clazz, name, originMethod.getParameterTypes());
         if (m == null) {
             // First time, resolve the block handler.
-            Method method = resolveBlockHandlerInternal(pjp, name, clazz, mustStatic);
+            Method method = resolveBlockHandlerInternal(originMethod, name, clazz, mustStatic);
             // Cache the method instance.
-            ResourceMetadataRegistry.updateBlockHandlerFor(clazz, name, method);
+            ResourceMetadataRegistry.updateBlockHandlerFor(clazz, name, originMethod.getParameterTypes(), method);
             return method;
         }
         if (!m.isPresent()) {
@@ -275,9 +276,7 @@ public abstract class AbstractSentinelAspectSupport {
         return m.getMethod();
     }
 
-    private Method resolveBlockHandlerInternal(ProceedingJoinPoint pjp, /*@NonNull*/ String name, Class<?> clazz,
-                                               boolean mustStatic) {
-        Method originMethod = resolveMethod(pjp);
+    private Method resolveBlockHandlerInternal(Method originMethod, String name, Class<?> clazz, boolean mustStatic) {
         Class<?>[] originList = originMethod.getParameterTypes();
         Class<?>[] parameterTypes = Arrays.copyOf(originList, originList.length + 1);
         parameterTypes[parameterTypes.length - 1] = BlockException.class;

@@ -16,8 +16,6 @@
 package com.alibaba.csp.sentinel.demo.annotation.aop.service;
 
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
-import com.alibaba.csp.sentinel.slots.block.BlockException;
-
 import org.springframework.stereotype.Service;
 
 /**
@@ -42,6 +40,15 @@ public class TestServiceImpl implements TestService {
     }
 
     @Override
+    @SentinelResource(value = "helloStr", fallback = "helloFallback")
+    public String hello(String s) {
+        if (s == null || s.trim().isEmpty()) {
+            throw new IllegalArgumentException("unknown");
+        }
+        return String.format("Hello, %s", s);
+    }
+
+    @Override
     @SentinelResource(value = "helloAnother", defaultFallback = "defaultFallback",
         exceptionsToIgnore = {IllegalStateException.class})
     public String helloAnother(String name) {
@@ -58,6 +65,12 @@ public class TestServiceImpl implements TestService {
         // Do some log here.
         ex.printStackTrace();
         return "Oops, error occurred at " + s;
+    }
+
+    private String helloFallback(String ignored, Throwable e) {
+        // Do some log here.
+        e.printStackTrace();
+        return "Hello, stranger";
     }
 
     public String defaultFallback() {
