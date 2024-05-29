@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.annotation.aspectj;
 
 import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.alibaba.csp.sentinel.fallback.IGlobalFallback;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.MethodUtil;
@@ -84,6 +85,19 @@ public abstract class AbstractSentinelAspectSupport {
         throws Throwable {
         return handleFallback(pjp, annotation.fallback(), annotation.defaultFallback(), annotation.fallbackClass(), ex);
     }
+
+    protected Object handleGlobalFallback(ProceedingJoinPoint pjp,
+                                          Class<? extends IGlobalFallback> globalFallbackClazz,
+                                          Throwable ex) throws Throwable {
+        Object[] originArgs = pjp.getArgs();
+        Method originMethod = resolveMethod(pjp);
+        IGlobalFallback globalFallback = ResourceMetadataRegistry.lookupGlobalHandler(globalFallbackClazz);
+        if(globalFallback == null){
+            globalFallback = ResourceMetadataRegistry.updateGlobalFallBackFor(globalFallbackClazz);
+        }
+        return globalFallback.handle(originMethod,originArgs,ex);
+    }
+
 
     protected Object handleFallback(ProceedingJoinPoint pjp, String fallback, String defaultFallback,
                                     Class<?>[] fallbackClass, Throwable ex) throws Throwable {
