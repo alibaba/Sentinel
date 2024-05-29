@@ -39,6 +39,7 @@ public class AuthorityRuleEntity extends AbstractRuleEntity<AuthorityRule> {
         entity.setApp(app);
         entity.setIp(ip);
         entity.setPort(port);
+        entity.setRegex(rule.isRegex());
         return entity;
     }
 

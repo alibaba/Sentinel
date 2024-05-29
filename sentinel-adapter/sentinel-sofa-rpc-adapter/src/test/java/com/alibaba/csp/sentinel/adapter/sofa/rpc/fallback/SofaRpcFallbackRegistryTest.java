@@ -70,5 +70,9 @@ public class SofaRpcFallbackRegistryTest {
         SofaResponse consumerResponse = SofaRpcFallbackRegistry.getConsumerFallback().handle(null, null, null);
         assertNotNull(consumerResponse);
         assertEquals("test consumer response", consumerResponse.getAppResponse());
+
+        // Reset to default provider and consumer fallback
+        SofaRpcFallbackRegistry.setProviderFallback(new DefaultSofaRpcFallback());
+        SofaRpcFallbackRegistry.setConsumerFallback(new DefaultSofaRpcFallback());
     }
 }

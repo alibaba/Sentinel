@@ -6,9 +6,16 @@
 				<form role="form" class="form-horizontal">
 					<div class="form-group">
 						<label class="col-sm-2 control-label">资源名</label>
-						<div class="col-sm-9">
+						<div class="col-sm-6">
 							<input type="text" ng-if="paramFlowRuleDialog.type == 'edit'" class="form-control" placeholder="资源名" ng-model='currentRule.rule.resource' disabled="" />
 							<input type="text" ng-if="paramFlowRuleDialog.type == 'add'" class="form-control highlight-border" placeholder="资源名" ng-model='currentRule.rule.resource' required />
+						</div>
+						<label class="col-sm-2 control-label">是否正则</label>
+						<div class="col-sm-2">
+							<label class="checkbox-inline">
+								<input type="checkbox" ng-if="paramFlowRuleDialog.type == 'add'" name="regex" ng-model="currentRule.rule.regex">
+								<input type="checkbox" ng-if="paramFlowRuleDialog.type == 'edit'" name="regex" ng-model="currentRule.rule.regex" disabled="">
+							</label>
 						</div>
                     </div>
                     
