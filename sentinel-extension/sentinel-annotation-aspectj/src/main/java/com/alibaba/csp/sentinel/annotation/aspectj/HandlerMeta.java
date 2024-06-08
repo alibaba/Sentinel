@@ -41,7 +41,9 @@ final class HandlerMeta {
      * @throws IllegalArgumentException if `originMethod` is null
      */
     static HandlerMeta handlerMetaOf(Method originMethod, Class<?> handlerClass, String handlerName) {
-        if (originMethod == null) throw new IllegalArgumentException("originMethod should not be null");
+        if (originMethod == null) {
+            throw new IllegalArgumentException("originMethod should not be null");
+        }
         return new HandlerMeta(
                 handlerClass, originMethod.getReturnType(), handlerName, originMethod.getParameterTypes());
     }
@@ -55,8 +57,12 @@ final class HandlerMeta {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         HandlerMeta that = (HandlerMeta) o;
         return Objects.equals(handlerClass, that.handlerClass) &&
                 Objects.equals(returnType, that.returnType) &&
