@@ -25,16 +25,34 @@ import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.ClusterNode;
+import com.alibaba.csp.sentinel.node.metric.export.DefaultExporter;
+import com.alibaba.csp.sentinel.node.metric.export.MetricExporter;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
+import com.alibaba.csp.sentinel.spi.SpiLoader;
 
 /**
  * @author jialiang.linjl
  */
 public class MetricTimerListener implements Runnable {
 
-    private static final MetricWriter metricWriter = new MetricWriter(SentinelConfig.singleMetricFileSize(),
-        SentinelConfig.totalMetricFileCount());
+    private static MetricExporter exporter = null;
+
+    static {
+        MetricExporter instance = null;
+        try {
+            instance = SpiLoader.of(MetricExporter.class).loadFirstInstance();
+        } catch (Throwable t) {
+            // ignore
+        }
+        if (instance == null) {
+            MetricTimerListener.exporter = new DefaultExporter();
+        } else {
+            MetricTimerListener.exporter = instance;
+        }
+        RecordLog.info("[MetricTimerListener] Active exporter: {}", MetricTimerListener.exporter.getClass());
+    }
+
 
     @Override
     public void run() {
@@ -46,12 +64,10 @@ public class MetricTimerListener implements Runnable {
         }
         aggregate(maps, Constants.ENTRY_NODE.metrics(), Constants.ENTRY_NODE);
         if (!maps.isEmpty()) {
-            for (Entry<Long, List<MetricNode>> entry : maps.entrySet()) {
-                try {
-                    metricWriter.write(entry.getKey(), entry.getValue());
-                } catch (Exception e) {
-                    RecordLog.warn("[MetricTimerListener] Write metric error", e);
-                }
+            try {
+                exporter.export(maps);
+            } catch (Exception e) {
+                RecordLog.warn("[MetricTimerListener] Write metric error", e);
             }
         }
     }
