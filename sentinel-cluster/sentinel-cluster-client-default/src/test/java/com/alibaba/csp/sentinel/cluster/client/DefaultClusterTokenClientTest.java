@@ -210,7 +210,7 @@ public class DefaultClusterTokenClientTest {
 
         ret = client.requestTokenWithCache(1L, 1, prefetch);
         Assert.assertTrue(ret.isFromCached());
-        Assert.assertEquals((long) TokenResultStatus.BLOCKED, (long) ret.getStatus());
+        Assert.assertEquals((long) TokenResultStatus.FAIL, (long) ret.getStatus());
 
         ret = client.requestTokenWithCache(1L, prefetch / 2 + 1, prefetch);
         Assert.assertTrue(!ret.isFromCached());
@@ -223,7 +223,7 @@ public class DefaultClusterTokenClientTest {
         // refill will be waiting
         ret = client.requestTokenWithCache(1L, 1, prefetch);
         Assert.assertTrue(ret.isFromCached());
-        Assert.assertEquals((long) TokenResultStatus.BLOCKED, (long) ret.getStatus());
+        Assert.assertEquals((long) TokenResultStatus.FAIL, (long) ret.getStatus());
         ret = client.requestTokenWithCache(1L, prefetch / 2 + 1, prefetch);
         Assert.assertTrue(!ret.isFromCached());
         Assert.assertEquals((long) TokenResultStatus.SHOULD_WAIT, (long) ret.getStatus());

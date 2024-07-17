@@ -241,7 +241,8 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
             if (newN + data.lastWaitPrefetchCnt.get() < -1 * prefetchCnt) {
                 data.count.addAndGet(acquireCount);
                 if (acquireCount <= prefetchCnt / 2) {
-                    ret.setStatus(TokenResultStatus.BLOCKED);
+                    // since last status is still waiting, we should not block directly, make it failover to local
+                    ret.setStatus(TokenResultStatus.FAIL);
                     return ret;
                 }
                 // for the large acquireCount, we can try remote again, since large request will

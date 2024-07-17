@@ -78,6 +78,7 @@ public class ClusterFlowConfig {
     // 0: disable prefetch.
     // value should be in the range [0.001 ~ 0.1]
     // We suggest disable prefetch if the limit count is less than 100,
+    // for count <100, suggest ratio 0.1
     // for count 100~1000, suggest ratio 0.06
     // for count 1000~10000, suggest ratio 0.04
     // for count 10000~100000, suggest ratio 0.01
@@ -217,6 +218,9 @@ public class ClusterFlowConfig {
         if (acquireRefuseStrategy != that.acquireRefuseStrategy) {
             return false;
         }
+        if (Double.compare(prefetchCntRatio, that.prefetchCntRatio) != 0) {
+            return false;
+        }
         return Objects.equals(flowId, that.flowId);
     }
 
@@ -232,6 +236,7 @@ public class ClusterFlowConfig {
         result = (int) (31 * result + clientOfflineTime);
         result = 31 * result + resourceTimeoutStrategy;
         result = 31 * result + acquireRefuseStrategy;
+        result = (int) (31 * result + prefetchCntRatio);
         return result;
     }
 
@@ -248,6 +253,7 @@ public class ClusterFlowConfig {
                 ", resourceTimeoutStrategy=" + resourceTimeoutStrategy +
                 ", acquireRefuseStrategy=" + acquireRefuseStrategy +
                 ", clientOfflineTime=" + clientOfflineTime +
+                ", prefetchCntRatio=" + prefetchCntRatio +
                 '}';
     }
 }

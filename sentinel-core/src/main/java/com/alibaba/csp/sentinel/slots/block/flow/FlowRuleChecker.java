@@ -200,10 +200,11 @@ public class FlowRuleChecker {
             case TokenResultStatus.SHOULD_WAIT:
                 // Wait for next tick.
                 try {
-                    if (result.getWaitInMs() > rule.getMaxQueueingTimeMs()) {
-                        return false;
+                    int waitMs = result.getWaitInMs();
+                    if (waitMs > rule.getMaxQueueingTimeMs()) {
+                        waitMs = rule.getMaxQueueingTimeMs();
                     }
-                    Thread.sleep(result.getWaitInMs());
+                    Thread.sleep(waitMs);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
