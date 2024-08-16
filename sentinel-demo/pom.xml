@@ -42,6 +42,7 @@
         <module>sentinel-demo-annotation-cdi-interceptor</module>
         <module>sentinel-demo-motan</module>
         <module>sentinel-demo-transport-spring-mvc</module>
+        <module>sentinel-demo-servlet</module>
     </modules>
 
     <dependencies>
