@@ -30,7 +30,8 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
-import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.AsyncHandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
@@ -52,7 +53,7 @@ import org.springframework.web.servlet.ModelAndView;
  * @author kaizi2009
  * @since 1.7.1
  */
-public abstract class AbstractSentinelInterceptor implements HandlerInterceptor {
+public abstract class AbstractSentinelInterceptor implements AsyncHandlerInterceptor {
 
     public static final String SENTINEL_SPRING_WEB_CONTEXT_NAME = "sentinel_spring_web_context";
     private static final String EMPTY_ORIGIN = "";
@@ -133,13 +134,35 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
         return SENTINEL_SPRING_WEB_CONTEXT_NAME;
     }
 
+
+    /**
+     * When a handler starts an asynchronous request, the DispatcherServlet exits without invoking postHandle and afterCompletion
+     * Called instead of postHandle and afterCompletion to exit the context and clean thread-local variables when the handler is being executed concurrently.
+     * @param request the current request
+     * @param response the current response
+     * @param handler the handler (or {@link HandlerMethod}) that started async
+     * execution, for type and/or instance examination
+     */
+    @Override
+    public void afterConcurrentHandlingStarted(HttpServletRequest request, HttpServletResponse response,
+                                        Object handler) throws Exception {
+        exitContext(request);
+    }
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
                                 Object handler, Exception ex) throws Exception {
+        exitContext(request, ex);
+    }
+
+    private void exitContext(HttpServletRequest request) {
+        exitContext(request, null);
+    }
+
+    private void exitContext(HttpServletRequest request, Exception ex) {
         if (increaseReferece(request, this.baseWebMvcConfig.getRequestRefName(), -1) != 0) {
             return;
         }
-        
+
         Entry entry = getEntryInRequest(request, baseWebMvcConfig.getRequestAttributeName());
         if (entry == null) {
             // should not happen
@@ -147,7 +170,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
                     getClass().getSimpleName(), baseWebMvcConfig.getRequestAttributeName());
             return;
         }
-        
+
         traceExceptionAndExit(entry, ex);
         removeEntryInRequest(request);
         ContextUtil.exit();

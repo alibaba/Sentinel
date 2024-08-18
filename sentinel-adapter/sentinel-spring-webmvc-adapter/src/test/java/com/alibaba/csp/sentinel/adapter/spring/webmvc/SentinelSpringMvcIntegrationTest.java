@@ -15,12 +15,12 @@
  */
 package com.alibaba.csp.sentinel.adapter.spring.webmvc;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
@@ -62,6 +62,18 @@ public class SentinelSpringMvcIntegrationTest {
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
         assertNotNull(cn);
         assertEquals(1, cn.passQps(), 0.01);
+    }
+
+    @Test
+    public void testAsync() throws Exception {
+        String url = "/async";
+        this.mvc.perform(get(url))
+                .andExpect(status().isOk());
+
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
+        assertNotNull(cn);
+        assertEquals(1, cn.passQps(), 0.01);
+        assertNull(ContextUtil.getContext());
     }
 
     @Test
