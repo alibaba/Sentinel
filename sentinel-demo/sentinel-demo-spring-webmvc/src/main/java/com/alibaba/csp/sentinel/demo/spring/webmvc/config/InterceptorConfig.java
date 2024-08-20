@@ -15,24 +15,16 @@
  */
 package com.alibaba.csp.sentinel.demo.spring.webmvc.config;
 
+import com.alibaba.csp.sentinel.adapter.spring.webmvc.SentinelExceptionAware;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.SentinelWebInterceptor;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.SentinelWebTotalInterceptor;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.DefaultBlockExceptionHandler;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.config.SentinelWebMvcConfig;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.config.SentinelWebMvcTotalConfig;
-
-import com.alibaba.csp.sentinel.context.ContextUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.lang.Nullable;
-import org.springframework.web.servlet.AsyncHandlerInterceptor;
-import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * Config sentinel interceptor
@@ -42,12 +34,16 @@ import javax.servlet.http.HttpServletResponse;
 @Configuration
 public class InterceptorConfig implements WebMvcConfigurer {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
-
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // Add Sentinel interceptor
         addSpringMvcInterceptor(registry);
+    }
+
+    @Bean
+    public SentinelExceptionAware sentinelExceptionAware() {
+        //Make exception visible to Sentinel if you have configured ExceptionHandler
+        return new SentinelExceptionAware();
     }
 
     private void addSpringMvcInterceptor(InterceptorRegistry registry) {
@@ -74,31 +70,6 @@ public class InterceptorConfig implements WebMvcConfigurer {
 
         // Add sentinel interceptor
         registry.addInterceptor(new SentinelWebInterceptor(config)).addPathPatterns("/**");
-
-        //Add sentinel interceptor call info
-        registry.addInterceptor(new AsyncHandlerInterceptor() {
-            @Override
-            public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler){
-                logger.info("preHandle: dispatcher type {}, {}, {}, {}", request.getDispatcherType(), ContextUtil.contextSize(), request.getRequestURI(), request.getAttribute(config.getRequestRefName()));
-                return true;
-            }
-            public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
-                            @Nullable ModelAndView modelAndView) throws Exception {
-
-                logger.info("postHandle: dispatcher type {}, {}, {},{}", request.getDispatcherType(), ContextUtil.contextSize(), request.getRequestURI(), request.getAttribute(config.getRequestRefName()));
-            }
-            public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,
-                                        @Nullable Exception ex) throws Exception {
-                logger.info("afterCompletion: dispatcher type {}, {},{},{}", request.getDispatcherType(), ContextUtil.contextSize(), request.getRequestURI(), request.getAttribute(config.getRequestRefName()));
-            }
-
-            public void afterConcurrentHandlingStarted(HttpServletRequest request, HttpServletResponse response,
-                                                       Object handler) throws Exception {
-                logger.info("afterConcurrentHandlingStarted: dispatcher type {}, {},{},{}", request.getDispatcherType(), ContextUtil.contextSize(), request.getRequestURI(), request.getAttribute(config.getRequestRefName()));
-
-            }
-
-        }).addPathPatterns("/**");
     }
 
     private void addSpringMvcTotalInterceptor(InterceptorRegistry registry) {
@@ -111,6 +82,5 @@ public class InterceptorConfig implements WebMvcConfigurer {
 
         //Add sentinel interceptor
         registry.addInterceptor(new SentinelWebTotalInterceptor(config)).addPathPatterns("/**");
-
     }
 }

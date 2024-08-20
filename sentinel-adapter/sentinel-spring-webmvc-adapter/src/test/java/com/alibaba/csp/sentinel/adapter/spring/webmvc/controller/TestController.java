@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.adapter.spring.webmvc.controller;
 
 
+import com.alibaba.csp.sentinel.adapter.spring.webmvc.exception.BizException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -47,6 +48,11 @@ public class TestController {
     public String runtimeException() {
         int i = 1 / 0;
         return "runtimeException";
+    }
+
+    @GetMapping("/bizException")
+    public String bizException() {
+        throw new BizException();
     }
 
     @GetMapping("/exclude/{id}")

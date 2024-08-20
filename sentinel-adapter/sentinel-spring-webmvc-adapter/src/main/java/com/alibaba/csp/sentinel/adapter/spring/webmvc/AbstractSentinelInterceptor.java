@@ -15,9 +15,6 @@
  */
 package com.alibaba.csp.sentinel.adapter.spring.webmvc;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.ResourceTypeConstants;
@@ -30,14 +27,20 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.AsyncHandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Objects;
+
 /**
  * Since request may be reprocessed in flow if any forwarding or including or other action
- * happened (see {@link javax.servlet.ServletRequest#getDispatcherType()}) we will only 
- * deal with the initial request. So we use <b>reference count</b> to track in 
+ * happened (see {@link javax.servlet.ServletRequest#getDispatcherType()}) we will only
+ * deal with the initial request. So we use <b>reference count</b> to track in
  * dispathing "onion" though which we could figure out whether we are in initial type "REQUEST".
  * That means the sub-requests which we rarely meet in practice will NOT be recorded in Sentinel.
  * <p>
@@ -72,15 +75,15 @@ public abstract class AbstractSentinelInterceptor implements AsyncHandlerInterce
      * @param step
      * @return reference count after increasing (initial value as zero to be increased) 
      */
-    private Integer increaseReferece(HttpServletRequest request, String rcKey, int step) {
+    private Integer increaseReference(HttpServletRequest request, String rcKey, int step) {
         Object obj = request.getAttribute(rcKey);
-        
+
         if (obj == null) {
             // initial
-            obj = Integer.valueOf(0);
+            obj = 0;
         }
-        
-        Integer newRc = (Integer)obj + step;
+
+        Integer newRc = (Integer) obj + step;
         request.setAttribute(rcKey, newRc);
         return newRc;
     }
@@ -94,8 +97,8 @@ public abstract class AbstractSentinelInterceptor implements AsyncHandlerInterce
             if (StringUtil.isEmpty(resourceName)) {
                 return true;
             }
-            
-            if (increaseReferece(request, this.baseWebMvcConfig.getRequestRefName(), 1) != 1) {
+
+            if (increaseReference(request, this.baseWebMvcConfig.getRequestRefName(), 1) != 1) {
                 return true;
             }
             
@@ -159,7 +162,7 @@ public abstract class AbstractSentinelInterceptor implements AsyncHandlerInterce
     }
 
     private void exitContext(HttpServletRequest request, Exception ex) {
-        if (increaseReferece(request, this.baseWebMvcConfig.getRequestRefName(), -1) != 0) {
+        if (increaseReference(request, this.baseWebMvcConfig.getRequestRefName(), -1) != 0) {
             return;
         }
 
@@ -191,12 +194,21 @@ public abstract class AbstractSentinelInterceptor implements AsyncHandlerInterce
     }
 
     protected void traceExceptionAndExit(Entry entry, Exception ex) {
-        if (entry != null) {
-            if (ex != null) {
-                Tracer.traceEntry(ex, entry);
-            }
-            entry.exit();
+        if (entry == null) {
+            return;
         }
+        HttpServletRequest request = getHttpServletRequest();
+        if (request != null
+                && ex == null
+                && increaseReference(request, this.baseWebMvcConfig.getRequestRefName() + ":" + BaseWebMvcConfig.REQUEST_REF_EXCEPTION_NAME, 1) == 1) {
+            //Each interceptor can only catch exception once
+            ex = (Exception) request.getAttribute(BaseWebMvcConfig.REQUEST_REF_EXCEPTION_NAME);
+        }
+
+        if (ex != null) {
+            Tracer.traceEntry(ex, entry);
+        }
+        entry.exit();
     }
 
     protected void handleBlockException(HttpServletRequest request, HttpServletResponse response, BlockException e)
@@ -220,4 +232,9 @@ public abstract class AbstractSentinelInterceptor implements AsyncHandlerInterce
         return origin;
     }
 
+    private HttpServletRequest getHttpServletRequest() {
+        ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+
+        return Objects.isNull(servletRequestAttributes) ? null : servletRequestAttributes.getRequest();
+    }
 }
