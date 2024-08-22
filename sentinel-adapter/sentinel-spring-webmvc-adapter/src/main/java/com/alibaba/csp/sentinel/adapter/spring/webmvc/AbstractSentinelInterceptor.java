@@ -52,7 +52,7 @@ import java.util.Objects;
  *     return mav;
  * }
  * </pre>
- * 
+ *
  * @author kaizi2009
  * @since 1.7.1
  */
@@ -68,12 +68,12 @@ public abstract class AbstractSentinelInterceptor implements AsyncHandlerInterce
         AssertUtil.assertNotBlank(config.getRequestAttributeName(), "requestAttributeName should not be blank");
         this.baseWebMvcConfig = config;
     }
-    
+
     /**
      * @param request
      * @param rcKey
      * @param step
-     * @return reference count after increasing (initial value as zero to be increased) 
+     * @return reference count after increasing (initial value as zero to be increased)
      */
     private Integer increaseReference(HttpServletRequest request, String rcKey, int step) {
         Object obj = request.getAttribute(rcKey);
@@ -87,10 +87,10 @@ public abstract class AbstractSentinelInterceptor implements AsyncHandlerInterce
         request.setAttribute(rcKey, newRc);
         return newRc;
     }
-    
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
-        throws Exception {
+            throws Exception {
         try {
             String resourceName = getResourceName(request);
 
@@ -101,7 +101,7 @@ public abstract class AbstractSentinelInterceptor implements AsyncHandlerInterce
             if (increaseReference(request, this.baseWebMvcConfig.getRequestRefName(), 1) != 1) {
                 return true;
             }
-            
+
             // Parse the request origin using registered origin parser.
             String origin = parseOrigin(request);
             String contextName = getContextName(request);
@@ -141,27 +141,29 @@ public abstract class AbstractSentinelInterceptor implements AsyncHandlerInterce
     /**
      * When a handler starts an asynchronous request, the DispatcherServlet exits without invoking postHandle and afterCompletion
      * Called instead of postHandle and afterCompletion to exit the context and clean thread-local variables when the handler is being executed concurrently.
-     * @param request the current request
+     *
+     * @param request  the current request
      * @param response the current response
-     * @param handler the handler (or {@link HandlerMethod}) that started async
-     * execution, for type and/or instance examination
+     * @param handler  the handler (or {@link HandlerMethod}) that started async
+     *                 execution, for type and/or instance examination
      */
     @Override
     public void afterConcurrentHandlingStarted(HttpServletRequest request, HttpServletResponse response,
-                                        Object handler) throws Exception {
-        exitContext(request);
+                                               Object handler) throws Exception {
+        exit(request);
     }
+
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
                                 Object handler, Exception ex) throws Exception {
-        exitContext(request, ex);
+        exit(request, ex);
     }
 
-    private void exitContext(HttpServletRequest request) {
-        exitContext(request, null);
+    private void exit(HttpServletRequest request) {
+        exit(request, null);
     }
 
-    private void exitContext(HttpServletRequest request, Exception ex) {
+    private void exit(HttpServletRequest request, Exception ex) {
         if (increaseReference(request, this.baseWebMvcConfig.getRequestRefName(), -1) != 0) {
             return;
         }
@@ -186,7 +188,7 @@ public abstract class AbstractSentinelInterceptor implements AsyncHandlerInterce
 
     protected Entry getEntryInRequest(HttpServletRequest request, String attrKey) {
         Object entryObject = request.getAttribute(attrKey);
-        return entryObject == null ? null : (Entry)entryObject;
+        return entryObject == null ? null : (Entry) entryObject;
     }
 
     protected void removeEntryInRequest(HttpServletRequest request) {
@@ -212,7 +214,7 @@ public abstract class AbstractSentinelInterceptor implements AsyncHandlerInterce
     }
 
     protected void handleBlockException(HttpServletRequest request, HttpServletResponse response, BlockException e)
-        throws Exception {
+            throws Exception {
         if (baseWebMvcConfig.getBlockExceptionHandler() != null) {
             baseWebMvcConfig.getBlockExceptionHandler().handle(request, response, e);
         } else {

@@ -27,6 +27,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 /**
  * Test controller
+ *
  * @author kaizi2009
  */
 @Controller
@@ -59,7 +60,7 @@ public class WebMvcTestController {
         doBusiness();
         return "Exclude " + id;
     }
-    
+
     @GetMapping("/forward")
     public ModelAndView apiForward() {
         ModelAndView mav = new ModelAndView();
@@ -69,8 +70,7 @@ public class WebMvcTestController {
 
     @GetMapping("/async")
     @ResponseBody
-    public DeferredResult<String> distribute() throws Exception{
-//        return new DeferredResult<String>(5000L, (Supplier<String>) () -> {doBusiness(); return "err";});
+    public DeferredResult<String> distribute() throws Exception {
         DeferredResult<String> result = new DeferredResult<>(4000L);
 
         Thread thread = new Thread(() -> result.setResult("async result"));
@@ -78,6 +78,7 @@ public class WebMvcTestController {
 
         return result;
     }
+
     private void doBusiness() {
         Random random = new Random(1);
         try {
