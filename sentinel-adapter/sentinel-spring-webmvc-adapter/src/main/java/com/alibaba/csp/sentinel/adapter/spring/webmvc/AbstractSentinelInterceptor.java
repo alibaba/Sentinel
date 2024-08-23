@@ -26,9 +26,11 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
+
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.AsyncHandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
@@ -50,11 +52,11 @@ import java.util.Objects;
  *     return mav;
  * }
  * </pre>
- * 
+ *
  * @author kaizi2009
  * @since 1.7.1
  */
-public abstract class AbstractSentinelInterceptor implements HandlerInterceptor {
+public abstract class AbstractSentinelInterceptor implements AsyncHandlerInterceptor {
 
     public static final String SENTINEL_SPRING_WEB_CONTEXT_NAME = "sentinel_spring_web_context";
     private static final String EMPTY_ORIGIN = "";
@@ -66,12 +68,12 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
         AssertUtil.assertNotBlank(config.getRequestAttributeName(), "requestAttributeName should not be blank");
         this.baseWebMvcConfig = config;
     }
-    
+
     /**
      * @param request
      * @param rcKey
      * @param step
-     * @return reference count after increasing (initial value as zero to be increased) 
+     * @return reference count after increasing (initial value as zero to be increased)
      */
     private Integer increaseReference(HttpServletRequest request, String rcKey, int step) {
         Object obj = request.getAttribute(rcKey);
@@ -85,10 +87,10 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
         request.setAttribute(rcKey, newRc);
         return newRc;
     }
-    
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
-        throws Exception {
+            throws Exception {
         try {
             String resourceName = getResourceName(request);
 
@@ -99,7 +101,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
             if (increaseReference(request, this.baseWebMvcConfig.getRequestRefName(), 1) != 1) {
                 return true;
             }
-            
+
             // Parse the request origin using registered origin parser.
             String origin = parseOrigin(request);
             String contextName = getContextName(request);
@@ -135,13 +137,37 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
         return SENTINEL_SPRING_WEB_CONTEXT_NAME;
     }
 
+
+    /**
+     * When a handler starts an asynchronous request, the DispatcherServlet exits without invoking postHandle and afterCompletion
+     * Called instead of postHandle and afterCompletion to exit the context and clean thread-local variables when the handler is being executed concurrently.
+     *
+     * @param request  the current request
+     * @param response the current response
+     * @param handler  the handler (or {@link HandlerMethod}) that started async
+     *                 execution, for type and/or instance examination
+     */
+    @Override
+    public void afterConcurrentHandlingStarted(HttpServletRequest request, HttpServletResponse response,
+                                               Object handler) throws Exception {
+        exit(request);
+    }
+
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
                                 Object handler, Exception ex) throws Exception {
+        exit(request, ex);
+    }
+
+    private void exit(HttpServletRequest request) {
+        exit(request, null);
+    }
+
+    private void exit(HttpServletRequest request, Exception ex) {
         if (increaseReference(request, this.baseWebMvcConfig.getRequestRefName(), -1) != 0) {
             return;
         }
-        
+
         Entry entry = getEntryInRequest(request, baseWebMvcConfig.getRequestAttributeName());
         if (entry == null) {
             // should not happen
@@ -149,7 +175,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
                     getClass().getSimpleName(), baseWebMvcConfig.getRequestAttributeName());
             return;
         }
-        
+
         traceExceptionAndExit(entry, ex);
         removeEntryInRequest(request);
         ContextUtil.exit();
@@ -162,7 +188,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
 
     protected Entry getEntryInRequest(HttpServletRequest request, String attrKey) {
         Object entryObject = request.getAttribute(attrKey);
-        return entryObject == null ? null : (Entry)entryObject;
+        return entryObject == null ? null : (Entry) entryObject;
     }
 
     protected void removeEntryInRequest(HttpServletRequest request) {
@@ -188,7 +214,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
     }
 
     protected void handleBlockException(HttpServletRequest request, HttpServletResponse response, BlockException e)
-        throws Exception {
+            throws Exception {
         if (baseWebMvcConfig.getBlockExceptionHandler() != null) {
             baseWebMvcConfig.getBlockExceptionHandler().handle(request, response, e);
         } else {

@@ -15,7 +15,11 @@
  */
 package com.alibaba.csp.sentinel.adapter.spring.webmvc_v6x;
 
-import com.alibaba.csp.sentinel.*;
+import com.alibaba.csp.sentinel.Entry;
+import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.ResourceTypeConstants;
+import com.alibaba.csp.sentinel.SphU;
+import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc_v6x.config.BaseWebMvcConfig;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.log.RecordLog;
@@ -24,7 +28,8 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.AsyncHandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
@@ -45,7 +50,7 @@ import org.springframework.web.servlet.ModelAndView;
  *
  * @since 1.8.8
  */
-public abstract class AbstractSentinelInterceptor implements HandlerInterceptor {
+public abstract class AbstractSentinelInterceptor implements AsyncHandlerInterceptor {
 
     public static final String SENTINEL_SPRING_WEB_CONTEXT_NAME = "sentinel_spring_web_context";
     private static final String EMPTY_ORIGIN = "";
@@ -124,9 +129,33 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
         return SENTINEL_SPRING_WEB_CONTEXT_NAME;
     }
 
+
+    /**
+     * When a handler starts an asynchronous request, the DispatcherServlet exits without invoking postHandle and afterCompletion
+     * Called instead of postHandle and afterCompletion to exit the context and clean thread-local variables when the handler is being executed concurrently.
+     *
+     * @param request  the current request
+     * @param response the current response
+     * @param handler  the handler (or {@link HandlerMethod}) that started async
+     *                 execution, for type and/or instance examination
+     */
+    @Override
+    public void afterConcurrentHandlingStarted(HttpServletRequest request, HttpServletResponse response,
+                                               Object handler) throws Exception {
+        exit(request);
+    }
+
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
                                 Object handler, Exception ex) throws Exception {
+        exit(request, ex);
+    }
+
+    private void exit(HttpServletRequest request) {
+        exit(request, null);
+    }
+
+    private void exit(HttpServletRequest request, Exception ex) {
         if (increaseReference(request, this.baseWebMvcConfig.getRequestRefName(), -1) != 0) {
             return;
         }
