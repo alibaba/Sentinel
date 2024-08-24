@@ -15,12 +15,13 @@
  */
 package com.alibaba.csp.sentinel.demo.spring.webmvc.config;
 
+import com.alibaba.csp.sentinel.adapter.spring.webmvc.SentinelExceptionAware;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.SentinelWebInterceptor;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.SentinelWebTotalInterceptor;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.DefaultBlockExceptionHandler;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.config.SentinelWebMvcConfig;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.config.SentinelWebMvcTotalConfig;
-
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -37,6 +38,12 @@ public class InterceptorConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         // Add Sentinel interceptor
         addSpringMvcInterceptor(registry);
+    }
+
+    @Bean
+    public SentinelExceptionAware sentinelExceptionAware() {
+        //Make exception visible to Sentinel if you have configured ExceptionHandler
+        return new SentinelExceptionAware();
     }
 
     private void addSpringMvcInterceptor(InterceptorRegistry registry) {

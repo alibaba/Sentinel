@@ -17,10 +17,12 @@ package com.alibaba.csp.sentinel.adapter.spring.webmvc_v6x;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
@@ -65,6 +67,18 @@ public class SentinelSpringMvcIntegrationTest {
     }
 
     @Test
+    public void testAsync() throws Exception {
+        String url = "/async";
+        this.mvc.perform(get(url))
+                .andExpect(status().isOk());
+
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
+        assertNotNull(cn);
+        assertEquals(1, cn.passQps(), 0.01);
+        assertNull(ContextUtil.getContext());
+    }
+
+    @Test
     public void testOriginParser() throws Exception {
         String springMvcPathVariableUrl = "/foo/{id}";
         String limitOrigin = "userA";
@@ -78,7 +92,7 @@ public class SentinelSpringMvcIntegrationTest {
 
         // This will be blocked since the caller is same: userA
         this.mvc.perform(
-                get("/foo/2").accept(MediaType.APPLICATION_JSON).header(headerName, limitOrigin))
+                        get("/foo/2").accept(MediaType.APPLICATION_JSON).header(headerName, limitOrigin))
                 .andExpect(status().isOk())
                 .andExpect(content().json(ResultWrapper.blocked().toJsonString()));
 
