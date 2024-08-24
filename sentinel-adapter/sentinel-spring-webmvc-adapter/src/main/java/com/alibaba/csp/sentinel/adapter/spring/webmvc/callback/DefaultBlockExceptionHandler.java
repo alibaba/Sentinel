@@ -15,8 +15,8 @@
  */
 package com.alibaba.csp.sentinel.adapter.spring.webmvc.callback;
 
+import com.alibaba.csp.sentinel.adapter.web.common.DefaultBlockExceptionResponse;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.csp.sentinel.util.StringUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,11 +31,10 @@ public class DefaultBlockExceptionHandler implements BlockExceptionHandler {
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, BlockException e) throws Exception {
-        // Return 429 (Too Many Requests) by default.
-        response.setStatus(429);
-
+        DefaultBlockExceptionResponse expRes = DefaultBlockExceptionResponse.resolve(e.getClass());
+        response.setStatus(expRes.getStatus());
         PrintWriter out = response.getWriter();
-        out.print("Blocked by Sentinel (flow limiting)");
+        out.print(expRes.getMsg());
         out.flush();
         out.close();
     }
