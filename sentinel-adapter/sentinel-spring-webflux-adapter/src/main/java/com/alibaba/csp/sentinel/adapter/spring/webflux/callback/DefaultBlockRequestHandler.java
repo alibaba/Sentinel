@@ -42,13 +42,13 @@ public class DefaultBlockRequestHandler implements BlockRequestHandler {
             return htmlErrorResponse(ex);
         }
         // JSON result by default.
-        return ServerResponse.status(HttpStatus.TOO_MANY_REQUESTS)
+        return ServerResponse.status(HttpStatus.TOO_MANY_REQUESTS.value())
             .contentType(MediaType.APPLICATION_JSON_UTF8)
             .body(fromObject(buildErrorResult(ex)));
     }
 
     private Mono<ServerResponse> htmlErrorResponse(Throwable ex) {
-        return ServerResponse.status(HttpStatus.TOO_MANY_REQUESTS)
+        return ServerResponse.status(HttpStatus.TOO_MANY_REQUESTS.value())
             .contentType(MediaType.TEXT_PLAIN)
             .syncBody(DEFAULT_BLOCK_MSG_PREFIX + ex.getClass().getSimpleName());
     }
