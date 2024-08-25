@@ -47,6 +47,12 @@ public class DemoController {
         return service.hello(t);
     }
 
+    @GetMapping("/count")
+    public int count() {
+        service.test();
+        return service.count();
+    }
+
     @GetMapping("/baz/{name}")
     public String apiBaz(@PathVariable("name") String name) {
         return service.helloAnother(name);

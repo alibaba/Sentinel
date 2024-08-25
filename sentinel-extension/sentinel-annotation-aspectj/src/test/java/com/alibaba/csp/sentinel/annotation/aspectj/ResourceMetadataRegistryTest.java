@@ -16,6 +16,8 @@
 package com.alibaba.csp.sentinel.annotation.aspectj;
 
 import com.alibaba.csp.sentinel.annotation.aspectj.integration.service.FooService;
+import com.alibaba.csp.sentinel.annotation.aspectj.integration.service.FooUtil;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,58 +33,83 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ResourceMetadataRegistryTest {
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         ResourceMetadataRegistry.clearBlockHandlerMap();
         ResourceMetadataRegistry.clearFallbackMap();
+        ResourceMetadataRegistry.clearDefaultFallbackMap();
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         ResourceMetadataRegistry.clearBlockHandlerMap();
         ResourceMetadataRegistry.clearFallbackMap();
+        ResourceMetadataRegistry.clearDefaultFallbackMap();
     }
 
     @Test
-    public void testUpdateThenLookupFallback() {
+    public void testUpdateThenLookupFallback() throws NoSuchMethodException {
         Class<?> clazz = FooService.class;
-        String methodName = "someMethodFallback";
-        Class<?>[] parameterTypes = new Class<?>[]{String.class, int.class};
-        Method method = clazz.getMethods()[0];
-        assertThat(ResourceMetadataRegistry.lookupFallback(clazz, methodName, parameterTypes)).isNull();
+        Method originMethod = clazz.getDeclaredMethod("fooWithFallback", int.class);
+        String methodName = "fooFallbackFunc";
+        Method handlerMethod = clazz.getDeclaredMethod(methodName, int.class);
+        assertThat(ResourceMetadataRegistry.lookupFallback(originMethod, clazz, methodName)).isNull();
 
-        ResourceMetadataRegistry.updateFallbackFor(clazz, methodName, parameterTypes, null);
-        assertThat(ResourceMetadataRegistry.lookupFallback(clazz, methodName, parameterTypes).isPresent()).isFalse();
+        ResourceMetadataRegistry.updateFallbackFor(originMethod, clazz, methodName, null);
+        assertThat(ResourceMetadataRegistry.lookupFallback(originMethod, clazz, methodName).isPresent()).isFalse();
 
-        ResourceMetadataRegistry.updateFallbackFor(clazz, methodName, parameterTypes, method);
-        MethodWrapper wrapper = ResourceMetadataRegistry.lookupFallback(clazz, methodName, parameterTypes);
+        ResourceMetadataRegistry.updateFallbackFor(originMethod, clazz, methodName, handlerMethod);
+        MethodWrapper wrapper = ResourceMetadataRegistry.lookupFallback(originMethod, clazz, methodName);
         assertThat(wrapper.isPresent()).isTrue();
-        assertThat(wrapper.getMethod()).isSameAs(method);
+        assertThat(wrapper.getMethod()).isSameAs(handlerMethod);
     }
 
     @Test
-    public void testUpdateThenLookupBlockHandler() {
+    public void testUpdateThenLookupBlockHandler() throws NoSuchMethodException {
         Class<?> clazz = FooService.class;
-        String methodName = "someMethodBlockHand;er";
-        Class<?>[] parameterTypes = new Class<?>[]{String.class, int.class};
-        Method method = clazz.getMethods()[1];
-        assertThat(ResourceMetadataRegistry.lookupBlockHandler(clazz, methodName, parameterTypes)).isNull();
+        Method originMethod = clazz.getDeclaredMethod("foo", int.class);
+        String methodName = "fooBlockHandler";
+        Method handlerMethod = clazz.getDeclaredMethod(methodName, int.class, BlockException.class);
+        assertThat(ResourceMetadataRegistry.lookupBlockHandler(originMethod, clazz, methodName)).isNull();
 
-        ResourceMetadataRegistry.updateBlockHandlerFor(clazz, methodName, parameterTypes, null);
-        assertThat(ResourceMetadataRegistry.lookupBlockHandler(clazz, methodName, parameterTypes).isPresent()).isFalse();
+        ResourceMetadataRegistry.updateBlockHandlerFor(originMethod, clazz, methodName, null);
+        assertThat(ResourceMetadataRegistry.lookupBlockHandler(originMethod, clazz, methodName).isPresent()).isFalse();
 
-        ResourceMetadataRegistry.updateBlockHandlerFor(clazz, methodName, parameterTypes, method);
-        MethodWrapper wrapper = ResourceMetadataRegistry.lookupBlockHandler(clazz, methodName, parameterTypes);
+        ResourceMetadataRegistry.updateBlockHandlerFor(originMethod, clazz, methodName, handlerMethod);
+        MethodWrapper wrapper = ResourceMetadataRegistry.lookupBlockHandler(originMethod, clazz, methodName);
         assertThat(wrapper.isPresent()).isTrue();
-        assertThat(wrapper.getMethod()).isSameAs(method);
+        assertThat(wrapper.getMethod()).isSameAs(handlerMethod);
+    }
+
+    @Test
+    public void testUpdateThenLookupDefaultFallback() throws NoSuchMethodException {
+        Class<?> clazz = FooService.class;
+        Method originMethod = clazz.getDeclaredMethod("anotherFoo", int.class);
+        String methodName = "globalDefaultFallback";
+        Class<?> handlerClass = FooUtil.class;
+        Method handlerMethod = handlerClass.getDeclaredMethod(methodName, Throwable.class);
+        assertThat(ResourceMetadataRegistry.lookupDefaultFallback(originMethod, clazz, methodName)).isNull();
+
+        ResourceMetadataRegistry.updateDefaultFallbackFor(originMethod, clazz, methodName, null);
+        assertThat(ResourceMetadataRegistry.lookupDefaultFallback(originMethod, clazz, methodName).isPresent()).isFalse();
+
+        ResourceMetadataRegistry.updateDefaultFallbackFor(originMethod, clazz, methodName, handlerMethod);
+        MethodWrapper wrapper = ResourceMetadataRegistry.lookupDefaultFallback(originMethod, clazz, methodName);
+        assertThat(wrapper.isPresent()).isTrue();
+        assertThat(wrapper.getMethod()).isSameAs(handlerMethod);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testUpdateBlockHandlerBadArgument() {
-        ResourceMetadataRegistry.updateBlockHandlerFor(null, "sxs", new Class<?>[]{}, String.class.getMethods()[0]);
+        ResourceMetadataRegistry.updateBlockHandlerFor(null, null, "sxs", String.class.getMethods()[0]);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testUpdateFallbackBadArgument() {
-        ResourceMetadataRegistry.updateBlockHandlerFor(String.class, "", new Class[0], String.class.getMethods()[0]);
+        ResourceMetadataRegistry.updateFallbackFor(null, String.class, "", String.class.getMethods()[0]);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testUpdateDefaultFallbackBadArgument() {
+        ResourceMetadataRegistry.updateDefaultFallbackFor(null, String.class, "", String.class.getMethods()[0]);
     }
 }

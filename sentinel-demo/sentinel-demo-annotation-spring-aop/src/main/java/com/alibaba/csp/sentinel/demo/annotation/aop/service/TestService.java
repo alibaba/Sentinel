@@ -26,5 +26,7 @@ public interface TestService {
 
     String hello(String s);
 
+    int count();
+
     String helloAnother(String name);
 }
