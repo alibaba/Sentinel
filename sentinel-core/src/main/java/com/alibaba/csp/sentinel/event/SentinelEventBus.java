@@ -64,6 +64,10 @@ public class SentinelEventBus {
         init();
         RecordLog.info("EnabledEventFeature: {} | SentinelEventMulticasterFactory: {} | SentinelEventListenerRegistry: {}",
                 this.enabledEvent, this.eventMulticasterFactory, this.sentinelEventListenerRegistry);
+        // register hook for destroy
+        if (this.enabledEvent) {
+            Runtime.getRuntime().addShutdownHook(new Thread(this::destroy));
+        }
     }
 
     /**
@@ -72,6 +76,14 @@ public class SentinelEventBus {
     private void init() {
         this.sentinelEventListenerRegistry.init(getRegistryProperties());
         this.eventMulticasterFactory.init(getFactoryProperties(), this.sentinelEventListenerRegistry);
+    }
+
+    /**
+     * Close ops for components.
+     */
+    private void destroy() {
+        this.sentinelEventListenerRegistry.destroy();
+        this.eventMulticasterFactory.destroy();
     }
 
     /**
@@ -142,6 +154,24 @@ public class SentinelEventBus {
      */
     public boolean publish(SentinelEvent event) {
         return eventMulticasterFactory.getSentinelEventMulticaster(event.getClass()).publish(event);
+    }
+
+    /**
+     * Add listener.
+     *
+     * @param listener listener
+     */
+    public void addListener(SentinelEventListener<? extends SentinelEvent> listener) {
+        sentinelEventListenerRegistry.addSubscriber(listener);
+    }
+
+    /**
+     * Remove listener.
+     *
+     * @param listener listener
+     */
+    public void removeListener(SentinelEventListener<? extends SentinelEvent> listener) {
+        sentinelEventListenerRegistry.removeSubscriber(listener);
     }
 
 }
