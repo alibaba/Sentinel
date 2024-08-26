@@ -17,13 +17,16 @@
 package com.alibaba.csp.sentinel.event;
 
 import com.alibaba.csp.sentinel.event.factory.SentinelEventMulticasterFactory;
+import com.alibaba.csp.sentinel.event.freq.SentinelEventFreqLimiter;
 import com.alibaba.csp.sentinel.event.model.SentinelEvent;
 import com.alibaba.csp.sentinel.event.multicaster.SentinelEventMulticaster;
 import com.alibaba.csp.sentinel.event.registry.SentinelEventListenerRegistry;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.spi.SpiLoader;
 
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Ops of sentinel event.
@@ -52,6 +55,11 @@ public class SentinelEventBus {
      */
     private volatile boolean enabledEvent = false;
 
+    /**
+     * enhancement for event frequency limit.
+     */
+    private final Map<Class<? extends SentinelEvent>, SentinelEventFreqLimiter> freqLimiterMap = new ConcurrentHashMap<>();
+
 
     private SentinelEventBus() {
         // init
@@ -61,11 +69,11 @@ public class SentinelEventBus {
         this.sentinelEventListenerRegistry = registry;
         // only when both of registry and factory are not null.
         enabledEvent = (factory != null && registry != null);
-        init();
         RecordLog.info("EnabledEventFeature: {} | SentinelEventMulticasterFactory: {} | SentinelEventListenerRegistry: {}",
                 this.enabledEvent, this.eventMulticasterFactory, this.sentinelEventListenerRegistry);
         // register hook for destroy
         if (this.enabledEvent) {
+            init();
             Runtime.getRuntime().addShutdownHook(new Thread(this::destroy));
         }
     }
@@ -123,7 +131,10 @@ public class SentinelEventBus {
      * @return whether success to add
      */
     public boolean registerMulticaster(Class<? extends SentinelEvent> clazz, SentinelEventMulticaster multicaster) {
-        return eventMulticasterFactory.addSentinelEventMulticaster(clazz, multicaster);
+        if (enableEvent()) {
+            return eventMulticasterFactory.addSentinelEventMulticaster(clazz, multicaster);
+        }
+        return false;
     }
 
     /**
@@ -133,7 +144,10 @@ public class SentinelEventBus {
      * @return whether success to remove
      */
     public boolean removerMulticaster(Class<? extends SentinelEvent> clazz) {
-        return eventMulticasterFactory.removeSentinelEventMulticaster(clazz);
+        if (enableEvent()) {
+            return eventMulticasterFactory.removeSentinelEventMulticaster(clazz);
+        }
+        return false;
     }
 
     /**
@@ -143,7 +157,10 @@ public class SentinelEventBus {
      * @return multicaster
      */
     public SentinelEventMulticaster getMulticaster(Class<? extends SentinelEvent> clazz) {
-        return eventMulticasterFactory.getSentinelEventMulticaster(clazz);
+        if (enableEvent()) {
+            return eventMulticasterFactory.getSentinelEventMulticaster(clazz);
+        }
+        return null;
     }
 
     /**
@@ -153,7 +170,10 @@ public class SentinelEventBus {
      * @return whether success to publish
      */
     public boolean publish(SentinelEvent event) {
-        return eventMulticasterFactory.getSentinelEventMulticaster(event.getClass()).publish(event);
+        if (enableEvent() && freqLimiterMap.get(event.getClass()) != null && freqLimiterMap.get(event.getClass()).shouldHandle(event)) {
+            return eventMulticasterFactory.getSentinelEventMulticaster(event.getClass()).publish(event);
+        }
+        return false;
     }
 
     /**
@@ -162,7 +182,9 @@ public class SentinelEventBus {
      * @param listener listener
      */
     public void addListener(SentinelEventListener<? extends SentinelEvent> listener) {
-        sentinelEventListenerRegistry.addSubscriber(listener);
+        if (enableEvent()) {
+            sentinelEventListenerRegistry.addSubscriber(listener);
+        }
     }
 
     /**
@@ -171,7 +193,17 @@ public class SentinelEventBus {
      * @param listener listener
      */
     public void removeListener(SentinelEventListener<? extends SentinelEvent> listener) {
-        sentinelEventListenerRegistry.removeSubscriber(listener);
+        if (enableEvent()) {
+            sentinelEventListenerRegistry.removeSubscriber(listener);
+        }
     }
 
+    /**
+     * Whether to enabled event feature.
+     *
+     * @return whether to enabled
+     */
+    public boolean enableEvent() {
+        return this.enabledEvent;
+    }
 }
