@@ -57,13 +57,6 @@ public abstract class SentinelEventListener<T extends SentinelEvent> {
     }
 
     /**
-     * Whether current listener allow concurrent execution.
-     */
-    public boolean allowConcurrentExec() {
-        return true;
-    }
-
-    /**
      * Should it always handle the latest events and ignore expired ones.
      */
     public boolean alwaysLast() {

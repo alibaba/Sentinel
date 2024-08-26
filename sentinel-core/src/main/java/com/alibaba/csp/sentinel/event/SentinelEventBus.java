@@ -93,7 +93,7 @@ public class SentinelEventBus {
      */
     private Properties getFactoryProperties() {
         // load properties from sys properties if necessary
-        return new Properties();
+        return new Properties(System.getProperties());
     }
 
     /**
@@ -103,7 +103,7 @@ public class SentinelEventBus {
      */
     private Properties getRegistryProperties() {
         // load properties from sys properties if necessary
-        return new Properties();
+        return new Properties(System.getProperties());
     }
 
     /**
