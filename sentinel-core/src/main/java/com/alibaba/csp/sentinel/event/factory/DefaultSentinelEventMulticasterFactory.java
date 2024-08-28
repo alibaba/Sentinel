@@ -50,6 +50,7 @@ public class DefaultSentinelEventMulticasterFactory implements SentinelEventMult
     public void init(Properties properties, SentinelEventListenerRegistry registry) {
         this.properties = properties;
         this.sentinelEventListenerRegistry = registry;
+        this.globalSentinelEventMulticaster.init(properties, registry);
     }
 
     @Override

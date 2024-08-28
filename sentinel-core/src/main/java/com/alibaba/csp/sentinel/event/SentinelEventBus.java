@@ -170,7 +170,8 @@ public class SentinelEventBus {
      * @return whether success to publish
      */
     public boolean publish(SentinelEvent event) {
-        if (enableEvent() && freqLimiterMap.get(event.getClass()) != null && freqLimiterMap.get(event.getClass()).shouldHandle(event)) {
+        SentinelEventFreqLimiter limiter = freqLimiterMap.get(event.getClass());
+        if (enableEvent() && (limiter == null || limiter.shouldHandle(event))) {
             return eventMulticasterFactory.getSentinelEventMulticaster(event.getClass()).publish(event);
         }
         return false;
