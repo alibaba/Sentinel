@@ -48,7 +48,7 @@ public abstract class PeriodFreqLimiter implements SentinelEventFreqLimiter {
         AtomicLong dimensionLastTriggerTime = getLastTriggerTime(getLimitDimensionKey(event));
         long lastTriggerVal = dimensionLastTriggerTime.get();
         long period = System.currentTimeMillis() - lastTriggerVal;
-        if (period > 0 && period < limitPeriod) {
+        if (period > 0 && period > limitPeriod) {
             return dimensionLastTriggerTime.compareAndSet(lastTriggerVal, Math.max(dimensionLastTriggerTime.get(), System.currentTimeMillis()));
         }
         return false;
@@ -65,7 +65,7 @@ public abstract class PeriodFreqLimiter implements SentinelEventFreqLimiter {
             if (lastTriggerTime != null) {
                 return lastTriggerTime;
             }
-            return new AtomicLong(0L);
+            return new AtomicLong(System.currentTimeMillis() - limitPeriod);
         });
     }
 
