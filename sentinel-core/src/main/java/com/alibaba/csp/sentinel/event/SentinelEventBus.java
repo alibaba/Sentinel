@@ -199,6 +199,18 @@ public class SentinelEventBus {
     }
 
     /**
+     * Add frequency limiter for event type.
+     *
+     * @param clazz       event type.
+     * @param freqLimiter freqLimiter.
+     */
+    public void addFreqLimiter(Class<? extends SentinelEvent> clazz, SentinelEventFreqLimiter freqLimiter) {
+        if (enableEvent()) {
+            this.freqLimiterMap.put(clazz, freqLimiter);
+        }
+    }
+
+    /**
      * Whether to enabled event feature.
      *
      * @return whether to enabled
