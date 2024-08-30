@@ -36,6 +36,15 @@ public interface TokenService {
     TokenResult requestToken(Long ruleId, int acquireCount, boolean prioritized);
 
     /**
+     * Request tokens from cache and remote token server.
+     *
+     * @param ruleId the unique rule ID
+     * @param acquireCount token count to acquire
+     * @return result of the token request
+     */
+    TokenResult requestTokenWithCache(Long ruleId, int acquireCount, int prefetchCnt);
+
+    /**
      * Request tokens for a specific parameter from remote token server.
      *
      * @param ruleId the unique rule ID

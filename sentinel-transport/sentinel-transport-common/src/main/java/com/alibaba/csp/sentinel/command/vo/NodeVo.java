@@ -39,9 +39,11 @@ public class NodeVo {
     private Long averageRt;
     private Long successQps;
     private Long exceptionQps;
+    private Long fallbackQps;
     private Long oneMinutePass;
     private Long oneMinuteBlock;
     private Long oneMinuteException;
+    private Long oneMinuteFallback;
     private Long oneMinuteTotal;
 
     private Long timestamp;
@@ -69,7 +71,9 @@ public class NodeVo {
         vo.averageRt = (long) node.avgRt();
         vo.successQps = (long) node.successQps();
         vo.exceptionQps = (long) node.exceptionQps();
+        vo.fallbackQps = (long) node.fallbackQps();
         vo.oneMinuteException = node.totalException();
+        vo.oneMinuteFallback = node.totalFallback();
         vo.oneMinutePass = node.totalRequest() - node.blockRequest();
         vo.oneMinuteBlock = node.blockRequest();
         vo.oneMinuteTotal = node.totalRequest();
@@ -108,7 +112,9 @@ public class NodeVo {
         vo.averageRt = (long) node.avgRt();
         vo.successQps = (long) node.successQps();
         vo.exceptionQps = (long) node.exceptionQps();
+        vo.fallbackQps = (long) node.fallbackQps();
         vo.oneMinuteException = node.totalException();
+        vo.oneMinuteFallback = node.totalFallback();
         vo.oneMinutePass = node.totalRequest() - node.blockRequest();
         vo.oneMinuteBlock = node.blockRequest();
         vo.oneMinuteTotal = node.totalRequest();
@@ -204,6 +210,22 @@ public class NodeVo {
         this.oneMinuteException = oneMinuteException;
     }
 
+    public Long getFallbackQps() {
+        return fallbackQps;
+    }
+
+    public void setFallbackQps(Long fallbackQps) {
+        this.fallbackQps = fallbackQps;
+    }
+
+    public Long getOneMinuteFallback() {
+        return oneMinuteFallback;
+    }
+
+    public void setOneMinuteFallback(Long oneMinuteFallback) {
+        this.oneMinuteFallback = oneMinuteFallback;
+    }
+    
     public Long getOneMinutePass() {
         return oneMinutePass;
     }

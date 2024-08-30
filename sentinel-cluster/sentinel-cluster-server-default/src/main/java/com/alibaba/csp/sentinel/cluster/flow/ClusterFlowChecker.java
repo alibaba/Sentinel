@@ -37,13 +37,14 @@ final class ClusterFlowChecker {
 
     private static double calcGlobalThreshold(FlowRule rule) {
         double count = rule.getCount();
+        double preCnt = rule.getClusterConfig().getPrefetchCntRatio() * count;
         switch (rule.getClusterConfig().getThresholdType()) {
             case ClusterRuleConstant.FLOW_THRESHOLD_GLOBAL:
-                return count;
+                return count + preCnt;
             case ClusterRuleConstant.FLOW_THRESHOLD_AVG_LOCAL:
             default:
                 int connectedCount = ClusterFlowRuleManager.getConnectedCount(rule.getClusterConfig().getFlowId());
-                return count * connectedCount;
+                return count * connectedCount + preCnt;
         }
     }
 

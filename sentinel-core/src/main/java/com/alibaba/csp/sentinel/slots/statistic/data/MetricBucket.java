@@ -91,6 +91,10 @@ public class MetricBucket {
         return get(MetricEvent.EXCEPTION);
     }
 
+    public long fallback() {
+        return get(MetricEvent.FALLBACK);
+    }
+
     public long rt() {
         return get(MetricEvent.RT);
     }
@@ -115,6 +119,10 @@ public class MetricBucket {
         add(MetricEvent.EXCEPTION, n);
     }
 
+    public void addFallback(int n) {
+        add(MetricEvent.FALLBACK, n);
+    }
+    
     public void addBlock(int n) {
         add(MetricEvent.BLOCK, n);
     }

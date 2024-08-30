@@ -44,6 +44,11 @@ public class DefaultEmbeddedTokenServer implements EmbeddedClusterTokenServer {
     }
 
     @Override
+    public TokenResult requestTokenWithCache(Long ruleId, int acquireCount, int prefetchCnt) {
+        return requestToken(ruleId, acquireCount, true);
+    }
+
+    @Override
     public TokenResult requestToken(Long ruleId, int acquireCount, boolean prioritized) {
         if (tokenService != null) {
             return tokenService.requestToken(ruleId, acquireCount, prioritized);
