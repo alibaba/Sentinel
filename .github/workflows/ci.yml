@@ -12,10 +12,13 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    name: Build on ${{matrix.os}} with Java ${{matrix.java}}
+    runs-on: ${{matrix.os}}
     strategy:
+      fail-fast: false
       matrix:
         java: [8, 11, 17, 21]
+        os: [ubuntu-latest, windows-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,15 +39,15 @@ jobs:
           distribution: 'temurin'
 
       - name: Maven Test With Spring 6.x
-        run: mvn --batch-mode test -Dsurefire.jdk-toolchain-version=${{ matrix.java }}
+        run: mvn test --batch-mode "-Dsurefire.jdk-toolchain-version=${{ matrix.java }}"
         if: ${{ matrix.java >= 17 }}
 
       - name: Maven Test Without Spring 6.x
-        run: mvn --batch-mode test -Dsurefire.jdk-toolchain-version=${{ matrix.java }} -Dskip.spring.v6x.test=true
+        run: mvn test --batch-mode "-Dsurefire.jdk-toolchain-version=${{ matrix.java }}" "-Dskip.spring.v6x.test=true"
         if: ${{ matrix.java < 17 }}
 
       - name: Build with Maven
-        run: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -DminimumPriority=1
+        run: mvn install "-DskipTests=true" "-Dmaven.javadoc.skip=true" -B -V "-DminimumPriority=1"
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.0.1

@@ -17,8 +17,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - run: npm install -g markdownlint-cli
-
+      - run: npm install -g markdownlint-cli@0.40.0
+      # Run markdown lint with the following rules disabled: 
+      # no hard tabs, line length, no duplicate heading, ordered list item prefix, no inline html and no emphasis as heading
       - name: use markdownlint-cli to lint markdown file
         run: |
           find ./ -name "*.md" | grep -v vendor | grep -v commandline | grep -v .github | grep -v swagger | grep -v api | \
