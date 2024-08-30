@@ -15,23 +15,15 @@
  */
 package com.alibaba.csp.sentinel.adapter.spring.webmvc_v6x;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 import com.alibaba.csp.sentinel.util.StringUtil;
-
-import java.util.Collections;
-
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,6 +33,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.Collections;
+
+import static org.junit.Assert.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * @author kaizi2009
@@ -142,6 +141,31 @@ public class SentinelSpringMvcIntegrationTest {
         assertEquals(1, cn.blockRequest(), 1);
     }
 
+    @Test
+    public void testExceptionPerception() throws Exception {
+        String url = "/bizException";
+        configureExceptionDegradeRulesFor(url, 2.6, null);
+        int repeat = 3;
+        for (int i = 0; i < repeat; i++) {
+            this.mvc.perform(get(url))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(new ResultWrapper(-1, "Biz error").toJsonString()));
+
+            ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
+            assertNotNull(cn);
+            assertEquals(i + 1, cn.passQps(), 0.01);
+        }
+
+        // This will be blocked and response json.
+        this.mvc.perform(get(url))
+                .andExpect(status().isOk())
+                .andExpect(content().string(ResultWrapper.blocked().toJsonString()));
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
+        assertNotNull(cn);
+        assertEquals(repeat, cn.passQps(), 0.01);
+        assertEquals(1, cn.blockRequest(), 1);
+    }
+
     private void configureRulesFor(String resource, int count, String limitApp) {
         FlowRule rule = new FlowRule()
                 .setCount(count)
@@ -164,9 +188,21 @@ public class SentinelSpringMvcIntegrationTest {
         FlowRuleManager.loadRules(Collections.singletonList(rule));
     }
 
+    private void configureExceptionDegradeRulesFor(String resource, double count, String limitApp) {
+        DegradeRule rule = new DegradeRule().setCount(count)
+                .setStatIntervalMs(1000).setMinRequestAmount(1)
+                .setTimeWindow(5).setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT);
+        rule.setResource(resource);
+        if (StringUtil.isNotBlank(limitApp)) {
+            rule.setLimitApp(limitApp);
+        }
+        DegradeRuleManager.loadRules(Collections.singletonList(rule));
+    }
+
     @After
     public void cleanUp() {
         FlowRuleManager.loadRules(null);
+        DegradeRuleManager.loadRules(null);
         ClusterBuilderSlot.resetClusterNodes();
     }
 }

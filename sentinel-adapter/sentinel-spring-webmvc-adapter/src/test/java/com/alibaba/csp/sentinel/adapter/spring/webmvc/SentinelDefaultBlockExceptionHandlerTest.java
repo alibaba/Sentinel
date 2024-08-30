@@ -154,6 +154,7 @@ public class SentinelDefaultBlockExceptionHandlerTest {
     @After
     public void cleanUp() {
         FlowRuleManager.loadRules(null);
+        DegradeRuleManager.loadRules(null);
         ClusterBuilderSlot.resetClusterNodes();
     }
 }
