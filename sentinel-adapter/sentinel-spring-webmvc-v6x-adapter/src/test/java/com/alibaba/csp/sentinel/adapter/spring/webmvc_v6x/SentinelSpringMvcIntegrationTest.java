@@ -174,7 +174,6 @@ public class SentinelSpringMvcIntegrationTest {
         if (StringUtil.isNotBlank(limitApp)) {
             rule.setLimitApp(limitApp);
         }
-        FlowRuleManager.loadRules(Collections.singletonList(rule));
     }
 
     private void configureExceptionRulesFor(String resource, int count, String limitApp) {

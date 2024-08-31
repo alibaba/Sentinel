@@ -99,8 +99,6 @@ public class SentinelSpringMvcIntegrationTest {
         this.mvc.perform(get("/foo/3").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().string("foo 3"));
-
-        FlowRuleManager.loadRules(null);
     }
 
     @Test
