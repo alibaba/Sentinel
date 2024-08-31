@@ -25,6 +25,7 @@ import com.alibaba.csp.sentinel.adapter.spring.webmvc_v6x.callback.RequestOrigin
  * @since 1.8.8
  */
 public abstract class BaseWebMvcConfig {
+    public final static String REQUEST_REF_EXCEPTION_NAME = "$$sentinel_spring_web_entry_attr-exception";
 
     protected String requestAttributeName;
     protected String requestRefName;
@@ -39,10 +40,10 @@ public abstract class BaseWebMvcConfig {
         this.requestAttributeName = requestAttributeName;
         this.requestRefName = this.requestAttributeName + "-rc";
     }
-    
+
     /**
      * Paired with attr name used to track reference count.
-     * 
+     *
      * @return
      */
     public String getRequestRefName() {

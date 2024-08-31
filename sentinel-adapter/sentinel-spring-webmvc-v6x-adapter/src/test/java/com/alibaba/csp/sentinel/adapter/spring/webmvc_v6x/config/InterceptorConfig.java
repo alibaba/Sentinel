@@ -15,17 +15,18 @@
  */
 package com.alibaba.csp.sentinel.adapter.spring.webmvc_v6x.config;
 
+import com.alibaba.csp.sentinel.adapter.spring.webmvc_v6x.SentinelExceptionAware;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc_v6x.SentinelWebInterceptor;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc_v6x.SentinelWebTotalInterceptor;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc_v6x.callback.BlockExceptionHandler;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc_v6x.callback.RequestOriginParser;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Config sentinel interceptor
@@ -34,6 +35,11 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 @Configuration
 public class InterceptorConfig implements WebMvcConfigurer {
+
+    @Bean
+    public SentinelExceptionAware sentinelExceptionAware() {
+        return new SentinelExceptionAware();
+    }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
