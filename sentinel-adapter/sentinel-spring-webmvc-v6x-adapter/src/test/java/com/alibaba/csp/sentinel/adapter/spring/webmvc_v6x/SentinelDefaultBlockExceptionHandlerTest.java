@@ -66,8 +66,6 @@ public class SentinelDefaultBlockExceptionHandlerTest {
         this.mvc.perform(get("/foo/3").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().string("foo 3"));
-
-        FlowRuleManager.loadRules(null);
     }
 
     @Test
@@ -93,8 +91,6 @@ public class SentinelDefaultBlockExceptionHandlerTest {
         assertNotNull(cn);
         assertEquals(repeat, cn.passQps(), 0.01);
         assertEquals(1, cn.blockRequest(), 1);
-
-        FlowRuleManager.loadRules(null);
     }
 
 
