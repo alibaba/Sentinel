@@ -20,6 +20,7 @@ import com.alibaba.csp.sentinel.event.model.SentinelEvent;
 import com.alibaba.csp.sentinel.event.multicaster.DefaultSentinelEventMulticaster;
 import com.alibaba.csp.sentinel.event.multicaster.SentinelEventMulticaster;
 import com.alibaba.csp.sentinel.event.registry.SentinelEventListenerRegistry;
+import com.alibaba.csp.sentinel.spi.Spi;
 
 import java.util.Map;
 import java.util.Properties;
@@ -30,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author Daydreamer-ia
  */
+@Spi(order=Spi.ORDER_LOWEST, isDefault = true)
 public class DefaultSentinelEventMulticasterFactory implements SentinelEventMulticasterFactory {
 
     /**

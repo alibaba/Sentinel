@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.event.registry;
 
 import com.alibaba.csp.sentinel.event.SentinelEventListener;
 import com.alibaba.csp.sentinel.event.model.SentinelEvent;
+import com.alibaba.csp.sentinel.spi.Spi;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,6 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author Daydreamer-ia
  */
+@Spi(order=Spi.ORDER_LOWEST, isDefault = true)
 public class DefaultSentinelEventListenerRegistry implements SentinelEventListenerRegistry {
 
     /**
