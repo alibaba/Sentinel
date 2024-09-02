@@ -18,7 +18,7 @@ package com.alibaba.csp.sentinel.slots.event;
 
 import com.alibaba.csp.sentinel.event.SentinelEventBus;
 import com.alibaba.csp.sentinel.event.freq.impl.BaseRuleIdPeriodFreqLimiter;
-import com.alibaba.csp.sentinel.event.model.impl.SentinelRuleEvent;
+import com.alibaba.csp.sentinel.event.model.impl.FlowBlockEvent;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
 
@@ -32,7 +32,7 @@ public class BlockEventPublisher {
     static {
         // init freq limiter for block event.
         if (SentinelEventBus.getInstance().enableEvent()) {
-            SentinelEventBus.getInstance().addFreqLimiter(SentinelRuleEvent.class, new BaseRuleIdPeriodFreqLimiter(10000));
+            SentinelEventBus.getInstance().addFreqLimiter(FlowBlockEvent.class, new BaseRuleIdPeriodFreqLimiter(10000));
         }
     }
 
@@ -43,7 +43,7 @@ public class BlockEventPublisher {
      */
     public static void publishBlockEvent(BlockException blockException) {
         if (blockException instanceof FlowException) {
-            SentinelRuleEvent flowBlockEvent = new SentinelRuleEvent(blockException.getRule());
+            FlowBlockEvent flowBlockEvent = new FlowBlockEvent(blockException.getRule());
             SentinelEventBus.getInstance().publish(flowBlockEvent);
         }
     }
