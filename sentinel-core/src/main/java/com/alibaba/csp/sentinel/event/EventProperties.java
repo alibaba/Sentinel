@@ -17,7 +17,7 @@
 package com.alibaba.csp.sentinel.event;
 
 /**
- * Default impl for SentinelEventMulticaster.
+ * Property key related to sentinel event.
  *
  * @author Daydreamer-ia
  */
