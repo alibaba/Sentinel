@@ -27,7 +27,7 @@ public class AuthorityBlockEvent extends SentinelRuleEvent {
     /**
      * flow source.
      */
-    private String origin;
+    private final String origin;
 
     public AuthorityBlockEvent(String origin, AbstractRule rule) {
         super(rule);
@@ -36,9 +36,5 @@ public class AuthorityBlockEvent extends SentinelRuleEvent {
 
     public String getOrigin() {
         return origin;
-    }
-
-    public void setOrigin(String origin) {
-        this.origin = origin;
     }
 }

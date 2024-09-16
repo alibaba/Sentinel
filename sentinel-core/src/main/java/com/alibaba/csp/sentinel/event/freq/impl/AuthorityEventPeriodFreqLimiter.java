@@ -25,9 +25,9 @@ import com.alibaba.csp.sentinel.slots.block.AbstractRule;
  *
  * @author Daydreamer-ia
  */
-public class BaseOriginPeriodFreqLimiter extends PeriodFreqLimiter {
+public class AuthorityEventPeriodFreqLimiter extends PeriodFreqLimiter {
 
-    public BaseOriginPeriodFreqLimiter(long limitPeriod) {
+    public AuthorityEventPeriodFreqLimiter(long limitPeriod) {
         super(limitPeriod);
     }
 

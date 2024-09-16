@@ -25,9 +25,9 @@ import com.alibaba.csp.sentinel.event.model.impl.SystemBlockEvent;
  *
  * @author Daydreamer-ia
  */
-public class BaseSysMetricPeriodFreqLimiter extends PeriodFreqLimiter {
+public class SysEventPeriodFreqLimiter extends PeriodFreqLimiter {
 
-    public BaseSysMetricPeriodFreqLimiter(long limitPeriod) {
+    public SysEventPeriodFreqLimiter(long limitPeriod) {
         super(limitPeriod);
     }
 

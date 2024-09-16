@@ -24,8 +24,17 @@ import com.alibaba.csp.sentinel.slots.block.AbstractRule;
  */
 public class FlowBlockEvent extends SentinelRuleEvent {
 
-    public FlowBlockEvent(AbstractRule rule) {
+    /**
+     * resource name.
+     */
+    private final String resourceName;
+
+    public FlowBlockEvent(String resourceName, AbstractRule rule) {
         super(rule);
+        this.resourceName = resourceName;
     }
 
+    public String getResourceName() {
+        return resourceName;
+    }
 }

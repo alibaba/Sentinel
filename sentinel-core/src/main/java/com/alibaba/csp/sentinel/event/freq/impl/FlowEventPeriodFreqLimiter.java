@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.event.freq.impl;
 
 import com.alibaba.csp.sentinel.event.freq.PeriodFreqLimiter;
 import com.alibaba.csp.sentinel.event.model.SentinelEvent;
+import com.alibaba.csp.sentinel.event.model.impl.FlowBlockEvent;
 import com.alibaba.csp.sentinel.event.model.impl.SentinelRuleEvent;
 
 /**
@@ -24,16 +25,17 @@ import com.alibaba.csp.sentinel.event.model.impl.SentinelRuleEvent;
  *
  * @author Daydreamer-ia
  */
-public class BaseRuleIdPeriodFreqLimiter extends PeriodFreqLimiter {
+public class FlowEventPeriodFreqLimiter extends PeriodFreqLimiter {
 
-    public BaseRuleIdPeriodFreqLimiter(long limitPeriod) {
+    public FlowEventPeriodFreqLimiter(long limitPeriod) {
         super(limitPeriod);
     }
 
     @Override
     protected String getLimitDimensionKey(SentinelEvent event) {
-        if (event instanceof SentinelRuleEvent) {
-            return ((SentinelRuleEvent) event).getRule().getId() + "";
+        if (event instanceof FlowBlockEvent) {
+            FlowBlockEvent flowBlockEvent = (FlowBlockEvent) event;
+            return flowBlockEvent.getResourceName() + ":" + flowBlockEvent.getRule().getId();
         }
         // degrade to limit global event.
         return "unknown";

@@ -28,7 +28,7 @@ public class SystemBlockEvent extends SentinelRuleEvent {
     /**
      * sys metric.
      */
-    private String sysMetricKey;
+    private final String sysMetricKey;
 
     public SystemBlockEvent(AbstractRule rule, String sysMetricKey) {
         super(rule);
@@ -37,9 +37,5 @@ public class SystemBlockEvent extends SentinelRuleEvent {
 
     public String getSysMetricKey() {
         return sysMetricKey;
-    }
-
-    public void setSysMetricKey(String sysMetricKey) {
-        this.sysMetricKey = sysMetricKey;
     }
 }

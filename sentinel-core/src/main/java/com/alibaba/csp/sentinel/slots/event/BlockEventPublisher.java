@@ -16,12 +16,13 @@
 package com.alibaba.csp.sentinel.slots.event;
 
 import com.alibaba.csp.sentinel.event.SentinelEventBus;
-import com.alibaba.csp.sentinel.event.freq.impl.BaseOriginPeriodFreqLimiter;
-import com.alibaba.csp.sentinel.event.freq.impl.BaseRuleIdPeriodFreqLimiter;
-import com.alibaba.csp.sentinel.event.freq.impl.BaseSysMetricPeriodFreqLimiter;
+import com.alibaba.csp.sentinel.event.freq.impl.AuthorityEventPeriodFreqLimiter;
+import com.alibaba.csp.sentinel.event.freq.impl.FlowEventPeriodFreqLimiter;
+import com.alibaba.csp.sentinel.event.freq.impl.SysEventPeriodFreqLimiter;
 import com.alibaba.csp.sentinel.event.model.impl.AuthorityBlockEvent;
 import com.alibaba.csp.sentinel.event.model.impl.FlowBlockEvent;
 import com.alibaba.csp.sentinel.event.model.impl.SystemBlockEvent;
+import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthorityException;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
@@ -39,22 +40,23 @@ public class BlockEventPublisher {
         // init freq limiter for block event.
         if (SentinelEventBus.getInstance().enableEvent()) {
             // by origin
-            SentinelEventBus.getInstance().addFreqLimiter(AuthorityBlockEvent.class, new BaseOriginPeriodFreqLimiter(10000));
+            SentinelEventBus.getInstance().addFreqLimiter(AuthorityBlockEvent.class, new AuthorityEventPeriodFreqLimiter(10000));
             // by rule id
-            SentinelEventBus.getInstance().addFreqLimiter(FlowBlockEvent.class, new BaseRuleIdPeriodFreqLimiter(10000));
+            SentinelEventBus.getInstance().addFreqLimiter(FlowBlockEvent.class, new FlowEventPeriodFreqLimiter(10000));
             // by sys metric
-            SentinelEventBus.getInstance().addFreqLimiter(SystemBlockEvent.class, new BaseSysMetricPeriodFreqLimiter(10000));
+            SentinelEventBus.getInstance().addFreqLimiter(SystemBlockEvent.class, new SysEventPeriodFreqLimiter(10000));
         }
     }
 
     /**
      * publish block event to listeners.
      *
+     * @param resourceWrapper resource
      * @param blockException blockException
      */
-    public static void publishBlockEvent(BlockException blockException) {
+    public static void publishBlockEvent(ResourceWrapper resourceWrapper, BlockException blockException) {
         if (blockException instanceof FlowException) {
-            FlowBlockEvent flowBlockEvent = new FlowBlockEvent(blockException.getRule());
+            FlowBlockEvent flowBlockEvent = new FlowBlockEvent(resourceWrapper.getName(), blockException.getRule());
             SentinelEventBus.getInstance().publish(flowBlockEvent);
         }
         if (blockException instanceof SystemBlockException) {

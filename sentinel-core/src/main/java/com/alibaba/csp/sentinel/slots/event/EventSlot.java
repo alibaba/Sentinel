@@ -36,7 +36,7 @@ public class EventSlot extends AbstractLinkedProcessorSlot<Object> {
             fireEntry(context, resourceWrapper, param, count, prioritized, args);
         } catch (BlockException e) {
             // block event happens
-            BlockEventPublisher.publishBlockEvent(e);
+            BlockEventPublisher.publishBlockEvent(resourceWrapper, e);
             throw e;
         } catch (Throwable e) {
             RecordLog.warn("Unexpected entry exception", e);
