@@ -34,8 +34,16 @@ public abstract class SentinelEvent {
      */
     private final long sequence = SEQUENCE.getAndIncrement();
 
+    /**
+     * Create time.
+     */
+    private final long createTime = System.currentTimeMillis();
+
     public long getSequence() {
         return sequence;
     }
 
+    public long getCreateTime() {
+        return createTime;
+    }
 }
