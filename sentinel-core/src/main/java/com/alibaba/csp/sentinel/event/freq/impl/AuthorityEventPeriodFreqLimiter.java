@@ -27,6 +27,11 @@ import com.alibaba.csp.sentinel.slots.block.AbstractRule;
  */
 public class AuthorityEventPeriodFreqLimiter extends PeriodFreqLimiter {
 
+    /**
+     * period limit config.
+     */
+    public static final String EVENT_LIMITER_CONFIG = PeriodFreqLimiter.EVENT_LIMITER_CONFIG_PREFIX + "authority";
+
     public AuthorityEventPeriodFreqLimiter(long limitPeriod) {
         super(limitPeriod);
     }

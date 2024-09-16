@@ -27,6 +27,11 @@ import com.alibaba.csp.sentinel.event.model.impl.SentinelRuleEvent;
  */
 public class FlowEventPeriodFreqLimiter extends PeriodFreqLimiter {
 
+    /**
+     * period limit config.
+     */
+    public static final String EVENT_LIMITER_CONFIG = PeriodFreqLimiter.EVENT_LIMITER_CONFIG_PREFIX + "flow";
+
     public FlowEventPeriodFreqLimiter(long limitPeriod) {
         super(limitPeriod);
     }

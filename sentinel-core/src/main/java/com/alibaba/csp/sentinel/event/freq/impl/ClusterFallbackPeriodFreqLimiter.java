@@ -27,6 +27,11 @@ import com.alibaba.csp.sentinel.event.model.impl.SentinelRuleEvent;
  */
 public class ClusterFallbackPeriodFreqLimiter extends PeriodFreqLimiter {
 
+    /**
+     * period limit config.
+     */
+    public static final String EVENT_LIMITER_CONFIG = PeriodFreqLimiter.EVENT_LIMITER_CONFIG_PREFIX + "cluster-fallback";
+
     public ClusterFallbackPeriodFreqLimiter(long limitPeriod) {
         super(limitPeriod);
     }

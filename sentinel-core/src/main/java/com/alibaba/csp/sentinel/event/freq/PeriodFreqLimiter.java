@@ -29,6 +29,11 @@ import java.util.concurrent.atomic.AtomicLong;
 public abstract class PeriodFreqLimiter implements SentinelEventFreqLimiter {
 
     /**
+     * prefix of period limit config.
+     */
+    public static final String EVENT_LIMITER_CONFIG_PREFIX = "sentinel.event.freq.period.";
+
+    /**
      * last trigger time.
      */
     private final Map<String, AtomicLong> lastTriggerTime = new ConcurrentHashMap<>();

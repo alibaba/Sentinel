@@ -27,6 +27,11 @@ import com.alibaba.csp.sentinel.event.model.impl.block.SystemBlockEvent;
  */
 public class SysEventPeriodFreqLimiter extends PeriodFreqLimiter {
 
+    /**
+     * period limit config.
+     */
+    public static final String EVENT_LIMITER_CONFIG = PeriodFreqLimiter.EVENT_LIMITER_CONFIG_PREFIX + "system";
+
     public SysEventPeriodFreqLimiter(long limitPeriod) {
         super(limitPeriod);
     }

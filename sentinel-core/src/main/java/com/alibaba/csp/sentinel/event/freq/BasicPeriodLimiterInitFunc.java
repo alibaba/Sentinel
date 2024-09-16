@@ -38,13 +38,27 @@ public class BasicPeriodLimiterInitFunc implements InitFunc {
         // init freq limiter for block event.
         if (SentinelEventBus.getInstance().enableEvent()) {
             // by origin
-            SentinelEventBus.getInstance().addFreqLimiter(AuthorityBlockEvent.class, new AuthorityEventPeriodFreqLimiter(10000));
+            SentinelEventBus.getInstance().addFreqLimiter(AuthorityBlockEvent.class,
+                    new AuthorityEventPeriodFreqLimiter(getLimitPeriodTimeMs(AuthorityEventPeriodFreqLimiter.EVENT_LIMITER_CONFIG)));
             // by rule id and resource
-            SentinelEventBus.getInstance().addFreqLimiter(FlowBlockEvent.class, new FlowEventPeriodFreqLimiter(10000));
+            SentinelEventBus.getInstance().addFreqLimiter(FlowBlockEvent.class,
+                    new FlowEventPeriodFreqLimiter(getLimitPeriodTimeMs(FlowEventPeriodFreqLimiter.EVENT_LIMITER_CONFIG)));
             // by sys metric
-            SentinelEventBus.getInstance().addFreqLimiter(SystemBlockEvent.class, new SysEventPeriodFreqLimiter(10000));
+            SentinelEventBus.getInstance().addFreqLimiter(SystemBlockEvent.class,
+                    new SysEventPeriodFreqLimiter(getLimitPeriodTimeMs(SysEventPeriodFreqLimiter.EVENT_LIMITER_CONFIG)));
             // by rule id and resource
-            SentinelEventBus.getInstance().addFreqLimiter(ClusterFallbackEvent.class, new ClusterFallbackPeriodFreqLimiter(10000));
+            SentinelEventBus.getInstance().addFreqLimiter(ClusterFallbackEvent.class,
+                    new ClusterFallbackPeriodFreqLimiter(getLimitPeriodTimeMs(ClusterFallbackPeriodFreqLimiter.EVENT_LIMITER_CONFIG)));
         }
+    }
+
+    /**
+     * get specify config key for period limit.
+     *
+     * @param config config key
+     * @return limit time
+     */
+    private long getLimitPeriodTimeMs(String config) {
+        return Long.parseLong(System.getProperty(config, "60000"));
     }
 }

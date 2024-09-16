@@ -21,8 +21,7 @@ import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 /**
  * Published when param flow blocked.
  *
- * @author Eric Zhao
- * @since 0.2.0
+ * @author Daydreamer-ia
  */
 public class ParamFlowBlockEvent extends SentinelRuleEvent {
 
