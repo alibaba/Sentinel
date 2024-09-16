@@ -15,19 +15,14 @@
  */
 package com.alibaba.csp.sentinel.slots.event;
 
-import com.alibaba.csp.sentinel.event.SentinelEventBus;
-import com.alibaba.csp.sentinel.event.freq.impl.AuthorityEventPeriodFreqLimiter;
-import com.alibaba.csp.sentinel.event.freq.impl.FlowEventPeriodFreqLimiter;
-import com.alibaba.csp.sentinel.event.freq.impl.SysEventPeriodFreqLimiter;
-import com.alibaba.csp.sentinel.event.model.impl.block.AuthorityBlockEvent;
-import com.alibaba.csp.sentinel.event.model.impl.block.FlowBlockEvent;
-import com.alibaba.csp.sentinel.event.model.impl.block.SystemBlockEvent;
+import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.csp.sentinel.slots.block.authority.AuthorityException;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
-import com.alibaba.csp.sentinel.slots.system.SystemBlockException;
-import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
+import com.alibaba.csp.sentinel.slots.event.inte.BlockEventHandler;
+import com.alibaba.csp.sentinel.spi.SpiLoader;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Ops to publish event.
@@ -36,26 +31,23 @@ import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
  */
 public class BlockEventPublisher {
 
+    private static List<BlockEventHandler> blockEventHandlers = new ArrayList<>();
+
+    static {
+        List<BlockEventHandler> blockEventHandlers = SpiLoader.of(BlockEventHandler.class).loadInstanceList();
+        BlockEventPublisher.blockEventHandlers = new ArrayList<>(blockEventHandlers);
+    }
+
     /**
      * publish block event to listeners.
      *
+     * @param context         context
      * @param resourceWrapper resource
-     * @param blockException blockException
+     * @param blockException  blockException
      */
-    public static void publishBlockEvent(ResourceWrapper resourceWrapper, BlockException blockException) {
-        if (blockException instanceof FlowException) {
-            FlowBlockEvent flowBlockEvent = new FlowBlockEvent(resourceWrapper.getName(), blockException.getRule());
-            SentinelEventBus.getInstance().publish(flowBlockEvent);
-        }
-        if (blockException instanceof SystemBlockException) {
-            SystemBlockException systemBlockException = (SystemBlockException) blockException;
-            SystemBlockEvent systemBlockEvent = new SystemBlockEvent(SystemRuleManager.getCurrentSysRule(), systemBlockException.getLimitType());
-            SentinelEventBus.getInstance().publish(systemBlockEvent);
-        }
-        if (blockException instanceof AuthorityException) {
-            AuthorityException authorityException = (AuthorityException) blockException;
-            AuthorityBlockEvent authorityBlockEvent = new AuthorityBlockEvent(authorityException.getRuleLimitApp(), authorityException.getRule());
-            SentinelEventBus.getInstance().publish(authorityBlockEvent);
+    public static void publishBlockEvent(Context context, ResourceWrapper resourceWrapper, BlockException blockException) {
+        for (BlockEventHandler blockEventHandler : blockEventHandlers) {
+            blockEventHandler.publish(blockException, resourceWrapper, context);
         }
     }
 
