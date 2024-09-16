@@ -13,28 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.event.model.impl;
+package com.alibaba.csp.sentinel.event.model.impl.block;
 
+
+import com.alibaba.csp.sentinel.event.model.impl.SentinelRuleEvent;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 
 /**
- * Event published when authority blocked.
+ * Event published when flow blocked.
  *
  * @author Daydreamer-ia
  */
-public class AuthorityBlockEvent extends SentinelRuleEvent {
+public class SystemBlockEvent extends SentinelRuleEvent {
 
     /**
-     * flow source.
+     * sys metric.
      */
-    private final String origin;
+    private final String sysMetricKey;
 
-    public AuthorityBlockEvent(String origin, AbstractRule rule) {
+    public SystemBlockEvent(AbstractRule rule, String sysMetricKey) {
         super(rule);
-        this.origin = origin;
+        this.sysMetricKey = sysMetricKey;
     }
 
-    public String getOrigin() {
-        return origin;
+    public String getSysMetricKey() {
+        return sysMetricKey;
     }
 }

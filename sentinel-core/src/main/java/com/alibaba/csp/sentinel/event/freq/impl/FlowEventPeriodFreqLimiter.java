@@ -17,7 +17,7 @@ package com.alibaba.csp.sentinel.event.freq.impl;
 
 import com.alibaba.csp.sentinel.event.freq.PeriodFreqLimiter;
 import com.alibaba.csp.sentinel.event.model.SentinelEvent;
-import com.alibaba.csp.sentinel.event.model.impl.FlowBlockEvent;
+import com.alibaba.csp.sentinel.event.model.impl.block.FlowBlockEvent;
 import com.alibaba.csp.sentinel.event.model.impl.SentinelRuleEvent;
 
 /**
