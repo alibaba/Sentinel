@@ -19,6 +19,8 @@ import com.alibaba.csp.sentinel.cluster.client.ClusterTokenClient;
 import com.alibaba.csp.sentinel.cluster.client.TokenClientProvider;
 import com.alibaba.csp.sentinel.cluster.server.EmbeddedClusterTokenServer;
 import com.alibaba.csp.sentinel.cluster.server.EmbeddedClusterTokenServerProvider;
+import com.alibaba.csp.sentinel.event.SentinelEventBus;
+import com.alibaba.csp.sentinel.event.model.impl.ClusterFlowStateEvent;
 import com.alibaba.csp.sentinel.init.InitExecutor;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
@@ -83,10 +85,20 @@ public final class ClusterStateManager {
         if (mode == CLUSTER_CLIENT) {
             return true;
         }
+        int originMode = mode;
         mode = CLUSTER_CLIENT;
         sleepIfNeeded();
         lastModified = TimeUtil.currentTimeMillis();
+        publishEvent(originMode, mode);
         return startClient();
+    }
+
+    private static void publishEvent(int oldMode, int newMode) {
+        if (oldMode == newMode) {
+            return;
+        }
+        ClusterFlowStateEvent stateEvent = new ClusterFlowStateEvent(oldMode, newMode);
+        SentinelEventBus.getInstance().publish(stateEvent);
     }
 
     private static boolean startClient() {
@@ -137,9 +149,11 @@ public final class ClusterStateManager {
         if (mode == CLUSTER_SERVER) {
             return true;
         }
+        int originMode = mode;
         mode = CLUSTER_SERVER;
         sleepIfNeeded();
         lastModified = TimeUtil.currentTimeMillis();
+        publishEvent(originMode, mode);
         return startServer();
     }
 
@@ -248,6 +262,7 @@ public final class ClusterStateManager {
             return;
         }
         RecordLog.info("[ClusterStateManager] Changing cluster mode to not-started");
+        int originMode = mode;
         mode = CLUSTER_NOT_STARTED;
 
         sleepIfNeeded();
@@ -255,6 +270,7 @@ public final class ClusterStateManager {
 
         stopClient();
         stopServer();
+        publishEvent(originMode, mode);
     }
 
     /**
@@ -267,7 +283,9 @@ public final class ClusterStateManager {
     }
 
     public static void markToServer() {
+        int originMode = mode;
         mode = CLUSTER_SERVER;
+        publishEvent(originMode, mode);
     }
 
     private static final int MIN_INTERVAL = 5 * 1000;
