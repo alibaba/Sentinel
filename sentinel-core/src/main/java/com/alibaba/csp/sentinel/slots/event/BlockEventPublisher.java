@@ -36,18 +36,6 @@ import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
  */
 public class BlockEventPublisher {
 
-    static {
-        // init freq limiter for block event.
-        if (SentinelEventBus.getInstance().enableEvent()) {
-            // by origin
-            SentinelEventBus.getInstance().addFreqLimiter(AuthorityBlockEvent.class, new AuthorityEventPeriodFreqLimiter(10000));
-            // by rule id
-            SentinelEventBus.getInstance().addFreqLimiter(FlowBlockEvent.class, new FlowEventPeriodFreqLimiter(10000));
-            // by sys metric
-            SentinelEventBus.getInstance().addFreqLimiter(SystemBlockEvent.class, new SysEventPeriodFreqLimiter(10000));
-        }
-    }
-
     /**
      * publish block event to listeners.
      *
