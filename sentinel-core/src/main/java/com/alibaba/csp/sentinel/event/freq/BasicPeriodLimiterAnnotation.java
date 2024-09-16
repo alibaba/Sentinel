@@ -24,27 +24,24 @@ import com.alibaba.csp.sentinel.event.model.impl.ClusterFallbackEvent;
 import com.alibaba.csp.sentinel.event.model.impl.block.AuthorityBlockEvent;
 import com.alibaba.csp.sentinel.event.model.impl.block.FlowBlockEvent;
 import com.alibaba.csp.sentinel.event.model.impl.block.SystemBlockEvent;
-import com.alibaba.csp.sentinel.init.InitFunc;
 
 /**
  * Used to declare event limiter.
  *
  * @author Daydreamer-ia
  */
-public class BasicPeriodLimiterAnnotation implements InitFunc {
+public class BasicPeriodLimiterAnnotation implements PeriodLimiterInitFun {
 
     @Override
-    public void init() throws Exception {
+    public void doInit() throws Exception {
         // init freq limiter for block event.
-        if (SentinelEventBus.getInstance().enableEvent()) {
-            // by origin
-            SentinelEventBus.getInstance().addFreqLimiter(AuthorityBlockEvent.class, new AuthorityEventPeriodFreqLimiter(10000));
-            // by rule id and resource
-            SentinelEventBus.getInstance().addFreqLimiter(FlowBlockEvent.class, new FlowEventPeriodFreqLimiter(10000));
-            // by sys metric
-            SentinelEventBus.getInstance().addFreqLimiter(SystemBlockEvent.class, new SysEventPeriodFreqLimiter(10000));
-            // by rule id and resource
-            SentinelEventBus.getInstance().addFreqLimiter(ClusterFallbackEvent.class, new ClusterFallbackPeriodFreqLimiter(10000));
-        }
+        // by origin
+        SentinelEventBus.getInstance().addFreqLimiter(AuthorityBlockEvent.class, new AuthorityEventPeriodFreqLimiter(10000));
+        // by rule id and resource
+        SentinelEventBus.getInstance().addFreqLimiter(FlowBlockEvent.class, new FlowEventPeriodFreqLimiter(10000));
+        // by sys metric
+        SentinelEventBus.getInstance().addFreqLimiter(SystemBlockEvent.class, new SysEventPeriodFreqLimiter(10000));
+        // by rule id and resource
+        SentinelEventBus.getInstance().addFreqLimiter(ClusterFallbackEvent.class, new ClusterFallbackPeriodFreqLimiter(10000));
     }
 }
