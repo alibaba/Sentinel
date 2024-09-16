@@ -19,25 +19,25 @@ package com.alibaba.csp.sentinel.event.freq.impl;
 import com.alibaba.csp.sentinel.event.freq.PeriodFreqLimiter;
 import com.alibaba.csp.sentinel.event.model.SentinelEvent;
 import com.alibaba.csp.sentinel.event.model.impl.SentinelRuleEvent;
+import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 
 /**
- * Base on rule id to finish frequency limit, event should be class or subclass of {@link SentinelRuleEvent}.
+ * Base on rule origin to finish frequency limit, event should be class or subclass of {@link SentinelRuleEvent}.
  *
  * @author Daydreamer-ia
  */
-public class BaseRuleIdPeriodFreqLimiter extends PeriodFreqLimiter {
+public class BaseOriginPeriodFreqLimiter extends PeriodFreqLimiter {
 
-    public BaseRuleIdPeriodFreqLimiter(long limitPeriod) {
+    public BaseOriginPeriodFreqLimiter(long limitPeriod) {
         super(limitPeriod);
     }
 
     @Override
     protected String getLimitDimensionKey(SentinelEvent event) {
         if (event instanceof SentinelRuleEvent) {
-            return ((SentinelRuleEvent) event).getRule().getId() + "";
+            AbstractRule rule = ((SentinelRuleEvent) event).getRule();
+            return rule.getLimitApp();
         }
-        // degrade to limit global event.
         return "unknown";
     }
-
 }

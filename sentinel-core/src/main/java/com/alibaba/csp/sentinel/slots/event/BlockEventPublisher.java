@@ -17,11 +17,14 @@
 package com.alibaba.csp.sentinel.slots.event;
 
 import com.alibaba.csp.sentinel.event.SentinelEventBus;
+import com.alibaba.csp.sentinel.event.freq.impl.BaseOriginPeriodFreqLimiter;
 import com.alibaba.csp.sentinel.event.freq.impl.BaseRuleIdPeriodFreqLimiter;
 import com.alibaba.csp.sentinel.event.freq.impl.BaseSysMetricPeriodFreqLimiter;
+import com.alibaba.csp.sentinel.event.model.impl.AuthorityBlockEvent;
 import com.alibaba.csp.sentinel.event.model.impl.FlowBlockEvent;
 import com.alibaba.csp.sentinel.event.model.impl.SystemBlockEvent;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.authority.AuthorityException;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
 import com.alibaba.csp.sentinel.slots.system.SystemBlockException;
 import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
@@ -36,7 +39,11 @@ public class BlockEventPublisher {
     static {
         // init freq limiter for block event.
         if (SentinelEventBus.getInstance().enableEvent()) {
+            // by origin
+            SentinelEventBus.getInstance().addFreqLimiter(AuthorityBlockEvent.class, new BaseOriginPeriodFreqLimiter(10000));
+            // by rule id
             SentinelEventBus.getInstance().addFreqLimiter(FlowBlockEvent.class, new BaseRuleIdPeriodFreqLimiter(10000));
+            // by sys metric
             SentinelEventBus.getInstance().addFreqLimiter(SystemBlockEvent.class, new BaseSysMetricPeriodFreqLimiter(10000));
         }
     }
@@ -55,6 +62,11 @@ public class BlockEventPublisher {
             SystemBlockException systemBlockException = (SystemBlockException) blockException;
             SystemBlockEvent systemBlockEvent = new SystemBlockEvent(SystemRuleManager.getCurrentSysRule(), systemBlockException.getLimitType());
             SentinelEventBus.getInstance().publish(systemBlockEvent);
+        }
+        if (blockException instanceof AuthorityException) {
+            AuthorityException authorityException = (AuthorityException) blockException;
+            AuthorityBlockEvent authorityBlockEvent = new AuthorityBlockEvent(authorityException.getRuleLimitApp(), authorityException.getRule());
+            SentinelEventBus.getInstance().publish(authorityBlockEvent);
         }
     }
 

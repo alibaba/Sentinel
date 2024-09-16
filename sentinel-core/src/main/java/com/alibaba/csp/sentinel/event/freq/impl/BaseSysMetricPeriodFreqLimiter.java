@@ -37,6 +37,7 @@ public class BaseSysMetricPeriodFreqLimiter extends PeriodFreqLimiter {
         if (event instanceof SystemBlockEvent) {
             return ((SystemBlockEvent) event).getSysMetricKey();
         }
+        // degrade to limit global event.
         return "unknown";
     }
 }
