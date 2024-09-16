@@ -13,24 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.event.freq;
+package com.alibaba.csp.sentinel.init;
 
 import com.alibaba.csp.sentinel.event.SentinelEventBus;
-import com.alibaba.csp.sentinel.init.InitFunc;
+import com.alibaba.csp.sentinel.event.freq.ParamFlowEventPeriodFreqLimiter;
+import com.alibaba.csp.sentinel.event.model.ParamFlowBlockEvent;
 
 /**
- * Used to init period limiter.
+ * Init method for event.
  *
  * @author Daydreamer-ia
  */
-public interface PeriodLimiterInitFun extends InitFunc {
+public class ParamFlowPeriodLimiterInitFunc implements InitFunc {
 
     @Override
-    default void init() throws Exception {
+    public void init() throws Exception {
         if (SentinelEventBus.getInstance().enableEvent()) {
-            doInit();
+            SentinelEventBus.getInstance().addFreqLimiter(ParamFlowBlockEvent.class, new ParamFlowEventPeriodFreqLimiter(10000L));
         }
     }
 
-    void doInit() throws Exception;
 }
