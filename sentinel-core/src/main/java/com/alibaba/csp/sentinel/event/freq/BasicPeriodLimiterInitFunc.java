@@ -36,13 +36,15 @@ public class BasicPeriodLimiterInitFunc implements InitFunc {
     @Override
     public void init() throws Exception {
         // init freq limiter for block event.
-        // by origin
-        SentinelEventBus.getInstance().addFreqLimiter(AuthorityBlockEvent.class, new AuthorityEventPeriodFreqLimiter(10000));
-        // by rule id and resource
-        SentinelEventBus.getInstance().addFreqLimiter(FlowBlockEvent.class, new FlowEventPeriodFreqLimiter(10000));
-        // by sys metric
-        SentinelEventBus.getInstance().addFreqLimiter(SystemBlockEvent.class, new SysEventPeriodFreqLimiter(10000));
-        // by rule id and resource
-        SentinelEventBus.getInstance().addFreqLimiter(ClusterFallbackEvent.class, new ClusterFallbackPeriodFreqLimiter(10000));
+        if (SentinelEventBus.getInstance().enableEvent()) {
+            // by origin
+            SentinelEventBus.getInstance().addFreqLimiter(AuthorityBlockEvent.class, new AuthorityEventPeriodFreqLimiter(10000));
+            // by rule id and resource
+            SentinelEventBus.getInstance().addFreqLimiter(FlowBlockEvent.class, new FlowEventPeriodFreqLimiter(10000));
+            // by sys metric
+            SentinelEventBus.getInstance().addFreqLimiter(SystemBlockEvent.class, new SysEventPeriodFreqLimiter(10000));
+            // by rule id and resource
+            SentinelEventBus.getInstance().addFreqLimiter(ClusterFallbackEvent.class, new ClusterFallbackPeriodFreqLimiter(10000));
+        }
     }
 }
