@@ -29,8 +29,19 @@ public class ParamFlowPeriodLimiterInitFunc implements InitFunc {
     @Override
     public void init() throws Exception {
         if (SentinelEventBus.getInstance().enableEvent()) {
-            SentinelEventBus.getInstance().addFreqLimiter(ParamFlowBlockEvent.class, new ParamFlowEventPeriodFreqLimiter(10000L));
+            SentinelEventBus.getInstance().addFreqLimiter(ParamFlowBlockEvent.class,
+                    new ParamFlowEventPeriodFreqLimiter(getLimitPeriodTimeMs(ParamFlowEventPeriodFreqLimiter.EVENT_LIMITER_CONFIG)));
         }
+    }
+
+    /**
+     * get specify config key for period limit.
+     *
+     * @param config config key
+     * @return limit time
+     */
+    private long getLimitPeriodTimeMs(String config) {
+        return Long.parseLong(System.getProperty(config, "60000"));
     }
 
 }
