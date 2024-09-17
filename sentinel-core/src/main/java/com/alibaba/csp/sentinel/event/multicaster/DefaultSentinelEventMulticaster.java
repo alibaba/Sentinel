@@ -38,32 +38,32 @@ import java.util.concurrent.atomic.AtomicLong;
 public class DefaultSentinelEventMulticaster implements SentinelEventMulticaster, Runnable {
 
 
-    private Properties properties;
+    protected Properties properties;
 
     /**
      * registry.
      */
-    private SentinelEventListenerRegistry registry;
+    protected SentinelEventListenerRegistry registry;
 
     /**
      * event queue.
      */
-    private BlockingQueue<SentinelEvent> queue;
+    protected BlockingQueue<SentinelEvent> queue;
 
     /**
      * init mark.
      */
-    private volatile boolean running = false;
+    protected volatile boolean running = false;
 
     /**
      * core thread.
      */
-    private final Thread thread = new Thread(this);
+    protected final Thread thread = new Thread(this);
 
     /**
      * used to record event sequence.
      */
-    private Map<Class<? extends SentinelEvent>, AtomicLong> sequences = new ConcurrentHashMap<>();
+    protected Map<Class<? extends SentinelEvent>, AtomicLong> sequences = new ConcurrentHashMap<>();
 
     @Override
     public void init(Properties properties, SentinelEventListenerRegistry registry) {
@@ -97,8 +97,8 @@ public class DefaultSentinelEventMulticaster implements SentinelEventMulticaster
 
     @Override
     public void run() {
-        try {
-            while (running) {
+        while (running) {
+            try {
                 SentinelEvent poll = queue.take();
                 if (poll != null) {
                     // handle event
@@ -106,9 +106,9 @@ public class DefaultSentinelEventMulticaster implements SentinelEventMulticaster
                     // increase sequence
                     increaseSequence(poll.getClass());
                 }
+            } catch (InterruptedException e) {
+                // ignore
             }
-        } catch (InterruptedException e) {
-            // ignore
         }
     }
 
@@ -159,6 +159,15 @@ public class DefaultSentinelEventMulticaster implements SentinelEventMulticaster
      */
     protected void increaseSequence(Class<? extends SentinelEvent> eventType) {
         sequences.compute(eventType, (k, v) -> v == null ? new AtomicLong(0) : v).incrementAndGet();
+    }
+
+    /**
+     * whether is runnning state now.
+     *
+     * @return is running
+     */
+    public boolean isRunning() {
+        return running;
     }
 
 }
