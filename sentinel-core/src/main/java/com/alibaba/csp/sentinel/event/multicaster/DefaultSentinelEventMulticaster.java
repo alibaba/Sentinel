@@ -119,10 +119,10 @@ public class DefaultSentinelEventMulticaster implements SentinelEventMulticaster
      */
     protected void receiveEvent(SentinelEvent event) {
         Class<? extends SentinelEvent> eventType = event.getClass();
-        List<SentinelEventListener<? extends SentinelEvent>> listeners = registry.getSentinelEventListener(eventType);
+        List<SentinelEventListener> listeners = registry.getSentinelEventListener(eventType);
         if (listeners != null && !listeners.isEmpty()) {
             // notify event
-            for (SentinelEventListener<? extends SentinelEvent> listener : listeners) {
+            for (SentinelEventListener listener : listeners) {
                 notifyListeners(event, listener);
             }
         }

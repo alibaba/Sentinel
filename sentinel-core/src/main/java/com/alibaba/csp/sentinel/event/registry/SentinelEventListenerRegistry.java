@@ -45,14 +45,15 @@ public interface SentinelEventListenerRegistry {
      *
      * @param listener listener
      */
-    void addSubscriber(SentinelEventListener<? extends SentinelEvent> listener);
+    void addSubscriber(SentinelEventListener listener);
 
     /**
      * Remove listener.
      *
+     * @param clazz event type
      * @param listener listener
      */
-    void removeSubscriber(SentinelEventListener<? extends SentinelEvent> listener);
+    void removeSubscriber(Class<? extends SentinelEvent> clazz, SentinelEventListener listener);
 
     /**
      * Acquire all listeners of specify event type.
@@ -60,6 +61,6 @@ public interface SentinelEventListenerRegistry {
      * @param event event
      * @return listeners
      */
-    List<SentinelEventListener<? extends SentinelEvent>> getSentinelEventListener(Class<? extends SentinelEvent> event);
+    List<SentinelEventListener> getSentinelEventListener(Class<? extends SentinelEvent> event);
 
 }

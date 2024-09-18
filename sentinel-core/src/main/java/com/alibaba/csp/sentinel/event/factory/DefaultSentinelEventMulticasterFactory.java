@@ -74,7 +74,8 @@ public class DefaultSentinelEventMulticasterFactory implements SentinelEventMult
     @Override
     public boolean addSentinelEventMulticaster(Class<? extends SentinelEvent> clazz, SentinelEventMulticaster multicaster) {
         multicaster.init(properties, this.sentinelEventListenerRegistry);
-        return multicasterMap.put(clazz, multicaster) == multicaster;
+        multicasterMap.put(clazz, multicaster);
+        return true;
     }
 
     @Override

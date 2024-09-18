@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.event;
 
 import com.alibaba.csp.sentinel.event.model.SentinelEvent;
 
+import java.util.List;
 import java.util.concurrent.Executor;
 
 /**
@@ -24,7 +25,7 @@ import java.util.concurrent.Executor;
  *
  * @author Daydreamer-ia
  */
-public abstract class SentinelEventListener<T extends SentinelEvent> {
+public abstract class SentinelEventListener {
 
     /**
      * Min priority.
@@ -41,12 +42,12 @@ public abstract class SentinelEventListener<T extends SentinelEvent> {
      *
      * @param event event msg.
      */
-    public abstract void onEvent(T event);
+    public abstract void onEvent(SentinelEvent event);
 
     /**
      * Events of interest to the listener
      */
-    public abstract Class<T> eventType();
+    public abstract List<Class<? extends SentinelEvent>> eventType();
 
     /**
      * Whether current listener handle the event asynchronously.

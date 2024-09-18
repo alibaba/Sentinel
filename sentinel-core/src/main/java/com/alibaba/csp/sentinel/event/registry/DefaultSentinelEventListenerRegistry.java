@@ -33,7 +33,7 @@ public class DefaultSentinelEventListenerRegistry implements SentinelEventListen
     /**
      * mapping of event
      */
-    private final Map<Class<? extends SentinelEvent>, List<SentinelEventListener<? extends SentinelEvent>>> listenerMap = new ConcurrentHashMap<>();
+    private final Map<Class<? extends SentinelEvent>, List<SentinelEventListener>> listenerMap = new ConcurrentHashMap<>();
 
     @Override
     public void init(Properties properties) {
@@ -46,26 +46,32 @@ public class DefaultSentinelEventListenerRegistry implements SentinelEventListen
     }
 
     @Override
-    public void addSubscriber(SentinelEventListener<? extends SentinelEvent> listener) {
-        List<SentinelEventListener<? extends SentinelEvent>> val = listenerMap.compute(listener.eventType(), (eventType, listeners) -> {
-            if (listeners != null) {
-                return listeners;
-            }
-            return Collections.synchronizedList(new ArrayList<>());
-        });
-        val.add(listener);
+    public void addSubscriber(SentinelEventListener listener) {
+        List<Class<? extends SentinelEvent>> classes = listener.eventType();
+        if (classes == null || classes.isEmpty()) {
+            return;
+        }
+        for (Class<? extends SentinelEvent> eventClazz : classes) {
+            List<SentinelEventListener> val = listenerMap.compute(eventClazz, (eventType, listeners) -> {
+                if (listeners != null) {
+                    return listeners;
+                }
+                return Collections.synchronizedList(new ArrayList<>());
+            });
+            val.add(listener);
+        }
     }
 
     @Override
-    public void removeSubscriber(SentinelEventListener<? extends SentinelEvent> listener) {
-        List<SentinelEventListener<? extends SentinelEvent>> listeners = listenerMap.get(listener.eventType());
+    public void removeSubscriber(Class<? extends SentinelEvent> eventType, SentinelEventListener listener) {
+        List<SentinelEventListener> listeners = listenerMap.get(eventType);
         if (listeners != null) {
             listeners.remove(listener);
         }
     }
 
     @Override
-    public List<SentinelEventListener<? extends SentinelEvent>> getSentinelEventListener(Class<? extends SentinelEvent> event) {
+    public List<SentinelEventListener> getSentinelEventListener(Class<? extends SentinelEvent> event) {
         return listenerMap.getOrDefault(event, new ArrayList<>());
     }
 

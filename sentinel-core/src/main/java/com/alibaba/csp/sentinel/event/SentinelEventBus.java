@@ -181,7 +181,7 @@ public class SentinelEventBus {
      *
      * @param listener listener
      */
-    public void addListener(SentinelEventListener<? extends SentinelEvent> listener) {
+    public void addListener(SentinelEventListener listener) {
         if (enableEvent()) {
             sentinelEventListenerRegistry.addSubscriber(listener);
         }
@@ -190,11 +190,12 @@ public class SentinelEventBus {
     /**
      * Remove listener.
      *
+     * @param clazz    event type
      * @param listener listener
      */
-    public void removeListener(SentinelEventListener<? extends SentinelEvent> listener) {
+    public void removeListener(Class<? extends SentinelEvent> clazz, SentinelEventListener listener) {
         if (enableEvent()) {
-            sentinelEventListenerRegistry.removeSubscriber(listener);
+            sentinelEventListenerRegistry.removeSubscriber(clazz, listener);
         }
     }
 
