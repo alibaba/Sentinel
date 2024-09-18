@@ -69,7 +69,7 @@ public abstract class PeriodFreqLimiter implements SentinelEventFreqLimiter {
             if (lastTriggerTime != null) {
                 return lastTriggerTime;
             }
-            return new AtomicLong(System.currentTimeMillis() - limitPeriod);
+            return new AtomicLong(0);
         });
     }
 
