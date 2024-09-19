@@ -16,57 +16,77 @@
 
 package com.alibaba.csp.sentinel.adapter.gateway.zuul.fallback;
 
+import com.alibaba.fastjson.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Fall back response for {@link com.alibaba.csp.sentinel.slots.block.BlockException}
  *
  * @author tiger
  */
-public class BlockResponse {
+public class BlockResponse extends HashMap<String, Object> {
 
-    /**
-     * HTTP status code.
-     */
-    private int code;
+  /** HTTP status code. */
+  private int code;
+  /** HTTP response message */
+  private String message;
+  /** route */
+  private String route;
 
-    private String message;
-    private String route;
+  public static BlockResponse blockError(String route) {
+    return error(429, "Sentinel block exception", route);
+  }
 
-    public BlockResponse(int code, String message, String route) {
-        this.code = code;
-        this.message = message;
-        this.route = route;
-    }
+  public static BlockResponse error(String route) {
+    return error(500, "System Error", route);
+  }
 
-    public int getCode() {
-        return code;
-    }
+  public static BlockResponse error(int code, String message, String route) {
+    BlockResponse response = new BlockResponse();
+    response.put("code", code);
+    response.put("message", message);
+    response.put("route", route);
+    return response;
+  }
 
-    public void setCode(int code) {
-        this.code = code;
-    }
+  public static BlockResponse ok(String msg) {
+    BlockResponse r = new BlockResponse();
+    r.put("msg", msg);
+    return r;
+  }
 
-    public String getMessage() {
-        return message;
-    }
+  public static BlockResponse ok(Map<String, Object> map) {
+    BlockResponse response = new BlockResponse();
+    response.putAll(map);
+    return response;
+  }
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
+  public static BlockResponse ok() {
+    return new BlockResponse();
+  }
 
-    public String getRoute() {
-        return route;
-    }
+  @Override
+  public BlockResponse put(String key, Object value) {
+    super.put(key, value);
+    return this;
+  }
 
-    public void setRoute(String route) {
-        this.route = route;
-    }
+  public int getCode() {
+    return (int) this.get("code");
+  }
 
-    @Override
-    public String toString() {
-        return "{" +
-                "\"code\":" + code +
-                ", \"message\":" + "\"" + message + "\"" +
-                ", \"route\":" + "\"" + route + "\"" +
-                '}';
-    }
+  public String getMessage() {
+    return (String) this.get("message");
+  }
+
+  public String getRoute() {
+    return (String) this.get("route");
+  }
+
+  @Override
+  public String toString() {
+   return JSONObject.toJSONString(this);
+  }
 }

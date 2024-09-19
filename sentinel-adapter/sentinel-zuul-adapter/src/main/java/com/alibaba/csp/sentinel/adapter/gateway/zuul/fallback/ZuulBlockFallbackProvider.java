@@ -21,7 +21,7 @@ package com.alibaba.csp.sentinel.adapter.gateway.zuul.fallback;
  *
  * @author tiger
  */
-public interface ZuulBlockFallbackProvider {
+public interface ZuulBlockFallbackProvider<T extends BlockResponse> {
 
     /**
      * The route this fallback will be used for.
@@ -36,5 +36,5 @@ public interface ZuulBlockFallbackProvider {
      * @param cause cause of the main method failure, may be <code>null</code>
      * @return the fallback response
      */
-    BlockResponse fallbackResponse(String route, Throwable cause);
+    T fallbackResponse(String route, Throwable cause);
 }
