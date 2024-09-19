@@ -118,6 +118,9 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
                     + ", is bigger than bufSize=" + buf.length + ". Can't read");
             }
             int len = inputStream.read(buf);
+            if (len == -1) {
+                return null;
+            }
             return new String(buf, 0, len, charset);
         } finally {
             if (inputStream != null) {
