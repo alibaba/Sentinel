@@ -24,8 +24,8 @@ import com.alibaba.csp.sentinel.slots.block.AbstractRule;
  * provides a measurement of system's load, but only available on Linux.
  * </p>
  * <p>
- * We recommend to coordinate {@link #highestSystemLoad}, {@link #qps}, {@link #avgRt}
- * and {@link #maxThread} to make sure your system run in safety level.
+ * We recommend to coordinate {@link SystemMetricType#LOAD}, {@link SystemMetricType#INBOUND_QPS}, {@link SystemMetricType#AVG_RT}
+ * and {@link SystemMetricType#CONCURRENCY} to make sure your system run in safety level.
  * </p>
  * <p>
  * To set the threshold appropriately, performance test may be needed.
@@ -33,102 +33,48 @@ import com.alibaba.csp.sentinel.slots.block.AbstractRule;
  *
  * @author jialiang.linjl
  * @author Carpenter Lee
+ * @author guozhong.huang
  * @see SystemRuleManager
  */
 public class SystemRule extends AbstractRule {
 
-    /**
-     * negative value means no threshold checking.
-     */
-    private double highestSystemLoad = -1;
-    /**
-     * cpu usage, between [0, 1]
-     */
-    private double highestCpuUsage = -1;
-    private double qps = -1;
-    private long avgRt = -1;
-    private long maxThread = -1;
-
-    public double getQps() {
-        return qps;
-    }
 
     /**
-     * Set max total QPS. In a high concurrency condition, real passed QPS may be greater than max QPS set.
-     * The real passed QPS will nearly satisfy the following formula:<br/>
-     *
-     * <pre>real passed QPS = QPS set + concurrent thread number</pre>
-     *
-     * @param qps max total QOS, values <= 0 are special for clearing the threshold.
+     * MetricType indicates the type of the trigger metric.
      */
-    public void setQps(double qps) {
-        this.qps = qps;
-    }
-
-    public long getMaxThread() {
-        return maxThread;
-    }
+    private SystemMetricType systemMetricType;
 
     /**
-     * Set max PARALLEL working thread. When concurrent thread number is greater than {@code maxThread} only
-     * maxThread will run in parallel.
-     *
-     * @param maxThread max parallel thread number, values <= 0 are special for clearing the threshold.
+     * TriggerCount represents the lower bound trigger of the adaptive strategy.
+     * Adaptive strategies will not be activated until target metric has reached the trigger count.
      */
-    public void setMaxThread(long maxThread) {
-        this.maxThread = maxThread;
+    private double triggerCount;
+
+    public SystemMetricType getSystemMetricType() {
+        return systemMetricType;
     }
 
-    public long getAvgRt() {
-        return avgRt;
+    public SystemRule setSystemMetricType(SystemMetricType systemMetricType) {
+        this.systemMetricType = systemMetricType;
+        return this;
     }
 
-    /**
-     * Set max average RT(response time) of all passed requests.
-     *
-     * @param avgRt max average response time, values <= 0 are special for clearing the threshold.
-     */
-    public void setAvgRt(long avgRt) {
-        this.avgRt = avgRt;
+
+    public double getTriggerCount() {
+        return triggerCount;
     }
 
-    public double getHighestSystemLoad() {
-        return highestSystemLoad;
+    public SystemRule setTriggerCount(double triggerCount) {
+        this.triggerCount = triggerCount;
+        return this;
     }
 
-    /**
-     * <p>
-     * Set highest load. The load is not same as Linux system load, which is not sensitive enough.
-     * To calculate the load, both Linux system load, current global response time and global QPS will be considered,
-     * which means that we need to coordinate with {@link #setAvgRt(long)} and {@link #setQps(double)}
-     * </p>
-     * <p>
-     * Note that this parameter is only available on Unix like system.
-     * </p>
-     *
-     * @param highestSystemLoad highest system load, values <= 0 are special for clearing the threshold.
-     * @see SystemRuleManager
-     */
-    public void setHighestSystemLoad(double highestSystemLoad) {
-        this.highestSystemLoad = highestSystemLoad;
-    }
-
-    /**
-     * Get highest cpu usage. Cpu usage is between [0, 1]
-     *
-     * @return highest cpu usage
-     */
-    public double getHighestCpuUsage() {
-        return highestCpuUsage;
-    }
-
-    /**
-     * set highest cpu usage. Cpu usage is between [0, 1]
-     *
-     * @param highestCpuUsage the value to set.
-     */
-    public void setHighestCpuUsage(double highestCpuUsage) {
-        this.highestCpuUsage = highestCpuUsage;
+    @Override
+    public String toString() {
+        return "SystemRule{" +
+                "systemMetricType=" + systemMetricType +
+                ", triggerCount=" + triggerCount +
+                '}';
     }
 
     @Override
@@ -136,58 +82,29 @@ public class SystemRule extends AbstractRule {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof SystemRule)) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
         if (!super.equals(o)) {
             return false;
         }
 
-        SystemRule that = (SystemRule)o;
+        SystemRule that = (SystemRule) o;
 
-        if (Double.compare(that.highestSystemLoad, highestSystemLoad) != 0) {
+        if (Double.compare(that.triggerCount, triggerCount) != 0) {
             return false;
         }
-        if (Double.compare(that.highestCpuUsage, highestCpuUsage) != 0) {
-            return false;
-        }
-
-        if (Double.compare(that.qps, qps) != 0) {
-            return false;
-        }
-
-        if (avgRt != that.avgRt) {
-            return false;
-        }
-        return maxThread == that.maxThread;
+        return systemMetricType == that.systemMetricType;
     }
 
     @Override
     public int hashCode() {
         int result = super.hashCode();
         long temp;
-        temp = Double.doubleToLongBits(highestSystemLoad);
-        result = 31 * result + (int)(temp ^ (temp >>> 32));
-
-        temp = Double.doubleToLongBits(highestCpuUsage);
-        result = 31 * result + (int)(temp ^ (temp >>> 32));
-
-        temp = Double.doubleToLongBits(qps);
-        result = 31 * result + (int)(temp ^ (temp >>> 32));
-
-        result = 31 * result + (int)(avgRt ^ (avgRt >>> 32));
-        result = 31 * result + (int)(maxThread ^ (maxThread >>> 32));
+        result = 31 * result + systemMetricType.hashCode();
+        temp = Double.doubleToLongBits(triggerCount);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
         return result;
     }
 
-    @Override
-    public String toString() {
-        return "SystemRule{" +
-            "highestSystemLoad=" + highestSystemLoad +
-            ", highestCpuUsage=" + highestCpuUsage +
-            ", qps=" + qps +
-            ", avgRt=" + avgRt +
-            ", maxThread=" + maxThread +
-            "}";
-    }
 }

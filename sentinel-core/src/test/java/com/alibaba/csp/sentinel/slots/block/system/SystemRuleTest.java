@@ -15,26 +15,23 @@
  */
 package com.alibaba.csp.sentinel.slots.block.system;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.util.Arrays;
-import java.util.Collections;
-
-import org.junit.Test;
-
-import com.alibaba.csp.sentinel.Constants;
-import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.DefaultNode;
-import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
+import com.alibaba.csp.sentinel.slots.system.SystemMetricType;
 import com.alibaba.csp.sentinel.slots.system.SystemRule;
+import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
+import org.junit.Test;
+
+import java.util.Collections;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author jialiang.linjl
+ * @author guozhong.huang
  */
 public class SystemRuleTest {
 
@@ -42,7 +39,8 @@ public class SystemRuleTest {
     public void testSystemRule_load() {
         SystemRule systemRule = new SystemRule();
 
-        systemRule.setAvgRt(4000L);
+        systemRule.setTriggerCount(4000L);
+        systemRule.setSystemMetricType(SystemMetricType.AVG_RT);
 
         SystemRuleManager.loadRules(Collections.singletonList(systemRule));
     }
@@ -52,7 +50,8 @@ public class SystemRuleTest {
 
         SystemRule systemRule = new SystemRule();
 
-        systemRule.setAvgRt(4L);
+        systemRule.setTriggerCount(4L);
+        systemRule.setSystemMetricType(SystemMetricType.AVG_RT);
 
         Context context = mock(Context.class);
         DefaultNode node = mock(DefaultNode.class);

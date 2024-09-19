@@ -15,22 +15,22 @@
  */
 package com.alibaba.csp.sentinel.demo.system;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.system.SystemMetricType;
 import com.alibaba.csp.sentinel.slots.system.SystemRule;
 import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
+import com.alibaba.csp.sentinel.util.TimeUtil;
+
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author jialiang.linjl
+ * @author guozhong.huang
  */
 public class SystemGuardDemo {
 
@@ -87,19 +87,33 @@ public class SystemGuardDemo {
     }
 
     private static void initSystemRule() {
-        SystemRule rule = new SystemRule();
+        SystemRule rule1 = new SystemRule();
         // max load is 3
-        rule.setHighestSystemLoad(3.0);
-        // max cpu usage is 60%
-        rule.setHighestCpuUsage(0.6);
-        // max avg rt of all request is 10 ms
-        rule.setAvgRt(10);
-        // max total qps is 20
-        rule.setQps(20);
-        // max parallel working thread is 10
-        rule.setMaxThread(10);
+        rule1.setTriggerCount(3.0);
+        rule1.setSystemMetricType(SystemMetricType.LOAD);
 
-        SystemRuleManager.loadRules(Collections.singletonList(rule));
+        // max cpu usage is 60%
+        SystemRule rule2 = new SystemRule();
+        rule2.setTriggerCount(0.6);
+        rule2.setSystemMetricType(SystemMetricType.CPU_USAGE);
+
+        // max avg rt of all request is 10 ms
+        SystemRule rule3 = new SystemRule();
+        rule3.setTriggerCount(20);
+        rule3.setSystemMetricType(SystemMetricType.AVG_RT);
+
+        // max total qps is 20
+        SystemRule rule4 = new SystemRule();
+        rule4.setTriggerCount(20);
+        rule4.setSystemMetricType(SystemMetricType.INBOUND_QPS);
+
+        // max parallel working thread is 10
+        SystemRule rule5 = new SystemRule();
+        rule5.setTriggerCount(10);
+        rule5.setSystemMetricType(SystemMetricType.CONCURRENCY);
+
+        SystemRuleManager.loadRules(Arrays.asList(rule1, rule2, rule3, rule4, rule5));
+//        SystemRuleManager.loadRules(Arrays.asList(rule1, rule2, rule4, rule5));
     }
 
     private static void tick() {
