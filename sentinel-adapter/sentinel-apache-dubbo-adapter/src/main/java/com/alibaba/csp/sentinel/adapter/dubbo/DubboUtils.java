@@ -25,7 +25,7 @@ import org.apache.dubbo.rpc.Invoker;
  */
 public final class DubboUtils {
 
-    public static final String SENTINEL_DUBBO_APPLICATION_KEY = "dubboApplication";
+    public static final String SENTINEL_DUBBO_APPLICATION_KEY = "remote.application";
 
     public static String getApplication(Invocation invocation, String defaultValue) {
         if (invocation == null || invocation.getAttachments() == null) {
