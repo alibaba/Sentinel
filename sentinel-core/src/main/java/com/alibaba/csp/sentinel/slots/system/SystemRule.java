@@ -61,8 +61,9 @@ public class SystemRule extends AbstractRule {
      *
      * @param qps max total QOS, values <= 0 are special for clearing the threshold.
      */
-    public void setQps(double qps) {
+    public SystemRule setQps(double qps) {
         this.qps = qps;
+        return this;
     }
 
     public long getMaxThread() {
@@ -75,8 +76,9 @@ public class SystemRule extends AbstractRule {
      *
      * @param maxThread max parallel thread number, values <= 0 are special for clearing the threshold.
      */
-    public void setMaxThread(long maxThread) {
+    public SystemRule setMaxThread(long maxThread) {
         this.maxThread = maxThread;
+        return this;
     }
 
     public long getAvgRt() {
@@ -88,8 +90,9 @@ public class SystemRule extends AbstractRule {
      *
      * @param avgRt max average response time, values <= 0 are special for clearing the threshold.
      */
-    public void setAvgRt(long avgRt) {
+    public SystemRule setAvgRt(long avgRt) {
         this.avgRt = avgRt;
+        return this;
     }
 
     public double getHighestSystemLoad() {
@@ -109,8 +112,9 @@ public class SystemRule extends AbstractRule {
      * @param highestSystemLoad highest system load, values <= 0 are special for clearing the threshold.
      * @see SystemRuleManager
      */
-    public void setHighestSystemLoad(double highestSystemLoad) {
+    public SystemRule setHighestSystemLoad(double highestSystemLoad) {
         this.highestSystemLoad = highestSystemLoad;
+        return this;
     }
 
     /**
@@ -127,8 +131,9 @@ public class SystemRule extends AbstractRule {
      *
      * @param highestCpuUsage the value to set.
      */
-    public void setHighestCpuUsage(double highestCpuUsage) {
+    public SystemRule setHighestCpuUsage(double highestCpuUsage) {
         this.highestCpuUsage = highestCpuUsage;
+        return this;
     }
 
     @Override
