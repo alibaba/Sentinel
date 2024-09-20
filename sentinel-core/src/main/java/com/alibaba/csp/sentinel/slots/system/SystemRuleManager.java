@@ -15,13 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.system;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
@@ -31,6 +24,14 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.property.SimplePropertyListener;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.util.CollectionUtil;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * <p>
@@ -82,21 +83,21 @@ public final class SystemRuleManager {
     private static volatile boolean maxRtIsSet = false;
     private static volatile boolean maxThreadIsSet = false;
 
-    private static AtomicBoolean checkSystemStatus = new AtomicBoolean(false);
+    private static final AtomicBoolean CHECK_SYSTEM_STATUS = new AtomicBoolean(false);
 
-    private static SystemStatusListener statusListener = null;
-    private final static SystemPropertyListener listener = new SystemPropertyListener();
+    private static final SystemStatusListener STATUS_LISTENER;
+    private static final SystemPropertyListener LISTENER = new SystemPropertyListener();
     private static SentinelProperty<List<SystemRule>> currentProperty = new DynamicSentinelProperty<List<SystemRule>>();
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
-    private final static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1,
-        new NamedThreadFactory("sentinel-system-status-record-task", true));
+    private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1,
+            new NamedThreadFactory("sentinel-system-status-record-task", true));
 
     static {
-        checkSystemStatus.set(false);
-        statusListener = new SystemStatusListener();
-        scheduler.scheduleAtFixedRate(statusListener, 0, 1, TimeUnit.SECONDS);
-        currentProperty.addListener(listener);
+        CHECK_SYSTEM_STATUS.set(false);
+        STATUS_LISTENER = new SystemStatusListener();
+        SCHEDULER.scheduleAtFixedRate(STATUS_LISTENER, 0, 1, TimeUnit.SECONDS);
+        currentProperty.addListener(LISTENER);
     }
 
     /**
@@ -106,10 +107,10 @@ public final class SystemRuleManager {
      * @param property the property to listen.
      */
     public static void register2Property(SentinelProperty<List<SystemRule>> property) {
-        synchronized (listener) {
+        synchronized (LISTENER) {
             RecordLog.info("[SystemRuleManager] Registering new property to system rule manager");
-            currentProperty.removeListener(listener);
-            property.addListener(listener);
+            currentProperty.removeListener(LISTENER);
+            property.addListener(LISTENER);
             currentProperty = property;
         }
     }
@@ -131,7 +132,7 @@ public final class SystemRuleManager {
     public static List<SystemRule> getRules() {
 
         List<SystemRule> result = new ArrayList<SystemRule>();
-        if (!checkSystemStatus.get()) {
+        if (!CHECK_SYSTEM_STATUS.get()) {
             return result;
         }
 
@@ -185,31 +186,28 @@ public final class SystemRuleManager {
         @Override
         public synchronized void configUpdate(List<SystemRule> rules) {
             restoreSetting();
-            // systemRules = rules;
-            if (rules != null && rules.size() >= 1) {
-                for (SystemRule rule : rules) {
-                    loadSystemConf(rule);
-                }
-            } else {
-                checkSystemStatus.set(false);
+            if (CollectionUtil.isEmpty(rules)) {
+                return;
             }
-
+            for (SystemRule rule : rules) {
+                loadSystemConf(rule);
+            }
             RecordLog.info(String.format("[SystemRuleManager] Current system check status: %s, "
-                    + "highestSystemLoad: %e, "
-                    + "highestCpuUsage: %e, "
-                    + "maxRt: %d, "
-                    + "maxThread: %d, "
-                    + "maxQps: %e",
-                checkSystemStatus.get(),
-                highestSystemLoad,
-                highestCpuUsage,
-                maxRt,
-                maxThread,
-                qps));
+                            + "highestSystemLoad: %e, "
+                            + "highestCpuUsage: %e, "
+                            + "maxRt: %d, "
+                            + "maxThread: %d, "
+                            + "maxQps: %e",
+                    CHECK_SYSTEM_STATUS.get(),
+                    highestSystemLoad,
+                    highestCpuUsage,
+                    maxRt,
+                    maxThread,
+                    qps));
         }
 
         protected void restoreSetting() {
-            checkSystemStatus.set(false);
+            CHECK_SYSTEM_STATUS.set(false);
 
             // should restore changes
             highestSystemLoad = Double.MAX_VALUE;
@@ -228,7 +226,7 @@ public final class SystemRuleManager {
     }
 
     public static Boolean getCheckSystemStatus() {
-        return checkSystemStatus.get();
+        return CHECK_SYSTEM_STATUS.get();
     }
 
     public static double getSystemLoadThreshold() {
@@ -240,45 +238,38 @@ public final class SystemRuleManager {
     }
 
     public static void loadSystemConf(SystemRule rule) {
-        boolean checkStatus = false;
         // Check if it's valid.
-
         if (rule.getHighestSystemLoad() >= 0) {
             highestSystemLoad = Math.min(highestSystemLoad, rule.getHighestSystemLoad());
             highestSystemLoadIsSet = true;
-            checkStatus = true;
         }
 
         if (rule.getHighestCpuUsage() >= 0) {
             if (rule.getHighestCpuUsage() > 1) {
                 RecordLog.warn(String.format("[SystemRuleManager] Ignoring invalid SystemRule: "
-                    + "highestCpuUsage %.3f > 1", rule.getHighestCpuUsage()));
+                        + "highestCpuUsage %.3f > 1", rule.getHighestCpuUsage()));
             } else {
                 highestCpuUsage = Math.min(highestCpuUsage, rule.getHighestCpuUsage());
                 highestCpuUsageIsSet = true;
-                checkStatus = true;
             }
         }
 
         if (rule.getAvgRt() >= 0) {
             maxRt = Math.min(maxRt, rule.getAvgRt());
             maxRtIsSet = true;
-            checkStatus = true;
         }
         if (rule.getMaxThread() >= 0) {
             maxThread = Math.min(maxThread, rule.getMaxThread());
             maxThreadIsSet = true;
-            checkStatus = true;
         }
 
         if (rule.getQps() >= 0) {
             qps = Math.min(qps, rule.getQps());
             qpsIsSet = true;
-            checkStatus = true;
         }
 
-        checkSystemStatus.set(checkStatus);
-
+        boolean checkStatus = highestSystemLoadIsSet || highestCpuUsageIsSet || maxRtIsSet || maxThreadIsSet || qpsIsSet;
+        CHECK_SYSTEM_STATUS.compareAndSet(false, checkStatus);
     }
 
     /**
@@ -292,7 +283,7 @@ public final class SystemRuleManager {
             return;
         }
         // Ensure the checking switch is on.
-        if (!checkSystemStatus.get()) {
+        if (!CHECK_SYSTEM_STATUS.get()) {
             return;
         }
 
@@ -333,17 +324,17 @@ public final class SystemRuleManager {
 
     private static boolean checkBbr(int currentThread) {
         if (currentThread > 1 &&
-            currentThread > Constants.ENTRY_NODE.maxSuccessQps() * Constants.ENTRY_NODE.minRt() / 1000) {
+                currentThread > Constants.ENTRY_NODE.maxSuccessQps() * Constants.ENTRY_NODE.minRt() / 1000) {
             return false;
         }
         return true;
     }
 
     public static double getCurrentSystemAvgLoad() {
-        return statusListener.getSystemAverageLoad();
+        return STATUS_LISTENER.getSystemAverageLoad();
     }
 
     public static double getCurrentCpuUsage() {
-        return statusListener.getCpuUsage();
+        return STATUS_LISTENER.getCpuUsage();
     }
 }
