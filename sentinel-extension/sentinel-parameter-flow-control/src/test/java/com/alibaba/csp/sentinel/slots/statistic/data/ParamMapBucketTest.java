@@ -30,13 +30,15 @@ import static org.junit.Assert.*;
 public class ParamMapBucketTest {
 
     @Test
-    public void testAddEviction() {
+    public void testAddEviction() throws InterruptedException {
         ParamMapBucket bucket = new ParamMapBucket();
         for (int i = 0; i < ParamMapBucket.DEFAULT_MAX_CAPACITY; i++) {
             bucket.add(RollingParamEvent.REQUEST_PASSED, 1, "param-" + i);
         }
         String lastParam = "param-end";
         bucket.add(RollingParamEvent.REQUEST_PASSED, 1, lastParam);
+        //background thread need some time to evict(use ForkJoinPool.commonPool())
+        Thread.sleep(50);
         assertEquals(0, bucket.get(RollingParamEvent.REQUEST_PASSED, "param-0"));
         assertEquals(1, bucket.get(RollingParamEvent.REQUEST_PASSED, "param-1"));
         assertEquals(1, bucket.get(RollingParamEvent.REQUEST_PASSED, lastParam));

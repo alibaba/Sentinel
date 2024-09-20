@@ -15,35 +15,34 @@
  */
 package com.alibaba.csp.sentinel.slots.statistic.cache;
 
+import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
-import com.googlecode.concurrentlinkedhashmap.Weighers;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Cache;
 
 /**
- * A {@link ConcurrentLinkedHashMap} wrapper for the universal {@link CacheMap}.
+ * A {@link Caffeine} wrapper for the universal {@link CacheMap}.
  *
  * @author Eric Zhao
  * @since 0.2.0
  */
 public class ConcurrentLinkedHashMapWrapper<T, R> implements CacheMap<T, R> {
 
-    private static final int DEFAULT_CONCURRENCY_LEVEL = 16;
-
-    private final ConcurrentLinkedHashMap<T, R> map;
+    private final Cache<T, R> map;
 
     public ConcurrentLinkedHashMapWrapper(long size) {
         if (size <= 0) {
             throw new IllegalArgumentException("Cache max capacity should be positive: " + size);
         }
-        this.map = new ConcurrentLinkedHashMap.Builder<T, R>()
-            .concurrencyLevel(DEFAULT_CONCURRENCY_LEVEL)
-            .maximumWeightedCapacity(size)
-            .weigher(Weighers.singleton())
-            .build();
+        this.map = Caffeine.newBuilder()
+                .maximumSize(size)
+                .build();
     }
 
-    public ConcurrentLinkedHashMapWrapper(ConcurrentLinkedHashMap<T, R> map) {
+    public ConcurrentLinkedHashMapWrapper(Cache<T, R> map) {
         if (map == null) {
             throw new IllegalArgumentException("Invalid map instance");
         }
@@ -52,45 +51,54 @@ public class ConcurrentLinkedHashMapWrapper<T, R> implements CacheMap<T, R> {
 
     @Override
     public boolean containsKey(T key) {
-        return map.containsKey(key);
+        return map.asMap().containsKey(key);
     }
 
     @Override
     public R get(T key) {
-        return map.get(key);
+        return map.getIfPresent(key);
     }
 
     @Override
     public R remove(T key) {
-        return map.remove(key);
+        return map.asMap().remove(key);
     }
 
     @Override
     public R put(T key, R value) {
-        return map.put(key, value);
+        return map.asMap().put(key, value);
     }
 
     @Override
     public R putIfAbsent(T key, R value) {
-        return map.putIfAbsent(key, value);
+        return map.asMap().putIfAbsent(key, value);
     }
 
     @Override
     public long size() {
-        return map.weightedSize();
+        return map.asMap().keySet().size();
     }
 
     @Override
     public void clear() {
-        map.clear();
+        map.invalidateAll();
+    }
+
+    @Override
+    public Set<T> keySet() {
+        return map.asMap().keySet();
     }
 
     @Override
     public Set<T> keySet(boolean ascending) {
         if (ascending) {
-            return map.ascendingKeySet();
+            return map.asMap().keySet().stream().sorted()
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
         } else {
-            return map.descendingKeySet();
+            return map.asMap().keySet().stream().sorted((Comparator
+                    <? super T>) Comparator.reverseOrder())
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+
         }
     }
 }
