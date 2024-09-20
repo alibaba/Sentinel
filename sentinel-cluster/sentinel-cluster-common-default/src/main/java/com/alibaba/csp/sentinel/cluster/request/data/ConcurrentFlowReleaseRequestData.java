@@ -13,24 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.cluster.client;
+package com.alibaba.csp.sentinel.cluster.request.data;
 
 /**
- * @author Eric Zhao
- * @since 1.4.0
+ * @author yunfeiyanggzq
  */
-public final class ClientConstants {
+public class ConcurrentFlowReleaseRequestData {
 
-    public static final int TYPE_PING = 0;
-    public static final int TYPE_FLOW = 1;
-    public static final int TYPE_PARAM_FLOW = 2;
-    public static final int TYPE_CONCURRENT_FLOW_ACQUIRE = 3;
-    public static final int TYPE_CONCURRENT_FLOW_RELEASE = 4;
+    private long tokenId;
 
-    public static final int CLIENT_STATUS_OFF = 0;
-    public static final int CLIENT_STATUS_PENDING = 1;
-    public static final int CLIENT_STATUS_STARTED = 2;
+    public long getTokenId() {
+        return tokenId;
+    }
 
-    private ClientConstants() {
+    public ConcurrentFlowReleaseRequestData setTokenId(long tokenId) {
+        this.tokenId = tokenId;
+        return this;
     }
 }

@@ -45,7 +45,7 @@ final public class ConcurrentClusterFlowChecker {
         }
     }
 
-    public static TokenResult acquireConcurrentToken(/*@Valid*/ String clientAddress, FlowRule rule, int acquireCount) {
+    public static TokenResult acquireConcurrentToken(/*@Valid*/ String clientAddress, FlowRule rule, int acquireCount, boolean prioritized) {
         long flowId = rule.getClusterConfig().getFlowId();
         AtomicInteger nowCalls = CurrentConcurrencyManager.get(flowId);
         if (nowCalls == null) {
@@ -78,25 +78,24 @@ final public class ConcurrentClusterFlowChecker {
         return tokenResult;
     }
 
-    public static TokenResult releaseConcurrentToken(/*@Valid*/ long tokenId) {
+    public static void releaseConcurrentToken(/*@Valid*/ long tokenId) {
         TokenCacheNode node = TokenCacheNodeManager.getTokenCacheNode(tokenId);
         if (node == null) {
             RecordLog.info("[ConcurrentClusterFlowChecker] Token<{}> is already released", tokenId);
-            return new TokenResult(TokenResultStatus.ALREADY_RELEASE);
+            return;
         }
         FlowRule rule = ClusterFlowRuleManager.getFlowRuleById(node.getFlowId());
         if (rule == null) {
             RecordLog.info("[ConcurrentClusterFlowChecker] Fail to get rule by flowId<{}>", node.getFlowId());
-            return new TokenResult(TokenResultStatus.NO_RULE_EXISTS);
+            return;
         }
         if (TokenCacheNodeManager.removeTokenCacheNode(tokenId) == null) {
             RecordLog.info("[ConcurrentClusterFlowChecker] Token<{}> is already released for flowId<{}>", tokenId, node.getFlowId());
-            return new TokenResult(TokenResultStatus.ALREADY_RELEASE);
+            return;
         }
         int acquireCount = node.getAcquireCount();
         AtomicInteger nowCalls = CurrentConcurrencyManager.get(node.getFlowId());
         nowCalls.getAndAdd(-1 * acquireCount);
         ClusterServerStatLogUtil.log("concurrent|release|" + rule.getClusterConfig().getFlowId(), acquireCount);
-        return new TokenResult(TokenResultStatus.RELEASE_OK);
     }
 }
