@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.datasource;
+package com.alibaba.csp.sentinel.datasource.file;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,6 +21,9 @@ import java.io.FileNotFoundException;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 
+import com.alibaba.csp.sentinel.datasource.AutoRefreshDataSource;
+import com.alibaba.csp.sentinel.datasource.Converter;
+import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
 import com.alibaba.csp.sentinel.log.RecordLog;
 
 /**

@@ -15,20 +15,19 @@
  */
 package com.alibaba.csp.sentinel.cluster.server.envoy.rls.datasource;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
 import com.alibaba.csp.sentinel.cluster.server.envoy.rls.SentinelEnvoyRlsConstants;
 import com.alibaba.csp.sentinel.cluster.server.envoy.rls.rule.EnvoyRlsRule;
 import com.alibaba.csp.sentinel.cluster.server.envoy.rls.rule.EnvoyRlsRuleManager;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
-import com.alibaba.csp.sentinel.datasource.FileRefreshableDataSource;
 import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
+import com.alibaba.csp.sentinel.datasource.file.FileRefreshableDataSource;
 import com.alibaba.csp.sentinel.util.StringUtil;
-
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Eric Zhao

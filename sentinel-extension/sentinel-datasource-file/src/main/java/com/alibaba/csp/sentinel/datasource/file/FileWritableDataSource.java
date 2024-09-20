@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.datasource;
+package com.alibaba.csp.sentinel.datasource.file;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -21,6 +21,8 @@ import java.nio.charset.Charset;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.alibaba.csp.sentinel.datasource.Converter;
+import com.alibaba.csp.sentinel.datasource.WritableDataSource;
 import com.alibaba.csp.sentinel.log.RecordLog;
 
 /**

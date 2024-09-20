@@ -15,12 +15,9 @@
  */
 package com.alibaba.csp.sentinel.demo.file.rule;
 
-import java.net.URLDecoder;
-import java.util.List;
-
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
-import com.alibaba.csp.sentinel.datasource.FileRefreshableDataSource;
+import com.alibaba.csp.sentinel.datasource.file.FileRefreshableDataSource;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.slots.block.Rule;
@@ -32,6 +29,9 @@ import com.alibaba.csp.sentinel.slots.system.SystemRule;
 import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+
+import java.net.URLDecoder;
+import java.util.List;
 
 /**
  * <p>
