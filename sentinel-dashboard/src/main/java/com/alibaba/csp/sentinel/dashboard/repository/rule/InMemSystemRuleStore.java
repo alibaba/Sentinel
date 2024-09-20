@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 /**
  * @author leyou
  */
-@Component
+
 public class InMemSystemRuleStore extends InMemoryRuleRepositoryAdapter<SystemRuleEntity> {
 
     private static AtomicLong ids = new AtomicLong(0);
