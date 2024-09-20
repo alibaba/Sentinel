@@ -15,19 +15,22 @@
  */
 package com.alibaba.csp.sentinel.util;
 
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.util.Enumeration;
-
+import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
+
+import java.net.InetAddress;
+import java.util.List;
 
 /**
  * Get host name and ip of the host.
  *
  * @author leyou
+ * @author imlzw
  */
 public final class HostNameUtil {
+
+    public static final String HEARTBEAT_CLIENT_NET_IGNOREDINTERFACES = "csp.sentinel.heartbeat.client.net.ignoredInterfaces";
+    public static final String HEARTBEAT_CLIENT_NET_PREFERREDNETWORKS = "csp.sentinel.heartbeat.client.net.preferredNetworks";
 
     private static String ip;
     private static String hostName;
@@ -41,23 +44,19 @@ public final class HostNameUtil {
         }
     }
 
+    private HostNameUtil() {
+    }
+
     private static void resolveHost() throws Exception {
         InetAddress addr = InetAddress.getLocalHost();
         hostName = addr.getHostName();
         ip = addr.getHostAddress();
-        if (addr.isLoopbackAddress()) {
-            // find the first IPv4 Address that not loopback
-            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-            while (interfaces.hasMoreElements()) {
-                NetworkInterface in = interfaces.nextElement();
-                Enumeration<InetAddress> addrs = in.getInetAddresses();
-                while (addrs.hasMoreElements()) {
-                    InetAddress address = addrs.nextElement();
-                    if (!address.isLoopbackAddress() && address instanceof Inet4Address) {
-                        ip = address.getHostAddress();
-                    }
-                }
-            }
+        NetUtil.NetConfig config = new NetUtil.NetConfig();
+        config.setIgnoredInterfaces(SentinelConfig.getConfig(HEARTBEAT_CLIENT_NET_IGNOREDINTERFACES));
+        config.setPreferredNetworks(SentinelConfig.getConfig(HEARTBEAT_CLIENT_NET_PREFERREDNETWORKS));
+        List<String[]> localIPs = NetUtil.getLocalIPs(config);
+        if (localIPs != null && !localIPs.isEmpty()) {
+            ip = localIPs.get(0)[1];
         }
     }
 
@@ -71,10 +70,8 @@ public final class HostNameUtil {
 
     public static String getConfigString() {
         return "{\n"
-            + "\t\"machine\": \"" + hostName + "\",\n"
-            + "\t\"ip\": \"" + ip + "\"\n"
-            + "}";
+                + "\t\"machine\": \"" + hostName + "\",\n"
+                + "\t\"ip\": \"" + ip + "\"\n"
+                + "}";
     }
-
-    private HostNameUtil() {}
 }
