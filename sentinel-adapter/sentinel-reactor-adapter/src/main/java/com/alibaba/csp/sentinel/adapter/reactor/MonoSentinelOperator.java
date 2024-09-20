@@ -20,6 +20,7 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
 import reactor.core.CoreSubscriber;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoOperator;
+import reactor.core.scheduler.Schedulers;
 
 /**
  * @author Eric Zhao
@@ -37,6 +38,9 @@ public class MonoSentinelOperator<T> extends MonoOperator<T, T> {
 
     @Override
     public void subscribe(CoreSubscriber<? super T> actual) {
-        source.subscribe(new SentinelReactorSubscriber<>(entryConfig, actual, true));
+        Mono.fromRunnable(() -> {
+            source.subscribe(new SentinelReactorSubscriber<>(entryConfig, actual, true));
+        }).subscribeOn(Schedulers.elastic())
+                .subscribe();
     }
 }
