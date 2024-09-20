@@ -15,8 +15,6 @@
  */
 package com.alibaba.csp.sentinel.cluster.log;
 
-import java.io.File;
-
 import com.alibaba.csp.sentinel.eagleeye.EagleEye;
 import com.alibaba.csp.sentinel.eagleeye.StatLogger;
 import com.alibaba.csp.sentinel.log.LogBase;
