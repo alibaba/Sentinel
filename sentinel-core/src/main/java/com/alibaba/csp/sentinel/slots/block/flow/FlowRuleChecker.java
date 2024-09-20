@@ -15,7 +15,10 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 import com.alibaba.csp.sentinel.cluster.ClusterStateManager;
 import com.alibaba.csp.sentinel.cluster.server.EmbeddedClusterTokenServerProvider;
@@ -48,10 +51,34 @@ public class FlowRuleChecker {
         }
         Collection<FlowRule> rules = ruleProvider.apply(resource.getName());
         if (rules != null) {
-            for (FlowRule rule : rules) {
-                if (!canPassCheck(rule, context, node, count, prioritized)) {
-                    throw new FlowException(rule.getLimitApp(), rule);
+            // divide origin rules
+            List<FlowRule> originRules = new ArrayList<>();
+            List<FlowRule> otherRules = new ArrayList<>();
+            rules.forEach(rule -> {
+                if (Optional.ofNullable(rule.getLimitApp()).orElse("").equals(context.getOrigin())) {
+                    originRules.add(rule);
+                } else {
+                    otherRules.add(rule);
                 }
+            });
+
+            // match (origin) rule
+            this.matchRules(originRules, context, node, count, prioritized);
+
+            // match (default, other) rule
+            this.matchRules(otherRules, context, node, count, prioritized);
+        }
+    }
+
+    private void matchRules(Collection<FlowRule> rules,
+                            Context context,
+                            DefaultNode node,
+                            int count,
+                            boolean prioritized) throws FlowException {
+
+        for (FlowRule rule : rules) {
+            if (!canPassCheck(rule, context, node, count, prioritized)) {
+                throw new FlowException(rule.getLimitApp(), rule);
             }
         }
     }
