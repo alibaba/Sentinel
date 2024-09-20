@@ -4,7 +4,9 @@
   </div>
   <div class="col-md-6">
     <button class="btn btn-default-inverse" style="float: right; margin-right: 10px;" ng-disabled="!macInputModel" ng-click="addNewRule()">
-      <i class="fa fa-plus"></i>&nbsp;&nbsp;新增熔断规则</button>
+      <i class="fa fa-plus"></i>&nbsp;&nbsp;新增系统规则</button>
+<!--    <a class="btn btn-outline-success" style="float: right; margin-right: 10px;" ui-sref="dashboard.system({app: app})">-->
+<!--      回到集群页面</a>-->
   </div>
 </div>
 
@@ -15,7 +17,7 @@
     <div class="col-md-12">
       <div class="card">
         <div class="inputs-header">
-          <span class="brand" style="font-size: 13px;">熔断规则</span>
+          <span class="brand" style="font-size: 13px;">系统规则</span>
           <!--<button class="btn btn-danger" style="float: right;margin-right: 10px;height: 30px;font-size: 12px;" ng-click="disableAll()">全部禁用</button>-->
           <button class="btn btn-primary" style="float: right; margin-right: 10px; height: 30px;font-size: 12px;" ng-click="getMachineRules()">刷新</button>
           <input class="form-control witdh-200" placeholder="关键字" ng-model="searchKey">
@@ -30,17 +32,11 @@
           <table class="table" style="border-left: none; border-right:none;margin-top: 10px;">
             <thead>
               <tr style="background: #F3F5F7;">
-                <td style="width: 40%">
-                  资源名
+                <td style="width: 40%;">
+                  阈值类型
                 </td>
-                <td style="width: 10%;">
-                  熔断策略
-                </td>
-                <td style="width: 10%;">
-                  阈值
-                </td>
-                <td style="width: 10%;">
-                  熔断时长(s)
+                <td style="width: 40%;">
+                  单机阈值
                 </td>
                 <td style="width: 12%;">
                   操作
@@ -50,20 +46,20 @@
             <tbody>
               <tr dir-paginate="rule in rules | filter : searchKey | itemsPerPage: rulesPageConfig.pageSize " current-page="rulesPageConfig.currentPageIndex"
                 pagination-id="entriesPagination">
-                <td style="word-wrap:break-word;word-break:break-all;">{{rule.resource}}</td>
-                <!--<td style="word-wrap:break-word;word-break:break-all;">{{rule.limitApp }}</td>-->
-                <td>
-                  <span ng-if="rule.grade == 0">慢调用比例</span>
-                  <span ng-if="rule.grade == 1" title="异常比例">异常比例</span>
-                  <span ng-if="rule.grade == 2" title="异常数">异常数</span>
+                <td style="word-wrap:break-word;word-break:break-all;">
+                  <span ng-if="rule.highestSystemLoad >= 0">系统 load（自适应）</span>
+                  <span ng-if="rule.avgRt >= 0">平均 RT</span>
+                  <span ng-if="rule.maxThread >= 0">并发数</span>
+                  <span ng-if="rule.qps >= 0">入口 QPS</span>
+                  <span ng-if="rule.highestCpuUsage >= 0">CPU 使用率</span>
                 </td>
                 <td style="word-wrap:break-word;word-break:break-all;">
-                  {{rule.count}}
+                  <span ng-if="rule.highestSystemLoad >= 0">{{rule.highestSystemLoad}}</span>
+                  <span ng-if="rule.avgRt >= 0">{{rule.avgRt}}</span>
+                  <span ng-if="rule.maxThread >= 0">{{rule.maxThread}}</span>
+                  <span ng-if="rule.qps >= 0">{{rule.qps}}</span>
+                  <span ng-if="rule.highestCpuUsage >= 0">{{rule.highestCpuUsage}}</span>
                 </td>
-                <td style="word-wrap:break-word;word-break:break-all;">
-                  {{rule.timeWindow}}s
-                </td>
-
                 <td>
                   <button class="btn btn-xs btn-default" type="button" ng-click="editRule(rule)" style="font-size: 12px; height:25px;">编辑</button>
                   <button class="btn btn-xs btn-default" type="button" ng-click="deleteRule(rule)" style="font-size: 12px; height:25px;">删除</button>

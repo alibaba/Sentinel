@@ -59,19 +59,19 @@
           </li>
 
           <li ui-sref-active="active">
-            <a ui-sref="dashboard.degrade({app: entry.app})">
+            <a ui-sref="dashboard.degradeV1({app: entry.app})">
               <i class="glyphicon glyphicon-flash"></i>&nbsp;&nbsp;熔断规则</a>
           </li>
           <li ui-sref-active="active" ng-if="!entry.isGateway">
-            <a ui-sref="dashboard.paramFlow({app: entry.app})">
+            <a ui-sref="dashboard.paramFlowV1({app: entry.app})">
               <i class="glyphicon glyphicon-fire"></i>&nbsp;&nbsp;热点规则</a>
           </li>
           <li ui-sref-active="active">
-            <a ui-sref="dashboard.system({app: entry.app})">
+            <a ui-sref="dashboard.systemV1({app: entry.app})">
               <i class="glyphicon glyphicon-lock"></i>&nbsp;&nbsp;系统规则</a>
           </li>
           <li ui-sref-active="active" ng-if="!entry.isGateway">
-            <a ui-sref="dashboard.authority({app: entry.app})">
+            <a ui-sref="dashboard.authorityV1({app: entry.app})">
               <i class="glyphicon glyphicon-check"></i>&nbsp;&nbsp;授权规则</a>
           </li>
           <li ui-sref-active="active" ng-if="!entry.isGateway">
