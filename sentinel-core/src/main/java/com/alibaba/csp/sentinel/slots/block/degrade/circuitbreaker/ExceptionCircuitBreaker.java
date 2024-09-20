@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.LongAdder;
 
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.context.Context;
+import com.alibaba.csp.sentinel.node.SampleCountProperty;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.statistic.base.LeapArray;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
@@ -41,7 +42,7 @@ public class ExceptionCircuitBreaker extends AbstractCircuitBreaker {
     private final LeapArray<SimpleErrorCounter> stat;
 
     public ExceptionCircuitBreaker(DegradeRule rule) {
-        this(rule, new SimpleErrorCounterLeapArray(1, rule.getStatIntervalMs()));
+        this(rule, new SimpleErrorCounterLeapArray(SampleCountProperty.SAMPLE_COUNT, rule.getStatIntervalMs()));
     }
 
     ExceptionCircuitBreaker(DegradeRule rule, LeapArray<SimpleErrorCounter> stat) {
@@ -57,8 +58,11 @@ public class ExceptionCircuitBreaker extends AbstractCircuitBreaker {
 
     @Override
     protected void resetStat() {
-        // Reset current bucket (bucket count = 1).
-        stat.currentWindow().value().reset();
+        // Reset current bucket
+        List<SimpleErrorCounter> values = stat.values();
+        for (SimpleErrorCounter counter : values) {
+            counter.reset();
+        }
     }
 
     @Override
