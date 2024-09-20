@@ -28,6 +28,7 @@ public abstract class BaseWebMvcConfig {
 
     protected String requestAttributeName;
     protected String requestRefName;
+    protected String requestAsyncSet;
     protected BlockExceptionHandler blockExceptionHandler;
     protected RequestOriginParser originParser;
 
@@ -38,6 +39,7 @@ public abstract class BaseWebMvcConfig {
     public void setRequestAttributeName(String requestAttributeName) {
         this.requestAttributeName = requestAttributeName;
         this.requestRefName = this.requestAttributeName + "-rc";
+        this.requestAsyncSet = this.requestAttributeName + "-as";
     }
     
     /**
@@ -63,5 +65,9 @@ public abstract class BaseWebMvcConfig {
 
     public void setOriginParser(RequestOriginParser originParser) {
         this.originParser = originParser;
+    }
+
+    public String getRequestAsyncSet() {
+        return requestAsyncSet;
     }
 }

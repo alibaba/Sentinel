@@ -15,9 +15,6 @@
  */
 package com.alibaba.csp.sentinel.adapter.spring.webmvc;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.ResourceTypeConstants;
@@ -29,9 +26,14 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
-
-import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.AsyncHandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Stack;
 
 /**
  * Since request may be reprocessed in flow if any forwarding or including or other action
@@ -52,11 +54,12 @@ import org.springframework.web.servlet.ModelAndView;
  * @author kaizi2009
  * @since 1.7.1
  */
-public abstract class AbstractSentinelInterceptor implements HandlerInterceptor {
+public abstract class AbstractSentinelInterceptor implements AsyncHandlerInterceptor {
 
     public static final String SENTINEL_SPRING_WEB_CONTEXT_NAME = "sentinel_spring_web_context";
     private static final String EMPTY_ORIGIN = "";
-
+    private static final Integer PRE_HANDLER_EVENT = 0;
+    private static final Integer POST_HANDLER_EVENT = 1;
     private final BaseWebMvcConfig baseWebMvcConfig;
 
     public AbstractSentinelInterceptor(BaseWebMvcConfig config) {
@@ -68,22 +71,80 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
     /**
      * @param request
      * @param rcKey
-     * @param step
-     * @return reference count after increasing (initial value as zero to be increased) 
+     * @param eventType
+     * @return Stack size after pushing (initial size is zero)
      */
-    private Integer increaseReferece(HttpServletRequest request, String rcKey, int step) {
-        Object obj = request.getAttribute(rcKey);
-        
-        if (obj == null) {
-            // initial
-            obj = Integer.valueOf(0);
+    private Integer pushStack(HttpServletRequest request, String rcKey, Integer eventType) {
+        Stack<Integer> stack = (Stack<Integer>) request.getAttribute(rcKey);
+        if (stack == null) {
+            stack = new Stack<>();
         }
-        
-        Integer newRc = (Integer)obj + step;
-        request.setAttribute(rcKey, newRc);
-        return newRc;
+        stack.push(eventType);
+        request.setAttribute(rcKey, stack);
+        return stack.size();
     }
-    
+
+    /**
+     * @param request
+     * @param rcKey
+     * @return
+     */
+    private Integer popStack(HttpServletRequest request, String rcKey) {
+        Stack<Integer> stack = (Stack<Integer>) request.getAttribute(rcKey);
+        if (stack == null) {
+            // should not happen
+            stack = new Stack<>();
+        }
+        // async count
+        Set<String> set = (Set<String>) request.getAttribute(this.baseWebMvcConfig.getRequestAsyncSet());
+        if (set == null) {
+            set = new HashSet<>();
+        }
+
+        if (stack.size() > 0) {
+            int matchedCount = 0;
+            int minMatchedNum = set.size();
+            Integer lastEvent = stack.pop();
+            while (stack.size() > 0) {
+                Integer curr = stack.pop();
+                if (curr.equals(lastEvent)) {
+                    //do nothing
+                } else if (matched(lastEvent, curr)) {
+                    // Keep trying to match forward until no match
+                    while (stack.size() > 0) {
+                        curr = stack.pop();
+                        if (!matched(lastEvent, curr)) {
+                            stack.push(curr);
+                            break;
+                        }
+                    }
+                    matchedCount++;
+                    if (matchedCount >= minMatchedNum) {
+                        break;
+                    }
+                } else {
+                    /**
+                     * The type of lastEvent is {@link AbstractSentinelInterceptor#PRE_HANDLER_EVENT},
+                     * indicating that an exception occurred in the program.
+                     * The postHandler is not executed normally, so it is automatically closed and skipped.
+                     */
+                    if (matchedCount++ >= minMatchedNum) {
+                        break;
+                    }
+                    lastEvent = curr;
+                }
+            }
+        }
+        //clear async set
+        removeAttrInRequest(request, baseWebMvcConfig.getRequestAsyncSet());
+        return stack.size();
+    }
+
+    private boolean matched(Integer last, Integer curr) {
+        return last.equals(POST_HANDLER_EVENT) && curr.equals(PRE_HANDLER_EVENT);
+    }
+
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
         throws Exception {
@@ -93,8 +154,8 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
             if (StringUtil.isEmpty(resourceName)) {
                 return true;
             }
-            
-            if (increaseReferece(request, this.baseWebMvcConfig.getRequestRefName(), 1) != 1) {
+
+            if (pushStack(request, this.baseWebMvcConfig.getRequestRefName(), PRE_HANDLER_EVENT) != 1) {
                 return true;
             }
             
@@ -102,7 +163,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
             String origin = parseOrigin(request);
             String contextName = getContextName(request);
             ContextUtil.enter(contextName, origin);
-            Entry entry = SphU.entry(resourceName, ResourceTypeConstants.COMMON_WEB, EntryType.IN);
+            Entry entry = SphU.asyncEntry(resourceName, ResourceTypeConstants.COMMON_WEB, EntryType.IN);
             request.setAttribute(baseWebMvcConfig.getRequestAttributeName(), entry);
             return true;
         } catch (BlockException e) {
@@ -136,7 +197,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
                                 Object handler, Exception ex) throws Exception {
-        if (increaseReferece(request, this.baseWebMvcConfig.getRequestRefName(), -1) != 0) {
+        if (popStack(request, this.baseWebMvcConfig.getRequestRefName()) != 0) {
             return;
         }
         
@@ -149,13 +210,26 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
         }
         
         traceExceptionAndExit(entry, ex);
-        removeEntryInRequest(request);
+        removeAttrInRequest(request, baseWebMvcConfig.getRequestAttributeName());
+        removeAttrInRequest(request, baseWebMvcConfig.getRequestRefName());
         ContextUtil.exit();
     }
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
                            ModelAndView modelAndView) throws Exception {
+        pushStack(request, baseWebMvcConfig.getRequestRefName(), POST_HANDLER_EVENT);
+    }
+
+    @Override
+    public void afterConcurrentHandlingStarted(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        Set<String> set = (Set<String>) request.getAttribute(baseWebMvcConfig.getRequestAsyncSet());
+        if (set == null) {
+            set = new HashSet<>();
+        }
+        set.add(request.getRequestURI());
+        request.setAttribute(baseWebMvcConfig.getRequestAsyncSet(), set);
+        ContextUtil.exit();
     }
 
     protected Entry getEntryInRequest(HttpServletRequest request, String attrKey) {
@@ -163,8 +237,8 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
         return entryObject == null ? null : (Entry)entryObject;
     }
 
-    protected void removeEntryInRequest(HttpServletRequest request) {
-        request.removeAttribute(baseWebMvcConfig.getRequestAttributeName());
+    protected void removeAttrInRequest(HttpServletRequest request, String attrName) {
+        request.removeAttribute(attrName);
     }
 
     protected void traceExceptionAndExit(Entry entry, Exception ex) {
