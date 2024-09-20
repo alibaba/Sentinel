@@ -141,6 +141,8 @@ public final class FlowRuleUtil {
                 case RuleConstant.CONTROL_BEHAVIOR_WARM_UP_RATE_LIMITER:
                     return new WarmUpRateLimiterController(rule.getCount(), rule.getWarmUpPeriodSec(),
                             rule.getMaxQueueingTimeMs(), ColdFactorProperty.coldFactor);
+                case RuleConstant.CONTROL_BEHAVIOR_CUSTOM:
+                    return rule.getRater();
                 case RuleConstant.CONTROL_BEHAVIOR_DEFAULT:
                 default:
                     // Default mode or unknown mode: default traffic shaping controller (fast-reject).
