@@ -53,7 +53,7 @@ public class DemoSlotChainBuilder implements SlotChainBuilder {
         sortedSlotList.removeIf(o -> DegradeSlot.class.equals(o.getClass()));
         for (ProcessorSlot slot : sortedSlotList) {
             if (!(slot instanceof AbstractLinkedProcessorSlot)) {
-                RecordLog.warn("The ProcessorSlot(" + slot.getClass().getCanonicalName() + ") is not an instance of AbstractLinkedProcessorSlot, can't be added into ProcessorSlotChain");
+                RecordLog.warn("The ProcessorSlot({}) is not an instance of AbstractLinkedProcessorSlot, can't be added into ProcessorSlotChain", slot.getClass().getCanonicalName());
                 continue;
             }
 

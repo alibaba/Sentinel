@@ -134,7 +134,7 @@ public class SentinelRuleLocator implements PropertySourceLocator {
                 "Could not locate PropertySource and the fail fast property is set, failing",
                 error);
         }
-        RecordLog.warn("Could not locate PropertySource: " + (errorBody == null
+        RecordLog.warn("Could not locate PropertySource: {}", (errorBody == null
             ? error == null ? "label not found" : error.getMessage()
             : errorBody));
         return null;

@@ -164,8 +164,7 @@ public class ContextUtil {
         contextHolder.set(NULL_CONTEXT);
         // Don't need to be thread-safe.
         if (shouldWarn) {
-            RecordLog.warn("[SentinelStatusChecker] WARN: Amount of context exceeds the threshold "
-                + Constants.MAX_CONTEXT_NAME_SIZE + ". Entries in new contexts will NOT take effect!");
+            RecordLog.warn("[SentinelStatusChecker] WARN: Amount of context exceeds the threshold {}. Entries in new contexts will NOT take effect!", Constants.MAX_CONTEXT_NAME_SIZE);
             shouldWarn = false;
         }
     }

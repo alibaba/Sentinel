@@ -189,7 +189,7 @@ public final class GatewayRuleManager {
 
             for (GatewayFlowRule rule : conf) {
                 if (!isValidRule(rule)) {
-                    RecordLog.warn("[GatewayRuleManager] Ignoring invalid rule when loading new rules: " + rule);
+                    RecordLog.warn("[GatewayRuleManager] Ignoring invalid rule when loading new rules: {}", rule);
                     continue;
                 }
                 String resourceName = rule.getResource();
