@@ -26,6 +26,7 @@ import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
+import com.alibaba.csp.sentinel.slots.RuleProvider;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 
 /**
@@ -40,9 +41,13 @@ public class MetricTimerListener implements Runnable {
     public void run() {
         Map<Long, List<MetricNode>> maps = new TreeMap<>();
         for (Entry<ResourceWrapper, ClusterNode> e : ClusterBuilderSlot.getClusterNodeMap().entrySet()) {
-            ClusterNode node = e.getValue();
-            Map<Long, MetricNode> metrics = node.metrics();
-            aggregate(maps, metrics, node);
+            if (SentinelConfig.shouldFilterMetric() && RuleProvider.isNotInRules(e.getValue().getName())) {
+                RecordLog.debug("[MetricTimerListener] Metric filter by resourceName={}", e.getValue().getName());
+            } else {
+                ClusterNode node = e.getValue();
+                Map<Long, MetricNode> metrics = node.metrics();
+                aggregate(maps, metrics, node);
+            }
         }
         aggregate(maps, Constants.ENTRY_NODE.metrics(), Constants.ENTRY_NODE);
         if (!maps.isEmpty()) {
