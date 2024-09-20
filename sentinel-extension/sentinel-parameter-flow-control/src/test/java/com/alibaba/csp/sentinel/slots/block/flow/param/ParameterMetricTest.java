@@ -20,6 +20,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -179,6 +180,37 @@ public class ParameterMetricTest {
         assertEquals(1, metric.getThreadCountMap().size());
         threadCountMap = metric.getThreadCountMap().get(rule.getParamIdx());
         assertEquals(0, threadCountMap.size());
+    }
+
+    @Test
+    public void testAddAndDecreaseThreadCountForParamFlowArgument() {
+        ParamFlowRule rule = new ParamFlowRule();
+        rule.setParamIdx(0);
+        ParameterMetric metric = new ParameterMetric();
+        metric.initialize(rule);
+        assertTrue(metric.getThreadCountMap().containsKey(rule.getParamIdx()));
+
+        class ParamFlowArgumentImpl implements ParamFlowArgument {
+            private final String name;
+            public ParamFlowArgumentImpl(String name) {
+                this.name = name;
+            }
+            @Override
+            public Object paramFlowKey() {
+                return this.name;
+            }
+        }
+
+        String realArg = "abc";
+        metric.addThreadCount(new ParamFlowArgumentImpl(realArg));
+        metric.addThreadCount(new ParamFlowArgumentImpl(realArg));
+        assertEquals(1, metric.getThreadCountMap().size());
+        assertEquals(2, metric.getThreadCountMap().get(0).get(realArg).get());
+
+        metric.decreaseThreadCount(new ParamFlowArgumentImpl(realArg));
+        assertEquals(1, metric.getThreadCountMap().get(0).get(realArg).get());
+        metric.decreaseThreadCount(new ParamFlowArgumentImpl(realArg));
+        assertNull(metric.getThreadCountMap().get(0).get(realArg));
     }
 
     private static final int PARAM_TYPE_NORMAL = 0;
