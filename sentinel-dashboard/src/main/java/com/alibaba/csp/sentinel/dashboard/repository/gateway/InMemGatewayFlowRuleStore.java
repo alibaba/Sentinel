@@ -16,10 +16,11 @@
 package com.alibaba.csp.sentinel.dashboard.repository.gateway;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayFlowRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.repository.IdGen;
+import com.alibaba.csp.sentinel.dashboard.repository.IdGenFactory;
+import com.alibaba.csp.sentinel.dashboard.repository.IdGenType;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
 import org.springframework.stereotype.Component;
-
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Store {@link GatewayFlowRuleEntity} in memory.
@@ -30,10 +31,10 @@ import java.util.concurrent.atomic.AtomicLong;
 @Component
 public class InMemGatewayFlowRuleStore extends InMemoryRuleRepositoryAdapter<GatewayFlowRuleEntity> {
 
-    private static AtomicLong ids = new AtomicLong(0);
+    private static final IdGen ID_GEN = IdGenFactory.create(IdGenType.SNOWFLAKE);
 
     @Override
     protected long nextId() {
-        return ids.incrementAndGet();
+        return ID_GEN.nextId();
     }
 }

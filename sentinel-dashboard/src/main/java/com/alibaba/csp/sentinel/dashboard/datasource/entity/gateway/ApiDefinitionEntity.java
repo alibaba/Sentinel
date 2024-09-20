@@ -20,6 +20,8 @@ import com.alibaba.csp.sentinel.adapter.gateway.common.api.ApiPathPredicateItem;
 import com.alibaba.csp.sentinel.adapter.gateway.common.api.ApiPredicateItem;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
 import com.alibaba.csp.sentinel.slots.block.Rule;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
 import java.util.Date;
 import java.util.LinkedHashSet;
@@ -114,6 +116,7 @@ public class ApiDefinitionEntity implements RuleEntity {
     }
 
     @Override
+    @JsonSerialize(using= ToStringSerializer.class)
     public Long getId() {
         return id;
     }

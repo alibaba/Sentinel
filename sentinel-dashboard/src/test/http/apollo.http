@@ -1,0 +1,5 @@
+
+### 更新apollo openapi
+GET http://localhost:6060/admin/apollo/openapi/modify?portalUrl=http%3A%2F%2Flocalhost%3A7070&token=183d39a00a46656063ab286830f71e023d24c454
+Accept: application/json
+
