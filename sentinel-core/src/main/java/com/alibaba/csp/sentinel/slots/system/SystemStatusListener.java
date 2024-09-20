@@ -27,8 +27,23 @@ import com.sun.management.OperatingSystemMXBean;
 
 /**
  * @author jialiang.linjl
+ * @author <a href="mailto:doob.yi@qq.com">doob</a>
  */
 public class SystemStatusListener implements Runnable {
+
+    public static final String CALCULATE_BY_SINGLE_CORE_KEY =
+            "csp.sentinel.system.status.cpuUsageCalculateBySingleCore";
+
+    /**
+     * when run app in docker or k8s,
+     * if set --cpu-period=100000 & --cpu-quota=100001 on docker run command(or set cpu request limit 1001m on k8s),
+     * {@link OperatingSystemMXBean#getAvailableProcessors()} will return 2;
+     * in this case, currentCpuUsage does not accurately express the percentage of available CPU resources;
+     * Therefore, we need this parameter to make the currentCpuUsage meaning accurate;
+     *
+     * @since 1.8.1
+     */
+    public static Boolean CPU_USAGE_CALCULATE_BY_SINGLE_CORE;
 
     volatile double currentLoad = -1;
     volatile double currentCpuUsage = -1;
@@ -70,7 +85,7 @@ public class SystemStatusListener implements Runnable {
             long processCpuTimeDiffInMs = TimeUnit.NANOSECONDS
                     .toMillis(newProcessCpuTime - processCpuTime);
             long processUpTimeDiffInMs = newProcessUpTime - processUpTime;
-            double processCpuUsage = (double) processCpuTimeDiffInMs / processUpTimeDiffInMs / cpuCores;
+            double processCpuUsage = getProcessCpuUsage(processCpuTimeDiffInMs, processUpTimeDiffInMs, cpuCores);
             processCpuTime = newProcessCpuTime;
             processUpTime = newProcessUpTime;
 
@@ -97,4 +112,16 @@ public class SystemStatusListener implements Runnable {
         sb.append("maxSuccess:").append(String.format("%.2f", Constants.ENTRY_NODE.maxSuccessQps())).append("; ");
         RecordLog.info(sb.toString());
     }
+
+    private double getProcessCpuUsage(long processCpuTimeDiffInMs, long processUpTimeDiffInMs, int cpuCores) {
+        double cpuUsageCalculateBySingleCore = (double) processCpuTimeDiffInMs / processUpTimeDiffInMs;
+        if (CPU_USAGE_CALCULATE_BY_SINGLE_CORE == null) {
+            CPU_USAGE_CALCULATE_BY_SINGLE_CORE = Boolean.parseBoolean(System.getProperty(CALCULATE_BY_SINGLE_CORE_KEY));
+        }
+        if (CPU_USAGE_CALCULATE_BY_SINGLE_CORE) {
+            return cpuUsageCalculateBySingleCore;
+        }
+        return cpuUsageCalculateBySingleCore / cpuCores;
+    }
+
 }
