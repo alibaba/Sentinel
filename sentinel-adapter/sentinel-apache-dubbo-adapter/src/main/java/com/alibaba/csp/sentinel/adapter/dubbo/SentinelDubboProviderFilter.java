@@ -20,12 +20,12 @@ import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboAdapterGlobalConfig;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.*;
+import org.apache.dubbo.rpc.support.RpcUtils;
+
+import java.util.LinkedList;
+import java.util.Optional;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 
@@ -61,6 +61,7 @@ public class SentinelDubboProviderFilter extends BaseSentinelDubboFilter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         // Get origin caller.
+        InvokeMode invokeMode = RpcUtils.getInvokeMode(invoker.getUrl(), invocation);
         String origin = DubboAdapterGlobalConfig.getOriginParser().parse(invoker, invocation);
         if (null == origin) {
             origin = "";
@@ -70,13 +71,32 @@ public class SentinelDubboProviderFilter extends BaseSentinelDubboFilter {
         String prefix = DubboAdapterGlobalConfig.getDubboProviderResNamePrefixKey();
         String interfaceResourceName = getInterfaceName(invoker, prefix);
         String methodResourceName = getMethodName(invoker, invocation, prefix);
+        ContextUtil.enter(methodResourceName, origin);
         try {
             // Only need to create entrance context at provider side, as context will take effect
             // at entrance of invocation chain only (for inbound traffic).
-            ContextUtil.enter(methodResourceName, origin);
+            if (InvokeMode.ASYNC == invokeMode) {
+                return asyncInvoke(invoker, invocation, interfaceResourceName, methodResourceName);
+            } else {
+                return syncInvoke(invoker, invocation, interfaceResourceName, methodResourceName);
+            }
+        } catch (RpcException e) {
+            Tracer.traceEntry(e, interfaceEntry);
+            Tracer.traceEntry(e, methodEntry);
+            throw e;
+        } finally {
+            ContextUtil.exit();
+        }
+    }
+
+
+    private Result syncInvoke(Invoker<?> invoker, Invocation invocation, String interfaceResourceName, String methodResourceName) {
+        Entry interfaceEntry = null;
+        Entry methodEntry = null;
+        try {
             interfaceEntry = SphU.entry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN);
             methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN,
-                invocation.getArguments());
+                    invocation.getArguments());
             Result result = invoker.invoke(invocation);
             if (result.hasException()) {
                 Tracer.traceEntry(result.getException(), interfaceEntry);
@@ -85,10 +105,6 @@ public class SentinelDubboProviderFilter extends BaseSentinelDubboFilter {
             return result;
         } catch (BlockException e) {
             return DubboAdapterGlobalConfig.getProviderFallback().handle(invoker, invocation, e);
-        } catch (RpcException e) {
-            Tracer.traceEntry(e, interfaceEntry);
-            Tracer.traceEntry(e, methodEntry);
-            throw e;
         } finally {
             if (methodEntry != null) {
                 methodEntry.exit(1, invocation.getArguments());
@@ -96,7 +112,55 @@ public class SentinelDubboProviderFilter extends BaseSentinelDubboFilter {
             if (interfaceEntry != null) {
                 interfaceEntry.exit();
             }
-            ContextUtil.exit();
+        }
+    }
+
+
+    private Result asyncInvoke(Invoker<?> invoker, Invocation invocation, String interfaceResourceName, String methodResourceName) {
+        LinkedList<EntryHolder> queue = new LinkedList<>();
+        try {
+            queue.push(new EntryHolder(
+                    SphU.asyncEntry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN), null));
+            queue.push(new EntryHolder(
+                    SphU.asyncEntry(methodResourceName, ResourceTypeConstants.COMMON_RPC,
+                            EntryType.IN, invocation.getArguments()), invocation.getArguments()));
+            Result result = invoker.invoke(invocation);
+            result.whenCompleteWithContext((r, throwable) -> {
+                Throwable error = throwable;
+                if (error == null) {
+                    error = Optional.ofNullable(r).map(Result::getException).orElse(null);
+                }
+                while (!queue.isEmpty()) {
+                    EntryHolder holder = queue.pop();
+                    Tracer.traceEntry(error, holder.entry);
+                    exitEntry(holder);
+                }
+            });
+            return result;
+        } catch (BlockException e) {
+            while (!queue.isEmpty()) {
+                exitEntry(queue.pop());
+            }
+            return DubboAdapterGlobalConfig.getProviderFallback().handle(invoker, invocation, e);
+        }
+    }
+
+    static class EntryHolder {
+
+        final private Entry entry;
+        final private Object[] params;
+
+        public EntryHolder(Entry entry, Object[] params) {
+            this.entry = entry;
+            this.params = params;
+        }
+    }
+
+    private void exitEntry(EntryHolder holder) {
+        if (holder.params != null) {
+            holder.entry.exit(1, holder.params);
+        } else {
+            holder.entry.exit();
         }
     }
 
