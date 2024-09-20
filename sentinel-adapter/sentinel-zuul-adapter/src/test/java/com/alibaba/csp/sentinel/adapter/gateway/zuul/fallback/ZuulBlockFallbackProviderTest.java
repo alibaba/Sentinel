@@ -17,7 +17,6 @@
 package com.alibaba.csp.sentinel.adapter.gateway.zuul.fallback;
 
 import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -26,7 +25,7 @@ import org.junit.Test;
  */
 public class ZuulBlockFallbackProviderTest {
 
-    private String ALL_ROUTE = "*";
+    private static final String ALL_ROUTE = "*";
 
     @Test
     public void testGetNullRoute() throws Exception {

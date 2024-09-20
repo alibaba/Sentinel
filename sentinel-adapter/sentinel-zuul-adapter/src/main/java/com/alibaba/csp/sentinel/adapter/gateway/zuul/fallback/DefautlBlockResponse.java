@@ -17,24 +17,14 @@
 package com.alibaba.csp.sentinel.adapter.gateway.zuul.fallback;
 
 /**
- * This interface is compatible for different spring cloud version.
+ * Fall back response for {@link com.alibaba.csp.sentinel.slots.block.BlockException}
  *
  * @author tiger
  */
-public interface ZuulBlockFallbackProvider<T extends BlockResponse> {
+public class DefautlBlockResponse extends BlockResponse {
 
-    /**
-     * The route this fallback will be used for.
-     * @return The route the fallback will be used for.
-     */
-    String getRoute();
 
-    /**
-     * Provides a fallback response based on the cause of the failed execution.
-     *
-     * @param route The route the fallback is for
-     * @param cause cause of the main method failure, may be <code>null</code>
-     * @return the fallback response
-     */
-    T fallbackResponse(String route, Throwable cause);
+    public DefautlBlockResponse(int code, String message, String route) {
+        super(code, message, route);
+    }
 }
