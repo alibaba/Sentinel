@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.LongAdder;
 
+import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
 import com.alibaba.csp.sentinel.slots.statistic.metric.ArrayMetric;
 import com.alibaba.csp.sentinel.slots.statistic.metric.Metric;
@@ -115,10 +116,15 @@ public class StatisticNode implements Node {
     @Override
     public Map<Long, MetricNode> metrics() {
         // The fetch operation is thread-safe under a single-thread scheduler pool.
-        long currentTime = TimeUtil.currentTimeMillis();
-        currentTime = currentTime - currentTime % 1000;
+        final long currentTime = TimeUtil.currentTimeMillis();
+        final long endTime = currentTime - currentTime % 1000;
+        long flushIntervalSec = SentinelConfig.metricLogFlushIntervalSec();
+        flushIntervalSec = Math.min(flushIntervalSec, 60L);
+        final long startTime = endTime - flushIntervalSec * 1000;
         Map<Long, MetricNode> metrics = new ConcurrentHashMap<>();
-        List<MetricNode> nodesOfEverySecond = rollingCounterInMinute.details();
+        // Only collect the metrics within flush interval
+        List<MetricNode> nodesOfEverySecond = rollingCounterInMinute
+                .detailsOnCondition(time -> time < endTime && time >= startTime);
         long newLastFetchTime = lastFetchTime;
         // Iterate metrics of all resources, filter valid metrics (not-empty and up-to-date).
         for (MetricNode node : nodesOfEverySecond) {
@@ -128,7 +134,6 @@ public class StatisticNode implements Node {
             }
         }
         lastFetchTime = newLastFetchTime;
-
         return metrics;
     }
 
