@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.alibaba.csp.sentinel.slots.block.flow.param.RollingParamEvent;
 import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
-import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
+import com.alibaba.csp.sentinel.slots.statistic.cache.CaffeineCacheMapWrapper;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
@@ -43,7 +43,7 @@ public class ParamMapBucket {
         RollingParamEvent[] events = RollingParamEvent.values();
         this.data = new CacheMap[events.length];
         for (RollingParamEvent event : events) {
-            data[event.ordinal()] = new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(capacity);
+            data[event.ordinal()] = new CaffeineCacheMapWrapper<>(capacity);
         }
     }
 

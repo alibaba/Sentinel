@@ -16,17 +16,15 @@
 package com.alibaba.csp.sentinel.slots.block.flow.param;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.alibaba.csp.sentinel.slots.statistic.cache.CaffeineCacheMapWrapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +33,6 @@ import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
 import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
-import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 
 /**
@@ -99,8 +96,8 @@ public class ParamFlowSlotTest {
 
         ParameterMetric metric = mock(ParameterMetric.class);
 
-        CacheMap<Object, AtomicLong> map = new ConcurrentLinkedHashMapWrapper<>(4000);
-        CacheMap<Object, AtomicLong> map2 = new ConcurrentLinkedHashMapWrapper<>(4000);
+        CacheMap<Object, AtomicLong> map = new CaffeineCacheMapWrapper<>(4000);
+        CacheMap<Object, AtomicLong> map2 = new CaffeineCacheMapWrapper<>(4000);
         when(metric.getRuleTimeCounter(rule)).thenReturn(map);
         when(metric.getRuleTokenCounter(rule)).thenReturn(map2);
         map.put(argToGo, new AtomicLong(TimeUtil.currentTimeMillis()));

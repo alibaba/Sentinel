@@ -18,7 +18,7 @@ package com.alibaba.csp.sentinel.cluster.flow.statistic.metric;
 import com.alibaba.csp.sentinel.slots.statistic.base.LeapArray;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
-import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
+import com.alibaba.csp.sentinel.slots.statistic.cache.CaffeineCacheMapWrapper;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
@@ -38,7 +38,7 @@ public class ClusterParameterLeapArray<C> extends LeapArray<CacheMap<Object, C>>
 
     @Override
     public CacheMap<Object, C> newEmptyBucket(long timeMillis) {
-        return new ConcurrentLinkedHashMapWrapper<>(maxCapacity);
+        return new CaffeineCacheMapWrapper<>(maxCapacity);
     }
 
     @Override

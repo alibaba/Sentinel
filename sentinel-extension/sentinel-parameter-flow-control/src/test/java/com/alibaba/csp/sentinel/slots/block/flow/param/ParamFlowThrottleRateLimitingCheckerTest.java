@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.alibaba.csp.sentinel.slots.statistic.cache.CaffeineCacheMapWrapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +30,6 @@ import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 
 import static org.junit.Assert.assertEquals;
@@ -57,7 +57,7 @@ public class ParamFlowThrottleRateLimitingCheckerTest {
         String valueA = "valueA";
         ParameterMetric metric = new ParameterMetric();
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
-        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTimeCounterMap().put(rule, new CaffeineCacheMapWrapper<Object, AtomicLong>(4000));
 
         long currentTime = TimeUtil.currentTimeMillis();
         long endTime = currentTime + rule.getDurationInSec() * 1000;
@@ -101,7 +101,7 @@ public class ParamFlowThrottleRateLimitingCheckerTest {
         final String valueA = "valueA";
         ParameterMetric metric = new ParameterMetric();
         ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
-        metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
+        metric.getRuleTimeCounterMap().put(rule, new CaffeineCacheMapWrapper<Object, AtomicLong>(4000));
 
         int threadCount = 40;
         System.out.println(metric.getRuleTimeCounter(rule));
