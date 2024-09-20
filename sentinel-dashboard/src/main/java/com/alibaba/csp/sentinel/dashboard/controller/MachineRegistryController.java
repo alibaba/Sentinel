@@ -45,7 +45,9 @@ public class MachineRegistryController {
     public Result<?> receiveHeartBeat(String app,
                                       @RequestParam(value = "app_type", required = false, defaultValue = "0")
                                           Integer appType, Long version, String v, String hostname, String ip,
-                                      Integer port) {
+                                      Integer port,  @RequestParam(value = "context_path", required = false)
+                                          String contextPath) {
+        //logger.info("app={},appType={},hostname={},ip={},port={},contextPath ={}",app,appType,hostname,ip,port,contextPath);
         if (StringUtil.isBlank(app) || app.length() > 256) {
             return Result.ofFail(-1, "invalid appName");
         }
@@ -78,6 +80,7 @@ public class MachineRegistryController {
             machineInfo.setHeartbeatVersion(version);
             machineInfo.setLastHeartbeat(System.currentTimeMillis());
             machineInfo.setVersion(sentinelVersion);
+            machineInfo.setContextPath(contextPath);
             appManagement.addMachine(machineInfo);
             return Result.ofSuccessMsg("success");
         } catch (Exception e) {

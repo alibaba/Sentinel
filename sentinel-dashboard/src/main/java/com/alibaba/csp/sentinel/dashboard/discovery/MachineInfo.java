@@ -35,6 +35,8 @@ public class MachineInfo implements Comparable<MachineInfo> {
      */
     private String version;
 
+    private String contextPath;
+
     public static MachineInfo of(String app, String ip, Integer port) {
         MachineInfo machineInfo = new MachineInfo();
         machineInfo.setApp(app);
@@ -103,7 +105,15 @@ public class MachineInfo implements Comparable<MachineInfo> {
         this.version = version;
         return this;
     }
-    
+
+    public String getContextPath() {
+        return contextPath;
+    }
+
+    public void setContextPath(String contextPath) {
+        this.contextPath = contextPath;
+    }
+
     public boolean isHealthy() {
         long delta = System.currentTimeMillis() - lastHeartbeat;
         return delta < DashboardConfig.getUnhealthyMachineMillis();
@@ -155,6 +165,7 @@ public class MachineInfo implements Comparable<MachineInfo> {
             .append(", heartbeatVersion=").append(heartbeatVersion)
             .append(", lastHeartbeat=").append(lastHeartbeat)
             .append(", version='").append(version).append('\'')
+            .append(", contextPath='").append(contextPath).append('\'')
             .append(", healthy=").append(isHealthy())
             .append('}').toString();
     }
