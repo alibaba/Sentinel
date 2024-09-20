@@ -28,7 +28,7 @@
         <slf4j.version>1.7.30</slf4j.version>
         <logback.version>1.2.3</logback.version>
 
-        <io.grpc.version>1.34.1</io.grpc.version>
+        <io.grpc.version>1.53.0</io.grpc.version>
 
         <bouncycastle_version>1.70</bouncycastle_version>
         <com.google.protobuf.version>3.14.0</com.google.protobuf.version>
