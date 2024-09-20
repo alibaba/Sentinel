@@ -23,10 +23,13 @@ package com.alibaba.csp.sentinel.adapter.gateway.zuul.fallback;
  */
 public class BlockResponse {
 
+
+    private int code;
+
     /**
      * HTTP status code.
      */
-    private int code;
+    private int httpCode = 429;
 
     private String message;
     private String route;
@@ -35,6 +38,13 @@ public class BlockResponse {
         this.code = code;
         this.message = message;
         this.route = route;
+    }
+
+    public BlockResponse(int code, String message, String route, int httpCode){
+        this.code = code;
+        this.message = message;
+        this.route = route;
+        this.httpCode = httpCode;
     }
 
     public int getCode() {
@@ -59,6 +69,14 @@ public class BlockResponse {
 
     public void setRoute(String route) {
         this.route = route;
+    }
+
+    public int getHttpCode() {
+        return httpCode;
+    }
+
+    public void setHttpCode(int httpCode) {
+        this.httpCode = httpCode;
     }
 
     @Override
