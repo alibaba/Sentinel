@@ -190,7 +190,6 @@ public class MetricFetcher {
         final AtomicLong success = new AtomicLong();
         final AtomicLong fail = new AtomicLong();
 
-        long start = System.currentTimeMillis();
         /** app_resource_timeSecond -> metric */
         final Map<String, MetricEntity> metricMap = new ConcurrentHashMap<>(16);
         final CountDownLatch latch = new CountDownLatch(machines.size());
