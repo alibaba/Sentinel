@@ -22,6 +22,7 @@ import java.util.concurrent.FutureTask;
 
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.adapter.jaxrs.config.SentinelJaxRsConfig;
+import com.alibaba.csp.sentinel.adapter.jaxrs.fallback.DefaultSentinelJaxRsFallback;
 import com.alibaba.csp.sentinel.adapter.jaxrs.fallback.SentinelJaxRsFallback;
 import com.alibaba.csp.sentinel.adapter.jaxrs.request.RequestOriginParser;
 import com.alibaba.csp.sentinel.node.ClusterNode;
@@ -77,6 +78,7 @@ public class ProviderFilterTest {
     public void cleanUp() {
         FlowRuleManager.loadRules(null);
         ClusterBuilderSlot.resetClusterNodes();
+        SentinelJaxRsConfig.setJaxRsFallback(new DefaultSentinelJaxRsFallback());
     }
 
 
