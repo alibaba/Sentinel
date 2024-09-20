@@ -60,7 +60,7 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
     @Override
     public boolean sendHeartbeat() throws Exception {
         if (TransportConfig.getRuntimePort() <= 0) {
-            RecordLog.info("[SimpleHttpHeartbeatSender] Command server port not initialized, won't send heartbeat");
+            RecordLog.warn("[SimpleHttpHeartbeatSender] Command server port not initialized, won't send heartbeat");
             return false;
         }
         Endpoint addrInfo = getAvailableAddress();
@@ -74,12 +74,12 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
             SimpleHttpResponse response = httpClient.post(request);
             if (response.getStatusCode() == OK_STATUS) {
                 return true;
-            } else if (clientErrorCode(response.getStatusCode()) || serverErrorCode(response.getStatusCode())) {
-                RecordLog.warn("[SimpleHttpHeartbeatSender] Failed to send heartbeat to " + addrInfo
-                    + ", http status code: " + response.getStatusCode());
+            }
+            if (clientErrorCode(response.getStatusCode()) || serverErrorCode(response.getStatusCode())) {
+                RecordLog.warn("[SimpleHttpHeartbeatSender] Failed to send heartbeat to {}, http status code: {}", addrInfo, response.getStatusCode());
             }
         } catch (Exception e) {
-            RecordLog.warn("[SimpleHttpHeartbeatSender] Failed to send heartbeat to " + addrInfo, e);
+            RecordLog.warn("[SimpleHttpHeartbeatSender] Failed to send heartbeat to {}", addrInfo, e);
         }
         return false;
     }
