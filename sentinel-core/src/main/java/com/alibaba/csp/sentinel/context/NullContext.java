@@ -15,10 +15,10 @@
  */
 package com.alibaba.csp.sentinel.context;
 
-import com.alibaba.csp.sentinel.Constants;
+import com.alibaba.csp.sentinel.config.SentinelConfig;
 
 /**
- * If total {@link Context} exceed {@link Constants#MAX_CONTEXT_NAME_SIZE}, a
+ * If total {@link Context} exceed {@link SentinelConfig#getMaxContextNameSize()}, a
  * {@link NullContext} will get when invoke {@link ContextUtil}.enter(), means
  * no rules checking will do.
  *
