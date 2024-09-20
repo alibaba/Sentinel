@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.cluster;
 
+import java.util.Objects;
+
 /**
  * A simple descriptor for Sentinel token server.
  *
@@ -57,5 +59,24 @@ public class TokenServerDescriptor {
             ", port=" + port +
             ", type='" + type + '\'' +
             '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        TokenServerDescriptor that = (TokenServerDescriptor) o;
+        return port == that.port &&
+                Objects.equals(host, that.host) &&
+                Objects.equals(type, that.type);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(host, port, type);
     }
 }
