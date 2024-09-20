@@ -93,7 +93,7 @@ public abstract class AbstractSentinelAspectSupport {
         Method fallbackMethod = extractFallbackMethod(pjp, fallback, fallbackClass);
         if (fallbackMethod != null) {
             // Construct args.
-            int paramCount = fallbackMethod.getParameterTypes().length;
+            int paramCount = fallbackMethod.getParameterCount();
             Object[] args;
             if (paramCount == originArgs.length) {
                 args = originArgs;
@@ -114,7 +114,7 @@ public abstract class AbstractSentinelAspectSupport {
         Method fallbackMethod = extractDefaultFallbackMethod(pjp, defaultFallback, fallbackClass);
         if (fallbackMethod != null) {
             // Construct args.
-            Object[] args = fallbackMethod.getParameterTypes().length == 0 ? new Object[0] : new Object[] {ex};
+            Object[] args = fallbackMethod.getParameterCount() == 0 ? new Object[0] : new Object[] {ex};
             return invoke(pjp, fallbackMethod, args);
         }
 
