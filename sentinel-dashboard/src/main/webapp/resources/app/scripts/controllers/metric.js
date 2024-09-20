@@ -8,6 +8,47 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
     $scope.startTime.setMinutes($scope.endTime.getMinutes() - 30);
     $scope.startTimeFmt = formatDate($scope.startTime);
     $scope.endTimeFmt = formatDate($scope.endTime);
+    $scope.cycle = 1;
+    $scope.tabIndex = 1;
+    $scope.timeRange = 0;
+    // 1通过qps升序， 2通过qps降序, 3拒绝QPS升序, 4拒绝QPS降序 5异常QPS升序, 6异常QPS降序
+    $scope.summaryOrderBy = 1;
+    $scope.sortedSummaryData = [];
+
+    $scope.changeTimeRange =  function(sec) {
+      if(sec != $scope.timeRange) {
+        $scope.timeRange = sec;
+        $scope.querySummary();
+      }
+    }
+
+    $scope.changeSummaryOrder =  function(sec) {
+      if( 1== sec) {
+        $scope.summaryOrderBy = $scope.summaryOrderBy == 1 ? 2 : 1;
+      }
+      if(2== sec) {
+        $scope.summaryOrderBy = $scope.summaryOrderBy == 3 ? 4 : 3;
+      }
+      if(3== sec) {
+        $scope.summaryOrderBy = $scope.summaryOrderBy == 5 ? 6 : 5;
+      }
+      $scope.querySummary();
+    }
+
+    $scope.changeCycle =  function(sec) {
+      if(sec != $scope.cycle) {
+        $scope.cycle = sec;
+        queryIdentityDatas();
+
+      }
+    }
+
+    $scope.changeTabs = function(index) {
+      if($scope.tabIndex != index) {
+         $scope.tabIndex = index;
+      }
+      $scope.refresh();
+    }
     function formatDate(date) {
       return moment(date).format('YYYY/MM/DD HH:mm:ss');
     }
@@ -20,12 +61,28 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
       $scope.endTimeFmt = formatDate(endTime);
     };
 
+    $scope.refresh = function() {
+      if($scope.tabIndex == "1") {
+        queryIdentityDatas();
+
+      }
+      if($scope.tabIndex == "2") {
+        $scope.querySummary();
+      }
+    }
+
     $scope.app = $stateParams.app;
     // 数据自动刷新频率
     var DATA_REFRESH_INTERVAL = 1000 * 10;
 
     $scope.servicePageConfig = {
       pageSize: 6,
+      currentPageIndex: 1,
+      totalPage: 1,
+      totalCount: 0,
+    };
+    $scope.summaryPageConfig = {
+      pageSize: 12,
       currentPageIndex: 1,
       totalPage: 1,
       totalCount: 0,
@@ -37,6 +94,11 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
       reInitIdentityDatas();
     };
 
+    $scope.pageChangedOfSummary = function (newPageNumber) {
+      $scope.summaryPageConfig.currentPageIndex = newPageNumber;
+      $scope.querySummary();
+    };
+
     var searchT;
     $scope.searchService = function () {
       $timeout.cancel(searchT);
@@ -44,9 +106,16 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
         reInitIdentityDatas();
       }, 600);
     }
+    $scope.searchServiceOfSummary = function () {
+      $timeout.cancel(searchT);
+      searchT = $timeout(function () {
+        $scope.querySummary();
+      }, 600);
+    }
 
     var intervalId;
     reInitIdentityDatas();
+
     function reInitIdentityDatas() {
       $interval.cancel(intervalId);
       queryIdentityDatas();
@@ -54,6 +123,8 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
         queryIdentityDatas();
       }, DATA_REFRESH_INTERVAL);
     };
+
+
 
     $scope.$on('$destroy', function () {
       $interval.cancel(intervalId);
@@ -174,6 +245,47 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
       });
     };
 
+    $scope.emptyObjsOfSummary = [];
+    $scope.intervalIdOfSummary = -1;
+    $scope.querySummary = function() {
+      $interval.cancel($scope.intervalIdOfSummary);
+
+      var params = {
+        app: $scope.app,
+        pageIndex: $scope.summaryPageConfig.currentPageIndex,
+        pageSize: $scope.summaryPageConfig.pageSize,
+        summaryOrderBy: $scope.summaryOrderBy,
+        timeRange: $scope.timeRange,
+        searchKey: $scope.serviceQueryOfSummary
+      };
+
+      MetricService.querySortedSummary(params).success(function (data) {
+        $scope.emptyObjsOfSummary = [];
+        $scope.sortedSummaryData = [];
+
+        if (data.code === 0 && data.data) {
+          var metricsObj = data.data.metric;
+
+          $scope.sortedSummaryData = metricsObj;
+
+          // 自动刷新
+          $scope.intervalIdOfSummary = $interval(function () {
+            $scope.querySummary();
+          }, DATA_REFRESH_INTERVAL);
+
+          $scope.summaryPageConfig.totalPage = data.data.totalPage;
+          $scope.summaryPageConfig.pageSize = data.data.pageSize;
+          var totalCount = data.data.totalCount;
+          $scope.summaryPageConfig.totalCount = totalCount;
+          for (i = 0; i < totalCount; i++) {
+            $scope.emptyObjsOfSummary.push({});
+          }
+
+        }
+      });
+    }
+
+
     $scope.metrics = [];
     $scope.emptyObjs = [];
     function queryIdentityDatas() {
@@ -182,8 +294,10 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
         pageIndex: $scope.servicePageConfig.currentPageIndex,
         pageSize: $scope.servicePageConfig.pageSize,
         desc: $scope.isDescOrder,
+        cycle: $scope.cycle,
         searchKey: $scope.serviceQuery
       };
+      console.log(params)
       MetricService.queryAppSortedIdentities(params).success(function (data) {
         $scope.metrics = [];
         $scope.emptyObjs = [];
@@ -228,7 +342,7 @@ app.controller('MetricCtl', ['$scope', '$stateParams', 'MetricService', '$interv
       var lastTime = metricData[0].timestamp / 1000;
       for (var i = 1; i < metricData.length; i++) {
         var curTime = metricData[i].timestamp / 1000;
-        if (curTime > lastTime + 1) {
+        if (curTime > lastTime + 1 && $scope.cycle == 1) {
           for (var j = lastTime + 1; j < curTime; j++) {
             filledData.push({
                 "timestamp": j * 1000,
