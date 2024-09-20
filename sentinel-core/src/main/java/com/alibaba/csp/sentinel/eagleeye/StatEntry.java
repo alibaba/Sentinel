@@ -113,7 +113,7 @@ public final class StatEntry {
         StringBuilder sb = new StringBuilder(64);
         sb.append("StatKeys [");
         appendTo(sb, ',');
-        sb.append("]");
+        sb.append(']');
         return sb.toString();
     }
 

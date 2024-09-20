@@ -44,7 +44,7 @@ public class MotanUtils {
             Class<?>[] classTypes = ReflectUtil.forNames(request.getParamtersDesc());
             for (Class<?> clazz : classTypes) {
                 if (!isFirst) {
-                    buf.append(",");
+                    buf.append(',');
                 }
                 buf.append(clazz.getName());
                 isFirst = false;
@@ -52,7 +52,7 @@ public class MotanUtils {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-        buf.append(")");
+        buf.append(')');
         return buf.toString();
     }
 

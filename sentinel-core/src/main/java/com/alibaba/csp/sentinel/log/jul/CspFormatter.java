@@ -36,8 +36,8 @@ class CspFormatter extends Formatter {
     public String format(LogRecord record) {
         final DateFormat df = dateFormatThreadLocal.get();
         StringBuilder builder = new StringBuilder(1000);
-        builder.append(df.format(new Date(record.getMillis()))).append(" ");
-        builder.append(record.getLevel().getName()).append(" ");
+        builder.append(df.format(new Date(record.getMillis()))).append(' ');
+        builder.append(record.getLevel().getName()).append(' ');
         builder.append(formatMessage(record));
 
         String throwable = "";
@@ -51,7 +51,7 @@ class CspFormatter extends Formatter {
         }
         builder.append(throwable);
         if ("".equals(throwable)) {
-            builder.append("\n");
+            builder.append('\n');
         }
         return builder.toString();
     }

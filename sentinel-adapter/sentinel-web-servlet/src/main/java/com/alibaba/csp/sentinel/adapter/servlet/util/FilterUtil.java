@@ -15,14 +15,13 @@
  */
 package com.alibaba.csp.sentinel.adapter.servlet.util;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import com.alibaba.csp.sentinel.adapter.servlet.config.WebServletConfig;
+import com.alibaba.csp.sentinel.util.StringUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.alibaba.csp.sentinel.adapter.servlet.config.WebServletConfig;
-import com.alibaba.csp.sentinel.util.StringUtil;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * Util class for web servlet filter.
@@ -62,7 +61,7 @@ public final class FilterUtil {
         StringBuffer url = request.getRequestURL();
 
         if ("GET".equals(request.getMethod()) && StringUtil.isNotBlank(request.getQueryString())) {
-            url.append("?").append(request.getQueryString());
+            url.append('?').append(request.getQueryString());
         }
 
         if (StringUtil.isBlank(WebServletConfig.getBlockPage())) {

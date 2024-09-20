@@ -15,12 +15,12 @@
  */
 package com.alibaba.csp.sentinel.slots.statistic.metric.occupy;
 
-import java.util.List;
-
 import com.alibaba.csp.sentinel.slots.statistic.MetricEvent;
 import com.alibaba.csp.sentinel.slots.statistic.base.LeapArray;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
+
+import java.util.List;
 
 /**
  * @author jialiang.linjl
@@ -87,14 +87,14 @@ public class OccupiableBucketLeapArray extends LeapArray<MetricBucket> {
         List<WindowWrap<MetricBucket>> lists = listAll();
         sb.append("a_Thread_").append(Thread.currentThread().getId()).append(" time=").append(time).append("; ");
         for (WindowWrap<MetricBucket> window : lists) {
-            sb.append(window.windowStart()).append(":").append(window.value().toString()).append(";");
+            sb.append(window.windowStart()).append(':').append(window.value().toString()).append(';');
         }
-        sb.append("\n");
+        sb.append('\n');
 
         lists = borrowArray.listAll();
         sb.append("b_Thread_").append(Thread.currentThread().getId()).append(" time=").append(time).append("; ");
         for (WindowWrap<MetricBucket> window : lists) {
-            sb.append(window.windowStart()).append(":").append(window.value().toString()).append(";");
+            sb.append(window.windowStart()).append(':').append(window.value().toString()).append(';');
         }
         System.out.println(sb.toString());
     }

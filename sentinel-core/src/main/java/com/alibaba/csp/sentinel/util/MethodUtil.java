@@ -50,17 +50,17 @@ public final class MethodUtil {
                     String className = method.getDeclaringClass().getName();
                     String name = method.getName();
                     Class<?>[] params = method.getParameterTypes();
-                    sb.append(className).append(":").append(name);
-                    sb.append("(");
+                    sb.append(className).append(':').append(name);
+                    sb.append('(');
 
                     int paramPos = 0;
                     for (Class<?> clazz : params) {
                         sb.append(clazz.getCanonicalName());
                         if (++paramPos < params.length) {
-                            sb.append(",");
+                            sb.append(',');
                         }
                     }
-                    sb.append(")");
+                    sb.append(')');
                     methodName = sb.toString();
 
                     methodNameMap.put(method, methodName);
