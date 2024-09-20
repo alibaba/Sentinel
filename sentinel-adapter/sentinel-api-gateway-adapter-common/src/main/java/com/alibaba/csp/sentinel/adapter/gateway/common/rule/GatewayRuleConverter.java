@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.adapter.gateway.common.rule;
 
 import com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayConstants;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
+import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowClusterConfig;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowItem;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
 
@@ -47,14 +48,30 @@ final class GatewayRuleConverter {
     }
 
     static ParamFlowRule applyNonParamToParamRule(/*@Valid*/ GatewayFlowRule gatewayRule, int idx) {
-        return new ParamFlowRule(gatewayRule.getResource())
-            .setCount(gatewayRule.getCount())
-            .setGrade(gatewayRule.getGrade())
-            .setDurationInSec(gatewayRule.getIntervalSec())
-            .setBurstCount(gatewayRule.getBurst())
-            .setControlBehavior(gatewayRule.getControlBehavior())
-            .setMaxQueueingTimeMs(gatewayRule.getMaxQueueingTimeoutMs())
-            .setParamIdx(idx);
+        ParamFlowRule paramFlowRule = new ParamFlowRule(gatewayRule.getResource())
+                .setCount(gatewayRule.getCount())
+                .setGrade(gatewayRule.getGrade())
+                .setDurationInSec(gatewayRule.getIntervalSec())
+                .setBurstCount(gatewayRule.getBurst())
+                .setControlBehavior(gatewayRule.getControlBehavior())
+                .setMaxQueueingTimeMs(gatewayRule.getMaxQueueingTimeoutMs())
+                .setParamIdx(idx);
+        if (gatewayRule.isClusterMode() && gatewayRule.getClusterConfig().getFlowId()!=null){
+            paramFlowRule.setClusterMode(gatewayRule.isClusterMode());
+            paramFlowRule.setClusterConfig(applyToParamFlowClusterConfig(gatewayRule.getClusterConfig()));
+        }
+        return paramFlowRule;
+    }
+
+    static ParamFlowClusterConfig applyToParamFlowClusterConfig(GatewayFlowClusterConfig config){
+
+        return new ParamFlowClusterConfig()
+                .setFlowId(config.getFlowId())
+                .setThresholdType(config.getThresholdType())
+                .setSampleCount(config.getSampleCount())
+                .setFallbackToLocalWhenFail(config.isFallbackToLocalWhenFail())
+                .setWindowIntervalMs(config.getWindowIntervalMs());
+
     }
 
     /**
@@ -81,6 +98,10 @@ final class GatewayRuleConverter {
         String valuePattern = gatewayItem.getPattern();
         if (valuePattern != null) {
             paramRule.getParamFlowItemList().add(generateNonMatchPassParamItem());
+        }
+        if (gatewayRule.isClusterMode() && gatewayRule.getClusterConfig().getFlowId()!=null){
+            paramRule.setClusterMode(gatewayRule.isClusterMode());
+            paramRule.setClusterConfig(applyToParamFlowClusterConfig(gatewayRule.getClusterConfig()));
         }
         return paramRule;
     }
