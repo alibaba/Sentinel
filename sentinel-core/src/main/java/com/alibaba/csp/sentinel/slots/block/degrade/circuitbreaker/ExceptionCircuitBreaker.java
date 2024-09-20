@@ -107,7 +107,7 @@ public class ExceptionCircuitBreaker extends AbstractCircuitBreaker {
             // Use errorRatio
             curCount = errCount * 1.0d / totalCount;
         }
-        if (curCount > threshold) {
+        if (curCount >= threshold) {
             transformToOpen(curCount);
         }
     }
