@@ -15,12 +15,15 @@
  */
 package com.alibaba.csp.sentinel.dashboard.controller.v2;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
+import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
+import com.alibaba.csp.sentinel.dashboard.discovery.AppInfo;
+import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
+import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
@@ -59,11 +62,18 @@ public class FlowControllerV2 {
     private InMemoryRuleRepositoryAdapter<FlowRuleEntity> repository;
 
     @Autowired
-    @Qualifier("flowRuleDefaultProvider")
+    private AppManagement appManagement;
+
+    @Autowired
+    @Qualifier("flowRuleApolloProvider")
     private DynamicRuleProvider<List<FlowRuleEntity>> ruleProvider;
     @Autowired
-    @Qualifier("flowRuleDefaultPublisher")
+    @Qualifier("flowRuleApolloPublisher")
     private DynamicRulePublisher<List<FlowRuleEntity>> rulePublisher;
+
+
+    @Autowired
+    private SentinelApiClient sentinelApiClient;
 
     @GetMapping("/rules")
     @AuthAction(PrivilegeType.READ_RULE)
@@ -83,6 +93,7 @@ public class FlowControllerV2 {
                 }
             }
             rules = repository.saveAll(rules);
+            syncRules(app,rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
             logger.error("Error when querying flow rules", throwable);
@@ -222,5 +233,18 @@ public class FlowControllerV2 {
     private void publishRules(/*@NonNull*/ String app) throws Exception {
         List<FlowRuleEntity> rules = repository.findAllByApp(app);
         rulePublisher.publish(app, rules);
+        syncRules(app,rules);
+
+    }
+
+    private void syncRules(String app,List<FlowRuleEntity> rules){
+        AppInfo appInfo = appManagement.getDetailApp(app);
+        if (appInfo != null) {
+            List<MachineInfo> list = new ArrayList<>(appInfo.getMachines());
+            Collections.sort(list, Comparator.comparing(MachineInfo::getApp).thenComparing(MachineInfo::getIp).thenComparingInt(MachineInfo::getPort));
+            for(MachineInfo machineInfo:list) {
+                sentinelApiClient.setFlowRuleOfMachineAsync(app, machineInfo.getIp(), machineInfo.getPort(), rules);
+            }
+        }
     }
 }
