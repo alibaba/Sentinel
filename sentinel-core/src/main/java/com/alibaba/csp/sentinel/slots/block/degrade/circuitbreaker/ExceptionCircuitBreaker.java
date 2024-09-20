@@ -47,11 +47,13 @@ public class ExceptionCircuitBreaker extends AbstractCircuitBreaker {
     ExceptionCircuitBreaker(DegradeRule rule, LeapArray<SimpleErrorCounter> stat) {
         super(rule);
         this.strategy = rule.getGrade();
+        this.threshold = rule.getCount();
         boolean modeOk = strategy == DEGRADE_GRADE_EXCEPTION_RATIO || strategy == DEGRADE_GRADE_EXCEPTION_COUNT;
         AssertUtil.isTrue(modeOk, "rule strategy should be error-ratio or error-count");
+        AssertUtil.isTrue(strategy == DEGRADE_GRADE_EXCEPTION_RATIO ? this.threshold <= 1.0 : this.threshold >= 1.0,
+            "threshold should be adjusted");
         AssertUtil.notNull(stat, "stat cannot be null");
         this.minRequestAmount = rule.getMinRequestAmount();
-        this.threshold = rule.getCount();
         this.stat = stat;
     }
 
