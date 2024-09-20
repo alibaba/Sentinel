@@ -27,7 +27,7 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRuleManager;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson2.JSON;
 
 /**
  * @author Eric Zhao
@@ -54,7 +54,7 @@ public class ModifyParamFlowRulesCommandHandler implements CommandHandler<String
         RecordLog.info("[API Server] Receiving rule change (type:parameter flow rule): {}", data);
 
         String result = SUCCESS_MSG;
-        List<ParamFlowRule> flowRules = JSONArray.parseArray(data, ParamFlowRule.class);
+        List<ParamFlowRule> flowRules = JSON.parseArray(data, ParamFlowRule.class);
         ParamFlowRuleManager.loadRules(flowRules);
         if (!writeToDataSource(paramFlowWds, flowRules)) {
             result = WRITE_DS_FAILURE_MSG;

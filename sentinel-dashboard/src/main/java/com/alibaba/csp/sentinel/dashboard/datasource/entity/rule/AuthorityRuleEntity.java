@@ -17,7 +17,7 @@ package com.alibaba.csp.sentinel.dashboard.datasource.entity.rule;
 
 import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRule;
 import com.alibaba.csp.sentinel.util.AssertUtil;
-import com.alibaba.fastjson.annotation.JSONField;
+import com.alibaba.fastjson2.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
