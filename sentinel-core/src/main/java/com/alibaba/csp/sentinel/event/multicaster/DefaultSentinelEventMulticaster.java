@@ -21,9 +21,7 @@ import com.alibaba.csp.sentinel.event.model.SentinelEvent;
 import com.alibaba.csp.sentinel.event.registry.SentinelEventListenerRegistry;
 import com.alibaba.csp.sentinel.log.RecordLog;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -122,6 +120,7 @@ public class DefaultSentinelEventMulticaster implements SentinelEventMulticaster
         List<SentinelEventListener> listeners = registry.getSentinelEventListener(eventType);
         if (listeners != null && !listeners.isEmpty()) {
             // notify event
+            Collections.sort(listeners, Comparator.comparingInt(SentinelEventListener::order));
             for (SentinelEventListener listener : listeners) {
                 notifyListeners(event, listener);
             }
