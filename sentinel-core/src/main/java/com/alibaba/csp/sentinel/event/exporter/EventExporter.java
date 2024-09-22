@@ -168,7 +168,7 @@ public class EventExporter {
         }
         Collections.sort(remainFile, EVENT_FILE_COMPARATOR);
         int removeCount = remainFile.size() - remainFileCnt;
-        for (int i = 0; i < removeCount; i++) {
+        for (int i = 0; i <= removeCount; i++) {
             new File(remainFile.get(i)).delete();
             RecordLog.info("[EventExporter] Remove old file: " + remainFile.get(i));
         }
@@ -259,7 +259,7 @@ public class EventExporter {
      */
     private String getFileName() {
         long timeMillis = System.currentTimeMillis();
-        String fileName = EVENT_BASE_DIR;
+        String fileName = BASE_EVENT_FILE_NAME;
         if (LogBase.isLogNameUsePid()) {
             fileName = fileName + ".pid" + pid;
         }
@@ -319,6 +319,10 @@ public class EventExporter {
         public void run() {
             while (started.get()) {
                 try {
+                    while (queue.isEmpty()) {
+                        // wait for 800ms if there is no data in the buffer
+                        LockSupport.parkNanos(800 * 1000000L);
+                    }
                     Queue<String> queue = EventExporter.this.queue;
                     List<String> data = new ArrayList<>(queue.size());
                     while (!queue.isEmpty()) {
@@ -326,8 +330,6 @@ public class EventExporter {
                     }
                     // write data to file if there is any
                     write(data);
-                    // wait for 800ms if there is no data in the buffer
-                    LockSupport.parkNanos(800 * 1000000L);
                 } catch (Exception e) {
                     // create new file if any exception occurs
                     RecordLog.error("[EventExporter] Error when flushing data to disk", e);
