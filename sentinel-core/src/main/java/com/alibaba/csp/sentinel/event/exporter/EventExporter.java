@@ -24,6 +24,7 @@ import com.alibaba.csp.sentinel.util.PidUtil;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -46,6 +47,8 @@ public class EventExporter {
     public static final EventFileComparator EVENT_FILE_COMPARATOR = new EventFileComparator();
 
     public final String BASE_EVENT_FILE_NAME = "event.log";
+
+    private String eventFilePrefix = "";
 
     private static final int pid = PidUtil.getPid();
 
@@ -137,7 +140,7 @@ public class EventExporter {
             createNewFile(absoluteDir, getFileName());
         } else {
             // check file size
-            checkFileSizeAndRollToNextFile(absoluteDir, curExportFile, this.singleFileSize);
+            checkFileSizeAndRollToNextFile(absoluteDir, this.singleFileSize);
         }
     }
 
@@ -149,6 +152,9 @@ public class EventExporter {
      * @throws Exception if any exception occurs when creating the file
      */
     private void createNewFile(String fileDir, String fileName) throws Exception {
+        if (outEventBuf != null) {
+            outEventBuf.close();
+        }
         outEvent = new FileOutputStream(fileDir + File.separator + fileName, true);
         outEventBuf = new BufferedOutputStream(outEvent);
         curExportFile = new File(fileName);
@@ -175,14 +181,13 @@ public class EventExporter {
     /**
      * Check if the file size exceeds the limit.
      *
-     * @param absoluteDir    the directory of the file
-     * @param file           the file to check
+     * @param baseDir      the base directory of the event files
      * @param singleFileSize the single file size limit
-     * @return true if the file size exceeds the limit, false otherwise
      */
-    private void checkFileSizeAndRollToNextFile(String absoluteDir, File file, long singleFileSize) throws Exception {
-        if (!file.exists() || file.length() >= singleFileSize) {
-            createNewFile(absoluteDir, getFileName());
+    private void checkFileSizeAndRollToNextFile(String baseDir, long singleFileSize) throws Exception {
+        long size = outEvent.getChannel().size();
+        if (size >= singleFileSize) {
+            createNewFile(baseDir, getFileName());
         }
     }
 
@@ -220,7 +225,13 @@ public class EventExporter {
      * @return true if the file name matches the pattern, false otherwise
      */
     private boolean matchEventFilePattern(String fileName) {
-        boolean startCheck = fileName.startsWith(BASE_EVENT_FILE_NAME);
+        String appName = SentinelConfig.getAppName();
+        if (appName == null) {
+            appName = "";
+        } else {
+            appName = appName.replace(".", "-");
+        }
+        boolean startCheck = fileName.startsWith(appName + "-" + BASE_EVENT_FILE_NAME);
         if (!startCheck) {
             return false;
         }
@@ -295,7 +306,7 @@ public class EventExporter {
             }
             String o1Time = o1Split[o1Split.length - 1];
             String o2Time = o2Split[o2Split.length - 1];
-            return o2Time.compareTo(o1Time);
+            return o1Time.compareTo(o2Time);
         }
     }
 
