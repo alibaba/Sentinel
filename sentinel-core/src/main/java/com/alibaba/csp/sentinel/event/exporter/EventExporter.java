@@ -45,8 +45,6 @@ public class EventExporter {
 
     public static final EventFileComparator EVENT_FILE_COMPARATOR = new EventFileComparator();
 
-    public final String BASE_EVENT_FILE_DIR = "sentinel-event";
-
     public final String BASE_EVENT_FILE_NAME = "event.log";
 
     private static final int pid = PidUtil.getPid();
@@ -125,7 +123,7 @@ public class EventExporter {
      * @throws Exception if any exception occurs when rolling to next file
      */
     private void checkAndRollToNextFile() throws Exception {
-        String absoluteDir = getAbsoluteDir();
+        String absoluteDir = EVENT_BASE_DIR;
         // check and create base dir
         createDirIfNecessary(absoluteDir);
         // get remain file
@@ -215,21 +213,6 @@ public class EventExporter {
     }
 
     /**
-     * Get the absolute path of the event file, not including the file name.
-     *
-     * @return the absolute path of the event file
-     */
-    private String getAbsoluteDir() {
-        String appName = SentinelConfig.getAppName();
-        if (appName == null) {
-            appName = "";
-        } else {
-            appName = appName.replace(".", "-");
-        }
-        return EVENT_BASE_DIR + File.separator + appName + File.separator + BASE_EVENT_FILE_DIR;
-    }
-
-    /**
      * !baseDir.isDirectory() || !baseDir.exists()
      * Match the event file pattern.
      *
@@ -258,13 +241,19 @@ public class EventExporter {
      * @return the file name of current event file
      */
     private String getFileName() {
+        String appName = SentinelConfig.getAppName();
+        if (appName == null) {
+            appName = "";
+        } else {
+            appName = appName.replace(".", "-");
+        }
         long timeMillis = System.currentTimeMillis();
         String fileName = BASE_EVENT_FILE_NAME;
         if (LogBase.isLogNameUsePid()) {
             fileName = fileName + ".pid" + pid;
         }
         fileName = String.format(fileName + "-%s-%d", currentDate(timeMillis), timeMillis);
-        return fileName;
+        return appName + "-" + fileName;
     }
 
     /**
