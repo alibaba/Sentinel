@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.init;
 import com.alibaba.csp.sentinel.event.SentinelEventBus;
 import com.alibaba.csp.sentinel.event.freq.ParamFlowEventPeriodFreqLimiter;
 import com.alibaba.csp.sentinel.event.model.ParamFlowBlockEvent;
+import com.alibaba.csp.sentinel.slots.event.listener.ParamFlowExportListener;
 
 /**
  * Init method for event.
@@ -31,6 +32,9 @@ public class ParamFlowPeriodLimiterInitFunc implements InitFunc {
         if (SentinelEventBus.getInstance().enableEvent()) {
             SentinelEventBus.getInstance().addFreqLimiter(ParamFlowBlockEvent.class,
                     new ParamFlowEventPeriodFreqLimiter(getLimitPeriodTimeMs(ParamFlowEventPeriodFreqLimiter.EVENT_LIMITER_CONFIG)));
+
+            // add basic event listener
+            SentinelEventBus.getInstance().addListener(new ParamFlowExportListener());
         }
     }
 

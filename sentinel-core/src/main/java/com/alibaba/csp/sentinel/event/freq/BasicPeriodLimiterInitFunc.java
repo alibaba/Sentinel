@@ -25,6 +25,7 @@ import com.alibaba.csp.sentinel.event.model.impl.block.AuthorityBlockEvent;
 import com.alibaba.csp.sentinel.event.model.impl.block.FlowBlockEvent;
 import com.alibaba.csp.sentinel.event.model.impl.block.SystemBlockEvent;
 import com.alibaba.csp.sentinel.init.InitFunc;
+import com.alibaba.csp.sentinel.slots.event.listener.BasicExportListener;
 
 /**
  * Used to declare event limiter.
@@ -49,6 +50,9 @@ public class BasicPeriodLimiterInitFunc implements InitFunc {
             // by rule id and resource
             SentinelEventBus.getInstance().addFreqLimiter(ClusterFallbackEvent.class,
                     new ClusterFallbackPeriodFreqLimiter(getLimitPeriodTimeMs(ClusterFallbackPeriodFreqLimiter.EVENT_LIMITER_CONFIG)));
+
+            // add basic event listener
+            SentinelEventBus.getInstance().addListener(new BasicExportListener());
         }
     }
 
