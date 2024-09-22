@@ -1,3 +1,18 @@
+/*
+ * Copyright 1999-2024 Alibaba Group Holding Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.alibaba.csp.sentinel.event.exporter;
 
 import com.alibaba.csp.sentinel.config.SentinelConfig;
@@ -13,6 +28,9 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.LockSupport;
 
 /**
  * This tool is used to export event data to disk, and it is not thread-safe.
@@ -33,17 +51,34 @@ public class EventExporter {
 
     private static final int pid = PidUtil.getPid();
 
-    private File curMetricFile;
+    private static EventExporter INSTANCE;
 
-    private FileOutputStream outMetric;
+    static {
+        long singleEventFileSize = SentinelConfig.singleEventFileSize();
+        int totalEventFileCount = SentinelConfig.totalEventFileCount();
+        INSTANCE = new EventExporter(totalEventFileCount, singleEventFileSize);
+    }
 
-    private BufferedOutputStream outMetricBuf;
+    private File curExportFile;
+
+    private FileOutputStream outEvent;
+
+    private BufferedOutputStream outEventBuf;
 
     private long singleFileSize;
 
     private int remainFileCnt;
 
-    public EventExporter(int remainFileCnt, long singleFileSize) {
+    private FlushEThread flushETask;
+
+    /**
+     * data buffer queue.
+     */
+    private final Queue<String> queue = new ConcurrentLinkedQueue<>();
+
+    private final AtomicBoolean started = new AtomicBoolean(false);
+
+    private EventExporter(int remainFileCnt, long singleFileSize) {
         if (remainFileCnt <= 0) {
             // the minimum remain file count is 1
             remainFileCnt = 1;
@@ -54,6 +89,18 @@ public class EventExporter {
         }
         this.remainFileCnt = remainFileCnt;
         this.singleFileSize = singleFileSize;
+        this.flushETask = new FlushEThread();
+        started.set(true);
+        this.flushETask.start();
+    }
+
+    /**
+     * Write data to buffer.
+     *
+     * @param data the data to write
+     */
+    public void writeBuffer(String data) {
+        this.queue.offer(data);
     }
 
     /**
@@ -62,15 +109,14 @@ public class EventExporter {
      * @param data the data to write
      * @throws Exception if any exception occurs when writing data to file
      */
-    public void write(List<String> data) throws Exception {
+    private void write(List<String> data) throws Exception {
         // check and roll to next file if necessary
         checkAndRollToNextFile();
         // write data to file
         for (String line : data) {
-            outMetricBuf.write(line.getBytes(CHARSET));
-            outMetricBuf.write('\n');
+            outEventBuf.write((line + "\n").getBytes(CHARSET));
         }
-        outMetricBuf.flush();
+        outEventBuf.flush();
     }
 
     /**
@@ -89,11 +135,11 @@ public class EventExporter {
             removeMoreOldFile(remainFile);
         }
         // create new file if necessary
-        if (curMetricFile == null) {
+        if (curExportFile == null) {
             createNewFile(absoluteDir, getFileName());
         } else {
             // check file size
-            checkFileSizeAndRollToNextFile(absoluteDir, curMetricFile, this.singleFileSize);
+            checkFileSizeAndRollToNextFile(absoluteDir, curExportFile, this.singleFileSize);
         }
     }
 
@@ -105,10 +151,10 @@ public class EventExporter {
      * @throws Exception if any exception occurs when creating the file
      */
     private void createNewFile(String fileDir, String fileName) throws Exception {
-        outMetric = new FileOutputStream(fileDir + File.separator + fileName, true);
-        outMetricBuf = new BufferedOutputStream(outMetric);
-        curMetricFile = new File(fileName);
-        RecordLog.info("[EventExporter] Create new file: " + curMetricFile.getAbsolutePath());
+        outEvent = new FileOutputStream(fileDir + File.separator + fileName, true);
+        outEventBuf = new BufferedOutputStream(outEvent);
+        curExportFile = new File(fileName);
+        RecordLog.info("[EventExporter] Create new file: " + curExportFile.getAbsolutePath());
     }
 
     /**
@@ -232,6 +278,17 @@ public class EventExporter {
         return dateTime.getYear() * 10000L + dateTime.getMonthValue() * 100L + dateTime.getDayOfMonth();
     }
 
+    public void close() throws Exception {
+        if (!started.get()) {
+            return;
+        }
+        if (outEventBuf != null) {
+            outEventBuf.close();
+        }
+        started.set(false);
+        flushETask.interrupt();
+    }
+
     /**
      * Comparator for event file.
      */
@@ -251,5 +308,41 @@ public class EventExporter {
             String o2Time = o2Split[o2Split.length - 1];
             return o2Time.compareTo(o1Time);
         }
+    }
+
+    /**
+     * Flushes the data in the buffer to the disk.
+     */
+    private class FlushEThread extends Thread {
+
+        @Override
+        public void run() {
+            while (started.get()) {
+                try {
+                    Queue<String> queue = EventExporter.this.queue;
+                    List<String> data = new ArrayList<>(queue.size());
+                    while (!queue.isEmpty()) {
+                        data.add(queue.poll());
+                    }
+                    // write data to file if there is any
+                    write(data);
+                    // wait for 200ms if there is no data in the buffer
+                    LockSupport.parkNanos(200 * 1000000L);
+                } catch (Exception e) {
+                    // create new file if any exception occurs
+                    RecordLog.error("[EventExporter] Error when flushing data to disk", e);
+                    try {
+                        checkAndRollToNextFile();
+                    } catch (Exception ex) {
+                        // ignore
+                    }
+                }
+            }
+        }
+
+    }
+
+    public static EventExporter getINSTANCE() {
+        return INSTANCE;
     }
 }
