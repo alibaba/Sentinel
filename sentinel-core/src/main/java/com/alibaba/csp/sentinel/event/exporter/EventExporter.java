@@ -326,8 +326,8 @@ public class EventExporter {
                     }
                     // write data to file if there is any
                     write(data);
-                    // wait for 200ms if there is no data in the buffer
-                    LockSupport.parkNanos(200 * 1000000L);
+                    // wait for 800ms if there is no data in the buffer
+                    LockSupport.parkNanos(800 * 1000000L);
                 } catch (Exception e) {
                     // create new file if any exception occurs
                     RecordLog.error("[EventExporter] Error when flushing data to disk", e);
