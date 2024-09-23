@@ -132,7 +132,7 @@ public class EventExporter {
         // get remain file
         List<String> remainFile = getRemainFile(absoluteDir);
         // check file count
-        if (remainFile.size() >= this.remainFileCnt) {
+        if (remainFile.size() > this.remainFileCnt) {
             removeMoreOldFile(remainFile);
         }
         // create new file if necessary
