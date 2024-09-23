@@ -1,1 +1,2 @@
 com.alibaba.csp.sentinel.init.ParamFlowStatisticSlotCallbackInit
+com.alibaba.csp.sentinel.init.ParamFlowPeriodLimiterInitFunc

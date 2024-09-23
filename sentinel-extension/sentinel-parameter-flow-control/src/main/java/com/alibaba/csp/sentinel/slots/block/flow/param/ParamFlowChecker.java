@@ -21,9 +21,12 @@ import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
 import com.alibaba.csp.sentinel.cluster.TokenService;
 import com.alibaba.csp.sentinel.cluster.client.TokenClientProvider;
 import com.alibaba.csp.sentinel.cluster.server.EmbeddedClusterTokenServerProvider;
+import com.alibaba.csp.sentinel.event.SentinelEventBus;
+import com.alibaba.csp.sentinel.event.model.impl.ClusterFallbackEvent;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 
@@ -296,12 +299,18 @@ public final class ParamFlowChecker {
 
     private static boolean fallbackToLocalOrPass(ResourceWrapper resourceWrapper, ParamFlowRule rule, int count,
                                                  Object value) {
+        publishFallbackToLocal(rule, resourceWrapper);
         if (rule.getClusterConfig().isFallbackToLocalWhenFail()) {
             return passLocalCheck(resourceWrapper, rule, count, value);
         } else {
             // The rule won't be activated, just pass.
             return true;
         }
+    }
+
+    private static void publishFallbackToLocal(ParamFlowRule rule, ResourceWrapper resource) {
+        ClusterFallbackEvent fallbackEvent = new ClusterFallbackEvent(resource.getName(), rule);
+        SentinelEventBus.getInstance().publish(fallbackEvent);
     }
 
     private static TokenService pickClusterService() {

@@ -92,6 +92,8 @@ public final class SystemRuleManager {
     private final static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1,
         new NamedThreadFactory("sentinel-system-status-record-task", true));
 
+    private static final SystemRule currentSysRule = new SystemRule();
+
     static {
         checkSystemStatus.set(false);
         statusListener = new SystemStatusListener();
@@ -223,6 +225,8 @@ public final class SystemRuleManager {
             maxRtIsSet = false;
             maxThreadIsSet = false;
             qpsIsSet = false;
+
+            resetCurrentSysRule();
         }
 
     }
@@ -279,6 +283,30 @@ public final class SystemRuleManager {
 
         checkSystemStatus.set(checkStatus);
 
+        if (checkStatus) {
+            resetCurrentSysRule();
+        }
+
+    }
+
+    /**
+     * set current sys rule by manager.
+     */
+    private static void resetCurrentSysRule() {
+        currentSysRule.setHighestSystemLoad(highestSystemLoad);
+        currentSysRule.setHighestCpuUsage(highestCpuUsage);
+        currentSysRule.setAvgRt(maxRt);
+        currentSysRule.setMaxThread(maxThread);
+        currentSysRule.setQps(qps);
+    }
+
+    /**
+     * Return current sys rule.
+     *
+     * @return  current sys rule
+     */
+    public static SystemRule getCurrentSysRule() {
+        return currentSysRule;
     }
 
     /**
