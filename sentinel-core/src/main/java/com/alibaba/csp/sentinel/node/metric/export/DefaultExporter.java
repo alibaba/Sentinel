@@ -40,7 +40,7 @@ public class DefaultExporter implements MetricExporter {
             try {
                 metricWriter.write(entry.getKey(), entry.getValue());
             } catch (Exception e) {
-                RecordLog.warn("[MetricTimerListener] Write metric error", e);
+                RecordLog.warn("[DefaultExporter] Write metric error", e);
             }
         }
     }
