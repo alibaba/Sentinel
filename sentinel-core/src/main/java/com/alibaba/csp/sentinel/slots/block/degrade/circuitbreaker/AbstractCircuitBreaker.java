@@ -19,6 +19,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.context.Context;
+import com.alibaba.csp.sentinel.event.SentinelEventBus;
+import com.alibaba.csp.sentinel.event.model.impl.CircuitBreakerStateEvent;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
@@ -93,6 +95,7 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
     protected boolean fromCloseToOpen(double snapshotValue) {
         State prev = State.CLOSED;
         if (currentState.compareAndSet(prev, State.OPEN)) {
+            publishEvent(prev, State.OPEN);
             updateNextRetryTimestamp();
 
             notifyObservers(prev, State.OPEN, snapshotValue);
@@ -103,6 +106,8 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
 
     protected boolean fromOpenToHalfOpen(Context context) {
         if (currentState.compareAndSet(State.OPEN, State.HALF_OPEN)) {
+            publishEvent(State.OPEN, State.HALF_OPEN);
+
             notifyObservers(State.OPEN, State.HALF_OPEN, null);
             Entry entry = context.getCurEntry();
             entry.whenTerminate(new BiConsumer<Context, Entry>() {
@@ -114,6 +119,7 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
                     if (entry.getBlockError() != null) {
                         // Fallback to OPEN due to detecting request is blocked
                         currentState.compareAndSet(State.HALF_OPEN, State.OPEN);
+                        publishEvent(State.HALF_OPEN, State.OPEN);
                         notifyObservers(State.HALF_OPEN, State.OPEN, 1.0d);
                     }
                 }
@@ -121,6 +127,11 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
             return true;
         }
         return false;
+    }
+
+    private void publishEvent(State oldState, State newState) {
+        CircuitBreakerStateEvent stateEvent = new CircuitBreakerStateEvent(oldState, newState, this.rule);
+        SentinelEventBus.getInstance().publish(stateEvent);
     }
     
     private void notifyObservers(CircuitBreaker.State prevState, CircuitBreaker.State newState, Double snapshotValue) {
@@ -131,6 +142,7 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
 
     protected boolean fromHalfOpenToOpen(double snapshotValue) {
         if (currentState.compareAndSet(State.HALF_OPEN, State.OPEN)) {
+            publishEvent(State.HALF_OPEN, State.OPEN);
             updateNextRetryTimestamp();
             notifyObservers(State.HALF_OPEN, State.OPEN, snapshotValue);
             return true;
@@ -140,6 +152,7 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
 
     protected boolean fromHalfOpenToClose() {
         if (currentState.compareAndSet(State.HALF_OPEN, State.CLOSED)) {
+            publishEvent(State.HALF_OPEN, State.CLOSED);
             resetStat();
             notifyObservers(State.HALF_OPEN, State.CLOSED, null);
             return true;

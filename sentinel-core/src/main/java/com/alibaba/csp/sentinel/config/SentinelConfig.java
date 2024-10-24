@@ -57,6 +57,8 @@ public final class SentinelConfig {
     public static final String CHARSET = "csp.sentinel.charset";
     public static final String SINGLE_METRIC_FILE_SIZE = "csp.sentinel.metric.file.single.size";
     public static final String TOTAL_METRIC_FILE_COUNT = "csp.sentinel.metric.file.total.count";
+    public static final String SINGLE_EVENT_FILE_SIZE = "csp.sentinel.event.file.single.size";
+    public static final String TOTAL_EVENT_FILE_COUNT = "csp.sentinel.event.file.total.count";
     public static final String COLD_FACTOR = "csp.sentinel.flow.cold.factor";
     public static final String STATISTIC_MAX_RT = "csp.sentinel.statistic.max.rt";
     public static final String SPI_CLASSLOADER = "csp.sentinel.spi.classloader";
@@ -65,6 +67,8 @@ public final class SentinelConfig {
     public static final String DEFAULT_CHARSET = "UTF-8";
     public static final long DEFAULT_SINGLE_METRIC_FILE_SIZE = 1024 * 1024 * 50;
     public static final int DEFAULT_TOTAL_METRIC_FILE_COUNT = 6;
+    public static final long DEFAULT_SINGLE_EVENT_FILE_SIZE = 1024 * 1024 * 50;
+    public static final int DEFAULT_TOTAL_EVENT_FILE_COUNT = 6;
     public static final int DEFAULT_COLD_FACTOR = 3;
     public static final int DEFAULT_STATISTIC_MAX_RT = 5000;
     public static final long DEFAULT_METRIC_FLUSH_INTERVAL = 1L;
@@ -218,6 +222,26 @@ public final class SentinelConfig {
             RecordLog.warn("[SentinelConfig] Parse totalMetricFileCount fail, use default value: "
                     + DEFAULT_TOTAL_METRIC_FILE_COUNT, throwable);
             return DEFAULT_TOTAL_METRIC_FILE_COUNT;
+        }
+    }
+
+    public static long singleEventFileSize() {
+        try {
+            return Long.parseLong(props.get(SINGLE_EVENT_FILE_SIZE));
+        } catch (Throwable throwable) {
+            RecordLog.warn("[SentinelConfig] Parse singleEventFileSize fail, use default value: "
+                    + DEFAULT_SINGLE_EVENT_FILE_SIZE, throwable);
+            return DEFAULT_SINGLE_EVENT_FILE_SIZE;
+        }
+    }
+
+    public static int totalEventFileCount() {
+        try {
+            return Integer.parseInt(props.get(TOTAL_EVENT_FILE_COUNT));
+        } catch (Throwable throwable) {
+            RecordLog.warn("[SentinelConfig] Parse totalEventFileCount fail, use default value: "
+                    + DEFAULT_TOTAL_EVENT_FILE_COUNT, throwable);
+            return DEFAULT_TOTAL_EVENT_FILE_COUNT;
         }
     }
 

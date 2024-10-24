@@ -24,6 +24,8 @@ import com.alibaba.csp.sentinel.cluster.TokenResultStatus;
 import com.alibaba.csp.sentinel.cluster.TokenResult;
 import com.alibaba.csp.sentinel.cluster.TokenService;
 import com.alibaba.csp.sentinel.context.Context;
+import com.alibaba.csp.sentinel.event.SentinelEventBus;
+import com.alibaba.csp.sentinel.event.model.impl.ClusterFallbackEvent;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.node.Node;
@@ -163,8 +165,15 @@ public class FlowRuleChecker {
         return fallbackToLocalOrPass(rule, context, node, acquireCount, prioritized);
     }
 
+    private static void publishFallbackToLocal(FlowRule rule, ResourceWrapper resource) {
+        ClusterFallbackEvent fallbackEvent = new ClusterFallbackEvent(resource.getName(), rule);
+        SentinelEventBus.getInstance().publish(fallbackEvent);
+    }
+
     private static boolean fallbackToLocalOrPass(FlowRule rule, Context context, DefaultNode node, int acquireCount,
                                                  boolean prioritized) {
+        // published when cluster flow rule fallback
+        publishFallbackToLocal(rule, node.getId());
         if (rule.getClusterConfig().isFallbackToLocalWhenFail()) {
             return passLocalCheck(rule, context, node, acquireCount, prioritized);
         } else {

@@ -1,1 +1,2 @@
 com.alibaba.csp.sentinel.metric.extension.MetricCallbackInit
+com.alibaba.csp.sentinel.event.freq.BasicPeriodLimiterInitFunc
