@@ -15,9 +15,10 @@
  */
 package com.alibaba.csp.sentinel.node.metric;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Metrics data for a specific resource at given {@code timestamp}.
@@ -211,11 +212,16 @@ public class MetricNode {
      * @return string format of this.
      */
     public String toFatString() {
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         StringBuilder sb = new StringBuilder(32);
         sb.delete(0, sb.length());
-        sb.append(getTimestamp()).append("|");
-        sb.append(df.format(new Date(getTimestamp()))).append("|");
+        
+        long timestamp = getTimestamp();
+        sb.append(timestamp).append("|");
+        
+        LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault());
+        sb.append(dateTime.format(formatter)).append("|");
+        
         String legalName = getResource().replaceAll("\\|", "_");
         sb.append(legalName).append("|");
         sb.append(getPassQps()).append("|");
