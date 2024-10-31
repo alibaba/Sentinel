@@ -213,7 +213,7 @@ public class MetricNode {
      */
 
     private static DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    
+
     public String toFatString() {
         StringBuilder sb = new StringBuilder(32);
         sb.delete(0, sb.length());
@@ -222,7 +222,7 @@ public class MetricNode {
         sb.append(timestamp).append("|");
         
         LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault());
-        sb.append(dateTime.format(df)).append("|");
+        sb.append(df.format(dateTime)).append("|");
         
         String legalName = getResource().replaceAll("\\|", "_");
         sb.append(legalName).append("|");
