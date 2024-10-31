@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.slots.block;
 
+import java.util.Objects;
+
 /**
  * Abstract rule entity.
  *
@@ -44,6 +46,11 @@ public abstract class AbstractRule implements Rule {
      */
     private String limitApp;
 
+    /**
+     * Whether to match resource names according to regular rules
+     */
+    private boolean regex;
+
     public Long getId() {
         return id;
     }
@@ -72,6 +79,15 @@ public abstract class AbstractRule implements Rule {
         return this;
     }
 
+    public boolean isRegex() {
+        return regex;
+    }
+
+    public AbstractRule setRegex(boolean regex) {
+        this.regex = regex;
+        return this;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -83,7 +99,10 @@ public abstract class AbstractRule implements Rule {
 
         AbstractRule that = (AbstractRule)o;
 
-        if (resource != null ? !resource.equals(that.resource) : that.resource != null) {
+        if (!Objects.equals(resource, that.resource)) {
+            return false;
+        }
+        if (regex != that.regex) {
             return false;
         }
         if (!limitAppEquals(limitApp, that.limitApp)) {
@@ -114,6 +133,7 @@ public abstract class AbstractRule implements Rule {
         if (!("".equals(limitApp) || RuleConstant.LIMIT_APP_DEFAULT.equals(limitApp) || limitApp == null)) {
             result = 31 * result + limitApp.hashCode();
         }
+        result = 31 * result + (regex ? 1 : 0);
         return result;
     }
 }

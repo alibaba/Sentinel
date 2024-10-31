@@ -35,6 +35,10 @@ public class AsyncEntry extends CtEntry {
         super(resourceWrapper, chain, context);
     }
 
+    AsyncEntry(ResourceWrapper resourceWrapper, ProcessorSlot<Object> chain, Context context, int count, Object[] args) {
+        super(resourceWrapper, chain, context, count, args);
+    }
+
     /**
      * Remove current entry from local context, but does not exit.
      */

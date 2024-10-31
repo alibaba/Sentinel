@@ -26,8 +26,6 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.function.Function;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 /**
  * <p>
@@ -179,9 +177,7 @@ public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     private final Function<String, Collection<FlowRule>> ruleProvider = new Function<String, Collection<FlowRule>>() {
         @Override
         public Collection<FlowRule> apply(String resource) {
-            // Flow rule map should not be null.
-            Map<String, List<FlowRule>> flowRules = FlowRuleManager.getFlowRuleMap();
-            return flowRules.get(resource);
+            return FlowRuleManager.getFlowRules(resource);
         }
     };
 }

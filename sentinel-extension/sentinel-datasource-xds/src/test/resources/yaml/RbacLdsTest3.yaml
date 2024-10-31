@@ -1,0 +1,61 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: httpbin2
+  namespace: default
+spec:
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: [ "principal1","principal2" ]
+            notPrincipals: [ "notPrincipal1","notPrincipal2" ]
+            requestPrincipals: [ "jwtp1","jwtp2" ]
+            notRequestPrincipals: [ "notjwtp1","notjwtp2" ]
+            namespaces: [ "namespace1","namespace2" ]
+            notNamespaces: [ "notNamespace1","notNamespace2" ]
+            ipBlocks: [ "10.1.1.1","10.1.1.0/24" ]
+            notIpBlocks: [ "11.1.1.1","11.1.1.0/24" ]
+            remoteIpBlocks: [ "12.1.1.1","12.1.1.0/24" ]
+            notRemoteIpBlocks: [ "13.1.1.1","13.1.1.0/24" ]
+        - source:
+            principals: [ "principal3" ]
+
+      to:
+        - operation:
+            hosts: [ "www.host1.com","www.host2.com" ]
+            notHosts: [ "www.nothost1.com","www.nothost2.com" ]
+            ports: [ "8080","443" ]
+            notPorts: [ "18080","1443" ]
+            methods: [ "GET","POST" ]
+            notMethods: [ "PUT","DELETE" ]
+            paths: [ "/info1*","/info2" ]
+            notPaths: [ "/notinfo1*","/info2" ]
+        - operation:
+            hosts: [ "www.host3.com" ]
+
+      when:
+        - key: request.headers[x1]
+          values: [ "whenhead1","whenhead2" ]
+        - key: source.ip
+          values: [ "14.1.1.1","14.1.1.0/24" ]
+        - key: remote.ip
+          values: [ "15.1.1.1","15.1.1.0/24" ]
+        - key: source.namespace
+          values: [ "whennamespace1","whennamespace2" ]
+        - key: source.principal
+          values: [ "whenprincipal1","whenprincipal2" ]
+        - key: request.auth.principal
+          values: [ "whenjwt1","whenjwt2" ]
+        - key: request.auth.audiences
+          values: [ "whenaudience1","whenaudience2" ]
+        - key: request.auth.presenter
+          values: [ "whenissuer1","whenissuer2" ]
+        - key: request.auth.claims[iss]
+          values: [ "whenclaims1","whenclaims2" ]
+        - key: destination.ip
+          values: [ "16.1.1.1","16.1.1.0/24" ]
+        - key: destination.port
+          values: [ "28080","2443" ]
+        - key: connection.sni
+          values: [ "www.whensni1.com","www.whensni2.com" ]

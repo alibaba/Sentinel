@@ -115,7 +115,7 @@ public class LogBase {
             try {
                 logLevel = Level.parse(logLevelString);
             } catch (IllegalArgumentException e) {
-                System.out.println("Log level : " + logLevel + " is invalid. Use default : " + LOG_DEFAULT_LEVEL.toString());
+                System.out.println("Log level : " + logLevelString + " is invalid. Use default : " + LOG_DEFAULT_LEVEL.toString());
             }
         }
         System.out.println("INFO: Sentinel log level is: " + logLevel);
