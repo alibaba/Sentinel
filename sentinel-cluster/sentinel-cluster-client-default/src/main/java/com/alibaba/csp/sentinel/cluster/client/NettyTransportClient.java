@@ -72,6 +72,7 @@ public class NettyTransportClient implements ClusterTransportClient {
     private Channel channel;
     private NioEventLoopGroup eventLoopGroup;
     private TokenClientHandler clientHandler;
+    private TokenClientPromiseHolder tokenClientPromiseHolder;
 
     private final AtomicInteger idGenerator = new AtomicInteger(0);
     private final AtomicInteger currentState = new AtomicInteger(ClientConstants.CLIENT_STATUS_OFF);
@@ -97,7 +98,8 @@ public class NettyTransportClient implements ClusterTransportClient {
             .handler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
-                    clientHandler = new TokenClientHandler(currentState, disconnectCallback);
+                    tokenClientPromiseHolder = new TokenClientPromiseHolder();
+                    clientHandler = new TokenClientHandler(currentState, disconnectCallback, tokenClientPromiseHolder);
 
                     ChannelPipeline pipeline = ch.pipeline();
                     pipeline.addLast(new LengthFieldBasedFrameDecoder(1024, 0, 2, 0, 2));
@@ -201,7 +203,7 @@ public class NettyTransportClient implements ClusterTransportClient {
 
     @Override
     public boolean isReady() {
-        return channel != null && clientHandler != null && clientHandler.hasStarted();
+        return channel != null && clientHandler != null && clientHandler.hasStarted() && tokenClientPromiseHolder != null;
     }
 
     @Override
@@ -219,20 +221,24 @@ public class NettyTransportClient implements ClusterTransportClient {
             channel.writeAndFlush(request);
 
             ChannelPromise promise = channel.newPromise();
-            TokenClientPromiseHolder.putPromise(xid, promise);
-
-            if (!promise.await(ClusterClientConfigManager.getRequestTimeout())) {
+            tokenClientPromiseHolder.putPromise(xid, promise);
+            int timeout = ClusterClientConfigManager.getRequestTimeout();
+            int requestTimeout = request.getTimeout();
+            if (requestTimeout > 0) {
+                timeout = requestTimeout;
+            }
+            if (!promise.await(timeout)) {
                 throw new SentinelClusterException(ClusterErrorMessages.REQUEST_TIME_OUT);
             }
 
-            SimpleEntry<ChannelPromise, ClusterResponse> entry = TokenClientPromiseHolder.getEntry(xid);
+            SimpleEntry<ChannelPromise, ClusterResponse> entry = tokenClientPromiseHolder.getEntry(xid);
             if (entry == null || entry.getValue() == null) {
                 // Should not go through here.
                 throw new SentinelClusterException(ClusterErrorMessages.UNEXPECTED_STATUS);
             }
             return entry.getValue();
         } finally {
-            TokenClientPromiseHolder.remove(xid);
+            tokenClientPromiseHolder.remove(xid);
         }
     }
 
