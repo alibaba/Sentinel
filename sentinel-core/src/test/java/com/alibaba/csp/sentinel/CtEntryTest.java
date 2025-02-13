@@ -51,7 +51,7 @@ public class CtEntryTest {
             assertEquals("B", nodeB.getId().getName());
             DefaultNode nodeC = (DefaultNode) new ArrayList<>(nodeB.getChildList()).get(0);
             assertEquals("C", nodeC.getId().getName());
-            // A -> C
+            // A -> D
             a = SphU.entry("A");
             Entry d = SphU.entry("D");
             d.exit();
