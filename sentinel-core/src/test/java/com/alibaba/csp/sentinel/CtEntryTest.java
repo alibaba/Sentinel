@@ -4,12 +4,21 @@ import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.context.ContextTestUtil;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.context.NullContext;
+import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
 
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
@@ -19,6 +28,51 @@ import static org.mockito.Mockito.when;
  * @author Eric Zhao
  */
 public class CtEntryTest {
+
+    @Test
+    public void testInvoiceTree(){
+        try{
+            ContextUtil.enter("invoice-tree");
+            DefaultNode entranceNode =(DefaultNode) Constants.ROOT.getChildList().stream()
+                    .filter(e -> ((DefaultNode) e).getId().getName().equals("invoice-tree"))
+                    .findFirst().get();
+            Entry a = SphU.entry("A");
+            Entry b = SphU.entry("B");
+            Entry c = SphU.entry("C");
+            c.exit();
+            b.exit();
+            a.exit();
+            // A -> B -> C
+            List<Node> childList = new ArrayList<>(entranceNode.getChildList());
+            assertEquals(1, childList.size());
+            DefaultNode nodeA = (DefaultNode) childList.get(0);
+            assertEquals("A", nodeA.getId().getName());
+            DefaultNode nodeB = (DefaultNode) new ArrayList<>(nodeA.getChildList()).get(0);
+            assertEquals("B", nodeB.getId().getName());
+            DefaultNode nodeC = (DefaultNode) new ArrayList<>(nodeB.getChildList()).get(0);
+            assertEquals("C", nodeC.getId().getName());
+            // A -> C
+            a = SphU.entry("A");
+            c = SphU.entry("C");
+            c.exit();
+            a.exit();
+            childList = new ArrayList<>(entranceNode.getChildList());
+            assertEquals(1, childList.size());
+            nodeA = (DefaultNode) childList.get(0);
+            Map<String, DefaultNode> nodeAChildMap = nodeA.getChildList()
+                    .stream().map(node -> (DefaultNode) node)
+                    .collect(Collectors.toMap(node -> node.getId().getName(), node -> node));
+            assertNotNull(nodeAChildMap.get("B"));
+            assertNotNull(nodeAChildMap.get("C"));
+
+        }catch (BlockException ignore){
+
+        }finally {
+            ContextUtil.exit();
+        }
+
+    }
+
 
     @Test
     public void testExitNotMatchCurEntry() {
