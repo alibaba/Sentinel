@@ -381,6 +381,14 @@ public abstract class LeapArray<T> {
     }
 
     /**
+     * Get window length of a single bucket in milliseconds.
+     * @return window length in milliseconds
+     */
+    public int getWindowLengthInMs() {
+        return windowLengthInMs;
+    }
+
+    /**
      * Get total interval length of the sliding window in milliseconds.
      *
      * @return interval in second

@@ -83,7 +83,7 @@ public class ClusterMetric {
         }
         metric.addOccupyPass(acquireCount);
         add(ClusterFlowEvent.WAITING, acquireCount);
-        return 1000 / metric.getSampleCount();
+        return metric.getWindowLengthInMs();
     }
 
     private boolean canOccupy(ClusterFlowEvent event, int acquireCount, double latestQps, double threshold) {
