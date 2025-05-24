@@ -36,6 +36,8 @@ public final class RuleConstant {
      */
     public static final int DEGRADE_GRADE_EXCEPTION_COUNT = 2;
 
+    public static final int DEGRADE_GRADE_EXCEPTION_THRESHOLD = 3;
+
     public static final int DEGRADE_DEFAULT_SLOW_REQUEST_AMOUNT = 5;
     public static final int DEGRADE_DEFAULT_MIN_REQUEST_AMOUNT = 5;
 

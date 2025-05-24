@@ -31,6 +31,7 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.RuleManager;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreaker;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.ExceptionCircuitBreaker;
+import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.LowRateAllowedCircuitBreaker;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.ResponseTimeCircuitBreaker;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -169,6 +170,8 @@ public final class DegradeRuleManager {
             case RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO:
             case RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT:
                 return new ExceptionCircuitBreaker(rule);
+            case RuleConstant.DEGRADE_GRADE_EXCEPTION_THRESHOLD:
+                return new LowRateAllowedCircuitBreaker(rule);
             default:
                 return null;
         }
