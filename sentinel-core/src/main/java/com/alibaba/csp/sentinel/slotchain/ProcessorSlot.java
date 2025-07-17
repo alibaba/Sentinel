@@ -19,7 +19,7 @@ import com.alibaba.csp.sentinel.context.Context;
 
 /**
  * A container of some process and ways of notification when the process is finished.
- *
+ * 用于封装一个处理过程，并提供处理完成后的通知机制。
  * @author qinan.qn
  * @author jialiang.linjl
  * @author leyou(lihao)
@@ -30,12 +30,12 @@ public interface ProcessorSlot<T> {
     /**
      * Entrance of this slot.
      *
-     * @param context         current {@link Context}
-     * @param resourceWrapper current resource
-     * @param param           generics parameter, usually is a {@link com.alibaba.csp.sentinel.node.Node}
-     * @param count           tokens needed
-     * @param prioritized     whether the entry is prioritized
-     * @param args            parameters of the original call
+     * @param context         current {@link Context} 当前请求上下文
+     * @param resourceWrapper current resource 资源包装对象，表示被保护的资源
+     * @param param           generics parameter, usually is a {@link com.alibaba.csp.sentinel.node.Node} 泛型参数，通常为节点对象
+     * @param count           tokens needed 需要的令牌数
+     * @param prioritized     whether the entry is prioritized 是否优先级请求
+     * @param args            parameters of the original call 原始调用参数
      * @throws Throwable blocked exception or unexpected error
      */
     void entry(Context context, ResourceWrapper resourceWrapper, T param, int count, boolean prioritized,

@@ -20,7 +20,7 @@ import com.alibaba.csp.sentinel.ResourceTypeConstants;
 
 /**
  * Common string resource wrapper.
- *
+ * 公共字符串资源包装类
  * @author qinan.qn
  * @author jialiang.linjl
  */

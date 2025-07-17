@@ -23,7 +23,7 @@ import com.alibaba.csp.sentinel.context.Context;
  */
 public class DefaultProcessorSlotChain extends ProcessorSlotChain {
 
-    AbstractLinkedProcessorSlot<?> first = new AbstractLinkedProcessorSlot<Object>() {
+    AbstractLinkedProcessorSlot<?> first = new AbstractLinkedProcessorSlot<>() {
 
         @Override
         public void entry(Context context, ResourceWrapper resourceWrapper, Object t, int count, boolean prioritized, Object... args)

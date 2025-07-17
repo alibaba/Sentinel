@@ -17,7 +17,7 @@ package com.alibaba.csp.sentinel.slotchain;
 
 /**
  * Link all processor slots as a chain.
- *
+ * Sentinel 的核心骨架，将不同的 Slot 按照顺序串在一起（责任链模式），从而将不同的功能（限流、降级、系统保护）组合在一起。
  * @author qinan.qn
  */
 public abstract class ProcessorSlotChain extends AbstractLinkedProcessorSlot<Object> {

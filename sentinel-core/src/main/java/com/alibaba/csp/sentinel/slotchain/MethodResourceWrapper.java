@@ -15,16 +15,15 @@
  */
 package com.alibaba.csp.sentinel.slotchain;
 
-import java.lang.reflect.Method;
-
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.ResourceTypeConstants;
-import com.alibaba.csp.sentinel.util.IdUtil;
 import com.alibaba.csp.sentinel.util.MethodUtil;
+
+import java.lang.reflect.Method;
 
 /**
  * Resource wrapper for method invocation.
- *
+ * 方法执行资源包装类
  * @author qinan.qn
  */
 public class MethodResourceWrapper extends ResourceWrapper {
