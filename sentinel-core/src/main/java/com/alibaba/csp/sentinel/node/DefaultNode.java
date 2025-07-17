@@ -15,15 +15,15 @@
  */
 package com.alibaba.csp.sentinel.node;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.SphO;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.context.Context;
+import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * <p>
@@ -34,7 +34,7 @@ import com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot;
  * This class may have a list of sub {@link DefaultNode}s. Child nodes will be created when
  * calling {@link SphU}#entry() or {@link SphO}@entry() multiple times in the same {@link Context}.
  * </p>
- *
+ * 链路节点，用于统计调用链路上某个资源的数据，维持树状结构。
  * @author qinan.qn
  * @see NodeSelectorSlot
  */

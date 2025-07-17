@@ -15,8 +15,6 @@
  */
 package com.alibaba.csp.sentinel;
 
-import java.util.LinkedList;
-
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.context.NullContext;
@@ -25,6 +23,8 @@ import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.util.function.BiConsumer;
+
+import java.util.LinkedList;
 
 /**
  * Linked entry within current context.
@@ -41,6 +41,12 @@ class CtEntry extends Entry {
     protected Context context;
     protected LinkedList<BiConsumer<Context, Entry>> exitHandlers;
 
+    /**
+     *
+     * @param resourceWrapper
+     * @param chain 为null时跳过规则检查
+     * @param context
+     */
     CtEntry(ResourceWrapper resourceWrapper, ProcessorSlot<Object> chain, Context context) {
         this(resourceWrapper, chain, context, 1, OBJECTS0);
     }
@@ -50,11 +56,13 @@ class CtEntry extends Entry {
         this.chain = chain;
         this.context = context;
 
+        // 将当前 Entry 接到传入 Context 的调用链路上
         setUpEntryFor(context);
     }
 
     private void setUpEntryFor(Context context) {
         // The entry should not be associated to NullContext.
+        // 入口节点上下文不能为NullContext
         if (context instanceof NullContext) {
             return;
         }

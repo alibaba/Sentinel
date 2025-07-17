@@ -58,21 +58,25 @@ public class Context {
 
     /**
      * Context name.
+     * 上下文名称
      */
     private final String name;
 
     /**
      * The entrance node of current invocation tree.
+     * 入口节点
      */
     private DefaultNode entranceNode;
 
     /**
      * Current processing entry.
+     * 当前处理入口
      */
     private Entry curEntry;
 
     /**
      * The origin of this context (usually indicate different invokers, e.g. service consumer name or origin IP).
+     * 上下文来源
      */
     private String origin = "";
 

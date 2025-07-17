@@ -43,6 +43,11 @@ import com.alibaba.csp.sentinel.context.Context;
  * {@link Context#setCurEntry(Entry)} as parent entry of this.
  * </p>
  *
+ * <li>记录当前资源调用的上下文信息（如创建时间、统计节点、资源名等）；</li>
+ * <li>支持构建调用树结构，便于统计和链路追踪；</li>
+ * <li>每次调用SphU.entry()会生成一个Entry对象，通过Context维护当前调用链中的父子关系；</li>
+ * <li>exit()方法需更新Context中当前Entry为父节点。</li>
+ *
  * @author qinan.qn
  * @author jialiang.linjl
  * @author leyou(lihao)
@@ -58,10 +63,12 @@ public abstract class Entry implements AutoCloseable {
     private final long createTimestamp;
     private long completeTimestamp;
 
+    // 当前统计节点
     private Node curNode;
     /**
      * {@link Node} of the specific origin, Usually the origin is the Service Consumer.
      */
+    // 来源统计节点
     private Node originNode;
 
     private Throwable error;

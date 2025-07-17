@@ -20,6 +20,7 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
  * A wrapper of resource name and type.
+ * 资源名称和类型的包装器
  *
  * @author qinan.qn
  * @author jialiang.linjl
