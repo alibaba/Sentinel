@@ -66,4 +66,4 @@ public class SentinelAspectConfiguration {
 }
 ```
 
-An example for using Sentinel Annotation AspectJ with Spring Boot can be found [here](https://github.com/alibaba/Sentinel/tree/master/sentinel-demo/sentinel-demo-annotation-spring-aop).
+An example for using Sentinel Annotation AspectJ with Spring Boot can be found in [sentinel-demo/sentinel-demo-annotation-spring-aop](https://github.com/alibaba/Sentinel/tree/master/sentinel-demo/sentinel-demo-annotation-spring-aop).

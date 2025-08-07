@@ -35,7 +35,7 @@ or add setting in `rpc-config.json` file, and its priority is lower than above.
 }
 ```
 
-For more details of SOFARPC filter, see [here](https://www.sofastack.tech/projects/sofa-rpc/custom-filter/).
+For more details of SOFARPC filter, see [SOFARPC filter documentation](https://www.sofastack.tech/projects/sofa-rpc/custom-filter/).
 
 ## SOFARPC resources
 
