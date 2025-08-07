@@ -31,7 +31,7 @@ If you don't want the filters enabled, you can manually disable them. For exampl
 <dubbo:provider filter="-sentinel.dubbo.provider.filter"/>
 ```
 
-For more details of Dubbo filter, see [here](http://dubbo.apache.org/en-us/docs/dev/impls/filter.html).
+For more details of Dubbo filter, see [Dubbo filter documentation](https://cn.dubbo.apache.org/en/overview/mannual/java-sdk/tasks/extensibility/filter/).
 
 ## Dubbo resources
 
