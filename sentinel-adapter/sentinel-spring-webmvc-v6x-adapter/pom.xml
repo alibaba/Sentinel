@@ -17,7 +17,7 @@
         <spring.boot.version>3.0.0</spring.boot.version>
         <servlet.api.version>6.0.0</servlet.api.version>
         <jakarta.xml.bind-api.version>4.0.0</jakarta.xml.bind-api.version>
-        <slf4j-api.version>2.0.4</slf4j-api.version>
+        <slf4j-api.version>2.0.16</slf4j-api.version>
 
         <skip.spring.v6x.test>false</skip.spring.v6x.test>
     </properties>
