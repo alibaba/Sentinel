@@ -2,7 +2,7 @@
 
 Sentinel provides integration module with Spring Cloud Gateway.
 The integration module is based on the Sentinel Reactor Adapter.
-> This module is quite similar to sentinel-spring-cloud-gateway-adapter and The difference is that this module has made some adaptations for webflux 6.x. 
+> This module is quite similar to sentinel-spring-cloud-gateway-adapter and The difference is that this module has made some adaptations for webflux 6.x.  
 > The usage is consistent with sentinel-spring-cloud-gateway-adapter, with the difference being that the maven dependency is different.
 
 Add the following dependency in `pom.xml` (if you are using Maven):
