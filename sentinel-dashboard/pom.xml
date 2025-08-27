@@ -3,6 +3,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <name>${project.groupId}:${project.artifactId}</name>
+
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-parent</artifactId>
@@ -176,6 +178,13 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
                 <version>${maven.deploy.version}</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
