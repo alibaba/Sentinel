@@ -212,7 +212,7 @@ public class MetricNode {
      * @return string format of this.
      */
 
-    private static DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public String toFatString() {
         StringBuilder sb = new StringBuilder(32);
