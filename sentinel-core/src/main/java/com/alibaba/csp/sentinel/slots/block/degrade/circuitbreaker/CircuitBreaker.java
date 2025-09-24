@@ -16,7 +16,6 @@
 package com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker;
 
 import com.alibaba.csp.sentinel.context.Context;
-import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 
 /**
@@ -64,6 +63,14 @@ public interface CircuitBreaker {
          * In {@code OPEN} state, all requests will be rejected until the next recovery time point.
          */
         OPEN,
+        /**
+         * This state is only used in adaptive circuit breaker.
+         * In {@code THROTTLING} state, the circuit breaker will release the current request with a certain probability based on the overload condition of the system.
+         * If the system is overloaded to an excessive degree, the probability of this request being processed will decrease until it reaches 0;
+         * and at the same time, the circuit breaker will enter the {@code OPEN} state.
+         * On the contrary, the probability will increase until it reaches 100%, and then the circuit breaker will enter the {@code CLOSED} state.
+         */
+        THROTTLING,
         /**
          * In {@code HALF_OPEN} state, the circuit breaker will allow a "probe" invocation.
          * If the invocation is abnormal according to the strategy (e.g. it's slow), the circuit breaker
