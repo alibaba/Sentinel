@@ -28,3 +28,6 @@ bin/
 # System related
 *.DS_Store
 Thumbs.db
+
+# flattened pom file
+.flattened-pom.xml

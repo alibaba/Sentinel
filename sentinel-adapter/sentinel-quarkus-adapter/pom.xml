@@ -6,7 +6,8 @@
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-adapter</artifactId>
-        <version>1.8.8</version>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>sentinel-quarkus-adapter-parent</artifactId>
