@@ -19,7 +19,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.context.Context;
-import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.util.AssertUtil;
@@ -33,7 +32,7 @@ import com.alibaba.csp.sentinel.util.function.BiConsumer;
 public abstract class AbstractCircuitBreaker implements CircuitBreaker {
 
     protected final DegradeRule rule;
-    protected final int recoveryTimeoutMs;
+    protected int recoveryTimeoutMs;
 
     private final EventObserverRegistry observerRegistry;
 
@@ -42,6 +41,13 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
 
     public AbstractCircuitBreaker(DegradeRule rule) {
         this(rule, EventObserverRegistry.getInstance());
+    }
+
+    // Constructor specifically for adaptive circuit breakers.
+    public AbstractCircuitBreaker() {
+        rule = null;
+        recoveryTimeoutMs = -1;
+        this.observerRegistry = EventObserverRegistry.getInstance();
     }
 
     AbstractCircuitBreaker(DegradeRule rule, EventObserverRegistry observerRegistry) {
@@ -80,7 +86,7 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
     /**
      * Reset the statistic data.
      */
-    abstract void resetStat();
+    protected abstract void resetStat();
 
     protected boolean retryTimeoutArrived() {
         return TimeUtil.currentTimeMillis() >= nextRetryTimestamp;
@@ -96,6 +102,35 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
             updateNextRetryTimestamp();
 
             notifyObservers(prev, State.OPEN, snapshotValue);
+            return true;
+        }
+        return false;
+    }
+
+    protected boolean fromCloseToThrottling(double snapshotValue) {
+        State prev = State.CLOSED;
+        if (currentState.compareAndSet(prev, State.THROTTLING)) {
+            notifyObservers(prev, State.THROTTLING, snapshotValue);
+            return true;
+        }
+        return false;
+    }
+
+    protected boolean fromThrottlingToOpen(int recoveryTimeoutMs, double snapshotValue) {
+        State prev = State.THROTTLING;
+        if (currentState.compareAndSet(prev, State.OPEN)) {
+            this.recoveryTimeoutMs = recoveryTimeoutMs;
+            updateNextRetryTimestamp();
+            notifyObservers(prev, State.OPEN, snapshotValue);
+            return true;
+        }
+        return false;
+    }
+
+    protected boolean fromThrottlingToClose() {
+        State prev = State.THROTTLING;
+        if (currentState.compareAndSet(prev, State.CLOSED)) {
+            notifyObservers(prev, State.CLOSED, null);
             return true;
         }
         return false;
@@ -122,7 +157,15 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
         }
         return false;
     }
-    
+
+    protected boolean fromOpenToHalfOpenForAdaptive() {
+        if (currentState.compareAndSet(State.OPEN, State.HALF_OPEN)) {
+            notifyObservers(State.OPEN, State.HALF_OPEN, null);
+            return true;
+        }
+        return false;
+    }
+
     private void notifyObservers(CircuitBreaker.State prevState, CircuitBreaker.State newState, Double snapshotValue) {
         for (CircuitBreakerStateChangeObserver observer : observerRegistry.getStateChangeObservers()) {
             observer.onStateChange(prevState, newState, rule, snapshotValue);

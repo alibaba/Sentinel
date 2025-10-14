@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel;
 
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.AdaptiveServerMetric;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.util.function.BiConsumer;
 import com.alibaba.csp.sentinel.context.ContextUtil;
@@ -66,6 +67,7 @@ public abstract class Entry implements AutoCloseable {
 
     private Throwable error;
     private BlockException blockError;
+    private AdaptiveServerMetric serverMetric;
 
     protected final ResourceWrapper resourceWrapper;
 
@@ -173,6 +175,14 @@ public abstract class Entry implements AutoCloseable {
 
     public void setError(Throwable error) {
         this.error = error;
+    }
+
+    public AdaptiveServerMetric getServerMetric() {
+        return serverMetric;
+    }
+
+    public void setServerMetric(AdaptiveServerMetric serverMetric) {
+        this.serverMetric = serverMetric;
     }
 
     /**

@@ -13,6 +13,7 @@
     <name>sentinel-demo</name>
 
     <modules>
+        <module>sentinel-demo-adaptive-degrade</module>
         <module>sentinel-demo-basic</module>
         <module>sentinel-demo-dynamic-file-rule</module>
         <module>sentinel-demo-rocketmq</module>
@@ -43,6 +44,7 @@
         <module>sentinel-demo-motan</module>
         <module>sentinel-demo-transport-spring-mvc</module>
         <module>sentinel-demo-servlet</module>
+        <module>sentinel-demo-adaptive-degrade-check-spi</module>
     </modules>
 
     <dependencies>
