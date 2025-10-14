@@ -49,7 +49,7 @@ public class AdaptiveDegradeRuleManagerTest {
         assertNotNull("Rule should not be null", rule1);
         assertNotNull("Rule should not be null", rule2);
         assertSame("Same resource should return same instance", rule1, rule2);
-        assertTrue("Default enabled should be true", rule1.isEnabled());
+        assertFalse("Default enabled should be false", rule1.isEnabled());
         AdaptiveDegradeRule ruleB = AdaptiveDegradeRuleManager.getRule(RESOURCE_B);
         assertNotNull("Rule should not be null", ruleB);
         assertNotSame("Different resources should return different instances", rule1, ruleB);

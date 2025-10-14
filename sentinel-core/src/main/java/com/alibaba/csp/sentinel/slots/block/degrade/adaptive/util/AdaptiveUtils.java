@@ -10,13 +10,9 @@ import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.scenario.ScenarioMa
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -32,6 +28,7 @@ public final class AdaptiveUtils {
     private static final double JEFFREYS_B = 0.5;
     private static final double MAD_TO_SIGMA = 1.4826;
     private static final double EDGE_PROBABILITY = 0.8;
+    private static final double MIN_BASELINE_ERROR_RATE = 0.001;
     private static final double MIN_TAU = 1.0 / WINDOW_COUNT;
 
     private AdaptiveUtils() {
@@ -121,6 +118,95 @@ public final class AdaptiveUtils {
             this.mean = mean;
             this.stdDev = stdDev;
         }
+    }
+
+    public static boolean isOverloadScenarioMatched(
+            WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter> currentWindow,
+            List<WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter>> windows,
+            AdaptiveServerMetric adaptiveServerMetric,
+            OverloadScenarioConfig config) {
+
+        if (config == null) {
+            return false;
+        }
+
+        if (windows.size() < 3) {
+            return false;
+        }
+
+        long currentTotal = currentWindow.value().getTotalCount().sum();
+        long currentErrors = currentWindow.value().getErrorCount().sum();
+        long currentRT = currentWindow.value().getOverallRTTime().sum();
+
+        double currentAvgRT = currentTotal > 0 ? (double) currentRT / currentTotal : 0;
+        double currentErrorRate = currentTotal > 0 ? (double) currentErrors / currentTotal : 0;
+
+        List<Double> historicalRts = new ArrayList<>();
+        List<Double> historicalErrorRates = new ArrayList<>();
+        long fallbackTotalRequests = 0;
+        long fallbackTotalErrors = 0;
+        long fallbackTotalRT = 0;
+
+        for (WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter> window : windows) {
+            AdaptiveCircuitBreaker.AdaptiveCounter counter = window.value();
+            if (counter == null) {
+                continue;
+            }
+            long total = counter.getTotalCount().sum();
+            long err = counter.getErrorCount().sum();
+            long rt = counter.getOverallRTTime().sum();
+            fallbackTotalRequests += total;
+            fallbackTotalErrors += err;
+            fallbackTotalRT += rt;
+            if (window == currentWindow) {
+                continue;
+            }
+            if (total > 0) {
+                double avgRt = (double) rt / total;
+                double errRate = (double) err / total;
+                historicalRts.add(avgRt);
+                historicalErrorRates.add(errRate);
+            }
+        }
+
+        fallbackTotalRequests -= currentTotal;
+        fallbackTotalErrors -= currentErrors;
+        fallbackTotalRT -= currentRT;
+
+        double avgRT;
+        double errorRate;
+
+        if (!historicalRts.isEmpty() && !historicalErrorRates.isEmpty()) {
+            List<Double> stableRts = filterOutliers(historicalRts);
+            List<Double> stableErrorRates = filterOutliers(historicalErrorRates);
+            if (!stableRts.isEmpty() && !stableErrorRates.isEmpty()) {
+                avgRT = stableRts.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+                errorRate = stableErrorRates.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+            } else {
+                avgRT = fallbackTotalRequests > 0 ? (double) fallbackTotalRT / fallbackTotalRequests : 0.0;
+                errorRate = fallbackTotalRequests > 0 ? (double) fallbackTotalErrors / fallbackTotalRequests : 0.0;
+            }
+        } else {
+            avgRT = fallbackTotalRequests > 0 ? (double) fallbackTotalRT / fallbackTotalRequests : 0.0;
+            errorRate = fallbackTotalRequests > 0 ? (double) fallbackTotalErrors / fallbackTotalRequests : 0.0;
+        }
+
+        double baselineErrorRate = Math.max(MIN_BASELINE_ERROR_RATE, errorRate);
+        boolean rtCondition = currentAvgRT > config.getResponseTimeMultiple() * avgRT;
+        boolean errorCondition = currentErrorRate > config.getErrorRateMultiple() * baselineErrorRate;
+
+        if (rtCondition || errorCondition) {
+            double serverCpuUsage = adaptiveServerMetric.getServerCpuUsage();
+            double serveTomcatUsageRate = adaptiveServerMetric.getServerTomcatUsageRate();
+            if (serverCpuUsage <= 0 && serveTomcatUsageRate <= 0) {
+                return false;
+            }
+            boolean cpuCondition = serverCpuUsage > 0 && serverCpuUsage > config.getOverloadCpuThreshold();
+            boolean tomcatCondition = serveTomcatUsageRate > 0 && serveTomcatUsageRate > config.getTomcatUsageRate();
+            return cpuCondition || tomcatCondition;
+        }
+
+        return false;
     }
 
     public static double getPassProbabilityWhenOverloading(
@@ -323,7 +409,7 @@ public final class AdaptiveUtils {
         return intervalInMs / sampleCount;
     }
 
-    private static List<Double> filterOutliers(List<Double> data) {
+    public static List<Double> filterOutliers(List<Double> data) {
         if (data.size() <= 1) {
             return data;
         }

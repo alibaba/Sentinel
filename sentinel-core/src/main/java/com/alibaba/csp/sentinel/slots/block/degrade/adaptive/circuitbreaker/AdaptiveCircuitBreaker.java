@@ -97,12 +97,12 @@ public class AdaptiveCircuitBreaker extends AbstractCircuitBreaker {
         if (currentState.get() == State.HALF_OPEN) {
             AdaptiveProbe.ProbeResults probeResults = adaptiveProbe.handleProbeRequestOnComplete(context);
             if (probeResults == AdaptiveProbe.ProbeResults.SUCCESS) {
-                RecordLog.debug("[AdaptiveCircuitBreaker] resource:{} Half-open state detection successful", resourceName);
+                RecordLog.info("[AdaptiveCircuitBreaker] resource:{} Half-open state detection successful", resourceName);
                 fromHalfOpenToClose();
                 scenario = Scenario.SystemScenario.NORMAL;
             }
             if (probeResults == AdaptiveProbe.ProbeResults.FAIL) {
-                RecordLog.debug("[AdaptiveCircuitBreaker] resource:{} Half-open state detection fail", resourceName);
+                RecordLog.warn("[AdaptiveCircuitBreaker] resource:{} Half-open state detection fail", resourceName);
                 fromHalfOpenToOpen(1.0d);
             }
             return;

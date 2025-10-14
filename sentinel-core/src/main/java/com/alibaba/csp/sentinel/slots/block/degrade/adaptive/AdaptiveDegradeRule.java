@@ -9,7 +9,7 @@ import com.alibaba.csp.sentinel.slots.block.AbstractRule;
  */
 public class AdaptiveDegradeRule extends AbstractRule {
 
-    private boolean enabled = true;
+    private boolean enabled = false;
 
     public AdaptiveDegradeRule(String name) {
         super();

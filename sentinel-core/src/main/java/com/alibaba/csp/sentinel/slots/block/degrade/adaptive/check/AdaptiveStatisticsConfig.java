@@ -29,7 +29,7 @@ public class AdaptiveStatisticsConfig {
     }
 
     public void loadConfig() {
-        RecordLog.debug("[AdaptiveStatisticsConfig] Starting to load user configuration");
+        RecordLog.info("[AdaptiveStatisticsConfig] Starting to load user configuration");
 
         String sampleCountStr = SentinelConfig.getConfig(SAMPLE_COUNT);
         if (sampleCountStr != null && !sampleCountStr.isEmpty()) {
@@ -41,7 +41,7 @@ public class AdaptiveStatisticsConfig {
             intervalInMs = Integer.parseInt(intervalInMsStr);
         }
 
-        RecordLog.debug("[AdaptiveStatisticsConfig] User configuration has been loaded successfully , current configuration: sampleCount:{},intervalInMs:{}", sampleCount, intervalInMs);
+        RecordLog.info("[AdaptiveStatisticsConfig] User configuration has been loaded successfully , current configuration: sampleCount:{},intervalInMs:{}", sampleCount, intervalInMs);
     }
 
 

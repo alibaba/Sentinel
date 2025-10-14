@@ -47,7 +47,7 @@ public class OverloadScenarioConfigTest {
 
     @Test
     public void testDefaultValues() {
-        assertEquals(5000, config.getRecoveryTimeoutMs());
+        assertEquals(10000, config.getRecoveryTimeoutMs());
         assertEquals(20000L, config.getHalfOpenTimeoutMs());
         assertEquals(0.6, config.getOverloadCpuThreshold(), 0.001);
         assertEquals(2.0, config.getResponseTimeMultiple(), 0.001);

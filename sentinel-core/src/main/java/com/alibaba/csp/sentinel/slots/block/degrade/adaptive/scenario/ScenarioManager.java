@@ -66,7 +66,7 @@ public class ScenarioManager {
                     break;
                 // TODO Integrate more scenarios
                 default:
-                    RecordLog.warn("[ScenarioManager] Unsupported scenarioType: {}", scenarioType);
+                    RecordLog.warn("[ScenarioManager] Unsupported scenarioType: {},use default config", scenarioType);
                     return new DefaultScenarioConfig();
             }
             ScenarioConfig existingConfig = scenarioConfigMap.putIfAbsent(scenarioType, config);

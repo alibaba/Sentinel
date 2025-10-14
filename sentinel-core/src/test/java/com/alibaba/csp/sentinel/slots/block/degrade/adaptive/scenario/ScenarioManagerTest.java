@@ -39,9 +39,11 @@ public class ScenarioManagerTest {
         assertEquals("Scenario type should match", Scenario.SystemScenario.OVER_LOAD, scenario.getScenarioType());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testRegisterNullScenario() {
+        int originalSize = ScenarioManager.getAllScenarios().size();
         ScenarioManager.registerScenario(null);
+        assertEquals(originalSize, ScenarioManager.getAllScenarios().size());
     }
 
     @Test

@@ -5,7 +5,6 @@ import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.csp.sentinel.slots.block.degrade.DegradeException;
 import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.circuitbreaker.AdaptiveCircuitBreaker;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,6 +16,11 @@ import org.mockito.junit.MockitoJUnitRunner;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+/**
+ * Unit test for {@link AdaptiveDegradeSlot}.
+ *
+ * @author ylnxwlp
+ */
 @RunWith(MockitoJUnitRunner.class)
 public class AdaptiveDegradeSlotTest {
 
@@ -105,7 +109,7 @@ public class AdaptiveDegradeSlotTest {
             try {
                 slot.performChecking(context, resourceWrapper);
                 fail("Should throw DegradeException when circuit breaker blocks");
-            } catch (DegradeException e) {
+            } catch (AdaptiveDegradeException e) {
                 assertNotNull(e.getMessage());
                 assertTrue(e.getMessage().contains("0.05"));
                 assertTrue(e.getMessage().contains("System is overloaded"));

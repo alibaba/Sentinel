@@ -98,6 +98,6 @@ public class AdaptiveCircuitBreakerTest {
     @Test
     public void getScenario_defaultShouldBeInvalidAdaptiveScenario() {
         AdaptiveCircuitBreaker cb = new AdaptiveCircuitBreaker("res-scenario");
-        assertEquals("Invalid adaptive scenario", cb.getScenario());
+        assertEquals("NORMAL", cb.getScenario());
     }
 }

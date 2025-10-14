@@ -25,7 +25,7 @@ public class AdaptiveDegradeCheckProvider {
                     }
 
                     if (instance == null) {
-                        RecordLog.debug("[AdaptiveDegradeCheckProvider] There is no user-defined adaptive circuit breaker algorithm");
+                        RecordLog.info("[AdaptiveDegradeCheckProvider] There is no user-defined adaptive circuit breaker algorithm");
                         instance = new DefaultAdaptiveDegradeCheck();
                     }
                 }

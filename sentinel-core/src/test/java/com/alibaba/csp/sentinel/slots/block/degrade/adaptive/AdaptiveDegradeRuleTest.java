@@ -29,7 +29,7 @@ public class AdaptiveDegradeRuleTest {
 
     @Test
     public void testEnabledDefaultValue() {
-        assertTrue("Default enabled value should be true", rule.isEnabled());
+        assertFalse("Default enabled value should be true", rule.isEnabled());
     }
 
     @Test
@@ -95,8 +95,8 @@ public class AdaptiveDegradeRuleTest {
     public void testEquals_WithDifferentEnabled() {
         AdaptiveDegradeRule rule1 = new AdaptiveDegradeRule(RESOURCE_NAME);
         AdaptiveDegradeRule rule2 = new AdaptiveDegradeRule(RESOURCE_NAME);
+        rule1.setEnabled(true);
         rule2.setEnabled(false);
-
         assertNotEquals("Rules with different enabled values should not be equal", rule1, rule2);
         assertNotEquals("Rules with different enabled values should not be equal", rule2, rule1);
     }
@@ -125,7 +125,7 @@ public class AdaptiveDegradeRuleTest {
         AdaptiveDegradeRule rule1 = new AdaptiveDegradeRule(RESOURCE_NAME);
         AdaptiveDegradeRule rule2 = new AdaptiveDegradeRule("differentResource");
         AdaptiveDegradeRule rule3 = new AdaptiveDegradeRule(RESOURCE_NAME);
-        rule3.setEnabled(false);
+        rule3.setEnabled(true);
 
         assertNotEquals("Rules with different resources should ideally have different hashCodes",
                 rule1.hashCode(), rule2.hashCode());
