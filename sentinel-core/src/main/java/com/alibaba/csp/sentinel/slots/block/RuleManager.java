@@ -86,7 +86,7 @@ public class RuleManager<R> {
      */
     public List<R> getRules(String resource) {
         List<R> result = new ArrayList<>(simpleRules.getOrDefault(resource, Collections.emptyList()));
-        if (regexRules.isEmpty()) {
+        if (regexRules.isEmpty() || !result.isEmpty()) {
             return result;
         }
         if (regexCacheRules.containsKey(resource)) {
