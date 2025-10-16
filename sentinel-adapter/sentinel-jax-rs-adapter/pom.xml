@@ -37,7 +37,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <version>2.2.6.RELEASE</version>
+            <version>2.5.12</version>
             <scope>test</scope>
         </dependency>
         <dependency>
