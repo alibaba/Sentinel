@@ -12,7 +12,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <netty.version>4.1.31.Final</netty.version>
+        <netty.version>4.1.42.Final</netty.version>
     </properties>
 
     <dependencies>
