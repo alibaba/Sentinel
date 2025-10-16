@@ -10,6 +10,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <name>${project.groupId}:${project.artifactId}</name>
+
     <artifactId>sentinel-reactor-adapter</artifactId>
 
     <properties>

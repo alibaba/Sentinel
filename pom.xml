@@ -40,7 +40,7 @@
     </issueManagement>
 
     <properties>
-        <revision>1.8.8</revision>
+        <revision>1.8.9</revision>
         <!-- Compile libs -->
         <fastjson.version>1.2.83_noneautotype</fastjson.version>
         <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
@@ -379,7 +379,7 @@
 
     <profiles>
         <profile>
-            <id>oss</id>
+            <id>central</id>
             <build>
                 <plugins>
                     <!-- Source -->
@@ -430,16 +430,26 @@
                             </execution>
                         </executions>
                     </plugin>
+                    <!-- central -->
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.8.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                        </configuration>
+                    </plugin>
                 </plugins>
             </build>
             <distributionManagement>
                 <snapshotRepository>
-                    <id>oss</id>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+                    <id>central</id>
+                    <url>https://central.sonatype.com/repository/maven-snapshots/</url>
                 </snapshotRepository>
                 <repository>
-                    <id>oss</id>
-                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+                    <id>central</id>
+                    <url>https://central.sonatype.org/service/local/staging/deploy/maven2/</url>
                 </repository>
             </distributionManagement>
         </profile>
