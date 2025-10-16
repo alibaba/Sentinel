@@ -46,6 +46,10 @@
         <module>sentinel-demo-servlet</module>
     </modules>
 
+    <properties>
+        <central.publishing.skip>true</central.publishing.skip>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.alibaba.csp</groupId>

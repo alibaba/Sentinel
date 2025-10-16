@@ -438,43 +438,6 @@
                         <extensions>true</extensions>
                         <configuration>
                             <publishingServerId>central</publishingServerId>
-                            <excludeArtifacts>
-                                <excludeArtifact>sentinel-benchmark</excludeArtifact>
-                                <excludeArtifact>sentinel-dashboard</excludeArtifact>
-                                <excludeArtifact>sentinel-demo</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-basic</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-dynamic-file-rule</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-rocketmq</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-dubbo</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-nacos-datasource</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-zookeeper-datasource</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-apollo-datasource</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-annotation-spring-aop</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-parameter-flow-control</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-slot-spi</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-slotchain-spi</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-cluster</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-cluster-embedded</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-cluster-server-alone</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-command-handler</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-spring-webflux</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-apache-dubbo</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-apache-httpclient</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-sofa-rpc</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-spring-cloud-gateway</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-zuul-gateway</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-etcd-datasource</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-spring-webmvc</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-zuul2-gateway</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-log-logback</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-okhttp</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-jax-rs</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-quarkus</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-annotation-cdi-interceptor</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-motan</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-transport-spring-mvc</excludeArtifact>
-                                <excludeArtifact>sentinel-demo-servlet</excludeArtifact>
-                            </excludeArtifacts>
                         </configuration>
                     </plugin>
                 </plugins>
