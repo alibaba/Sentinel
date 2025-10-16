@@ -333,6 +333,19 @@
 
     <profiles>
         <profile>
+            <id>apple silicon</id>
+            <activation>
+                <os>
+                    <name>Mac OS X</name>
+                    <family>unix</family>
+                    <arch>aarch64</arch>
+                </os>
+            </activation>
+            <properties>
+                <os.detected.classifier>osx-x86_64</os.detected.classifier>
+            </properties>
+        </profile>
+        <profile>
             <id>oss</id>
             <build>
                 <plugins>
