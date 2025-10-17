@@ -34,7 +34,7 @@ public class ParamFlowRuleEntity extends AbstractRuleEntity<ParamFlowRule> {
     }
 
     public ParamFlowRuleEntity(ParamFlowRule rule) {
-        AssertUtil.notNull(rule, "Authority rule should not be null");
+        AssertUtil.notNull(rule, "param rule should not be null");
         this.rule = rule;
     }
 

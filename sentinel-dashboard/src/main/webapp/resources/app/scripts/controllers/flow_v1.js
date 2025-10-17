@@ -32,9 +32,9 @@ app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', '
         return '单机';
       }
       if (rule.clusterConfig.thresholdType === 0) {
-        return '集群均摊';
+        return '单机均摊';
       } else if (rule.clusterConfig.thresholdType === 1) {
-        return '集群总体';
+        return '总体阈值';
       } else {
         return '集群';
       }
