@@ -64,9 +64,9 @@ final class ClusterFlowChecker {
             return new TokenResult(TokenResultStatus.FAIL);
         }
 
-        double latestQps = metric.getAvg(ClusterFlowEvent.PASS);
+        double latestSum = metric.getSum(ClusterFlowEvent.PASS);
         double globalThreshold = calcGlobalThreshold(rule) * ClusterServerConfigManager.getExceedCount();
-        double nextRemaining = globalThreshold - latestQps - acquireCount;
+        double nextRemaining = globalThreshold - latestSum - acquireCount;
 
         if (nextRemaining >= 0) {
             // TODO: checking logic and metric operation should be separated.
@@ -83,8 +83,8 @@ final class ClusterFlowChecker {
         } else {
             if (prioritized) {
                 // Try to occupy incoming buckets.
-                double occupyAvg = metric.getAvg(ClusterFlowEvent.WAITING);
-                if (occupyAvg <= ClusterServerConfigManager.getMaxOccupyRatio() * globalThreshold) {
+                double occupySum = metric.getSum(ClusterFlowEvent.WAITING);
+                if (occupySum <= ClusterServerConfigManager.getMaxOccupyRatio() * globalThreshold) {
                     int waitInMs = metric.tryOccupyNext(ClusterFlowEvent.PASS, acquireCount, globalThreshold);
                     // waitInMs > 0 indicates pre-occupy incoming buckets successfully.
                     if (waitInMs > 0) {
