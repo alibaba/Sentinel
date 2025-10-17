@@ -34,6 +34,7 @@ import com.alibaba.csp.sentinel.cluster.request.data.ParamFlowRequestData;
 import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
 import com.alibaba.csp.sentinel.cluster.response.data.FlowTokenResponseData;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
@@ -57,6 +58,14 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
             }
         });
         initNewConnection();
+    }
+
+    public DefaultClusterTokenClient(ClusterTransportClient transportClient,
+                                     TokenServerDescriptor serverDescriptor) {
+        AssertUtil.notNull(transportClient,"transportClient cannot be null");
+        AssertUtil.notNull(serverDescriptor,"serverDescriptor cannot be null");
+        this.transportClient = transportClient;
+        this.serverDescriptor = serverDescriptor;
     }
 
     private boolean serverEqual(TokenServerDescriptor descriptor, ClusterClientAssignConfig config) {

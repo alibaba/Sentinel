@@ -38,7 +38,7 @@ public final class TokenClientProvider {
     }
 
     private static void resolveTokenClientInstance() {
-        ClusterTokenClient resolvedClient = SpiLoader.of(ClusterTokenClient.class).loadFirstInstance();
+        ClusterTokenClient resolvedClient = SpiLoader.of(ClusterTokenClient.class).loadHighestPriorityInstance();
         if (resolvedClient == null) {
             RecordLog.info(
                 "[TokenClientProvider] No existing cluster token client, cluster client mode will not be activated");
