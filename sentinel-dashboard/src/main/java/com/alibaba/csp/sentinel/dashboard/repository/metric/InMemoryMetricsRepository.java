@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.dashboard.repository.metric;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.MetricEntity;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.util.TimeUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -39,7 +40,8 @@ import java.util.stream.Collectors;
 @Component
 public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity> {
 
-    private static final long MAX_METRIC_LIVE_TIME_MS = 1000 * 60 * 5;
+    @Value("${max.metric.live.time.ms}")
+    private long MAX_METRIC_LIVE_TIME_MS;
 
     /**
      * {@code app -> resource -> timestamp -> metric}
