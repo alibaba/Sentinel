@@ -38,8 +38,7 @@ public final class TokenServiceProvider {
     private static void resolveTokenServiceSpi() {
         service = SpiLoader.of(TokenService.class).loadFirstInstanceOrDefault();
         if (service != null) {
-            RecordLog.info("[TokenServiceProvider] Global token service resolved: "
-                + service.getClass().getCanonicalName());
+            RecordLog.info("[TokenServiceProvider] Global token service resolved: {}", service.getClass().getCanonicalName());
         } else {
             RecordLog.warn("[TokenServiceProvider] Unable to resolve TokenService: no SPI found");
         }

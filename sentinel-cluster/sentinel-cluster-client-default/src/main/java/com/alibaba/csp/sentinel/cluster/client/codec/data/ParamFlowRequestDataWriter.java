@@ -72,13 +72,12 @@ public class ParamFlowRequestDataWriter implements EntityWriter<ParamFlowRequest
         for (Object param : params) {
             int s = calculateParamTransportSize(param);
             if (s <= 0) {
-                RecordLog.warn("[ParamFlowRequestDataWriter] WARN: Non-primitive type detected in params of "
-                        + "cluster parameter flow control, which is not supported: " + param);
+                RecordLog.warn("[ParamFlowRequestDataWriter] WARN: Non-primitive type detected in params of cluster parameter flow control, which is not supported: {}", param);
                 continue;
             }
             if (size + s > maxParamByteSize) {
                 RecordLog.warn("[ParamFlowRequestDataWriter] WARN: params size is too big." +
-                        " the configure value is : " + maxParamByteSize + ", the params size is: " + params.size());
+                        " the configure value is : {}, the params size is: {}", maxParamByteSize, params.size());
                 break;
             }
             size += s;

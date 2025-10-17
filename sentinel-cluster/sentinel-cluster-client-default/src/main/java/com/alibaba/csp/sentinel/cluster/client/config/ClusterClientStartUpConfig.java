@@ -40,7 +40,7 @@ public class ClusterClientStartUpConfig {
         try {
             return maxParamByteSize == null ? null : Integer.valueOf(maxParamByteSize);
         } catch (Exception ex) {
-            RecordLog.warn("[ClusterClientStartUpConfig] Failed to parse maxParamByteSize: " + maxParamByteSize);
+            RecordLog.warn("[ClusterClientStartUpConfig] Failed to parse maxParamByteSize: {}", maxParamByteSize);
             return null;
         }
     }

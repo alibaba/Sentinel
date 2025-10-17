@@ -40,7 +40,7 @@ public class RecordLogTest {
     public void testLogRolling() {
         int count = 1000;
         while (--count > 0) {
-            RecordLog.info("Count " + count);
+            RecordLog.info("Count {}", count);
         }
     }
 

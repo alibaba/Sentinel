@@ -83,7 +83,7 @@ public class AsyncEntry extends CtEntry {
                 .setCurEntry(this);
         } else {
             RecordLog.warn(
-                "[AsyncEntry] Duplicate initialize of async context for entry: " + resourceWrapper.getName());
+                "[AsyncEntry] Duplicate initialize of async context for entry: {}", resourceWrapper.getName());
         }
     }
 

@@ -124,7 +124,7 @@ public final class ClusterClientConfigManager {
         private synchronized void applyConfig(ClusterClientAssignConfig config) {
             if (!isValidAssignConfig(config)) {
                 RecordLog.warn(
-                    "[ClusterClientConfigManager] Invalid cluster client assign config, ignoring: " + config);
+                    "[ClusterClientConfigManager] Invalid cluster client assign config, ignoring: {}", config);
                 return;
             }
             if (serverPort == config.getServerPort() && config.getServerHost().equals(serverHost)) {

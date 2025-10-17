@@ -72,13 +72,13 @@ public class HeartbeatSenderInitFunc implements InitFunc {
     long retrieveInterval(/*@NonNull*/ HeartbeatSender sender) {
         Long intervalInConfig = TransportConfig.getHeartbeatIntervalMs();
         if (isValidHeartbeatInterval(intervalInConfig)) {
-            RecordLog.info("[HeartbeatSenderInitFunc] Using heartbeat interval "
-                + "in Sentinel config property: " + intervalInConfig);
+            RecordLog.info("[HeartbeatSenderInitFunc] Using heartbeat interval " +
+                    "in Sentinel config property:{}", intervalInConfig);
             return intervalInConfig;
         } else {
             long senderInterval = sender.intervalMs();
-            RecordLog.info("[HeartbeatSenderInit] Heartbeat interval not configured in "
-                + "config property or invalid, using sender default: " + senderInterval);
+            RecordLog.info("[HeartbeatSenderInit] Heartbeat interval not configured in " +
+                    "config property or invalid using sender default:{}",senderInterval);
             return senderInterval;
         }
     }
@@ -94,7 +94,6 @@ public class HeartbeatSenderInitFunc implements InitFunc {
                 }
             }
         }, 5000, interval, TimeUnit.MILLISECONDS);
-        RecordLog.info("[HeartbeatSenderInit] HeartbeatSender started: "
-            + sender.getClass().getCanonicalName());
+        RecordLog.info("[HeartbeatSenderInit] HeartbeatSender started: {}", sender.getClass().getCanonicalName());
     }
 }
