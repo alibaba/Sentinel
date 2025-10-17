@@ -64,6 +64,12 @@ public class DashboardConfig {
      */
     public static final String CONFIG_AUTO_REMOVE_MACHINE_MILLIS = "sentinel.dashboard.autoRemoveMachineMillis";
 
+    /**
+     * The ttl of metric data in the Memory
+     * default 1 day
+     */
+    public static final String MAX_METRIC_LIVE_TIME_MS_OF_FIVE_MINUTES = "sentinel.dashboard.store.maxMetricLiveTimeOfFiveMinutes";
+
     private static final ConcurrentMap<String, Object> cacheMap = new ConcurrentHashMap<>();
     
     @NonNull
@@ -125,7 +131,13 @@ public class DashboardConfig {
     public static int getRemoveAppNoMachineMillis() {
         return getConfigInt(CONFIG_REMOVE_APP_NO_MACHINE_MILLIS, 0, 120000);
     }
-    
+
+
+    public static int getMaxMetricLiveTimeMsOfFiveMinutes() {
+        return getConfigInt(MAX_METRIC_LIVE_TIME_MS_OF_FIVE_MINUTES, 86400000, 300000);
+    }
+
+
     public static int getAutoRemoveMachineMillis() {
         return getConfigInt(CONFIG_AUTO_REMOVE_MACHINE_MILLIS, 0, 300000);
     }

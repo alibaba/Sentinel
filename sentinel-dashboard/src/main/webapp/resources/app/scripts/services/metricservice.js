@@ -2,6 +2,15 @@ var app = angular.module('sentinelDashboardApp');
 
 app.service('MetricService', ['$http', function ($http) {
 
+  this.querySortedSummary = function (params) {
+    return $http({
+      url: '/metric//queryResourceSummary.json',
+      params: params,
+      method: 'GET'
+    });
+  };
+
+
   this.queryAppSortedIdentities = function (params) {
     return $http({
       url: '/metric/queryTopResourceMetric.json',
