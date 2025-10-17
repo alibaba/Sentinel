@@ -167,13 +167,13 @@ public abstract class LeapArray<T> {
                 return old;
             } else if (windowStart > old.windowStart()) {
                 /*
-                 *   (old)
+                 *                    (old)
                  *             B0       B1      B2    NULL      B4
                  * |_______||_______|_______|_______|_______|_______||___
                  * ...    1200     1400    1600    1800    2000    2200  timestamp
                  *                              ^
                  *                           time=1676
-                 *          startTime of Bucket 2: 400, deprecated, should be reset
+                 *          startTime of Bucket 2: 1400, deprecated, should be reset
                  *
                  * If the start timestamp of old bucket is behind provided time, that means
                  * the bucket is deprecated. We have to reset the bucket to current {@code windowStart}.
