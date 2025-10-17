@@ -15,6 +15,8 @@
  */
 package com.alibaba.csp.sentinel.demo.zuul.gateway;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,6 +27,7 @@ import com.alibaba.csp.sentinel.adapter.gateway.common.api.ApiDefinition;
 import com.alibaba.csp.sentinel.adapter.gateway.common.api.ApiPathPredicateItem;
 import com.alibaba.csp.sentinel.adapter.gateway.common.api.ApiPredicateItem;
 import com.alibaba.csp.sentinel.adapter.gateway.common.api.GatewayApiDefinitionManager;
+import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayFieldFlowItem;
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayFlowRule;
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayParamFlowItem;
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayRuleManager;
@@ -70,13 +73,43 @@ public class GatewayRuleConfig {
             .setCount(10)
             .setIntervalSec(1)
         );
-        rules.add(new GatewayFlowRule("aliyun-product-route")
+        /*rules.add(new GatewayFlowRule("aliyun-product-route")
             .setCount(2)
-            .setIntervalSec(2)
-            .setBurst(2)
+            .setIntervalSec(5)
             .setParamItem(new GatewayParamFlowItem()
                 .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_CLIENT_IP)
+                .setGatewayFieldFlowItemList(Collections.singletonList(
+                                new GatewayFieldFlowItem()
+                                        .setClassType(String.class.getName())
+                                        .setCount(10)
+                                        .setObject("0:0:0:0:0:0:0:1")))
             )
+        );*/
+        // use http://localhost:8097/aliyun_product/1?testDemo=demo1
+        // then use http://localhost:8097/aliyun_product/1?testDemo=demo2
+        rules.add(new GatewayFlowRule("aliyun-product-route")
+                .setCount(2)
+                .setIntervalSec(10)
+                .setParamItem(new GatewayParamFlowItem()
+                        .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_URL_PARAM)
+                        .setFieldName("testDemo")
+                        .setPattern("demo")
+                        .setMatchStrategy(SentinelGatewayConstants.PARAM_MATCH_STRATEGY_CONTAINS)
+                        .setGatewayFieldFlowItemList(Collections.singletonList(
+                                new GatewayFieldFlowItem()
+                                        .setClassType(String.class.getName())
+                                        .setCount(4)
+                                        .setObject("demo2")))
+                )
+        );
+        rules.add(new GatewayFlowRule("aliyun-product-route")
+                .setCount(2)
+                .setIntervalSec(2)
+                .setBurst(2)
+                .setParamItem(new GatewayParamFlowItem()
+                        .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER)
+                        .setFieldName("X-Sentinel-Flag")
+                        .setMatchStrategy(SentinelGatewayConstants.PARAM_MATCH_STRATEGY_EXACT))
         );
         rules.add(new GatewayFlowRule("another-route-httpbin")
             .setCount(10)
