@@ -31,6 +31,7 @@ import com.alibaba.csp.sentinel.util.function.BiConsumer;
  * @since 1.8.0
  */
 public abstract class AbstractCircuitBreaker implements CircuitBreaker {
+    protected static final double MAX_RATIO = 1.0d;
 
     protected final DegradeRule rule;
     protected final int recoveryTimeoutMs;
@@ -122,7 +123,7 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
         }
         return false;
     }
-    
+
     private void notifyObservers(CircuitBreaker.State prevState, CircuitBreaker.State newState, Double snapshotValue) {
         for (CircuitBreakerStateChangeObserver observer : observerRegistry.getStateChangeObservers()) {
             observer.onStateChange(prevState, newState, rule, snapshotValue);
