@@ -61,6 +61,7 @@ public final class SentinelConfig {
     public static final String STATISTIC_MAX_RT = "csp.sentinel.statistic.max.rt";
     public static final String SPI_CLASSLOADER = "csp.sentinel.spi.classloader";
     public static final String METRIC_FLUSH_INTERVAL = "csp.sentinel.metric.flush.interval";
+    public static final String MAX_CONTEXT_NAME_SIZE = "csp.sentinel.context.max.size";
 
     public static final String DEFAULT_CHARSET = "UTF-8";
     public static final long DEFAULT_SINGLE_METRIC_FILE_SIZE = 1024 * 1024 * 50;
@@ -68,6 +69,9 @@ public final class SentinelConfig {
     public static final int DEFAULT_COLD_FACTOR = 3;
     public static final int DEFAULT_STATISTIC_MAX_RT = 5000;
     public static final long DEFAULT_METRIC_FLUSH_INTERVAL = 1L;
+    public static final int DEFAULT_MAX_CONTEXT_NAME_SIZE = 2000;
+
+    private static int maxContextNameSize = DEFAULT_MAX_CONTEXT_NAME_SIZE;
 
     static {
         try {
@@ -75,6 +79,7 @@ public final class SentinelConfig {
             loadProps();
             resolveAppName();
             resolveAppType();
+            resolveMaxContextNameSize();
             RecordLog.info("[SentinelConfig] Application type resolved: {}", appType);
         } catch (Throwable ex) {
             RecordLog.warn("[SentinelConfig] Failed to initialize", ex);
@@ -98,6 +103,21 @@ public final class SentinelConfig {
         }
     }
 
+    private static void resolveMaxContextNameSize() {
+        try {
+            String size = getConfig(MAX_CONTEXT_NAME_SIZE);
+            if (size == null) {
+                return;
+            }
+            maxContextNameSize = Integer.parseInt(size);
+            if (maxContextNameSize < 0) {
+                maxContextNameSize = DEFAULT_MAX_CONTEXT_NAME_SIZE;
+            }
+        } catch (Exception ex) {
+            maxContextNameSize = DEFAULT_MAX_CONTEXT_NAME_SIZE;
+        }
+    }
+
     private static void initialize() {
         // Init default properties.
         setConfig(CHARSET, DEFAULT_CHARSET);
@@ -106,6 +126,7 @@ public final class SentinelConfig {
         setConfig(COLD_FACTOR, String.valueOf(DEFAULT_COLD_FACTOR));
         setConfig(STATISTIC_MAX_RT, String.valueOf(DEFAULT_STATISTIC_MAX_RT));
         setConfig(METRIC_FLUSH_INTERVAL, String.valueOf(DEFAULT_METRIC_FLUSH_INTERVAL));
+        setConfig(MAX_CONTEXT_NAME_SIZE, String.valueOf(DEFAULT_MAX_CONTEXT_NAME_SIZE));
     }
 
     private static void loadProps() {
@@ -181,10 +202,15 @@ public final class SentinelConfig {
     public static String charset() {
         return props.get(CHARSET);
     }
-    
+
+    public static int getMaxContextNameSize() {
+        return maxContextNameSize;
+    }
+
     /**
      * Get the metric log flush interval in second
-     * @return  the metric log flush interval in second
+     *
+     * @return the metric log flush interval in second
      * @since 1.8.1
      */
     public static long metricLogFlushIntervalSec() {

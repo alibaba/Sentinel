@@ -16,10 +16,18 @@
 package com.alibaba.csp.sentinel.context;
 
 import com.alibaba.csp.sentinel.Constants;
-
+import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.config.SentinelConfig;
+import com.alibaba.csp.sentinel.node.DefaultNode;
+import com.alibaba.csp.sentinel.node.EntranceNode;
+import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.lang.reflect.Field;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -48,6 +56,22 @@ public class ContextTest {
             String contextName = "abc";
             ContextUtil.enter(contextName, "bcd");
             Context curContext = ContextUtil.getContext();
+            assertEquals(contextName, curContext.getName());
+            assertFalse(curContext instanceof NullContext);
+            assertNotEquals("", curContext.getOrigin());
+        } finally {
+            ContextUtil.exit();
+            resetContextMap();
+        }
+    }
+
+    @Test
+    public void testEnterCustomContextWhenExceedsThresholdAndCannotCleanUp() {
+        fillActiveContext();
+        try {
+            String contextName = "abc";
+            ContextUtil.enter(contextName, "bcd");
+            Context curContext = ContextUtil.getContext();
             assertNotEquals(contextName, curContext.getName());
             assertTrue(curContext instanceof NullContext);
             assertEquals("", curContext.getOrigin());
@@ -72,9 +96,32 @@ public class ContextTest {
     }
 
     private void fillContext() {
-        for (int i = 0; i < Constants.MAX_CONTEXT_NAME_SIZE; i++) {
+        for (int i = 0; i < SentinelConfig.getMaxContextNameSize(); i++) {
             ContextUtil.enter("test-context-" + i);
             ContextUtil.exit();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void fillActiveContext() {
+        Field field;
+        Map<String, DefaultNode> contextNameNodeMap = null;
+        try {
+            field = ContextUtil.class.getDeclaredField("contextNameNodeMap");
+            field.setAccessible(true);
+            contextNameNodeMap = (Map<String, DefaultNode>) field.get(null);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+            Assert.fail("unreachable");
+        }
+        for (int i = 0; i < SentinelConfig.getMaxContextNameSize(); i++) {
+            EntranceNode node = new EntranceNode(new StringResourceWrapper("test-context-" + i, EntryType.OUT), null) {
+                @Override
+                public long totalRequest() {
+                    return 1;
+                }
+            };
+            contextNameNodeMap.put("test-context-" + i, node);
         }
     }
 
