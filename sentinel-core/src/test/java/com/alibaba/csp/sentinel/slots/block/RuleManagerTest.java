@@ -51,7 +51,7 @@ public class RuleManagerTest {
         Field regexCacheRules = RuleManager.class.getDeclaredField("regexCacheRules");
         regexCacheRules.setAccessible(true);
         assertEquals(((Map)regexCacheRules.get(ruleManager)).size(), 0);
-        ruleManager.getRules("rule2");
+        ruleManager.getRules("rule");
         assertEquals(((Map)regexCacheRules.get(ruleManager)).size(), 1);
     }
 
@@ -68,6 +68,7 @@ public class RuleManagerTest {
         // Verify the results
         Field regexCacheRules = RuleManager.class.getDeclaredField("regexCacheRules");
         regexCacheRules.setAccessible(true);
+        ruleManager.getRules("rule");
         assertEquals(((Map)regexCacheRules.get(ruleManager)).size(), 1);
 
         // Clean up regular rules
