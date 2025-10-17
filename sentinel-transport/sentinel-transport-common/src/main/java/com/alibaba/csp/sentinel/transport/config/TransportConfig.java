@@ -34,6 +34,7 @@ public class TransportConfig {
 
     public static final String CONSOLE_SERVER = "csp.sentinel.dashboard.server";
     public static final String SERVER_PORT = "csp.sentinel.api.port";
+    public static final String SERVER_SERVLET_CONTEXT_PATH = "csp.sentinel.api.context-path";
     public static final String HEARTBEAT_INTERVAL_MS = "csp.sentinel.heartbeat.interval.ms";
     public static final String HEARTBEAT_CLIENT_IP = "csp.sentinel.heartbeat.client.ip";
     public static final String HEARTBEAT_API_PATH = "csp.sentinel.heartbeat.api.path";
@@ -41,6 +42,7 @@ public class TransportConfig {
     public static final String HEARTBEAT_DEFAULT_PATH = "/registry/machine";
 
     private static int runtimePort = -1;
+    private static String runtimeServletPath;
 
     /**
      * Get heartbeat interval in milliseconds.
@@ -150,6 +152,18 @@ public class TransportConfig {
      */
     public static void setRuntimePort(int port) {
         runtimePort = port;
+    }
+
+    public static String getServletPath() {
+        if (runtimeServletPath != null){
+            return runtimeServletPath;
+        }
+
+        return SentinelConfig.getConfig(SERVER_SERVLET_CONTEXT_PATH, true);
+    }
+
+    public static void setRuntimeServletPath(String runtimeServletPath) {
+        TransportConfig.runtimeServletPath = runtimeServletPath;
     }
 
     /**
