@@ -23,6 +23,7 @@ public class ClusterRequest<T> implements Request {
 
     private int id;
     private int type;
+    private int timeout;
 
     private T data;
 
@@ -68,12 +69,22 @@ public class ClusterRequest<T> implements Request {
         return this;
     }
 
+    public int getTimeout() {
+        return timeout;
+    }
+
+    public ClusterRequest<T> setTimeout(int timeout) {
+        this.timeout = timeout;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "ClusterRequest{" +
-            "id=" + id +
-            ", type=" + type +
-            ", data=" + data +
-            '}';
+                "id=" + id +
+                ", type=" + type +
+                ", timeout=" + timeout +
+                ", data=" + data +
+                '}';
     }
 }

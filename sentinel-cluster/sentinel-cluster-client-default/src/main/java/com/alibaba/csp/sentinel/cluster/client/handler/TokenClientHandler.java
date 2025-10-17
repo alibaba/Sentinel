@@ -38,10 +38,12 @@ public class TokenClientHandler extends ChannelInboundHandlerAdapter {
 
     private final AtomicInteger currentState;
     private final Runnable disconnectCallback;
+    private final TokenClientPromiseHolder tokenClientPromiseHolder;
 
-    public TokenClientHandler(AtomicInteger currentState, Runnable disconnectCallback) {
+    public TokenClientHandler(AtomicInteger currentState, Runnable disconnectCallback, TokenClientPromiseHolder tokenClientPromiseHolder) {
         this.currentState = currentState;
         this.disconnectCallback = disconnectCallback;
+        this.tokenClientPromiseHolder = tokenClientPromiseHolder;
     }
 
     @Override
@@ -61,7 +63,7 @@ public class TokenClientHandler extends ChannelInboundHandlerAdapter {
                 return;
             }
 
-            TokenClientPromiseHolder.completePromise(response.getId(), response);
+            tokenClientPromiseHolder.completePromise(response.getId(), response);
         }
     }
 
