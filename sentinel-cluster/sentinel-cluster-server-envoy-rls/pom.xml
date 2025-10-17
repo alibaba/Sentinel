@@ -29,7 +29,7 @@
         </dependency>
         <dependency>
             <groupId>com.alibaba.csp</groupId>
-            <artifactId>sentinel-datasource-extension</artifactId>
+            <artifactId>sentinel-datasource-file</artifactId>
         </dependency>
         <dependency>
             <groupId>com.alibaba.csp</groupId>

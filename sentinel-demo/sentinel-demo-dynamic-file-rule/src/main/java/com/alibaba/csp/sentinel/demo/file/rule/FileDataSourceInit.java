@@ -15,19 +15,19 @@
  */
 package com.alibaba.csp.sentinel.demo.file.rule;
 
-import java.io.File;
-import java.util.List;
-
-import com.alibaba.csp.sentinel.datasource.FileRefreshableDataSource;
-import com.alibaba.csp.sentinel.datasource.FileWritableDataSource;
 import com.alibaba.csp.sentinel.datasource.ReadableDataSource;
 import com.alibaba.csp.sentinel.datasource.WritableDataSource;
+import com.alibaba.csp.sentinel.datasource.file.FileRefreshableDataSource;
+import com.alibaba.csp.sentinel.datasource.file.FileWritableDataSource;
 import com.alibaba.csp.sentinel.init.InitFunc;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.transport.util.WritableDataSourceRegistry;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+
+import java.io.File;
+import java.util.List;
 
 /**
  * <p>
