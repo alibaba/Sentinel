@@ -16,9 +16,9 @@
 package com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent;
 
 import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.expire.RegularExpireStrategy;
+import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
+import com.alibaba.csp.sentinel.slots.statistic.cache.CaffeineCacheMapWrapper;
 import com.alibaba.csp.sentinel.util.AssertUtil;
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
-import com.googlecode.concurrentlinkedhashmap.Weighers;
 
 import java.util.Set;
 
@@ -26,7 +26,7 @@ import java.util.Set;
  * @author yunfeiyanggzq
  */
 public class TokenCacheNodeManager {
-    private static ConcurrentLinkedHashMap<Long, TokenCacheNode> TOKEN_CACHE_NODE_MAP;
+    private static CacheMap<Long, TokenCacheNode> TOKEN_CACHE_NODE_MAP;
 
 
     private static final int DEFAULT_CONCURRENCY_LEVEL = 16;
@@ -40,11 +40,7 @@ public class TokenCacheNodeManager {
         AssertUtil.isTrue(concurrencyLevel > 0, "concurrencyLevel must be positive");
         AssertUtil.isTrue(maximumWeightedCapacity > 0, "maximumWeightedCapacity must be positive");
 
-        TOKEN_CACHE_NODE_MAP = new ConcurrentLinkedHashMap.Builder<Long, TokenCacheNode>()
-                .concurrencyLevel(concurrencyLevel)
-                .maximumWeightedCapacity(maximumWeightedCapacity)
-                .weigher(Weighers.singleton())
-                .build();
+        TOKEN_CACHE_NODE_MAP = new CaffeineCacheMapWrapper<>(maximumWeightedCapacity);
         // Start the task of regularly clearing expired keys
         RegularExpireStrategy strategy = new RegularExpireStrategy(TOKEN_CACHE_NODE_MAP);
         strategy.startClearTaskRegularly();
@@ -52,8 +48,7 @@ public class TokenCacheNodeManager {
 
 
     public static TokenCacheNode getTokenCacheNode(long tokenId) {
-        //use getQuietly to prevent disorder
-        return TOKEN_CACHE_NODE_MAP.getQuietly(tokenId);
+        return TOKEN_CACHE_NODE_MAP.get(tokenId);
     }
 
     public static void putTokenCacheNode(long tokenId, TokenCacheNode cacheNode) {
@@ -69,7 +64,7 @@ public class TokenCacheNodeManager {
     }
 
     public static int getSize() {
-        return TOKEN_CACHE_NODE_MAP.size();
+        return (int) TOKEN_CACHE_NODE_MAP.size();
     }
 
     public static Set<Long> getCacheKeySet() {
