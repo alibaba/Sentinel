@@ -31,4 +31,9 @@ public class DefaultControllerFactory implements TrafficShapingControllerFactory
     public int getControlBehavior() {
         return RuleConstant.CONTROL_BEHAVIOR_DEFAULT;
     }
+
+    @Override
+    public boolean isBuiltIn() {
+        return true;
+    }
 }

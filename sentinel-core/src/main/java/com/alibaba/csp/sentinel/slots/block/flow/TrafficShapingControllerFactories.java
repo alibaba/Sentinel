@@ -15,9 +15,12 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow;
 
+import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.spi.SpiLoader;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
@@ -34,18 +37,52 @@ public class TrafficShapingControllerFactories {
      * Using existing factory if the factory with the same control behavior already exists, because the existing factory has higher priority
      */
     private static BinaryOperator<TrafficShapingControllerFactory> usingExisting() {
-        return (existing, replacement) -> existing;
+        return (existing, replacement) -> {
+            RecordLog.warn("[TrafficShapingControllerFactories] Duplicate control behavior [{}], " +
+                    "using existing factory [{}], ignoring [{}]",
+                    existing.getControlBehavior(),
+                    existing.getClass().getName(),
+                    replacement.getClass().getName());
+            return existing;
+        };
     }
 
     private static TrafficShapingControllerFactory logging(TrafficShapingControllerFactory factory) {
         return new LoggingTrafficShapingControllerFactory(factory);
     }
 
+    /**
+     * Validates the control behavior namespace of a factory.
+     */
+    private static void validateControlBehavior(TrafficShapingControllerFactory factory) {
+        int controlBehavior = factory.getControlBehavior();
+        
+        // User-defined factories must not use reserved range [0, 255]
+        if (!factory.isBuiltIn() && isReservedControlBehavior(controlBehavior)) {
+            throw new IllegalArgumentException(String.format(
+                    "Invalid control behavior [%d] for factory [%s]. " +
+                    "Control behavior values in range [0, %d] are reserved for Sentinel built-in implementations. " +
+                    "User-defined factories must use values >= %d to ensure compatibility with future Sentinel upgrades.",
+                    controlBehavior,
+                    factory.getClass().getName(),
+                    RuleConstant.CONTROL_BEHAVIOR_USER_DEFINED_MIN - 1,
+                    RuleConstant.CONTROL_BEHAVIOR_USER_DEFINED_MIN));
+        }
+        
+        RecordLog.info("[TrafficShapingControllerFactories] Registered factory [{}] for control behavior [{}]",
+                factory.getClass().getName(), controlBehavior);
+    }
+
     private static Map<Integer, TrafficShapingControllerFactory> initFactories() {
-        return SpiLoader.of(TrafficShapingControllerFactory.class)
-                .loadInstanceListSorted()
-                .stream()
-                .collect(Collectors.toMap(TrafficShapingControllerFactory::getControlBehavior,
+        List<TrafficShapingControllerFactory> factories = SpiLoader.of(TrafficShapingControllerFactory.class)
+                .loadInstanceListSorted();
+        // Validate all factories
+        for (TrafficShapingControllerFactory factory : factories) {
+            validateControlBehavior(factory);
+        }
+        return factories.stream()
+                .collect(Collectors.toMap(
+                        TrafficShapingControllerFactory::getControlBehavior,
                         TrafficShapingControllerFactories::logging,
                         usingExisting(),
                         HashMap::new));
@@ -58,4 +95,7 @@ public class TrafficShapingControllerFactories {
     private TrafficShapingControllerFactories() {
     }
 
+    public static boolean isReservedControlBehavior(int controlBehavior) {
+        return controlBehavior < RuleConstant.CONTROL_BEHAVIOR_USER_DEFINED_MIN;
+    }
 }

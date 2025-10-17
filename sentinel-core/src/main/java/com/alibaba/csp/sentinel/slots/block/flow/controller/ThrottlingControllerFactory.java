@@ -31,4 +31,9 @@ public class ThrottlingControllerFactory implements TrafficShapingControllerFact
     public int getControlBehavior() {
         return RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER;
     }
+
+    @Override
+    public boolean isBuiltIn() {
+        return true;
+    }
 }
