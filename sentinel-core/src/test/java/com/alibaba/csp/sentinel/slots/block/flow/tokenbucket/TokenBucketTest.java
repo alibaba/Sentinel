@@ -25,6 +25,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.Assert.*;
@@ -122,4 +123,86 @@ public class TokenBucketTest extends AbstractTimeBasedTest {
         assertEquals(10, passNumFullStart.longValue());
     }
 
+    @Test
+    public void testForOptimisticTokenBucket() throws InterruptedException {
+        long unitProduceNum = 5;
+        long maxTokenNum = 10;
+        long intervalInMs = 1000;
+        final int n = 64;
+        long testStart = System.currentTimeMillis();
+        setCurrentMillis(testStart);
+
+        final AtomicLong passNum = new AtomicLong();
+        final AtomicLong passNumFullStart = new AtomicLong();
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
+        final CountDownLatch countDownLatchFullStart = new CountDownLatch(n);
+        final OptimisticTokenBucket optimisticTokenBucket = new OptimisticTokenBucket(unitProduceNum, maxTokenNum, intervalInMs);
+        final OptimisticTokenBucket strictOptimisticTokenBucket = new OptimisticTokenBucket(unitProduceNum, maxTokenNum, true,
+                intervalInMs);
+
+        for (int i = 0; i < n; i++) {
+            threadPoolExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    if (optimisticTokenBucket.tryConsume(1)) {
+                        passNum.incrementAndGet();
+                    }
+                    countDownLatch.countDown();
+                }
+            });
+            threadPoolExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    if (strictOptimisticTokenBucket.tryConsume(1)) {
+                        passNumFullStart.incrementAndGet();
+                    }
+                    countDownLatchFullStart.countDown();
+                }
+            });
+        }
+
+        countDownLatch.await();
+        countDownLatchFullStart.await();
+        assertEquals(5, passNum.longValue());
+        assertEquals(10, passNumFullStart.longValue());
+    }
+
+    @Test
+    public void testForOptimisticTokenBucketCheckQpsMultipleThreads() throws InterruptedException {
+        useActualTime();
+        long unitProduceNum = 1;
+        long maxTokenNum = 100;
+        long intervalInMs = 10;
+        final int n = 64;
+        final AtomicLong passNum = new AtomicLong();
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
+        final AtomicBoolean flag = new AtomicBoolean(true);
+        final OptimisticTokenBucket optimistTokenBucket = new OptimisticTokenBucket(unitProduceNum, maxTokenNum, intervalInMs);
+
+        long s = System.currentTimeMillis();
+        for (int i = 0; i < 64; i++) {
+            threadPoolExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    countDownLatch.countDown();
+                    while (flag.get()) {
+                        if (optimistTokenBucket.tryConsume(1)) {
+                            passNum.incrementAndGet();
+                        }
+                        try {
+                            TimeUnit.NANOSECONDS.sleep(30);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            });
+        }
+        long e = System.currentTimeMillis();
+        countDownLatch.await();
+        TimeUnit.MILLISECONDS.sleep(5000 - (e - s));
+        flag.set(false);
+
+        assertEquals(500, passNum.longValue(), 50);
+    }
 }
