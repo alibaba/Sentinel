@@ -73,6 +73,12 @@ public class MonoSentinelOperatorIntegrationTest {
     @Test
     public void testEmitSingleLongTimeRt() {
         String resourceName = createResourceName("testEmitSingleLongTimeRt");
+        // Warmup once, Removes time lost due to static code initialization of Sentinel and Mono
+        StepVerifier.create(Mono.just(1)
+                .transform(new SentinelReactorTransformer<>(resourceName + "_warmup")))
+                .expectNext(1)
+                .verifyComplete();
+
         StepVerifier.create(Mono.just(2)
             .delayElement(Duration.ofMillis(1000))
             .map(e -> e * 2)
