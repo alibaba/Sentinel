@@ -287,7 +287,11 @@
                     <!-- CircleCI build workaround -->
                     <argLine>@{argLine} -Xms1024m -Xmx2048m</argLine>
                     <argLine>-Dfile.encoding=UTF-8</argLine>
+                    <argLine>--add-opens java.base/java.lang=ALL_UNNAMED</argLine>
                     <useSystemClassLoader>false</useSystemClassLoader>
+                    <forkCount>3</forkCount>
+                    <reuseForks>true</reuseForks>
+                    <argLine>-XX:MaxPermSize=256m</argLine>
                 </configuration>
             </plugin>
             <plugin>
