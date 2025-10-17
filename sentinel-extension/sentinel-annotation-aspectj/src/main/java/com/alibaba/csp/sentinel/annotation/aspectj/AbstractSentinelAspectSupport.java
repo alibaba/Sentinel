@@ -179,12 +179,12 @@ public abstract class AbstractSentinelAspectSupport {
         boolean mustStatic = locationClass != null && locationClass.length >= 1;
         Class<?> clazz = mustStatic ? locationClass[0] : pjp.getTarget().getClass();
         Method originMethod = resolveMethod(pjp);
-        MethodWrapper m = ResourceMetadataRegistry.lookupFallback(clazz, fallbackName, originMethod.getParameterTypes());
+        MethodWrapper m = ResourceMetadataRegistry.lookupFallback(originMethod, clazz, fallbackName);
         if (m == null) {
             // First time, resolve the fallback.
             Method method = resolveFallbackInternal(originMethod, fallbackName, clazz, mustStatic);
             // Cache the method instance.
-            ResourceMetadataRegistry.updateFallbackFor(clazz, fallbackName, originMethod.getParameterTypes(), method);
+            ResourceMetadataRegistry.updateFallbackFor(originMethod, clazz, fallbackName, method);
             return method;
         }
         if (!m.isPresent()) {
@@ -209,10 +209,11 @@ public abstract class AbstractSentinelAspectSupport {
         boolean mustStatic = locationClass != null && locationClass.length >= 1;
         Class<?> clazz = mustStatic ? locationClass[0] : pjp.getTarget().getClass();
 
-        MethodWrapper m = ResourceMetadataRegistry.lookupDefaultFallback(clazz, defaultFallback);
+        Method originMethod = resolveMethod(pjp);
+        MethodWrapper m = ResourceMetadataRegistry.lookupDefaultFallback(originMethod, clazz, defaultFallback);
         if (m == null) {
             // First time, resolve the default fallback.
-            Class<?> originReturnType = resolveMethod(pjp).getReturnType();
+            Class<?> originReturnType = originMethod.getReturnType();
             // Default fallback allows two kinds of parameter list.
             // One is empty parameter list.
             Class<?>[] defaultParamTypes = new Class<?>[0];
@@ -225,7 +226,7 @@ public abstract class AbstractSentinelAspectSupport {
                 method = findMethod(mustStatic, clazz, defaultFallback, originReturnType, paramTypeWithException);
             }
             // Cache the method instance.
-            ResourceMetadataRegistry.updateDefaultFallbackFor(clazz, defaultFallback, method);
+            ResourceMetadataRegistry.updateDefaultFallbackFor(originMethod, clazz, defaultFallback, method);
             return method;
         }
         if (!m.isPresent()) {
@@ -262,12 +263,12 @@ public abstract class AbstractSentinelAspectSupport {
             clazz = pjp.getTarget().getClass();
         }
         Method originMethod = resolveMethod(pjp);
-        MethodWrapper m = ResourceMetadataRegistry.lookupBlockHandler(clazz, name, originMethod.getParameterTypes());
+        MethodWrapper m = ResourceMetadataRegistry.lookupBlockHandler(originMethod, clazz, name);
         if (m == null) {
             // First time, resolve the block handler.
             Method method = resolveBlockHandlerInternal(originMethod, name, clazz, mustStatic);
             // Cache the method instance.
-            ResourceMetadataRegistry.updateBlockHandlerFor(clazz, name, originMethod.getParameterTypes(), method);
+            ResourceMetadataRegistry.updateBlockHandlerFor(originMethod, clazz, name, method);
             return method;
         }
         if (!m.isPresent()) {
