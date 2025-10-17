@@ -24,6 +24,15 @@ package com.alibaba.csp.sentinel.dashboard.auth;
 public interface AuthService<R> {
 
     /**
+     * Do login with username and password.
+     *
+     * @param username the username 
+     * @param password the password
+     * @return
+     */
+    boolean doLogin(String username, String password);
+
+    /**
      * Get the authentication user.
      *
      * @param request the request contains the user information

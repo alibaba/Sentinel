@@ -37,7 +37,7 @@ public class AuthConfiguration {
     @ConditionalOnMissingBean
     public AuthService<HttpServletRequest> httpServletRequestAuthService() {
         if (this.authProperties.isEnabled()) {
-            return new SimpleWebAuthServiceImpl();
+            return new SimpleWebAuthServiceImpl(authProperties);
         }
         return new FakeAuthServiceImpl();
     }
