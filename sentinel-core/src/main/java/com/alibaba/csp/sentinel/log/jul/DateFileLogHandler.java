@@ -106,10 +106,7 @@ class DateFileLogHandler extends Handler {
     }
 
     private boolean shouldRotate(LogRecord record) {
-        if (endDate <= record.getMillis() || !logFileExits()) {
-            return true;
-        }
-        return false;
+        return endDate <= record.getMillis() || !logFileExits();
     }
 
     @Override
