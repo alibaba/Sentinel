@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.adapter.spring.webflux;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.ResourceTypeConstants;
@@ -38,11 +39,24 @@ public class SentinelWebFluxFilter implements WebFilter {
 
     public static final String SENTINEL_SPRING_WEBFLUX_CONTEXT_NAME = "sentinel_spring_webflux_context";
 
+    private static final Function<ServerWebExchange, String> DEFAULT_EXTRACTOR = (exchange) -> null;
+
+    private final Function<ServerWebExchange,String> bestMatchingPatternExtractor;
+
+    public SentinelWebFluxFilter() {
+        this(DEFAULT_EXTRACTOR);
+    }
+
+    public SentinelWebFluxFilter(Function<ServerWebExchange,String> bestMatchingPatternExtractor) {
+        this.bestMatchingPatternExtractor = bestMatchingPatternExtractor;
+    }
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         // Maybe we can get the URL pattern elsewhere via:
         // exchange.getAttributeOrDefault(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE, path)
-        String path = exchange.getRequest().getPath().value();
+        String bestMatchingPattern = bestMatchingPatternExtractor.apply(exchange);
+        String path = bestMatchingPattern != null ? bestMatchingPattern : exchange.getRequest().getPath().value();
 
         String finalPath = WebFluxCallbackManager.getUrlCleaner().apply(exchange, path);
         if (StringUtil.isEmpty(finalPath)) {
