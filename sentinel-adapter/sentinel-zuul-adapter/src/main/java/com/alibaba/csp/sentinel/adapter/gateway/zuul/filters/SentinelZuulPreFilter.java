@@ -142,7 +142,7 @@ public class SentinelZuulPreFilter extends ZuulFilter {
 
             // Set fallback response.
             ctx.setResponseBody(blockResponse.toString());
-            ctx.setResponseStatusCode(blockResponse.getCode());
+            ctx.setResponseStatusCode(blockResponse.getHttpCode());
             // Set Response ContentType
             ctx.getResponse().setContentType("application/json; charset=utf-8");
         } finally {
