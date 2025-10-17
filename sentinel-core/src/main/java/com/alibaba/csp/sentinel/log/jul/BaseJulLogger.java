@@ -16,6 +16,8 @@
 package com.alibaba.csp.sentinel.log.jul;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,6 +35,7 @@ import static com.alibaba.csp.sentinel.log.LogBase.LOG_OUTPUT_TYPE_FILE;
  * @since 1.7.2
  */
 public class BaseJulLogger {
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     protected void log(Logger logger, Handler handler, Level level, String detail, Object... params) {
         if (detail == null) {
@@ -43,7 +46,10 @@ public class BaseJulLogger {
         // Compatible with slf4j placeholder format "{}".
         FormattingTuple formattingTuple = MessageFormatter.arrayFormat(detail, params);
         String message = formattingTuple.getMessage();
-        logger.log(level, message);
+
+        executor.execute(() -> {
+            logger.log(level, message);
+        });
     }
 
     protected void log(Logger logger, Handler handler, Level level, String detail, Throwable throwable) {
