@@ -27,7 +27,12 @@ npm start
 ```
 npm run build
 ```
+## 如果构建失败
 
+```
+npm install -g grunt-cli
+npm install -g bower
+```
 ## Credit
 
 - [sb-admin-angular](https://github.com/start-angular/sb-admin-angular)
