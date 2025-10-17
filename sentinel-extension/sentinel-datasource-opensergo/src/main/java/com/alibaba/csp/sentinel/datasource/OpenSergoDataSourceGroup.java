@@ -34,6 +34,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import io.envoyproxy.envoy.config.route.v3.RouteConfiguration;
 import io.opensergo.ConfigKind;
 import io.opensergo.OpenSergoClient;
+import io.opensergo.OpenSergoClientConfig;
 import io.opensergo.OpenSergoClientManager;
 import io.opensergo.proto.fault_tolerance.v1.CircuitBreakerStrategy;
 import io.opensergo.proto.fault_tolerance.v1.ConcurrencyLimitStrategy;
@@ -79,6 +80,30 @@ public class OpenSergoDataSourceGroup {
         AssertUtil.notEmpty(namespace, "namespace cannot be empty");
         AssertUtil.notEmpty(app, "app cannot be empty");
         this.openSergoClient = OpenSergoClientManager.get().getOrCreateClient(host, port);
+        this.namespace = namespace;
+        this.app = app;
+        this.ruleAggregator = new OpenSergoRuleAggregator(dataSourceMap);
+        this.trafficRouterParser = new OpenSergoTrafficRouterParser();
+
+        initializeDataSourceMap();
+        OpenSergoDataSourceGroupManager.addGroup(host + ":" + port, this);
+    }
+
+    /**
+     * @param host      host of OpenSergo Control Plane
+     * @param port      port of OpenSergo Control Plane
+     * @param namespace namespace to subscribe
+     * @param app       appName to subscribe
+     * @param dataSourceConfig   config for OpenSergoDataSource
+     */
+    public OpenSergoDataSourceGroup(String host, int port, String namespace, String app, OpenSergoDataSourceConfig dataSourceConfig) {
+        AssertUtil.notEmpty(namespace, "namespace cannot be empty");
+        AssertUtil.notEmpty(app, "app cannot be empty");
+        if(dataSourceConfig.getClientReuse()) {
+            this.openSergoClient = OpenSergoClientManager.get().getOrCreateClient(host, port);
+        } else {
+            this.openSergoClient = new OpenSergoClient.Builder().endpoint(host, port).build();
+        }
         this.namespace = namespace;
         this.app = app;
         this.ruleAggregator = new OpenSergoRuleAggregator(dataSourceMap);
