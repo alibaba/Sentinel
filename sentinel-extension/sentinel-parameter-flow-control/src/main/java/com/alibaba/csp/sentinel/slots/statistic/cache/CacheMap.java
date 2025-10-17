@@ -41,5 +41,7 @@ public interface CacheMap<K, V> {
 
     void clear();
 
+    Set<K> keySet();
+
     Set<K> keySet(boolean ascending);
 }

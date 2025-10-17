@@ -48,7 +48,7 @@ public class ClusterConcurrentCheckerLogListener implements Runnable {
             ClusterServerStatLogUtil.log(String.format("concurrent|resource:%s|flowId:%dl|concurrencyLevel:%fl|currentConcurrency", resource, flowId,concurrencyLevel),CurrentConcurrencyManager.get(flowId).get());
         }
         if (TokenCacheNodeManager.getSize() != 0){
-            ClusterServerStatLogUtil.log("flow|totalTokenSize", TokenCacheNodeManager.getSize());
+            ClusterServerStatLogUtil.log("flow|totalTokenSize", (int)TokenCacheNodeManager.getSize());
         }
 
     }
