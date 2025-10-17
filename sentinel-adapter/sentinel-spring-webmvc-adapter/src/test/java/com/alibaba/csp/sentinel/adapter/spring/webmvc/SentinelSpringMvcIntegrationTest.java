@@ -15,21 +15,12 @@
  */
 package com.alibaba.csp.sentinel.adapter.spring.webmvc;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 import com.alibaba.csp.sentinel.util.StringUtil;
-
-import java.util.Collections;
-
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,6 +30,18 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+
+import java.util.Collections;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * @author kaizi2009
@@ -51,6 +54,161 @@ public class SentinelSpringMvcIntegrationTest {
     private static final String HELLO_STR = "Hello!";
     @Autowired
     private MockMvc mvc;
+
+    // async request  test
+    @Test
+    public void testAsync() throws Exception {
+        String url = "/async";
+        MvcResult mvcResult = this.mvc.perform(get(url))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+        this.mvc.perform(asyncDispatch(mvcResult))
+                .andExpect(status().isOk())
+                .andExpect(content().string("apiAsync!"));
+
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
+        assertNotNull(cn);
+        assertEquals(1, cn.successQps(), 0.01);
+    }
+
+    @Test
+    public void testNestedAsync() throws Exception {
+        String url = "/nestedAsync";
+        MvcResult mvcResult = this.mvc.perform(get(url))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+        MvcResult mvcResult2 = this.mvc.perform(asyncDispatch(mvcResult))
+                .andExpect(forwardedUrl("async"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        //Mock mvc does not support automatic jump forward requests.
+        //If manual requests are made in the following ways, the count will be re-counted
+        assertNotNull(mvcResult2.getModelAndView());
+        assertNotNull(mvcResult2.getModelAndView().getViewName());
+        MvcResult mvcResult3 = this.mvc.perform(get("/" + mvcResult2.getModelAndView().getViewName()))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+        this.mvc.perform(asyncDispatch(mvcResult3))
+                .andExpect(status().isOk())
+                .andExpect(content().string("apiAsync!"));
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
+        assertNotNull(cn);
+        assertEquals(1, cn.successQps(), 0.01);
+    }
+
+    @Test
+    public void testAsync2Sync() throws Exception {
+        String url = "/async2Sync";
+        MvcResult mvcResult = this.mvc.perform(get(url))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+        MvcResult mvcResult2 = this.mvc.perform(asyncDispatch(mvcResult))
+                .andExpect(forwardedUrl("sync"))
+                .andExpect(status().isOk())
+                .andReturn();
+        assertNotNull(mvcResult2.getModelAndView());
+        assertNotNull(mvcResult2.getModelAndView().getViewName());
+        this.mvc.perform(get("/" + mvcResult2.getModelAndView().getViewName()))
+                .andExpect(status().isOk())
+                .andExpect(content().string("sync!"));
+
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
+        assertNotNull(cn);
+        assertEquals(1, cn.successQps(), 0.01);
+    }
+
+    @Test
+    public void testAsync2Sync2Async() throws Exception {
+        String url = "/async2Sync2Async";
+        MvcResult mvcResult = this.mvc.perform(get(url))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+        MvcResult mvcResult2 = this.mvc.perform(asyncDispatch(mvcResult))
+                .andExpect(forwardedUrl("sync2Async"))
+                .andExpect(status().isOk())
+                .andReturn();
+        assertNotNull(mvcResult2.getModelAndView());
+        assertNotNull(mvcResult2.getModelAndView().getViewName());
+        MvcResult mvcResult3 = this.mvc.perform(get("/" + mvcResult2.getModelAndView().getViewName()))
+                .andExpect(forwardedUrl("async"))
+                .andExpect(status().isOk())
+                .andReturn();
+        assertNotNull(mvcResult3.getModelAndView());
+        assertNotNull(mvcResult3.getModelAndView().getViewName());
+        MvcResult mvcResult4 = this.mvc.perform(get("/" + mvcResult3.getModelAndView().getViewName()))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+        this.mvc.perform(asyncDispatch(mvcResult4))
+                .andExpect(status().isOk())
+                .andExpect(content().string("apiAsync!"));
+
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
+        assertNotNull(cn);
+        assertEquals(1, cn.successQps(), 0.01);
+    }
+
+
+    @Test
+    public void testSync2Async() throws Exception {
+        String url = "/sync2Async";
+        MvcResult mvcResult = this.mvc.perform(get(url))
+                .andExpect(forwardedUrl("async"))
+                .andExpect(status().isOk())
+                .andReturn();
+        assertNotNull(mvcResult.getModelAndView());
+        assertNotNull(mvcResult.getModelAndView().getViewName());
+        MvcResult mvcResult2 = this.mvc.perform(get("/" + mvcResult.getModelAndView().getViewName()))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+        this.mvc.perform(asyncDispatch(mvcResult2))
+                .andExpect(status().isOk())
+                .andExpect(content().string("apiAsync!"));
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
+        assertNotNull(cn);
+        assertEquals(1, cn.successQps(), 0.01);
+    }
+
+
+    @Test
+    public void testSync2Exception() throws Exception {
+        String url = "/sync2Exception";
+        MvcResult mvcResult = this.mvc.perform(get(url))
+                .andExpect(forwardedUrl("runtimeException"))
+                .andExpect(status().isOk())
+                .andReturn();
+        assertNotNull(mvcResult.getModelAndView());
+        assertNotNull(mvcResult.getModelAndView().getViewName());
+        this.mvc.perform(get("/" + mvcResult.getModelAndView().getViewName()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(ResultWrapper.error().toJsonString()));
+
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
+        assertNotNull(cn);
+        assertEquals(1, cn.successQps(), 0.01);
+    }
+
+    @Test
+    public void testAsync2Exception() throws Exception {
+        String url = "/async2Exception";
+        MvcResult mvcResult = this.mvc.perform(get(url))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+        MvcResult mvcResult2 = this.mvc.perform(asyncDispatch(mvcResult))
+                .andExpect(forwardedUrl("runtimeException"))
+                .andExpect(status().isOk())
+                .andReturn();
+        assertNotNull(mvcResult2.getModelAndView());
+        assertNotNull(mvcResult2.getModelAndView().getViewName());
+        this.mvc.perform(get("/" + mvcResult2.getModelAndView().getViewName()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(ResultWrapper.error().toJsonString()));
+
+        ClusterNode cn = ClusterBuilderSlot.getClusterNode(url);
+        assertNotNull(cn);
+        assertEquals(1, cn.successQps(), 0.01);
+    }
+
 
     @Test
     public void testBase() throws Exception {
