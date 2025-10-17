@@ -107,7 +107,7 @@ public class SimpleHttpCommandCenter implements CommandCenter {
                     success = true;
                     port = serverSocket.getLocalPort();
                 } else {
-                    CommandCenterLog.info("[CommandCenter] chooses port fail, http command center will not work");
+                    CommandCenterLog.warn("[CommandCenter] chooses port fail, http command center will not work");
                 }
 
                 if (!success) {
