@@ -2,9 +2,9 @@ name: Sentinel CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, dashboard/apollo/master, release-* ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, dashboard/apollo/master, release-* ]
 
 jobs:
   build:

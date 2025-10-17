@@ -15,7 +15,12 @@
  */
 package com.alibaba.csp.sentinel.dashboard.repository.metric;
 
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.MetricEntity;
+
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 /**
  * Repository interface for aggregated metrics data.
@@ -57,4 +62,26 @@ public interface MetricsRepository<T> {
      * @return list of resources
      */
     List<String> listResourcesOfApp(String app);
+
+    /**
+     * Order by last minute b_qps DESC.
+     *
+     * @param resourceCount
+     * @return
+     */
+    default List<String> listResourcesSorted(Map<String, MetricEntity> resourceCount){
+        return resourceCount.entrySet()
+                .stream()
+                .sorted((o1, o2) -> {
+                    MetricEntity e1 = o1.getValue();
+                    MetricEntity e2 = o2.getValue();
+                    int t = e2.getBlockQps().compareTo(e1.getBlockQps());
+                    if (t != 0) {
+                        return t;
+                    }
+                    return e2.getPassQps().compareTo(e1.getPassQps());
+                })
+                .map(Entry::getKey)
+                .collect(Collectors.toList());
+    }
 }

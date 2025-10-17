@@ -19,6 +19,8 @@ import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayFlowRule;
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayParamFlowItem;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
 import com.alibaba.csp.sentinel.slots.block.Rule;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
 import java.util.Date;
 import java.util.Objects;
@@ -164,6 +166,7 @@ public class GatewayFlowRuleEntity implements RuleEntity {
     }
 
     @Override
+    @JsonSerialize(using= ToStringSerializer.class)
     public Long getId() {
         return id;
     }
