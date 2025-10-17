@@ -33,4 +33,9 @@ public class WarmUpRateLimiterControllerFactory implements TrafficShapingControl
     public int getControlBehavior() {
         return RuleConstant.CONTROL_BEHAVIOR_WARM_UP_RATE_LIMITER;
     }
+
+    @Override
+    public boolean isBuiltIn() {
+        return true;
+    }
 }

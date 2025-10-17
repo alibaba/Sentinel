@@ -32,4 +32,18 @@ public interface TrafficShapingControllerFactory {
      * @return the control behavior
      */
     int getControlBehavior();
+
+    /**
+     * Indicates whether this factory is a built-in Sentinel implementation.
+     * Built-in factories are allowed to use control behavior values in the reserved range [0, 255].
+     * User-defined factories should return {@code false} (default) and use values >= 256.
+     *
+     * This method is used internally for validation during factory registration to ensure
+     * proper namespace separation and prevent conflicts.
+     *
+     * @return {@code true} if this is a Sentinel built-in factory, {@code false} for user-defined implementations
+     */
+    default boolean isBuiltIn() {
+        return false;
+    }
 }

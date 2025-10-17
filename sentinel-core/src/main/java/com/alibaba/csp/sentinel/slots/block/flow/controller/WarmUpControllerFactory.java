@@ -34,4 +34,9 @@ public class WarmUpControllerFactory implements TrafficShapingControllerFactory 
     public int getControlBehavior() {
         return RuleConstant.CONTROL_BEHAVIOR_WARM_UP;
     }
+
+    @Override
+    public boolean isBuiltIn() {
+        return true;
+    }
 }
