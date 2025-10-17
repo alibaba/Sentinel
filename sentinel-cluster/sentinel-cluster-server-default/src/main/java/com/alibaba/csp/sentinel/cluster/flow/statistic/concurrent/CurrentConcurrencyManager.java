@@ -95,4 +95,12 @@ public final class CurrentConcurrencyManager {
     public static Set<Long> getConcurrencyMapKeySet() {
         return NOW_CALLS_MAP.keySet();
     }
+    
+    /**
+     * clear NOW_CALLS_MAP.
+     */
+    public static void clear() {
+        NOW_CALLS_MAP.clear();
+        return;
+    }
 }
