@@ -17,6 +17,8 @@ package com.alibaba.csp.sentinel.demo.spring.webmvc.controller;
 
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+
+import com.alibaba.csp.sentinel.demo.spring.webmvc.exception.WebMvcException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,6 +37,12 @@ public class WebMvcTestController {
     public String apiHello() {
         doBusiness();
         return "Hello!";
+    }
+
+    @GetMapping("/exception")
+    @ResponseBody
+    public String apiMvcException(){
+        throw new WebMvcException("this is WebMvcException");
     }
 
     @GetMapping("/err")

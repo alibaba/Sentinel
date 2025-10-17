@@ -148,7 +148,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
             return;
         }
         
-        traceExceptionAndExit(entry, ex);
+        traceExceptionAndExit(request, entry, ex);
         removeEntryInRequest(request);
         ContextUtil.exit();
     }
@@ -167,10 +167,18 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
         request.removeAttribute(baseWebMvcConfig.getRequestAttributeName());
     }
 
-    protected void traceExceptionAndExit(Entry entry, Exception ex) {
+    protected void traceExceptionAndExit(HttpServletRequest request, Entry entry, Exception ex) {
         if (entry != null) {
             if (ex != null) {
                 Tracer.traceEntry(ex, entry);
+            } else {
+              if (this instanceof SentinelWebInterceptor){
+                  Throwable throwable = SentinelWebExceptionHandlerHelper.getAndClearCurrentRequestException(request);
+                  Tracer.traceEntry(throwable, entry);
+              } else if (this instanceof SentinelWebTotalInterceptor) {
+                  Throwable throwable = SentinelWebExceptionHandlerHelper.getAndClearTotalRequestException(request);
+                  Tracer.traceEntry(throwable, entry);
+              }
             }
             entry.exit();
         }
