@@ -48,10 +48,8 @@ public class CtSph implements Sph {
      * Same resource({@link ResourceWrapper#equals(Object)}) will share the same
      * {@link ProcessorSlotChain}, no matter in which {@link Context}.
      */
-    private static volatile Map<ResourceWrapper, ProcessorSlotChain> chainMap
+    private static final Map<ResourceWrapper, ProcessorSlotChain> CHAIN_MAP
         = new HashMap<ResourceWrapper, ProcessorSlotChain>();
-
-    private static final Object LOCK = new Object();
 
     private AsyncEntry asyncEntryWithNoChain(ResourceWrapper resourceWrapper, Context context) {
         AsyncEntry entry = new AsyncEntry(resourceWrapper, null, context);
@@ -192,22 +190,18 @@ public class CtSph implements Sph {
      * @return {@link ProcessorSlotChain} of the resource
      */
     ProcessorSlot<Object> lookProcessChain(ResourceWrapper resourceWrapper) {
-        ProcessorSlotChain chain = chainMap.get(resourceWrapper);
+        ProcessorSlotChain chain = CHAIN_MAP.get(resourceWrapper);
         if (chain == null) {
-            synchronized (LOCK) {
-                chain = chainMap.get(resourceWrapper);
+            synchronized (CHAIN_MAP) {
+                chain = CHAIN_MAP.get(resourceWrapper);
                 if (chain == null) {
                     // Entry size limit.
-                    if (chainMap.size() >= Constants.MAX_SLOT_CHAIN_SIZE) {
+                    if (CHAIN_MAP.size() >= Constants.MAX_SLOT_CHAIN_SIZE) {
                         return null;
                     }
 
                     chain = SlotChainProvider.newSlotChain();
-                    Map<ResourceWrapper, ProcessorSlotChain> newMap = new HashMap<ResourceWrapper, ProcessorSlotChain>(
-                        chainMap.size() + 1);
-                    newMap.putAll(chainMap);
-                    newMap.put(resourceWrapper, chain);
-                    chainMap = newMap;
+                    CHAIN_MAP.put(resourceWrapper, chain);
                 }
             }
         }
@@ -221,7 +215,9 @@ public class CtSph implements Sph {
      * @since 0.2.0
      */
     public static int entrySize() {
-        return chainMap.size();
+        synchronized (CHAIN_MAP){
+            return CHAIN_MAP.size();
+        }
     }
 
     /**
@@ -230,7 +226,7 @@ public class CtSph implements Sph {
      * @since 0.2.0
      */
     static void resetChainMap() {
-        chainMap.clear();
+        CHAIN_MAP.clear();
     }
 
     /**
@@ -239,7 +235,7 @@ public class CtSph implements Sph {
      * @since 0.2.0
      */
     static Map<ResourceWrapper, ProcessorSlotChain> getChainMap() {
-        return chainMap;
+        return CHAIN_MAP;
     }
 
     /**
