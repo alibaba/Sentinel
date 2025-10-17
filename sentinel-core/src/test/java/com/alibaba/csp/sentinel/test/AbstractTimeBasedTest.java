@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.test;
 
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.junit.runner.RunWith;
@@ -25,6 +26,8 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
+import com.alibaba.csp.sentinel.context.Context;
+import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 
@@ -92,6 +95,52 @@ public abstract class AbstractTimeBasedTest {
         } finally {
             if (entry != null) {
                 entry.exit();
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Init entries one by one with a fix interval.
+     *
+     * @param entryList filled with entries, set null if blocked.
+     */
+    protected final void batchEntryPeriodically(String resource, int size, int intervalMs, List<Entry> entryList) {
+        for (int i = 0; i < size; i++) {
+            Entry entry = null;
+            try {
+                entry = SphU.entry(resource);
+            } catch (BlockException ex) {
+                // do nothing
+            } catch (Exception ex) {
+                Tracer.traceEntry(ex, entry);
+            }
+            entryList.add(entry);
+            sleep(intervalMs);
+        }
+    }
+
+    protected final void batchExitImmediately(List<Entry> entryList) {
+        for (Entry entry : entryList) {
+            if (entry != null) {
+                safeExit(entry);
+            }
+        }
+    }
+
+    static protected final void safeExit(Entry entryToExit) {
+        Context context = ContextUtil.getContext();
+        Entry curEntry = context.getCurEntry();
+        context.setCurEntry(entryToExit);
+        entryToExit.exit();
+        context.setCurEntry(curEntry);
+        ContextUtil.replaceContext(context);
+    }
+
+    static protected final boolean noOneBlocked(List<Entry> entryList) {
+        for (Entry entry : entryList) {
+            if (entry == null) {
+                return false;
             }
         }
         return true;
