@@ -24,12 +24,11 @@ import java.util.concurrent.ConcurrentMap;
 
 import com.alibaba.csp.sentinel.util.AssertUtil;
 
-import org.springframework.stereotype.Component;
 
 /**
  * @author leyou
  */
-@Component
+
 public class SimpleMachineDiscovery implements MachineDiscovery {
 
     private final ConcurrentMap<String, AppInfo> apps = new ConcurrentHashMap<>();
