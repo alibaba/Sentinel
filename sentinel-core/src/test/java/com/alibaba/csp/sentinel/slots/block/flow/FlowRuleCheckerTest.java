@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow;
 
+import com.alibaba.csp.sentinel.node.Node;
 import java.util.Arrays;
 
 import com.alibaba.csp.sentinel.EntryType;
@@ -25,6 +26,7 @@ import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 
+import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -164,6 +166,41 @@ public class FlowRuleCheckerTest {
 
         FlowRuleChecker checker = new FlowRuleChecker();
         assertTrue(checker.canPassCheck(rule, context, node, 1));
+    }
+
+    @Test
+    public void testCustomTrafficShapingController() {
+        FlowRule rule = new FlowRule();
+        rule.setResource("abc");
+        rule.setGrade(RuleConstant.FLOW_GRADE_QPS);
+        rule.setStrategy(RuleConstant.STRATEGY_DIRECT);
+        rule.setCount(2);
+        rule.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_CUSTOM);
+        rule.setBehaviorController(new TrafficShapingController() {
+            @Override
+            public boolean canPass(Node node, int acquireCount, boolean prioritized) {
+                if (acquireCount > 1) return true;
+                return false;
+            }
+
+            @Override
+            public boolean canPass(Node node, int acquireCount) {
+                return false;
+            }
+        });
+        DefaultNode node = mock(DefaultNode.class);
+        when(node.getClusterNode()).thenReturn(new ClusterNode("abc"));
+        Context context = mock(Context.class);
+        when(context.getOrigin()).thenReturn("def");
+        FlowRuleChecker checker = new FlowRuleChecker();
+        FlowRuleManager.loadRules(Arrays.asList(rule));
+        List<FlowRule> abc = FlowRuleManager.getFlowRuleMap().get("abc");
+        assertNotNull(abc);
+        for (FlowRule flowRule : abc) {
+            assertEquals(flowRule.getRater(), rule.getRater());
+            assertTrue(checker.canPassCheck(flowRule, context, node, 2));
+            assertFalse(checker.canPassCheck(flowRule, context, node, 1));
+        }
     }
 
     @Before
