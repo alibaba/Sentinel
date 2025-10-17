@@ -196,7 +196,7 @@ public final class ClusterStateManager {
             try {
                 Thread.sleep(-estimated);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                RecordLog.warn("[ClusterStateManager] Error in sleepIfNeeded", e );
             }
         }
     }
