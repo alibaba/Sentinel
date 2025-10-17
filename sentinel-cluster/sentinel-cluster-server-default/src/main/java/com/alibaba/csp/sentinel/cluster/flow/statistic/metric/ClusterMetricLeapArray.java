@@ -15,12 +15,12 @@
  */
 package com.alibaba.csp.sentinel.cluster.flow.statistic.metric;
 
-import java.util.concurrent.atomic.LongAdder;
-
 import com.alibaba.csp.sentinel.cluster.flow.statistic.data.ClusterFlowEvent;
 import com.alibaba.csp.sentinel.cluster.flow.statistic.data.ClusterMetricBucket;
 import com.alibaba.csp.sentinel.slots.statistic.base.LeapArray;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
+
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * @author Eric Zhao
@@ -46,11 +46,9 @@ public class ClusterMetricLeapArray extends LeapArray<ClusterMetricBucket> {
     }
 
     @Override
-    protected WindowWrap<ClusterMetricBucket> resetWindowTo(WindowWrap<ClusterMetricBucket> w, long startTime) {
-        w.resetTo(startTime);
-        w.value().reset();
-        transferOccupyToBucket(w.value());
-        return w;
+    protected void resetWindowValue(ClusterMetricBucket windowValue, long startTime) {
+        windowValue.reset();
+        transferOccupyToBucket(windowValue);
     }
 
     private void transferOccupyToBucket(/*@Valid*/ ClusterMetricBucket bucket) {

@@ -38,11 +38,8 @@ public class FutureBucketLeapArray extends LeapArray<MetricBucket> {
     }
 
     @Override
-    protected WindowWrap<MetricBucket> resetWindowTo(WindowWrap<MetricBucket> w, long startTime) {
-        // Update the start time and reset value.
-        w.resetTo(startTime);
-        w.value().reset();
-        return w;
+    protected void resetWindowValue(MetricBucket windowValue, long startTime) {
+        windowValue.reset();
     }
 
     @Override

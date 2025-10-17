@@ -15,14 +15,14 @@
  */
 package com.alibaba.csp.sentinel.util;
 
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.LongAdder;
-
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.statistic.base.LeapArray;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 import com.alibaba.csp.sentinel.util.function.Tuple2;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * <p>Provides millisecond-level time of OS.</p>
@@ -88,12 +88,9 @@ public final class TimeUtil implements Runnable {
             }
 
             @Override
-            protected WindowWrap<Statistic> resetWindowTo(WindowWrap<Statistic> windowWrap, long startTime) {
-                Statistic val = windowWrap.value();
-                val.getReads().reset();
-                val.getWrites().reset();
-                windowWrap.resetTo(startTime);
-                return windowWrap;
+            protected void resetWindowValue(Statistic windowValue, long startTime) {
+                windowValue.getReads().reset();
+                windowValue.getWrites().reset();
             }
         };
         this.currentTimeMillis = System.currentTimeMillis();

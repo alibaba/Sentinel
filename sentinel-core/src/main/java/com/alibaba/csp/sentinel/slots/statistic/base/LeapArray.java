@@ -15,13 +15,13 @@
  */
 package com.alibaba.csp.sentinel.slots.statistic.base;
 
+import com.alibaba.csp.sentinel.util.AssertUtil;
+import com.alibaba.csp.sentinel.util.TimeUtil;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.concurrent.locks.ReentrantLock;
-
-import com.alibaba.csp.sentinel.util.AssertUtil;
-import com.alibaba.csp.sentinel.util.TimeUtil;
 
 /**
  * <p>
@@ -92,10 +92,9 @@ public abstract class LeapArray<T> {
      * Reset given bucket to provided start time and reset the value.
      *
      * @param startTime  the start time of the bucket in milliseconds
-     * @param windowWrap current bucket
-     * @return new clean bucket at given start time
+     * @param windowValue current bucket value
      */
-    protected abstract WindowWrap<T> resetWindowTo(WindowWrap<T> windowWrap, long startTime);
+    protected abstract void resetWindowValue(T windowValue, long startTime);
 
     private int calculateTimeIdx(/*@Valid*/ long timeMillis) {
         long timeId = timeMillis / windowLengthInMs;
@@ -185,8 +184,13 @@ public abstract class LeapArray<T> {
                  */
                 if (updateLock.tryLock()) {
                     try {
-                        // Successfully get the update lock, now we reset the bucket.
-                        return resetWindowTo(old, windowStart);
+                        //Check again
+                        if (!(windowStart > old.windowStart())) continue;
+                        // Successfully get the update lock, now we reset the bucket value and windowStart.
+                        // It is necessary to reset value first and then set windowStart
+                        // Because if set windowStart first other threads will see  not consistency WindowWrap
+                        resetWindowValue(old.value(), windowStart);
+                        return old.resetTo(windowStart);
                     } finally {
                         updateLock.unlock();
                     }
