@@ -42,7 +42,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jmh.version>1.21</jmh.version>
         <uberjar.name>benchmarks</uberjar.name>
-        <central.publishing.skip>true</central.publishing.skip>
     </properties>
 
     <build>

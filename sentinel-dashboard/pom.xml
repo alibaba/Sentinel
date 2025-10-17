@@ -19,7 +19,6 @@
         <resource.delimiter>@</resource.delimiter>
         <spring.boot.version>2.5.12</spring.boot.version>
         <curator.version>4.0.1</curator.version>
-        <central.publishing.skip>true</central.publishing.skip>
     </properties>
 
     <dependencies>
