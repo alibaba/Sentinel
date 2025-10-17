@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 
 /**
  * @author jialiang.linjl
+ * @author guozhong.huang
  */
 public class SystemBlockException extends BlockException {
 
@@ -31,6 +32,12 @@ public class SystemBlockException extends BlockException {
 
     public SystemBlockException(String resourceName, String limitType) {
         super(limitType);
+        this.resourceName = resourceName;
+    }
+
+
+    public SystemBlockException(String resourceName, SystemRule systemRule) {
+        super(systemRule);
         this.resourceName = resourceName;
     }
 
