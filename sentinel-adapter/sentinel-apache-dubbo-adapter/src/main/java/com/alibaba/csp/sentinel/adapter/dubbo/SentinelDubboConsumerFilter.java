@@ -19,14 +19,12 @@ import com.alibaba.csp.sentinel.*;
 import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboAdapterGlobalConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.LinkedList;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 
@@ -80,7 +78,8 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
             methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT,
                 invocation.getArguments());
             Result result = invoker.invoke(invocation);
-            if (result.hasException()) {
+            // Non-BlockException,Non-wrapped-BlockException (business exception) is recorded.
+            if (result.hasException() && !BlockException.isBlockException(result.getException())) {
                 Tracer.traceEntry(result.getException(), interfaceEntry);
                 Tracer.traceEntry(result.getException(), methodEntry);
             }
@@ -118,9 +117,14 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
                 if (error == null) {
                     error = Optional.ofNullable(r).map(Result::getException).orElse(null);
                 }
+                // if error == null the Tracer.traceEntry() will not record it;
+                boolean isBlockException = BlockException.isBlockException(error);
                 while (!queue.isEmpty()) {
                     EntryHolder holder = queue.pop();
-                    Tracer.traceEntry(error, holder.entry);
+                    // Non-BlockException,Non-wrapped-BlockException (business exception) is recorded.
+                    if (!isBlockException) {
+                        Tracer.traceEntry(error, holder.entry);
+                    }
                     exitEntry(holder);
                 }
             });
