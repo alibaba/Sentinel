@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.slots.block;
 
 import com.alibaba.csp.sentinel.util.function.Function;
 import com.alibaba.csp.sentinel.util.function.Predicate;
+import com.alibaba.csp.sentinel.config.SentinelConfig;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -86,7 +87,7 @@ public class RuleManager<R> {
      */
     public List<R> getRules(String resource) {
         List<R> result = new ArrayList<>(simpleRules.getOrDefault(resource, Collections.emptyList()));
-        if (regexRules.isEmpty() || !result.isEmpty()) {
+        if (regexRules.isEmpty() || (SentinelConfig.shouldSkipRegexIfSimpleRuleMatched() && !result.isEmpty())) {
             return result;
         }
         if (regexCacheRules.containsKey(resource)) {

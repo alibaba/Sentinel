@@ -61,6 +61,7 @@ public final class SentinelConfig {
     public static final String STATISTIC_MAX_RT = "csp.sentinel.statistic.max.rt";
     public static final String SPI_CLASSLOADER = "csp.sentinel.spi.classloader";
     public static final String METRIC_FLUSH_INTERVAL = "csp.sentinel.metric.flush.interval";
+    public static final String SKIP_REGEX_IF_SIMPLE_RULE_MATCHED_KEY = "csp.sentinel.rule.regex.skip.if.simple.matched";
 
     public static final String DEFAULT_CHARSET = "UTF-8";
     public static final long DEFAULT_SINGLE_METRIC_FILE_SIZE = 1024 * 1024 * 50;
@@ -68,6 +69,7 @@ public final class SentinelConfig {
     public static final int DEFAULT_COLD_FACTOR = 3;
     public static final int DEFAULT_STATISTIC_MAX_RT = 5000;
     public static final long DEFAULT_METRIC_FLUSH_INTERVAL = 1L;
+    public static final String DEFAULT_SKIP_REGEX_IF_SIMPLE_RULE_MATCHED = "false";
 
     static {
         try {
@@ -106,6 +108,7 @@ public final class SentinelConfig {
         setConfig(COLD_FACTOR, String.valueOf(DEFAULT_COLD_FACTOR));
         setConfig(STATISTIC_MAX_RT, String.valueOf(DEFAULT_STATISTIC_MAX_RT));
         setConfig(METRIC_FLUSH_INTERVAL, String.valueOf(DEFAULT_METRIC_FLUSH_INTERVAL));
+        setConfig(SKIP_REGEX_IF_SIMPLE_RULE_MATCHED_KEY, DEFAULT_SKIP_REGEX_IF_SIMPLE_RULE_MATCHED);
     }
 
     private static void loadProps() {
@@ -339,6 +342,14 @@ public final class SentinelConfig {
     public static boolean shouldUseContextClassloader() {
         String classloaderConf = SentinelConfig.getConfig(SentinelConfig.SPI_CLASSLOADER);
         return CLASSLOADER_CONTEXT.equalsIgnoreCase(classloaderConf);
+    }
+
+    /**
+     * Return whether to skip regex matching when simple rules already matched.
+     * Default: false (keeps backward compatibility).
+     */
+    public static boolean shouldSkipRegexIfSimpleRuleMatched() {
+        return Boolean.parseBoolean(getConfig(SKIP_REGEX_IF_SIMPLE_RULE_MATCHED_KEY));
     }
 
     private SentinelConfig() {}
