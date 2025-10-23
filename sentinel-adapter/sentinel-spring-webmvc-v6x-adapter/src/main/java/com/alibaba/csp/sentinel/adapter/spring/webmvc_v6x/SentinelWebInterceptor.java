@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.adapter.spring.webmvc_v6x;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc_v6x.config.SentinelWebMvcConfig;
 
 import com.alibaba.csp.sentinel.adapter.web.common.UrlCleaner;
+import com.alibaba.csp.sentinel.util.StringUtil;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.web.servlet.HandlerMapping;
@@ -61,6 +62,9 @@ public class SentinelWebInterceptor extends AbstractSentinelInterceptor {
         }
         if (config.isContextPathSpecify() && request.getContextPath() != null) {
             resourceName = request.getContextPath() + resourceName;
+        }
+        if (StringUtil.isNotEmpty(resourceName) && (config.isHttpMethodSpecify() || SentinelWebMvcConfig.isMseHttpMethodSpecify())) {
+            resourceName = request.getMethod().toUpperCase() + ":" + resourceName;
         }
         return resourceName;
     }
