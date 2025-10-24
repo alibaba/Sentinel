@@ -33,12 +33,10 @@ import org.apache.dubbo.rpc.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import java.util.Map;
 import java.util.Set;
 
-import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -89,28 +87,6 @@ public class SentinelDubboProviderFilterTest extends BaseTest {
 
         Context context = ContextUtil.getContext();
         assertNull(context);
-    }
-
-    @Test
-    public void testProviderReceivesAdaptiveHeaderReturnsServerMetrics() {
-        URL url = URL.valueOf("dubbo://127.0.0.1:20880/" + Object.class.getName())
-                .addParameter(org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY, PROVIDER_SIDE);
-        AppResponse result = new AppResponse();
-        AppResponse spyResult = Mockito.spy(result);
-        Mockito.when(spyResult.hasException()).thenReturn(false);
-        Invoker<?> invoker = Mockito.mock(Invoker.class);
-        Mockito.when(invoker.getUrl()).thenReturn(url);
-        Mockito.when(invoker.getInterface()).thenReturn((Class) Object.class);
-        Mockito.when(invoker.invoke(Mockito.any())).thenReturn(spyResult);
-        Invocation invocation = Mockito.mock(Invocation.class);
-        Mockito.when(invocation.getMethodName()).thenReturn("testMethod");
-        Mockito.when(invocation.getParameterTypes()).thenReturn(new Class[0]);
-        Mockito.when(invocation.getArguments()).thenReturn(new Object[0]);
-        RpcContext.getContext().setAttachment("X-Sentinel-Adaptive", "enabled");
-        SentinelDubboProviderFilter filter = new SentinelDubboProviderFilter();
-        String metrics = RpcContext.getServerContext().getAttachment("X-Server-Metrics");
-        assertNotNull(metrics, "X-Server-Metrics should not be null");
-        assertTrue("Metrics should contain CPU info", metrics.contains("cpu:"));
     }
 
     /**

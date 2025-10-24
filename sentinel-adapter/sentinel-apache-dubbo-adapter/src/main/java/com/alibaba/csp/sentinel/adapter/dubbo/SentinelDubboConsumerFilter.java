@@ -80,7 +80,7 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
         String methodResourceName = getMethodName(invoker, invocation, prefix);
         if (AdaptiveDegradeRuleManager.getRule(interfaceResourceName).isEnabled() ||
                 AdaptiveDegradeRuleManager.getRule(methodResourceName).isEnabled()) {
-            RpcContext.getContext().setAttachment("X-Sentinel-Adaptive", "enabled");
+            invocation.setObjectAttachment("X-Sentinel-Adaptive", "enabled");
         }
         try {
             interfaceEntry = SphU.entry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT);
@@ -91,7 +91,7 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
                 Tracer.traceEntry(result.getException(), interfaceEntry);
                 Tracer.traceEntry(result.getException(), methodEntry);
             }
-            String metrics = RpcContext.getServerContext().getAttachment("X-Server-Metrics");
+            String metrics = result.getAttachment("X-Server-Metrics");
             if (metrics != null) {
                 if (interfaceEntry != null) {
                     interfaceEntry.setServerMetric(AdaptiveUtils.parseServiceMetrics(metrics, interfaceResourceName));
@@ -99,7 +99,7 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
                 if (methodEntry != null) {
                     methodEntry.setServerMetric(AdaptiveUtils.parseServiceMetrics(metrics, methodResourceName));
                 }
-                RpcContext.getServerContext().removeAttachment("X-Server-Metrics");
+                result.setObjectAttachment("X-Server-Metrics", null);
             }
             return result;
         } catch (BlockException e) {
@@ -125,7 +125,7 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
         String methodResourceName = getMethodName(invoker, invocation, prefix);
         if (AdaptiveDegradeRuleManager.getRule(interfaceResourceName).isEnabled() ||
                 AdaptiveDegradeRuleManager.getRule(methodResourceName).isEnabled()) {
-            RpcContext.getContext().setAttachment("X-Sentinel-Adaptive", "enabled");
+            invocation.setObjectAttachment("X-Sentinel-Adaptive", "enabled");
         }
         try {
             queue.push(new EntryHolder(
@@ -140,14 +140,16 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
                 if (error == null) {
                     error = Optional.ofNullable(r).map(Result::getException).orElse(null);
                 }
-                String metrics = RpcContext.getServerContext().getAttachment("X-Server-Metrics");
-                if (metrics != null) {
-                    for (EntryHolder holder : holders) {
-                        holder.entry.setServerMetric(
-                                AdaptiveUtils.parseServiceMetrics(metrics, holder.entry.getResourceWrapper().getName())
-                        );
+                if (r != null) {
+                    String metrics = (String) r.getObjectAttachment("X-Server-Metrics");
+                    if (metrics != null) {
+                        for (EntryHolder holder : holders) {
+                            holder.entry.setServerMetric(
+                                    AdaptiveUtils.parseServiceMetrics(metrics, holder.entry.getResourceWrapper().getName())
+                            );
+                        }
+                        r.setObjectAttachment("X-Server-Metrics", null);
                     }
-                    RpcContext.getServerContext().removeAttachment("X-Server-Metrics");
                 }
                 while (!queue.isEmpty()) {
                     EntryHolder holder = queue.pop();

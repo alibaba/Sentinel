@@ -82,7 +82,7 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter impleme
         String methodResourceName = getMethodName(invoker, invocation, prefix);
         if (AdaptiveDegradeRuleManager.getRule(interfaceResourceName).isEnabled() ||
                 AdaptiveDegradeRuleManager.getRule(methodResourceName).isEnabled()) {
-            RpcContext.getClientAttachment().setObjectAttachment("X-Sentinel-Adaptive", "enabled");
+            invocation.setObjectAttachment("X-Sentinel-Adaptive", "enabled");
         }
         try {
             interfaceEntry = SphU.entry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT);
@@ -124,7 +124,7 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter impleme
         String methodResourceName = getMethodName(invoker, invocation, prefix);
         if (AdaptiveDegradeRuleManager.getRule(interfaceResourceName).isEnabled() ||
                 AdaptiveDegradeRuleManager.getRule(methodResourceName).isEnabled()) {
-            RpcContext.getClientAttachment().setObjectAttachment("X-Sentinel-Adaptive", "enabled");
+            invocation.setObjectAttachment("X-Sentinel-Adaptive", "enabled");
         }
         try {
             queue.push(new EntryHolder(

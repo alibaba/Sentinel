@@ -26,6 +26,7 @@ import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.node.StatisticNode;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.AdaptiveDegradeRule;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.AdaptiveDegradeRuleManager;
 import com.alipay.sofa.rpc.common.RpcConstants;
 import com.alipay.sofa.rpc.core.request.SofaRequest;
 import com.alipay.sofa.rpc.core.response.SofaResponse;
@@ -119,6 +120,7 @@ public class SentinelSofaRpcConsumerFilterTest extends BaseTest {
         SofaResponse response = filter.invoke(filterInvoker, request);
         verify(filterInvoker).invoke(request);
         assertNull(response.getResponseProp("X-Server-Metrics"));
+        AdaptiveDegradeRuleManager.getRule(interfaceResourceName).setEnabled(false);
     }
 
     @Test

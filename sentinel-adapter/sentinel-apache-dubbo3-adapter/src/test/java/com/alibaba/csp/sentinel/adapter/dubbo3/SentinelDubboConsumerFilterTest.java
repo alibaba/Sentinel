@@ -29,7 +29,6 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.AdaptiveDegradeRule;
-import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.AdaptiveDegradeRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.util.TimeUtil;
@@ -397,43 +396,26 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
     }
 
     @Test
-    public void testAdaptiveDegradeEnabledSetsAdaptiveHeader() {
-        Invoker invoker = DubboTestUtil.getDefaultMockInvoker();
-        Invocation invocation = DubboTestUtil.getDefaultMockInvocationOne();
+    public void testXSentinelAdaptiveAttachmentSetWhenAdaptiveRuleEnabledSync() {
+        Invoker<?> invoker = DubboTestUtil.getDefaultMockInvoker();
+        String interfaceName = invoker.getInterface().getName();
+        String methodName = DubboTestUtil.DEFAULT_TEST_METHOD_ONE.getName();
+        Class<?>[] parameterTypes = DubboTestUtil.DEFAULT_TEST_METHOD_ONE.getParameterTypes();
+        RpcInvocation realInvocation = new RpcInvocation(
+                methodName,
+                interfaceName,
+                null,
+                parameterTypes,
+                new Object[parameterTypes.length]
+        );
+        Invocation invocation = spy(realInvocation);
         String interfaceResource = DubboUtils.getInterfaceName(invoker);
-        String methodResource = consumerFilter.getMethodName(invoker, invocation, null);
-        try (MockedStatic<AdaptiveDegradeRuleManager> mocked = mockStatic(AdaptiveDegradeRuleManager.class)) {
-            AdaptiveDegradeRule rule = mock(AdaptiveDegradeRule.class);
-            when(rule.isEnabled()).thenReturn(true);
-            when(AdaptiveDegradeRuleManager.getRule(interfaceResource)).thenReturn(rule);
-            when(AdaptiveDegradeRuleManager.getRule(methodResource)).thenReturn(mock(AdaptiveDegradeRule.class)); // not enabled
-            Result result = AsyncRpcResult.newDefaultAsyncResult("ok", invocation);
-            when(invoker.invoke(invocation)).thenAnswer(i -> {
-                String adaptive = (String) RpcContext.getClientAttachment().getObjectAttachment("X-Sentinel-Adaptive");
-                assertEquals("enabled", adaptive);
-                return result;
-            });
-            consumerFilter.invoke(invoker, invocation);
-        }
-    }
-
-    @Test
-    public void testAdaptiveDegradeDisabledNoAdaptiveHeader() {
-        Invoker invoker = DubboTestUtil.getDefaultMockInvoker();
-        Invocation invocation = DubboTestUtil.getDefaultMockInvocationOne();
-        try (MockedStatic<AdaptiveDegradeRuleManager> mocked = mockStatic(AdaptiveDegradeRuleManager.class)) {
-            when(AdaptiveDegradeRuleManager.getRule(anyString())).thenReturn(mock(AdaptiveDegradeRule.class));
-            AdaptiveDegradeRule rule = mock(AdaptiveDegradeRule.class);
-            when(rule.isEnabled()).thenReturn(false);
-            when(AdaptiveDegradeRuleManager.getRule(anyString())).thenReturn(rule);
-            Result result = AsyncRpcResult.newDefaultAsyncResult("ok", invocation);
-            when(invoker.invoke(invocation)).thenAnswer(i -> {
-                String adaptive = (String) RpcContext.getClientAttachment().getObjectAttachment("X-Sentinel-Adaptive");
-                assertNull(adaptive);
-                return result;
-            });
-            consumerFilter.invoke(invoker, invocation);
-        }
+        AdaptiveDegradeRule adaptiveDegradeRule = new AdaptiveDegradeRule(interfaceResource);
+        adaptiveDegradeRule.setEnabled(true);
+        Result result = AsyncRpcResult.newDefaultAsyncResult("ok", invocation);
+        when(invoker.invoke(invocation)).thenReturn(result);
+        consumerFilter.invoke(invoker, invocation);
+        assertEquals("enabled", invocation.getObjectAttachment("X-Sentinel-Adaptive"));
     }
 
     @Test
@@ -449,8 +431,6 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
             Entry mockMethodEntry = mock(Entry.class);
             ResourceWrapper interfaceRes = new StringResourceWrapper(DubboUtils.getInterfaceName(invoker), EntryType.OUT);
             ResourceWrapper methodRes = new StringResourceWrapper(consumerFilter.getMethodName(invoker, invocation, null), EntryType.OUT);
-            when(mockInterfaceEntry.getResourceWrapper()).thenReturn(interfaceRes);
-            when(mockMethodEntry.getResourceWrapper()).thenReturn(methodRes);
             sphu.when(() -> SphU.entry(eq(interfaceRes.getName()), anyInt(), eq(EntryType.OUT)))
                     .thenReturn(mockInterfaceEntry);
             sphu.when(() -> SphU.entry(eq(methodRes.getName()), anyInt(), eq(EntryType.OUT), any()))
