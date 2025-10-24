@@ -38,6 +38,7 @@ import com.alibaba.csp.sentinel.adapter.servlet.config.WebServletConfig;
 import com.alibaba.csp.sentinel.adapter.servlet.util.FilterUtil;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.util.AdaptiveUtils;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
@@ -81,7 +82,11 @@ public class CommonFilter implements Filter {
         HttpServletRequest sRequest = (HttpServletRequest) request;
         Entry urlEntry = null;
 
+        boolean adaptiveEnabled;
+        HttpServletResponse sResponse = (HttpServletResponse) response;
         try {
+            String adaptiveHeader = sRequest.getHeader("X-Sentinel-Adaptive");
+            adaptiveEnabled = "enabled".equals(adaptiveHeader);
             String target = FilterUtil.filterTarget(sRequest);
             // Clean and unify the URL.
             // For REST APIs, you have to clean the URL (e.g. `/foo/1` and `/foo/2` -> `/foo/:id`), or
@@ -107,9 +112,11 @@ public class CommonFilter implements Filter {
                     urlEntry = SphU.entry(target, ResourceTypeConstants.COMMON_WEB, EntryType.IN);
                 }
             }
+            if (adaptiveEnabled && !sResponse.isCommitted()) {
+                sResponse.setHeader("X-Server-Metrics", AdaptiveUtils.packServerMetric());
+            }
             chain.doFilter(request, response);
         } catch (BlockException e) {
-            HttpServletResponse sResponse = (HttpServletResponse) response;
             // Return the block page, or redirect to another URL.
             WebCallbackManager.getUrlBlockHandler().blocked(sRequest, sResponse, e);
         } catch (IOException | ServletException | RuntimeException e2) {

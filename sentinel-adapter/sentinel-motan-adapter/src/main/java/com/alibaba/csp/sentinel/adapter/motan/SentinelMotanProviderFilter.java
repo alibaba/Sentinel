@@ -20,6 +20,7 @@ import com.alibaba.csp.sentinel.adapter.motan.config.MotanAdapterGlobalConfig;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.util.AdaptiveUtils;
 import com.weibo.api.motan.common.MotanConstants;
 import com.weibo.api.motan.core.extension.Activation;
 import com.weibo.api.motan.core.extension.SpiMeta;
@@ -45,8 +46,12 @@ public class SentinelMotanProviderFilter implements Filter {
     public Response filter(Caller<?> caller, Request request) {
         Entry interfaceEntry = null;
         Entry methodEntry = null;
+        boolean enableAdaptive = false;
         Map<String, String> attachment = request.getAttachments();
         String origin = attachment.getOrDefault(MotanAdapterGlobalConfig.APPLICATION, MotanAdapterGlobalConfig.MOTAN);
+        if("enabled".equals(attachment.get("X-Sentinel-Adaptive"))){
+            enableAdaptive = true;
+        }
         String prefix = MotanAdapterGlobalConfig.getMotanProviderPrefix();
         String interfaceResourceName = MotanUtils.getInterfaceName(caller, prefix);
         String methodResourceName = MotanUtils.getMethodResourceName(caller, request, prefix);
@@ -59,6 +64,9 @@ public class SentinelMotanProviderFilter implements Filter {
             if (result.getException() != null) {
                 Tracer.traceEntry(result.getException(), interfaceEntry);
                 Tracer.traceEntry(result.getException(), methodEntry);
+            }
+            if(enableAdaptive){
+                result.setAttachment("X-Server-Metrics", AdaptiveUtils.packServerMetric());
             }
             return result;
         } catch (BlockException e) {

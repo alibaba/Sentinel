@@ -15,9 +15,13 @@
  */
 package com.alibaba.csp.sentinel.adapter.apache.httpclient.app.controller;
 
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.util.AdaptiveUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author zhaoyuguang
@@ -33,5 +37,17 @@ public class TestController {
     @RequestMapping("/httpclient/back/{id}")
     public String back(@PathVariable String id) {
         return "Welcome Back! " + id;
+    }
+
+    @RequestMapping("/httpclient/back/adaptive")
+    public String adaptive(HttpServletRequest request, HttpServletResponse response) {
+        //The service-side indicators in this case should be added by the service-side Sentinel.
+        // Here, we simulate the middleware logic of Sentinel to determine whether the upstream HttpClient can parse normally.
+        response.setHeader("X-Server-Metrics", AdaptiveUtils.packServerMetric());
+        String adaptiveHeader = request.getHeader("X-Sentinel-Adaptive");
+        if("enabled".equals(adaptiveHeader)){
+            return "adaptive-enabled-received";
+        }
+        return "adaptive-enabled-unreceived";
     }
 }

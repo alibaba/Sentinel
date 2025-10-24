@@ -235,9 +235,31 @@ public class ProviderFilterTest {
         String resourceName = "GET:" + url;
         Response response = given().get(url);
         response.then().statusCode(javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).body(equalTo("test exception mapper"));
-
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(resourceName);
         assertNotNull(cn);
+    }
+
+    @Test
+    public void testServerReturnsMetricsOnlyWhenAdaptiveHeaderPresent() {
+        String url = "/test/hello";
+        String resourceName = "GET:" + url;
+        Response resp1 = given().get(url);
+        resp1.then().statusCode(200).body(equalTo(HELLO_STR));
+        assertNull("Should not contain X-Server-Metrics without adaptive header",
+                resp1.getHeader("X-Server-Metrics"));
+        Response resp2 = given()
+                .header("X-Sentinel-Adaptive", "enabled")
+                .get(url);
+        resp2.then().statusCode(200).body(equalTo(HELLO_STR));
+        assertNotNull("Should contain X-Server-Metrics when adaptive header is present",
+                resp2.getHeader("X-Server-Metrics"));
+        assertFalse(resp2.getHeader("X-Server-Metrics").isEmpty());
+        Response resp3 = given()
+                .header("X-Sentinel-Adaptive", "disabled")
+                .get(url);
+        resp3.then().statusCode(200).body(equalTo(HELLO_STR));
+        assertNull("Should not contain X-Server-Metrics when adaptive header is not 'enabled'",
+                resp3.getHeader("X-Server-Metrics"));
     }
 
     private void configureRulesFor(String resource, int count) {
@@ -246,8 +268,8 @@ public class ProviderFilterTest {
 
     private void configureRulesFor(String resource, int count, String limitApp) {
         FlowRule rule = new FlowRule()
-            .setCount(count)
-            .setGrade(RuleConstant.FLOW_GRADE_QPS);
+                .setCount(count)
+                .setGrade(RuleConstant.FLOW_GRADE_QPS);
         rule.setResource(resource);
         if (StringUtil.isNotBlank(limitApp)) {
             rule.setLimitApp(limitApp);

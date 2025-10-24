@@ -1,7 +1,8 @@
-package com.alibaba.csp.sentinel.slots.block.degrade.adaptive.scenario;
+package com.alibaba.csp.sentinel.slots.block.degrade.adaptive.scenario.overload;
 
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.scenario.ScenarioConfig;
 
 /**
  * The threshold configuration relied upon for the specific scenario judgment of overload.
@@ -39,7 +40,7 @@ public class OverloadScenarioConfig implements ScenarioConfig {
     }
 
     public void loadConfig() {
-        RecordLog.debug("[OverloadScenarioConfig] Starting to load user configuration");
+        RecordLog.info("[OverloadScenarioConfig] Starting to load user configuration");
 
         String recoveryTimeoutStr = SentinelConfig.getConfig(RECOVERY_TIMEOUT_MS);
         if (recoveryTimeoutStr != null && !recoveryTimeoutStr.isEmpty()) {
@@ -71,7 +72,7 @@ public class OverloadScenarioConfig implements ScenarioConfig {
             tomcatUsageRate = Double.parseDouble(tomcatUsageRateStr);
         }
 
-        RecordLog.debug("[OverloadScenarioConfig] User configuration has been loaded successfully, current configuration: " +
+        RecordLog.info("[OverloadScenarioConfig] User configuration has been loaded successfully, current configuration: " +
                         "recoveryTimeoutMs:{}, halfOpenTimeoutMs:{}, overloadCpuThreshold:{}, responseTimeMultiple:{}, errorRateMultiple:{}, tomcatUsageRate:{}",
                 recoveryTimeoutMs, halfOpenTimeoutMs, overloadCpuThreshold, responseTimeMultiple, errorRateMultiple, tomcatUsageRate);
     }

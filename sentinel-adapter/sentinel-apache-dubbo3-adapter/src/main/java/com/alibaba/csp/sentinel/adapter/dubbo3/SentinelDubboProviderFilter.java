@@ -21,12 +21,9 @@ import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.util.AdaptiveUtils;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.Filter;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.*;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 
@@ -71,6 +68,8 @@ public class SentinelDubboProviderFilter extends BaseSentinelDubboFilter impleme
         String prefix = DubboAdapterGlobalConfig.getDubboProviderResNamePrefixKey();
         String interfaceResourceName = getInterfaceName(invoker, prefix);
         String methodResourceName = getMethodName(invoker, invocation, prefix);
+        String clientAdaptive = (String) RpcContext.getServerContext().getObjectAttachment("X-Sentinel-Adaptive");
+        boolean isAdaptiveEnabled = "enabled".equals(clientAdaptive);
         try {
             // Only need to create entrance context at provider side, as context will take effect
             // at entrance of invocation chain only (for inbound traffic).
@@ -82,6 +81,10 @@ public class SentinelDubboProviderFilter extends BaseSentinelDubboFilter impleme
             if (result.hasException()) {
                 Tracer.traceEntry(result.getException(), interfaceEntry);
                 Tracer.traceEntry(result.getException(), methodEntry);
+            }
+            if (isAdaptiveEnabled) {
+                String metrics = AdaptiveUtils.packServerMetric();
+                result.setObjectAttachment("X-Server-Metrics", metrics);
             }
             return result;
         } catch (BlockException e) {

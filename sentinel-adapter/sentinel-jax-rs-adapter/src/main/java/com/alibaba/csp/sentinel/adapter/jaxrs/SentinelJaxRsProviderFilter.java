@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.*;
 import com.alibaba.csp.sentinel.adapter.jaxrs.config.SentinelJaxRsConfig;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.util.AdaptiveUtils;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import javax.ws.rs.container.*;
@@ -67,6 +68,10 @@ public class SentinelJaxRsProviderFilter implements ContainerRequestFilter, Cont
     @Override
     public void filter(ContainerRequestContext containerRequestContext, ContainerResponseContext containerResponseContext) throws IOException {
         Entry entry = (Entry) containerRequestContext.getProperty(SENTINEL_JAX_RS_PROVIDER_ENTRY_PROPERTY);
+        String headerValue = containerRequestContext.getHeaderString("X-Sentinel-Adaptive");
+        if ("enabled".equals(headerValue)) {
+            containerResponseContext.getHeaders().add("X-Server-Metrics", AdaptiveUtils.packServerMetric());
+        }
         if (entry != null) {
             entry.exit();
         }

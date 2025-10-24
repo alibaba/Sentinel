@@ -19,6 +19,8 @@ import com.alibaba.csp.sentinel.*;
 import com.alibaba.csp.sentinel.adapter.motan.config.MotanAdapterGlobalConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.AdaptiveDegradeRuleManager;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.util.AdaptiveUtils;
 import com.weibo.api.motan.common.MotanConstants;
 import com.weibo.api.motan.core.extension.Activation;
 import com.weibo.api.motan.core.extension.SpiMeta;
@@ -27,6 +29,8 @@ import com.weibo.api.motan.filter.Filter;
 import com.weibo.api.motan.rpc.Caller;
 import com.weibo.api.motan.rpc.Request;
 import com.weibo.api.motan.rpc.Response;
+
+import java.util.Map;
 
 /**
  * @author zhangxn8
@@ -46,6 +50,10 @@ public class SentinelMotanConsumerFilter implements Filter {
         String prefix = MotanAdapterGlobalConfig.getMotanConsumerPrefix();
         String interfaceResourceName = MotanUtils.getInterfaceName(caller, prefix);
         String methodResourceName = MotanUtils.getMethodResourceName(caller, request, prefix);
+        if(AdaptiveDegradeRuleManager.getRule(interfaceResourceName).isEnabled()
+                || AdaptiveDegradeRuleManager.getRule(methodResourceName).isEnabled()){
+            request.setAttachment("X-Sentinel-Adaptive", "enabled");
+        }
         try {
             interfaceEntry = SphU.entry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT);
             methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT,
@@ -54,6 +62,15 @@ public class SentinelMotanConsumerFilter implements Filter {
             if (result.getException() != null) {
                 Tracer.traceEntry(result.getException(), interfaceEntry);
                 Tracer.traceEntry(result.getException(), methodEntry);
+            }
+            Map<String, String> responseHeaders = result.getAttachments();
+            if (responseHeaders != null) {
+                String metrics = responseHeaders.get("X-Server-Metrics");
+                if(metrics != null){
+                    interfaceEntry.setServerMetric(AdaptiveUtils.parseServiceMetrics(metrics,interfaceResourceName));
+                    methodEntry.setServerMetric(AdaptiveUtils.parseServiceMetrics(metrics,methodResourceName));
+                }
+                responseHeaders.remove("X-Server-Metrics");
             }
             return result;
         } catch (BlockException e) {

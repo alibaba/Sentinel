@@ -23,12 +23,9 @@ import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.util.AdaptiveUtils;
 import com.alibaba.dubbo.common.extension.Activate;
-import com.alibaba.dubbo.rpc.Filter;
-import com.alibaba.dubbo.rpc.Invocation;
-import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.Result;
-import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.*;
 
 import static com.alibaba.dubbo.common.Constants.PROVIDER;
 
@@ -64,6 +61,8 @@ public class SentinelDubboProviderFilter extends AbstractDubboFilter implements 
             String prefix = DubboAdapterGlobalConfig.getDubboProviderPrefix();
             String methodResourceName = getMethodResourceName(invoker, invocation, prefix);
             String interfaceName = getInterfaceName(invoker, prefix);
+            String clientAdaptive = RpcContext.getContext().getAttachment("X-Sentinel-Adaptive");
+            boolean isAdaptiveEnabled = "enabled".equals(clientAdaptive);
             ContextUtil.enter(methodResourceName, origin);
             interfaceEntry = SphU.entry(interfaceName, ResourceTypeConstants.COMMON_RPC, EntryType.IN);
             methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC,
@@ -75,6 +74,10 @@ public class SentinelDubboProviderFilter extends AbstractDubboFilter implements 
                 // Record common exception.
                 Tracer.traceEntry(e, interfaceEntry);
                 Tracer.traceEntry(e, methodEntry);
+            }
+            if (isAdaptiveEnabled) {
+                String metrics = AdaptiveUtils.packServerMetric();
+                RpcContext.getServerContext().setAttachment("X-Server-Metrics", metrics);
             }
             return result;
         } catch (BlockException e) {

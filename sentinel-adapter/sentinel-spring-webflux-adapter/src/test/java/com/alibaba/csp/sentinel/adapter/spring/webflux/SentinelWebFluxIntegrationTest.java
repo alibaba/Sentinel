@@ -199,6 +199,39 @@ public class SentinelWebFluxIntegrationTest {
         WebFluxCallbackManager.resetRequestOriginParser();
     }
 
+    @Test
+    public void testAdaptiveMetricsHeaderEnabled() throws Exception {
+        String url = "/hello";
+        this.webClient.get()
+                .uri(url)
+                .header("X-Sentinel-Adaptive", "enabled")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().exists("X-Server-Metrics");
+    }
+
+    @Test
+    public void testAdaptiveMetricsHeaderDisabledOrMissing() throws Exception {
+        String url = "/hello";
+        this.webClient.get()
+                .uri(url)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().doesNotExist("X-Server-Metrics");
+        this.webClient.get()
+                .uri(url)
+                .header("X-Sentinel-Adaptive", "disabled")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().doesNotExist("X-Server-Metrics");
+        this.webClient.get()
+                .uri(url)
+                .header("X-Sentinel-Adaptive", "")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().doesNotExist("X-Server-Metrics");
+    }
+
     @Before
     public void setUp() {
         FlowRuleManager.loadRules(new ArrayList<>());

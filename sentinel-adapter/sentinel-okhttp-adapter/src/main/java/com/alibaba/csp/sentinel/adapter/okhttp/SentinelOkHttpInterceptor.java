@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.adapter.okhttp;
 
 import com.alibaba.csp.sentinel.*;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.AdaptiveDegradeRuleManager;
 import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.util.AdaptiveUtils;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -53,12 +54,21 @@ public class SentinelOkHttpInterceptor implements Interceptor {
                 name = config.getResourcePrefix() + name;
             }
             entry = SphU.entry(name, ResourceTypeConstants.COMMON_WEB, EntryType.OUT);
+            boolean enabled = AdaptiveDegradeRuleManager.getRule(name).isEnabled();
+            if (enabled) {
+                request = request.newBuilder()
+                        .addHeader("X-Sentinel-Adaptive", "enabled")
+                        .build();
+            }
             Response res = chain.proceed(request);
-            String metricHeader = res.header("X-Server-Metrics");
-            entry.setServerMetric(AdaptiveUtils.parseServiceMetrics(metricHeader, name));
-            return res.newBuilder()
-                    .removeHeader("X-Server-Metrics")
-                    .build();
+            if (enabled) {
+                String metricHeader = res.header("X-Server-Metrics");
+                entry.setServerMetric(AdaptiveUtils.parseServiceMetrics(metricHeader, name));
+                return res.newBuilder()
+                        .removeHeader("X-Server-Metrics")
+                        .build();
+            }
+            return res;
         } catch (BlockException e) {
             return config.getFallback().handle(chain.request(), chain.connection(), e);
         } catch (IOException ex) {

@@ -25,6 +25,7 @@ import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.node.StatisticNode;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.AdaptiveDegradeRule;
 import com.alipay.sofa.rpc.common.RpcConstants;
 import com.alipay.sofa.rpc.core.request.SofaRequest;
 import com.alipay.sofa.rpc.core.response.SofaResponse;
@@ -93,6 +94,51 @@ public class SentinelSofaRpcConsumerFilterTest extends BaseTest {
 
         // After invoke, make sure exit context
         assertNull(ContextUtil.getContext());
+    }
+
+    @Test
+    public void testAdaptiveHeaderAddedWhenRuleEnabled() {
+        String interfaceResourceName = "com.example.DemoService";
+        AdaptiveDegradeRule adaptiveDegradeRule = new AdaptiveDegradeRule(interfaceResourceName);
+        adaptiveDegradeRule.setEnabled(true);
+        SentinelSofaRpcConsumerFilter filter = new SentinelSofaRpcConsumerFilter();
+        SofaRequest request = new SofaRequest();
+        request.setInvokeType(RpcConstants.INVOKER_TYPE_SYNC);
+        request.setInterfaceName(interfaceResourceName);
+        request.setMethodName("test");
+        request.setMethodArgSigs(new String[0]);
+        request.setMethodArgs(new Object[0]);
+        FilterInvoker filterInvoker = mock(FilterInvoker.class);
+        when(filterInvoker.invoke(any(SofaRequest.class))).thenAnswer(invocation -> {
+            SofaRequest captured = invocation.getArgument(0);
+            assertEquals("enabled", captured.getRequestProp("X-Sentinel-Adaptive"));
+            SofaResponse response = new SofaResponse();
+            response.addResponseProp("X-Server-Metrics", "cpu:60.02,tomcatQueue:-1,tomcatUsage:-1");
+            return response;
+        });
+        SofaResponse response = filter.invoke(filterInvoker, request);
+        verify(filterInvoker).invoke(request);
+        assertNull(response.getResponseProp("X-Server-Metrics"));
+    }
+
+    @Test
+    public void testAdaptiveHeaderNotAddedWhenRuleDisabled() {
+        SentinelSofaRpcConsumerFilter filter = new SentinelSofaRpcConsumerFilter();
+        String interfaceResourceName = "com.example.DemoService";
+        SofaRequest request = new SofaRequest();
+        request.setInvokeType(RpcConstants.INVOKER_TYPE_SYNC);
+        request.setInterfaceName(interfaceResourceName);
+        request.setMethodName("test");
+        request.setMethodArgSigs(new String[0]);
+        request.setMethodArgs(new Object[0]);
+        FilterInvoker filterInvoker = mock(FilterInvoker.class);
+        when(filterInvoker.invoke(any(SofaRequest.class))).thenAnswer(invocation -> {
+            SofaRequest captured = invocation.getArgument(0);
+            assertNull(captured.getRequestProp("X-Sentinel-Adaptive"));
+            return new SofaResponse();
+        });
+        filter.invoke(filterInvoker, request);
+        verify(filterInvoker).invoke(request);
     }
 
     /**

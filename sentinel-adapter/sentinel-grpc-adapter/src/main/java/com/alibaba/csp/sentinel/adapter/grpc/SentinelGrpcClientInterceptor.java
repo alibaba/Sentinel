@@ -20,6 +20,8 @@ import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.AdaptiveDegradeRuleManager;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.util.AdaptiveUtils;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ClientCall;
@@ -73,11 +75,21 @@ public class SentinelGrpcClientInterceptor implements ClientInterceptor {
                     channel.newCall(methodDescriptor, callOptions)) {
                 @Override
                 public void start(Listener<RespT> responseListener, Metadata headers) {
+                    if (AdaptiveDegradeRuleManager.getRule(fullMethodName).isEnabled()) {
+                        Metadata.Key<String> adaptiveKey = Metadata.Key.of("X-Sentinel-Adaptive", Metadata.ASCII_STRING_MARSHALLER);
+                        headers.put(adaptiveKey, "enabled");
+                    }
                     super.start(new ForwardingClientCallListener.SimpleForwardingClientCallListener<RespT>(responseListener) {
                         @Override
                         public void onClose(Status status, Metadata trailers) {
                             Entry entry = atomicReferenceEntry.get();
                             if (entry != null) {
+                                Metadata.Key<String> metricsKey = Metadata.Key.of("X-Server-Metrics", Metadata.ASCII_STRING_MARSHALLER);
+                                String metrics = trailers.get(metricsKey);
+                                if (metrics != null) {
+                                    entry.setServerMetric(AdaptiveUtils.parseServiceMetrics(metrics, fullMethodName));
+                                    trailers.discardAll(metricsKey); // or: trailers.remove(metricsKey, metrics);
+                                }
                                 // Record the exception metrics.
                                 if (!status.isOk()) {
                                     Tracer.traceEntry(status.asRuntimeException(), entry);

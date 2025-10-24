@@ -22,12 +22,10 @@ import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.AdaptiveDegradeRuleManager;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.util.AdaptiveUtils;
 import com.alibaba.dubbo.common.extension.Activate;
-import com.alibaba.dubbo.rpc.Filter;
-import com.alibaba.dubbo.rpc.Invocation;
-import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.Result;
-import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.*;
 
 import static com.alibaba.dubbo.common.Constants.CONSUMER;
 
@@ -57,6 +55,10 @@ public class SentinelDubboConsumerFilter extends AbstractDubboFilter implements 
             String prefix = DubboAdapterGlobalConfig.getDubboConsumerPrefix();
             String interfaceResourceName = getInterfaceName(invoker, prefix);
             String methodResourceName = getMethodResourceName(invoker, invocation, prefix);
+            if (AdaptiveDegradeRuleManager.getRule(interfaceResourceName).isEnabled() ||
+                    AdaptiveDegradeRuleManager.getRule(methodResourceName).isEnabled()) {
+                RpcContext.getContext().setAttachment("X-Sentinel-Adaptive", "enabled");
+            }
             interfaceEntry = SphU.entry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT);
             methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC,
                 EntryType.OUT, invocation.getArguments());
@@ -67,6 +69,16 @@ public class SentinelDubboConsumerFilter extends AbstractDubboFilter implements 
                 // Record common exception.
                 Tracer.traceEntry(e, interfaceEntry);
                 Tracer.traceEntry(e, methodEntry);
+            }
+            String metrics = RpcContext.getServerContext().getAttachment("X-Server-Metrics");
+            if (metrics != null) {
+                if (interfaceEntry != null) {
+                    interfaceEntry.setServerMetric(AdaptiveUtils.parseServiceMetrics(metrics, interfaceResourceName));
+                }
+                if (methodEntry != null) {
+                    methodEntry.setServerMetric(AdaptiveUtils.parseServiceMetrics(metrics, methodResourceName));
+                }
+                RpcContext.getServerContext().removeAttachment("X-Server-Metrics");
             }
             return result;
         } catch (BlockException e) {

@@ -19,6 +19,8 @@ import com.alibaba.csp.sentinel.*;
 import com.alibaba.csp.sentinel.adapter.sofa.rpc.fallback.SofaRpcFallbackRegistry;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.AdaptiveDegradeRuleManager;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.util.AdaptiveUtils;
 import com.alipay.sofa.rpc.common.RpcConstants;
 import com.alipay.sofa.rpc.core.exception.SofaRpcException;
 import com.alipay.sofa.rpc.core.request.SofaRequest;
@@ -62,9 +64,17 @@ public class SentinelSofaRpcConsumerFilter extends AbstractSofaRpcFilter {
             interfaceEntry = SphU.entry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT);
             methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC,
                 EntryType.OUT, getMethodArguments(request));
-
+            if(AdaptiveDegradeRuleManager.getRule(interfaceResourceName).isEnabled()
+                    || AdaptiveDegradeRuleManager.getRule(methodResourceName).isEnabled()){
+                request.addRequestProp("X-Sentinel-Adaptive", "enabled");
+            }
             SofaResponse response = invoker.invoke(request);
-
+            String metrics = (String) response.getResponseProp("X-Server-Metrics");
+            if(metrics != null){
+                interfaceEntry.setServerMetric(AdaptiveUtils.parseServiceMetrics(metrics,interfaceResourceName));
+                methodEntry.setServerMetric(AdaptiveUtils.parseServiceMetrics(metrics,methodResourceName));
+                response.removeResponseProp("X-Server-Metrics");
+            }
             traceResponseException(response, interfaceEntry, methodEntry);
             return response;
         } catch (BlockException e) {

@@ -20,6 +20,7 @@ import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.util.AdaptiveUtils;
 import io.grpc.ForwardingServerCall;
 import io.grpc.ForwardingServerCallListener;
 import io.grpc.Metadata;
@@ -54,6 +55,9 @@ public class SentinelGrpcServerInterceptor implements ServerInterceptor {
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
         String fullMethodName = call.getMethodDescriptor().getFullMethodName();
+        Metadata.Key<String> adaptiveKey = Metadata.Key.of("X-Sentinel-Adaptive", Metadata.ASCII_STRING_MARSHALLER);
+        String adaptiveValue = headers.get(adaptiveKey);
+        boolean isAdaptiveEnabled = "enabled".equals(adaptiveValue);
         // Remote address: serverCall.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
         Entry entry = null;
         try {
@@ -73,6 +77,10 @@ public class SentinelGrpcServerInterceptor implements ServerInterceptor {
                                         }
                                         //entry exit when the call be closed
                                         entry.exit();
+                                    }
+                                    if (isAdaptiveEnabled) {
+                                        Metadata.Key<String> metricsKey = Metadata.Key.of("X-Server-Metrics", Metadata.ASCII_STRING_MARSHALLER);
+                                        trailers.put(metricsKey, AdaptiveUtils.packServerMetric());
                                     }
                                     super.close(status, trailers);
                                 }

@@ -22,7 +22,7 @@ public abstract class AbstractAdaptiveDegradeCheck implements AdaptiveDegradeChe
             case OVER_LOAD:
                 return getPassProbabilityWhenOverloading(resourceName, currentWindow, windows);
             default:
-                RecordLog.warn("[AbstractAdaptiveDegradeCheck] The invalid scenarios are used to calculate the probability of the request passing.");
+                RecordLog.warn("[AbstractAdaptiveDegradeCheck] The invalid scenarios are used to calculate the probability of the request passing");
                 return -1;
         }
     }

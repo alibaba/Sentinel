@@ -22,6 +22,7 @@ public class AdaptiveDegradeRule extends AbstractRule {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+        AdaptiveDegradeRuleManager.setAdaptiveRule(this);
     }
 
     @Override

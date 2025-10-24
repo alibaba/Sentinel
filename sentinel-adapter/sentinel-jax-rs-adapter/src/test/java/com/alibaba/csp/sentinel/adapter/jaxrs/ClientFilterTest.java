@@ -25,6 +25,7 @@ import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.EntranceNode;
 import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.AdaptiveDegradeRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
@@ -394,6 +395,20 @@ public class ClientFilterTest {
         ClusterNode cn = ClusterBuilderSlot.getClusterNode(resourceName);
         assertNotNull(cn);
         assertEquals(1, cn.passQps(), 0.01);
+    }
+
+    @Test
+    public void testEndToEndAdaptiveHeaderExchange() {
+        final String url = "/test/hello";
+        final String resourceName = "GET:" + url;
+        AdaptiveDegradeRule adaptiveDegradeRule = new AdaptiveDegradeRule(resourceName);
+        adaptiveDegradeRule.setEnabled(true);
+        Response response = SentinelJaxRsClientTemplate.executeWithAdaptive(resourceName, client, host + url);
+        assertEquals(200, response.getStatus());
+        assertEquals(HELLO_STR, response.readEntity(String.class));
+        String serverMetrics = response.getHeaderString("X-Server-Metrics");
+        assertNotNull("Response should contain X-Server-Metrics", serverMetrics);
+        assertFalse(serverMetrics.isEmpty());
     }
 
     private void configureRulesFor(String resource, int count) {

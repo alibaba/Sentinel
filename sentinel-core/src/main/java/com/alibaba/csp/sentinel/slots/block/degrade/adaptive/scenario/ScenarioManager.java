@@ -1,6 +1,8 @@
 package com.alibaba.csp.sentinel.slots.block.degrade.adaptive.scenario;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.scenario.overload.OverloadScenario;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.scenario.overload.OverloadScenarioConfig;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +26,7 @@ public class ScenarioManager {
     public static void reset() {
         SCENARIO_MAP.clear();
         CONFIG_MAP.clear();
-        registerScenario(new OverLoadScenario());
+        registerScenario(new OverloadScenario());
     }
 
     public static void registerScenario(Scenario scenario) {
@@ -37,7 +39,7 @@ public class ScenarioManager {
 
     public static Scenario getScenario(Scenario.SystemScenario scenario) {
         if (scenario == null) {
-            RecordLog.error("Scenario cannot be null");
+            RecordLog.error("[ScenarioManager] Scenario cannot be null");
             return null;
         }
         return SCENARIO_MAP.get(scenario);
@@ -45,7 +47,7 @@ public class ScenarioManager {
 
     public static ScenarioConfig getConfig(String resourceName, Scenario.SystemScenario scenarioType) {
         if (resourceName == null || scenarioType == null) {
-            RecordLog.warn("[ScenarioManager] resourceName or scenarioType is null, use default config");
+            RecordLog.warn("[ScenarioManager] ResourceName or scenarioType is null, use default config");
             return new DefaultScenarioConfig();
         }
 

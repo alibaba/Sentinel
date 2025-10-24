@@ -1,6 +1,7 @@
 package com.alibaba.csp.sentinel.slots.block.degrade.adaptive.scenario;
 
 import com.alibaba.csp.sentinel.config.SentinelConfig;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.scenario.overload.OverloadScenarioConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

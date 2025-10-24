@@ -23,6 +23,7 @@ import com.alibaba.csp.sentinel.adapter.reactor.ContextConfig;
 import com.alibaba.csp.sentinel.adapter.reactor.EntryConfig;
 import com.alibaba.csp.sentinel.adapter.reactor.SentinelReactorTransformer;
 import com.alibaba.csp.sentinel.adapter.spring.webflux.callback.WebFluxCallbackManager;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.util.AdaptiveUtils;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import org.springframework.web.server.ServerWebExchange;
@@ -45,6 +46,10 @@ public class SentinelWebFluxFilter implements WebFilter {
         String path = exchange.getRequest().getPath().value();
 
         String finalPath = WebFluxCallbackManager.getUrlCleaner().apply(exchange, path);
+        String headerValue = exchange.getRequest().getHeaders().getFirst("X-Sentinel-Adaptive");
+       if("enabled".equals(headerValue)){
+           exchange.getResponse().getHeaders().add("X-Server-Metrics", AdaptiveUtils.packServerMetric());
+       }
         if (StringUtil.isEmpty(finalPath)) {
             return chain.filter(exchange);
         }

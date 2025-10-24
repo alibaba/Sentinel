@@ -1,10 +1,10 @@
-package com.alibaba.csp.sentinel.adapter.spring.webmvc_v6x;
+package com.alibaba.csp.sentinel.adapter.spring.webmvc;
 
 import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.util.AdaptiveUtils;
-import jakarta.servlet.*;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpServletResponseWrapper;
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -18,6 +18,11 @@ public class SentinelMetricsResponseFilter implements Filter {
 
     private static final String METRICS_ENABLED_HEADER = "X-Sentinel-Adaptive";
     private static final String METRICS_ENABLED_VALUE = "enabled";
+
+    @Override
+    public void init(FilterConfig filterConfig) {
+
+    }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -35,6 +40,11 @@ public class SentinelMetricsResponseFilter implements Filter {
         } else {
             chain.doFilter(request, response);
         }
+    }
+
+    @Override
+    public void destroy() {
+
     }
 
     static class ServerMetricsResponseWrapper extends HttpServletResponseWrapper {

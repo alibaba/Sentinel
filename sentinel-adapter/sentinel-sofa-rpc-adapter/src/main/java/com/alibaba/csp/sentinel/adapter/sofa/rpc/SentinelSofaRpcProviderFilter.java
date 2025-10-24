@@ -20,6 +20,7 @@ import com.alibaba.csp.sentinel.adapter.sofa.rpc.fallback.SofaRpcFallbackRegistr
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.util.AdaptiveUtils;
 import com.alipay.sofa.rpc.common.RpcConstants;
 import com.alipay.sofa.rpc.core.exception.SofaRpcException;
 import com.alipay.sofa.rpc.core.request.SofaRequest;
@@ -62,7 +63,7 @@ public class SentinelSofaRpcProviderFilter extends AbstractSofaRpcFilter {
         String callerApp = getApplicationName(request);
         String interfaceResourceName = getInterfaceResourceName(request);
         String methodResourceName = getMethodResourceName(request);
-
+        boolean enableAdaptive = "enabled".equals(request.getRequestProp("X-Sentinel-Adaptive"));
         Entry interfaceEntry = null;
         Entry methodEntry = null;
         try {
@@ -73,7 +74,10 @@ public class SentinelSofaRpcProviderFilter extends AbstractSofaRpcFilter {
                 EntryType.IN, getMethodArguments(request));
 
             SofaResponse response = invoker.invoke(request);
-
+            if(enableAdaptive){
+                String serverMetrics = AdaptiveUtils.packServerMetric();
+                response.addResponseProp("X-Server-Metrics", serverMetrics);
+            }
             traceResponseException(response, interfaceEntry, methodEntry);
             return response;
         } catch (BlockException e) {

@@ -73,7 +73,9 @@ public class AdaptiveCircuitBreaker extends AbstractCircuitBreaker {
         if (entry == null) {
             return;
         }
-        adaptiveServerMetric = entry.getServerMetric();
+        AdaptiveServerMetric serverMetric = entry.getServerMetric();
+        adaptiveServerMetric = serverMetric;
+        AdaptiveDegradeRuleManager.setServerMetric(resourceName, serverMetric);
         Throwable error = entry.getError();
         AdaptiveCounter counter = stat.currentWindow().value();
         if (error != null) {
@@ -107,17 +109,17 @@ public class AdaptiveCircuitBreaker extends AbstractCircuitBreaker {
             }
             return;
         }
-        scenario = checkInstability(context.getCurEntry().getServerMetric());
+        scenario = checkInstability(adaptiveServerMetric);
         switch (scenario) {
             case NORMAL:
                 break;
             case OVER_LOAD:
-                RecordLog.warn("[AdaptiveCircuitBreaker] resource:{} The system has entered an overload state.", resourceName);
+                RecordLog.warn("[AdaptiveCircuitBreaker] resource:{} The system has entered an overload state", resourceName);
                 fromCloseToThrottling(1.0d);
                 break;
             //TODO Integrate more scenarios
             default:
-                RecordLog.error("IsInstability method returns an invalid adaptive scenario");
+                RecordLog.error("[AdaptiveCircuitBreaker] IsInstability method returns an invalid adaptive scenario");
                 break;
         }
     }
@@ -157,7 +159,7 @@ public class AdaptiveCircuitBreaker extends AbstractCircuitBreaker {
             double passProbability = arithmetic.getPassProbability(resourceName, scenario, stat.currentWindow(), stat.list());
             probability = passProbability;
             if (passProbability == -1) {
-                RecordLog.error("Invalid adaptive scenario:{}", scenario);
+                RecordLog.error("[AdaptiveCircuitBreaker] Invalid adaptive scenario:{}", scenario);
                 return true;
             }
             if (passProbability <= 0.05) {
@@ -170,11 +172,11 @@ public class AdaptiveCircuitBreaker extends AbstractCircuitBreaker {
                     recoveryTimeoutMs = (int) (tomcatQueueSize * (counter.overallRTTime.sum() / counter.getTotalCount().sum()));
                     fromThrottlingToOpen(recoveryTimeoutMs, passProbability);
                 }
-                RecordLog.warn("[AdaptiveCircuitBreaker] resource:{} Current request success probability:{},above the threshold, enter the complete degradation mode for {} s.", resourceName, probability, (double) recoveryTimeoutMs / 1000);
+                RecordLog.warn("[AdaptiveCircuitBreaker] Resource:{} Current request success probability:{},above the threshold, enter the complete degradation mode for {} s", resourceName, probability, (double) recoveryTimeoutMs / 1000);
                 return false;
             } else if (passProbability >= 0.95) {
                 fromThrottlingToClose();
-                RecordLog.warn("[AdaptiveCircuitBreaker] resource:{} Current request success probability:{},below the threshold, the circuit breaker is closed.", resourceName, probability);
+                RecordLog.info("[AdaptiveCircuitBreaker] Resource:{} Current request success probability:{},below the threshold, the circuit breaker is closed", resourceName, probability);
                 return true;
             }
             return ThreadLocalRandom.current().nextDouble() < passProbability;

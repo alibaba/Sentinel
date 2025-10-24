@@ -34,6 +34,7 @@ import com.alibaba.csp.sentinel.adapter.servlet.callback.WebCallbackManager;
 import com.alibaba.csp.sentinel.adapter.servlet.config.WebServletConfig;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.util.AdaptiveUtils;
 
 /***
  * Servlet filter for all requests.
@@ -53,14 +54,19 @@ public class CommonTotalFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response,
                          FilterChain chain) throws IOException, ServletException {
         HttpServletRequest sRequest = (HttpServletRequest)request;
-
+        HttpServletResponse sResponse = (HttpServletResponse) response;
         Entry entry = null;
+        boolean adaptiveEnabled;
         try {
+            String adaptiveHeader = sRequest.getHeader("X-Sentinel-Adaptive");
+            adaptiveEnabled = "enabled".equals(adaptiveHeader);
             ContextUtil.enter(WebServletConfig.WEB_SERVLET_CONTEXT_NAME);
             entry = SphU.entry(TOTAL_URL_REQUEST, ResourceTypeConstants.COMMON_WEB);
+            if (adaptiveEnabled && !sResponse.isCommitted()) {
+                sResponse.setHeader("X-Server-Metrics", AdaptiveUtils.packServerMetric());
+            }
             chain.doFilter(request, response);
         } catch (BlockException e) {
-            HttpServletResponse sResponse = (HttpServletResponse)response;
             WebCallbackManager.getUrlBlockHandler().blocked(sRequest, sResponse, e);
         } catch (IOException | ServletException | RuntimeException e2) {
             Tracer.trace(e2);

@@ -1,13 +1,15 @@
-package com.alibaba.csp.sentinel.slots.block.degrade.adaptive.scenario;
+package com.alibaba.csp.sentinel.slots.block.degrade.adaptive.scenario.overload;
 
 import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.AdaptiveServerMetric;
 import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.circuitbreaker.AdaptiveCircuitBreaker;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.scenario.Scenario;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.scenario.ScenarioManager;
 import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.util.AdaptiveUtils;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 
 import java.util.List;
 
-public class OverLoadScenario implements Scenario {
+public class OverloadScenario implements Scenario {
 
     @Override
     public boolean matchScenario(String resourceName, WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter> currentWindow, List<WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter>> windows, AdaptiveServerMetric adaptiveServerMetric) {

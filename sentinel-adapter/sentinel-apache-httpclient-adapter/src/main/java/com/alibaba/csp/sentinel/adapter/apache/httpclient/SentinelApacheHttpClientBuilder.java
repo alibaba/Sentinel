@@ -18,7 +18,10 @@ package com.alibaba.csp.sentinel.adapter.apache.httpclient;
 import com.alibaba.csp.sentinel.*;
 import com.alibaba.csp.sentinel.adapter.apache.httpclient.config.SentinelApacheHttpClientConfig;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.AdaptiveDegradeRuleManager;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.util.AdaptiveUtils;
 import com.alibaba.csp.sentinel.util.StringUtil;
+import org.apache.http.Header;
 import org.apache.http.HttpException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpExecutionAware;
@@ -59,7 +62,17 @@ public class SentinelApacheHttpClientBuilder extends HttpClientBuilder {
                         name = config.getPrefix() + name;
                     }
                     entry = SphU.entry(name, ResourceTypeConstants.COMMON_WEB, EntryType.OUT);
-                    return mainExec.execute(route, request, clientContext, execAware);
+                    if(AdaptiveDegradeRuleManager.getRule(name).isEnabled()){
+                        request.addHeader("X-Sentinel-Adaptive", "enabled");
+                    }
+                    CloseableHttpResponse response = mainExec.execute(route, request, clientContext, execAware);
+                    Header metricsHeader = response.getFirstHeader("X-Server-Metrics");
+                    if(metricsHeader != null){
+                        String metrics = metricsHeader.getValue();
+                        entry.setServerMetric(AdaptiveUtils.parseServiceMetrics(metrics,name));
+                        response.removeHeader(metricsHeader);
+                    }
+                    return response;
                 } catch (BlockException e) {
                     return config.getFallback().handle(request, e);
                 } catch (Throwable t) {

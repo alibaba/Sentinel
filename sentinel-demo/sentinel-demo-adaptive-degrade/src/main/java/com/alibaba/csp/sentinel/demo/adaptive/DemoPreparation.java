@@ -6,10 +6,10 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeException;
 import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.AdaptiveCircuitBreakerManager;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.AdaptiveDegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.AdaptiveServerMetric;
 import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.circuitbreaker.AdaptiveCircuitBreaker;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
-import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -129,6 +129,8 @@ public class DemoPreparation {
     }
 
     private static void runSimulation(ParameterProvider provider) throws InterruptedException {
+        AdaptiveDegradeRule adaptiveDegradeRule = new AdaptiveDegradeRule(RESOURCE_KEY);
+        adaptiveDegradeRule.setEnabled(true);
         ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
         long startTime = System.currentTimeMillis();
 

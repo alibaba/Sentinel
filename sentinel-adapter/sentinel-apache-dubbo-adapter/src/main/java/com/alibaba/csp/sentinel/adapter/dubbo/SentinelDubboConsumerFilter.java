@@ -20,13 +20,16 @@ import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboAdapterGlobalConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.AdaptiveDegradeRuleManager;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.util.AdaptiveUtils;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 
@@ -75,6 +78,10 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
         String prefix = DubboAdapterGlobalConfig.getDubboConsumerResNamePrefixKey();
         String interfaceResourceName = getInterfaceName(invoker, prefix);
         String methodResourceName = getMethodName(invoker, invocation, prefix);
+        if (AdaptiveDegradeRuleManager.getRule(interfaceResourceName).isEnabled() ||
+                AdaptiveDegradeRuleManager.getRule(methodResourceName).isEnabled()) {
+            RpcContext.getContext().setAttachment("X-Sentinel-Adaptive", "enabled");
+        }
         try {
             interfaceEntry = SphU.entry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT);
             methodEntry = SphU.entry(methodResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT,
@@ -83,6 +90,16 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
             if (result.hasException()) {
                 Tracer.traceEntry(result.getException(), interfaceEntry);
                 Tracer.traceEntry(result.getException(), methodEntry);
+            }
+            String metrics = RpcContext.getServerContext().getAttachment("X-Server-Metrics");
+            if (metrics != null) {
+                if (interfaceEntry != null) {
+                    interfaceEntry.setServerMetric(AdaptiveUtils.parseServiceMetrics(metrics, interfaceResourceName));
+                }
+                if (methodEntry != null) {
+                    methodEntry.setServerMetric(AdaptiveUtils.parseServiceMetrics(metrics, methodResourceName));
+                }
+                RpcContext.getServerContext().removeAttachment("X-Server-Metrics");
             }
             return result;
         } catch (BlockException e) {
@@ -106,17 +123,31 @@ public class SentinelDubboConsumerFilter extends BaseSentinelDubboFilter {
         String prefix = DubboAdapterGlobalConfig.getDubboConsumerResNamePrefixKey();
         String interfaceResourceName = getInterfaceName(invoker, prefix);
         String methodResourceName = getMethodName(invoker, invocation, prefix);
+        if (AdaptiveDegradeRuleManager.getRule(interfaceResourceName).isEnabled() ||
+                AdaptiveDegradeRuleManager.getRule(methodResourceName).isEnabled()) {
+            RpcContext.getContext().setAttachment("X-Sentinel-Adaptive", "enabled");
+        }
         try {
             queue.push(new EntryHolder(
                 SphU.asyncEntry(interfaceResourceName, ResourceTypeConstants.COMMON_RPC, EntryType.OUT), null));
             queue.push(new EntryHolder(
                 SphU.asyncEntry(methodResourceName, ResourceTypeConstants.COMMON_RPC,
                     EntryType.OUT, 1, invocation.getArguments()), invocation.getArguments()));
+            List<EntryHolder> holders = new ArrayList<>(queue);
             Result result = invoker.invoke(invocation);
             result.whenCompleteWithContext((r, throwable) -> {
                 Throwable error = throwable;
                 if (error == null) {
                     error = Optional.ofNullable(r).map(Result::getException).orElse(null);
+                }
+                String metrics = RpcContext.getServerContext().getAttachment("X-Server-Metrics");
+                if (metrics != null) {
+                    for (EntryHolder holder : holders) {
+                        holder.entry.setServerMetric(
+                                AdaptiveUtils.parseServiceMetrics(metrics, holder.entry.getResourceWrapper().getName())
+                        );
+                    }
+                    RpcContext.getServerContext().removeAttachment("X-Server-Metrics");
                 }
                 while (!queue.isEmpty()) {
                     EntryHolder holder = queue.pop();

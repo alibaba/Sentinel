@@ -110,6 +110,28 @@ public class CommonFilterTest {
         testCustomOriginParser();
     }
 
+    @Test
+    public void testAdaptiveMetricsHeaderEnabled() throws Exception {
+        String url = "/hello";
+
+        this.mvc.perform(get(url)
+                        .header("X-Sentinel-Adaptive", "enabled"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(HELLO_STR))
+                .andExpect(header().exists("X-Server-Metrics"));
+
+        this.mvc.perform(get(url)
+                        .header("X-Sentinel-Adaptive", "disabled"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(HELLO_STR))
+                .andExpect(header().doesNotExist("X-Server-Metrics"));
+
+        this.mvc.perform(get(url))
+                .andExpect(status().isOk())
+                .andExpect(content().string(HELLO_STR))
+                .andExpect(header().doesNotExist("X-Server-Metrics"));
+    }
+
     private void testCommonBlockAndRedirectBlockPage(String url, ClusterNode cn) throws Exception {
         configureRulesFor(url, 0);
         // The request will be blocked and response is default block message.

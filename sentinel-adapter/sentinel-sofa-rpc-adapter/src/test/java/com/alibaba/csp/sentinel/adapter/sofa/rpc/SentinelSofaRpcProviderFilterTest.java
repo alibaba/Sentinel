@@ -96,6 +96,46 @@ public class SentinelSofaRpcProviderFilterTest extends BaseTest {
         assertNull(ContextUtil.getContext());
     }
 
+    @Test
+    public void testServerMetricsAddedWhenAdaptiveHeaderPresent() {
+        SentinelSofaRpcProviderFilter filter = new SentinelSofaRpcProviderFilter();
+        String interfaceResourceName = "com.example.DemoService";
+        String callerApp = "consumer-app";
+        SofaRequest request = new SofaRequest();
+        request.setInvokeType(RpcConstants.INVOKER_TYPE_SYNC);
+        request.setInterfaceName(interfaceResourceName);
+        request.setMethodName("test");
+        request.setMethodArgSigs(new String[0]);
+        request.setMethodArgs(new Object[0]);
+        request.addRequestProp("app", callerApp);
+        request.addRequestProp("X-Sentinel-Adaptive", "enabled");
+        FilterInvoker filterInvoker = mock(FilterInvoker.class);
+        when(filterInvoker.invoke(any(SofaRequest.class))).thenReturn(new SofaResponse());
+        SofaResponse response = filter.invoke(filterInvoker, request);
+        String metrics = (String) response.getResponseProp("X-Server-Metrics");
+        assertNotNull("X-Server-Metrics should be present", metrics);
+        assertTrue("Metrics should contain 'cpu'", metrics.contains("cpu"));
+        assertTrue("Metrics should contain 'qps' or similar", !metrics.trim().isEmpty());
+    }
+
+    @Test
+    public void testServerMetricsNotAddedWhenAdaptiveHeaderAbsent() {
+        SentinelSofaRpcProviderFilter filter = new SentinelSofaRpcProviderFilter();
+        String interfaceResourceName = "com.example.DemoService";
+        String callerApp = "consumer-app";
+        SofaRequest request = new SofaRequest();
+        request.setInvokeType(RpcConstants.INVOKER_TYPE_SYNC);
+        request.setInterfaceName(interfaceResourceName);
+        request.setMethodName("test");
+        request.setMethodArgSigs(new String[0]);
+        request.setMethodArgs(new Object[0]);
+        request.addRequestProp("app", callerApp);
+        FilterInvoker filterInvoker = mock(FilterInvoker.class);
+        when(filterInvoker.invoke(any(SofaRequest.class))).thenReturn(new SofaResponse());
+        SofaResponse response = filter.invoke(filterInvoker, request);
+        assertNull("X-Server-Metrics should not be present", response.getResponseProp("X-Server-Metrics"));
+    }
+
     /**
      * Verify Sentinel invocation structure in memory:
      * EntranceNode(methodResourceName)

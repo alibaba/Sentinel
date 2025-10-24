@@ -15,9 +15,13 @@
  */
 package com.alibaba.csp.sentinel.adapter.okhttp.app.controller;
 
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.util.AdaptiveUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author zhaoyuguang
@@ -33,5 +37,16 @@ public class TestController {
     @RequestMapping("/okhttp/back/{id}")
     public String back(@PathVariable String id) {
         return "Welcome Back! " + id;
+    }
+
+    @RequestMapping("/okhttp/back/adaptive")
+    public String back(HttpServletRequest request, HttpServletResponse response) {
+        //This should be encapsulated by the downstream Sentinel. Here, only a simulation is conducted.
+        String adaptiveHeader = request.getHeader("X-Sentinel-Adaptive");
+        if ("enabled".equals(adaptiveHeader)) {
+            response.setHeader("X-Server-Metrics", AdaptiveUtils.packServerMetric());
+            return "Adaptive enabled received";
+        }
+        return "Adaptive enabled unreceived ";
     }
 }

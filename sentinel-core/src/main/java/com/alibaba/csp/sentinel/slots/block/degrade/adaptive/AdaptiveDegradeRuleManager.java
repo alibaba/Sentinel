@@ -42,11 +42,20 @@ public class AdaptiveDegradeRuleManager {
         return adaptiveRuleMap.computeIfAbsent(name, key -> new AdaptiveDegradeRule(name));
     }
 
-    public static AdaptiveServerMetric getServerMetric(String name) {
+    public static void setServerMetric(String name, AdaptiveServerMetric serverMetric) {
         AssertUtil.notNull(name, "name cannot be null");
-        return adaptiveMetricMap.computeIfAbsent(name, key -> new AdaptiveServerMetric(name));
+        AssertUtil.notNull(serverMetric, "serverMetric cannot be null");
+        adaptiveMetricMap.put(name, serverMetric);
     }
 
+    public static AdaptiveServerMetric getServerMetric(String name) {
+        AssertUtil.notNull(name, "name cannot be null");
+        return adaptiveMetricMap.get(name);
+    }
+
+    static void setAdaptiveRule(AdaptiveDegradeRule adaptiveDegradeRule){
+        adaptiveRuleMap.put(adaptiveDegradeRule.getResource(), adaptiveDegradeRule);
+    }
 
     private static class AdaptiveRulePropertyListener implements PropertyListener<AdaptiveDegradeRule> {
 
@@ -55,7 +64,8 @@ public class AdaptiveDegradeRuleManager {
             if (value == null) {
                 return;
             }
-            adaptiveRuleMap.putIfAbsent(value.getResource(), value);
+            RecordLog.info("[AdaptiveDegradeRuleManager] Resource:{},status of adaptive function activation:{}",value.getResource(),value.isEnabled());
+            adaptiveRuleMap.put(value.getResource(), value);
         }
 
         @Override
@@ -63,7 +73,8 @@ public class AdaptiveDegradeRuleManager {
             if (value == null) {
                 return;
             }
-            adaptiveRuleMap.putIfAbsent(value.getResource(), value);
+            RecordLog.info("[AdaptiveDegradeRuleManager] Resource:{},status of adaptive function activation:{}",value.getResource(),value.isEnabled());
+            adaptiveRuleMap.put(value.getResource(), value);
         }
     }
 }

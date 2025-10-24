@@ -2,6 +2,8 @@ package com.alibaba.csp.sentinel.slots.block.degrade.adaptive.scenario;
 
 import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.AdaptiveServerMetric;
 import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.circuitbreaker.AdaptiveCircuitBreaker;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.scenario.overload.OverloadScenario;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.scenario.overload.OverloadScenarioConfig;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,21 +15,21 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 /**
- * Unit tests for {@link OverLoadScenario}
+ * Unit tests for {@link OverloadScenario}
  *
  * Adapted for matchScenario(String resourceName, ...) and resource-scoped config.
  */
-public class OverLoadScenarioTest {
+public class OverloadScenarioTest {
 
     private static final String RESOURCE = "scenarioRes";
 
-    private OverLoadScenario scenario;
+    private OverloadScenario scenario;
     private OverloadScenarioConfig config;
     private AdaptiveServerMetric mockMetric;
 
     @Before
     public void setUp() {
-        scenario = new OverLoadScenario();
+        scenario = new OverloadScenario();
         config = (OverloadScenarioConfig) ScenarioManager.getConfig(RESOURCE, Scenario.SystemScenario.OVER_LOAD);
         mockMetric = mock(AdaptiveServerMetric.class);
     }

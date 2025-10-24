@@ -2,6 +2,8 @@ package com.alibaba.csp.sentinel.slots.block.degrade.adaptive.scenario;
 
 import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.AdaptiveServerMetric;
 import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.circuitbreaker.AdaptiveCircuitBreaker;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.scenario.overload.OverloadScenario;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.scenario.overload.OverloadScenarioConfig;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,10 +34,10 @@ public class ScenarioManagerTest {
         Scenario scenario = ScenarioManager.getScenario(Scenario.SystemScenario.OVER_LOAD);
 
         assertNotNull("OverloadScenarioConfig should be created on demand", cfg);
-        assertNotNull("OverLoadScenario should be registered by default", scenario);
+        assertNotNull("OverloadScenario should be registered by default", scenario);
 
         assertTrue("Config should be instance of OverloadScenarioConfig", cfg instanceof OverloadScenarioConfig);
-        assertTrue("Scenario should be instance of OverLoadScenario", scenario instanceof OverLoadScenario);
+        assertTrue("Scenario should be instance of OverloadScenario", scenario instanceof OverloadScenario);
         assertEquals("Scenario type should match", Scenario.SystemScenario.OVER_LOAD, scenario.getScenarioType());
     }
 

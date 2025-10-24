@@ -4,7 +4,7 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.AdaptiveServerMetric;
 import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.check.AdaptiveStatisticsConfig;
 import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.circuitbreaker.AdaptiveCircuitBreaker;
-import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.scenario.OverloadScenarioConfig;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.scenario.overload.OverloadScenarioConfig;
 import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.scenario.Scenario;
 import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.scenario.ScenarioManager;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
@@ -366,7 +366,7 @@ public final class AdaptiveUtils {
             AdaptiveStatisticsConfig adaptiveStatisticsConfig) {
 
         if (windows == null || windows.isEmpty()) {
-            RecordLog.debug("[AdaptiveUtils] No history windows for stable qps average calculation");
+            RecordLog.warn("[AdaptiveUtils] No history windows for stable qps average calculation");
             return 0.0;
         }
 
@@ -386,13 +386,13 @@ public final class AdaptiveUtils {
         }
 
         if (windowQpsList.isEmpty()) {
-            RecordLog.debug("[AdaptiveUtils] No valid window QPS data");
+            RecordLog.warn("[AdaptiveUtils] No valid window QPS data");
             return 0.0;
         }
 
         List<Double> stableQpsList = filterOutliers(windowQpsList);
         if (stableQpsList.isEmpty()) {
-            RecordLog.debug("[AdaptiveUtils] All QPS data are outliers, use original average");
+            RecordLog.warn("[AdaptiveUtils] All QPS data are outliers, use original average");
             stableQpsList = windowQpsList;
         }
 
