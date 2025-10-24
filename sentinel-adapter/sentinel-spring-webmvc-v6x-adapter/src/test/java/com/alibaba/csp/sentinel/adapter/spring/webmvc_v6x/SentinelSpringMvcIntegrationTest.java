@@ -33,6 +33,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 import java.util.Collections;
 
 import org.junit.After;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +54,11 @@ public class SentinelSpringMvcIntegrationTest {
     private static final String HELLO_STR = "Hello!";
     @Autowired
     private MockMvc mvc;
+
+    @BeforeClass
+    public static void disableMseHttpMethodPrefix() {
+        System.setProperty("spring.cloud.mse.sentinel.web.http-method-prefix", "false");
+    }
 
     @Test
     public void testBase() throws Exception {
