@@ -32,14 +32,14 @@ public class AdaptiveDegradeCheckProviderTest {
     }
 
     @Test
-    public void testSingleton_SameReferenceAcrossCalls() {
+    public void testSingletonSameReferenceAcrossCalls() {
         AdaptiveDegradeCheck a = AdaptiveDegradeCheckProvider.getInstance();
         AdaptiveDegradeCheck b = AdaptiveDegradeCheckProvider.getInstance();
         Assert.assertSame("getInstance() should return the same reference", a, b);
     }
 
     @Test
-    public void testConcurrent_GetInstanceIsSingleton() throws Exception {
+    public void testConcurrentGetInstanceIsSingleton() throws Exception {
         final int threads = 64;
         final CountDownLatch start = new CountDownLatch(1);
         final CountDownLatch done = new CountDownLatch(threads);
@@ -71,7 +71,7 @@ public class AdaptiveDegradeCheckProviderTest {
     }
 
     @Test
-    public void testNoSPI_ReturnsDefaultImplementation() {
+    public void testNoSPIReturnsDefaultImplementation() {
         Assume.assumeFalse("SPI is present on classpath, skipping this test.", isSpiPresent());
 
         AdaptiveDegradeCheck inst = AdaptiveDegradeCheckProvider.getInstance();
@@ -83,7 +83,7 @@ public class AdaptiveDegradeCheckProviderTest {
     }
 
     @Test
-    public void testWithSPI_ReturnsFirstDiscoveredImplementation() {
+    public void testWithSPIReturnsFirstDiscoveredImplementation() {
         Assume.assumeTrue("No SPI on classpath, skipping this test.", isSpiPresent());
 
         Class<?> firstSpi = firstSpiImplClass();

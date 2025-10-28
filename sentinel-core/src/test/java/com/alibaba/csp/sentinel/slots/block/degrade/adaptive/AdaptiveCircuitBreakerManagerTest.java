@@ -33,7 +33,7 @@ public class AdaptiveCircuitBreakerManagerTest {
     }
 
     @Test
-    public void testGetAdaptiveCircuitBreaker_SameInstance() {
+    public void testGetAdaptiveCircuitBreakerSameInstance() {
         AdaptiveCircuitBreaker breaker1 = AdaptiveCircuitBreakerManager.getAdaptiveCircuitBreaker(RESOURCE_A);
         AdaptiveCircuitBreaker breaker2 = AdaptiveCircuitBreakerManager.getAdaptiveCircuitBreaker(RESOURCE_A);
         assertNotNull(breaker1);
@@ -42,7 +42,7 @@ public class AdaptiveCircuitBreakerManagerTest {
     }
 
     @Test
-    public void testGetAdaptiveCircuitBreaker_DifferentResources() {
+    public void testGetAdaptiveCircuitBreakerDifferentResources() {
         AdaptiveCircuitBreaker breakerA = AdaptiveCircuitBreakerManager.getAdaptiveCircuitBreaker(RESOURCE_A);
         AdaptiveCircuitBreaker breakerB = AdaptiveCircuitBreakerManager.getAdaptiveCircuitBreaker(RESOURCE_B);
         assertNotNull(breakerA);
@@ -51,7 +51,7 @@ public class AdaptiveCircuitBreakerManagerTest {
     }
 
     @Test
-    public void testGetAdaptiveCircuitBreaker_ConcurrentCreationUniqueness() throws InterruptedException {
+    public void testGetAdaptiveCircuitBreakerConcurrentCreationUniqueness() throws InterruptedException {
         AdaptiveCircuitBreakerManager.removeAdaptiveCircuitBreaker(RESOURCE_X);
         final int threadCount = 100;
         final CountDownLatch startLatch = new CountDownLatch(1);
@@ -107,7 +107,7 @@ public class AdaptiveCircuitBreakerManagerTest {
     }
 
     @Test
-    public void testConcurrentGetAndRemove_NoException() throws InterruptedException {
+    public void testConcurrentGetAndRemoveNoException() throws InterruptedException {
         final int threadCount = 50;
         final CountDownLatch startLatch = new CountDownLatch(1);
         final CountDownLatch endLatch = new CountDownLatch(threadCount * 2);
@@ -143,7 +143,7 @@ public class AdaptiveCircuitBreakerManagerTest {
     }
 
     @Test
-    public void testConcurrentGetAndClearAll_NoException() throws InterruptedException {
+    public void testConcurrentGetAndClearAllNoException() throws InterruptedException {
         final int threadCount = 50;
         final CountDownLatch startLatch = new CountDownLatch(1);
         final CountDownLatch endLatch = new CountDownLatch(threadCount * 2);

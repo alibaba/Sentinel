@@ -20,6 +20,7 @@ import com.alibaba.csp.sentinel.slotchain.ProcessorSlotChain;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthoritySlot;
 import com.alibaba.csp.sentinel.slots.block.degrade.DefaultCircuitBreakerSlot;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeSlot;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.AdaptiveDegradeSlot;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowSlot;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 import com.alibaba.csp.sentinel.slots.logger.LogSlot;
@@ -73,6 +74,9 @@ public class DefaultSlotChainBuilderTest {
 
         next = next.getNext();
         assertTrue(next instanceof DegradeSlot);
+
+        next = next.getNext();
+        assertTrue(next instanceof AdaptiveDegradeSlot);
 
         next = next.getNext();
         assertNull(next);

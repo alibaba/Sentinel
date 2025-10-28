@@ -30,7 +30,7 @@ public class AdaptiveProbeManagerTest {
     }
 
     @Test
-    public void getProbe_shouldReturnSameInstance_forSameCircuitBreaker() {
+    public void testGetProbeShouldReturnSameInstanceForSameCircuitBreaker() {
         AdaptiveCircuitBreaker cb = mock(AdaptiveCircuitBreaker.class);
         AdaptiveProbe p1 = AdaptiveProbeManager.getProbe(cb);
         AdaptiveProbe p2 = AdaptiveProbeManager.getProbe(cb);
@@ -40,7 +40,7 @@ public class AdaptiveProbeManagerTest {
     }
 
     @Test
-    public void getProbe_shouldReturnDifferentInstances_forDifferentCircuitBreakers() {
+    public void testGetProbeShouldReturnDifferentInstancesForDifferentCircuitBreakers() {
         AdaptiveCircuitBreaker cb1 = mock(AdaptiveCircuitBreaker.class);
         AdaptiveCircuitBreaker cb2 = mock(AdaptiveCircuitBreaker.class);
         AdaptiveProbe p1 = AdaptiveProbeManager.getProbe(cb1);
@@ -52,7 +52,7 @@ public class AdaptiveProbeManagerTest {
     }
 
     @Test
-    public void removeProbe_shouldReturnExisting_and_nextGetCreatesNewInstance() {
+    public void testRemoveProbeShouldReturnExistingAndNextGetCreatesNewInstance() {
         AdaptiveCircuitBreaker cb = mock(AdaptiveCircuitBreaker.class);
         AdaptiveProbe first = AdaptiveProbeManager.getProbe(cb);
         assertEquals(1, manager.getProbeCount());
@@ -65,7 +65,7 @@ public class AdaptiveProbeManagerTest {
     }
 
     @Test
-    public void removeProbe_onUnknownCircuitBreaker_shouldReturnNull() {
+    public void testRemoveProbeOnUnknownCircuitBreakerShouldReturnNull() {
         AdaptiveCircuitBreaker cb = mock(AdaptiveCircuitBreaker.class);
         AdaptiveProbe removed = AdaptiveProbeManager.removeProbe(cb);
         assertNull("removing unknown mapping should return null", removed);
@@ -73,7 +73,7 @@ public class AdaptiveProbeManagerTest {
     }
 
     @Test
-    public void clearAllProbes_shouldResetCountToZero() {
+    public void testClearAllProbesShouldResetCountToZero() {
         AdaptiveCircuitBreaker cb1 = mock(AdaptiveCircuitBreaker.class);
         AdaptiveCircuitBreaker cb2 = mock(AdaptiveCircuitBreaker.class);
         AdaptiveProbeManager.getProbe(cb1);
@@ -87,7 +87,7 @@ public class AdaptiveProbeManagerTest {
     }
 
     @Test
-    public void concurrentGetProbe_shouldReturnSingleInstance_andCountOne() throws Exception {
+    public void testConcurrentGetProbeShouldReturnSingleInstanceAndCountOne() throws Exception {
         final AdaptiveCircuitBreaker cb = mock(AdaptiveCircuitBreaker.class);
         final int threads = 20;
         final ExecutorService pool = Executors.newFixedThreadPool(threads);

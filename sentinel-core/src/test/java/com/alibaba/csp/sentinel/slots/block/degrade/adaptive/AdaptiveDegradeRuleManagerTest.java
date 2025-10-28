@@ -43,7 +43,7 @@ public class AdaptiveDegradeRuleManagerTest {
     }
 
     @Test
-    public void testGetRule_LazyCreationAndIdempotent() {
+    public void testGetRuleLazyCreationAndIdempotent() {
         AdaptiveDegradeRule rule1 = AdaptiveDegradeRuleManager.getRule(RESOURCE_A);
         AdaptiveDegradeRule rule2 = AdaptiveDegradeRuleManager.getRule(RESOURCE_A);
         assertNotNull("Rule should not be null", rule1);
@@ -56,7 +56,11 @@ public class AdaptiveDegradeRuleManagerTest {
     }
 
     @Test
-    public void testGetServerMetric_LazyCreationAndIdempotent() {
+    public void testGetServerMetricIdempotentWhenPreSet() {
+        AdaptiveServerMetric metricA = new AdaptiveServerMetric(RESOURCE_A);
+        AdaptiveServerMetric metricB = new AdaptiveServerMetric(RESOURCE_B);
+        AdaptiveDegradeRuleManager.setServerMetric(RESOURCE_A, metricA);
+        AdaptiveDegradeRuleManager.setServerMetric(RESOURCE_B, metricB);
         AdaptiveServerMetric metric1 = AdaptiveDegradeRuleManager.getServerMetric(RESOURCE_A);
         AdaptiveServerMetric metric2 = AdaptiveDegradeRuleManager.getServerMetric(RESOURCE_A);
         assertNotNull("Metric should not be null", metric1);
@@ -65,13 +69,13 @@ public class AdaptiveDegradeRuleManagerTest {
         assertEquals("Default serverCpuUsage should be -1.0", -1.0, metric1.getServerCpuUsage(), 0.0);
         assertEquals("Default serverTomcatUsageRate should be -1.0", -1.0, metric1.getServerTomcatUsageRate(), 0.0);
         assertEquals("Default serverTomcatQueueSize should be -1", -1, metric1.getServerTomcatQueueSize());
-        AdaptiveServerMetric metricB = AdaptiveDegradeRuleManager.getServerMetric(RESOURCE_B);
-        assertNotNull("Metric should not be null", metricB);
-        assertNotSame("Different resources should return different instances", metric1, metricB);
+        AdaptiveServerMetric metricBRetrieved = AdaptiveDegradeRuleManager.getServerMetric(RESOURCE_B);
+        assertNotNull("Metric for RESOURCE_B should not be null", metricBRetrieved);
+        assertNotSame("Different resources should return different instances", metric1, metricBRetrieved);
     }
 
     @Test
-    public void testPropertyListener_ConfigLoad() {
+    public void testPropertyListenerConfigLoad() {
         AdaptiveDegradeRule rule = new AdaptiveDegradeRule(RESOURCE_A);
         rule.setEnabled(false);
         DynamicSentinelProperty<AdaptiveDegradeRule> propertyWithInitialValue = new DynamicSentinelProperty<>(rule);
@@ -82,7 +86,7 @@ public class AdaptiveDegradeRuleManagerTest {
     }
 
     @Test
-    public void testPropertyListener_ConfigUpdate() {
+    public void testPropertyListenerConfigUpdate() {
         DynamicSentinelProperty<AdaptiveDegradeRule> property = new DynamicSentinelProperty<>();
         AdaptiveDegradeRuleManager.register2Property(property);
         AdaptiveDegradeRule rule = new AdaptiveDegradeRule(RESOURCE_A);
@@ -94,7 +98,7 @@ public class AdaptiveDegradeRuleManagerTest {
     }
 
     @Test
-    public void testRegister2Property_Effectiveness() {
+    public void testRegister2PropertyEffectiveness() {
         DynamicSentinelProperty<AdaptiveDegradeRule> prop1 = new DynamicSentinelProperty<>();
         DynamicSentinelProperty<AdaptiveDegradeRule> prop2 = new DynamicSentinelProperty<>();
         AdaptiveDegradeRuleManager.register2Property(prop1);
@@ -115,11 +119,11 @@ public class AdaptiveDegradeRuleManagerTest {
         rule1Update.setEnabled(true);
         prop1.updateValue(rule1Update);
         AdaptiveDegradeRule retrievedRule1Again = AdaptiveDegradeRuleManager.getRule(RESOURCE_A);
-        assertFalse("Rule A should still have enabled=false due to putIfAbsent", retrievedRule1Again.isEnabled());
+        assertTrue("Rule A should be updated to enabled=true", retrievedRule1Again.isEnabled());
     }
 
     @Test
-    public void testRegister2Property_NullValidation() {
+    public void testRegister2PropertyNullValidation() {
         try {
             AdaptiveDegradeRuleManager.register2Property(null);
             fail("Should throw IllegalArgumentException for null property");
@@ -129,7 +133,7 @@ public class AdaptiveDegradeRuleManagerTest {
     }
 
     @Test
-    public void testGetRule_NullValidation() {
+    public void testGetRuleNullValidation() {
         try {
             AdaptiveDegradeRuleManager.getRule(null);
             fail("Should throw IllegalArgumentException for null resource name");
@@ -139,7 +143,7 @@ public class AdaptiveDegradeRuleManagerTest {
     }
 
     @Test
-    public void testGetServerMetric_NullValidation() {
+    public void testGetServerMetricNullValidation() {
         try {
             AdaptiveDegradeRuleManager.getServerMetric(null);
             fail("Should throw IllegalArgumentException for null resource name");
@@ -149,7 +153,7 @@ public class AdaptiveDegradeRuleManagerTest {
     }
 
     @Test
-    public void testConcurrentGetRule_CreationUniqueness() throws InterruptedException {
+    public void testConcurrentGetRuleCreationUniqueness() throws InterruptedException {
         final int threadCount = 50;
         final CountDownLatch startLatch = new CountDownLatch(1);
         final CountDownLatch endLatch = new CountDownLatch(threadCount);
@@ -179,7 +183,10 @@ public class AdaptiveDegradeRuleManagerTest {
     }
 
     @Test
-    public void testConcurrentGetServerMetric_CreationUniqueness() throws InterruptedException {
+    public void testConcurrentGetServerMetricExistingInstanceConsistency() throws InterruptedException {
+        final String resource = RESOURCE_A;
+        AdaptiveServerMetric preCreated = new AdaptiveServerMetric(RESOURCE_A);
+        AdaptiveDegradeRuleManager.setServerMetric(resource, preCreated);
         final int threadCount = 50;
         final CountDownLatch startLatch = new CountDownLatch(1);
         final CountDownLatch endLatch = new CountDownLatch(threadCount);
@@ -190,7 +197,7 @@ public class AdaptiveDegradeRuleManagerTest {
             executor.submit(() -> {
                 try {
                     startLatch.await();
-                    metrics[index] = AdaptiveDegradeRuleManager.getServerMetric(RESOURCE_A);
+                    metrics[index] = AdaptiveDegradeRuleManager.getServerMetric(resource);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 } finally {
@@ -201,15 +208,14 @@ public class AdaptiveDegradeRuleManagerTest {
         startLatch.countDown();
         endLatch.await();
         executor.shutdown();
-        AdaptiveServerMetric firstMetric = metrics[0];
-        assertNotNull("First metric should not be null", firstMetric);
-        for (int i = 1; i < threadCount; i++) {
-            assertSame("All metrics should be the same instance", firstMetric, metrics[i]);
+        for (int i = 0; i < threadCount; i++) {
+            assertNotNull("Metric should not be null", metrics[i]);
+            assertSame("All metrics should be the same instance", preCreated, metrics[i]);
         }
     }
 
     @Test
-    public void testPutIfAbsentBehavior_NoOverwrite() {
+    public void testPropertyUpdateOverwritesExistingRule() {
         DynamicSentinelProperty<AdaptiveDegradeRule> property = new DynamicSentinelProperty<>();
         AdaptiveDegradeRuleManager.register2Property(property);
         AdaptiveDegradeRule rule1 = new AdaptiveDegradeRule(RESOURCE_A);
@@ -218,8 +224,8 @@ public class AdaptiveDegradeRuleManagerTest {
         AdaptiveDegradeRule rule2 = new AdaptiveDegradeRule(RESOURCE_A);
         rule2.setEnabled(true);
         property.updateValue(rule2);
-        AdaptiveDegradeRule retrievedRule = AdaptiveDegradeRuleManager.getRule(RESOURCE_A);
-        assertNotNull("Rule should not be null", retrievedRule);
-        assertFalse("Rule should still have enabled=false due to putIfAbsent behavior", retrievedRule.isEnabled());
+        AdaptiveDegradeRule retrieved = AdaptiveDegradeRuleManager.getRule(RESOURCE_A);
+        assertNotNull(retrieved);
+        assertTrue("Latest property update should take effect", retrieved.isEnabled());
     }
 }

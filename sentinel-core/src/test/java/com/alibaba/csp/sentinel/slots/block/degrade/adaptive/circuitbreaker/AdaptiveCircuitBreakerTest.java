@@ -56,14 +56,14 @@ public class AdaptiveCircuitBreakerTest {
     }
 
     @Test
-    public void tryPass_whenClosed_shouldReturnTrue() {
+    public void testTryPassWhenClosedShouldReturnTrue() {
         AdaptiveCircuitBreaker cb = new AdaptiveCircuitBreaker("res-closed");
         boolean pass = cb.tryPass(context);
         assertTrue("CLOSED state should always pass", pass);
     }
 
     @Test
-    public void onRequestComplete_shouldAccumulateSuccessAndErrorAndRT() {
+    public void testOnRequestCompleteShouldAccumulateSuccessAndErrorAndRT() {
         AdaptiveCircuitBreaker cb = new AdaptiveCircuitBreaker("res-count");
         cb.onRequestComplete(context);
         long[] agg1 = aggregateCounters(cb);
@@ -81,7 +81,7 @@ public class AdaptiveCircuitBreakerTest {
     }
 
     @Test
-    public void resetStat_shouldClearCurrentBucketOnly() {
+    public void testResetStatShouldClearCurrentBucketOnly() {
         AdaptiveCircuitBreaker cb = new AdaptiveCircuitBreaker("res-reset");
         cb.onRequestComplete(context);
         long[] beforeReset = aggregateCounters(cb);
@@ -96,7 +96,7 @@ public class AdaptiveCircuitBreakerTest {
     }
 
     @Test
-    public void getScenario_defaultShouldBeInvalidAdaptiveScenario() {
+    public void testGetScenarioDefaultShouldBeInvalidAdaptiveScenario() {
         AdaptiveCircuitBreaker cb = new AdaptiveCircuitBreaker("res-scenario");
         assertEquals("NORMAL", cb.getScenario());
     }

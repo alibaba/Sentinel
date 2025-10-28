@@ -17,7 +17,7 @@ import java.util.List;
 public class AbstractAdaptiveDegradeCheckTest {
 
     @Test
-    public void testScenarioDispatch_CallsOverloadMethod() {
+    public void testScenarioDispatchCallsOverloadMethod() {
         TestableAdaptiveCheck checker = new TestableAdaptiveCheck(0.42);
 
         double ret = checker.getPassProbability(
@@ -32,13 +32,13 @@ public class AbstractAdaptiveDegradeCheckTest {
     }
 
     @Test(expected = NullPointerException.class)
-    public void testNullScenario_ThrowsNPE() {
+    public void testNullScenarioThrowsNPE() {
         TestableAdaptiveCheck checker = new TestableAdaptiveCheck(0.5);
-        checker.getPassProbability("res", null, null, null); // switch(null) -> NPE
+        checker.getPassProbability("res", null, null, null);
     }
 
     @Test
-    public void testNonOverloadScenario_ReturnsMinusOne_IfPresent() {
+    public void testNonOverloadScenarioReturnsMinusOneIfPresent() {
         Scenario.SystemScenario other = findAnyNonOverload();
         Assume.assumeTrue("Only OVER_LOAD exists; skipping this test.", other != null);
 
@@ -51,7 +51,7 @@ public class AbstractAdaptiveDegradeCheckTest {
 
 
     @Test
-    public void testDefaultImpl_DelegatesToProtectedMethod_AndPassesArguments() {
+    public void testDefaultImplDelegatesToProtectedMethodAndPassesArguments() {
         @SuppressWarnings("unchecked")
         WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter> winMock =
                 (WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter>) Mockito.mock(WindowWrap.class);
@@ -70,7 +70,7 @@ public class AbstractAdaptiveDegradeCheckTest {
     }
 
     @Test
-    public void testDefaultImpl_NonOverloadScenario_ReturnsMinusOne_IfPresent() {
+    public void testDefaultImplNonOverloadScenarioReturnsMinusOneIfPresent() {
         Scenario.SystemScenario other = findAnyNonOverload();
         Assume.assumeTrue("Only OVER_LOAD exists; skipping this test.", other != null);
 

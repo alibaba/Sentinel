@@ -63,7 +63,7 @@ public class AdaptiveServerMetricTest {
     }
 
     @Test
-    public void testConcurrentVisibility_SmokeTest() throws InterruptedException {
+    public void testConcurrentVisibilitySmokeTest() throws InterruptedException {
         final int threadCount = 10;
         final int iterations = 100;
         final CountDownLatch startLatch = new CountDownLatch(1);

@@ -43,7 +43,7 @@ public class OverloadScenarioTest {
     }
 
     @Test
-    public void testWindowCountLessThanThree_shouldReturnFalse() {
+    public void testWindowCountLessThanThreeShouldReturnFalse() {
         WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter> current = createWindow(10, 1, 100);
         List<WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter>> windows = new ArrayList<>();
         windows.add(createWindow(5, 0, 50));
@@ -51,7 +51,7 @@ public class OverloadScenarioTest {
     }
 
     @Test
-    public void testHistoricalAvgGreaterThanCurrent_shouldEarlyExit() {
+    public void testHistoricalAvgGreaterThanCurrentShouldEarlyExit() {
         WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter> current = createWindow(3, 0, 30);
         List<WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter>> windows = new ArrayList<>();
         windows.add(createWindow(5, 0, 50));
@@ -61,7 +61,7 @@ public class OverloadScenarioTest {
     }
 
     @Test
-    public void testHistoricalAvgEqualsCurrent_shouldNotEarlyExit() {
+    public void testHistoricalAvgEqualsCurrentShouldNotEarlyExit() {
         WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter> current = createWindow(3, 0, 30);
         List<WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter>> windows = new ArrayList<>();
         windows.add(createWindow(3, 0, 30));
@@ -74,7 +74,7 @@ public class OverloadScenarioTest {
     }
 
     @Test
-    public void testOnlyRTConditionTriggered_noMetrics_shouldReturnFalse() {
+    public void testOnlyRTConditionTriggeredNoMetricsShouldReturnFalse() {
         WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter> current = createWindow(10, 0, 2000);
         List<WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter>> windows = new ArrayList<>();
         windows.add(createWindow(10, 0, 1000));
@@ -87,7 +87,7 @@ public class OverloadScenarioTest {
     }
 
     @Test
-    public void testOnlyRTConditionTriggered_withMetrics_shouldReturnTrue() {
+    public void testOnlyRTConditionTriggeredWithMetricsShouldReturnTrue() {
         WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter> current = createWindow(10, 0, 2000);
         List<WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter>> windows = new ArrayList<>();
         windows.add(createWindow(10, 0, 1000));
@@ -100,7 +100,7 @@ public class OverloadScenarioTest {
     }
 
     @Test
-    public void testOnlyErrorRateConditionTriggered_cpuOverThreshold_shouldReturnTrue() {
+    public void testOnlyErrorRateConditionTriggeredCpuOverThresholdShouldReturnTrue() {
         WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter> current = createWindow(100, 60, 1000);
         List<WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter>> windows = new ArrayList<>();
         windows.add(createWindow(100, 30, 1000));
@@ -113,7 +113,7 @@ public class OverloadScenarioTest {
     }
 
     @Test
-    public void testOnlyErrorRateConditionTriggered_tomcatOverThreshold_shouldReturnTrue() {
+    public void testOnlyErrorRateConditionTriggeredTomcatOverThresholdShouldReturnTrue() {
         WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter> current = createWindow(100, 60, 1000);
         List<WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter>> windows = new ArrayList<>();
         windows.add(createWindow(100, 30, 1000));
@@ -126,7 +126,7 @@ public class OverloadScenarioTest {
     }
 
     @Test
-    public void testConditionsMet_butMetricsNotExceedThreshold_shouldReturnFalse() {
+    public void testConditionsMetButMetricsNotExceedThresholdShouldReturnFalse() {
         WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter> current = createWindow(100, 60, 2000);
         List<WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter>> windows = new ArrayList<>();
         windows.add(createWindow(100, 30, 1000));
@@ -140,7 +140,7 @@ public class OverloadScenarioTest {
     }
 
     @Test
-    public void testNoConditionMet_shouldReturnFalse() {
+    public void testNoConditionMetShouldReturnFalse() {
         WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter> current = createWindow(100, 10, 1000);
         List<WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter>> windows = new ArrayList<>();
         windows.add(createWindow(100, 10, 1000));
@@ -152,7 +152,7 @@ public class OverloadScenarioTest {
     }
 
     @Test
-    public void testHistoricalTotalIsZero_shouldStillTriggerCondition() {
+    public void testHistoricalTotalIsZeroShouldStillTriggerCondition() {
         WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter> current = createWindow(10, 5, 1000);
         List<WindowWrap<AdaptiveCircuitBreaker.AdaptiveCounter>> windows = new ArrayList<>();
         windows.add(createWindow(0, 0, 0));

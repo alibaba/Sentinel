@@ -24,6 +24,7 @@ import com.alibaba.csp.sentinel.slots.DefaultSlotChainBuilder;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthoritySlot;
 import com.alibaba.csp.sentinel.slots.block.degrade.DefaultCircuitBreakerSlot;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeSlot;
+import com.alibaba.csp.sentinel.slots.block.degrade.adaptive.AdaptiveDegradeSlot;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowSlot;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 import com.alibaba.csp.sentinel.slots.logger.LogSlot;
@@ -108,6 +109,7 @@ public class SpiLoaderTest {
         singletonSlotClasses.add(FlowSlot.class);
         singletonSlotClasses.add(DegradeSlot.class);
         singletonSlotClasses.add(DefaultCircuitBreakerSlot.class);
+        singletonSlotClasses.add(AdaptiveDegradeSlot.class);
 
         for (int i = 0; i < slots1.size(); i++) {
             ProcessorSlot slot1 = slots1.get(i);
@@ -151,7 +153,7 @@ public class SpiLoaderTest {
         assertNotNull(sortedSlots);
 
         // Total 8 default slot in sentinel-core
-        assertEquals(9, sortedSlots.size());
+        assertEquals(10, sortedSlots.size());
 
         // Verify the order of slot
         int index = 0;
@@ -164,6 +166,7 @@ public class SpiLoaderTest {
         assertTrue(sortedSlots.get(index++) instanceof FlowSlot);
         assertTrue(sortedSlots.get(index++) instanceof DefaultCircuitBreakerSlot);
         assertTrue(sortedSlots.get(index++) instanceof DegradeSlot);
+        assertTrue(sortedSlots.get(index++) instanceof AdaptiveDegradeSlot);
     }
 
     @Test
@@ -181,7 +184,7 @@ public class SpiLoaderTest {
         assertNotNull(slot);
 
         // DegradeSlot is lowest order priority with @Spi(order = -1000) among all slots
-        assertTrue(slot instanceof DegradeSlot);
+        assertTrue(slot instanceof AdaptiveDegradeSlot);
     }
 
     @Test

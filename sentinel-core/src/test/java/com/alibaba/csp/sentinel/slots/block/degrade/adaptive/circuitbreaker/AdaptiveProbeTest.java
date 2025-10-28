@@ -54,7 +54,7 @@ public class AdaptiveProbeTest {
     }
 
     @Test
-    public void handleProbeRequest_shouldAllowUpToLimit_thenRejectAfterLimit() {
+    public void testHandleProbeRequestShouldAllowUpToLimitThenRejectAfterLimit() {
         AdaptiveProbe probe = new AdaptiveProbe(cb);
         int limit = 3;
         configProbe(probe, limit /* 60s later */);
@@ -66,7 +66,7 @@ public class AdaptiveProbeTest {
     }
 
     @Test
-    public void handleProbeRequestOnComplete_shouldFailImmediately_whenTimeoutReached_andResetState() {
+    public void testHandleProbeRequestOnCompleteShouldFailImmediatelyWhenTimeoutReachedAndResetState() {
         AdaptiveProbe probe = new AdaptiveProbe(cb);
         probe.setHalfOpenTimeoutMs(System.currentTimeMillis() - 1);
         assertFalse("timeout -> handleProbeRequest should reject", probe.handleProbeRequest(makeContext(false)));
@@ -77,7 +77,7 @@ public class AdaptiveProbeTest {
     }
 
     @Test
-    public void probeResults_shouldBeWaitingUntilAllCollected_thenSUCCESS_whenAllSuccess_noHistory() {
+    public void testProbeResultsShouldBeWaitingUntilAllCollectedThenSUCCESSWhenAllSuccessNoHistory() {
         AdaptiveProbe probe = new AdaptiveProbe(cb);
         int limit = 5;
         configProbe(probe, limit);
@@ -93,7 +93,7 @@ public class AdaptiveProbeTest {
     }
 
     @Test
-    public void probeResults_shouldFAIL_whenCurrentErrorRateExceedsDefaultThreshold_noHistory() {
+    public void testProbeResultsShouldFAILWhenCurrentErrorRateExceedsDefaultThresholdNoHistory() {
         AdaptiveProbe probe = new AdaptiveProbe(cb);
         int limit = 5;
         configProbe(probe, limit);
@@ -110,7 +110,7 @@ public class AdaptiveProbeTest {
     }
 
     @Test
-    public void probeResults_shouldUseHistoricalMeanPlus2Sigma_thresholdFromHistory_singleWindow() {
+    public void testProbeResultsShouldUseHistoricalMeanPlus2SigmaThresholdFromHistorySingleWindow() {
         AdaptiveProbe probe = new AdaptiveProbe(cb);
         int limit = 5;
         configProbe(probe, limit);

@@ -42,12 +42,12 @@ public class AdaptiveDegradeRuleTest {
     }
 
     @Test
-    public void testEquals_Reflexive() {
+    public void testEqualsReflexive() {
         assertEquals("Rule should be equal to itself", rule, rule);
     }
 
     @Test
-    public void testEquals_Symmetric() {
+    public void testEqualsSymmetric() {
         AdaptiveDegradeRule rule1 = new AdaptiveDegradeRule(RESOURCE_NAME);
         AdaptiveDegradeRule rule2 = new AdaptiveDegradeRule(RESOURCE_NAME);
 
@@ -56,7 +56,7 @@ public class AdaptiveDegradeRuleTest {
     }
 
     @Test
-    public void testEquals_Transitive() {
+    public void testEqualsTransitive() {
         AdaptiveDegradeRule rule1 = new AdaptiveDegradeRule(RESOURCE_NAME);
         AdaptiveDegradeRule rule2 = new AdaptiveDegradeRule(RESOURCE_NAME);
         AdaptiveDegradeRule rule3 = new AdaptiveDegradeRule(RESOURCE_NAME);
@@ -67,12 +67,12 @@ public class AdaptiveDegradeRuleTest {
     }
 
     @Test
-    public void testEquals_WithNull() {
+    public void testEqualsWithNull() {
         assertNotEquals("Rule should not equal null", null, rule);
     }
 
     @Test
-    public void testEquals_WithDifferentType() {
+    public void testEqualsWithDifferentType() {
         Object differentType = new Object();
         assertNotEquals("Rule should not equal different type", rule, differentType);
 
@@ -83,7 +83,7 @@ public class AdaptiveDegradeRuleTest {
     }
 
     @Test
-    public void testEquals_WithDifferentResource() {
+    public void testEqualsWithDifferentResource() {
         AdaptiveDegradeRule rule1 = new AdaptiveDegradeRule(RESOURCE_NAME);
         AdaptiveDegradeRule rule2 = new AdaptiveDegradeRule("differentResource");
 
@@ -92,7 +92,7 @@ public class AdaptiveDegradeRuleTest {
     }
 
     @Test
-    public void testEquals_WithDifferentEnabled() {
+    public void testEqualsWithDifferentEnabled() {
         AdaptiveDegradeRule rule1 = new AdaptiveDegradeRule(RESOURCE_NAME);
         AdaptiveDegradeRule rule2 = new AdaptiveDegradeRule(RESOURCE_NAME);
         rule1.setEnabled(true);
@@ -102,7 +102,7 @@ public class AdaptiveDegradeRuleTest {
     }
 
     @Test
-    public void testEquals_WithSameConfiguration() {
+    public void testEqualsWithSameConfiguration() {
         AdaptiveDegradeRule rule1 = new AdaptiveDegradeRule(RESOURCE_NAME);
         rule1.setEnabled(false);
         AdaptiveDegradeRule rule2 = new AdaptiveDegradeRule(RESOURCE_NAME);
@@ -113,7 +113,7 @@ public class AdaptiveDegradeRuleTest {
     }
 
     @Test
-    public void testHashCode_Consistency() {
+    public void testHashCodeConsistency() {
         AdaptiveDegradeRule rule1 = new AdaptiveDegradeRule(RESOURCE_NAME);
         AdaptiveDegradeRule rule2 = new AdaptiveDegradeRule(RESOURCE_NAME);
 
@@ -121,7 +121,7 @@ public class AdaptiveDegradeRuleTest {
     }
 
     @Test
-    public void testHashCode_DifferentConfigurations() {
+    public void testHashCodeDifferentConfigurations() {
         AdaptiveDegradeRule rule1 = new AdaptiveDegradeRule(RESOURCE_NAME);
         AdaptiveDegradeRule rule2 = new AdaptiveDegradeRule("differentResource");
         AdaptiveDegradeRule rule3 = new AdaptiveDegradeRule(RESOURCE_NAME);
@@ -134,7 +134,7 @@ public class AdaptiveDegradeRuleTest {
     }
 
     @Test
-    public void testHashCode_SameConfiguration() {
+    public void testHashCodeSameConfiguration() {
         AdaptiveDegradeRule rule1 = new AdaptiveDegradeRule(RESOURCE_NAME);
         rule1.setEnabled(false);
         AdaptiveDegradeRule rule2 = new AdaptiveDegradeRule(RESOURCE_NAME);

@@ -78,7 +78,6 @@ public class ScenarioManagerTest {
 
     @Test
     public void testDefensiveCopyForGetAllScenarios() {
-        // Ensure one scenario exists
         ScenarioManager.getConfig(TEST_RESOURCE, Scenario.SystemScenario.OVER_LOAD);
 
         Map<Scenario.SystemScenario, Scenario> m1 = ScenarioManager.getAllScenarios();
@@ -134,7 +133,6 @@ public class ScenarioManagerTest {
 
     @Test
     public void testGetAllConfigsReturnsCopy() {
-        // Ensure at least one config exists
         ScenarioManager.getConfig(TEST_RESOURCE, Scenario.SystemScenario.OVER_LOAD);
 
         Map<String, Map<Scenario.SystemScenario, ScenarioConfig>> c1 = ScenarioManager.getAllConfigs();
@@ -195,7 +193,6 @@ public class ScenarioManagerTest {
 
     @Test
     public void testGetConfigWithUnsupportedScenario() {
-        // A mock enum value won't match OVER_LOAD, so default branch is used.
         Scenario.SystemScenario unsupported = mock(Scenario.SystemScenario.class);
         ScenarioConfig cfg = ScenarioManager.getConfig(TEST_RESOURCE, unsupported);
         assertTrue("Unsupported scenario -> DefaultScenarioConfig", cfg instanceof DefaultScenarioConfig);

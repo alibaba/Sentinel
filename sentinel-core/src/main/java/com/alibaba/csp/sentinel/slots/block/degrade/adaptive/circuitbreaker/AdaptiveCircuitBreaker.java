@@ -74,8 +74,10 @@ public class AdaptiveCircuitBreaker extends AbstractCircuitBreaker {
             return;
         }
         AdaptiveServerMetric serverMetric = entry.getServerMetric();
-        adaptiveServerMetric = serverMetric;
-        AdaptiveDegradeRuleManager.setServerMetric(resourceName, serverMetric);
+        if(serverMetric != null){
+            adaptiveServerMetric = serverMetric;
+            AdaptiveDegradeRuleManager.setServerMetric(resourceName, serverMetric);
+        }
         Throwable error = entry.getError();
         AdaptiveCounter counter = stat.currentWindow().value();
         if (error != null) {
