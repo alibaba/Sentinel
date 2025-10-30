@@ -3,7 +3,6 @@ package com.alibaba.csp.sentinel.adapter.spring.webmvc_v6x;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc_v6x.config.SentinelWebMvcConfig;
 import com.alibaba.csp.sentinel.adapter.web.common.UrlCleaner;
 import jakarta.servlet.http.HttpServletRequest;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -14,7 +13,7 @@ import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 
 /**
- * The test for the fix of resource request prefix concatenation in spring-webmvc-v6x.
+ * The test for the resource request prefix concatenation in spring-webmvc-v6x.
  *
  * @author ylnxwlp
  */
@@ -25,13 +24,7 @@ public class SentinelWebInterceptorHttpMethodPrefixTest {
 
     @Before
     public void setUp() {
-        System.clearProperty("spring.cloud.mse.sentinel.web.http-method-prefix");
         mockRequest = Mockito.mock(HttpServletRequest.class);
-    }
-
-    @After
-    public void tearDown() {
-        System.clearProperty("spring.cloud.mse.sentinel.web.http-method-prefix");
     }
 
     @Test
@@ -39,7 +32,7 @@ public class SentinelWebInterceptorHttpMethodPrefixTest {
         SentinelWebMvcConfig config = new SentinelWebMvcConfig();
         config.setHttpMethodSpecify(true);
         interceptor = new SentinelWebInterceptor(config);
-        when(mockRequest.getAttribute("org.springframework.web.servlet.HandlerMapping.bestMatchingPattern"))
+        when(mockRequest.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE))
                 .thenReturn("/test/path");
         when(mockRequest.getMethod()).thenReturn("POST");
         when(mockRequest.getContextPath()).thenReturn("");
@@ -48,25 +41,11 @@ public class SentinelWebInterceptorHttpMethodPrefixTest {
     }
 
     @Test
-    public void testGetResourceNameWithMseHttpMethodSpecifyEnabledViaSystemProperty() {
-        System.setProperty("spring.cloud.mse.sentinel.web.http-method-prefix", "true");
-        SentinelWebMvcConfig config = new SentinelWebMvcConfig();
-        interceptor = new SentinelWebInterceptor(config);
-        when(mockRequest.getAttribute("org.springframework.web.servlet.HandlerMapping.bestMatchingPattern"))
-                .thenReturn("/api/user");
-        when(mockRequest.getMethod()).thenReturn("GET");
-        when(mockRequest.getContextPath()).thenReturn("/myapp");
-        String resourceName = interceptor.getResourceName(mockRequest);
-        assertEquals("GET:/myapp/api/user", resourceName);
-    }
-
-    @Test
-    public void testGetResourceNameBothDisabledShouldNotAddPrefix() {
-        System.setProperty("spring.cloud.mse.sentinel.web.http-method-prefix", "false");
+    public void testGetResourceNameWithHttpMethodSpecifyDisabled() {
         SentinelWebMvcConfig config = new SentinelWebMvcConfig();
         config.setHttpMethodSpecify(false);
         interceptor = new SentinelWebInterceptor(config);
-        when(mockRequest.getAttribute("org.springframework.web.servlet.HandlerMapping.bestMatchingPattern"))
+        when(mockRequest.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE))
                 .thenReturn("/no/prefix");
         when(mockRequest.getMethod()).thenReturn("DELETE");
         when(mockRequest.getContextPath()).thenReturn("");
@@ -92,7 +71,7 @@ public class SentinelWebInterceptorHttpMethodPrefixTest {
         SentinelWebMvcConfig config = new SentinelWebMvcConfig();
         config.setHttpMethodSpecify(true);
         interceptor = new SentinelWebInterceptor(config);
-        when(mockRequest.getAttribute("org.springframework.web.servlet.HandlerMapping.bestMatchingPattern"))
+        when(mockRequest.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE))
                 .thenReturn(null);
         when(mockRequest.getMethod()).thenReturn("PATCH");
         String resourceName = interceptor.getResourceName(mockRequest);
@@ -110,11 +89,39 @@ public class SentinelWebInterceptorHttpMethodPrefixTest {
             }
         });
         interceptor = new SentinelWebInterceptor(config);
-        when(mockRequest.getAttribute("org.springframework.web.servlet.HandlerMapping.bestMatchingPattern"))
+        when(mockRequest.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE))
                 .thenReturn("/dirty/path");
         when(mockRequest.getMethod()).thenReturn("GET");
         when(mockRequest.getContextPath()).thenReturn("");
         String resourceName = interceptor.getResourceName(mockRequest);
         assertEquals("GET:/cleaned", resourceName);
+    }
+
+    @Test
+    public void testGetResourceNameWithContextPath() {
+        SentinelWebMvcConfig config = new SentinelWebMvcConfig();
+        config.setHttpMethodSpecify(true);
+        config.setContextPathSpecify(true);
+        interceptor = new SentinelWebInterceptor(config);
+        when(mockRequest.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE))
+                .thenReturn("/api/user");
+        when(mockRequest.getMethod()).thenReturn("GET");
+        when(mockRequest.getContextPath()).thenReturn("/myapp");
+        String resourceName = interceptor.getResourceName(mockRequest);
+        assertEquals("GET:/myapp/api/user", resourceName);
+    }
+
+    @Test
+    public void testGetResourceNameWithContextPathDisabled() {
+        SentinelWebMvcConfig config = new SentinelWebMvcConfig();
+        config.setHttpMethodSpecify(true);
+        config.setContextPathSpecify(false);
+        interceptor = new SentinelWebInterceptor(config);
+        when(mockRequest.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE))
+                .thenReturn("/api/user");
+        when(mockRequest.getMethod()).thenReturn("GET");
+        when(mockRequest.getContextPath()).thenReturn("/myapp");
+        String resourceName = interceptor.getResourceName(mockRequest);
+        assertEquals("GET:/api/user", resourceName);
     }
 }

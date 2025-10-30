@@ -63,7 +63,7 @@ public class SentinelWebInterceptor extends AbstractSentinelInterceptor {
         if (config.isContextPathSpecify() && request.getContextPath() != null) {
             resourceName = request.getContextPath() + resourceName;
         }
-        if (StringUtil.isNotEmpty(resourceName) && (config.isHttpMethodSpecify() || SentinelWebMvcConfig.isMseHttpMethodSpecify())) {
+        if (StringUtil.isNotEmpty(resourceName) && config.isHttpMethodSpecify()) {
             resourceName = request.getMethod().toUpperCase() + ":" + resourceName;
         }
         return resourceName;

@@ -34,11 +34,6 @@ public class SentinelWebMvcConfig extends BaseWebMvcConfig {
      */
     private boolean httpMethodSpecify;
 
-    /**
-     * Specify whether the URL resource name should contain the HTTP method prefix in MSE (e.g. {@code GET:}).
-     */
-    private static boolean mseHttpMethodSpecify;
-
 
     /**
      * Specify whether unify web context(i.e. use the default context name), and is true by default.
@@ -56,10 +51,6 @@ public class SentinelWebMvcConfig extends BaseWebMvcConfig {
         super();
         setRequestAttributeName(DEFAULT_REQUEST_ATTRIBUTE_NAME);
         try {
-            String enable = System.getProperty("spring.cloud.mse.sentinel.web.http-method-prefix","true");
-            if(enable != null){
-                mseHttpMethodSpecify = Boolean.parseBoolean(enable);
-            }
             String enableContextPath = System.getProperty("spring.cloud.ahas.sentinel.web.context-path", "true");
             if (enableContextPath != null) {
                 contextPathSpecify = Boolean.parseBoolean(enableContextPath);
@@ -84,10 +75,6 @@ public class SentinelWebMvcConfig extends BaseWebMvcConfig {
     public SentinelWebMvcConfig setHttpMethodSpecify(boolean httpMethodSpecify) {
         this.httpMethodSpecify = httpMethodSpecify;
         return this;
-    }
-
-    public static boolean isMseHttpMethodSpecify() {
-        return mseHttpMethodSpecify;
     }
 
     public boolean isWebContextUnify() {
