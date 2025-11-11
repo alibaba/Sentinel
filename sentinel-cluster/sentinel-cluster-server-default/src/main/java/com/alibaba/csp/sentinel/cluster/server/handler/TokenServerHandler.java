@@ -29,6 +29,8 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.codec.CorruptedFrameException;
+import io.netty.handler.codec.TooLongFrameException;
 
 /**
  * Netty server handler for Sentinel token server.
@@ -79,6 +81,14 @@ public class TokenServerHandler extends ChannelInboundHandlerAdapter {
                 writeResponse(ctx, response);
             }
         }
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        if (!(cause instanceof CorruptedFrameException) && !(cause instanceof TooLongFrameException)) {
+            RecordLog.warn("[TokenServerHandler] Unexpected exception", cause);
+        }
+        ctx.close();
     }
 
     private void writeBadResponse(ChannelHandlerContext ctx, ClusterRequest request) {
