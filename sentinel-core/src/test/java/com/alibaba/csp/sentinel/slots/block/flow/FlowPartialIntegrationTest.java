@@ -15,9 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,6 +28,8 @@ import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+
+import static org.junit.Assert.*;
 
 /**
  * @author jialiang.linjl
@@ -112,6 +111,21 @@ public class FlowPartialIntegrationTest {
 
         SphU.entry("testThreadGrade");
         System.out.println("done");
+    }
+
+    @Test
+    public void testQpsRegex() {
+        FlowRule flowRule = new FlowRule();
+        String resource = ".*";
+        flowRule.setResource(resource);
+        flowRule.setGrade(RuleConstant.FLOW_GRADE_QPS);
+        flowRule.setRegex(true);
+        flowRule.setCount(1);
+        FlowRuleManager.loadRules(Collections.singletonList(flowRule));
+        verifyFlow("testQpsRegex_1", true);
+        verifyFlow("testQpsRegex_2", true);
+        verifyFlow("testQpsRegex_1", false);
+        verifyFlow("testQpsRegex_2", false);
     }
 
     @Test
@@ -254,5 +268,19 @@ public class FlowPartialIntegrationTest {
         e.exit();
 
         ContextUtil.exit();
+    }
+
+    private void verifyFlow(String resource, boolean shouldPass) {
+        Entry e = null;
+        try {
+            e = SphU.entry(resource);
+            assertTrue(shouldPass);
+        } catch (BlockException e1) {
+            assertFalse(shouldPass);
+        } finally {
+            if (e != null) {
+                e.exit();
+            }
+        }
     }
 }

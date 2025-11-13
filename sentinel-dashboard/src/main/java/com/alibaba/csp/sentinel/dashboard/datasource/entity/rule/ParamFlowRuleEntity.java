@@ -43,6 +43,7 @@ public class ParamFlowRuleEntity extends AbstractRuleEntity<ParamFlowRule> {
         entity.setApp(app);
         entity.setIp(ip);
         entity.setPort(port);
+        entity.setRegex(rule.isRegex());
         return entity;
     }
 

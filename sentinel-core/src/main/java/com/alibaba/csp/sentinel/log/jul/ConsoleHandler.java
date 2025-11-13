@@ -18,14 +18,12 @@ package com.alibaba.csp.sentinel.log.jul;
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayDeque;
-import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Formatter;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.StreamHandler;
 
 /**
  * This Handler publishes log records to console by using {@link java.util.logging.StreamHandler}.
@@ -41,6 +39,19 @@ import java.util.logging.*;
  * @author cdfive
  */
 class ConsoleHandler extends Handler {
+    private static final ThreadPoolExecutor executor = new ThreadPoolExecutor(
+            1,
+            5,
+            1,
+            TimeUnit.HOURS,
+            new ArrayBlockingQueue<>(1024),
+            new NamedThreadFactory("sentinel-console-log-executor", true),
+            new LogRejectedExecutionHandler()
+    );
+
+    static {
+        executor.allowCoreThreadTimeOut(true);
+    }
 
     /**
      * A Handler which publishes log records to System.out.
@@ -52,21 +63,11 @@ class ConsoleHandler extends Handler {
      */
     private StreamHandler stderrHandler;
 
-    private ExecutorService executor;
+    private AtomicReference<Future<?>> lastFuture = new AtomicReference<>();
 
     public ConsoleHandler() {
         this.stdoutHandler = new StreamHandler(System.out, new CspFormatter());
         this.stderrHandler = new StreamHandler(System.err, new CspFormatter());
-
-        int corePoolSize = 1;
-        int maximumPoolSize = 1;
-        long keepAliveTime = 0;
-        /**insure the log can be recorded*/
-        int queueSize = 1024;
-        RejectedExecutionHandler handler = new LogRejectedExecutionHandler();
-        executor = new ThreadPoolExecutor(corePoolSize, maximumPoolSize,
-                keepAliveTime, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(queueSize),
-                new NamedThreadFactory("sentinel-console-log-executor", true), handler);
     }
 
     @Override
@@ -83,7 +84,7 @@ class ConsoleHandler extends Handler {
 
     @Override
     public void publish(LogRecord record) {
-        executor.execute(new LogTask(record,stdoutHandler,stderrHandler));
+        lastFuture.set(executor.submit(new LogTask(record, stdoutHandler, stderrHandler)));
     }
 
     @Override
@@ -94,14 +95,16 @@ class ConsoleHandler extends Handler {
 
     @Override
     public void close() throws SecurityException {
-        /**not need to record log if process is killed.*/
-        executor.shutdown();
+        Future<?> future = lastFuture.get();
+        if (future != null) {
+            try {
+                future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+            }
+        }
         stdoutHandler.close();
         stderrHandler.close();
-    }
-
-    public ExecutorService getExecutor() {
-        return executor;
     }
 
     static class LogRejectedExecutionHandler implements RejectedExecutionHandler {

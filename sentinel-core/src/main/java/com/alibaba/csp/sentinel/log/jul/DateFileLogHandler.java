@@ -20,14 +20,11 @@ import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayDeque;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Queue;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
@@ -43,7 +40,20 @@ class DateFileLogHandler extends Handler {
         }
     };
 
-    private ExecutorService executor;
+    private static final ThreadPoolExecutor executor = new ThreadPoolExecutor(
+            1,
+            5,
+            1,
+            TimeUnit.HOURS,
+            new ArrayBlockingQueue<Runnable>(1024),
+            new NamedThreadFactory("sentinel-datafile-log-executor", true),
+            new ThreadPoolExecutor.DiscardOldestPolicy()
+    );
+
+    static {
+        // allow all thread could be stopped
+        executor.allowCoreThreadTimeOut(true);
+    }
 
     private volatile FileHandler handler;
 
@@ -66,22 +76,10 @@ class DateFileLogHandler extends Handler {
         this.append = append;
         rotateDate();
         this.initialized = true;
-
-        int corePoolSize = 1;
-        int maximumPoolSize = 1;
-        long keepAliveTime = 0;
-        /**insure the log can be recorded*/
-        int queueSize = 1024;
-        RejectedExecutionHandler handler = new LogRejectedExecutionHandler();
-        executor = new ThreadPoolExecutor(corePoolSize, maximumPoolSize,
-                keepAliveTime, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(queueSize),
-                new NamedThreadFactory("sentinel-datafile-log-executor", true), handler);
     }
 
     @Override
     public void close() throws SecurityException {
-        /**not need to record log if process is killed.*/
-        executor.shutdown();
         handler.close();
     }
 
