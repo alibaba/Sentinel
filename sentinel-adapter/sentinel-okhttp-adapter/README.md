@@ -26,11 +26,11 @@ OkHttpClient client = new OkHttpClient.Builder()
 
 `SentinelOkHttpConfig` configuration:
 
-| name | description | type | default value |
-|------|------------|------|-------|
-| resourcePrefix | customized resource name prefix | `String` | `okhttp:` |
-| resourceExtractor | customized resource extractor | `OkHttpResourceExtractor` | `DefaultOkHttpResourceExtractor` |
-| fallback | handle request when it is blocked | `OkHttpFallback` | `DefaultOkHttpFallback` |
+ | name | description | type | default value | 
+ | ------ | ------------ | ------ | ------- | 
+ | resourcePrefix | customized resource name prefix | `String` | `okhttp:` | 
+ | resourceExtractor | customized resource extractor | `OkHttpResourceExtractor` | `DefaultOkHttpResourceExtractor` | 
+ | fallback | handle request when it is blocked | `OkHttpFallback` | `DefaultOkHttpFallback` | 
 
 ### Resource Extractor
 
