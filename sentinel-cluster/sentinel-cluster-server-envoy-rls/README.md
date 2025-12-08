@@ -1,4 +1,4 @@
-# Sentinel Token Server (Envoy RLS implementation)
+﻿# Sentinel Token Server (Envoy RLS implementation)
 
 This module provides the [Envoy rate limiting gRPC service](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/other_features/global_rate_limiting#arch-overview-rate-limit) implementation
 with Sentinel token server.
@@ -50,11 +50,7 @@ We may also retrieve the converted `FlowRule` via the command API `localhost:871
 
 The configuration list:
 
- | Item (env) | Item (JVM property) | Description | Default Value | Required | 
- | -------- | -------- | -------- | -------- | -------- | 
- | `SENTINEL_RLS_GRPC_PORT` | `csp.sentinel.grpc.server.port` | The RLS gRPC server port | **10240** | false | 
- | `SENTINEL_RLS_RULE_FILE_PATH` | `csp.sentinel.rls.rule.file` | The path of the RLS rule yaml file | - | **true** | 
- | `SENTINEL_RLS_ACCESS_LOG` | - | Whether to enable the access log (`on` for enable) | off | false | 
+ |Item (env)|Item (JVM property)|Description|Default Value|Required||--------|--------|--------|--------|--------||`SENTINEL_RLS_GRPC_PORT`|`csp.sentinel.grpc.server.port`|The RLS gRPC server port|**10240**|false||`SENTINEL_RLS_RULE_FILE_PATH`|`csp.sentinel.rls.rule.file`|The path of the RLS rule yaml file|-|**true**||`SENTINEL_RLS_ACCESS_LOG`|-|Whether to enable the access log (`on` for enable)|off|false|
 
 ## Samples
 

@@ -1,4 +1,4 @@
-# Sentinel: The Sentinel of Your Microservices
+﻿# Sentinel: The Sentinel of Your Microservices
 
 <img src="https://user-images.githubusercontent.com/9434884/43697219-3cb4ef3a-9975-11e8-9a9c-73f4f537442d.png" alt="Sentinel Logo" width="50%">
 
@@ -18,7 +18,7 @@ to guarantee reliability and resilience for microservices.
 
 Sentinel has the following features:
 
-- **Rich applicable scenarios**: Sentinel has been wildly used in Alibaba, and has covered almost all the core-scenarios in Double-11 (11.11) Shopping Festivals in the past 10 years, such as “Second Kill” which needs to limit burst flow traffic to meet the system capacity, message peak clipping and valley fills, circuit breaking for unreliable downstream services, cluster flow control, etc.
+- **Rich applicable scenarios**: Sentinel has been wildly used in Alibaba, and has covered almost all the core-scenarios in Double-11 (11.11) Shopping Festivals in the past 10 years, such as 鈥淪econd Kill鈥?which needs to limit burst flow traffic to meet the system capacity, message peak clipping and valley fills, circuit breaking for unreliable downstream services, cluster flow control, etc.
 - **Real-time monitoring**: Sentinel also provides real-time monitoring ability. You can see the runtime information of a single machine in real-time, and the aggregated runtime info of a cluster with less than 500 nodes.
 - **Widespread open-source ecosystem**: Sentinel provides out-of-box integrations with commonly-used frameworks and libraries such as Spring Cloud, gRPC, Apache Dubbo and Quarkus. You can easily use Sentinel by simply add the adapter dependency to your services.
 - **Polyglot support**: Sentinel has provided native support for Java, [Go](https://github.com/alibaba/sentinel-golang), [C++](https://github.com/alibaba/sentinel-cpp) and [Rust](https://github.com/sentinel-group/sentinel-rust).
@@ -35,7 +35,7 @@ Please refer to [OpenSergo](https://opensergo.io/) for details.
 
 See the [Sentinel Website](https://sentinelguard.io/) for the official website of Sentinel.
 
-See the [中文文档](https://sentinelguard.io/zh-cn/docs/introduction.html) for document in Chinese.
+See the [涓枃鏂囨。](https://sentinelguard.io/zh-cn/docs/introduction.html) for document in Chinese.
 
 See the [Wiki](https://github.com/alibaba/Sentinel/wiki) for full documentation, examples, blog posts, operational details and other information.
 
@@ -112,13 +112,13 @@ For more information, please refer to [How To Use](https://sentinelguard.io/en-u
 After running the demo for a while, you can see the following records in `~/logs/csp/${appName}-metrics.log.{date}` (When using the default `DateFileLogHandler`).
 
 ```plaintext
-|--timestamp-|------date time----|-resource-|p |block|s |e|rt  |occupied
-1529998904000|2018-06-26 15:41:44|HelloWorld|20|0    |20|0|0   |0
-1529998905000|2018-06-26 15:41:45|HelloWorld|20|5579 |20|0|728 |0
-1529998906000|2018-06-26 15:41:46|HelloWorld|20|15698|20|0|0   |0
-1529998907000|2018-06-26 15:41:47|HelloWorld|20|19262|20|0|0   |0
-1529998908000|2018-06-26 15:41:48|HelloWorld|20|19502|20|0|0   |0
-1529998909000|2018-06-26 15:41:49|HelloWorld|20|18386|20|0|0   |0
+|--timestamp-|------date time----|-resource-|p|block|s|e|rt|occupied
+1529998904000|2018-06-26 15:41:44|HelloWorld|20|0|20|0|0|0
+1529998905000|2018-06-26 15:41:45|HelloWorld|20|5579|20|0|728|0
+1529998906000|2018-06-26 15:41:46|HelloWorld|20|15698|20|0|0|0
+1529998907000|2018-06-26 15:41:47|HelloWorld|20|19262|20|0|0|0
+1529998908000|2018-06-26 15:41:48|HelloWorld|20|19502|20|0|0|0
+1529998909000|2018-06-26 15:41:49|HelloWorld|20|18386|20|0|0|0
 
 p stands for incoming request, block for blocked by rules, s for success handled by Sentinel, e for exception count, rt for average response time (ms), occupied stands for occupiedPassQps since 1.5.0 which enable us booking more than 1 shot when entering.
 ```
@@ -160,9 +160,9 @@ You can start with the issues labeled with [`good first issue`](https://github.c
 
 ## Enterprise Service
 
-If you need Sentinel enterprise service support (Sentinel 企业版), or purchase cloud product services,
+If you need Sentinel enterprise service support (Sentinel 浼佷笟鐗?, or purchase cloud product services,
 you can join the discussion by the DingTalk group (34754806). It can also be directly activated
-and used through the [microservice engine (MSE 微服务引擎) provided by Alibaba Cloud](https://cn.aliyun.com/product/aliware/mse?spm=sentinel-github.index.0.0.0).
+and used through the [microservice engine (MSE 寰湇鍔″紩鎿? provided by Alibaba Cloud](https://cn.aliyun.com/product/aliware/mse?spm=sentinel-github.index.0.0.0).
 
 ## Credits
 
@@ -178,13 +178,13 @@ If you are using Sentinel, please [add your company here](https://github.com/ali
 ![Alibaba Group](https://docs.alibabagroup.com/assets2/images/en/global/logo_header.png)
 ![AntFin](https://user-images.githubusercontent.com/9434884/90598732-30961c00-e226-11ea-8c86-0b1d7f7875c7.png)
 ![Taiping Renshou](http://www.cntaiping.com/tplresource/cms/www/taiping/img/home_new/tp_logo_img.png)
-![拼多多](http://cdn.pinduoduo.com/assets/img/pdd_logo_v3.png)
-![爱奇艺](https://user-images.githubusercontent.com/9434884/90598445-a51c8b00-e225-11ea-9327-3543525f3f2a.png)
+![鎷煎澶歖(http://cdn.pinduoduo.com/assets/img/pdd_logo_v3.png)
+![鐖卞鑹篯(https://user-images.githubusercontent.com/9434884/90598445-a51c8b00-e225-11ea-9327-3543525f3f2a.png)
 ![Shunfeng Technology](https://user-images.githubusercontent.com/9434884/48463502-2f48eb80-e817-11e8-984f-2f9b1b789e2d.png)
-![二维火](https://user-images.githubusercontent.com/9434884/49358468-bc43de00-f70d-11e8-97fe-0bf05865f29f.png)
+![浜岀淮鐏玗(https://user-images.githubusercontent.com/9434884/49358468-bc43de00-f70d-11e8-97fe-0bf05865f29f.png)
 ![Mandao](https://user-images.githubusercontent.com/9434884/48463559-6cad7900-e817-11e8-87e4-42952b074837.png)
-![文轩在线](http://static.winxuancdn.com/css/v2/images/logo.png)
-![客如云](https://www.keruyun.com/static/krynew/images/logo.png)
-![亲宝宝](https://stlib.qbb6.com/wclt/img/home_hd/version1/title_logo.png)
-![金汇金融](https://res.jinhui365.com/r/images/logo2.png?v=1.527)
-![闪电购](http://cdn.52shangou.com/shandianbang/official-source/3.1.1/build/images/logo.png)
+![鏂囪僵鍦ㄧ嚎](http://static.winxuancdn.com/css/v2/images/logo.png)
+![瀹㈠浜慮(https://www.keruyun.com/static/krynew/images/logo.png)
+![浜插疂瀹漖(https://stlib.qbb6.com/wclt/img/home_hd/version1/title_logo.png)
+![閲戞眹閲戣瀺](https://res.jinhui365.com/r/images/logo2.png?v=1.527)
+![闂數璐璢(http://cdn.52shangou.com/shandianbang/official-source/3.1.1/build/images/logo.png)
