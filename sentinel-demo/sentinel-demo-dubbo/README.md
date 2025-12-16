@@ -1,6 +1,6 @@
-﻿# Sentinel Dubbo Demo
+# Sentinel Dubbo Demo
 
-Sentinel 鎻愪緵浜嗕笌 Dubbo 鏁村悎鐨勬ā鍧?- Sentinel Dubbo Adapter锛屼富瑕佸寘鎷拡瀵?Service Provider 鍜?Service Consumer 瀹炵幇鐨?Filter銆備娇鐢ㄦ椂鐢ㄦ埛鍙渶寮曞叆浠ヤ笅妯″潡锛堜互 Maven 涓轰緥锛夛細
+Sentinel 提供了与 Dubbo 整合的模块 - Sentinel Dubbo Adapter，主要包括针对 Service Provider 和 Service Consumer 实现的 Filter。使用时用户只需引入以下模块（以 Maven 为例）：
 
 ```xml
 <dependency>
@@ -10,11 +10,11 @@ Sentinel 鎻愪緵浜嗕笌 Dubbo 鏁村悎鐨勬ā鍧?- Sentinel Dubbo Adapter�
 </dependency>
 ```
 
-寮曞叆姝や緷璧栧悗锛孌ubbo 鐨勬湇鍔℃帴鍙ｅ拰鏂规硶锛堝寘鎷皟鐢ㄧ鍜屾湇鍔＄锛夊氨浼氭垚涓?Sentinel 涓殑璧勬簮锛屽湪閰嶇疆浜嗚鍒欏悗灏卞彲浠ヨ嚜鍔ㄤ韩鍙楀埌 Sentinel 鐨勯槻鎶よ兘鍔涖€?
+引入此依赖后，Dubbo 的服务接口和方法（包括调用端和服务端）就会成为 Sentinel 中的资源，在配置了规则后就可以自动享受到 Sentinel 的防护能力。
 
-> **娉細鑻ュ笇鏈涙帴鍏?Dashboard锛岃鍙傝€冨悗闈㈡帴鍏ユ帶鍒跺彴鐨勬楠ゃ€傚彧寮曞叆 Sentinel Dubbo Adapter 鏃犳硶鎺ュ叆鎺у埗鍙帮紒**
+> **注：若希望接入 Dashboard，请参考后面接入控制台的步骤。只引入 Sentinel Dubbo Adapter 无法接入控制台！**
 
-鑻ヤ笉甯屾湜寮€鍚?Sentinel Dubbo Adapter 涓殑鏌愪釜 Filter锛屽彲浠ユ墜鍔ㄥ叧闂搴旂殑 Filter锛屾瘮濡傦細
+若不希望开启 Sentinel Dubbo Adapter 中的某个 Filter，可以手动关闭对应的 Filter，比如：
 
 ```java
 @Bean
@@ -25,88 +25,88 @@ public ConsumerConfig consumerConfig() {
 }
 ```
 
-鎴戜滑鎻愪緵浜嗗嚑涓叿浣撶殑 Demo 鏉ュ垎鍒紨绀?Provider 鍜?Consumer 鐨勯檺娴佸満鏅€?
+我们提供了几个具体的 Demo 来分别演示 Provider 和 Consumer 的限流场景。
 
 ## Service Provider
 
-Service Provider 鐢ㄤ簬鍚戝鐣屾彁渚涙湇鍔★紝澶勭悊鍚勪釜娑堣垂鑰呯殑璋冪敤璇锋眰銆備负浜嗕繚鎶?Provider 涓嶈婵€澧炵殑娴侀噺鎷栧灝褰卞搷绋冲畾鎬э紝鍙互缁?Provider 閰嶇疆 **QPS 妯″紡**鐨勯檺娴侊紝杩欐牱褰撴瘡绉掔殑璇锋眰閲忚秴杩囪瀹氱殑闃堝€兼椂浼氳嚜鍔ㄦ嫆缁濆鐨勮姹傘€傞檺娴佺矑搴﹀彲浠ユ槸鏈嶅姟鎺ュ彛鍜屾湇鍔℃柟娉曚袱绉嶇矑搴︺€傝嫢甯屾湜鏁翠釜鏈嶅姟鎺ュ彛鐨?QPS 涓嶈秴杩囦竴瀹氭暟鍊硷紝鍒欏彲浠ヤ负瀵瑰簲鏈嶅姟鎺ュ彛璧勬簮锛坮esourceName 涓?*鎺ュ彛鍏ㄩ檺瀹氬悕**锛夐厤缃?QPS 闃堝€硷紱鑻ュ笇鏈涙湇鍔＄殑鏌愪釜鏂规硶鐨?QPS 涓嶈秴杩囦竴瀹氭暟鍊硷紝鍒欏彲浠ヤ负瀵瑰簲鏈嶅姟鏂规硶璧勬簮锛坮esourceName 涓?*鎺ュ彛鍏ㄩ檺瀹氬悕:鏂规硶绛惧悕**锛夐厤缃?QPS 闃堝€笺€傛湁鍏抽厤缃鎯呰鍙傝€?[娴侀噺鎺у埗 | Sentinel](https://github.com/alibaba/Sentinel/wiki/%E6%B5%81%E9%87%8F%E6%8E%A7%E5%88%B6)銆?
+Service Provider 用于向外界提供服务，处理各个消费者的调用请求。为了保护 Provider 不被激增的流量拖垮影响稳定性，可以给 Provider 配置 **QPS 模式**的限流，这样当每秒的请求量超过设定的阈值时会自动拒绝多的请求。限流粒度可以是服务接口和服务方法两种粒度。若希望整个服务接口的 QPS 不超过一定数值，则可以为对应服务接口资源（resourceName 为**接口全限定名**）配置 QPS 阈值；若希望服务的某个方法的 QPS 不超过一定数值，则可以为对应服务方法资源（resourceName 为**接口全限定名:方法签名**）配置 QPS 阈值。有关配置详情请参考 [流量控制 | Sentinel](https://github.com/alibaba/Sentinel/wiki/%E6%B5%81%E9%87%8F%E6%8E%A7%E5%88%B6)。
 
-Demo 1 婕旂ず浜嗘闄愭祦鍦烘櫙锛屾垜浠湅涓€涓嬭繖绉嶆ā寮忕殑闄愭祦浜х敓鐨勬晥鏋溿€傚亣璁炬垜浠凡缁忓畾涔変簡鏌愪釜鏈嶅姟鎺ュ彛 `com.alibaba.csp.sentinel.demo.dubbo.FooService`锛屽叾涓湁涓€涓柟娉?`sayHello(java.lang.String)`锛孭rovider 绔鏂规硶璁惧畾 QPS 闃堝€间负 10銆傚湪 Consumer 绔湪 1s 涔嬪唴杩炵画鍙戣捣 15 娆¤皟鐢紝鍙互閫氳繃鏃ュ織鏂囦欢鐪嬪埌 Provider 绔闄愭祦銆傛嫤鎴棩蹇楃粺涓€璁板綍鍦?`~/logs/csp/sentinel-block.log` 涓細
+Demo 1 演示了此限流场景，我们看一下这种模式的限流产生的效果。假设我们已经定义了某个服务接口 `com.alibaba.csp.sentinel.demo.dubbo.FooService`，其中有一个方法 `sayHello(java.lang.String)`，Provider 端该方法设定 QPS 阈值为 10。在 Consumer 端在 1s 之内连续发起 15 次调用，可以通过日志文件看到 Provider 端被限流。拦截日志统一记录在 `~/logs/csp/sentinel-block.log` 中：
 
 ```plaintext
 2018-07-24 17:13:43|1|com.alibaba.csp.sentinel.demo.dubbo.FooService:sayHello(java.lang.String),FlowException,default,|5,0
 ```
 
-鍦?Provider 瀵瑰簲鐨?metrics 鏃ュ織涓篃鏈夎褰曪細
+在 Provider 对应的 metrics 日志中也有记录：
 
 ```plaintext
 1532423623000|2018-07-24 17:13:43|com.alibaba.csp.sentinel.demo.dubbo.FooService|15|0|15|0|3
 1532423623000|2018-07-24 17:13:43|com.alibaba.csp.sentinel.demo.dubbo.FooService:sayHello(java.lang.String)|10|5|10|0|0
 ```
 
-寰堝鍦烘櫙涓嬶紝鏍规嵁**璋冪敤鏂?*鏉ラ檺娴佷篃鏄潪甯搁噸瑕佺殑銆傛瘮濡傛湁涓や釜鏈嶅姟 A 鍜?B 閮藉悜 Service Provider 鍙戣捣璋冪敤璇锋眰锛屾垜浠笇鏈涘彧瀵规潵鑷湇鍔?B 鐨勮姹傝繘琛岄檺娴侊紝鍒欏彲浠ヨ缃檺娴佽鍒欑殑 `limitApp` 涓烘湇鍔?B 鐨勫悕绉般€係entinel Dubbo Adapter 浼氳嚜鍔ㄨВ鏋?Dubbo 娑堣垂鑰咃紙璋冪敤鏂癸級鐨?application name 浣滀负璋冪敤鏂瑰悕绉帮紙`origin`锛夛紝鍦ㄨ繘琛岃祫婧愪繚鎶ょ殑鏃跺€欓兘浼氬甫涓婅皟鐢ㄦ柟鍚嶇О銆傝嫢闄愭祦瑙勫垯鏈厤缃皟鐢ㄦ柟锛坄default`锛夛紝鍒欒闄愭祦瑙勫垯瀵规墍鏈夎皟鐢ㄦ柟鐢熸晥銆傝嫢闄愭祦瑙勫垯閰嶇疆浜嗚皟鐢ㄦ柟鍒欓檺娴佽鍒欏皢浠呭鎸囧畾璋冪敤鏂圭敓鏁堛€?
+很多场景下，根据**调用方**来限流也是非常重要的。比如有两个服务 A 和 B 都向 Service Provider 发起调用请求，我们希望只对来自服务 B 的请求进行限流，则可以设置限流规则的 `limitApp` 为服务 B 的名称。Sentinel Dubbo Adapter 会自动解析 Dubbo 消费者（调用方）的 application name 作为调用方名称（`origin`），在进行资源保护的时候都会带上调用方名称。若限流规则未配置调用方（`default`），则该限流规则对所有调用方生效。若限流规则配置了调用方则限流规则将仅对指定调用方生效。
 
-> 娉細Dubbo 榛樿閫氫俊涓嶆惡甯﹀绔?application name 淇℃伅锛屽洜姝ら渶瑕佸紑鍙戣€呭湪璋冪敤绔墜鍔ㄥ皢 application name 缃叆 attachment 涓紝provider 绔繘琛岀浉搴旂殑瑙ｆ瀽銆係entinel Dubbo Adapter 瀹炵幇浜嗕竴涓?Filter 鐢ㄤ簬鑷姩浠?consumer 绔悜 provider 绔€忎紶 application name銆傝嫢璋冪敤绔湭寮曞叆 Sentinel Dubbo Adapter锛屽張甯屾湜鏍规嵁璋冪敤绔檺娴侊紝鍙互鍦ㄨ皟鐢ㄧ鎵嬪姩灏?application name 缃叆 attachment 涓紝key 涓?`dubboApplication`銆?
+> 注：Dubbo 默认通信不携带对端 application name 信息，因此需要开发者在调用端手动将 application name 置入 attachment 中，provider 端进行相应的解析。Sentinel Dubbo Adapter 实现了一个 Filter 用于自动从 consumer 端向 provider 端透传 application name。若调用端未引入 Sentinel Dubbo Adapter，又希望根据调用端限流，可以在调用端手动将 application name 置入 attachment 中，key 为 `dubboApplication`。
 
-鍦ㄩ檺娴佹棩蹇椾腑浼氫篃浼氳褰曡皟鐢ㄦ柟鐨勫悕绉帮紝濡傦細
+在限流日志中会也会记录调用方的名称，如：
 
 ```plaintext
 2018-07-25 16:26:48|1|com.alibaba.csp.sentinel.demo.dubbo.FooService:sayHello(java.lang.String),FlowException,default,demo-consumer|5,0
 ```
 
-鍏朵腑鏃ュ織涓殑 `demo-consumer` 鍗充负璋冪敤鏂瑰悕绉般€?
+其中日志中的 `demo-consumer` 即为调用方名称。
 
 ## Service Consumer
 
-> 瀵规湇鍔℃秷璐规柟鐨勬祦閲忔帶鍒跺彲鍒嗕负**鎺у埗骞跺彂绾跨▼鏁?*鍜?*鏈嶅姟闄嶇骇**涓や釜缁村害銆?
+> 对服务消费方的流量控制可分为**控制并发线程数**和**服务降级**两个维度。
 
-### 骞跺彂绾跨▼鏁伴檺娴?
+### 并发线程数限流
 
-Service Consumer 浣滀负瀹㈡埛绔幓璋冪敤杩滅▼鏈嶅姟銆傛瘡涓€涓湇鍔￠兘鍙兘浼氫緷璧栧嚑涓笅娓告湇鍔★紝鑻ユ煇涓湇鍔?A 渚濊禆鐨勪笅娓告湇鍔?B 鍑虹幇浜嗕笉绋冲畾鐨勬儏鍐碉紝鏈嶅姟 A 璇锋眰鏈嶅姟 B 鐨勫搷搴旀椂闂村彉闀匡紝浠庤€屾湇鍔?A 璋冪敤鏈嶅姟 B 鐨勭嚎绋嬪氨浼氫骇鐢熷爢绉紝鏈€缁堝彲鑳借€楀敖鏈嶅姟 A 鐨勭嚎绋嬫暟銆傛垜浠€氳繃鐢ㄥ苟鍙戠嚎绋嬫暟鏉ユ帶鍒跺涓嬫父鏈嶅姟 B 鐨勮闂紝鏉ヤ繚璇佷笅娓告湇鍔′笉鍙潬鐨勬椂鍊欙紝涓嶄細鎷栧灝鏈嶅姟鑷韩銆傚熀浜庤繖绉嶅満鏅紝鎺ㄨ崘缁?Consumer 閰嶇疆**绾跨▼鏁版ā寮?*鐨勯檺娴侊紝鏉ヤ繚璇佽嚜韬笉琚笉绋冲畾鏈嶅姟鎵€褰卞搷銆傞檺娴佺矑搴﹀悓鏍峰彲浠ユ槸鏈嶅姟鎺ュ彛鍜屾湇鍔℃柟娉曚袱绉嶇矑搴︺€?
+Service Consumer 作为客户端去调用远程服务。每一个服务都可能会依赖几个下游服务，若某个服务 A 依赖的下游服务 B 出现了不稳定的情况，服务 A 请求服务 B 的响应时间变长，从而服务 A 调用服务 B 的线程就会产生堆积，最终可能耗尽服务 A 的线程数。我们通过用并发线程数来控制对下游服务 B 的访问，来保证下游服务不可靠的时候，不会拖垮服务自身。基于这种场景，推荐给 Consumer 配置**线程数模式**的限流，来保证自身不被不稳定服务所影响。限流粒度同样可以是服务接口和服务方法两种粒度。
 
-閲囩敤鍩轰簬绾跨▼鏁扮殑闄愭祦妯″紡鍚庯紝鎴戜滑涓嶉渶瑕佸啀鏄惧紡鍦板幓杩涜绾跨▼姹犻殧绂伙紝Sentinel 浼氭帶鍒惰祫婧愮殑绾跨▼鏁帮紝瓒呭嚭鐨勮姹傜洿鎺ユ嫆缁濓紝鐩村埌鍫嗙Н鐨勭嚎绋嬪鐞嗗畬鎴愩€?
+采用基于线程数的限流模式后，我们不需要再显式地去进行线程池隔离，Sentinel 会控制资源的线程数，超出的请求直接拒绝，直到堆积的线程处理完成。
 
-Demo 2 婕旂ず浜嗘闄愭祦鍦烘櫙锛屾垜浠湅涓€涓嬭繖绉嶆ā寮忕殑鏁堟灉銆傚亣璁惧綋鍓嶆湇鍔?A 渚濊禆涓や釜杩滅▼鏈嶅姟鏂规硶 `sayHello(java.lang.String)` 鍜?`doAnother()`銆傚墠鑰呰繙绋嬭皟鐢ㄧ殑鍝嶅簲鏃堕棿 涓?1s-1.5s涔嬮棿锛屽悗鑰?RT 闈炲父灏忥紙30 ms 宸﹀彸锛夈€傛湇鍔?A 绔涓や釜杩滅▼鏂规硶 thread count 涓?5銆傜劧鍚庢瘡闅?50 ms 宸﹀彸鍚戠嚎绋嬫睜鎶曞叆涓や釜浠诲姟锛屼綔涓烘秷璐硅€呭垎鍒繙绋嬭皟鐢ㄥ搴旀柟娉曪紝鎸佺画 10 娆°€傚彲浠ョ湅鍒?`sayHello` 鏂规硶琚檺娴?5 娆★紝鍥犱负鍚庨潰璋冪敤鐨勬椂鍊欏墠闈㈢殑杩滅▼璋冪敤杩樻湭杩斿洖锛圧T 楂橈級锛涜€?`doAnother()` 璋冪敤鍒欎笉鍙楀奖鍝嶃€傜嚎绋嬫暟鐩秴鍑烘椂蹇€熷け璐ヨ兘澶熸湁鏁堝湴闃叉鑷繁琚參璋冪敤鎵€褰卞搷銆?
+Demo 2 演示了此限流场景，我们看一下这种模式的效果。假设当前服务 A 依赖两个远程服务方法 `sayHello(java.lang.String)` 和 `doAnother()`。前者远程调用的响应时间 为 1s-1.5s之间，后者 RT 非常小（30 ms 左右）。服务 A 端设两个远程方法 thread count 为 5。然后每隔 50 ms 左右向线程池投入两个任务，作为消费者分别远程调用对应方法，持续 10 次。可以看到 `sayHello` 方法被限流 5 次，因为后面调用的时候前面的远程调用还未返回（RT 高）；而 `doAnother()` 调用则不受影响。线程数目超出时快速失败能够有效地防止自己被慢调用所影响。
 
-### 鏈嶅姟闄嶇骇
+### 服务降级
 
-褰撴湇鍔′緷璧栦簬澶氫釜涓嬫父鏈嶅姟锛岃€屾煇涓笅娓告湇鍔¤皟鐢ㄩ潪甯告參鏃讹紝浼氫弗閲嶅奖鍝嶅綋鍓嶆湇鍔＄殑璋冪敤銆傝繖閲屾垜浠彲浠ュ埄鐢?Sentinel 鐔旀柇闄嶇骇鐨勫姛鑳斤紝涓鸿皟鐢ㄧ閰嶇疆鍩轰簬骞冲潎 RT 鐨刐闄嶇骇瑙勫垯](https://github.com/alibaba/Sentinel/wiki/%E7%86%94%E6%96%AD%E9%99%8D%E7%BA%A7)銆傝繖鏍峰綋璋冪敤閾捐矾涓煇涓湇鍔¤皟鐢ㄧ殑骞冲潎 RT 鍗囬珮锛屽湪涓€瀹氱殑娆℃暟鍐呰秴杩囬厤缃殑 RT 闃堝€硷紝Sentinel 灏变細瀵规璋冪敤璧勬簮杩涜闄嶇骇鎿嶄綔锛屾帴涓嬫潵鐨勮皟鐢ㄩ兘浼氱珛鍒绘嫆缁濓紝鐩村埌杩囦簡涓€娈佃瀹氱殑鏃堕棿鍚庢墠鎭㈠锛屼粠鑰屼繚鎶ゆ湇鍔′笉琚皟鐢ㄧ鐭澘鎵€褰卞搷銆傚悓鏃跺彲浠ラ厤鍚?fallback 鍔熻兘浣跨敤锛屽湪琚檷绾х殑鏃跺€欐彁渚涚浉搴旂殑澶勭悊閫昏緫銆?
+当服务依赖于多个下游服务，而某个下游服务调用非常慢时，会严重影响当前服务的调用。这里我们可以利用 Sentinel 熔断降级的功能，为调用端配置基于平均 RT 的[降级规则](<https://github.com/alibaba/Sentinel/wiki/%E7%86%94%E6%96%AD%E9%99%8D%E7%BA%A7>)。这样当调用链路中某个服务调用的平均 RT 升高，在一定的次数内超过配置的 RT 阈值，Sentinel 就会对此调用资源进行降级操作，接下来的调用都会立刻拒绝，直到过了一段设定的时间后才恢复，从而保护服务不被调用端短板所影响。同时可以配合 fallback 功能使用，在被降级的时候提供相应的处理逻辑。
 
 ## Fallback
 
-浠?0.1.1 鐗堟湰寮€濮嬶紝Sentinel Dubbo Adapter 杩樻敮鎸侀厤缃叏灞€鐨?fallback 鍑芥暟锛屽彲浠ュ湪 Dubbo 鏈嶅姟琚檺娴?闄嶇骇/璐熻浇淇濇姢鐨勬椂鍊欒繘琛岀浉搴旂殑 fallback 澶勭悊銆傜敤鎴峰彧闇€瑕佸疄鐜拌嚜瀹氫箟鐨?[`DubboFallback`](https://github.com/alibaba/Sentinel/blob/master/sentinel-adapter/sentinel-dubbo-adapter/src/main/java/com/alibaba/csp/sentinel/adapter/dubbo/fallback/DubboFallback.java) 鎺ュ彛锛屽苟閫氳繃 `DubboFallbackRegistry` 娉ㄥ唽鍗冲彲銆傞粯璁ゆ儏鍐典細鐩存帴灏?`BlockException` 鍖呰鍚庢姏鍑恒€傚悓鏃讹紝鎴戜滑杩樺彲浠ラ厤鍚?[Dubbo 鐨?fallback 鏈哄埗](http://dubbo.apache.org/#!/docs/user/demos/local-mock.md?lang=zh-cn) 鏉ヤ负闄嶇骇鐨勬湇鍔℃彁渚涙浛浠ｇ殑瀹炵幇銆?
+从 0.1.1 版本开始，Sentinel Dubbo Adapter 还支持配置全局的 fallback 函数，可以在 Dubbo 服务被限流/降级/负载保护的时候进行相应的 fallback 处理。用户只需要实现自定义的 [`DubboFallback`](https://github.com/alibaba/Sentinel/blob/master/sentinel-adapter/sentinel-dubbo-adapter/src/main/java/com/alibaba/csp/sentinel/adapter/dubbo/fallback/DubboFallback.java) 接口，并通过 `DubboFallbackRegistry` 注册即可。默认情况会直接将 `BlockException` 包装后抛出。同时，我们还可以配合 [Dubbo 的 fallback 机制](http://dubbo.apache.org/#!/docs/user/demos/local-mock.md?lang=zh-cn) 来为降级的服务提供替代的实现。
 
-Demo 2 鐨?Consumer 绔彁渚涗簡涓€涓畝鍗曠殑 fallback 绀轰緥銆?
+Demo 2 的 Consumer 端提供了一个简单的 fallback 示例。
 
 ## Sentinel Dashboard
 
-Sentinel 杩樻彁渚?API 鐢ㄤ簬鑾峰彇瀹炴椂鐨勭洃鎺т俊鎭紝瀵瑰簲鏂囨。瑙乕姝ゅ](https://github.com/alibaba/Sentinel/wiki/%E5%AE%9E%E6%97%B6%E7%9B%91%E6%8E%A7)銆備负浜嗕究浜庝娇鐢紝Sentinel 杩樻彁渚涗簡涓€涓帶鍒跺彴锛圖ashboard锛夌敤浜庨厤缃鍒欍€佹煡鐪嬬洃鎺с€佹満鍣ㄥ彂鐜扮瓑鍔熻兘銆?
+Sentinel 还提供 API 用于获取实时的监控信息，对应文档见[此处](<https://github.com/alibaba/Sentinel/wiki/%E5%AE%9E%E6%97%B6%E7%9B%91%E6%8E%A7>)。为了便于使用，Sentinel 还提供了一个控制台（Dashboard）用于配置规则、查看监控、机器发现等功能。
 
-鎺ュ叆 Dashboard 鐨勬楠わ紙**缂轰竴涓嶅彲**锛夛細
+接入 Dashboard 的步骤（**缺一不可**）：
 
-1. 鎸夌収 [Sentinel 鎺у埗鍙版枃妗(https://github.com/alibaba/Sentinel/wiki/%E6%8E%A7%E5%88%B6%E5%8F%B0) 鍚姩鎺у埗鍙?
-2. 搴旂敤寮曞叆 `sentinel-transport-simple-http` 渚濊禆锛屼互渚挎帶鍒跺彴鍙互鎷夊彇瀵瑰簲搴旂敤鐨勭浉鍏充俊鎭?
-3. 缁欏簲鐢ㄦ坊鍔犵浉鍏崇殑鍚姩鍙傛暟锛屽惎鍔ㄥ簲鐢ㄣ€傞渶瑕侀厤缃殑鍙傛暟鏈夛細
-   - `-Dcsp.sentinel.api.port`锛氬鎴风鐨?port锛岀敤浜庝笂鎶ョ浉鍏充俊鎭?
-   - `-Dcsp.sentinel.dashboard.server`锛氭帶鍒跺彴鐨勫湴鍧€
-   - `-Dproject.name`锛氬簲鐢ㄥ悕绉帮紝浼氬湪鎺у埗鍙颁腑鏄剧ず
+1. 按照 [Sentinel 控制台文档](https://github.com/alibaba/Sentinel/wiki/%E6%8E%A7%E5%88%B6%E5%8F%B0) 启动控制台
+2. 应用引入 `sentinel-transport-simple-http` 依赖，以便控制台可以拉取对应应用的相关信息
+3. 给应用添加相关的启动参数，启动应用。需要配置的参数有：
+   - `-Dcsp.sentinel.api.port`：客户端的 port，用于上报相关信息
+   - `-Dcsp.sentinel.dashboard.server`：控制台的地址
+   - `-Dproject.name`：应用名称，会在控制台中显示
 
-娉ㄦ剰鏌愪簺鐜涓嬫湰鍦拌繍琛?Dubbo 鏈嶅姟杩橀渶瑕佸姞涓?`-Djava.net.preferIPv4Stack=true` 鍙傛暟銆傛瘮濡?Service Provider 绀轰緥鐨勫惎鍔ㄥ弬鏁帮細
+注意某些环境下本地运行 Dubbo 服务还需要加上 `-Djava.net.preferIPv4Stack=true` 参数。比如 Service Provider 示例的启动参数：
 
 ```bash
 -Djava.net.preferIPv4Stack=true -Dcsp.sentinel.api.port=8720 -Dcsp.sentinel.dashboard.server=localhost:8080 -Dproject.name=dubbo-provider-demo
 ```
 
-Service Consumer 绀轰緥鐨勫惎鍔ㄥ弬鏁帮細
+Service Consumer 示例的启动参数：
 
 ```bash
 -Djava.net.preferIPv4Stack=true -Dcsp.sentinel.api.port=8721 -Dcsp.sentinel.dashboard.server=localhost:8080 -Dproject.name=dubbo-consumer-demo
 ```
 
-杩欐牱鍦ㄥ惎鍔?Service Provider 鍜?Service Consumer 绀轰緥浠ュ悗锛屽氨鍙互鍦?Sentinel 鎺у埗鍙颁腑鎵惧埌鎴戜滑鐨勬湇鍔′簡銆傚彲浠ュ緢鏂逛究鍦板湪鎺у埗鍙颁腑閰嶇疆闄愭祦瑙勫垯锛?
+这样在启动 Service Provider 和 Service Consumer 示例以后，就可以在 Sentinel 控制台中找到我们的服务了。可以很方便地在控制台中配置限流规则：
 
-![瑙勫垯閰嶇疆](http://dubbo.incubator.apache.org/img/blog/sentinel-dashboard-view-rules.png)
+![规则配置](http://dubbo.incubator.apache.org/img/blog/sentinel-dashboard-view-rules.png)
 
-鎴栬€呮煡鐪嬪疄鏃剁洃鎺ф暟鎹細
+或者查看实时监控数据：
 
-![绉掔骇瀹炴椂鐩戞帶](http://dubbo.incubator.apache.org/img/blog/sentinel-dashboard-metrics.png)
+![秒级实时监控](http://dubbo.incubator.apache.org/img/blog/sentinel-dashboard-metrics.png)
