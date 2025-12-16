@@ -31,10 +31,10 @@ java -Dserver.port=8080 \
 为便于演示，我们对控制台本身加入了流量控制功能，具体做法是引入 Sentinel 提供的 `CommonFilter` 这个 Servlet Filter。
 上述 JVM 参数的含义是：
 
- | 参数 | 作用 | 
- | -------- | -------- | 
- | `-Dcsp.sentinel.dashboard.server=localhost:8080` | 向 Sentinel 接入端指定控制台的地址 | 
- | `-Dproject.name=sentinel-dashboard` | 向 Sentinel 指定应用名称，比如上面对应的应用名称就为 `sentinel-dashboard` | 
+ | 参数 | 作用 |
+ | -------- | -------- |
+ | `-Dcsp.sentinel.dashboard.server=localhost:8080` | 向 Sentinel 接入端指定控制台的地址 |
+ | `-Dproject.name=sentinel-dashboard` | 向 Sentinel 指定应用名称，比如上面对应的应用名称就为 `sentinel-dashboard` |
 
 全部的配置项可以参考 [启动配置项文档](https://github.com/alibaba/Sentinel/wiki/%E5%90%AF%E5%8A%A8%E9%85%8D%E7%BD%AE%E9%A1%B9)。
 
