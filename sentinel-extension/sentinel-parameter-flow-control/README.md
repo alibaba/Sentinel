@@ -48,6 +48,12 @@ ParamFlowRuleManager.loadRules(Collections.singletonList(rule));
 
 The description for fields of `ParamFlowRule`:
 
-|Field|Description|Default||:---:|:---|:---||resource|resource name (**required**)|||count|flow control threshold (**required**)|||grade|metric type (QPS or thread count)|QPS mode||paramIdx|the index of provided parameter in `SphU.entry(xxx, args)` (**required**)|||paramFlowItemList|the exception items of parameter; you can set threshold to a specific parameter value||
+| Field | Description | Default |
+| :---: | :--- | :--- |
+| resource | resource name (**required**) | |
+| count | flow control threshold (**required**) | |
+| grade | metric type (QPS or thread count) | QPS mode |
+| paramIdx | the index of provided parameter in `SphU.entry(xxx, args)` (**required**) | |
+| paramFlowItemList | the exception items of parameter; you can set threshold to a specific parameter value | |
 
 Now the parameter flow control rules will take effect.
