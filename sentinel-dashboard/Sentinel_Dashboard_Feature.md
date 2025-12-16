@@ -85,4 +85,4 @@ sentinel_dashboard_app_hideAppNoMachineMillis=60000
 更多：
 
 - [Sentinel 控制台启动和客户端接入](./README.md)
-- [控制台 Wiki](https://github.com/alibaba/Sentinel/wiki/%E6%8E%A7%E5%88%B6%E5%8F%B0)
+- [控制台 Wiki](<https://github.com/alibaba/Sentinel/wiki/%E6%8E%A7%E5%88%B6%E5%8F%B0>)
