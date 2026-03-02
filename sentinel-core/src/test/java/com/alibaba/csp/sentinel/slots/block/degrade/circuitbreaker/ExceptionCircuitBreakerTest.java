@@ -90,26 +90,28 @@ public class ExceptionCircuitBreakerTest extends AbstractTimeBasedTest {
 
     @Test
     public void testMaxErrorRatioThreshold() {
-        String resource = "testMaxErrorRatioThreshold";
-        DegradeRule rule = new DegradeRule("resource")
-                .setCount(1)
-                .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO)
-                .setMinRequestAmount(3)
-                .setStatIntervalMs(5000)
-                .setTimeWindow(5);
-        rule.setResource(resource);
-        DegradeRuleManager.loadRules(Collections.singletonList(rule));
+        try (MockedStatic<TimeUtil> mocked = super.mockTimeUtil()) {
+            String resource = "testMaxErrorRatioThreshold";
+            DegradeRule rule = new DegradeRule("resource")
+                    .setCount(1)
+                    .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO)
+                    .setMinRequestAmount(3)
+                    .setStatIntervalMs(5000)
+                    .setTimeWindow(5);
+            rule.setResource(resource);
+            DegradeRuleManager.loadRules(Collections.singletonList(rule));
 
-        assertTrue(entryWithErrorIfPresent(resource, new RuntimeException()));
-        assertTrue(entryWithErrorIfPresent(resource, new RuntimeException()));
-        assertTrue(entryWithErrorIfPresent(resource, new RuntimeException()));
+            assertTrue(entryWithErrorIfPresent(mocked, resource, new RuntimeException()));
+            assertTrue(entryWithErrorIfPresent(mocked, resource, new RuntimeException()));
+            assertTrue(entryWithErrorIfPresent(mocked, resource, new RuntimeException()));
 
-        // should be blocked, cause 3/3 requests' rt is bigger than max rt.
-        assertFalse(entryWithErrorIfPresent(resource, new RuntimeException()));
-        assertFalse(entryWithErrorIfPresent(resource, new RuntimeException()));
+            // should be blocked, cause 3/3 requests' rt is bigger than max rt.
+            assertFalse(entryWithErrorIfPresent(mocked, resource, new RuntimeException()));
+            assertFalse(entryWithErrorIfPresent(mocked, resource, new RuntimeException()));
 
-        sleep(5000);
+            sleep(mocked, 5000);
 
-        assertTrue(entryWithErrorIfPresent(resource, new RuntimeException()));
+            assertTrue(entryWithErrorIfPresent(mocked, resource, new RuntimeException()));
+        }
     }
 }
