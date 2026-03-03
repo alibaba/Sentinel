@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.slots.block.flow;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.After;
 import org.junit.Before;
@@ -78,7 +79,7 @@ public class FlowPartialIntegrationTest {
         flowRule.setCount(1);
         FlowRuleManager.loadRules(Arrays.asList(flowRule));
 
-        final Object sequence = new Object();
+        final CountDownLatch latch = new CountDownLatch(1);
 
         Runnable runnable = new Runnable() {
             @Override
@@ -86,10 +87,7 @@ public class FlowPartialIntegrationTest {
                 Entry e = null;
                 try {
                     e = SphU.entry("testThreadGrade");
-                    synchronized (sequence) {
-                        System.out.println("notify up");
-                        sequence.notify();
-                    }
+                    latch.countDown();
                     Thread.sleep(100);
                 } catch (BlockException e1) {
                     fail("Should had failed");
@@ -103,11 +101,7 @@ public class FlowPartialIntegrationTest {
         Thread thread = new Thread(runnable);
         thread.start();
 
-        synchronized (sequence) {
-            System.out.println("sleep");
-            sequence.wait();
-            System.out.println("wake up");
-        }
+        latch.await();
 
         SphU.entry("testThreadGrade");
         System.out.println("done");
