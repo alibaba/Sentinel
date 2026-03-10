@@ -106,6 +106,7 @@ FlowRuleManager.loadRules(Collections.singletonList(rule));
 ### SentinelRestClientInterceptor
 
 The main interceptor implementation responsible for:
+
 - Creating Sentinel resources for each HTTP request
 - Catching BlockException and invoking fallback handler
 - Tracing exceptions and 5xx errors
@@ -113,6 +114,7 @@ The main interceptor implementation responsible for:
 ### SentinelRestClientConfig
 
 Configuration class containing:
+
 - `resourcePrefix`: Resource name prefix (default: `restclient:`)
 - `resourceExtractor`: Resource name extractor
 - `fallback`: Fallback handler
@@ -130,13 +132,13 @@ Interface for fallback handling, invoked when requests are blocked by flow contr
 The default resource name format: `{prefix}{METHOD}:{URL}`
 
 Examples:
+
 - `restclient:GET:https://httpbin.org/get`
 - `restclient:POST:http://localhost:8080/api/users`
 
 ## Notes
 
 This adapter only supports `RestClient` from Spring Framework 6.0+, not `RestTemplate`.
-
 
 ## Integration with Spring Cloud Alibaba
 
@@ -148,3 +150,4 @@ This adapter provides basic Sentinel integration. For Spring Cloud Alibaba proje
 ## License
 
 Apache License 2.0
+
