@@ -34,6 +34,7 @@
         <module>sentinel-spring-webmvc-v6x-adapter</module>
         <module>sentinel-zuul2-adapter</module>
         <module>sentinel-okhttp-adapter</module>
+        <module>sentinel-spring-restclient-adapter</module>
         <module>sentinel-jax-rs-adapter</module>
         <module>sentinel-quarkus-adapter</module>
         <module>sentinel-motan-adapter</module>
