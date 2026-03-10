@@ -17,6 +17,8 @@ package com.alibaba.csp.sentinel.adapter.spring.restclient;
 
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.adapter.spring.restclient.app.TestApplication;
+import com.alibaba.csp.sentinel.adapter.spring.restclient.extractor.DefaultRestClientResourceExtractor;
+import com.alibaba.csp.sentinel.adapter.spring.restclient.fallback.DefaultRestClientFallback;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
@@ -179,15 +181,17 @@ public class SentinelRestClientInterceptorSimpleTest {
     public void testCustomConfig() {
         String customPrefix = "my-api:";
         String url = "http://localhost:" + port + "/test/hello";
-        String pathResource = customPrefix + "GET:" + url;
 
-        FlowRule rule = new FlowRule(pathResource);
+        FlowRule rule = new FlowRule("my-api:abc");
         rule.setGrade(RuleConstant.FLOW_GRADE_QPS);
         rule.setCount(0);
         rule.setLimitApp("default");
         FlowRuleManager.loadRules(Collections.singletonList(rule));
 
-        SentinelRestClientConfig config = new SentinelRestClientConfig(customPrefix);
+        SentinelRestClientConfig config = new SentinelRestClientConfig(
+                customPrefix,
+                request -> "abc",
+                (a,b,c,d) -> new SentinelClientHttpResponse("ABC blocked!" ));
         RestClient restClient = RestClient.builder()
                 .requestInterceptor(new SentinelRestClientInterceptor(config))
                 .build();
@@ -198,9 +202,9 @@ public class SentinelRestClientInterceptorSimpleTest {
                 .body(String.class);
 
         assertNotNull("Should get fallback response when blocked", result);
-        assertTrue("Response should indicate blocking by Sentinel", 
-                result.contains("blocked by Sentinel"));
-        System.out.println("Custom prefix flow control test completed: " + result);
+        assertTrue("Response should indicate blocking by Sentinel with custom resource and fallback response",
+                result.contains("ABC blocked!"));
+        System.out.println("Custom config flow control test completed: " + result);
     }
 
 
