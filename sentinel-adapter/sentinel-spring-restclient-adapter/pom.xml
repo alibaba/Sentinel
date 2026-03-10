@@ -19,6 +19,8 @@
         <spring-web.version>6.1.0</spring-web.version>
         <spring-boot.version>3.2.0</spring-boot.version>
         <spring-test.version>6.1.0</spring-test.version>
+
+        <skip.spring.v6x.test>false</skip.spring.v6x.test>
     </properties>
 
     <dependencies>
@@ -69,4 +71,17 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven.surefire.version}</version>
+                <configuration>
+                    <skipTests>${skip.spring.v6x.test}</skipTests>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
