@@ -150,4 +150,3 @@ This adapter provides basic Sentinel integration. For Spring Cloud Alibaba proje
 ## License
 
 Apache License 2.0
-
