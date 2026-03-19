@@ -15,8 +15,8 @@
  */
 package com.alibaba.csp.sentinel.adapter.spring.restclient.fallback;
 
-import com.alibaba.csp.sentinel.adapter.spring.restclient.SentinelClientHttpResponse;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.SentinelRpcException;
 
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
@@ -32,7 +32,7 @@ public class DefaultRestClientFallback implements RestClientFallback {
     @Override
     public ClientHttpResponse handle(HttpRequest request, byte[] body,
                                      ClientHttpRequestExecution execution, BlockException ex) {
-        return new SentinelClientHttpResponse("RestClient request blocked by Sentinel: " 
-            + ex.getClass().getSimpleName());
+        // Just wrap and throw the exception.
+        throw new SentinelRpcException(ex);
     }
 }

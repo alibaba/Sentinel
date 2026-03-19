@@ -72,7 +72,7 @@ public class SentinelClientHttpResponse implements ClientHttpResponse {
     public HttpHeaders getHeaders() {
         Map<String, List<String>> headers = new HashMap<>();
         headers.put(HttpHeaders.CONTENT_TYPE,
-                Arrays.asList(MediaType.APPLICATION_JSON_VALUE));
+                Arrays.asList(MediaType.TEXT_PLAIN_VALUE));
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.putAll(headers);
         return httpHeaders;

@@ -17,8 +17,6 @@ package com.alibaba.csp.sentinel.adapter.spring.restclient;
 
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.adapter.spring.restclient.app.TestApplication;
-import com.alibaba.csp.sentinel.adapter.spring.restclient.extractor.DefaultRestClientResourceExtractor;
-import com.alibaba.csp.sentinel.adapter.spring.restclient.fallback.DefaultRestClientFallback;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
@@ -26,7 +24,6 @@ import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,10 +34,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestClient;
 
 import java.util.Collections;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.*;
 
@@ -128,7 +121,7 @@ public class SentinelRestClientInterceptorSimpleTest {
         }
     }
 
-    @Test
+    @Test(expected = com.alibaba.csp.sentinel.slots.block.SentinelRpcException.class)
     public void testFlowControlBlocking() {
         String url = "http://localhost:" + port + "/test/hello";
         String pathResource = "restclient:GET:" + url;
@@ -143,16 +136,13 @@ public class SentinelRestClientInterceptorSimpleTest {
                 .requestInterceptor(new SentinelRestClientInterceptor())
                 .build();
 
-        String result = restClient.get()
+        restClient.get()
                 .uri(url)
                 .retrieve()
                 .body(String.class);
-
-        assertNotNull("Should get fallback response", result);
-        System.out.println("Blocked response: " + result);
     }
     
-    @Test
+    @Test(expected = com.alibaba.csp.sentinel.slots.block.SentinelRpcException.class)
     public void testHostLevelFlowControl() throws InterruptedException {
         String url = "http://localhost:" + port + "/test/hello";
         String rootResource = "restclient:GET:" + "http://localhost:" + port;
@@ -167,13 +157,10 @@ public class SentinelRestClientInterceptorSimpleTest {
                 .requestInterceptor(new SentinelRestClientInterceptor())
                 .build();
 
-        String result = restClient.get()
+        restClient.get()
                 .uri(url)
                 .retrieve()
                 .body(String.class);
-
-        assertNotNull("Should get fallback response", result);
-        System.out.println("Blocked response: " + result);
     }
 
 
@@ -208,7 +195,7 @@ public class SentinelRestClientInterceptorSimpleTest {
     }
 
 
-    @Test
+    @Test(expected = com.alibaba.csp.sentinel.slots.block.SentinelRpcException.class)
     public void testPostRequestFlowControl() {
         String url = "http://localhost:" + port + "/test/users";
         String pathResource = "restclient:POST:" + url;
@@ -223,16 +210,11 @@ public class SentinelRestClientInterceptorSimpleTest {
                 .requestInterceptor(new SentinelRestClientInterceptor())
                 .build();
 
-        String result = restClient.post()
+        restClient.post()
                 .uri(url)
                 .body("Test User")
                 .retrieve()
                 .body(String.class);
-
-        assertNotNull("Should get fallback response when blocked", result);
-        assertTrue("Response should indicate blocking by Sentinel", 
-                result.contains("blocked by Sentinel"));
-        System.out.println("POST request blocked by flow control: " + result);
     }
 
     @Test

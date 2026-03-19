@@ -15,25 +15,19 @@
  */
 package com.alibaba.csp.sentinel.adapter.spring.restclient;
 
-import java.io.IOException;
-import java.net.URI;
-
-import com.alibaba.csp.sentinel.Entry;
-import com.alibaba.csp.sentinel.EntryType;
-import com.alibaba.csp.sentinel.ResourceTypeConstants;
-import com.alibaba.csp.sentinel.SphU;
-import com.alibaba.csp.sentinel.Tracer;
+import com.alibaba.csp.sentinel.*;
 import com.alibaba.csp.sentinel.adapter.spring.restclient.extractor.RestClientResourceExtractor;
 import com.alibaba.csp.sentinel.adapter.spring.restclient.fallback.RestClientFallback;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.csp.sentinel.slots.block.degrade.DegradeException;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
-
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
+
+import java.io.IOException;
+import java.net.URI;
 
 /**
  * {@link ClientHttpRequestInterceptor} for integrating Sentinel with Spring's
@@ -105,13 +99,17 @@ public class SentinelRestClientInterceptor implements ClientHttpRequestIntercept
 
             if (response.getStatusCode().is5xxServerError()) {
                 RuntimeException ex = new RuntimeException("Server error: " + response.getStatusCode().value());
-                Tracer.trace(ex);
+                Tracer.traceEntry(ex, hostEntry);
+                if (pathEntry != null) {
+                    Tracer.traceEntry(ex, pathEntry);
+                }
             }
 
             return response;
         } catch (BlockException ex) {
             return handleBlockException(request, body, execution, ex);
         } catch (IOException ex) {
+            // Path entry does not need to be traced if an IO exception occurred.
             Tracer.traceEntry(ex, hostEntry);
             throw ex;
         } finally {
