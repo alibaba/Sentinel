@@ -164,7 +164,7 @@ public class SentinelRestClientInterceptorSimpleTest {
     }
 
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void testCustomConfig() {
         String customPrefix = "my-api:";
         String url = "http://localhost:" + port + "/test/hello";
@@ -178,20 +178,15 @@ public class SentinelRestClientInterceptorSimpleTest {
         SentinelRestClientConfig config = new SentinelRestClientConfig(
                 customPrefix,
                 request -> "abc",
-                (a,b,c,d) -> new SentinelClientHttpResponse("ABC blocked!" ));
+                (a, b, c, d) -> { throw new IllegalStateException("custom fallback triggered"); });
         RestClient restClient = RestClient.builder()
                 .requestInterceptor(new SentinelRestClientInterceptor(config))
                 .build();
 
-        String result = restClient.get()
+        restClient.get()
                 .uri(url)
                 .retrieve()
                 .body(String.class);
-
-        assertNotNull("Should get fallback response when blocked", result);
-        assertTrue("Response should indicate blocking by Sentinel with custom resource and fallback response",
-                result.contains("ABC blocked!"));
-        System.out.println("Custom config flow control test completed: " + result);
     }
 
 

@@ -15,7 +15,6 @@
  */
 package com.alibaba.csp.sentinel.adapter.spring.restclient.fallback;
 
-import com.alibaba.csp.sentinel.adapter.spring.restclient.SentinelClientHttpResponse;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 
 import org.springframework.http.HttpRequest;

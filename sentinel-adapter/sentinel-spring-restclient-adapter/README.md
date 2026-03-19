@@ -66,9 +66,9 @@ RestClientResourceExtractor customExtractor = request -> {
     return request.getMethod() + ":" + request.getURI().getHost() + path;
 };
 
-// Custom fallback response
+// Custom fallback: throw a custom exception when blocked
 RestClientFallback customFallback = (request, body, execution, ex) -> {
-    return new SentinelClientHttpResponse("Service temporarily unavailable, please retry later");
+    throw new RuntimeException("Service temporarily unavailable, please retry later", ex);
 };
 
 // Create configuration

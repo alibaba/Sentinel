@@ -10,7 +10,6 @@ import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
-import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.RestClient;
 
 import com.alibaba.csp.sentinel.slots.block.BlockException;
@@ -83,15 +82,15 @@ public class ManualTest {
                 .build();
 
         try {
-            String result = restClient.get()
+            restClient.get()
                     .uri("https://httpbin.org/delay/1")
                     .retrieve()
                     .body(String.class);
-            
-            System.out.println("Response: " + result);
-            System.out.println("✅ Flow control test completed!");
+            System.out.println("❌ Request should have been blocked!");
+        } catch (com.alibaba.csp.sentinel.slots.block.SentinelRpcException e) {
+            System.out.println("✅ Request blocked as expected: " + e.getCause().getClass().getSimpleName());
         } catch (Exception e) {
-            System.out.println("❌ Test error: " + e.getMessage());
+            System.out.println("❌ Unexpected exception: " + e.getMessage());
         }
         
         FlowRuleManager.loadRules(Collections.emptyList());
@@ -112,8 +111,9 @@ public class ManualTest {
         };
 
         RestClientFallback customFallback = (HttpRequest request, byte[] body,
-                                             ClientHttpRequestExecution execution, BlockException ex) ->
-                new SentinelClientHttpResponse("Custom fallback: " + ex.getClass().getSimpleName());
+                                             ClientHttpRequestExecution execution, BlockException ex) -> {
+            throw new RuntimeException("Custom fallback: " + ex.getClass().getSimpleName(), ex);
+        };
 
         SentinelRestClientConfig config = new SentinelRestClientConfig(
                 "custom:",
