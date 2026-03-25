@@ -35,7 +35,7 @@ import java.lang.reflect.Method;
 @Aspect
 public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
 
-    @Pointcut("@annotation(com.alibaba.csp.sentinel.annotation.SentinelResource)")
+    @Pointcut("execution(* *(..)) && @annotation(com.alibaba.csp.sentinel.annotation.SentinelResource)")
     public void sentinelResourceAnnotationPointcut() {
     }
 
