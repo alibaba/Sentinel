@@ -32,9 +32,9 @@
 						<label class="col-sm-2 control-label">熔断策略</label>
 						<div class="col-sm-9">
 							<div class="form-control highlight-border" align="center">
-								<input type="radio" name="grade" value="0" checked ng-model='currentRule.grade' title="慢调用比例（1.8.0+ 版本生效）" />&nbsp;慢调用比例&nbsp;&nbsp;
-								<input type="radio" name="grade" value="1" ng-model='currentRule.grade' title="异常比例" />&nbsp;异常比例&nbsp;&nbsp;
-								<input type="radio" name="grade" value="2" ng-model='currentRule.grade' title="异常数" />&nbsp;异常数
+								<input type="radio" name="grade" value="0" checked ng-model='currentRule.grade' ng-change="onGradeChange()" title="慢调用比例（1.8.0+ 版本生效）" />&nbsp;慢调用比例&nbsp;&nbsp;
+								<input type="radio" name="grade" value="1" ng-model='currentRule.grade' ng-change="onGradeChange()" title="异常比例" />&nbsp;异常比例&nbsp;&nbsp;
+								<input type="radio" name="grade" value="2" ng-model='currentRule.grade' ng-change="onGradeChange()" title="异常数" />&nbsp;异常数
 							</div>
 						</div>
 					</div>

@@ -83,6 +83,11 @@ app.controller('DegradeCtl', ['$scope', '$stateParams', 'DegradeService', 'ngDia
       });
     };
 
+    $scope.onGradeChange = function () {
+      $scope.currentRule.count = undefined;
+      $scope.currentRule.slowRatioThreshold = undefined;
+    };
+
     $scope.saveRule = function () {
       if (!DegradeService.checkRuleValid($scope.currentRule)) {
         return;
