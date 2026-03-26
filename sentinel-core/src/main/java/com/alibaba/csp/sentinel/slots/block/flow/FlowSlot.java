@@ -159,7 +159,14 @@ public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
                       boolean prioritized, Object... args) throws Throwable {
-        checkFlow(resourceWrapper, context, node, count, prioritized);
+        try {
+            checkFlow(resourceWrapper, context, node, count, prioritized);
+        } catch (PriorityWaitException ex) {
+            // When a prioritized request passes flow control by waiting, subsequent slots
+            // (e.g. circuit breaker / degrade) should still be executed.
+            fireEntry(context, resourceWrapper, node, count, prioritized, args);
+            throw ex;
+        }
 
         fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }
