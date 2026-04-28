@@ -32,7 +32,7 @@ public class TestController {
 
     @GetMapping("/httpclient/back/{id}")
     public String back(@PathVariable String id) {
-        return "Welcome Back! " + id;
+        return "Welcome Back!";
     }
 
     @GetMapping("/httpclient/query")
