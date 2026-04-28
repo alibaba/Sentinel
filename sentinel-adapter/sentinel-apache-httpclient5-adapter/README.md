@@ -42,7 +42,7 @@ CloseableHttpClient httpclient = HttpClients.custom()
 ### Configuration
 
 | Name | Description | Type | Default Value |
-|------|------------|------|---------------|
+| --- | --- | --- | --- |
 | prefix | Customize resource prefix | `String` | `httpclient:` |
 | extractor | Customize resource extractor | `ApacheHttpClientResourceExtractor` | `DefaultApacheHttpClientResourceExtractor` |
 | fallback | Handle request when it is blocked | `ApacheHttpClientFallback` | `DefaultApacheHttpClientFallback` |
