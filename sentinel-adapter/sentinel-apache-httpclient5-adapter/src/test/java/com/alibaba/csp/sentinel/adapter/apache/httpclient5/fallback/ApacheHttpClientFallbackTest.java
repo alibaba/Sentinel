@@ -21,7 +21,7 @@ import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.junit.Test;
 
 /**
- * @author qihuai.wyq
+ * @author uuuyuqi
  */
 public class ApacheHttpClientFallbackTest {
 

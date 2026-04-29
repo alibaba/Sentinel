@@ -22,7 +22,7 @@ import com.alibaba.csp.sentinel.adapter.apache.httpclient5.fallback.DefaultApach
 import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
- * @author qihuai.wyq
+ * @author uuuyuqi
  */
 public class SentinelApacheHttpClientConfig {
 

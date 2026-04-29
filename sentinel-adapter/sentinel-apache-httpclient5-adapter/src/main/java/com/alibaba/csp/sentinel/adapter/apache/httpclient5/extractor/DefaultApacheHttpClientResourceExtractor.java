@@ -25,7 +25,7 @@ import org.apache.hc.core5.http.ClassicHttpRequest;
  * and fragment stripped. This is consistent with the OkHttp adapter's resource naming
  * convention.</p>
  *
- * @author qihuai.wyq
+ * @author uuuyuqi
  */
 public class DefaultApacheHttpClientResourceExtractor implements ApacheHttpClientResourceExtractor {
 

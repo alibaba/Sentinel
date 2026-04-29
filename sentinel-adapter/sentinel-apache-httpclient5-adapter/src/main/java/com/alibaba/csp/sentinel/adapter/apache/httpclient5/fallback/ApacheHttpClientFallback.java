@@ -22,7 +22,7 @@ import org.apache.hc.core5.http.ClassicHttpResponse;
 /**
  * Fallback handler for Apache HttpClient 5.x when the request is blocked by Sentinel.
  *
- * @author qihuai.wyq
+ * @author uuuyuqi
  */
 public interface ApacheHttpClientFallback {
 

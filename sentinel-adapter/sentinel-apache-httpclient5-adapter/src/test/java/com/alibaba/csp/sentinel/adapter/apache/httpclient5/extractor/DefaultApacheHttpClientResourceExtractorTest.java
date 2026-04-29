@@ -22,7 +22,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 /**
- * @author qihuai.wyq
+ * @author uuuyuqi
  */
 public class DefaultApacheHttpClientResourceExtractorTest {
 

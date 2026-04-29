@@ -45,7 +45,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 /**
- * @author qihuai.wyq
+ * @author uuuyuqi
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TestApplication.class,

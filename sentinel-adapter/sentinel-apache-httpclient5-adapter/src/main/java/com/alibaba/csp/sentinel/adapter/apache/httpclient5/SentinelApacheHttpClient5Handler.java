@@ -45,7 +45,7 @@ import java.io.IOException;
  *     .build();
  * }</pre>
  *
- * @author qihuai.wyq
+ * @author uuuyuqi
  */
 public class SentinelApacheHttpClient5Handler implements ExecChainHandler {
 

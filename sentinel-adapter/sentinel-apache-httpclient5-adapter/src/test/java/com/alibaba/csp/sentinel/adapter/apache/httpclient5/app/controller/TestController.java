@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * @author qihuai.wyq
+ * @author uuuyuqi
  */
 @RestController
 public class TestController {

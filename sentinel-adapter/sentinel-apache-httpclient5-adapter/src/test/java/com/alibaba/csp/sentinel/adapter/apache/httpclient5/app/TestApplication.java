@@ -19,7 +19,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * @author qihuai.wyq
+ * @author uuuyuqi
  */
 @SpringBootApplication
 public class TestApplication {

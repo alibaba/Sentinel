@@ -20,7 +20,7 @@ import org.apache.hc.core5.http.ClassicHttpRequest;
 /**
  * Extracts Sentinel resource name from an Apache HttpClient 5.x request.
  *
- * @author qihuai.wyq
+ * @author uuuyuqi
  */
 public interface ApacheHttpClientResourceExtractor {
 

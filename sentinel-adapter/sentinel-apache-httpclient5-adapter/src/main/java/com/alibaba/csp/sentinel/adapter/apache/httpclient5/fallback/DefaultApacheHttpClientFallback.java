@@ -21,7 +21,7 @@ import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 
 /**
- * @author qihuai.wyq
+ * @author uuuyuqi
  */
 public class DefaultApacheHttpClientFallback implements ApacheHttpClientFallback {
 
