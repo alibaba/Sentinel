@@ -62,6 +62,32 @@ public class MyResourceExtractor implements ApacheHttpClientResourceExtractor {
 }
 ```
 
+### Migration from Apache HttpClient 4.x Adapter
+
+> **Note:** The default resource naming convention differs between the HC4 and HC5 adapters. If you are migrating from
+> `sentinel-apache-httpclient-adapter` to `sentinel-apache-httpclient5-adapter`, please review your existing flow control
+> rules carefully — they will **not** match automatically.
+
+| Adapter | Default Resource Name Format | Example |
+| --- | --- | --- |
+| `sentinel-apache-httpclient-adapter` (HC4) | URI only (path, may include query) | `httpclient:/api/users` |
+| `sentinel-apache-httpclient5-adapter` (HC5) | `METHOD:full_url` (query/fragment stripped) | `httpclient:GET:http://example.com/api/users` |
+
+Both adapters share the same default resource prefix (`httpclient:`), but the resource name suffix is incompatible.
+This means any flow control rules configured against HC4 resource names will no longer take effect after migration.
+
+You have two options:
+
+1. **Update your rules** to match the new HC5 resource name format (recommended — aligns with the OkHttp adapter and
+   provides better granularity by including the HTTP method).
+2. **Preserve the old format** by supplying a custom `ApacheHttpClientResourceExtractor` that returns only the URI path,
+   e.g.:
+
+   ```java
+   SentinelApacheHttpClientConfig config = new SentinelApacheHttpClientConfig();
+   config.setExtractor(request -> request.getRequestUri());
+   ```
+
 ### Fallback
 
 The default fallback throws `SentinelRpcException`. You can customize the behavior:
