@@ -17,6 +17,7 @@
 
     <modules>
         <module>sentinel-web-servlet</module>
+        <module>sentinel-web-servlet-jakarta</module>
         <module>sentinel-dubbo-adapter</module>
         <module>sentinel-apache-dubbo-adapter</module>
         <module>sentinel-apache-dubbo3-adapter</module>
