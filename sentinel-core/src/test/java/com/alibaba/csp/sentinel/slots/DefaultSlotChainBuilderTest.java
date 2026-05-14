@@ -15,8 +15,10 @@
  */
 package com.alibaba.csp.sentinel.slots;
 
+import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlotChain;
+import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthoritySlot;
 import com.alibaba.csp.sentinel.slots.block.degrade.DefaultCircuitBreakerSlot;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeSlot;
@@ -89,5 +91,39 @@ public class DefaultSlotChainBuilderTest {
         NodeSelectorSlot nodeSelectorSlot2 = (NodeSelectorSlot) next;
         // Verify the two NodeSelectorSlot instances are different
         assertNotSame(nodeSelectorSlot, nodeSelectorSlot2);
+    }
+
+    @Test
+    public void testAddSingletonSlotInDifferentChains() {
+        ProcessorSlotChain chain = new ProcessorSlotChain();
+        TestSlot singletonSlot = new TestSlot();
+        TestSlot firstNext = new TestSlot();
+        TestSlot secondNext = new TestSlot();
+
+        chain.addLast(singletonSlot);
+        chain.addLast(firstNext);
+
+        ProcessorSlotChain chain2 = new ProcessorSlotChain();
+        chain2.addLast(singletonSlot);
+        chain2.addLast(secondNext);
+
+        AbstractLinkedProcessorSlot<?> next = chain.getNext().getNext();
+        assertSame(firstNext, next.getNext());
+
+        next = chain2.getNext().getNext();
+        assertSame(secondNext, next.getNext());
+        assertNotSame(firstNext, secondNext);
+    }
+
+    private static class TestSlot extends AbstractLinkedProcessorSlot<Object> {
+
+        @Override
+        public void entry(Context context, ResourceWrapper resourceWrapper, Object t, int count, boolean prioritized,
+                          Object... args) {
+        }
+
+        @Override
+        public void exit(Context context, ResourceWrapper resourceWrapper, int count, Object... args) {
+        }
     }
 }

@@ -49,9 +49,22 @@ public class DefaultProcessorSlotChain extends ProcessorSlotChain {
     }
 
     @Override
-    public void addLast(AbstractLinkedProcessorSlot<?> protocolProcessor) {
-        end.setNext(protocolProcessor);
-        end = protocolProcessor;
+    public void addLast(final AbstractLinkedProcessorSlot<?> protocolProcessor) {
+        AbstractLinkedProcessorSlot<Object> processor = new AbstractLinkedProcessorSlot<Object>() {
+
+            @Override
+            public void entry(Context context, ResourceWrapper resourceWrapper, Object t, int count, boolean prioritized,
+                              Object... args) throws Throwable {
+                protocolProcessor.transformEntry(context, resourceWrapper, t, count, prioritized, args);
+            }
+
+            @Override
+            public void exit(Context context, ResourceWrapper resourceWrapper, int count, Object... args) {
+                protocolProcessor.exit(context, resourceWrapper, count, args);
+            }
+        };
+        end.setNext(processor);
+        end = processor;
     }
 
     /**
