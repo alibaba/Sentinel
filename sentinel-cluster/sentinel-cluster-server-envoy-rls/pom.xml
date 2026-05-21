@@ -3,11 +3,14 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>sentinel-cluster</artifactId>
         <groupId>com.alibaba.csp</groupId>
-        <version>1.8.6</version>
+        <artifactId>sentinel-cluster</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
+
+    <name>${project.groupId}:${project.artifactId}</name>
 
     <artifactId>sentinel-cluster-server-envoy-rls</artifactId>
 
@@ -15,8 +18,8 @@
         <java.source.version>1.8</java.source.version>
         <java.target.version>1.8</java.target.version>
 
-        <protobuf.version>3.10.0</protobuf.version>
-        <grpc.version>1.30.2</grpc.version>
+        <protobuf.version>3.21.9</protobuf.version>
+        <grpc.version>1.51.0</grpc.version>
 
         <maven.shade.version>3.2.1</maven.shade.version>
     </properties>
@@ -65,7 +68,7 @@
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <version>1.26</version>
+            <version>1.32</version>
         </dependency>
 
         <dependency>

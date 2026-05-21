@@ -17,14 +17,17 @@ package com.alibaba.csp.sentinel.demo.spring.webmvc.controller;
 
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
  * Test controller
+ *
  * @author kaizi2009
  */
 @Controller
@@ -57,12 +60,23 @@ public class WebMvcTestController {
         doBusiness();
         return "Exclude " + id;
     }
-    
+
     @GetMapping("/forward")
     public ModelAndView apiForward() {
         ModelAndView mav = new ModelAndView();
         mav.setViewName("hello");
         return mav;
+    }
+
+    @GetMapping("/async")
+    @ResponseBody
+    public DeferredResult<String> distribute() throws Exception {
+        DeferredResult<String> result = new DeferredResult<>(4000L);
+
+        Thread thread = new Thread(() -> result.setResult("async result"));
+        thread.start();
+
+        return result;
     }
 
     private void doBusiness() {

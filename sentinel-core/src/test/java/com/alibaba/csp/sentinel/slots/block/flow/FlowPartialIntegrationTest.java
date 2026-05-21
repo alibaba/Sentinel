@@ -15,12 +15,10 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.After;
 import org.junit.Before;
@@ -31,6 +29,8 @@ import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+
+import static org.junit.Assert.*;
 
 /**
  * @author jialiang.linjl
@@ -79,7 +79,7 @@ public class FlowPartialIntegrationTest {
         flowRule.setCount(1);
         FlowRuleManager.loadRules(Arrays.asList(flowRule));
 
-        final Object sequence = new Object();
+        final CountDownLatch latch = new CountDownLatch(1);
 
         Runnable runnable = new Runnable() {
             @Override
@@ -87,10 +87,7 @@ public class FlowPartialIntegrationTest {
                 Entry e = null;
                 try {
                     e = SphU.entry("testThreadGrade");
-                    synchronized (sequence) {
-                        System.out.println("notify up");
-                        sequence.notify();
-                    }
+                    latch.countDown();
                     Thread.sleep(100);
                 } catch (BlockException e1) {
                     fail("Should had failed");
@@ -104,14 +101,25 @@ public class FlowPartialIntegrationTest {
         Thread thread = new Thread(runnable);
         thread.start();
 
-        synchronized (sequence) {
-            System.out.println("sleep");
-            sequence.wait();
-            System.out.println("wake up");
-        }
+        latch.await();
 
         SphU.entry("testThreadGrade");
         System.out.println("done");
+    }
+
+    @Test
+    public void testQpsRegex() {
+        FlowRule flowRule = new FlowRule();
+        String resource = ".*";
+        flowRule.setResource(resource);
+        flowRule.setGrade(RuleConstant.FLOW_GRADE_QPS);
+        flowRule.setRegex(true);
+        flowRule.setCount(1);
+        FlowRuleManager.loadRules(Collections.singletonList(flowRule));
+        verifyFlow("testQpsRegex_1", true);
+        verifyFlow("testQpsRegex_2", true);
+        verifyFlow("testQpsRegex_1", false);
+        verifyFlow("testQpsRegex_2", false);
     }
 
     @Test
@@ -254,5 +262,19 @@ public class FlowPartialIntegrationTest {
         e.exit();
 
         ContextUtil.exit();
+    }
+
+    private void verifyFlow(String resource, boolean shouldPass) {
+        Entry e = null;
+        try {
+            e = SphU.entry(resource);
+            assertTrue(shouldPass);
+        } catch (BlockException e1) {
+            assertFalse(shouldPass);
+        } finally {
+            if (e != null) {
+                e.exit();
+            }
+        }
     }
 }

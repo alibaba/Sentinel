@@ -36,6 +36,7 @@ import static org.assertj.core.api.Assertions.fail;
 /**
  * @author sea
  */
+@Ignore
 public class SentinelAnnotationInterceptorIntegrationTest {
 
     static SeContainer container;

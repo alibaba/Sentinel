@@ -24,5 +24,7 @@ public interface TestService {
 
     String hello(long s);
 
+    String hello(String s);
+
     String helloAnother(String name);
 }

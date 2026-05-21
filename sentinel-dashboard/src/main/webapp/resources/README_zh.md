@@ -12,19 +12,19 @@
 
 ## 安装依赖
 
-```
+```shell
 npm i
 ```
 
 ## 开始本地开发
 
-```
+```shell
 npm start
 ```
 
 ## 构建前端资源
 
-```
+```shell
 npm run build
 ```
 

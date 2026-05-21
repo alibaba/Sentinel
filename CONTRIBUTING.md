@@ -11,7 +11,18 @@ Please make sure to read and observe our [Code of Conduct](./CODE_OF_CONDUCT.md)
 
 ### Setting up your development environment
 
-You should have JDK 1.8 or later installed in your system.
+You should have JDK 17 or later installed in your system.
+
+### How to run test
+
+1. add `~/.m2/toolchains.xml`, to define JDK and path. See [toolcahinas-example.xml](./toolchains-example.xml).
+2. With JDK 17 as your default JDK, you could specify the JDK version to run test,
+
+i.e. Run test at JDK 8:
+
+```bash
+mvn test -Dsurefire.jdk-toolchain-version=8
+```
 
 ## Contributing
 
@@ -73,7 +84,7 @@ All code should be well reviewed by one or more committers. Some principles:
 
 #### Mailing list
 
-If you have any questions or advice, please contact sentinel@linux.alibaba.com.
+If you have any questions or advice, please contact <sentinel@linux.alibaba.com>.
 
 #### Gitter
 

@@ -26,6 +26,8 @@ import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.RequestOriginPars
  */
 public abstract class BaseWebMvcConfig {
 
+    public final static String REQUEST_REF_EXCEPTION_NAME = "$$sentinel_spring_web_entry_attr-exception";
+
     protected String requestAttributeName;
     protected String requestRefName;
     protected BlockExceptionHandler blockExceptionHandler;

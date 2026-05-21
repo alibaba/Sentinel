@@ -44,6 +44,6 @@ public class Endpoint {
 
     @Override
     public String toString() {
-        return "Endpoint{" + "protocol=" + protocol + ", host='" + host + ", port=" + port + '}';
+        return "Endpoint{" + "protocol=" + protocol + ", host='" + host + '\'' + ", port=" + port + '}';
     }
 }

@@ -15,6 +15,9 @@
  */
 package com.alibaba.csp.sentinel.eagleeye;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -139,15 +142,12 @@ final class EagleEyeCoreUtils {
         return appender;
     }
 
-    private static final ThreadLocal<FastDateFormat> dateFmt = new ThreadLocal<FastDateFormat>() {
-        @Override
-        protected FastDateFormat initialValue() {
-            return new FastDateFormat();
-        }
-    };
+    private static final DateTimeFormatter dateFmt = DateTimeFormatter
+            .ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
+            .withZone(ZoneId.systemDefault());
 
     public static String formatTime(long timestamp) {
-        return dateFmt.get().format(timestamp);
+        return dateFmt.format(Instant.ofEpochMilli(timestamp));
     }
 
     public static String getSystemProperty(String key) {

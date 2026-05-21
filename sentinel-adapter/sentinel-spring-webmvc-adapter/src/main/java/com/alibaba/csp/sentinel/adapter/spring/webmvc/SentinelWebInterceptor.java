@@ -25,6 +25,8 @@ import org.springframework.web.servlet.HandlerMapping;
 
 /**
  * Spring Web MVC interceptor that integrates with Sentinel.
+ * <p>
+ * This will record resource as `${uri}`.
  *
  * @author kaizi2009
  * @since 1.7.1

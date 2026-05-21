@@ -51,7 +51,7 @@ public EurekaDataSource<List<FlowRule>> eurekaDataSource(EurekaInstanceConfig eu
 To refresh the rule dynamically, you need to call [Eureka-REST-operations](https://github.com/Netflix/eureka/wiki/Eureka-REST-operations)
 to update instance metadata:
 
-```
+```plaintext
 PUT /eureka/apps/{appID}/{instanceID}/metadata?{ruleKey}={json of the rules}
 ```
 

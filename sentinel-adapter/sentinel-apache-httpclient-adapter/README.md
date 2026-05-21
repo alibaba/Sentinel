@@ -1,4 +1,4 @@
-# Sentinel Apache Httpclient Adapter
+﻿# Sentinel Apache Httpclient Adapter
 
 ## Introduction
 
@@ -32,11 +32,7 @@ CloseableHttpClient httpclient = builder.build();
 
 - `SentinelApacheHttpClientConfig` configuration:
 
-| name | description | type | default value |
-|------|------------|------|-------|
-| prefix | customize resource prefix | `String` | `httpclient:` |
-| extractor | customize resource extractor | `ApacheHttpClientResourceExtractor` | `DefaultApacheHttpClientResourceExtractor` |
-| fallback | handle request when it is blocked | `ApacheHttpClientFallback` | `DefaultApacheHttpClientFallback` |
+ |name|description|type|default value||------|------------|------|-------||prefix|customize resource prefix|`String`|`httpclient:`||extractor|customize resource extractor|`ApacheHttpClientResourceExtractor`|`DefaultApacheHttpClientResourceExtractor`||fallback|handle request when it is blocked|`ApacheHttpClientFallback`|`DefaultApacheHttpClientFallback`|
 
 ### extractor (resource extractor)
 

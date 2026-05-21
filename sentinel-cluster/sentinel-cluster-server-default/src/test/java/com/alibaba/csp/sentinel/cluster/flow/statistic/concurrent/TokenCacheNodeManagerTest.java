@@ -16,16 +16,16 @@
 package com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent;
 
 import com.alibaba.csp.sentinel.cluster.flow.rule.ClusterFlowRuleManager;
-import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.TokenCacheNode;
-import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.TokenCacheNodeManager;
+import com.alibaba.csp.sentinel.cluster.server.AbstractTimeBasedTest;
 import com.alibaba.csp.sentinel.slots.block.ClusterRuleConstant;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
-import com.alibaba.csp.sentinel.test.AbstractTimeBasedTest;
+import com.alibaba.csp.sentinel.util.TimeUtil;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.MockedStatic;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,28 +52,30 @@ public class TokenCacheNodeManagerTest extends AbstractTimeBasedTest {
 
     @Test
     public void testPutTokenCacheNode() throws InterruptedException {
-        setCurrentMillis(System.currentTimeMillis());
+        try (MockedStatic<TimeUtil> mocked = super.mockTimeUtil()) {
+            setCurrentMillis(mocked, System.currentTimeMillis());
 
-        for (long i = 0; i < 100; i++) {
-            final TokenCacheNode node = new TokenCacheNode();
-            node.setTokenId(i);
-            node.setFlowId(111L);
-            node.setResourceTimeout(10000L);
-            node.setClientTimeout(10000L);
-            node.setClientAddress("localhost");
-            if (TokenCacheNodeManager.validToken(node)) {
-                TokenCacheNodeManager.putTokenCacheNode(node.getTokenId(), node);
+            for (long i = 0; i < 100; i++) {
+                final TokenCacheNode node = new TokenCacheNode();
+                node.setTokenId(i);
+                node.setFlowId(111L);
+                node.setResourceTimeout(10000L);
+                node.setClientTimeout(10000L);
+                node.setClientAddress("localhost");
+                if (TokenCacheNodeManager.validToken(node)) {
+                    TokenCacheNodeManager.putTokenCacheNode(node.getTokenId(), node);
 
+                }
             }
-        }
-        Assert.assertEquals(100, TokenCacheNodeManager.getSize());
-        for (int i = 0; i < 100; i++) {
-            TokenCacheNodeManager.getTokenCacheNode((long) (Math.random() * 100));
-        }
-        List<Long> keyList = new ArrayList<>(TokenCacheNodeManager.getCacheKeySet());
-        for (int i = 0; i < 100; i++) {
-            Assert.assertEquals(i, (long) keyList.get(i));
-            TokenCacheNodeManager.removeTokenCacheNode(i);
+            Assert.assertEquals(100, TokenCacheNodeManager.getSize());
+            for (int i = 0; i < 100; i++) {
+                TokenCacheNodeManager.getTokenCacheNode((long) (Math.random() * 100));
+            }
+            List<Long> keyList = new ArrayList<>(TokenCacheNodeManager.getCacheKeySet());
+            for (int i = 0; i < 100; i++) {
+                Assert.assertEquals(i, (long) keyList.get(i));
+                TokenCacheNodeManager.removeTokenCacheNode(i);
+            }
         }
     }
 }

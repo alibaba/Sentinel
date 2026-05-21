@@ -19,6 +19,7 @@ import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
@@ -35,7 +36,7 @@ import static org.junit.Assert.*;
 public class ConsoleHandlerTest {
 
     @Test
-    public void testPublish() {
+    public void testInfoPublish() {
         ByteArrayOutputStream baosOut = new ByteArrayOutputStream();
         System.setOut(new PrintStream(baosOut));
 
@@ -50,35 +51,85 @@ public class ConsoleHandlerTest {
         // Test INFO level, should log to stdout
         logRecord = new LogRecord(Level.INFO, "test info message");
         consoleHandler.publish(logRecord);
+
+        consoleHandler.close();
         assertEquals(cspFormatter.format(logRecord), baosOut.toString());
         assertEquals("", baosErr.toString());
         baosOut.reset();
         baosErr.reset();
+    }
+
+    @Test
+    public void testWarnPublish() {
+        ByteArrayOutputStream baosOut = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(baosOut));
+
+        ByteArrayOutputStream baosErr = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(baosErr));
+
+        CspFormatter cspFormatter = new CspFormatter();
+        ConsoleHandler consoleHandler = new ConsoleHandler();
+
+        LogRecord logRecord;
 
         // Test INFO level, should log to stderr
         logRecord = new LogRecord(Level.WARNING, "test warning message");
         consoleHandler.publish(logRecord);
+
+        consoleHandler.close();
         assertEquals(cspFormatter.format(logRecord), baosErr.toString());
         assertEquals("", baosOut.toString());
         baosOut.reset();
         baosErr.reset();
+    }
+
+    @Test
+    public void testFinePublish() {
+        ByteArrayOutputStream baosOut = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(baosOut));
+
+        ByteArrayOutputStream baosErr = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(baosErr));
+
+        CspFormatter cspFormatter = new CspFormatter();
+        ConsoleHandler consoleHandler = new ConsoleHandler();
+
+        LogRecord logRecord;
 
         // Test FINE level, no log by default
         // Default log level is INFO, to log FINE message to stdout, add following config in $JAVA_HOME/jre/lib/logging.properties
         // java.util.logging.StreamHandler.level=FINE
         logRecord = new LogRecord(Level.FINE, "test fine message");
         consoleHandler.publish(logRecord);
+
+        consoleHandler.close();
         assertEquals("", baosOut.toString());
         assertEquals("", baosErr.toString());
         baosOut.reset();
         baosErr.reset();
+    }
 
+    @Test
+    public void testSeverePublish() {
+        ByteArrayOutputStream baosOut = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(baosOut));
+
+        ByteArrayOutputStream baosErr = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(baosErr));
+
+        CspFormatter cspFormatter = new CspFormatter();
+        ConsoleHandler consoleHandler = new ConsoleHandler();
+
+        LogRecord logRecord;
         // Test SEVERE level, should log to stderr
         logRecord = new LogRecord(Level.SEVERE, "test severe message");
         consoleHandler.publish(logRecord);
+
+        consoleHandler.close();
         assertEquals(cspFormatter.format(logRecord), baosErr.toString());
         assertEquals("", baosOut.toString());
         baosOut.reset();
         baosErr.reset();
     }
+
 }

@@ -2,31 +2,51 @@ name: Sentinel CI
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - '*'
   pull_request:
-    branches: [ master ]
+    branches:
+      - master
+      - "1.8"
+      - "2.0"
 
 jobs:
   build:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [8, 11]
+        java: [8, 11, 17, 21]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Setup Java
-        uses: actions/setup-java@v1
+      - name: Setup Java for test
+        uses: actions/setup-java@v4
         with:
           java-version: ${{ matrix.java }}
-          architecture: x64
+          distribution: 'temurin'
+          cache: 'maven'
 
-      - name: Test with Maven
-        run: mvn test
+      - name: Setup Java for mvn
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+
+      - name: Maven Test With Spring 6.x
+        run: mvn --batch-mode test -Dsurefire.jdk-toolchain-version=${{ matrix.java }}
+        if: ${{ matrix.java >= 17 }}
+
+      - name: Maven Test Without Spring 6.x
+        run: mvn --batch-mode test -Dsurefire.jdk-toolchain-version=${{ matrix.java }} -Dskip.spring.v6x.test=true
+        if: ${{ matrix.java < 17 }}
 
       - name: Build with Maven
         run: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -DminimumPriority=1
 
-      - name: Run Codecov
-        run: bash <(curl -s https://codecov.io/bash)
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}

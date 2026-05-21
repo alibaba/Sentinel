@@ -15,8 +15,10 @@
  */
 package com.alibaba.csp.sentinel.cluster.flow.statistic.limit;
 
-import com.alibaba.csp.sentinel.cluster.test.AbstractTimeBasedTest;
+import com.alibaba.csp.sentinel.cluster.server.AbstractTimeBasedTest;
+import com.alibaba.csp.sentinel.util.TimeUtil;
 import org.junit.Test;
+import org.mockito.MockedStatic;
 
 import static org.junit.Assert.*;
 
@@ -24,21 +26,23 @@ public class RequestLimiterTest extends AbstractTimeBasedTest {
 
     @Test
     public void testRequestLimiter() {
-        setCurrentMillis(System.currentTimeMillis());
-        RequestLimiter limiter = new RequestLimiter(10);
-        limiter.add(3);
-        limiter.add(3);
-        limiter.add(3);
-        assertTrue(limiter.canPass());
-        assertEquals(9, limiter.getSum());
-        limiter.add(3);
-        assertFalse(limiter.canPass());
+        try (MockedStatic<TimeUtil> mocked = super.mockTimeUtil()) {
+            setCurrentMillis(mocked, System.currentTimeMillis());
+            RequestLimiter limiter = new RequestLimiter(10);
+            limiter.add(3);
+            limiter.add(3);
+            limiter.add(3);
+            assertTrue(limiter.canPass());
+            assertEquals(9, limiter.getSum());
+            limiter.add(3);
+            assertFalse(limiter.canPass());
 
-        // wait a second to refresh the window
-        sleep(1000);
-        limiter.add(3);
-        assertTrue(limiter.tryPass());
-        assertTrue(limiter.canPass());
-        assertEquals(4, limiter.getSum());
+            // wait a second to refresh the window
+            sleep(mocked, 1000);
+            limiter.add(3);
+            assertTrue(limiter.tryPass());
+            assertTrue(limiter.canPass());
+            assertEquals(4, limiter.getSum());
+        }
     }
 }

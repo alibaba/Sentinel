@@ -329,11 +329,11 @@ public final class SpiLoader<S> {
         try {
             urls = classLoader.getResources(fullFileName);
         } catch (IOException e) {
-            fail("Error locating SPI configuration file, filename=" + fullFileName + ", classloader=" + classLoader, e);
+            fail("Error locating SPI configuration file,filename=" + fullFileName + ",classloader=" + classLoader, e);
         }
 
         if (urls == null || !urls.hasMoreElements()) {
-            RecordLog.warn("No SPI configuration file, filename=" + fullFileName + ", classloader=" + classLoader);
+            RecordLog.warn("No SPI configuration file,filename=" + fullFileName + ",classloader=" + classLoader);
             return;
         }
 
@@ -371,8 +371,13 @@ public final class SpiLoader<S> {
                         fail("class " + line + " not found", e);
                     }
 
+                    if (classMap.containsValue(clazz)) {
+                        RecordLog.warn("duplicate class found,className=" + clazz.getName() + ",SPI configuration file[" + url + "]");
+                        continue;
+                    }
+
                     if (!service.isAssignableFrom(clazz)) {
-                        fail("class " + clazz.getName() + "is not subtype of " + service.getName() + ",SPI configuration file=" + fullFileName);
+                        fail("class " + clazz.getName() + "is not subtype of " + service.getName() + ",SPI configuration file[" + url + "]");
                     }
 
                     classList.add(clazz);
@@ -381,13 +386,13 @@ public final class SpiLoader<S> {
                     if (classMap.containsKey(aliasName)) {
                         Class<? extends S> existClass = classMap.get(aliasName);
                         fail("Found repeat alias name for " + clazz.getName() + " and "
-                                + existClass.getName() + ",SPI configuration file=" + fullFileName);
+                                + existClass.getName() + ",SPI configuration file[" + url + "]");
                     }
                     classMap.put(aliasName, clazz);
 
                     if (spi != null && spi.isDefault()) {
                         if (defaultClass != null) {
-                            fail("Found more than one default Provider, SPI configuration file=" + fullFileName);
+                            fail("Found more than one default Provider,className=" + clazz.getName() + ",SPI configuration file[" + url + "]");
                         }
                         defaultClass = clazz;
                     }
@@ -400,7 +405,7 @@ public final class SpiLoader<S> {
                             , spi == null ? 0 : spi.order());
                 }
             } catch (IOException e) {
-                fail("error reading SPI configuration file", e);
+                fail("error reading SPI configuration file[" + url + "]", e);
             } finally {
                 closeResources(in, br);
             }

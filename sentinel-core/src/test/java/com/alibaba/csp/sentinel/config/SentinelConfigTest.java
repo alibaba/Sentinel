@@ -26,6 +26,7 @@ public class SentinelConfigTest {
         assertEquals(SentinelConfig.DEFAULT_TOTAL_METRIC_FILE_COUNT, SentinelConfig.totalMetricFileCount());
         assertEquals(SentinelConfig.DEFAULT_COLD_FACTOR, SentinelConfig.coldFactor());
         assertEquals(SentinelConfig.DEFAULT_STATISTIC_MAX_RT, SentinelConfig.statisticMaxRt());
+        assertEquals(false, SentinelConfig.shouldSkipRegexIfSimpleRuleMatched());
     }
 
     //    add JVM parameter

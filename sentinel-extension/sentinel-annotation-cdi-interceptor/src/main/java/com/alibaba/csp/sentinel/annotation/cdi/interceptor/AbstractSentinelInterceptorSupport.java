@@ -34,6 +34,7 @@ import java.util.Arrays;
  *
  * @author Eric Zhao
  * @author seasidesky
+ * @author dowenliu-xyz(hawkdowen@hotmail.com)
  */
 public abstract class AbstractSentinelInterceptorSupport {
 
@@ -170,12 +171,13 @@ public abstract class AbstractSentinelInterceptorSupport {
         }
         boolean mustStatic = locationClass != null && locationClass.length >= 1;
         Class<?> clazz = mustStatic ? locationClass[0] : ctx.getTarget().getClass();
-        MethodWrapper m = ResourceMetadataRegistry.lookupFallback(clazz, fallbackName);
+        Method originMethod = resolveMethod(ctx);
+        MethodWrapper m = ResourceMetadataRegistry.lookupFallback(clazz, fallbackName, originMethod.getParameterTypes());
         if (m == null) {
             // First time, resolve the fallback.
-            Method method = resolveFallbackInternal(ctx, fallbackName, clazz, mustStatic);
+            Method method = resolveFallbackInternal(originMethod, fallbackName, clazz, mustStatic);
             // Cache the method instance.
-            ResourceMetadataRegistry.updateFallbackFor(clazz, fallbackName, method);
+            ResourceMetadataRegistry.updateFallbackFor(clazz, fallbackName, originMethod.getParameterTypes(), method);
             return method;
         }
         if (!m.isPresent()) {
@@ -225,9 +227,7 @@ public abstract class AbstractSentinelInterceptorSupport {
         return m.getMethod();
     }
 
-    private Method resolveFallbackInternal(InvocationContext ctx, /*@NonNull*/ String name, Class<?> clazz,
-                                           boolean mustStatic) {
-        Method originMethod = resolveMethod(ctx);
+    private Method resolveFallbackInternal(Method originMethod, String name, Class<?> clazz, boolean mustStatic) {
         // Fallback function allows two kinds of parameter list.
         Class<?>[] defaultParamTypes = originMethod.getParameterTypes();
         Class<?>[] paramTypesWithException = Arrays.copyOf(defaultParamTypes, defaultParamTypes.length + 1);
@@ -254,12 +254,13 @@ public abstract class AbstractSentinelInterceptorSupport {
             // By default current class.
             clazz = ctx.getTarget().getClass();
         }
-        MethodWrapper m = ResourceMetadataRegistry.lookupBlockHandler(clazz, name);
+        Method originMethod = resolveMethod(ctx);
+        MethodWrapper m = ResourceMetadataRegistry.lookupBlockHandler(clazz, name, originMethod.getParameterTypes());
         if (m == null) {
             // First time, resolve the block handler.
-            Method method = resolveBlockHandlerInternal(ctx, name, clazz, mustStatic);
+            Method method = resolveBlockHandlerInternal(originMethod, name, clazz, mustStatic);
             // Cache the method instance.
-            ResourceMetadataRegistry.updateBlockHandlerFor(clazz, name, method);
+            ResourceMetadataRegistry.updateBlockHandlerFor(clazz, name, originMethod.getParameterTypes(), method);
             return method;
         }
         if (!m.isPresent()) {
@@ -268,9 +269,7 @@ public abstract class AbstractSentinelInterceptorSupport {
         return m.getMethod();
     }
 
-    private Method resolveBlockHandlerInternal(InvocationContext ctx, /*@NonNull*/ String name, Class<?> clazz,
-                                               boolean mustStatic) {
-        Method originMethod = resolveMethod(ctx);
+    private Method resolveBlockHandlerInternal(Method originMethod, String name, Class<?> clazz, boolean mustStatic) {
         Class<?>[] originList = originMethod.getParameterTypes();
         Class<?>[] parameterTypes = Arrays.copyOf(originList, originList.length + 1);
         parameterTypes[parameterTypes.length - 1] = BlockException.class;

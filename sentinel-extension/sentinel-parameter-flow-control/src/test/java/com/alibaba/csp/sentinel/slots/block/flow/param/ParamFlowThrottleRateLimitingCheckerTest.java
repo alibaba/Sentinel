@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2019 Alibaba Group Holding Ltd.
+ * Copyright 1999-2024 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,6 @@ public class ParamFlowThrottleRateLimitingCheckerTest {
         }
         assertEquals(successCount, threshold);
 
-        System.out.println("testSingleValueThrottleCheckQps: sleep for 3 seconds");
         TimeUnit.SECONDS.sleep(3);
 
         currentTime = TimeUtil.currentTimeMillis();
@@ -104,7 +103,6 @@ public class ParamFlowThrottleRateLimitingCheckerTest {
         metric.getRuleTimeCounterMap().put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(4000));
 
         int threadCount = 40;
-        System.out.println(metric.getRuleTimeCounter(rule));
 
         final CountDownLatch waitLatch = new CountDownLatch(threadCount);
         final AtomicInteger successCount = new AtomicInteger();
@@ -125,10 +123,8 @@ public class ParamFlowThrottleRateLimitingCheckerTest {
         waitLatch.await();
 
         assertEquals(successCount.get(), 1);
-        System.out.println(threadCount);
         successCount.set(0);
 
-        System.out.println("testSingleValueThrottleCheckQpsMultipleThreads: sleep for 3 seconds");
         TimeUnit.SECONDS.sleep(3);
 
         successCount.set(0);

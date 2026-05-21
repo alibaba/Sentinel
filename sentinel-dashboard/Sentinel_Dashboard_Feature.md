@@ -4,7 +4,7 @@
 
 Sentinel 控制台是流量控制、熔断降级规则统一配置和管理的入口，它为用户提供了机器自发现、簇点链路自发现、监控、规则配置等功能。在 Sentinel 控制台上，我们可以配置规则并实时查看流量控制效果。使用 Sentinel 控制台的流程如下：
 
-```
+```plaintext
 客户端接入 -> 机器自发现 -> 查看簇点链路 -> 配置流控规则 -> 查看流控效果
 ```
 
@@ -53,14 +53,14 @@ Sentinel 提供了多种规则来保护系统的不同部分。流量控制规�
 
 > 通过环境变量进行配置时，因为不支持 `.` 所以需要将其更换为 `_`。
 
-项 | 类型 | 默认值 | 最小值 | 描述
---- | --- | --- | --- | ---
-sentinel.dashboard.auth.username | String | sentinel | 无 | 登录控制台的用户名，默认为 `sentinel`
-sentinel.dashboard.auth.password | String | sentinel | 无 | 登录控制台的密码，默认为 `sentinel`
-sentinel.dashboard.app.hideAppNoMachineMillis | Integer | 0 | 60000 | 是否隐藏无健康节点的应用，距离最近一次主机心跳时间的毫秒数，默认关闭
-sentinel.dashboard.removeAppNoMachineMillis | Integer | 0 | 120000 | 是否自动删除无健康节点的应用，距离最近一次其下节点的心跳时间毫秒数，默认关闭
-sentinel.dashboard.unhealthyMachineMillis | Integer | 60000 | 30000 | 主机失联判定，不可关闭
-sentinel.dashboard.autoRemoveMachineMillis | Integer | 0 | 300000 | 距离最近心跳时间超过指定时间是否自动删除失联节点，默认关闭
+项|类型|默认值|最小值|描述
+---|---|---|---|---
+sentinel.dashboard.auth.username|String|sentinel|无|登录控制台的用户名，默认为 `sentinel`
+sentinel.dashboard.auth.password|String|sentinel|无|登录控制台的密码，默认为 `sentinel`
+sentinel.dashboard.app.hideAppNoMachineMillis|Integer|0|60000|是否隐藏无健康节点的应用，距离最近一次主机心跳时间的毫秒数，默认关闭
+sentinel.dashboard.removeAppNoMachineMillis|Integer|0|120000|是否自动删除无健康节点的应用，距离最近一次其下节点的心跳时间毫秒数，默认关闭
+sentinel.dashboard.unhealthyMachineMillis|Integer|60000|30000|主机失联判定，不可关闭
+sentinel.dashboard.autoRemoveMachineMillis|Integer|0|300000|距离最近心跳时间超过指定时间是否自动删除失联节点，默认关闭
 
 配置示例：
 
@@ -85,4 +85,4 @@ sentinel_dashboard_app_hideAppNoMachineMillis=60000
 更多：
 
 - [Sentinel 控制台启动和客户端接入](./README.md)
-- [控制台 Wiki](https://github.com/alibaba/Sentinel/wiki/%E6%8E%A7%E5%88%B6%E5%8F%B0)
+- [控制台 Wiki](<https://github.com/alibaba/Sentinel/wiki/%E6%8E%A7%E5%88%B6%E5%8F%B0>)

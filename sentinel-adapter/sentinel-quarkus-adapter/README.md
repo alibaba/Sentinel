@@ -28,7 +28,7 @@ To use sentinel-annotation-quarkus-adapter, you can simply add the following dep
 
 When Quarkus application started, you can see the enabled feature like:
 
-```
+```plaintext
 INFO  [io.quarkus] (Quarkus Main Thread) Installed features: [cdi, resteasy, sentinel-annotation, sentinel-jax-rs]
 ```
 
@@ -51,7 +51,7 @@ If you're using `sentinel-jax-rs-quarkus-adapter`, you'll need to set `quarkus.n
 
 When Quarkus application started, you can see the enabled feature like:
 
-```
+```plaintext
 INFO  [io.quarkus] (main) Installed features: [cdi, resteasy, sentinel-annotation, sentinel-jax-rs, sentinel-native-image]
 ```
 

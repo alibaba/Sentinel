@@ -20,7 +20,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
+import com.alibaba.csp.sentinel.util.TimeUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,12 +32,13 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.test.AbstractTimeBasedTest;
+import org.mockito.MockedStatic;
 
 /**
  * @author Eric Zhao
  */
 public class ExceptionCircuitBreakerTest extends AbstractTimeBasedTest {
-    
+
     @Before
     public void setUp() {
         DegradeRuleManager.loadRules(new ArrayList<DegradeRule>());
@@ -48,38 +51,67 @@ public class ExceptionCircuitBreakerTest extends AbstractTimeBasedTest {
 
     @Test
     public void testRecordErrorOrSuccess() throws BlockException {
-        String resource = "testRecordErrorOrSuccess";
-        int retryTimeoutMillis = 10 * 1000;
-        int retryTimeout = retryTimeoutMillis / 1000;
-        DegradeRule rule = new DegradeRule("abc")
-            .setCount(0.2d)
-            .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO)
-            .setStatIntervalMs(20 * 1000)
-            .setTimeWindow(retryTimeout)
-            .setMinRequestAmount(1);
-        rule.setResource(resource);
-        DegradeRuleManager.loadRules(Arrays.asList(rule));
+        try (MockedStatic<TimeUtil> mocked = super.mockTimeUtil()) {
+            String resource = "testRecordErrorOrSuccess";
+            int retryTimeoutMillis = 10 * 1000;
+            int retryTimeout = retryTimeoutMillis / 1000;
+            DegradeRule rule = new DegradeRule("abc")
+                    .setCount(0.2d)
+                    .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO)
+                    .setStatIntervalMs(20 * 1000)
+                    .setTimeWindow(retryTimeout)
+                    .setMinRequestAmount(1);
+            rule.setResource(resource);
+            DegradeRuleManager.loadRules(Arrays.asList(rule));
 
-        assertTrue(entryAndSleepFor(resource, 10));
-        
-        assertTrue(entryWithErrorIfPresent(resource, new IllegalArgumentException())); // -> open
-        assertFalse(entryWithErrorIfPresent(resource, new IllegalArgumentException()));
-        assertFalse(entryAndSleepFor(resource, 100));
-        sleep(retryTimeoutMillis / 2);
-        assertFalse(entryAndSleepFor(resource, 100));
-        sleep(retryTimeoutMillis / 2);
-        assertTrue(entryWithErrorIfPresent(resource, new IllegalArgumentException())); // -> half -> open
-        assertFalse(entryAndSleepFor(resource, 100));
-        assertFalse(entryAndSleepFor(resource, 100));
-        sleep(retryTimeoutMillis);
-        assertTrue(entryAndSleepFor(resource, 100)); // -> half -> closed
-        assertTrue(entryAndSleepFor(resource, 100));
-        assertTrue(entryAndSleepFor(resource, 100));
-        assertTrue(entryAndSleepFor(resource, 100));
-        assertTrue(entryAndSleepFor(resource, 100));
-        assertTrue(entryAndSleepFor(resource, 100));
-        assertTrue(entryAndSleepFor(resource, 100));
-        assertTrue(entryWithErrorIfPresent(resource, new IllegalArgumentException()));
-        assertTrue(entryAndSleepFor(resource, 100));
+            assertTrue(entryAndSleepFor(mocked, resource, 10));
+
+            assertTrue(entryWithErrorIfPresent(mocked, resource, new IllegalArgumentException())); // -> open
+            assertFalse(entryWithErrorIfPresent(mocked, resource, new IllegalArgumentException()));
+            assertFalse(entryAndSleepFor(mocked, resource, 100));
+            sleep(mocked, retryTimeoutMillis / 2);
+            assertFalse(entryAndSleepFor(mocked, resource, 100));
+            sleep(mocked, retryTimeoutMillis / 2);
+            assertTrue(entryWithErrorIfPresent(mocked, resource, new IllegalArgumentException())); // -> half -> open
+            assertFalse(entryAndSleepFor(mocked, resource, 100));
+            assertFalse(entryAndSleepFor(mocked, resource, 100));
+            sleep(mocked, retryTimeoutMillis);
+            assertTrue(entryAndSleepFor(mocked, resource, 100)); // -> half -> closed
+            assertTrue(entryAndSleepFor(mocked, resource, 100));
+            assertTrue(entryAndSleepFor(mocked, resource, 100));
+            assertTrue(entryAndSleepFor(mocked, resource, 100));
+            assertTrue(entryAndSleepFor(mocked, resource, 100));
+            assertTrue(entryAndSleepFor(mocked, resource, 100));
+            assertTrue(entryAndSleepFor(mocked, resource, 100));
+            assertTrue(entryWithErrorIfPresent(mocked, resource, new IllegalArgumentException()));
+            assertTrue(entryAndSleepFor(mocked, resource, 100));
+        }
+    }
+
+    @Test
+    public void testMaxErrorRatioThreshold() {
+        try (MockedStatic<TimeUtil> mocked = super.mockTimeUtil()) {
+            String resource = "testMaxErrorRatioThreshold";
+            DegradeRule rule = new DegradeRule("resource")
+                    .setCount(1)
+                    .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO)
+                    .setMinRequestAmount(3)
+                    .setStatIntervalMs(5000)
+                    .setTimeWindow(5);
+            rule.setResource(resource);
+            DegradeRuleManager.loadRules(Collections.singletonList(rule));
+
+            assertTrue(entryWithErrorIfPresent(mocked, resource, new RuntimeException()));
+            assertTrue(entryWithErrorIfPresent(mocked, resource, new RuntimeException()));
+            assertTrue(entryWithErrorIfPresent(mocked, resource, new RuntimeException()));
+
+            // should be blocked, cause 3/3 requests' rt is bigger than max rt.
+            assertFalse(entryWithErrorIfPresent(mocked, resource, new RuntimeException()));
+            assertFalse(entryWithErrorIfPresent(mocked, resource, new RuntimeException()));
+
+            sleep(mocked, 5000);
+
+            assertTrue(entryWithErrorIfPresent(mocked, resource, new RuntimeException()));
+        }
     }
 }

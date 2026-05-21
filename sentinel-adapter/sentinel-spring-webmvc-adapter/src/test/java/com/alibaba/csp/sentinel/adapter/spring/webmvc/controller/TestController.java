@@ -16,9 +16,12 @@
 package com.alibaba.csp.sentinel.adapter.spring.webmvc.controller;
 
 
+import com.alibaba.csp.sentinel.adapter.spring.webmvc.exception.BizException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.async.DeferredResult;
 
 /**
  * @author kaizi2009
@@ -47,9 +50,26 @@ public class TestController {
         return "runtimeException";
     }
 
+    @GetMapping("/bizException")
+    public String bizException() {
+        throw new BizException();
+    }
+
     @GetMapping("/exclude/{id}")
     public String apiExclude(@PathVariable("id") Long id) {
         return "Exclude " + id;
+    }
+
+    @GetMapping("/async")
+    @ResponseBody
+    public DeferredResult<String> distribute() throws Exception{
+        DeferredResult<String> result = new DeferredResult<>();
+
+        Thread thread = new Thread(() -> result.setResult("async result."));
+        thread.start();
+
+        Thread.yield();
+        return result;
     }
 
 }

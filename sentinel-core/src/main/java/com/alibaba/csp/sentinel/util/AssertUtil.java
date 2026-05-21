@@ -24,7 +24,19 @@ import java.util.Collection;
  */
 public class AssertUtil {
 
-    private AssertUtil(){}
+    private AssertUtil() {}
+
+    public static void assertNotNull(Object object, String message) {
+        if (object == null) {
+            throw new IllegalArgumentException(message);
+        }
+    }
+
+    public static void assertTrue(boolean value, String message) {
+        if (!value) {
+            throw new IllegalArgumentException(message);
+        }
+    }
 
     public static void notEmpty(String string, String message) {
         if (StringUtil.isEmpty(string)) {

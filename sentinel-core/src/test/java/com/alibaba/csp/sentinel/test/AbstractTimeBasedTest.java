@@ -15,58 +15,58 @@
  */
 package com.alibaba.csp.sentinel.test;
 
-import java.util.concurrent.ThreadLocalRandom;
-
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import org.junit.runner.RunWith;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
+
 import com.alibaba.csp.sentinel.util.TimeUtil;
+
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Mock support for {@link TimeUtil}.
- * 
+ *
  * @author jason
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({ TimeUtil.class })
+@RunWith(MockitoJUnitRunner.class)
 public abstract class AbstractTimeBasedTest {
 
     private long currentMillis = 0;
 
-    {
-        PowerMockito.mockStatic(TimeUtil.class);
-        PowerMockito.when(TimeUtil.currentTimeMillis()).thenReturn(currentMillis);
+    public MockedStatic<TimeUtil> mockTimeUtil() {
+        MockedStatic<TimeUtil> mocked = Mockito.mockStatic(TimeUtil.class);
+        mocked.when(TimeUtil::currentTimeMillis).thenReturn(currentMillis);
+        return mocked;
     }
 
-    protected final void useActualTime() {
-        PowerMockito.when(TimeUtil.currentTimeMillis()).thenCallRealMethod();
+    protected final void useActualTime(MockedStatic<TimeUtil> mocked) {
+        mocked.when(TimeUtil::currentTimeMillis).thenCallRealMethod();
     }
 
-    protected final void setCurrentMillis(long cur) {
+    protected final void setCurrentMillis(MockedStatic<TimeUtil> mocked, long cur) {
         currentMillis = cur;
-        PowerMockito.when(TimeUtil.currentTimeMillis()).thenReturn(currentMillis);
+        mocked.when(TimeUtil::currentTimeMillis).thenReturn(currentMillis);
     }
 
-    protected final void sleep(int t) {
+    protected final void sleep(MockedStatic<TimeUtil> mocked, long t) {
         currentMillis += t;
-        PowerMockito.when(TimeUtil.currentTimeMillis()).thenReturn(currentMillis);
+        mocked.when(TimeUtil::currentTimeMillis).thenReturn(currentMillis);
     }
 
-    protected final void sleepSecond(int timeSec) {
-        sleep(timeSec * 1000);
+    protected final void sleepSecond(MockedStatic<TimeUtil> mocked, long timeSec) {
+        sleep(mocked, timeSec * 1000);
     }
     
-    protected final boolean entryAndSleepFor(String res, int sleepMs) {
+    protected final boolean entryAndSleepFor(MockedStatic<TimeUtil> mocked, String res, int sleepMs) {
         Entry entry = null;
         try {
             entry = SphU.entry(res);
-            sleep(sleepMs);
+            sleep(mocked, sleepMs);
         } catch (BlockException ex) {
             return false;
         } catch (Exception ex) {
@@ -79,14 +79,14 @@ public abstract class AbstractTimeBasedTest {
         return true;
     }
 
-    protected final boolean entryWithErrorIfPresent(String res, Exception ex) {
+    protected final boolean entryWithErrorIfPresent(MockedStatic<TimeUtil> mocked, String res, Exception ex) {
         Entry entry = null;
         try {
             entry = SphU.entry(res);
             if (ex != null) {
                 Tracer.traceEntry(ex, entry);
             }
-            sleep(ThreadLocalRandom.current().nextInt(5, 10));
+            sleep(mocked, ThreadLocalRandom.current().nextInt(5, 10));
         } catch (BlockException b) {
             return false;
         } finally {

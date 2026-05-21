@@ -156,7 +156,7 @@ public class EagleEyeCoreUtilsTest {
     @Test
     public void testFormatTime() {
         Assert.assertEquals("2019-06-15 12:13:14.000",
-                EagleEyeCoreUtils.formatTime(1560600794000L - TimeZone.getDefault().getRawOffset()));
+                EagleEyeCoreUtils.formatTime(1560600794000L - TimeZone.getDefault().getOffset(1560600794000L)));
     }
 
     @Test

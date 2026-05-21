@@ -87,7 +87,6 @@ public class SystemGuardDemo {
     }
 
     private static void initSystemRule() {
-        List<SystemRule> rules = new ArrayList<SystemRule>();
         SystemRule rule = new SystemRule();
         // max load is 3
         rule.setHighestSystemLoad(3.0);
@@ -100,7 +99,6 @@ public class SystemGuardDemo {
         // max parallel working thread is 10
         rule.setMaxThread(10);
 
-        rules.add(rule);
         SystemRuleManager.loadRules(Collections.singletonList(rule));
     }
 

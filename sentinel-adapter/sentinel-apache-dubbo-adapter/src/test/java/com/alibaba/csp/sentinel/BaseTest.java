@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright 1999-2024 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel;
 
+import com.alibaba.csp.sentinel.adapter.dubbo.AbstractTimeBasedTest;
 import com.alibaba.csp.sentinel.adapter.dubbo.config.DubboAdapterGlobalConfig;
 import com.alibaba.csp.sentinel.adapter.dubbo.fallback.DefaultDubboFallback;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
@@ -37,7 +38,7 @@ import java.util.ArrayList;
  * @author cdfive
  * @author lianglin
  */
-public class BaseTest {
+public class BaseTest extends AbstractTimeBasedTest {
 
 
     /**

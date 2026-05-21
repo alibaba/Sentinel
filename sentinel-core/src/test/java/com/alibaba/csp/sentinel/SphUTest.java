@@ -157,4 +157,14 @@ public class SphUTest {
 
         e.exit(2, arg0, arg1);
     }
+
+    @Test
+    public void testEntryExitAutomation() throws BlockException{
+        String[] args = {"foo", "baz"};
+        int batchCount = 3;
+        Entry e = SphU.entry("testEntryExitAutomation", EntryType.IN, 3, args);
+        e.exit();
+        // The number of success is automatically updated based on batchCount when exit
+        assertEquals(batchCount, e.getCurNode().totalSuccess());
+    }
 }

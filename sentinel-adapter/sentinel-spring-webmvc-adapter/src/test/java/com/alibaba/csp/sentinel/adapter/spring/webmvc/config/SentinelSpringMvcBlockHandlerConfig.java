@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.adapter.spring.webmvc.config;
 
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.ResultWrapper;
+import com.alibaba.csp.sentinel.adapter.spring.webmvc.exception.BizException;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import org.slf4j.Logger;
@@ -50,5 +51,12 @@ public class SentinelSpringMvcBlockHandlerConfig {
     public ResultWrapper exceptionHandler(Exception e) {
         logger.error("System error", e.getMessage());
         return new ResultWrapper(-1, "System error");
+    }
+
+    @ExceptionHandler(BizException.class)
+    @ResponseBody
+    public ResultWrapper bizExceptionHandler(BizException e) {
+        logger.error("Biz error", e.getMessage());
+        return new ResultWrapper(-1, "Biz error");
     }
 }

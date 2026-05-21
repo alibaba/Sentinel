@@ -18,8 +18,9 @@ package com.alibaba.csp.sentinel.slots.block.flow;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.block.ClusterRuleConstant;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.RuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.controller.DefaultController;
-import com.alibaba.csp.sentinel.slots.block.flow.controller.RateLimiterController;
+import com.alibaba.csp.sentinel.slots.block.flow.controller.ThrottlingController;
 import com.alibaba.csp.sentinel.slots.block.flow.controller.WarmUpController;
 import com.alibaba.csp.sentinel.slots.block.flow.controller.WarmUpRateLimiterController;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -136,7 +137,7 @@ public final class FlowRuleUtil {
                     return new WarmUpController(rule.getCount(), rule.getWarmUpPeriodSec(),
                             ColdFactorProperty.coldFactor);
                 case RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER:
-                    return new RateLimiterController(rule.getMaxQueueingTimeMs(), rule.getCount());
+                    return new ThrottlingController(rule.getMaxQueueingTimeMs(), rule.getCount());
                 case RuleConstant.CONTROL_BEHAVIOR_WARM_UP_RATE_LIMITER:
                     return new WarmUpRateLimiterController(rule.getCount(), rule.getWarmUpPeriodSec(),
                             rule.getMaxQueueingTimeMs(), ColdFactorProperty.coldFactor);
@@ -168,6 +169,9 @@ public final class FlowRuleUtil {
         boolean baseValid = rule != null && !StringUtil.isBlank(rule.getResource()) && rule.getCount() >= 0
                 && rule.getGrade() >= 0 && rule.getStrategy() >= 0 && rule.getControlBehavior() >= 0;
         if (!baseValid) {
+            return false;
+        }
+        if (!checkRegexField(rule)) {
             return false;
         }
         if (rule.getGrade() == RuleConstant.FLOW_GRADE_QPS) {
@@ -233,6 +237,16 @@ public final class FlowRuleUtil {
     private static boolean checkStrategyField(/*@NonNull*/ FlowRule rule) {
         if (rule.getStrategy() == RuleConstant.STRATEGY_RELATE || rule.getStrategy() == RuleConstant.STRATEGY_CHAIN) {
             return StringUtil.isNotBlank(rule.getRefResource());
+        }
+        return true;
+    }
+
+    private static boolean checkRegexField(FlowRule rule) {
+        if (!RuleManager.checkRegexResourceField(rule)) {
+            return false;
+        }
+        if (rule.isRegex()) {
+            return !rule.isClusterMode() && rule.getControlBehavior() == RuleConstant.CONTROL_BEHAVIOR_DEFAULT;
         }
         return true;
     }

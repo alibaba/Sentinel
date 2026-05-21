@@ -25,7 +25,9 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
+import io.lettuce.core.SslOptions;
 import io.lettuce.core.api.sync.RedisCommands;
+import io.lettuce.core.cluster.ClusterClientOptions;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
 import io.lettuce.core.cluster.pubsub.StatefulRedisClusterPubSubConnection;
@@ -33,10 +35,10 @@ import io.lettuce.core.pubsub.RedisPubSubAdapter;
 import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import io.lettuce.core.pubsub.api.sync.RedisPubSubCommands;
 
+import java.io.File;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * <p>
@@ -95,18 +97,69 @@ public class RedisDataSource<T> extends AbstractDataSource<String, T> {
     }
 
     /**
+     * init SslOptions, support jks or pem format
+     *
+     * @param connectionConfig Redis connection config
+     * @return a new SslOptions
+     */
+    private SslOptions initSslOptions(RedisConnectionConfig connectionConfig) {
+        if (!connectionConfig.isSslEnable()){
+            return null;
+        }
+
+        SslOptions.Builder sslOptionsBuilder = SslOptions.builder();
+
+        if (connectionConfig.getTrustedCertificatesPath() != null){
+            if (connectionConfig.getTrustedCertificatesPath().endsWith(".jks")){
+                // if the value is end with .jks，think it is java key store format，to invoke truststore method
+                sslOptionsBuilder.truststore(
+                        new File(connectionConfig.getTrustedCertificatesPath()),
+                        connectionConfig.getTrustedCertificatesJksPassword()
+                );
+            } else {
+                // if the value is not end with .jks，think it is pem format，to invoke trustManager method
+                sslOptionsBuilder.trustManager(new File(connectionConfig.getTrustedCertificatesPath()));
+            }
+        }
+
+        if (connectionConfig.getKeyCertChainFilePath() != null || connectionConfig.getKeyFilePath() != null) {
+            if (connectionConfig.getKeyFilePath().endsWith(".jks")){
+                sslOptionsBuilder.keystore(
+                        new File(connectionConfig.getKeyCertChainFilePath()),
+                        connectionConfig.getKeyFilePassword() == null ? null : connectionConfig.getKeyFilePassword().toCharArray()
+                );
+            } else {
+                sslOptionsBuilder.keyManager(
+                        new File(connectionConfig.getKeyCertChainFilePath()),
+                        new File(connectionConfig.getKeyFilePath()),
+                        connectionConfig.getKeyFilePassword() == null ? null : connectionConfig.getKeyFilePassword().toCharArray()
+                );
+            }
+        }
+        return sslOptionsBuilder.build();
+    }
+
+    /**
      * Build Redis client fromm {@code RedisConnectionConfig}.
      *
      * @return a new {@link RedisClient}
      */
     private RedisClient getRedisClient(RedisConnectionConfig connectionConfig) {
+        RedisClient redisClient;
         if (connectionConfig.getRedisSentinels().size() == 0) {
             RecordLog.info("[RedisDataSource] Creating stand-alone mode Redis client");
-            return getRedisStandaloneClient(connectionConfig);
+            redisClient = getRedisStandaloneClient(connectionConfig);
         } else {
             RecordLog.info("[RedisDataSource] Creating Redis Sentinel mode Redis client");
-            return getRedisSentinelClient(connectionConfig);
+            redisClient = getRedisSentinelClient(connectionConfig);
         }
+        SslOptions sslOptions = initSslOptions(connectionConfig);
+        if (sslOptions != null){
+            redisClient.setOptions(
+                    ClusterClientOptions.builder().sslOptions(sslOptions).build()
+            );
+        }
+        return redisClient;
     }
 
     private RedisClusterClient getRedisClusterClient(RedisConnectionConfig connectionConfig) {
@@ -119,6 +172,7 @@ public class RedisDataSource<T> extends AbstractDataSource<String, T> {
             RedisURI.Builder clusterRedisUriBuilder = RedisURI.builder();
             clusterRedisUriBuilder.withHost(config.getHost())
                 .withPort(config.getPort())
+                .withSsl(config.isSslEnable())
                 .withTimeout(Duration.ofMillis(connectionConfig.getTimeout()));
             //All redis nodes must have same password
             if (password != null) {
@@ -126,8 +180,16 @@ public class RedisDataSource<T> extends AbstractDataSource<String, T> {
             }
             redisUris.add(clusterRedisUriBuilder.build());
         }
-        return RedisClusterClient.create(redisUris);
+        RedisClusterClient redisClusterClient =  RedisClusterClient.create(redisUris);
+        SslOptions sslOptions = initSslOptions(connectionConfig);
+        if (sslOptions != null){
+            redisClusterClient.setOptions(
+                    ClusterClientOptions.builder().sslOptions(sslOptions).build()
+            );
+        }
+        return redisClusterClient;
     }
+
 
     private RedisClient getRedisStandaloneClient(RedisConnectionConfig connectionConfig) {
         char[] password = connectionConfig.getPassword();
@@ -136,6 +198,7 @@ public class RedisDataSource<T> extends AbstractDataSource<String, T> {
         redisUriBuilder.withHost(connectionConfig.getHost())
             .withPort(connectionConfig.getPort())
             .withDatabase(connectionConfig.getDatabase())
+            .withSsl(connectionConfig.isSslEnable())
             .withTimeout(Duration.ofMillis(connectionConfig.getTimeout()));
         if (password != null) {
             redisUriBuilder.withPassword(connectionConfig.getPassword());
@@ -160,6 +223,7 @@ public class RedisDataSource<T> extends AbstractDataSource<String, T> {
             sentinelRedisUriBuilder.withClientName(clientName);
         }
         sentinelRedisUriBuilder.withSentinelMasterId(connectionConfig.getRedisSentinelMasterId())
+            .withSsl(connectionConfig.isSslEnable())
             .withTimeout(Duration.ofMillis(connectionConfig.getTimeout()));
         return RedisClient.create(sentinelRedisUriBuilder.build());
     }

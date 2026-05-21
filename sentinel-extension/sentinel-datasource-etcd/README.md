@@ -15,7 +15,7 @@ To use Sentinel DataSource Etcd, you should add the following dependency:
 
 We could configure Etcd connection configuration by config file (for example `sentinel.properties`):
 
-```
+```properties
 csp.sentinel.etcd.endpoints=http://ip1:port1,http://ip2:port2
 csp.sentinel.etcd.user=your_user
 csp.sentinel.etcd.password=your_password

@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2020 Alibaba Group Holding Ltd.
+ * Copyright 1999-2024 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,10 +32,6 @@ import com.alibaba.csp.sentinel.util.function.Tuple2;
  *
  */
 public class TimeUtilTest {
-    @Before
-    public void initLogging() {
-        System.setProperty("csp.sentinel.log.output.type", "console");
-    }
     
     private void waitFor(int step, int seconds) throws InterruptedException {
         for (int i = 0; i < seconds; i ++) {

@@ -22,11 +22,14 @@ import com.alibaba.csp.sentinel.metric.extension.MetricExtensionProvider;
 import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
 import com.alibaba.csp.sentinel.test.AbstractTimeBasedTest;
 
+import com.alibaba.csp.sentinel.util.TimeUtil;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.MockedStatic;
 
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 
 /**
  * @author Carpenter Lee
@@ -35,64 +38,68 @@ public class MetricExitCallbackTest extends AbstractTimeBasedTest {
 
     @Test
     public void onExit() {
-        FakeMetricExtension extension = new FakeMetricExtension();
-        MetricExtensionProvider.addMetricExtension(extension);
+        try (MockedStatic<TimeUtil> mocked = super.mockTimeUtil()) {
+            FakeMetricExtension extension = new FakeMetricExtension();
+            MetricExtensionProvider.addMetricExtension(extension);
 
-        MetricExitCallback exitCallback = new MetricExitCallback();
-        StringResourceWrapper resourceWrapper = new StringResourceWrapper("resource", EntryType.OUT);
-        int count = 2;
-        Object[] args = {"args1", "args2"};
-        long prevRt = 20;
-        extension.rt = prevRt;
-        extension.success = 6;
-        extension.thread = 10;
-        Context context = mock(Context.class);
-        Entry entry = mock(Entry.class);
+            MetricExitCallback exitCallback = new MetricExitCallback();
+            StringResourceWrapper resourceWrapper = new StringResourceWrapper("resource", EntryType.OUT);
+            int count = 2;
+            Object[] args = {"args1", "args2"};
+            long prevRt = 20;
+            extension.rt = prevRt;
+            extension.success = 6;
+            extension.thread = 10;
+            Context context = mock(Context.class);
+            Entry entry = mock(Entry.class);
 
-        // Mock current time
-        long curMillis = System.currentTimeMillis();
-        setCurrentMillis(curMillis);
+            // Mock current time
+            long curMillis = System.currentTimeMillis();
+            setCurrentMillis(mocked, curMillis);
 
-        int deltaMs = 100;
-        when(entry.getError()).thenReturn(null);
-        when(entry.getCreateTimestamp()).thenReturn(curMillis - deltaMs);
-        when(context.getCurEntry()).thenReturn(entry);
-        exitCallback.onExit(context, resourceWrapper, count, args);
-        Assert.assertEquals(prevRt + deltaMs, extension.rt);
-        Assert.assertEquals(extension.success, 6 + count);
-        Assert.assertEquals(extension.thread, 10 - 1);
+            int deltaMs = 100;
+            when(entry.getError()).thenReturn(null);
+            when(entry.getCreateTimestamp()).thenReturn(curMillis - deltaMs);
+            when(context.getCurEntry()).thenReturn(entry);
+            exitCallback.onExit(context, resourceWrapper, count, args);
+            Assert.assertEquals(prevRt + deltaMs, extension.rt);
+            Assert.assertEquals(extension.success, 6 + count);
+            Assert.assertEquals(extension.thread, 10 - 1);
+        }
     }
-    
+
     /**
      * @author bill_yip
      */
     @Test
     public void advancedExtensionOnExit() {
-        FakeAdvancedMetricExtension extension = new FakeAdvancedMetricExtension();
-        MetricExtensionProvider.addMetricExtension(extension);
+        try (MockedStatic<TimeUtil> mocked = super.mockTimeUtil()) {
+            FakeAdvancedMetricExtension extension = new FakeAdvancedMetricExtension();
+            MetricExtensionProvider.addMetricExtension(extension);
 
-        MetricExitCallback exitCallback = new MetricExitCallback();
-        StringResourceWrapper resourceWrapper = new StringResourceWrapper("resource", EntryType.OUT);
-        int count = 2;
-        Object[] args = {"args1", "args2"};
-        long prevRt = 20;
-        extension.rt = prevRt;
-        extension.complete = 6;
-        extension.concurrency = 10;
-        Context context = mock(Context.class);
-        Entry entry = mock(Entry.class);
+            MetricExitCallback exitCallback = new MetricExitCallback();
+            StringResourceWrapper resourceWrapper = new StringResourceWrapper("resource", EntryType.OUT);
+            int count = 2;
+            Object[] args = {"args1", "args2"};
+            long prevRt = 20;
+            extension.rt = prevRt;
+            extension.complete = 6;
+            extension.concurrency = 10;
+            Context context = mock(Context.class);
+            Entry entry = mock(Entry.class);
 
-        // Mock current time
-        long curMillis = System.currentTimeMillis();
-        setCurrentMillis(curMillis);
+            // Mock current time
+            long curMillis = System.currentTimeMillis();
+            setCurrentMillis(mocked, curMillis);
 
-        int deltaMs = 100;
-        when(entry.getError()).thenReturn(null);
-        when(entry.getCreateTimestamp()).thenReturn(curMillis - deltaMs);
-        when(context.getCurEntry()).thenReturn(entry);
-        exitCallback.onExit(context, resourceWrapper, count, args);
-        Assert.assertEquals(prevRt + deltaMs, extension.rt);
-        Assert.assertEquals(extension.complete, 6 + count);
-        Assert.assertEquals(extension.concurrency, 10 - 1);
+            int deltaMs = 100;
+            when(entry.getError()).thenReturn(null);
+            when(entry.getCreateTimestamp()).thenReturn(curMillis - deltaMs);
+            when(context.getCurEntry()).thenReturn(entry);
+            exitCallback.onExit(context, resourceWrapper, count, args);
+            Assert.assertEquals(prevRt + deltaMs, extension.rt);
+            Assert.assertEquals(extension.complete, 6 + count);
+            Assert.assertEquals(extension.concurrency, 10 - 1);
+        }
     }
 }

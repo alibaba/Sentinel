@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright 1999-2024 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,15 +21,10 @@ import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
-
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.Response;
-import com.pszymczyk.consul.ConsulProcess;
-import com.pszymczyk.consul.ConsulStarterBuilder;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
+import org.testcontainers.consul.ConsulContainer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,11 +35,12 @@ import java.util.concurrent.TimeUnit;
  * @author wavesZh
  */
 public class ConsulDataSourceTest {
+    @ClassRule
+    public static ConsulContainer consulContainer = new ConsulContainer("hashicorp/consul:1.15");
 
     private final String ruleKey = "sentinel.rules.flow.ruleKey";
     private final int waitTimeoutInSecond = 1;
 
-    private ConsulProcess consul;
     private ConsulClient client;
 
     private ReadableDataSource<String, List<FlowRule>> consulDataSource;
@@ -53,11 +49,8 @@ public class ConsulDataSourceTest {
 
     @Before
     public void init() {
-        this.consul = ConsulStarterBuilder.consulStarter()
-            .build()
-            .start();
-        int port = consul.getHttpPort();
-        String host = "127.0.0.1";
+        int port = consulContainer.getMappedPort(8500);
+        String host = consulContainer.getHost();
         client = new ConsulClient(host, port);
         Converter<String, List<FlowRule>> flowConfigParser = buildFlowConfigParser();
         String flowRulesJson =
@@ -75,9 +68,6 @@ public class ConsulDataSourceTest {
     public void clean() throws Exception {
         if (consulDataSource != null) {
             consulDataSource.close();
-        }
-        if (consul != null) {
-            consul.close();
         }
         FlowRuleManager.loadRules(new ArrayList<>());
     }

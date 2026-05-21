@@ -42,7 +42,11 @@ class CtEntry extends Entry {
     protected LinkedList<BiConsumer<Context, Entry>> exitHandlers;
 
     CtEntry(ResourceWrapper resourceWrapper, ProcessorSlot<Object> chain, Context context) {
-        super(resourceWrapper);
+        this(resourceWrapper, chain, context, 1, OBJECTS0);
+    }
+
+    CtEntry(ResourceWrapper resourceWrapper, ProcessorSlot<Object> chain, Context context, int count, Object[] args) {
+        super(resourceWrapper, count, args);
         this.chain = chain;
         this.context = context;
 

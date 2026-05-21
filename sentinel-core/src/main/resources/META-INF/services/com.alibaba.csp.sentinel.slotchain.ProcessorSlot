@@ -7,3 +7,4 @@ com.alibaba.csp.sentinel.slots.block.authority.AuthoritySlot
 com.alibaba.csp.sentinel.slots.system.SystemSlot
 com.alibaba.csp.sentinel.slots.block.flow.FlowSlot
 com.alibaba.csp.sentinel.slots.block.degrade.DegradeSlot
+com.alibaba.csp.sentinel.slots.block.degrade.DefaultCircuitBreakerSlot

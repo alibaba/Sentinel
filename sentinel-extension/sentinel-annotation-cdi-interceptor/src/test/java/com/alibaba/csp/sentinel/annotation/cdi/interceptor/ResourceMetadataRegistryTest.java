@@ -27,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Eric Zhao
+ * @author dowenliu-xyz(hawkdowen@hotmail.com)
  */
 public class ResourceMetadataRegistryTest {
 
@@ -46,14 +47,15 @@ public class ResourceMetadataRegistryTest {
     public void testUpdateThenLookupFallback() {
         Class<?> clazz = FooService.class;
         String methodName = "someMethodFallback";
+        Class<?>[] parameterTypes = new Class<?>[] {String.class};
         Method method = clazz.getMethods()[0];
-        assertThat(ResourceMetadataRegistry.lookupFallback(clazz, methodName)).isNull();
+        assertThat(ResourceMetadataRegistry.lookupFallback(clazz, methodName, parameterTypes)).isNull();
 
-        ResourceMetadataRegistry.updateFallbackFor(clazz, methodName, null);
-        assertThat(ResourceMetadataRegistry.lookupFallback(clazz, methodName).isPresent()).isFalse();
+        ResourceMetadataRegistry.updateFallbackFor(clazz, methodName, parameterTypes, null);
+        assertThat(ResourceMetadataRegistry.lookupFallback(clazz, methodName, parameterTypes).isPresent()).isFalse();
 
-        ResourceMetadataRegistry.updateFallbackFor(clazz, methodName, method);
-        MethodWrapper wrapper = ResourceMetadataRegistry.lookupFallback(clazz, methodName);
+        ResourceMetadataRegistry.updateFallbackFor(clazz, methodName, parameterTypes, method);
+        MethodWrapper wrapper = ResourceMetadataRegistry.lookupFallback(clazz, methodName, parameterTypes);
         assertThat(wrapper.isPresent()).isTrue();
         assertThat(wrapper.getMethod()).isSameAs(method);
     }
@@ -62,25 +64,26 @@ public class ResourceMetadataRegistryTest {
     public void testUpdateThenLookupBlockHandler() {
         Class<?> clazz = FooService.class;
         String methodName = "someMethodBlockHand;er";
+        Class<?>[] parameterTypes = new Class<?>[] {String.class};
         Method method = clazz.getMethods()[1];
-        assertThat(ResourceMetadataRegistry.lookupBlockHandler(clazz, methodName)).isNull();
+        assertThat(ResourceMetadataRegistry.lookupBlockHandler(clazz, methodName, parameterTypes)).isNull();
 
-        ResourceMetadataRegistry.updateBlockHandlerFor(clazz, methodName, null);
-        assertThat(ResourceMetadataRegistry.lookupBlockHandler(clazz, methodName).isPresent()).isFalse();
+        ResourceMetadataRegistry.updateBlockHandlerFor(clazz, methodName, parameterTypes, null);
+        assertThat(ResourceMetadataRegistry.lookupBlockHandler(clazz, methodName, parameterTypes).isPresent()).isFalse();
 
-        ResourceMetadataRegistry.updateBlockHandlerFor(clazz, methodName, method);
-        MethodWrapper wrapper = ResourceMetadataRegistry.lookupBlockHandler(clazz, methodName);
+        ResourceMetadataRegistry.updateBlockHandlerFor(clazz, methodName, parameterTypes, method);
+        MethodWrapper wrapper = ResourceMetadataRegistry.lookupBlockHandler(clazz, methodName, parameterTypes);
         assertThat(wrapper.isPresent()).isTrue();
         assertThat(wrapper.getMethod()).isSameAs(method);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testUpdateBlockHandlerBadArgument() {
-        ResourceMetadataRegistry.updateBlockHandlerFor(null, "sxs", String.class.getMethods()[0]);
+        ResourceMetadataRegistry.updateBlockHandlerFor(null, "sxs", new Class[0], String.class.getMethods()[0]);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testUpdateFallbackBadArgument() {
-        ResourceMetadataRegistry.updateBlockHandlerFor(String.class, "", String.class.getMethods()[0]);
+        ResourceMetadataRegistry.updateBlockHandlerFor(String.class, "", new Class[0], String.class.getMethods()[0]);
     }
 }

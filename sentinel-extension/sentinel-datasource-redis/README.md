@@ -36,7 +36,7 @@ You can also create multi data sources to subscribe for different rule type.
 Note that the data source first loads initial rules from a Redis String (provided `ruleKey`) during initialization.
 So for consistency, users should publish the value and save the value to the `ruleKey` simultaneously like this (using Redis transaction):
 
-```
+```plaintext
 MULTI
 SET ruleKey value
 PUBLISH channel value

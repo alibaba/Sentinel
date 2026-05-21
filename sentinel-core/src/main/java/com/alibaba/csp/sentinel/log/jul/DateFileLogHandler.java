@@ -15,11 +15,19 @@
  */
 package com.alibaba.csp.sentinel.log.jul;
 
+import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
+
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
@@ -27,12 +35,24 @@ import java.util.logging.LogRecord;
 
 class DateFileLogHandler extends Handler {
 
-    private final ThreadLocal<SimpleDateFormat> dateFormatThreadLocal = new ThreadLocal<SimpleDateFormat>() {
-        @Override
-        public SimpleDateFormat initialValue() {
-            return new SimpleDateFormat("yyyy-MM-dd");
-        }
-    };
+    private final DateTimeFormatter dateFormat = DateTimeFormatter
+            .ofPattern("yyyy-MM-dd")
+            .withZone(ZoneId.systemDefault());
+
+    private static final ThreadPoolExecutor executor = new ThreadPoolExecutor(
+            1,
+            5,
+            1,
+            TimeUnit.HOURS,
+            new ArrayBlockingQueue<Runnable>(1024),
+            new NamedThreadFactory("sentinel-datafile-log-executor", true),
+            new ThreadPoolExecutor.DiscardOldestPolicy()
+    );
+
+    static {
+        // allow all thread could be stopped
+        executor.allowCoreThreadTimeOut(true);
+    }
 
     private volatile FileHandler handler;
 
@@ -80,7 +100,8 @@ class DateFileLogHandler extends Handler {
             String msg = record.getMessage();
             record.setMessage("missed file rolling at: " + new Date(endDate) + "\n" + msg);
         }
-        handler.publish(record);
+
+        executor.execute(new LogTask(record,handler));
     }
 
     private boolean shouldRotate(LogRecord record) {
@@ -98,8 +119,7 @@ class DateFileLogHandler extends Handler {
 
     private boolean logFileExits() {
         try {
-            SimpleDateFormat format = dateFormatThreadLocal.get();
-            String fileName = pattern.replace("%d", format.format(new Date()));
+            String fileName = pattern.replace("%d", dateFormat.format(Instant.now()));
             // When file count is not 1, the first log file name will end with ".0"
             if (count != 1) {
                 fileName += ".0";
@@ -117,8 +137,7 @@ class DateFileLogHandler extends Handler {
         if (handler != null) {
             handler.close();
         }
-        SimpleDateFormat format = dateFormatThreadLocal.get();
-        String newPattern = pattern.replace("%d", format.format(new Date()));
+        String newPattern = pattern.replace("%d", dateFormat.format(Instant.now()));
         // Get current date.
         Calendar next = Calendar.getInstance();
         // Begin of next date.
@@ -143,6 +162,49 @@ class DateFileLogHandler extends Handler {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    static class LogRejectedExecutionHandler implements RejectedExecutionHandler {
+        /**
+         * The period of logged rejected records.
+         */
+        private final long recordPeriod;
+
+        private Long lastRecordTime;
+
+        public LogRejectedExecutionHandler() {
+            String DEFAULT_REJECTED_RECORD_PERIOD = "60000";
+            String REJECTED_RECORD_PERIOD_KEY = "sentinel.rejected.record.period";
+            lastRecordTime = null;
+            recordPeriod = Long.parseLong(System.getProperty(REJECTED_RECORD_PERIOD_KEY, DEFAULT_REJECTED_RECORD_PERIOD));
+        }
+
+        public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+            long currentTimestamp = System.currentTimeMillis();
+            if (lastRecordTime == null || currentTimestamp - lastRecordTime > recordPeriod) {
+                System.err.println("Failed to log sentinel record with datafile, rejected");
+                lastRecordTime = currentTimestamp;
+            }
+        }
+    }
+
+    static class LogTask implements Runnable {
+        private final LogRecord record;
+        private final FileHandler handler;
+
+        public LogTask(LogRecord record,FileHandler handler) {
+            this.record = record;
+            this.handler = handler;
+        }
+
+        public void run() {
+            handler.publish(record);
+        }
+
+        public LogRecord getRecord() {
+            return record;
+        }
+
     }
 
 }

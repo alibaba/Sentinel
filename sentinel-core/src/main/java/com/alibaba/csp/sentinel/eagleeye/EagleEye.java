@@ -198,7 +198,7 @@ public final class EagleEye {
         return new StatLoggerBuilder(loggerName);
     }
 
-    static void setEagelEyeSelfAppender(EagleEyeAppender appender) {
+    static void setEagleEyeSelfAppender(EagleEyeAppender appender) {
         selfAppender = appender;
     }
 
