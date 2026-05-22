@@ -67,7 +67,7 @@ public class SentinelReactorSubscriber<T> extends InheritableBaseSubscriber<T> {
             return actual.currentContext();
         }
         return actual.currentContext()
-            .put(SentinelReactorConstants.SENTINEL_CONTEXT_KEY, currentEntry.getAsyncContext());
+            .put(SentinelReactorConstants.SENTINEL_CONTEXT_KEY, sentinelContext);
     }
 
     private void doWithContextOrCurrent(Supplier<Optional<com.alibaba.csp.sentinel.context.Context>> contextSupplier,
