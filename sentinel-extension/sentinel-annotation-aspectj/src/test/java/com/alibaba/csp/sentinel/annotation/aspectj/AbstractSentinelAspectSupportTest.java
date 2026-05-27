@@ -21,6 +21,7 @@ import org.junit.Test;
 import java.lang.reflect.Method;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 /**
  * @author Eric Zhao
@@ -35,5 +36,24 @@ public class AbstractSentinelAspectSupportTest extends AbstractSentinelAspectSup
         assertThat(getResourceName(resourceName, method)).isEqualTo(resourceName);
         assertThat(getResourceName(null, method)).isEqualTo(expectedResolvedName);
         assertThat(getResourceName("", method)).isEqualTo(expectedResolvedName);
+    }
+
+    @Test
+    public void testGlobalFallbackDefaultIsNull() {
+        assertThat(getGlobalFallback()).isNull();
+    }
+
+    @Test
+    public void testSetAndGetGlobalFallback() throws Throwable {
+        SentinelAnnotationGlobalFallback fallback = mock(SentinelAnnotationGlobalFallback.class);
+        setGlobalFallback(fallback);
+        assertThat(getGlobalFallback()).isSameAs(fallback);
+    }
+
+    @Test
+    public void testClearGlobalFallback() {
+        setGlobalFallback(mock(SentinelAnnotationGlobalFallback.class));
+        setGlobalFallback(null);
+        assertThat(getGlobalFallback()).isNull();
     }
 }

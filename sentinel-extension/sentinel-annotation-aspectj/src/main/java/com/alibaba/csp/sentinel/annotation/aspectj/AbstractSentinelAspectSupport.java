@@ -37,6 +37,30 @@ import java.util.Arrays;
  */
 public abstract class AbstractSentinelAspectSupport {
 
+    /**
+     * Global fallback handler, invoked as last resort when no per-method fallback
+     * or default fallback is configured.
+     */
+    private volatile SentinelAnnotationGlobalFallback globalFallback;
+
+    /**
+     * Set the global fallback handler.
+     *
+     * @param globalFallback the global fallback handler (may be {@code null} to clear)
+     */
+    public void setGlobalFallback(SentinelAnnotationGlobalFallback globalFallback) {
+        this.globalFallback = globalFallback;
+    }
+
+    /**
+     * Get the current global fallback handler.
+     *
+     * @return the global fallback handler, or {@code null} if not set
+     */
+    public SentinelAnnotationGlobalFallback getGlobalFallback() {
+        return globalFallback;
+    }
+
     protected void traceException(Throwable ex) {
         Tracer.trace(ex);
     }
@@ -116,6 +140,12 @@ public abstract class AbstractSentinelAspectSupport {
             // Construct args.
             Object[] args = fallbackMethod.getParameterTypes().length == 0 ? new Object[0] : new Object[] {ex};
             return invoke(pjp, fallbackMethod, args);
+        }
+
+        // If no default fallback is present, try the global fallback.
+        if (globalFallback != null) {
+            Method originMethod = resolveMethod(pjp);
+            return globalFallback.handle(originMethod, pjp.getArgs(), ex);
         }
 
         // If no any fallback is present, then directly throw the exception.
