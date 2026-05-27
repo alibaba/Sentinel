@@ -16,6 +16,8 @@
     <properties>
         <jakarta.servlet-api.version>6.0.0</jakarta.servlet-api.version>
         <skip.spring.v6x.test>false</skip.spring.v6x.test>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
     <dependencies>
