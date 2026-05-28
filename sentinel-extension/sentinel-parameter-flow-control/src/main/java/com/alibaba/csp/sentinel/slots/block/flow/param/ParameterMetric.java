@@ -141,6 +141,10 @@ public class ParameterMetric {
                 if (arg == null) {
                     continue;
                 }
+                if (arg instanceof ParamFlowArgument) {
+                    arg = ((ParamFlowArgument) arg).paramFlowKey();
+                }
+
                 if (Collection.class.isAssignableFrom(arg.getClass())) {
 
                     for (Object value : ((Collection)arg)) {
@@ -200,6 +204,9 @@ public class ParameterMetric {
 
                 if (arg == null) {
                     continue;
+                }
+                if (arg instanceof ParamFlowArgument) {
+                    arg = ((ParamFlowArgument) arg).paramFlowKey();
                 }
 
                 if (Collection.class.isAssignableFrom(arg.getClass())) {
