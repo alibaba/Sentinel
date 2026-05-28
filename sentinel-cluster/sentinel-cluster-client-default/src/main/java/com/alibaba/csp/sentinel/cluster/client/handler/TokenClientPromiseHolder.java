@@ -29,25 +29,25 @@ import io.netty.channel.ChannelPromise;
  */
 public final class TokenClientPromiseHolder {
 
-    private static final Map<Integer, SimpleEntry<ChannelPromise, ClusterResponse>> PROMISE_MAP = new ConcurrentHashMap<>();
+    private final Map<Integer, SimpleEntry<ChannelPromise, ClusterResponse>> promiseMap = new ConcurrentHashMap<>();
 
-    public static void putPromise(int xid, ChannelPromise promise) {
-        PROMISE_MAP.put(xid, new SimpleEntry<ChannelPromise, ClusterResponse>(promise, null));
+    public void putPromise(int xid, ChannelPromise promise) {
+        promiseMap.put(xid, new SimpleEntry<ChannelPromise, ClusterResponse>(promise, null));
     }
 
-    public static SimpleEntry<ChannelPromise, ClusterResponse> getEntry(int xid) {
-        return PROMISE_MAP.get(xid);
+    public SimpleEntry<ChannelPromise, ClusterResponse> getEntry(int xid) {
+        return promiseMap.get(xid);
     }
 
-    public static void remove(int xid) {
-        PROMISE_MAP.remove(xid);
+    public void remove(int xid) {
+        promiseMap.remove(xid);
     }
 
-    public static <T> boolean completePromise(int xid, ClusterResponse<T> response) {
-        if (!PROMISE_MAP.containsKey(xid)) {
+    public <T> boolean completePromise(int xid, ClusterResponse<T> response) {
+        if (!promiseMap.containsKey(xid)) {
             return false;
         }
-        SimpleEntry<ChannelPromise, ClusterResponse> entry = PROMISE_MAP.get(xid);
+        SimpleEntry<ChannelPromise, ClusterResponse> entry = promiseMap.get(xid);
         if (entry != null) {
             ChannelPromise promise = entry.getKey();
             if (promise.isDone() || promise.isCancelled()) {
@@ -59,6 +59,4 @@ public final class TokenClientPromiseHolder {
         }
         return false;
     }
-
-    private TokenClientPromiseHolder() {}
 }
