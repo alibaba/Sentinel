@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.slotchain;
 
 import com.alibaba.csp.sentinel.context.Context;
+import com.alibaba.csp.sentinel.slots.block.flow.PrototypeSlotWrapper;
 
 /**
  * @author qinan.qn
@@ -50,8 +51,9 @@ public class DefaultProcessorSlotChain extends ProcessorSlotChain {
 
     @Override
     public void addLast(AbstractLinkedProcessorSlot<?> protocolProcessor) {
-        end.setNext(protocolProcessor);
-        end = protocolProcessor;
+        PrototypeSlotWrapper processor = new PrototypeSlotWrapper(protocolProcessor);
+        end.setNext(processor);
+        end = processor;
     }
 
     /**
