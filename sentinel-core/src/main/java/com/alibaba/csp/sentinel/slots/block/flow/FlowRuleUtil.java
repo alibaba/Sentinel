@@ -20,15 +20,18 @@ import com.alibaba.csp.sentinel.slots.block.ClusterRuleConstant;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.RuleManager;
 import com.alibaba.csp.sentinel.slots.block.flow.controller.DefaultController;
-import com.alibaba.csp.sentinel.slots.block.flow.controller.ThrottlingController;
-import com.alibaba.csp.sentinel.slots.block.flow.controller.WarmUpController;
-import com.alibaba.csp.sentinel.slots.block.flow.controller.WarmUpRateLimiterController;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.util.function.Function;
 import com.alibaba.csp.sentinel.util.function.Predicate;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -132,18 +135,9 @@ public final class FlowRuleUtil {
 
     private static TrafficShapingController generateRater(/*@Valid*/ FlowRule rule) {
         if (rule.getGrade() == RuleConstant.FLOW_GRADE_QPS) {
-            switch (rule.getControlBehavior()) {
-                case RuleConstant.CONTROL_BEHAVIOR_WARM_UP:
-                    return new WarmUpController(rule.getCount(), rule.getWarmUpPeriodSec(),
-                            ColdFactorProperty.coldFactor);
-                case RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER:
-                    return new ThrottlingController(rule.getMaxQueueingTimeMs(), rule.getCount());
-                case RuleConstant.CONTROL_BEHAVIOR_WARM_UP_RATE_LIMITER:
-                    return new WarmUpRateLimiterController(rule.getCount(), rule.getWarmUpPeriodSec(),
-                            rule.getMaxQueueingTimeMs(), ColdFactorProperty.coldFactor);
-                case RuleConstant.CONTROL_BEHAVIOR_DEFAULT:
-                default:
-                    // Default mode or unknown mode: default traffic shaping controller (fast-reject).
+            TrafficShapingControllerFactory trafficShapingControllerFactory = TrafficShapingControllerFactories.get(rule.getControlBehavior());
+            if (trafficShapingControllerFactory != null) {
+                return trafficShapingControllerFactory.create(rule);
             }
         }
         return new DefaultController(rule.getCount(), rule.getGrade());

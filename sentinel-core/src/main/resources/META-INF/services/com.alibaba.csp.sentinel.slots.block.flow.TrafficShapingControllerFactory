@@ -1,0 +1,4 @@
+com.alibaba.csp.sentinel.slots.block.flow.controller.DefaultControllerFactory
+com.alibaba.csp.sentinel.slots.block.flow.controller.WarmUpControllerFactory
+com.alibaba.csp.sentinel.slots.block.flow.controller.ThrottlingControllerFactory
+com.alibaba.csp.sentinel.slots.block.flow.controller.WarmUpRateLimiterControllerFactory

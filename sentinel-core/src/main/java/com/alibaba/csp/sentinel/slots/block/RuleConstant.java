@@ -50,6 +50,10 @@ public final class RuleConstant {
     public static final int CONTROL_BEHAVIOR_WARM_UP = 1;
     public static final int CONTROL_BEHAVIOR_RATE_LIMITER = 2;
     public static final int CONTROL_BEHAVIOR_WARM_UP_RATE_LIMITER = 3;
+    /**
+     * User-defined control behavior values MUST be >= 256 (0x100)
+     */
+    public static final int CONTROL_BEHAVIOR_USER_DEFINED_MIN = 0x100; // 256
 
     public static final int DEFAULT_BLOCK_STRATEGY = 0;
     public static final int TRY_AGAIN_BLOCK_STRATEGY = 1;
