@@ -246,7 +246,7 @@ public final class FlowRuleUtil {
             return false;
         }
         if (rule.isRegex()) {
-            return !rule.isClusterMode() && rule.getControlBehavior() == RuleConstant.CONTROL_BEHAVIOR_DEFAULT;
+            return !rule.isClusterMode();
         }
         return true;
     }
