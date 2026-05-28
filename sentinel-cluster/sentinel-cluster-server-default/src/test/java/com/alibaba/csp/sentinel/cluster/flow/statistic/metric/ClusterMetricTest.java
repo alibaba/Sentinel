@@ -36,11 +36,11 @@ public class ClusterMetricTest extends AbstractTimeBasedTest {
             Assert.assertEquals(4, metric.getSum(ClusterFlowEvent.PASS));
             Assert.assertEquals(1, metric.getSum(ClusterFlowEvent.BLOCK));
             Assert.assertEquals(160, metric.getAvg(ClusterFlowEvent.PASS), 0.01);
-            Assert.assertEquals(200, metric.tryOccupyNext(ClusterFlowEvent.PASS, 111, 900));
+            Assert.assertEquals(5, metric.tryOccupyNext(ClusterFlowEvent.PASS, 111, 900));
             metric.add(ClusterFlowEvent.PASS, 1);
             metric.add(ClusterFlowEvent.PASS, 2);
             metric.add(ClusterFlowEvent.PASS, 1);
-            Assert.assertEquals(200, metric.tryOccupyNext(ClusterFlowEvent.PASS, 222, 900));
+            Assert.assertEquals(5, metric.tryOccupyNext(ClusterFlowEvent.PASS, 222, 900));
             metric.add(ClusterFlowEvent.PASS, 1);
             metric.add(ClusterFlowEvent.PASS, 2);
             metric.add(ClusterFlowEvent.PASS, 1);
