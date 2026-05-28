@@ -48,6 +48,12 @@ public class TestServiceImpl implements TestService {
         return String.format("Hello, %s", s);
     }
 
+    @SentinelResource(value = "count", fallback = "helloFallback", defaultFallback = "countDefaultFallback")
+    @Override
+    public int count() {
+        throw new UnsupportedOperationException("unimplemented");
+    }
+
     @Override
     @SentinelResource(value = "helloAnother", defaultFallback = "defaultFallback",
         exceptionsToIgnore = {IllegalStateException.class})
@@ -76,5 +82,9 @@ public class TestServiceImpl implements TestService {
     public String defaultFallback() {
         System.out.println("Go to default fallback");
         return "default_fallback";
+    }
+
+    public int countDefaultFallback() {
+        return -1;
     }
 }
