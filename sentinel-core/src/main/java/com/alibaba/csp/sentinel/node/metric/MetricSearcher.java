@@ -206,7 +206,6 @@ public class MetricSearcher {
             long second;
             lastPosition.offsetInIndex = in.getChannel().position();
             while ((second = indexIn.readLong()) < beginSecond) {
-                offset = indexIn.readLong();
                 lastPosition.offsetInIndex = in.getChannel().position();
             }
             offset = indexIn.readLong();
