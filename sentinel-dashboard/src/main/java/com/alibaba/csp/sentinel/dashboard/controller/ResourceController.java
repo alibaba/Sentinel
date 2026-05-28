@@ -15,23 +15,21 @@
  */
 package com.alibaba.csp.sentinel.dashboard.controller;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.command.vo.NodeVo;
-
-import com.alibaba.csp.sentinel.dashboard.domain.ResourceTreeNode;
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
+import com.alibaba.csp.sentinel.dashboard.domain.ResourceTreeNode;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.dashboard.domain.vo.ResourceVo;
-
+import com.alibaba.csp.sentinel.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Carpenter Lee
