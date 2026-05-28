@@ -59,9 +59,9 @@ public final class ClusterParamFlowChecker {
         boolean hasPassed = true;
         Object blockObject = null;
         for (Object value : values) {
-            double latestQps = metric.getAvg(value);
+            double latestSum = metric.getSum(value);
             double threshold = calcGlobalThreshold(rule, value);
-            double nextRemaining = threshold - latestQps - count;
+            double nextRemaining = threshold - latestSum - count;
             remaining = nextRemaining;
             if (nextRemaining < 0) {
                 hasPassed = false;
