@@ -21,7 +21,6 @@ import com.alibaba.csp.sentinel.cluster.codec.response.ResponseEntityWriter;
 import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
 import com.alibaba.csp.sentinel.cluster.response.Response;
 import com.alibaba.csp.sentinel.cluster.server.codec.ServerEntityCodecProvider;
-import com.alibaba.csp.sentinel.cluster.server.codec.registry.ResponseDataWriterRegistry;
 import com.alibaba.csp.sentinel.log.RecordLog;
 
 import io.netty.buffer.ByteBuf;
@@ -45,7 +44,6 @@ public class NettyResponseEncoder extends MessageToByteEncoder<ClusterResponse> 
 
         responseEntityWriter.writeTo(response, out);
     }
-
 
     private void writeBadStatusHead(Response response, ByteBuf out) {
         out.writeInt(response.getId());

@@ -15,13 +15,8 @@
  */
 package com.alibaba.csp.sentinel.demo.apache.dubbo;
 
-import java.util.Collections;
-
 import com.alibaba.csp.sentinel.demo.apache.dubbo.provider.ProviderConfiguration;
 import com.alibaba.csp.sentinel.init.InitExecutor;
-import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
@@ -41,7 +36,6 @@ public class FooProviderBootstrap {
         // Users don't need to manually call this method.
         // Only for eager initialization.
         InitExecutor.doInit();
-
 
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
         context.register(ProviderConfiguration.class);

@@ -26,7 +26,6 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.LinkedList;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 

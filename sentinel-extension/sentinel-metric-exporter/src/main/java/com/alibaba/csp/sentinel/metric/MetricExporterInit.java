@@ -19,7 +19,6 @@ package com.alibaba.csp.sentinel.metric;
 
 import com.alibaba.csp.sentinel.init.InitFunc;
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.metric.collector.MetricCollector;
 import com.alibaba.csp.sentinel.metric.exporter.MetricExporter;
 import com.alibaba.csp.sentinel.metric.exporter.jmx.JMXMetricExporter;
 
