@@ -83,4 +83,16 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <profiles>
+        <profile>
+            <id>jdk17-plus</id>
+            <activation>
+                <jdk>[17,)</jdk>
+            </activation>
+            <modules>
+                <module>sentinel-web-servlet-jakarta</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>
