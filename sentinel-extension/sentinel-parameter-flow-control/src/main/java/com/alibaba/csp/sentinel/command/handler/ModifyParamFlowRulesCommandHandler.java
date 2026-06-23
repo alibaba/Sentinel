@@ -15,7 +15,6 @@
  */
 package com.alibaba.csp.sentinel.command.handler;
 
-import java.net.URLDecoder;
 import java.util.List;
 
 import com.alibaba.csp.sentinel.command.CommandHandler;
@@ -43,12 +42,6 @@ public class ModifyParamFlowRulesCommandHandler implements CommandHandler<String
         String data = request.getParam("data");
         if (StringUtil.isBlank(data)) {
             return CommandResponse.ofFailure(new IllegalArgumentException("Bad data"));
-        }
-        try {
-            data = URLDecoder.decode(data, "utf-8");
-        } catch (Exception e) {
-            RecordLog.info("Decode rule data error", e);
-            return CommandResponse.ofFailure(e, "decode rule data error");
         }
 
         RecordLog.info("[API Server] Receiving rule change (type:parameter flow rule): {}", data);
