@@ -73,6 +73,13 @@ public class DashboardConfig {
         if (StringUtils.isNotEmpty(val)) {
             return val;
         }
+        String underscoreName = name.replace('.', '_');
+        if (!underscoreName.equals(name)) {
+            val = System.getenv(underscoreName);
+            if (StringUtils.isNotEmpty(val)) {
+                return val;
+            }
+        }
         // properties
         val = System.getProperty(name);
         if (StringUtils.isNotEmpty(val)) {
