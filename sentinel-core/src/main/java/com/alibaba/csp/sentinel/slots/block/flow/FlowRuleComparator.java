@@ -37,8 +37,14 @@ public class FlowRuleComparator implements Comparator<FlowRule> {
             return -1;
         }
 
-        if (o1.getLimitApp() == null) {
+        if (o1.getLimitApp() == null && o2.getLimitApp() == null) {
             return 0;
+        }
+        if (o1.getLimitApp() == null) {
+            return 1;
+        }
+        if (o2.getLimitApp() == null) {
+            return -1;
         }
 
         if (o1.getLimitApp().equals(o2.getLimitApp())) {
@@ -50,7 +56,7 @@ public class FlowRuleComparator implements Comparator<FlowRule> {
         } else if (RuleConstant.LIMIT_APP_DEFAULT.equals(o2.getLimitApp())) {
             return -1;
         } else {
-            return 0;
+            return o1.getLimitApp().compareTo(o2.getLimitApp());
         }
     }
 
