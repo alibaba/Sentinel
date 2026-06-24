@@ -183,13 +183,27 @@ public class MetricNode {
     public static MetricNode fromThinString(String line) {
         MetricNode node = new MetricNode();
         String[] strs = line.split("\\|");
-        node.setTimestamp(Long.parseLong(strs[0]));
-        node.setResource(strs[1]);
-        node.setPassQps(Long.parseLong(strs[2]));
-        node.setBlockQps(Long.parseLong(strs[3]));
-        node.setSuccessQps(Long.parseLong(strs[4]));
-        node.setExceptionQps(Long.parseLong(strs[5]));
-        node.setRt(Long.parseLong(strs[6]));
+        if (strs.length >= 1) {
+            node.setTimestamp(Long.parseLong(strs[0]));
+        }
+        if (strs.length >= 2) {
+            node.setResource(strs[1]);
+        }
+        if (strs.length >= 3) {
+            node.setPassQps(Long.parseLong(strs[2]));
+        }
+        if (strs.length >= 4) {
+            node.setBlockQps(Long.parseLong(strs[3]));
+        }
+        if (strs.length >= 5) {
+            node.setSuccessQps(Long.parseLong(strs[4]));
+        }
+        if (strs.length >= 6) {
+            node.setExceptionQps(Long.parseLong(strs[5]));
+        }
+        if (strs.length >= 7) {
+            node.setRt(Long.parseLong(strs[6]));
+        }
         if (strs.length >= 8) {
             node.setOccupiedPassQps(Long.parseLong(strs[7]));
         }

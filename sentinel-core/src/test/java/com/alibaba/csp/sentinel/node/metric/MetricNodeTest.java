@@ -34,4 +34,17 @@ public class MetricNodeTest {
         assertEquals(2, node.getConcurrency());
         assertEquals(1, node.getSuccessQps());
     }
+
+    @Test
+    public void testFromThinStringShortInput() {
+        // Input with only 3 pipe-separated fields (fewer than the required 7).
+        // The method should gracefully handle missing fields and NOT throw
+        // ArrayIndexOutOfBoundsException, consistent with how later fields
+        // (strs[7], strs[8], strs[9]) already have length guards.
+        String line = "1564382218000|resource|10";
+        MetricNode node = MetricNode.fromThinString(line);
+        assertEquals(1564382218000L, node.getTimestamp());
+        assertEquals("resource", node.getResource());
+        assertEquals(10L, node.getPassQps());
+    }
 }
