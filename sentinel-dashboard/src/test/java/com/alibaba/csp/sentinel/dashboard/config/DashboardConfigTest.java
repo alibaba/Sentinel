@@ -48,6 +48,15 @@ public class DashboardConfigTest {
     }
 
     @Test
+    public void testGetConfigStrFromUnderscoreEnv() {
+        DashboardConfig.clearCache();
+
+        environmentVariables.set("sentinel_dashboard_auth_password", "from_env");
+
+        assertEquals("from_env", DashboardConfig.getAuthPassword());
+    }
+
+    @Test
     public void testGetConfigInt() {
         // clear cache
         DashboardConfig.clearCache();
