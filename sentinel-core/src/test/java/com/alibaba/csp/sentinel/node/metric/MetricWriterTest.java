@@ -80,4 +80,9 @@ public class MetricWriterTest {
     }
 
 
+
+    @Test
+    public void testFileNameCmpTwoPartFilenameNoAIOOBE() {
+        MetricWriter.METRIC_FILE_NAME_CMP.compare("metrics.log", "metrics.log.2018-03-06");
+    }
 }
