@@ -243,12 +243,14 @@ public class MetricWriter {
         public int compare(String o1, String o2) {
             String name1 = new File(o1).getName();
             String name2 = new File(o2).getName();
-            String dateStr1 = name1.split("\\.")[2];
-            String dateStr2 = name2.split("\\.")[2];
+            String[] parts1 = name1.split("\\.");
+            String[] parts2 = name2.split("\\.");
+            String dateStr1 = parts1.length > 2 ? parts1[2] : "";
+            String dateStr2 = parts2.length > 2 ? parts2[2] : "";
             // in case of file name contains pid, skip it, like Sentinel-Admin-metrics.log.pid22568.2018-12-24
             if (dateStr1.startsWith(pid)) {
-                dateStr1 = name1.split("\\.")[3];
-                dateStr2 = name2.split("\\.")[3];
+                dateStr1 = parts1.length > 3 ? parts1[3] : "";
+                dateStr2 = parts2.length > 3 ? parts2[3] : "";
             }
 
             // compare date first
