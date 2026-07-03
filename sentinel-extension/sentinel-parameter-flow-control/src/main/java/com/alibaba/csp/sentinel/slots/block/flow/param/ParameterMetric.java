@@ -85,30 +85,22 @@ public class ParameterMetric {
     }
 
     public void initialize(ParamFlowRule rule) {
-        if (!ruleTimeCounters.containsKey(rule)) {
-            synchronized (lock) {
-                if (ruleTimeCounters.get(rule) == null) {
-                    long size = Math.min(BASE_PARAM_MAX_CAPACITY * rule.getDurationInSec(), TOTAL_MAX_CAPACITY);
-                    ruleTimeCounters.put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(size));
-                }
+        // BUG FIX: Removed the first check outside the lock to prevent race condition.
+        // Now all checks are done inside the synchronized block to ensure atomicity.
+        synchronized (lock) {
+            if (!ruleTimeCounters.containsKey(rule)) {
+                long size = Math.min(BASE_PARAM_MAX_CAPACITY * rule.getDurationInSec(), TOTAL_MAX_CAPACITY);
+                ruleTimeCounters.put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(size));
             }
-        }
 
-        if (!ruleTokenCounter.containsKey(rule)) {
-            synchronized (lock) {
-                if (ruleTokenCounter.get(rule) == null) {
-                    long size = Math.min(BASE_PARAM_MAX_CAPACITY * rule.getDurationInSec(), TOTAL_MAX_CAPACITY);
-                    ruleTokenCounter.put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(size));
-                }
+            if (!ruleTokenCounter.containsKey(rule)) {
+                long size = Math.min(BASE_PARAM_MAX_CAPACITY * rule.getDurationInSec(), TOTAL_MAX_CAPACITY);
+                ruleTokenCounter.put(rule, new ConcurrentLinkedHashMapWrapper<Object, AtomicLong>(size));
             }
-        }
 
-        if (!threadCountMap.containsKey(rule.getParamIdx())) {
-            synchronized (lock) {
-                if (threadCountMap.get(rule.getParamIdx()) == null) {
-                    threadCountMap.put(rule.getParamIdx(),
-                        new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(THREAD_COUNT_MAX_CAPACITY));
-                }
+            if (!threadCountMap.containsKey(rule.getParamIdx())) {
+                threadCountMap.put(rule.getParamIdx(),
+                    new ConcurrentLinkedHashMapWrapper<Object, AtomicInteger>(THREAD_COUNT_MAX_CAPACITY));
             }
         }
     }
@@ -133,6 +125,10 @@ public class ParameterMetric {
                 if (Collection.class.isAssignableFrom(arg.getClass())) {
 
                     for (Object value : ((Collection)arg)) {
+                        // BUG FIX: Added null check to prevent null values in collections
+                        if (value == null) {
+                            continue;
+                        }
                         AtomicInteger oldValue = threadCount.putIfAbsent(value, new AtomicInteger());
                         if (oldValue != null) {
                             int currentValue = oldValue.decrementAndGet();
@@ -146,6 +142,10 @@ public class ParameterMetric {
                     int length = Array.getLength(arg);
                     for (int i = 0; i < length; i++) {
                         Object value = Array.get(arg, i);
+                        // BUG FIX: Added null check for array elements
+                        if (value == null) {
+                            continue;
+                        }
                         AtomicInteger oldValue = threadCount.putIfAbsent(value, new AtomicInteger());
                         if (oldValue != null) {
                             int currentValue = oldValue.decrementAndGet();
@@ -193,6 +193,10 @@ public class ParameterMetric {
 
                 if (Collection.class.isAssignableFrom(arg.getClass())) {
                     for (Object value : ((Collection)arg)) {
+                        // BUG FIX: Added null check to prevent null values in collections
+                        if (value == null) {
+                            continue;
+                        }
                         AtomicInteger oldValue = threadCount.putIfAbsent(value, new AtomicInteger());
                         if (oldValue != null) {
                             oldValue.incrementAndGet();
@@ -205,6 +209,10 @@ public class ParameterMetric {
                     int length = Array.getLength(arg);
                     for (int i = 0; i < length; i++) {
                         Object value = Array.get(arg, i);
+                        // BUG FIX: Added null check for array elements
+                        if (value == null) {
+                            continue;
+                        }
                         AtomicInteger oldValue = threadCount.putIfAbsent(value, new AtomicInteger());
                         if (oldValue != null) {
                             oldValue.incrementAndGet();
