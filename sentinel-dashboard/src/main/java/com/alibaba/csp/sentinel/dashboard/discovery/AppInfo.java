@@ -73,7 +73,10 @@ public class AppInfo {
         return "AppInfo{" + "app='" + app + ", machines=" + machines + '}';
     }
 
-    public boolean addMachine(MachineInfo machineInfo) {
+    // BUG FIX: Synchronized addMachine method to ensure atomicity with removeMachine.
+    // Previously, remove() and add() were not atomic, allowing race conditions where
+    // another thread could call removeMachine() between the two operations.
+    public synchronized boolean addMachine(MachineInfo machineInfo) {
         machines.remove(machineInfo);
         return machines.add(machineInfo);
     }
