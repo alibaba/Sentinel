@@ -20,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.Properties;
 
+import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.LogBase;
 import com.alibaba.csp.sentinel.util.AppNameUtil;
 
@@ -31,11 +32,11 @@ import com.alibaba.csp.sentinel.util.AppNameUtil;
 public final class ConfigPropertyHelper {
 
     public static void setAppNameProperty(String appName) {
-        System.setProperty(AppNameUtil.APP_NAME, appName);
+        System.setProperty(SentinelConfig.APP_NAME_PROP_KEY, appName);
     }
 
     public static void clearAppNameProperty() {
-        System.clearProperty(AppNameUtil.APP_NAME);
+        System.clearProperty(SentinelConfig.APP_NAME_PROP_KEY);
     }
 
     public static void runWithConfig(Properties prop, String appName, Task task) throws Exception {

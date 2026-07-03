@@ -58,4 +58,13 @@ public class DefaultEmbeddedTokenServer implements EmbeddedClusterTokenServer {
         }
         return new TokenResult(TokenResultStatus.FAIL);
     }
+
+    @Override
+    public TokenResult requestConcurrentToken(String clientAddress, Long ruleId, int acquireCount) {
+        return null;
+    }
+
+    @Override
+    public void releaseConcurrentToken(Long tokenId) {
+    }
 }

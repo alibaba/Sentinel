@@ -1,8 +1,10 @@
 package com.alibaba.csp.sentinel;
 
+import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.Node;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
+import com.alibaba.csp.sentinel.util.function.BiConsumer;
 
 import org.junit.Test;
 
@@ -63,6 +65,11 @@ public class EntryTest {
         @Override
         public Node getLastNode() {
             return null;
+        }
+
+        @Override
+        public void whenTerminate(BiConsumer<Context, Entry> consumer) {
+            // do nothing
         }
     }
 }

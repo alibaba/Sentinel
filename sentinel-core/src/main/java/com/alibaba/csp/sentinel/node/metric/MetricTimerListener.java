@@ -38,14 +38,13 @@ public class MetricTimerListener implements Runnable {
 
     @Override
     public void run() {
-        Map<Long, List<MetricNode>> maps = new TreeMap<Long, List<MetricNode>>();
+        Map<Long, List<MetricNode>> maps = new TreeMap<>();
         for (Entry<ResourceWrapper, ClusterNode> e : ClusterBuilderSlot.getClusterNodeMap().entrySet()) {
-            String name = e.getKey().getName();
             ClusterNode node = e.getValue();
             Map<Long, MetricNode> metrics = node.metrics();
-            aggregate(maps, metrics, name);
+            aggregate(maps, metrics, node);
         }
-        aggregate(maps, Constants.ENTRY_NODE.metrics(), Constants.TOTAL_IN_RESOURCE_NAME);
+        aggregate(maps, Constants.ENTRY_NODE.metrics(), Constants.ENTRY_NODE);
         if (!maps.isEmpty()) {
             for (Entry<Long, List<MetricNode>> entry : maps.entrySet()) {
                 try {
@@ -57,14 +56,13 @@ public class MetricTimerListener implements Runnable {
         }
     }
 
-    private void aggregate(Map<Long, List<MetricNode>> maps, Map<Long, MetricNode> metrics, String resourceName) {
+    private void aggregate(Map<Long, List<MetricNode>> maps, Map<Long, MetricNode> metrics, ClusterNode node) {
         for (Entry<Long, MetricNode> entry : metrics.entrySet()) {
             long time = entry.getKey();
             MetricNode metricNode = entry.getValue();
-            metricNode.setResource(resourceName);
-            if (maps.get(time) == null) {
-                maps.put(time, new ArrayList<MetricNode>());
-            }
+            metricNode.setResource(node.getName());
+            metricNode.setClassification(node.getResourceType());
+            maps.computeIfAbsent(time, k -> new ArrayList<MetricNode>());
             List<MetricNode> nodes = maps.get(time);
             nodes.add(entry.getValue());
         }

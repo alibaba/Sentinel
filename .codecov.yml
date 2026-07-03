@@ -3,6 +3,45 @@ ignore:
   - "sentinel-dashboard/.*"
   - "sentinel-benchmark/.*"
   - "sentinel-transport/.*"
-  - "sentinel-core/src/main/java/com/alibaba/csp/sentinel/slots/statistic/base/LongAdder.java"
-  - "sentinel-core/src/main/java/com/alibaba/csp/sentinel/slots/statistic/base/Striped64.java"
   - "sentinel-core/src/main/java/com/alibaba/csp/sentinel/eagleeye/*"
+comment:                  # this is a top-level key
+  layout: " condensed_header, diff, condensed_files, components, condensed_footer"
+  behavior: default
+  require_changes: false  # if true: only post the comment if coverage changes
+  require_base: false        # [true :: must have a base report to post]
+  require_head: true       # [true :: must have a head report to post]
+  hide_project_coverage: false # [true :: only show coverage on the git diff]
+component_management:
+  individual_components:
+    - component_id: sentinel-adapter  # this is an identifier that should not be changed
+      name: sentinel-adapter  # this is a display name, and can be changed freely
+      paths:
+        - sentinel-adapter
+    - component_id: sentinel-cluster
+      name: sentinel-cluster
+      paths:
+        - sentinel-cluster
+    - component_id: sentinel-core
+      name: sentinel-core
+      paths:
+        - sentinel-core
+    - component_id: sentinel-extension
+      name: sentinel-extension
+      paths:
+        - sentinel-extension
+    - component_id: sentinel-logging
+      name: sentinel-logging
+      paths:
+        - sentinel-logging
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 0.5%
+        base: auto
+    patch:
+      default:
+        target: 60%
+        threshold: 1%
+        base: auto

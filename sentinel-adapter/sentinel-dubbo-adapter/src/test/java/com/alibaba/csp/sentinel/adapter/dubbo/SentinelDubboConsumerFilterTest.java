@@ -85,14 +85,14 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
         // As not call ContextUtil.enter(resourceName, application) in SentinelDubboConsumerFilter, use default context
         // In actual project, a consumer is usually also a provider, the context will be created by SentinelDubboProviderFilter
         // If consumer is on the top of Dubbo RPC invocation chain, use default context
-        String resourceName = filter.getResourceName(invoker, invocation);
+        String resourceName = filter.getMethodResourceName(invoker, invocation);
         assertEquals(Constants.CONTEXT_DEFAULT_NAME, context.getName());
         assertEquals("", context.getOrigin());
 
         DefaultNode entranceNode = context.getEntranceNode();
         ResourceWrapper entranceResource = entranceNode.getId();
         assertEquals(Constants.CONTEXT_DEFAULT_NAME, entranceResource.getName());
-        assertSame(EntryType.IN, entranceResource.getType());
+        assertSame(EntryType.IN, entranceResource.getEntryType());
 
         // As SphU.entry(interfaceName, EntryType.OUT);
         Set<Node> childList = entranceNode.getChildList();
@@ -100,7 +100,7 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
         DefaultNode interfaceNode = (DefaultNode) childList.iterator().next();
         ResourceWrapper interfaceResource = interfaceNode.getId();
         assertEquals(DemoService.class.getName(), interfaceResource.getName());
-        assertSame(EntryType.OUT, interfaceResource.getType());
+        assertSame(EntryType.OUT, interfaceResource.getEntryType());
 
         // As SphU.entry(resourceName, EntryType.OUT);
         childList = interfaceNode.getChildList();
@@ -108,7 +108,7 @@ public class SentinelDubboConsumerFilterTest extends BaseTest {
         DefaultNode methodNode = (DefaultNode) childList.iterator().next();
         ResourceWrapper methodResource = methodNode.getId();
         assertEquals(resourceName, methodResource.getName());
-        assertSame(EntryType.OUT, methodResource.getType());
+        assertSame(EntryType.OUT, methodResource.getEntryType());
 
         // Verify curEntry
         Entry curEntry = context.getCurEntry();

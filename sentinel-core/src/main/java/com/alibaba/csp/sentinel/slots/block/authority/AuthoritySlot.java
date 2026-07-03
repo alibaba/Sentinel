@@ -15,14 +15,15 @@
  */
 package com.alibaba.csp.sentinel.slots.block.authority;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
+import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
+import com.alibaba.csp.sentinel.spi.Spi;
 
 /**
  * A {@link ProcessorSlot} that dedicates to {@link AuthorityRule} checking.
@@ -30,6 +31,7 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
  * @author leyou
  * @author Eric Zhao
  */
+@Spi(order = Constants.ORDER_AUTHORITY_SLOT)
 public class AuthoritySlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
@@ -45,13 +47,8 @@ public class AuthoritySlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     }
 
     void checkBlackWhiteAuthority(ResourceWrapper resource, Context context) throws AuthorityException {
-        Map<String, Set<AuthorityRule>> authorityRules = AuthorityRuleManager.getAuthorityRules();
 
-        if (authorityRules == null) {
-            return;
-        }
-
-        Set<AuthorityRule> rules = authorityRules.get(resource.getName());
+        List<AuthorityRule> rules = AuthorityRuleManager.getRules(resource.getName());
         if (rules == null) {
             return;
         }

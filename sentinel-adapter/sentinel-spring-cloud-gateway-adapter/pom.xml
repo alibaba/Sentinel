@@ -3,11 +3,14 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>sentinel-adapter</artifactId>
         <groupId>com.alibaba.csp</groupId>
-        <version>1.7.0-SNAPSHOT</version>
+        <artifactId>sentinel-adapter</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
+
+    <name>${project.groupId}:${project.artifactId}</name>
 
     <artifactId>sentinel-spring-cloud-gateway-adapter</artifactId>
     <packaging>jar</packaging>
@@ -16,8 +19,8 @@
         <java.source.version>1.8</java.source.version>
         <java.target.version>1.8</java.target.version>
         <spring.cloud.gateway.version>2.1.1.RELEASE</spring.cloud.gateway.version>
-        <spring.boot.version>2.1.4.RELEASE</spring.boot.version>
-        <spring.version>5.1.5.RELEASE</spring.version>
+        <spring.boot.version>2.5.12</spring.boot.version>
+        <spring.version>5.3.18</spring.version>
     </properties>
 
     <dependencies>

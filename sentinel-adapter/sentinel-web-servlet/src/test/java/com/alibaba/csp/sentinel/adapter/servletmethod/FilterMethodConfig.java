@@ -16,7 +16,7 @@ public class FilterMethodConfig {
         FilterRegistrationBean registration = new FilterRegistrationBean();
         registration.setFilter(new CommonFilter());
         registration.addUrlPatterns("/*");
-        registration.addInitParameter("HTTP_METHOD_SPECIFY", "true");
+        registration.addInitParameter(CommonFilter.HTTP_METHOD_SPECIFY, "true");
         registration.setName("sentinelFilter");
         registration.setOrder(1);
 

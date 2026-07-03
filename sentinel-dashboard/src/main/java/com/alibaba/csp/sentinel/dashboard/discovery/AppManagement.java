@@ -16,9 +16,12 @@
 package com.alibaba.csp.sentinel.dashboard.discovery;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
+
+import com.alibaba.csp.sentinel.util.StringUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -65,6 +68,15 @@ public class AppManagement implements MachineDiscovery {
     @Override
     public void removeApp(String app) {
         machineDiscovery.removeApp(app);
+    }
+
+    public boolean isValidMachineOfApp(String app, String ip) {
+        if (StringUtil.isEmpty(app)) {
+            return false;
+        }
+        return Optional.ofNullable(getDetailApp(app))
+            .flatMap(a -> a.getMachine(ip))
+            .isPresent();
     }
 
 }

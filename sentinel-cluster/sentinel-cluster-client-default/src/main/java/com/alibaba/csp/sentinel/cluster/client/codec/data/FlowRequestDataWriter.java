@@ -22,7 +22,7 @@ import io.netty.buffer.ByteBuf;
 
 /**
  * +-------------------+--------------+----------------+---------------+------------------+
- * | RequestID(8 byte) | Type(1 byte) | FlowID(4 byte) | Count(4 byte) | PriorityFlag (1) |
+ * | RequestID(8 byte) | Type(1 byte) | FlowID(8 byte) | Count(4 byte) | PriorityFlag (1) |
  * +-------------------+--------------+----------------+---------------+------------------+
  *
  * @author Eric Zhao

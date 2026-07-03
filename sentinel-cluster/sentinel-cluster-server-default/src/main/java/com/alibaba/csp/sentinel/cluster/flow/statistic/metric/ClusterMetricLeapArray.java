@@ -15,10 +15,11 @@
  */
 package com.alibaba.csp.sentinel.cluster.flow.statistic.metric;
 
+import java.util.concurrent.atomic.LongAdder;
+
 import com.alibaba.csp.sentinel.cluster.flow.statistic.data.ClusterFlowEvent;
 import com.alibaba.csp.sentinel.cluster.flow.statistic.data.ClusterMetricBucket;
 import com.alibaba.csp.sentinel.slots.statistic.base.LeapArray;
-import com.alibaba.csp.sentinel.slots.statistic.base.LongAdder;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 
 /**

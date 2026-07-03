@@ -15,17 +15,17 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
+import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.spi.Spi;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.function.Function;
+
+import java.util.Collection;
 
 /**
  * <p>
@@ -136,6 +136,7 @@ import com.alibaba.csp.sentinel.util.function.Function;
  * @author jialiang.linjl
  * @author Eric Zhao
  */
+@Spi(order = Constants.ORDER_FLOW_SLOT)
 public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     private final FlowRuleChecker checker;
@@ -176,9 +177,7 @@ public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     private final Function<String, Collection<FlowRule>> ruleProvider = new Function<String, Collection<FlowRule>>() {
         @Override
         public Collection<FlowRule> apply(String resource) {
-            // Flow rule map should not be null.
-            Map<String, List<FlowRule>> flowRules = FlowRuleManager.getFlowRuleMap();
-            return flowRules.get(resource);
+            return FlowRuleManager.getFlowRules(resource);
         }
     };
 }

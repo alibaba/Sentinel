@@ -15,18 +15,28 @@
  */
 package com.alibaba.csp.sentinel.dashboard.config;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.alibaba.csp.sentinel.adapter.servlet.CommonFilter;
-import com.alibaba.csp.sentinel.dashboard.filter.AuthFilter;
+import com.alibaba.csp.sentinel.adapter.servlet.callback.WebCallbackManager;
+import com.alibaba.csp.sentinel.dashboard.auth.AuthorizationInterceptor;
+import com.alibaba.csp.sentinel.dashboard.auth.LoginAuthenticationFilter;
+import com.alibaba.csp.sentinel.util.StringUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.Filter;
 
 /**
@@ -38,7 +48,15 @@ public class WebConfig implements WebMvcConfigurer {
     private final Logger logger = LoggerFactory.getLogger(WebConfig.class);
 
     @Autowired
-    private AuthFilter authFilter;
+    private LoginAuthenticationFilter loginAuthenticationFilter;
+
+    @Autowired
+    private AuthorizationInterceptor authorizationInterceptor;
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(authorizationInterceptor).addPathPatterns("/**");
+    }
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -61,16 +79,35 @@ public class WebConfig implements WebMvcConfigurer {
         registration.addUrlPatterns("/*");
         registration.setName("sentinelFilter");
         registration.setOrder(1);
+        // If this is enabled, the entrance of all Web URL resources will be unified as a single context name.
+        // In most scenarios that's enough, and it could reduce the memory footprint.
+        registration.addInitParameter(CommonFilter.WEB_CONTEXT_UNIFY, "true");
 
         logger.info("Sentinel servlet CommonFilter registered");
 
         return registration;
     }
 
+    @PostConstruct
+    public void doInit() {
+        Set<String> suffixSet = new HashSet<>(Arrays.asList(".js", ".css", ".html", ".ico", ".txt",
+            ".woff", ".woff2"));
+        // Example: register a UrlCleaner to exclude URLs of common static resources.
+        WebCallbackManager.setUrlCleaner(url -> {
+            if (StringUtil.isEmpty(url)) {
+                return url;
+            }
+            if (suffixSet.stream().anyMatch(url::endsWith)) {
+                return null;
+            }
+            return url;
+        });
+    }
+
     @Bean
     public FilterRegistrationBean authenticationFilterRegistration() {
         FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>();
-        registration.setFilter(authFilter);
+        registration.setFilter(loginAuthenticationFilter);
         registration.addUrlPatterns("/*");
         registration.setName("authenticationFilter");
         registration.setOrder(0);

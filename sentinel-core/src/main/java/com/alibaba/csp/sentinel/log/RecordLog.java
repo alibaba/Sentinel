@@ -15,37 +15,74 @@
  */
 package com.alibaba.csp.sentinel.log;
 
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.alibaba.csp.sentinel.log.jul.JavaLoggingAdapter;
 
-/***
- * The basic logger for vital events.
+/**
+ * The basic biz logger of Sentinel.
  *
  * @author youji.zj
+ * @author Eric Zhao
  */
-public class RecordLog extends LogBase {
-    private static final Logger heliumRecordLog = Logger.getLogger("cspSentinelRecordLog");
-    private static final String FILE_NAME = "sentinel-record.log";
-    private static Handler logHandler = null;
+public class RecordLog {
+
+    public static final String LOGGER_NAME = "sentinelRecordLogger";
+    public static final String DEFAULT_LOG_FILENAME = "sentinel-record.log";
+
+    private static com.alibaba.csp.sentinel.log.Logger logger = null;
 
     static {
-        logHandler = makeLogger(FILE_NAME, heliumRecordLog);
+        try {
+            // Load user-defined logger implementation first.
+            logger = LoggerSpiProvider.getLogger(LOGGER_NAME);
+            if (logger == null) {
+                // If no customized loggers are provided, we use the default logger based on JUL.
+                logger = new JavaLoggingAdapter(LOGGER_NAME, DEFAULT_LOG_FILENAME);
+            }
+        } catch (Throwable t) {
+            System.err.println("Error: failed to initialize Sentinel RecordLog");
+            t.printStackTrace();
+        }
     }
 
-    public static void info(String detail, Object... params) {
-        log(heliumRecordLog, logHandler, Level.INFO, detail, params);
+    public static void info(String format, Object... arguments) {
+        logger.info(format, arguments);
     }
 
-    public static void info(String detail, Throwable e) {
-        log(heliumRecordLog, logHandler, Level.INFO, detail, e);
+    public static void info(String msg, Throwable e) {
+        logger.info(msg, e);
     }
 
-    public static void warn(String detail, Object... params) {
-        log(heliumRecordLog, logHandler, Level.WARNING, detail, params);
+    public static void warn(String format, Object... arguments) {
+        logger.warn(format, arguments);
     }
 
-    public static void warn(String detail, Throwable e) {
-        log(heliumRecordLog, logHandler, Level.WARNING, detail, e);
+    public static void warn(String msg, Throwable e) {
+        logger.warn(msg, e);
     }
+
+    public static void trace(String format, Object... arguments) {
+        logger.trace(format, arguments);
+    }
+
+    public static void trace(String msg, Throwable e) {
+        logger.trace(msg, e);
+    }
+
+    public static void debug(String format, Object... arguments) {
+        logger.debug(format, arguments);
+    }
+
+    public static void debug(String msg, Throwable e) {
+        logger.debug(msg, e);
+    }
+
+    public static void error(String format, Object... arguments) {
+        logger.error(format, arguments);
+    }
+
+    public static void error(String msg, Throwable e) {
+        logger.error(msg, e);
+    }
+
+    private RecordLog() {}
 }

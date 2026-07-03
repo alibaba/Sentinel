@@ -4,6 +4,9 @@
 out
 gen
 
+# Visual Studio Code
+.history/
+
 # Maven
 target/
 pom.xml.tag
@@ -25,3 +28,7 @@ bin/
 # System related
 *.DS_Store
 Thumbs.db
+
+# flattened pom file
+.flattened-pom.xml
+node_modules/

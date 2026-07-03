@@ -19,6 +19,7 @@ public final class Constants {
 
     public static final String TEST_GROUP_NAME = "sentinel-group";
     public static final String TEST_TOPIC_NAME = "SentinelTopicTest";
+    public static final String TEST_NAMESRV_ADDR = "127.0.0.1:9876";
 
     private Constants() {}
 }

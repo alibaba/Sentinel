@@ -15,7 +15,7 @@
  */
 package com.alibaba.csp.sentinel.cluster.client.codec;
 
-import com.alibaba.csp.sentinel.util.SpiLoader;
+import com.alibaba.csp.sentinel.spi.SpiLoader;
 import com.alibaba.csp.sentinel.cluster.codec.request.RequestEntityWriter;
 import com.alibaba.csp.sentinel.cluster.codec.response.ResponseEntityDecoder;
 import com.alibaba.csp.sentinel.log.RecordLog;
@@ -34,19 +34,21 @@ public final class ClientEntityCodecProvider {
     }
 
     private static void resolveInstance() {
-        RequestEntityWriter writer = SpiLoader.loadFirstInstance(RequestEntityWriter.class);
+        RequestEntityWriter writer = SpiLoader.of(RequestEntityWriter.class).loadFirstInstance();
         if (writer == null) {
             RecordLog.warn("[ClientEntityCodecProvider] No existing request entity writer, resolve failed");
         } else {
             requestEntityWriter = writer;
-            RecordLog.info("[ClientEntityCodecProvider] Request entity writer resolved: " + requestEntityWriter.getClass().getCanonicalName());
+            RecordLog.info("[ClientEntityCodecProvider] Request entity writer resolved: {}",
+                requestEntityWriter.getClass().getCanonicalName());
         }
-        ResponseEntityDecoder decoder = SpiLoader.loadFirstInstance(ResponseEntityDecoder.class);
+        ResponseEntityDecoder decoder = SpiLoader.of(ResponseEntityDecoder.class).loadFirstInstance();
         if (decoder == null) {
             RecordLog.warn("[ClientEntityCodecProvider] No existing response entity decoder, resolve failed");
         } else {
             responseEntityDecoder = decoder;
-            RecordLog.info("[ClientEntityCodecProvider] Response entity decoder resolved: " + responseEntityDecoder.getClass().getCanonicalName());
+            RecordLog.info("[ClientEntityCodecProvider] Response entity decoder resolved: {}",
+                responseEntityDecoder.getClass().getCanonicalName());
         }
     }
 

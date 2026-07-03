@@ -15,11 +15,12 @@
  */
 package com.alibaba.csp.sentinel.cluster.server.processor;
 
+import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.csp.sentinel.cluster.annotation.RequestType;
+import com.alibaba.csp.sentinel.spi.SpiLoader;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
@@ -30,14 +31,13 @@ public final class RequestProcessorProvider {
 
     private static final Map<Integer, RequestProcessor> PROCESSOR_MAP = new ConcurrentHashMap<>();
 
-    private static final ServiceLoader<RequestProcessor> SERVICE_LOADER = ServiceLoader.load(RequestProcessor.class);
-
     static {
         loadAndInit();
     }
 
     private static void loadAndInit() {
-        for (RequestProcessor processor : SERVICE_LOADER) {
+        List<RequestProcessor> processors = SpiLoader.of(RequestProcessor.class).loadInstanceList();
+        for (RequestProcessor processor : processors) {
             Integer type = parseRequestType(processor);
             if (type != null) {
                 PROCESSOR_MAP.put(type, processor);
@@ -59,18 +59,13 @@ public final class RequestProcessorProvider {
     }
 
     static void addProcessorIfAbsent(int type, RequestProcessor processor) {
-        // TBD: use putIfAbsent in JDK 1.8.
-        if (PROCESSOR_MAP.containsKey(type)) {
-            return;
-        }
-        PROCESSOR_MAP.put(type, processor);
+        PROCESSOR_MAP.putIfAbsent(type, processor);
     }
 
     static void addProcessor(int type, RequestProcessor processor) {
         AssertUtil.notNull(processor, "processor cannot be null");
         PROCESSOR_MAP.put(type, processor);
     }
-
 
     private RequestProcessorProvider() {}
 }

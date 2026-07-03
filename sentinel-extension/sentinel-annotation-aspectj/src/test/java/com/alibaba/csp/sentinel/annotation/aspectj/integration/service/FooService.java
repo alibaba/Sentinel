@@ -76,11 +76,31 @@ public class FooService {
         return "cheers, " + name;
     }
 
+    @SentinelResource(value = "apiFooWithFallback", blockHandler = "fooBlockHandlerPrivate", fallback = "fooFallbackFuncPrivate",
+            exceptionsToTrace = {IllegalArgumentException.class})
+    public String fooWithPrivateFallback(int i) throws Exception {
+        if (i == 5758) {
+            throw new IllegalAccessException();
+        }
+        if (i == 5763) {
+            throw new IllegalArgumentException();
+        }
+        return "Hello for " + i;
+    }
+
     public String fooBlockHandler(int i, BlockException ex) {
         return "Oops, " + i;
     }
 
     public String fooFallbackFunc(int i) {
         return "eee...";
+    }
+
+    private String fooFallbackFuncPrivate(int i) {
+        return "EEE...";
+    }
+
+    private String fooBlockHandlerPrivate(int i, BlockException ex) {
+        return "Oops, " + i;
     }
 }

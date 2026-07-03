@@ -3,6 +3,7 @@
 ## 环境要求
 
 - Node.js > 6.x
+- Node.js < 12.x
 
 ## 编码规范
 
@@ -11,19 +12,19 @@
 
 ## 安装依赖
 
-```
+```shell
 npm i
 ```
 
 ## 开始本地开发
 
-```
+```shell
 npm start
 ```
 
 ## 构建前端资源
 
-```
+```shell
 npm run build
 ```
 

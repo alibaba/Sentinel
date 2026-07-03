@@ -61,7 +61,6 @@ public class MetricEntity {
         entity.setExceptionQps(oldEntity.getExceptionQps());
         entity.setRt(oldEntity.getRt());
         entity.setCount(oldEntity.getCount());
-        entity.setResource(oldEntity.getResource());
         return entity;
     }
 

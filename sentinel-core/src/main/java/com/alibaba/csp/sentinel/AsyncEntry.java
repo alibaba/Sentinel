@@ -35,6 +35,10 @@ public class AsyncEntry extends CtEntry {
         super(resourceWrapper, chain, context);
     }
 
+    AsyncEntry(ResourceWrapper resourceWrapper, ProcessorSlot<Object> chain, Context context, int count, Object[] args) {
+        super(resourceWrapper, chain, context, count, args);
+    }
+
     /**
      * Remove current entry from local context, but does not exit.
      */
@@ -52,7 +56,11 @@ public class AsyncEntry extends CtEntry {
                     ((CtEntry)parent).child = null;
                 }
             } else {
-                throw new IllegalStateException("Bad async context state");
+                String curEntryName = curEntry == null ? "none"
+                    : curEntry.resourceWrapper.getName() + "@" + curEntry.hashCode();
+                String msg = String.format("Bad async context state, expected entry: %s, but actual: %s",
+                    getResourceWrapper().getName() + "@" + hashCode(), curEntryName);
+                throw new IllegalStateException(msg);
             }
         }
     }
@@ -74,7 +82,8 @@ public class AsyncEntry extends CtEntry {
                 .setOrigin(context.getOrigin())
                 .setCurEntry(this);
         } else {
-            RecordLog.warn("[AsyncEntry] Duplicate initialize of async context for entry: " + resourceWrapper.getName());
+            RecordLog.warn(
+                "[AsyncEntry] Duplicate initialize of async context for entry: " + resourceWrapper.getName());
         }
     }
 

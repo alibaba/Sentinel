@@ -67,13 +67,13 @@ public class OccupyTimeoutProperty {
             return;
         }
         if (newInterval > IntervalProperty.INTERVAL) {
-            RecordLog.warn("[OccupyTimeoutProperty] Illegal timeout value will be ignored: " + occupyTimeout
-                + ", should <= " + IntervalProperty.INTERVAL);
+            RecordLog.warn("[OccupyTimeoutProperty] Illegal timeout value will be ignored: {}, should <= {}",
+                occupyTimeout, IntervalProperty.INTERVAL);
             return;
         }
         if (newInterval != occupyTimeout) {
             occupyTimeout = newInterval;
         }
-        RecordLog.info("[OccupyTimeoutProperty] occupyTimeout updated to: " + occupyTimeout);
+        RecordLog.info("[OccupyTimeoutProperty] occupyTimeout updated to: {}", occupyTimeout);
     }
 }

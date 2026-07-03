@@ -79,7 +79,7 @@ public class DefaultNode extends StatisticNode {
      */
     public void addChild(Node node) {
         if (node == null) {
-            RecordLog.warn("Trying to add null child to node <{0}>, ignored", id.getName());
+            RecordLog.warn("Trying to add null child to node <{}>, ignored", id.getName());
             return;
         }
         if (!childList.contains(node)) {
@@ -91,7 +91,7 @@ public class DefaultNode extends StatisticNode {
                     childList = newSet;
                 }
             }
-            RecordLog.info("Add child <{0}> to node <{1}>", ((DefaultNode)node).id.getName(), id.getName());
+            RecordLog.info("Add child <{}> to node <{}>", ((DefaultNode)node).id.getName(), id.getName());
         }
     }
 

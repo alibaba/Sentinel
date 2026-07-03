@@ -41,7 +41,7 @@ public class CtSphTest {
         Entry entry = null;
         try {
             if (async) {
-                entry = ctSph.asyncEntry(resourceName, resourceWrapper.getType(), 1);
+                entry = ctSph.asyncEntry(resourceName, resourceWrapper.getEntryType(), 1);
             } else {
                 entry = ctSph.entry(resourceWrapper, 1);
             }
@@ -80,7 +80,7 @@ public class CtSphTest {
             if (!async) {
                 entry = ctSph.entry(resourceWrapper, 1);
             } else {
-                entry = ctSph.asyncEntry(resourceName, resourceWrapper.getType(), 1);
+                entry = ctSph.asyncEntry(resourceName, resourceWrapper.getEntryType(), 1);
                 Context asyncContext = ((AsyncEntry)entry).getAsyncContext();
                 assertTrue(ContextUtil.isDefaultContext(asyncContext));
                 assertTrue(asyncContext.isAsync());
@@ -127,7 +127,7 @@ public class CtSphTest {
         AsyncEntry asyncEntry = null;
         try {
             entry = ctSph.entry(resourceWrapperA, 1);
-            asyncEntry = ctSph.asyncEntry(resourceNameB, resourceWrapperB.getType(), 1);
+            asyncEntry = ctSph.asyncEntry(resourceNameB, resourceWrapperB.getEntryType(), 1);
         } catch (BlockException ex) {
             fail("Unexpected blocked: " + ex.getClass().getCanonicalName());
         } finally {

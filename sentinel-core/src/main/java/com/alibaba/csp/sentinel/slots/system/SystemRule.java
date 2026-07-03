@@ -15,8 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.system;
 
-import com.alibaba.csp.sentinel.context.Context;
-import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 
 /**
@@ -131,11 +129,6 @@ public class SystemRule extends AbstractRule {
      */
     public void setHighestCpuUsage(double highestCpuUsage) {
         this.highestCpuUsage = highestCpuUsage;
-    }
-
-    @Override
-    public boolean passCheck(Context context, DefaultNode node, int count, Object... args) {
-        return true;
     }
 
     @Override

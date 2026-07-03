@@ -16,8 +16,7 @@
 package com.alibaba.csp.sentinel.eagleeye;
 
 import java.util.concurrent.atomic.AtomicReference;
-
-import com.alibaba.csp.sentinel.slots.statistic.base.LongAdder;
+import java.util.concurrent.atomic.LongAdder;
 
 interface StatEntryFunc {
 

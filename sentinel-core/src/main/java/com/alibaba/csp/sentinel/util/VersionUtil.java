@@ -36,4 +36,69 @@ public final class VersionUtil {
     }
 
     private VersionUtil() {}
+    
+    private static int parseInt(String str) {
+        if (str == null || str.length() < 1) {
+            return 0;
+        }
+        int num = 0;
+        for (int i = 0; i < str.length(); i ++) {
+            char ch = str.charAt(i);
+            if (ch < '0' || ch > '9') {
+                break;
+            }
+            num = num * 10 + (ch - '0');
+        }
+        return num;
+    }
+
+    /**
+     * Convert version in string like x.y.z or x.y.z.b into number<br />
+     * Each segment has one byte space(unsigned)<br />
+     * eg.<br />
+     * <pre>
+     * 1.2.3.4 => 01 02 03 04
+     * 1.2.3   => 01 02 03 00
+     * 1.2     => 01 02 00 00
+     * 1       => 01 00 00 00
+     * </pre>
+     * 
+     * @return
+     */
+    public static int fromVersionString(String verStr) {
+        if (verStr == null || verStr.length() < 1) {
+            return 0;
+        }
+        int[] versions = new int[] {0, 0, 0, 0};
+        int index = 0;
+        String segment;
+        int cur = 0;
+        int pos;
+        do {
+            if (index >= versions.length) {
+                // More dots than "x.y.z.b" contains
+                return 0;
+            }
+            pos = verStr.indexOf('.', cur);
+            if (pos == -1) {
+                segment = verStr.substring(cur);
+            } else if (cur < pos) {
+                segment = verStr.substring(cur, pos);
+            } else {
+                // Illegal format
+                return 0;
+            }
+            versions[index] = parseInt(segment);
+            if (versions[index] < 0 || versions[index] > 255) {
+                // Out of range [0, 255]
+                return 0;
+            }
+            cur = pos + 1;
+            index ++;
+        } while (pos > 0);
+        return ((versions[0] & 0xff) << 24)
+             | ((versions[1] & 0xff) << 16)
+             | ((versions[2] & 0xff) << 8)
+              | (versions[3] & 0xff);
+    }
 }

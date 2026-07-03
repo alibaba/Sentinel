@@ -148,18 +148,18 @@ app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', '
           getMachineRules();
           confirmDialog.close();
         } else {
-          alert('失败!');
+          alert('失败：' + data.msg);
         }
       });
     };
 
     function addNewRule(rule) {
       FlowService.newRule(rule).success(function (data) {
-        if (data.code == 0) {
+        if (data.code === 0) {
           getMachineRules();
           flowRuleDialog.close();
         } else {
-          alert('失败!');
+          alert('失败：' + data.msg);
         }
       });
     };
@@ -173,7 +173,7 @@ app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', '
 
     function saveRule(rule, edit) {
       FlowService.saveRule(rule).success(function (data) {
-        if (data.code == 0) {
+        if (data.code === 0) {
           getMachineRules();
           if (edit) {
             flowRuleDialog.close();
@@ -181,7 +181,7 @@ app.controller('FlowControllerV1', ['$scope', '$stateParams', 'FlowServiceV1', '
             confirmDialog.close();
           }
         } else {
-          alert('失败!');
+          alert('失败：' + data.msg);
         }
       });
     }

@@ -1,5 +1,7 @@
 package com.alibaba.csp.sentinel.util.function;
 
+import java.util.Objects;
+
 /**
  * A tuple of 2 elements.
  */
@@ -32,10 +34,29 @@ public class Tuple2<R1, R2> {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Tuple2)) {
+            return false;
+        }
+        Tuple2 that = (Tuple2) o;
+        return Objects.equals(this.r1, that.r1) && Objects.equals(this.r2, that.r2);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = r1 != null ? r1.hashCode() : 0;
+        result = 31 * result + (r2 != null ? r2.hashCode() : 0);
+        return result;
+    }
+
+    @Override
     public String toString() {
         return "Tuple2{" +
-            "r1=" + r1 +
-            ", r2=" + r2 +
-            '}';
+                "r1=" + r1 +
+                ", r2=" + r2 +
+                '}';
     }
 }

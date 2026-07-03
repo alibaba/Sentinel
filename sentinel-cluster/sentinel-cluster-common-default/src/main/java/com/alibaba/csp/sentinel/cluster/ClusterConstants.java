@@ -24,6 +24,9 @@ public final class ClusterConstants {
     public static final int MSG_TYPE_PING = 0;
     public static final int MSG_TYPE_FLOW = 1;
     public static final int MSG_TYPE_PARAM_FLOW = 2;
+    public static final int MSG_TYPE_CONCURRENT_FLOW_ACQUIRE = 3;
+    public static final int MSG_TYPE_CONCURRENT_FLOW_RELEASE = 4;
+
 
     public static final int RESPONSE_STATUS_BAD = -1;
     public static final int RESPONSE_STATUS_OK = 0;

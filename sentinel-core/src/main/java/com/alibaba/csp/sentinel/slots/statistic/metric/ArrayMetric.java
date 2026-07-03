@@ -18,13 +18,14 @@ package com.alibaba.csp.sentinel.slots.statistic.metric;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.alibaba.csp.sentinel.Constants;
+import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
 import com.alibaba.csp.sentinel.slots.statistic.MetricEvent;
 import com.alibaba.csp.sentinel.slots.statistic.base.LeapArray;
 import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
 import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 import com.alibaba.csp.sentinel.slots.statistic.metric.occupy.OccupiableBucketLeapArray;
+import com.alibaba.csp.sentinel.util.function.Predicate;
 
 /**
  * The basic metric class in Sentinel using a {@link BucketLeapArray} internal.
@@ -140,7 +141,7 @@ public class ArrayMetric implements Metric {
     @Override
     public long minRt() {
         data.currentWindow();
-        long rt = Constants.TIME_DROP_VALVE;
+        long rt = SentinelConfig.statisticMaxRt();
         List<MetricBucket> list = data.values();
         for (MetricBucket window : list) {
             if (window.minRt() < rt) {
@@ -153,31 +154,54 @@ public class ArrayMetric implements Metric {
 
     @Override
     public List<MetricNode> details() {
-        List<MetricNode> details = new ArrayList<MetricNode>();
+        List<MetricNode> details = new ArrayList<>();
         data.currentWindow();
         List<WindowWrap<MetricBucket>> list = data.list();
         for (WindowWrap<MetricBucket> window : list) {
             if (window == null) {
                 continue;
             }
-            MetricNode node = new MetricNode();
-            node.setBlockQps(window.value().block());
-            node.setExceptionQps(window.value().exception());
-            node.setPassQps(window.value().pass());
-            long successQps = window.value().success();
-            node.setSuccessQps(successQps);
-            if (successQps != 0) {
-                node.setRt(window.value().rt() / successQps);
-            } else {
-                node.setRt(window.value().rt());
-            }
-            node.setTimestamp(window.windowStart());
-            node.setOccupiedPassQps(window.value().occupiedPass());
 
-            details.add(node);
+            details.add(fromBucket(window));
         }
 
         return details;
+    }
+
+    @Override
+    public List<MetricNode> detailsOnCondition(Predicate<Long> timePredicate) {
+        List<MetricNode> details = new ArrayList<>();
+        data.currentWindow();
+        List<WindowWrap<MetricBucket>> list = data.list();
+        for (WindowWrap<MetricBucket> window : list) {
+            if (window == null) {
+                continue;
+            }
+            if (timePredicate != null && !timePredicate.test(window.windowStart())) {
+                continue;
+            }
+
+            details.add(fromBucket(window));
+        }
+
+        return details;
+    }
+
+    private MetricNode fromBucket(WindowWrap<MetricBucket> wrap) {
+        MetricNode node = new MetricNode();
+        node.setBlockQps(wrap.value().block());
+        node.setExceptionQps(wrap.value().exception());
+        node.setPassQps(wrap.value().pass());
+        long successQps = wrap.value().success();
+        node.setSuccessQps(successQps);
+        if (successQps != 0) {
+            node.setRt(wrap.value().rt() / successQps);
+        } else {
+            node.setRt(wrap.value().rt());
+        }
+        node.setTimestamp(wrap.windowStart());
+        node.setOccupiedPassQps(wrap.value().occupiedPass());
+        return node;
     }
 
     @Override

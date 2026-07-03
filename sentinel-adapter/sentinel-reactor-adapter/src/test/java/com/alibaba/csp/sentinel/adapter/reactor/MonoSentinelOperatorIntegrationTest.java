@@ -162,6 +162,28 @@ public class MonoSentinelOperatorIntegrationTest {
         assertEquals(1, cn.totalException());
     }
 
+    @Test
+    public void testMultipleReactorTransformerLatterFlowControl() {
+        String resourceName1 = createResourceName("testMultipleReactorTransformerLatterFlowControl1");
+        String resourceName2 = createResourceName("testMultipleReactorTransformerLatterFlowControl2");
+        FlowRuleManager.loadRules(Collections.singletonList(
+            new FlowRule(resourceName2).setCount(0)
+        ));
+        StepVerifier.create(Mono.just(2)
+            .transform(new SentinelReactorTransformer<>(resourceName1))
+            .transform(new SentinelReactorTransformer<>(resourceName2)))
+            .expectError(BlockException.class)
+            .verify();
+
+        ClusterNode cn1 = ClusterBuilderSlot.getClusterNode(resourceName1);
+        assertNotNull(cn1);
+        ClusterNode cn2 = ClusterBuilderSlot.getClusterNode(resourceName2);
+        assertNotNull(cn2);
+        assertEquals(1, cn2.blockRequest());
+        assertEquals(1, cn1.totalSuccess());
+        FlowRuleManager.loadRules(new ArrayList<>());
+    }
+
     private String createResourceName(String resourceName) {
         return "reactor_test_mono_" + resourceName;
     }

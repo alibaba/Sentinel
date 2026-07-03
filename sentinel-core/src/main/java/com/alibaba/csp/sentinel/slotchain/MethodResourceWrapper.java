@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.slotchain;
 import java.lang.reflect.Method;
 
 import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.ResourceTypeConstants;
 import com.alibaba.csp.sentinel.util.IdUtil;
 import com.alibaba.csp.sentinel.util.MethodUtil;
 
@@ -28,17 +29,15 @@ import com.alibaba.csp.sentinel.util.MethodUtil;
  */
 public class MethodResourceWrapper extends ResourceWrapper {
 
-    private transient Method method;
+    private final transient Method method;
 
-    public MethodResourceWrapper(Method method, EntryType type) {
-        this.method = method;
-        this.name = MethodUtil.resolveMethodName(method);
-        this.type = type;
+    public MethodResourceWrapper(Method method, EntryType e) {
+        this(method, e, ResourceTypeConstants.COMMON);
     }
 
-    @Override
-    public String getName() {
-        return name;
+    public MethodResourceWrapper(Method method, EntryType e, int resType) {
+        super(MethodUtil.resolveMethodName(method), e, resType);
+        this.method = method;
     }
 
     public Method getMethod() {
@@ -47,12 +46,15 @@ public class MethodResourceWrapper extends ResourceWrapper {
 
     @Override
     public String getShowName() {
-        return IdUtil.truncate(this.name);
+        return name;
     }
 
     @Override
-    public EntryType getType() {
-        return type;
+    public String toString() {
+        return "MethodResourceWrapper{" +
+            "name='" + name + '\'' +
+            ", entryType=" + entryType +
+            ", resourceType=" + resourceType +
+            '}';
     }
-
 }

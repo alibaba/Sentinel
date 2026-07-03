@@ -51,6 +51,14 @@ public final class RuleConstant {
     public static final int CONTROL_BEHAVIOR_RATE_LIMITER = 2;
     public static final int CONTROL_BEHAVIOR_WARM_UP_RATE_LIMITER = 3;
 
+    public static final int DEFAULT_BLOCK_STRATEGY = 0;
+    public static final int TRY_AGAIN_BLOCK_STRATEGY = 1;
+    public static final int TRY_UNTIL_SUCCESS_BLOCK_STRATEGY = 2;
+
+    public static final int DEFAULT_RESOURCE_TIMEOUT_STRATEGY = 0;
+    public static final int RELEASE_RESOURCE_TIMEOUT_STRATEGY = 1;
+    public static final int KEEP_RESOURCE_TIMEOUT_STRATEGY = 2;
+
     public static final String LIMIT_APP_DEFAULT = "default";
     public static final String LIMIT_APP_OTHER = "other";
 

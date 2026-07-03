@@ -63,7 +63,7 @@ public class SphOTest {
             try {
                 assertTrue(StringUtil.equalsIgnoreCase(
                     ContextUtil.getContext().getCurEntry().getResourceWrapper().getName(), "resourceName"));
-                assertSame(ContextUtil.getContext().getCurEntry().getResourceWrapper().getType(), EntryType.OUT);
+                assertSame(ContextUtil.getContext().getCurEntry().getResourceWrapper().getEntryType(), EntryType.OUT);
             } finally {
                 SphO.exit(2);
             }
@@ -78,7 +78,7 @@ public class SphOTest {
                 assertTrue(StringUtil.equalsIgnoreCase(
                     ContextUtil.getContext().getCurEntry().getResourceWrapper().getName(),
                     "com.alibaba.csp.sentinel.SphOTest:testMethodEntryCount()"));
-                assertSame(ContextUtil.getContext().getCurEntry().getResourceWrapper().getType(), EntryType.OUT);
+                assertSame(ContextUtil.getContext().getCurEntry().getResourceWrapper().getEntryType(), EntryType.OUT);
             } finally {
                 SphO.exit(2);
             }
@@ -91,7 +91,7 @@ public class SphOTest {
             try {
                 assertTrue(StringUtil.equalsIgnoreCase(
                     ContextUtil.getContext().getCurEntry().getResourceWrapper().getName(), "resourceName"));
-                assertSame(ContextUtil.getContext().getCurEntry().getResourceWrapper().getType(), EntryType.IN);
+                assertSame(ContextUtil.getContext().getCurEntry().getResourceWrapper().getEntryType(), EntryType.IN);
             } finally {
                 SphO.exit();
             }
@@ -106,7 +106,7 @@ public class SphOTest {
                 assertTrue(StringUtil.equalsIgnoreCase(
                     ContextUtil.getContext().getCurEntry().getResourceWrapper().getName(),
                     "com.alibaba.csp.sentinel.SphOTest:testMethodEntryType()"));
-                assertSame(ContextUtil.getContext().getCurEntry().getResourceWrapper().getType(), EntryType.IN);
+                assertSame(ContextUtil.getContext().getCurEntry().getResourceWrapper().getEntryType(), EntryType.IN);
             } finally {
                 SphO.exit();
             }
@@ -119,7 +119,7 @@ public class SphOTest {
             try {
                 assertTrue(StringUtil.equalsIgnoreCase(
                     ContextUtil.getContext().getCurEntry().getResourceWrapper().getName(), "resourceName"));
-                assertSame(ContextUtil.getContext().getCurEntry().getResourceWrapper().getType(), EntryType.IN);
+                assertSame(ContextUtil.getContext().getCurEntry().getResourceWrapper().getEntryType(), EntryType.IN);
             } finally {
                 SphO.exit(2);
             }
@@ -134,7 +134,7 @@ public class SphOTest {
                 assertTrue(StringUtil.equalsIgnoreCase(
                     ContextUtil.getContext().getCurEntry().getResourceWrapper().getName(),
                     "com.alibaba.csp.sentinel.SphOTest:testMethodEntryTypeCount()"));
-                assertSame(ContextUtil.getContext().getCurEntry().getResourceWrapper().getType(), EntryType.IN);
+                assertSame(ContextUtil.getContext().getCurEntry().getResourceWrapper().getEntryType(), EntryType.IN);
             } finally {
                 SphO.exit(2);
             }
@@ -147,7 +147,7 @@ public class SphOTest {
             try {
                 assertTrue(StringUtil.equalsIgnoreCase(
                     ContextUtil.getContext().getCurEntry().getResourceWrapper().getName(), "resourceName"));
-                assertSame(ContextUtil.getContext().getCurEntry().getResourceWrapper().getType(), EntryType.IN);
+                assertSame(ContextUtil.getContext().getCurEntry().getResourceWrapper().getEntryType(), EntryType.IN);
             } finally {
                 SphO.exit(2, "hello1", "hello2");
             }
@@ -162,7 +162,7 @@ public class SphOTest {
                 assertTrue(StringUtil.equalsIgnoreCase(
                     ContextUtil.getContext().getCurEntry().getResourceWrapper().getName(),
                     "com.alibaba.csp.sentinel.SphOTest:testMethodEntryAll()"));
-                assertSame(ContextUtil.getContext().getCurEntry().getResourceWrapper().getType(), EntryType.IN);
+                assertSame(ContextUtil.getContext().getCurEntry().getResourceWrapper().getEntryType(), EntryType.IN);
             } finally {
                 SphO.exit(2, "hello1", "hello2");
             }

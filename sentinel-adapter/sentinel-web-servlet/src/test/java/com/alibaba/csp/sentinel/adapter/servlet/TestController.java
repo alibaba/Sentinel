@@ -39,4 +39,9 @@ public class TestController {
     public String apiFoo(@PathVariable("id") Long id) {
         return "Hello " + id;
     }
+
+    @GetMapping("/exclude/{id}")
+    public String apiExclude(@PathVariable("id") Long id) {
+        return "Exclude " + id;
+    }
 }

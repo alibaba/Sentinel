@@ -37,15 +37,11 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
  */
 public class FooProviderBootstrap {
 
-    private static final String INTERFACE_RES_KEY = FooService.class.getName();
-    private static final String RES_KEY = INTERFACE_RES_KEY + ":sayHello(java.lang.String)";
-
     public static void main(String[] args) {
         // Users don't need to manually call this method.
         // Only for eager initialization.
         InitExecutor.doInit();
 
-        initFlowRule();
 
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
         context.register(ProviderConfiguration.class);
@@ -54,10 +50,4 @@ public class FooProviderBootstrap {
         System.out.println("Service provider is ready");
     }
 
-    private static void initFlowRule() {
-        FlowRule flowRule = new FlowRule(INTERFACE_RES_KEY)
-            .setCount(10)
-            .setGrade(RuleConstant.FLOW_GRADE_QPS);
-        FlowRuleManager.loadRules(Collections.singletonList(flowRule));
-    }
 }

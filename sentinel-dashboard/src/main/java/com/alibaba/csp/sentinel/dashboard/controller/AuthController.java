@@ -22,10 +22,10 @@ import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
@@ -45,6 +45,9 @@ public class AuthController {
 
     @Value("${auth.password:sentinel}")
     private String authPassword;
+
+    @Autowired
+    private AuthService<HttpServletRequest> authService;
 
     @PostMapping("/login")
     public Result<AuthService.AuthUser> login(HttpServletRequest request, String username, String password) {
@@ -72,9 +75,18 @@ public class AuthController {
         return Result.ofSuccess(authUser);
     }
 
-    @RequestMapping(value = "/logout", method = RequestMethod.POST)
+    @PostMapping(value = "/logout")
     public Result<?> logout(HttpServletRequest request) {
         request.getSession().invalidate();
         return Result.ofSuccess(null);
+    }
+
+    @PostMapping(value = "/check")
+    public Result<?> check(HttpServletRequest request) {
+        AuthService.AuthUser authUser = authService.getAuthUser(request);
+        if (authUser == null) {
+            return Result.ofFail(-1, "Not logged in");
+        }
+        return Result.ofSuccess(authUser);
     }
 }

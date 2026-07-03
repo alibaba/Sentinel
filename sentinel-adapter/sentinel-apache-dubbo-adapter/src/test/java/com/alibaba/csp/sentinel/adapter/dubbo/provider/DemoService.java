@@ -20,4 +20,5 @@ package com.alibaba.csp.sentinel.adapter.dubbo.provider;
  */
 public interface DemoService {
     String sayHello(String name, int n);
+    String sayHi(String name,int n);
 }

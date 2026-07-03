@@ -16,9 +16,9 @@
 package com.alibaba.csp.sentinel.cluster.flow.statistic.limit;
 
 import java.util.List;
+import java.util.concurrent.atomic.LongAdder;
 
 import com.alibaba.csp.sentinel.slots.statistic.base.LeapArray;
-import com.alibaba.csp.sentinel.slots.statistic.base.LongAdder;
 import com.alibaba.csp.sentinel.slots.statistic.base.UnaryLeapArray;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 

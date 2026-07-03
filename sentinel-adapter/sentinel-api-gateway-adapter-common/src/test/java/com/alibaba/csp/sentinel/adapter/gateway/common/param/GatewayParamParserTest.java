@@ -187,6 +187,35 @@ public class GatewayParamParserTest {
     }
 
     @Test
+    public void testParseParametersWithEmptyItemPattern() {
+        RequestItemParser<Object> itemParser = mock(RequestItemParser.class);
+        GatewayParamParser<Object> paramParser = new GatewayParamParser<>(itemParser);
+        // Create a fake request.
+        Object request = new Object();
+        // Prepare gateway rules.
+        Set<GatewayFlowRule> rules = new HashSet<>();
+        final String routeId = "my_test_route_DS(*H";
+        final String headerName = "X-Sentinel-Flag";
+        GatewayFlowRule routeRule1 = new GatewayFlowRule(routeId)
+            .setCount(10)
+            .setIntervalSec(2)
+            .setParamItem(new GatewayParamFlowItem()
+                .setParseStrategy(SentinelGatewayConstants.PARAM_PARSE_STRATEGY_HEADER)
+                .setFieldName(headerName)
+                .setPattern("")
+                .setMatchStrategy(SentinelGatewayConstants.PARAM_MATCH_STRATEGY_EXACT)
+            );
+        rules.add(routeRule1);
+        GatewayRuleManager.loadRules(rules);
+
+        mockSingleHeader(itemParser, headerName, "Sent1nel");
+        Object[] params = paramParser.parseParameterFor(routeId, request, routeIdPredicate);
+        assertThat(params.length).isEqualTo(1);
+        // Empty pattern should not take effect.
+        assertThat(params[routeRule1.getParamItem().getIndex()]).isEqualTo("Sent1nel");
+    }
+
+    @Test
     public void testParseParametersWithItemPatternMatching() {
         RequestItemParser<Object> itemParser = mock(RequestItemParser.class);
         GatewayParamParser<Object> paramParser = new GatewayParamParser<>(itemParser);

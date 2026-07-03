@@ -131,7 +131,7 @@ public final class ClusterClientConfigManager {
                 return;
             }
 
-            RecordLog.info("[ClusterClientConfigManager] Assign to new target token server: " + config);
+            RecordLog.info("[ClusterClientConfigManager] Assign to new target token server: {}", config);
 
             updateServerAssignment(config);
         }
@@ -156,11 +156,11 @@ public final class ClusterClientConfigManager {
         private synchronized void applyConfig(ClusterClientConfig config) {
             if (!isValidClientConfig(config)) {
                 RecordLog.warn(
-                    "[ClusterClientConfigManager] Invalid cluster client config, ignoring: " + config);
+                    "[ClusterClientConfigManager] Invalid cluster client config, ignoring: {}", config);
                 return;
             }
 
-            RecordLog.info("[ClusterClientConfigManager] Updating to new client config: " + config);
+            RecordLog.info("[ClusterClientConfigManager] Updating to new client config: {}", config);
 
             updateClientConfigChange(config);
         }

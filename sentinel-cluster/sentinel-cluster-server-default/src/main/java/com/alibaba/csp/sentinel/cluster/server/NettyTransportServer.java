@@ -118,7 +118,7 @@ public class NettyTransportServer implements ClusterTokenServer {
                         RecordLog.info("[NettyTransportServer] Failed to start token server when retrying", e);
                     }
                 } else {
-                    RecordLog.info("[NettyTransportServer] Token server started success at port " + port);
+                    RecordLog.info("[NettyTransportServer] Token server started success at port {}", port);
                     currentState.compareAndSet(SERVER_STATUS_STARTING, SERVER_STATUS_STARTED);
                 }
             }

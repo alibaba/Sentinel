@@ -3,6 +3,7 @@
 ## Env Requirement
 
 - Node.js > 6.x
+- Node.js < 12.x
 
 ## Code Guide
 
@@ -11,19 +12,19 @@
 
 ## Install Packages
 
-```
+```shell
 npm install
 ```
 
 ## Start Development
 
-```
+```shell
 npm start
 ```
 
 ## Build for production
 
-```
+```shell
 npm run build
 ```
 

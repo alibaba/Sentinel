@@ -15,8 +15,6 @@
  */
 package com.alibaba.csp.sentinel.slots.block.flow;
 
-import com.alibaba.csp.sentinel.context.Context;
-import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
@@ -184,11 +182,6 @@ public class FlowRule extends AbstractRule {
     public FlowRule setClusterConfig(ClusterFlowConfig clusterConfig) {
         this.clusterConfig = clusterConfig;
         return this;
-    }
-
-    @Override
-    public boolean passCheck(Context context, DefaultNode node, int acquireCount, Object... args) {
-        return true;
     }
 
     @Override

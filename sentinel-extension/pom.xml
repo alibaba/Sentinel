@@ -3,10 +3,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <name>${project.groupId}:${project.artifactId}</name>
+
     <parent>
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-parent</artifactId>
-        <version>1.7.0-SNAPSHOT</version>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>sentinel-extension</artifactId>
     <packaging>pom</packaging>
@@ -19,6 +22,13 @@
         <module>sentinel-datasource-redis</module>
         <module>sentinel-annotation-aspectj</module>
         <module>sentinel-parameter-flow-control</module>
+        <module>sentinel-datasource-spring-cloud-config</module>
+        <module>sentinel-datasource-consul</module>
+        <module>sentinel-datasource-etcd</module>
+        <module>sentinel-datasource-eureka</module>
+        <module>sentinel-annotation-cdi-interceptor</module>
+        <module>sentinel-metric-exporter</module>
+        <module>sentinel-prometheus-metric-exporter</module>
     </modules>
 
 </project>

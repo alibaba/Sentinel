@@ -219,7 +219,7 @@ public final class ClusterServerConfigManager {
         if (newSet == null) {
             return;
         }
-        RecordLog.info("[ClusterServerConfigManager] Server namespace set will be update to: " + newSet);
+        RecordLog.info("[ClusterServerConfigManager] Server namespace set will be update to: {}", newSet);
         if (newSet.isEmpty()) {
             ClusterServerConfigManager.namespaceSet = Collections.singleton(ServerConstants.DEFAULT_NAMESPACE);
             return;
@@ -276,10 +276,10 @@ public final class ClusterServerConfigManager {
         private synchronized void applyConfig(ServerTransportConfig config) {
             if (!isValidTransportConfig(config)) {
                 RecordLog.warn(
-                    "[ClusterServerConfigManager] Invalid cluster server transport config, ignoring: " + config);
+                    "[ClusterServerConfigManager] Invalid cluster server transport config, ignoring: {}", config);
                 return;
             }
-            RecordLog.info("[ClusterServerConfigManager] Updating new server transport config: " + config);
+            RecordLog.info("[ClusterServerConfigManager] Updating new server transport config: {}", config);
             if (config.getIdleSeconds() != idleSeconds) {
                 idleSeconds = config.getIdleSeconds();
             }
@@ -315,10 +315,10 @@ public final class ClusterServerConfigManager {
         private synchronized void applyGlobalFlowConfig(ServerFlowConfig config) {
             if (!isValidFlowConfig(config)) {
                 RecordLog.warn(
-                    "[ClusterServerConfigManager] Invalid cluster server global flow config, ignoring: " + config);
+                    "[ClusterServerConfigManager] Invalid cluster server global flow config, ignoring: {}", config);
                 return;
             }
-            RecordLog.info("[ClusterServerConfigManager] Updating new server global flow config: " + config);
+            RecordLog.info("[ClusterServerConfigManager] Updating new server global flow config: {}", config);
             if (config.getExceedCount() != exceedCount) {
                 exceedCount = config.getExceedCount();
             }

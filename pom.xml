@@ -5,7 +5,7 @@
 
     <groupId>com.alibaba.csp</groupId>
     <artifactId>sentinel-parent</artifactId>
-    <version>1.7.0-SNAPSHOT</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <name>${project.artifactId}</name>
@@ -40,29 +40,31 @@
     </issueManagement>
 
     <properties>
+        <revision>1.8.11-SNAPSHOT</revision>
         <!-- Compile libs -->
-        <fastjson.version>1.2.56</fastjson.version>
+        <fastjson.version>1.2.83_noneautotype</fastjson.version>
+        <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
 
         <!-- Test libs -->
         <junit.version>4.12</junit.version>
-        <mockito.version>2.21.0</mockito.version>
+        <mockito.version>4.11.0</mockito.version>
+        <byte-buddy.version>1.14.10</byte-buddy.version>
         <assertj.version>3.12.1</assertj.version>
         <awaitility.version>3.1.5</awaitility.version>
-        <powermock.version>2.0.0</powermock.version>
 
         <!-- Build -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.source.version>1.7</java.source.version>
-        <java.target.version>1.7</java.target.version>
+        <java.source.version>1.8</java.source.version>
+        <java.target.version>1.8</java.target.version>
         <java.encoding>UTF-8</java.encoding>
-        <maven.compiler.version>3.8.0</maven.compiler.version>
-        <maven.surefire.version>2.22.1</maven.surefire.version>
+        <maven.compiler.version>3.12.0</maven.compiler.version>
+        <maven.surefire.version>3.2.5</maven.surefire.version>
         <maven.source.version>3.0.1</maven.source.version>
         <maven.javadoc.version>3.0.1</maven.javadoc.version>
         <maven.deploy.version>2.8.2</maven.deploy.version>
         <maven.gpg.version>1.6</maven.gpg.version>
-        <maven.jacoco.version>0.8.3</maven.jacoco.version>
-        <maven.jar.version>3.1.0</maven.jar.version>
+        <maven.jacoco.version>0.8.11</maven.jacoco.version>
+        <maven.jar.version>3.3.0</maven.jar.version>
         <maven.pmd.version>3.8</maven.pmd.version>
     </properties>
 
@@ -71,11 +73,14 @@
         <module>sentinel-extension</module>
         <module>sentinel-transport</module>
         <module>sentinel-adapter</module>
+        <module>sentinel-cluster</module>
+        <module>sentinel-logging</module>
+
         <module>sentinel-dashboard</module>
 
         <module>sentinel-demo</module>
         <module>sentinel-benchmark</module>
-        <module>sentinel-cluster</module>
+
     </modules>
 
     <dependencyManagement>
@@ -93,6 +98,11 @@
             <dependency>
                 <groupId>com.alibaba.csp</groupId>
                 <artifactId>sentinel-annotation-aspectj</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-annotation-cdi-interceptor</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -122,12 +132,22 @@
             </dependency>
             <dependency>
                 <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-datasource-etcd</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
                 <artifactId>sentinel-transport-simple-http</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.alibaba.csp</groupId>
                 <artifactId>sentinel-transport-netty-http</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-transport-spring-mvc</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -140,12 +160,25 @@
                 <artifactId>sentinel-cluster-common-default</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-web-adapter-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>com.alibaba.csp</groupId>
                 <artifactId>sentinel-adapter</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
+            
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-metric-exporter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>
@@ -165,6 +198,22 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-inline</artifactId>
+                <version>${mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy</artifactId>
+                <version>${byte-buddy.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy-agent</artifactId>
+                <version>${byte-buddy.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
                 <version>${assertj.version}</version>
@@ -182,23 +231,36 @@
                 <version>2.0.0.0</version>
                 <scope>test</scope>
             </dependency>
-            <dependency>
-                <groupId>org.powermock</groupId>
-                <artifactId>powermock-module-junit4</artifactId>
-                <version>${powermock.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.powermock</groupId>
-                <artifactId>powermock-api-mockito2</artifactId>
-                <version>${powermock.version}</version>
-                <scope>test</scope>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.7.3</version>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
@@ -246,20 +308,33 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven.compiler.version}</version>
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <configuration>
+                            <release>17</release>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>base-compile</id>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>module-info.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
                 <configuration>
-                    <source>${java.source.version}</source>
-                    <target>${java.target.version}</target>
-                    <encoding>${java.encoding}</encoding>
+                    <release>8</release>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <!-- CircleCI build workaround -->
-                    <argLine>@{argLine} -Xms1024m -Xmx2048m</argLine>
-                    <useSystemClassLoader>false</useSystemClassLoader>
-                </configuration>
+                <version>${maven.surefire.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -293,13 +368,18 @@
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>${maven.jar.version}</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>${maven.gpg.version}</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
 
     <profiles>
         <profile>
-            <id>oss</id>
+            <id>central</id>
             <build>
                 <plugins>
                     <!-- Source -->
@@ -350,18 +430,90 @@
                             </execution>
                         </executions>
                     </plugin>
+                    <!-- central -->
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.8.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <!--参考官方文档以及实际验证，目前仅支持精确匹配-->
+                            <excludeArtifacts>
+                                <excludeArtifact>sentinel-benchmark</excludeArtifact>
+                                <excludeArtifact>sentinel-dashboard</excludeArtifact>
+                                <excludeArtifact>sentinel-demo</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-basic</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-dynamic-file-rule</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-rocketmq</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-dubbo</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-nacos-datasource</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-zookeeper-datasource</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-apollo-datasource</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-annotation-spring-aop</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-parameter-flow-control</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-slot-spi</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-slotchain-spi</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-cluster</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-cluster-embedded</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-cluster-server-alone</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-command-handler</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-spring-webflux</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-apache-dubbo</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-apache-httpclient</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-sofa-rpc</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-spring-cloud-gateway</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-zuul-gateway</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-etcd-datasource</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-spring-webmvc</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-zuul2-gateway</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-log-logback</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-okhttp</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-jax-rs</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-quarkus</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-annotation-cdi-interceptor</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-motan</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-transport-spring-mvc</excludeArtifact>
+                                <excludeArtifact>sentinel-demo-servlet</excludeArtifact>
+                            </excludeArtifacts>
+                        </configuration>
+                    </plugin>
                 </plugins>
             </build>
             <distributionManagement>
                 <snapshotRepository>
-                    <id>oss</id>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+                    <id>central</id>
+                    <url>https://central.sonatype.com/repository/maven-snapshots/</url>
                 </snapshotRepository>
                 <repository>
-                    <id>oss</id>
-                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+                    <id>central</id>
+                    <url>https://central.sonatype.org/service/local/staging/deploy/maven2/</url>
                 </repository>
             </distributionManagement>
+        </profile>
+        <profile>
+            <id>custom-test-runtime-version</id>
+            <activation>
+                <property>
+                    <name>surefire.jdk-toolchain-version</name>
+                </property>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-surefire-plugin</artifactId>
+                            <version>${maven.surefire.version}</version>
+                            <configuration>
+                                <jdkToolchain>
+                                    <version>${surefire.jdk-toolchain-version}</version>
+                                </jdkToolchain>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
         </profile>
     </profiles>
 

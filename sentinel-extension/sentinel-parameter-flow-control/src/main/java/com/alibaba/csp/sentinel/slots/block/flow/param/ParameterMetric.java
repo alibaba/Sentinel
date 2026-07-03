@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
@@ -46,12 +47,14 @@ public class ParameterMetric {
      * @since 1.6.0
      */
     private final Map<ParamFlowRule, CacheMap<Object, AtomicLong>> ruleTimeCounters = new HashMap<>();
+
     /**
      * Format: (rule, (value, tokenCounter))
      *
      * @since 1.6.0
      */
-    private final Map<ParamFlowRule, CacheMap<Object, AtomicLong>> ruleTokenCounter = new HashMap<>();
+    private final Map<ParamFlowRule, CacheMap<Object, AtomicReference<TokenUpdateStatus>>> ruleTokenCounter = new HashMap<>();
+
     private final Map<Integer, CacheMap<Object, AtomicInteger>> threadCountMap = new HashMap<>();
 
     /**
@@ -59,10 +62,18 @@ public class ParameterMetric {
      *
      * @param rule valid parameter rule
      * @return the associated token counter
-     * @since 1.6.0
+     * @since 1.8.8
      */
-    public CacheMap<Object, AtomicLong> getRuleTokenCounter(ParamFlowRule rule) {
+    CacheMap<Object, AtomicReference<TokenUpdateStatus>> getRuleStampedTokenCounter(ParamFlowRule rule) {
         return ruleTokenCounter.get(rule);
+    }
+
+    public void clear() {
+        synchronized (lock) {
+            ruleTimeCounters.clear();
+            ruleTokenCounter.clear();
+            threadCountMap.clear();
+        }
     }
 
     /**
@@ -76,11 +87,11 @@ public class ParameterMetric {
         return ruleTimeCounters.get(rule);
     }
 
-    public void clear() {
+    public void clearForRule(ParamFlowRule rule) {
         synchronized (lock) {
-            threadCountMap.clear();
-            ruleTimeCounters.clear();
-            ruleTokenCounter.clear();
+            ruleTimeCounters.remove(rule);
+            ruleTokenCounter.remove(rule);
+            threadCountMap.remove(rule.getParamIdx());
         }
     }
 
@@ -253,7 +264,7 @@ public class ParameterMetric {
      *
      * @return the token counter map
      */
-    Map<ParamFlowRule, CacheMap<Object, AtomicLong>> getRuleTokenCounterMap() {
+    Map<ParamFlowRule, CacheMap<Object, AtomicReference<TokenUpdateStatus>>> getRuleTokenCounterMap() {
         return ruleTokenCounter;
     }
 

@@ -44,4 +44,20 @@ public interface TokenService {
      * @return result of the token request
      */
     TokenResult requestParamToken(Long ruleId, int acquireCount, Collection<Object> params);
+
+    /**
+     * Request acquire concurrent tokens from remote token server.
+     *
+     * @param clientAddress the address of the request belong.
+     * @param ruleId ruleId the unique rule ID
+     * @param acquireCount token count to acquire
+     * @return result of the token request
+     */
+    TokenResult requestConcurrentToken(String clientAddress,Long ruleId,int acquireCount);
+    /**
+     * Request release concurrent tokens from remote token server asynchronously.
+     *
+     * @param tokenId the unique token ID
+     */
+    void releaseConcurrentToken(Long tokenId);
 }

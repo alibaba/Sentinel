@@ -17,10 +17,11 @@ package com.alibaba.csp.sentinel.adapter.gateway.zuul.api.route;
 
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.function.Predicate;
-
 import com.netflix.zuul.context.RequestContext;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.PathMatcher;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Eric Zhao
@@ -42,7 +43,12 @@ public class PrefixRoutePathMatcher implements Predicate<RequestContext> {
 
     @Override
     public boolean test(RequestContext context) {
-        String path = context.getRequest().getServletPath();
+        //Solve the problem of prefix matching
+        HttpServletRequest request = context.getRequest();
+        String path = request.getRequestURI();
+        if (path == null) {
+            AssertUtil.assertNotBlank(pattern, "requesturi cannot be blank");
+        }
         if (canMatch) {
             return pathMatcher.match(pattern, path);
         }

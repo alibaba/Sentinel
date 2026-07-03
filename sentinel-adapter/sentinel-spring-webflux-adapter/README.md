@@ -1,7 +1,5 @@
 # Sentinel Spring WebFlux Adapter
 
-> Note: this module requires Java 8 or later version.
-
 Sentinel provides integration module with Spring WebFlux, so reactive web applications can also leverage Sentinel's flow control
 and circuit breaking to achieve reliability. The integration module is based on the Sentinel Reactor Adapter.
 
@@ -50,7 +48,7 @@ public class WebFluxConfig {
 You can register various customized callback in `WebFluxCallbackManager`:
 
 - `setBlockHandler`: register a customized `BlockRequestHandler` to handle the blocked request. The default implementation is `DefaultBlockRequestHandler`, which returns default message like `Blocked by Sentinel: FlowException`.
-- `setUrlCleaner`: used for normalization of URL. The function type is `(ServerWebExchange, String) → String`, which means `(webExchange, originalUrl) → finalUrl`.
+- `setUrlCleaner`: used for normalization of URL. The function type is `(ServerWebExchange, String) → String`, which means `(webExchange, originalUrl) → finalUrl`, if the finalUrl is `"""` or `null`, the URLs will be excluded (since Sentinel 1.7.0)..
 - `setRequestOriginParser`: used to resolve the origin from the HTTP request. The function type is `ServerWebExchange → String`.
 
 You can also refer to the demo: [sentinel-demo-spring-webflux](https://github.com/alibaba/Sentinel/tree/master/sentinel-demo/sentinel-demo-spring-webflux).

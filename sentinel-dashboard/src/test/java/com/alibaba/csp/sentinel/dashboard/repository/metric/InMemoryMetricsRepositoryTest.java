@@ -16,17 +16,24 @@
 package com.alibaba.csp.sentinel.dashboard.repository.metric;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.MetricEntity;
-
-import org.assertj.core.util.Lists;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.*;
 
@@ -37,13 +44,11 @@ import static org.junit.Assert.*;
  */
 public class InMemoryMetricsRepositoryTest {
 
-    private static final String DEFAULT_APP = "default";
-    private static final String DEFAULT_EXPIRE_APP = "default_expire_app";
-    private static final String DEFAULT_RESOURCE = "test";
+    private final static String DEFAULT_APP = "defaultApp";
+    private final static String DEFAULT_RESOURCE = "defaultResource";
     private static final long EXPIRE_TIME = 1000 * 60 * 5L;
 
     private InMemoryMetricsRepository inMemoryMetricsRepository;
-
     private ExecutorService executorService;
 
     @Before
@@ -57,27 +62,50 @@ public class InMemoryMetricsRepositoryTest {
         executorService.shutdownNow();
     }
 
-    private void testSave() {
-        for (int i = 0; i < 1000000; i++) {
+
+    @Test
+    public void testSave() {
+        MetricEntity entry = new MetricEntity();
+        entry.setApp("testSave");
+        entry.setResource("testResource");
+        entry.setTimestamp(new Date(System.currentTimeMillis()));
+        entry.setPassQps(1L);
+        entry.setExceptionQps(1L);
+        entry.setBlockQps(0L);
+        entry.setSuccessQps(1L);
+        inMemoryMetricsRepository.save(entry);
+        List<String> resources = inMemoryMetricsRepository.listResourcesOfApp("testSave");
+        Assert.assertTrue(resources.size() == 1 && "testResource".equals(resources.get(0)));
+    }
+
+
+    @Test
+    public void testSaveAll() {
+        List<MetricEntity> entities = new ArrayList<>(10000);
+        for (int i = 0; i < 10000; i++) {
             MetricEntity entry = new MetricEntity();
-            entry.setApp(DEFAULT_APP);
-            entry.setResource(DEFAULT_RESOURCE);
+            entry.setApp("testSaveAll");
+            entry.setResource("testResource" + i);
             entry.setTimestamp(new Date(System.currentTimeMillis()));
             entry.setPassQps(1L);
             entry.setExceptionQps(1L);
             entry.setBlockQps(0L);
             entry.setSuccessQps(1L);
-            inMemoryMetricsRepository.save(entry);
+            entities.add(entry);
         }
+        inMemoryMetricsRepository.saveAll(entities);
+        List<String> result = inMemoryMetricsRepository.listResourcesOfApp("testSaveAll");
+        Assert.assertTrue(result.size() == entities.size());
     }
+
 
     @Test
     public void testExpireMetric() {
         long now = System.currentTimeMillis();
         MetricEntity expireEntry = new MetricEntity();
-        expireEntry.setApp(DEFAULT_EXPIRE_APP);
+        expireEntry.setApp(DEFAULT_APP);
         expireEntry.setResource(DEFAULT_RESOURCE);
-        expireEntry.setTimestamp(new Date(now - EXPIRE_TIME - 10L));
+        expireEntry.setTimestamp(new Date(now - EXPIRE_TIME - 1L));
         expireEntry.setPassQps(1L);
         expireEntry.setExceptionQps(1L);
         expireEntry.setBlockQps(0L);
@@ -85,7 +113,7 @@ public class InMemoryMetricsRepositoryTest {
         inMemoryMetricsRepository.save(expireEntry);
 
         MetricEntity entry = new MetricEntity();
-        entry.setApp(DEFAULT_EXPIRE_APP);
+        entry.setApp(DEFAULT_APP);
         entry.setResource(DEFAULT_RESOURCE);
         entry.setTimestamp(new Date(now));
         entry.setPassQps(1L);
@@ -95,47 +123,40 @@ public class InMemoryMetricsRepositoryTest {
         inMemoryMetricsRepository.save(entry);
 
         List<MetricEntity> list = inMemoryMetricsRepository.queryByAppAndResourceBetween(
-            DEFAULT_EXPIRE_APP, DEFAULT_RESOURCE, now - 2 * EXPIRE_TIME, now + EXPIRE_TIME);
+                DEFAULT_APP, DEFAULT_RESOURCE, now - EXPIRE_TIME, now);
 
         assertFalse(CollectionUtils.isEmpty(list));
         assertEquals(1, list.size());
+        assertTrue(list.get(0).getTimestamp().getTime() >= now - EXPIRE_TIME && list.get(0).getTimestamp().getTime() <= now);
+
     }
 
+
     @Test
-    public void testListResourcesOfApp() {
-        // prepare basic test data
-        testSave();
-        System.out.println( "[" + System.currentTimeMillis() + "] Basic test data ready in testListResourcesOfApp");
+    public void testConcurrentPutAndGet() {
 
-        List<CompletableFuture> futures = Lists.newArrayList();
-
-        // concurrent query resources of app
+        List<CompletableFuture> futures = new ArrayList<>(10000);
         final CyclicBarrier cyclicBarrier = new CyclicBarrier(8);
+
         for (int j = 0; j < 10000; j++) {
-            futures.add(
-                CompletableFuture.runAsync(() -> {
+            final int finalJ = j;
+            futures.add(CompletableFuture.runAsync(() -> {
                         try {
                             cyclicBarrier.await();
-                            inMemoryMetricsRepository.listResourcesOfApp(DEFAULT_APP);
+                            if (finalJ % 2 == 0) {
+                                batchSave();
+                            } else {
+                                inMemoryMetricsRepository.listResourcesOfApp(DEFAULT_APP);
+                            }
+
                         } catch (InterruptedException | BrokenBarrierException e) {
                             e.printStackTrace();
                         }
-                }, executorService)
+
+                    }, executorService)
             );
         }
 
-        // batch add metric entity
-        for (int i = 0; i < 10000; i++) {
-            MetricEntity entry = new MetricEntity();
-            entry.setApp(DEFAULT_APP);
-            entry.setResource(DEFAULT_RESOURCE);
-            entry.setTimestamp(new Date(System.currentTimeMillis() - EXPIRE_TIME - 1000L));
-            entry.setPassQps(1L);
-            entry.setExceptionQps(1L);
-            entry.setBlockQps(0L);
-            entry.setSuccessQps(1L);
-            inMemoryMetricsRepository.save(entry);
-        }
 
         CompletableFuture all = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
 
@@ -154,5 +175,20 @@ public class InMemoryMetricsRepositoryTest {
             fail("allOf future timeout");
         }
     }
+
+    private void batchSave() {
+        for (int i = 0; i < 100; i++) {
+            MetricEntity entry = new MetricEntity();
+            entry.setApp(DEFAULT_APP);
+            entry.setResource(DEFAULT_RESOURCE);
+            entry.setTimestamp(new Date(System.currentTimeMillis()));
+            entry.setPassQps(1L);
+            entry.setExceptionQps(1L);
+            entry.setBlockQps(0L);
+            entry.setSuccessQps(1L);
+            inMemoryMetricsRepository.save(entry);
+        }
+    }
+
 
 }

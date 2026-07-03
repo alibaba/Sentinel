@@ -15,10 +15,10 @@
  */
 package com.alibaba.csp.sentinel.transport.heartbeat.client;
 
+import com.alibaba.csp.sentinel.config.SentinelConfig;
+
 import java.nio.charset.Charset;
 import java.util.Map;
-
-import com.alibaba.csp.sentinel.config.SentinelConfig;
 
 /**
  * Simple HTTP response representation.
@@ -112,10 +112,12 @@ public class SimpleHttpResponse {
     public String toString() {
         StringBuilder buf = new StringBuilder();
         buf.append(statusLine)
-            .append("\r\n");
-        for (Map.Entry<String, String> entry : headers.entrySet()) {
-            buf.append(entry.getKey()).append(": ").append(entry.getValue())
                 .append("\r\n");
+        if (headers != null) {
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                buf.append(entry.getKey()).append(": ").append(entry.getValue())
+                        .append("\r\n");
+            }
         }
         buf.append("\r\n");
         buf.append(getBodyAsString());

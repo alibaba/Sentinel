@@ -51,7 +51,7 @@ public class ModifyParamFlowRulesCommandHandler implements CommandHandler<String
             return CommandResponse.ofFailure(e, "decode rule data error");
         }
 
-        RecordLog.info(String.format("[API Server] Receiving rule change (type:parameter flow rule): %s", data));
+        RecordLog.info("[API Server] Receiving rule change (type:parameter flow rule): {}", data);
 
         String result = SUCCESS_MSG;
         List<ParamFlowRule> flowRules = JSONArray.parseArray(data, ParamFlowRule.class);

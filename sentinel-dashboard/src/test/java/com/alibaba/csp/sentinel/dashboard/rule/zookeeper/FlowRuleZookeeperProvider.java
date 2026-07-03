@@ -19,6 +19,7 @@ import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import org.apache.curator.framework.CuratorFramework;
+import org.apache.zookeeper.data.Stat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -36,6 +37,10 @@ public class FlowRuleZookeeperProvider implements DynamicRuleProvider<List<FlowR
     @Override
     public List<FlowRuleEntity> getRules(String appName) throws Exception {
         String zkPath = ZookeeperConfigUtil.getPath(appName);
+        Stat stat = zkClient.checkExists().forPath(zkPath);
+        if(stat == null){
+            return new ArrayList<>(0);
+        }
         byte[] bytes = zkClient.getData().forPath(zkPath);
         if (null == bytes || bytes.length == 0) {
             return new ArrayList<>();

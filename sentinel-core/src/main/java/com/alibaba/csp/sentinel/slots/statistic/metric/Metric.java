@@ -19,6 +19,7 @@ import java.util.List;
 
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
 import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
+import com.alibaba.csp.sentinel.util.function.Predicate;
 
 /**
  * Represents a basic structure recording invocation metrics of protected resources.
@@ -83,6 +84,15 @@ public interface Metric extends DebugSupport {
      * @return metric node list of all resources
      */
     List<MetricNode> details();
+
+    /**
+     * Generate aggregated metric items that satisfies the time predicate.
+     *
+     * @param timePredicate time predicate
+     * @return aggregated metric items
+     * @since 1.7.0
+     */
+    List<MetricNode> detailsOnCondition(Predicate<Long> timePredicate);
 
     /**
      * Get the raw window array.
