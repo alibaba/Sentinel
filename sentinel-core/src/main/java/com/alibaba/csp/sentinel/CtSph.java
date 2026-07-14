@@ -16,8 +16,8 @@
 package com.alibaba.csp.sentinel;
 
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.context.Context;
@@ -49,7 +49,7 @@ public class CtSph implements Sph {
      * {@link ProcessorSlotChain}, no matter in which {@link Context}.
      */
     private static final Map<ResourceWrapper, ProcessorSlotChain> CHAIN_MAP
-        = new HashMap<ResourceWrapper, ProcessorSlotChain>();
+        = new ConcurrentHashMap<ResourceWrapper, ProcessorSlotChain>();
 
     private AsyncEntry asyncEntryWithNoChain(ResourceWrapper resourceWrapper, Context context) {
         AsyncEntry entry = new AsyncEntry(resourceWrapper, null, context);
