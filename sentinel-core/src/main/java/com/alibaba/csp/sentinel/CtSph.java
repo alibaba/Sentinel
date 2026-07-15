@@ -215,7 +215,7 @@ public class CtSph implements Sph {
      * @since 0.2.0
      */
     public static int entrySize() {
-        synchronized (CHAIN_MAP){
+        synchronized (CHAIN_MAP) {
             return CHAIN_MAP.size();
         }
     }
@@ -226,7 +226,7 @@ public class CtSph implements Sph {
      * @since 0.2.0
      */
     static void resetChainMap() {
-        synchronized (CHAIN_MAP){
+        synchronized (CHAIN_MAP) {
             CHAIN_MAP.clear();
         }
     }
