@@ -310,6 +310,33 @@ public class CtSphTest {
         assertEquals(1, CtSph.entrySize());
     }
 
+    @Test
+    public void testLookUpSlotChainAtCapacityConcurrently() throws Exception {
+        fillResources(Constants.MAX_SLOT_CHAIN_SIZE - 1);
+        final int taskCount = 16;
+        List<Callable<ProcessorSlot<Object>>> tasks =
+            new ArrayList<Callable<ProcessorSlot<Object>>>(taskCount);
+        for (int i = 0; i < taskCount; i++) {
+            final ResourceWrapper resource =
+                new StringResourceWrapper("concurrent-capacity-resource-" + i, EntryType.IN);
+            tasks.add(new Callable<ProcessorSlot<Object>>() {
+                @Override
+                public ProcessorSlot<Object> call() {
+                    return ctSph.lookProcessChain(resource);
+                }
+            });
+        }
+
+        int createdCount = 0;
+        for (ProcessorSlot<Object> chain : invokeConcurrently(tasks)) {
+            if (chain != null) {
+                createdCount++;
+            }
+        }
+        assertEquals("Only one resource should be created at the capacity boundary", 1, createdCount);
+        assertEquals(Constants.MAX_SLOT_CHAIN_SIZE, CtSph.entrySize());
+    }
+
     private <T> List<T> invokeConcurrently(List<Callable<T>> tasks) throws Exception {
         final int taskCount = tasks.size();
         final ExecutorService executor = Executors.newFixedThreadPool(taskCount);
@@ -354,7 +381,11 @@ public class CtSphTest {
     }
 
     private void fillFullResources() {
-        for (int i = 0; i < Constants.MAX_SLOT_CHAIN_SIZE; i++) {
+        fillResources(Constants.MAX_SLOT_CHAIN_SIZE);
+    }
+
+    private void fillResources(int count) {
+        for (int i = 0; i < count; i++) {
             ResourceWrapper resourceWrapper = new StringResourceWrapper("test-resource-" + i, EntryType.IN);
             CtSph.getChainMap().put(resourceWrapper, SlotChainProvider.newSlotChain());
         }
