@@ -1,6 +1,15 @@
 package com.alibaba.csp.sentinel;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.context.ContextTestUtil;
@@ -275,6 +284,66 @@ public class CtSphTest {
     public void testChainMapSupportsConcurrentAccess() {
         assertTrue("Chain map should support lock-free concurrent reads",
             CtSph.getChainMap() instanceof ConcurrentMap);
+    }
+
+    @Test
+    public void testLookUpSameSlotChainConcurrently() throws Exception {
+        final int taskCount = 32;
+        final ResourceWrapper resource = new StringResourceWrapper("concurrent-resource", EntryType.IN);
+        List<Callable<ProcessorSlot<Object>>> tasks =
+            new ArrayList<Callable<ProcessorSlot<Object>>>(taskCount);
+        for (int i = 0; i < taskCount; i++) {
+            tasks.add(new Callable<ProcessorSlot<Object>>() {
+                @Override
+                public ProcessorSlot<Object> call() {
+                    return ctSph.lookProcessChain(resource);
+                }
+            });
+        }
+
+        List<ProcessorSlot<Object>> chains = invokeConcurrently(tasks);
+        ProcessorSlot<Object> expected = chains.get(0);
+        assertNotNull(expected);
+        for (ProcessorSlot<Object> chain : chains) {
+            assertSame("Same resource should share one slot chain", expected, chain);
+        }
+        assertEquals(1, CtSph.entrySize());
+    }
+
+    private <T> List<T> invokeConcurrently(List<Callable<T>> tasks) throws Exception {
+        final int taskCount = tasks.size();
+        final ExecutorService executor = Executors.newFixedThreadPool(taskCount);
+        final CountDownLatch ready = new CountDownLatch(taskCount);
+        final CountDownLatch start = new CountDownLatch(1);
+        final List<Future<T>> futures = new ArrayList<Future<T>>(taskCount);
+
+        try {
+            for (final Callable<T> task : tasks) {
+                futures.add(executor.submit(new Callable<T>() {
+                    @Override
+                    public T call() throws Exception {
+                        ready.countDown();
+                        if (!start.await(5, TimeUnit.SECONDS)) {
+                            throw new TimeoutException("Timed out waiting for concurrent test start");
+                        }
+                        return task.call();
+                    }
+                }));
+            }
+
+            assertTrue("Concurrent tasks were not ready in time", ready.await(5, TimeUnit.SECONDS));
+            start.countDown();
+
+            List<T> results = new ArrayList<T>(taskCount);
+            for (Future<T> future : futures) {
+                results.add(future.get(10, TimeUnit.SECONDS));
+            }
+            return results;
+        } finally {
+            start.countDown();
+            executor.shutdownNow();
+            assertTrue("Executor did not terminate in time", executor.awaitTermination(5, TimeUnit.SECONDS));
+        }
     }
 
     private void fillFullContext() {
