@@ -1,5 +1,7 @@
 package com.alibaba.csp.sentinel;
 
+import java.util.concurrent.ConcurrentMap;
+
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.context.ContextTestUtil;
 import com.alibaba.csp.sentinel.context.ContextUtil;
@@ -267,6 +269,12 @@ public class CtSphTest {
         assertFalse(CtSph.getChainMap().containsKey(r2));
         assertNull("The slot chain for r2 should not be created because amount exceeded", ctSph.lookProcessChain(r2));
         assertNull(ctSph.lookProcessChain(r2));
+    }
+
+    @Test
+    public void testChainMapSupportsConcurrentAccess() {
+        assertTrue("Chain map should support lock-free concurrent reads",
+            CtSph.getChainMap() instanceof ConcurrentMap);
     }
 
     private void fillFullContext() {
