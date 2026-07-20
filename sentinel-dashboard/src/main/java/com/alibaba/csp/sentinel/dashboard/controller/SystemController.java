@@ -22,6 +22,8 @@ import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.RuleRepository;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.SystemRuleEntity;
@@ -51,6 +53,10 @@ public class SystemController {
     private SentinelApiClient sentinelApiClient;
     @Autowired
     private AppManagement appManagement;
+    @Autowired
+    private DynamicRuleProvider<List<SystemRuleEntity>> systemRuleNacosProvider;
+    @Autowired
+    private DynamicRulePublisher<List<SystemRuleEntity>> systemRuleNacosPublisher;
 
     private <R> Result<R> checkBasicParams(String app, String ip, Integer port) {
         if (StringUtil.isEmpty(app)) {
@@ -80,7 +86,11 @@ public class SystemController {
             return checkResult;
         }
         try {
-            List<SystemRuleEntity> rules = sentinelApiClient.fetchSystemRuleOfMachine(app, ip, port);
+            List<SystemRuleEntity> rules = systemRuleNacosProvider.getRules(app);
+            rules.forEach(rule -> {
+                rule.setIp(ip);
+                rule.setPort(port);
+            });
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
@@ -251,6 +261,12 @@ public class SystemController {
 
     private boolean publishRules(String app, String ip, Integer port) {
         List<SystemRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return sentinelApiClient.setSystemRuleOfMachine(app, ip, port, rules);
+        try {
+            systemRuleNacosPublisher.publish(app, rules);
+            return true;
+        } catch (Exception e) {
+            logger.error("Publish system rules to Nacos error", e);
+            return false;
+        }
     }
 }
