@@ -18,8 +18,10 @@ package com.alibaba.csp.sentinel.dashboard.rule.nacos;
 import java.util.List;
 import java.util.Properties;
 
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.datasource.Converter;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
@@ -67,6 +69,16 @@ public class NacosConfig {
     @Bean
     public Converter<String, List<FlowRule>> flowRuleDecoder() {
         return s -> JSON.parseObject(s, new TypeReference<List<FlowRule>>() {});
+    }
+
+    @Bean
+    public Converter<List<DegradeRule>, String> degradeRuleEncoder() {
+        return JSON::toJSONString;
+    }
+
+    @Bean
+    public Converter<String, List<DegradeRule>> degradeRuleDecoder() {
+        return s -> JSON.parseObject(s, new TypeReference<List<DegradeRule>>() {});
     }
 
     @Bean
