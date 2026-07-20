@@ -100,11 +100,10 @@
             <artifactId>fastjson</artifactId>
         </dependency>
 
-        <!-- for Nacos rule publisher sample -->
+        <!-- for Nacos rule publisher -->
         <dependency>
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-datasource-nacos</artifactId>
-            <scope>test</scope>
         </dependency>
         <!-- for Apollo rule publisher sample -->
         <dependency>
