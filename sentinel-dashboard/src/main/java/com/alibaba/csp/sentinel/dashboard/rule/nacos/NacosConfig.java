@@ -21,6 +21,7 @@ import java.util.Properties;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.datasource.Converter;
+import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
@@ -101,6 +102,16 @@ public class NacosConfig {
     @Bean
     public Converter<String, List<SystemRule>> systemRuleDecoder() {
         return s -> JSON.parseObject(s, new TypeReference<List<SystemRule>>() {});
+    }
+
+    @Bean
+    public Converter<List<AuthorityRule>, String> authorityRuleEncoder() {
+        return JSON::toJSONString;
+    }
+
+    @Bean
+    public Converter<String, List<AuthorityRule>> authorityRuleDecoder() {
+        return s -> JSON.parseObject(s, new TypeReference<List<AuthorityRule>>() {});
     }
 
     @Bean

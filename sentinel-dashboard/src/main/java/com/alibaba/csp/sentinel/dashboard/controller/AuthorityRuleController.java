@@ -23,6 +23,8 @@ import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
@@ -59,6 +61,10 @@ public class AuthorityRuleController {
     private RuleRepository<AuthorityRuleEntity, Long> repository;
     @Autowired
     private AppManagement appManagement;
+    @Autowired
+    private DynamicRuleProvider<List<AuthorityRuleEntity>> authorityRuleNacosProvider;
+    @Autowired
+    private DynamicRulePublisher<List<AuthorityRuleEntity>> authorityRuleNacosPublisher;
 
     @GetMapping("/rules")
     @AuthAction(PrivilegeType.READ_RULE)
@@ -78,8 +84,7 @@ public class AuthorityRuleController {
             return Result.ofFail(-1, "given ip does not belong to given app");
         }
         try {
-            List<AuthorityRuleEntity> rules = sentinelApiClient.fetchAuthorityRulesOfMachine(app, ip, port);
-            rules = repository.saveAll(rules);
+            List<AuthorityRuleEntity> rules = authorityRuleNacosProvider.getRules(app);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
             logger.error("Error when querying authority rules", throwable);
@@ -192,6 +197,12 @@ public class AuthorityRuleController {
 
     private boolean publishRules(String app, String ip, Integer port) {
         List<AuthorityRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return sentinelApiClient.setAuthorityRuleOfMachine(app, ip, port, rules);
+        try {
+            authorityRuleNacosPublisher.publish(app, rules);
+            return true;
+        } catch (Exception e) {
+            logger.error("Publish authority rules to Nacos error", e);
+            return false;
+        }
     }
 }
