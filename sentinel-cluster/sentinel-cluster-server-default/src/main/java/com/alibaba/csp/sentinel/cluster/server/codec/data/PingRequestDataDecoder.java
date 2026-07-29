@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.cluster.server.codec.data;
 import com.alibaba.csp.sentinel.cluster.codec.EntityDecoder;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.handler.codec.CorruptedFrameException;
 
 /**
  * @author Eric Zhao
@@ -27,14 +28,19 @@ public class PingRequestDataDecoder implements EntityDecoder<ByteBuf, String> {
 
     @Override
     public String decode(ByteBuf source) {
-        if (source.readableBytes() >= 4) {
-            int length = source.readInt();
-            if (length > 0 && source.readableBytes() > 0) {
-                byte[] bytes = new byte[length];
-                source.readBytes(bytes);
-                return new String(bytes);
-            }
+        if (source.readableBytes() < Integer.BYTES) {
+            throw new CorruptedFrameException("Incomplete ping payload length");
         }
-        return null;
+
+        int packetLen = source.readInt();
+        int actualLength = source.readableBytes();
+        if (packetLen < 0 || packetLen != actualLength) {
+            throw new CorruptedFrameException("Invalid ping payload length: declared=" + packetLen
+                + ", actual=" + actualLength);
+        }
+
+        byte[] bytes = new byte[packetLen];
+        source.readBytes(bytes);
+        return new String(bytes);
     }
 }

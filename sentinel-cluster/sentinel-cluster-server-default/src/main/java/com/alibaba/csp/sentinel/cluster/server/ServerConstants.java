@@ -27,5 +27,10 @@ public final class ServerConstants {
 
     public static final String DEFAULT_NAMESPACE = "default";
 
-    private ServerConstants() {}
+    public static final int NETTY_MAX_FRAME_LENGTH = 1024;
+    public static final int MAX_PARAM_AMOUNT = 512;
+    public static final int MAX_PARAM_STRING_LENGTH = 1024;
+
+    private ServerConstants() {
+    }
 }
