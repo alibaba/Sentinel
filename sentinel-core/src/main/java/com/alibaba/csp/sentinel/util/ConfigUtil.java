@@ -27,6 +27,8 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
+import com.alibaba.csp.sentinel.log.RecordLog;
+
 /**
  * <p>
  * Util class for loading configuration from file or command arguments.
@@ -75,7 +77,7 @@ public final class ConfigUtil {
                 properties.load(bufferedReader);
             }
         } catch (Throwable e) {
-            e.printStackTrace();
+            RecordLog.warn("Failed to load properties from absolute file: {}", fileName, e);
         }
         return properties;
     }
@@ -102,7 +104,7 @@ public final class ConfigUtil {
                 list.add(urls.nextElement());
             }
         } catch (Throwable e) {
-            e.printStackTrace();
+            RecordLog.warn("Failed to get resources from classpath: {}", fileName, e);
         }
 
         if (list.isEmpty()) {
@@ -117,7 +119,7 @@ public final class ConfigUtil {
                 p.load(bufferedReader);
                 properties.putAll(p);
             } catch (Throwable e) {
-                e.printStackTrace();
+                RecordLog.warn("Failed to load properties from URL: {}", url, e);
             }
         }
         return properties;
