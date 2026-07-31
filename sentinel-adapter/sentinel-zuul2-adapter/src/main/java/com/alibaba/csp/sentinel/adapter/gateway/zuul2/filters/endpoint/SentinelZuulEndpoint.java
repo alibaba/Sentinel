@@ -42,7 +42,7 @@ public class SentinelZuulEndpoint extends HttpSyncEndpoint {
         ZuulBlockFallbackProvider zuulBlockFallbackProvider = ZuulBlockFallbackManager
             .getFallbackProvider(fallBackRoute);
         BlockResponse response = zuulBlockFallbackProvider.fallbackResponse(fallBackRoute, throwable);
-        HttpResponseMessage resp = new HttpResponseMessageImpl(context, request, response.getCode());
+        HttpResponseMessage resp = new HttpResponseMessageImpl(context, request, response.getStatus());
         resp.setBodyAsText(response.toString());
         return resp;
     }
